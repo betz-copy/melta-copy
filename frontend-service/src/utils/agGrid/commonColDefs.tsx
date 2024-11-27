@@ -28,9 +28,10 @@ const isError = <Data extends any = IEntity>(props: ICellRendererParams<Data, an
 const errorColDef = <Data extends any = IEntity>(props: ICellRendererParams<Data, any | undefined>, field: string) => {
     const error = isError(props, field, true);
 
-    const message = error.metadata.message.includes('must be')
-        ? `${i18next.t('wizard.entity.loadEntities.notValid')} ${i18next.t(`propertyTypes.${error.metadata.params.type}`)}`
-        : error.metadata.message;
+    const message =
+        error.metadata.message && error.metadata.message.includes('must be')
+            ? `${i18next.t('wizard.entity.loadEntities.notValid')} ${i18next.t(`propertyTypes.${error.metadata.params.type}`)}`
+            : error.metadata.message;
 
     return (
         <Box display="flex" justifyContent="space-between" alignItems="center" width="100%">
@@ -297,7 +298,7 @@ export const enumArrayColDef = <Data extends any = IEntity>(
         cellRenderer: (props: ICellRendererParams<Data, string[] | undefined>) => {
             if (!props.value) return '';
             if (isError(props, field, showErrors)) return errorColDef(props, field);
-            if (showErrors) return props.value;
+            if (showErrors) return props.value.join(', ');
             return (
                 <OverflowWrapper
                     searchValue={searchValue}
@@ -407,7 +408,12 @@ export const dateColDef = <Data extends any = IEntity>(
         cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => {
             if (isError(props, field, showErrors)) return errorColDef(props, field);
             return (
-                <Value searchValue={searchValue} hideValue={hideValue} value={formatDate(props.value?.toString())} calculateTime={calculateTime} />
+                <Value
+                    searchValue={searchValue}
+                    hideValue={hideValue}
+                    value={formatDate(props.value?.toString())}
+                    calculateTime={showErrors ? false : calculateTime}
+                />
             );
         },
         filter: 'agDateColumnFilter',

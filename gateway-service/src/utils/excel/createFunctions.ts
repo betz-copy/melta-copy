@@ -61,10 +61,11 @@ const TypesToHebrew = (propertyTemplate: IEntitySingleProperty) => {
     const type = excelConfig.propertyType[propertyTemplate.format ? propertyTemplate.format : propertyTemplate.type];
 
     if (type === propertyType.string) {
-        if (propertyTemplate.enum) return propertyTemplate.enum.join('/ ');
-        if (propertyTemplate.pattern) return propertyType.pattern;
+        if (propertyTemplate.enum) return `${propertyType.enum}: ${propertyTemplate.enum.join('/ ')}`;
+        if (propertyTemplate.pattern) return `${propertyType.regex}`;
     }
-    if (type === propertyType.array && propertyTemplate.items?.type === 'string') return propertyTemplate.items.enum?.join(', ');
+    if (type === propertyType.array && propertyTemplate.items?.type === 'string')
+        return `${propertyType.multiEnum}: ${propertyTemplate.items.enum?.join(', ')}`;
 
     return type;
 };
@@ -204,15 +205,18 @@ const createWorksheet = async (
     const { properties } = template.properties;
 
     const sheetColumns: Partial<Excel.Column>[] = [];
+    let columnIndex = 0;
 
-    Object.entries(properties).forEach(([propertyKey, propertyTemplate], index) => {
+    Object.entries(properties).forEach(([propertyKey, propertyTemplate]) => {
         const isRelationshipRef = propertyTemplate.format === 'relationshipReference' || propertyTemplate.relationshipReference;
         const isFile = propertyTemplate.format === 'fileId' || (propertyTemplate.type === 'array' && propertyTemplate.items?.format === 'fileId');
-        const shouldAddColumn = displayColumns?.includes(propertyKey) && insertEntities?.insert ? !isRelationshipRef && !isFile : true;
+        const isSerialNumber = propertyTemplate.type === 'number' && propertyTemplate.serialCurrent;
+        const shouldAddColumn =
+            displayColumns?.includes(propertyKey) && insertEntities?.insert ? !isRelationshipRef && !isFile && !isSerialNumber : true;
 
         if (shouldAddColumn) {
-            columnDataValidation(worksheet, propertyTemplate, index);
-
+            columnDataValidation(worksheet, propertyTemplate, columnIndex);
+            columnIndex++;
             sheetColumns.push({
                 key: propertyKey,
                 header: propertyTemplate.title,
@@ -220,15 +224,15 @@ const createWorksheet = async (
             });
         }
     });
-
     const externalColumns = excelConfig.excelDefaultColumns.filter((externalColumn) => displayColumns?.includes(externalColumn.key));
     worksheet.columns = insertEntities?.insert ? sheetColumns : sheetColumns.concat(externalColumns);
     worksheet.getRow(1).eachCell((cell) => {
-        const type = TypesToHebrew(Object.values(properties).find((propertyTemplate) => propertyTemplate.title === cell.value)!);
-
         cell.font = excelStyle.columnHeader.font;
         cell.alignment = excelStyle.columnHeader.alignment;
-        cell.note = insertEntities?.insert ? type : undefined;
+        if (insertEntities?.insert) {
+            const type = TypesToHebrew(Object.values(properties).find((propertyTemplate) => propertyTemplate.title === cell.value)!);
+            cell.note = type;
+        }
     });
     return worksheet;
 };
@@ -302,9 +306,9 @@ const styleAWorksheet = (
                 cell.font = excelStyle.cell.font;
 
                 const isComplex = fixComplexProperties(cell, row, [key, value], rowIndex, workspace);
-
                 if (!isComplex) {
                     cell.value = row[key];
+
                     if (typeof cell.value === 'boolean') {
                         cell.value = cell.value ? excelConfig.TRUE_TO_HEBREW : excelConfig.FALSE_TO_HEBREW;
                     }
@@ -331,8 +335,12 @@ const styleAWorksheet = (
                     }
 
                     // Check if value is simple list
-                    if (value.type === 'string' && value.enum)
-                        cell.font = { ...excelStyle.cell.font, color: { argb: hexToARGB(template.enumPropertiesColors![key][row[key]]) } };
+                    if (!insert)
+                        if (value.type === 'string' && value.enum) {
+                            if (template.enumPropertiesColors && template.enumPropertiesColors[key][row[key]])
+                                cell.font = { ...excelStyle.cell.font, color: { argb: hexToARGB(template.enumPropertiesColors[key][row[key]]) } };
+                        }
+
                     // Check if value is multiple list
                     if (!insert) if (value.type === 'array' && value.items?.type === 'string' && value.items.enum) cell.value = row[key].join(', ');
                 }

@@ -39,7 +39,7 @@ import {
     IMongoEntityTemplatePopulated,
 } from '../../externalServices/templates/entityTemplateService';
 import { trycatch } from '../../utils';
-import { createWorkbook, createWorksheet, styleAWorksheet } from '../../utils/excel/createExcelFunctions';
+import { createWorkbook, createWorksheet, styleAWorksheet } from '../../utils/excel/createFunctions';
 import DefaultManagerProxy from '../../utils/express/manager';
 import logger from '../../utils/logger/logsLogger';
 import { objectFilter } from '../../utils/object';
@@ -51,7 +51,7 @@ import { RabbitManager } from '../../utils/rabbit';
 import { SemanticSearchService } from '../../externalServices/semanticSearch';
 import { ISemanticSearchResult } from '../../externalServices/semanticSearch/interface';
 import { WorkspaceService } from '../workspaces/service';
-import { getPopulatedBrokenRulesErrorEntities, getValidationErrorEntities, readExcelFile } from '../../utils/excel/getExcelFunctions';
+import { getPopulatedBrokenRulesErrorEntities, getValidationErrorEntities, readExcelFile } from '../../utils/excel/getFunctions';
 
 const { errorCodes, rabbit, ruleBreachService } = config;
 
@@ -207,18 +207,28 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         const failedEntities: IFailedEntity[] = [];
         const allBrokenRulesEntities: IBrokenRuleEntity[] = [];
 
+        const template = await this.entityTemplateService.getEntityTemplateById(entities[0].templateId);
+        const serialStarters: Record<string, number> = Object.entries(template.properties.properties)
+            .filter(([_key, value]) => value.type === 'number' && value.serialStarter !== undefined)
+            .reduce((acc, [key, value]) => {
+                acc[key] = value.serialStarter || 0 + 1;
+                return acc;
+            }, {});
+
         await Promise.all(
-            entities.map(async (entity) => {
+            entities.map(async (entity, index) => {
                 try {
-                    const result = await this.createEntityInstance(entity, [], ignoredRules, userId);
+                    const serialNumbers = Object.fromEntries(Object.entries(serialStarters).map(([key, value]) => [key, value + index]));
+                    const result = await this.createEntityInstance(entity, [], ignoredRules, userId, serialNumbers);
                     succeededEntities.push(result);
                     return result;
                 } catch (error) {
                     if (error instanceof AxiosError) {
                         const { data } = error.response!;
 
-                        if (data.metadata.errorCode === errorCodes.failedConstraintsValidation) {
+                        if (data.metadata && data.metadata.errorCode === errorCodes.failedConstraintsValidation) {
                             const { constraint } = data.metadata;
+
                             if (constraint.type === ActionErrors.unique) {
                                 failedEntities.push({
                                     properties: entity.properties,
@@ -226,6 +236,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
                                 });
                                 return null;
                             }
+
                             if (constraint.type === ActionErrors.required) {
                                 failedEntities.push({
                                     properties: entity.properties,
@@ -233,6 +244,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
                                 });
                                 return null;
                             }
+
                             return null;
                         }
                         if (data.type === 'TemplateValidationError') getValidationErrorEntities(error as AxiosError, failedEntities);
@@ -277,6 +289,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
     private async setSerialPropertiesAndUpdateTemplate(
         entityProperties: IEntity['properties'],
         entityTemplate: IMongoEntityTemplatePopulated,
+        serialNumbers?: Record<string, number>,
     ): Promise<IEntity['properties']> {
         const updatedProperties: IEntity['properties'] = { ...entityProperties };
 
@@ -287,9 +300,11 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
         Object.keys(entityTemplate.properties.properties).forEach((key) => {
             if (entityTemplate.properties.properties[key].serialCurrent !== undefined) {
-                updatedProperties[key] = Number(entityTemplate.properties.properties[key].serialCurrent);
+                updatedProperties[key] = serialNumbers ? serialNumbers[key] : Number(entityTemplate.properties.properties[key].serialCurrent);
 
-                const serialNum: number = Number(entityTemplate.properties.properties[key].serialCurrent) + 1;
+                const serialNum: number = serialNumbers
+                    ? serialNumbers[key] + 1
+                    : Number(entityTemplate.properties.properties[key].serialCurrent) + 1;
                 const newSerialNumberObj = { ...entityTemplate.properties.properties[key], serialCurrent: serialNum };
                 updatedTemplateProperties[key] = newSerialNumberObj;
                 isTemplateUpdated = true;
@@ -310,11 +325,11 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         return updatedProperties;
     }
 
-    async handlePreparationsBeforeCreateEntity(instanceData: IEntity, files: Express.Multer.File[]) {
+    async handlePreparationsBeforeCreateEntity(instanceData: IEntity, files: Express.Multer.File[], serialNumbers?: Record<string, number>) {
         const { props: propertiesWithFiles, files: upserstedFiles } = await this.uploadInstanceFiles(files, instanceData.properties);
 
         const entityTemplate = await this.entityTemplateService.getEntityTemplateById(instanceData.templateId);
-        const newInstanceProperties = await this.setSerialPropertiesAndUpdateTemplate(propertiesWithFiles, entityTemplate);
+        const newInstanceProperties = await this.setSerialPropertiesAndUpdateTemplate(propertiesWithFiles, entityTemplate, serialNumbers);
 
         return {
             templateId: instanceData.templateId,
@@ -328,9 +343,10 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         files: Express.Multer.File[],
         ignoredRules: IBrokenRule[],
         userId: string,
+        serialNumbers?: Record<string, number>,
         createAlert: boolean = true,
     ) {
-        const { templateId, properties, files: upserstedFiles } = await this.handlePreparationsBeforeCreateEntity(instanceData, files);
+        const { templateId, properties, files: upserstedFiles } = await this.handlePreparationsBeforeCreateEntity(instanceData, files, serialNumbers);
 
         const { createdEntity, actions } = await this.service
             .createEntityInstance({ properties, templateId }, ignoredRules, userId)

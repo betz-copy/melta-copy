@@ -24,24 +24,43 @@ import {
 const formatExcel = (value: Excel.CellValue | string, propertyTemplate: IEntitySingleProperty) => {
     const { type, format } = propertyTemplate;
     if (value === null) return undefined;
-
-    if (type === 'boolean') {
-        if (value === excelConfig.TRUE_TO_HEBREW) return true;
-        if (value === excelConfig.FALSE_TO_HEBREW) return false;
-    }
-    if (type === 'string') {
-        if (format === 'date') return new Date(value as string).toLocaleDateString('en-CA');
-        if (format === 'date-time') return new Date(value as string).toISOString();
-    }
-    if (type === 'array') {
-        if (propertyTemplate.items && propertyTemplate.items.type === 'string' && typeof value === 'object' && 'richText' in value)
-            return value?.richText.map((item) => item.text).filter((text) => text !== ', ');
+    switch (type) {
+        case 'boolean':
+            if (value === excelConfig.TRUE_TO_HEBREW) return true;
+            if (value === excelConfig.FALSE_TO_HEBREW) return false;
+            break;
+        case 'string':
+            if (format === 'email' && typeof value === 'object') return (value as any).text;
+            if (format === 'date') return new Date(value as string).toLocaleDateString('en-CA');
+            if (format === 'date-time') return new Date(value as string).toISOString();
+            if (propertyTemplate.enum && typeof value === 'object' && 'richText' in value)
+                return value?.richText
+                    .map((item) => item.text)
+                    .filter((text) => text !== ', ')
+                    .join('');
+            return value?.toString();
+        case 'array':
+            if (propertyTemplate.items && propertyTemplate.items.type === 'string' && typeof value === 'object' && 'richText' in value)
+                return value?.richText.map((item) => item.text).filter((text) => text !== ', ' && text !== ',');
+            break;
+        default:
+            break;
     }
     return value;
 };
 
 const readExcelFile = async (files: Express.Multer.File[], template: IMongoEntityTemplatePopulated) => {
     const allActions: IAction[] = [];
+
+    const columns = Object.fromEntries(
+        Object.entries(template.properties.properties).filter(([_propertyKey, propertyTemplate]) => {
+            const isRelationshipRef = propertyTemplate.format === 'relationshipReference' || propertyTemplate.relationshipReference;
+            const isFile = propertyTemplate.format === 'fileId' || (propertyTemplate.type === 'array' && propertyTemplate.items?.format === 'fileId');
+            const isSerialNumber = propertyTemplate.type === 'number' && propertyTemplate.serialCurrent;
+            const shouldAddColumn = !isRelationshipRef && !isFile && !isSerialNumber;
+            return shouldAddColumn;
+        }),
+    );
 
     await Promise.all(
         files.map(async (file) => {
@@ -58,7 +77,7 @@ const readExcelFile = async (files: Express.Multer.File[], template: IMongoEntit
                 if (rowIndex === 1) return;
 
                 const rowData: Record<string, any> = {};
-                Object.entries(template.properties.properties).forEach(([key, value], columnIndex) => {
+                Object.entries(columns).forEach(([key, value], columnIndex) => {
                     const cellValue = row.getCell(columnIndex + 1).value;
                     const formatCellValue = formatExcel(cellValue, value);
                     rowData[key] = formatCellValue;

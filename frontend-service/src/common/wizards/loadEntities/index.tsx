@@ -214,13 +214,13 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
                     text: i18next.t('wizard.entity.loadEntities.loadEntities'),
                     onClick: async () => {
                         if (stepsData.status === StepStatus.stepsPreview) {
-                            await loadEntities(stepsData.allEntities);
-                            if (stepsData.data.failedEntities.length > 0)
+                            const data = await loadEntities(stepsData.allEntities);
+                            if (data.failedEntities.length > 0)
                                 await exportTemplateToExcel({
                                     fileName: `${template?.displayName}: ${i18next.t('wizard.entity.loadEntities.failedEntities')}.xlsx`,
                                     insertEntities: {
                                         insert: true,
-                                        entities: stepsData.data.failedEntities.map((entity) => entity.properties),
+                                        entities: data.failedEntities.map((entity) => entity.properties),
                                     },
                                 });
                         }

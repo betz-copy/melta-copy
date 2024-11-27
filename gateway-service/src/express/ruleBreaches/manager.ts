@@ -368,7 +368,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
         const { templateId, properties } = action.actionMetadata;
         const instancesManager = new InstancesManager(this.workspaceId);
 
-        const entity = await instancesManager.createEntityInstance({ templateId, properties }, [], brokenRules, originUserId, false);
+        const entity = await instancesManager.createEntityInstance({ templateId, properties }, [], brokenRules, originUserId, undefined, false);
 
         await this.service.updateRuleBreachRequestActionsMetadata(_id, [
             {
