@@ -78,7 +78,7 @@ export const MeltaRoutesInner: React.FC = () => {
 
         if (pageScrollTarget) {
             pageScrollTarget.addEventListener('scroll', handleScroll);
-        } 
+        }
 
         return () => {
             if (pageScrollTarget) {

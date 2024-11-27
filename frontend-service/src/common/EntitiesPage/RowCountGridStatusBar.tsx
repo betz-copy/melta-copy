@@ -19,9 +19,7 @@ export const RowCountGridStatusBar: React.FC<IStatusPanelParams> = ({ api }) => 
         if (selectAll) {
             const toggledNodesCount = toggledNodes.length;
             setSelectedCount(count - toggledNodesCount);
-        } else {
-            setSelectedCount(api.getSelectedRows().length);
-        }
+        } else setSelectedCount(api.getSelectedRows().length);
     }, [api, count]);
 
     useEffect(() => {

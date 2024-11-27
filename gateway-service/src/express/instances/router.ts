@@ -45,6 +45,7 @@ InstancesRouter.post(
     InstancesValidatorMiddleware.validateUserCanSearchEntitiesBatch,
     InstancesControllerMiddleware.searchEntitiesBatch,
 );
+
 InstancesRouter.post(
     '/entities/search/template/:templateId',
     InstancesValidatorMiddleware.validateUserCanSearchEntitiesOfTemplate,

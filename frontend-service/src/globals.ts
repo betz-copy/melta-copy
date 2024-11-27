@@ -198,7 +198,7 @@ export const environment = {
         infiniteInitialRowCount: 1,
         defaultExpandedTableHeight: 650,
         paginationPageSizeSelector: [5, 10, 25, 50],
-        limitOfDeleteEntities: 2,
+        limitOfDeleteEntities: 1000,
     },
     activityLog: {
         infiniteScrollPageCount: 10,
