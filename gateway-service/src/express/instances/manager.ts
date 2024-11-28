@@ -313,27 +313,31 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
     }
 
     async searchEntitiesBatch(shouldSemanticSearch: boolean, searchBody: ISearchBatchBody) {
-        if (shouldSemanticSearch && searchBody.textSearch) {
-            const semanticSearchResult = await this.semanticSearchSearch.search({
-                textSearch: searchBody.textSearch,
-                limit: searchBody.limit,
-                skip: searchBody.skip,
-                templates: Object.keys(searchBody.templates),
-            });
-
-            const instanceResults = await this.service.searchEntitiesBatch({
-                ...searchBody,
-                entityIdsToInclude: semanticSearchResult ? Object.values(semanticSearchResult).map(Object.keys).flat() : undefined,
-            });
-
-            const { formattedEntities, textsForReranking } = formatEntitiesSearch(instanceResults, searchBody.textSearch, semanticSearchResult);
-            const reRank = await this.semanticSearchSearch.rerank({ query: searchBody.textSearch, texts: textsForReranking });
-            const sortedEntities = reRank.map((index) => formattedEntities.entities[index]);
-
-            return { ...formattedEntities, entities: sortedEntities };
+        if (!shouldSemanticSearch || !searchBody.textSearch) {
+            return this.service.searchEntitiesBatch(searchBody);
         }
 
-        return this.service.searchEntitiesBatch(searchBody);
+        const semanticSearchResult = await this.semanticSearchSearch.search({
+            textSearch: searchBody.textSearch,
+            limit: searchBody.limit,
+            skip: searchBody.skip,
+            templates: Object.keys(searchBody.templates),
+        });
+
+        const instanceResults = await this.service.searchEntitiesBatch({
+            ...searchBody,
+            entityIdsToInclude: semanticSearchResult ? Object.values(semanticSearchResult).map(Object.keys).flat() : undefined,
+        });
+
+        const { formattedEntities, textsForReranking } = formatEntitiesSearch(instanceResults, searchBody.textSearch, semanticSearchResult);
+        const rerank = await this.semanticSearchSearch.rerank({ query: searchBody.textSearch, texts: textsForReranking });
+
+        if (!rerank?.length) {
+            return formattedEntities;
+        }
+
+        const sortedEntities = rerank.flatMap((index) => formattedEntities.entities?.[index] ?? []);
+        return { ...formattedEntities, entities: sortedEntities };
     }
 
     async getEntitiesCountByTemplates(shouldSemanticSearch: boolean, searchBody: ITemplateSearchBody): Promise<ICountSearchResult[] | undefined> {

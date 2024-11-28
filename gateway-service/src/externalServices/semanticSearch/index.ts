@@ -4,12 +4,12 @@ import { ISearchBatchBody } from '../instanceService/interfaces/entities';
 import { IRerankRequest, ISemanticSearchResult } from './interface';
 
 const {
-    semanticSearchService: { url, searchRoute, requestTimeout },
+    semanticSearchService: { url, searchRoute, requestTimeout, baseRoute, rerankRoute },
 } = config;
 
 export class SemanticSearchService extends DefaultExternalServiceApi {
     constructor(workspaceId: string) {
-        super(workspaceId, { baseURL: url, timeout: requestTimeout });
+        super(workspaceId, { baseURL: `${url}${baseRoute}`, timeout: requestTimeout });
     }
 
     async search(searchBody: Omit<ISearchBatchBody, 'templates'> & { templates: string[] }) {
@@ -24,7 +24,7 @@ export class SemanticSearchService extends DefaultExternalServiceApi {
 
     async rerank(rerankBody: IRerankRequest) {
         try {
-            const { data } = await this.api.post<number[]>(searchRoute, rerankBody);
+            const { data } = await this.api.post<number[]>(rerankRoute, rerankBody);
             return data;
         } catch (e) {
             console.log(e);

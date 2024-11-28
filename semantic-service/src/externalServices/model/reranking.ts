@@ -4,7 +4,7 @@ import { IRerankRequest, IRerankResult } from '../../express/semantics/interface
 
 const {
     modelApi: {
-        rerank: { baseUrl, rerankRoute: embeddingRoute, requestTimeout },
+        rerank: { baseUrl, rerankRoute, requestTimeout },
     },
 } = config;
 
@@ -13,7 +13,7 @@ export class ModelRerankingApiService {
 
     static async rerank(body: IRerankRequest): Promise<IRerankResult[] | undefined> {
         try {
-            const { data } = await ModelRerankingApiService.api.post<IRerankResult[]>(embeddingRoute, { ...body, truncate: true, return_text: true });
+            const { data } = await ModelRerankingApiService.api.post<IRerankResult[]>(rerankRoute, { ...body, truncate: true, return_text: true });
 
             return data;
         } catch (e) {

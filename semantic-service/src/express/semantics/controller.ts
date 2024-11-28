@@ -12,7 +12,7 @@ class SemanticController extends DefaultController {
     }
 
     async rerank(req: Request, res: Response) {
-        res.json(await this.manager.search(req.body));
+        res.json(await this.manager.rerank(req.body));
     }
 
     async createIndex(_req: Request, res: Response) {

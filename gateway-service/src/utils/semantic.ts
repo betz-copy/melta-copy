@@ -2,7 +2,7 @@ import { IEntityWithDirectRelationships, ISearchResult } from '../externalServic
 import { ISemanticSearchResult } from '../externalServices/semanticSearch/interface';
 
 const searchEntityPropertiesForQuery = (entity: IEntityWithDirectRelationships, query: string): string =>
-    Object.values(entity.entity.properties).find((propValue) => query.includes(propValue) || propValue.includes(query));
+    Object.values(entity.entity.properties).find((propValue: string) => query.toString().includes(propValue) || propValue.toString().includes(query));
 
 export const formatEntitiesSearch = (searchResults: ISearchResult, query: string, semanticSearchResult?: ISemanticSearchResult) => {
     const textsForReranking: string[] = [];
@@ -12,7 +12,7 @@ export const formatEntitiesSearch = (searchResults: ISearchResult, query: string
 
         if (!isSemanticResult) {
             textsForReranking.push(searchEntityPropertiesForQuery(entity, query));
-            return entity;
+            return { ...entity };
         }
 
         return {
