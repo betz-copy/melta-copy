@@ -9,10 +9,8 @@ const {
 } = config;
 
 export class StorageService extends DefaultExternalServiceApi {
-    constructor(bucketName: string) {
-        console.log({ bucketName });
-
-        super(bucketName, { baseURL: url });
+    constructor(workspaceId: string) {
+        super(workspaceId, { baseURL: url });
     }
 
     async uploadFile(file: Express.Multer.File) {
@@ -45,8 +43,6 @@ export class StorageService extends DefaultExternalServiceApi {
     }
 
     async downloadProfileFile(path: string) {
-        console.log('hello', { path });
-
         const { data } = await this.api.get<ArrayBuffer>(`${downloadFileRoute}/user-profile/${encodeURIComponent(path)}`, {
             responseType: 'arraybuffer',
             ...docxHeaders,

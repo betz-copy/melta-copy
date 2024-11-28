@@ -72,7 +72,7 @@ export const fileSchema = Joi.object({
 
 export const iconFileSchema = fileSchema.keys({
     originalname: Joi.string()
-        .regex(/\.(svg|png|jpeg)$/)
+        .regex(/\.(svg|png|jpeg|jpg)$/)
         .required(),
 });
 

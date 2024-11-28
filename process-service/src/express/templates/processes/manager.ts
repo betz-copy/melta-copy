@@ -41,7 +41,6 @@ export default class ProcessTemplateManager extends DefaultManagerMongo<IProcess
             const [{ _id }] = await this.model.insertMany([{ ...processTemplate, steps: stepsIds }], { session });
             return _id!.toString();
         });
-
         return this.getProcessTemplateById(templateId);
     }
 

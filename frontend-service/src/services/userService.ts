@@ -42,7 +42,6 @@ export const updateUserPreferencesMetadataRequest = async (
     }
     formData.append('mailsNotificationsTypes', JSON.stringify(notificationsToShowCheckbox));
     if (darkMode !== undefined) formData.append('darkMode', JSON.stringify(darkMode));
-    console.log(...formData);
 
     const { data } = await axios.patch<IUser>(`${users}/${userId}/preferences`, formData);
     return data;

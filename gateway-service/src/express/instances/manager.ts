@@ -509,7 +509,6 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         if (fileIdsToRemove.length === 0) {
             return [];
         }
-        console.log('aaaaaaaaa');
 
         await menash.send(
             rabbit.deleteUnusedFilesQueue,
@@ -517,7 +516,6 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 fileIds: fileIdsToRemove,
             }),
         );
-        console.log('bbbbb');
 
         return fileIdsToRemove;
     }

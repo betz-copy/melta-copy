@@ -393,7 +393,6 @@ export default {
         cancel: 'ביטול',
         edit: 'ערוך פרופיל',
         save: 'שמור',
-        kartoffelProfileNotExist: 'תמונת חוגר אינה קיימת',
         yes: 'כן',
         no: 'לא',
         areYouSure: 'בפעולה זו השינויים ימחקו',

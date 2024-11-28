@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import Avatar from '@mui/material/Avatar';
+import { useQuery } from 'react-query';
 import { IUser } from '../interfaces/users';
 import { useDarkModeStore } from '../stores/darkMode';
-import { apiUrlToImageSource, apiUrlToProfileImageSource } from '../services/storageService';
+import { apiUrlToProfileImageSource } from '../services/storageService';
 import { environment } from '../globals';
 import { isProfileFileType } from '../utils/profileType';
-import { useQuery } from 'react-query';
 
 interface UserAvatarProps {
     user: IUser;
@@ -44,8 +44,6 @@ const UserAvatar: React.FC<UserAvatarProps> = ({ user, size = 48, bgColor, defau
             },
         },
     );
-
-    console.log({ profile });
 
     return (
         <Avatar

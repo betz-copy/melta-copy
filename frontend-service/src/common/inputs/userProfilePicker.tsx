@@ -43,8 +43,6 @@ const UserProfilePicker: React.FC<UserProfilePickerProps> = ({ imageName, onPick
     };
 
     useEffect(() => {
-        console.log({ imageName });
-
         if (imageName) setImage({ name: getFileName(imageName) });
     }, [imageName]);
 
@@ -87,7 +85,6 @@ const UserProfilePicker: React.FC<UserProfilePickerProps> = ({ imageName, onPick
                             ))}
                             <Grid item padding={2} onClick={() => handleAvatarClick()}>
                                 <Avatar
-                                    // src="/icons/profileAvatar/none.png"
                                     style={{
                                         width: 50,
                                         height: 50,
@@ -126,7 +123,6 @@ const UserProfilePicker: React.FC<UserProfilePickerProps> = ({ imageName, onPick
                             setImage(() => {});
                             onDelete();
                         }}
-                        // file={fileInputValue?.file}
                         file={image}
                         inputText={i18next.t('user.addFile')}
                         acceptedFilesTypes={{ 'image/png': ['.png', '.jpg'] }}
