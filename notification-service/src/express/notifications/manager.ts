@@ -72,7 +72,7 @@ export class NotificationsManager extends DefaultManagerMongo<INotification> {
             );
         }
 
-        return this.model.create({ ...notificationData });
+        return this.model.create({ ...notificationData, notificationDate: new Date() });
     }
 
     public async notificationSeen(notificationId: string, viewerId: string): Promise<INotification> {
