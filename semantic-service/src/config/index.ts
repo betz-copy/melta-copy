@@ -99,8 +99,6 @@ const config = {
             embeddingRoute: env.get('MODEL_EMBEDDING_ROUTE').default('/embed').asString(),
             requestTimeout: env.get('MODEL_EMBEDDING_REQUEST_TIMEOUT').default(10000).asIntPositive(),
             concurrentSentenceEmbeddingLimit: env.get('MODEL_EMBEDDING_CONCURRENT_SENTENCE_LIMIT').default(100).asInt(),
-            token: env.get('MODEL_EMBEDDING_API_TOKEN').default('pa-Ij1f9ka-IVcyRfdg9sfLntx36vDiRmvXhTY1Dr_EZxc').asString(),
-            modelName: env.get('MODEL_EMBEDDING_API_MODEL_NAME').default('voyage-2').asString(),
         },
         rerank: {
             baseUrl: env.get('MODEL_RERANK_API_URL').default('https://api.voyageai.com/v1/embeddings').asString(),
