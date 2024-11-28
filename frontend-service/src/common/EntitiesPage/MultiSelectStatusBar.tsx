@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { IServerSideSelectionState, IStatusPanelParams } from '@ag-grid-community/core';
-import { CircularProgress, Grid, Typography, useTheme } from '@mui/material';
+import { CircularProgress, Grid, TextField, Typography } from '@mui/material';
 import { Delete } from '@mui/icons-material';
 import i18next from 'i18next';
 import { useMutation } from 'react-query';
@@ -16,6 +16,7 @@ import { environment } from '../../globals';
 import { TableButton } from '../TableButton';
 import { useUserStore } from '../../stores/user';
 import { PermissionScope } from '../../interfaces/permissions';
+import { DeleteEntitiesDialog } from './DeleteEntitiesDialog';
 
 interface MultiSelectStatusBarProps extends IStatusPanelParams {
     entityTemplate: IMongoEntityTemplatePopulated;
@@ -28,6 +29,7 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
     const [openRelationshipDialog, setOpenRelationshipDialog] = useState(false);
     const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
     const [selectedRowCount, setSelectedRowCount] = useState(0);
+    const [confirmDeleteDisplayNameValue, setConfirmDeleteDisplayNameValue] = useState('');
 
     const updateSelectedRowCount = useCallback(() => {
         const { selectAll, toggledNodes } = api.getServerSideSelectionState() as IServerSideSelectionState;
@@ -57,12 +59,12 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
                 ) {
                     setOpenRelationshipDialog(true);
                 } else {
-                    toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.entity.failedToDelete')} />);
+                    toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.entity.failedToDeleteEntities')} />);
                     api.deselectAll();
                 }
             },
             onSuccess: () => {
-                toast.success(i18next.t('wizard.entity.deletedSuccessfully'));
+                toast.success(i18next.t('wizard.entity.deletedEntitiesSuccess'));
                 api.refreshServerSide();
                 api.deselectAll();
             },
@@ -79,15 +81,7 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
                 ids: toggledNodes,
                 deleteAllRelationships,
                 templateId,
-                filter: {
-                    ...{
-                        disabled: {
-                            filterType: 'set',
-                            values: [false],
-                        },
-                    },
-                    ...filterModelToFilterOfTemplate(api.getFilterModel(), entityTemplate),
-                },
+                filter: filterModelToFilterOfTemplate(api.getFilterModel(), entityTemplate),
                 textSearch: quickFilterText,
             });
         } else {
@@ -100,11 +94,6 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
 
     const handleCloseRelationshipDialog = () => {
         setOpenRelationshipDialog(false);
-        api.deselectAll();
-    };
-
-    const handleCloseDeleteDialog = () => {
-        setOpenDeleteDialog(false);
         api.deselectAll();
     };
 
@@ -143,15 +132,18 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
                 open={openRelationshipDialog}
                 handleClose={handleCloseRelationshipDialog}
                 title={i18next.t('entityPage.payAttention')}
-                body={i18next.t('entityPage.wouldYouLikeToDeleteTheRelationships')}
+                body={i18next.t('entityPage.wouldYouLikeToDeleteRelationshipsOfEntities')}
                 onYes={handleYesDeleteWithRelationships}
             />
 
-            <AreYouSureDialog
+            <DeleteEntitiesDialog
                 open={openDeleteDialog}
-                handleClose={handleCloseDeleteDialog}
+                handleClose={() => setOpenDeleteDialog(false)}
                 onYes={() => handleMultipleDelete()}
                 isLoading={isDeleteLoading}
+                entityTemplate={entityTemplate}
+                value={confirmDeleteDisplayNameValue}
+                setValue={setConfirmDeleteDisplayNameValue}
             />
         </Grid>
     );

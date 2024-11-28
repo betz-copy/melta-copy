@@ -316,7 +316,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                     body={
                         expandedEntity.connections.length > 0 &&
                         currentUser.currentWorkspacePermissions.admin?.scope === PermissionScope.write &&
-                        i18next.t('entityPage.wouldYouLikeToDeleteTheRelationships')
+                        i18next.t('entityPage.wouldYouLikeToDeleteTheRelationshipsOfEntity')
                     }
                     onYes={() => deleteMutation()}
                     isLoading={isDeleteLoading}

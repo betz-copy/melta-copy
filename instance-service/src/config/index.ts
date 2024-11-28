@@ -60,6 +60,7 @@ const config = {
     },
     errorCodes: {
         entityHasRelationships: 'ENTITY_HAS_RELATIONSHIPS',
+        entityHasRelationshipReferenceField: 'ENTITY_HAS_RELATIONSHIPS_REFERENCE',
         relationshipAlreadyExists: 'RELATIONSHIP_ALREADY_EXISTS',
         ruleBlock: 'RULE_BLOCK',
         failedToCreateConstraints: 'FAILED_TO_CREATE_CONSTRAINTS',

@@ -990,7 +990,9 @@ export class EntityManager extends DefaultManagerNeo4j {
                 );
 
                 if (isPropertyRelationshipsExists.some((exists) => exists)) {
-                    throw new BadRequestError('there are isProperty relationship');
+                    throw new BadRequestError(`some entities have relationshipReference field.`, {
+                        errorCode: config.errorCodes.entityHasRelationshipReferenceField,
+                    });
                 }
             }),
         );
@@ -1021,13 +1023,9 @@ export class EntityManager extends DefaultManagerNeo4j {
             });
         } catch (error) {
             if (error instanceof Neo4jError && error.code === 'Neo.ClientError.Schema.ConstraintValidationFailed')
-                throw new ServiceError(
-                    badRequestStatus,
-                    `[NEO4J] some entities with ids ${entityIdsToDelete} have existing relationships. Delete them first.`,
-                    {
-                        errorCode: config.errorCodes.entityHasRelationships,
-                    },
-                );
+                throw new BadRequestError(`[NEO4J] some entities with ids ${entityIdsToDelete} have existing relationships. Delete them first.`, {
+                    errorCode: config.errorCodes.entityHasRelationships,
+                });
 
             throw error;
         }
