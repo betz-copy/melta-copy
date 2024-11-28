@@ -91,6 +91,8 @@ const config = {
         permissionsRoute: env.get('USER_SERVICE_BASE_ROUTE').default('/api/permissions').asString(),
         checkAuthorizationRoute: env.get('PERMISSION_SERVICE_CHECK_AUTHERIZATION_ROUTE').default('authorization').asString(),
         requestTimeout: env.get('PERMISSION_SERVICE_REQUEST_TIMEOUT').default(100000).asIntPositive(),
+        avatarsFolderPath: env.get('AVATARS_FOLDER_PATH').default('/icons/profileAvatar').asString(),
+        kartoffelProfileStartPath: env.get('KARTOFFEL_PROFILE_START_PATH').default('http://,https://').asString().split(','),
     },
     activityLogService: {
         url: env.get('ACTIVITY_LOG_SERVICE_URL').required().asString(),

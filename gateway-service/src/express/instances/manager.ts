@@ -261,7 +261,12 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
             return [];
         }
 
-        await menash.send(rabbit.deleteUnusedFilesQueue, JSON.stringify(fileIdsToDelete));
+        await menash.send(
+            rabbit.deleteUnusedFilesQueue,
+            JSON.stringify({
+                fileIds: fileIdsToDelete,
+            }),
+        );
 
         return fileIdsToDelete;
     }
@@ -504,8 +509,15 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         if (fileIdsToRemove.length === 0) {
             return [];
         }
+        console.log('aaaaaaaaa');
 
-        await menash.send(rabbit.deleteUnusedFilesQueue, JSON.stringify(fileIdsToRemove));
+        await menash.send(
+            rabbit.deleteUnusedFilesQueue,
+            JSON.stringify({
+                fileIds: fileIdsToRemove,
+            }),
+        );
+        console.log('bbbbb');
 
         return fileIdsToRemove;
     }

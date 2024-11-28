@@ -16,46 +16,49 @@ const UserProfile: React.FC<{
     setProfilePreference: (profilePreference: { profilePath?: string; icon?: any }) => void;
 }> = ({ existingUser, editProfile, darkMode, profilePreference, setProfilePreference, setEditProfile, kartoffelUserProfile }) => {
     return (
-        <>
-            <Grid item xs={6}>
-                <UserAvatar user={existingUser} size={100} />
-                <Button
-                    onClick={() => {
-                        setEditProfile(!editProfile);
-                    }}
-                    sx={{ color: darkMode ? 'white' : 'black', marginTop: '12px', left: editProfile ? 0 : 5 }}
-                >
-                    {i18next.t(`user.${editProfile ? 'close' : 'edit'}`)}
-                </Button>
+        <Grid container display="flex" justifyContent="center" padding={2}>
+            <Grid item width="100%" display="flex" justifyItems="start">
+                <Grid direction="column" display="flex" alignItems="center">
+                    <UserAvatar user={existingUser} size={100} />
+                    <Grid item>
+                        <Button
+                            onClick={() => {
+                                setEditProfile(!editProfile);
+                            }}
+                            sx={{ color: darkMode ? 'white' : 'black', marginTop: '5px' }}
+                        >
+                            {i18next.t(`user.${editProfile ? 'close' : 'edit'}`)}
+                        </Button>
+                        {editProfile && (
+                            <Button
+                                onClick={() => {
+                                    const updatedPreferences = { ...profilePreference };
+                                    delete updatedPreferences.icon;
 
-                {editProfile && (
-                    <Button
-                        onClick={() => {
-                            const updatedPreferences = { ...profilePreference };
-                            delete updatedPreferences.icon;
+                                    if (existingUser.preferences.profilePath) {
+                                        updatedPreferences.profilePath = existingUser.preferences.profilePath;
+                                    } else {
+                                        delete updatedPreferences.profilePath;
+                                    }
 
-                            if (existingUser.preferences.profilePath) {
-                                updatedPreferences.profilePath = existingUser.preferences.profilePath;
-                            } else {
-                                delete updatedPreferences.profilePath;
-                            }
-
-                            setProfilePreference(updatedPreferences);
-                            setEditProfile(!editProfile);
-                        }}
-                        sx={{ justifyContent: 'center', color: darkMode ? 'white' : 'black', marginTop: '13px' }}
-                    >
-                        {i18next.t('user.cancel')}
-                    </Button>
-                )}
+                                    setProfilePreference(updatedPreferences);
+                                    setEditProfile(!editProfile);
+                                }}
+                                sx={{ justifyContent: 'center', color: darkMode ? 'white' : 'black', marginTop: '5px' }}
+                            >
+                                {i18next.t('user.cancel')}
+                            </Button>
+                        )}
+                    </Grid>
+                </Grid>
             </Grid>
 
             {editProfile && (
-                <Grid item paddingTop={3}>
+                <Grid item>
                     <UserProfilePicker
                         user={existingUser}
                         onPick={(value: any) => {
-                            setProfilePreference(value.file ? { icon: value } : { profilePath: value });
+                            setProfilePreference(value?.file ? { icon: value } : { profilePath: value });
                         }}
                         onDelete={() => setProfilePreference({})}
                         kartoffelProfile={kartoffelUserProfile}
@@ -64,7 +67,7 @@ const UserProfile: React.FC<{
                     />
                 </Grid>
             )}
-        </>
+        </Grid>
     );
 };
 

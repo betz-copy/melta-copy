@@ -97,7 +97,6 @@ const FileInput: React.FC<FileInputProps> = ({
     };
 
     const isFileFromInput = useMemo(() => file instanceof File || profileImageFile, [file]);
-    console.log({ isFileFromInput });
 
     return (
         <>

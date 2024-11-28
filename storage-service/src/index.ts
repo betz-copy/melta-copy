@@ -25,8 +25,7 @@ const initializeRabbit = async () => {
 };
 
 const main = async () => {
-
-   new Client({
+    new Client({
         endPoint,
         port,
         useSSL,

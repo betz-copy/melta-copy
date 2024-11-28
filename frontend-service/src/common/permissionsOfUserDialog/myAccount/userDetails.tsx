@@ -3,7 +3,7 @@ import i18next from 'i18next';
 import React from 'react';
 import { IUser } from '../../../interfaces/users';
 
-const UserDetails: React.FC<{ existingUser: IUser }> = ({ existingUser }) => {
+const UserDetails: React.FC<{ existingUser: IUser; editProfile: boolean }> = ({ existingUser, editProfile }) => {
     const userDetailsMap: { [key: string]: string | boolean | undefined } = {
         fullName: existingUser.fullName,
         email: existingUser.mail,
@@ -11,23 +11,24 @@ const UserDetails: React.FC<{ existingUser: IUser }> = ({ existingUser }) => {
         hierarchy: existingUser.hierarchy,
     };
     return (
-        <>
+        <Grid container gap={editProfile ? 1.5 : 2}>
+            <Grid item xs={12}>
+                <Divider />
+            </Grid>
             {Object.entries(userDetailsMap).map(([key, value]) => (
-                <>
-                    <Grid item xs={6}>
+                <Grid container item key={key} gap={editProfile ? 1.5 : 2}>
+                    <Grid item display="flex" justifyContent="space-between" width="100%" paddingX="10px">
                         <Typography variant="body1" style={{ fontWeight: 'bold' }}>
                             {i18next.t(`user.${key}`)}
                         </Typography>
-                    </Grid>
-                    <Grid item xs={6}>
                         <Typography variant="body1">{String(value)}</Typography>
                     </Grid>
                     <Grid item xs={12}>
                         <Divider />
                     </Grid>
-                </>
+                </Grid>
             ))}
-        </>
+        </Grid>
     );
 };
 export { UserDetails };

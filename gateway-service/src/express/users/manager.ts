@@ -1,4 +1,5 @@
 /* eslint-disable no-param-reassign */
+import { menash } from 'menashmq';
 import config from '../../config';
 import { Kartoffel } from '../../externalServices/kartoffel';
 import { IKartoffelUser, IKartoffelUserDigitalIdentity } from '../../externalServices/kartoffel/interface';
@@ -16,16 +17,15 @@ import { removeTmpFile } from '../../utils/fs';
 import { RecursiveNullable } from '../../utils/types';
 import { DigitalIdentitySourceDoesNotExistsError, KartoffelUserMissingDataError } from './error';
 
-const { usersGlobalBucketName } = config.storageService;
+const {
+    storageService: { usersGlobalBucketName },
+    rabbit,
+} = config;
 export class UsersManager {
     private static storageService = new StorageService(usersGlobalBucketName);
 
     static async getUserById(userId: string, workspaceIds?: string[]): Promise<IUser> {
         return UserService.getUserById(userId, workspaceIds);
-    }
-
-    static async getKartoffelUserById(kartoffelId: string): Promise<IKartoffelUser> {
-        return Kartoffel.getUserById(kartoffelId);
     }
 
     static async getKartoffelUserProfileRequest(kartoffelId: string) {
@@ -85,14 +85,29 @@ export class UsersManager {
         } = await UserService.getUserById(userId);
 
         if (file) {
-            if (profilePath && isProfileFileType(profilePath)) await UsersManager.storageService.deleteFile(profilePath);
+            if (profilePath && isProfileFileType(profilePath)) {
+                await menash.send(
+                    rabbit.deleteUnusedFilesQueue,
+                    JSON.stringify({
+                        fileIds: [profilePath],
+                        bucketName: config.storageService.usersGlobalBucketName,
+                    }),
+                );
+            }
             const newProfilePath = await this.storageService.uploadFile(file);
             await removeTmpFile(file.path);
             return UserService.updateUser(userId, { preferences: { ...preferences, profilePath: newProfilePath } });
         }
 
         if (profilePath && (!preferences.profilePath || preferences.profilePath !== profilePath)) {
-            await this.storageService.deleteFile(profilePath);
+            await menash.send(
+                rabbit.deleteUnusedFilesQueue,
+                JSON.stringify({
+                    fileIds: [profilePath],
+                    bucketName: config.storageService.usersGlobalBucketName,
+                }),
+            );
+
             return UserService.updateUser(userId, { preferences: { ...preferences, profilePath: preferences.profilePath || undefined } });
         }
 

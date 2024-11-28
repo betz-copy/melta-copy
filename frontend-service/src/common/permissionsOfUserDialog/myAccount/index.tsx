@@ -57,10 +57,9 @@ const MyAccount: React.FC<{
         const hasPreferencesChanged =
             profilePreference.icon ||
             !isEqual(profilePreference.profilePath, existingUser.preferences.profilePath) ||
-            !isEqual(updatedNotificationsTypes, existingUser.preferences.mailsNotificationsTypes) ||
-            !isEqual(isDarkMode, existingUser.preferences.darkMode);
+            !isEqual(updatedNotificationsTypes, existingUser.preferences.mailsNotificationsTypes);
         setIsPreferencesUpdated(hasPreferencesChanged);
-    }, [profilePreference, notificationsToShowCheckbox, isDarkMode]);
+    }, [profilePreference, notificationsToShowCheckbox]);
 
     const { mutateAsync } = useMutation(
         (id: string) =>
@@ -114,14 +113,11 @@ const MyAccount: React.FC<{
                     profilePreference={profilePreference}
                     setProfilePreference={setProfilePreference}
                 />
-                <Grid item xs={12}>
-                    <Divider />
-                </Grid>
 
-                <UserDetails existingUser={existingUser} />
+                <UserDetails existingUser={existingUser} editProfile={editProfile} />
 
-                <Grid container item display="flex" justifyContent="space-between" alignItems="center" width="100%">
-                    <Grid item marginLeft={1}>
+                <Grid container item display="flex" justifyContent="space-between" alignItems="center" width="100%" margin={1}>
+                    <Grid item>
                         <SelectCheckbox
                             title={i18next.t('notifications.notificationType')}
                             options={allNotifications}
@@ -135,7 +131,7 @@ const MyAccount: React.FC<{
                             horizontalOrigin={153}
                         />
                     </Grid>
-                    <Grid item marginRight={2}>
+                    <Grid item marginRight={1}>
                         <DayNightSwitch
                             checked={darkMode}
                             onClick={() => {

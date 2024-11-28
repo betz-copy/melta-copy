@@ -1,14 +1,11 @@
 import { Avatar, Box, Grid, IconButton, ToggleButton, ToggleButtonGroup, Tooltip } from '@mui/material';
 import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
-import fs from 'fs';
-import path from 'path';
 import fileDetails from '../../interfaces/fileDetails';
 import { IUser } from '../../interfaces/users';
 import { getFileName } from '../../utils/getFileName';
 import FileInput from './ImageFileInput';
 import { environment } from '../../globals';
-import { UserProfile } from '../permissionsOfUserDialog/myAccount/userProfile';
 import { getNameInitials } from '../UserAvatar';
 
 type InputSelectType = 'chooseFile' | 'chooseAvatar' | 'kartoffelProfile';
@@ -23,10 +20,9 @@ export interface UserProfilePickerProps {
 }
 const UserProfilePicker: React.FC<UserProfilePickerProps> = ({ imageName, onPick, onDelete, defaultInputType, kartoffelProfile, user }) => {
     const [inputType, setInputType] = useState(defaultInputType);
-    const [fileInputValue, setFileInputValue] = useState<fileDetails | undefined>();
+    const [fileInputValue, setFileInputValue] = useState<fileDetails>();
     const [image, setImage] = useState<{ name: string }>();
     const [selectedIcon, setSelectedIcon] = useState<string | undefined>(user.preferences.profilePath ?? undefined);
-    // const iconPaths = Array.from({ length: environment.profileIconsCount }, (_, index) => `${environment.avatarIconPath}.png`);
 
     const icons = import.meta.glob('../../../public/icons/profileAvatar/*');
 
@@ -47,14 +43,16 @@ const UserProfilePicker: React.FC<UserProfilePickerProps> = ({ imageName, onPick
     };
 
     useEffect(() => {
+        console.log({ imageName });
+
         if (imageName) setImage({ name: getFileName(imageName) });
     }, [imageName]);
 
     return (
         <Grid container direction="column" alignItems="center" spacing={1}>
-            <Grid item>
+            <Grid item margin={0}>
                 <ToggleButtonGroup value={inputType} exclusive onChange={handleToggleChange} sx={{ height: '2.5rem' }}>
-                    <ToggleButton value="chooseAvatar" sx={{ width: '10rem' }}>
+                    <ToggleButton value="chooseAvatar" sx={{ width: '10.5rem' }}>
                         {i18next.t('input.imagePicker.chooseAvatar')}
                     </ToggleButton>
                     <ToggleButton value="chooseFile" sx={{ width: '10rem' }}>
@@ -68,8 +66,8 @@ const UserProfilePicker: React.FC<UserProfilePickerProps> = ({ imageName, onPick
 
             {inputType === 'chooseAvatar' && (
                 <Grid item>
-                    <Box style={{ padding: '20px', border: '1px solid #ccc', borderRadius: '8px' }}>
-                        <Grid container>
+                    <Box style={{ border: '1px solid #ccc', borderRadius: '8px' }}>
+                        <Grid container sx={{ display: 'flex', justifyContent: 'space-evenly' }}>
                             {fileNames.map((iconPath, index) => (
                                 // eslint-disable-next-line react/no-array-index-key
                                 <Grid item key={index} padding={2}>
@@ -114,7 +112,7 @@ const UserProfilePicker: React.FC<UserProfilePickerProps> = ({ imageName, onPick
                 </Grid>
             )}
             {inputType === 'chooseFile' && (
-                <Grid item>
+                <Grid item width="70%">
                     <FileInput
                         fileFieldName="profileFile"
                         onDropFile={(acceptedFile) => {
@@ -124,10 +122,11 @@ const UserProfilePicker: React.FC<UserProfilePickerProps> = ({ imageName, onPick
                             onPick(detailedFile);
                         }}
                         onDeleteFile={() => {
-                            setFileInputValue(undefined);
-                            setImage(undefined);
+                            setFileInputValue({} as fileDetails);
+                            setImage(() => {});
                             onDelete();
                         }}
+                        // file={fileInputValue?.file}
                         file={image}
                         inputText={i18next.t('user.addFile')}
                         acceptedFilesTypes={{ 'image/png': ['.png', '.jpg'] }}

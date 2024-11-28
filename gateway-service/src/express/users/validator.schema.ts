@@ -17,30 +17,13 @@ const UserExternalMetadataSchema = joi.object({
 const UserPreferencesMetadataSchema = joi.object({
     darkMode: ExtendedJoi.boolean(),
     mailsNotificationsTypes: ExtendedJoi.stringToArray(),
-    profilePath: joi.string().allow(null),
+    profilePath: joi
+        .string()
+        .pattern(/^(https?:\/\/|\/icons\/profileAvatar\/.*|[0-9a-f]{8}[0-9a-f]{4}[0-9a-f]{4}[0-9a-f]{4}[0-9a-f]{12}.*)$/)
+        .messages({
+            'string.pattern.base': 'profilePath must start with "http", "https", "/icons/profileAvatar/", or a valid UUID.',
+        }),
 });
-
-export const baseUserSchema = joi.object({
-    fullName: joi.string().required(),
-    jobTitle: joi.string().required(),
-    hierarchy: joi.string().required(),
-    mail: joi.string().required(),
-    profile: joi.string(),
-    externalMetadata: joi
-        .object({
-            kartoffelId: joi.string().required(),
-            digitalIdentitySource: joi.string().required(),
-        })
-        .required(),
-    preferences: joi
-        .object({
-            darkMode: joi.boolean(),
-            mailsNotificationsTypes: joi.array().items(joi.string()),
-            profilePath: joi.string(),
-        })
-        .required(),
-});
-export const partialBaseUserSchema = partialSchema(baseUserSchema);
 
 // GET /api/users/my
 export const getMyUserRequestSchema = joi.object({
@@ -55,15 +38,6 @@ export const getUserByIdRequestSchema = joi.object({
     body: {},
     params: {
         userId: joi.string().required(),
-    },
-});
-
-// GET /api/users/kartoffelUser/:kartoffelId
-export const getKartoffelUserByIdRequestSchema = joi.object({
-    query: {},
-    body: {},
-    params: {
-        kartoffelId: joi.string().required(),
     },
 });
 

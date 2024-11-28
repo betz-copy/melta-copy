@@ -1,6 +1,5 @@
 import axios from '../axios';
 import { environment } from '../globals';
-import { IKartoffelUser } from '../interfaces/kartoffel';
 import { ICompactNullablePermissions, ICompactPermissions, IPermission, ISubCompactPermissions } from '../interfaces/permissions/permissions';
 import { IExternalUser, IUser, IUserPreferences, IUserSearchBody } from '../interfaces/users';
 import { RecursiveNullable } from '../utils/types';
@@ -43,6 +42,7 @@ export const updateUserPreferencesMetadataRequest = async (
     }
     formData.append('mailsNotificationsTypes', JSON.stringify(notificationsToShowCheckbox));
     if (darkMode !== undefined) formData.append('darkMode', JSON.stringify(darkMode));
+    console.log(...formData);
 
     const { data } = await axios.patch<IUser>(`${users}/${userId}/preferences`, formData);
     return data;
@@ -69,11 +69,6 @@ export const deletePermissionsFromMetadata = async (
     metadata: RecursiveNullable<ISubCompactPermissions>,
 ) => {
     const { data } = await axios.patch<void>(`${users}/metadata`, { query, metadata });
-    return data;
-};
-
-export const getKartoffelUserByIdRequest = async (kartoffelId: string) => {
-    const { data } = await axios.get<IKartoffelUser>(`${users}/kartoffelUser/${kartoffelId}`);
     return data;
 };
 

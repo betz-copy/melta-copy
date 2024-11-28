@@ -10,10 +10,6 @@ export class UsersController {
         res.json(await UsersManager.getUserById(req.params.userId));
     }
 
-    static async getKartoffelUserById(req: Request, res: Response) {
-        res.json(await UsersManager.getKartoffelUserById(req.params.kartoffelId));
-    }
-
     static async getKartoffelUserProfile(req: Request, res: Response) {
         res.json(await UsersManager.getKartoffelUserProfileRequest(req.params.kartoffelId));
     }

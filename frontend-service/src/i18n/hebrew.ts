@@ -390,7 +390,7 @@ export default {
         hierarchy: 'היררכיה',
         addFile: 'הוסף קובץ',
         close: 'סגור',
-        cancel: 'ביטול שינויים',
+        cancel: 'ביטול',
         edit: 'ערוך פרופיל',
         save: 'שמור',
         kartoffelProfileNotExist: 'תמונת חוגר אינה קיימת',
@@ -398,7 +398,7 @@ export default {
         no: 'לא',
         areYouSure: 'בפעולה זו השינויים ימחקו',
         succeededToUpdatePreferences: 'עודכנו העדפות משתמש בהצלחה',
-        failedToCreateRequest: 'נכשל בעידכון העדפות המשתמש',
+        failedToUpdateRequest: 'נכשל בעידכון העדפות המשתמש',
     },
     entitiesCardView: {
         failedToLoadResults: 'נכשל לטעון תוצאות',
