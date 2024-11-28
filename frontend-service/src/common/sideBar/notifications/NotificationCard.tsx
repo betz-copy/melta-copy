@@ -66,7 +66,9 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({ notification
                 <Grid container direction="column">
                     {!isDateAboutToExpireNotification(notification) && (
                         <Grid item container justifyContent="flex-end" wrap="nowrap">
-                            <Typography sx={{ fontSize: '11px', fontWeight: '350px' }}>{getShortDate(notification.createdAt)}</Typography>
+                            <Typography sx={{ fontSize: '11px', fontWeight: '350px' }}>
+                                {getShortDate(notification.notificationDate || notification.createdAt)}
+                            </Typography>
                         </Grid>
                     )}
                     <Grid item sx={{ padding: '10px' }}>
@@ -94,7 +96,7 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({ notification
                         {isDateAboutToExpireNotification(notification) && (
                             <Grid item container alignItems="center" marginLeft="5.5%">
                                 <Typography sx={{ fontSize: '11px', fontWeight: '350px', color: '#5A6173' }}>
-                                    {getShortDate(notification.createdAt)}
+                                    {getShortDate(notification.notificationDate || notification.createdAt)}
                                 </Typography>
                             </Grid>
                         )}

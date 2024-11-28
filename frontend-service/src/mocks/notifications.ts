@@ -31,6 +31,7 @@ const generateNotification = (): INotificationPopulated => {
         type,
         metadata,
         createdAt: new Date(),
+        notificationDate: new Date(),
         _id: generateMongoId(),
     };
 };

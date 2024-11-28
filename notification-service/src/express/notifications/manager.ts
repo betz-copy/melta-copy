@@ -3,7 +3,13 @@ import config from '../../config';
 import transaction from '../../utils/mongo';
 import { DefaultManagerMongo } from '../../utils/mongo/manager';
 import { NotificationDoesNotExistError } from '../error';
-import { IBasicNotificationQuery, INotification, INotificationCountGroups, INotificationGroupCountDetails } from './interface';
+import {
+    IBasicNotificationQuery,
+    IDateAboutToExpireMetadata,
+    INotification,
+    INotificationCountGroups,
+    INotificationGroupCountDetails,
+} from './interface';
 import { NotificationsSchema } from './model';
 
 export class NotificationsManager extends DefaultManagerMongo<INotification> {
@@ -47,7 +53,26 @@ export class NotificationsManager extends DefaultManagerMongo<INotification> {
     }
 
     public async createNotification(notificationData: Omit<INotification, 'createdAt'>): Promise<INotification> {
-        return this.model.create({ ...notificationData });
+        // To avoid spam of dateAboutToExpire notifications, update the current notification document.
+        if (notificationData.type === 'dateAboutToExpire') {
+            return this.model.findOneAndUpdate(
+                {
+                    $and: [
+                        {
+                            // datePropertyValue only exists on IDateAboutToExpireMetadata.
+                            'metadata.datePropertyValue': (notificationData?.metadata as IDateAboutToExpireMetadata)?.datePropertyValue,
+                            type: notificationData.type,
+                            'metadata.entityId': (notificationData?.metadata as IDateAboutToExpireMetadata)?.entityId,
+                        },
+                    ],
+                },
+                // NotificationDate is being used instead of createdAt because we are updating the existing document.
+                { ...notificationData, notificationDate: new Date() },
+                { new: true, upsert: true },
+            );
+        }
+
+        return this.model.create({ ...notificationData, notificationDate: new Date() });
     }
 
     public async notificationSeen(notificationId: string, viewerId: string): Promise<INotification> {
