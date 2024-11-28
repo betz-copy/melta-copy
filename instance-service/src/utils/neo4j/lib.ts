@@ -92,8 +92,8 @@ export const normalizeResponseTemplatesCount = (result: QueryResult): { template
         };
 
         if (record.has('entitiesWithFiles') && record.get('entitiesWithFiles')) {
-            formattedObject.entitiesWithFiles = Object.values(record.get('entitiesWithFiles') as ISemanticSearchResult)
-                .map((t) => t.map((f) => f.minioFileId))
+            formattedObject.entitiesWithFiles = Object.values(record.get('entitiesWithFiles') as ISemanticSearchResult[string])
+                .map((entityData) => entityData.map(({ minioFileId }) => minioFileId))
                 .flat();
         }
 
