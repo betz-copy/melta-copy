@@ -87,7 +87,7 @@ export const normalizeResponseTemplatesCount = (result: QueryResult): { template
     return result.records.map((record) => ({
         templateId: record.get('templateId'),
         count: +record.get('count'),
-        entitiesWithFiles: (record.has('entitiesWithFiles') && record.get('entitiesWithFiles')) ?? undefined,
+        entitiesWithFiles: (record.has('entitiesWithFiles') && record.get('entitiesWithFiles')?.map(({ minioFileId }) => minioFileId)) ?? undefined,
     }));
 };
 

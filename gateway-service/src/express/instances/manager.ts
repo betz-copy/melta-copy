@@ -15,7 +15,6 @@ import {
     IEntity,
     ISearchBatchBody,
     ISearchFilter,
-    ISearchResult,
     ISearchSort,
     ITemplateSearchBody,
 } from '../../externalServices/instanceService/interfaces/entities';
@@ -46,8 +45,8 @@ import { patchDocumentAsStream } from './documentExport';
 import { IExportEntitiesBody } from './interfaces';
 import { RabbitManager } from '../../utils/rabbit';
 import { SemanticSearchService } from '../../externalServices/semanticSearch';
-import { ISemanticSearchResult } from '../../externalServices/semanticSearch/interface';
 import { WorkspaceService } from '../workspaces/service';
+import { formatEntitiesSearch } from '../../utils/semantic';
 
 const { errorCodes, rabbit, ruleBreachService } = config;
 
@@ -313,18 +312,6 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         return patchDocumentAsStream(await this.storageService.downloadFile(documentTemplateId), entityProperties);
     }
 
-    private async formatEntitiesSearch(searchResults: ISearchResult, semanticSearchResult?: ISemanticSearchResult) {
-        return semanticSearchResult
-            ? {
-                  ...searchResults,
-                  entities: searchResults.entities.map((entity) => ({
-                      ...entity,
-                      minioFileIds: semanticSearchResult?.[entity.entity.templateId]?.[entity.entity.properties._id],
-                  })),
-              }
-            : searchResults;
-    }
-
     async searchEntitiesBatch(shouldSemanticSearch: boolean, searchBody: ISearchBatchBody) {
         if (shouldSemanticSearch && searchBody.textSearch) {
             const semanticSearchResult = await this.semanticSearchSearch.search({
@@ -334,13 +321,16 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 templates: Object.keys(searchBody.templates),
             });
 
-            return this.formatEntitiesSearch(
-                await this.service.searchEntitiesBatch({
-                    ...searchBody,
-                    entityIdsToInclude: semanticSearchResult ? Object.values(semanticSearchResult).map(Object.keys).flat() : undefined,
-                }),
-                semanticSearchResult,
-            );
+            const instanceResults = await this.service.searchEntitiesBatch({
+                ...searchBody,
+                entityIdsToInclude: semanticSearchResult ? Object.values(semanticSearchResult).map(Object.keys).flat() : undefined,
+            });
+
+            const { formattedEntities, textsForReranking } = formatEntitiesSearch(instanceResults, searchBody.textSearch, semanticSearchResult);
+            const reRank = await this.semanticSearchSearch.rerank({ query: searchBody.textSearch, texts: textsForReranking });
+            const sortedEntities = reRank.map((index) => formattedEntities.entities[index]);
+
+            return { ...formattedEntities, entities: sortedEntities };
         }
 
         return this.service.searchEntitiesBatch(searchBody);

@@ -94,12 +94,19 @@ const config = {
         uniqueEntityForAgg: env.get('ELASTIC_UNIQUE_ENTITY_FOR_AGG').default('minioFileId').asString(),
     },
     modelApi: {
-        url: env.get('MODEL_API_URL').default('https://api.voyageai.com/v1/embeddings').asString(),
-        searchRoute: env.get('MODEL_API_SEARCH_ROUTE').default('').asString(),
-        endpoint: env.get('MODEL_API_ENDPOINT').default('embed').asString(),
-        concurrentSentenceEmbeddingLimit: env.get('MODEL_CONCURRENT_SENTENCE_LIMIT').default(100).asInt(),
-        token: env.get('MODEL_API_TOKEN').default('pa-Ij1f9ka-IVcyRfdg9sfLntx36vDiRmvXhTY1Dr_EZxc').asString(),
-        modelName: env.get('MODEL_API_MODEL_NAME').default('voyage-2').asString(),
+        embedding: {
+            baseUrl: env.get('MODEL_EMBEDDING_API_URL').default('https://api.voyageai.com/v1/embeddings').asString(),
+            embeddingRoute: env.get('MODEL_EMBEDDING_ROUTE').default('/embed').asString(),
+            requestTimeout: env.get('MODEL_EMBEDDING_REQUEST_TIMEOUT').default(10000).asIntPositive(),
+            concurrentSentenceEmbeddingLimit: env.get('MODEL_EMBEDDING_CONCURRENT_SENTENCE_LIMIT').default(100).asInt(),
+            token: env.get('MODEL_EMBEDDING_API_TOKEN').default('pa-Ij1f9ka-IVcyRfdg9sfLntx36vDiRmvXhTY1Dr_EZxc').asString(),
+            modelName: env.get('MODEL_EMBEDDING_API_MODEL_NAME').default('voyage-2').asString(),
+        },
+        rerank: {
+            baseUrl: env.get('MODEL_RERANK_API_URL').default('https://api.voyageai.com/v1/embeddings').asString(),
+            rerankRoute: env.get('MODEL_RERANK_ROUTE').default('/rerank').asString(),
+            requestTimeout: env.get('MODEL_RERANK_REQUEST_TIMEOUT').default(10000).asIntPositive(),
+        },
     },
 };
 

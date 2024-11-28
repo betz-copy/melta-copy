@@ -11,6 +11,10 @@ class SemanticController extends DefaultController {
         res.json(await this.manager.search(req.body));
     }
 
+    async rerank(req: Request, res: Response) {
+        res.json(await this.manager.search(req.body));
+    }
+
     async createIndex(_req: Request, res: Response) {
         res.json(await this.manager.createIndex());
     }

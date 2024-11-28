@@ -90,26 +90,20 @@ class ElasticClient {
             top_hits_by_group: estypes.AggregationsTopHitsAggregate;
         }>;
 
-        return buckets
-            .sort((a, b) => {
-                const maxScoreA = a.top_hits_by_group.hits.max_score || 0;
-                const maxScoreB = b.top_hits_by_group.hits.max_score || 0;
-                return maxScoreB - maxScoreA;
-            })
-            .reduce((acc, { top_hits_by_group }) => {
-                top_hits_by_group.hits.hits.forEach((hit) => {
-                    const { templateId, minioFileId, entityId } = hit?._source ?? { templateId: '', minioFileId: '', entityId: '' };
+        return buckets.reduce((acc, { top_hits_by_group }) => {
+            top_hits_by_group.hits.hits.forEach((hit) => {
+                const { templateId, minioFileId, entityId, text } = hit?._source ?? { templateId: '', minioFileId: '', entityId: '', text: '' };
 
-                    if (!templateId || !minioFileId || !entityId) return;
+                if (!templateId || !minioFileId || !entityId) return;
 
-                    if (!acc[templateId]) acc[templateId] = {};
-                    if (!acc[templateId][entityId]) acc[templateId][entityId] = [];
+                if (!acc[templateId]) acc[templateId] = {};
+                if (!acc[templateId][entityId]) acc[templateId][entityId] = [];
 
-                    acc[templateId][entityId].push(minioFileId);
-                });
+                acc[templateId][entityId].push({ minioFileId, text });
+            });
 
-                return acc;
-            }, {} as ISemanticSearchResult);
+            return acc;
+        }, {} as ISemanticSearchResult);
     }
 
     async hybridSearch(query: string, embeddedQuery: number[], limit: number, skip: number, templates: string[]) {
