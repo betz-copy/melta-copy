@@ -57,11 +57,11 @@ export const UploadExcel: React.FC<{
             <InstanceFileInput
                 {...formikProps}
                 fileFieldName="file"
-                fieldTemplateTitle={i18next.t('wizard.entity.fileFields')}
+                fieldTemplateTitle=""
                 comment={i18next.t('wizard.entity.loadEntities.onlyExcelFiles')}
                 value={values.files}
                 setFieldValue={setFieldValue}
-                required
+                required={false}
                 acceptedFilesTypes={{ 'excel/xlsx': ['.xlsx', '.xls'] }}
                 setFieldTouched={setFieldTouched}
                 error={errorText || formikProps.errors.files}

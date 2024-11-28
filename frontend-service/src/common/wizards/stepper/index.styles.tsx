@@ -33,21 +33,23 @@ const StepNumberTypography = styled(Typography)<{ type: 'currentStep' | 'finishe
               })),
 }));
 
-const StepNameTypography = styled(Typography)<{ type: 'currentStep' | 'finishedStep' | 'futureStep' }>(({ type, theme }) => {
-    let color;
+const StepNameTypography = styled(Typography)<{ type: 'currentStep' | 'finishedStep' | 'futureStep'; direction: 'row' | 'column' }>(
+    ({ type, theme, direction }) => {
+        let color;
 
-    if (theme.palette.mode === 'dark') {
-        color = type === 'finishedStep' ? '#8f919b' : 'white';
-    } else {
-        color = type === 'finishedStep' ? '#a1a5b7' : '#1E2775';
-    }
+        if (theme.palette.mode === 'dark') {
+            color = type === 'finishedStep' ? '#8f919b' : 'white';
+        } else {
+            color = type === 'finishedStep' ? '#a1a5b7' : '#1E2775';
+        }
 
-    return {
-        fontWeight: 410,
-        fontSize: '16px',
-        color,
-    };
-});
+        return {
+            fontWeight: direction === 'column' ? 400 : 410,
+            fontSize: direction === 'column' ? '14px' : '16px',
+            color,
+        };
+    },
+);
 
 const StepDescriptionTypography = styled(Typography)<{ type: 'currentStep' | 'finishedStep' | 'futureStep' }>(({ type, theme }) => {
     let color;

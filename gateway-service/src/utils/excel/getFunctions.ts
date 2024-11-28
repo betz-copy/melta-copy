@@ -57,8 +57,7 @@ const readExcelFile = async (files: Express.Multer.File[], template: IMongoEntit
             const isRelationshipRef = propertyTemplate.format === 'relationshipReference' || propertyTemplate.relationshipReference;
             const isFile = propertyTemplate.format === 'fileId' || (propertyTemplate.type === 'array' && propertyTemplate.items?.format === 'fileId');
             const isSerialNumber = propertyTemplate.type === 'number' && propertyTemplate.serialCurrent;
-            const shouldAddColumn = !isRelationshipRef && !isFile && !isSerialNumber;
-            return shouldAddColumn;
+            return !isRelationshipRef && !isFile && !isSerialNumber;
         }),
     );
 
@@ -68,10 +67,7 @@ const readExcelFile = async (files: Express.Multer.File[], template: IMongoEntit
             await workbook.xlsx.readFile(file.path);
             const worksheet = workbook.worksheets[0];
 
-            const expectedName = `${template.displayName}${template._id}`.trim();
-            if (!expectedName.includes(worksheet.name)) {
-                throw new ServiceError(StatusCodes.BAD_REQUEST, 'Invalid excel', file);
-            }
+            if (!template.displayName.includes(worksheet.name)) throw new ServiceError(StatusCodes.BAD_REQUEST, 'Invalid excel', file);
 
             worksheet.eachRow((row, rowIndex) => {
                 if (rowIndex === 1) return;

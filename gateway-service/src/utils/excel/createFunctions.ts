@@ -201,7 +201,7 @@ const createWorksheet = async (
     displayColumns?: string[],
     insertEntities?: { insert: boolean; entities?: Record<string, any>[] },
 ) => {
-    const worksheet = workbook.addWorksheet(`${template.displayName}${template._id}`);
+    const worksheet = workbook.addWorksheet(template.displayName);
     const { properties } = template.properties;
 
     const sheetColumns: Partial<Excel.Column>[] = [];

@@ -37,7 +37,9 @@ const StepperSideBar = <T extends object>({
                                         </StepNumberTypography>
                                     </Grid>
                                     <Grid item>
-                                        <StepNameTypography type={type}>{step.label}</StepNameTypography>
+                                        <StepNameTypography type={type} direction={direction}>
+                                            {step.label}
+                                        </StepNameTypography>
                                     </Grid>
                                     <Grid item marginLeft="10px">
                                         {step.description && <StepDescriptionTypography type={type}>{step.description}</StepDescriptionTypography>}
@@ -75,7 +77,9 @@ const StepperSideBar = <T extends object>({
                                     </StepNumberTypography>
                                 </Grid>
                                 <Grid item>
-                                    <StepNameTypography type={type}>{step.label}</StepNameTypography>
+                                    <StepNameTypography type={type} direction={direction}>
+                                        {step.label}
+                                    </StepNameTypography>
                                 </Grid>
                             </Grid>
                         </Grid>
