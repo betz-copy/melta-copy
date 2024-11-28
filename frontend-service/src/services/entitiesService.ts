@@ -248,7 +248,7 @@ export const searchEntitiesOfTemplateRequest = async (templateId: string, search
     return data;
 };
 
-export const getCountByTemplateIdsRequest = async (templateIds: string[], textSearch: string, shouldSemanticSearch: boolean) => {
+export const getCountByTemplateIdsRequest = async (templateIds: string[], textSearch: string = '', shouldSemanticSearch: boolean = false) => {
     const { data } = await axios.post<ICountSearchResult[]>(`${entities}/count`, { templateIds, textSearch, shouldSemanticSearch });
     return data;
 };

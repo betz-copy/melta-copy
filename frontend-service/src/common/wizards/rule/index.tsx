@@ -76,7 +76,7 @@ const RuleWizard: React.FC<WizardBaseType<RuleWizardValues>> = ({
             initialValues={initialValues}
             initialStep={initialStep}
             isEditMode={isEditMode}
-            title={i18next.t('wizard.rule.title')}
+            title={isEditMode ? i18next.t('wizard.rule.updateTitle') : i18next.t('wizard.rule.createTitle')}
             steps={steps}
             isLoading={isLoading}
             submitFunction={(values) => mutateAsync(values)}

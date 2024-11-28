@@ -78,8 +78,9 @@ const RelationshipTemplateWizard: React.FC<WizardBaseType<RelationshipTemplateWi
         (relationshipTemplateForm: RelationshipTemplateWizardValues) => {
             const { _id, createdAt, updatedAt, ...restOfRelationshipTemplateForm } = relationshipTemplateForm;
             const relationshipTemplateBody = relationshipTemplateFormToRelationshipTemplateObject(restOfRelationshipTemplateForm);
+            const { isProperty, ...updatedRelationshipTemplate } = relationshipTemplateBody;
             if (isEditMode) {
-                return updateRelationshipTemplateRequest(_id!, relationshipTemplateBody);
+                return updateRelationshipTemplateRequest(_id!, updatedRelationshipTemplate);
             }
             return createRelationshipTemplateRequest(relationshipTemplateBody);
         },
@@ -114,7 +115,7 @@ const RelationshipTemplateWizard: React.FC<WizardBaseType<RelationshipTemplateWi
             initialValues={initialValues}
             initialStep={initialStep}
             isEditMode={isEditMode}
-            title={i18next.t('wizard.relationshipTemplate.title')}
+            title={isEditMode ? i18next.t('wizard.relationshipTemplate.updateTitle') : i18next.t('wizard.relationshipTemplate.createTitle')}
             steps={steps}
             isLoading={isLoading}
             submitFunction={mutateAsync}

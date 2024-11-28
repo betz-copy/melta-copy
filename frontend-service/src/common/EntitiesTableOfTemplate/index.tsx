@@ -364,7 +364,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             if (params.api.getVerticalPixelRange().top >= 0 && rowModelType === 'infinite') {
                 sessionStorage.setItem(`scrollPosition-${template._id}`, JSON.stringify(params.api.getVerticalPixelRange().top));
             }
-        }, 300);
+        }, 500);
 
         const gridContent = (
             <Box
@@ -477,7 +477,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                                             });
                                         }
                                     }
-                                }, 150);
+                                }, 300);
                             }
                         }
                     }}
