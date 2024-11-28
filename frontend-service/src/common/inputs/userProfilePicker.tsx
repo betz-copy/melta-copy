@@ -109,7 +109,7 @@ const UserProfilePicker: React.FC<UserProfilePickerProps> = ({ imageName, onPick
                 </Grid>
             )}
             {inputType === 'chooseFile' && (
-                <Grid item width="70%">
+                <Grid item width="50%">
                     <FileInput
                         fileFieldName="profileFile"
                         onDropFile={(acceptedFile) => {
