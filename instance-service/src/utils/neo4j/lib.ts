@@ -6,6 +6,7 @@ import { IRelationship } from '../../express/relationships/interfaces';
 import config from '../../config';
 import { EntityManager } from '../../express/entities/manager';
 import { IFormulaCauses } from '../../express/rules/interfaces/formulaWithCauses';
+import { ISemanticSearchResult } from '../../externalServices/semanticSearch/interface';
 
 type Node = Neo4jNode<number>;
 type Relationship = Neo4jRelationship<number>;
@@ -83,12 +84,21 @@ export const normalizeResponseCount = (result: QueryResult): number => {
     return result.records[0].get(0);
 };
 
-export const normalizeResponseTemplatesCount = (result: QueryResult): { templateId: string; count: number; entitiesWithFiles: string[] }[] => {
-    return result.records.map((record) => ({
-        templateId: record.get('templateId'),
-        count: +record.get('count'),
-        entitiesWithFiles: (record.has('entitiesWithFiles') && record.get('entitiesWithFiles')?.map(({ minioFileId }) => minioFileId)) ?? undefined,
-    }));
+export const normalizeResponseTemplatesCount = (result: QueryResult): { templateId: string; count: number; entitiesWithFiles?: string[] }[] => {
+    return result.records.map((record) => {
+        const formattedObject: { templateId: string; count: number; entitiesWithFiles?: string[] } = {
+            templateId: record.get('templateId'),
+            count: +record.get('count'),
+        };
+
+        if (record.has('entitiesWithFiles') && record.get('entitiesWithFiles')) {
+            formattedObject.entitiesWithFiles = Object.values(record.get('entitiesWithFiles') as ISemanticSearchResult)
+                .map((t) => t.map((f) => f.minioFileId))
+                .flat();
+        }
+
+        return formattedObject;
+    });
 };
 
 export const normalizeRuleResult = (result: QueryResult) => {
