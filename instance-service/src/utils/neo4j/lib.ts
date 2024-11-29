@@ -84,17 +84,27 @@ export const normalizeResponseCount = (result: QueryResult): number => {
     return result.records[0].get(0);
 };
 
-export const normalizeResponseTemplatesCount = (result: QueryResult): { templateId: string; count: number; entitiesWithFiles?: string[] }[] => {
+export const normalizeResponseTemplatesCount = (
+    result: QueryResult,
+): { templateId: string; count: number; entitiesWithFiles?: Record<string, string[]> }[] => {
+    // entitiesWithFiles: { entityId: minioFileId[] }
     return result.records.map((record) => {
-        const formattedObject: { templateId: string; count: number; entitiesWithFiles?: string[] } = {
+        const formattedObject: { templateId: string; count: number; entitiesWithFiles?: Record<string, string[]> } = {
             templateId: record.get('templateId'),
             count: +record.get('count'),
         };
 
         if (record.has('entitiesWithFiles') && record.get('entitiesWithFiles')) {
-            formattedObject.entitiesWithFiles = Object.values(record.get('entitiesWithFiles') as ISemanticSearchResult[string])
-                .map((entityData) => entityData.map(({ minioFileId }) => minioFileId))
-                .flat();
+            formattedObject.entitiesWithFiles = Object.entries(record.get('entitiesWithFiles') as ISemanticSearchResult[string]).reduce(
+                (acc, [entityId, entityData]) => {
+                    entityData.forEach(({ minioFileId }) => {
+                        if (!acc[entityId]) acc[entityId] = [];
+                        acc[entityId].push(minioFileId);
+                    });
+                    return acc;
+                },
+                {},
+            );
         }
 
         return formattedObject;
