@@ -518,7 +518,6 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                         resizable: true,
                         lockPinned: true,
                         initialWidth: 250,
-                        // checkboxSelection: multipleSelect ? isFirstColumn : false,
                     }}
                     sideBar={{
                         toolPanels: [

@@ -1,21 +1,21 @@
-import { ThemeProvider } from '@mui/material';
-import { AxiosError } from 'axios';
+import './initWindowGlobal';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './i18n';
 import './utils/agGrid';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { ReactQueryDevtools } from 'react-query/devtools';
+import { ThemeProvider } from '@mui/material';
 import { ToastContainer } from 'react-toastify';
+import { AxiosError } from 'axios';
 import { StatusCodes } from 'http-status-codes';
 import App from './App';
 import { TourWrapper } from './TourWrapper';
-import './initWindowGlobal';
-import { useDarkModeStore } from './stores/darkMode';
 import { darkTheme, lightTheme } from './theme';
+import { useDarkModeStore } from './stores/darkMode';
 
 if (import.meta.hot) {
-    import.meta.hot.on('vite:beforeUpdate', () => console.clear()); // eslint-disable-line no-console
+    import.meta.hot.on('vite:beforeUpdate', () => console.clear());
 }
 
 const queryClient = new QueryClient({
