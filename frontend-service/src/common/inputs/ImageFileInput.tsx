@@ -20,7 +20,7 @@ interface FileInputProps {
     fileFieldName?: string;
     errorText?: string;
     disableCamera?: boolean;
-    profileImageFile?: boolean;
+    allowPreview?: boolean;
 }
 
 const FileInput: React.FC<FileInputProps> = ({
@@ -31,7 +31,7 @@ const FileInput: React.FC<FileInputProps> = ({
     acceptedFilesTypes,
     errorText,
     disableCamera = false,
-    profileImageFile,
+    allowPreview = true,
 }) => {
     const theme = useTheme();
 
@@ -96,7 +96,7 @@ const FileInput: React.FC<FileInputProps> = ({
         cursor: 'pointer',
     };
 
-    const isFileFromInput = useMemo(() => file instanceof File || profileImageFile, [file]);
+    const isFileFromInput = useMemo(() => file instanceof File, [file]);
 
     return (
         <>
@@ -129,7 +129,7 @@ const FileInput: React.FC<FileInputProps> = ({
                                 </Grid>
                                 <Grid item container xs={1} justifyContent="flex-end">
                                     <Grid container item justifyContent="flex-end" alignItems="center" wrap="nowrap">
-                                        {!isFileFromInput && (
+                                        {!isFileFromInput && allowPreview && (
                                             <OpenPreview fileId={file.name!} img={<Visibility fontSize="small" />} showText={false} />
                                         )}
 

@@ -11,8 +11,6 @@ export const createController = <T extends InstanceType<typeof DefaultController
         {
             get: (_, funcName: string) => {
                 return (req: Request, res: Response, next: NextFunction) => {
-                    console.log('shirel', req.headers[config.service.workspaceIdHeaderName]);
-
                     const workspaceId = req.route.path.includes('/user-profile')
                         ? usersGlobalBucketName
                         : req.headers[config.service.workspaceIdHeaderName];

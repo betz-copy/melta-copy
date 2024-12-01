@@ -20,8 +20,9 @@ export interface UserProfilePickerProps {
 }
 const UserProfilePicker: React.FC<UserProfilePickerProps> = ({ imageName, onPick, onDelete, defaultInputType, kartoffelProfile, user }) => {
     const [inputType, setInputType] = useState(defaultInputType);
-    const [fileInputValue, setFileInputValue] = useState<fileDetails>();
-    const [image, setImage] = useState<{ name: string }>();
+    const [fileInputValue, setFileInputValue] = useState<fileDetails | undefined>(
+        imageName ? { file: { name: imageName }, name: imageName } : undefined,
+    );
     const [selectedIcon, setSelectedIcon] = useState<string | undefined>(user.preferences.profilePath ?? undefined);
 
     const icons = import.meta.glob('../../../public/icons/profileAvatar/*');
@@ -41,10 +42,6 @@ const UserProfilePicker: React.FC<UserProfilePickerProps> = ({ imageName, onPick
         setSelectedIcon(iconPath ?? undefined);
         onPick(iconPath);
     };
-
-    useEffect(() => {
-        if (imageName) setImage({ name: getFileName(imageName) });
-    }, [imageName]);
 
     return (
         <Grid container direction="column" alignItems="center" spacing={1}>
@@ -115,19 +112,18 @@ const UserProfilePicker: React.FC<UserProfilePickerProps> = ({ imageName, onPick
                         onDropFile={(acceptedFile) => {
                             const detailedFile = { file: acceptedFile, name: acceptedFile.name };
                             setFileInputValue(detailedFile);
-                            setImage({ name: detailedFile.name });
                             onPick(detailedFile);
                         }}
-                        onDeleteFile={() => {
+                        onDeleteFile={(event: React.MouseEvent<HTMLButtonElement>) => {
+                            event.stopPropagation();
                             setFileInputValue({} as fileDetails);
-                            setImage(() => {});
                             onDelete();
                         }}
-                        file={image}
+                        file={fileInputValue?.file}
                         inputText={i18next.t('user.addFile')}
                         acceptedFilesTypes={{ 'image/png': ['.png', '.jpg'] }}
                         disableCamera
-                        profileImageFile
+                        allowPreview={false}
                     />
                 </Grid>
             )}

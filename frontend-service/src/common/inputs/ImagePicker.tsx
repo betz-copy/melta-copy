@@ -15,7 +15,6 @@ interface ImagePickerProps {
 
 const ImagePicker: React.FC<ImagePickerProps> = ({ image, onPick, onDelete, defaultInputType }) => {
     const [inputType, setInputType] = useState(defaultInputType);
-
     const [fileInputValue, setFileInputValue] = useState<fileDetails | undefined>(image);
     const [iconPickerValue, setIconPickerValue] = useState<fileDetails>();
 
