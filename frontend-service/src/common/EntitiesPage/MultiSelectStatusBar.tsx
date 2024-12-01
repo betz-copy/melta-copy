@@ -138,7 +138,10 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
 
             <DeleteEntitiesDialog
                 open={openDeleteDialog}
-                handleClose={() => setOpenDeleteDialog(false)}
+                handleClose={() => {
+                    setOpenDeleteDialog(false);
+                    setConfirmDeleteDisplayNameValue('');
+                }}
                 onYes={() => handleMultipleDelete()}
                 isLoading={isDeleteLoading}
                 entityTemplate={entityTemplate}

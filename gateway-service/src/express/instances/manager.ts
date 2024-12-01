@@ -35,7 +35,7 @@ import {
     IEntityTemplatePopulated,
     IMongoEntityTemplatePopulated,
 } from '../../externalServices/templates/entityTemplateService';
-// import { trycatch } from '../../utils';
+import { trycatch } from '../../utils';
 import { createWorksheet, createWorkbook, styleAWorksheet } from '../../utils/excel/excelFunctions';
 import DefaultManagerProxy from '../../utils/express/manager';
 import logger from '../../utils/logger/logsLogger';
@@ -48,7 +48,6 @@ import { RabbitManager } from '../../utils/rabbit';
 import { SemanticSearchService } from '../../externalServices/semanticSearch';
 import { ISemanticSearchResult } from '../../externalServices/semanticSearch/interface';
 import { WorkspaceService } from '../workspaces/service';
-import { trycatch } from '../../utils';
 
 const { errorCodes, rabbit, ruleBreachService } = config;
 
