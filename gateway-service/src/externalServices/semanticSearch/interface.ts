@@ -5,3 +5,9 @@ export interface IRerankRequest {
     query: string;
     texts: string[];
 }
+
+export interface IRerankResult {
+    index: number;
+    text: string;
+    score: string;
+}

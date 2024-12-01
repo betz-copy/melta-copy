@@ -46,7 +46,7 @@ import { IExportEntitiesBody } from './interfaces';
 import { RabbitManager } from '../../utils/rabbit';
 import { SemanticSearchService } from '../../externalServices/semanticSearch';
 import { WorkspaceService } from '../workspaces/service';
-import { formatEntitiesBulkSearch } from '../../utils/semantic';
+import { formatEntitiesBulkSearch, sortEntities } from '../../utils/semantic';
 
 const { errorCodes, rabbit, ruleBreachService } = config;
 
@@ -330,14 +330,13 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         });
 
         const { formattedEntities, textsForReranking } = formatEntitiesBulkSearch(instanceResults, searchBody.textSearch, semanticSearchResult);
-        const rerank = await this.semanticSearchSearch.rerank({ query: searchBody.textSearch, texts: textsForReranking });
+        const rerank = await this.semanticSearchSearch.rerank({ query: searchBody.textSearch, texts: Object.keys(textsForReranking) });
 
         if (!rerank?.length) {
             return formattedEntities;
         }
 
-        const sortedEntities = rerank.flatMap((index) => formattedEntities.entities?.[index] ?? []);
-        return { ...formattedEntities, entities: sortedEntities };
+        return { ...formattedEntities, entities: sortEntities(formattedEntities.entities, rerank, textsForReranking) };
     }
 
     async getEntitiesCountByTemplates(shouldSemanticSearch: boolean, searchBody: ITemplateSearchBody): Promise<ICountSearchResult[] | undefined> {

@@ -34,8 +34,7 @@ export class SemanticManager {
     }
 
     public async rerank(searchBody: IRerankRequest) {
-        const rerankResult = await ModelRerankingApiService.rerank(searchBody);
-        return rerankResult?.map(({ index }) => index);
+        return ModelRerankingApiService.rerank(searchBody);
     }
 
     public createIndex() {

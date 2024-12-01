@@ -1,7 +1,7 @@
 import config from '../../config';
 import DefaultExternalServiceApi from '../../utils/express/externalService';
 import { ISearchBatchBody } from '../instanceService/interfaces/entities';
-import { IRerankRequest, ISemanticSearchResult } from './interface';
+import { IRerankRequest, IRerankResult, ISemanticSearchResult } from './interface';
 
 const {
     semanticSearchService: { url, searchRoute, requestTimeout, baseRoute, rerankRoute },
@@ -24,7 +24,7 @@ export class SemanticSearchService extends DefaultExternalServiceApi {
 
     async rerank(rerankBody: IRerankRequest) {
         try {
-            const { data } = await this.api.post<number[]>(rerankRoute, rerankBody);
+            const { data } = await this.api.post<IRerankResult[]>(rerankRoute, rerankBody);
             return data;
         } catch (e) {
             console.log(e);
