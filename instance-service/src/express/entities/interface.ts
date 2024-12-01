@@ -162,11 +162,20 @@ export interface IExecutionOutput {
     properties: Record<string, any>;
 }
 
-export interface IDeleteBody {
-    ids: string[];
-    deleteAllRelationships?: boolean;
+export interface IDeleteBodyBase {
     selectAll: boolean;
     templateId: string;
-    filter?: IFilterOfTemplate;
-    textSearch?: string;
+    deleteAllRelationships?: boolean;
 }
+
+export type IDeleteBody =
+    | ({
+          selectAll: true;
+          idsToExclude?: string[];
+          filter?: ISearchEntitiesOfTemplateBody['filter'];
+          textSearch?: string;
+      } & IDeleteBodyBase)
+    | ({
+          selectAll: false;
+          idsToInclude: string[];
+      } & IDeleteBodyBase);

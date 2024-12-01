@@ -224,8 +224,6 @@ export const deleteEntityRequest = async (deleteBody: IDeleteEntityBody) => {
 };
 
 export const searchEntitiesOfTemplateRequest = async (templateId: string, searchBody: ISearchEntitiesOfTemplateBody) => {
-    console.log(searchBody.filter);
-
     const { data } = await axios.post<ISearchResult>(`${entities}/search/template/${templateId}`, searchBody);
     return data;
 };

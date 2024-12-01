@@ -78,7 +78,6 @@ entityRouter.post('/', ValidateRequest(createEntityRequestSchema), entityValidat
 entityRouter.get('/:id', ValidateRequest(getEntityByIdRequestSchema), entityController.getEntityById);
 entityRouter.post('/ids', ValidateRequest(getEntitiesByIdsRequestSchema), entityController.getEntitiesByIds);
 entityRouter.post('/delete/bulk', ValidateRequest(deleteEntitiesByIdsRequestSchema), entityController.deleteEntityInstances);
-entityRouter.delete('/', ValidateRequest(deleteEntitiesByTemplateIdRequestSchema), entityController.deleteEntitiesByTemplateId);
 entityRouter.put(
     '/:id',
     ValidateRequest(updateEntityByIdRequestSchema),

@@ -905,16 +905,16 @@ export class EntityManager extends DefaultManagerNeo4j {
         return entities.map(({ entity }) => entity);
     }
 
-    async getEntitiesToDelete(
-        selectAll: boolean,
-        ids: string[],
-        entityTemplate: IMongoEntityTemplate,
-        filter?: ISearchFilter,
-        textSearch: string = '',
-    ): Promise<IEntity[]> {
-        if (selectAll) return this.getFilteredEntitiesToDelete(entityTemplate, filter, ids, textSearch);
+    async getEntitiesToDelete(deleteBody: IDeleteBody, entityTemplate: IMongoEntityTemplate): Promise<IEntity[]> {
+        const { selectAll } = deleteBody;
 
-        return this.getEntitiesByIds(ids);
+        if (selectAll) {
+            const { idsToExclude, filter, textSearch = '' } = deleteBody;
+            return this.getFilteredEntitiesToDelete(entityTemplate, filter, idsToExclude, textSearch);
+        }
+
+        const { idsToInclude } = deleteBody;
+        return this.getEntitiesByIds(idsToInclude);
     }
 
     getFilesProperties(entityTemplate: IMongoEntityTemplate) {
@@ -990,12 +990,12 @@ export class EntityManager extends DefaultManagerNeo4j {
 
     async deleteEntityInstances(deleteBody: IDeleteBody) {
         let entityIdsToDelete: string[] = [];
-        const { ids, deleteAllRelationships, filter, selectAll, templateId, textSearch } = deleteBody;
+        const { deleteAllRelationships, templateId } = deleteBody;
 
         try {
             return await this.neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
                 const entityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(templateId);
-                const entitiesToDelete = await this.getEntitiesToDelete(selectAll, ids, entityTemplate, filter, textSearch);
+                const entitiesToDelete = await this.getEntitiesToDelete(deleteBody, entityTemplate);
 
                 if (deleteAllRelationships) await this.getRelationshipReferencesToTemplate(entityTemplate, entitiesToDelete);
 

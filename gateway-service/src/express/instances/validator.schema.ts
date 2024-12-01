@@ -44,13 +44,26 @@ export const updateEntityStatusSchema = Joi.object({
 });
 
 // POST /api/instances/entities/delete/bulk
+const baseDeleteSchema = Joi.object({
+    selectAll: Joi.boolean().required(),
+    templateId: Joi.string().required(),
+    deleteAllRelationships: Joi.boolean(),
+});
+
+const selectAllSchema = baseDeleteSchema.keys({
+    selectAll: Joi.valid(true).required(),
+    idsToExclude: Joi.array().items(Joi.string()),
+    filter: Joi.object(),
+    textSearch: Joi.string(),
+});
+
+const specificIdsSchema = baseDeleteSchema.keys({
+    selectAll: Joi.valid(false).required(),
+    idsToInclude: Joi.array().items(Joi.string()).min(1).required(),
+});
+
 export const deleteEntityInstancesSchema = Joi.object({
-    body: Joi.object({
-        ids: Joi.array().items(Joi.string()).required(),
-        deleteAllRelationships: Joi.boolean(),
-        selectAll: Joi.boolean(),
-        templateId: Joi.string(),
-    }).unknown(true),
+    body: Joi.alternatives().try(selectAllSchema, specificIdsSchema),
     query: {},
     params: {},
 });

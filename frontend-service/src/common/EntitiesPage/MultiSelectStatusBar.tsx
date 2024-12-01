@@ -78,7 +78,7 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
         if (selectAll) {
             deleteMutation({
                 selectAll,
-                ids: toggledNodes,
+                idsToExclude: toggledNodes,
                 deleteAllRelationships,
                 templateId,
                 filter: filterModelToFilterOfTemplate(api.getFilterModel(), entityTemplate),
@@ -86,7 +86,7 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
             });
         } else {
             const selectedRowsIds = api.getSelectedRows().map((row) => row.properties._id);
-            deleteMutation({ selectAll: false, ids: selectedRowsIds, deleteAllRelationships, templateId });
+            deleteMutation({ selectAll: false, idsToInclude: selectedRowsIds, deleteAllRelationships, templateId });
         }
 
         setOpenDeleteDialog(false);

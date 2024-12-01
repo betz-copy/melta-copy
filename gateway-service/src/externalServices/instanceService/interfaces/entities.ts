@@ -115,11 +115,20 @@ export interface ICountSearchResult {
     entityIdsToInclude: Record<string, string[]>; // { entityId: minioFileIds:[] }
 }
 
-export interface IDeleteBody {
-    ids: string[];
+export interface IDeleteBodyBase {
+    selectAll: boolean;
+    templateId: string;
     deleteAllRelationships?: boolean;
-    selectAll?: boolean;
-    templateId?: string;
-    filter?: IFilterOfTemplate;
-    textSearch?: string;
 }
+
+export type IDeleteBody =
+    | ({
+          selectAll: true;
+          idsToExclude?: string[];
+          filter?: ISearchEntitiesOfTemplateBody['filter'];
+          textSearch?: string;
+      } & IDeleteBodyBase)
+    | ({
+          selectAll: false;
+          idsToInclude: string[];
+      } & IDeleteBodyBase);

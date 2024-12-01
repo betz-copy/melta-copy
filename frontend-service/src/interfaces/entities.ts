@@ -150,30 +150,20 @@ export interface IGraphFilterBodyBatch {
     [key: string]: IGraphFilterBody;
 }
 
-export interface IDeleteEntityBody {
-    ids: string[]; // when selectall Exclude these IDs otherwise Include only these IDs
+export interface IDeleteEntityBodyBase {
     selectAll: boolean;
-    deleteAllRelationships?: boolean;
     templateId: string;
-    filter?: ISearchEntitiesOfTemplateBody['filter'];
-    textSearch?: string;
+    deleteAllRelationships?: boolean;
 }
 
-// TODO:
-// export interface IDeleteEntityBodyBase {
-//     selectAll: boolean;
-//     templateId: string;
-//     deleteAllRelationships?: boolean;
-// }
-
-// export type IDeleteEntityBody =
-//     | ({
-//           selectAll: true;
-//           idsToExclude?: string[];
-//           filter?: ISearchEntitiesOfTemplateBody['filter'];
-//           textSearch?: string;
-//       } & IDeleteEntityBodyBase)
-//     | ({
-//           selectAll: false;
-//           idsToInclude: string[];
-//       } & IDeleteEntityBodyBase);
+export type IDeleteEntityBody =
+    | ({
+          selectAll: true;
+          idsToExclude?: string[];
+          filter?: ISearchEntitiesOfTemplateBody['filter'];
+          textSearch?: string;
+      } & IDeleteEntityBodyBase)
+    | ({
+          selectAll: false;
+          idsToInclude: string[];
+      } & IDeleteEntityBodyBase);
