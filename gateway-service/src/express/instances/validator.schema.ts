@@ -53,8 +53,8 @@ const baseDeleteSchema = Joi.object({
 const selectAllSchema = baseDeleteSchema.keys({
     selectAll: Joi.valid(true).required(),
     idsToExclude: Joi.array().items(Joi.string()),
-    filter: Joi.object(),
-    textSearch: Joi.string(),
+    filter: Joi.any(), // will be checked by instance-manager
+    textSearch: Joi.string().allow(''),
 });
 
 const specificIdsSchema = baseDeleteSchema.keys({
@@ -63,7 +63,7 @@ const specificIdsSchema = baseDeleteSchema.keys({
 });
 
 export const deleteEntityInstancesSchema = Joi.object({
-    body: Joi.alternatives().try(selectAllSchema, specificIdsSchema),
+    body: Joi.alternatives(selectAllSchema, specificIdsSchema).required(),
     query: {},
     params: {},
 });

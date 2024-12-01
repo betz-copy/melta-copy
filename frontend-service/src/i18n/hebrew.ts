@@ -562,7 +562,7 @@ export default {
             deletedSuccessfully: 'ישות נמחקה בהצלחה',
             deletedEntitiesSuccess: 'ישויות נמחקו בהצלחה',
             failedToDelete: 'נכשל למחוק ישות',
-            typeEntityTemplateForConfirmDelete: 'הקלד את התבנית "{{displayName}}" לצורך אישור המחיקה',
+            typeEntityTemplateForConfirmDelete: 'הקלד את שם התבנית "{{displayName}}" לצורך אישור המחיקה',
             failedToDeleteEntities: 'נכשל למחוק ישויות',
             chooseEntityTemplate: 'בחירת תבנית ישות',
             fillFields: 'מלא פרטים',

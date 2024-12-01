@@ -187,7 +187,7 @@ const selectAllSchema = baseDeleteSchema.keys({
     selectAll: Joi.valid(true).required(),
     idsToExclude: Joi.array().items(Joi.string()),
     filter: searchFilterSchema,
-    textSearch: Joi.string(),
+    textSearch: Joi.string().allow(''),
 });
 
 const specificIdsSchema = baseDeleteSchema.keys({
@@ -196,7 +196,7 @@ const specificIdsSchema = baseDeleteSchema.keys({
 });
 
 export const deleteEntitiesByIdsRequestSchema = Joi.object({
-    body: Joi.alternatives().try(selectAllSchema, specificIdsSchema),
+    body: Joi.alternatives(selectAllSchema, specificIdsSchema).required(),
     query: {},
     params: {},
 });
