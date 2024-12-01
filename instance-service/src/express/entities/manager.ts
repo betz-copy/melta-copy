@@ -746,40 +746,34 @@ export class EntityManager extends DefaultManagerNeo4j {
         let query = this.buildBaseQuery();
 
         query += `
-            AND templateData.circle IS NOT NULL 
-    
+            AND templateData.circle IS NOT NULL
+
             WITH n, templateData,
-            [field IN templateData.locationFields WHERE 
-                point.distance(
-                    n[field],  
-                    point({
-                        latitude: templateData.circle.coordinate[0],
-                        longitude: templateData.circle.coordinate[1]
-                    })
-                ) <= templateData.circle.radius
-            ] AS matchingFields
-    
-            WHERE size(matchingFields) > 0
-    
-            RETURN n, matchingFields
-        `;
-        return query;
-    }
+            point({
+                latitude: templateData.circle.coordinate[0],
+                longitude: templateData.circle.coordinate[1]
+            }) AS circle_center
 
-    buildPolygonQuery() {
-        let query = this.buildBaseQuery();
-
-        query += `
-            AND templateData.polygon IS NOT NULL 
-            AND ANY(field IN templateData.locationFields WHERE 
-                point.inPolygon(
-                    n[field],  
-                    templateData.polygon
+            // Filter location fields within the circle
+            WITH n, templateData, circle_center,
+            [ field IN templateData.locationFields
+            WHERE n[field] IS NOT NULL AND (
+                // Check if n[field] is a list (polygon)
+                (n[field][0] IS NOT NULL AND
+                ANY(pointItem IN n[field] WHERE point.distance(pointItem, circle_center) <= templateData.circle.radius)
+                ) OR
+                // Else, n[field] is a single point
+                (n[field] IS NOT NULL AND
+                point.distance(n[field], circle_center) <= templateData.circle.radius
                 )
             )
-        `;
+            | field ] AS matchingFields
 
-        query += 'RETURN n';
+            WITH n, matchingFields
+            WHERE size(matchingFields) > 0
+
+            RETURN n, matchingFields
+        `;
         return query;
     }
 
@@ -789,13 +783,11 @@ export class EntityManager extends DefaultManagerNeo4j {
         let query: string | null = null;
 
         if (circle) query = this.buildCircleQuery();
-        else if (polygon) query = this.buildPolygonQuery();
+        // else if (polygon) query = this.buildPolygonQuery();
 
         if (!query) throw new Error('Payload must include either circle or polygon.');
 
         const updatedTemplates = Object.fromEntries(Object.entries(templates).map(([key, value]) => [key, { ...value, circle, polygon }]));
-
-        // return this.neo4jClient.readTransaction(query, normalizeReturnedEntity('multipleResponses'), { templates: updatedTemplates });
 
         return this.neo4jClient.readTransaction(query, (result) => normalizeSearchByLocationResponse(result), { templates: updatedTemplates });
     }

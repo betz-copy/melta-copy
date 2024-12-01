@@ -15,7 +15,6 @@ type Props = {
 };
 
 const EntityWithLocationFields = ({ styles, properties, entityTemplate, darkMode }: Props) => {
-    const markerRefs = useRef<{ [key: string]: L.Marker }>({});
     const propertyDefinitions = entityTemplate.properties.properties;
 
     const { markers, polygons, allLatLngs } = useMemo(() => {
@@ -92,21 +91,7 @@ const EntityWithLocationFields = ({ styles, properties, entityTemplate, darkMode
                 <LayersControl.Overlay checked name="Markers">
                     <LayerGroup>
                         {markers.map(({ key, position }) => (
-                            <Marker
-                                key={key}
-                                position={position}
-                                ref={(element) => {
-                                    if (element) markerRefs.current[key] = element;
-                                }}
-                                eventHandlers={{
-                                    mouseover: () => {
-                                        if (markerRefs.current[key]) markerRefs.current[key].openPopup();
-                                    },
-                                    mouseout: () => {
-                                        if (markerRefs.current[key]) markerRefs.current[key].closePopup();
-                                    },
-                                }}
-                            >
+                            <Marker key={key} position={position}>
                                 <EntityPopup
                                     header={propertyDefinitions[key].title}
                                     properties={properties}

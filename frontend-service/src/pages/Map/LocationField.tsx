@@ -12,7 +12,7 @@ type Props = {
     updateValue: (newValue: string) => void;
 };
 
-const AddLocationField = ({ defaultLocation, styles, updateValue }: Props) => {
+const LocationField = ({ defaultLocation, styles, updateValue }: Props) => {
     const [markerPosition, setMarkerPosition] = useState<LatLng | null>(null);
     const [polygonPosition, setPolygonPosition] = useState<LatLng[] | null>(null);
 
@@ -123,4 +123,4 @@ const AddLocationField = ({ defaultLocation, styles, updateValue }: Props) => {
     );
 };
 
-export default AddLocationField;
+export default LocationField;

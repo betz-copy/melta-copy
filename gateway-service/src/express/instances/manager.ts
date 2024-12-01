@@ -714,8 +714,6 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
             return acc;
         }, {});
 
-        console.log({ locationFieldsMap });
-
         return this.instancesService.searchEntitiesByLocationRequest({ ...reqBody, templates: locationFieldsMap } as ISearchEntitiesByLocationBody);
     }
 }

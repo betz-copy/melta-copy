@@ -53,7 +53,6 @@ export const stringToCoordinates = (strCoords: string): CoordinatesResult => {
 };
 
 export const latLngToString = (latLng: LatLng | LatLng[], includePolygon = true) => {
-    // Handle single LatLng point
     if (!Array.isArray(latLng)) {
         return latLng
             .toString()
@@ -61,7 +60,7 @@ export const latLngToString = (latLng: LatLng | LatLng[], includePolygon = true)
             .trim();
     }
 
-    const matchedPoints = latLng.toString().match(/LatLng\(([^)]+)\)/g); // Match each "LatLng(number, number)"
+    const matchedPoints = latLng.toString().match(/LatLng\(([^)]+)\)/g);
 
     if (!matchedPoints) {
         return includePolygon ? 'POLYGON(())' : '';
@@ -74,12 +73,15 @@ export const latLngToString = (latLng: LatLng | LatLng[], includePolygon = true)
             .trim(),
     );
 
-    // Return the POLYGON format
     return includePolygon ? `POLYGON((${points.join(',')}))` : points.join(',');
 };
 
 // ugly af find better solution
 export const bindPopupForMarker = (coordinates: LatLng) => {
+    const { lat, lng } = coordinates;
+    if (lat && lng) {
+        return `Coordinates: ${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+    }
     return `Coordinates: ${coordinates[0].toFixed(5)}, ${coordinates[1].toFixed(5)}`;
 };
 
