@@ -971,29 +971,19 @@ export class EntityManager extends DefaultManagerNeo4j {
 
         await Promise.all(
             entitiesToDelete.map(async ({ properties: { _id: entityId } }) => {
-                const isPropertyRelationshipsExists = await Promise.all(
-                    isPropertyRelationships.map(async ({ _id: RelationshipId, destinationEntityId, sourceEntityId, name }) => {
-                        const isSourceRelationship = sourceEntityId === templateId;
-                        const isDestinationRelationship = destinationEntityId === templateId;
+                const entityHasRelationship = await Promise.all(
+                    isPropertyRelationships.map(async ({ _id: RelationshipId, name }) => {
+                        if (properties[name]?.relationshipReference?.relationshipTemplateId === RelationshipId) return false;
 
-                        if (isSourceRelationship || isDestinationRelationship) {
-                            const relationships = await this.relationshipManager.getRelationshipByTemplateIdAndSourceIdOrDestinationId(
-                                RelationshipId,
-                                isSourceRelationship ? entityId : undefined,
-                                isDestinationRelationship ? entityId : undefined,
-                            );
-
-                            return relationships.length > 0 && properties[name]?.relationshipReference?.relationshipTemplateId !== RelationshipId;
-                        }
-                        return false;
+                        const relationshipCount = await this.relationshipManager.getRelationshipByTemplateIdAndEntityId(RelationshipId, entityId);
+                        return relationshipCount > 0;
                     }),
                 );
 
-                if (isPropertyRelationshipsExists.some((exists) => exists)) {
-                    throw new BadRequestError(`some entities have relationshipReference field.`, {
+                if (entityHasRelationship.some((exists) => exists))
+                    throw new BadRequestError(`Some entities have a relationshipReference field.`, {
                         errorCode: config.errorCodes.entityHasRelationshipReferenceField,
                     });
-                }
             }),
         );
     }
