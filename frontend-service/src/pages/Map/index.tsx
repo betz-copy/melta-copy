@@ -17,30 +17,33 @@ import {
 import { getEntitiesByLocation } from '../../services/entitiesService';
 import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
 import { Circle, ISearchEntitiesByLocationTemplatesBody, Polygon } from '../../interfaces/entities';
-import MapFilter from './MapFilter';
 
-const EditableMapControl = ({ featureGroupRef }) => {
+const EditableMapControl = ({ featureGroupRef, searchResultGroupRef, lastCircleRef }) => {
     const map = useMap();
     const queryClient = useQueryClient();
     const entityTemplateMap = queryClient.getQueryData<IEntityTemplateMap>(['getEntityTemplates']);
 
     const { mutate } = useMutation(getEntitiesByLocation, {
         onSuccess: (response) => {
+            if (searchResultGroupRef.current) {
+                searchResultGroupRef.current.clearLayers();
+            }
+
             response.forEach((item) => {
                 const { matchingFields, node } = item;
 
                 matchingFields.forEach((field) => {
                     const { type, value } = stringToCoordinates(node.properties[field]);
 
-                    // types issue arab af
+                    let layer;
                     if (type === 'polygon') {
-                        L.polygon(value as LatLngExpression[])
-                            .addTo(map)
-                            .bindPopup(bindPopupForPolygon(value as LatLng[]));
+                        layer = L.polygon(value as LatLngExpression[]).bindPopup(bindPopupForPolygon(value as LatLng[]));
                     } else {
-                        L.marker(value as LatLngExpression)
-                            .addTo(map)
-                            .bindPopup(bindPopupForMarker(value as LatLng));
+                        layer = L.marker(value as LatLngExpression).bindPopup(bindPopupForMarker(value as LatLng));
+                    }
+
+                    if (layer) {
+                        searchResultGroupRef.current.addLayer(layer); // Add to search results
                     }
                 });
             });
@@ -83,6 +86,11 @@ const EditableMapControl = ({ featureGroupRef }) => {
                 map.fitBounds(bounds);
             });
         } else if (layer instanceof L.Circle) {
+            if (lastCircleRef.current) {
+                featureGroupRef.current.removeLayer(lastCircleRef.current);
+            }
+            lastCircleRef.current = layer;
+
             const circle: Circle = { coordinate: [layer.getLatLng().lng, layer.getLatLng().lat], radius: layer.getRadius() };
             handleFetchLocationRequest({ circle });
             const bounds = layer.getBounds();
@@ -114,6 +122,9 @@ const EditableMapControl = ({ featureGroupRef }) => {
 
     const handleDeleteLayer = (e) => {
         e.layers.eachLayer((layer) => {
+            if (layer instanceof L.Circle && layer === lastCircleRef.current) {
+                lastCircleRef.current = null;
+            }
             featureGroupRef.current.removeLayer(layer);
         });
     };
@@ -124,20 +135,16 @@ const EditableMapControl = ({ featureGroupRef }) => {
             draw={{
                 rectangle: false,
                 circlemarker: false,
-                marker: true,
+                polygon: false,
+                marker: false,
                 circle: {
                     shapeOptions: {
                         color: 'red',
                     },
                 },
-                polygon: {
-                    shapeOptions: {
-                        color: 'green',
-                    },
-                },
                 polyline: {
                     shapeOptions: {
-                        color: 'yellow',
+                        color: 'red',
                     },
                 },
             }}
@@ -154,7 +161,9 @@ const EditableMapControl = ({ featureGroupRef }) => {
 };
 
 const MapPage = () => {
-    const featureGroupRef = useRef<L.FeatureGroup>(null);
+    const featureGroupRef = useRef<L.FeatureGroup>(null); // For user-drawn layers
+    const searchResultGroupRef = useRef<L.FeatureGroup>(null); // For search results
+    const lastCircleRef = useRef<L.Circle | null>(null); // To track the last drawn circle
 
     return (
         <Box position="relative" width="100%" height="100vh">
@@ -185,12 +194,12 @@ const MapPage = () => {
 
                 {/* Feature Group for Draw Controls */}
                 <FeatureGroup ref={featureGroupRef}>
-                    <EditableMapControl featureGroupRef={featureGroupRef} />
+                    <EditableMapControl featureGroupRef={featureGroupRef} searchResultGroupRef={searchResultGroupRef} lastCircleRef={lastCircleRef} />
                 </FeatureGroup>
+
+                <FeatureGroup ref={searchResultGroupRef} />
             </MapContainer>
             {/* Filter Component */}
-
-            <MapFilter />
         </Box>
     );
 };

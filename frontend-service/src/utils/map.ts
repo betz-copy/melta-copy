@@ -1,4 +1,5 @@
 import { GeometryUtil, LatLng, LatLngExpression } from 'leaflet';
+import * as L from 'leaflet';
 import { IEntity } from '../interfaces/entities';
 import { IEntityTemplatePopulated } from '../interfaces/entityTemplates';
 
@@ -17,11 +18,7 @@ export const parsePolygon = (polygonStr: string): LatLng[] | undefined => {
 
     const coordinates: LatLng[] = coordPairs.map((pair) => {
         const [latStr, lonStr] = pair.trim().split(/\s+/);
-
-        const lat = +latStr;
-        const lon = +lonStr;
-
-        return [lat, lon] as unknown as LatLng;
+        return L.latLng(+latStr, +lonStr);
     });
 
     return coordinates.length > 0 ? coordinates : undefined;
