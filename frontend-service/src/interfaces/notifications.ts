@@ -67,7 +67,6 @@ export interface INotificationPopulated<T = INotificationMetadataPopulated> {
     type: NotificationType;
     metadata: T;
     createdAt: Date;
-    notificationDate: Date;
     _id: string;
 }
 
