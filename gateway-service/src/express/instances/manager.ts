@@ -46,7 +46,7 @@ import { IExportEntitiesBody } from './interfaces';
 import { RabbitManager } from '../../utils/rabbit';
 import { SemanticSearchService } from '../../externalServices/semanticSearch';
 import { WorkspaceService } from '../workspaces/service';
-import { formatEntitiesSearch } from '../../utils/semantic';
+import { formatEntitiesBulkSearch } from '../../utils/semantic';
 
 const { errorCodes, rabbit, ruleBreachService } = config;
 
@@ -329,7 +329,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
             entityIdsToInclude: semanticSearchResult ? Object.values(semanticSearchResult).map(Object.keys).flat() : undefined,
         });
 
-        const { formattedEntities, textsForReranking } = formatEntitiesSearch(instanceResults, searchBody.textSearch, semanticSearchResult);
+        const { formattedEntities, textsForReranking } = formatEntitiesBulkSearch(instanceResults, searchBody.textSearch, semanticSearchResult);
         const rerank = await this.semanticSearchSearch.rerank({ query: searchBody.textSearch, texts: textsForReranking });
 
         if (!rerank?.length) {

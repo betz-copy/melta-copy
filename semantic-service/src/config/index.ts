@@ -89,8 +89,8 @@ const config = {
         vectorDims: env.get('ELASTIC_VECTOR_DIMS').default(770).asInt(),
         similarityAlgorithm: env.get('SIMILARITY_ALGORITHM').default('l2_norm').asString(),
         queryMinScore: env.get('ELASTIC_QUERY_MIN_SCORE').default(1.0).asFloat(),
-        topHitsByGroup: env.get('ELASTIC_TOP_HITS_BY_GROUP').default(10000).asInt(),
-        groupByEntityId: env.get('ELASTIC_GROUP_BY_ENTITY_ID').default(1).asInt(),
+        uniqueEntityForAggSize: env.get('ELASTIC_UNIQUE_ENTITY_FOR_AGG_SIZE').default(10000).asInt(),
+        topHitsByGroupSize: env.get('ELASTIC_TOP_HITS_BY_GROUP_SIZE').default(1).asInt(),
         uniqueEntityForAgg: env.get('ELASTIC_UNIQUE_ENTITY_FOR_AGG').default('minioFileId').asString(),
     },
     modelApi: {

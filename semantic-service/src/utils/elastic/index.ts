@@ -11,21 +11,21 @@ const {
         url,
         vectorDims,
         similarityAlgorithm,
-        // knnGroupSize,
-        // lexicalFuzziness,
-        // rrfWindowConstant,
-        // queryMinScore,
-        // rrfRankConstant,
+        knnGroupSize,
+        lexicalFuzziness,
+        queryMinScore,
+        rrfWindowConstant,
+        rrfRankConstant,
+        rrfWindowFieldName,
         user,
         password,
-        // rrfWindowFieldName,
-        // topHitsByGroup,
-        // groupByEntityId,
-        // uniqueEntityForAgg,
+        uniqueEntityForAggSize,
+        topHitsByGroupSize,
+        uniqueEntityForAgg,
     },
 } = config;
 
-interface IGroupByEntityIdAggregate {
+interface IGroupByUniquePropAggregate {
     group_by_unique_prop: estypes.AggregationsTermsAggregateBase<
         estypes.AggregationsAggregate & {
             top_hits_by_group: estypes.AggregationsTopHitsAggregate;
@@ -82,7 +82,7 @@ class ElasticClient {
         return ElasticClient.client!.indices.delete({ index: `${config.elastic.index}-${this.workspaceId}` });
     }
 
-    formatElasticResponse(response: estypes.SearchResponse<IElasticDoc, IGroupByEntityIdAggregate>): ISemanticSearchResult {
+    formatElasticResponse(response: estypes.SearchResponse<IElasticDoc, IGroupByUniquePropAggregate>): ISemanticSearchResult {
         if (!response?.aggregations?.group_by_unique_prop?.buckets) return {};
 
         const buckets = response.aggregations.group_by_unique_prop.buckets as Array<{
@@ -106,64 +106,66 @@ class ElasticClient {
         }, {} as ISemanticSearchResult);
     }
 
-    async hybridSearch(_query: string, _embeddedQuery: number[], _limit: number, _skip: number, _templates: string[]) {
-        // const filters = templates && templates.length > 0 ? { terms: { templateId: templates } } : {};
+    async hybridSearch(query: string, embeddedQuery: number[], limit: number, skip: number, templates: string[]) {
+        const filters = templates && templates.length > 0 ? { terms: { templateId: templates } } : {};
 
-        // const indexName = `${index}-${this.workspaceId}`;
-        // const searchBody = {
-        //     index: indexName,
-        //     from: skip,
-        //     size: limit,
-        //     query: {
-        //         bool: {
-        //             must: {
-        //                 multi_match: {
-        //                     query,
-        //                     fields: ['text'],
-        //                     fuzziness: lexicalFuzziness,
-        //                 },
-        //             },
-        //             filter: Object.keys(filters).length > 0 ? [filters] : [],
-        //         },
-        //     },
-        //     knn: {
-        //         field: 'embedding',
-        //         query_vector: embeddedQuery,
-        //         k: limit,
-        //         num_candidates: knnGroupSize,
-        //     },
-        //     rank: {
-        //         rrf: {
-        //             [rrfWindowFieldName]: rrfWindowConstant,
-        //             rank_constant: rrfRankConstant,
-        //         },
-        //     },
-        //     min_score: queryMinScore,
-        //     // Group by unique values
-        //     aggs: {
-        //         group_by_unique_prop: {
-        //             terms: {
-        //                 field: `${uniqueEntityForAgg}.keyword`,
-        //                 size: topHitsByGroup, // Control how many of the unique values to return.
-        //             },
-        //             aggs: {
-        //                 top_hits_by_group: {
-        //                     top_hits: {
-        //                         size: groupByEntityId, // Control how many documents are allowed to return within each group.
-        //                     },
-        //                 },
-        //             },
-        //         },
-        //     },
-        // };
-
-        // const response = await ElasticClient.client!.search<IElasticDoc, IGroupByEntityIdAggregate>(searchBody);
-        return {
-            '673466f797c02373db4bf9d5': {
-                '095021b1-cbe0-4dfa-858d-8373c972e7ef': [{ minioFileId: 'ead3c9cfb20d4e478c5d8519c525110fharry.pdf', text: 'voldemort' }],
+        const indexName = `${index}-${this.workspaceId}`;
+        const searchBody = {
+            index: indexName,
+            from: skip,
+            size: limit,
+            query: {
+                bool: {
+                    must: {
+                        multi_match: {
+                            query,
+                            fields: ['text'],
+                            fuzziness: lexicalFuzziness,
+                        },
+                    },
+                    filter: Object.keys(filters).length > 0 ? [filters] : [],
+                },
+            },
+            knn: {
+                field: 'embedding',
+                query_vector: embeddedQuery,
+                k: limit,
+                num_candidates: knnGroupSize,
+            },
+            rank: {
+                rrf: {
+                    [rrfWindowFieldName]: rrfWindowConstant,
+                    rank_constant: rrfRankConstant,
+                },
+            },
+            min_score: queryMinScore,
+            // Group by unique values
+            aggs: {
+                group_by_unique_prop: {
+                    terms: {
+                        field: `${uniqueEntityForAgg}.keyword`,
+                        size: uniqueEntityForAggSize, // Control how many of the unique values to return.
+                    },
+                    aggs: {
+                        top_hits_by_group: {
+                            top_hits: {
+                                size: topHitsByGroupSize, // Control how many documents are allowed to return within each group.
+                                sort: [
+                                    {
+                                        _score: {
+                                            order: 'desc', // Sorts by score in descending order.
+                                        },
+                                    },
+                                ],
+                            },
+                        },
+                    },
+                },
             },
         };
-        // return this.formatElasticResponse(response);
+
+        const response = await ElasticClient.client!.search<IElasticDoc, IGroupByUniquePropAggregate>(searchBody);
+        return this.formatElasticResponse(response);
     }
 
     async bulkIndexDocuments(documents: IElasticDoc[]) {
