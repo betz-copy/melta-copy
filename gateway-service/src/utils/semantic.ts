@@ -1,9 +1,52 @@
+/* eslint-disable no-param-reassign */
 import { IEntityWithDirectRelationships, ISearchResult } from '../externalServices/instanceService/interfaces/entities';
 import { IRerankResult, ISemanticSearchResult } from '../externalServices/semanticSearch/interface';
+import { excelConfig } from './excel/excelConfig';
 
-const searchEntityPropertiesForQuery = (entityProps: IEntityWithDirectRelationships['entity']['properties'], query: string): string =>
-    Object.values(entityProps).find((propValue: string) => query.toString().includes(propValue) || propValue.toString().includes(query));
+const PROPS_TO_SKIP = ['_id', 'updatedAt', 'createdAt'];
 
+const convertDate = (date: string) => {
+    return date.split('-').reverse().join('/');
+};
+
+const searchEntityPropertiesForQuery = (entityProps: IEntityWithDirectRelationships['entity']['properties'], query: string): string | undefined => {
+    let nestedValue: string | undefined;
+
+    const foundValue = Object.entries(entityProps).find(([key, propValue]) => {
+        if (PROPS_TO_SKIP.includes(key)) return false;
+
+        if (typeof propValue === 'boolean') {
+            return propValue ? excelConfig.TRUE_TO_HEBREW.includes(query) : excelConfig.FALSE_TO_HEBREW.includes(query);
+        }
+        if (excelConfig.regexOfDateFormat.test(propValue.toString())) {
+            return propValue.toString().includes(query) || convertDate(propValue).includes(query);
+        }
+        if (Array.isArray(propValue)) {
+            return propValue.find((single) => single.toString().includes(query));
+        }
+        if (typeof propValue === 'object' && propValue.properties) {
+            nestedValue = searchEntityPropertiesForQuery(propValue.properties, query);
+            return nestedValue;
+        }
+        return propValue.toString().includes(query);
+    });
+
+    return nestedValue ?? foundValue?.[1];
+};
+
+const pushToTextsForReranking = (textsForReranking: Record<string, string[]>, text: string, entityId: string) => {
+    if (!textsForReranking[text]) textsForReranking[text] = [];
+    textsForReranking[text].push(entityId);
+};
+
+/**
+ * Put minioFileIds (from semantic-service) into each of the entities.
+ * Also create an array of the texts that match the query (from the entity or from the file) and the matching entityIds.
+ * @param searchResults search results from instance service (neo4j)
+ * @param query what the user searched for
+ * @param semanticSearchResult search results from semantic service
+ * @returns { formattedEntities: { count: number, formattedEntities: entitiyWithMinioFileId }, textsForReranking: { matchedText: entityIds[] } }
+ */
 export const formatEntitiesBulkSearch = (searchResults: ISearchResult, query: string, semanticSearchResult?: ISemanticSearchResult) => {
     // { text: entityIds[] }
     const textsForReranking: Record<string, string[]> = {};
@@ -17,9 +60,7 @@ export const formatEntitiesBulkSearch = (searchResults: ISearchResult, query: st
 
         if (!semanticResult) {
             const text = searchEntityPropertiesForQuery(entity.entity.properties, query);
-
-            if (!textsForReranking[text]) textsForReranking[text] = [];
-            textsForReranking[text].push(entityId);
+            pushToTextsForReranking(textsForReranking, text ?? query, entityId);
 
             return { ...entity };
         }
@@ -27,8 +68,7 @@ export const formatEntitiesBulkSearch = (searchResults: ISearchResult, query: st
         return {
             ...entity,
             minioFileIds: semanticResult.map(({ minioFileId, text }) => {
-                if (!textsForReranking[text]) textsForReranking[text] = [];
-                textsForReranking[text].push(entityId);
+                pushToTextsForReranking(textsForReranking, text, entityId);
 
                 return minioFileId;
             }),
@@ -38,6 +78,13 @@ export const formatEntitiesBulkSearch = (searchResults: ISearchResult, query: st
     return { formattedEntities: { ...searchResults, entities: entitiesWithFileIds }, textsForReranking };
 };
 
+/**
+ * Order formattedEntities by the rerankByDocs array (which contains the texts in the order they should be)
+ * @param formattedEntities entities with minioFileIds
+ * @param rerankByDocs from semantic service ({ text: string, index: number })
+ * @param textsForReranking object containing each text with its corresponding entityIds
+ * @returns sorted formattedEntities
+ */
 export const sortEntities = (
     formattedEntities: (IEntityWithDirectRelationships & { minioFileIds?: string[] })[],
     rerankByDocs: IRerankResult[],
