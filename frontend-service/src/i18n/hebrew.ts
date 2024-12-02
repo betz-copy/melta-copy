@@ -504,6 +504,8 @@ export default {
             deleteUniqueGrouptoList: 'מחק',
             archiveProperties: 'שדות ארכיון',
             archive: 'ארכיון',
+            moveToArchive: 'הכנס לארכיון',
+            removeFromArchive: 'הוצא מארכיון',
         },
         relationshipTemplate: {
             title: 'יצירת תבנית קשר',

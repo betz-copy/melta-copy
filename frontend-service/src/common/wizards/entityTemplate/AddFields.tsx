@@ -119,14 +119,14 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
         setFieldValue('propertiesTypeOrder', newPropertiesTypeOrder);
     };
 
-    const getTitle = (itemId: string) => {
-        let title = '';
+    const getTitle = (itemId: string): string => {
+        const titles: Record<string, string> = {
+            properties: i18next.t('wizard.entityTemplate.properties'),
+            attachmentProperties: i18next.t('wizard.entityTemplate.attachments'),
+            archiveProperties: i18next.t('wizard.entityTemplate.archiveProperties'),
+        };
 
-        if (itemId === 'properties') title = i18next.t('wizard.entityTemplate.properties');
-        else if (itemId === 'attachmentProperties') title = i18next.t('wizard.entityTemplate.attachments');
-        else if (itemId === 'archiveProperties') title = i18next.t('wizard.entityTemplate.archiveProperties');
-
-        return title;
+        return titles[itemId] || '';
     };
 
     return (
@@ -186,7 +186,7 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
                                             supportEditEnum
                                             supportUnique
                                             supportArchive
-                                            supportAddButton={itemId === 'attachmentProperties' || itemId === 'properties'}
+                                            supportAddFieldButton={itemId === 'attachmentProperties' || itemId === 'properties'}
                                             hasActions={hasActions}
                                             draggable={{ isDraggable: true, dragHandleProps: draggableProvided.dragHandleProps }}
                                         />

@@ -16,7 +16,6 @@ import RjsfTextWidget from './RjsfStringWidget';
 import RjfsTextAreaWidget from './RjfsTextAreaWidget';
 import './form.css';
 import RjfsTemplateReferenceWidget from './RjfsTemplateReferenceWidget';
-import { boolean } from 'yup/lib/locale';
 
 const ajvErrorsToFormikErrors = (schema: IMongoEntityTemplatePopulated['properties'], ajvErrors: ErrorObject[]): FormikErrors<any> => {
     const formikErrorsEntries = ajvErrors.map((ajvError) => {

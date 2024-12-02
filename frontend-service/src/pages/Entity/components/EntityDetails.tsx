@@ -8,7 +8,7 @@ import {
     Unarchive,
     Archive,
 } from '@mui/icons-material';
-import { Card, CardContent, FormControlLabel, Grid, IconButton, Menu, Switch } from '@mui/material';
+import { Card, CardContent, Grid, IconButton, Menu } from '@mui/material';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React, { useState } from 'react';
@@ -140,10 +140,6 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
     const canWriteInstance = checkUserCategoryPermission(currentUser.currentWorkspacePermissions, entityTemplate.category, PermissionScope.write);
     const isEntityDisabled = expandedEntity.entity.properties.disabled;
 
-    const handleDisplayArchiveChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setDisplayArchiveProperties(event.target.checked);
-    };
-
     return (
         <>
             <Card
@@ -261,9 +257,9 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                                         text={isEntityDisabled ? i18next.t('actions.activate') : i18next.t('actions.disable')}
                                     />
                                     <TooltipMenuButton
-                                        tooltipTitle=""
+                                        tooltipTitle={i18next.t('permissions.dontHaveWritePermissionsToCategory')}
                                         onClick={() => setDisplayArchiveProperties(!displayArchiveProperties)}
-                                        disabled={false}
+                                        disabled={!canWriteInstance}
                                         icon={displayArchiveProperties ? Archive : Unarchive}
                                         text={displayArchiveProperties ? i18next.t('entityPage.hideArchive') : i18next.t('entityPage.displayArchive')}
                                     />

@@ -1080,7 +1080,14 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                         >
                                             <Grid>
                                                 {supportArchive && isEditMode && (
-                                                    <MeltaTooltip title={i18next.t('wizard.entityTemplate.archive')} arrow placement="right">
+                                                    <MeltaTooltip
+                                                        title={
+                                                            value.archive
+                                                                ? i18next.t('wizard.entityTemplate.removeFromArchive')
+                                                                : i18next.t('wizard.entityTemplate.moveToArchive')
+                                                        }
+                                                        placement="right"
+                                                    >
                                                         <IconButton
                                                             onClick={() => setFieldValue('archive', !value.archive)}
                                                             disabled={value.required || value.uniqueCheckbox || value.preview}

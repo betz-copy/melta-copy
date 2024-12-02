@@ -556,7 +556,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         });
     }
 
-    private async checkIfPropertyInUsedBeforeDelete(templateId: string, properties: string[]) {
+    private async checkIfPropertyInUsedBeforeDeleteOrArchive(templateId: string, properties: string[]) {
         if (properties.length)
             await Promise.all([
                 this.isPropertyOfTemplateInUsedInGantts(templateId, properties),
@@ -755,8 +755,8 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             });
         }
 
-        await this.checkIfPropertyInUsedBeforeDelete(id, removedProperties);
-        await this.checkIfPropertyInUsedBeforeDelete(id, archiveProperties);
+        await this.checkIfPropertyInUsedBeforeDeleteOrArchive(id, removedProperties);
+        await this.checkIfPropertyInUsedBeforeDeleteOrArchive(id, archiveProperties);
 
         const { iconFileId, documentTemplatesIds } = await this.handleFiles(updatedTemplateData, currTemplate, { file, files });
 

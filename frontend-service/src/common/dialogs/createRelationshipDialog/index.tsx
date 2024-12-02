@@ -133,7 +133,7 @@ const SourceOrDestinationEntityInput: React.FC<{
         <TemplateTableSelect
             entityTemplate={formikProps.values.relationshipTemplate?.[field]}
             value={formikProps.values[field]}
-            onChange={(entity) => { 
+            onChange={(entity) => {
                 formikProps.setFieldValue(field, entity);
                 formikProps.setFieldTouched(field, true, false); // setFieldValue will validate after change
             }}
