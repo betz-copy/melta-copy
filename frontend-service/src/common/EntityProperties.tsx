@@ -1,5 +1,5 @@
 import { Visibility as VisibilityIcon, VisibilityOff as VisibilityOffIcon } from '@mui/icons-material';
-import { Divider, Grid, IconButton, Typography } from '@mui/material';
+import { Box, Divider, Grid, IconButton, Typography } from '@mui/material';
 import type { Property } from 'csstype';
 import i18next from 'i18next';
 import React, { CSSProperties } from 'react';
@@ -17,6 +17,7 @@ import RelationshipReferenceView from './RelationshipReferenceView';
 import { VerifyLink } from './VerifyLink';
 import { getFixedNumber, getTextDirection } from '../utils/stringValues';
 import { HighlightText } from '../utils/HighlightText';
+import { BlueTitle } from './BlueTitle';
 
 const { maxNumOfCharactersNotInFullWidth } = environment.entitiesProperties;
 
@@ -146,7 +147,8 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
 
     return (
         <>
-            {showDivider && <Divider sx={{ marginY: '1rem' }} />}
+            {showDivider && <Divider title={dividerTitle} sx={{ marginY: '1rem' }} />}
+            <Box sx={{ marginY: '1rem' }}>{dividerTitle && <BlueTitle title={dividerTitle} component="p" variant="subtitle1" />}</Box>
             <Grid container style={{ ...style, alignItems: textWrap ? 'flex-start' : 'center', alignContent: 'center' }}>
                 {propertiesOrderedToShow.map((propertyKey) => {
                     const propertySchema = entityTemplate.properties.properties[propertyKey];
