@@ -510,6 +510,9 @@ export default {
             archive: 'ארכיון',
             moveToArchive: 'הכנס לארכיון',
             removeFromArchive: 'הוצא מארכיון',
+            cannotArchiveIfRequired: 'לא ניתן להכניס לארכיון שדה חובה',
+            cannotArchiveIfUnique: 'לא ניתן להכניס לארכיון שדה מיוחד',
+            cannotArchiveIfPreview: 'לא ניתן להכניס לארכיון שדה בתצוגה מצומצמת',
         },
         relationshipTemplate: {
             createTitle: 'יצירת תבנית קשר',

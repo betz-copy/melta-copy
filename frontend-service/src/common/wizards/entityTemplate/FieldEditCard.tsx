@@ -523,6 +523,14 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
         }));
     };
 
+    const archiveButtonTooltip = () => {
+        if (value.required) return i18next.t('wizard.entityTemplate.cannotArchiveIfRequired');
+        if (value.uniqueCheckbox) return i18next.t('wizard.entityTemplate.cannotArchiveIfUnique');
+        if (value.preview) return i18next.t('wizard.entityTemplate.cannotArchiveIfPreview');
+        if (value.archive) return i18next.t('wizard.entityTemplate.removeFromArchive');
+        return i18next.t('wizard.entityTemplate.moveToArchive');
+    };
+
     return (
         <Draggable draggableId={value.id} index={index}>
             {(draggableProvided) => (
@@ -1078,22 +1086,17 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                             disableHoverListener={!initialValue?.required}
                                             title={i18next.t('wizard.entityTemplate.cantDeleteUniqueOrRequiredFields')}
                                         >
-                                            <Grid>
+                                            <Grid display="flex">
                                                 {supportArchive && isEditMode && (
-                                                    <MeltaTooltip
-                                                        title={
-                                                            value.archive
-                                                                ? i18next.t('wizard.entityTemplate.removeFromArchive')
-                                                                : i18next.t('wizard.entityTemplate.moveToArchive')
-                                                        }
-                                                        placement="right"
-                                                    >
-                                                        <IconButton
-                                                            onClick={() => setFieldValue('archive', !value.archive)}
-                                                            disabled={value.required || value.uniqueCheckbox || value.preview}
-                                                        >
-                                                            {value.archive ? <Unarchive color="primary" /> : <Archive />}
-                                                        </IconButton>
+                                                    <MeltaTooltip title={archiveButtonTooltip()} placement="right">
+                                                        <Box>
+                                                            <IconButton
+                                                                onClick={() => setFieldValue('archive', !value.archive)}
+                                                                disabled={value.required || value.uniqueCheckbox || value.preview}
+                                                            >
+                                                                {value.archive ? <Unarchive color="primary" /> : <Archive />}
+                                                            </IconButton>
+                                                        </Box>
                                                     </MeltaTooltip>
                                                 )}
                                                 <IconButton
