@@ -17,7 +17,7 @@ import { BackendConfigState, getBackendConfigRequest } from './services/backendC
 import { getMyUserRequest } from './services/userService';
 import { getById } from './services/workspacesService';
 import { useUserStore } from './stores/user';
-import useMatomoInstance from './matomo';
+import { useMatomoInstance } from './matomo';
 
 const App: React.FC = () => {
     const [isLoadingUser, setIsLoadingUser] = useState(true);
@@ -26,7 +26,6 @@ const App: React.FC = () => {
     const [location, navigate] = useLocation();
 
     const matomoInstance = useMatomoInstance();
-    console.log({ matomoInstance });
 
     useEffect(() => {
         const browser = Bowser.getParser(window.navigator.userAgent);

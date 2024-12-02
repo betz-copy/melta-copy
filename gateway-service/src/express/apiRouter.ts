@@ -15,8 +15,6 @@ import { usersRouter } from './users/router';
 import { workspaceRouter } from './workspaces/router';
 
 const apiRouter = Router();
-console.log('fdffdfdfdd');
-console.log(config.frontendConfig.matotmo);
 
 apiRouter.use('/config', (_req, res) =>
     res.json({
