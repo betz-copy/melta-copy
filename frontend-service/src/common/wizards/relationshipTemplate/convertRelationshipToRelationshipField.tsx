@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button, Grid, CircularProgress } from '@mui/material';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
@@ -6,7 +6,7 @@ import i18next from 'i18next';
 import { useQueryClient } from 'react-query';
 import { variableNameValidation } from '../../../utils/validation';
 import { BlueTitle } from '../../BlueTitle';
-import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
+import { IEntitySingleProperty, IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { IMongoRelationshipTemplate } from '../../../interfaces/relationshipTemplates';
 import { IRelationshipReference } from '../entityTemplate/commonInterfaces';
 import RelationshipReferenceField from '../entityTemplate/RelationshipReferenceField';
@@ -20,6 +20,20 @@ interface IConvertToRelationship {
 }
 
 const ConvertToRelationship: React.FC<IConvertToRelationship> = ({ open, handleClose, onYes, isLoading, relationshipTemplate }) => {
+    const queryClient = useQueryClient();
+    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+
+    const destEntity = entityTemplates.get(relationshipTemplate?.destinationEntityId!);
+    const srcEntity = entityTemplates.get(relationshipTemplate?.sourceEntityId!);
+    const [relatedTemplateId, setRelatedTemplateId] = useState<string>('');
+    const newSourceEntity = relatedTemplateId === destEntity?._id ? srcEntity : destEntity;
+    const fieldNamesExsiting = newSourceEntity?.propertiesOrder;
+    const displayFieldNamesExsiting = Object.values(newSourceEntity?.properties.properties || {}).map(
+        (property: IEntitySingleProperty) => property?.title,
+    );
+
+    console.log({ relatedTemplateId }, { fieldsNameExsiting: fieldNamesExsiting }, fieldNamesExsiting?.includes('lastName'));
+
     const formik = useFormik({
         initialValues: {
             fieldName: '',
@@ -31,8 +45,17 @@ const ConvertToRelationship: React.FC<IConvertToRelationship> = ({ open, handleC
             },
         },
         validationSchema: Yup.object({
-            fieldName: Yup.string().matches(variableNameValidation, i18next.t('validation.variableName')).required(i18next.t('validation.required')),
-            displayFieldName: Yup.string().required(i18next.t('validation.required')),
+            fieldName: Yup.string()
+                .matches(variableNameValidation, i18next.t('validation.variableName'))
+                .required(i18next.t('validation.required'))
+                .test('unique-name', i18next.t('validation.existingName'), (value) => {
+                    return !fieldNamesExsiting?.includes(value || '');
+                }),
+            displayFieldName: Yup.string()
+                .required(i18next.t('validation.required'))
+                .test('unique-name', i18next.t('validation.existingDisplayName'), (value) => {
+                    return !displayFieldNamesExsiting?.includes(value || '');
+                }),
         }),
         onSubmit: (values) => {
             onYes({ ...values });
@@ -40,13 +63,6 @@ const ConvertToRelationship: React.FC<IConvertToRelationship> = ({ open, handleC
             handleClose();
         },
     });
-    const queryClient = useQueryClient();
-    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-
-    const destEntity = entityTemplates.get(relationshipTemplate?.destinationEntityId!);
-    const srcEntity = entityTemplates.get(relationshipTemplate?.sourceEntityId!);
-
-    const selectedTemplate = entityTemplates.get(formik.values.relationshipReference?.relatedTemplateId || '') ?? null;
 
     const onClose = () => {
         formik.resetForm();
@@ -124,7 +140,11 @@ const ConvertToRelationship: React.FC<IConvertToRelationship> = ({ open, handleC
                                 errors={formik.errors}
                                 setFieldValue={formik.setFieldValue}
                                 isDisabled={false}
-                                convertToRelationshipField={{ options: [srcEntity, destEntity], originSourceEntityId: srcEntity?._id! }}
+                                convertToRelationshipField={{
+                                    options: [srcEntity, destEntity],
+                                    originSourceEntityId: srcEntity?._id!,
+                                    setRelatedTemplateId,
+                                }}
                             />
                         </Grid>
                     </Grid>

@@ -14,17 +14,6 @@ const validateRequiredConstraints = (requiredConstraints: IConstraintsOfTemplate
     }
 };
 
-const validateFieldUniqueness = (properties: Record<string, any>, fieldName: string, displayFieldName: string) => {
-    const fieldExists = Object.prototype.hasOwnProperty.call(properties, fieldName);
-    const displayFieldExists = Object.values(properties).some((value) => value.title === displayFieldName);
-
-    if (fieldExists || displayFieldExists) {
-        throw new BadRequestError('Field or display name field in source entity exists', {
-            errorCode: 'DUPLICATE_ERROR',
-        });
-    }
-};
-
 const validateUniqueRelationships = (existingRelationships: IRelationship[]) => {
     const sourceEntityIdsMap = new Set<string>();
 
@@ -66,4 +55,4 @@ const buildNewRelationshipField = (
     };
 };
 
-export { validateFieldUniqueness, validateNoDependentRules, validateRequiredConstraints, validateUniqueRelationships, buildNewRelationshipField };
+export { validateNoDependentRules, validateRequiredConstraints, validateUniqueRelationships, buildNewRelationshipField };

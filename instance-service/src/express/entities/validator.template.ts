@@ -437,6 +437,8 @@ export const addStringFieldsAndNormalizeDateValues = (
             return;
         }
 
+        console.log('hellooo', { key });
+
         if (type === 'string' && format === 'relationshipReference' && typeof propertyValue === 'object') {
             if (recursiveRelationshipReference) {
                 normalizedEntity[key] = propertyValue.properties[value.relationshipReference!.relatedTemplateField] || propertyValue.properties._id;
@@ -444,6 +446,7 @@ export const addStringFieldsAndNormalizeDateValues = (
                 normalizedEntity[`${key}.templateId${neo4j.relationshipReferencePropertySuffix}`] = value.relationshipReference!.relatedTemplateId;
                 Object.entries(propertyValue).forEach(([innerKey, innerProperty]) => {
                     normalizedEntity[`${key}.properties.${innerKey}${neo4j.relationshipReferencePropertySuffix}`] = innerProperty;
+                    console.log({ innerKey, innerProperty });
                 });
             }
 
@@ -452,6 +455,6 @@ export const addStringFieldsAndNormalizeDateValues = (
 
         normalizedEntity[key] = propertyValue;
     });
-
+    console.dir({ normalizedEntity }, { depth: null });
     return normalizedEntity;
 };

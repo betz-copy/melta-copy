@@ -6,8 +6,7 @@
     "build": "tsc && vite build",
     "eslint": "eslint -h",
     "lint": "eslint --ext .ts,.tsx .",
-    "lint:fix": "eslint --ext .ts,.tsx . --fix",
-    "prepare": "husky install"
+    "lint:fix": "eslint --ext .ts,.tsx . --fix"
   },
   "browserslist": {
     "production": [

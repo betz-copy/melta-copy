@@ -16,6 +16,7 @@ export interface FieldEditCardProps {
     convertToRelationshipField?: {
         options: (IMongoEntityTemplatePopulated | undefined)[];
         originSourceEntityId: string;
+        setRelatedTemplateId: (id: string) => void;
     };
 }
 
@@ -67,16 +68,15 @@ const RelationshipReferenceField: React.FC<FieldEditCardProps> = ({
                     const newValue = {
                         ...value.relationshipReference,
                         relatedTemplateId: relatedTemplateIdValue?._id || '',
-                        // relationshipTemplateDirection: isDestinationEntity ? 'outgoing' : 'incoming',
-                        // eslint-disable-next-line no-nested-ternary
                         relationshipTemplateDirection: isOriginSrcEntity ? 'incoming' : 'outgoing',
                     };
+                    convertToRelationshipField?.setRelatedTemplateId(relatedTemplateIdValue?._id || '');
                     setFieldValue('relationshipReference', newValue);
                 }}
                 sx={{ marginRight: '5px' }}
                 value={selectedTemplate}
                 disabled={isDisabled}
-                getOptionLabel={(option) => option.displayName}
+                getOptionLabel={(option) => option?.displayName ?? ''}
                 renderInput={(params) => (
                     <TextField
                         {...params}
@@ -86,7 +86,7 @@ const RelationshipReferenceField: React.FC<FieldEditCardProps> = ({
                         sx={{
                             '& .MuiInputBase-root': {
                                 borderRadius: '10px',
-                                width: convertToRelationshipField ? 240 : 300,
+                                width: convertToRelationshipField ? 220 : 300,
                             },
                         }}
                         helperText={touchedRelationshipReference && errorRelationshipReference?.relatedTemplateId}
@@ -103,7 +103,7 @@ const RelationshipReferenceField: React.FC<FieldEditCardProps> = ({
                         name="relationshipTemplateDirection"
                         label={i18next.t('validation.relatedDirection')}
                         value={i18next.t(`validation.${value.relationshipReference?.relationshipTemplateDirection}`)}
-                        sx={{ marginRight: '8px', borderRadius: '10px', width: 150 }}
+                        sx={{ marginRight: '8px', borderRadius: '10px', width: 100 }}
                         InputProps={{ readOnly: true }}
                         disabled
                     />
@@ -156,7 +156,7 @@ const RelationshipReferenceField: React.FC<FieldEditCardProps> = ({
                             sx={{
                                 '& .MuiInputBase-root': {
                                     borderRadius: '10px',
-                                    width: convertToRelationshipField ? 200 : 300,
+                                    width: convertToRelationshipField ? 240 : 300,
                                 },
                             }}
                             helperText={

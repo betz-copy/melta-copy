@@ -1,5 +1,5 @@
 /* eslint-disable no-param-reassign */
-import _ from 'lodash';
+import _, { mapValues } from 'lodash';
 import { AxiosError, AxiosResponse } from 'axios';
 import _isEqual from 'lodash.isequal';
 import lodashUniqby from 'lodash.uniqby';
@@ -7,7 +7,7 @@ import { StatusCodes } from 'http-status-codes';
 import { logger } from 'elastic-apm-node';
 import config from '../../config';
 import { InstancesService } from '../../externalServices/instanceService';
-import { IConstraintsOfTemplate, IUniqueConstraintOfTemplate } from '../../externalServices/instanceService/interfaces/entities';
+import { IConstraintsOfTemplate, IEntity, IUniqueConstraintOfTemplate } from '../../externalServices/instanceService/interfaces/entities';
 import { ProcessService } from '../../externalServices/processService';
 import { RuleBreachService } from '../../externalServices/ruleBreachService';
 import { StorageService } from '../../externalServices/storageService';
@@ -1026,7 +1026,6 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         templateId: string,
     ) {
         validateRequiredConstraints(requiredConstraints);
-        // validateFieldUniqueness(sourceEntityTemplate.properties.properties, fieldName, displayFieldName);
         validateUniqueRelationships(existingRelationships);
         const rules: IMongoRule[] = await this.instancesService.getDependantRules(await this.relationshipTemplateService.searchRules({}), templateId);
         validateNoDependentRules(rules);
@@ -1078,19 +1077,36 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             },
             propertiesOrder: [...restOfEntityTemplate.propertiesOrder, fieldName],
         });
+        console.log('new template ', { updatedEntityTemplate });
 
         if (existingRelationships.length > 0)
             await Promise.all(
                 existingRelationships.map(async (relationship) => {
-                    const entityToUpdate = await this.instancesService.getEntityInstanceById(
-                        addToSrcEntity ? relationship.sourceEntityId : relationship.destinationEntityId,
+                    const entityId = addToSrcEntity ? relationship.sourceEntityId : relationship.destinationEntityId;
+                    const entityToUpdate: IEntity = await this.instancesService.getEntityInstanceById(entityId);
+
+                    const entityProperties = mapValues(entityToUpdate.properties, (property, key) =>
+                        updatedEntityTemplate.properties.properties[key]?.format === 'relationshipReference' ? property?.properties._id : property,
+                    );
+                    console.dir(
+                        {
+                            templateId: entityToUpdate.templateId,
+                            properties: {
+                                ...entityProperties,
+                                [fieldName]: addToSrcEntity ? relationship.destinationEntityId : relationship.sourceEntityId,
+                            },
+                        },
+                        { depth: null },
                     );
 
                     await this.instancesService.updateEntityInstance(
-                        addToSrcEntity ? relationship.sourceEntityId : relationship.destinationEntityId,
+                        entityId,
                         {
                             templateId: entityToUpdate.templateId,
-                            properties: { [fieldName]: addToSrcEntity ? relationship.destinationEntityId : relationship.sourceEntityId },
+                            properties: {
+                                ...entityProperties,
+                                [fieldName]: addToSrcEntity ? relationship.destinationEntityId : relationship.sourceEntityId,
+                            },
                         },
                         [],
                         userId,
