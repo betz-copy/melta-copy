@@ -25,6 +25,14 @@ const config = {
         url: env.get('MONGO_URL').required().asString(),
         iFramesCollectionName: env.get('MONGO_IFRAMES_COLLECTION_NAME').required().asString(),
     },
+
+    frontendConfig: {
+        matotmo: {
+            url: env.get('MATOMO_URL').default('http://localhost:8016').asString(),
+            siteId: env.get('SITE_ID').default(1).asString(),
+        },
+    },
+
     authentication: {
         isRequired: env.get('IS_AUTHENTICATION_REQUIRED').default('true').asBool(),
         mockAuthenticatedUserId: env.get('MOCK_AUTHENTICATED_USER_ID').default('5e5688324203fc40043591aa').asString(), // niky adidas

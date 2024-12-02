@@ -15,11 +15,13 @@ import { usersRouter } from './users/router';
 import { workspaceRouter } from './workspaces/router';
 
 const apiRouter = Router();
+console.log('fdffdfdfdd');
+console.log(config.frontendConfig.matotmo);
 
 apiRouter.use('/config', (_req, res) =>
     res.json({
-        contactByMailLink: 'mailAdr@gmail.com',
-        contactByChatLink: 'http://chat.com',
+        matomoUrl: config.frontendConfig.matotmo.url,
+        matomoSiteId: config.frontendConfig.matotmo.siteId,
     }),
 );
 
