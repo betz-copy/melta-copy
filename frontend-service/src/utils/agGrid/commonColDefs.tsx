@@ -17,6 +17,7 @@ import { getFileName } from '../getFileName';
 import { agGridLocaleText } from './agGridLocaleText';
 import OverflowWrapper from './OverflowWrapper';
 import { Value } from './Value';
+import { EditCell } from '../../pages/Entity/components/EditCell';
 
 export const numberColDef = <Data extends any = IEntity>(
     field: string,
@@ -38,6 +39,17 @@ export const numberColDef = <Data extends any = IEntity>(
         width: hardcodedWidth,
         flex: hardcodedWidth ? 0 : 1,
         hide: hideColumn,
+        cellEditor: EditCell,
+        cellEditorParams: (params: ICellRendererParams<Data, string | undefined>) => {
+            console.log({ params });
+
+            return {
+                entityTemplate: { properties: { properties: { [field]: value }, required: [] } },
+                entity: { properties: { [field]: params.value?.toString() ?? '' } },
+                onSuccessUpdate: () => {},
+                onCancelUpdate: () => {},
+            };
+        },
     };
 };
 
@@ -62,6 +74,17 @@ export const regexColDef = <Data extends any = IEntity>(
         flex: hardcodedWidth ? 0 : 1,
         hide: hideColumn,
         cellStyle: { direction: 'ltr' },
+        cellEditor: EditCell,
+        cellEditorParams: (params: ICellRendererParams<Data, string | undefined>) => {
+            console.log({ params });
+
+            return {
+                entityTemplate: { properties: { properties: { [field]: value }, required: [] } },
+                entity: { properties: { [field]: params.value?.toString() ?? '' } },
+                onSuccessUpdate: () => {},
+                onCancelUpdate: () => {},
+            };
+        },
     };
 };
 
@@ -85,6 +108,17 @@ export const stringColDef = <Data extends any = IEntity>(
         width: hardcodedWidth,
         flex: hardcodedWidth ? 0 : 1,
         hide: hideColumn,
+        cellEditor: EditCell,
+        cellEditorParams: (params: ICellRendererParams<Data, string | undefined>) => {
+            console.log({ params });
+
+            return {
+                entityTemplate: { properties: { properties: { [field]: value }, required: [] } },
+                entity: { properties: { [field]: params.value?.toString() ?? '' } },
+                onSuccessUpdate: () => {},
+                onCancelUpdate: () => {},
+            };
+        },
     };
 };
 
@@ -139,6 +173,17 @@ export const relatedTemplateColDef = <Data extends any = IEntity>(
         width: hardcodedWidth,
         flex: hardcodedWidth ? 0 : 1,
         hide: hideColumn,
+        cellEditor: EditCell,
+        cellEditorParams: (params: ICellRendererParams<Data, string | undefined>) => {
+            console.log({ params });
+
+            return {
+                entityTemplate: { properties: { properties: { [field]: value }, required: [] } },
+                entity: { properties: { [field]: params.value?.toString() ?? '' } },
+                onSuccessUpdate: () => {},
+                onCancelUpdate: () => {},
+            };
+        },
     };
 };
 
@@ -177,6 +222,17 @@ export const booleanColDef = <Data extends any = IEntity>(
         width: hardcodedWidth,
         flex: hardcodedWidth ? 0 : 1,
         hide: hideColumn,
+        cellEditor: EditCell,
+        cellEditorParams: (params: ICellRendererParams<Data, boolean | undefined>) => {
+            console.log({ params });
+
+            return {
+                entityTemplate: { properties: { properties: { [field]: value }, required: [] } },
+                entity: { properties: { [field]: formatValue(params.value) } },
+                onSuccessUpdate: () => {},
+                onCancelUpdate: () => {},
+            };
+        },
     };
 };
 
@@ -215,6 +271,17 @@ export const enumColDef = <Data extends any = IEntity>(
         width: hardcodedWidth,
         flex: hardcodedWidth ? 0 : 1,
         hide: hideColumn,
+        cellEditor: EditCell,
+        cellEditorParams: (params: ICellRendererParams<Data, string | undefined>) => {
+            console.log({ params });
+
+            return {
+                entityTemplate: { properties: { properties: { [field]: value }, required: [] } },
+                entity: { properties: { [field]: params.value } },
+                onSuccessUpdate: () => {},
+                onCancelUpdate: () => {},
+            };
+        },
     };
 };
 
@@ -259,6 +326,17 @@ export const enumArrayColDef = <Data extends any = IEntity>(
         width: hardcodedWidth,
         flex: hardcodedWidth ? 0 : 1,
         hide: hideColumn,
+        cellEditor: EditCell,
+        cellEditorParams: (params: ICellRendererParams<Data, string[] | undefined>) => {
+            console.log({ params });
+
+            return {
+                entityTemplate: { properties: { properties: { [field]: value }, required: [] } },
+                entity: { properties: { [field]: params.value } },
+                onSuccessUpdate: () => {},
+                onCancelUpdate: () => {},
+            };
+        },
     };
 };
 
@@ -355,6 +433,17 @@ export const dateColDef = <Data extends any = IEntity>(
         width: hardcodedWidth,
         flex: hardcodedWidth ? 0 : 1,
         hide: hideColumn,
+        cellEditor: EditCell,
+        cellEditorParams: (params: ICellRendererParams<Data, string | undefined>) => {
+            console.log({ params });
+
+            return {
+                entityTemplate: { properties: { properties: { [field]: value }, required: [] } },
+                entity: { properties: { [field]: formatDate(params.value?.toString()) } },
+                onSuccessUpdate: () => {},
+                onCancelUpdate: () => {},
+            };
+        },
     };
 };
 

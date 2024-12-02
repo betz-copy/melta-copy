@@ -488,6 +488,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                         resizable: true,
                         lockPinned: true,
                         initialWidth: 250,
+                        editable: true,
                     }}
                     sideBar={{
                         toolPanels: [
@@ -521,6 +522,8 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                     }
                     localeText={agGridLocaleText}
                     paginationPageSizeSelector={paginationPageSizeSelector}
+                    onCellEditingStarted={() => console.log('hi')}
+                    onCellEditingStopped={() => console.log('bye')}
                 />
             </Box>
         );
