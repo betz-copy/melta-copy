@@ -15,6 +15,7 @@ export class ModelEmbeddingApiService {
         try {
             const { data } = await ModelEmbeddingApiService.api.post<number[][]>(embeddingRoute, {
                 inputs: texts,
+                endpoint: 'embed',
             });
 
             return data;
