@@ -8,6 +8,7 @@ import i18next from 'i18next';
 import React, { Dispatch, SetStateAction, useCallback, useEffect, useRef, useState } from 'react';
 import { debounce } from 'lodash';
 import AutoAwesomeOutlinedIcon from '@mui/icons-material/AutoAwesomeOutlined';
+import { useMatomo } from '@datapunt/matomo-tracker-react';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import SearchInput from '../inputs/SearchInput';
 import { AddEntityButton } from './AddEntityButton';
@@ -183,6 +184,7 @@ const EntitiesPageHeadline: React.FC<{
 }) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const theme = useTheme();
+    const { trackEvent } = useMatomo();
 
     const onSuccessCreate = (entity: IEntity) => {
         const handleTemplatesTablesView = () => {
@@ -203,6 +205,19 @@ const EntitiesPageHeadline: React.FC<{
             onAddEntity(entity.properties._id);
         }
     };
+
+    const handleToggleChange = (_e: React.MouseEvent<HTMLElement>, newValue: 'cards-view' | 'templates-tables-view') => {
+        if (newValue !== null) {
+            viewModeProps.setViewMode(newValue);
+            if (newValue === 'cards-view') {
+                trackEvent({
+                    category: 'view-mode',
+                    action: 'click',
+                });
+            }
+        }
+    };
+
     return (
         <Grid
             container
@@ -254,11 +269,7 @@ const EntitiesPageHeadline: React.FC<{
                     <Grid item>
                         <ToggleButtonGroup
                             value={viewModeProps.viewMode}
-                            onChange={(_e, newValue) => {
-                                if (newValue !== null) {
-                                    viewModeProps.setViewMode(newValue);
-                                }
-                            }}
+                            onChange={handleToggleChange}
                             exclusive
                             color="primary"
                             size="small"
