@@ -1,10 +1,10 @@
 import { createInstance } from '@datapunt/matomo-tracker-react';
-import { useQuery } from 'react-query';
-import { BackendConfigState, getBackendConfigRequest } from './services/backendConfigService';
+import { useQueryClient } from 'react-query';
+import { BackendConfigState } from './services/backendConfigService';
 
 export const useMatomoInstance = () => {
-    const { data: matomoConfig } = useQuery<BackendConfigState>('getBackendConfig', getBackendConfigRequest);
-    console.log(matomoConfig);
+    const queryClient = useQueryClient();
+    const matomoConfig = queryClient.getQueryData<BackendConfigState>('getBackendConfig')!;
 
     if (!matomoConfig) {
         return null;
