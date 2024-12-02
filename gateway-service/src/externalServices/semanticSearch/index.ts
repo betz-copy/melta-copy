@@ -1,5 +1,6 @@
 import config from '../../config';
 import DefaultExternalServiceApi from '../../utils/express/externalService';
+import logger from '../../utils/logger/logsLogger';
 import { ISearchBatchBody } from '../instanceService/interfaces/entities';
 import { IRerankRequest, IRerankResult, ISemanticSearchResult } from './interface';
 
@@ -17,7 +18,8 @@ export class SemanticSearchService extends DefaultExternalServiceApi {
             const { data } = await this.api.post<ISemanticSearchResult>(searchRoute, searchBody);
             return data;
         } catch (e) {
-            console.log(e);
+            console.dir(`Search error: ${e}`, { depth: null });
+            logger.error(e);
             return {};
         }
     }
@@ -27,7 +29,8 @@ export class SemanticSearchService extends DefaultExternalServiceApi {
             const { data } = await this.api.post<IRerankResult[]>(rerankRoute, rerankBody);
             return data;
         } catch (e) {
-            console.log(e);
+            console.dir(`Rerank error: ${e}`, { depth: null });
+            logger.error(e);
             return [];
         }
     }

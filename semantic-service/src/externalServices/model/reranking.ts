@@ -1,6 +1,7 @@
 import axios from 'axios';
 import config from '../../config';
 import { IRerankRequest, IRerankResult } from '../../express/semantics/interface';
+import logger from '../../utils/logger/logsLogger';
 
 const {
     modelApi: {
@@ -17,7 +18,7 @@ export class ModelRerankingApiService {
 
             return data;
         } catch (e) {
-            console.log('Error in ModelApiService.search', e);
+            logger.error('Error in ModelApiService.search', e);
             return undefined;
         }
     }

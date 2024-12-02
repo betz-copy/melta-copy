@@ -97,13 +97,13 @@ const config = {
         embedding: {
             baseUrl: env.get('MODEL_EMBEDDING_API_URL').default('https://api.voyageai.com/v1/embeddings').asString(),
             embeddingRoute: env.get('MODEL_EMBEDDING_ROUTE').default('/embed').asString(),
-            requestTimeout: env.get('MODEL_EMBEDDING_REQUEST_TIMEOUT').default(10000).asIntPositive(),
+            requestTimeout: env.get('MODEL_EMBEDDING_REQUEST_TIMEOUT').default(20000).asIntPositive(),
             concurrentSentenceEmbeddingLimit: env.get('MODEL_EMBEDDING_CONCURRENT_SENTENCE_LIMIT').default(100).asInt(),
         },
         rerank: {
             baseUrl: env.get('MODEL_RERANK_API_URL').default('https://api.voyageai.com/v1/embeddings').asString(),
             rerankRoute: env.get('MODEL_RERANK_ROUTE').default('/rerank').asString(),
-            requestTimeout: env.get('MODEL_RERANK_REQUEST_TIMEOUT').default(10000).asIntPositive(),
+            requestTimeout: env.get('MODEL_RERANK_REQUEST_TIMEOUT').default(20000).asIntPositive(),
         },
     },
 };

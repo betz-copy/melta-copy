@@ -84,6 +84,15 @@ export const normalizeResponseCount = (result: QueryResult): number => {
     return result.records[0].get(0);
 };
 
+const formatEntitiesWithFiles = (entitiesWithFiles: ISemanticSearchResult[string]): Record<string, string[]> =>
+    Object.entries(entitiesWithFiles).reduce((acc, [entityId, entityData]) => {
+        entityData.forEach(({ minioFileId }) => {
+            if (!acc[entityId]) acc[entityId] = [];
+            acc[entityId].push(minioFileId);
+        });
+        return acc;
+    }, {});
+
 export const normalizeResponseTemplatesCount = (
     result: QueryResult,
 ): { templateId: string; count: number; entitiesWithFiles?: Record<string, string[]> }[] => {
@@ -95,16 +104,7 @@ export const normalizeResponseTemplatesCount = (
         };
 
         if (record.has('entitiesWithFiles') && record.get('entitiesWithFiles')) {
-            formattedObject.entitiesWithFiles = Object.entries(record.get('entitiesWithFiles') as ISemanticSearchResult[string]).reduce(
-                (acc, [entityId, entityData]) => {
-                    entityData.forEach(({ minioFileId }) => {
-                        if (!acc[entityId]) acc[entityId] = [];
-                        acc[entityId].push(minioFileId);
-                    });
-                    return acc;
-                },
-                {},
-            );
+            formattedObject.entitiesWithFiles = formatEntitiesWithFiles(record.get('entitiesWithFiles') as ISemanticSearchResult[string]);
         }
 
         return formattedObject;

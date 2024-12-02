@@ -73,7 +73,7 @@ const config = {
         requestTimeout: env.get('STORAGE_SERVICE_SERVICE_REQUEST_TIMEOUT').default(10000).asIntPositive(),
     },
     semanticSearchService: {
-        requestTimeout: env.get('SEMANTIC_SEARCH_SERVICE_REQUEST_TIMEOUT').default(10000).asIntPositive(),
+        requestTimeout: env.get('SEMANTIC_SEARCH_SERVICE_REQUEST_TIMEOUT').default(20000).asIntPositive(),
         url: env.get('SEMANTIC_SEARCH_SERVICE').required().asString(),
         baseRoute: env.get('SEMANTIC_SEARCH_SERVICE_BASE_ROUTE').default('/api/semantic').asString(),
         searchRoute: env.get('SEMANTIC_SEARCH_SERVICE_SEARCH_ROUTE').default('/search').asString(),

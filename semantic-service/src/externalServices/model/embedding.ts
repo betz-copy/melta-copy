@@ -1,5 +1,6 @@
 import axios from 'axios';
 import config from '../../config';
+import logger from '../../utils/logger/logsLogger';
 
 const {
     modelApi: {
@@ -18,7 +19,7 @@ export class ModelEmbeddingApiService {
 
             return data;
         } catch (e) {
-            console.log('Error in ModelApiService.search', e);
+            logger.error('Error in ModelApiService.search', e);
             return [[]];
         }
     }

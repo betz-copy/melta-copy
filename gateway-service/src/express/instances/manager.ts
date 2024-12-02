@@ -324,12 +324,12 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
             templates: Object.keys(searchBody.templates),
         });
 
-        const instanceResults = await this.service.searchEntitiesBatch({
+        const allResults = await this.service.searchEntitiesBatch({
             ...searchBody,
             entityIdsToInclude: semanticSearchResult ? Object.values(semanticSearchResult).map(Object.keys).flat() : undefined,
         });
 
-        const { formattedEntities, textsForReranking } = formatEntitiesBulkSearch(instanceResults, searchBody.textSearch, semanticSearchResult);
+        const { formattedEntities, textsForReranking } = formatEntitiesBulkSearch(allResults, searchBody.textSearch, semanticSearchResult);
         const rerank = await this.semanticSearchSearch.rerank({ query: searchBody.textSearch, texts: Object.keys(textsForReranking) });
 
         if (!rerank?.length) {
