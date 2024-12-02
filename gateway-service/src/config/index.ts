@@ -29,7 +29,7 @@ const config = {
     frontendConfig: {
         matotmo: {
             url: env.get('MATOMO_URL').default('http://localhost:8016').asString(),
-            siteId: env.get('SITE_ID').default(1).asString(),
+            siteId: env.get('SITE_ID').default(1).asInt(),
         },
     },
 
