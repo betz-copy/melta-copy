@@ -125,7 +125,7 @@ export interface ISearchResultByTemplates {
 export interface ICountSearchResult {
     templateId: string;
     count: number;
-    entityIdsToInclude?: ISemanticSearchResult[string];
+    entitiesWithFiles?: ISemanticSearchResult[string];
 }
 
 export interface IExportEntitiesBody {

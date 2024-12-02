@@ -2,7 +2,8 @@ import {
     AccountTreeOutlined as GraphIcon,
     ContentCopy as DuplicateIcon,
     Delete as DeleteIcon,
-    DoDisturbAlt,
+    DoNotDisturbOnOutlined as DoNotDisturbOnOutlinedIcon,
+    DoNotDisturbOffOutlined as DoNotDisturbOffOutlinedIcon,
     Edit as EditIcon,
     MoreVertOutlined,
     Unarchive,
@@ -253,7 +254,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                                             handleClose();
                                         }}
                                         disabled={!canWriteInstance}
-                                        icon={DoDisturbAlt}
+                                        icon={isEntityDisabled ? DoNotDisturbOffOutlinedIcon : DoNotDisturbOnOutlinedIcon}
                                         text={isEntityDisabled ? i18next.t('actions.activate') : i18next.t('actions.disable')}
                                     />
                                     <TooltipMenuButton

@@ -4,12 +4,12 @@ import { ISearchBatchBody } from '../instanceService/interfaces/entities';
 import { ISemanticSearchResult } from './interface';
 
 const {
-    semanticSearchService: { url, searchRoute },
+    semanticSearchService: { url, searchRoute, requestTimeout },
 } = config;
 
 export class SemanticSearchService extends DefaultExternalServiceApi {
     constructor(workspaceId: string) {
-        super(workspaceId, { baseURL: url });
+        super(workspaceId, { baseURL: url, timeout: requestTimeout });
     }
 
     async search(searchBody: Omit<ISearchBatchBody, 'templates'> & { templates: string[] }) {
