@@ -1,4 +1,4 @@
-import React, { useMemo, useRef } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { MapContainer, TileLayer, LayersControl, FeatureGroup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-draw/dist/leaflet.draw.css';
@@ -13,12 +13,13 @@ import {
     bindPopupForPolygon,
     jerusalemCoordinates,
     stringToCoordinates,
-} from '../../utils/map';
-import { getEntitiesByLocation } from '../../services/entitiesService';
-import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
-import { Circle, ISearchEntitiesByLocationTemplatesBody, Polygon } from '../../interfaces/entities';
+} from '../../../utils/map';
+import { getEntitiesByLocation } from '../../../services/entitiesService';
+import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
+import { Circle, IEntity, ISearchEntitiesByLocationTemplatesBody, Polygon } from '../../../interfaces/entities';
+import MapPageEntityDialog from './MapPageEntityDialog';
 
-const EditableMapControl = ({ featureGroupRef, searchResultGroupRef, lastCircleRef }) => {
+const EditableMapControl = ({ featureGroupRef, searchResultGroupRef, lastCircleRef, onSelectEntity }) => {
     const map = useMap();
     const queryClient = useQueryClient();
     const entityTemplateMap = queryClient.getQueryData<IEntityTemplateMap>(['getEntityTemplates']);
@@ -37,12 +38,15 @@ const EditableMapControl = ({ featureGroupRef, searchResultGroupRef, lastCircleR
 
                     let layer;
                     if (type === 'polygon') {
-                        layer = L.polygon(value as LatLngExpression[]).bindPopup(bindPopupForPolygon(value as LatLng[]));
+                        layer = L.polygon(value as LatLngExpression[]);
                     } else {
-                        layer = L.marker(value as LatLngExpression).bindPopup(bindPopupForMarker(value as LatLng));
+                        layer = L.marker(value as LatLngExpression);
                     }
 
                     if (layer) {
+                        layer.on('click', () => {
+                            onSelectEntity(node);
+                        });
                         searchResultGroupRef.current.addLayer(layer); // Add to search results
                     }
                 });
@@ -165,6 +169,8 @@ const MapPage = () => {
     const searchResultGroupRef = useRef<L.FeatureGroup>(null); // For search results
     const lastCircleRef = useRef<L.Circle | null>(null); // To track the last drawn circle
 
+    const [selectedEntity, setSelectedEntity] = useState<IEntity | null>(null);
+
     return (
         <Box position="relative" width="100%" height="100vh">
             <MapContainer
@@ -194,12 +200,17 @@ const MapPage = () => {
 
                 {/* Feature Group for Draw Controls */}
                 <FeatureGroup ref={featureGroupRef}>
-                    <EditableMapControl featureGroupRef={featureGroupRef} searchResultGroupRef={searchResultGroupRef} lastCircleRef={lastCircleRef} />
+                    <EditableMapControl
+                        featureGroupRef={featureGroupRef}
+                        searchResultGroupRef={searchResultGroupRef}
+                        lastCircleRef={lastCircleRef}
+                        onSelectEntity={setSelectedEntity}
+                    />
                 </FeatureGroup>
 
                 <FeatureGroup ref={searchResultGroupRef} />
             </MapContainer>
-            {/* Filter Component */}
+            {selectedEntity && <MapPageEntityDialog open={!!selectedEntity} entity={selectedEntity} onClose={() => setSelectedEntity(null)} />}
         </Box>
     );
 };

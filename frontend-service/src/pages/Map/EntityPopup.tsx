@@ -32,7 +32,7 @@ const EntityPopup = ({ header, properties, entityTemplate }: MapPopupProps) => {
                             <Typography>{entityTemplate.properties.properties[key].title}:</Typography>
                         </Grid>
                         <Grid item xs={8}>
-                            <Typography color="textSecondary">{filteredObject[key]}</Typography>
+                            <Typography color="textSecondary">{filteredObject[key].toString()}</Typography>
                         </Grid>
                     </React.Fragment>
                 ))}
