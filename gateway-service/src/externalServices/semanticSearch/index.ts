@@ -17,9 +17,9 @@ export class SemanticSearchService extends DefaultExternalServiceApi {
         try {
             const { data } = await this.api.post<ISemanticSearchResult>(searchRoute, searchBody);
             return data;
-        } catch (e) {
-            console.dir(`Search error: ${e}`, { depth: null });
-            logger.error(e);
+        } catch (error) {
+            console.dir(`Search error: ${error}`, { depth: null });
+            logger.error('Search error: ', { error });
             return {};
         }
     }
@@ -28,9 +28,8 @@ export class SemanticSearchService extends DefaultExternalServiceApi {
         try {
             const { data } = await this.api.post<IRerankResult[]>(rerankRoute, rerankBody);
             return data;
-        } catch (e) {
-            console.dir(`Rerank error: ${e}`, { depth: null });
-            logger.error(e);
+        } catch (error) {
+            logger.error('Rerank error: ', { error });
             return [];
         }
     }
