@@ -14,7 +14,12 @@ export class ModelRerankingApiService {
 
     static async rerank(body: IRerankRequest): Promise<IRerankResult[] | undefined> {
         try {
-            const { data } = await ModelRerankingApiService.api.post<IRerankResult[]>(rerankRoute, { ...body, truncate: true, return_text: true });
+            const { data } = await ModelRerankingApiService.api.post<IRerankResult[]>(rerankRoute, {
+                ...body,
+                endpoint: 'rerank',
+                truncate: true,
+                return_text: true,
+            });
 
             return data;
         } catch (e) {
