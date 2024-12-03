@@ -111,6 +111,7 @@ export interface ISearchBatchBody {
         };
     };
     sort?: ISearchSort;
+    shouldSemanticSearch?: boolean;
 }
 
 export interface ISearchResult {
