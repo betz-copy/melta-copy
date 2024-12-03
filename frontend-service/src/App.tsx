@@ -11,19 +11,21 @@ import './css/index.css';
 import './css/loading.css';
 import { environment } from './globals';
 import Main from './Main';
-import matomoInstance from './matomo';
 import ErrorPage from './pages/ErrorPage';
 import { AuthService } from './services/authService';
 import { BackendConfigState, getBackendConfigRequest } from './services/backendConfigService';
 import { getMyUserRequest } from './services/userService';
 import { getById } from './services/workspacesService';
 import { useUserStore } from './stores/user';
+import { useMatomoInstance } from './matomo';
 
 const App: React.FC = () => {
     const [isLoadingUser, setIsLoadingUser] = useState(true);
     const [isErrorMyUser, setIsErrorMyUser] = useState(false);
 
     const [location, navigate] = useLocation();
+
+    const matomoInstance = useMatomoInstance();
 
     useEffect(() => {
         const browser = Bowser.getParser(window.navigator.userAgent);
@@ -91,7 +93,7 @@ const App: React.FC = () => {
     if (isErrorBackendConfig) return <ErrorPage errorText={i18next.t('errorPage.systemUnavailable')} />;
 
     return (
-        <MatomoProvider value={matomoInstance}>
+        <MatomoProvider value={matomoInstance!}>
             <Main />;
         </MatomoProvider>
     );
