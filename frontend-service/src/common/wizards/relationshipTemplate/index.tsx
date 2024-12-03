@@ -13,7 +13,6 @@ import {
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
 import { ErrorToast } from '../../ErrorToast';
-import { relationshipTemplates } from '../../../mocks/templates/relationshipTemplates';
 
 export interface RelationshipTemplateWizardValues {
     _id?: string;

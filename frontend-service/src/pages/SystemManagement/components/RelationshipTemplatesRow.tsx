@@ -2,7 +2,7 @@ import { AppRegistration as AppRegistrationIcon, ArrowBack } from '@mui/icons-ma
 import { Grid, IconButton, Typography, useTheme } from '@mui/material';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { CustomIcon } from '../../../common/CustomIcon';
