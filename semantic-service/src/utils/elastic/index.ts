@@ -107,7 +107,7 @@ class ElasticClient {
     }
 
     async hybridSearch(query: string, embeddedQuery: number[], limit: number, skip: number, templates: string[]) {
-        const filters = templates && templates.length > 0 ? { terms: { templateId: templates } } : {};
+        const filter = templates?.length > 0 ? [{ terms: { templateId: templates } }] : [];
 
         const indexName = `${index}-${this.workspaceId}`;
         const searchBody = {
@@ -123,7 +123,7 @@ class ElasticClient {
                             fuzziness: lexicalFuzziness,
                         },
                     },
-                    filter: Object.keys(filters).length > 0 ? [filters] : [],
+                    filter,
                 },
             },
             knn: {
@@ -131,6 +131,7 @@ class ElasticClient {
                 query_vector: embeddedQuery,
                 k: limit,
                 num_candidates: knnGroupSize,
+                filter,
             },
             rank: {
                 rrf: {

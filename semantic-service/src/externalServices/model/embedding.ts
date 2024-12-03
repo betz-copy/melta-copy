@@ -21,7 +21,7 @@ export class ModelEmbeddingApiService {
             return data;
         } catch (e) {
             logger.error('Error in ModelApiService.search', e);
-            return [[]];
+            return texts.map((): number[] => []);
         }
     }
 }
