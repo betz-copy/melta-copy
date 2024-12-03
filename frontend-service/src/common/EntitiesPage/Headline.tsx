@@ -206,18 +206,6 @@ const EntitiesPageHeadline: React.FC<{
         }
     };
 
-    const handleToggleChange = (_e: React.MouseEvent<HTMLElement>, newValue: 'cards-view' | 'templates-tables-view') => {
-        if (newValue !== null) {
-            viewModeProps.setViewMode(newValue);
-            if (newValue === 'cards-view') {
-                trackEvent({
-                    category: 'view-mode',
-                    action: 'click',
-                });
-            }
-        }
-    };
-
     return (
         <Grid
             container
@@ -269,7 +257,11 @@ const EntitiesPageHeadline: React.FC<{
                     <Grid item>
                         <ToggleButtonGroup
                             value={viewModeProps.viewMode}
-                            onChange={handleToggleChange}
+                            onChange={(_e, newValue) => {
+                                if (newValue !== null) {
+                                    viewModeProps.setViewMode(newValue);
+                                }
+                            }}
                             exclusive
                             color="primary"
                             size="small"

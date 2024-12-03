@@ -27,7 +27,7 @@ export const getUserByIdRequestSchema = joi.object({
 export const searchUsersRequestSchema = joi.object({
     query: {},
     body: {
-        search: joi.string(), 
+        search: joi.string(),
         permissions: joi.object(),
         workspaceIds: joi.array().items(MongoIdSchema.required()),
         limit: joi.number().integer().required(),
