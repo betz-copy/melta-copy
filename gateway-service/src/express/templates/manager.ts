@@ -1024,9 +1024,10 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         requiredConstraints: IConstraintsOfTemplate['requiredConstraints'],
         existingRelationships: IRelationship[],
         templateId: string,
+        addToSrcEntity: boolean,
     ) {
         validateRequiredConstraints(requiredConstraints);
-        validateUniqueRelationships(existingRelationships);
+        validateUniqueRelationships(existingRelationships, addToSrcEntity);
         const rules: IMongoRule[] = await this.instancesService.getDependantRules(await this.relationshipTemplateService.searchRules({}), templateId);
         validateNoDependentRules(rules);
     }
@@ -1044,7 +1045,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             this.instancesService.getConstraintsOfTemplate(relationshipReference.relatedTemplateId),
         ]);
 
-        await this.validateConvertRelationshipToRelationshipField(destRequiredConstraints, existingRelationships, templateId);
+        await this.validateConvertRelationshipToRelationshipField(destRequiredConstraints, existingRelationships, templateId, addToSrcEntity);
 
         const { category, _id, createdAt, updatedAt, disabled, properties, ...restOfEntityTemplate } =
             await this.entityTemplateService.getEntityTemplateById(addToSrcEntity ? sourceEntityId : destinationEntityId);

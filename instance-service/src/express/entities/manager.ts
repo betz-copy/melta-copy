@@ -1071,6 +1071,8 @@ export class EntityManager extends DefaultManagerNeo4j {
         const fixedProperties: Record<string, any> = JSON.parse(JSON.stringify(entityProperties));
         const createdRelationships: IRelationship[] = [];
         const deletedRelationships: IRelationship[] = [];
+        console.dir({ entityProperties, updatedProperties }, { depth: null });
+
         await Promise.all(
             updatedProperties.map(async (updatedProperty) => {
                 const property = entityTemplate.properties.properties[updatedProperty];
@@ -1112,7 +1114,7 @@ export class EntityManager extends DefaultManagerNeo4j {
                 }
             }),
         );
-
+        console.dir({ fixedProperties }, { depth: null });
         return { fixedProperties, createdRelationships, deletedRelationships };
     }
 
@@ -1130,21 +1132,17 @@ export class EntityManager extends DefaultManagerNeo4j {
 
         await Promise.all(
             Object.entries(entitiesNeedToUpdate).map(async ([fieldToChange, entityIdsToUpdate]) => {
-                console.log({ fieldToChange, entityIdsToUpdate });
-
                 if (entityIdsToUpdate.length === 0) return;
 
                 const relatedEntitiesChangedValues = { updatedAt: getNeo4jDateTime() };
-
                 updatedProperties.forEach((updatedProperty) => {
-                    console.dir({ updatedProperty }, { depth: null });
-
                     if (entityProperties[updatedProperty]) {
                         if (entityTemplate?.properties.properties[updatedProperty]?.format === 'relationshipReference') {
-                            const fieldName = entityTemplate?.properties.properties[updatedProperty].relationshipReference?.relatedTemplateField!;
+                            console.log({ updatedProperty }, Object.entries(entityProperties[updatedProperty].properties));
+                            const fieldName = entityTemplate?.properties.properties[updatedProperty].relationshipReference?.relatedTemplateField;
                             relatedEntitiesChangedValues[
                                 `${fieldToChange}.properties.${updatedProperty}${config.neo4j.relationshipReferencePropertySuffix}`
-                            ] = entityProperties[updatedProperty].properties[fieldName];
+                            ] = entityProperties[updatedProperty].properties[fieldName!];
                         } else {
                             relatedEntitiesChangedValues[
                                 `${fieldToChange}.properties.${updatedProperty}${config.neo4j.relationshipReferencePropertySuffix}`
@@ -1152,7 +1150,6 @@ export class EntityManager extends DefaultManagerNeo4j {
                         }
                     }
                 });
-                console.dir({ relatedEntitiesChangedValues }, { depth: null });
 
                 await runInTransactionAndNormalize(
                     transaction,
@@ -1204,7 +1201,6 @@ export class EntityManager extends DefaultManagerNeo4j {
             userId ?? '',
             convertToRelationshipField,
         );
-        console.dir({ entityProperties, updatedProperties, fixedProperties }, { depth: null });
 
         const updatedEntity = await runInTransactionAndNormalize(
             transaction,
