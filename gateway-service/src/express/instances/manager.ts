@@ -47,7 +47,8 @@ import { IExportEntitiesBody } from './interfaces';
 import { RabbitManager } from '../../utils/rabbit';
 import { SemanticSearchService } from '../../externalServices/semanticSearch';
 import { WorkspaceService } from '../workspaces/service';
-import { formatEntitiesBulkSearch, sortEntities } from '../../utils/semantic';
+import { createTextsFromEntitiesWithFiles, formatEntitiesBulkSearch, pushToTextsForReranking, sortEntities } from '../../utils/semantic';
+import { ISemanticSearchResult } from '../../externalServices/semanticSearch/interface';
 
 const { errorCodes, rabbit, ruleBreachService } = config;
 
@@ -147,21 +148,29 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         await Promise.all(tasks);
     }
 
-    async searchEntitiesOfTemplate(templateId: string, searchBody: ISearchEntitiesOfTemplateBody) {
-        const { texts, ...body } = searchBody;
-        if (!texts?.length || body.sort?.length || !body.textSearch) {
+    async searchEntitiesOfTemplate(
+        templateId: string,
+        searchBody: ISearchEntitiesOfTemplateBody & { entitiesWithFiles: ISemanticSearchResult[string] },
+    ) {
+        const { entitiesWithFiles, ...body } = searchBody;
+
+        if (!entitiesWithFiles || !Object.keys(entitiesWithFiles)?.length || body.sort?.length || !body.textSearch) {
             return this.service.searchEntitiesOfTemplateRequest(templateId, body);
         }
 
-        const searchResult = await this.service.searchEntitiesOfTemplateRequest(templateId, body);
+        const searchResult = await this.service.searchEntitiesOfTemplateRequest(templateId, {
+            ...body,
+            entityIdsToInclude: Object.keys(entitiesWithFiles),
+        });
 
-        const rerank = await this.semanticSearchSearch.rerank({ query: body.textSearch, texts });
+        const texts = createTextsFromEntitiesWithFiles(entitiesWithFiles);
+        const rerank = await this.semanticSearchSearch.rerank({ query: body.textSearch, texts: Object.keys(texts) });
 
         if (!rerank?.length) {
             return searchResult;
         }
 
-        
+        return { ...searchResult, entities: sortEntities(searchResult.entities, rerank, texts) };
     }
 
     private async createWorksheet(

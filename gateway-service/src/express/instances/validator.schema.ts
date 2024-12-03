@@ -117,6 +117,19 @@ export const getEntitiesCountByTemplates = Joi.object({
     params: {},
 });
 
+const semanticSearchResult = Joi.object().pattern(
+    Joi.string(),
+    Joi.object().pattern(
+        Joi.string(),
+        Joi.array().items(
+            Joi.object({
+                minioFileId: Joi.string(),
+                text: Joi.string(),
+            }),
+        ),
+    ),
+);
+
 // POST /api/instances/search/templates
 export const searchEntitiesByTemplatesSchema = Joi.object({
     body: {
@@ -127,6 +140,7 @@ export const searchEntitiesByTemplatesSchema = Joi.object({
             filter: Joi.any(),
             showRelationships: Joi.alternatives(Joi.boolean(), Joi.array().items(Joi.string())).default(false),
             sort: Joi.any(),
+            entitiesWithFiles: semanticSearchResult,
         }),
     },
     query: {},

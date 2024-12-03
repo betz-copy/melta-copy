@@ -34,7 +34,7 @@ const searchEntityPropertiesForQuery = (entityProps: IEntityWithDirectRelationsh
     return nestedValue ?? foundValue?.[1];
 };
 
-const pushToTextsForReranking = (textsForReranking: Record<string, string[]>, text: string, entityId: string) => {
+export const pushToTextsForReranking = (textsForReranking: Record<string, string[]>, text: string, entityId: string) => {
     if (!textsForReranking[text]) textsForReranking[text] = [];
     textsForReranking[text].push(entityId);
 };
@@ -77,6 +77,15 @@ export const formatEntitiesBulkSearch = (searchResults: ISearchResult, query: st
 
     return { formattedEntities: { ...searchResults, entities: entitiesWithFileIds }, textsForReranking };
 };
+
+export const createTextsFromEntitiesWithFiles = (entitiesWithFiles: ISemanticSearchResult[string]) =>
+    Object.entries(entitiesWithFiles).reduce((acc, [entityId, value]) => {
+        Object.values(value).forEach(({ text }) => {
+            pushToTextsForReranking(acc, text, entityId);
+        });
+
+        return acc;
+    }, {});
 
 /**
  * Order formattedEntities by the rerankByDocs array (which contains the texts in the order they should be)

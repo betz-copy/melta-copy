@@ -1,7 +1,7 @@
 import { IMongoEntityTemplatePopulated } from './entityTemplates';
 import { IMongoRelationshipTemplate } from './relationshipTemplates';
 import { IRelationship } from './relationships';
-import { ISemanticSearchMinioResult } from './semanticSearch';
+import { ISemanticSearchResult } from './semanticSearch';
 
 export interface IEntity {
     templateId: string;
@@ -91,7 +91,7 @@ export interface ISearchEntitiesOfTemplateBody {
     filter?: ISearchFilter;
     showRelationships?: boolean | Array<IMongoRelationshipTemplate['_id']>;
     sort?: ISearchSort;
-    entityIdsToInclude?: string[];
+    entitiesWithFiles?: ICountSearchResult['entitiesWithFiles'];
 }
 
 export interface ISearchEntitiesByTemplatesBody {
@@ -126,7 +126,7 @@ export interface ISearchResultByTemplates {
 export interface ICountSearchResult {
     templateId: string;
     count: number;
-    entitiesWithFiles?: ISemanticSearchMinioResult[string];
+    entitiesWithFiles?: ISemanticSearchResult[string];
     texts?: string[];
 }
 

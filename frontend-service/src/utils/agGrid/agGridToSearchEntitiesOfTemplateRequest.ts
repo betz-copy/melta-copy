@@ -222,7 +222,6 @@ export const agGridToSearchEntitiesOfTemplateRequest = (
         filter: filterModelToFilterOfTemplate(filterModel, entityTemplate),
         showRelationships: false,
         sort: sortModelToSortOfSearchRequest(sortModel),
-        entityIdsToInclude: entityTemplate.entitiesWithFiles ? Object.keys(entityTemplate.entitiesWithFiles) : undefined,
-        texts: entityTemplate.entitiesWithFiles ? entityTemplate.entitiesWithFiles.texts : undefined,
+        entitiesWithFiles: entityTemplate.entitiesWithFiles,
     };
 };

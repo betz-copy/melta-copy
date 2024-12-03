@@ -6,7 +6,6 @@ import { IRelationship } from '../../express/relationships/interfaces';
 import config from '../../config';
 import { EntityManager } from '../../express/entities/manager';
 import { IFormulaCauses } from '../../express/rules/interfaces/formulaWithCauses';
-import { ISemanticSearchResult } from '../../externalServices/semanticSearch/interface';
 
 type Node = Neo4jNode<number>;
 type Relationship = Neo4jRelationship<number>;
@@ -84,39 +83,12 @@ export const normalizeResponseCount = (result: QueryResult): number => {
     return result.records[0].get(0);
 };
 
-const formatEntitiesWithFiles = (
-    entitiesWithFiles: ISemanticSearchResult[string],
-): { entitiesWithFiles: Record<string, string[]>; texts: string[] } =>
-    Object.entries(entitiesWithFiles).reduce(
-        (acc, [entityId, entityData]) => {
-            entityData.forEach(({ minioFileId, text }) => {
-                if (!acc.entitiesWithFiles[entityId]) acc.entitiesWithFiles[entityId] = [];
-                acc.entitiesWithFiles[entityId].push(minioFileId);
-                acc.texts.push(text);
-            });
-            return acc;
-        },
-        { entitiesWithFiles: {}, texts: [] } as { entitiesWithFiles: Record<string, string[]>; texts: string[] },
-    );
-
-export const normalizeResponseTemplatesCount = (
-    result: QueryResult,
-): { templateId: string; count: number; entitiesWithFiles?: Record<string, string[]> }[] => {
-    // entitiesWithFiles: { entityId: minioFileId[] }
-    return result.records.map((record) => {
-        const formattedObject: { templateId: string; count: number; entitiesWithFiles?: Record<string, string[]>; texts?: string[] } = {
-            templateId: record.get('templateId'),
-            count: +record.get('count'),
-        };
-
-        if (record.has('entitiesWithFiles') && record.get('entitiesWithFiles')) {
-            const { entitiesWithFiles, texts } = formatEntitiesWithFiles(record.get('entitiesWithFiles'));
-            formattedObject.entitiesWithFiles = entitiesWithFiles;
-            formattedObject.texts = texts;
-        }
-
-        return formattedObject;
-    });
+export const normalizeResponseTemplatesCount = (result: QueryResult): { templateId: string; count: number }[] => {
+    return result.records.map((record) => ({
+        templateId: record.get('templateId'),
+        count: +record.get('count'),
+        entitiesWithFiles: (record.has('entitiesWithFiles') && record.get('entitiesWithFiles')) ?? undefined,
+    }));
 };
 
 export const normalizeRuleResult = (result: QueryResult) => {

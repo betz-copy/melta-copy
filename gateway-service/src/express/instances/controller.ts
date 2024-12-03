@@ -36,7 +36,7 @@ export class InstancesController extends DefaultController<InstancesManager> {
     }
 
     async searchEntitiesOfTemplate(req: Request, res: Response) {
-        res.json(await this.manager.searchEntitiesOfTemplate(req.body));
+        res.json(await this.manager.searchEntitiesOfTemplate(req.params.templateId, req.body));
     }
 
     async getEntitiesCountByTemplates(req: Request, res: Response) {
