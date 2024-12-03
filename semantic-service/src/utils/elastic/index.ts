@@ -11,12 +11,12 @@ const {
         url,
         vectorDims,
         similarityAlgorithm,
-        knnGroupSize,
         lexicalFuzziness,
         queryMinScore,
-        rrfWindowConstant,
-        rrfRankConstant,
-        rrfWindowFieldName,
+        // knnGroupSize,
+        // rrfWindowConstant,
+        // rrfRankConstant,
+        // rrfWindowFieldName,
         user,
         password,
         uniqueEntityForAggSize,
@@ -106,7 +106,7 @@ class ElasticClient {
         }, {} as ISemanticSearchResult);
     }
 
-    async hybridSearch(query: string, embeddedQuery: number[], limit: number, skip: number, templates: string[]) {
+    async hybridSearch(query: string, _embeddedQuery: number[], limit: number, skip: number, templates: string[]) {
         const filter = templates?.length > 0 ? [{ terms: { templateId: templates } }] : [];
 
         const indexName = `${index}-${this.workspaceId}`;
@@ -126,19 +126,19 @@ class ElasticClient {
                     filter,
                 },
             },
-            knn: {
-                field: 'embedding',
-                query_vector: embeddedQuery,
-                k: limit,
-                num_candidates: knnGroupSize,
-                filter,
-            },
-            rank: {
-                rrf: {
-                    [rrfWindowFieldName]: rrfWindowConstant,
-                    rank_constant: rrfRankConstant,
-                },
-            },
+            // knn: {
+            //     field: 'embedding',
+            //     query_vector: embeddedQuery,
+            //     k: limit,
+            //     num_candidates: knnGroupSize,
+            //     filter,
+            // },
+            // rank: {
+            //     rrf: {
+            //         [rrfWindowFieldName]: rrfWindowConstant,
+            //         rank_constant: rrfRankConstant,
+            //     },
+            // },
             min_score: queryMinScore,
             // Group by unique values
             aggs: {
@@ -165,8 +165,14 @@ class ElasticClient {
             },
         };
 
-        const response = await ElasticClient.client!.search<IElasticDoc, IGroupByUniquePropAggregate>(searchBody);
-        return this.formatElasticResponse(response);
+        try {
+            const response = await ElasticClient.client!.search<IElasticDoc, IGroupByUniquePropAggregate>(searchBody);
+            console.dir({ response }, { depth: null });
+            return this.formatElasticResponse(response);
+        } catch (e) {
+            console.dir({ e }, { depth: null });
+            return undefined;
+        }
     }
 
     async bulkIndexDocuments(documents: IElasticDoc[]) {

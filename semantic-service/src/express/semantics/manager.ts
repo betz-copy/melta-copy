@@ -1,5 +1,5 @@
 import config from '../../config';
-import { ModelEmbeddingApiService } from '../../externalServices/model/embedding';
+// import { ModelEmbeddingApiService } from '../../externalServices/model/embedding';
 import { ModelRerankingApiService } from '../../externalServices/model/reranking';
 import ElasticClient from '../../utils/elastic';
 import { splitTextIntoChunks } from '../../utils/fs';
@@ -28,9 +28,9 @@ export class SemanticManager {
     }
 
     public async search(searchBody: ISearchRequest) {
-        const embeddedQuery = await ModelEmbeddingApiService.embed([searchBody.textSearch]);
+        // const embeddedQuery = await ModelEmbeddingApiService.embed([searchBody.textSearch]);
 
-        return this.elasticClient.hybridSearch(searchBody.textSearch, embeddedQuery[0], searchBody.limit, searchBody.skip, searchBody.templates);
+        return this.elasticClient.hybridSearch(searchBody.textSearch, [], searchBody.limit, searchBody.skip, searchBody.templates);
     }
 
     public async rerank(searchBody: IRerankRequest) {

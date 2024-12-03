@@ -14,6 +14,7 @@ import {
     ICountSearchResult,
     IEntity,
     ISearchBatchBody,
+    ISearchEntitiesOfTemplateBody,
     ISearchFilter,
     ISearchSort,
     ITemplateSearchBody,
@@ -144,6 +145,23 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         });
 
         await Promise.all(tasks);
+    }
+
+    async searchEntitiesOfTemplate(templateId: string, searchBody: ISearchEntitiesOfTemplateBody) {
+        const { texts, ...body } = searchBody;
+        if (!texts?.length || body.sort?.length || !body.textSearch) {
+            return this.service.searchEntitiesOfTemplateRequest(templateId, body);
+        }
+
+        const searchResult = await this.service.searchEntitiesOfTemplateRequest(templateId, body);
+
+        const rerank = await this.semanticSearchSearch.rerank({ query: body.textSearch, texts });
+
+        if (!rerank?.length) {
+            return searchResult;
+        }
+
+        
     }
 
     private async createWorksheet(

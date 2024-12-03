@@ -127,6 +127,7 @@ export interface ICountSearchResult {
     templateId: string;
     count: number;
     entitiesWithFiles?: ISemanticSearchMinioResult[string];
+    texts?: string[];
 }
 
 export interface IExportEntitiesBody {

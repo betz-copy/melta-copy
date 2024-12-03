@@ -84,27 +84,35 @@ export const normalizeResponseCount = (result: QueryResult): number => {
     return result.records[0].get(0);
 };
 
-const formatEntitiesWithFiles = (entitiesWithFiles: ISemanticSearchResult[string]): Record<string, string[]> =>
-    Object.entries(entitiesWithFiles).reduce((acc, [entityId, entityData]) => {
-        entityData.forEach(({ minioFileId }) => {
-            if (!acc[entityId]) acc[entityId] = [];
-            acc[entityId].push(minioFileId);
-        });
-        return acc;
-    }, {});
+const formatEntitiesWithFiles = (
+    entitiesWithFiles: ISemanticSearchResult[string],
+): { entitiesWithFiles: Record<string, string[]>; texts: string[] } =>
+    Object.entries(entitiesWithFiles).reduce(
+        (acc, [entityId, entityData]) => {
+            entityData.forEach(({ minioFileId, text }) => {
+                if (!acc.entitiesWithFiles[entityId]) acc.entitiesWithFiles[entityId] = [];
+                acc.entitiesWithFiles[entityId].push(minioFileId);
+                acc.texts.push(text);
+            });
+            return acc;
+        },
+        { entitiesWithFiles: {}, texts: [] } as { entitiesWithFiles: Record<string, string[]>; texts: string[] },
+    );
 
 export const normalizeResponseTemplatesCount = (
     result: QueryResult,
 ): { templateId: string; count: number; entitiesWithFiles?: Record<string, string[]> }[] => {
     // entitiesWithFiles: { entityId: minioFileId[] }
     return result.records.map((record) => {
-        const formattedObject: { templateId: string; count: number; entitiesWithFiles?: Record<string, string[]> } = {
+        const formattedObject: { templateId: string; count: number; entitiesWithFiles?: Record<string, string[]>; texts?: string[] } = {
             templateId: record.get('templateId'),
             count: +record.get('count'),
         };
 
         if (record.has('entitiesWithFiles') && record.get('entitiesWithFiles')) {
-            formattedObject.entitiesWithFiles = formatEntitiesWithFiles(record.get('entitiesWithFiles') as ISemanticSearchResult[string]);
+            const { entitiesWithFiles, texts } = formatEntitiesWithFiles(record.get('entitiesWithFiles'));
+            formattedObject.entitiesWithFiles = entitiesWithFiles;
+            formattedObject.texts = texts;
         }
 
         return formattedObject;
