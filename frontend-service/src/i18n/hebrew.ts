@@ -62,6 +62,7 @@ export default {
         failedToLoadData: 'נכשל לטעון מידע',
         columns: 'עמודות',
         semanticSearch: 'נמצא באמצעות AI',
+        archiveTitle: '(ארכיון)',
     },
     noSearchResults: 'לא נמצאו תוצאות. חפש שנית',
     noSearchLeft: 'אין עוד תוצאות',

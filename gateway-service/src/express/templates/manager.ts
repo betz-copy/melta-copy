@@ -14,6 +14,7 @@ import { StorageService } from '../../externalServices/storageService';
 import {
     EntityTemplateService,
     ICategory,
+    IEntitySingleProperty,
     IEntityTemplate,
     IEntityTemplatePopulated,
     IMongoEntityTemplatePopulated,
@@ -717,6 +718,9 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
         if (currTemplate.disabled === true) throw new BadRequestError('can not update disabled template');
 
+        if (!this.checkValidAmountOfArchiveProperties(updatedTemplateData.properties.properties))
+            throw new BadRequestError('can not archive all properties');
+
         const removeRequiredProperties = populatedCurrTemplate.properties.required.filter(
             (property) => !updatedTemplateData.properties.required.includes(property),
         );
@@ -789,6 +793,12 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         });
 
         return this.populateTemplateConstraints(updatedTemplate, requiredConstraints, uniqueConstraints);
+    }
+
+    private checkValidAmountOfArchiveProperties(updatedTemplateProperties: Record<string, IEntitySingleProperty>) {
+        const archivePropertiesNumber = Object.values(updatedTemplateProperties).reduce((count, { archive }) => (archive ? count + 1 : count), 0);
+
+        return archivePropertiesNumber < Object.values(updatedTemplateProperties).length;
     }
 
     updateEntityTemplateStatus(id: string, disabledStatus: boolean) {
