@@ -42,6 +42,13 @@ class EntityTemplateController extends DefaultController<IMongoEntityTemplate, E
         res.json(await this.manager.updateEntityTemplateStatus(id, req.body.disabled));
     }
 
+    async convertToRelationshipField(req: Request, res: Response) {
+        const { templateId, relationshipTemplateId } = req.params;
+        console.log('0', req.params, req.body);
+
+        res.json(await this.manager.convertToRelationshipField(templateId,relationshipTemplateId, req.body));
+    }
+    
     async updateEntityTemplateAction(req: Request, res: Response) {
         const { templateId: id } = req.params;
         const actionToUpsert = fetchPropertyFromRequest<string>(req, 'actions');

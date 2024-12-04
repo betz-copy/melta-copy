@@ -14,12 +14,11 @@ const validateRequiredConstraints = (requiredConstraints: IConstraintsOfTemplate
     }
 };
 
-const validateUniqueRelationships = (existingRelationships: IRelationship[], addToSrcEntity: boolean) => {
+const validateUniqueRelationships = (existingRelationships: IRelationship[], addFieldToSrcEntity: boolean) => {
     const relationshipsEntityIdsMap = new Set<string>();
-    console.log({ existingRelationships, addToSrcEntity });
 
     existingRelationships.forEach((relationship) => {
-        const entityId = addToSrcEntity ? relationship.sourceEntityId : relationship.destinationEntityId;
+        const entityId = addFieldToSrcEntity ? relationship.sourceEntityId : relationship.destinationEntityId;
         if (relationshipsEntityIdsMap.has(entityId)) {
             throw new BadRequestError('Some entities have more than one relationship', {
                 errorCode: moreThenOneRelationshipInstanceExist,
@@ -27,7 +26,6 @@ const validateUniqueRelationships = (existingRelationships: IRelationship[], add
         }
         relationshipsEntityIdsMap.add(entityId);
     });
-    console.log({ relationshipsEntityIdsMap });
 };
 
 const validateNoDependentRules = (rules: IMongoRule[]) => {

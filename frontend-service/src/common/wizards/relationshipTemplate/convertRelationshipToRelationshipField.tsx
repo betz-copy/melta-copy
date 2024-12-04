@@ -6,7 +6,7 @@ import i18next from 'i18next';
 import { useQueryClient } from 'react-query';
 import { variableNameValidation } from '../../../utils/validation';
 import { BlueTitle } from '../../BlueTitle';
-import { IEntitySingleProperty, IEntityTemplateMap } from '../../../interfaces/entityTemplates';
+import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IMongoRelationshipTemplate } from '../../../interfaces/relationshipTemplates';
 import { IRelationshipReference } from '../entityTemplate/commonInterfaces';
 import RelationshipReferenceField from '../entityTemplate/RelationshipReferenceField';
@@ -23,16 +23,14 @@ const ConvertToRelationship: React.FC<IConvertToRelationship> = ({ open, handleC
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
 
-    const destEntity = entityTemplates.get(relationshipTemplate?.destinationEntityId!);
-    const srcEntity = entityTemplates.get(relationshipTemplate?.sourceEntityId!);
+    const destEntity: IMongoEntityTemplatePopulated = entityTemplates.get(relationshipTemplate?.destinationEntityId!)!;
+    const srcEntity: IMongoEntityTemplatePopulated = entityTemplates.get(relationshipTemplate?.sourceEntityId!)!;
     const [relatedTemplateId, setRelatedTemplateId] = useState<string>('');
     const newSourceEntity = relatedTemplateId === destEntity?._id ? srcEntity : destEntity;
-    const fieldNamesExsiting = newSourceEntity?.propertiesOrder;
-    const displayFieldNamesExsiting = Object.values(newSourceEntity?.properties.properties || {}).map(
+    const fieldNamesExisting = newSourceEntity?.propertiesOrder;
+    const displayFieldNamesExisting = Object.values(newSourceEntity?.properties.properties || {}).map(
         (property: IEntitySingleProperty) => property?.title,
     );
-
-    console.log({ relatedTemplateId }, { fieldsNameExsiting: fieldNamesExsiting }, fieldNamesExsiting?.includes('lastName'));
 
     const formik = useFormik({
         initialValues: {
@@ -49,12 +47,12 @@ const ConvertToRelationship: React.FC<IConvertToRelationship> = ({ open, handleC
                 .matches(variableNameValidation, i18next.t('validation.variableName'))
                 .required(i18next.t('validation.required'))
                 .test('unique-name', i18next.t('validation.existingName'), (value) => {
-                    return !fieldNamesExsiting?.includes(value || '');
+                    return !fieldNamesExisting?.includes(value || '');
                 }),
             displayFieldName: Yup.string()
                 .required(i18next.t('validation.required'))
                 .test('unique-name', i18next.t('validation.existingDisplayName'), (value) => {
-                    return !displayFieldNamesExsiting?.includes(value || '');
+                    return !displayFieldNamesExisting?.includes(value || '');
                 }),
         }),
         onSubmit: (values) => {

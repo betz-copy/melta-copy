@@ -203,7 +203,7 @@ const RelationshipTemplatesRow: React.FC = () => {
         },
     });
 
-    const { mutateAsync: convertRelationshipToRelationShipFieldRequest } = useMutation(
+    const { isLoading: convertToRelationshipFieldLoading, mutateAsync: convertRelationshipToRelationShipFieldRequest } = useMutation(
         ({
             id,
             fieldName,
@@ -222,8 +222,6 @@ const RelationshipTemplatesRow: React.FC = () => {
             }),
         {
             onSuccess: ({ updatedRelationShipTemplate, updatedEntityTemplate }, { id }) => {
-                console.log({ updatedRelationShipTemplate });
-
                 queryClient.setQueryData<IRelationshipTemplateMap>('getRelationshipTemplates', (relationshipTemplateMap) =>
                     relationshipTemplateMap!.set(id, updatedRelationShipTemplate),
                 );
@@ -470,7 +468,7 @@ const RelationshipTemplatesRow: React.FC = () => {
                         relationshipReference,
                     })
                 }
-                isLoading={isLoading}
+                isLoading={convertToRelationshipFieldLoading}
                 relationshipTemplate={convertToRelationshipFieldDialogState.relationshipTemplate}
             />
         </Grid>

@@ -186,10 +186,6 @@ export const convertToRelationshipFieldRequestSchema = Joi.object({
         fieldName: Joi.string().required(),
         displayFieldName: Joi.string().required(),
         relationshipReference: Joi.object().required(),
-        // relatedTemplateField: Joi.string().required(),
-        // relationshipTemplateDirection: Joi.string().valid('outgoing', 'incoming').required(),
-        // sourceEntityId: MongoIdSchema.required(),
-        // destinationEntityId: MongoIdSchema.required(),
     },
     query: {},
     params: {

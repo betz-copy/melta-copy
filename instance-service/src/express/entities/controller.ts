@@ -78,6 +78,11 @@ class EntityController extends DefaultController<EntityManager> {
         );
     }
 
+    async convertToRelationshipField(req: Request, res: Response) {
+        const { existingRelationships, addFieldToSrcEntity, fieldName, userId } = req.body;
+        res.json(await this.manager.convertToRelationshipField(existingRelationships, addFieldToSrcEntity, fieldName, userId));
+    }
+
     async updateEnumFieldValue(req: Request, res: Response) {
         const { newValue, oldValue, field } = req.body;
         res.json(await this.manager.updateEnumFieldValue(req.params.id, newValue, oldValue, field));

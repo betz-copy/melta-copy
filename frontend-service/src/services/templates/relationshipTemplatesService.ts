@@ -55,9 +55,6 @@ const convertToRelationshipFieldRequest = async (relationshipTemplateId: string,
         updatedRelationShipTemplate: IMongoRelationshipTemplate;
         updatedEntityTemplate: IMongoEntityTemplatePopulated;
     }>(`${relationshipTemplates}/convertToRelationshipField/${relationshipTemplateId}`, updatedData);
-
-    console.log({ data });
-
     return data;
 };
 

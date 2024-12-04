@@ -23,6 +23,7 @@ import {
     updateEnumFieldRequestSchema,
     deletePropertiesOfTemplateRequestSchema,
     getDependentRulesRequestSchema,
+    convertToRelationshipFieldRequestSchema,
 } from './validator.schema';
 import { EntityValidator } from './validator.template';
 
@@ -87,6 +88,11 @@ entityRouter.put(
     ValidateRequest(updateEntityByIdRequestSchema),
     entityValidatorController.validateEntityRequest,
     entityController.updateEntityById,
+);
+entityRouter.patch(
+    '/convertToRelationshipField',
+    ValidateRequest(convertToRelationshipFieldRequestSchema),
+    entityController.convertToRelationshipField,
 );
 entityRouter.patch('/:id/status', ValidateRequest(updateEntityStatusByIdRequestSchema), entityController.updateStatusById);
 entityRouter.patch(

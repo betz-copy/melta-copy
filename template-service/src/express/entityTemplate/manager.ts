@@ -41,6 +41,8 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
     }
 
     getTemplateById(id: string): Promise<IEntityTemplatePopulated> {
+        console.log('a');
+
         return this.model
             .findById(id)
             .populate<Pick<IEntityTemplatePopulated, 'category'>>('category')
@@ -173,43 +175,53 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
             .exec();
     }
 
-    async updateEntityTemplate(id: string, updatedTemplateData: Omit<IEntityTemplate, 'disabled'>) {
+    async updateEntityTemplateInTransaction(
+        id: string,
+        currentEntityTemplate: IEntityTemplatePopulated,
+        updatedTemplateData: Omit<IEntityTemplate, 'disabled'>,
+        session?: ClientSession,
+    ) {
+        let entityTemplateToUpdate = { ...currentEntityTemplate, ...updatedTemplateData };
+
+        if (this.hasRelationshipsProperties(entityTemplateToUpdate)) {
+            entityTemplateToUpdate = await this.upsertRelationshipsProperties(entityTemplateToUpdate, session, true);
+        }
+
+        const updatedEntityTemplate = await this.model
+            .findByIdAndUpdate(id, entityTemplateToUpdate, {
+                new: true,
+                overwrite: true,
+                session,
+            })
+            .populate('category')
+            .orFail(new NotFoundError('Entity Template not found'))
+            .lean()
+            .exec();
+
+        const relationshipTemplateIdsToDelete = Object.values(currentEntityTemplate.properties.properties)
+            .filter(
+                (property) =>
+                    property.relationshipReference?.relationshipTemplateId &&
+                    Object.values(entityTemplateToUpdate.properties.properties).every(
+                        (updatedProperty) =>
+                            updatedProperty.relationshipReference?.relationshipTemplateId !== property.relationshipReference!.relationshipTemplateId!,
+                    ),
+            )
+            .map((property) => property.relationshipReference!.relationshipTemplateId!);
+
+        await this.relationshipTemplateManager.deleteManyTemplatesByIds(relationshipTemplateIdsToDelete, session);
+
+        return updatedEntityTemplate;
+    }
+
+    async updateEntityTemplate(id: string, updatedTemplateData: Omit<IEntityTemplate, 'disabled'>, session?: ClientSession) {
         const currentEntityTemplate = await this.getTemplateById(id);
 
-        const newEntityTemplate = await withTransaction(async (session: ClientSession) => {
-            let entityTemplateToUpdate = { ...currentEntityTemplate, ...updatedTemplateData };
-
-            if (this.hasRelationshipsProperties(entityTemplateToUpdate)) {
-                entityTemplateToUpdate = await this.upsertRelationshipsProperties(entityTemplateToUpdate, session, true);
-            }
-
-            const updatedEntityTemplate = await this.model
-                .findByIdAndUpdate(id, entityTemplateToUpdate, {
-                    new: true,
-                    overwrite: true,
-                    session,
-                })
-                .populate('category')
-                .orFail(new NotFoundError('Entity Template not found'))
-                .lean()
-                .exec();
-
-            const relationshipTemplateIdsToDelete = Object.values(currentEntityTemplate.properties.properties)
-                .filter(
-                    (property) =>
-                        property.relationshipReference?.relationshipTemplateId &&
-                        Object.values(entityTemplateToUpdate.properties.properties).every(
-                            (updatedProperty) =>
-                                updatedProperty.relationshipReference?.relationshipTemplateId !==
-                                property.relationshipReference!.relationshipTemplateId!,
-                        ),
-                )
-                .map((property) => property.relationshipReference!.relationshipTemplateId!);
-
-            await this.relationshipTemplateManager.deleteManyTemplatesByIds(relationshipTemplateIdsToDelete, session);
-
-            return updatedEntityTemplate;
-        });
+        const newEntityTemplate = session
+            ? await this.updateEntityTemplateInTransaction(id, currentEntityTemplate, updatedTemplateData, session)
+            : await withTransaction(async (newSession: ClientSession) =>
+                  this.updateEntityTemplateInTransaction(id, currentEntityTemplate, updatedTemplateData, newSession),
+              );
 
         const propertyTypeWithToString = ['number', 'boolean', 'date', 'date-time'];
         const isPropertyWithToString = (property: IEntitySingleProperty) => {
@@ -217,7 +229,7 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
         };
 
         const isPropertyTypeChanged = Object.entries(currentEntityTemplate.properties.properties).some(([key, value]) => {
-            const newProperty = newEntityTemplate.properties.properties[key];
+            const newProperty = newEntityTemplate?.properties.properties[key];
 
             if (!newProperty) return true; // if property deleted
 
@@ -228,7 +240,7 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
         });
 
         const isNewPropertyAdded =
-            Object.keys(currentEntityTemplate.properties.properties).length !== Object.keys(newEntityTemplate.properties.properties).length;
+            Object.keys(currentEntityTemplate.properties.properties).length !== Object.keys(newEntityTemplate?.properties.properties).length;
 
         if (isPropertyTypeChanged || isNewPropertyAdded) {
             await this.globalSearchIndexCreator.sendUpdateIndexesOnUpdateTemplate(id);
@@ -251,6 +263,26 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
             .orFail(new NotFoundError('Entity Template not found'))
             .lean()
             .exec();
+    }
+
+    async convertToRelationshipField(templateId: string, relationshipTemplateId: string, updatedEntityTemplateData) {
+        console.log('1');
+
+        return withTransaction(async (session: ClientSession) => {
+            console.log('2', { templateId }, [updatedEntityTemplateData]);
+
+            const updatedRelationShipTemplate = await this.relationshipTemplateManager.updateTemplateById(
+                relationshipTemplateId,
+                { isProperty: true },
+                session,
+            );
+            console.log({ updatedRelationShipTemplate });
+
+            const updatedEntityTemplate = await this.updateEntityTemplate(templateId, updatedEntityTemplateData, session);
+
+            console.log({ updatedEntityTemplate });
+            return { updatedRelationShipTemplate, updatedEntityTemplate };
+        });
     }
 
     async updateEntityTemplateAction(id: string, actions: string) {

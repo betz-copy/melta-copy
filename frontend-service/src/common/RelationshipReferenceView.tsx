@@ -58,7 +58,6 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({ e
             </Grid>
         );
     }
-    console.log('im hereeee', { entity });
 
     return (
         <MeltaTooltip

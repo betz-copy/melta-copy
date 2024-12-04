@@ -148,8 +148,6 @@ const TemplateEntitiesAutocomplete: React.FC<{
             renderOption={(props, option) => {
                 const displayOptionValues = displayKeys.map((key) => {
                     const property = option.properties[key];
-                    console.log({ property });
-
                     const templateProperty = template.properties.properties[key];
 
                     return typeof property === 'object' ? (

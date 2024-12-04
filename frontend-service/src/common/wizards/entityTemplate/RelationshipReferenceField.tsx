@@ -7,14 +7,14 @@ import { CommonFormInputProperties, IRelationshipReference } from './commonInter
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 
 export interface FieldEditCardProps {
-    value: CommonFormInputProperties;
+    value: CommonFormInputProperties | any;
     index: number;
-    touched?: FormikTouched<CommonFormInputProperties>;
-    errors?: FormikErrors<CommonFormInputProperties>;
+    touched?: FormikTouched<CommonFormInputProperties> | any;
+    errors?: FormikErrors<CommonFormInputProperties> | any;
     setFieldValue: (field: keyof CommonFormInputProperties, value: any) => void;
     isDisabled?: boolean;
     convertToRelationshipField?: {
-        options: (IMongoEntityTemplatePopulated | undefined)[];
+        options: IMongoEntityTemplatePopulated[];
         originSourceEntityId: string;
         setRelatedTemplateId: (id: string) => void;
     };
@@ -63,8 +63,7 @@ const RelationshipReferenceField: React.FC<FieldEditCardProps> = ({
                 id={relatedTemplateId}
                 options={activeEntityTemplatesFiltered}
                 onChange={(_e, relatedTemplateIdValue) => {
-                    const isOriginSrcEntity = relatedTemplateIdValue?._id === convertToRelationshipField?.originSourceEntityId; // Check the condition
-
+                    const isOriginSrcEntity = relatedTemplateIdValue?._id === convertToRelationshipField?.originSourceEntityId;
                     const newValue = {
                         ...value.relationshipReference,
                         relatedTemplateId: relatedTemplateIdValue?._id || '',

@@ -277,6 +277,27 @@ export const updateEntityByIdRequestSchema = Joi.object({
     },
 });
 
+const relationshipsSchema = Joi.object({
+    templateId: Joi.string(),
+    properties: Joi.object(),
+    sourceEntityId: Joi.string(),
+    destinationEntityId: Joi.string(),
+});
+
+/**
+ * PATCH /api/instances/entities/convertToRelationshipField
+ */
+export const convertToRelationshipFieldRequestSchema = Joi.object({
+    body: {
+        existingRelationships: Joi.array().items(relationshipsSchema).required(),
+        addFieldToSrcEntity: Joi.boolean().required(),
+        fieldName: Joi.string().required(),
+        userId: Joi.string().required(),
+    },
+    query: {},
+    params: {},
+});
+
 export const getConstraintsOfTemplateRequestSchema = Joi.object({
     body: {},
     query: {},

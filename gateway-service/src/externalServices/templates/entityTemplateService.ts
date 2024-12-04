@@ -1,6 +1,7 @@
 import { TemplatesManagerService } from '.';
 import config from '../../config';
 import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
+import { IMongoRelationshipTemplate } from './relationshipsTemplateService';
 
 const {
     templateService: {
@@ -159,6 +160,16 @@ export class EntityTemplateService extends TemplatesManagerService {
 
     async updateEntityTemplate(entityTemplateId: string, updatedEntityTemplate: Omit<IEntityTemplate, 'disabled'>) {
         const { data } = await this.api.put<IMongoEntityTemplatePopulated>(`${baseEntitiesRoute}/${entityTemplateId}`, updatedEntityTemplate);
+
+        return data;
+    }
+
+    async convertToRelationshipField(entityTemplateId: string, relationshipTemplateId: string, updatedData) {
+        const { data } = await this.api.put<{
+            updatedRelationShipTemplate: IMongoRelationshipTemplate;
+            updatedEntityTemplate: IMongoEntityTemplatePopulated;
+        }>(`${baseEntitiesRoute}/convertToRelationshipField/${entityTemplateId}/${relationshipTemplateId}`, updatedData);
+        console.log({ data });
 
         return data;
     }

@@ -68,6 +68,17 @@ export class InstancesService extends DefaultExternalServiceApi {
             userId,
             convertToRelationshipField,
         });
+
+        return data;
+    }
+
+    async convertToRelationshipField(existingRelationships: IRelationship[], addFieldToSrcEntity: boolean, fieldName: string, userId: string) {
+        const { data } = await this.api.patch<{}>(`${baseEntitiesRoute}/convertToRelationshipField/`, {
+            existingRelationships,
+            addFieldToSrcEntity,
+            fieldName,
+            userId,
+        });
         console.log({ data });
 
         return data;

@@ -13,10 +13,6 @@ export interface IConvertToRelationshipField {
     fieldName: string;
     displayFieldName: string;
     relationshipReference: IRelationshipReference;
-    // relatedTemplateField: string;
-    // relationshipTemplateDirection: 'outgoing' | 'incoming';
-    // sourceEntityId: string;
-    // destinationEntityId: string;
 }
 
 export interface IMongoRelationshipTemplate extends IRelationshipTemplate {

@@ -18,7 +18,11 @@ export interface IRelationshipTemplate {
     destinationEntityId: string;
     isProperty: boolean;
 }
-
+export interface IMongoRelationshipTemplate extends IRelationshipTemplate {
+    _id: string;
+    createdAt: string;
+    updatedAt: string;
+}
 export interface ISearchRelationshipTemplatesBody extends ISearchBody {
     ids?: string[];
     sourceEntityIds?: string[];

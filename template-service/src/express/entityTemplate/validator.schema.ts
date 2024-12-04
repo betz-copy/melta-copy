@@ -93,6 +93,28 @@ export const updateEntityTemplateStatusSchema = Joi.object({
     },
 });
 
+// PUT /api/entities/templates/convertToRelationshipField/:templateId/:relationshipTemplateId
+export const convertToRelationshipFieldRequestSchema = Joi.object({
+    body: Joi.object({
+        name: variableNameValidation.required(),
+        displayName: Joi.string().required(),
+        category: Joi.string().required(),
+        properties: innerPropertiesSchema.required(),
+        iconFileId: Joi.string().allow(null),
+        propertiesOrder: orderPropertiesSchema.required(),
+        propertiesTypeOrder: orderPropertiesTypeSchema.required(),
+        propertiesPreview: previewPropertiesSchema.required(),
+        enumPropertiesColors: enumPropertiesColorsSchema,
+        documentTemplatesIds: Joi.array().items(Joi.string()),
+        actions: Joi.string(),
+    }).min(1),
+    query: {},
+    params: {
+        templateId: MongoIdSchema.required(),
+        relationshipTemplateId: MongoIdSchema.required(),
+    },
+});
+
 // PATCH /api/entities/templates/:templateId/actions
 export const updateEntityTemplateActionSchema = Joi.object({
     body: {
