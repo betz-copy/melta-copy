@@ -3,7 +3,7 @@ import { INotificationMetadata, NotificationType } from '@microservices/shared';
 import config from '../config';
 import { MailManager } from './mailNotifications';
 import { IMailNotificationMetadataPopulated } from './mailNotifications/interfaces';
-import logger from './logger/logsLogger';
+import { logger } from '@microservices/shared';
 
 const {
     rabbit,

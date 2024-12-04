@@ -4,7 +4,7 @@ import { basicValidateRequest } from '../utils/joi';
 import { Action, IUpdateIndexRequest } from './interfaces';
 import Manager from './manager';
 import { requestSchema } from './validator.schema';
-import logger from '../utils/logger/logsLogger';
+import { logger } from '@microservices/shared';
 import { ServiceError } from '../error';
 import config from '../config';
 

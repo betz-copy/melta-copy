@@ -13,7 +13,7 @@ import { removeTmpFile } from '../../../utils/fs';
 import { InstancesManager } from '../../instances/manager';
 import { UsersManager } from '../../users/manager';
 import ProcessesInstancesManager from '../processInstances/manager';
-import logger from '../../../utils/logger/logsLogger';
+import { logger } from '@microservices/shared';
 
 export default class StepsInstancesManager extends DefaultManagerProxy<ProcessService> {
     private storageService: StorageService;

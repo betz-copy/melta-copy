@@ -4,7 +4,7 @@ import pdf from 'pdf-parse';
 import * as mammoth from 'mammoth';
 import config from '../../config';
 import { streamToBuffer } from '../fs';
-import logger from '../logger/logsLogger';
+import { logger } from '@microservices/shared';
 
 const { url: endPoint, port, accessKey, secretKey, useSSL, transportAgent } = config.minio;
 

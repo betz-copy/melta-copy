@@ -3,7 +3,7 @@ import { PermissionScope, ICompactPermissions, ISubCompactPermissions } from '@m
 import { config } from './config';
 import { IPermissionsOfUser } from './old_interfaces';
 import { createNewUser, getOldPermissionsOfUsers } from './requests';
-import logger from '../utils/logger/logsLogger';
+import { logger } from '@microservices/shared';
 
 const oldPermissionsToNewPermissions = (
     oldPermissions: IPermissionsOfUser[],

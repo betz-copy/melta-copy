@@ -3,7 +3,7 @@ import * as express from 'express';
 import { StatusCodes } from 'http-status-codes';
 import axios from 'axios';
 import { NotificationType } from '@microservices/shared';
-import logger from '../utils/logger/logsLogger';
+import { logger } from '@microservices/shared';
 
 export class ServiceError extends Error {
     public code: number;

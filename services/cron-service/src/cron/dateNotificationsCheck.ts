@@ -14,7 +14,7 @@ import { InstancesService } from '../services/instance';
 import { EntityTemplateService } from '../services/entityTemplate';
 import { WorkspaceManager } from '../workspaces/manager';
 import { RabbitManager } from '../utils/rabbit/rabbit';
-import logger from '../utils/logger/logsLogger';
+import { logger } from '@microservices/shared';
 
 const { notifications } = config;
 

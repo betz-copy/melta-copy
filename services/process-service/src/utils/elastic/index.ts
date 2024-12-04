@@ -1,7 +1,7 @@
 import { Client } from '@elastic/elasticsearch';
 import type { DeleteRequest, ExistsRequest, IndexRequest, SearchRequest, UpdateRequest } from '@elastic/elasticsearch/lib/api/types';
 import config from '../../config';
-import logger from '../logger/logsLogger';
+import { logger } from '@microservices/shared';
 
 class ElasticClient {
     static client: Client | null;

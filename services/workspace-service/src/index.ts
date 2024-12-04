@@ -5,7 +5,7 @@ import { WorkspaceTypes } from '@microservices/shared';
 import { config } from './config';
 import { Server } from './express/server';
 import { WorkspacesModel } from './express/workspaces/model';
-import logger from './utils/logger/logsLogger';
+import { logger } from '@microservices/shared';
 
 const { mongo, service } = config;
 

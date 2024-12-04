@@ -4,7 +4,7 @@ import { IEntityTemplate, IMongoEntityTemplate } from '@microservices/shared';
 import config from '../config';
 import { TemplateManagerService } from '../externalServices/entityTemplateManager';
 import DefaultManagerNeo4j from '../utils/neo4j/manager';
-import logger from '../utils/logger/logsLogger';
+import { logger } from '@microservices/shared';
 
 const {
     neo4j: {

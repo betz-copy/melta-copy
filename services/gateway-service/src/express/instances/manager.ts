@@ -35,7 +35,7 @@ import { EntityTemplateService } from '../../externalServices/templates/entityTe
 import { trycatch } from '../../utils';
 import { createWorksheet, createWorkbook, styleAWorksheet } from '../../utils/excel/excelFunctions';
 import DefaultManagerProxy from '../../utils/express/manager';
-import logger from '../../utils/logger/logsLogger';
+import { logger } from '@microservices/shared';
 import { objectFilter } from '../../utils/object';
 import { BadRequestError } from '../error';
 import RuleBreachesManager from '../ruleBreaches/manager';

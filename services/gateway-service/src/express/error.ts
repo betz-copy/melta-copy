@@ -3,7 +3,7 @@ import express from 'express';
 import { StatusCodes } from 'http-status-codes';
 import { PermissionScope } from '@microservices/shared';
 
-import logger from '../utils/logger/logsLogger';
+import { logger } from '@microservices/shared';
 
 export class ServiceError extends Error {
     public code: number;

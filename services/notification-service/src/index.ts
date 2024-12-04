@@ -4,7 +4,7 @@ import * as mongoose from 'mongoose';
 import config from './config';
 import Server from './express/server';
 import NotificationsConsumer from './rabbit/consumer';
-import logger from './utils/logger/logsLogger';
+import { logger } from '@microservices/shared';
 
 const { mongo, rabbit, service } = config;
 

@@ -2,7 +2,7 @@ import 'elastic-apm-node/start';
 import menash from 'menashmq';
 import { config } from './config';
 import { Server } from './express/server';
-import logger from './utils/logger/logsLogger';
+import { logger } from '@microservices/shared';
 import { declareTopology } from './utils/rabbit';
 
 const { rabbit } = config;

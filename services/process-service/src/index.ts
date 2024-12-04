@@ -3,7 +3,7 @@ import * as mongoose from 'mongoose';
 import config from './config';
 import Server from './express/server';
 import ElasticClient from './utils/elastic';
-import logger from './utils/logger/logsLogger';
+import { logger } from '@microservices/shared';
 
 const { mongo, service } = config;
 

@@ -1,7 +1,7 @@
 import fs from 'fs';
 import { once } from 'events';
 import { trycatch } from '.';
-import logger from './logger/logsLogger';
+import { logger } from '@microservices/shared';
 
 type BufferEncoding = 'ascii' | 'utf8' | 'utf-8' | 'utf16le' | 'ucs2' | 'ucs-2' | 'base64' | 'latin1' | 'binary' | 'hex';
 

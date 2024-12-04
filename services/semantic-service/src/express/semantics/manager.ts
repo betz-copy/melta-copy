@@ -2,7 +2,7 @@ import config from '../../config';
 import { ModelApiService } from '../../externalServices/modelApi';
 import ElasticClient from '../../utils/elastic';
 import { splitTextIntoChunks } from '../../utils/fs';
-import logger from '../../utils/logger/logsLogger';
+import { logger } from '@microservices/shared';
 import { MinIOClient } from '../../utils/minio/minioClient';
 import { IIndexFilesRequest, ISearchRequest } from './interface';
 

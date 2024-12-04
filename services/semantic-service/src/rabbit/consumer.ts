@@ -1,7 +1,7 @@
 import { ConsumerMessage } from 'menashmq';
 import { basicValidateRequest } from '../utils/joi';
 import { semanticIndexFilesSchema } from '../utils/joi/schemas/semantic';
-import logger from '../utils/logger/logsLogger';
+import { logger } from '@microservices/shared';
 import config from '../config';
 import { SemanticManager } from '../express/semantics/manager';
 import { IIndexFilesRequest } from '../express/semantics/interface';

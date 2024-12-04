@@ -2,7 +2,7 @@ import 'elastic-apm-node/start';
 import * as mongoose from 'mongoose';
 import Server from './express/server';
 import config from './config';
-import logger from './utils/logger/logsLogger';
+import { logger } from '@microservices/shared';
 
 const { mongo, service } = config;
 
