@@ -47,7 +47,7 @@ import { IExportEntitiesBody } from './interfaces';
 import { RabbitManager } from '../../utils/rabbit';
 import { SemanticSearchService } from '../../externalServices/semanticSearch';
 import { WorkspaceService } from '../workspaces/service';
-import { createTextsFromEntitiesWithFiles, formatEntitiesBulkSearch, pushToTextsForReranking, sortEntities } from '../../utils/semantic';
+import { createTextsFromEntitiesWithFiles, formatEntitiesBulkSearch, sortEntities } from '../../utils/semantic';
 import { ISemanticSearchResult } from '../../externalServices/semanticSearch/interface';
 
 const { errorCodes, rabbit, ruleBreachService } = config;
