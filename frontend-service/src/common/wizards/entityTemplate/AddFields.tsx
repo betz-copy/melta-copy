@@ -69,6 +69,9 @@ const addFieldsSchema = Yup.object({
         .min(1, i18next.t('validation.oneField'))
         .test(i18next.t('validation.oneField'), i18next.t('validation.oneField'), (value) =>
             value ? value.some((obj) => !('deleted' in obj) || obj.deleted === false) : false,
+        )
+        .test(i18next.t('validation.oneField'), i18next.t('validation.oneField'), (value) =>
+            value ? value.some((obj) => !('archive' in obj) || obj.archive === false || obj.archive === undefined) : false,
         ),
     attachmentProperties: Yup.array().of(
         attachmentPropertiesBaseSchema.shape({
