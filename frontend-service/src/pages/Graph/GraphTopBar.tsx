@@ -4,6 +4,7 @@ import { useTheme } from '@mui/material/styles';
 import i18next from 'i18next';
 import React from 'react';
 import { useQuery, useQueryClient } from 'react-query';
+import { useMatomo } from '@datapunt/matomo-tracker-react';
 import { CopyUrlButton } from '../../common/CopyUrlButton';
 import IconButtonWithPopover from '../../common/IconButtonWithPopover';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
@@ -23,6 +24,7 @@ const GraphTopBar: React.FC<GraphTopBarProps> = ({ onReset, set3DView, is3DView,
     const queryClient = useQueryClient();
 
     const theme = useTheme();
+    const { trackEvent } = useMatomo();
 
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
@@ -70,7 +72,18 @@ const GraphTopBar: React.FC<GraphTopBarProps> = ({ onReset, set3DView, is3DView,
                 <Grid container alignItems="center" spacing={0.8} wrap="nowrap">
                     <Grid item>
                         <ToggleButtonGroup value={is3DView ? '3D' : '2D'} size="small" sx={{ height: '2rem', marginX: '0.2rem' }}>
-                            <ToggleButton value="3D" onClick={() => set3DView(true)} sx={{ borderRadius: 4 }}>
+                            <ToggleButton
+                                value="3D"
+                                onClick={() => {
+                                    set3DView(true);
+
+                                    trackEvent({
+                                        category: '3D mode',
+                                        action: 'click',
+                                    });
+                                }}
+                                sx={{ borderRadius: 4 }}
+                            >
                                 <Typography color="primary" fontWeight="bold">
                                     3D
                                 </Typography>

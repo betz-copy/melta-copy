@@ -3,6 +3,7 @@ import { Grid } from '@mui/material';
 import i18next from 'i18next';
 import React, { memo } from 'react';
 import { Link } from 'wouter';
+import { useMatomo } from '@datapunt/matomo-tracker-react';
 import { IButtonProps } from '.';
 import { IEntity } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
@@ -205,13 +206,22 @@ export const getColumnDefs = <Data extends any = IEntity>({
             cellRenderer: memo<{ data: Data }>(({ data }) => {
                 const entity = getEntityPropertiesData(data);
                 const { disabled: disabledEntity } = entity;
+                const { trackEvent, trackPageView } = useMatomo();
+
                 return (
                     <Grid flexWrap="nowrap">
                         {onNavigateToRow && (
                             <Link
                                 href={`/entity/${getEntityPropertiesData(data)._id}`}
                                 onClick={(e) => {
-                                    if (!hasPermissionToCategory) e.preventDefault();
+                                    if (!hasPermissionToCategory) {
+                                        e.preventDefault();
+                                    } else {
+                                        trackPageView({
+                                            documentTitle: `Entity page - ${getEntityPropertiesData(data)._id}`,
+                                            href: `/504/operational.mlt/entity/${getEntityPropertiesData(data)._id}`,
+                                        });
+                                    }
                                 }}
                                 data-tour="entity-page"
                             >
@@ -242,7 +252,16 @@ export const getColumnDefs = <Data extends any = IEntity>({
                             <IconButtonWithPopover
                                 popoverText={disabledEntity ? i18next.t('entityPage.disabledEntity') : editRowButtonProps.popoverText}
                                 iconButtonProps={{
-                                    onClick: () => editRowButtonProps.onClick(data),
+                                    onClick: () => {
+                                        if (!editRowButtonProps.disabledButton && !disabledEntity) {
+                                            editRowButtonProps.onClick(data);
+
+                                            trackEvent({
+                                                category: 'entity-action',
+                                                action: 'edit click',
+                                            });
+                                        }
+                                    },
                                 }}
                                 disabled={editRowButtonProps.disabledButton || disabledEntity}
                             >
@@ -253,7 +272,14 @@ export const getColumnDefs = <Data extends any = IEntity>({
                             <Link
                                 href={`/entity/${getEntityPropertiesData(data)._id}/graph`}
                                 onClick={(e) => {
-                                    if (disabledEntity) e.preventDefault();
+                                    if (disabledEntity) {
+                                        e.preventDefault();
+                                    } else {
+                                        trackEvent({
+                                            category: 'entity-action',
+                                            action: 'graph click',
+                                        });
+                                    }
                                 }}
                                 data-tour="entity-page"
                             >

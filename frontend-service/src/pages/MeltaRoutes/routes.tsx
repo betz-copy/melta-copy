@@ -61,10 +61,6 @@ export const MeltaRoutesInner: React.FC = () => {
     const { trackPageView } = useMatomo();
 
     useEffect(() => {
-        trackPageView({ documentTitle: '/', href: '/' });
-    }, []);
-
-    useEffect(() => {
         const savedScrollPosition = sessionStorage.getItem(`pageScrollPosition-${location}`);
 
         if (savedScrollPosition && pageScrollTargetRef.current) {
@@ -130,6 +126,10 @@ export const MeltaRoutesInner: React.FC = () => {
             );
         }
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+    useEffect(() => {
+        trackPageView({ documentTitle: '/', href: '/' });
+    }, []);
 
     const [match] = useRoute('/entity/:entityId/graph');
 

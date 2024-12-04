@@ -14,6 +14,7 @@ import React, { useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { useLocation } from 'wouter';
+import { useMatomo } from '@datapunt/matomo-tracker-react';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import { ExportFormats } from '../../../common/dialogs/entity/ExportFormats';
 import { EntityProperties } from '../../../common/EntityProperties';
@@ -45,7 +46,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
     const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
     const queryClient = useQueryClient();
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-
+    const { trackEvent } = useMatomo();
     const currentUser = useUserStore((state) => state.user);
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
@@ -189,6 +190,12 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                                         <MenuButton
                                             onClick={() => {
                                                 navigate(`/entity/${entity.properties._id}/graph`);
+
+                                                trackEvent({
+                                                    category: 'entity-action',
+                                                    action: 'graph click',
+                                                });
+
                                                 handleClose();
                                             }}
                                             text={i18next.t('actions.graph')}
@@ -207,6 +214,12 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                                         }
                                         onClick={() => {
                                             if (!canWriteInstance || isEntityDisabled) return;
+
+                                            trackEvent({
+                                                category: 'entity-action',
+                                                action: 'edit click',
+                                            });
+
                                             setIsEditMode(true);
                                             handleClose();
                                         }}

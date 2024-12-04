@@ -4,6 +4,7 @@ import { CloseOutlined as DeleteIcon, CameraAltOutlined as CameraIcon, Visibilit
 import { Accept, useDropzone } from 'react-dropzone';
 import i18next from 'i18next';
 import { toast } from 'react-toastify';
+import { useMatomo } from '@datapunt/matomo-tracker-react';
 import Camera from '../dialogs/Camera';
 import { getFileExtension } from '../../utils/getFileType';
 import FileIcon from '../FilePreview/FileIcon';
@@ -23,6 +24,7 @@ interface FileInputProps {
 
 const FileInput: React.FC<FileInputProps> = ({ file, onDeleteFile, onDropFile, inputText, acceptedFilesTypes, errorText, disableCamera = false }) => {
     const theme = useTheme();
+    const { trackEvent } = useMatomo();
 
     const [stream, setStream] = useState<MediaStream | null>(null);
     const [open, setOpen] = useState(false);
@@ -148,7 +150,13 @@ const FileInput: React.FC<FileInputProps> = ({ file, onDeleteFile, onDropFile, i
                                         borderRadius: '7px',
                                         marginLeft: '5px',
                                     }}
-                                    onClick={onCameraClick}
+                                    onClick={(event) => {
+                                        onCameraClick(event);
+                                        trackEvent({
+                                            category: 'entity',
+                                            action: 'camera-icon click',
+                                        });
+                                    }}
                                 >
                                     <CameraIcon style={{ color: '#1E2775', width: '20px', height: '20px' }} />
                                 </IconButton>
