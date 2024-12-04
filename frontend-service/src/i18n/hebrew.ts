@@ -304,6 +304,7 @@ export default {
     },
     userAutocomplete: {
         label: 'משתמש',
+        searchLabel: 'חיפוש משתמש',
         failedToSearchUsers: 'נכשל לחפש משתמשים',
         loading: 'טוען...',
         noOptions: 'אין תוצאות',
@@ -382,6 +383,12 @@ export default {
         scopes: {
             read: 'קריאה',
             write: 'עריכה',
+        },
+        dialog: {
+            title: 'הרשאות בסביבה',
+            mainWorkspaceTitle: 'ראשית',
+            permissionType: 'סוג הרשאה',
+            updatedAt: 'עודכן ב',
         },
     },
     entitiesCardView: {
