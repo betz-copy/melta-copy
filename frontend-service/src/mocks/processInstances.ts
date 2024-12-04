@@ -2,6 +2,7 @@
 import MockAdapter from 'axios-mock-adapter';
 import { Chance } from 'chance';
 import { JSONSchemaFaker } from 'json-schema-faker';
+import { StatusCodes } from 'http-status-codes';
 import { IMongoProcessInstancePopulated, Status } from '../interfaces/processes/processInstance';
 import { IMongoProcessTemplatePopulated } from '../interfaces/processes/processTemplate';
 import { IMongoStepInstancePopulated } from '../interfaces/processes/stepInstance';
@@ -51,21 +52,21 @@ const generateProcessInstance = () => {
 };
 
 const mockProcessInstances = (mock: MockAdapter) => {
-    mock.onGet(/\/api\/processes\/instances\/[0-9a-fA-F]{24}/).reply(() => [200, generateProcessInstance()]);
+    mock.onGet(/\/api\/processes\/instances\/[0-9a-fA-F]{24}/).reply(() => [StatusCodes.OK, generateProcessInstance()]);
 
     mock.onPost('/api/processes/instances').reply(({ data: processToCreate }) => {
-        return [200, { ...JSON.parse(processToCreate), _id: generateMongoId() }];
+        return [StatusCodes.OK, { ...JSON.parse(processToCreate), _id: generateMongoId() }];
     });
 
-    mock.onDelete(/\/api\/processes\/instances\/[0-9a-fA-F]{24}/).reply(() => [200, {}]); // UI does not use returned deleted process
+    mock.onDelete(/\/api\/processes\/instances\/[0-9a-fA-F]{24}/).reply(() => [StatusCodes.OK, {}]); // UI does not use returned deleted process
 
     mock.onPut(/\/api\/processes\/instances\/[0-9a-fA-F]{24}/).reply(({ data: processDataToUpdate, url }) => {
-        return [200, { ...JSON.parse(processDataToUpdate), _id: url!.split('/').at(-1) }];
+        return [StatusCodes.OK, { ...JSON.parse(processDataToUpdate), _id: url!.split('/').at(-1) }];
     });
 
     mock.onPost('/api/processes/instances/search').reply(() => {
         const processes = Array.from({ length: 20 }).map(generateProcessInstance);
-        return [200, processes];
+        return [StatusCodes.OK, processes];
     });
 };
 

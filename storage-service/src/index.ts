@@ -34,7 +34,4 @@ const main = async () => {
     logger.info(`Server started on port: ${serverPort}`);
 };
 
-main().catch((error) => {
-    logger.error('Main error: ', { error });
-    process.exit(1);
-});
+main().catch((error) => logger.error('Main error: ', { error }));

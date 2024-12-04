@@ -1,4 +1,4 @@
-import { AppRegistration as AppRegistrationIcon } from '@mui/icons-material';
+import { AppRegistration as AppRegistrationIcon, AutoAwesome } from '@mui/icons-material';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import { Box, Card, CardContent, CardHeader, Dialog, Divider, Grid, IconButton, styled, Typography } from '@mui/material';
@@ -23,12 +23,13 @@ import { FileExtensions, IFile } from '../../../interfaces/preview';
 import { useUserStore } from '../../../stores/user';
 import { getEntityTemplateColor } from '../../../utils/colors';
 import { getFileName } from '../../../utils/getFileName';
-import { getPreviewContentType } from '../../../utils/getFileType';
+import { getFileNameWithoutExtension, getPreviewContentType } from '../../../utils/getFileType';
 import { checkUserCategoryPermission } from '../../../utils/permissions/instancePermissions';
 import { EntityDates } from '../../Entity/components/EntityDates';
 import { EntityDisableCheckbox } from '../../Entity/components/EntityDisableCheckbox';
 import { EntityWizardValues } from '../../../common/dialogs/entity';
 import { NoFile } from './NoFile';
+import { HighlightText } from '../../../utils/HighlightText';
 
 export const StyledCard = styled(Card)(({ theme }) => ({
     background: theme.palette.mode === 'light' ? '#FFFFFF 0% 0% no-repeat padding-box' : undefined,
@@ -54,6 +55,8 @@ interface EntityCardProps {
     customCardStyle?: React.CSSProperties;
     variant?: 'outlined' | 'elevation';
     refetchQuery?: () => void;
+    searchedText?: string;
+    minioFileId?: string;
 }
 
 const EntityCard: React.FC<EntityCardProps> = ({
@@ -66,6 +69,8 @@ const EntityCard: React.FC<EntityCardProps> = ({
     customCardStyle,
     variant = 'outlined',
     refetchQuery,
+    searchedText,
+    minioFileId,
 }) => {
     const [open, setOpen] = useState<boolean>(expandCard);
     const [externalErrors, setExternalErrors] = useState({ files: false, unique: {}, action: '' });
@@ -156,6 +161,20 @@ const EntityCard: React.FC<EntityCardProps> = ({
             )
             .slice(0, Math.max(5 - entityTemplate.propertiesPreview.length, 0)),
     ];
+
+    useMemo(() => {
+        const fileIndex = files.findIndex(
+            ({ id, name }) => id === minioFileId || (searchedText && getFileNameWithoutExtension(name).includes(searchedText)),
+        );
+        setPreviewImageIndex(fileIndex > 0 ? fileIndex : 0);
+    }, [files, minioFileId, searchedText]);
+
+    const fileName = files[previewImageIndex]?.name;
+
+    const isFoundByAi = useMemo(() => {
+        const isFileNameSearched = searchedText && !fileName?.toLowerCase()?.includes(searchedText?.toLowerCase());
+        return isFileNameSearched && minioFileId;
+    }, [fileName, minioFileId, searchedText]);
 
     return (
         <Card
@@ -309,6 +328,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                 width: '100%',
                             }}
                             viewFirstLineOfLongText
+                            searchedText={searchedText}
                         />
                     </Grid>
                     {shouldDisplayFilePreview && (
@@ -340,7 +360,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                     }}
                                 >
                                     <Grid item xs={9}>
-                                        <MeltaTooltip title={files[previewImageIndex]?.name || ''}>
+                                        <MeltaTooltip title={fileName || ''}>
                                             <Typography
                                                 sx={{
                                                     marginLeft: '7px',
@@ -352,17 +372,22 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                                     color: 'white',
                                                 }}
                                             >
-                                                {files[previewImageIndex]?.name || ''}
+                                                <HighlightText text={fileName || ''} searchedText={minioFileId ? fileName : searchedText} />
                                             </Typography>
                                         </MeltaTooltip>
                                     </Grid>
-                                    <Grid item xs={3} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                                    <Grid item xs={3} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
                                         {files[previewImageIndex] && (
                                             <OpenPreview
                                                 fileId={files[previewImageIndex].id}
                                                 img={<img src="/icons/expand-preview-file.svg" style={{ height: '11px' }} />}
                                                 showText={false}
                                             />
+                                        )}
+                                        {isFoundByAi && (
+                                            <MeltaTooltip title={i18next.t('entitiesTableOfTemplate.semanticSearch')} arrow>
+                                                <AutoAwesome style={{ height: '18px', color: 'white' }} />
+                                            </MeltaTooltip>
                                         )}
                                     </Grid>
                                 </Grid>
@@ -459,6 +484,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                             fileId={files[previewImageIndex].id}
                                             img={<img src="/icons/expand-preview-file.svg" style={{ height: '11px' }} />}
                                             showText={false}
+                                            searchValue={searchedText}
                                         />
                                     </Grid>
                                 </Grid>

@@ -1,4 +1,5 @@
 import MockAdapter from 'axios-mock-adapter';
+import { StatusCodes } from 'http-status-codes';
 
 const rules = [
     {
@@ -87,7 +88,7 @@ const rules = [
 const mockRules = (mock: MockAdapter) => {
     // Create
     mock.onPost('/api/templates/rules').reply(() => [
-        200,
+        StatusCodes.OK,
         {
             _id: '61e3ea6e4d53a23e87e43c7c',
             isRelationshipTemplateRule: true,
@@ -117,7 +118,7 @@ const mockRules = (mock: MockAdapter) => {
 
     // Update
     mock.onPut(/\/api\/templates\/rules\/[0-9a-fA-F]{24}/).reply(() => [
-        200,
+        StatusCodes.OK,
         {
             _id: '61e3ea6e4d53a23e87e43c7c',
             isRelationshipTemplateRule: true,
@@ -146,7 +147,7 @@ const mockRules = (mock: MockAdapter) => {
     ]);
 
     // Delete
-    mock.onDelete(/\/api\/templates\/rules\/[0-9a-fA-F]{24}/).reply(() => [200, {}]);
+    mock.onDelete(/\/api\/templates\/rules\/[0-9a-fA-F]{24}/).reply(() => [StatusCodes.OK, {}]);
 };
 
 export { mockRules, rules };

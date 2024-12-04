@@ -20,6 +20,12 @@ export interface IMongoCategory extends ICategory {
     createdAt: string;
     updatedAt: string;
 }
+export interface ISearchCategoriesBody {
+    search?: string;
+    ids?: string[];
+    limit?: number;
+    skip?: number;
+}
 
 export interface IEntitySingleProperty {
     title: string;

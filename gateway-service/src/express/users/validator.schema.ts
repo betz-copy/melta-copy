@@ -32,6 +32,13 @@ export const searchUsersRequestSchema = joi.object({
         workspaceIds: joi.array().items(MongoIdSchema.required()),
         limit: joi.number().integer().required(),
         step: joi.number().integer(),
+        filterModel: joi.object(),
+        sortModel: joi.array().items(
+            joi.object({
+                colId: joi.string(),
+                sort: joi.string(),
+            }),
+        ),
     },
     params: {},
 });

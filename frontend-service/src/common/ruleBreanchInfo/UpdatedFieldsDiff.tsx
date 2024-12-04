@@ -68,7 +68,7 @@ const getEntityPropertiesString = (
     entityTemplate: IMongoEntityTemplatePopulated,
     oldEntityProperties?: Record<string, any>,
 ) => {
-    const fieldPropertiesStrings = Object.entries(entityTemplate.properties.properties).map(([propertyKey, propertyTemplate]) => {
+    const fieldPropertiesStrings = Object.entries(entityTemplate?.properties?.properties || []).map(([propertyKey, propertyTemplate]) => {
         const oldValue = oldEntityProperties?.[propertyKey];
         const value = entityProperties[propertyKey];
         const valueFormatted = getEntityPropertyString(value, propertyTemplate, oldValue, propertyTemplate.items);

@@ -1,14 +1,18 @@
-import React, { forwardRef, useImperativeHandle, useRef } from 'react';
+import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import _isEqual from 'lodash.isequal';
 import { CircularProgress, Grid, Typography } from '@mui/material';
 import { useQuery } from 'react-query';
 import { useTour } from '@reactour/tour';
 import i18next from 'i18next';
 import { toast } from 'react-toastify';
+import { _debounce } from '@ag-grid-community/core';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { TemplateTable, TemplateTableRef } from './TemplateTable';
 import { getCountByTemplateIdsRequest } from '../../services/entitiesService';
 import { IEntity } from '../../interfaces/entities';
+import { environment } from '../../globals';
+
+const { tablesPerLoadingChunkSize } = environment.ganttSettings;
 
 type TemplateTablesViewResultsRef = {
     templateTablesRefs: Record<string, TemplateTableRef>;
@@ -25,14 +29,43 @@ const TemplateTablesViewResults = forwardRef<
     }
 >(({ templates, searchInput, pageType, setUpdatedEntities }, ref) => {
     const templateTablesRefs = useRef<Record<string, TemplateTableRef>>({});
+    const [visibleTemplatesCount, setVisibleTemplatesCount] = useState<number>(() => {
+        const savedCount = sessionStorage.getItem('visibleTemplatesCount');
+        return savedCount ? parseInt(savedCount, 10) : tablesPerLoadingChunkSize;
+    });
+    const loaderRef = useRef<HTMLDivElement | null>(null);
 
     useImperativeHandle(ref, () => ({
         templateTablesRefs: templateTablesRefs.current,
     }));
 
+    useEffect(() => {
+        const observer = new IntersectionObserver((entries) => {
+            const first = entries[0];
+            if (first.isIntersecting) {
+                setVisibleTemplatesCount((prevCount) => prevCount + tablesPerLoadingChunkSize);
+            }
+        });
+
+        const currentLoader = loaderRef.current;
+        if (currentLoader) {
+            observer.observe(currentLoader);
+        }
+
+        return () => {
+            if (currentLoader) {
+                observer.unobserve(currentLoader);
+            }
+        };
+    }, []);
+
+    useEffect(() => {
+        sessionStorage.setItem('visibleTemplatesCount', visibleTemplatesCount.toString());
+    }, [visibleTemplatesCount]);
+
     return (
         <Grid container direction="column" spacing={1}>
-            {templates.map((template) => (
+            {templates.slice(0, visibleTemplatesCount).map((template) => (
                 <Grid item key={template._id}>
                     <TemplateTable
                         ref={(el) => {
@@ -49,19 +82,29 @@ const TemplateTablesViewResults = forwardRef<
                     />
                 </Grid>
             ))}
+            {visibleTemplatesCount < templates.length && (
+                <Grid item container justifyContent="center" ref={loaderRef}>
+                    <CircularProgress />
+                </Grid>
+            )}
         </Grid>
     );
 });
 
-const filterEmptyTemplateTablesOnGlobalSearchRequest = async (templates: IMongoEntityTemplatePopulated[], searchInput: string) => {
+const filterEmptyTemplateTablesOnGlobalSearchRequest = async (
+    templates: IMongoEntityTemplatePopulated[],
+    searchInput: string,
+    semanticSearch: boolean,
+) => {
     const entitiesCountByTemplates = await getCountByTemplateIdsRequest(
         templates.map(({ _id }) => _id),
         searchInput,
+        semanticSearch,
     );
 
-    return templates.filter(({ _id }) => {
-        const count = entitiesCountByTemplates.find((countByTemplate) => countByTemplate.templateId === _id)?.count || 0;
-        return count > 0;
+    return templates.flatMap((template) => {
+        const entityCount = entitiesCountByTemplates.find((countByTemplate) => countByTemplate.templateId === template._id);
+        return entityCount?.count ? { ...template, entitiesWithFiles: entityCount.entitiesWithFiles } : [];
     });
 };
 
@@ -69,6 +112,7 @@ export interface TemplateTablesViewProps {
     templates: IMongoEntityTemplatePopulated[];
     searchInput: string;
     pageType: string;
+    semanticSearch: boolean;
     setUpdatedEntities: React.Dispatch<React.SetStateAction<IEntity[]>>;
 }
 
@@ -78,16 +122,15 @@ export interface TemplateTablesViewRef {
 }
 
 const TemplateTablesView = forwardRef<TemplateTablesViewRef, TemplateTablesViewProps>(
-    ({ templates, searchInput, pageType, setUpdatedEntities }, ref) => {
+    ({ templates, searchInput, pageType, setUpdatedEntities, semanticSearch }, ref) => {
         const { setSteps } = useTour();
-
         const {
             data: templatesFilteredByCount,
             refetch: refetchTemplatesFilteredByCount,
             isFetching: isLoadingTemplatesFilteredByCount,
         } = useQuery(
-            ['filterEmptyTemplateTablesOnGlobalSearch', templates, searchInput],
-            () => filterEmptyTemplateTablesOnGlobalSearchRequest(templates, searchInput),
+            ['filterEmptyTemplateTablesOnGlobalSearch', templates, searchInput, semanticSearch],
+            () => filterEmptyTemplateTablesOnGlobalSearchRequest(templates, searchInput, semanticSearch),
             {
                 onSuccess: (data) => {
                     if (data.length === 0 && pageType === 'globalSearch') {

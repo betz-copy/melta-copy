@@ -4,7 +4,7 @@ import { promisify } from 'util';
 import { menash } from 'menashmq';
 import { streamToBuffer } from '../../utils/fs';
 import { config } from '../../config';
-import { ServiceError } from '../error';
+import { NotFoundError } from '../error';
 import DefaultManagerMinio from '../../utils/minio/manager';
 
 const {
@@ -25,7 +25,7 @@ export class FilesManager extends DefaultManagerMinio {
         } catch (error: any) {
             if (error.code === 'NoSuchKey') {
                 await menash.send(rabbit.previewQueue, filePath, { headers: { [workspaceIdHeaderName]: this.workspaceId } });
-                throw new ServiceError(404, 'File Not Found');
+                throw new NotFoundError('File Not Found');
             }
             throw error;
         }

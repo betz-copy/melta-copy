@@ -1,5 +1,6 @@
+/* eslint-disable react/no-array-index-key */
 import React, { useState } from 'react';
-import { Box, Collapse, List, ListItem, ListItemButton, ListItemIcon, ListItemText } from '@mui/material';
+import { Box, Collapse, Grid, List, ListItemButton, ListItemIcon, ListItemText, Typography } from '@mui/material';
 import { useQueryClient } from 'react-query';
 import i18next from 'i18next';
 import { ExpandLess as ExpandLessIcon, ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
@@ -8,26 +9,36 @@ import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { IActionPopulated } from '../../../interfaces/ruleBreaches/actionMetadata';
 import { IBrokenRulePopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
 import { IMongoRule } from '../../../interfaces/rules';
-import { EntityForBrokenRules } from '../ActionInfo';
 import { RuleIcon } from './RuleIcon';
 import { MeltaTooltip } from '../../MeltaTooltip';
-import { IEntity } from '../../../interfaces/entities';
+import { EntityInfo } from '../InstanceInfo/EntityInfo';
+import { RelationshipInfo } from '../InstanceInfo/RelationshipInfo';
+import { BrokenRuleActions } from './BrokenRuleActions';
+import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
+import {
+    getActionsByFailureOnEntity,
+    getActionsByFailureOnRelationship,
+    getEntityForEntityInfo,
+    getRelationshipForRelationshipInfo,
+} from '../../../utils/ruleBreach/ruleBreachActions';
 
 export const BrokenRuleFull: React.FC<{
     brokenRule: IBrokenRulePopulated;
     ruleTemplate: IMongoRule;
     actions: IActionPopulated[];
 }> = ({ brokenRule, ruleTemplate, actions }) => {
-    const [open, setOpen] = useState(false);
+    const [openRule, setOpenRule] = useState(false);
     const queryClient = useQueryClient();
 
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+
+    const relationshipTemplates = queryClient.getQueryData<IRelationshipTemplateMap>('getRelationshipTemplates')!;
 
     const entityTemplate = entityTemplates.get(ruleTemplate.entityTemplateId)!;
 
     return (
         <>
-            <ListItemButton onClick={() => setOpen((prev) => !prev)}>
+            <ListItemButton onClick={() => setOpenRule((prev) => !prev)}>
                 <ListItemIcon>
                     <RuleIcon ruleType={ruleTemplate.actionOnFail} />
                 </ListItemIcon>
@@ -38,77 +49,89 @@ export const BrokenRuleFull: React.FC<{
                         </Box>
                     </MeltaTooltip>
                 </ListItemText>
-                {open ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                {openRule ? (
+                    <ExpandLessIcon style={{ color: '#787C9E', width: '20px', height: '20px' }} />
+                ) : (
+                    <ExpandMoreIcon style={{ color: '#787C9E', width: '20px', height: '20px' }} />
+                )}
             </ListItemButton>
-            <Collapse in={open} timeout="auto" unmountOnExit>
-                <List dense component="div" disablePadding>
-                    {brokenRule.failures.map(({ entity, causes }, i) => {
-                        const causeOfMainEntityIndex = causes.findIndex(({ instance }) => {
-                            const currEntityOfCause = instance.aggregatedRelationship ? instance.aggregatedRelationship.otherEntity : instance.entity;
-                            return isEqual(currEntityOfCause, entity);
-                        });
-                        const causeOfMainEntity = causes[causeOfMainEntityIndex];
+            <Collapse in={openRule} timeout="auto" unmountOnExit>
+                <Grid>
+                    <List dense component="div" disablePadding>
+                        {brokenRule.failures.map(({ entity, causes }, i) => {
+                            const causeOfMainEntityIndex = causes.findIndex(({ instance }) => {
+                                const currEntityOfCause = instance.aggregatedRelationship
+                                    ? instance.aggregatedRelationship.otherEntity
+                                    : instance.entity;
+                                return isEqual(currEntityOfCause, entity);
+                            });
 
-                        const causesWithoutMainEntity = causes.slice();
-                        if (causeOfMainEntityIndex > -1) causesWithoutMainEntity.splice(causeOfMainEntityIndex, 1);
+                            const causesWithoutMainEntity = causes.slice();
+                            if (causeOfMainEntityIndex > -1) causesWithoutMainEntity.splice(causeOfMainEntityIndex, 1);
 
-                        const mainEntityPropertiesToShowTooltipOverride = [
-                            ...(causeOfMainEntity?.properties || []),
-                            ...(entityTemplate?.propertiesPreview || []),
-                        ];
-
-                        return (
-                            // eslint-disable-next-line react/no-array-index-key
-                            <ListItem key={i}>
-                                {'- '}
-                                <ListItemText sx={{ pl: 4 }}>
-                                    <EntityForBrokenRules
-                                        ruleTemplate={ruleTemplate}
-                                        entity={entity}
-                                        entityTemplate={entityTemplate}
-                                        actions={actions}
-                                        entityPropertiesToShowTooltipOverride={[...new Set(mainEntityPropertiesToShowTooltipOverride)]}
-                                        entityPropertiesToHighlightTooltip={causeOfMainEntity?.properties}
-                                    />
-                                    {causesWithoutMainEntity.length > 0 && ': '}
-                                    {causesWithoutMainEntity.map(({ instance, properties }, j) => {
-                                        const entityToShow = (
-                                            instance.aggregatedRelationship ? instance.aggregatedRelationship.otherEntity : instance.entity
-                                        ) as IEntity; // because we excluded causeOfMainEntity from causes
-
-                                        const entityTemplateOfEntityToShow =
-                                            // eslint-disable-next-line no-nested-ternary
-                                            !entityToShow ? null : entityTemplates.get(entityToShow.templateId)!;
-
-                                        const entityPropertiesToShowTooltipOverride = [
-                                            ...properties,
-                                            ...(entityTemplateOfEntityToShow?.propertiesPreview || []),
-                                        ];
-
-                                        return (
+                            return (
+                                <Grid key={i}>
+                                    <Grid item>
+                                        {causesWithoutMainEntity.length === 0 && (
                                             <>
-                                                {j > 0 && ', '}
-                                                <EntityForBrokenRules
-                                                    // eslint-disable-next-line react/no-array-index-key
-                                                    key={j}
-                                                    ruleTemplate={ruleTemplate}
-                                                    entity={entityToShow}
-                                                    entityTemplate={entityTemplateOfEntityToShow}
-                                                    actions={actions}
-                                                    entityPropertiesToShowTooltipOverride={[...new Set(entityPropertiesToShowTooltipOverride)]}
-                                                    entityPropertiesToHighlightTooltip={properties}
+                                                <Grid paddingBottom="10px">
+                                                    <Grid style={{ width: 'fit-content', cursor: 'pointer' }}>
+                                                        <EntityInfo
+                                                            entity={getEntityForEntityInfo(entity, actions)}
+                                                            entityTemplate={entityTemplate}
+                                                            failedProperties={causes.flatMap((cause) => cause.properties)}
+                                                        />
+                                                    </Grid>
+                                                </Grid>
+                                                <BrokenRuleActions
+                                                    actions={getActionsByFailureOnEntity({ entity, causes }, actions)}
+                                                    failedProperties={causes.flatMap((cause) => cause.properties)}
                                                 />
                                             </>
-                                        );
-                                    })}
-                                </ListItemText>
-                            </ListItem>
-                        );
-                    })}
-                    {brokenRule.failures.length === 0 && (
-                        <ListItemText sx={{ pl: 4 }}>{i18next.t('ruleBreachInfo.noRelevantEntitiesForBrokenRule')}</ListItemText>
-                    )}
-                </List>
+                                        )}
+                                    </Grid>
+                                    <Grid item>
+                                        {causesWithoutMainEntity.length > 0 && (
+                                            <>
+                                                {causesWithoutMainEntity.length > 1 && (
+                                                    <Typography paddingLeft="15px">{i18next.t('ruleBreachInfo.relationshipsCombination')}</Typography>
+                                                )}
+                                                {causesWithoutMainEntity.map(({ instance }, j) => {
+                                                    const relationship = instance.aggregatedRelationship
+                                                        ? instance.aggregatedRelationship.relationship
+                                                        : null;
+
+                                                    return (
+                                                        <Grid key={j} paddingBottom="10px">
+                                                            <Grid style={{ width: 'fit-content', cursor: 'pointer' }}>
+                                                                <RelationshipInfo
+                                                                    relationship={getRelationshipForRelationshipInfo(
+                                                                        relationship,
+                                                                        actions,
+                                                                        entityTemplates,
+                                                                        relationshipTemplates,
+                                                                    )}
+                                                                    failedProperties={causes.flatMap((cause) => cause.properties)}
+                                                                />
+                                                            </Grid>
+                                                        </Grid>
+                                                    );
+                                                })}
+                                                <BrokenRuleActions
+                                                    actions={getActionsByFailureOnRelationship({ entity, causes }, actions)}
+                                                    failedProperties={causes.flatMap((cause) => cause.properties)}
+                                                />
+                                            </>
+                                        )}
+                                    </Grid>
+                                </Grid>
+                            );
+                        })}
+                        {brokenRule.failures.length === 0 && (
+                            <ListItemText sx={{ pl: 4 }}>{i18next.t('ruleBreachInfo.noRelevantEntitiesForBrokenRule')}</ListItemText>
+                        )}
+                    </List>
+                </Grid>
             </Collapse>
         </>
     );

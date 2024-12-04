@@ -7,6 +7,7 @@ import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { useDarkModeStore } from '../stores/darkMode';
 import { EntityPropertiesInternal } from './EntityProperties';
 import { MeltaTooltip } from './MeltaTooltip';
+import { environment } from '../globals';
 
 interface EntityLinkProps {
     entity: IEntity | null;
@@ -34,7 +35,7 @@ export const EntityLink: React.FC<EntityLinkProps> = ({
     const entityPropertiesTooltip =
         // eslint-disable-next-line no-nested-ternary
         !entityTemplate || !entity ? (
-            ''
+            i18next.t('ruleBreachInfo.deletedEntity')
         ) : !entityTemplate.propertiesPreview.length ? (
             i18next.t('graph.noPreviewProperties')
         ) : (
@@ -64,12 +65,20 @@ export const EntityLink: React.FC<EntityLinkProps> = ({
             {linkable ? (
                 <Link
                     to={`/entity/${entity && typeof entity !== 'string' ? entity.properties._id : 'unknownEntity'}`}
-                    style={{ color: theme.palette.primary.main, textDecoration: 'inherit', fontWeight: 'bold' }}
+                    style={{
+                        color: theme.palette.primary.main,
+                        textDecoration: 'inherit',
+                        fontWeight: 'bold',
+                        fontSize: environment.mainFontSizes.headlineSubTitleFontSize,
+                    }}
                 >
                     {linkText}
                 </Link>
             ) : (
-                <Box component="span" sx={{ color: theme.palette.primary.main, fontWeight: 'bold', fontSize: '14px' }}>
+                <Box
+                    component="span"
+                    sx={{ color: theme.palette.primary.main, fontWeight: 'bold', fontSize: environment.mainFontSizes.headlineSubTitleFontSize }}
+                >
                     {linkText}
                 </Box>
             )}

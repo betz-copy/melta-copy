@@ -1,3 +1,4 @@
+import { StatusCodes } from 'http-status-codes';
 import React from 'react';
 import { useQuery } from 'react-query';
 import { IFile } from '../../interfaces/preview';
@@ -25,7 +26,7 @@ export const useFilePreview = (
             refetchOnMount: false,
             retry: false,
             onError: (error: any) => {
-                setNoSuchKeyError(error?.response?.status === 404);
+                setNoSuchKeyError(error?.response?.status === StatusCodes.NOT_FOUND);
             },
         },
     );

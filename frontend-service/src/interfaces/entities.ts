@@ -1,6 +1,7 @@
 import { IMongoEntityTemplatePopulated } from './entityTemplates';
 import { IMongoRelationshipTemplate } from './relationshipTemplates';
 import { IRelationship } from './relationships';
+import { ISemanticSearchMinioResult } from './semanticSearch';
 
 export interface IEntity {
     templateId: string;
@@ -90,6 +91,7 @@ export interface ISearchEntitiesOfTemplateBody {
     filter?: ISearchFilter;
     showRelationships?: boolean | Array<IMongoRelationshipTemplate['_id']>;
     sort?: ISearchSort;
+    entityIdsToInclude?: string[];
 }
 
 export interface ISearchEntitiesByTemplatesBody {
@@ -109,15 +111,22 @@ export interface ISearchBatchBody {
         };
     };
     sort?: ISearchSort;
+    shouldSemanticSearch?: boolean;
 }
 
 export interface ISearchResult {
     count: number;
-    entities: IEntityWithDirectConnections[];
+    entities: (IEntityWithDirectConnections & { minioFileIds?: string[] })[];
 }
 
 export interface ISearchResultByTemplates {
     [templateId: string]: ISearchResult;
+}
+
+export interface ICountSearchResult {
+    templateId: string;
+    count: number;
+    entitiesWithFiles?: ISemanticSearchMinioResult[string];
 }
 
 export interface IExportEntitiesBody {
@@ -127,6 +136,7 @@ export interface IExportEntitiesBody {
         [templateId: string]: {
             filter?: ISearchFilter;
             sort?: ISearchSort;
+            displayColumns: string[];
         };
     };
 }
