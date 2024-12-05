@@ -1017,7 +1017,7 @@ export class EntityManager extends DefaultManagerNeo4j {
                     deleteAllRelationships,
                 );
 
-                if (entitiesToDelete.length >= deleteEntitiesMaxLimit)
+                if (allowedEntitiesToDelete.length >= deleteEntitiesMaxLimit)
                     throw new BadRequestError(`cant delete more then ${deleteEntitiesMaxLimit} instances`);
 
                 await Promise.all(
