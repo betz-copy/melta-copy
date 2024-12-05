@@ -1305,6 +1305,7 @@ export class EntityManager extends DefaultManagerNeo4j {
             const fixedActions = this.fixActions(actions, results);
             return { updatedEntity, actions: fixedActions };
         }
+        console.log('hhhh ', { entityProperties });
 
         return this.neo4jClient
             .performComplexTransaction('writeTransaction', async (transaction) => {
@@ -1340,31 +1341,34 @@ export class EntityManager extends DefaultManagerNeo4j {
     }
 
     async convertToRelationshipField(existingRelationships: IRelationship[], addFieldToSrcEntity: boolean, fieldName: string, userId: string) {
-        await Promise.all(
-            existingRelationships.map(async (relationship) => {
-                const entityId = addFieldToSrcEntity ? relationship.sourceEntityId : relationship.destinationEntityId;
-                const entityToUpdate: IEntity = await this.getEntityById(entityId);
-                const entityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(entityToUpdate.templateId);
+        const updatedEntities = new Map<string, any>();
+        return this.neo4jClient
+            .performComplexTransaction('writeTransaction', async (transaction) => {
+                for (const relationship of existingRelationships) {
+                    const entityId = addFieldToSrcEntity ? relationship.sourceEntityId : relationship.destinationEntityId;
+                    const entityToUpdate: IEntity = await this.getEntityById(entityId);
+                    const entityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(entityToUpdate.templateId);
+                    const entityProperties = mapValues(entityToUpdate.properties, (property, key) =>
+                        entityTemplate.properties.properties[key]?.format === 'relationshipReference' ? property?.properties._id : property,
+                    );
 
-                const entityProperties = mapValues(entityToUpdate.properties, (property, key) =>
-                    entityTemplate.properties.properties[key]?.format === 'relationshipReference' ? property?.properties._id : property,
-                );
-                await this.updateEntityById(
-                    entityId,
-                    {
-                        templateId: entityToUpdate.templateId,
-                        properties: {
+                    const { updatedEntity } = await this.updateEntityByIdInnerTransaction(
+                        entityId,
+                        {
                             ...entityProperties,
                             [fieldName]: addFieldToSrcEntity ? relationship.destinationEntityId : relationship.sourceEntityId,
                         },
-                    },
-                    entityTemplate,
-                    [],
-                    userId,
-                    true,
-                );
-            }),
-        );
+                        entityTemplate,
+                        transaction,
+                        userId,
+                        true,
+                    );
+
+                    updatedEntities.set(entityId, updatedEntity);
+                }
+                return updatedEntities;
+            })
+            .catch((err) => this.throwServiceErrorIfFailedConstraintsValidation(err));
     }
 
     async updateRelationshipReferencesEnumField(

@@ -1,5 +1,5 @@
 /* eslint-disable no-param-reassign */
-import _, { mapValues } from 'lodash';
+import _ from 'lodash';
 import { AxiosError, AxiosResponse } from 'axios';
 import _isEqual from 'lodash.isequal';
 import lodashUniqby from 'lodash.uniqby';
@@ -7,7 +7,7 @@ import { StatusCodes } from 'http-status-codes';
 import { logger } from 'elastic-apm-node';
 import config from '../../config';
 import { InstancesService } from '../../externalServices/instanceService';
-import { IConstraintsOfTemplate, IEntity, IUniqueConstraintOfTemplate } from '../../externalServices/instanceService/interfaces/entities';
+import { IConstraintsOfTemplate, IUniqueConstraintOfTemplate } from '../../externalServices/instanceService/interfaces/entities';
 import { ProcessService } from '../../externalServices/processService';
 import { RuleBreachService } from '../../externalServices/ruleBreachService';
 import { StorageService } from '../../externalServices/storageService';
@@ -881,7 +881,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         }
     }
 
-    async convertToRelationshipRollBack(
+    async handleConversionRollback(
         relationshipTemplateId: string,
         entityTemplateId: string,
         currentRelationshipTemplate: IRelationshipTemplate,
@@ -1052,8 +1052,9 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         const currentRelationshipTemplate: IRelationshipTemplate =
             await this.relationshipTemplateService.getRelationshipTemplateById(relationshipTemplateId);
         const { sourceEntityId, destinationEntityId } = currentRelationshipTemplate;
+
         const addFieldToSrcEntity = relationshipReference.relatedTemplateId === destinationEntityId;
-        const entityIdWithNewRelationshipField = addFieldToSrcEntity ? sourceEntityId : destinationEntityId;
+        const entityIdToUpdate = addFieldToSrcEntity ? sourceEntityId : destinationEntityId;
 
         const [existingRelationships, { requiredConstraints: destRequiredConstraints }] = await Promise.all([
             this.instancesService.getRelationshipsByEntitiesAndTemplate({
@@ -1078,58 +1079,34 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             relationshipReference.relatedTemplateId,
             relationshipReference.relatedTemplateField,
         );
-        const restOfEntityTemplate = this.removeBasicFields(await this.entityTemplateService.getEntityTemplateById(entityIdWithNewRelationshipField));
 
-        const { updatedRelationShipTemplate, updatedEntityTemplate } = await this.entityTemplateService.convertToRelationshipField(
-            entityIdWithNewRelationshipField,
-            relationshipTemplateId,
-            {
-                ...restOfEntityTemplate,
-                category: restOfEntityTemplate.category._id,
+        const restOfEntityTemplate = this.removeBasicFields(await this.entityTemplateService.getEntityTemplateById(entityIdToUpdate));
+        const updatedEntityTemplate = {
+            ...restOfEntityTemplate,
+            category: restOfEntityTemplate.category._id,
+            properties: {
+                ...restOfEntityTemplate.properties,
                 properties: {
-                    ...restOfEntityTemplate.properties,
-                    properties: {
-                        ...restOfEntityTemplate.properties.properties,
-                        [fieldName]: newRelationshipField,
-                    },
+                    ...restOfEntityTemplate.properties.properties,
+                    [fieldName]: newRelationshipField,
                 },
-                propertiesOrder: [...restOfEntityTemplate.propertiesOrder, fieldName],
             },
+            propertiesOrder: [...restOfEntityTemplate.propertiesOrder, fieldName],
+        };
+
+        const { updatedRelationShipTemplate } = await this.entityTemplateService.convertToRelationshipField(
+            entityIdToUpdate,
+            relationshipTemplateId,
+            updatedEntityTemplate,
         );
 
         if (existingRelationships.length > 0)
-            await this.instancesService.convertToRelationshipField(existingRelationships, addFieldToSrcEntity, fieldName, userId);
-        // if (existingRelationships.length > 0)
-        //     await Promise.all(
-        //         existingRelationships.map(async (relationship) => {
-        //             const entityId = addFieldToSrcEntity ? relationship.sourceEntityId : relationship.destinationEntityId;
-        //             const entityToUpdate: IEntity = await this.instancesService.getEntityInstanceById(entityId);
-
-        //             const entityProperties = mapValues(entityToUpdate.properties, (property, key) =>
-        //                 updatedEntityTemplate.properties.properties[key]?.format === 'relationshipReference' ? property?.properties._id : property,
-        //             );
-        //             await this.instancesService.updateEntityInstance(
-        //                 entityId,
-        //                 {
-        //                     templateId: entityToUpdate.templateId,
-        //                     properties: {
-        //                         ...entityProperties,
-        //                         [fieldName]: addFieldToSrcEntity ? relationship.destinationEntityId : relationship.sourceEntityId,
-        //                     },
-        //                 },
-        //                 [],
-        //                 userId,
-        //                 true,
-        //             );
-        //         }),
-        //     ).catch(async () => {
-        //         await this.convertToRelationshipRollBack(
-        //             relationshipTemplateId,
-        //             entityIdWithNewRelationshipField,
-        //             currentRelationshipTemplate,
-        //             restOfEntityTemplate,
-        //         );
-        //     });
+            await this.instancesService
+                .convertToRelationshipField(existingRelationships, addFieldToSrcEntity, fieldName, userId)
+                .catch(async (error) => {
+                    logger.error('Error in update entity instances in relationships:', error);
+                    await this.handleConversionRollback(relationshipTemplateId, entityIdToUpdate, currentRelationshipTemplate, restOfEntityTemplate);
+                });
 
         return { updatedRelationShipTemplate, updatedEntityTemplate };
     }

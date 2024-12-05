@@ -3,14 +3,14 @@ import React from 'react';
 import { FormikErrors, FormikTouched } from 'formik';
 import { useQueryClient } from 'react-query';
 import i18next from 'i18next';
-import { CommonFormInputProperties, IRelationshipReference } from './commonInterfaces';
+import { ConvertToRelationshipFieldFormInputProperties, CommonFormInputProperties, IRelationshipReference } from './commonInterfaces';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 
 export interface FieldEditCardProps {
-    value: CommonFormInputProperties | any;
+    value: CommonFormInputProperties | ConvertToRelationshipFieldFormInputProperties;
     index: number;
-    touched?: FormikTouched<CommonFormInputProperties> | any;
-    errors?: FormikErrors<CommonFormInputProperties> | any;
+    touched?: FormikTouched<CommonFormInputProperties | ConvertToRelationshipFieldFormInputProperties>;
+    errors?: FormikErrors<CommonFormInputProperties | ConvertToRelationshipFieldFormInputProperties>;
     setFieldValue: (field: keyof CommonFormInputProperties, value: any) => void;
     isDisabled?: boolean;
     convertToRelationshipField?: {
