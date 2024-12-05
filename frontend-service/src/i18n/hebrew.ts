@@ -96,7 +96,7 @@ export default {
         succeededToDeleteRelationship: 'הקשר נמחק בהצלחה',
         payAttention: 'שים לב',
         wouldYouLikeToDeleteRelationshipsOfEntities:
-            'לחלק מהישויות מחוברים קשרים. בעת לחיצה על אישור ימחקו הישיות והקשרים שלהם, בעת לחיצה על ביטול לא ימחקו הישיות',
+            'לחלק מהישויות מחוברים קשרים. בעת לחיצה על אישור ימחקו הישיות והקשרים שלהם מלבד ישויות המשויכות כשדה לישות אחרת',
         wouldYouLikeToDeleteTheRelationshipsOfEntity: 'לישות קיימים קשרים. האם תרצה למחוק את הקשרים?',
         createdAt: 'תאריך יצירה',
         updatedAt: 'תאריך עדכון',
@@ -560,7 +560,7 @@ export default {
             failedToEdit: 'נכשל בעריכת ישות',
             failedToDuplicate: 'נכשל בשכפול ישות',
             deletedSuccessfully: 'ישות נמחקה בהצלחה',
-            deletedEntitiesSuccess: 'ישויות נמחקו בהצלחה',
+            deletedEntitiesSuccess: 'ישויות נמחקו בהצלחה (מלבד ישויות המשויכיות כשדה לישות אחרת)',
             failedToDelete: 'נכשל למחוק ישות',
             typeEntityTemplateForConfirmDelete: 'הקלד את שם התבנית "{{displayName}}" לצורך אישור המחיקה',
             failedToDeleteEntities: 'נכשל למחוק ישויות',
@@ -759,7 +759,7 @@ export default {
         RULE_BLOCK: 'עבר על חוקים',
         RULE_HAS_ALERTS_OR_REQUESTS: 'לחוק קיימים התראות/בקשות. ניתן רק להשבית אותו',
         FILES_TOO_BIG: 'סך גודל הקבצים גדול מדי',
-        ENTITY_HAS_RELATIONSHIPS_REFERENCE: 'ישות זו מקשורת כשדה בישויות אחרות',
+        ENTITY_HAS_RELATIONSHIPS_REFERENCE: 'ישות אחת או יותר מקשורת כשדה בישות אחרת',
     },
     tourText: {
         sideBar: 'סרגל הניווט הראשי של המערכת למעבר בין עולמות התוכן והעמודים השונים',
