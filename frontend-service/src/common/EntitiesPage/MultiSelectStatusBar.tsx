@@ -43,10 +43,11 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
                     toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.entity.failedToDeleteEntities')} />);
                     api.deselectAll();
                 }
+
+                setConfirmDeleteDisplayNameValue('');
             },
             onSuccess: () => {
-                toast.success(i18next.t('wizard.entity.deletedEntitiesSuccess'));
-                setConfirmDeleteDisplayNameValue('');
+                toast.success(i18next.t(`wizard.entity.${workspaceAdmin ? 'deletedEntitiesSuccessForAdmin' : 'deletedEntitiesSuccess'}`));
                 api.refreshServerSide();
                 api.deselectAll();
             },
@@ -99,6 +100,7 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
 
     const handleCloseRelationshipDialog = () => {
         setOpenRelationshipDialog(false);
+        setConfirmDeleteDisplayNameValue('');
         api.deselectAll();
     };
 
