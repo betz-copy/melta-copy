@@ -40,7 +40,7 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
 
                 if (errorIdentifier === 'ENTITY_HAS_RELATIONSHIPS' && workspaceAdmin) setOpenRelationshipDialog(true);
                 else {
-                    toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.entity.failedToDeleteEntities')} />);
+                    toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.entity.failedToDelete')} />);
                     api.deselectAll();
                 }
 
