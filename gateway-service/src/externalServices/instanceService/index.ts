@@ -79,7 +79,6 @@ export class InstancesService extends DefaultExternalServiceApi {
             fieldName,
             userId,
         });
-        console.dir({ data2: data }, { depth: null });
 
         return data;
     }

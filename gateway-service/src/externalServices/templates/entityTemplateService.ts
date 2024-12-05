@@ -169,7 +169,6 @@ export class EntityTemplateService extends TemplatesManagerService {
             updatedRelationShipTemplate: IMongoRelationshipTemplate;
             updatedEntityTemplate: IMongoEntityTemplatePopulated;
         }>(`${baseEntitiesRoute}/convertToRelationshipField/${entityTemplateId}/${relationshipTemplateId}`, updatedData);
-        console.dir({ data }, { depth: null });
 
         return data;
     }

@@ -1071,7 +1071,6 @@ export class EntityManager extends DefaultManagerNeo4j {
         const fixedProperties: Record<string, any> = JSON.parse(JSON.stringify(entityProperties));
         const createdRelationships: IRelationship[] = [];
         const deletedRelationships: IRelationship[] = [];
-        console.dir({ entityProperties, updatedProperties }, { depth: null });
 
         await Promise.all(
             updatedProperties.map(async (updatedProperty) => {
@@ -1122,7 +1121,6 @@ export class EntityManager extends DefaultManagerNeo4j {
     ) {
         const { templateId, properties: entityProperties } = updatedEntity;
         const entitiesNeedToUpdate = await this.getRelatedEntitiesOfEntity(templateId, [entityProperties._id], transaction);
-        console.dir({ entityProperties, entitiesNeedToUpdate }, { depth: null });
 
         await Promise.all(
             Object.entries(entitiesNeedToUpdate).map(async ([fieldToChange, entityIdsToUpdate]) => {
@@ -1305,7 +1303,6 @@ export class EntityManager extends DefaultManagerNeo4j {
             const fixedActions = this.fixActions(actions, results);
             return { updatedEntity, actions: fixedActions };
         }
-        console.log('hhhh ', { entityProperties });
 
         return this.neo4jClient
             .performComplexTransaction('writeTransaction', async (transaction) => {

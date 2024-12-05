@@ -41,8 +41,6 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
     }
 
     getTemplateById(id: string): Promise<IEntityTemplatePopulated> {
-        console.log('a');
-
         return this.model
             .findById(id)
             .populate<Pick<IEntityTemplatePopulated, 'category'>>('category')
@@ -266,21 +264,15 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
     }
 
     async convertToRelationshipField(templateId: string, relationshipTemplateId: string, updatedEntityTemplateData) {
-        console.log('1');
-
         return withTransaction(async (session: ClientSession) => {
-            console.log('2', { templateId }, [updatedEntityTemplateData]);
-
             const updatedRelationShipTemplate = await this.relationshipTemplateManager.updateTemplateById(
                 relationshipTemplateId,
                 { isProperty: true },
                 session,
             );
-            console.log({ updatedRelationShipTemplate });
 
             const updatedEntityTemplate = await this.updateEntityTemplate(templateId, updatedEntityTemplateData, session);
 
-            console.log({ updatedEntityTemplate });
             return { updatedRelationShipTemplate, updatedEntityTemplate };
         });
     }
