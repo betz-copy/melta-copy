@@ -249,7 +249,7 @@ export const getEntitiesWithDirectConnections = async (searchBody: ISearchBatchB
 };
 
 export const getEntitiesByLocation = async (searchBody: ISearchEntitiesByLocationBody) => {
-    const { data } = await axios.post(`${entities}/search/location`, searchBody);
+    const { data } = await axios.post<{ node: IEntity; matchingFields: string[] }[]>(`${entities}/search/location`, searchBody);
     return data;
 };
 

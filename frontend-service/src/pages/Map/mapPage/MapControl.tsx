@@ -1,27 +1,43 @@
-import L, { LatLngExpression, LatLng } from 'leaflet';
-import React, { useMemo } from 'react';
+import L, { LatLngExpression } from 'leaflet';
+import React, { useEffect, useRef, useState } from 'react';
 import { useMap } from 'react-leaflet';
 import { EditControl } from 'react-leaflet-draw';
 import { useQueryClient, useMutation } from 'react-query';
-import { Circle, ISearchEntitiesByLocationTemplatesBody, Polygon } from '../../../interfaces/entities';
+import LocationOn from '@mui/icons-material/LocationOn';
+import CircleIcon from '@mui/icons-material/Circle';
+import ReactDOMServer from 'react-dom/server';
+import { Circle } from '../../../interfaces/entities';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { getEntitiesByLocation } from '../../../services/entitiesService';
 import { stringToCoordinates, bindPopupForLine, bindPopupForCircle } from '../../../utils/map';
-
-const MAX_RADIUS = 30000; // 10 kilometers in meters
+import { getEntityTemplateColor } from '../../../utils/colors';
 
 type props = {
     featureGroupRef: React.RefObject<L.FeatureGroup<any>>;
     searchResultGroupRef: React.RefObject<L.FeatureGroup<any>>;
-    lastCircleRef: React.RefObject<L.Circle<any>>;
     onSelectEntity: (element) => void;
     filteredTemplatesIds: string[];
 };
 
-export const EditableMapControl = ({ featureGroupRef, searchResultGroupRef, lastCircleRef, onSelectEntity, filteredTemplatesIds }: props) => {
-    const map = useMap();
+const markerIcon = (color: string) =>
+    L.divIcon({
+        className: 'custom-div-icon',
+        html: ReactDOMServer.renderToString(<LocationOn style={{ color, fontSize: '1.5rem' }} />),
+    });
+
+const polygonCenterIcon = (color: string) =>
+    L.divIcon({
+        className: 'custom-div-icon',
+        html: ReactDOMServer.renderToString(<CircleIcon style={{ color, fontSize: '1rem' }} />),
+    });
+
+export const EditableMapControl = ({ featureGroupRef, searchResultGroupRef, onSelectEntity, filteredTemplatesIds }: props) => {
     const queryClient = useQueryClient();
     const entityTemplateMap = queryClient.getQueryData<IEntityTemplateMap>(['getEntityTemplates']);
+
+    const map = useMap();
+    const [circle, setCircle] = useState<Circle>();
+    const lastCircleRef = useRef<L.Circle | null>(null);
 
     const { mutate } = useMutation(getEntitiesByLocation, {
         onSuccess: (response) => {
@@ -29,98 +45,80 @@ export const EditableMapControl = ({ featureGroupRef, searchResultGroupRef, last
 
             response.forEach((item) => {
                 const { matchingFields, node } = item;
+                const entityTemplate = entityTemplateMap!.get(node.templateId)!;
+                const entityTemplateColor = getEntityTemplateColor(entityTemplate);
 
                 matchingFields.forEach((field) => {
                     const { type, value } = stringToCoordinates(node.properties[field]);
 
-                    let layer;
                     if (type === 'polygon') {
-                        layer = L.polygon(value as LatLngExpression[]).setStyle({ fill: false });
-                    } else {
-                        layer = L.marker(value as LatLngExpression);
-                    }
+                        // Create the polygon layer
+                        const polygonLayer = L.polygon(value as LatLngExpression[]).setStyle({ fill: false, color: entityTemplateColor });
+                        searchResultGroupRef?.current?.addLayer(polygonLayer);
 
-                    if (layer) {
-                        layer.on('click', () => {
+                        // Create a marker at the polygon's center
+                        const centerMarker = L.marker(polygonLayer.getCenter(), { icon: polygonCenterIcon(entityTemplateColor) });
+
+                        // When the center marker is clicked, call onSelectEntity
+                        centerMarker.on('click', () => {
                             onSelectEntity({ node, field });
                         });
-                        searchResultGroupRef?.current?.addLayer(layer);
+
+                        // Add both the polygon and the center marker to the search result group
+                        searchResultGroupRef?.current?.addLayer(centerMarker);
+                    } else {
+                        const markerLayer = L.marker(value as LatLngExpression, { icon: markerIcon(entityTemplateColor) });
+                        markerLayer.on('click', () => {
+                            onSelectEntity({ node, field });
+                        });
+                        searchResultGroupRef?.current?.addLayer(markerLayer);
                     }
                 });
             });
         },
+
         onError: (error) => {
             console.log('error', error);
         },
     });
 
-    const generateTemplateObject: ISearchEntitiesByLocationTemplatesBody | null = useMemo(() => {
-        return entityTemplateMap ? Array.from(entityTemplateMap.keys()).reduce((acc, elem) => ({ ...acc, [elem]: { filter: {} } }), {}) : null;
-    }, [entityTemplateMap]);
-
-    const generateFilteredTemplateObject = () => {
-        if (!entityTemplateMap) return null;
-
-        return filteredTemplatesIds.reduce((acc, templateId) => {
-            if (entityTemplateMap.has(templateId)) {
+    const handleFetchLocationRequest = () => {
+        const templatesObject = filteredTemplatesIds.reduce((acc, templateId) => {
+            if (entityTemplateMap!.has(templateId)) {
                 return { ...acc, [templateId]: { filter: {} } };
             }
             return acc;
         }, {});
-    };
 
-    const handleFetchLocationRequest = (location: { circle?: Circle; polygon?: Polygon }) => {
-        const generateTemplateObject2 = generateFilteredTemplateObject();
-
-        console.log(generateTemplateObject);
-        console.log(generateTemplateObject2);
-
-        if (generateTemplateObject) {
-            const payload = {
-                textSearch: '',
-                templates: generateTemplateObject,
-                ...location,
-            };
-            mutate(payload);
+        if (templatesObject && circle) {
+            mutate({ textSearch: '', templates: templatesObject, circle });
         }
-    };
-
-    const handlePolylineLayer = (layer) => {
-        layer.bindPopup(bindPopupForLine(layer.getLatLngs() as L.LatLng[])).openPopup();
-    };
-
-    const handleCircleLayer = (layer) => {
-        if (layer.getRadius() > MAX_RADIUS) {
-            layer.setRadius(MAX_RADIUS);
-        }
-
-        if (lastCircleRef.current) {
-            featureGroupRef?.current?.removeLayer(lastCircleRef.current);
-        }
-        lastCircleRef.current = layer;
-
-        const circle: Circle = {
-            coordinate: [layer.getLatLng().lng, layer.getLatLng().lat],
-            radius: layer.getRadius(),
-        };
-
-        handleFetchLocationRequest({ circle });
-
-        const bounds = layer.getBounds();
-        map.fitBounds(bounds);
-
-        layer.bindPopup(bindPopupForCircle(layer.getRadius()));
-        layer.on('click', () => {
-            map.fitBounds(bounds);
-        });
     };
 
     const handleCreateLayer = (e) => {
         const { layer } = e;
         if (layer instanceof L.Polyline && !(layer instanceof L.Polygon)) {
-            handlePolylineLayer(layer);
+            layer.bindPopup(bindPopupForLine(layer.getLatLngs() as L.LatLng[])).openPopup();
         } else if (layer instanceof L.Circle) {
-            handleCircleLayer(layer);
+            if (lastCircleRef.current) {
+                featureGroupRef?.current?.removeLayer(lastCircleRef.current);
+            }
+            lastCircleRef.current = layer;
+
+            setCircle({
+                coordinate: [layer.getLatLng().lng, layer.getLatLng().lat],
+                radius: layer.getRadius(),
+            });
+
+            handleFetchLocationRequest();
+
+            const bounds = layer.getBounds();
+            map.fitBounds(bounds);
+
+            layer.bindPopup(bindPopupForCircle(layer.getRadius()));
+            layer.on('click', () => {
+                map.fitBounds(bounds);
+            });
         }
         featureGroupRef?.current?.addLayer(layer);
     };
@@ -128,11 +126,15 @@ export const EditableMapControl = ({ featureGroupRef, searchResultGroupRef, last
     const handleDeleteLayer = (e) => {
         e.layers.eachLayer((layer) => {
             if (layer instanceof L.Circle && layer === lastCircleRef.current) {
-                lastCircleRef.current = null;
+                lastCircleRef.current.remove();
             }
             featureGroupRef?.current?.removeLayer(layer);
         });
     };
+
+    useEffect(() => {
+        handleFetchLocationRequest();
+    }, [filteredTemplatesIds]);
 
     return (
         <EditControl

@@ -27,9 +27,9 @@ const MapPageEntityDialog = ({ open, onClose, entityWithMatchingField }: props) 
     const entityTemplateColor = getEntityTemplateColor(entityTemplate);
 
     return (
-        <Dialog open={open} onClose={onClose}>
-            <Box display="flex" justifyContent="space-between" alignItems="center">
-                <Box padding={1} display="flex" gap="10px" alignItems="center">
+        <Dialog open={open} onClose={onClose} sx={{ opacity: 0.95 }}>
+            <Box display="flex" justifyContent="space-between" alignItems="center" padding="10px 20px 0px 20px">
+                <Box display="flex" gap="10px" alignItems="center">
                     <CustomIcon
                         iconUrl={entityTemplate.iconFileId!}
                         height={environment.iconSize.height}
@@ -47,7 +47,7 @@ const MapPageEntityDialog = ({ open, onClose, entityWithMatchingField }: props) 
                     <img src="/icons/read-more-icon.svg" onClick={() => navigate(`/entity/${entityWithMatchingField.node.properties._id}`)} />
                 </IconButtonWithPopover>
             </Box>
-            <Grid item xs={8} container paddingLeft="4px" paddingBottom="14px" height="fit-content" minHeight="37px" alignItems="center">
+            <Grid item xs={8} container alignItems="center" padding="20px">
                 <EntityProperties
                     entityTemplate={entityTemplate}
                     properties={entityWithMatchingField.node.properties}
@@ -57,8 +57,6 @@ const MapPageEntityDialog = ({ open, onClose, entityWithMatchingField }: props) 
                         flexDirection: 'row',
                         flexWrap: 'wrap',
                         rowGap: '14px',
-                        marginRight: '1rem',
-                        paddingTop: '10px',
                         alignItems: 'center',
                         width: '100%',
                     }}

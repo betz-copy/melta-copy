@@ -14,7 +14,6 @@ import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplat
 const MapPage = () => {
     const featureGroupRef = useRef<L.FeatureGroup | null>(null);
     const searchResultGroupRef = useRef<L.FeatureGroup | null>(null);
-    const lastCircleRef = useRef<L.Circle | null>(null);
 
     const [selectedEntity, setSelectedEntity] = useState<{ node: IEntity; field: string } | null>(null);
 
@@ -53,7 +52,6 @@ const MapPage = () => {
                     <EditableMapControl
                         featureGroupRef={featureGroupRef}
                         searchResultGroupRef={searchResultGroupRef}
-                        lastCircleRef={lastCircleRef}
                         onSelectEntity={setSelectedEntity}
                         filteredTemplatesIds={selectedTemplates.map(({ _id }) => _id)}
                     />

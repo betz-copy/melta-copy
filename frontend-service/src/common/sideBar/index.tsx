@@ -9,6 +9,7 @@ import {
     ManageAccounts as ManageAccountsIcon,
     MeetingRoom as ExitIcon,
     Widgets as WidgetsIcon,
+    Map,
 } from '@mui/icons-material';
 import LinkIcon from '@mui/icons-material/Link';
 import { Box, Button, Grid, IconButton, Slide, Typography, useTheme } from '@mui/material';
@@ -364,6 +365,16 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                         isActiveButton={activeButton === 'iFrames'}
                     >
                         <LinkIcon fontSize="large" sx={{ color: activeButton === 'iFrames' ? '#545eb9' : 'white', ...environment.iconSize }} />
+                    </NavButton>
+
+                    <NavButton
+                        to="/map"
+                        text="עמוד מפה"
+                        isDrawerOpen={isDrawerOpen}
+                        onChangeToActive={(isActive) => handleChangeActiveButton(isActive, 'map')}
+                        isActiveButton={activeButton === 'map'}
+                    >
+                        <Map fontSize="large" sx={{ color: activeButton === 'map' ? '#545eb9' : 'white', ...environment.iconSize }} />
                     </NavButton>
 
                     <NavButton
