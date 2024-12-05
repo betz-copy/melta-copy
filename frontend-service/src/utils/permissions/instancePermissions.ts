@@ -32,3 +32,5 @@ export const getCategoryPermissionsToSyncAndDelete = (instances: ISubCompactPerm
 
     return { categoryPermissionsToSync, categoryPermissionsToDelete };
 };
+
+export const isWorkspaceAdmin = (permissions: ISubCompactPermissions) => permissions.admin?.scope === PermissionScope.write;

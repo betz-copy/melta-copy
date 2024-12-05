@@ -759,7 +759,7 @@ export default {
         RULE_BLOCK: 'עבר על חוקים',
         RULE_HAS_ALERTS_OR_REQUESTS: 'לחוק קיימים התראות/בקשות. ניתן רק להשבית אותו',
         FILES_TOO_BIG: 'סך גודל הקבצים גדול מדי',
-        ENTITY_HAS_RELATIONSHIPS_REFERENCE: 'קיימים קשרים מסוג שיוך לישות',
+        ENTITY_HAS_RELATIONSHIPS_REFERENCE: 'ישות זו מקשורת כשדה בישויות אחרות',
     },
     tourText: {
         sideBar: 'סרגל הניווט הראשי של המערכת למעבר בין עולמות התוכן והעמודים השונים',

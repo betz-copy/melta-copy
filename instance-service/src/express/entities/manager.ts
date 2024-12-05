@@ -906,14 +906,12 @@ export class EntityManager extends DefaultManagerNeo4j {
     }
 
     async getEntitiesToDelete(deleteBody: IDeleteBody, entityTemplate: IMongoEntityTemplate): Promise<IEntity[]> {
-        const { selectAll } = deleteBody;
-
-        if (selectAll) {
-            const { idsToExclude, filter, textSearch = '' } = deleteBody;
+        if (deleteBody.selectAll) {
+            const { idsToExclude, filter, textSearch = '' } = deleteBody as IDeleteBody<true>;
             return this.getFilteredEntitiesToDelete(entityTemplate, filter, idsToExclude, textSearch);
         }
 
-        const { idsToInclude } = deleteBody;
+        const { idsToInclude } = deleteBody as IDeleteBody<false>;
         return this.getEntitiesByIds(idsToInclude);
     }
 
@@ -958,6 +956,7 @@ export class EntityManager extends DefaultManagerNeo4j {
     }
 
     async getRelationshipReferencesToTemplate({ _id: templateId, properties: { properties } }: IMongoEntityTemplate, entitiesToDelete: IEntity[]) {
+        const entitiesCanDelete: IEntity[] = [];
         const [sourceRelationships, destRelationships] = await Promise.all([
             this.relationshipsTemplateManagerService.searchRelationshipTemplates({ sourceEntityIds: [templateId] }),
             this.relationshipsTemplateManagerService.searchRelationshipTemplates({ destinationEntityIds: [templateId] }),
@@ -969,23 +968,38 @@ export class EntityManager extends DefaultManagerNeo4j {
 
         const isPropertyRelationships = allRelevantRelationshipWithoutDuplicate.filter((relationship) => relationship.isProperty);
 
-        await Promise.all(
-            entitiesToDelete.map(async ({ properties: { _id: entityId } }) => {
-                const entityHasRelationship = await Promise.all(
-                    isPropertyRelationships.map(async ({ _id: RelationshipId, name }) => {
-                        if (properties[name]?.relationshipReference?.relationshipTemplateId === RelationshipId) return false;
+        for (const entity of entitiesToDelete)
+            for (const { _id: relationshipId, name } of isPropertyRelationships) {
+                if (properties[name]?.relationshipReference?.relationshipTemplateId === relationshipId) continue;
 
-                        const relationshipCount = await this.relationshipManager.getRelationshipByTemplateIdAndEntityId(RelationshipId, entityId);
-                        return relationshipCount > 0;
-                    }),
+                const relationshipCount = await this.relationshipManager.getRelationshipByTemplateIdAndEntityId(
+                    relationshipId,
+                    entity.properties._id,
                 );
 
-                if (entityHasRelationship.some((exists) => exists))
-                    throw new BadRequestError(`Some entities have a relationshipReference field.`, {
-                        errorCode: config.errorCodes.entityHasRelationshipReferenceField,
-                    });
-            }),
-        );
+                if (relationshipCount === 0) entitiesCanDelete.push(entity);
+            }
+
+        return entitiesCanDelete;
+    }
+
+    private async getEntitiesExceptForRelationshipReference(
+        entitiesToDelete: IEntity[],
+        entityTemplate: IMongoEntityTemplate,
+        deleteAllRelationships?: boolean,
+    ): Promise<IEntity[]> {
+        if (deleteAllRelationships) {
+            const entitiesWithoutRelationshipReference = await this.getRelationshipReferencesToTemplate(entityTemplate, entitiesToDelete);
+
+            if (!entitiesWithoutRelationshipReference.length)
+                throw new BadRequestError('Some entities have a relationshipReference field.', {
+                    errorCode: config.errorCodes.entityHasRelationshipReferenceField,
+                });
+
+            return entitiesWithoutRelationshipReference;
+        }
+
+        return entitiesToDelete;
     }
 
     async deleteEntityInstances(deleteBody: IDeleteBody) {
@@ -997,16 +1011,22 @@ export class EntityManager extends DefaultManagerNeo4j {
                 const entityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(templateId);
                 const entitiesToDelete = await this.getEntitiesToDelete(deleteBody, entityTemplate);
 
-                if (deleteAllRelationships) await this.getRelationshipReferencesToTemplate(entityTemplate, entitiesToDelete);
+                const allowedEntitiesToDelete = await this.getEntitiesExceptForRelationshipReference(
+                    entitiesToDelete,
+                    entityTemplate,
+                    deleteAllRelationships,
+                );
 
                 if (entitiesToDelete.length >= deleteEntitiesMaxLimit)
                     throw new BadRequestError(`cant delete more then ${deleteEntitiesMaxLimit} instances`);
 
                 await Promise.all(
-                    entitiesToDelete.map((entityToDelete) => this.deleteRelationshipReferenceForEntity(entityToDelete, entityTemplate, transaction)),
+                    allowedEntitiesToDelete.map((entityToDelete) =>
+                        this.deleteRelationshipReferenceForEntity(entityToDelete, entityTemplate, transaction),
+                    ),
                 );
 
-                entityIdsToDelete = entitiesToDelete.map((entityToDelete) => entityToDelete.properties._id);
+                entityIdsToDelete = allowedEntitiesToDelete.map((entityToDelete) => entityToDelete.properties._id);
                 await this.deleteEntityInstancesInTransaction(transaction, entityIdsToDelete, templateId, deleteAllRelationships);
 
                 return this.getFilesOfEntities(entitiesToDelete, entityTemplate);

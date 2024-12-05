@@ -5,7 +5,7 @@ import {
     Download,
     Expand,
     TableRowsOutlined,
-    LibraryAddCheckOutlined,
+    LibraryAddCheckOutlined as SelectMultipleIcon,
 } from '@mui/icons-material';
 import { Box, CircularProgress, Dialog, Grid, useTheme } from '@mui/material';
 import i18next from 'i18next';
@@ -196,8 +196,9 @@ const TemplateTable = forwardRef<
                                 },
                             },
                         }}
-                        icon={<LibraryAddCheckOutlined fontSize="small" />}
+                        icon={<SelectMultipleIcon fontSize="small" />}
                         text={i18next.t('entitiesTableOfTemplate.multipleSelect')}
+                        disableButton={!userHasWritePermissions}
                     />
                 </Grid>
 

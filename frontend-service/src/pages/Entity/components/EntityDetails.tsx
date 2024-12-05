@@ -20,14 +20,14 @@ import { ErrorToast } from '../../../common/ErrorToast';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
 import { ImageWithDisable } from '../../../common/ImageWithDisable';
 import { MenuButton } from '../../../common/MenuButton';
-import { IEntity, IEntityExpanded } from '../../../interfaces/entities';
+import { IDeleteEntityBody, IEntity, IEntityExpanded } from '../../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { PermissionScope } from '../../../interfaces/permissions';
 import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
 import { deleteEntityRequest, updateEntityStatusRequest } from '../../../services/entitiesService';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { useUserStore } from '../../../stores/user';
-import { checkUserCategoryPermission } from '../../../utils/permissions/instancePermissions';
+import { checkUserCategoryPermission, isWorkspaceAdmin } from '../../../utils/permissions/instancePermissions';
 import { EditEntityDetails } from './EditEntityDetails';
 import { EntityDates } from './EntityDates';
 import { EntityDisableCheckbox } from './EntityDisableCheckbox';
@@ -39,16 +39,31 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
     expandedEntity,
 }) => {
     const { entity } = expandedEntity;
+
     const [_, navigate] = useLocation();
+    const queryClient = useQueryClient();
+
     const [isEditMode, setIsEditMode] = useState(false);
     const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
-    const queryClient = useQueryClient();
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+    const [updateStatusWithRuleBreachDialogState, setUpdateStatusWithRuleBreachDialogState] = useState<{
+        isOpen: boolean;
+        brokenRules?: IRuleBreachPopulated['brokenRules'];
+        rawBrokenRules?: IRuleBreach['brokenRules'];
+        disabledStatus?: boolean;
+    }>({ isOpen: false });
 
     const currentUser = useUserStore((state) => state.user);
     const darkMode = useDarkModeStore((state) => state.darkMode);
-
     const open = Boolean(anchorEl);
+
+    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+    const currentEntityTemplate = entityTemplates.get(expandedEntity?.entity.templateId);
+    const templateIds = Array.from(entityTemplates.keys());
+
+    const WorkspaceAdmin = isWorkspaceAdmin(currentUser.currentWorkspacePermissions);
+    const canWriteInstance = checkUserCategoryPermission(currentUser.currentWorkspacePermissions, entityTemplate.category, PermissionScope.write);
+    const isEntityDisabled = expandedEntity.entity.properties.disabled;
 
     const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
         setAnchorEl(event.currentTarget);
@@ -62,15 +77,6 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
         setOpenDeleteDialog(false);
     };
 
-    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const currentEntityTemplate = entityTemplates.get(expandedEntity?.entity.templateId);
-    const templateIds = Array.from(entityTemplates.keys());
-    const [updateStatusWithRuleBreachDialogState, setUpdateStatusWithRuleBreachDialogState] = useState<{
-        isOpen: boolean;
-        brokenRules?: IRuleBreachPopulated['brokenRules'];
-        rawBrokenRules?: IRuleBreach['brokenRules'];
-        disabledStatus?: boolean;
-    }>({ isOpen: false });
     const { isLoading: isUpdateStatusLoading, mutateAsync: updateEntityStatus } = useMutation(
         ({ currEntity, disabled, ignoredRules }: { currEntity: IEntity; disabled: boolean; ignoredRules?: IRuleBreach['brokenRules'] }) =>
             updateEntityStatusRequest(currEntity.properties._id, disabled, JSON.stringify(ignoredRules)),
@@ -109,9 +115,8 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                 selectAll: false,
                 templateId: currentEntityTemplate?._id as string,
                 idsToInclude: [entity.properties._id],
-                deleteAllRelationships:
-                    expandedEntity.connections.length > 0 && currentUser.currentWorkspacePermissions.admin?.scope === PermissionScope.write,
-            }),
+                deleteAllRelationships: expandedEntity.connections.length > 0 && WorkspaceAdmin,
+            } as IDeleteEntityBody<false>),
         {
             onError: (error: AxiosError) => {
                 closeDeleteDialog();
@@ -144,8 +149,6 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
         );
     }
 
-    const canWriteInstance = checkUserCategoryPermission(currentUser.currentWorkspacePermissions, entityTemplate.category, PermissionScope.write);
-    const isEntityDisabled = expandedEntity.entity.properties.disabled;
     return (
         <>
             <Card
@@ -315,7 +318,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                     handleClose={closeDeleteDialog}
                     body={
                         expandedEntity.connections.length > 0 &&
-                        currentUser.currentWorkspacePermissions.admin?.scope === PermissionScope.write &&
+                        WorkspaceAdmin &&
                         i18next.t('entityPage.wouldYouLikeToDeleteTheRelationshipsOfEntity')
                     }
                     onYes={() => deleteMutation()}

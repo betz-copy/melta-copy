@@ -1,6 +1,6 @@
 import { Box, Button, debounce, useScrollTrigger } from '@mui/material';
 import { useTour } from '@reactour/tour';
-import i18next, { loadLanguages } from 'i18next';
+import i18next from 'i18next';
 import React, { lazy, Suspense, useEffect, useState } from 'react';
 import { useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';

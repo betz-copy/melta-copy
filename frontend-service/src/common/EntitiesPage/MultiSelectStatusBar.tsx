@@ -1,21 +1,21 @@
-import React, { useCallback, useEffect, useState } from 'react';
 import { IServerSideSelectionState, IStatusPanelParams } from '@ag-grid-community/core';
-import { CircularProgress, Grid, TextField, Typography } from '@mui/material';
 import { Delete } from '@mui/icons-material';
-import i18next from 'i18next';
-import { useMutation } from 'react-query';
+import { CircularProgress, Grid, Typography } from '@mui/material';
 import { AxiosError } from 'axios';
+import i18next from 'i18next';
+import React, { useEffect, useState } from 'react';
+import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
-import { deleteEntityRequest } from '../../services/entitiesService';
-import { AreYouSureDialog } from '../dialogs/AreYouSureDialog';
-import { ErrorToast } from '../ErrorToast';
+import { environment } from '../../globals';
 import { IDeleteEntityBody } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { filterModelToFilterOfTemplate } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
-import { environment } from '../../globals';
-import { TableButton } from '../TableButton';
+import { deleteEntityRequest } from '../../services/entitiesService';
 import { useUserStore } from '../../stores/user';
-import { PermissionScope } from '../../interfaces/permissions';
+import { filterModelToFilterOfTemplate } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
+import { isWorkspaceAdmin } from '../../utils/permissions/instancePermissions';
+import { AreYouSureDialog } from '../dialogs/AreYouSureDialog';
+import { ErrorToast } from '../ErrorToast';
+import { TableButton } from '../TableButton';
 import { DeleteEntitiesDialog } from './DeleteEntitiesDialog';
 
 interface MultiSelectStatusBarProps extends IStatusPanelParams {
@@ -25,27 +25,12 @@ interface MultiSelectStatusBarProps extends IStatusPanelParams {
 
 export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api, entityTemplate, quickFilterText }) => {
     const currentUser = useUserStore((state) => state.user);
+    const workspaceAdmin = isWorkspaceAdmin(currentUser.currentWorkspacePermissions);
 
     const [openRelationshipDialog, setOpenRelationshipDialog] = useState(false);
     const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
     const [selectedRowCount, setSelectedRowCount] = useState(0);
     const [confirmDeleteDisplayNameValue, setConfirmDeleteDisplayNameValue] = useState('');
-
-    const updateSelectedRowCount = useCallback(() => {
-        const { selectAll, toggledNodes } = api.getServerSideSelectionState() as IServerSideSelectionState;
-
-        if (selectAll) {
-            const toggledNodesCount = toggledNodes.length;
-            setSelectedRowCount(api.getDisplayedRowCount() - toggledNodesCount);
-        } else setSelectedRowCount(api.getSelectedRows().length);
-    }, [api]);
-
-    useEffect(() => {
-        api.addEventListener('selectionChanged', updateSelectedRowCount);
-        updateSelectedRowCount();
-
-        return () => api.removeEventListener('selectionChanged', updateSelectedRowCount);
-    }, [api, updateSelectedRowCount]);
 
     const { isLoading: isDeleteLoading, mutateAsync: deleteMutation } = useMutation(
         (deleteBody: IDeleteEntityBody) => deleteEntityRequest(deleteBody),
@@ -53,42 +38,62 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
             onError: (error: AxiosError) => {
                 const errorIdentifier = error.response?.data?.metadata?.errorCode;
 
-                if (
-                    errorIdentifier === 'ENTITY_HAS_RELATIONSHIPS' &&
-                    currentUser.currentWorkspacePermissions.admin?.scope === PermissionScope.write
-                ) {
-                    setOpenRelationshipDialog(true);
-                } else {
+                if (errorIdentifier === 'ENTITY_HAS_RELATIONSHIPS' && workspaceAdmin) setOpenRelationshipDialog(true);
+                else {
                     toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.entity.failedToDeleteEntities')} />);
                     api.deselectAll();
                 }
             },
             onSuccess: () => {
                 toast.success(i18next.t('wizard.entity.deletedEntitiesSuccess'));
+                setConfirmDeleteDisplayNameValue('');
                 api.refreshServerSide();
                 api.deselectAll();
             },
         },
     );
 
+    useEffect(() => {
+        const updateSelectedRowCount = () => {
+            const { selectAll, toggledNodes } = api.getServerSideSelectionState() as IServerSideSelectionState;
+
+            if (selectAll) {
+                const toggledNodesCount = toggledNodes.length;
+                setSelectedRowCount(api.getDisplayedRowCount() - toggledNodesCount);
+            } else setSelectedRowCount(api.getSelectedRows().length);
+        };
+
+        api.addEventListener('selectionChanged', updateSelectedRowCount);
+        updateSelectedRowCount();
+
+        return () => api.removeEventListener('selectionChanged', updateSelectedRowCount);
+    }, [api]);
+
     const handleMultipleDelete = (deleteAllRelationships = false) => {
         const { selectAll, toggledNodes } = api.getServerSideSelectionState() as IServerSideSelectionState;
         const { _id: templateId } = entityTemplate;
+        let deleteBody: IDeleteEntityBody<boolean>;
 
         if (selectAll) {
-            deleteMutation({
-                selectAll,
+            deleteBody = {
+                selectAll: true,
                 idsToExclude: toggledNodes,
                 deleteAllRelationships,
                 templateId,
                 filter: filterModelToFilterOfTemplate(api.getFilterModel(), entityTemplate),
                 textSearch: quickFilterText,
-            });
+            } as IDeleteEntityBody<true>;
         } else {
             const selectedRowsIds = api.getSelectedRows().map((row) => row.properties._id);
-            deleteMutation({ selectAll: false, idsToInclude: selectedRowsIds, deleteAllRelationships, templateId });
+            deleteBody = {
+                selectAll: false,
+                idsToInclude: selectedRowsIds,
+                deleteAllRelationships,
+                templateId,
+            } as IDeleteEntityBody<false>;
         }
 
+        deleteMutation(deleteBody);
         setOpenDeleteDialog(false);
     };
 

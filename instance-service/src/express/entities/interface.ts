@@ -168,14 +168,14 @@ export interface IDeleteBodyBase {
     deleteAllRelationships?: boolean;
 }
 
-export type IDeleteBody =
-    | ({
-          selectAll: true;
-          idsToExclude?: string[];
-          filter?: ISearchEntitiesOfTemplateBody['filter'];
-          textSearch?: string;
-      } & IDeleteBodyBase)
-    | ({
-          selectAll: false;
-          idsToInclude: string[];
-      } & IDeleteBodyBase);
+export type IDeleteBody<T extends boolean = boolean> = IDeleteBodyBase & {
+    selectAll: T;
+} & (T extends true
+        ? {
+              idsToExclude?: string[];
+              filter?: ISearchEntitiesOfTemplateBody['filter'];
+              textSearch?: string;
+          }
+        : {
+              idsToInclude: string[];
+          });
