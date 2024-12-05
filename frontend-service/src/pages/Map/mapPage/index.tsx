@@ -1,175 +1,25 @@
-import React, { useMemo, useRef, useState } from 'react';
-import { MapContainer, TileLayer, LayersControl, FeatureGroup, useMap } from 'react-leaflet';
+import React, { useRef, useState } from 'react';
+import { MapContainer, TileLayer, LayersControl, FeatureGroup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-draw/dist/leaflet.draw.css';
-import L, { LatLng, LatLngExpression } from 'leaflet';
-import { EditControl } from 'react-leaflet-draw';
-import { useMutation, useQueryClient } from 'react-query';
+import L from 'leaflet';
 import { Box } from '@mui/material';
-import {
-    bindPopupForCircle,
-    bindPopupForLine,
-    bindPopupForMarker,
-    bindPopupForPolygon,
-    jerusalemCoordinates,
-    stringToCoordinates,
-} from '../../../utils/map';
-import { getEntitiesByLocation } from '../../../services/entitiesService';
-import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
-import { Circle, IEntity, ISearchEntitiesByLocationTemplatesBody, Polygon } from '../../../interfaces/entities';
+import { jerusalemCoordinates } from '../../../utils/map';
+import { IEntity } from '../../../interfaces/entities';
 import MapPageEntityDialog from './MapPageEntityDialog';
-
-const EditableMapControl = ({ featureGroupRef, searchResultGroupRef, lastCircleRef, onSelectEntity }) => {
-    const map = useMap();
-    const queryClient = useQueryClient();
-    const entityTemplateMap = queryClient.getQueryData<IEntityTemplateMap>(['getEntityTemplates']);
-
-    const { mutate } = useMutation(getEntitiesByLocation, {
-        onSuccess: (response) => {
-            if (searchResultGroupRef.current) {
-                searchResultGroupRef.current.clearLayers();
-            }
-
-            response.forEach((item) => {
-                const { matchingFields, node } = item;
-
-                matchingFields.forEach((field) => {
-                    const { type, value } = stringToCoordinates(node.properties[field]);
-
-                    let layer;
-                    if (type === 'polygon') {
-                        layer = L.polygon(value as LatLngExpression[]);
-                    } else {
-                        layer = L.marker(value as LatLngExpression);
-                    }
-
-                    if (layer) {
-                        layer.on('click', () => {
-                            onSelectEntity(node);
-                        });
-                        searchResultGroupRef.current.addLayer(layer); // Add to search results
-                    }
-                });
-            });
-        },
-        onError: (error) => {
-            console.log('error', error);
-        },
-    });
-
-    const generateTemplateObject: ISearchEntitiesByLocationTemplatesBody | null = useMemo(() => {
-        return entityTemplateMap ? Array.from(entityTemplateMap.keys()).reduce((acc, elem) => ({ ...acc, [elem]: { filter: {} } }), {}) : null;
-    }, [entityTemplateMap]);
-
-    const handleFetchLocationRequest = (location: { circle?: Circle; polygon?: Polygon }) => {
-        if (generateTemplateObject) {
-            const payload = {
-                textSearch: '',
-                templates: generateTemplateObject,
-                ...location,
-            };
-            mutate(payload);
-        }
-    };
-
-    const handleCreateLayer = (e) => {
-        const { layer } = e;
-
-        if (layer instanceof L.Marker) {
-            layer.bindPopup(bindPopupForMarker(layer.getLatLng())).openPopup();
-        } else if (layer instanceof L.Polyline && !(layer instanceof L.Polygon)) {
-            layer.bindPopup(bindPopupForLine(layer.getLatLngs() as L.LatLng[])).openPopup();
-        } else if (layer instanceof L.Polygon) {
-            const polygon: Polygon = (layer.getLatLngs()[0] as LatLng[]).map((coordinates) => [coordinates.lat, coordinates.lng]);
-            handleFetchLocationRequest({ polygon });
-            const bounds = layer.getBounds();
-
-            map.fitBounds(bounds);
-            layer.bindPopup(bindPopupForPolygon(layer.getLatLngs()[0] as L.LatLng[]));
-            layer.on('click', () => {
-                map.fitBounds(bounds);
-            });
-        } else if (layer instanceof L.Circle) {
-            if (lastCircleRef.current) {
-                featureGroupRef.current.removeLayer(lastCircleRef.current);
-            }
-            lastCircleRef.current = layer;
-
-            const circle: Circle = { coordinate: [layer.getLatLng().lng, layer.getLatLng().lat], radius: layer.getRadius() };
-            handleFetchLocationRequest({ circle });
-            const bounds = layer.getBounds();
-            map.fitBounds(bounds);
-            layer.bindPopup(bindPopupForCircle(layer.getRadius()));
-            layer.on('click', () => {
-                map.fitBounds(bounds);
-            });
-        }
-
-        featureGroupRef.current.addLayer(layer);
-    };
-
-    const handleEditLayer = (e) => {
-        e.layers.eachLayer((layer) => {
-            if (layer instanceof L.Marker) {
-                layer.bindPopup(bindPopupForMarker(layer.getLatLng())).openPopup();
-            } else if (layer instanceof L.Polyline && !(layer instanceof L.Polygon)) {
-                layer.bindPopup(bindPopupForLine(layer.getLatLngs() as L.LatLng[])).openPopup();
-            } else if (layer instanceof L.Polygon) {
-                map.fitBounds(layer.getBounds());
-                layer.bindPopup(bindPopupForPolygon(layer.getLatLngs()[0] as L.LatLng[])).openPopup();
-            } else if (layer instanceof L.Circle) {
-                map.fitBounds(layer.getBounds());
-                layer.bindPopup(bindPopupForCircle(layer.getRadius())).openPopup();
-            }
-        });
-    };
-
-    const handleDeleteLayer = (e) => {
-        e.layers.eachLayer((layer) => {
-            if (layer instanceof L.Circle && layer === lastCircleRef.current) {
-                lastCircleRef.current = null;
-            }
-            featureGroupRef.current.removeLayer(layer);
-        });
-    };
-
-    return (
-        <EditControl
-            position="topright"
-            draw={{
-                rectangle: false,
-                circlemarker: false,
-                polygon: false,
-                marker: false,
-                circle: {
-                    shapeOptions: {
-                        color: 'red',
-                    },
-                },
-                polyline: {
-                    shapeOptions: {
-                        color: 'red',
-                    },
-                },
-            }}
-            edit={{
-                featureGroup: featureGroupRef.current,
-                edit: {},
-                remove: true,
-            }}
-            onCreated={handleCreateLayer}
-            onEdited={handleEditLayer}
-            onDeleted={handleDeleteLayer}
-        />
-    );
-};
+import { EditableMapControl } from './MapControl';
+import MapFilters from './MapFilters';
+import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 
 const MapPage = () => {
-    const featureGroupRef = useRef<L.FeatureGroup>(null); // For user-drawn layers
-    const searchResultGroupRef = useRef<L.FeatureGroup>(null); // For search results
-    const lastCircleRef = useRef<L.Circle | null>(null); // To track the last drawn circle
+    const featureGroupRef = useRef<L.FeatureGroup | null>(null);
+    const searchResultGroupRef = useRef<L.FeatureGroup | null>(null);
+    const lastCircleRef = useRef<L.Circle | null>(null);
 
-    const [selectedEntity, setSelectedEntity] = useState<IEntity | null>(null);
+    const [selectedEntity, setSelectedEntity] = useState<{ node: IEntity; field: string } | null>(null);
+
+    const [selectedTemplates, setSelectedTemplates] = useState<IMongoEntityTemplatePopulated[]>([]);
+    const [searchValue, setSearchValue] = useState('');
 
     return (
         <Box position="relative" width="100%" height="100vh">
@@ -205,12 +55,22 @@ const MapPage = () => {
                         searchResultGroupRef={searchResultGroupRef}
                         lastCircleRef={lastCircleRef}
                         onSelectEntity={setSelectedEntity}
+                        filteredTemplatesIds={selectedTemplates.map(({ _id }) => _id)}
                     />
                 </FeatureGroup>
 
                 <FeatureGroup ref={searchResultGroupRef} />
+
+                <MapFilters
+                    searchValue={searchValue}
+                    selectedTemplates={selectedTemplates}
+                    setSearchValue={setSearchValue}
+                    setSelectedTemplates={setSelectedTemplates}
+                />
             </MapContainer>
-            {selectedEntity && <MapPageEntityDialog open={!!selectedEntity} entity={selectedEntity} onClose={() => setSelectedEntity(null)} />}
+            {selectedEntity && (
+                <MapPageEntityDialog open={!!selectedEntity} entityWithMatchingField={selectedEntity} onClose={() => setSelectedEntity(null)} />
+            )}
         </Box>
     );
 };

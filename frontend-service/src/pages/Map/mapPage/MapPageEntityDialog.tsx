@@ -1,34 +1,34 @@
 import React from 'react';
-import { Box, Dialog, Grid, Typography, useTheme } from '@mui/material';
+import { Box, Dialog, Grid, Typography } from '@mui/material';
 import { useQueryClient } from 'react-query';
+import i18next from 'i18next';
+import { useLocation } from 'wouter';
 import { IEntity } from '../../../interfaces/entities';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { EntityProperties } from '../../../common/EntityProperties';
 import { CustomIcon } from '../../../common/CustomIcon';
 import { environment } from '../../../globals';
-import { template } from 'lodash';
 import { getEntityTemplateColor } from '../../../utils/colors';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
 
 type props = {
     open: boolean;
     onClose: () => void;
-    entity: IEntity;
+    entityWithMatchingField: { node: IEntity; field: string };
 };
 
-const MapPageEntityDialog = ({ open, onClose, entity }: props) => {
+const MapPageEntityDialog = ({ open, onClose, entityWithMatchingField }: props) => {
+    const [_, navigate] = useLocation();
     const queryClient = useQueryClient();
+
     const entityTemplateMap = queryClient.getQueryData<IEntityTemplateMap>(['getEntityTemplates']);
-    const theme = useTheme();
 
-    const entityTemplate = entityTemplateMap!.get(entity.templateId)!;
+    const entityTemplate = entityTemplateMap!.get(entityWithMatchingField.node.templateId)!;
     const entityTemplateColor = getEntityTemplateColor(entityTemplate);
-
-    console.log(entityTemplate);
 
     return (
         <Dialog open={open} onClose={onClose}>
-            <Box display="flex" justifyContent="space-between">
+            <Box display="flex" justifyContent="space-between" alignItems="center">
                 <Box padding={1} display="flex" gap="10px" alignItems="center">
                     <CustomIcon
                         iconUrl={entityTemplate.iconFileId!}
@@ -36,22 +36,21 @@ const MapPageEntityDialog = ({ open, onClose, entity }: props) => {
                         width={environment.iconSize.width}
                         color={entityTemplateColor}
                     />
-                    <Typography fontSize="20px" fontWeight="bold">
-                        {entityTemplate.displayName}
+                    <Typography fontSize="20px" fontWeight={700}>
+                        {entityTemplate.displayName} -
+                    </Typography>
+                    <Typography fontSize="18px" fontWeight={600}>
+                        ({i18next.t('wizard.processTemplate.field')} {entityTemplate.properties.properties[entityWithMatchingField.field].title})
                     </Typography>
                 </Box>
-                <IconButtonWithPopover />
-
-                {/* icon: '/icons/read-more-icon.svg',
-                action: () => {
-                    navigate(`/entity/${entity.properties._id}`);
-                },
-                popoverText: i18next.t('wizard.entity.readMore'), */}
+                <IconButtonWithPopover popoverText={i18next.t('entitiesTableOfTemplate.navigateToEntityPage')}>
+                    <img src="/icons/read-more-icon.svg" onClick={() => navigate(`/entity/${entityWithMatchingField.node.properties._id}`)} />
+                </IconButtonWithPopover>
             </Box>
             <Grid item xs={8} container paddingLeft="4px" paddingBottom="14px" height="fit-content" minHeight="37px" alignItems="center">
                 <EntityProperties
                     entityTemplate={entityTemplate}
-                    properties={entity.properties}
+                    properties={entityWithMatchingField.node.properties}
                     mode="normal"
                     style={{
                         display: 'flex',

@@ -148,6 +148,9 @@ const EntitiesPageHeadline: React.FC<{
             onAddEntity(entity.properties._id);
         }
     };
+
+    console.log({ entityTemplateSelectCheckboxProps });
+
     return (
         <Grid
             container
