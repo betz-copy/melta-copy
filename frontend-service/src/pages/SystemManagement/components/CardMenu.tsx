@@ -16,7 +16,7 @@ import { environment } from '../../../globals';
 import { useUserStore } from '../../../stores/user';
 
 export const CardMenu: React.FC<{
-    onEditClick: MouseEventHandler;
+    onEditClick?: MouseEventHandler;
     onDeleteClick?: MouseEventHandler;
     disabledProps?: { isDisabled: boolean; isEditDisabled: boolean; tooltipTitle: string; editTooltipTitle?: string };
     onDisableClick?: MouseEventHandler;
@@ -61,19 +61,21 @@ export const CardMenu: React.FC<{
                 <OptionsIcon />
             </IconButton>
             <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
-                <MeltaTooltip placement="left" title={editTooltipTitle} disableHoverListener={!disabledProps?.isEditDisabled}>
-                    <Grid>
-                        <MenuButton
-                            onClick={(e) => {
-                                onEditClick(e);
-                                handleClose(e);
-                            }}
-                            text={i18next.t('actions.edit')}
-                            disabled={disabledProps?.isEditDisabled}
-                            icon={<EditIcon color="action" />}
-                        />
-                    </Grid>
-                </MeltaTooltip>
+                {onEditClick && (
+                    <MeltaTooltip placement="top" title={editTooltipTitle} disableHoverListener={!disabledProps?.isEditDisabled}>
+                        <Grid>
+                            <MenuButton
+                                onClick={(e) => {
+                                    onEditClick(e);
+                                    handleClose(e);
+                                }}
+                                text={i18next.t('actions.edit')}
+                                disabled={disabledProps?.isEditDisabled}
+                                icon={<EditIcon color="action" />}
+                            />
+                        </Grid>
+                    </MeltaTooltip>
+                )}
 
                 {onDuplicateClick && (
                     <MenuButton
@@ -119,9 +121,13 @@ export const CardMenu: React.FC<{
                             onDisableClick(e);
                             handleClose(e);
                         }}
-                        text={isEntityTemplateDisabled || isRuleDisabled ? i18next.t('actions.activate') : i18next.t('actions.disable')}
+                        text={
+                            isEntityTemplateDisabled || isRuleDisabled || disabledProps?.isDisabled
+                                ? i18next.t('actions.activate')
+                                : i18next.t('actions.disable')
+                        }
                         icon={
-                            isEntityTemplateDisabled || isRuleDisabled ? (
+                            isEntityTemplateDisabled || isRuleDisabled || disabledProps?.isDisabled ? (
                                 <DoNotDisturbOffOutlinedIcon color="action" />
                             ) : (
                                 <DoNotDisturbOnOutlinedIcon color="action" />

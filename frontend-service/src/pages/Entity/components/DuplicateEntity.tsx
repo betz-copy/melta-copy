@@ -41,6 +41,7 @@ const DuplicateEntity: React.FC<{}> = () => {
     if (!state) {
         navigate(`/entity/${entity?.properties._id}`);
     }
+
     const [externalErrors, setExternalErrors] = useState({ files: false, unique: {}, action: '' });
 
     const [duplicateEntityWithRuleBreachDialogState, setDuplicateEntityWithRuleBreachDialogState] = useState<{

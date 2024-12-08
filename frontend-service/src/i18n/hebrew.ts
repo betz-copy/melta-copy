@@ -246,6 +246,7 @@ export default {
         cannotDeleteWithRelationship: 'לא ניתן למחוק קשר זה, קיימים תחתיו קשרים',
         cannotEditEntityDisabled: 'לא ניתן לערוך קשר זה, מכיל ישות מושבתת',
         disabledEntityTemplate: 'תבנית מושבתת',
+        disabledEntity: 'ישות מושבתת',
         disabledRule: 'חוק מושבת',
         defaultCantEdit: 'לא ניתן לערוך ',
         deleteField: 'מחיקת שדה',
