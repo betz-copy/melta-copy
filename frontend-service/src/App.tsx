@@ -21,7 +21,6 @@ import { useWorkspaceStore } from './stores/workspace';
 import { getWorkspacePermissions } from './utils/permissions';
 import { useMatomoInstance } from './matomo';
 
-
 const App: React.FC = () => {
     const [isLoadingUser, setIsLoadingUser] = useState(true);
     const [isErrorMyUser, setIsErrorMyUser] = useState(false);
