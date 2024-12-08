@@ -457,7 +457,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             throw new BadRequestError('entity template still has instances', { errorCode: entityTemplateHasInstances });
         }
     }
-    const updatedRelationship =
+
     async deleteEntityTemplate(id: string): Promise<IMongoEntityTemplateWithConstraints> {
         const entityTemplateToDelete = await this.entityTemplateService.getEntityTemplateById(id);
         await this.throwIfEntityHasRelationships(entityTemplateToDelete);
