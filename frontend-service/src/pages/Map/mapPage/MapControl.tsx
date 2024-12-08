@@ -21,7 +21,7 @@ type props = {
 
 const markerIcon = (color: string) =>
     L.divIcon({
-        className: 'custom-div-icon',
+        className: 'custom-div-icon', // must have for some raeason otherwise looks bad
         html: ReactDOMServer.renderToString(<LocationOn style={{ color, fontSize: '1.5rem' }} />),
     });
 
@@ -80,27 +80,24 @@ export const EditableMapControl = ({ featureGroupRef, searchResultGroupRef, onSe
         },
     });
 
+    // Fetching all template at once
+    // const handleFetchLocationRequest = () => {
+    //     const templatesObject = filteredTemplatesIds.reduce((acc, templateId) => {
+    //         if (entityTemplateMap!.has(templateId)) {
+    //             return { ...acc, [templateId]: { filter: {} } };
+    //         }
+    //         return acc;
+    //     }, {});
+    //     if (templatesObject && circle) {
+    //         mutate({ textSearch: '', templates: templatesObject, circle });
+    //     }
+    // };
+
     const handleFetchLocationRequest = async () => {
-        // const templatesObject = filteredTemplatesIds.reduce((acc, templateId) => {
-        //     if (entityTemplateMap!.has(templateId)) {
-        //         return { ...acc, [templateId]: { filter: {} } };
-        //     }
-        //     return acc;
-        // }, {});
-
-        // if (templatesObject && circle) {
-        //     mutate({ textSearch: '', templates: templatesObject, circle });
-        // }
-
-        const templatesToFetch = filteredTemplatesIds.filter((templateId) => entityTemplateMap?.has(templateId));
-        const fetchTemplate = async (templateId: string) => {
-            const templateObject = { [templateId]: { filter: {} } };
-            if (circle) {
-                mutate({ textSearch: '', templates: templateObject, circle });
+        if (circle) {
+            for (const templateId of filteredTemplatesIds) {
+                mutate({ textSearch: '', templates: { [templateId]: { filter: {} } }, circle });
             }
-        };
-        for (const templateId of templatesToFetch) {
-            fetchTemplate(templateId);
         }
     };
 
