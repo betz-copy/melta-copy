@@ -142,10 +142,7 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
         if (isBrokenRules)
             setCreateOrUpdateWithRuleBreachDialogState({
                 isOpen: true,
-                rawBrokenRules: stepsData.data.brokenRulesEntities?.rawBrokenRules,
-                brokenRules: stepsData.data.brokenRulesEntities?.brokenRules,
-                actions: stepsData.data.brokenRulesEntities?.actions,
-                rawActions: stepsData.data.brokenRulesEntities?.rawActions,
+                ...(stepsData.data.brokenRulesEntities ?? {}),
             });
         else {
             onClose();
