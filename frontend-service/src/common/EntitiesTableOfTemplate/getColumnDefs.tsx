@@ -321,7 +321,7 @@ export const getColumnDefs = <Data extends any = IEntity>({
                                     }}
                                     disabledProps={{
                                         isDisabled: getEntityPropertiesData(data).disabled,
-                                        canEdit: menuRowButtonProps,
+                                        isEditDisabled: menuRowButtonProps,
                                         tooltipTitle: i18next.t('systemManagement.disabledEntity'),
                                     }}
                                 />

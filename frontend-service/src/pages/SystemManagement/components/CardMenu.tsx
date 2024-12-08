@@ -121,9 +121,13 @@ export const CardMenu: React.FC<{
                             onDisableClick(e);
                             handleClose(e);
                         }}
-                        text={isEntityTemplateDisabled || isRuleDisabled ? i18next.t('actions.activate') : i18next.t('actions.disable')}
+                        text={
+                            isEntityTemplateDisabled || isRuleDisabled || disabledProps?.isDisabled
+                                ? i18next.t('actions.activate')
+                                : i18next.t('actions.disable')
+                        }
                         icon={
-                            isEntityTemplateDisabled || isRuleDisabled ? (
+                            isEntityTemplateDisabled || isRuleDisabled || disabledProps?.isDisabled ? (
                                 <DoNotDisturbOffOutlinedIcon color="action" />
                             ) : (
                                 <DoNotDisturbOnOutlinedIcon color="action" />
