@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import i18next from 'i18next';
 import { Grid } from '@mui/material';
 import { useQueryClient } from 'react-query';
@@ -23,6 +23,10 @@ const MapFilters = ({ searchValue, selectedTemplates, setSearchValue, setSelecte
             templatesWithLocationField.push(key);
         }
     });
+
+    useEffect(() => {
+        setSelectedTemplates(templatesWithLocationField);
+    }, []);
 
     return (
         <Grid item zIndex={1000} position="absolute" top={10} left={100} container wrap="nowrap" gap="15px">

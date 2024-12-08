@@ -41,8 +41,6 @@ export const EditableMapControl = ({ featureGroupRef, searchResultGroupRef, onSe
 
     const { mutate } = useMutation(getEntitiesByLocation, {
         onSuccess: (response) => {
-            searchResultGroupRef?.current?.clearLayers();
-
             response.forEach((item) => {
                 const { matchingFields, node } = item;
                 const entityTemplate = entityTemplateMap!.get(node.templateId)!;
@@ -82,16 +80,27 @@ export const EditableMapControl = ({ featureGroupRef, searchResultGroupRef, onSe
         },
     });
 
-    const handleFetchLocationRequest = () => {
-        const templatesObject = filteredTemplatesIds.reduce((acc, templateId) => {
-            if (entityTemplateMap!.has(templateId)) {
-                return { ...acc, [templateId]: { filter: {} } };
-            }
-            return acc;
-        }, {});
+    const handleFetchLocationRequest = async () => {
+        // const templatesObject = filteredTemplatesIds.reduce((acc, templateId) => {
+        //     if (entityTemplateMap!.has(templateId)) {
+        //         return { ...acc, [templateId]: { filter: {} } };
+        //     }
+        //     return acc;
+        // }, {});
 
-        if (templatesObject && circle) {
-            mutate({ textSearch: '', templates: templatesObject, circle });
+        // if (templatesObject && circle) {
+        //     mutate({ textSearch: '', templates: templatesObject, circle });
+        // }
+
+        const templatesToFetch = filteredTemplatesIds.filter((templateId) => entityTemplateMap?.has(templateId));
+        const fetchTemplate = async (templateId: string) => {
+            const templateObject = { [templateId]: { filter: {} } };
+            if (circle) {
+                mutate({ textSearch: '', templates: templateObject, circle });
+            }
+        };
+        for (const templateId of templatesToFetch) {
+            fetchTemplate(templateId);
         }
     };
 
@@ -109,8 +118,6 @@ export const EditableMapControl = ({ featureGroupRef, searchResultGroupRef, onSe
                 coordinate: [layer.getLatLng().lng, layer.getLatLng().lat],
                 radius: layer.getRadius(),
             });
-
-            handleFetchLocationRequest();
 
             const bounds = layer.getBounds();
             map.fitBounds(bounds);
@@ -133,8 +140,9 @@ export const EditableMapControl = ({ featureGroupRef, searchResultGroupRef, onSe
     };
 
     useEffect(() => {
+        searchResultGroupRef?.current?.clearLayers();
         handleFetchLocationRequest();
-    }, [filteredTemplatesIds]);
+    }, [filteredTemplatesIds, circle]);
 
     return (
         <EditControl

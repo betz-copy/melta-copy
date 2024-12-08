@@ -10,6 +10,7 @@ import { CustomIcon } from '../../../common/CustomIcon';
 import { environment } from '../../../globals';
 import { getEntityTemplateColor } from '../../../utils/colors';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
+import FlexBox from '../../../common/FlexBox';
 
 type props = {
     open: boolean;
@@ -44,7 +45,9 @@ const MapPageEntityDialog = ({ open, onClose, entityWithMatchingField }: props) 
                     </Typography>
                 </Box>
                 <IconButtonWithPopover popoverText={i18next.t('entitiesTableOfTemplate.navigateToEntityPage')}>
-                    <img src="/icons/read-more-icon.svg" onClick={() => navigate(`/entity/${entityWithMatchingField.node.properties._id}`)} />
+                    <FlexBox onClick={() => navigate(`/entity/${entityWithMatchingField.node.properties._id}`)}>
+                        <img src="/icons/read-more-icon.svg" />
+                    </FlexBox>
                 </IconButtonWithPopover>
             </Box>
             <Grid item xs={8} container alignItems="center" padding="20px">
