@@ -63,7 +63,7 @@ export const createEntityTemplateSchema = Joi.object({
 
 // PUT /api/entities/templates/:templateId
 export const updateEntityTemplateSchema = Joi.object({
-    body: Joi.object({
+    body: {
         name: variableNameValidation.required(),
         displayName: Joi.string().required(),
         category: Joi.string().required(),
@@ -75,7 +75,8 @@ export const updateEntityTemplateSchema = Joi.object({
         enumPropertiesColors: enumPropertiesColorsSchema,
         documentTemplatesIds: Joi.array().items(Joi.string()),
         actions: Joi.string(),
-    }).min(1),
+        allowToDeleteRelationshipFields: Joi.boolean(),
+    },
     query: {},
     params: {
         templateId: MongoIdSchema.required(),

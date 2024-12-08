@@ -177,6 +177,7 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
         id: string,
         currentEntityTemplate: IEntityTemplatePopulated,
         updatedTemplateData: Omit<IEntityTemplate, 'disabled'>,
+        allowToDeleteRelationshipFields: boolean,
         session?: ClientSession,
     ) {
         let entityTemplateToUpdate = { ...currentEntityTemplate, ...updatedTemplateData };
@@ -196,29 +197,37 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
             .lean()
             .exec();
 
-        const relationshipTemplateIdsToDelete = Object.values(currentEntityTemplate.properties.properties)
-            .filter(
-                (property) =>
-                    property.relationshipReference?.relationshipTemplateId &&
-                    Object.values(entityTemplateToUpdate.properties.properties).every(
-                        (updatedProperty) =>
-                            updatedProperty.relationshipReference?.relationshipTemplateId !== property.relationshipReference!.relationshipTemplateId!,
-                    ),
-            )
-            .map((property) => property.relationshipReference!.relationshipTemplateId!);
+        if (allowToDeleteRelationshipFields) {
+            const relationshipTemplateIdsToDelete = Object.values(currentEntityTemplate.properties.properties)
+                .filter(
+                    (property) =>
+                        property.relationshipReference?.relationshipTemplateId &&
+                        Object.values(entityTemplateToUpdate.properties.properties).every(
+                            (updatedProperty) =>
+                                updatedProperty.relationshipReference?.relationshipTemplateId !==
+                                property.relationshipReference!.relationshipTemplateId!,
+                        ),
+                )
+                .map((property) => property.relationshipReference!.relationshipTemplateId!);
 
-        await this.relationshipTemplateManager.deleteManyTemplatesByIds(relationshipTemplateIdsToDelete, session);
+            await this.relationshipTemplateManager.deleteManyTemplatesByIds(relationshipTemplateIdsToDelete, session);
+        }
 
         return updatedEntityTemplate;
     }
 
-    async updateEntityTemplate(id: string, updatedTemplateData: Omit<IEntityTemplate, 'disabled'>, session?: ClientSession) {
+    async updateEntityTemplate(
+        id: string,
+        updatedTemplateData: Omit<IEntityTemplate, 'disabled'>,
+        allowToDeleteRelationshipFields: boolean,
+        session?: ClientSession,
+    ) {
         const currentEntityTemplate = await this.getTemplateById(id);
 
         const newEntityTemplate = session
-            ? await this.updateEntityTemplateInTransaction(id, currentEntityTemplate, updatedTemplateData, session)
+            ? await this.updateEntityTemplateInTransaction(id, currentEntityTemplate, updatedTemplateData, allowToDeleteRelationshipFields, session)
             : await withTransaction(async (newSession: ClientSession) =>
-                  this.updateEntityTemplateInTransaction(id, currentEntityTemplate, updatedTemplateData, newSession),
+                  this.updateEntityTemplateInTransaction(id, currentEntityTemplate, updatedTemplateData, allowToDeleteRelationshipFields, newSession),
               );
 
         const propertyTypeWithToString = ['number', 'boolean', 'date', 'date-time'];
@@ -271,7 +280,7 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
                 session,
             );
 
-            const updatedEntityTemplate = await this.updateEntityTemplate(templateId, updatedEntityTemplateData, session);
+            const updatedEntityTemplate = await this.updateEntityTemplate(templateId, updatedEntityTemplateData, true, session);
 
             return { updatedRelationShipTemplate, updatedEntityTemplate };
         });

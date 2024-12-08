@@ -225,6 +225,7 @@ const RelationshipTemplatesRow: React.FC = () => {
                 queryClient.setQueryData<IRelationshipTemplateMap>('getRelationshipTemplates', (relationshipTemplateMap) =>
                     relationshipTemplateMap!.set(id, updatedRelationShipTemplate),
                 );
+
                 queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) =>
                     entityTemplateMap!.set(updatedEntityTemplate._id, updatedEntityTemplate),
                 );

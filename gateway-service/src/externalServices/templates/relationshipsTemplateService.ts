@@ -57,7 +57,7 @@ export class RelationshipsTemplateService extends TemplatesManagerService {
     }
 
     async getRelationshipTemplateById(id: string) {
-        const { data } = await this.api.get<IRelationshipTemplate>(`${baseRelationshipsRoute}/${id}`);
+        const { data } = await this.api.get<IMongoRelationshipTemplate>(`${baseRelationshipsRoute}/${id}`);
 
         return data;
     }

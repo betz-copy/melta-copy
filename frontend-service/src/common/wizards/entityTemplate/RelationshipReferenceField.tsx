@@ -65,7 +65,7 @@ const RelationshipReferenceField: React.FC<FieldEditCardProps> = ({
                 onChange={(_e, relatedTemplateIdValue) => {
                     const isOriginSrcEntity = relatedTemplateIdValue?._id === convertToRelationshipField?.originSourceEntityId;
                     const newValue = {
-                        ...value.relationshipReference,
+                        relatedTemplateField: '',
                         relatedTemplateId: relatedTemplateIdValue?._id || '',
                         relationshipTemplateDirection: isOriginSrcEntity ? 'incoming' : 'outgoing',
                     };

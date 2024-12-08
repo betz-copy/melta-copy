@@ -471,7 +471,7 @@ const Entity: React.FC = () => {
                                                                 )!;
 
                                                                 if (
-                                                                    connectionRelationshipTemplate.isProperty &&
+                                                                    connectionRelationshipTemplate?.isProperty &&
                                                                     currentEntityTemplate.properties.properties[connectionRelationshipTemplate.name]
                                                                         ?.relationshipReference?.relationshipTemplateId ===
                                                                         connectionRelationshipTemplate._id

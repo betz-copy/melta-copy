@@ -152,7 +152,7 @@ const ConvertToRelationship: React.FC<IConvertToRelationship> = ({ open, handleC
                             </DialogContent>
                             <DialogActions sx={{ paddingTop: 0 }}>
                                 <Button onClick={handleClose}>{i18next.t('wizard.cancel')}</Button>
-                                <Button onClick={() => formik.handleSubmit()} disabled={isLoading || !formik.isValid}>
+                                <Button type="submit" onClick={() => formik.handleSubmit()} disabled={isLoading || !formik.isValid}>
                                     {i18next.t('wizard.finish')} {isLoading && <CircularProgress size={20} />}
                                 </Button>
                             </DialogActions>

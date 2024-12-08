@@ -20,6 +20,7 @@ import {
     ISearchEntityTemplatesBody,
 } from '../../externalServices/templates/entityTemplateService';
 import {
+    IMongoRelationshipTemplate,
     IRelationshipTemplate,
     ISearchRelationshipTemplatesBody,
     ISearchRulesBody,
@@ -882,18 +883,26 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
     }
 
     async handleConversionRollback(
-        relationshipTemplateId: string,
         entityTemplateId: string,
-        currentRelationshipTemplate: IRelationshipTemplate,
+        currentRelationshipTemplate: IMongoRelationshipTemplate,
         rollBackTemplateWithoutProperties: Omit<IEntityTemplatePopulated, 'disabled'>,
     ) {
         try {
-            await this.relationshipTemplateService.updateRelationshipTemplate(relationshipTemplateId, currentRelationshipTemplate);
-            await this.entityTemplateService.updateEntityTemplate(entityTemplateId, {
-                ...rollBackTemplateWithoutProperties,
-                category: rollBackTemplateWithoutProperties.category._id,
-            } as Omit<IEntityTemplate, 'disabled'>);
-            logger.info('RollBack mongoDB succeeded', { rollBackTemplateWithoutProperties });
+            const { createdAt, updatedAt, _id, ...restRelationshipTemplate } = currentRelationshipTemplate;
+            const updatedRelationship = await this.relationshipTemplateService.updateRelationshipTemplate(_id, restRelationshipTemplate);
+            console.log({ updatedRelationship });
+
+            const updatedEntity = await this.entityTemplateService.updateEntityTemplate(
+                entityTemplateId,
+                {
+                    ...rollBackTemplateWithoutProperties,
+                    category: rollBackTemplateWithoutProperties.category._id,
+                },
+                false,
+            );
+            console.log({ updatedEntity });
+
+            logger.info('RollBack mongoDB succeeded', { rollBackTemplateWithoutProperties, restRelationshipTemplate });
         } catch (error) {
             throw new ServiceError(internalServerErrorStatus, 'RollBack mongoDB update failed', { error });
         }
@@ -1044,12 +1053,13 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         validateNoDependentRules(rules);
     }
 
+    // eslint-disable-next-line consistent-return
     async convertRelationshipToRelationshipField(
         relationshipTemplateId: string,
         { fieldName, displayFieldName, relationshipReference },
         userId: string,
     ) {
-        const currentRelationshipTemplate: IRelationshipTemplate =
+        const currentRelationshipTemplate: IMongoRelationshipTemplate =
             await this.relationshipTemplateService.getRelationshipTemplateById(relationshipTemplateId);
         const { sourceEntityId, destinationEntityId } = currentRelationshipTemplate;
 
@@ -1081,7 +1091,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         );
 
         const restOfEntityTemplate = this.removeBasicFields(await this.entityTemplateService.getEntityTemplateById(entityIdToUpdate));
-        const updatedEntityTemplate = {
+        const entityTemplateToUpdate = {
             ...restOfEntityTemplate,
             category: restOfEntityTemplate.category._id,
             properties: {
@@ -1094,20 +1104,20 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             propertiesOrder: [...restOfEntityTemplate.propertiesOrder, fieldName],
         };
 
-        const { updatedRelationShipTemplate } = await this.entityTemplateService.convertToRelationshipField(
+        const { updatedRelationShipTemplate, updatedEntityTemplate } = await this.entityTemplateService.convertToRelationshipField(
             entityIdToUpdate,
             relationshipTemplateId,
-            updatedEntityTemplate,
+            entityTemplateToUpdate,
         );
 
-        if (existingRelationships.length > 0)
-            await this.instancesService
-                .convertToRelationshipField(existingRelationships, addFieldToSrcEntity, fieldName, userId)
-                .catch(async (error) => {
-                    logger.error('Error in update entity instances in relationships:', error);
-                    await this.handleConversionRollback(relationshipTemplateId, entityIdToUpdate, currentRelationshipTemplate, restOfEntityTemplate);
-                });
-
+        try {
+            if (existingRelationships.length > 0)
+                await this.instancesService.convertToRelationshipField(existingRelationships, addFieldToSrcEntity, fieldName, userId);
+        } catch (error) {
+            logger.error('Neo4j update failed: starting roll-back', { error });
+            await this.handleConversionRollback(entityIdToUpdate, currentRelationshipTemplate, restOfEntityTemplate);
+            throw new ServiceError(internalServerErrorStatus, 'Neo4j update failed: starting roll-back', { error });
+        }
         return { updatedRelationShipTemplate, updatedEntityTemplate };
     }
 
