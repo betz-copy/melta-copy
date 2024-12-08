@@ -20,7 +20,6 @@ import {
     searchEntitiesByTemplatesSchema,
     updateEntityInstanceSchema,
     updateEntityStatusSchema,
-    readExcelSchema,
     loadEntitiesSchema,
 } from './validator.schema';
 
@@ -75,15 +74,8 @@ InstancesRouter.post(
 );
 
 InstancesRouter.post(
-    '/entities/readExcel',
-    wrapMulter(multer({ dest: config.service.uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).any()),
-    InstancesValidatorMiddleware.validateUserCanCreateEntityInstance,
-    ValidateRequest(readExcelSchema),
-    InstancesControllerMiddleware.readExcelEntities,
-);
-
-InstancesRouter.post(
     '/entities/loadEntities',
+    wrapMulter(multer({ dest: config.service.uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).any()),
     InstancesValidatorMiddleware.validateUserCanCreateEntityInstance,
     ValidateRequest(loadEntitiesSchema),
     InstancesControllerMiddleware.loadEntities,

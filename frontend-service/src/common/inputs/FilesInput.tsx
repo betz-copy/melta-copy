@@ -144,13 +144,13 @@ const FilesInput: React.FC<FilesInputProps> = ({
                     <LinearProgress
                         style={{
                             width: '100%',
-                            backgroundColor: errorText ? '#A4000' : '#E1F5FE',
+                            backgroundColor: errorText ? '#A40000' : '#E1F5FE',
                             borderRadius: '25px',
                             margin: '5px',
                         }}
                         sx={{
                             '& .MuiLinearProgress-bar': {
-                                backgroundColor: errorText ? '#A4000' : '#4752B6',
+                                backgroundColor: errorText ? '#A40000' : '#4752B6',
                             },
                         }}
                         variant={errorText ? 'determinate' : 'indeterminate'}

@@ -82,7 +82,7 @@ export const documentTemplateSchema = fileSchema.keys({
         .required(),
 });
 
-export const excelsTemplateSchema = fileSchema.keys({
+export const excelTemplateSchema = fileSchema.keys({
     originalname: Joi.string()
         .regex(/\.(xlsx|xls)$/)
         .required(),

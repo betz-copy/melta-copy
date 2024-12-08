@@ -28,6 +28,7 @@ interface InstanceFileInputProps {
     onDrop?: (file: File) => Promise<void>;
     isLoading?: boolean;
     disableCamera?: boolean;
+    comment?: string;
 }
 
 export const InstanceSingleFileInput: React.FC<InstanceFileInputProps> = ({
@@ -43,6 +44,7 @@ export const InstanceSingleFileInput: React.FC<InstanceFileInputProps> = ({
     onDrop,
     isLoading,
     disableCamera,
+    comment,
 }) => {
     return (
         <Box
@@ -80,6 +82,7 @@ export const InstanceSingleFileInput: React.FC<InstanceFileInputProps> = ({
                 errorText={error}
                 isLoading={isLoading}
                 disableCamera={disableCamera}
+                comment={comment}
             />
         </Box>
     );

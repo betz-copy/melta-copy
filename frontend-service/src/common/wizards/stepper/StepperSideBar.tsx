@@ -32,7 +32,7 @@ const StepperSideBar = <T extends object>({
                             <Grid container justifyContent="start" alignItems="flex-start">
                                 <Grid container justifyContent="start" alignItems="center">
                                     <Grid item display="flex" justifyContent="center" alignContent="center">
-                                        <StepNumberTypography type={type}>
+                                        <StepNumberTypography type={type} direction="column">
                                             {type === 'finishedStep' ? <DoneIcon fontSize="small" /> : index + 1}
                                         </StepNumberTypography>
                                     </Grid>
@@ -72,7 +72,7 @@ const StepperSideBar = <T extends object>({
                         <Grid>
                             <Grid container justifyContent="center" alignItems="center">
                                 <Grid item display="flex" justifyContent="center" alignContent="center">
-                                    <StepNumberTypography type={type}>
+                                    <StepNumberTypography type={type} direction="row">
                                         {type === 'finishedStep' ? <DoneIcon fontSize="small" /> : index + 1}
                                     </StepNumberTypography>
                                 </Grid>

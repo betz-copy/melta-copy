@@ -1,4 +1,4 @@
-import { Box, CircularProgress, Grid, IconButton, Link, Typography } from '@mui/material';
+import { Grid, IconButton, Link, Typography } from '@mui/material';
 import React, { ReactNode, useMemo, useState } from 'react';
 import { AutoAwesome } from '@mui/icons-material';
 import i18next from 'i18next';
@@ -59,14 +59,12 @@ const OpenPreview: React.FC<{
     fileId: string | File;
     img?: ReactNode;
     showText?: boolean;
-    type?: 'download' | 'preview' | 'exportTable';
+    download?: boolean;
     onClick?: () => Promise<void>;
-    loading?: boolean;
     searchValue?: string;
     entityIdsToInclude?: string[];
-}> = ({ fileId, img, showText = true, type = 'preview', onClick, loading, searchValue, entityIdsToInclude }) => {
-    // eslint-disable-next-line no-nested-ternary
-    const fileName = typeof fileId === 'string' ? (type === 'exportTable' ? fileId : getFileName(fileId)) : fileId.name;
+}> = ({ fileId, img, showText = true, download, onClick, searchValue, entityIdsToInclude }) => {
+    const fileName = typeof fileId === 'string' ? getFileName(fileId) : fileId.name;
     const [open, setOpen] = useState(false);
     const contentType = getPreviewContentType(fileName);
 
@@ -79,28 +77,35 @@ const OpenPreview: React.FC<{
         return !isFileNameSearched && entityIdsToInclude?.includes(typeof fileId === 'string' ? fileId : fileId.name);
     }, [entityIdsToInclude, fileId, fileName, searchValue]);
 
+    if (download) {
+        const content = (
+            <OpenPreviewContent
+                fileName={fileName}
+                img={img}
+                showText={showText}
+                searchValue={searchValue}
+                onClick={onClick}
+                highlightAll={highlightAll}
+            />
+        );
+        if (onClick) return content;
+        return (
+            <Link href={`/api${environment.api.storage}/${fileId}`} target="_blank" download>
+                {content}
+            </Link>
+        );
+    }
     return (
         <Grid>
-            {type === 'download' && (
-                <Link href={`/api${environment.api.storage}/${fileId}`} target="_blank" download>
-                    <OpenPreviewContent fileName={fileName} img={img} showText={showText} searchValue={searchValue} highlightAll={highlightAll} />
-                </Link>
-            )}
-            {type === 'preview' && (
-                <Box>
-                    <OpenPreviewContent
-                        fileName={fileName}
-                        onClick={handleButtonClick}
-                        img={img}
-                        showText={showText}
-                        searchValue={searchValue}
-                        highlightAll={highlightAll}
-                    />
-                    {open && <PreviewDialog fileId={fileId} setOpen={setOpen} open={open} fileName={fileName} contentType={contentType} />}
-                </Box>
-            )}
-            {type === 'exportTable' &&
-                (loading ? <CircularProgress size="24px" /> : <OpenPreviewContent fileName={fileName} onClick={onClick} showText={showText} />)}
+            <OpenPreviewContent
+                fileName={fileName}
+                onClick={handleButtonClick}
+                img={img}
+                showText={showText}
+                searchValue={searchValue}
+                highlightAll={highlightAll}
+            />
+            {open && <PreviewDialog fileId={fileId} setOpen={setOpen} open={open} fileName={fileName} contentType={contentType} />}
         </Grid>
     );
 };

@@ -22,11 +22,18 @@ import { Value } from './Value';
 import { ActionErrors } from '../../interfaces/ruleBreaches/actionMetadata';
 
 const isError = <Data extends any = IEntity>(props: ICellRendererParams<Data, any | undefined>, field: string, showErrors = false) => {
-    if (showErrors && props.data && props.data.errors) {
+    if (showErrors && props.data?.errors) {
         return props.data.errors.find((error) => {
-            if (error.type === ActionErrors.required) return error.metadata.property === field;
-            if (error.type === ActionErrors.unique) return error.metadata.properties.some((property) => property === field);
-            if (error.type === ActionErrors.validation) return error.metadata.path.slice(1) === field;
+            switch (error.type) {
+                case ActionErrors.required:
+                    return error.metadata.property === field;
+                case ActionErrors.unique:
+                    return error.metadata.properties.some((property) => property === field);
+                case ActionErrors.validation:
+                    return error.metadata.path.slice(1) === field;
+                default:
+                    break;
+            }
             return false;
         });
     }
@@ -65,7 +72,7 @@ const errorColDef = <Data extends any = IEntity>(props: ICellRendererParams<Data
                     },
                 }}
             >
-                <PriorityHigh color="error" fontSize="small" style={{ paddingLeft: '5px' }} />
+                <PriorityHigh color="error" fontSize="small" style={{ marginLeft: '10px' }} />
             </Tooltip>
         </Box>
     );
@@ -306,7 +313,8 @@ export const enumArrayColDef = <Data extends any = IEntity>(
         cellRenderer: (props: ICellRendererParams<Data, string[] | undefined>) => {
             if (!props.value) return '';
             if (isError(props, field, showErrors)) return errorColDef(props, field);
-            if (showErrors) return props.value.join(', ');
+            if (showErrors) return typeof props.value === 'string' ? props.value : props.value.join(', ');
+
             return (
                 <OverflowWrapper
                     searchValue={searchValue}

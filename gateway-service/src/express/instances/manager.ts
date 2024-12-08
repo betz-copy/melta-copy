@@ -202,12 +202,19 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         return actions.map((action) => action.actionMetadata);
     }
 
-    async loadEntities(entities: IEntity[], ignoredRules: IBrokenRule[], userId: string) {
+    async loadEntities(templateId: string, ignoredRules: IBrokenRule[], userId: string, files?: Express.Multer.File[], allEntities?: IEntity[]) {
+        let entities = allEntities;
+        const template = await this.entityTemplateService.getEntityTemplateById(templateId);
+
+        if (files && entities?.length === 0) {
+            const actions = await readExcelFile(files, template);
+            entities = actions.map((action) => action.actionMetadata as IEntity);
+        }
+
         const succeededEntities: IEntity[] = [];
         const failedEntities: IFailedEntity[] = [];
         const allBrokenRulesEntities: IBrokenRuleEntity[] = [];
 
-        const template = await this.entityTemplateService.getEntityTemplateById(entities[0].templateId);
         const serialStarters: Record<string, number> = Object.entries(template.properties.properties)
             .filter(([_key, value]) => value.type === 'number' && value.serialStarter !== undefined)
             .reduce((acc, [key, value]) => {
@@ -216,7 +223,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
             }, {});
 
         await Promise.all(
-            entities.map(async (entity, index) => {
+            entities!.map(async (entity, index) => {
                 try {
                     const serialNumbers = Object.fromEntries(Object.entries(serialStarters).map(([key, value]) => [key, value + index]));
                     const result = await this.createEntityInstance(entity, [], ignoredRules, userId, serialNumbers);
@@ -228,24 +235,22 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
                         if (data.metadata && data.metadata.errorCode === errorCodes.failedConstraintsValidation) {
                             const { constraint } = data.metadata;
-
-                            if (constraint.type === ActionErrors.unique) {
-                                failedEntities.push({
-                                    properties: entity.properties,
-                                    errors: [{ type: ActionErrors.unique, metadata: constraint }],
-                                });
-                                return null;
+                            switch (constraint.type) {
+                                case ActionErrors.unique:
+                                    failedEntities.push({
+                                        properties: entity.properties,
+                                        errors: [{ type: ActionErrors.unique, metadata: constraint }],
+                                    });
+                                    break;
+                                case ActionErrors.required:
+                                    failedEntities.push({
+                                        properties: entity.properties,
+                                        errors: [{ type: ActionErrors.required, metadata: constraint }],
+                                    });
+                                    break;
+                                default:
+                                    break;
                             }
-
-                            if (constraint.type === ActionErrors.required) {
-                                failedEntities.push({
-                                    properties: entity.properties,
-                                    errors: [{ type: ActionErrors.required, metadata: constraint }],
-                                });
-                                return null;
-                            }
-
-                            return null;
                         }
                         if (data.type === 'TemplateValidationError') getValidationErrorEntities(error as AxiosError, failedEntities);
                         return null;

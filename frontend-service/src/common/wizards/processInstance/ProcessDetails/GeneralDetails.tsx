@@ -135,11 +135,9 @@ export const FileAttachmentsView: React.FC<FileAttachmentsProps> = ({ templateFi
                 );
                 if (values.detailsAttachments[fieldName]) {
                     if (Array.isArray(values.detailsAttachments[fieldName])) {
-                        attachments = values.detailsAttachments[fieldName].map((v) => (
-                            <OpenPreview key={v} fileId={v.name} type={toPrint ? 'download' : 'preview'} />
-                        ));
+                        attachments = values.detailsAttachments[fieldName].map((v) => <OpenPreview key={v} fileId={v.name} download={toPrint} />);
                     } else {
-                        attachments = <OpenPreview fileId={values.detailsAttachments[fieldName].name} type={toPrint ? 'download' : 'preview'} />;
+                        attachments = <OpenPreview fileId={values.detailsAttachments[fieldName].name} download={toPrint} />;
                     }
                 }
                 return (

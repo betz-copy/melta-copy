@@ -20,6 +20,7 @@ interface FileInputProps {
     errorText?: string;
     disableCamera?: boolean;
     isLoading?: boolean;
+    comment?: string;
 }
 
 const FileInput: React.FC<FileInputProps> = ({
@@ -31,6 +32,7 @@ const FileInput: React.FC<FileInputProps> = ({
     errorText,
     disableCamera = false,
     isLoading,
+    comment,
 }) => {
     const theme = useTheme();
 
@@ -220,6 +222,11 @@ const FileInput: React.FC<FileInputProps> = ({
                                 {i18next.t('input.imagePicker.dragFile')}
                             </Typography>
                         </Grid>
+                    )}
+                    {comment && (
+                        <Typography fontSize="12px" color="#9398C2" paddingLeft="7px">
+                            {comment}
+                        </Typography>
                     )}
                     {errorText && (
                         <p id="error" style={errorStyle}>

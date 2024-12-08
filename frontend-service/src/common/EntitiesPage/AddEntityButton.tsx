@@ -7,7 +7,6 @@ import { CreateOrEditEntityDetails, ICreateOrUpdateWithRuleBreachDialogState } f
 import { IEntity } from '../../interfaces/entities';
 import { useDraftIdStore } from '../../stores/drafts';
 import { TableButton } from '../TableButton';
-import { LoadEntitiesWizard } from '../wizards/loadEntities';
 
 const AddEntityButton: React.FC<{
     style?: CSSProperties;
@@ -18,19 +17,7 @@ const AddEntityButton: React.FC<{
     popoverText?: string;
     onSuccessCreate?: (entity: IEntity) => void;
     setUpdatedEntities?: React.Dispatch<React.SetStateAction<IEntity[]>>;
-    isLoadEntities?: true;
-}> = ({
-    style,
-    children,
-    disabled,
-    initialStep,
-    initialValues,
-    popoverText,
-    disabledToolTip = false,
-    onSuccessCreate,
-    setUpdatedEntities,
-    isLoadEntities,
-}) => {
+}> = ({ style, children, disabled, initialStep, initialValues, popoverText, disabledToolTip = false, onSuccessCreate, setUpdatedEntities }) => {
     const [addEntityWizardState, setAddEntityWizardState] = useState<{
         isOpen: boolean;
         initialStep?: number;
@@ -46,28 +33,17 @@ const AddEntityButton: React.FC<{
 
     const setDraftId = useDraftIdStore((state) => state.setDraftId);
 
-    const [loadEntitiesState, setLoadEntitiesState] = useState<{
-        isOpen: boolean;
-        initialStep?: number;
-    }>({
-        isOpen: false,
-    });
-
     return (
         <>
             <TableButton
                 iconButtonWithPopoverProps={{
                     iconButtonProps: {
                         onClick: () => {
-                            if (isLoadEntities) {
-                                if (!disabled) setLoadEntitiesState({ isOpen: true, initialStep: 1 });
-                            } else {
-                                setAddEntityWizardState({ isOpen: true, initialStep, initialValues });
-                                setExternalErrors({ files: false, unique: {}, action: '' });
-                                setCreateOrUpdateWithRuleBreachDialogState({ isOpen: false });
-                                toast.dismiss();
-                                setDraftId('');
-                            }
+                            setAddEntityWizardState({ isOpen: true, initialStep, initialValues });
+                            setExternalErrors({ files: false, unique: {}, action: '' });
+                            setCreateOrUpdateWithRuleBreachDialogState({ isOpen: false });
+                            toast.dismiss();
+                            setDraftId('');
                         },
                         style,
                     },
@@ -117,15 +93,6 @@ const AddEntityButton: React.FC<{
                     setCreateOrUpdateWithRuleBreachDialogState={setCreateOrUpdateWithRuleBreachDialogState}
                 />
             </Dialog>
-            <LoadEntitiesWizard
-                open={loadEntitiesState.isOpen}
-                handleClose={() => {
-                    onSuccessCreate();
-                    setLoadEntitiesState({ isOpen: false });
-                }}
-                initialValues={{ template: initialValues?.template, file: undefined }}
-                initialStep={1}
-            />
         </>
     );
 };

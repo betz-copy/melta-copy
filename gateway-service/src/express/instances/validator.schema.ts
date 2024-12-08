@@ -1,5 +1,5 @@
 import Joi from 'joi';
-import { excelsTemplateSchema, ExtendedJoi, fileSchema, MongoIdSchema } from '../../utils/joi';
+import { excelTemplateSchema, ExtendedJoi, fileSchema, MongoIdSchema } from '../../utils/joi';
 import { brokenRuleSchema } from '../ruleBreaches/validator.schema';
 import config from '../../config';
 
@@ -160,18 +160,10 @@ export const deleteRelationshipSchema = Joi.object({
     },
 });
 
-// POST /api/instances/entities/readExcel/:templateId
-export const readExcelSchema = Joi.object({
-    body: {
-        files: Joi.array().items(excelsTemplateSchema),
-        templateId: Joi.string().required(),
-    },
-    query: {},
-});
-
 // POST /api/instances/entities/loadEntities
 export const loadEntitiesSchema = Joi.object({
     body: {
+        file: excelTemplateSchema,
         entities: Joi.array().items({ templateId: Joi.string(), properties: Joi.object() }).default([]),
         templateId: Joi.string().required(),
         ignoredRules: Joi.array().items(brokenRuleSchema).default([]),

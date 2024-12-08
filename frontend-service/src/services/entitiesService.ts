@@ -16,6 +16,7 @@ import {
 import { EntityWizardValues } from '../common/dialogs/entity';
 import { IBrokenRule, IRuleBreach } from '../interfaces/ruleBreaches/ruleBreach';
 import { filterModelToFilterOfGraph } from '../pages/Graph/GraphFilterToBackend';
+import { ITablesResults } from '../common/wizards/loadEntities';
 import { ICreateEntityMetadata } from '../interfaces/ruleBreaches/actionMetadata';
 
 const { entities, relationships } = environment.api;
@@ -25,22 +26,23 @@ export const exportEntitiesRequest = async (body: IExportEntitiesBody) => {
     return data;
 };
 
-export const readExcelEntitiesRequest = async (files: Record<string, File>, templateId: string) => {
+export const loadEntitiesRequest = async (
+    templateId: string,
+    files?: Record<string, File>,
+    entitiesToCreate?: ICreateEntityMetadata[],
+    ignoredRules?: IBrokenRule[],
+): Promise<ITablesResults> => {
     const formData = new FormData();
-
-    Object.entries(files).forEach(([key, value]) => {
-        formData.append(key, value as Blob);
-    });
-
+    if (files)
+        Object.entries(files).forEach(([key, value]) => {
+            formData.append(key, value as Blob);
+        });
     formData.append('templateId', templateId);
+    if (ignoredRules) formData.append('ignoredRules', JSON.stringify(ignoredRules));
+    if (entitiesToCreate)
+        entitiesToCreate.map((entity) => formData.append('properties', JSON.stringify(mapValues(entity.properties, (property, _key) => property))));
 
-    const { data } = await axios.post(`${entities}/readExcel`, formData);
-
-    return data;
-};
-
-export const loadEntitiesRequest = async (entitiesToCreate: ICreateEntityMetadata[], templateId: string, ignoredRules?: IBrokenRule[]) => {
-    const { data } = await axios.post(`${entities}/loadEntities`, { templateId, entities: entitiesToCreate, ignoredRules });
+    const { data } = await axios.post(`${entities}/loadEntities`, formData);
 
     return data;
 };
