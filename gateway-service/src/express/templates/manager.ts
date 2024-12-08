@@ -457,7 +457,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             throw new BadRequestError('entity template still has instances', { errorCode: entityTemplateHasInstances });
         }
     }
-
+    const updatedRelationship =
     async deleteEntityTemplate(id: string): Promise<IMongoEntityTemplateWithConstraints> {
         const entityTemplateToDelete = await this.entityTemplateService.getEntityTemplateById(id);
         await this.throwIfEntityHasRelationships(entityTemplateToDelete);
@@ -889,10 +889,9 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
     ) {
         try {
             const { createdAt, updatedAt, _id, ...restRelationshipTemplate } = currentRelationshipTemplate;
-            const updatedRelationship = await this.relationshipTemplateService.updateRelationshipTemplate(_id, restRelationshipTemplate);
-            console.log({ updatedRelationship });
+            await this.relationshipTemplateService.updateRelationshipTemplate(_id, restRelationshipTemplate);
 
-            const updatedEntity = await this.entityTemplateService.updateEntityTemplate(
+            await this.entityTemplateService.updateEntityTemplate(
                 entityTemplateId,
                 {
                     ...rollBackTemplateWithoutProperties,
@@ -900,7 +899,6 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
                 },
                 false,
             );
-            console.log({ updatedEntity });
 
             logger.info('RollBack mongoDB succeeded', { rollBackTemplateWithoutProperties, restRelationshipTemplate });
         } catch (error) {

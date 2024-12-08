@@ -145,7 +145,6 @@ export const updateEntityRequestForMultiple = async (
             ),
         ),
     );
-
     formData.append('templateId', newEntityData.template._id);
 
     if (ignoredRules) {
