@@ -196,7 +196,18 @@ export const searchEntitiesByTemplatesSchema = Joi.object({
     params: {},
 });
 
-const semanticSearchResult = Joi.object().pattern(Joi.string(), Joi.object().pattern(Joi.string(), Joi.array().items(Joi.string())));
+const semanticSearchResult = Joi.object().pattern(
+    Joi.string(),
+    Joi.object().pattern(
+        Joi.string(),
+        Joi.array().items(
+            Joi.object({
+                minioFileId: Joi.string(),
+                text: Joi.string(),
+            }),
+        ),
+    ),
+);
 
 /*
  * POST /api/instances/entities/count

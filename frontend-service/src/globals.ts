@@ -213,6 +213,7 @@ export const environment = {
     minimumSupportedChromeVersion: 85,
     fileIdLength: 32,
     maxDateTimestamp: 8640000000000000,
+    attemptInterval: 100,
     errorCodes: {
         ruleBlock: 'RULE_BLOCK',
         failedToCreateConstraints: 'FAILED_TO_CREATE_CONSTRAINTS',
@@ -1262,10 +1263,10 @@ export const environment = {
             'prw',
         ],
     },
-    matomo: {
-        urlBase: 'matomo.yesodot.services.idf',
-        siteId: 24,
-    },
+    // matomo: {
+    //     urlBase: 'matomo.yesodot.services.idf',
+    //     siteId: 24,
+    // },
     systemManagement: {
         actions: {
             unusedPropertyErrorCodeTs: '6133',

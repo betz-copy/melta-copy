@@ -11,10 +11,10 @@ import { menash } from 'menashmq';
 import config from '../../config';
 import { InstancesService } from '../../externalServices/instanceService';
 import {
+    ICountSearchResult,
     IEntity,
     ISearchBatchBody,
     ISearchFilter,
-    ISearchResult,
     ISearchSort,
     ITemplateSearchBody,
 } from '../../externalServices/instanceService/interfaces/entities';
@@ -26,6 +26,7 @@ import {
     ICreateEntityMetadata,
     ICreateRelationshipMetadata,
     IUpdateEntityMetadata,
+    RuleBreachRequestStatus,
 } from '../../externalServices/ruleBreachService/interfaces';
 import { StorageService } from '../../externalServices/storageService';
 import {
@@ -44,8 +45,8 @@ import { patchDocumentAsStream } from './documentExport';
 import { IExportEntitiesBody } from './interfaces';
 import { RabbitManager } from '../../utils/rabbit';
 import { SemanticSearchService } from '../../externalServices/semanticSearch';
-import { ISemanticSearchResult } from '../../externalServices/semanticSearch/interface';
 import { WorkspaceService } from '../workspaces/service';
+import { formatEntitiesBulkSearch, sortEntities } from '../../utils/semantic';
 
 const { errorCodes, rabbit, ruleBreachService } = config;
 
@@ -156,18 +157,21 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
     ) {
         const worksheet = await createWorksheet(workbook, template, displayColumns);
         const { searchEntitiesChunkSize } = config.service;
-        const { count } = await this.service.searchEntitiesOfTemplateRequest(template._id, {
-            limit: 1,
-            filter,
-            sort,
+        const templateCount = await this.getEntitiesCountByTemplates(true, {
+            templateIds: [template._id],
+            textSearch,
         });
-        for (let skip = 0; count - skip > 0; skip += searchEntitiesChunkSize) {
+
+        const { count, entitiesWithFiles } = templateCount?.[0] ?? { count: 0, entitiesWithFiles: {} };
+
+        for (let skip = 0; count ?? 0 - skip > 0; skip += searchEntitiesChunkSize) {
             const { entities: chunk } = await this.service.searchEntitiesOfTemplateRequest(template._id, {
                 skip,
                 limit: searchEntitiesChunkSize,
                 textSearch,
                 filter,
                 sort,
+                entityIdsToInclude: Object.keys(entitiesWithFiles ?? {}),
             });
             styleAWorksheet(
                 worksheet,
@@ -175,6 +179,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 template,
                 displayColumns,
                 workspace,
+                skip,
             );
         }
     }
@@ -308,40 +313,34 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         return patchDocumentAsStream(await this.storageService.downloadFile(documentTemplateId), entityProperties);
     }
 
-    private async formatEntitiesSearch(searchResults: ISearchResult, semanticSearchResult?: ISemanticSearchResult) {
-        return semanticSearchResult
-            ? {
-                  ...searchResults,
-                  entities: searchResults.entities.map((entity) => ({
-                      ...entity,
-                      minioFileIds: semanticSearchResult?.[entity.entity.templateId]?.[entity.entity.properties._id],
-                  })),
-              }
-            : searchResults;
-    }
-
     async searchEntitiesBatch(shouldSemanticSearch: boolean, searchBody: ISearchBatchBody) {
-        if (shouldSemanticSearch && searchBody.textSearch) {
-            const semanticSearchResult = await this.semanticSearchSearch.search({
-                textSearch: searchBody.textSearch,
-                limit: searchBody.limit,
-                skip: searchBody.skip,
-                templates: Object.keys(searchBody.templates),
-            });
-
-            return this.formatEntitiesSearch(
-                await this.service.searchEntitiesBatch({
-                    ...searchBody,
-                    entityIdsToInclude: semanticSearchResult ? Object.values(semanticSearchResult).map(Object.keys).flat() : undefined,
-                }),
-                semanticSearchResult,
-            );
+        if (!shouldSemanticSearch || !searchBody.textSearch) {
+            return this.service.searchEntitiesBatch(searchBody);
         }
 
-        return this.service.searchEntitiesBatch(searchBody);
+        const semanticSearchResult = await this.semanticSearchSearch.search({
+            textSearch: searchBody.textSearch,
+            limit: searchBody.limit,
+            skip: searchBody.skip,
+            templates: Object.keys(searchBody.templates),
+        });
+
+        const allResults = await this.service.searchEntitiesBatch({
+            ...searchBody,
+            entityIdsToInclude: semanticSearchResult ? Object.values(semanticSearchResult).map(Object.keys).flat() : undefined,
+        });
+
+        const { formattedEntities, textsForReranking } = formatEntitiesBulkSearch(allResults, searchBody.textSearch, semanticSearchResult);
+        const rerank = await this.semanticSearchSearch.rerank({ query: searchBody.textSearch, texts: Object.keys(textsForReranking) });
+
+        if (!rerank?.length) {
+            return formattedEntities;
+        }
+
+        return { ...formattedEntities, entities: sortEntities(formattedEntities.entities, rerank, textsForReranking) };
     }
 
-    async getEntitiesCountByTemplates(shouldSemanticSearch: boolean, searchBody: ITemplateSearchBody) {
+    async getEntitiesCountByTemplates(shouldSemanticSearch: boolean, searchBody: ITemplateSearchBody): Promise<ICountSearchResult[] | undefined> {
         return this.service.getEntitiesCountByTemplates({
             ...searchBody,
             semanticSearchResult:
@@ -597,6 +596,8 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
     async deleteEntityInstance(id: string) {
         const currentEntity = await this.service.getEntityInstanceById(id);
         const deletedInstance = await this.service.deleteEntityInstance(id);
+
+        await this.ruleBreachesManager.updateManyRuleBreachRequestsStatusesByRelatedEntityId(id, RuleBreachRequestStatus.Canceled);
 
         const { err: error } = await trycatch(() => this.deleteAllEntityFiles(currentEntity));
 

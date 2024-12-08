@@ -109,17 +109,17 @@ const getColumnDefs = (
     ];
 
     const requestColDef: ColDef<IRuleBreachRequestPopulated>[] = [
-        translatedEnumColDef<IRuleBreachRequestPopulated>(
-            'status',
-            ({ data }) => data?.status,
-            { title: i18next.t('ruleManagement.approvalStatus') },
-            {
+        translatedEnumColDef<IRuleBreachRequestPopulated>({
+            field: 'status',
+            valueGetter: ({ data }) => data?.status,
+            title: i18next.t('ruleManagement.approvalStatus'),
+            valuesMap: {
                 [RuleBreachRequestStatus.Approved]: i18next.t('ruleManagement.approved'),
                 [RuleBreachRequestStatus.Denied]: i18next.t('ruleManagement.denied'),
                 [RuleBreachRequestStatus.Pending]: i18next.t('ruleManagement.pending'),
                 [RuleBreachRequestStatus.Canceled]: i18next.t('ruleManagement.canceled'),
             },
-        ),
+        }),
         {
             field: 'reviewer',
             headerName: i18next.t('ruleManagement.reviewer'),

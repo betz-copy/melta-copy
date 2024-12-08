@@ -35,7 +35,8 @@ const defaultColDef: ColDef<IUser> = {
     },
     resizable: true,
     menuTabs: ['filterMenuTab'],
-    suppressHeaderMenuButton: true,
+    suppressHeaderMenuButton: false,
+    suppressHeaderFilterButton: true,
 };
 
 const columnDefs = (
@@ -48,6 +49,8 @@ const columnDefs = (
         field: 'displayName',
         headerName: i18next.t('permissions.userHeaderName'),
         filter: 'agTextColumnFilter',
+        sortable: true,
+        suppressHeaderFilterButton: false,
     },
     {
         field: 'externalMetadata.digitalIdentitySource',
@@ -55,36 +58,38 @@ const columnDefs = (
         filter: 'agTextColumnFilter',
         hide: true,
     },
-    translatedEnumColDef<IUser>(
-        'permissionsManagement',
-        (params) => (params.data?.permissions[workspaceId]?.permissions?.scope || params.data?.permissions[workspaceId]?.admin?.scope) ?? '',
-        { title: i18next.t('permissions.permissionsManagement') },
-        scopesTranslation,
-    ),
-    translatedEnumColDef<IUser>(
-        'templatesManagement',
-        (params) => (params.data?.permissions[workspaceId]?.templates?.scope || params.data?.permissions[workspaceId]?.admin?.scope) ?? '',
-        { title: i18next.t('permissions.templatesManagement') },
-        scopesTranslation,
-    ),
-    translatedEnumColDef<IUser>(
-        'rulesManagement',
-        (params) => (params.data?.permissions[workspaceId]?.rules?.scope || params.data?.permissions[workspaceId]?.admin?.scope) ?? '',
-        { title: i18next.t('permissions.rulesManagement') },
-        scopesTranslation,
-    ),
-    translatedEnumColDef<IUser>(
-        'processesManagement',
-        (params) => (params.data?.permissions[workspaceId]?.processes?.scope || params.data?.permissions[workspaceId]?.admin?.scope) ?? '',
-        { title: i18next.t('permissions.processesManagement') },
-        scopesTranslation,
-    ),
+    translatedEnumColDef<IUser>({
+        field: 'permissionsManagement',
+        valueGetter: (params) =>
+            (params.data?.permissions[workspaceId]?.permissions?.scope || params.data?.permissions[workspaceId]?.admin?.scope) ?? '',
+        title: i18next.t('permissions.permissionsManagement'),
+        valuesMap: scopesTranslation,
+    }),
+    translatedEnumColDef<IUser>({
+        field: 'templatesManagement',
+        valueGetter: (params) =>
+            (params.data?.permissions[workspaceId]?.templates?.scope || params.data?.permissions[workspaceId]?.admin?.scope) ?? '',
+        title: i18next.t('permissions.templatesManagement'),
+        valuesMap: scopesTranslation,
+    }),
+    translatedEnumColDef<IUser>({
+        field: 'rulesManagement',
+        valueGetter: (params) => (params.data?.permissions[workspaceId]?.rules?.scope || params.data?.permissions[workspaceId]?.admin?.scope) ?? '',
+        title: i18next.t('permissions.rulesManagement'),
+        valuesMap: scopesTranslation,
+    }),
+    translatedEnumColDef<IUser>({
+        field: 'processesManagement',
+        valueGetter: (params) =>
+            (params.data?.permissions[workspaceId]?.processes?.scope || params.data?.permissions[workspaceId]?.admin?.scope) ?? '',
+        title: i18next.t('permissions.processesManagement'),
+        valuesMap: scopesTranslation,
+    }),
     {
         field: 'categoriesPermissions',
         headerName: i18next.t('permissions.permissionsOfUserDialog.instancesPermissions'),
         valueGetter: (params) => params.data?.permissions[workspaceId].instances?.categories,
         filter: false, // todo: do set filter with `.includes` logic
-        suppressHeaderMenuButton: true,
         // filter: 'agSetColumnFilter',
         // filterParams: {
         //     values: categories.map(({ _id }) => _id),
@@ -138,7 +143,6 @@ const columnDefs = (
         colId: 'actions', // used for autoSizeColumns onFirstDataRendered
         sortable: false,
         filter: false,
-        suppressHeaderMenuButton: true,
         suppressColumnsToolPanel: true,
         cellRenderer: (props: ICellRendererParams<IUser>) => {
             const { data } = props;
@@ -167,13 +171,17 @@ const getDatasource = <Data extends any = IUser>(
     onFail: (err: unknown) => void | undefined,
 ): IServerSideDatasource => {
     return {
-        async getRows({ request: { startRow, endRow }, success, fail }: IServerSideGetRowsParams<Data>) {
+        async getRows({ request, success, fail }: IServerSideGetRowsParams<Data>) {
+            const { startRow, endRow, filterModel, sortModel } = request;
+
             const { result: data, err } = await trycatch(() =>
                 searchUsersRequest({
                     workspaceIds: [_id],
                     step: startRow! / infiniteScrollPageCount,
                     limit: endRow! - startRow!,
                     search: quickFilter || undefined,
+                    filterModel,
+                    sortModel,
                 }),
             );
 

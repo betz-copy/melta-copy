@@ -12,3 +12,13 @@ export const search = joi.object({
     }),
     params: {},
 });
+
+// POST /api/semantic/rerank
+export const rerank = joi.object({
+    query: {},
+    body: joi.object({
+        query: joi.string().required(),
+        texts: joi.array().items(joi.string()).required(),
+    }),
+    params: {},
+});

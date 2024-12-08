@@ -178,7 +178,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                                     }}
                                     disabledProps={{
                                         isDisabled: isEntityDisabled,
-                                        canEdit: canWriteInstance,
+                                        isEditDisabled: !canWriteInstance,
                                         tooltipTitle: i18next.t('systemManagement.disabledEntity'),
                                     }}
                                 />

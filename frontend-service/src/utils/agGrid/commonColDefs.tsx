@@ -1,4 +1,12 @@
-import { ColDef, ICellRendererParams, IDateFilterParams, ISetFilterParams, ValueFormatterParams, ValueGetterFunc } from '@ag-grid-community/core';
+import {
+    ColDef,
+    ICellRendererParams,
+    IDateFilterParams,
+    ISetFilterParams,
+    ValueFormatterParams,
+    ValueGetterFunc,
+    ValueGetterParams,
+} from '@ag-grid-community/core';
 import i18next from 'i18next';
 import React from 'react';
 import OpenPreview from '../../common/FilePreview/OpenPreview';
@@ -350,16 +358,27 @@ export const dateColDef = <Data extends any = IEntity>(
     };
 };
 
-export const translatedEnumColDef = <Data extends any = IEntity>(
-    field: string,
-    valueGetter: ValueGetterFunc<Data>,
-    value: { title: string },
-    valuesMap: Record<string, string>,
-    hardcodedWidth?: number,
+interface TranslatedEnumColDefOptions<Data> {
+    field: string;
+    valueGetter: (params: ValueGetterParams<Data>) => string | undefined;
+    title: string;
+    valuesMap: Record<string, string>;
+    hardcodedWidth?: number;
+    hideColumn?: boolean;
+    hideValue?: boolean;
+    searchValue?: string;
+}
+
+export const translatedEnumColDef = <Data extends any = IEntity>({
+    field,
+    valueGetter,
+    title,
+    valuesMap,
+    hardcodedWidth,
     hideColumn = false,
     hideValue = false,
-    searchValue: string | undefined = undefined,
-): ColDef => {
+    searchValue = undefined,
+}: TranslatedEnumColDefOptions<Data>): ColDef => {
     const formatValue = (propertyValue: string | null | undefined) => (propertyValue ? valuesMap[propertyValue] : '');
 
     const filterParams: ISetFilterParams<Data, string | undefined> = {
@@ -374,7 +393,7 @@ export const translatedEnumColDef = <Data extends any = IEntity>(
 
     return {
         field,
-        headerName: value.title,
+        headerName: title,
         valueGetter,
         cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => (
             <Value hideValue={hideValue} value={formatValue(props.value)} searchValue={searchValue} />

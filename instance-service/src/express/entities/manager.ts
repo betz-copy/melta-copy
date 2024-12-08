@@ -713,7 +713,7 @@ export class EntityManager extends DefaultManagerNeo4j {
                 RETURN node
                 ${entityIdMatch}
             }
-            RETURN templateId, count(node) as count ${includeSemantic ? ', $semanticSearchResult[templateId] as entityIdsToInclude' : ''};
+            RETURN templateId, count(node) as count ${includeSemantic ? ', $semanticSearchResult[templateId] as entitiesWithFiles' : ''};
         `;
 
         return this.neo4jClient.readTransaction(query, normalizeResponseTemplatesCount, {

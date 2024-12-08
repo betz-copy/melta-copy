@@ -1,11 +1,12 @@
-import React, { MouseEventHandler } from 'react';
+import React, { MouseEventHandler, useMemo } from 'react';
 import { Grid, IconButton, Menu } from '@mui/material';
 import i18next from 'i18next';
 import {
     Edit as EditIcon,
     Delete as DeleteIcon,
     MoreVertOutlined as OptionsIcon,
-    DoDisturbAlt as DisabledIcon,
+    DoNotDisturbOnOutlined as DoNotDisturbOnOutlinedIcon,
+    DoNotDisturbOffOutlined as DoNotDisturbOffOutlinedIcon,
     ContentCopy as DuplicateIcon,
     ControlPoint as AddIcon,
 } from '@mui/icons-material';
@@ -17,11 +18,22 @@ import { useUserStore } from '../../../stores/user';
 export const CardMenu: React.FC<{
     onEditClick?: MouseEventHandler;
     onDeleteClick?: MouseEventHandler;
-    disabledProps?: { isDisabled: boolean; canEdit: boolean; tooltipTitle: string };
+    disabledProps?: { isDisabled: boolean; isEditDisabled: boolean; tooltipTitle: string; editTooltipTitle?: string };
     onDisableClick?: MouseEventHandler;
     onDuplicateClick?: MouseEventHandler;
     onAddActionsClick?: MouseEventHandler;
-}> = ({ onEditClick, onDeleteClick, disabledProps, onDisableClick, onDuplicateClick, onAddActionsClick }) => {
+    isEntityTemplateDisabled?: boolean;
+    isRuleDisabled?: boolean;
+}> = ({
+    onEditClick,
+    onDeleteClick,
+    disabledProps,
+    onDisableClick,
+    onDuplicateClick,
+    onAddActionsClick,
+    isEntityTemplateDisabled,
+    isRuleDisabled,
+}) => {
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
     const open = Boolean(anchorEl);
 
@@ -36,6 +48,13 @@ export const CardMenu: React.FC<{
         event.stopPropagation();
         setAnchorEl(null);
     };
+
+    const editTooltipTitle = useMemo(() => {
+        if (disabledProps?.isEditDisabled && disabledProps?.editTooltipTitle) return disabledProps.editTooltipTitle;
+        if (disabledProps?.isDisabled) return disabledProps.tooltipTitle;
+        return i18next.t('systemManagement.defaultCantEdit');
+    }, [disabledProps]);
+
     return (
         <>
             <IconButton onClick={handleClick} style={{ ...environment.iconSize }}>
@@ -43,11 +62,7 @@ export const CardMenu: React.FC<{
             </IconButton>
             <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
                 {onEditClick && (
-                    <MeltaTooltip
-                        placement="top"
-                        title={disabledProps?.tooltipTitle || String(i18next.t('systemManagement.defaultCantEdit'))}
-                        disableHoverListener={!disabledProps?.canEdit}
-                    >
+                    <MeltaTooltip placement="top" title={editTooltipTitle} disableHoverListener={!disabledProps?.isEditDisabled}>
                         <Grid>
                             <MenuButton
                                 onClick={(e) => {
@@ -55,7 +70,7 @@ export const CardMenu: React.FC<{
                                     handleClose(e);
                                 }}
                                 text={i18next.t('actions.edit')}
-                                disabled={disabledProps?.canEdit}
+                                disabled={disabledProps?.isEditDisabled}
                                 icon={<EditIcon color="action" />}
                             />
                         </Grid>
@@ -85,14 +100,19 @@ export const CardMenu: React.FC<{
                 )}
 
                 {onDeleteClick && (
-                    <MenuButton
-                        onClick={(e) => {
-                            onDeleteClick(e);
-                            handleClose(e);
-                        }}
-                        text={i18next.t('actions.delete')}
-                        icon={<DeleteIcon color="action" />}
-                    />
+                    <MeltaTooltip placement="left" title={disabledProps?.tooltipTitle}>
+                        <Grid>
+                            <MenuButton
+                                onClick={(e) => {
+                                    onDeleteClick(e);
+                                    handleClose(e);
+                                }}
+                                text={i18next.t('actions.delete')}
+                                disabled={disabledProps?.isDisabled || isEntityTemplateDisabled}
+                                icon={<DeleteIcon color="action" />}
+                            />
+                        </Grid>
+                    </MeltaTooltip>
                 )}
 
                 {onDisableClick && (
@@ -101,8 +121,14 @@ export const CardMenu: React.FC<{
                             onDisableClick(e);
                             handleClose(e);
                         }}
-                        text={disabledProps?.isDisabled ? i18next.t('actions.activate') : i18next.t('actions.disable')}
-                        icon={<DisabledIcon color="action" />}
+                        text={isEntityTemplateDisabled || isRuleDisabled ? i18next.t('actions.activate') : i18next.t('actions.disable')}
+                        icon={
+                            isEntityTemplateDisabled || isRuleDisabled ? (
+                                <DoNotDisturbOffOutlinedIcon color="action" />
+                            ) : (
+                                <DoNotDisturbOnOutlinedIcon color="action" />
+                            )
+                        }
                     />
                 )}
             </Menu>
