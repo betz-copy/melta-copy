@@ -9,6 +9,7 @@ export const partialSchema = (schema: joi.ObjectSchema) => {
         keySchema.describe().type === 'object' ? partialSchema(keySchema as joi.ObjectSchema) : keySchema.optional(),
     );
 };
+
 const UserExternalMetadataSchema = joi.object({
     kartoffelId: joi.string().required(),
     digitalIdentitySource: joi.string().required(),

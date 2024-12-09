@@ -1,5 +1,6 @@
 import axios from '../axios';
 import { environment } from '../globals';
+import { NotificationType } from '../interfaces/notifications';
 import { ICompactNullablePermissions, ICompactPermissions, IPermission, ISubCompactPermissions } from '../interfaces/permissions/permissions';
 import { IExternalUser, IUser, IUserPreferences, IUserSearchBody } from '../interfaces/users';
 import { RecursiveNullable } from '../utils/types';
@@ -29,9 +30,11 @@ export const createUserRequest = async (kartoffelId: string, digitalIdentitySour
 export const updateUserPreferencesMetadataRequest = async (
     userId: string,
     profilePreference: IUserPreferences,
-    notificationsToShowCheckbox: any,
+    notificationsToShowCheckbox: NotificationType[],
     darkMode?: boolean,
 ) => {
+    console.log({ profilePreference, notificationsToShowCheckbox, darkMode });
+
     const formData = new FormData();
     if (profilePreference.icon?.file instanceof File) {
         formData.append('file', profilePreference.icon.file);

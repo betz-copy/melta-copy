@@ -1,12 +1,11 @@
 import { Avatar, Box, Grid, IconButton, ToggleButton, ToggleButtonGroup, Tooltip } from '@mui/material';
 import i18next from 'i18next';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import fileDetails from '../../interfaces/fileDetails';
 import { IUser } from '../../interfaces/users';
-import { getFileName } from '../../utils/getFileName';
 import FileInput from './ImageFileInput';
 import { environment } from '../../globals';
-import { getNameInitials } from '../UserAvatar';
+import { getNameInitials } from '../../utils/userProfile';
 
 type InputSelectType = 'chooseFile' | 'chooseAvatar' | 'kartoffelProfile';
 
@@ -18,6 +17,7 @@ export interface UserProfilePickerProps {
     kartoffelProfile?: string;
     user: IUser;
 }
+
 const UserProfilePicker: React.FC<UserProfilePickerProps> = ({ imageName, onPick, onDelete, defaultInputType, kartoffelProfile, user }) => {
     const [inputType, setInputType] = useState(defaultInputType);
     const [fileInputValue, setFileInputValue] = useState<fileDetails | undefined>(
@@ -27,7 +27,7 @@ const UserProfilePicker: React.FC<UserProfilePickerProps> = ({ imageName, onPick
 
     const icons = import.meta.glob('../../../public/icons/profileAvatar/*');
 
-    const fileNames = Object.keys(icons).map((filePath) => {
+    const iconPaths = Object.keys(icons).map((filePath) => {
         const avatarName = filePath.split('/').pop();
         return `${environment.avatarIconPath}${avatarName}`;
     });
@@ -63,7 +63,7 @@ const UserProfilePicker: React.FC<UserProfilePickerProps> = ({ imageName, onPick
                 <Grid item>
                     <Box style={{ border: '1px solid #ccc', borderRadius: '8px' }}>
                         <Grid container sx={{ display: 'flex', justifyContent: 'space-evenly' }}>
-                            {fileNames.map((iconPath, index) => (
+                            {iconPaths.map((iconPath, index) => (
                                 // eslint-disable-next-line react/no-array-index-key
                                 <Grid item key={index} padding={2}>
                                     <Avatar
@@ -123,7 +123,7 @@ const UserProfilePicker: React.FC<UserProfilePickerProps> = ({ imageName, onPick
                         inputText={i18next.t('user.addFile')}
                         acceptedFilesTypes={{ 'image/png': ['.png', '.jpg'] }}
                         disableCamera
-                        allowPreview={false}
+                        disablePreview
                     />
                 </Grid>
             )}

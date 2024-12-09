@@ -3,7 +3,7 @@ import React from 'react';
 import i18next from 'i18next';
 import UserAvatar from '../../UserAvatar';
 import { UserProfilePicker } from '../../inputs/userProfilePicker';
-import { defaultInputType, isProfileFileType } from '../../../utils/profileType';
+import { defaultInputType, isProfileFileType } from '../../../utils/userProfile';
 import { IUser } from '../../../interfaces/users';
 
 const UserProfile: React.FC<{

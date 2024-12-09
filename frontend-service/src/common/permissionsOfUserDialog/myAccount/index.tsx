@@ -1,4 +1,4 @@
-import { Button, Divider, Grid } from '@mui/material';
+import { Button, Grid } from '@mui/material';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import isEqual from 'lodash/isEqual';
@@ -33,7 +33,6 @@ const MyAccount: React.FC<{
     const [profilePreference, setProfilePreference] = useState<{ profilePath?: string; icon?: any }>({
         profilePath: existingUser?.preferences.profilePath,
     });
-    const [isDarkMode, setIsDarkMode] = useState(existingUser.preferences.darkMode ?? false);
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const toggleDarkMode = useDarkModeStore((state) => state.toggleDarkMode);
     const currentUser = useUserStore((state) => state.user);
@@ -67,7 +66,7 @@ const MyAccount: React.FC<{
                 id,
                 profilePreference,
                 notificationsToShowCheckbox.map(({ type }) => type),
-                isDarkMode,
+                darkMode,
             ),
         {
             onSuccess: (updatedUser: IUser) => {
@@ -85,7 +84,7 @@ const MyAccount: React.FC<{
             },
 
             onError: (err: AxiosError) => {
-                console.log('failed to create rule breach request. error:', err);
+                console.log('failed to update user`s preferences request. error:', err);
                 toast.error(<ErrorToast axiosError={err} defaultErrorMessage={i18next.t('user.failedToUpdateRequest')} />);
             },
         },
@@ -135,13 +134,12 @@ const MyAccount: React.FC<{
                         <DayNightSwitch
                             checked={darkMode}
                             onClick={() => {
-                                setIsDarkMode(!isDarkMode);
                                 toggleDarkMode();
                                 updateUserPreferencesMetadataRequest(
                                     existingUser!._id,
                                     existingUser.preferences,
-                                    existingUser.preferences.mailsNotificationsTypes,
-                                    !isDarkMode,
+                                    existingUser.preferences.mailsNotificationsTypes ?? [],
+                                    !darkMode,
                                 );
                             }}
                         />

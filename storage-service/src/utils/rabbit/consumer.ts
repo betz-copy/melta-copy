@@ -18,8 +18,6 @@ class DeleteFilesConsumer {
             console.log(allObj);
 
             const { fileIds, bucketName } = allObj;
-            console.log({ fileIds, bucketName });
-
             const filesManager = new FilesManager(bucketName ?? msg.properties.headers[workspaceIdHeaderName]);
             await filesManager.deleteFiles(fileIds);
 

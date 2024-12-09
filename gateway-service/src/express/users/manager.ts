@@ -80,38 +80,30 @@ export class UsersManager {
     }
 
     static async updateUserPreferencesMetadata(userId: string, preferences: Partial<IBaseUser['preferences']>, file?: Express.Multer.File) {
-        const {
-            preferences: { profilePath },
-        } = await UserService.getUserById(userId);
-
-        if (file) {
-            if (profilePath && isProfileFileType(profilePath)) {
+        const user = await UserService.getUserById(userId);
+        const { profilePath: currentProfilePath } = user.preferences || {};
+        const updates: Partial<IBaseUser['preferences']> = { ...preferences };
+        const deleteCurrentProfileFile = async () => {
+            if (currentProfilePath && isProfileFileType(currentProfilePath)) {
                 await menash.send(
                     rabbit.deleteUnusedFilesQueue,
                     JSON.stringify({
-                        fileIds: [profilePath],
+                        fileIds: [currentProfilePath],
                         bucketName: config.storageService.usersGlobalBucketName,
                     }),
                 );
             }
+        };
+        if (file) {
+            await deleteCurrentProfileFile();
             const newProfilePath = await this.storageService.uploadFile(file);
             await removeTmpFile(file.path);
-            return UserService.updateUser(userId, { preferences: { ...preferences, profilePath: newProfilePath } });
+            updates.profilePath = newProfilePath;
+        } else if (currentProfilePath && (!preferences.profilePath || preferences.profilePath !== currentProfilePath)) {
+            await deleteCurrentProfileFile();
+            updates.profilePath = preferences.profilePath || undefined;
         }
-
-        if (profilePath && (!preferences.profilePath || preferences.profilePath !== profilePath)) {
-            await menash.send(
-                rabbit.deleteUnusedFilesQueue,
-                JSON.stringify({
-                    fileIds: [profilePath],
-                    bucketName: config.storageService.usersGlobalBucketName,
-                }),
-            );
-
-            return UserService.updateUser(userId, { preferences: { ...preferences, profilePath: preferences.profilePath || undefined } });
-        }
-
-        return UserService.updateUser(userId, { preferences });
+        return UserService.updateUser(userId, { preferences: updates });
     }
 
     static async syncUserPermissions(userId: string, permissions: ICompactNullablePermissions): Promise<ICompactPermissions> {

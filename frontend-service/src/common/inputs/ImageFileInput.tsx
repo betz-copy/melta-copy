@@ -20,7 +20,7 @@ interface FileInputProps {
     fileFieldName?: string;
     errorText?: string;
     disableCamera?: boolean;
-    allowPreview?: boolean;
+    disablePreview?: boolean;
 }
 
 const FileInput: React.FC<FileInputProps> = ({
@@ -31,7 +31,7 @@ const FileInput: React.FC<FileInputProps> = ({
     acceptedFilesTypes,
     errorText,
     disableCamera = false,
-    allowPreview = true,
+    disablePreview = false,
 }) => {
     const theme = useTheme();
 
@@ -129,7 +129,7 @@ const FileInput: React.FC<FileInputProps> = ({
                                 </Grid>
                                 <Grid item container xs={1} justifyContent="flex-end">
                                     <Grid container item justifyContent="flex-end" alignItems="center" wrap="nowrap">
-                                        {!isFileFromInput && allowPreview && (
+                                        {!isFileFromInput && !disablePreview && (
                                             <OpenPreview fileId={file.name!} img={<Visibility fontSize="small" />} showText={false} />
                                         )}
 

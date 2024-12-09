@@ -5,7 +5,7 @@ import { IUser } from '../interfaces/users';
 import { useDarkModeStore } from '../stores/darkMode';
 import { apiUrlToProfileImageSource } from '../services/storageService';
 import { environment } from '../globals';
-import { isProfileFileType } from '../utils/profileType';
+import { getNameInitials, isProfileFileType } from '../utils/userProfile';
 
 interface UserAvatarProps {
     user: IUser;
@@ -13,14 +13,6 @@ interface UserAvatarProps {
     bgColor?: string;
     defaultProfile?: boolean;
 }
-
-export const getNameInitials = (user: IUser): string => {
-    const names = user.fullName?.split(' ') ?? [];
-
-    if (names.length < 3) return names.map((name) => name.charAt(0)).join('');
-
-    return `${names[0].charAt(0)}${names[names.length - 1].charAt(0)}`;
-};
 
 const UserAvatar: React.FC<UserAvatarProps> = ({ user, size = 48, bgColor, defaultProfile = false }) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
