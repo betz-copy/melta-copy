@@ -5,16 +5,17 @@ import { IUser } from '../interfaces/users';
 import { useDarkModeStore } from '../stores/darkMode';
 import { apiUrlToProfileImageSource } from '../services/storageService';
 import { environment } from '../globals';
-import { getNameInitials, isProfileFileType } from '../utils/userProfile';
+import { getNameInitials } from '../utils/userProfile';
 
 interface UserAvatarProps {
     user: IUser;
     size?: number;
     bgColor?: string;
+    kartoffelProfile?: string;
     defaultProfile?: boolean;
 }
 
-const UserAvatar: React.FC<UserAvatarProps> = ({ user, size = 48, bgColor, defaultProfile = false }) => {
+const UserAvatar: React.FC<UserAvatarProps> = ({ user, size = 48, bgColor, kartoffelProfile, defaultProfile = false }) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
     // eslint-disable-next-line no-nested-ternary
@@ -23,9 +24,10 @@ const UserAvatar: React.FC<UserAvatarProps> = ({ user, size = 48, bgColor, defau
     const { data: profile, isError } = useQuery(
         ['userProfile', user.preferences.profilePath],
         async () => {
-            if (!isProfileFileType(user.preferences.profilePath)) {
-                return user.preferences.profilePath;
-            }
+            const { profilePath } = user.preferences;
+            if (!profilePath) return null;
+            if (profilePath === 'kartoffelProfile') return kartoffelProfile;
+            if (profilePath.startsWith('/icons/profileAvatar')) return profilePath;
             return apiUrlToProfileImageSource(`/api${environment.api.storage}/user-profile/${user.preferences.profilePath}`);
         },
         {

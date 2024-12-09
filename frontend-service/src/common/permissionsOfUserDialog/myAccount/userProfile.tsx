@@ -3,7 +3,7 @@ import React from 'react';
 import i18next from 'i18next';
 import UserAvatar from '../../UserAvatar';
 import { UserProfilePicker } from '../../inputs/userProfilePicker';
-import { defaultInputType, isProfileFileType } from '../../../utils/userProfile';
+import { defaultInputType, isProfileFile } from '../../../utils/userProfile';
 import { IUser } from '../../../interfaces/users';
 
 const UserProfile: React.FC<{
@@ -19,7 +19,7 @@ const UserProfile: React.FC<{
         <Grid container display="flex" justifyContent="center" padding={2}>
             <Grid item width="100%" display="flex" justifyItems="start">
                 <Grid direction="column" display="flex" alignItems="center">
-                    <UserAvatar user={existingUser} size={100} />
+                    <UserAvatar user={existingUser} kartoffelProfile={kartoffelUserProfile} size={100} />
                     <Grid item>
                         <Button
                             onClick={() => {
@@ -62,7 +62,7 @@ const UserProfile: React.FC<{
                         }}
                         onDelete={() => setProfilePreference({})}
                         kartoffelProfile={kartoffelUserProfile}
-                        imageName={isProfileFileType(existingUser.preferences.profilePath) ? existingUser.preferences.profilePath : undefined}
+                        imageName={isProfileFile(existingUser.preferences.profilePath) ? existingUser.preferences.profilePath : undefined}
                         defaultInputType={defaultInputType(existingUser.preferences.profilePath)}
                     />
                 </Grid>

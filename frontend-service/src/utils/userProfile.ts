@@ -1,18 +1,12 @@
 import { IUser } from '../interfaces/users';
 
-export const isProfileFileType = (profilePath?: string): boolean => {
-    return (
-        !!profilePath &&
-        profilePath !== '' &&
-        !profilePath.startsWith('/icons/profileAvatar') &&
-        !profilePath.startsWith('http://') &&
-        !profilePath.startsWith('https://')
-    );
+export const isProfileFile = (profilePath?: string): boolean => {
+    return !!profilePath && profilePath !== '' && !profilePath.startsWith('/icons/profileAvatar') && profilePath !== 'kartoffelProfile';
 };
 
 export const defaultInputType = (profilePath?: string) => {
     if (!profilePath || profilePath.startsWith('/icons/profileAvatar')) return 'chooseAvatar';
-    if (profilePath.startsWith('http://') || profilePath.startsWith('https://')) return 'kartoffelProfile';
+    if (profilePath === 'kartoffelProfile') return 'kartoffelProfile';
     return 'chooseFile';
 };
 

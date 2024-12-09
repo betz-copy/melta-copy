@@ -20,9 +20,9 @@ const UserPreferencesMetadataSchema = joi.object({
     mailsNotificationsTypes: ExtendedJoi.stringToArray(),
     profilePath: joi
         .string()
-        .pattern(/^(https?:\/\/|\/icons\/profileAvatar\/.*|[0-9a-f]{8}[0-9a-f]{4}[0-9a-f]{4}[0-9a-f]{4}[0-9a-f]{12}.*)$/)
+        .pattern(/^(kartoffelProfile|\/icons\/profileAvatar\/.*|[0-9a-f]{8}[0-9a-f]{4}[0-9a-f]{4}[0-9a-f]{4}[0-9a-f]{12}.*)$/)
         .messages({
-            'string.pattern.base': 'profilePath must start with "http", "https", "/icons/profileAvatar/", or a valid UUID.',
+            'string.pattern.base': 'profilePath must start with "/icons/profileAvatar/", or a valid UUID, or kartoffelProfile string',
         }),
 });
 

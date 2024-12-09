@@ -1,4 +1,4 @@
-import { Avatar, Box, Grid, IconButton, ToggleButton, ToggleButtonGroup, Tooltip } from '@mui/material';
+import { Avatar, Box, Grid, IconButton, ToggleButton, ToggleButtonGroup } from '@mui/material';
 import i18next from 'i18next';
 import React, { useState } from 'react';
 import fileDetails from '../../interfaces/fileDetails';
@@ -129,30 +129,28 @@ const UserProfilePicker: React.FC<UserProfilePickerProps> = ({ imageName, onPick
             )}
             {inputType === 'kartoffelProfile' && (
                 <Grid padding="20px">
-                    <Tooltip title={!kartoffelProfile ? i18next.t('user.kartoffelProfileNotExist') : ''}>
-                        <IconButton
-                            onClick={() => {
-                                if (kartoffelProfile) handleAvatarClick(kartoffelProfile);
-                            }}
+                    <IconButton
+                        onClick={() => {
+                            handleAvatarClick('kartoffelProfile');
+                        }}
+                        style={{
+                            width: 50,
+                            height: 50,
+                            cursor: 'pointer',
+                            boxShadow: selectedIcon === 'kartoffelProfile' ? '0px 4px 10px rgba(0, 0, 0, 0.8)' : '',
+                            border: selectedIcon === 'kartoffelProfile' ? '3px solid green' : '',
+                        }}
+                        disabled={!kartoffelProfile}
+                    >
+                        <Avatar
                             style={{
                                 width: 50,
                                 height: 50,
                                 cursor: 'pointer',
-                                boxShadow: selectedIcon === 'kartoffelProfile' ? '0px 4px 10px rgba(0, 0, 0, 0.8)' : '',
-                                border: selectedIcon === 'kartoffelProfile' ? '3px solid green' : '',
                             }}
-                            disabled={!kartoffelProfile}
-                        >
-                            <Avatar
-                                style={{
-                                    width: 50,
-                                    height: 50,
-                                    cursor: 'pointer',
-                                }}
-                                src={kartoffelProfile}
-                            />
-                        </IconButton>
-                    </Tooltip>
+                            src={kartoffelProfile}
+                        />
+                    </IconButton>
                 </Grid>
             )}
         </Grid>
