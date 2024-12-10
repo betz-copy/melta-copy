@@ -9,6 +9,7 @@ import {
     ManageAccounts as ManageAccountsIcon,
     MeetingRoom as ExitIcon,
     Widgets as WidgetsIcon,
+    BarChart as ChartIcon,
 } from '@mui/icons-material';
 import { Box, Button, Grid, IconButton, Slide, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
@@ -378,6 +379,16 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                             fontSize="large"
                             sx={{ color: activeButton === 'rule-management' ? '#545eb9' : 'white', ...environment.iconSize }}
                         />
+                    </NavButton>
+
+                    <NavButton
+                        to="/charts"
+                        text={i18next.t('pages.charts')}
+                        isDrawerOpen={isDrawerOpen}
+                        onChangeToActive={(isActive) => handleChangeActiveButton(isActive, 'charts')}
+                        isActiveButton={activeButton === 'charts'}
+                    >
+                        <ChartIcon fontSize="large" sx={{ color: activeButton === 'charts' ? '#545eb9' : 'white', ...environment.iconSize }} />
                     </NavButton>
 
                     <NavButton

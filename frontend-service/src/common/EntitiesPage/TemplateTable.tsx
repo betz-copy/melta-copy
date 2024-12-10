@@ -5,6 +5,7 @@ import {
     Download,
     Expand,
     TableRowsOutlined,
+    BarChart,
 } from '@mui/icons-material';
 import { Box, CircularProgress, Dialog, Grid, useTheme } from '@mui/material';
 import i18next from 'i18next';
@@ -12,6 +13,7 @@ import fileDownload from 'js-file-download';
 import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
+import { useLocation } from 'wouter';
 import { environment } from '../../globals';
 import { IEntity } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
@@ -46,6 +48,8 @@ const TemplateTable = forwardRef<
         setUpdatedEntities: React.Dispatch<React.SetStateAction<IEntity[]>>;
     }
 >(({ template, quickFilterText, page, setUpdatedEntities }, ref) => {
+    const [_, navigate] = useLocation();
+
     const currentUser = useUserStore((state) => state.user);
 
     const theme = useTheme();
@@ -179,6 +183,15 @@ const TemplateTable = forwardRef<
                         }}
                         icon={isExportingTableToExcelFile ? <CircularProgress size="24px" /> : <Download fontSize="small" />}
                         text={isExportingTableToExcelFile ? '' : i18next.t('entitiesTableOfTemplate.downloadOneTableTitle')}
+                    />
+
+                    <TableButton
+                        iconButtonWithPopoverProps={{
+                            popoverText: i18next.t('pages.charts'),
+                            iconButtonProps: { onClick: () => navigate(`/charts/${template._id}`) },
+                        }}
+                        icon={isExportingTableToExcelFile ? <CircularProgress size="24px" /> : <BarChart fontSize="small" />}
+                        text={isExportingTableToExcelFile ? '' : i18next.t('pages.charts')}
                     />
                 </Grid>
 

@@ -26,6 +26,8 @@ const Category = lazy(() => import('../Category'));
 const SystemManagement = lazy(() => import('../SystemManagement'));
 const PermissionsManagement = lazy(() => import('../PermissionsManagement'));
 const RuleManagement = lazy(() => import('../RuleManagement'));
+const Charts = lazy(() => import('../Charts'));
+const ChartPage = lazy(() => import('../Charts/ChartPage'));
 const Gantts = lazy(() => import('../Gantts'));
 const GanttPage = lazy(() => import('../Gantts/GanttPage'));
 const IFrames = lazy(() => import('../IFrames'));
@@ -156,6 +158,14 @@ export const MeltaRoutesInner: React.FC = () => {
                             <Route path="/rule-management/:breachType?/:ruleBreachId?">
                                 <TopBar title={title} />
                                 <RuleManagement setTitle={setTitle} />
+                            </Route>
+
+                            <Route path="/charts">
+                                <Charts setTitle={setTitle} />
+                            </Route>
+
+                            <Route path="/charts/:templateId">
+                                <ChartPage />
                             </Route>
 
                             <Route path="/gantts">

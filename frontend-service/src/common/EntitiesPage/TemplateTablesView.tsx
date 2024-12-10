@@ -113,7 +113,7 @@ export interface TemplateTablesViewProps {
     searchInput: string;
     pageType: string;
     semanticSearch: boolean;
-    setUpdatedEntities: React.Dispatch<React.SetStateAction<IEntity[]>>;
+    setUpdatedEntities?: React.Dispatch<React.SetStateAction<IEntity[]>>;
 }
 
 export interface TemplateTablesViewRef {

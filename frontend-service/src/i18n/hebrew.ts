@@ -231,6 +231,7 @@ export default {
         iFrames: 'קישורים חיצוניים',
         gantts: 'טבלאות',
         fluidSimulation: '???',
+        charts: 'תרשימים',
     },
     systemManagement: {
         newCategory: 'קטגוריה חדשה',
