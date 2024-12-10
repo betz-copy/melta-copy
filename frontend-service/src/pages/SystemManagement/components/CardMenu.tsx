@@ -18,22 +18,11 @@ import { useUserStore } from '../../../stores/user';
 export const CardMenu: React.FC<{
     onEditClick?: MouseEventHandler;
     onDeleteClick?: MouseEventHandler;
-    disabledProps?: { isDisabled: boolean; isEditDisabled: boolean; tooltipTitle: string; editTooltipTitle?: string };
+    disabledProps?: { isDisabled?: boolean; isEditDisabled: boolean; isDeleteDisabled?: boolean; tooltipTitle: string; editTooltipTitle?: string };
     onDisableClick?: MouseEventHandler;
     onDuplicateClick?: MouseEventHandler;
     onAddActionsClick?: MouseEventHandler;
-    isEntityTemplateDisabled?: boolean;
-    isRuleDisabled?: boolean;
-}> = ({
-    onEditClick,
-    onDeleteClick,
-    disabledProps,
-    onDisableClick,
-    onDuplicateClick,
-    onAddActionsClick,
-    isEntityTemplateDisabled,
-    isRuleDisabled,
-}) => {
+}> = ({ onEditClick, onDeleteClick, disabledProps, onDisableClick, onDuplicateClick, onAddActionsClick }) => {
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
     const open = Boolean(anchorEl);
 
@@ -51,7 +40,7 @@ export const CardMenu: React.FC<{
 
     const editTooltipTitle = useMemo(() => {
         if (disabledProps?.isEditDisabled && disabledProps?.editTooltipTitle) return disabledProps.editTooltipTitle;
-        if (disabledProps?.isDisabled) return disabledProps.tooltipTitle;
+        if (disabledProps?.isDeleteDisabled) return disabledProps.tooltipTitle;
         return i18next.t('systemManagement.defaultCantEdit');
     }, [disabledProps]);
 
@@ -108,7 +97,7 @@ export const CardMenu: React.FC<{
                                     handleClose(e);
                                 }}
                                 text={i18next.t('actions.delete')}
-                                disabled={disabledProps?.isDisabled || isEntityTemplateDisabled}
+                                disabled={disabledProps?.isDisabled || disabledProps?.isDeleteDisabled}
                                 icon={<DeleteIcon color="action" />}
                             />
                         </Grid>
@@ -121,17 +110,9 @@ export const CardMenu: React.FC<{
                             onDisableClick(e);
                             handleClose(e);
                         }}
-                        text={
-                            isEntityTemplateDisabled || isRuleDisabled || disabledProps?.isDisabled
-                                ? i18next.t('actions.activate')
-                                : i18next.t('actions.disable')
-                        }
+                        text={disabledProps?.isDisabled ? i18next.t('actions.activate') : i18next.t('actions.disable')}
                         icon={
-                            isEntityTemplateDisabled || isRuleDisabled || disabledProps?.isDisabled ? (
-                                <DoNotDisturbOffOutlinedIcon color="action" />
-                            ) : (
-                                <DoNotDisturbOnOutlinedIcon color="action" />
-                            )
+                            disabledProps?.isDisabled ? <DoNotDisturbOffOutlinedIcon color="action" /> : <DoNotDisturbOnOutlinedIcon color="action" />
                         }
                     />
                 )}
