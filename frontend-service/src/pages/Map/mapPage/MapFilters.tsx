@@ -17,12 +17,9 @@ const MapFilters = ({ searchValue, selectedTemplates, setSearchValue, setSelecte
     const queryClient = useQueryClient();
     const entityTemplateMap = queryClient.getQueryData<IEntityTemplateMap>(['getEntityTemplates']);
 
-    const templatesWithLocationField: IMongoEntityTemplatePopulated[] = [];
-    entityTemplateMap!.forEach((key, _) => {
-        if (Object.values(key.properties.properties).find((obj) => obj.format === 'location')) {
-            templatesWithLocationField.push(key);
-        }
-    });
+    const templatesWithLocationField = Array.from(entityTemplateMap!.values()).filter((key) =>
+        Object.values(key.properties.properties).some((obj) => obj.format === 'location'),
+    );
 
     useEffect(() => {
         setSelectedTemplates(templatesWithLocationField);
@@ -30,7 +27,7 @@ const MapFilters = ({ searchValue, selectedTemplates, setSearchValue, setSelecte
 
     return (
         <Grid item zIndex={1000} position="absolute" top={10} left={100} container wrap="nowrap" gap="15px">
-            <Grid item data-tour="template-filter">
+            <Grid item>
                 <TemplatesSelectCheckbox
                     title={i18next.t('entityTemplatesCheckboxLabel')}
                     templates={templatesWithLocationField}
@@ -41,7 +38,7 @@ const MapFilters = ({ searchValue, selectedTemplates, setSearchValue, setSelecte
                     size="small"
                 />
             </Grid>
-            <Grid item data-tour="search-input">
+            <Grid item>
                 <GlobalSearchBar
                     inputValue={searchValue}
                     setInputValue={setSearchValue}

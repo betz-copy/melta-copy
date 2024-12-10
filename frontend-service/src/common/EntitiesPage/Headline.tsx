@@ -149,8 +149,6 @@ const EntitiesPageHeadline: React.FC<{
         }
     };
 
-    console.log({ entityTemplateSelectCheckboxProps });
-
     return (
         <Grid
             container
