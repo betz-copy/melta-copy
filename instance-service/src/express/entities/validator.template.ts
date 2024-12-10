@@ -409,7 +409,7 @@ const getFileName = (fileId: string): string => {
     return fileId.slice(config.fileIdLength);
 };
 
-export const addStringFieldsAndNormalizeDateValues = (
+export const addStringFieldsAndNormalizeSpecialStringValues = (
     entityProperties: Record<string, any>,
     entityTemplate: IMongoEntityTemplate,
     recursiveRelationshipReference = false,
