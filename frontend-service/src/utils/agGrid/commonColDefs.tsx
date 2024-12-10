@@ -29,6 +29,7 @@ export const numberColDef = <Data extends any = IEntity>(
     hideColumn = false,
     hideValue = false,
     searchValue: string | undefined = undefined,
+    editable: boolean = false,
 ): ColDef => {
     return {
         field,
@@ -41,7 +42,7 @@ export const numberColDef = <Data extends any = IEntity>(
         width: hardcodedWidth,
         flex: hardcodedWidth ? 0 : 1,
         hide: hideColumn,
-        editable: !value.readOnly && !value.serialStarter,
+        editable: editable && !value.serialStarter,
         cellEditor: 'agNumberCellEditor',
         cellEditorParams: {
             precision: 2,
@@ -59,6 +60,7 @@ export const regexColDef = <Data extends any = IEntity>(
     hideColumn = false,
     hideValue = false,
     searchValue: string | undefined = undefined,
+    editable: boolean = false,
 ): ColDef => {
     return {
         field,
@@ -72,7 +74,7 @@ export const regexColDef = <Data extends any = IEntity>(
         flex: hardcodedWidth ? 0 : 1,
         hide: hideColumn,
         cellStyle: { direction: 'ltr' },
-        editable: !value.readOnly,
+        editable,
         cellEditor: 'agTextCellEditor',
     };
 };
@@ -85,6 +87,7 @@ export const stringColDef = <Data extends any = IEntity>(
     hideColumn = false,
     hideValue = false,
     searchValue: string | undefined = undefined,
+    editable: boolean = false,
 ): ColDef => {
     return {
         field,
@@ -97,7 +100,7 @@ export const stringColDef = <Data extends any = IEntity>(
         width: hardcodedWidth,
         flex: hardcodedWidth ? 0 : 1,
         hide: hideColumn,
-        editable: !value.readOnly,
+        editable,
         cellEditor: value.format === 'text-area' ? 'agLargeTextCellEditor' : 'agTextCellEditor',
     };
 };
@@ -166,6 +169,7 @@ export const booleanColDef = <Data extends any = IEntity>(
     hideColumn = false,
     hideValue = false,
     searchValue: string | undefined = undefined,
+    editable: boolean = false,
 ): ColDef => {
     const formatValue = (propertyValue: boolean | null | undefined) => {
         if (!propertyValue) return i18next.t('booleanOptions.no');
@@ -193,7 +197,7 @@ export const booleanColDef = <Data extends any = IEntity>(
         width: hardcodedWidth,
         flex: hardcodedWidth ? 0 : 1,
         hide: hideColumn,
-        editable: !value.readOnly && field !== 'disabled',
+        editable,
         cellEditor: 'agCheckboxCellEditor',
     };
 };
@@ -208,6 +212,7 @@ export const enumColDef = <Data extends any = IEntity>(
     hideColumn = false,
     hideValue = false,
     searchValue: string | undefined = undefined,
+    editable: boolean = false,
 ): ColDef => {
     const filterParams: ISetFilterParams<Data, string | undefined> = {
         suppressMiniFilter: true,
@@ -233,7 +238,7 @@ export const enumColDef = <Data extends any = IEntity>(
         width: hardcodedWidth,
         flex: hardcodedWidth ? 0 : 1,
         hide: hideColumn,
-        editable: !value.readOnly,
+        editable,
         cellEditor: 'agSelectCellEditor',
         cellEditorParams: {
             values,
@@ -252,6 +257,7 @@ export const enumArrayColDef = <Data extends any = IEntity>(
     hideColumn = false,
     hideValue = false,
     searchValue: string | undefined = undefined,
+    editable: boolean = false,
 ): ColDef => {
     const filterParams: ISetFilterParams<Data, string | undefined> = {
         suppressMiniFilter: true,
@@ -282,7 +288,7 @@ export const enumArrayColDef = <Data extends any = IEntity>(
         width: hardcodedWidth,
         flex: hardcodedWidth ? 0 : 1,
         hide: hideColumn,
-        editable: !value.readOnly,
+        editable,
         cellEditor: MultiSelectCellEditor,
         cellEditorParams: {
             values,
@@ -344,6 +350,7 @@ export const dateColDef = <Data extends any = IEntity>(
     hideValue = false,
     calculateTime = false,
     searchValue: string | undefined = undefined,
+    editable: boolean = false,
 ): ColDef => {
     const { format } = value;
 
@@ -384,7 +391,7 @@ export const dateColDef = <Data extends any = IEntity>(
         width: hardcodedWidth,
         flex: hardcodedWidth ? 0 : 1,
         hide: hideColumn,
-        editable: !value.readOnly && field !== 'createdAt' && field !== 'updatedAt',
+        editable,
         cellEditor: format === 'date-time' ? DateTimeCellEditor : 'agDateStringCellEditor',
     };
 };

@@ -25,10 +25,8 @@ import '../../css/resizeTable.css';
 import '../../css/table.css';
 import { useMutation } from 'react-query';
 import { AxiosError } from 'axios';
-import { StatusCodes } from 'http-status-codes';
-import { FullWidth } from '@ag-grid-community/core/dist/types/src/components/framework/componentTypes';
 import { environment } from '../../globals';
-import { IEntity, IEntityExpanded, IUniqueConstraint, IRequiredConstraint } from '../../interfaces/entities';
+import { IEntity, IEntityExpanded, IUniqueConstraint } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IRelationship } from '../../interfaces/relationships';
 import { searchEntitiesOfTemplateRequest, updateEntityRequestForMultiple } from '../../services/entitiesService';
@@ -295,6 +293,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             defaultColumnWidths,
             rowHeight,
             searchValue: quickFilterText,
+            disableEditCell: editRowButtonProps?.disabledButton,
         };
         const columnDefs = useDeepCompareMemo(() => getColumnDefs(columnDefProps), [columnDefProps]);
 
@@ -378,7 +377,6 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             }
         }, 500);
 
-        const [externalErrors, setExternalErrors] = useState({ files: false, unique: {}, action: '' });
         const [updateWithRuleBreachDialogState, setUpdateWithRuleBreachDialogState] = useState<{
             isOpen: boolean;
             brokenRules?: IRuleBreachPopulated['brokenRules'];
@@ -396,7 +394,6 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                     toast.success(i18next.t('wizard.entity.editedSuccessfully'));
                     gridRef.current?.api.refreshServerSide();
                     setUpdateWithRuleBreachDialogState({ isOpen: false });
-                    setExternalErrors({ files: false, unique: {}, action: '' });
                 },
                 onError: (err: AxiosError, { newEntityData: newEntityDate }) => {
                     const errorMetadata = err.response?.data?.metadata;
@@ -414,8 +411,6 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                                     const constraintPropsDisplayNames = properties.map(
                                         (prop) => `${prop}-${template.properties.properties[prop].title}`,
                                     );
-                                    console.log({ properties, constraintPropsDisplayNames });
-
                                     constraintPropsDisplayNames.forEach((uniqueProp) => {
                                         toast.error(
                                             `${i18next.t('wizard.entity.failedToEdit')}: ${i18next.t(
@@ -429,7 +424,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                             }
                             break;
                         case errorCodes.actionsCustomError:
-                            setExternalErrors((prev) => ({ ...prev, action: errorMetadata?.message }));
+                            toast.error(errorMetadata?.message);
                             break;
                         case errorCodes.ruleBlock:
                             const { brokenRules, rawBrokenRules, actions, rawActions } = errorMetadata;
@@ -451,6 +446,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             },
         );
         const [currEntity, setCurrEntity] = useState<IEntity>();
+        const [currEditingCell, setCurrEditingCell] = useState<any>();
 
         const gridContent = (
             <>
@@ -578,7 +574,6 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                             resizable: true,
                             lockPinned: true,
                             initialWidth: 250,
-                            editable: true,
                         }}
                         sideBar={{
                             toolPanels: [
@@ -612,13 +607,12 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                         }
                         localeText={agGridLocaleText}
                         paginationPageSizeSelector={paginationPageSizeSelector}
-                        onCellEditingStarted={() => console.log('hi')}
                         onCellEditingStopped={(params) => {
-                            console.log('bye', { params });
+                            setCurrEditingCell(undefined);
                             if (params.valueChanged === false) return;
                             const updatedProperties = {
                                 ...params.data?.properties,
-                                [params.column.colId]: params.newValue === '' ? undefined : params.newValue,
+                                [params.column.getColId()]: params.newValue === '' ? undefined : params.newValue,
                             };
                             setCurrEntity({ templateId: template._id, properties: params.data?.properties });
                             updateMutation({
@@ -629,7 +623,10 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                                 },
                             });
                         }}
-                        // stopEditingWhenCellsLoseFocus
+                        onCellClicked={(params) => {
+                            setCurrEditingCell(params);
+                            if (currEditingCell && currEditingCell.value !== params.value) params.api.stopEditing();
+                        }}
                     />
                 </Box>
                 {updateWithRuleBreachDialogState.isOpen && (

@@ -180,10 +180,14 @@ export class EntityManager extends DefaultManagerNeo4j {
                 constraint: requiredConstraint,
                 neo4jMessage,
             });
-        } else if (neo4jMessage.includes('already exists with') || neo4jMessage.includes('uniqueConstraint')) {
+        } else if (neo4jMessage.includes('already exists with')) {
             let label = '';
             let properties: any[] = [];
-            if (neo4jMessage.includes('already exists with')) {
+            if (neo4jMessage.includes('uniqueConstraint')) {
+                label = neo4jMessage.substr(neo4jMessage.indexOf(':') + 1, 24);
+                const keys = neo4jMessage.substring(neo4jMessage.indexOf('{') + 1, neo4jMessage.indexOf('}'));
+                properties = keys.split(',').map((key) => key.trim());
+            } else {
                 // neo4jMessage = Node(...) already exists with label `someLabel...` and properties `property1` = ..., `property2` = ...
                 // support unique w/ multiple props
                 const variableMatchesInMessage = neo4jMessage.matchAll(/`(.*?)`/g)!;
@@ -191,10 +195,6 @@ export class EntityManager extends DefaultManagerNeo4j {
                 properties = properties.map((property) =>
                     property.endsWith(config.neo4j.relationshipReferencePropertySuffix) ? property.split('.')[0] : property,
                 );
-            } else {
-                label = neo4jMessage.substr(neo4jMessage.indexOf(':') + 1, 24);
-                const keys = neo4jMessage.substring(neo4jMessage.indexOf('{') + 1, neo4jMessage.indexOf('}'));
-                properties = keys.split(',').map((key) => key.trim());
             }
 
             const uniqueConstraint: Omit<IUniqueConstraint, 'constraintName'> = {
