@@ -18,7 +18,6 @@ const MapPage = () => {
     const [selectedEntity, setSelectedEntity] = useState<{ node: IEntity; field: string } | null>(null);
 
     const [selectedTemplates, setSelectedTemplates] = useState<IMongoEntityTemplatePopulated[]>([]);
-    const [searchValue, setSearchValue] = useState('');
 
     return (
         <Box position="relative" width="100%" height="100vh">
@@ -59,12 +58,7 @@ const MapPage = () => {
 
                 <FeatureGroup ref={searchResultGroupRef} />
 
-                <MapFilters
-                    searchValue={searchValue}
-                    selectedTemplates={selectedTemplates}
-                    setSearchValue={setSearchValue}
-                    setSelectedTemplates={setSelectedTemplates}
-                />
+                <MapFilters selectedTemplates={selectedTemplates} setSelectedTemplates={setSelectedTemplates} />
             </MapContainer>
             {selectedEntity && (
                 <MapPageEntityDialog open={!!selectedEntity} entityWithMatchingField={selectedEntity} onClose={() => setSelectedEntity(null)} />

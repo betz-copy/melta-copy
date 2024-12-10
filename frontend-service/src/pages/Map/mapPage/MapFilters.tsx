@@ -4,16 +4,14 @@ import { Grid } from '@mui/material';
 import { useQueryClient } from 'react-query';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import TemplatesSelectCheckbox from '../../../common/templatesSelectCheckbox';
-import { GlobalSearchBar } from '../../../common/EntitiesPage/Headline';
+import SearchAutoComplete from './SearchAutoComplete';
 
 type props = {
     selectedTemplates: IMongoEntityTemplatePopulated[];
     setSelectedTemplates: React.Dispatch<React.SetStateAction<IMongoEntityTemplatePopulated[]>>;
-    searchValue?: string;
-    setSearchValue?: (newInputValue: string) => void;
 };
 
-const MapFilters = ({ searchValue, selectedTemplates, setSearchValue, setSelectedTemplates }: props) => {
+const MapFilters = ({ selectedTemplates, setSelectedTemplates }: props) => {
     const queryClient = useQueryClient();
     const entityTemplateMap = queryClient.getQueryData<IEntityTemplateMap>(['getEntityTemplates']);
 
@@ -23,6 +21,7 @@ const MapFilters = ({ searchValue, selectedTemplates, setSearchValue, setSelecte
 
     useEffect(() => {
         setSelectedTemplates(templatesWithLocationField);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     return (
@@ -34,19 +33,11 @@ const MapFilters = ({ searchValue, selectedTemplates, setSearchValue, setSelecte
                     selectedTemplates={selectedTemplates}
                     setSelectedTemplates={setSelectedTemplates}
                     isDraggableDisabled
-                    // setTemplates={entityTemplateSelectCheckboxProps.setTemplates}
                     size="small"
                 />
             </Grid>
             <Grid item>
-                <GlobalSearchBar
-                    inputValue={searchValue}
-                    setInputValue={setSearchValue}
-                    onSearch={() => console.log('hello')}
-                    borderRadius="7px"
-                    placeholder={i18next.t('globalSearch.searchInPage')}
-                    autoSearch
-                />
+                <SearchAutoComplete selectedTemplates={selectedTemplates} />
             </Grid>
         </Grid>
     );
