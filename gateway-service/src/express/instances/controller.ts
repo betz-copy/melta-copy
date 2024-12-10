@@ -35,6 +35,16 @@ export class InstancesController extends DefaultController<InstancesManager> {
         res.json(await this.manager.searchEntitiesByLocation(req.body as ISearchEntitiesByLocationBody));
     }
 
+    async searchEntitiesBatch(req: Request, res: Response) {
+        const { shouldSemanticSearch, ...body } = req.body;
+        res.json(await this.manager.searchEntitiesBatch(shouldSemanticSearch, body));
+    }
+
+    async getEntitiesCountByTemplates(req: Request, res: Response) {
+        const { shouldSemanticSearch, ...body } = req.body;
+        res.json(await this.manager.getEntitiesCountByTemplates(shouldSemanticSearch, body));
+    }
+
     async duplicateEntityInstance(req: Request, res: Response) {
         const { ignoredRules, ...instanceData } = req.body;
         res.json(

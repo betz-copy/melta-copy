@@ -75,6 +75,7 @@ const TemplateTable = forwardRef<
                     [template._id]: {
                         filter: filterModelToFilterOfTemplate(entitiesTableRef.current?.getFilterModel() ?? {}, template),
                         sort: sortModelToSortOfSearchRequest(entitiesTableRef.current?.getSortModel() ?? []),
+                        displayColumns: entitiesTableRef.current?.getDisplayColumns() ?? [],
                     },
                 },
             });
@@ -281,6 +282,8 @@ const TemplateTable = forwardRef<
                     onFilter={() => {
                         setIsFiltered(entitiesTableRef.current?.isFiltered() ?? false);
                     }}
+                    menuRowButtonProps={userHasWritePermissions}
+                    refetch={() => entitiesTableRef.current?.refreshServerSide()}
                 />
             </Box>
 

@@ -154,4 +154,8 @@ export class UsersManager {
             existingDigitalIdentitySource: existingUser.externalMetadata?.digitalIdentitySource,
         };
     }
+
+    static async searchUsersByPermissions(workspaceId: string): Promise<IUser[]> {
+        return UserService.searchUsersByPermissions(workspaceId);
+    }
 }

@@ -1,11 +1,37 @@
 {
-  "peacock.color": "#cfcfc4",
-  "workbench.colorCustomizations": {
-    "statusBar.background": "#cfcfc4",
-    "statusBar.foreground": "#15202b",
-    "statusBarItem.hoverBackground": "#b8b8a8",
-    "statusBarItem.remoteBackground": "#cfcfc4",
-    "statusBarItem.remoteForeground": "#15202b"
+  "eslint.validate": ["javascript", "typescript"],
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
   },
-  "cSpell.words": ["latlngs"]
+  "editor.formatOnSave": true,
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[html]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[yaml]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.insertSpaces": true,
+    "editor.tabSize": 2,
+    "editor.quickSuggestions": {
+      "comments": "on",
+      "strings": "on",
+      "other": "on"
+    }
+  },
+  "workbench.colorCustomizations": {
+    "statusBar.background": "#007fff",
+    "statusBar.foreground": "#e7e7e7",
+    "statusBarItem.hoverBackground": "#3399ff",
+    "statusBarItem.remoteBackground": "#007fff",
+    "statusBarItem.remoteForeground": "#e7e7e7"
+  },
+  "peacock.color": "#007fff"
 }

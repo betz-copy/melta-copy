@@ -5,6 +5,7 @@ import { Grid, IconButton, Typography, useTheme } from '@mui/material';
 import { DropResult } from 'react-beautiful-dnd';
 import FilterAltOffIcon from '@mui/icons-material/FilterAltOff';
 import AddIcon from '@mui/icons-material/Add';
+import { FilterList } from '@mui/icons-material';
 import { TopBarGrid } from '../../common/TopBar';
 import { BlueTitle } from '../../common/BlueTitle';
 import { environment } from '../../globals';
@@ -27,6 +28,7 @@ const IFramesPageHeadline: React.FC<{
     const theme = useTheme();
     const queryClient = useQueryClient();
     const [allIFramesAllowed, setAllIFramesAllowed] = useState<IMongoIFrame[]>();
+    const [inputValue, setInputValue] = useState('');
     const currentUser = useUserStore((state) => state.user);
 
     useEffect(() => {
@@ -71,7 +73,7 @@ const IFramesPageHeadline: React.FC<{
                 <Grid item>
                     <SelectCheckbox
                         title={i18next.t('iFrames.arrangementIFrames')}
-                        img={<img src="/icons/select-checkbox.svg" />}
+                        img={<FilterList fontSize="small" />}
                         options={allIFramesAllowed ?? []}
                         selectedOptions={[]}
                         setSelectedOptions={() => {}}
@@ -86,7 +88,16 @@ const IFramesPageHeadline: React.FC<{
 
                 <Grid item>
                     <Grid container wrap="nowrap" gap="15px">
-                        <GlobalSearchBar onSearch={onSearch} borderRadius="7px" placeholder={i18next.t('globalSearch.searchInPage')} toTopBar />
+                        <GlobalSearchBar
+                            inputValue={inputValue}
+                            setInputValue={setInputValue}
+                            onSearch={() => {
+                                onSearch(inputValue);
+                            }}
+                            borderRadius="7px"
+                            placeholder={i18next.t('globalSearch.searchInPage')}
+                            toTopBar
+                        />
                     </Grid>
                 </Grid>
                 <Grid item>

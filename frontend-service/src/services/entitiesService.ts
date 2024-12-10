@@ -12,6 +12,7 @@ import {
     IGraphFilterBodyBatch,
     ISearchEntitiesByTemplatesBody,
     ISearchEntitiesByLocationBody,
+    ICountSearchResult,
 } from '../interfaces/entities';
 import { EntityWizardValues } from '../common/dialogs/entity';
 import { IRuleBreach } from '../interfaces/ruleBreaches/ruleBreach';
@@ -227,8 +228,8 @@ export const searchEntitiesOfTemplateRequest = async (templateId: string, search
     return data;
 };
 
-export const getCountByTemplateIdsRequest = async (templateIds: string[], textSearch: string) => {
-    const { data } = await axios.post<{ templateId: string; count: number }[]>(`${entities}/count`, { templateIds, textSearch });
+export const getCountByTemplateIdsRequest = async (templateIds: string[], textSearch: string = '', shouldSemanticSearch: boolean = false) => {
+    const { data } = await axios.post<ICountSearchResult[]>(`${entities}/count`, { templateIds, textSearch, shouldSemanticSearch });
     return data;
 };
 

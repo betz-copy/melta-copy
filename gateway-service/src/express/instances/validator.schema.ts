@@ -69,6 +69,7 @@ export const exportEntitiesSchema = Joi.object({
         templates: Joi.object().pattern(Joi.string(), {
             filter: Joi.any(), // will be checked by instance-manager
             sort: Joi.any(), // will be checked by instance-manager
+            displayColumns: Joi.array().items(Joi.string()).required(),
         }),
     },
     query: {},
@@ -91,6 +92,7 @@ export const searchEntitiesBatchRequestSchema = Joi.object({
         skip: Joi.any(),
         limit: Joi.any(),
         textSearch: Joi.any(),
+        shouldSemanticSearch: Joi.boolean().default(true),
         // validation only in order to check permissions to templates
         templates: Joi.object().pattern(Joi.string(), {
             filter: Joi.any(),
@@ -120,6 +122,18 @@ export const searchEntitiesByLocationRequestSchema = Joi.object({
     }).xor('circle', 'polygon'),
     query: Joi.object(),
     params: Joi.object(),
+});
+/*
+ * POST /api/instances/entities/count
+ */
+export const getEntitiesCountByTemplates = Joi.object({
+    body: {
+        templateIds: Joi.array().items(Joi.string()).required(),
+        textSearch: Joi.string().allow(''),
+        shouldSemanticSearch: Joi.boolean().default(true),
+    },
+    query: {},
+    params: {},
 });
 
 // POST /api/instances/search/templates

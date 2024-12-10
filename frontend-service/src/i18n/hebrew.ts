@@ -1,7 +1,6 @@
 import { environment } from '../globals';
 import { ActionTypes } from '../interfaces/ruleBreaches/actionMetadata';
 import { WorkspaceTypes } from '../interfaces/workspaces';
-import { agGridLocaleText } from '../utils/agGrid/agGridLocaleText';
 import { muiDatePickersLocaleText } from '../utils/datePickers';
 
 export default {
@@ -62,6 +61,7 @@ export default {
         navigateToEntityPage: 'עמוד פרט',
         failedToLoadData: 'נכשל לטעון מידע',
         columns: 'עמודות',
+        semanticSearch: 'נמצא באמצעות AI',
     },
     noSearchResults: 'לא נמצאו תוצאות. חפש שנית',
     noSearchLeft: 'אין עוד תוצאות',
@@ -103,7 +103,7 @@ export default {
         failedToActivate: 'נכשל להפעיל ישות',
         disabledSuccessfully: 'ישות הושבתה בהצלחה',
         activatedSuccessfully: 'ישות הופעלה בהצלחה',
-        disabledEntity: 'ישות לא פעילה',
+        disabledEntity: 'ישות מושבתת',
         linkToEntityPage: 'לחץ למידע נוסף',
         error: 'לחץ לניסיון נוסף',
         create: 'יוצר ישות',
@@ -242,8 +242,12 @@ export default {
         search: 'חיפוש',
         sourceTemplates: 'תבניות מקור',
         destinationTemplates: 'תבניות יעד',
-        disabledEntityTemplate: 'תבנית לא פעילה',
-        disabledRule: 'חוק לא פעיל',
+        cannotDeleteWithEntities: 'לא ניתן למחוק תבנית זאת, קיימות תחתיה ישויות',
+        cannotDeleteWithRelationship: 'לא ניתן למחוק קשר זה, קיימים תחתיו קשרים',
+        cannotEditEntityDisabled: 'לא ניתן לערוך קשר זה, מכיל ישות מושבתת',
+        disabledEntityTemplate: 'תבנית מושבתת',
+        disabledEntity: 'ישות מושבתת',
+        disabledRule: 'חוק מושבת',
         defaultCantEdit: 'לא ניתן לערוך ',
         deleteField: 'מחיקת שדה',
         warningOnDeleteField: 'שים לב! מחיקת שדה',
@@ -301,6 +305,7 @@ export default {
     },
     userAutocomplete: {
         label: 'משתמש',
+        searchLabel: 'חיפוש משתמש',
         failedToSearchUsers: 'נכשל לחפש משתמשים',
         loading: 'טוען...',
         noOptions: 'אין תוצאות',
@@ -380,6 +385,12 @@ export default {
             read: 'קריאה',
             write: 'עריכה',
         },
+        dialog: {
+            title: 'הרשאות בסביבה',
+            mainWorkspaceTitle: 'ראשית',
+            permissionType: 'סוג הרשאה',
+            updatedAt: 'עודכן ב',
+        },
     },
     entitiesCardView: {
         failedToLoadResults: 'נכשל לטעון תוצאות',
@@ -396,6 +407,8 @@ export default {
         searchRelations: 'חיפוש קשרים...',
         searchProcesses: 'חיפוש תהליכים...',
         searchInPage: 'חיפוש בעמוד',
+        turnOnSemanticSearch: 'חיפוש חכם בתוכן הקבצים כבוי',
+        turnOffSemanticSearch: 'חיפוש חכם בתוכן הקבצים דלוק',
     },
     wizard: {
         next: 'הבא',
@@ -408,7 +421,8 @@ export default {
         failedToUpdateSystemData: 'נכשל לעדכן נתוני מערכת',
         date: 'בחר תאריך',
         category: {
-            title: 'יצירת קטגוריה',
+            createTitle: 'יצירת קטגוריה',
+            updateTitle: 'עריכת קטגוריה',
             createdSuccessfully: 'קטגוריה נוצרה בהצלחה',
             editedSuccessfully: 'קטגוריה עודכנה בהצלחה',
             failedToCreate: 'נכשל ליצור קטגוריה',
@@ -436,8 +450,8 @@ export default {
             placeInSideBar: 'למקם בסרגל צידי',
         },
         entityTemplate: {
-            title: 'יצירת תבנית ישות',
-            editTitle: 'עריכת תבנית ישות',
+            createTitle: 'יצירת תבנית ישות',
+            updateTitle: 'עריכת תבנית ישות',
             createdSuccessfully: 'תבנית ישות נוצרה בהצלחה',
             editedSuccessfully: 'תבנית ישות עודכנה בהצלחה',
             failedToCreate: 'נכשל ליצור תבנית ישות',
@@ -499,7 +513,8 @@ export default {
             deleteUniqueGrouptoList: 'מחק',
         },
         relationshipTemplate: {
-            title: 'יצירת תבנית קשר',
+            createTitle: 'יצירת תבנית קשר',
+            updateTitle: 'עריכת תבנית קשר',
             createdSuccessfully: 'תבנית קשר נוצרה בהצלחה',
             editedSuccessfully: 'תבנית קשר עודכנה בהצלחה',
             failedToCreate: 'נכשל ליצור תבנית קשר',
@@ -510,14 +525,15 @@ export default {
             destinationEntity: 'תבנית ישות יעד',
         },
         processTemplate: {
-            title: 'יצירת תבנית תהליך',
-            editTitle: 'עריכת תבנית תהליך',
+            createTitle: 'יצירת תבנית תהליך',
+            updateTitle: 'עריכת תבנית תהליך',
             createdSuccessfully: 'תבנית תהליך נוצרה בהצלחה',
             editedSuccessfully: 'תבנית תהליך עודכנה בהצלחה',
             failedToCreate: 'נכשל ליצור תבנית תהליך',
             failedToEdit: 'נכשל בעריכת תבנית תהליך',
             deletedSuccessfully: 'תבנית תהליך נמחקה בהצלחה',
-            failedToDelete: 'נכשל למחוק תבנית תהליך',
+            failedToDelete: 'נכשל למחוק תבנית תהליך,',
+            hasInstances: 'קיים תהליך המשתמש בתבנית זאת',
             chooseProcessTemplateName: 'בחירת שם תבנית',
             otherDetails: 'פרטים נוספים',
             levels: 'שלבים',
@@ -557,12 +573,14 @@ export default {
             fileFields: 'העלאת קבצים',
             summary: 'סיכום',
             classificationCategory: 'סיווג לקטגוריה',
+            deleteDisabledDueToTemplates: 'לא ניתן למחוק קטגוריה זאת, קיימות תחתיה תבניות ישות',
             anotherParams: 'פרמטרים נוספים',
             serialNumberAutoGenerated: '*מספר סידורי אוטומטי',
             readMore: 'קרא עוד',
         },
         rule: {
-            title: 'יצירת חוק',
+            createTitle: 'יצירת חוק',
+            updateTitle: 'עריכת חוק',
             createdSuccessfully: 'חוק נוצר בהצלחה',
             editedSuccessfully: 'חוק עודכן בהצלחה',
             failedToCreate: 'נכשל ליצור חוק',
@@ -697,6 +715,8 @@ export default {
         colorRequired: 'חובה לבחור צבע',
         requiredFiles: 'קבצים חובה',
         variableName: 'פורמט שם משתנה',
+        existingName: 'שם באנגלית קיים',
+        existingDisplayName: 'שם תצוגה קיים',
         fieldNameExists: 'קיים שם שדה באנגלית זהה',
         fieldTitleExists: 'קיים שם שדה לתצוגה זהה',
         fieldExist: 'שדה זה קיים במערכת',
@@ -742,6 +762,7 @@ export default {
         ENTITY_TEMPLATE_HAS_INSTANCES: 'קיימות ישויות מהתבנית',
         RELATIONSHIP_TEMPLATE_HAS_INSTANCES: 'קיימים קשרים מהתבנית',
         DUPLICATE_ERROR: 'קיימים מאפיינים זהים',
+        DUPLICATE_ENTITY_NAME_ERROR: 'קיימת תבנית ישות בעלת שם זהה',
         ENTITY_HAS_RELATIONSHIPS: 'קיימים קשרים לישות',
         RELATIONSHIP_ALREADY_EXISTS: 'הקשר קיים כבר',
         RELATIONSHIP_TEMPLATE_HAS_RULES: 'קיימים חוקים לתבנית קשר',
@@ -790,6 +811,7 @@ export default {
             toDisabled: 'למושבת',
             toActive: 'למופעל',
         },
+        deletedEntity: 'הישות נמחקה',
         brokenRules: 'חריגות',
         actionsOrder: 'סדר פעולות',
         actionsBrokeTheFollowingRules: 'הפעולות שנעשו',
@@ -1017,7 +1039,6 @@ export default {
             primary: 'ראשי',
         },
     },
-    agGridLocaleText,
     muiDatePickersLocaleText,
     schedule: {
         schedule: {

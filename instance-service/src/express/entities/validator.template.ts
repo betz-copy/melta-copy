@@ -405,7 +405,11 @@ const formatDateForFullTextSearch = (date: Date) => {
     return formatFns(date, 'dd/MM/yyyy');
 };
 
-export const addStringFieldsAndNormalizeSpecialStringValues = (
+const getFileName = (fileId: string): string => {
+    return fileId.slice(config.fileIdLength);
+};
+
+export const addStringFieldsAndNormalizeDateValues = (
     entityProperties: Record<string, any>,
     entityTemplate: IMongoEntityTemplate,
     recursiveRelationshipReference = false,
@@ -414,7 +418,11 @@ export const addStringFieldsAndNormalizeSpecialStringValues = (
 
     Object.entries(entityTemplate.properties.properties).forEach(([key, value]) => {
         if (!(key in entityProperties)) {
-            if (value.type === 'boolean') normalizedEntity[key] = false;
+            if (value.type === 'boolean') {
+                normalizedEntity[key] = false;
+                normalizedEntity[`${key}${neo4j.booleanPropertySuffix}`] = neo4j.booleanHeNoValue;
+            }
+
             return;
         }
 
@@ -423,6 +431,18 @@ export const addStringFieldsAndNormalizeSpecialStringValues = (
         // For Neo4j fulltext search (supports only string properties)
         if (type !== 'string') {
             normalizedEntity[`${key}${neo4j.stringPropertySuffix}`] = String(propertyValue);
+        }
+
+        if (type === 'boolean') {
+            normalizedEntity[`${key}${neo4j.booleanPropertySuffix}`] = propertyValue ? neo4j.booleanHeYesValue : neo4j.booleanHeNoValue;
+        }
+
+        if (type === 'array' && value.items?.format === 'fileId') {
+            normalizedEntity[`${key}${neo4j.filePropertySuffix}`] = propertyValue.map((fileId: string) => getFileName(fileId));
+        }
+
+        if (type === 'string' && format === 'fileId') {
+            normalizedEntity[`${key}${neo4j.filePropertySuffix}`] = getFileName(propertyValue);
         }
 
         if (type === 'string' && format === 'date') {
