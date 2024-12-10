@@ -42,7 +42,7 @@ export const numberColDef = <Data extends any = IEntity>(
         width: hardcodedWidth,
         flex: hardcodedWidth ? 0 : 1,
         hide: hideColumn,
-        editable: editable && !value.serialStarter,
+        editable: editable && value.serialStarter === undefined,
         cellEditor: 'agNumberCellEditor',
         cellEditorParams: {
             precision: 2,
