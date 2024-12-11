@@ -13,10 +13,10 @@ const {
         similarityAlgorithm,
         lexicalFuzziness,
         queryMinScore,
-        // knnGroupSize,
-        // rrfWindowConstant,
-        // rrfRankConstant,
-        // rrfWindowFieldName,
+        knnGroupSize,
+        rrfWindowConstant,
+        rrfRankConstant,
+        rrfWindowFieldName,
         user,
         password,
         uniqueEntityForAggSize,
@@ -106,7 +106,7 @@ class ElasticClient {
         }, {} as ISemanticSearchResult);
     }
 
-    async hybridSearch(query: string, _embeddedQuery: number[], limit: number, skip: number, templates: string[]) {
+    async hybridSearch(query: string, embeddedQuery: number[], limit: number, skip: number, templates: string[]) {
         const filter = templates?.length > 0 ? [{ terms: { templateId: templates } }] : [];
 
         const indexName = `${index}-${this.workspaceId}`;
@@ -126,19 +126,19 @@ class ElasticClient {
                     filter,
                 },
             },
-            // knn: {
-            //     field: 'embedding',
-            //     query_vector: embeddedQuery,
-            //     k: limit,
-            //     num_candidates: knnGroupSize,
-            //     filter,
-            // },
-            // rank: {
-            //     rrf: {
-            //         [rrfWindowFieldName]: rrfWindowConstant,
-            //         rank_constant: rrfRankConstant,
-            //     },
-            // },
+            knn: {
+                field: 'embedding',
+                query_vector: embeddedQuery,
+                k: limit,
+                num_candidates: knnGroupSize,
+                filter,
+            },
+            rank: {
+                rrf: {
+                    [rrfWindowFieldName]: rrfWindowConstant,
+                    rank_constant: rrfRankConstant,
+                },
+            },
             min_score: queryMinScore,
             // Group by unique values
             aggs: {
