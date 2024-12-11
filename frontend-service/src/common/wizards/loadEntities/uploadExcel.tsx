@@ -69,6 +69,9 @@ export const UploadExcel: React.FC<{
                         const workbook = XLSX.read(binaryData, { type: 'array' });
                         const firstSheetName = workbook.SheetNames[0];
                         const worksheet = workbook.Sheets[firstSheetName];
+
+                        const worksheetName = workbook?.Workbook?.Sheets?.[0]?.name as string;
+                        if (!template.displayName.includes(worksheetName)) throw new Error('Invalid File: wrong template');
                         const fileData: any[][] = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
 
                         const newEntities = importDataToGrid(fileData);
@@ -96,7 +99,10 @@ export const UploadExcel: React.FC<{
             setRowData(entities);
             return true;
         } catch (error) {
-            toast.error(`${i18next.t('wizard.entity.loadEntities.limitNumberEntities')} ${(error as Error).message}`);
+            if (files.some((file) => file.name === (error as Error).message))
+                toast.error(`${i18next.t('wizard.entity.loadEntities.limitNumberEntities')} ${(error as Error).message}`);
+            else if ((error as Error).message.includes('wrong template')) toast.error(i18next.t('wizard.entity.loadEntities.filesWrongTemplate'));
+            else toast.error(i18next.t('wizard.entity.loadEntities.failedReadingFiles'));
             return false;
         }
     };
