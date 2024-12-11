@@ -13,6 +13,7 @@ import { InstancesManager } from '../../instances/manager';
 import { UsersManager } from '../../users/manager';
 import ProcessesInstancesManager from '../processInstances/manager';
 import logger from '../../../utils/logger/logsLogger';
+import { UploadedFile } from '../../../utils/busboy/interface';
 
 export default class StepsInstancesManager extends DefaultManagerProxy<ProcessService> {
     private storageService: StorageService;
@@ -62,7 +63,7 @@ export default class StepsInstancesManager extends DefaultManagerProxy<ProcessSe
         processId: string,
         stepId: string,
         updatedData: Partial<Pick<IStepInstance, 'properties' | 'status' | 'comments'>>,
-        files: Express.Multer.File[],
+        files: UploadedFile[],
         userId: string,
     ) {
         const processInstancesManager = new ProcessesInstancesManager(this.workspaceId);

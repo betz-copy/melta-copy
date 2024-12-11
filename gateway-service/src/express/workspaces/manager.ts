@@ -1,4 +1,5 @@
 import { StorageService } from '../../externalServices/storageService';
+import { UploadedFile } from '../../utils/busboy/interface';
 import DefaultManagerProxy from '../../utils/express/manager';
 import { UserNotAuthorizedError } from '../error';
 import { UsersManager } from '../users/manager';
@@ -50,18 +51,18 @@ export class WorkspaceManager extends DefaultManagerProxy {
         return WorkspaceService.getById(id);
     }
 
-    private async uploadFilesWrapper(files: Express.Multer.File[]) {
+    private async uploadFilesWrapper(files: UploadedFile[]) {
         if (!files.length) return {};
 
         const fileIds = await this.storageService.uploadFiles(files);
 
         return files.reduce(
-            (acc, { fieldname }, index) => ({ ...acc, [fieldname]: fileIds[index] }),
+            (acc, { fieldName }, index) => ({ ...acc, [fieldName]: fileIds[index] }),
             {} as Pick<IWorkspace, 'iconFileId' | 'logoFileId'>,
         );
     }
 
-    async createOne(workspace: Omit<IWorkspace, '_id'>, files: Express.Multer.File[]) {
+    async createOne(workspace: Omit<IWorkspace, '_id'>, files: UploadedFile[]) {
         const { _id, createdAt, updatedAt, ...createdWorkspace } = await WorkspaceService.createOne(workspace);
 
         this.storageService = new StorageService(_id);
@@ -88,7 +89,7 @@ export class WorkspaceManager extends DefaultManagerProxy {
         return !filesToDelete.length ? [] : this.storageService.deleteFiles(filesToDelete);
     }
 
-    async updateOne(id: string, workspace: Omit<IWorkspace, '_id'>, files: Express.Multer.File[]) {
+    async updateOne(id: string, workspace: Omit<IWorkspace, '_id'>, files: UploadedFile[]) {
         const [oldWorkspace, fileProperties] = await Promise.all([WorkspaceService.getById(id), this.uploadFilesWrapper(files)]);
 
         const updatedWorkspace = await WorkspaceService.updateOne(id, { ...workspace, ...fileProperties });

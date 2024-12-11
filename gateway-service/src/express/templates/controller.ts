@@ -8,6 +8,7 @@ import {
     RequestWithSearchRelationshipTemplateBody,
     RequestWithSearchRuleTemplateBody,
 } from '../../externalServices/templates/relationshipsTemplateService';
+import { UploadedFile } from '../../utils/busboy/interface';
 
 export default class TemplatesController extends DefaultController<TemplatesManager> {
     constructor(workspaceId: string) {
@@ -25,7 +26,7 @@ export default class TemplatesController extends DefaultController<TemplatesMana
 
     // categories
     async createCategory(req: Request, res: Response) {
-        res.json(await this.manager.createCategory(req.body, req.file));
+        res.json(await this.manager.createCategory(req.body, req.file as unknown as UploadedFile));
     }
 
     async deleteCategory(req: Request, res: Response) {
@@ -33,7 +34,7 @@ export default class TemplatesController extends DefaultController<TemplatesMana
     }
 
     async updateCategory(req: Request, res: Response) {
-        res.json(await this.manager.updateCategory(req.params.id, req.body, req.file));
+        res.json(await this.manager.updateCategory(req.params.id, req.body, req.file as unknown as UploadedFile));
     }
 
     async searchCategories(req: Request, res: Response) {
@@ -45,7 +46,7 @@ export default class TemplatesController extends DefaultController<TemplatesMana
 
     // entityTemplates
     async createEntityTemplate(req: Request, res: Response) {
-        res.json(await this.manager.createEntityTemplate(req.body, req.files as Record<string, Express.Multer.File[]>));
+        res.json(await this.manager.createEntityTemplate(req.body, req.files as unknown as Record<string, UploadedFile[]>));
     }
 
     async deleteEntityTemplate(req: Request, res: Response) {
@@ -53,7 +54,7 @@ export default class TemplatesController extends DefaultController<TemplatesMana
     }
 
     async updateEntityTemplate(req: Request, res: Response) {
-        res.json(await this.manager.updateEntityTemplate(req.params.id, req.body, req.files as Record<string, Express.Multer.File[]>));
+        res.json(await this.manager.updateEntityTemplate(req.params.id, req.body, req.files as unknown as Record<string, UploadedFile[]>));
     }
 
     async updateEntityTemplateStatus(req: Request, res: Response) {

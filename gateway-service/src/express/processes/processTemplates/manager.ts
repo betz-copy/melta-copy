@@ -15,6 +15,7 @@ import { IMongoStepTemplate, IStepTemplate } from '../../../externalServices/pro
 import { StorageService } from '../../../externalServices/storageService';
 import { PermissionScope } from '../../../externalServices/userService/interfaces/permissions';
 import { Authorizer } from '../../../utils/authorizer';
+import { UploadedFile } from '../../../utils/busboy/interface';
 import DefaultManagerProxy from '../../../utils/express/manager';
 import { removeTmpFile } from '../../../utils/fs';
 import { ServiceError } from '../../error';
@@ -34,7 +35,7 @@ export class ProcessTemplatesManager extends DefaultManagerProxy<ProcessService>
         this.processInstancesManager = new ProcessesInstancesManager(workspaceId);
     }
 
-    private async uploadIcons(icons: Express.Multer.File[]) {
+    private async uploadIcons(icons: UploadedFile[]) {
         if (icons.length === 0) {
             return [];
         }
@@ -42,7 +43,7 @@ export class ProcessTemplatesManager extends DefaultManagerProxy<ProcessService>
         const iconFileIds = await this.storageService.uploadFiles(icons);
 
         const iconFilePropertiesEntries = icons.map((icon, index) => {
-            return [Number(icon.fieldname), iconFileIds[index]];
+            return [Number(icon.fieldName), iconFileIds[index]];
         });
         return iconFilePropertiesEntries;
     }
@@ -73,7 +74,7 @@ export class ProcessTemplatesManager extends DefaultManagerProxy<ProcessService>
             });
     }
 
-    private async handleIcons(icons: Express.Multer.File[], newSteps: IMongoStepTemplate[]) {
+    private async handleIcons(icons: UploadedFile[], newSteps: IMongoStepTemplate[]) {
         const updatedSteps = [...newSteps];
 
         if (icons.length) {
@@ -90,13 +91,13 @@ export class ProcessTemplatesManager extends DefaultManagerProxy<ProcessService>
         return updatedSteps;
     }
 
-    async createProcessTemplate(templateData: IProcessTemplateWithSteps, icons: Express.Multer.File[]) {
+    async createProcessTemplate(templateData: IProcessTemplateWithSteps, icons: UploadedFile[]) {
         const updatedSteps = await this.handleIcons(icons, templateData.steps);
         const processTemplate = await this.service.createProcessTemplate({ ...templateData, steps: updatedSteps });
         return this.getTemplateWithPopulatedStepReviewers(processTemplate);
     }
 
-    async updateProcessTemplate(templateId: string, templateData: IProcessTemplateWithSteps, icons: Express.Multer.File[], userId: string) {
+    async updateProcessTemplate(templateId: string, templateData: IProcessTemplateWithSteps, icons: UploadedFile[], userId: string) {
         const currProcessTemplate = await this.getProcessTemplate(templateId, userId);
 
         const updatedSteps = await this.handleIcons(icons, templateData.steps);

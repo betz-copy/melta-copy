@@ -45,6 +45,7 @@ import { UsersManager } from '../../users/manager';
 import { WorkspaceManager } from '../../workspaces/manager';
 import { EntityNotExist, NotFoundError } from '../error';
 import StepsInstancesManager from '../stepInstances/manager';
+import { UploadedFile } from '../../../utils/busboy/interface';
 
 export default class ProcessesInstancesManager extends DefaultManagerProxy<ProcessService> {
     private instancesService: InstancesService;
@@ -153,7 +154,7 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
         );
     }
 
-    async createProcessInstance(processData: IProcessInstance, files: Express.Multer.File[], userId: string) {
+    async createProcessInstance(processData: IProcessInstance, files: UploadedFile[], userId: string) {
         const processTemplate = await this.service.getProcessTemplateById(processData.templateId);
         this.checkEntityReferenceFields(processData.details, processTemplate.details.properties);
         if (!files.length) {
@@ -205,7 +206,7 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
             });
     }
 
-    async updateProcessInstance(processId: string, processData: IProcessInstance, files: Express.Multer.File[], userId: string) {
+    async updateProcessInstance(processId: string, processData: IProcessInstance, files: UploadedFile[], userId: string) {
         const currProcessInstance = await this.getProcessInstance(processId, userId);
         const processTemplate = await this.service.getProcessTemplateById(currProcessInstance.templateId);
 

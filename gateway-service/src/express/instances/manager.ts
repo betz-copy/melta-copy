@@ -47,6 +47,7 @@ import { RabbitManager } from '../../utils/rabbit';
 import { SemanticSearchService } from '../../externalServices/semanticSearch';
 import { WorkspaceService } from '../workspaces/service';
 import { formatEntitiesBulkSearch, sortEntities } from '../../utils/semantic';
+import { UploadedFile } from '../../utils/busboy/interface';
 
 const { errorCodes, rabbit, ruleBreachService } = config;
 
@@ -74,7 +75,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
     }
 
     async uploadInstanceFiles<TProps = Record<string, any>>(
-        files: Express.Multer.File[],
+        files: UploadedFile[],
         props: TProps = {} as TProps,
     ): Promise<{ props: TProps; files: Record<string, any> }> {
         if (files.length === 0) {
@@ -83,7 +84,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
         const fileIds = await this.storageService.uploadFiles(files);
         const filePropertiesEntries = files.map((file, index) => {
-            return [file.fieldname, fileIds[index]];
+            return [file.fieldName, fileIds[index]];
         });
 
         const filesToUpload: Record<string, any> = {};
@@ -227,7 +228,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         return updatedProperties;
     }
 
-    async handlePreparationsBeforeCreateEntity(instanceData: IEntity, files: Express.Multer.File[]) {
+    async handlePreparationsBeforeCreateEntity(instanceData: IEntity, files: UploadedFile[]) {
         const { props: propertiesWithFiles, files: upserstedFiles } = await this.uploadInstanceFiles(files, instanceData.properties);
 
         const entityTemplate = await this.entityTemplateService.getEntityTemplateById(instanceData.templateId);
@@ -242,7 +243,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
     async createEntityInstance(
         instanceData: IEntity,
-        files: Express.Multer.File[],
+        files: UploadedFile[],
         ignoredRules: IBrokenRule[],
         userId: string,
         createAlert: boolean = true,
@@ -276,9 +277,9 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         return createdEntity;
     }
 
-    private async deleteUnusedFiles(currentEntity: IEntity, instanceData: IEntity, files: Express.Multer.File[]) {
+    private async deleteUnusedFiles(currentEntity: IEntity, instanceData: IEntity, files: UploadedFile[]) {
         const entityTemplate = await this.entityTemplateService.getEntityTemplateById(currentEntity.templateId);
-        const newFilesKeys = files.map((file) => file.fieldname);
+        const newFilesKeys = files.map((file) => file.fieldName);
 
         const fileProperties = this.getEntityFileProperties(currentEntity.properties, entityTemplate);
 
@@ -424,7 +425,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
     async duplicateEntityInstance(
         id: string,
         instanceData: IEntity,
-        files: Express.Multer.File[],
+        files: UploadedFile[],
         ignoredRules: IBrokenRule[],
         userId: string,
         duplicateFileProperties = true,
@@ -498,7 +499,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
     async updateEntityInstance(
         id: string,
         updatedInstanceData: IEntity,
-        files: Express.Multer.File[],
+        files: UploadedFile[],
         ignoredRules: IBrokenRule[],
         userId: string,
         createAlert: boolean = true,

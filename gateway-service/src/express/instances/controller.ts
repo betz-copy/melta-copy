@@ -3,6 +3,7 @@ import { promisify } from 'util';
 import { Request, Response } from 'express';
 import { InstancesManager } from './manager';
 import DefaultController from '../../utils/express/controller';
+import { UploadedFile } from '../../utils/busboy/interface';
 
 export class InstancesController extends DefaultController<InstancesManager> {
     constructor(workspaceId: string) {
@@ -11,7 +12,7 @@ export class InstancesController extends DefaultController<InstancesManager> {
 
     async createEntityInstance(req: Request, res: Response) {
         const { ignoredRules, ...instanceData } = req.body;
-        res.json(await this.manager.createEntityInstance(instanceData, req.files as Express.Multer.File[], ignoredRules, req.user!.id));
+        res.json(await this.manager.createEntityInstance(instanceData, req.files as unknown as UploadedFile[], ignoredRules, req.user!.id));
     }
 
     async exportEntities(req: Request, res: Response) {
@@ -26,7 +27,7 @@ export class InstancesController extends DefaultController<InstancesManager> {
     async updateEntityInstance(req: Request, res: Response) {
         const { ignoredRules, ...instanceData } = req.body;
         res.json(
-            await this.manager.updateEntityInstance(req.params.id, instanceData, req.files as Express.Multer.File[], ignoredRules, req.user!.id),
+            await this.manager.updateEntityInstance(req.params.id, instanceData, req.files as unknown as UploadedFile[], ignoredRules, req.user!.id),
         );
     }
 
@@ -43,7 +44,13 @@ export class InstancesController extends DefaultController<InstancesManager> {
     async duplicateEntityInstance(req: Request, res: Response) {
         const { ignoredRules, ...instanceData } = req.body;
         res.json(
-            await this.manager.duplicateEntityInstance(req.params.id, instanceData, req.files as Express.Multer.File[], ignoredRules, req.user!.id),
+            await this.manager.duplicateEntityInstance(
+                req.params.id,
+                instanceData,
+                req.files as unknown as UploadedFile[],
+                ignoredRules,
+                req.user!.id,
+            ),
         );
     }
 

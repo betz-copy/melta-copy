@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import StepInstanceManager from './manager';
 import DefaultController from '../../../utils/express/controller';
+import { UploadedFile } from '../../../utils/busboy/interface';
 
 class StepInstanceController extends DefaultController<StepInstanceManager> {
     constructor(workspaceId: string) {
@@ -8,7 +9,9 @@ class StepInstanceController extends DefaultController<StepInstanceManager> {
     }
 
     async updateStep(req: Request, res: Response) {
-        res.json(await this.manager.updateStep(req.params.processId, req.params.stepId, req.body, req.files as Express.Multer.File[], req.user!.id));
+        res.json(
+            await this.manager.updateStep(req.params.processId, req.params.stepId, req.body, req.files as unknown as UploadedFile[], req.user!.id),
+        );
     }
 }
 

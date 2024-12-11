@@ -44,6 +44,7 @@ import { IRule } from './rules/interfaces';
 import { IFormula } from './rules/interfaces/formula';
 import { GanttsService } from '../../externalServices/ganttsService';
 import { checkPropertyInUsedFromFormula } from './rules/checkIfPropertyInUsed';
+import { UploadedFile } from '../../utils/busboy/interface';
 
 const {
     categoryHasTemplates,
@@ -278,7 +279,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         return this.entityTemplateService.getAllCategories();
     }
 
-    async createCategory(categoryData: Omit<ICategory, 'iconFileId'>, file?: Express.Multer.File) {
+    async createCategory(categoryData: Omit<ICategory, 'iconFileId'>, file?: UploadedFile) {
         if (file) {
             const newFileId = await this.storageService.uploadFile(file);
             await removeTmpFile(file.path);
@@ -310,7 +311,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         ).catch(() => {});
     }
 
-    async updateCategory(id: string, updatedData: Partial<ICategory> & { file?: string }, file?: Express.Multer.File) {
+    async updateCategory(id: string, updatedData: Partial<ICategory> & { file?: string }, file?: UploadedFile) {
         const { iconFileId } = await this.entityTemplateService.getCategoryById(id);
 
         if (file) {
@@ -393,7 +394,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
     async createEntityTemplate(
         templateData: Omit<IEntityTemplateWithConstraints, 'iconFileId' | 'documentTemplatesIds'>,
-        { file, files }: { file?: [Express.Multer.File]; files?: Express.Multer.File[] },
+        { file, files }: { file?: [UploadedFile]; files?: UploadedFile[] },
     ): Promise<IMongoEntityTemplateWithConstraintsPopulated> {
         await this.entityTemplateService.getCategoryById(templateData.category);
         let iconFileId: string | null;
@@ -672,7 +673,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
     private async handleFiles(
         updatedTemplateData: Omit<IEntityTemplateWithConstraints, 'disabled'> & { file?: string },
         currTemplate: IMongoEntityTemplatePopulated,
-        { file, files }: { file?: [Express.Multer.File]; files?: Express.Multer.File[] },
+        { file, files }: { file?: [UploadedFile]; files?: UploadedFile[] },
     ) {
         let iconFileId: string | null;
 
@@ -705,7 +706,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
     async updateEntityTemplate(
         id: string,
         updatedTemplateData: Omit<IEntityTemplateWithConstraints, 'disabled'> & { file?: string },
-        { file, files }: { file?: [Express.Multer.File]; files?: Express.Multer.File[] },
+        { file, files }: { file?: [UploadedFile]; files?: UploadedFile[] },
     ): Promise<IMongoEntityTemplateWithConstraintsPopulated> {
         await this.entityTemplateService.getCategoryById(updatedTemplateData.category);
 
@@ -815,6 +816,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         const curentTemplateEnum = template.properties.properties[values.name].enum || values.options;
         let templateEnumFieldValues = [...curentTemplateEnum];
         if (update) templateEnumFieldValues[valueIndex] = field;
+        // eslint-disable-next-line @typescript-eslint/no-shadow
         else templateEnumFieldValues = templateEnumFieldValues.filter((_, index) => valueIndex !== index);
         const templateWithoutProperties: Omit<IEntityTemplatePopulated, 'disabled'> = this.removeBasicFields(template);
         if (template.enumPropertiesColors?.[values.name]?.[fieldValue] !== undefined) {

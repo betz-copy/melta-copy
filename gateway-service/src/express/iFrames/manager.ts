@@ -9,6 +9,7 @@ import { DefaultManagerMongo } from '../../utils/mongo/manager';
 import { ServiceError } from '../error';
 import { IFrame, IFrameDocument } from './interface';
 import IFrameSchema from './model';
+import { UploadedFile } from '../../utils/busboy/interface';
 
 export class IFrameManager extends DefaultManagerMongo<IFrameDocument> {
     private storageService: StorageService;
@@ -54,7 +55,7 @@ export class IFrameManager extends DefaultManagerMongo<IFrameDocument> {
         return this.model.findById(iFrameId).orFail(new ServiceError(StatusCodes.NOT_FOUND, 'IFrame not found')).lean().exec();
     }
 
-    async createIFrame(iFrameData: Omit<IFrame, 'iconFileId'>, file?: Express.Multer.File) {
+    async createIFrame(iFrameData: Omit<IFrame, 'iconFileId'>, file?: UploadedFile) {
         let newIFrame: IFrame;
         if (file) {
             const newFileId = await this.storageService.uploadFile(file);
@@ -82,7 +83,7 @@ export class IFrameManager extends DefaultManagerMongo<IFrameDocument> {
             .exec();
     }
 
-    async updateIFrame(iFrameId: string, updatedData: Partial<IFrame> & { file?: string }, file?: Express.Multer.File) {
+    async updateIFrame(iFrameId: string, updatedData: Partial<IFrame> & { file?: string }, file?: UploadedFile) {
         const { iconFileId } = await this.getIFrameById(iFrameId);
         let updatedIFrame: IFrame;
 

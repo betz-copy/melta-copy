@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import DefaultController from '../../utils/express/controller';
 import { WorkspaceManager } from './manager';
+import { UploadedFile } from '../../utils/busboy/interface';
 
 export class WorkspaceController extends DefaultController<WorkspaceManager> {
     constructor(workspaceId: string) {
@@ -28,11 +29,11 @@ export class WorkspaceController extends DefaultController<WorkspaceManager> {
     }
 
     async createOne(req: Request, res: Response) {
-        res.json(await this.manager.createOne(req.body, req.files as Express.Multer.File[]));
+        res.json(await this.manager.createOne(req.body, req.files as unknown as UploadedFile[]));
     }
 
     async updateOne(req: Request, res: Response) {
-        res.json(await this.manager.updateOne(req.params.id, req.body, req.files as Express.Multer.File[]));
+        res.json(await this.manager.updateOne(req.params.id, req.body, req.files as unknown as UploadedFile[]));
     }
 
     async deleteOne(req: Request, res: Response) {

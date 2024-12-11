@@ -2,6 +2,7 @@ import FormData from 'form-data';
 import config from '../config';
 import DefaultExternalServiceApi from '../utils/express/externalService';
 import fsCreateReadStream from '../utils/fs';
+import { UploadedFile } from '../utils/busboy/interface';
 
 const {
     service: { docxHeaders },
@@ -13,7 +14,7 @@ export class StorageService extends DefaultExternalServiceApi {
         super(workspaceId, { baseURL: url });
     }
 
-    async uploadFile(file: Express.Multer.File) {
+    async uploadFile(file: UploadedFile) {
         const formData = new FormData();
         const fileStream = await fsCreateReadStream(file.path);
         formData.append('file', fileStream, file.originalname);
@@ -25,7 +26,7 @@ export class StorageService extends DefaultExternalServiceApi {
         return data.path;
     }
 
-    async uploadFiles(files: Express.Multer.File[]) {
+    async uploadFiles(files: UploadedFile[]) {
         const formData = new FormData();
 
         const fileStreamsPromises = files.map((file) => fsCreateReadStream(file.path));
