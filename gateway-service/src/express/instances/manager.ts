@@ -154,7 +154,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
     ) {
         const { entitiesWithFiles, ...body } = searchBody;
 
-        if (!entitiesWithFiles || !Object.keys(entitiesWithFiles)?.length || body.sort?.length || !body.textSearch) {
+        if (!entitiesWithFiles || !Object.keys(entitiesWithFiles)?.length || !body.textSearch) {
             return this.service.searchEntitiesOfTemplateRequest(templateId, body);
         }
 
@@ -162,6 +162,10 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
             ...body,
             entityIdsToInclude: Object.keys(entitiesWithFiles),
         });
+
+        if (body.sort?.length) {
+            return searchResult;
+        }
 
         const texts = createTextsFromEntitiesWithFiles(entitiesWithFiles);
         const rerank = await this.semanticSearchSearch.rerank({ query: body.textSearch, texts: Object.keys(texts) });
