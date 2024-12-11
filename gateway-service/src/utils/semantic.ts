@@ -34,7 +34,7 @@ const searchEntityPropertiesForQuery = (entityProps: IEntityWithDirectRelationsh
     return nestedValue ?? foundValue?.[1];
 };
 
-export const pushToTextsForReranking = (textsForReranking: Record<string, string[]>, text: string, entityId: string) => {
+const pushToTextsForReranking = (textsForReranking: Record<string, string[]>, text: string, entityId: string) => {
     if (!textsForReranking[text]) textsForReranking[text] = [];
     textsForReranking[text].push(entityId);
 };
