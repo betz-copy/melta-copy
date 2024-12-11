@@ -167,10 +167,8 @@ class ElasticClient {
 
         try {
             const response = await ElasticClient.client!.search<IElasticDoc, IGroupByUniquePropAggregate>(searchBody);
-            console.dir({ response }, { depth: null });
             return this.formatElasticResponse(response);
         } catch (e) {
-            console.dir({ e }, { depth: null });
             return undefined;
         }
     }
