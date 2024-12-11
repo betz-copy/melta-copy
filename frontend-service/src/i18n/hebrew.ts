@@ -1162,6 +1162,7 @@ export default {
         cameraNotFound: 'מצלמה לא נמצאה',
         somethingWentWrong: 'משהו השתבש, אנא נסה שנית',
         imgName: 'שם התמונה',
+        fileName: 'שם הקובץ',
         takePicture: 'צלם תמונה',
     },
 };

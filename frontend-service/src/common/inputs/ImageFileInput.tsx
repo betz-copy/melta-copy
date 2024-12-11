@@ -1,6 +1,6 @@
 import React, { MouseEventHandler, useEffect, useMemo, useRef, useState } from 'react';
 import { IconButton, Grid, useTheme, Typography } from '@mui/material';
-import { CloseOutlined as DeleteIcon, CameraAltOutlined as CameraIcon, Visibility } from '@mui/icons-material';
+import { CloseOutlined as DeleteIcon, CameraAltOutlined as CameraIcon, Visibility, DocumentScanner } from '@mui/icons-material';
 import { Accept, useDropzone } from 'react-dropzone';
 import i18next from 'i18next';
 import { toast } from 'react-toastify';
@@ -9,6 +9,8 @@ import { getFileExtension } from '../../utils/getFileType';
 import FileIcon from '../FilePreview/FileIcon';
 import OpenPreview from '../FilePreview/OpenPreview';
 import { getFileName } from '../../utils/getFileName';
+import { MeltaTooltip } from '../MeltaTooltip';
+import ImageView from '../dialogs/Camera/ImageView';
 
 interface FileInputProps {
     file: Partial<File> | { name: string } | undefined;
@@ -25,7 +27,9 @@ const FileInput: React.FC<FileInputProps> = ({ file, onDeleteFile, onDropFile, i
     const theme = useTheme();
 
     const [stream, setStream] = useState<MediaStream | null>(null);
-    const [open, setOpen] = useState(false);
+    const [openCamera, setOpenCamera] = useState(false);
+    const [imgURL, setImgURL] = useState<string | null>(null);
+    const [openImageView, setOpenImageView] = useState(false);
 
     const errorStyle = {
         color: '#d32f2f',
@@ -36,6 +40,7 @@ const FileInput: React.FC<FileInputProps> = ({ file, onDeleteFile, onDropFile, i
     const onDrop = (acceptedFiles: File[]) => {
         onDropFile(acceptedFiles[0]);
     };
+
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
         onDrop,
         accept: acceptedFilesTypes,
@@ -65,10 +70,15 @@ const FileInput: React.FC<FileInputProps> = ({ file, onDeleteFile, onDropFile, i
         try {
             const userStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
             setStream(userStream);
-            setOpen(true);
+            setOpenCamera(true);
         } catch {
             toast.error(i18next.t('camera.cameraNotFound'));
         }
+    };
+
+    const onScannerClick = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+        event.stopPropagation();
+        setOpenImageView(true);
     };
 
     const inputStyle = {
@@ -85,6 +95,23 @@ const FileInput: React.FC<FileInputProps> = ({ file, onDeleteFile, onDropFile, i
     };
 
     const isFileFromInput = useMemo(() => file instanceof File, [file]);
+
+    const imageExtensions = ['png', 'jpg', 'jpeg', 'gif', 'svg'];
+
+    const isImageFile = () => {
+        if (!file) return false;
+
+        if ('type' in file && typeof file.type === 'string') {
+            return file.type.startsWith('image/');
+        }
+
+        if ('name' in file && typeof file.name === 'string') {
+            const extension = file.name.split('.').pop()?.toLowerCase();
+            return imageExtensions.includes(extension || '');
+        }
+
+        return false;
+    };
 
     return (
         <>
@@ -121,6 +148,22 @@ const FileInput: React.FC<FileInputProps> = ({ file, onDeleteFile, onDropFile, i
                                             <OpenPreview fileId={file.name!} img={<Visibility fontSize="small" />} showText={false} />
                                         )}
 
+                                        {isImageFile() && (
+                                            <MeltaTooltip title="סריקה מתמונה">
+                                                <IconButton
+                                                    style={{
+                                                        height: '25px',
+                                                        width: '25px',
+                                                        borderRadius: '7px',
+                                                        marginLeft: '5px',
+                                                    }}
+                                                    onClick={onScannerClick}
+                                                    size="small"
+                                                >
+                                                    <DocumentScanner style={{ width: '20px', height: '20px' }} />
+                                                </IconButton>
+                                            </MeltaTooltip>
+                                        )}
                                         <IconButton
                                             onClick={(e) => {
                                                 e.preventDefault();
@@ -175,7 +218,27 @@ const FileInput: React.FC<FileInputProps> = ({ file, onDeleteFile, onDropFile, i
                     )}
                 </Grid>
             </Grid>
-            {open && <Camera stream={stream!} setStream={setStream} open={open} setOpen={setOpen} onPictureTaken={onDropFile} />}
+            {openImageView && imgURL && (
+                <ImageView
+                    setStream={setStream}
+                    imgURL={imgURL}
+                    setImgURL={setImgURL}
+                    setOpenImageView={setOpenImageView}
+                    openImageView={openImageView}
+                    onPictureTaken={onDropFile}
+                />
+            )}
+            {openCamera && (
+                <Camera
+                    stream={stream!}
+                    setStream={setStream}
+                    open={openCamera}
+                    setOpen={setOpenCamera}
+                    setImgURL={setImgURL}
+                    onPictureTaken={onDropFile}
+                    setOpenImageView={setOpenImageView}
+                />
+            )}
         </>
     );
 };
