@@ -70,6 +70,7 @@ const readExcelFile = async (files: Express.Multer.File[], template: IMongoEntit
             const workbook = new Excel.Workbook();
             await workbook.xlsx.readFile(file.path);
             const worksheet = workbook.worksheets[0];
+            if (!worksheet) throw new BadRequestError(`Can't read excel`);
 
             if (template.displayName.trim() !== worksheet.name.trim()) throw new ServiceError(StatusCodes.BAD_REQUEST, 'Invalid excel', file);
 
