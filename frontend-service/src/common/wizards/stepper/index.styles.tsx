@@ -13,12 +13,12 @@ const StepNumberTypography = styled(Typography)<{ type: 'currentStep' | 'finishe
         fontSize: '15px',
         fontWeight: 700,
         ...(type === 'currentStep' && {
-            backgroundColor: direction === 'row' ? theme.palette.primary.main : '#4752B6',
+            backgroundColor: theme.palette.primary.main,
             color: 'white',
             boxShadow: '0px 1px 2px #00000029',
         }),
         ...(type === 'finishedStep' && {
-            border: `2px solid ${direction === 'row' ? theme.palette.primary.main : '#4752B6'}`,
+            border: `2px solid ${theme.palette.primary.main}`,
             color: theme.palette.primary.main,
             boxShadow: '0px 1px 2px #00000029',
         }),
@@ -54,14 +54,8 @@ const StepNameTypography = styled(Typography)<{ type: 'currentStep' | 'finishedS
     },
 );
 
-const StepDescriptionTypography = styled(Typography)<{ type: 'currentStep' | 'finishedStep' | 'futureStep' }>(({ type, theme }) => {
-    let color;
-
-    if (theme.palette.mode === 'dark') {
-        color = type === 'finishedStep' ? '#787C9E' : '#787C9E';
-    } else {
-        color = type === 'finishedStep' ? '#787C9E' : '#787C9E';
-    }
+const StepDescriptionTypography = styled(Typography)<{ type: 'currentStep' | 'finishedStep' | 'futureStep' }>(({ type }) => {
+    const color = type === 'finishedStep' ? '#787C9E' : '#787C9E';
 
     return {
         fontWeight: 400,
@@ -73,14 +67,14 @@ const StepDescriptionTypography = styled(Typography)<{ type: 'currentStep' | 'fi
 const DashedHorizontalLine = styled('div')(({ theme }) => ({
     flexGrow: 1,
     margin: '15px',
-    borderBottom: `2px solid ${theme.palette.mode === 'dark' ? 'rgb(200, 200, 200, 0.2)' : '#e4e6ef'}`,
+    borderBottom: `2px solid ${theme.palette.mode === 'dark' ? 'rgb(200, 200, 200, 0.2)' : theme.palette.primary.main}`,
 }));
 
 const DashedVerticalLine = styled('div')(({ theme }) => ({
     width: '2px',
     minHeight: '43px',
     margin: '15px',
-    borderLeft: `2px solid ${theme.palette.mode === 'dark' ? 'rgba(200, 200, 200, 0.2)' : '#4752B6'}`,
+    borderLeft: `2px solid ${theme.palette.mode === 'dark' ? 'rgba(200, 200, 200, 0.2)' : theme.palette.primary.main}`,
 }));
 
 export { StepNumberTypography, StepNameTypography, StepDescriptionTypography, DashedHorizontalLine, DashedVerticalLine };

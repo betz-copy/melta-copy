@@ -154,6 +154,7 @@ const config = {
         ruleHasAlertsOrRequests: 'RULE_HAS_ALERTS_OR_REQUESTS',
         failedToDeleteField: 'FAILED_DELETE_FIELD',
         failedConstraintsValidation: 'FAILED_CONSTRAINTS_VALIDATION',
+        templateValidationError: 'TemplateValidationError',
     },
     rabbit: {
         url: env.get('RABBIT_URL').required().asUrlString(),
@@ -197,6 +198,11 @@ const config = {
     excel: {
         multipleFilesName: env.get('MULTIPLE_FILES_NAME').default('attachmentZip').asString(),
         columnWidth: env.get('COLUMN_WIDTH').default(20).asIntPositive(),
+    },
+    loadExcel: {
+        maxValidationRow: env.get('MAX_VALIDATION_ROW').default(100).asIntPositive(),
+        minValidationRow: env.get('MIN_VALIDATION_ROW').default(2).asIntPositive(),
+        entitiesFileLimit: env.get('ENTITIES_FILE_LIMIT').default(500).asIntPositive(),
     },
 };
 

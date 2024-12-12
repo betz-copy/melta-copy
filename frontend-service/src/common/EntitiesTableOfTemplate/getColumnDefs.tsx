@@ -33,7 +33,7 @@ export interface IGetColumnDefsOptions<Data extends any> {
     defaultColumnsOrder?: { [key: string]: { order: number } };
     defaultColumnWidths?: { [key: string]: number };
     rowHeight: number;
-    showErrors?: boolean;
+    ignoreType?: boolean;
     searchValue?: string;
 }
 
@@ -49,7 +49,7 @@ export const getColumnDefs = <Data extends any = IEntity>({
     defaultColumnsOrder = {},
     defaultColumnWidths = {},
     rowHeight,
-    showErrors,
+    ignoreType,
     searchValue,
 }: IGetColumnDefsOptions<Data>): ColDef[] => {
     const columnDefs = template.propertiesOrder.map((property) => {
@@ -73,7 +73,7 @@ export const getColumnDefs = <Data extends any = IEntity>({
                 defaultColumnWidths[property],
                 hideColumn,
                 hideField,
-                showErrors,
+                ignoreType,
                 searchValue,
             );
         if (type === 'boolean')
@@ -84,7 +84,7 @@ export const getColumnDefs = <Data extends any = IEntity>({
                 defaultColumnWidths[property],
                 hideColumn,
                 hideField,
-                showErrors,
+                ignoreType,
                 searchValue,
             );
         if (format === 'date' || format === 'date-time')
@@ -96,7 +96,7 @@ export const getColumnDefs = <Data extends any = IEntity>({
                 hideColumn,
                 hideField,
                 calculateTime,
-                showErrors,
+                ignoreType,
                 searchValue,
             );
         if (format === 'fileId')
@@ -130,7 +130,7 @@ export const getColumnDefs = <Data extends any = IEntity>({
                 template.enumPropertiesColors?.[property],
                 hideColumn,
                 hideField,
-                showErrors,
+                ignoreType,
                 searchValue,
             );
         if (propertyTemplate.pattern)
@@ -141,7 +141,7 @@ export const getColumnDefs = <Data extends any = IEntity>({
                 defaultColumnWidths[property],
                 hideColumn,
                 hideField,
-                showErrors,
+                ignoreType,
                 searchValue,
             );
         if (propertyTemplate.items?.enum)
@@ -155,7 +155,7 @@ export const getColumnDefs = <Data extends any = IEntity>({
                 template.enumPropertiesColors?.[property],
                 hideColumn,
                 hideField,
-                showErrors,
+                ignoreType,
                 searchValue,
             );
         if (propertyTemplate.items) {
@@ -170,7 +170,7 @@ export const getColumnDefs = <Data extends any = IEntity>({
                 Object.values(template.entitiesWithFiles ?? {}).flat(),
             );
         }
-        return stringColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn, hideField, showErrors, searchValue);
+        return stringColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn, hideField, ignoreType, searchValue);
     });
     columnDefs.push(
         booleanColDef(

@@ -70,7 +70,8 @@ export const exportEntitiesSchema = Joi.object({
             filter: Joi.any(), // will be checked by instance-manager
             sort: Joi.any(), // will be checked by instance-manager
             displayColumns: Joi.array().items(Joi.string()),
-            insertEntities: { insert: Joi.boolean(), entities: Joi.array().items(Joi.object().pattern(Joi.string(), Joi.any())) },
+            headersOnly: Joi.boolean(),
+            insertEntities: Joi.array().items(Joi.object().pattern(Joi.string(), Joi.any())),
         }),
     },
     query: {},
@@ -164,9 +165,11 @@ export const deleteRelationshipSchema = Joi.object({
 export const loadEntitiesSchema = Joi.object({
     body: {
         file: excelTemplateSchema,
-        entities: Joi.array().items({ templateId: Joi.string(), properties: Joi.object() }).default([]),
+        insertBrokenEntities: {
+            entitiesToCreate: Joi.array().items({ templateId: Joi.string(), properties: Joi.object() }).default([]),
+            ignoredRules: Joi.array().items(brokenRuleSchema).default([]),
+        },
         templateId: Joi.string().required(),
-        ignoredRules: Joi.array().items(brokenRuleSchema).default([]),
     },
     query: {},
 });

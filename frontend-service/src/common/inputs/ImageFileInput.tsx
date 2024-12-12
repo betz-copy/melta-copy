@@ -1,5 +1,5 @@
 import React, { MouseEventHandler, useEffect, useMemo, useRef, useState } from 'react';
-import { IconButton, Grid, useTheme, Typography, LinearProgress } from '@mui/material';
+import { IconButton, Grid, useTheme, Typography } from '@mui/material';
 import { CloseOutlined as DeleteIcon, CameraAltOutlined as CameraIcon, Visibility } from '@mui/icons-material';
 import { Accept, useDropzone } from 'react-dropzone';
 import i18next from 'i18next';
@@ -9,6 +9,7 @@ import { getFileExtension } from '../../utils/getFileType';
 import FileIcon from '../FilePreview/FileIcon';
 import OpenPreview from '../FilePreview/OpenPreview';
 import { getFileName } from '../../utils/getFileName';
+import { LoadingFilesInput } from './LoadingFilesInput';
 
 interface FileInputProps {
     file: Partial<File> | { name: string } | undefined;
@@ -18,6 +19,7 @@ interface FileInputProps {
     acceptedFilesTypes?: Accept;
     fileFieldName?: string;
     errorText?: string;
+    setErrorText?: React.Dispatch<React.SetStateAction<string | undefined>>;
     disableCamera?: boolean;
     isLoading?: boolean;
     comment?: string;
@@ -30,6 +32,7 @@ const FileInput: React.FC<FileInputProps> = ({
     inputText,
     acceptedFilesTypes,
     errorText,
+    setErrorText,
     disableCamera = false,
     isLoading,
     comment,
@@ -97,49 +100,16 @@ const FileInput: React.FC<FileInputProps> = ({
 
     const isFileFromInput = useMemo(() => file instanceof File, [file]);
 
-    if (isLoading && file) {
+    if ((isLoading || errorText) && file)
         return (
-            <Grid container style={style} direction="column">
-                <Grid item container alignItems="center" wrap="nowrap">
-                    <Grid item xs={10}>
-                        <Typography
-                            style={{
-                                overflow: 'hidden',
-                                whiteSpace: 'nowrap',
-                                textOverflow: 'ellipsis',
-                                maxWidth: inputWidth * 0.7,
-                            }}
-                        >
-                            {isFileFromInput ? file.name : getFileName(file.name!)}
-                        </Typography>
-                    </Grid>
-                    <Grid item container justifyContent="flex-end" alignItems="center" wrap="nowrap">
-                        <IconButton
-                            onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                onDeleteFile(e);
-                            }}
-                            size="small"
-                        >
-                            <DeleteIcon fontSize="small" />
-                        </IconButton>
-                    </Grid>
-                </Grid>
-
-                <Grid display="flex" justifyContent="center">
-                    <LinearProgress
-                        style={{ width: '100%', backgroundColor: '#E1F5FE', borderRadius: '25px', margin: '5px' }}
-                        sx={{
-                            '& .MuiLinearProgress-bar': {
-                                backgroundColor: '#4752B6',
-                            },
-                        }}
-                    />
-                </Grid>
-            </Grid>
+            <LoadingFilesInput
+                files={[file]}
+                errorText={errorText}
+                setErrorText={setErrorText}
+                inputWidth={inputWidth}
+                isFileFromInput={isFileFromInput}
+            />
         );
-    }
 
     return (
         <>

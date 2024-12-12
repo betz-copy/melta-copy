@@ -98,11 +98,6 @@ export interface IRuleBreachRequest extends IRuleBreach {
     status: RuleBreachRequestStatus;
 }
 
-export enum ActionStatus {
-    fulfilled = 'fulfilled',
-    rejected = 'rejected',
-}
-
 export enum ActionErrors {
     validation = 'VALIDATION',
     unique = 'UNIQUE',

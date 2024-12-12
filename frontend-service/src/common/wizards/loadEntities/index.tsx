@@ -103,8 +103,8 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
     );
 
     const { isLoading: isLoadingRules, mutateAsync: loadRules } = useMutation(
-        async ({ entities, ignoredRules }: { entities: ICreateEntityMetadata[]; ignoredRules?: IBrokenRule[] }) => {
-            return loadEntitiesRequest(template!._id, undefined, entities, ignoredRules);
+        async (insertBrokenEntities: { entitiesToCreate: ICreateEntityMetadata[]; ignoredRules: IBrokenRule[] }) => {
+            return loadEntitiesRequest(template!._id, undefined, insertBrokenEntities);
         },
         {
             onError() {
@@ -120,11 +120,11 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
     );
 
     const { isLoading: isExportingTableToExcelFile, mutateAsync: exportTemplateToExcel } = useMutation(
-        async ({ fileName, insertEntities }: { fileName: string; insertEntities?: { insert: boolean; entities?: Record<string, any>[] } }) => {
+        async ({ fileName, headersOnly, insertEntities }: { fileName: string; headersOnly?: boolean; insertEntities?: Record<string, any>[] }) => {
             return exportEntitiesRequest({
                 fileName,
                 templates: {
-                    [template!._id]: { insertEntities, displayColumns: template?.propertiesOrder },
+                    [template!._id]: { headersOnly, insertEntities, displayColumns: template?.propertiesOrder },
                 },
             });
         },
@@ -160,9 +160,7 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
                     onClick={() =>
                         exportTemplateToExcel({
                             fileName: `${template?.displayName}${excelExtension}`,
-                            insertEntities: {
-                                insert: true,
-                            },
+                            headersOnly: true,
                         })
                     }
                     download
@@ -198,10 +196,7 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
                             if (data.failedEntities.length > 0)
                                 await exportTemplateToExcel({
                                     fileName: `${template?.displayName}: ${i18next.t('wizard.entity.loadEntities.failedEntities')}${excelExtension}`,
-                                    insertEntities: {
-                                        insert: true,
-                                        entities: data.failedEntities.map((entity) => entity.properties),
-                                    },
+                                    insertEntities: data.failedEntities.map((entity) => entity.properties),
                                 });
                         }
                     },
@@ -221,12 +216,9 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
                                 fileName: `${template?.displayName}: ${i18next.t(
                                     `wizard.entity.loadEntities.${brokenRulesEntities ? 'brokenRules' : 'failed'}`,
                                 )}${excelExtension}`,
-                                insertEntities: {
-                                    insert: true,
-                                    entities: brokenRulesEntities
-                                        ? stepsData.data.brokenRulesEntities?.entities.map((entity) => entity.properties)
-                                        : stepsData.data.failedEntities.map((entity) => entity.properties),
-                                },
+                                insertEntities: brokenRulesEntities
+                                    ? stepsData.data.brokenRulesEntities?.entities.map((entity) => entity.properties)
+                                    : stepsData.data.failedEntities.map((entity) => entity.properties),
                             });
                         }}
                         isLoadingDownload={isExportingTableToExcelFile}
@@ -277,8 +269,8 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
                             })) || [];
 
                         return loadRules({
-                            entities: brokenRulesEntities,
-                            ignoredRules: stepsData.data.brokenRulesEntities?.rawBrokenRules,
+                            entitiesToCreate: brokenRulesEntities,
+                            ignoredRules: stepsData.data.brokenRulesEntities?.rawBrokenRules || [],
                         });
                     }}
                     actionType={ActionTypes.CreateEntity}

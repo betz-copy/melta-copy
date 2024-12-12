@@ -62,6 +62,8 @@ export const useReadExcel = () => {
 
         const entities: { properties: Record<string, any> }[] = [];
         const fileReadPromises = Array.from(Object.values(fileObject)).map((file) => {
+            const excelExtension = ['.xlsx', '.xls'];
+            if (!excelExtension.some((ext) => file.name.toLowerCase().endsWith(ext))) throw new Error('Invalid File Type');
             return new Promise<void>((resolve, reject) => {
                 const reader = new FileReader();
                 reader.onload = (e) => {
@@ -71,8 +73,9 @@ export const useReadExcel = () => {
                         const firstSheetName = workbook.SheetNames[0];
                         const worksheet = workbook.Sheets[firstSheetName];
 
-                        const worksheetName = workbook?.Workbook?.Sheets?.[0]?.name as string;
-                        if (!template.displayName.includes(worksheetName)) throw new Error('Invalid File: wrong template');
+                        const worksheetName = Object.keys(workbook.Sheets)[0] as string;
+                        if (template.displayName.trim() !== worksheetName.trim()) throw new Error('Invalid File: wrong template');
+
                         const fileData: any[][] = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
 
                         const newEntities = importDataToGrid(fileData, template);
@@ -101,7 +104,8 @@ export const useReadExcel = () => {
             setRowData(entities);
             setStepsData((prev) => ({ ...prev, status: StepStatus.previewExcelRows, files: fileObject }));
         } catch (error) {
-            if (files.some((file) => file.name === (error as Error).message))
+            if ((error as Error).message === 'Invalid File Type') toast.error(i18next.t('wizard.entity.loadEntities.wrongFileType'));
+            else if (files.some((file) => file.name === (error as Error).message))
                 toast.error(`${i18next.t('wizard.entity.loadEntities.limitNumberEntities')} ${(error as Error).message}`);
             else if ((error as Error).message.includes('wrong template')) toast.error(i18next.t('wizard.entity.loadEntities.filesWrongTemplate'));
             else toast.error(i18next.t('wizard.entity.loadEntities.failedReadingFiles'));

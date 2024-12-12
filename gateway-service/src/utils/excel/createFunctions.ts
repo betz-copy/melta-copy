@@ -6,6 +6,9 @@ import { IEntity } from '../../externalServices/instanceService/interfaces/entit
 import config from '../../config/index';
 import { excelConfig } from './excelConfig';
 import { hexToARGB } from './colors';
+import { isExcludedColumn } from './getFunctions';
+
+const { maxValidationRow, minValidationRow } = config.loadExcel;
 
 interface IExcelStyle {
     columnHeader: {
@@ -87,7 +90,7 @@ const indexToExcelColumn = (index: number): string => {
 const booleanValidation = (worksheet: Excel.Worksheet, columnIndex: number) => {
     const { formulae } = excelConfig;
 
-    for (let row = 2; row <= 100; row++) {
+    for (let row = minValidationRow; row <= maxValidationRow; row++) {
         const allowedValues = formulae.boolean;
         const cell = worksheet.getCell(`${indexToExcelColumn(columnIndex + 1)}${row}`);
         cell.dataValidation = {
@@ -104,7 +107,7 @@ const booleanValidation = (worksheet: Excel.Worksheet, columnIndex: number) => {
 const numberValidation = (worksheet: Excel.Worksheet, columnIndex: number) => {
     const { formulae } = excelConfig;
 
-    for (let row = 2; row <= 100; row++) {
+    for (let row = minValidationRow; row <= maxValidationRow; row++) {
         const cell = worksheet.getCell(`${indexToExcelColumn(columnIndex + 1)}${row}`);
         cell.dataValidation = {
             type: 'decimal',
@@ -122,7 +125,7 @@ const listValidation = (worksheet: Excel.Worksheet, propertyTemplate: IEntitySin
     const { formulae } = excelConfig;
     const allowedValues = propertyTemplate.enum!.join(', ');
 
-    for (let row = 2; row <= 100; row++) {
+    for (let row = minValidationRow; row <= maxValidationRow; row++) {
         const cell = worksheet.getCell(`${indexToExcelColumn(columnIndex + 1)}${row}`);
         cell.dataValidation = {
             type: 'list',
@@ -138,7 +141,7 @@ const listValidation = (worksheet: Excel.Worksheet, propertyTemplate: IEntitySin
 const dateValidation = (worksheet: Excel.Worksheet, columnIndex: number) => {
     const { formulae } = excelConfig;
 
-    for (let row = 2; row <= 100; row++) {
+    for (let row = minValidationRow; row <= maxValidationRow; row++) {
         const cell = worksheet.getCell(`${indexToExcelColumn(columnIndex + 1)}${row}`);
         cell.dataValidation = {
             type: 'date',
@@ -156,7 +159,7 @@ const dateValidation = (worksheet: Excel.Worksheet, columnIndex: number) => {
 const mailValidation = (worksheet: Excel.Worksheet, columnIndex: number) => {
     const { formulae } = excelConfig;
 
-    for (let row = 2; row <= 100; row++) {
+    for (let row = minValidationRow; row <= maxValidationRow; row++) {
         const cell = worksheet.getCell(`${indexToExcelColumn(columnIndex + 1)}${row}`);
         cell.dataValidation = {
             type: 'custom',
@@ -199,7 +202,7 @@ const createWorksheet = async (
     workbook: Excel.Workbook,
     template: IMongoEntityTemplatePopulated,
     displayColumns?: string[],
-    insertEntities?: { insert: boolean; entities?: Record<string, any>[] },
+    headersOnly?: boolean,
 ) => {
     const worksheet = workbook.addWorksheet(template.displayName);
     const { properties } = template.properties;
@@ -208,11 +211,7 @@ const createWorksheet = async (
     let columnIndex = 0;
 
     Object.entries(properties).forEach(([propertyKey, propertyTemplate]) => {
-        const isRelationshipRef = propertyTemplate.format === 'relationshipReference' || propertyTemplate.relationshipReference;
-        const isFile = propertyTemplate.format === 'fileId' || (propertyTemplate.type === 'array' && propertyTemplate.items?.format === 'fileId');
-        const isSerialNumber = propertyTemplate.type === 'number' && propertyTemplate.serialCurrent;
-        const shouldAddColumn =
-            displayColumns?.includes(propertyKey) && insertEntities?.insert ? !isRelationshipRef && !isFile && !isSerialNumber : true;
+        const shouldAddColumn = displayColumns?.includes(propertyKey) || headersOnly ? isExcludedColumn(propertyTemplate) : true;
 
         if (shouldAddColumn) {
             columnDataValidation(worksheet, propertyTemplate, columnIndex);
@@ -225,11 +224,11 @@ const createWorksheet = async (
         }
     });
     const externalColumns = excelConfig.excelDefaultColumns.filter((externalColumn) => displayColumns?.includes(externalColumn.key));
-    worksheet.columns = insertEntities?.insert ? sheetColumns : sheetColumns.concat(externalColumns);
+    worksheet.columns = headersOnly ? sheetColumns : sheetColumns.concat(externalColumns);
     worksheet.getRow(1).eachCell((cell) => {
         cell.font = excelStyle.columnHeader.font;
         cell.alignment = excelStyle.columnHeader.alignment;
-        if (insertEntities?.insert) {
+        if (headersOnly) {
             const type = TypesToHebrew(Object.values(properties).find((propertyTemplate) => propertyTemplate.title === cell.value)!);
             cell.note = type;
         }
@@ -282,7 +281,7 @@ const styleAWorksheet = (
     template: IMongoEntityTemplatePopulated,
     workspace: { path: string; id: string },
     displayColumns?: string[],
-    insert?: boolean,
+    headersOnly?: boolean,
 ) => {
     worksheet.getRow(1).eachCell((cell) => {
         cell.font = excelStyle.columnHeader.font;
@@ -335,14 +334,15 @@ const styleAWorksheet = (
                     }
 
                     // Check if value is simple list
-                    if (!insert)
+                    if (!headersOnly)
                         if (value.type === 'string' && value.enum) {
                             if (template.enumPropertiesColors && template.enumPropertiesColors[key][row[key]])
                                 cell.font = { ...excelStyle.cell.font, color: { argb: hexToARGB(template.enumPropertiesColors[key][row[key]]) } };
                         }
 
                     // Check if value is multiple list
-                    if (!insert) if (value.type === 'array' && value.items?.type === 'string' && value.items.enum) cell.value = row[key].join(', ');
+                    if (!headersOnly)
+                        if (value.type === 'array' && value.items?.type === 'string' && value.items.enum) cell.value = row[key].join(', ');
                 }
             }
         });

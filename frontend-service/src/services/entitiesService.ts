@@ -29,8 +29,7 @@ export const exportEntitiesRequest = async (body: IExportEntitiesBody) => {
 export const loadEntitiesRequest = async (
     templateId: string,
     files?: Record<string, File>,
-    entitiesToCreate?: ICreateEntityMetadata[],
-    ignoredRules?: IBrokenRule[],
+    insertBrokenEntities?: { entitiesToCreate: ICreateEntityMetadata[]; ignoredRules: IBrokenRule[] },
 ): Promise<ITablesResults> => {
     const formData = new FormData();
     if (files)
@@ -38,9 +37,20 @@ export const loadEntitiesRequest = async (
             formData.append(key, value as Blob);
         });
     formData.append('templateId', templateId);
-    if (ignoredRules) formData.append('ignoredRules', JSON.stringify(ignoredRules));
-    if (entitiesToCreate)
-        entitiesToCreate.map((entity) => formData.append('properties', JSON.stringify(mapValues(entity.properties, (property, _key) => property))));
+
+    if (insertBrokenEntities) {
+        const { entitiesToCreate = [], ignoredRules = [] } = insertBrokenEntities;
+
+        const insertBrokenEntitiesObject = {
+            entitiesToCreate: entitiesToCreate.map((entity) => ({
+                templateId: entity.templateId,
+                properties: mapValues(entity.properties, (property) => property),
+            })),
+            ignoredRules,
+        };
+
+        formData.append('insertBrokenEntities', JSON.stringify(insertBrokenEntitiesObject));
+    }
 
     const { data } = await axios.post(`${entities}/loadEntities`, formData);
 

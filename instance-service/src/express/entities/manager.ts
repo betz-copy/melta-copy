@@ -191,6 +191,7 @@ export class EntityManager extends DefaultManagerNeo4j {
                 const variableMatchesInMessage = neo4jMessage.matchAll(/`(.*?)`/g)!;
                 [label, ...properties] = Array.from(variableMatchesInMessage).map((match) => match[1]);
 
+                // get unique values
                 const valueMatch = neo4jMessage.match(/= '(.*?)'/);
                 if (valueMatch) {
                     const propertyValue = valueMatch[1];

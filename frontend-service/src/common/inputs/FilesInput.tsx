@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { IconButton, Grid, useTheme, Typography, LinearProgress, Button, Box, Divider } from '@mui/material';
+import { IconButton, Grid, useTheme, Typography, Button, Box, Divider } from '@mui/material';
 import { CloseOutlined as DeleteIcon, Visibility, Upload } from '@mui/icons-material';
 import { Accept, useDropzone } from 'react-dropzone';
 import i18next from 'i18next';
@@ -7,6 +7,7 @@ import FileIcon from '../FilePreview/FileIcon';
 import { getFileExtension } from '../../utils/getFileType';
 import OpenPreview from '../FilePreview/OpenPreview';
 import { getFileName } from '../../utils/getFileName';
+import { LoadingFilesInput } from './LoadingFilesInput';
 
 interface FilesInputProps {
     files: File[] | { name: string }[];
@@ -62,25 +63,13 @@ const FilesInput: React.FC<FilesInputProps> = ({
         };
     }, []);
 
-    const loadingStyle = {
-        border: isDragActive ? `2px dashed ${theme.palette.primary.main}` : '1px solid #c4c4c4',
-        borderRadius: '10px',
-        borderColor: errorText ? '#A40000' : '#CCCFE5',
-        color: '#9398C2',
-        width: '100%',
-        display: 'flex',
-        padding: '5px 20px',
-        cursor: 'pointer',
-    };
-
     const inputStyle = {
         borderRadius: '10px',
         borderColor: '#CCCFE5',
         color: '#9398C2',
         width: '100%',
-        height: comment ? '245px' : '220px', // Set a fixed height
+        height: comment ? '245px' : '220px',
         display: 'flex',
-        // alignItems: 'center',
         cursor: 'pointer',
         overflowY: 'auto',
         padding: '10px',
@@ -108,58 +97,8 @@ const FilesInput: React.FC<FilesInputProps> = ({
 
     const isFileFromInput = (file: FilesInputProps['files'][number]) => file instanceof File;
 
-    if ((isLoading || errorText) && files) {
-        return (
-            // eslint-disable-next-line react/no-array-index-key
-            <Grid container style={loadingStyle} direction="column">
-                <Grid item container alignItems="center" wrap="nowrap">
-                    <Grid item xs={10}>
-                        <Typography
-                            style={{
-                                overflow: 'hidden',
-                                whiteSpace: 'nowrap',
-                                textOverflow: 'ellipsis',
-                                maxWidth: inputWidth * 0.7,
-                                color: errorText ? '#A40000' : '',
-                            }}
-                        >
-                            {errorText ?? files.join(', ')}
-                        </Typography>
-                    </Grid>
-                    <Grid item container justifyContent="flex-end" alignItems="center" wrap="nowrap">
-                        <IconButton
-                            onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                setErrorText?.(undefined);
-                            }}
-                            size="small"
-                        >
-                            <DeleteIcon fontSize="small" />
-                        </IconButton>
-                    </Grid>
-                </Grid>
-
-                <Grid display="flex" justifyContent="center">
-                    <LinearProgress
-                        style={{
-                            width: '100%',
-                            backgroundColor: errorText ? '#A40000' : '#E1F5FE',
-                            borderRadius: '25px',
-                            margin: '5px',
-                        }}
-                        sx={{
-                            '& .MuiLinearProgress-bar': {
-                                backgroundColor: errorText ? '#A40000' : '#4752B6',
-                            },
-                        }}
-                        variant={errorText ? 'determinate' : 'indeterminate'}
-                        value={errorText ? 100 : undefined}
-                    />
-                </Grid>
-            </Grid>
-        );
-    }
+    if ((isLoading || errorText) && files)
+        return <LoadingFilesInput files={files} errorText={errorText} setErrorText={setErrorText} inputWidth={inputWidth} isFileFromInput />;
 
     return (
         <Grid container flexDirection="column" justifyContent="space-around" width="100%" ref={inputRef}>

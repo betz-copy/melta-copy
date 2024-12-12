@@ -11,6 +11,7 @@ import { menash } from 'menashmq';
 import config from '../../config';
 import { InstancesService } from '../../externalServices/instanceService';
 import {
+    IBrokenRulesError,
     ICountSearchResult,
     IEntity,
     ISearchBatchBody,
@@ -51,7 +52,7 @@ import { RabbitManager } from '../../utils/rabbit';
 import { SemanticSearchService } from '../../externalServices/semanticSearch';
 import { ISemanticSearchResult } from '../../externalServices/semanticSearch/interface';
 import { WorkspaceService } from '../workspaces/service';
-import { getPopulatedBrokenRulesErrorEntities, getValidationErrorEntities, readExcelFile } from '../../utils/excel/getFunctions';
+import { getValidationErrorEntities, readExcelFile, updateIdOfBrokenRules } from '../../utils/excel/getFunctions';
 
 const { errorCodes, rabbit, ruleBreachService } = config;
 
@@ -143,9 +144,9 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         workbook: stream.xlsx.WorkbookWriter,
         workspace: { path: string; id: string },
     ): Promise<void> {
-        const tasks = Object.entries(templates).map(async ([templateId, { filter, sort, displayColumns, insertEntities }]) => {
+        const tasks = Object.entries(templates).map(async ([templateId, { filter, sort, displayColumns, headersOnly, insertEntities }]) => {
             const template = await this.entityTemplateService.getEntityTemplateById(templateId);
-            await this.createWorksheet(workbook, template, filter, sort, textSearch, workspace, displayColumns, insertEntities);
+            await this.createWorksheet(workbook, template, filter, sort, textSearch, workspace, displayColumns, headersOnly, insertEntities);
         });
 
         await Promise.all(tasks);
@@ -159,127 +160,132 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         textSearch: string | undefined,
         workspace: { path: string; id: string },
         displayColumns?: string[],
-        insertEntities?: { insert: boolean; entities?: Record<string, any>[] },
+        headersOnly?: boolean,
+        insertEntities?: Record<string, any>[],
     ) {
-        const worksheet = await createWorksheet(workbook, template, displayColumns, insertEntities);
+        const worksheet = await createWorksheet(workbook, template, displayColumns, headersOnly || !!insertEntities);
         const { searchEntitiesChunkSize } = config.service;
 
-        if (!insertEntities?.insert || insertEntities?.entities) {
-            if (insertEntities?.entities) styleAWorksheet(worksheet, insertEntities.entities, template, workspace, displayColumns);
-            else {
-                const templateCount = await this.getEntitiesCountByTemplates(true, {
-                    templateIds: [template._id],
-                    textSearch,
-                });
+        if (headersOnly) return;
 
-                const { count, entitiesWithFiles } = templateCount?.[0] ?? { count: 0, entitiesWithFiles: {} };
+        if (insertEntities) {
+            styleAWorksheet(worksheet, insertEntities, template, workspace, displayColumns);
+            return;
+        }
 
-                for (let skip = 0; count - skip > 0; skip += searchEntitiesChunkSize) {
-                    const { entities: chunk } = await this.service.searchEntitiesOfTemplateRequest(template._id, {
-                        skip,
-                        limit: searchEntitiesChunkSize,
-                        textSearch,
-                        filter,
-                        sort,
-                        entityIdsToInclude: Object.keys(entitiesWithFiles),
-                    });
-                    styleAWorksheet(
-                        worksheet,
-                        chunk.map((row) => row.entity.properties),
-                        template,
-                        workspace,
-                        displayColumns,
-                        insertEntities?.insert,
-                    );
-                }
-            }
+        const templateCount = await this.getEntitiesCountByTemplates(true, {
+            templateIds: [template._id],
+            textSearch,
+        });
+
+        const { count, entitiesWithFiles } = templateCount?.[0] ?? { count: 0, entitiesWithFiles: {} };
+
+        for (let skip = 0; count - skip > 0; skip += searchEntitiesChunkSize) {
+            const { entities: chunk } = await this.service.searchEntitiesOfTemplateRequest(template._id, {
+                skip,
+                limit: searchEntitiesChunkSize,
+                textSearch,
+                filter,
+                sort,
+                entityIdsToInclude: Object.keys(entitiesWithFiles),
+            });
+            styleAWorksheet(
+                worksheet,
+                chunk.map((row) => row.entity.properties),
+                template,
+                workspace,
+                displayColumns,
+                headersOnly,
+            );
         }
     }
 
-    async readExcelEntities(files: Express.Multer.File[], templateId: string) {
-        const template = await this.entityTemplateService.getEntityTemplateById(templateId);
-        const actions = await readExcelFile(files, template);
-        return actions.map((action) => action.actionMetadata);
-    }
+    getSerialStarters = (template: IMongoEntityTemplatePopulated): Record<string, number> => {
+        return Object.entries(template.properties.properties)
+            .filter(([_key, value]) => value.type === 'number' && value.serialStarter !== undefined)
+            .reduce((acc, [key, value]) => {
+                acc[key] = value.serialCurrent || 0;
+                return acc;
+            }, {});
+    };
 
-    async loadEntities(templateId: string, ignoredRules: IBrokenRule[], userId: string, files?: Express.Multer.File[], allEntities?: IEntity[]) {
-        let entities = allEntities;
+    handleLoadEntitiesErrors = (error, failedEntities: IFailedEntity[], entity: IEntity, allBrokenRulesEntities: IBrokenRuleEntity[]) => {
+        if (error instanceof AxiosError) {
+            const { data } = error.response!;
+
+            if (data.metadata && data.metadata.errorCode === errorCodes.failedConstraintsValidation) {
+                const { constraint } = data.metadata;
+                switch (constraint.type) {
+                    case ActionErrors.unique:
+                        failedEntities.push({
+                            properties: entity.properties,
+                            errors: [{ type: ActionErrors.unique, metadata: constraint }],
+                        });
+                        break;
+                    case ActionErrors.required:
+                        failedEntities.push({
+                            properties: entity.properties,
+                            errors: [{ type: ActionErrors.required, metadata: constraint }],
+                        });
+                        break;
+                    default:
+                        break;
+                }
+            }
+            if (data.type === errorCodes.templateValidationError) getValidationErrorEntities(error as AxiosError, failedEntities);
+        } else if ((error as IBrokenRulesError).metadata.errorCode === errorCodes.ruleBlock) {
+            allBrokenRulesEntities.push({
+                brokenRules: error.metadata.brokenRules,
+                rawBrokenRules: error.metadata.rawBrokenRules,
+                actions: error.metadata.actions ?? [
+                    {
+                        actionType: ActionTypes.CreateEntity,
+                        actionMetadata: entity,
+                    },
+                ],
+                rawActions: error.metadata.rawActions ?? [
+                    {
+                        actionType: ActionTypes.CreateEntity,
+                        actionMetadata: entity,
+                    },
+                ],
+                entities: [{ properties: entity.properties }],
+            });
+        }
+    };
+
+    async loadEntities(
+        templateId: string,
+        userId: string,
+        files?: Express.Multer.File[],
+        insertBrokenEntities?: { entitiesToCreate: IEntity[]; ignoredRules: IBrokenRule[] },
+    ) {
+        let entities = insertBrokenEntities?.entitiesToCreate;
         const template = await this.entityTemplateService.getEntityTemplateById(templateId);
 
-        if (files && entities?.length === 0) {
+        if (files && !entities) {
             const actions = await readExcelFile(files, template);
             entities = actions.map((action) => action.actionMetadata as IEntity);
         }
-
+        const serialStarters = this.getSerialStarters(template);
         const succeededEntities: IEntity[] = [];
         const failedEntities: IFailedEntity[] = [];
         const allBrokenRulesEntities: IBrokenRuleEntity[] = [];
+        let succeededIndex = 0;
 
-        const serialStarters: Record<string, number> = Object.entries(template.properties.properties)
-            .filter(([_key, value]) => value.type === 'number' && value.serialStarter !== undefined)
-            .reduce((acc, [key, value]) => {
-                acc[key] = value.serialStarter || 0 + 1;
-                return acc;
-            }, {});
+        for (const entity of entities!) {
+            try {
+                // eslint-disable-next-line no-loop-func
+                const serialNumbers = Object.fromEntries(Object.entries(serialStarters).map(([key, value]) => [key, value + succeededIndex]));
+                const result = await this.createEntityInstance(entity, [], insertBrokenEntities?.ignoredRules || [], userId, serialNumbers);
+                succeededEntities.push(result);
+                succeededIndex++;
+            } catch (error) {
+                this.handleLoadEntitiesErrors(error, failedEntities, entity, allBrokenRulesEntities);
+            }
+        }
 
-        await Promise.all(
-            entities!.map(async (entity, index) => {
-                try {
-                    const serialNumbers = Object.fromEntries(Object.entries(serialStarters).map(([key, value]) => [key, value + index]));
-                    const result = await this.createEntityInstance(entity, [], ignoredRules, userId, serialNumbers);
-                    succeededEntities.push(result);
-                    return result;
-                } catch (error) {
-                    if (error instanceof AxiosError) {
-                        const { data } = error.response!;
-
-                        if (data.metadata && data.metadata.errorCode === errorCodes.failedConstraintsValidation) {
-                            const { constraint } = data.metadata;
-                            switch (constraint.type) {
-                                case ActionErrors.unique:
-                                    failedEntities.push({
-                                        properties: entity.properties,
-                                        errors: [{ type: ActionErrors.unique, metadata: constraint }],
-                                    });
-                                    break;
-                                case ActionErrors.required:
-                                    failedEntities.push({
-                                        properties: entity.properties,
-                                        errors: [{ type: ActionErrors.required, metadata: constraint }],
-                                    });
-                                    break;
-                                default:
-                                    break;
-                            }
-                        }
-                        if (data.type === 'TemplateValidationError') getValidationErrorEntities(error as AxiosError, failedEntities);
-                        return null;
-                    }
-                    if ((error as any).metadata.errorCode === errorCodes.ruleBlock) {
-                        allBrokenRulesEntities.push({
-                            brokenRules: (error as any).metadata.brokenRules,
-                            rawBrokenRules: (error as any).metadata.rawBrokenRules,
-                            actions: (error as any).metadata.actions ?? [
-                                {
-                                    actionType: ActionTypes.CreateEntity,
-                                    actionMetadata: entity,
-                                },
-                            ],
-                            rawActions: (error as any).metadata.rawActions ?? [
-                                {
-                                    actionType: ActionTypes.CreateEntity,
-                                    actionMetadata: entity,
-                                },
-                            ],
-                            entities: [{ properties: entity.properties }],
-                        });
-                        return null;
-                    }
-                    return null;
-                }
-            }),
-        );
-        const brokenRulesEntities = await getPopulatedBrokenRulesErrorEntities(allBrokenRulesEntities);
+        const brokenRulesEntities = await updateIdOfBrokenRules(allBrokenRulesEntities);
 
         return { succeededEntities, failedEntities, brokenRulesEntities };
     }
@@ -305,11 +311,10 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
         Object.keys(entityTemplate.properties.properties).forEach((key) => {
             if (entityTemplate.properties.properties[key].serialCurrent !== undefined) {
-                updatedProperties[key] = serialNumbers ? serialNumbers[key] : Number(entityTemplate.properties.properties[key].serialCurrent);
+                const serialCurrent = serialNumbers ? serialNumbers[key] : Number(entityTemplate.properties.properties[key].serialCurrent);
+                updatedProperties[key] = serialCurrent;
 
-                const serialNum: number = serialNumbers
-                    ? serialNumbers[key] + 1
-                    : Number(entityTemplate.properties.properties[key].serialCurrent) + 1;
+                const serialNum: number = serialCurrent + 1;
                 const newSerialNumberObj = { ...entityTemplate.properties.properties[key], serialCurrent: serialNum };
                 updatedTemplateProperties[key] = newSerialNumberObj;
                 isTemplateUpdated = true;

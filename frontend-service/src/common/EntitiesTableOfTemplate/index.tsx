@@ -159,7 +159,7 @@ export type EntitiesTableOfTemplateProps<Data> = {
     };
     onFilter?: () => void;
     mainEntity?: IEntityExpanded;
-    showErrors?: boolean;
+    ignoreType?: boolean;
     hasInstances?: boolean;
     paginationPageSizeSelector?: boolean | number[];
 };
@@ -197,7 +197,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             saveStorageProps,
             onFilter,
             hasPermissionToCategory,
-            showErrors,
+            ignoreType,
             mainEntity,
             hasInstances,
             paginationPageSizeSelector = environment.agGrid.paginationPageSizeSelector as unknown as number[],
@@ -286,7 +286,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             defaultColumnsOrder,
             defaultColumnWidths,
             rowHeight,
-            showErrors,
+            ignoreType,
             searchValue: quickFilterText,
         };
         const columnDefs = useDeepCompareMemo(() => getColumnDefs(columnDefProps), [columnDefProps]);
@@ -377,7 +377,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             >
                 <AgGridReact<Data>
                     ref={gridRef}
-                    suppressDragLeaveHidesColumns={showErrors}
+                    suppressDragLeaveHidesColumns={ignoreType}
                     getRowStyle={(params): RowStyle | undefined => {
                         if (params.data && getEntityPropertiesData(params.data).disabled) {
                             return { background: darkMode ? '' : '#FAFAFA', color: darkMode ? '#7f7f7f' : 'rgb(159 147 147 / 40%)' };

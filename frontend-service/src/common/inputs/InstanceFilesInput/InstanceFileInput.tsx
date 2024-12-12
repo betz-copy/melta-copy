@@ -71,7 +71,7 @@ export const InstanceFileInput: React.FC<InstanceFileInputProps> = ({
                     setFieldValue(fileFieldName, updatedFiles);
                     setFieldTouched(fileFieldName, true, false);
                     setExternalErrors?.((prev) => ({ ...prev, files: false }));
-                    if (onDrop) onDrop(acceptedFiles);
+                    onDrop?.(acceptedFiles);
                 }}
                 onDeleteFile={(fileIndex: number, event: React.MouseEvent<HTMLButtonElement>) => {
                     event.stopPropagation();

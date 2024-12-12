@@ -598,6 +598,7 @@ export default {
                 emptyExcel: 'יש להעלות קבצים עם יישויות',
                 failedReadingFiles: 'שגיאה בקריאת קבצים',
                 filesWrongTemplate: 'חלק מקבצים אלו לא מתאימים לתבנית',
+                wrongFileType: 'חלק מקבצים אלו לא קבצי אקסל',
                 notValid: 'שדה חייב להיות מסוג',
             },
         },

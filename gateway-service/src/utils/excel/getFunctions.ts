@@ -5,7 +5,6 @@ import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../exte
 import { excelConfig } from './excelConfig';
 import { BadRequestError, ServiceError } from '../../express/error';
 import {
-    ActionErrors,
     ActionTypes,
     IAction,
     IActionPopulated,
@@ -14,12 +13,15 @@ import {
     ICreateEntityMetadata,
     IFailedEntity,
 } from '../../externalServices/ruleBreachService/interfaces';
-import { IValidationError } from '../../externalServices/instanceService/interfaces/entities';
+import { IValidationErrorData } from '../../externalServices/instanceService/interfaces/entities';
 import {
     IBrokenRulePopulated,
     ICreateEntityMetadataPopulated,
     IUpdateEntityMetadataPopulated,
 } from '../../externalServices/ruleBreachService/interfaces/populated';
+import config from '../../config';
+
+const { entitiesFileLimit } = config.loadExcel;
 
 const formatExcel = (value: Excel.CellValue | string, propertyTemplate: IEntitySingleProperty) => {
     const { type, format } = propertyTemplate;
@@ -49,16 +51,18 @@ const formatExcel = (value: Excel.CellValue | string, propertyTemplate: IEntityS
     return value;
 };
 
+export const isExcludedColumn = (propertyTemplate: IEntitySingleProperty) => {
+    const isRelationshipRef = propertyTemplate.format === 'relationshipReference' || propertyTemplate.relationshipReference;
+    const isFile = propertyTemplate.format === 'fileId' || (propertyTemplate.type === 'array' && propertyTemplate.items?.format === 'fileId');
+    const isSerialNumber = propertyTemplate.type === 'number' && propertyTemplate.serialCurrent;
+    return !isRelationshipRef && !isFile && !isSerialNumber;
+};
+
 const readExcelFile = async (files: Express.Multer.File[], template: IMongoEntityTemplatePopulated) => {
     const allActions: IAction[] = [];
 
     const columns = Object.fromEntries(
-        Object.entries(template.properties.properties).filter(([_propertyKey, propertyTemplate]) => {
-            const isRelationshipRef = propertyTemplate.format === 'relationshipReference' || propertyTemplate.relationshipReference;
-            const isFile = propertyTemplate.format === 'fileId' || (propertyTemplate.type === 'array' && propertyTemplate.items?.format === 'fileId');
-            const isSerialNumber = propertyTemplate.type === 'number' && propertyTemplate.serialCurrent;
-            return !isRelationshipRef && !isFile && !isSerialNumber;
-        }),
+        Object.entries(template.properties.properties).filter(([_propertyKey, propertyTemplate]) => isExcludedColumn(propertyTemplate)),
     );
 
     await Promise.all(
@@ -67,10 +71,10 @@ const readExcelFile = async (files: Express.Multer.File[], template: IMongoEntit
             await workbook.xlsx.readFile(file.path);
             const worksheet = workbook.worksheets[0];
 
-            if (!template.displayName.includes(worksheet.name)) throw new ServiceError(StatusCodes.BAD_REQUEST, 'Invalid excel', file);
+            if (template.displayName.trim() !== worksheet.name.trim()) throw new ServiceError(StatusCodes.BAD_REQUEST, 'Invalid excel', file);
 
             worksheet.eachRow((row, rowIndex) => {
-                if (rowIndex === 1) return;
+                if (rowIndex === 1) return; // skip header row
 
                 const rowData: Record<string, any> = {};
                 Object.entries(columns).forEach(([key, value], columnIndex) => {
@@ -85,7 +89,7 @@ const readExcelFile = async (files: Express.Multer.File[], template: IMongoEntit
                 });
             });
 
-            if (allActions.length > 500) throw new BadRequestError('file limit: more than 500 entities', file);
+            if (allActions.length > entitiesFileLimit) throw new BadRequestError(`file limit: more than ${entitiesFileLimit} entities`, file);
         }),
     );
 
@@ -93,15 +97,7 @@ const readExcelFile = async (files: Express.Multer.File[], template: IMongoEntit
 };
 
 const getValidationErrorEntities = (error: AxiosError, failedEntities: IFailedEntity[]) => {
-    const errorData = error.response?.data as {
-        type: string;
-        message: string;
-        metadata: {
-            properties: Record<string, any>;
-            errors: { type: ActionErrors.validation; metadata: IValidationError }[];
-        };
-    };
-
+    const errorData = error.response?.data as IValidationErrorData;
     const { metadata } = errorData;
     const { properties, errors } = metadata;
 
@@ -195,7 +191,7 @@ const updateAction = (actions: IActionPopulated[], _id: string) => {
     });
 };
 
-const getPopulatedBrokenRulesErrorEntities = async (allBrokenRulesEntities: IBrokenRuleEntity[]) => {
+const updateIdOfBrokenRules = async (allBrokenRulesEntities: IBrokenRuleEntity[]) => {
     return allBrokenRulesEntities.reduce<IBrokenRuleEntity>(
         (accumulator, current, index) => {
             const entityId = `$${index}._id`;
@@ -220,4 +216,4 @@ const getPopulatedBrokenRulesErrorEntities = async (allBrokenRulesEntities: IBro
     );
 };
 
-export { readExcelFile, getValidationErrorEntities, getPopulatedBrokenRulesErrorEntities };
+export { readExcelFile, getValidationErrorEntities, updateIdOfBrokenRules };

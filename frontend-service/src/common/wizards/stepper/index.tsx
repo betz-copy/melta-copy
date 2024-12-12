@@ -1,52 +1,107 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import { Grid } from '@mui/material';
+import { Done as DoneIcon } from '@mui/icons-material';
 import { FormikProps } from 'formik';
 import { StepType } from '..';
-import { StepperSideBar } from './StepperSideBar';
+import { StepNumberTypography, StepNameTypography, DashedHorizontalLine, DashedVerticalLine, StepDescriptionTypography } from './index.styles';
 
 const Stepper = <T extends object>({
     activeStep,
     steps,
+    direction,
     formikProps,
     setBlock,
     isEditMode,
-    direction,
-    showPrevSteps = false,
+    showPrevSteps,
 }: {
     activeStep: number;
     steps: StepType<T>[];
+    direction: 'row' | 'column';
     formikProps: FormikProps<T>;
     setBlock: React.Dispatch<React.SetStateAction<boolean>>;
     isEditMode: boolean;
-    direction: 'row' | 'column';
-    showPrevSteps?: boolean;
+    showPrevSteps: boolean;
 }): JSX.Element | null => {
+    if (direction === 'column')
+        return (
+            <Grid container justifyContent="start" alignItems="center">
+                {steps.map((step, index) => {
+                    // eslint-disable-next-line no-nested-ternary
+                    const type = activeStep < index ? 'futureStep' : activeStep === index ? 'currentStep' : 'finishedStep';
+                    if (step.invisibleBeforeStep && type === 'futureStep') return undefined;
+
+                    return (
+                        <Fragment key={step.label}>
+                            <Grid container justifyContent="start" alignItems="flex-start">
+                                <Grid container justifyContent="start" alignItems="center">
+                                    <Grid item display="flex" justifyContent="center" alignContent="center">
+                                        <StepNumberTypography type={type} direction="column">
+                                            {type === 'finishedStep' ? <DoneIcon fontSize="small" /> : index + 1}
+                                        </StepNumberTypography>
+                                    </Grid>
+                                    <Grid item>
+                                        <StepNameTypography type={type} direction={direction}>
+                                            {step.label}
+                                        </StepNameTypography>
+                                    </Grid>
+                                    <Grid item marginLeft="10px">
+                                        {step.description && <StepDescriptionTypography type={type}>{step.description}</StepDescriptionTypography>}
+                                    </Grid>
+                                </Grid>
+                                <Grid container alignItems="center">
+                                    {index !== steps.length - 1 &&
+                                        (type === 'finishedStep' ||
+                                            ((type === 'currentStep' || type === 'futureStep') && !steps[index + 1].invisibleBeforeStep)) && (
+                                            <DashedVerticalLine />
+                                        )}
+                                    {(type === 'currentStep' || (showPrevSteps && type === 'finishedStep')) &&
+                                        step.component(formikProps, { isEditMode, setBlock })}
+                                </Grid>
+                            </Grid>
+                        </Fragment>
+                    );
+                })}
+            </Grid>
+        );
+
     return (
-        <Grid container minWidth="70vh" spacing={2}>
-            {steps.length > 1 && (
-                <Grid item width="100%">
-                    <StepperSideBar
-                        steps={steps}
-                        activeStep={activeStep}
-                        direction={direction}
-                        componentProps={{ formikProps, helpers: { isEditMode, setBlock } }}
-                        showPrevSteps={showPrevSteps}
-                    />
-                </Grid>
-            )}
-            {direction === 'row' && (
-                <Grid
-                    container
-                    direction="column"
-                    justifyContent="space-between"
-                    alignItems="center"
-                    height="100%"
-                    marginBottom="0.5rem"
-                    marginTop="1rem"
-                >
-                    {steps[activeStep].component(formikProps, { isEditMode, setBlock })}
-                </Grid>
-            )}
+        <Grid container justifyContent="space-around" alignItems="center">
+            {steps.length > 1 &&
+                steps.map((step, index) => {
+                    // eslint-disable-next-line no-nested-ternary
+                    const type = activeStep < index ? 'futureStep' : activeStep === index ? 'currentStep' : 'finishedStep';
+
+                    return (
+                        <Fragment key={step.label}>
+                            <Grid>
+                                <Grid container justifyContent="center" alignItems="center">
+                                    <Grid item display="flex" justifyContent="center" alignContent="center">
+                                        <StepNumberTypography type={type} direction="row">
+                                            {type === 'finishedStep' ? <DoneIcon fontSize="small" /> : index + 1}
+                                        </StepNumberTypography>
+                                    </Grid>
+                                    <Grid item>
+                                        <StepNameTypography type={type} direction={direction}>
+                                            {step.label}
+                                        </StepNameTypography>
+                                    </Grid>
+                                </Grid>
+                            </Grid>
+                            {index !== steps.length - 1 && <DashedHorizontalLine />}
+                        </Fragment>
+                    );
+                })}
+            <Grid
+                container
+                direction="column"
+                justifyContent="space-between"
+                alignItems="center"
+                height="100%"
+                marginBottom="0.5rem"
+                marginTop="2rem"
+            >
+                {steps[activeStep].component(formikProps, { isEditMode, setBlock })}
+            </Grid>
         </Grid>
     );
 };

@@ -94,7 +94,7 @@ export const UploadExcel: React.FC<{
                         shouldSavePagination: false,
                         shouldSaveScrollPosition: false,
                     }}
-                    showErrors
+                    ignoreType
                     showNavigateToRowButton={false}
                 />
             </Grid>

@@ -95,7 +95,7 @@ export const EntitiesTable: React.FC<{
                         shouldSavePagination: false,
                         shouldSaveScrollPosition: false,
                     }}
-                    showErrors
+                    ignoreType
                     showNavigateToRowButton={false}
                 />
             </AccordionDetails>

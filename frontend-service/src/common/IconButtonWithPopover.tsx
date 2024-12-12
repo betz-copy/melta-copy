@@ -21,12 +21,12 @@ const IconButtonWithPopover: React.FC<{
         | 'top-end'
         | 'top-start'
         | 'top';
-    sxStyle?: SxProps<Theme>;
-}> = ({ children, iconButtonProps, popoverText, disabledToolTip = false, disabled, style, placement = 'bottom', sxStyle }) => {
+    buttonStyle?: SxProps<Theme>;
+}> = ({ children, iconButtonProps, popoverText, disabledToolTip = false, disabled, style, placement = 'bottom', buttonStyle }) => {
     return (
         <MeltaTooltip title={popoverText} disableHoverListener={disabledToolTip} placement={placement}>
             <span>
-                <IconButton {...iconButtonProps} style={style} disabled={disabled} sx={sxStyle}>
+                <IconButton {...iconButtonProps} style={style} disabled={disabled} sx={buttonStyle}>
                     {children}
                 </IconButton>
             </span>

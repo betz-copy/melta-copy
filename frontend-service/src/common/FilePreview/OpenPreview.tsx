@@ -88,8 +88,9 @@ const OpenPreview: React.FC<{
                 highlightAll={highlightAll}
             />
         );
-        if (onClick) return content;
-        return (
+        return onClick ? (
+            content
+        ) : (
             <Link href={`/api${environment.api.storage}/${fileId}`} target="_blank" download>
                 {content}
             </Link>

@@ -25,13 +25,7 @@ export class InstancesController extends DefaultController<InstancesManager> {
 
     async loadEntities(req: Request, res: Response) {
         res.json(
-            await this.manager.loadEntities(
-                req.body.templateId,
-                req.body.ignoredRules,
-                req.user!.id,
-                req.files as Express.Multer.File[],
-                req.body.entities,
-            ),
+            await this.manager.loadEntities(req.body.templateId, req.user!.id, req.files as Express.Multer.File[], req.body.insertBrokenEntities),
         );
     }
 
