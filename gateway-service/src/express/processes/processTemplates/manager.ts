@@ -43,7 +43,7 @@ export class ProcessTemplatesManager extends DefaultManagerProxy<ProcessService>
         const iconFileIds = await this.storageService.uploadFiles(icons);
 
         const iconFilePropertiesEntries = icons.map((icon, index) => {
-            return [Number(icon.fieldName), iconFileIds[index]];
+            return [Number(icon.fieldname), iconFileIds[index]];
         });
         return iconFilePropertiesEntries;
     }

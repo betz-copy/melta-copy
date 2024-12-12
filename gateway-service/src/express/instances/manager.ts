@@ -84,7 +84,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
         const fileIds = await this.storageService.uploadFiles(files);
         const filePropertiesEntries = files.map((file, index) => {
-            return [file.fieldName, fileIds[index]];
+            return [file.fieldname, fileIds[index]];
         });
 
         const filesToUpload: Record<string, any> = {};
@@ -279,7 +279,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
     private async deleteUnusedFiles(currentEntity: IEntity, instanceData: IEntity, files: UploadedFile[]) {
         const entityTemplate = await this.entityTemplateService.getEntityTemplateById(currentEntity.templateId);
-        const newFilesKeys = files.map((file) => file.fieldName);
+        const newFilesKeys = files.map((file) => file.fieldname);
 
         const fileProperties = this.getEntityFileProperties(currentEntity.properties, entityTemplate);
 

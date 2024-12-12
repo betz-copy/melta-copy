@@ -64,9 +64,9 @@ export const WorkspaceNameSchema = Joi.string().regex(/^[a-zA-Z0-9_-]+$/, 'valid
 export const fileSchema = Joi.object({
     fieldname: Joi.string().required(),
     originalname: Joi.string().required(),
-    size: Joi.number().min(1).required(),
     encoding: Joi.string().required(),
     mimetype: Joi.string().required(),
+    size: Joi.number().min(1).required(),
     path: Joi.string().required(),
 }).unknown(true);
 

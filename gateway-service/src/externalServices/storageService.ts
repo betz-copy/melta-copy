@@ -1,7 +1,7 @@
 import FormData from 'form-data';
+import fs from 'fs';
 import config from '../config';
 import DefaultExternalServiceApi from '../utils/express/externalService';
-import fsCreateReadStream from '../utils/fs';
 import { UploadedFile } from '../utils/busboy/interface';
 
 const {
@@ -16,7 +16,7 @@ export class StorageService extends DefaultExternalServiceApi {
 
     async uploadFile(file: UploadedFile) {
         const formData = new FormData();
-        const fileStream = await fsCreateReadStream(file.path);
+        const fileStream = fs.createReadStream(file.path);
         formData.append('file', fileStream, file.originalname);
 
         const { data } = await this.api.post<{ path: string }>(uploadFileRoute, formData, {
@@ -29,7 +29,7 @@ export class StorageService extends DefaultExternalServiceApi {
     async uploadFiles(files: UploadedFile[]) {
         const formData = new FormData();
 
-        const fileStreamsPromises = files.map((file) => fsCreateReadStream(file.path));
+        const fileStreamsPromises = files.map((file) => fs.createReadStream(file.path));
         const fileStreams = await Promise.all(fileStreamsPromises);
 
         fileStreams.forEach((fileStream, index) => {

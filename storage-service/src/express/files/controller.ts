@@ -5,6 +5,7 @@ import DefaultController from '../../utils/express/controller';
 import { getFileName } from '../../utils/generatePath';
 import { ServiceError } from '../error';
 import { FilesManager } from './manager';
+import { UploadedFile } from './interface';
 
 export default class FilesController extends DefaultController<FilesManager> {
     constructor(workspaceId: string) {
@@ -55,7 +56,7 @@ export default class FilesController extends DefaultController<FilesManager> {
     }
 
     async uploadFiles(req: express.Request, res: express.Response) {
-        res.json(await this.manager.uploadFiles(req.files as Express.Multer.File[]));
+        res.json(await this.manager.uploadFiles(req.files as UploadedFile[]));
     }
 
     async listFiles(_req: express.Request, res: express.Response) {

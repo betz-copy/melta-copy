@@ -1,6 +1,4 @@
 import { Router } from 'express';
-import multer from 'multer';
-import config from '../../config';
 import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
 import { createWorkspacesController, wrapController } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
@@ -14,6 +12,7 @@ import {
     getWorkspaceIds,
     updateOneSchema,
 } from './validator.schema';
+import { busboyMiddleware } from '../../utils/busboy/busboyMiddleware';
 
 const controller = createWorkspacesController(WorkspaceController);
 
@@ -40,7 +39,7 @@ workspaceRouter.get('/:id', ValidateRequest(getByIdSchema), wrapController(Works
 
 workspaceRouter.post(
     '/',
-    multer({ dest: config.service.uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).any(),
+    busboyMiddleware,
     ValidateRequest(createOneSchema),
     AuthorizerControllerMiddleware.userCanWriteWorkspaces,
     controller.createOne,
@@ -48,7 +47,7 @@ workspaceRouter.post(
 
 workspaceRouter.put(
     '/:id',
-    multer({ dest: config.service.uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).any(),
+    busboyMiddleware,
     ValidateRequest(updateOneSchema),
     AuthorizerControllerMiddleware.userCanWriteWorkspaces,
     controller.updateOne,

@@ -3,7 +3,7 @@ import * as env from 'env-var';
 import { fileExtension } from './documentExtension';
 
 export const config = {
-    multer: {
+    busboy: {
         fileKeyName: 'file',
         filesKeyName: 'files',
     },

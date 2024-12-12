@@ -57,7 +57,7 @@ export class WorkspaceManager extends DefaultManagerProxy {
         const fileIds = await this.storageService.uploadFiles(files);
 
         return files.reduce(
-            (acc, { fieldName }, index) => ({ ...acc, [fieldName]: fileIds[index] }),
+            (acc, { fieldname }, index) => ({ ...acc, [fieldname]: fileIds[index] }),
             {} as Pick<IWorkspace, 'iconFileId' | 'logoFileId'>,
         );
     }

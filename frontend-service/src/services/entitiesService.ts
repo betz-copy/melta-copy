@@ -52,22 +52,19 @@ export const getRelationshipInstancesCountByTemplateIdRequest = async (templateI
 export const createEntityRequest = async (entity: EntityWizardValues, ignoredRules?: IRuleBreach['brokenRules']) => {
     const formData = new FormData();
 
-    const filesToUpload: any = [];
+    // const filesToUpload: any = [];
     Object.entries(entity.attachmentsProperties).forEach(([key, value]: [string, any]) => {
         if (Array.isArray(value)) {
             value.forEach((file, index) => {
                 if (file instanceof File && entity.template.properties.properties[key].items) {
-                    filesToUpload.push([`${key}.${index}`, file]);
+                    formData.append(`${key}.${index}`, file);
                 } else if (file instanceof File) {
-                    filesToUpload.push([`${key}`, file]);
+                    formData.append(`${key}`, file);
                 }
             });
         } else {
-            filesToUpload.push([`${key}`, value]);
+            formData.append(`${key}`, value);
         }
-    });
-    filesToUpload.forEach(([key, value]) => {
-        formData.append(key, value as Blob);
     });
     formData.append(
         'properties',
@@ -84,6 +81,7 @@ export const createEntityRequest = async (entity: EntityWizardValues, ignoredRul
     }
 
     const { data } = await axios.post<IEntity>(entities, formData);
+
     return data;
 };
 
@@ -151,7 +149,11 @@ export const updateEntityRequestForMultiple = async (
     if (ignoredRules) {
         formData.append('ignoredRules', JSON.stringify(ignoredRules));
     }
-    const { data } = await axios.put<IEntity>(`${entities}/${entityId}`, formData);
+
+    const { data } = await axios.put<IEntity>(`${entities}/${entityId}`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+    });
+
     return data;
 };
 

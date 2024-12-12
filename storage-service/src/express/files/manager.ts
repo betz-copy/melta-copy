@@ -5,6 +5,7 @@ import { getFileExtension, isFileDocument } from '../../utils/fileHelper';
 import { ServiceError } from '../error';
 import { generatePath } from '../../utils/generatePath';
 import DefaultManagerMinio from '../../utils/minio/manager';
+import { UploadedFile } from './interface';
 
 const {
     rabbit,
@@ -13,11 +14,11 @@ const {
 } = config;
 
 export class FilesManager extends DefaultManagerMinio {
-    uploadFile(file?: Express.Multer.File) {
+    uploadFile(file?: UploadedFile) {
         return file;
     }
 
-    async uploadFiles(files?: Express.Multer.File[]) {
+    async uploadFiles(files?: UploadedFile[]) {
         const documentFiles = files?.filter((file) => isFileDocument(file.path));
         if (documentFiles?.length)
             await menash.send(
