@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { MapContainer, TileLayer, LayersControl, FeatureGroup, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, LayersControl, FeatureGroup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-draw/dist/leaflet.draw.css';
 import L from 'leaflet';

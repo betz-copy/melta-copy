@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useMemo, useState } from 'react';
-import { MapContainer, TileLayer, LayersControl, LayerGroup, FeatureGroup, Marker, Popup, Polygon, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, LayersControl, LayerGroup, FeatureGroup, Marker, Popup, Polygon } from 'react-leaflet';
 import L, { LatLng } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-draw/dist/leaflet.draw.css';
