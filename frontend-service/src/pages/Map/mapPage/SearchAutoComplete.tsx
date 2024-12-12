@@ -112,36 +112,46 @@ const SearchAutoComplete = ({ selectedTemplates, handleEntityClick }: props) => 
                 if (!template) return <>No templates Selected</>;
 
                 const displayOptionValues = getTopNFieldsWithValues(option, template, 3);
+
                 return (
                     <li {...props} ref={props['data-option-index'] === searchResults.length - 1 ? lastElementRef : null}>
-                        <Grid container direction="row" spacing={1} onClick={() => handleEntityClick(option)}>
-                            {displayOptionValues.map((displayOptionValue) => (
-                                <Grid item key={displayOptionValue} xs={3.6} overflow="hidden" wrap="nowrap">
-                                    <MeltaTooltip placement="right" title={displayOptionValue}>
-                                        <Typography color={theme.palette.text.primary} maxHeight={50} textOverflow="ellipsis">
-                                            {displayOptionValue}
-                                        </Typography>
-                                    </MeltaTooltip>
+                        <Grid container direction="row" alignItems="center">
+                            <Grid item container direction="column" spacing={1} onClick={() => handleEntityClick(option)}>
+                                <Grid item container alignSelf="center" direction="row" spacing={1}>
+                                    <Grid item>
+                                        <MeltaTooltip
+                                            title={
+                                                template.propertiesPreview.length === 0 ? (
+                                                    i18next.t('templateEntitiesAutocomplete.noPreviewFields')
+                                                ) : (
+                                                    <EntityPropertiesInternal
+                                                        properties={option.properties}
+                                                        entityTemplate={template}
+                                                        // showPreviewPropertiesOnly
+                                                        mode="white"
+                                                        textWrap
+                                                    />
+                                                )
+                                            }
+                                        >
+                                            <InfoOutlined sx={{ color: '#166BD4' }} />
+                                        </MeltaTooltip>
+                                    </Grid>
+                                    <Grid item>
+                                        <Typography fontWeight={600}>{template.displayName}</Typography>
+                                    </Grid>
                                 </Grid>
-                            ))}
-                            <Grid item xs={0.2}>
-                                <MeltaTooltip
-                                    title={
-                                        template.propertiesPreview.length === 0 ? (
-                                            i18next.t('templateEntitiesAutocomplete.noPreviewFields')
-                                        ) : (
-                                            <EntityPropertiesInternal
-                                                properties={option.properties}
-                                                entityTemplate={template}
-                                                // showPreviewPropertiesOnly
-                                                mode="white"
-                                                textWrap
-                                            />
-                                        )
-                                    }
-                                >
-                                    <InfoOutlined sx={{ color: '#166BD4' }} />
-                                </MeltaTooltip>
+                                <Grid item container direction="row" spacing={1}>
+                                    {displayOptionValues.map((displayOptionValue) => (
+                                        <Grid item key={displayOptionValue} overflow="hidden" wrap="nowrap" xs={12 / displayOptionValues.length}>
+                                            <MeltaTooltip placement="right" title={displayOptionValue}>
+                                                <Typography color={theme.palette.text.primary} maxHeight={50} textOverflow="ellipsis">
+                                                    {displayOptionValue}
+                                                </Typography>
+                                            </MeltaTooltip>
+                                        </Grid>
+                                    ))}
+                                </Grid>
                             </Grid>
                         </Grid>
                     </li>
