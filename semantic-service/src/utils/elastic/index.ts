@@ -13,19 +13,19 @@ const {
         similarityAlgorithm,
         knnGroupSize,
         lexicalFuzziness,
-        rrfWindowConstant,
         queryMinScore,
+        rrfWindowConstant,
         rrfRankConstant,
+        rrfWindowFieldName,
         user,
         password,
-        rrfWindowFieldName,
-        topHitsByGroup,
-        groupByEntityId,
+        uniqueEntityForAggSize,
+        topHitsByGroupSize,
         uniqueEntityForAgg,
     },
 } = config;
 
-interface IGroupByEntityIdAggregate {
+interface IGroupByUniquePropAggregate {
     group_by_unique_prop: estypes.AggregationsTermsAggregateBase<
         estypes.AggregationsAggregate & {
             top_hits_by_group: estypes.AggregationsTopHitsAggregate;
@@ -82,7 +82,7 @@ class ElasticClient {
         return ElasticClient.client!.indices.delete({ index: `${config.elastic.index}-${this.workspaceId}` });
     }
 
-    formatElasticResponse(response: estypes.SearchResponse<IElasticDoc, IGroupByEntityIdAggregate>): ISemanticSearchResult {
+    formatElasticResponse(response: estypes.SearchResponse<IElasticDoc, IGroupByUniquePropAggregate>): ISemanticSearchResult {
         if (!response?.aggregations?.group_by_unique_prop?.buckets) return {};
 
         const buckets = response.aggregations.group_by_unique_prop.buckets as Array<{
@@ -90,30 +90,24 @@ class ElasticClient {
             top_hits_by_group: estypes.AggregationsTopHitsAggregate;
         }>;
 
-        return buckets
-            .sort((a, b) => {
-                const maxScoreA = a.top_hits_by_group.hits.max_score || 0;
-                const maxScoreB = b.top_hits_by_group.hits.max_score || 0;
-                return maxScoreB - maxScoreA;
-            })
-            .reduce((acc, { top_hits_by_group }) => {
-                top_hits_by_group.hits.hits.forEach((hit) => {
-                    const { templateId, minioFileId, entityId } = hit?._source ?? { templateId: '', minioFileId: '', entityId: '' };
+        return buckets.reduce((acc, { top_hits_by_group }) => {
+            top_hits_by_group.hits.hits.forEach((hit) => {
+                const { templateId, minioFileId, entityId, text } = hit?._source ?? { templateId: '', minioFileId: '', entityId: '', text: '' };
 
-                    if (!templateId || !minioFileId || !entityId) return;
+                if (!templateId || !minioFileId || !entityId) return;
 
-                    if (!acc[templateId]) acc[templateId] = {};
-                    if (!acc[templateId][entityId]) acc[templateId][entityId] = [];
+                if (!acc[templateId]) acc[templateId] = {};
+                if (!acc[templateId][entityId]) acc[templateId][entityId] = [];
 
-                    acc[templateId][entityId].push(minioFileId);
-                });
+                acc[templateId][entityId].push({ minioFileId, text });
+            });
 
-                return acc;
-            }, {} as ISemanticSearchResult);
+            return acc;
+        }, {} as ISemanticSearchResult);
     }
 
     async hybridSearch(query: string, embeddedQuery: number[], limit: number, skip: number, templates: string[]) {
-        const filters = templates && templates.length > 0 ? { terms: { templateId: templates } } : {};
+        const filter = templates?.length > 0 ? [{ terms: { templateId: templates } }] : [];
 
         const indexName = `${index}-${this.workspaceId}`;
         const searchBody = {
@@ -129,7 +123,7 @@ class ElasticClient {
                             fuzziness: lexicalFuzziness,
                         },
                     },
-                    filter: Object.keys(filters).length > 0 ? [filters] : [],
+                    filter,
                 },
             },
             knn: {
@@ -137,6 +131,7 @@ class ElasticClient {
                 query_vector: embeddedQuery,
                 k: limit,
                 num_candidates: knnGroupSize,
+                filter,
             },
             rank: {
                 rrf: {
@@ -150,12 +145,19 @@ class ElasticClient {
                 group_by_unique_prop: {
                     terms: {
                         field: `${uniqueEntityForAgg}.keyword`,
-                        size: topHitsByGroup, // Control how many of the unique values to return.
+                        size: uniqueEntityForAggSize, // Control how many of the unique values to return.
                     },
                     aggs: {
                         top_hits_by_group: {
                             top_hits: {
-                                size: groupByEntityId, // Control how many documents are allowed to return within each group.
+                                size: topHitsByGroupSize, // Control how many documents are allowed to return within each group.
+                                sort: [
+                                    {
+                                        _score: {
+                                            order: 'desc', // Sorts by score in descending order.
+                                        },
+                                    },
+                                ],
                             },
                         },
                     },
@@ -163,7 +165,7 @@ class ElasticClient {
             },
         };
 
-        const response = await ElasticClient.client!.search<IElasticDoc, IGroupByEntityIdAggregate>(searchBody);
+        const response = await ElasticClient.client!.search<IElasticDoc, IGroupByUniquePropAggregate>(searchBody);
         return this.formatElasticResponse(response);
     }
 

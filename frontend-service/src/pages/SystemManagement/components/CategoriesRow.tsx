@@ -107,7 +107,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, setDeleteCategory
                                 onEditClick={() => setCategoryWizardDialogState({ isWizardOpen: true, category })}
                                 onDeleteClick={() => setDeleteCategoryDialogState({ isDialogOpen: true, categoryId: category._id })}
                                 disabledProps={{
-                                    isDisabled: isDeleteButtonDisabled,
+                                    isDeleteDisabled: isDeleteButtonDisabled,
                                     isEditDisabled: !canEdit,
                                     tooltipTitle: isDeleteButtonDisabled ? i18next.t('wizard.entity.deleteDisabledDueToTemplates') : '',
                                 }}

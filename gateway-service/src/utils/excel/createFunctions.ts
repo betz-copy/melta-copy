@@ -47,6 +47,8 @@ const excelStyle: IExcelStyle = {
     },
 };
 
+const SKIP_ROW_HEADER = 2;
+
 const createWorkbook = async (fileName: string) => {
     const fileOption = {
         filename: `${config.service.excelFilePath}/${uuidv4()}${fileName}`,
@@ -282,6 +284,7 @@ const styleAWorksheet = (
     workspace: { path: string; id: string },
     displayColumns?: string[],
     headersOnly?: boolean,
+    skip: number = 0,
 ) => {
     worksheet.getRow(1).eachCell((cell) => {
         cell.font = excelStyle.columnHeader.font;
@@ -298,8 +301,9 @@ const styleAWorksheet = (
         }, {});
 
     Object.entries(allProperties).forEach(([key, value], columnIndex) => {
-        rows.forEach((row, rowIndex) => {
-            const cell = worksheet.getCell(`${indexToExcelColumn(columnIndex + 1)}${rowIndex + 2}`);
+        rows.forEach((row, index) => {
+            const rowIndex = index + skip;
+            const cell = worksheet.getCell(`${indexToExcelColumn(columnIndex + 1)}${rowIndex + SKIP_ROW_HEADER}`);
             if (row[key] !== undefined) {
                 cell.alignment = excelStyle.cell.alignment;
                 cell.font = excelStyle.cell.font;

@@ -107,7 +107,7 @@ const RelationshipTemplateCard: React.FC<RelationshipTemplateCardProps> = ({
                                     });
                                 }}
                                 disabledProps={{
-                                    isDisabled: isDeleteButtonDisabled,
+                                    isDeleteDisabled: isDeleteButtonDisabled,
                                     tooltipTitle: isDeleteButtonDisabled ? i18next.t('systemManagement.cannotDeleteWithRelationship') : '',
                                     isEditDisabled: relationshipTemplate.sourceEntity.disabled || relationshipTemplate.destinationEntity.disabled,
                                     editTooltipTitle: i18next.t('systemManagement.cannotEditEntityDisabled'),

@@ -204,6 +204,7 @@ const EntitiesPageHeadline: React.FC<{
             onAddEntity(entity.properties._id);
         }
     };
+
     return (
         <Grid
             container

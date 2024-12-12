@@ -25,6 +25,14 @@ const config = {
         url: env.get('MONGO_URL').required().asString(),
         iFramesCollectionName: env.get('MONGO_IFRAMES_COLLECTION_NAME').required().asString(),
     },
+
+    frontendConfig: {
+        matotmo: {
+            baseUrl: env.get('FRONTEND_CONFIG_MATOMO_BASE_URL').default('http://localhost:8016').required().asString(),
+            siteId: env.get('FRONTEND_CONFIG_MATOMO_SITE_ID').default(1).required().asInt(),
+        },
+    },
+
     authentication: {
         isRequired: env.get('IS_AUTHENTICATION_REQUIRED').default('true').asBool(),
         mockAuthenticatedUserId: env.get('MOCK_AUTHENTICATED_USER_ID').default('5e5688324203fc40043591aa').asString(), // niky adidas
@@ -73,9 +81,11 @@ const config = {
         requestTimeout: env.get('STORAGE_SERVICE_SERVICE_REQUEST_TIMEOUT').default(10000).asIntPositive(),
     },
     semanticSearchService: {
-        requestTimeout: env.get('SEMANTIC_SEARCH_SERVICE_REQUEST_TIMEOUT').default(10000).asIntPositive(),
+        requestTimeout: env.get('SEMANTIC_SEARCH_SERVICE_REQUEST_TIMEOUT').default(20000).asIntPositive(),
         url: env.get('SEMANTIC_SEARCH_SERVICE').required().asString(),
-        searchRoute: env.get('SEMANTIC_SEARCH_SERVICE_SEARCH_ROUTE').default('/api/semantic/search').asString(),
+        baseRoute: env.get('SEMANTIC_SEARCH_SERVICE_BASE_ROUTE').default('/api/semantic').asString(),
+        searchRoute: env.get('SEMANTIC_SEARCH_SERVICE_SEARCH_ROUTE').default('/search').asString(),
+        rerankRoute: env.get('SEMANTIC_SEARCH_SERVICE_RERANK_ROUTE').default('/rerank').asString(),
     },
     instanceService: {
         url: env.get('INSTANCE_SERVICE_URL').required().asString(),

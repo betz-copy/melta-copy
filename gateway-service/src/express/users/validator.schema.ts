@@ -96,3 +96,12 @@ export const searchExternalUsersRequestSchema = joi.object({
     body: {},
     params: {},
 });
+
+//GET /api/users/search/:workspaceId
+export const searchUsersByPermissionsSchema = joi.object({
+    query: {},
+    body: {},
+    params: {
+        workspaceId: joi.string().required(),
+    },
+});
