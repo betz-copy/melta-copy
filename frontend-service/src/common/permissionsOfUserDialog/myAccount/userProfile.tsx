@@ -9,17 +9,16 @@ import { IUser } from '../../../interfaces/users';
 const UserProfile: React.FC<{
     existingUser: IUser;
     darkMode: boolean;
-    kartoffelUserProfile?: string;
     editProfile: boolean;
     setEditProfile: (editProfile: boolean) => void;
     profilePreference: { profilePath?: string; icon?: any };
     setProfilePreference: (profilePreference: { profilePath?: string; icon?: any }) => void;
-}> = ({ existingUser, editProfile, darkMode, profilePreference, setProfilePreference, setEditProfile, kartoffelUserProfile }) => {
+}> = ({ existingUser, editProfile, darkMode, profilePreference, setProfilePreference, setEditProfile }) => {
     return (
         <Grid container display="flex" justifyContent="center" padding={2}>
             <Grid item width="100%" display="flex" justifyItems="start">
                 <Grid direction="column" display="flex" alignItems="center">
-                    <UserAvatar user={existingUser} kartoffelProfile={kartoffelUserProfile} size={100} />
+                    <UserAvatar user={existingUser} size={100} />
                     <Grid item>
                         <Button
                             onClick={() => {
@@ -61,7 +60,6 @@ const UserProfile: React.FC<{
                             setProfilePreference(value?.file ? { icon: value } : { profilePath: value });
                         }}
                         onDelete={() => setProfilePreference({})}
-                        kartoffelProfile={kartoffelUserProfile}
                         imageName={isProfileFile(existingUser.preferences.profilePath) ? existingUser.preferences.profilePath : undefined}
                         defaultInputType={defaultInputType(existingUser.preferences.profilePath)}
                     />

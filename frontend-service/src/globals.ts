@@ -67,6 +67,9 @@ export const environment = {
         heightPaddingMultiplier: 0.3,
         widthPaddingMultiplier: 0.6,
     },
+    users: {
+        kartoffelProfile: 'kartoffelProfile',
+    },
     ganttSettings: {
         infiniteScrollPageCount: 10,
         isSidebarOpenLocalStorageKey: 'isGanttSidebarOpen',

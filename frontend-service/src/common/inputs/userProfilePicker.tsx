@@ -1,11 +1,12 @@
 import { Avatar, Box, Grid, IconButton, ToggleButton, ToggleButtonGroup } from '@mui/material';
 import i18next from 'i18next';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import fileDetails from '../../interfaces/fileDetails';
 import { IUser } from '../../interfaces/users';
 import FileInput from './ImageFileInput';
-import { environment } from '../../globals';
 import { getNameInitials } from '../../utils/userProfile';
+import { allProfileAvatars } from '../../utils/icons';
+import { getUserProfileRequest } from '../../services/userService';
 
 type InputSelectType = 'chooseFile' | 'chooseAvatar' | 'kartoffelProfile';
 
@@ -14,24 +15,18 @@ export interface UserProfilePickerProps {
     onPick: (profileImage: fileDetails | string | undefined) => void;
     onDelete: () => void;
     defaultInputType?: InputSelectType;
-    kartoffelProfile?: string;
     user: IUser;
 }
 
-const UserProfilePicker: React.FC<UserProfilePickerProps> = ({ imageName, onPick, onDelete, defaultInputType, kartoffelProfile, user }) => {
+const UserProfilePicker: React.FC<UserProfilePickerProps> = ({ imageName, onPick, onDelete, defaultInputType, user }) => {
     const [inputType, setInputType] = useState(defaultInputType);
     const [fileInputValue, setFileInputValue] = useState<fileDetails | undefined>(
         imageName ? { file: { name: imageName }, name: imageName } : undefined,
     );
     const [selectedIcon, setSelectedIcon] = useState<string | undefined>(user.preferences.profilePath ?? undefined);
 
-    const icons = import.meta.glob('../../../public/icons/profileAvatar/*');
-
-    const iconPaths = Object.keys(icons).map((filePath) => {
-        const avatarName = filePath.split('/').pop();
-        return `${environment.avatarIconPath}${avatarName}`;
-    });
-
+    const allAvatarPaths = allProfileAvatars;
+    const [kartoffelProfile, setKartoffelProfile] = useState<string>();
     const handleToggleChange = (_event: React.MouseEvent<HTMLElement>, selected: InputSelectType | null) => {
         if (!selected) return;
         setInputType(selected);
@@ -43,6 +38,18 @@ const UserProfilePicker: React.FC<UserProfilePickerProps> = ({ imageName, onPick
         onPick(iconPath);
     };
 
+    useEffect(() => {
+        const fetchKartoffelUserProfile = async () => {
+            try {
+                const kartoffelProfileImg = await getUserProfileRequest({ kartoffelId: user.externalMetadata.kartoffelId });
+                setKartoffelProfile(kartoffelProfileImg);
+            } catch (error) {
+                console.error('Failed to fetch Kartoffel user profile:', error);
+            }
+        };
+
+        fetchKartoffelUserProfile();
+    }, [user]);
     return (
         <Grid container direction="column" alignItems="center" spacing={1}>
             <Grid item margin={0}>
@@ -63,7 +70,7 @@ const UserProfilePicker: React.FC<UserProfilePickerProps> = ({ imageName, onPick
                 <Grid item>
                     <Box style={{ border: '1px solid #ccc', borderRadius: '8px' }}>
                         <Grid container sx={{ display: 'flex', justifyContent: 'space-evenly' }}>
-                            {iconPaths.map((iconPath, index) => (
+                            {allAvatarPaths.map((iconPath, index) => (
                                 // eslint-disable-next-line react/no-array-index-key
                                 <Grid item key={index} padding={2}>
                                     <Avatar
@@ -108,7 +115,6 @@ const UserProfilePicker: React.FC<UserProfilePickerProps> = ({ imageName, onPick
             {inputType === 'chooseFile' && (
                 <Grid item width="50%">
                     <FileInput
-                        fileFieldName="profileFile"
                         onDropFile={(acceptedFile) => {
                             const detailedFile = { file: acceptedFile, name: acceptedFile.name };
                             setFileInputValue(detailedFile);

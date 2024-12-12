@@ -4,16 +4,14 @@ import { ServiceError } from '../../express/error';
 import { FunctionKey } from '../types';
 import DefaultController from './controller';
 
-const { usersGlobalBucketName } = config.minio;
 export const createController = <T extends InstanceType<typeof DefaultController<any>>>(Controller: { new (workspaceId: string): T }) => {
     return new Proxy(
         {},
         {
             get: (_, funcName: string) => {
                 return (req: Request, res: Response, next: NextFunction) => {
-                    const workspaceId = req.route.path.includes('/user-profile')
-                        ? usersGlobalBucketName
-                        : req.headers[config.service.workspaceIdHeaderName];
+                    const workspaceId = req.headers[config.service.workspaceIdHeaderName];
+                    console.log({ workspaceId });
 
                     if (typeof workspaceId !== 'string') return next(new ServiceError(400, 'Invalid workspace id in header'));
 

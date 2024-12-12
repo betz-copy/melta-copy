@@ -6,6 +6,7 @@ import { muiDatePickersLocaleText } from '../utils/datePickers';
 
 export default {
     myPermissions: 'ההרשאות שלי',
+    personalDetails: 'פרטים אישיים',
     myAccount: 'החשבון שלי',
     category: 'קטגוריה',
     categories: 'קטגוריות',

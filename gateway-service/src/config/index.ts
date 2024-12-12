@@ -93,6 +93,10 @@ const config = {
         requestTimeout: env.get('PERMISSION_SERVICE_REQUEST_TIMEOUT').default(100000).asIntPositive(),
         avatarsFolderPath: env.get('AVATARS_FOLDER_PATH').default('/icons/profileAvatar').asString(),
         kartoffelProfileStartPath: env.get('KARTOFFEL_PROFILE_START_PATH').default('http://,https://').asString().split(','),
+        profilePathPattern: env
+            .get('PROFILE_PATH_PATTERN')
+            .default('^(kartoffelProfile|/icons/profileAvatar/.*|[0-9a-f]{8}[0-9a-f]{4}[0-9a-f]{4}[0-9a-f]{4}[0-9a-f]{12}.*)$')
+            .asRegExp(),
     },
     activityLogService: {
         url: env.get('ACTIVITY_LOG_SERVICE_URL').required().asString(),

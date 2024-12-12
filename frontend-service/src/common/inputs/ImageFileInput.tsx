@@ -17,7 +17,6 @@ interface FileInputProps {
     onDropFile: (acceptedFile: File) => void;
     inputText: string;
     acceptedFilesTypes?: Accept;
-    fileFieldName?: string;
     errorText?: string;
     disableCamera?: boolean;
     disablePreview?: boolean;

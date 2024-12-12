@@ -28,8 +28,9 @@ export class UsersManager {
         return UserService.getUserById(userId, workspaceIds);
     }
 
-    static async getKartoffelUserProfileRequest(kartoffelId: string) {
-        return Kartoffel.getUserProfile(kartoffelId);
+    static async getUserProfile(profilePath?: string, kartoffelId?: string) {
+        if (kartoffelId) return Kartoffel.getUserProfile(kartoffelId);
+        return this.storageService.downloadProfileFile(profilePath!);
     }
 
     static async searchUserIds(searchBody: IUserSearchBody): Promise<string[]> {

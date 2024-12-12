@@ -6,7 +6,7 @@ import { UsersController } from './controller';
 import {
     createUserRequestSchema,
     deletePermissionsFromMetadataRequestSchema,
-    getKartoffelUserProfileRequestSchema,
+    getUserProfileRequestSchema,
     getMyUserRequestSchema,
     getUserByIdRequestSchema,
     searchExternalUsersRequestSchema,
@@ -27,13 +27,9 @@ usersRouter.get('/my', ValidateRequest(getMyUserRequestSchema), wrapController(U
 
 usersRouter.get('/external', ValidateRequest(searchExternalUsersRequestSchema), wrapController(UsersController.searchExternalUsers));
 
-usersRouter.get(
-    '/kartoffel-user-profile/:kartoffelId',
-    ValidateRequest(getKartoffelUserProfileRequestSchema),
-    wrapController(UsersController.getKartoffelUserProfile),
-);
-
 usersRouter.get('/:userId', ValidateRequest(getUserByIdRequestSchema), wrapController(UsersController.getUserById));
+
+usersRouter.post('/user-profile', ValidateRequest(getUserProfileRequestSchema), wrapController(UsersController.getUserProfile));
 
 usersRouter.post('/search-ids', ValidateRequest(searchUsersRequestSchema), wrapController(UsersController.searchUserIds));
 

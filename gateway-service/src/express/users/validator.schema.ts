@@ -1,6 +1,9 @@
 import joi from 'joi';
 import { PermissionType } from '../../externalServices/userService/interfaces/permissions';
 import { ExtendedJoi, iconFileSchema, MongoIdSchema } from '../../utils/joi';
+import config from '../../config';
+
+const { profilePathPattern } = config.userService;
 
 export const partialSchema = (schema: joi.ObjectSchema) => {
     const keys = Object.keys(schema.describe().keys);
@@ -18,12 +21,9 @@ const UserExternalMetadataSchema = joi.object({
 const UserPreferencesMetadataSchema = joi.object({
     darkMode: ExtendedJoi.boolean(),
     mailsNotificationsTypes: ExtendedJoi.stringToArray(),
-    profilePath: joi
-        .string()
-        .pattern(/^(kartoffelProfile|\/icons\/profileAvatar\/.*|[0-9a-f]{8}[0-9a-f]{4}[0-9a-f]{4}[0-9a-f]{4}[0-9a-f]{12}.*)$/)
-        .messages({
-            'string.pattern.base': 'profilePath must start with "/icons/profileAvatar/", or a valid UUID, or kartoffelProfile string',
-        }),
+    profilePath: joi.string().pattern(profilePathPattern).messages({
+        'string.pattern.base': 'profilePath must start with "/icons/profileAvatar/", or a valid UUID, or kartoffelProfile string',
+    }),
 });
 
 // GET /api/users/my
@@ -42,13 +42,16 @@ export const getUserByIdRequestSchema = joi.object({
     },
 });
 
-// GET /api/users/kartoffel-user-profile/:kartoffelId
-export const getKartoffelUserProfileRequestSchema = joi.object({
+// POST /api/users/user-profile
+export const getUserProfileRequestSchema = joi.object({
     query: {},
-    body: {},
-    params: {
-        kartoffelId: joi.string().required(),
+    body: {
+        kartoffelId: joi.string(),
+        profilePath: joi.string().pattern(profilePathPattern).messages({
+            'string.pattern.base': 'profilePath must start with "/icons/profileAvatar/", or a valid UUID, or kartoffelProfile string',
+        }),
     },
+    params: {},
 });
 
 // POST /api/users/search

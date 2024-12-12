@@ -1,21 +1,22 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Avatar from '@mui/material/Avatar';
 import { useQuery } from 'react-query';
 import { IUser } from '../interfaces/users';
 import { useDarkModeStore } from '../stores/darkMode';
-import { apiUrlToProfileImageSource } from '../services/storageService';
-import { environment } from '../globals';
 import { getNameInitials } from '../utils/userProfile';
+import { getUserProfileRequest } from '../services/userService';
+import { environment } from '../globals';
 
 interface UserAvatarProps {
     user: IUser;
     size?: number;
     bgColor?: string;
-    kartoffelProfile?: string;
     defaultProfile?: boolean;
 }
 
-const UserAvatar: React.FC<UserAvatarProps> = ({ user, size = 48, bgColor, kartoffelProfile, defaultProfile = false }) => {
+const { kartoffelProfile } = environment.users;
+
+const UserAvatar: React.FC<UserAvatarProps> = ({ user, size = 48, bgColor, defaultProfile = false }) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
     // eslint-disable-next-line no-nested-ternary
@@ -25,10 +26,13 @@ const UserAvatar: React.FC<UserAvatarProps> = ({ user, size = 48, bgColor, karto
         ['userProfile', user.preferences.profilePath],
         async () => {
             const { profilePath } = user.preferences;
-            if (!profilePath) return null;
-            if (profilePath === 'kartoffelProfile') return kartoffelProfile;
+            if (!profilePath) return '';
             if (profilePath.startsWith('/icons/profileAvatar')) return profilePath;
-            return apiUrlToProfileImageSource(`/api${environment.api.storage}/user-profile/${user.preferences.profilePath}`);
+            const img = new Image();
+            img.src = await getUserProfileRequest(
+                profilePath === kartoffelProfile ? { kartoffelId: user.externalMetadata.kartoffelId } : { profilePath },
+            );
+            return img as any;
         },
         {
             enabled: !defaultProfile,
@@ -38,6 +42,7 @@ const UserAvatar: React.FC<UserAvatarProps> = ({ user, size = 48, bgColor, karto
             },
         },
     );
+    console.log({ profile });
 
     return (
         <Avatar
@@ -55,19 +60,28 @@ const UserAvatar: React.FC<UserAvatarProps> = ({ user, size = 48, bgColor, karto
                 border: '3px solid #FF006B',
             }}
         >
-            {profile && !isError ? (
-                <div
-                    style={{
-                        backgroundImage: `url(${profile})`,
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'center',
-                        height: '100%',
-                        width: '100%',
-                    }}
-                />
-            ) : (
+            {/* {profile && !isError ? ( */}
+            <img
+                src={profile ?? ''}
+                // onLoad={(event) => {
+                //     const img = event.target as HTMLImageElement;
+                //     const aspectRatio = img.naturalWidth / img.naturalHeight;
+                //     const containerHeight = window.innerHeight * 0.95;
+                //     const containerWidth = containerHeight * aspectRatio;
+
+                //     if (containerWidth > window.innerWidth) {
+                //         img.style.width = '100%';
+                //         img.style.height = 'auto';
+                //     } else {
+                //         img.style.height = '95vh';
+                //         img.style.width = 'auto';
+                //     }
+                // }}
+                // style={{ maxWidth: '100%', maxHeight: '95vh', transformOrigin: 'center center' }}
+            />
+            {/* ) : (
                 getNameInitials(user)
-            )}
+            )} */}
         </Avatar>
     );
 };

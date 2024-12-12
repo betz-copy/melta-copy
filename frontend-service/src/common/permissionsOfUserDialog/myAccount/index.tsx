@@ -9,7 +9,7 @@ import { environment } from '../../../globals';
 import { IUser } from '../../../interfaces/users';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { useUserStore } from '../../../stores/user';
-import { getKartoffelUserProfileRequest, updateUserPreferencesMetadataRequest } from '../../../services/userService';
+import { updateUserPreferencesMetadataRequest } from '../../../services/userService';
 import { ErrorToast } from '../../ErrorToast';
 import { UserProfile } from './userProfile';
 import { UserDetails } from './userDetails';
@@ -28,7 +28,6 @@ const MyAccount: React.FC<{
     const [notificationsToShowCheckbox, setNotificationsToShowCheckbox] = useState(
         allNotifications.filter((notification) => existingUser?.preferences.mailsNotificationsTypes?.includes(notification.type)),
     );
-    const [kartoffelUserProfile, setKartoffelUserProfile] = useState<string>();
     const [editProfile, setEditProfile] = useState(false);
     const [profilePreference, setProfilePreference] = useState<{ profilePath?: string; icon?: any }>({
         profilePath: existingUser?.preferences.profilePath,
@@ -37,19 +36,6 @@ const MyAccount: React.FC<{
     const toggleDarkMode = useDarkModeStore((state) => state.toggleDarkMode);
     const currentUser = useUserStore((state) => state.user);
     const setUser = useUserStore((state) => state.setUser);
-
-    useEffect(() => {
-        const fetchUserProfile = async () => {
-            try {
-                const kartoffelProfile = await getKartoffelUserProfileRequest(existingUser.externalMetadata.kartoffelId);
-                setKartoffelUserProfile(kartoffelProfile);
-            } catch (error) {
-                console.error('Failed to fetch Kartoffel user profile:', error);
-            }
-        };
-
-        fetchUserProfile();
-    }, [existingUser]);
 
     useEffect(() => {
         const updatedNotificationsTypes = notificationsToShowCheckbox.map(({ type }) => type);
@@ -108,7 +94,6 @@ const MyAccount: React.FC<{
                     editProfile={editProfile}
                     setEditProfile={setEditProfile}
                     existingUser={existingUser}
-                    kartoffelUserProfile={kartoffelUserProfile}
                     profilePreference={profilePreference}
                     setProfilePreference={setProfilePreference}
                 />

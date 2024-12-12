@@ -4,6 +4,7 @@ import { NotificationType } from '../interfaces/notifications';
 import { ICompactNullablePermissions, ICompactPermissions, IPermission, ISubCompactPermissions } from '../interfaces/permissions/permissions';
 import { IExternalUser, IUser, IUserPreferences, IUserSearchBody } from '../interfaces/users';
 import { RecursiveNullable } from '../utils/types';
+import { apiUrlToImageSource, apiUrlToProfileImageSource } from './storageService';
 
 const { users } = environment.api;
 
@@ -33,8 +34,6 @@ export const updateUserPreferencesMetadataRequest = async (
     notificationsToShowCheckbox: NotificationType[],
     darkMode?: boolean,
 ) => {
-    console.log({ profilePreference, notificationsToShowCheckbox, darkMode });
-
     const formData = new FormData();
     if (profilePreference.icon?.file instanceof File) {
         formData.append('file', profilePreference.icon.file);
@@ -74,7 +73,19 @@ export const deletePermissionsFromMetadata = async (
     return data;
 };
 
-export const getKartoffelUserProfileRequest = async (kartoffelId: string) => {
-    const { data } = await axios.get<string>(`${users}/kartoffel-user-profile/${kartoffelId}`);
-    return data;
+export const getUserProfileRequest = async ({ profilePath, kartoffelId }: { profilePath?: string; kartoffelId?: string }) => {
+    const { data } = await axios.post(
+        `${users}/user-profile`,
+        { profilePath, kartoffelId },
+        {
+            responseType: 'blob',
+        },
+    );
+    // const blob = new Blob([data]);
+    console.log({ data }, URL.createObjectURL(data));
+
+    
+    const data2 = await apiUrlToImageSource(`/api${environment.api.storage}/${profilePath}`, 'users-global-bucket');
+    console.log({ data2 });
+    return URL.createObjectURL(data);
 };

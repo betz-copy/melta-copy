@@ -146,7 +146,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                     <Grid item container direction={isDrawerOpen ? 'row' : 'column'} wrap="nowrap" alignItems="center">
                         <ProfileButton
                             currentUser={currentUser}
-                            text={i18next.t('permissions.permissionsOfUserDialog.readTitle')}
+                            text={i18next.t('personalDetails')}
                             isDrawerOpen={isDrawerOpen}
                             onClick={() => setIsMyPermissionsDialogOpen(!isMyPermissionsDialogOpen)}
                         />
