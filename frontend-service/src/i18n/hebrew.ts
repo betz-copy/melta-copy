@@ -302,6 +302,7 @@ export default {
         loading: 'טוען...',
         noOptions: 'אין תוצאות',
         noPreviewFields: 'אין שדות לתצוגה מקדימה',
+        failedToSearchEntities: 'נכשל בחיפוש ישויות',
     },
     userAutocomplete: {
         label: 'משתמש',

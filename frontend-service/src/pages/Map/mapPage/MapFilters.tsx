@@ -1,27 +1,26 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect } from 'react';
 import i18next from 'i18next';
 import { Grid } from '@mui/material';
-import { useQueryClient } from 'react-query';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import TemplatesSelectCheckbox from '../../../common/templatesSelectCheckbox';
 import SearchAutoComplete from './SearchAutoComplete';
+import { IEntity } from '../../../interfaces/entities';
 
 type props = {
     selectedTemplates: IMongoEntityTemplatePopulated[];
     setSelectedTemplates: React.Dispatch<React.SetStateAction<IMongoEntityTemplatePopulated[]>>;
+    moveToEntityLocations: (entity: IEntity) => void;
+    entityTemplateMap: IEntityTemplateMap;
 };
 
-const MapFilters = ({ selectedTemplates, setSelectedTemplates }: props) => {
-    const queryClient = useQueryClient();
-    const entityTemplateMap = queryClient.getQueryData<IEntityTemplateMap>(['getEntityTemplates']);
-
-    const templatesWithLocationField = Array.from(entityTemplateMap!.values()).filter((key) =>
+const MapFilters = ({ selectedTemplates, setSelectedTemplates, moveToEntityLocations, entityTemplateMap }: props) => {
+    const templatesWithLocationField = Array.from(entityTemplateMap.values()).filter((key) =>
         Object.values(key.properties.properties).some((obj) => obj.format === 'location'),
     );
 
     useEffect(() => {
         setSelectedTemplates(templatesWithLocationField);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     return (
@@ -37,7 +36,7 @@ const MapFilters = ({ selectedTemplates, setSelectedTemplates }: props) => {
                 />
             </Grid>
             <Grid item>
-                <SearchAutoComplete selectedTemplates={selectedTemplates} />
+                <SearchAutoComplete selectedTemplates={selectedTemplates} handleEntityClick={(entity: IEntity) => moveToEntityLocations(entity)} />
             </Grid>
         </Grid>
     );

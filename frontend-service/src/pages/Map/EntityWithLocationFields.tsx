@@ -1,50 +1,22 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { MapContainer, Marker, TileLayer, Polygon, LayersControl, LayerGroup } from 'react-leaflet';
-import L, { LatLngExpression } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import 'leaflet-draw/dist/leaflet.draw.css'; // Import Leaflet.Draw CSS
+import 'leaflet-draw/dist/leaflet.draw.css';
 import EntityPopup from './EntityPopup';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { jerusalemCoordinates, parsePolygon, stringToCoordinates } from '../../utils/map';
+import { jerusalemCoordinates, UpdateMapBounds } from '../../utils/map';
+import { IEntity } from '../../interfaces/entities';
+import { useEntityWithLocationFields } from '../../utils/hooks/useLocation';
 
 type Props = {
-    properties: Record<string, any>;
+    entity: IEntity;
     entityTemplate: IMongoEntityTemplatePopulated;
     darkMode: boolean;
     styles?: React.CSSProperties;
 };
 
-const EntityWithLocationFields = ({ styles, properties, entityTemplate, darkMode }: Props) => {
-    const propertyDefinitions = entityTemplate.properties.properties;
-
-    const { markers, polygons, allLatLngs } = useMemo(() => {
-        const markerList: { key: string; position: LatLngExpression }[] = [];
-        const polygonList: { key: string; positions: LatLngExpression[] }[] = [];
-        const latLngList: LatLngExpression[] = [];
-
-        Object.entries(propertyDefinitions).forEach(([key, definition]) => {
-            if (definition.format === 'location' && properties[key]) {
-                const parsedPolygon = parsePolygon(properties[key]);
-                if (parsedPolygon) {
-                    polygonList.push({ key, positions: parsedPolygon });
-                    latLngList.push(...parsedPolygon);
-                } else {
-                    const position = stringToCoordinates(properties[key]);
-                    markerList.push({ key, position: position.value as LatLngExpression });
-                    latLngList.push(position.value as LatLngExpression);
-                }
-            }
-        });
-
-        return { markers: markerList, polygons: polygonList, allLatLngs: latLngList };
-    }, [propertyDefinitions, properties]);
-
-    const bounds = useMemo(() => {
-        if (allLatLngs.length > 0) {
-            return L.latLngBounds(allLatLngs);
-        }
-        return null;
-    }, [allLatLngs]);
+const EntityWithLocationFields = ({ styles, entity, entityTemplate, darkMode }: Props) => {
+    const { bounds, polygons, propertyDefinitions, markers } = useEntityWithLocationFields({ entityTemplate, entity });
 
     return (
         <MapContainer
@@ -52,12 +24,14 @@ const EntityWithLocationFields = ({ styles, properties, entityTemplate, darkMode
             bounds={bounds?.isValid() ? bounds : undefined}
             center={!bounds?.isValid() ? jerusalemCoordinates : undefined}
             zoom={!bounds?.isValid() ? 8 : undefined}
+            maxBoundsViscosity={1}
             maxBounds={[
                 [-90, -180],
                 [90, 180],
             ]}
-            maxBoundsViscosity={1}
         >
+            <UpdateMapBounds bounds={bounds} />
+
             <LayersControl position="topright">
                 {/* Base Layers */}
                 <LayersControl.BaseLayer checked name="OpenStreetMap">
@@ -75,11 +49,11 @@ const EntityWithLocationFields = ({ styles, properties, entityTemplate, darkMode
                 {/* Overlay Layers */}
                 <LayersControl.Overlay checked name="Polygons">
                     <LayerGroup>
-                        {polygons.map(({ key, positions }) => (
-                            <Polygon key={key} positions={positions}>
+                        {polygons.map(({ key, position }) => (
+                            <Polygon key={key} positions={position}>
                                 <EntityPopup
                                     header={propertyDefinitions[key].title}
-                                    properties={properties}
+                                    properties={entity.properties}
                                     entityTemplate={entityTemplate}
                                     darkMode={darkMode}
                                 />
@@ -94,7 +68,7 @@ const EntityWithLocationFields = ({ styles, properties, entityTemplate, darkMode
                             <Marker key={key} position={position}>
                                 <EntityPopup
                                     header={propertyDefinitions[key].title}
-                                    properties={properties}
+                                    properties={entity.properties}
                                     entityTemplate={entityTemplate}
                                     darkMode={darkMode}
                                 />

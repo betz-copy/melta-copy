@@ -1,23 +1,29 @@
 import React, { useRef, useState } from 'react';
-import { MapContainer, TileLayer, LayersControl, FeatureGroup } from 'react-leaflet';
+import { MapContainer, TileLayer, LayersControl, FeatureGroup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-draw/dist/leaflet.draw.css';
 import L from 'leaflet';
 import { Box } from '@mui/material';
+import { useQueryClient } from 'react-query';
 import { jerusalemCoordinates } from '../../../utils/map';
 import { IEntity } from '../../../interfaces/entities';
 import MapPageEntityDialog from './MapPageEntityDialog';
 import { EditableMapControl } from './MapControl';
 import MapFilters from './MapFilters';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 
 const MapPage = () => {
+    const queryClient = useQueryClient();
+    const entityTemplateMap = queryClient.getQueryData<IEntityTemplateMap>(['getEntityTemplates']);
+
     const featureGroupRef = useRef<L.FeatureGroup | null>(null);
     const searchResultGroupRef = useRef<L.FeatureGroup | null>(null);
+    const searchedEntityGroupRef = useRef<L.FeatureGroup | null>(null);
 
-    const [selectedEntity, setSelectedEntity] = useState<{ node: IEntity; field: string } | null>(null);
-
+    const [selectedEntity, setSelectedEntity] = useState<{ node: IEntity; matchingField: string } | null>(null);
     const [selectedTemplates, setSelectedTemplates] = useState<IMongoEntityTemplatePopulated[]>([]);
+
+    const [searchedEntity, setSearchedEntity] = useState<IEntity>();
 
     return (
         <Box position="relative" width="100%" height="100vh">
@@ -51,14 +57,24 @@ const MapPage = () => {
                     <EditableMapControl
                         featureGroupRef={featureGroupRef}
                         searchResultGroupRef={searchResultGroupRef}
+                        searchedEntityGroupRef={searchedEntityGroupRef}
                         onSelectEntity={setSelectedEntity}
                         filteredTemplatesIds={selectedTemplates.map(({ _id }) => _id)}
+                        searchedEntity={searchedEntity}
+                        entityTemplateMap={entityTemplateMap!}
                     />
                 </FeatureGroup>
 
                 <FeatureGroup ref={searchResultGroupRef} />
 
-                <MapFilters selectedTemplates={selectedTemplates} setSelectedTemplates={setSelectedTemplates} />
+                <FeatureGroup ref={searchedEntityGroupRef} />
+
+                <MapFilters
+                    selectedTemplates={selectedTemplates}
+                    setSelectedTemplates={setSelectedTemplates}
+                    moveToEntityLocations={(entity: IEntity) => setSearchedEntity(entity)}
+                    entityTemplateMap={entityTemplateMap!}
+                />
             </MapContainer>
             {selectedEntity && (
                 <MapPageEntityDialog open={!!selectedEntity} entityWithMatchingField={selectedEntity} onClose={() => setSelectedEntity(null)} />

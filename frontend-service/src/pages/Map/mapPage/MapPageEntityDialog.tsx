@@ -15,7 +15,7 @@ import FlexBox from '../../../common/FlexBox';
 type props = {
     open: boolean;
     onClose: () => void;
-    entityWithMatchingField: { node: IEntity; field: string };
+    entityWithMatchingField: { node: IEntity; matchingField: string };
 };
 
 const MapPageEntityDialog = ({ open, onClose, entityWithMatchingField }: props) => {
@@ -41,7 +41,8 @@ const MapPageEntityDialog = ({ open, onClose, entityWithMatchingField }: props) 
                         {entityTemplate.displayName} -
                     </Typography>
                     <Typography fontSize="18px" fontWeight={600}>
-                        ({i18next.t('wizard.processTemplate.field')} {entityTemplate.properties.properties[entityWithMatchingField.field].title})
+                        ({i18next.t('wizard.processTemplate.field')}{' '}
+                        {entityTemplate.properties.properties[entityWithMatchingField.matchingField].title})
                     </Typography>
                 </Box>
                 <IconButtonWithPopover popoverText={i18next.t('entitiesTableOfTemplate.navigateToEntityPage')}>

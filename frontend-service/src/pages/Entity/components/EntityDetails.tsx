@@ -135,7 +135,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                 <CardContent sx={{ '&:last-child': { padding: 0 } }}>
                     <Grid item container flexDirection="column" flexWrap="nowrap" padding="20px">
                         <Grid item>
-                            <Grid container flexDirection="row" flexWrap="nowrap" justifyContent="flex-end">
+                            <Grid container flexDirection="row" flexWrap="nowrap" justifyContent="flex-end" alignItems="center">
                                 {includeLocationProperty && (
                                     <Grid onClick={() => setMapPopupOpen(true)}>
                                         <IconButtonWithPopover popoverText="מפה">
@@ -143,8 +143,6 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                                         </IconButtonWithPopover>
                                     </Grid>
                                 )}
-                            </Grid>
-                            <Grid container flexDirection="row" flexWrap="nowrap" justifyContent="flex-end" alignItems="center">
                                 <Grid
                                     onClick={() => {
                                         if (canWriteInstance && !isEntityDisabled) setIsEditMode(true);
@@ -277,7 +275,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
             {mapPopupOpen && (
                 <Dialog open={mapPopupOpen} onClose={() => setMapPopupOpen(false)}>
                     <EntityWithLocationFields
-                        properties={entity.properties}
+                        entity={entity}
                         entityTemplate={entityTemplate}
                         darkMode={darkMode}
                         styles={{ height: '800px', width: '600px' }}

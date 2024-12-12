@@ -1,5 +1,7 @@
 import { GeometryUtil, LatLng, LatLngExpression } from 'leaflet';
 import * as L from 'leaflet';
+import { useMap } from 'react-leaflet';
+import { useEffect } from 'react';
 import { IEntity } from '../interfaces/entities';
 import { IEntityTemplatePopulated } from '../interfaces/entityTemplates';
 
@@ -97,7 +99,8 @@ export const bindPopupForPolygon = (coordinates: LatLng[]) => {
 export const bindPopupForCircle = (radius: number) => {
     const areaMeters = Math.PI * radius * radius;
     const areaKm2 = areaMeters / 1_000_000;
-    return `Area: ${areaKm2.toFixed(2)} km²`;
+    const radiusKm = radius / 1000;
+    return `Area: ${areaKm2.toFixed(2)} km², Radius: ${radiusKm.toFixed(2)} Km`;
 };
 
 export const extractLocationFieldsFromEntity = (entity: IEntity, entityTemplate: IEntityTemplatePopulated) => {
@@ -108,4 +111,16 @@ export const extractLocationFieldsFromEntity = (entity: IEntity, entityTemplate:
     return Object.entries(entity.properties)
         .filter(([key]) => locationFields.includes(key))
         .map(([, value]) => value as string);
+};
+
+export const UpdateMapBounds = ({ bounds }: { bounds: L.LatLngBounds | null }) => {
+    const map = useMap();
+
+    useEffect(() => {
+        if (bounds?.isValid()) {
+            map.fitBounds(bounds);
+        }
+    }, [bounds, map]);
+
+    return null;
 };

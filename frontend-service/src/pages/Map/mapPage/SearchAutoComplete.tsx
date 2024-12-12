@@ -1,7 +1,8 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { Autocomplete, Grid, TextField, Typography } from '@mui/material';
+/* eslint-disable react-hooks/exhaustive-deps */
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { Autocomplete, Grid, TextField, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
-import { useMutation } from 'react-query';
+import { useInfiniteQuery } from 'react-query';
 import { toast } from 'react-toastify';
 import { _debounce } from '@ag-grid-community/core';
 import { InfoOutlined } from '@mui/icons-material';
@@ -10,12 +11,16 @@ import { IEntity } from '../../../interfaces/entities';
 import { MeltaTooltip } from '../../../common/MeltaTooltip';
 import { EntityPropertiesInternal } from '../../../common/EntityProperties';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { getTopNFieldsWithValues } from '../../../utils/entities';
 
 type props = {
     selectedTemplates: IMongoEntityTemplatePopulated[];
+    handleEntityClick: (entity: IEntity) => void;
 };
 
-const SearchAutoComplete = ({ selectedTemplates }: props) => {
+const SearchAutoComplete = ({ selectedTemplates, handleEntityClick }: props) => {
+    const theme = useTheme();
+
     const [inputValue, setInputValue] = useState('');
     const [searchResults, setSearchResults] = useState<IEntity[]>([]);
     const [templatesObject, setTemplatesObject] = useState<Record<string, {}>>({});
@@ -25,29 +30,34 @@ const SearchAutoComplete = ({ selectedTemplates }: props) => {
         setTemplatesObject(updatedTemplatesObject);
     }, [selectedTemplates]);
 
-    const mutation = useMutation(
-        () =>
-            getEntitiesWithDirectConnections({
-                limit: 100,
+    const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useInfiniteQuery(
+        ['searchEntitiesOfTemplates', inputValue],
+        ({ pageParam = 0 }) => {
+            if (Object.keys(templatesObject).length === 0) return { count: 0, entities: [] };
+            return getEntitiesWithDirectConnections({
+                skip: pageParam * 50,
+                limit: 50,
                 textSearch: inputValue,
                 templates: templatesObject,
-            }),
+            });
+        },
         {
-            onSuccess: (data) => {
-                setSearchResults(data.entities.map(({ entity }) => entity));
+            getNextPageParam: (lastPage, pages) => {
+                if (lastPage.entities.length < 50) return undefined;
+                return pages.length;
             },
-            onError: (error) => {
-                toast.error(error);
+            onError: () => {
+                toast.error(i18next.t('templateEntitiesAutocomplete.failedToSearchEntities'));
             },
         },
     );
 
     useEffect(() => {
-        mutation.mutate();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [inputValue]);
+        if (data) {
+            setSearchResults(data.pages.flatMap(({ entities }) => entities.map(({ entity }) => entity)));
+        }
+    }, [data]);
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     const debouncedSearch = useCallback(
         _debounce((debounedValue: string) => {
             setInputValue(debounedValue);
@@ -55,37 +65,66 @@ const SearchAutoComplete = ({ selectedTemplates }: props) => {
         [],
     );
 
+    const loadMore = useCallback(() => {
+        if (hasNextPage && !isFetchingNextPage) {
+            fetchNextPage();
+        }
+    }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+    const observer = useRef<IntersectionObserver | null>(null);
+
+    const lastElementRef = useCallback(
+        (node) => {
+            if (isLoading) return;
+            if (observer.current) observer.current.disconnect();
+
+            observer.current = new IntersectionObserver((entries) => {
+                if (entries[0].isIntersecting) loadMore();
+            });
+            if (node) observer.current.observe(node);
+        },
+        [isLoading, loadMore],
+    );
+
     return (
         <Autocomplete
             options={searchResults}
             getOptionLabel={(option) => option.properties._id}
+            loading={isLoading || isFetchingNextPage}
+            loadingText={i18next.t('templateEntitiesAutocomplete.loading')}
+            noOptionsText={i18next.t('templateEntitiesAutocomplete.noOptions')}
+            isOptionEqualToValue={(option, currValue) => option.properties._id === currValue.properties._id}
+            filterOptions={(options) => options}
             renderInput={(params) => (
                 <TextField
                     {...params}
                     onChange={(e) => debouncedSearch(e.target.value)}
-                    sx={{ backgroundColor: 'white', width: 400, borderRadius: '10px' }}
+                    sx={{ backgroundColor: theme.palette.background.default, width: 400, borderRadius: '10px' }}
                     label={i18next.t('globalSearch.searchInPage')}
                     size="small"
                     variant="outlined"
                 />
             )}
             renderOption={(props, option) => {
-                const template = selectedTemplates.find(({ _id }) => _id === option.templateId)!;
-                const displayOptionValues = [template.propertiesOrder[0], template.propertiesOrder[1]].map((key) => option.properties[key]);
+                const template = selectedTemplates.find(({ _id }) => _id === option.templateId);
 
+                // TODO add template name below every item and take care of template not wxist
+                if (!template) return <>No templates Selected</>;
+
+                const displayOptionValues = getTopNFieldsWithValues(option, template, 3);
                 return (
-                    <li {...props}>
-                        <Grid container justifyContent="space-between" direction="row" spacing={1}>
-                            {displayOptionValues.map((displayOptionValue, index) => (
-                                <Grid item key={displayOptionValue} xs={4} overflow="hidden">
+                    <li {...props} ref={props['data-option-index'] === searchResults.length - 1 ? lastElementRef : null}>
+                        <Grid container direction="row" spacing={1} onClick={() => handleEntityClick(option)}>
+                            {displayOptionValues.map((displayOptionValue) => (
+                                <Grid item key={displayOptionValue} xs={3.6} overflow="hidden" wrap="nowrap">
                                     <MeltaTooltip placement="right" title={displayOptionValue}>
-                                        <Typography color={index > 0 ? '#166BD4' : 'black'} overflow="hidden">
+                                        <Typography color={theme.palette.text.primary} maxHeight={50} textOverflow="ellipsis">
                                             {displayOptionValue}
                                         </Typography>
                                     </MeltaTooltip>
                                 </Grid>
                             ))}
-                            <Grid item xs={0}>
+                            <Grid item xs={0.2}>
                                 <MeltaTooltip
                                     title={
                                         template.propertiesPreview.length === 0 ? (
@@ -94,7 +133,7 @@ const SearchAutoComplete = ({ selectedTemplates }: props) => {
                                             <EntityPropertiesInternal
                                                 properties={option.properties}
                                                 entityTemplate={template}
-                                                showPreviewPropertiesOnly
+                                                // showPreviewPropertiesOnly
                                                 mode="white"
                                                 textWrap
                                             />

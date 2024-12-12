@@ -1,10 +1,11 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useMemo, useState } from 'react';
-import { MapContainer, TileLayer, LayersControl, LayerGroup, FeatureGroup, Marker, Popup, Polygon } from 'react-leaflet';
+import { MapContainer, TileLayer, LayersControl, LayerGroup, FeatureGroup, Marker, Popup, Polygon, useMap } from 'react-leaflet';
 import L, { LatLng } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-draw/dist/leaflet.draw.css';
 import { EditControl } from 'react-leaflet-draw';
-import { bindPopupForMarker, bindPopupForPolygon, jerusalemCoordinates, latLngToString, stringToCoordinates } from '../../utils/map';
+import { bindPopupForMarker, bindPopupForPolygon, jerusalemCoordinates, latLngToString, stringToCoordinates, UpdateMapBounds } from '../../utils/map';
 
 type Props = {
     defaultLocation?: string;
@@ -66,12 +67,14 @@ const LocationField = ({ defaultLocation, styles, updateValue }: Props) => {
             bounds={bounds?.isValid() ? bounds : undefined}
             center={!bounds?.isValid() ? markerPosition || jerusalemCoordinates : undefined}
             zoom={!bounds?.isValid() ? 8 : undefined}
+            maxBoundsViscosity={1}
             maxBounds={[
                 [-90, -180],
                 [90, 180],
             ]}
-            maxBoundsViscosity={1}
         >
+            <UpdateMapBounds bounds={bounds} />
+
             <LayersControl position="topright">
                 <LayersControl.BaseLayer checked name="OpenStreetMap">
                     <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />

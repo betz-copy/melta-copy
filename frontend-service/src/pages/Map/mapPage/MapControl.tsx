@@ -1,23 +1,20 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import L, { LatLngExpression } from 'leaflet';
 import React, { useEffect, useRef, useState } from 'react';
 import { useMap } from 'react-leaflet';
 import { EditControl } from 'react-leaflet-draw';
-import { useQueryClient, useMutation } from 'react-query';
+import { useMutation } from 'react-query';
 import LocationOn from '@mui/icons-material/LocationOn';
 import CircleIcon from '@mui/icons-material/Circle';
 import ReactDOMServer from 'react-dom/server';
-import { Circle } from '../../../interfaces/entities';
-import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
+import { toast } from 'react-toastify';
+import i18next from 'i18next';
+import { Circle, IEntity } from '../../../interfaces/entities';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { getEntitiesByLocation } from '../../../services/entitiesService';
 import { stringToCoordinates, bindPopupForLine, bindPopupForCircle } from '../../../utils/map';
 import { getEntityTemplateColor } from '../../../utils/colors';
-
-type props = {
-    featureGroupRef: React.RefObject<L.FeatureGroup<any>>;
-    searchResultGroupRef: React.RefObject<L.FeatureGroup<any>>;
-    onSelectEntity: (element) => void;
-    filteredTemplatesIds: string[];
-};
+import { useEntityWithLocationFields } from '../../../utils/hooks/useLocation';
 
 const markerIcon = (color: string) =>
     L.divIcon({
@@ -31,52 +28,105 @@ const polygonCenterIcon = (color: string) =>
         html: ReactDOMServer.renderToString(<CircleIcon style={{ color, fontSize: '1rem' }} />),
     });
 
-export const EditableMapControl = ({ featureGroupRef, searchResultGroupRef, onSelectEntity, filteredTemplatesIds }: props) => {
-    const queryClient = useQueryClient();
-    const entityTemplateMap = queryClient.getQueryData<IEntityTemplateMap>(['getEntityTemplates']);
+type props = {
+    featureGroupRef: React.RefObject<L.FeatureGroup<any>>;
+    searchResultGroupRef: React.RefObject<L.FeatureGroup<any>>;
+    searchedEntityGroupRef: React.RefObject<L.FeatureGroup<any>>;
+    onSelectEntity: (element: { node: IEntity; matchingField: string }) => void;
+    filteredTemplatesIds: string[];
+    searchedEntity?: IEntity;
+    entityTemplateMap: IEntityTemplateMap;
+};
 
+export const EditableMapControl = ({
+    featureGroupRef,
+    searchResultGroupRef,
+    searchedEntityGroupRef,
+    onSelectEntity,
+    filteredTemplatesIds,
+    searchedEntity,
+    entityTemplateMap,
+}: props) => {
     const map = useMap();
-    const [circle, setCircle] = useState<Circle>();
     const lastCircleRef = useRef<L.Circle | null>(null);
 
-    const { mutate } = useMutation(getEntitiesByLocation, {
+    const [circle, setCircle] = useState<Circle>();
+    const [searchedEntityTemplate, setSearchedEntityTemplate] = useState<IMongoEntityTemplatePopulated>();
+
+    const {
+        bounds: searchedEntityBounds,
+        markers: searchedEntityMarkers,
+        polygons: searchedEntityPolygons,
+    } = useEntityWithLocationFields({ entityTemplate: searchedEntityTemplate, entity: searchedEntity });
+
+    const drawPolygonLayer = ({
+        position,
+        color,
+        entityWithMatchingField,
+        groupRef,
+    }: {
+        position: LatLngExpression[];
+        color: string;
+        entityWithMatchingField: { node: IEntity; matchingField: string };
+        groupRef: React.RefObject<L.FeatureGroup<any>>;
+    }) => {
+        const polygonLayer = L.polygon(position).setStyle({ fill: false, color });
+        groupRef?.current?.addLayer(polygonLayer);
+        const centerMarker = L.marker(polygonLayer.getCenter(), { icon: polygonCenterIcon(color) });
+        centerMarker.on('click', () => {
+            onSelectEntity(entityWithMatchingField);
+        });
+        groupRef.current?.addLayer(centerMarker);
+    };
+
+    const drawMarkerLayer = ({
+        position,
+        color,
+        entityWithMatchingField,
+        groupRef,
+    }: {
+        position: LatLngExpression;
+        color: string;
+        entityWithMatchingField: { node: IEntity; matchingField: string };
+        groupRef: React.RefObject<L.FeatureGroup<any>>;
+    }) => {
+        const markerLayer = L.marker(position, { icon: markerIcon(color) });
+        markerLayer.on('click', () => {
+            onSelectEntity(entityWithMatchingField);
+        });
+        groupRef.current?.addLayer(markerLayer);
+    };
+
+    const { mutateAsync } = useMutation(getEntitiesByLocation, {
         onSuccess: (response) => {
             response.forEach((item) => {
                 const { matchingFields, node } = item;
                 const entityTemplate = entityTemplateMap!.get(node.templateId)!;
                 const entityTemplateColor = getEntityTemplateColor(entityTemplate);
 
-                matchingFields.forEach((field) => {
-                    const { type, value } = stringToCoordinates(node.properties[field]);
+                matchingFields.forEach((matchingField) => {
+                    const { type, value } = stringToCoordinates(node.properties[matchingField]);
 
                     if (type === 'polygon') {
-                        // Create the polygon layer
-                        const polygonLayer = L.polygon(value as LatLngExpression[]).setStyle({ fill: false, color: entityTemplateColor });
-                        searchResultGroupRef?.current?.addLayer(polygonLayer);
-
-                        // Create a marker at the polygon's center
-                        const centerMarker = L.marker(polygonLayer.getCenter(), { icon: polygonCenterIcon(entityTemplateColor) });
-
-                        // When the center marker is clicked, call onSelectEntity
-                        centerMarker.on('click', () => {
-                            onSelectEntity({ node, field });
+                        drawPolygonLayer({
+                            position: value as LatLngExpression[],
+                            color: entityTemplateColor,
+                            entityWithMatchingField: { node, matchingField },
+                            groupRef: searchResultGroupRef,
                         });
-
-                        // Add both the polygon and the center marker to the search result group
-                        searchResultGroupRef?.current?.addLayer(centerMarker);
                     } else {
-                        const markerLayer = L.marker(value as LatLngExpression, { icon: markerIcon(entityTemplateColor) });
-                        markerLayer.on('click', () => {
-                            onSelectEntity({ node, field });
+                        drawMarkerLayer({
+                            position: value as LatLngExpression,
+                            color: entityTemplateColor,
+                            entityWithMatchingField: { node, matchingField },
+                            groupRef: searchResultGroupRef,
                         });
-                        searchResultGroupRef?.current?.addLayer(markerLayer);
                     }
                 });
             });
         },
-
-        onError: (error) => {
-            console.log('error', error);
+        onError: () => {
+            toast.error(i18next.t('templateEntitiesAutocomplete.failedToSearchEntities'));
         },
     });
 
@@ -93,53 +143,44 @@ export const EditableMapControl = ({ featureGroupRef, searchResultGroupRef, onSe
     //     }
     // };
 
-    const handleFetchLocationRequest = async () => {
-        if (circle) {
-            for (const templateId of filteredTemplatesIds) {
-                mutate({ textSearch: '', templates: { [templateId]: { filter: {} } }, circle });
-            }
-        }
-    };
-
-    const handleCreateLayer = (e) => {
-        const { layer } = e;
-        if (layer instanceof L.Polyline && !(layer instanceof L.Polygon)) {
-            layer.bindPopup(bindPopupForLine(layer.getLatLngs() as L.LatLng[])).openPopup();
-        } else if (layer instanceof L.Circle) {
-            if (lastCircleRef.current) {
-                featureGroupRef?.current?.removeLayer(lastCircleRef.current);
-            }
-            lastCircleRef.current = layer;
-
-            setCircle({
-                coordinate: [layer.getLatLng().lng, layer.getLatLng().lat],
-                radius: layer.getRadius(),
-            });
-
-            const bounds = layer.getBounds();
-            map.fitBounds(bounds);
-
-            layer.bindPopup(bindPopupForCircle(layer.getRadius()));
-            layer.on('click', () => {
-                map.fitBounds(bounds);
-            });
-        }
-        featureGroupRef?.current?.addLayer(layer);
-    };
-
-    const handleDeleteLayer = (e) => {
-        e.layers.eachLayer((layer) => {
-            if (layer instanceof L.Circle && layer === lastCircleRef.current) {
-                lastCircleRef.current.remove();
-            }
-            featureGroupRef?.current?.removeLayer(layer);
-        });
-    };
-
     useEffect(() => {
         searchResultGroupRef?.current?.clearLayers();
-        handleFetchLocationRequest();
-    }, [filteredTemplatesIds, circle]);
+        if (circle) {
+            for (const templateId of filteredTemplatesIds) {
+                mutateAsync({ textSearch: '', templates: { [templateId]: { filter: {} } }, circle });
+            }
+        }
+    }, [filteredTemplatesIds, circle]); // refetch every time circle or selected templates changes
+
+    useEffect(() => {
+        if (searchedEntity) {
+            setSearchedEntityTemplate(entityTemplateMap!.get(searchedEntity.templateId)!);
+        }
+    }, [searchedEntity]);
+
+    useEffect(() => {
+        searchedEntityGroupRef.current?.clearLayers();
+        if (searchedEntityBounds?.isValid()) {
+            searchedEntityPolygons.forEach(({ key, position }) => {
+                drawPolygonLayer({
+                    position,
+                    color: 'yellow',
+                    entityWithMatchingField: { node: searchedEntity!, matchingField: key },
+                    groupRef: searchedEntityGroupRef,
+                });
+            });
+            searchedEntityMarkers.forEach(({ key, position }) => {
+                drawMarkerLayer({
+                    position,
+                    color: 'yellow',
+                    entityWithMatchingField: { node: searchedEntity!, matchingField: key },
+                    groupRef: searchedEntityGroupRef,
+                });
+            });
+
+            map.fitBounds(searchedEntityBounds);
+        }
+    }, [searchedEntityBounds, searchedEntityMarkers, searchedEntityPolygons, map]);
 
     return (
         <EditControl
@@ -166,8 +207,36 @@ export const EditableMapControl = ({ featureGroupRef, searchResultGroupRef, onSe
                 edit: false,
                 remove: true,
             }}
-            onCreated={handleCreateLayer}
-            onDeleted={handleDeleteLayer}
+            onCreated={(e) => {
+                const { layer } = e;
+                if (layer instanceof L.Polyline && !(layer instanceof L.Polygon)) {
+                    layer.bindPopup(bindPopupForLine(layer.getLatLngs() as L.LatLng[])).openPopup();
+                } else if (layer instanceof L.Circle) {
+                    if (lastCircleRef.current) {
+                        featureGroupRef?.current?.removeLayer(lastCircleRef.current);
+                    }
+                    lastCircleRef.current = layer;
+
+                    setCircle({
+                        coordinate: [layer.getLatLng().lng, layer.getLatLng().lat],
+                        radius: layer.getRadius(),
+                    });
+
+                    const bounds = layer.getBounds();
+                    map.fitBounds(bounds);
+
+                    layer.bindPopup(bindPopupForCircle(layer.getRadius()));
+                }
+                featureGroupRef?.current?.addLayer(layer);
+            }}
+            onDeleted={(e) =>
+                e.layers.eachLayer((layer) => {
+                    if (layer instanceof L.Circle && layer === lastCircleRef.current) {
+                        lastCircleRef.current.remove();
+                    }
+                    featureGroupRef?.current?.removeLayer(layer);
+                })
+            }
         />
     );
 };
