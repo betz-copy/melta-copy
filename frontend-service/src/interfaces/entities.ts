@@ -1,7 +1,7 @@
 import { IMongoEntityTemplatePopulated } from './entityTemplates';
 import { IMongoRelationshipTemplate } from './relationshipTemplates';
 import { IRelationship } from './relationships';
-import { ISemanticSearchResult } from './semanticSearch';
+import { ISemanticSearchMinioResult } from './semanticSearch';
 
 export interface IEntity {
     templateId: string;
@@ -112,6 +112,7 @@ export interface ISearchBatchBody {
         };
     };
     sort?: ISearchSort;
+    shouldSemanticSearch?: boolean;
 }
 
 export interface ISearchResult {
@@ -126,7 +127,7 @@ export interface ISearchResultByTemplates {
 export interface ICountSearchResult {
     templateId: string;
     count: number;
-    entitiesWithFiles?: ISemanticSearchResult[string];
+    entitiesWithFiles?: ISemanticSearchMinioResult[string];
 }
 
 export interface IExportEntitiesBody {

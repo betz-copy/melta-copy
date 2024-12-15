@@ -187,7 +187,8 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                     updateEntityTemplateStatusAsync({ entityTemplateId: entityTemplate._id, disabled: !entityTemplate.disabled })
                                 }
                                 disabledProps={{
-                                    isDisabled: isDeleteButtonDisabled,
+                                    isDeleteDisabled: isDeleteButtonDisabled,
+                                    isDisabled: entityTemplate.disabled,
                                     isEditDisabled: entityTemplate.disabled,
                                     // eslint-disable-next-line no-nested-ternary
                                     tooltipTitle: entityTemplate.disabled
@@ -196,7 +197,6 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                         ? i18next.t('systemManagement.cannotDeleteWithEntities')
                                         : '',
                                 }}
-                                isEntityTemplateDisabled={entityTemplate.disabled}
                             />
                         )}
                     </Grid>

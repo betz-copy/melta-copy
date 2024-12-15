@@ -1,8 +1,17 @@
 import { createInstance } from '@datapunt/matomo-tracker-react';
-import { environment } from './globals';
+import { useQueryClient } from 'react-query';
+import { BackendConfigState } from './services/backendConfigService';
 
-const matomoInstance = createInstance({
-    urlBase: environment.matomo.urlBase,
-    siteId: environment.matomo.siteId,
-});
-export default matomoInstance;
+export const useMatomoInstance = () => {
+    const queryClient = useQueryClient();
+    const matomoConfig = queryClient.getQueryData<BackendConfigState>('getBackendConfig');
+
+    if (!matomoConfig) {
+        return null;
+    }
+
+    return createInstance({
+        urlBase: matomoConfig.matomoUrl,
+        siteId: matomoConfig.matomoSiteId,
+    });
+};

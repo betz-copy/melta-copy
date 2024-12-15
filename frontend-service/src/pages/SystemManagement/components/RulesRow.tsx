@@ -76,10 +76,10 @@ export const RuleCard: React.FC<{
                                     onDisableClick={() => updateDisabledMutateAsync(rule)}
                                     disabledProps={{
                                         isDisabled: rule.disabled,
+                                        isDeleteDisabled: rule.disabled,
                                         isEditDisabled: rule.disabled,
                                         tooltipTitle: rule.disabled ? i18next.t('systemManagement.disabledRule') : '',
                                     }}
-                                    isRuleDisabled={rule.disabled}
                                 />
                             )}
                         </Grid>

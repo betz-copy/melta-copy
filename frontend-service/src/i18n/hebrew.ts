@@ -247,6 +247,7 @@ export default {
         cannotDeleteWithRelationship: 'לא ניתן למחוק קשר זה, קיימים תחתיו קשרים',
         cannotEditEntityDisabled: 'לא ניתן לערוך קשר זה, מכיל ישות מושבתת',
         disabledEntityTemplate: 'תבנית מושבתת',
+        disabledEntity: 'ישות מושבתת',
         disabledRule: 'חוק מושבת',
         defaultCantEdit: 'לא ניתן לערוך ',
         deleteField: 'מחיקת שדה',
@@ -305,6 +306,7 @@ export default {
     },
     userAutocomplete: {
         label: 'משתמש',
+        searchLabel: 'חיפוש משתמש',
         failedToSearchUsers: 'נכשל לחפש משתמשים',
         loading: 'טוען...',
         noOptions: 'אין תוצאות',
@@ -383,6 +385,12 @@ export default {
         scopes: {
             read: 'קריאה',
             write: 'עריכה',
+        },
+        dialog: {
+            title: 'הרשאות בסביבה',
+            mainWorkspaceTitle: 'ראשית',
+            permissionType: 'סוג הרשאה',
+            updatedAt: 'עודכן ב',
         },
     },
     entitiesCardView: {
