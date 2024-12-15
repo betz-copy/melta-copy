@@ -154,7 +154,7 @@ const FileInput: React.FC<FileInputProps> = ({ file, onDeleteFile, onDropFile, i
                                         onCameraClick(event);
                                         trackEvent({
                                             category: 'entity',
-                                            action: 'camera-icon click',
+                                            action: 'camera icon click',
                                         });
                                     }}
                                 >

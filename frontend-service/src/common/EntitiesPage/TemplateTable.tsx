@@ -118,6 +118,16 @@ const TemplateTable = forwardRef<
         sessionStorage.setItem(`isExpand-${template._id}`, isExpand.toString());
     }, [isExpand, template._id]);
 
+    const handleDownloadClick = () => {
+        exportTemplateToExcel();
+
+        trackEvent({
+            category: 'template-action',
+            action: 'download template click',
+            name: template.displayName,
+        });
+    };
+
     return (
         <Grid container minWidth="fit-content">
             <Grid container justifyContent="space-between" width="fit-content" minWidth="fit-content">
@@ -161,7 +171,7 @@ const TemplateTable = forwardRef<
 
                                     trackEvent({
                                         category: 'template-action',
-                                        action: 'show-sidebar click',
+                                        action: 'show sidebar click',
                                     });
                                 },
                             },
@@ -195,12 +205,7 @@ const TemplateTable = forwardRef<
                             popoverText: i18next.t('entitiesTableOfTemplate.downloadOneTable'),
                             iconButtonProps: {
                                 onClick: () => {
-                                    exportTemplateToExcel();
-
-                                    trackEvent({
-                                        category: 'template-action',
-                                        action: 'download-template click',
-                                    });
+                                    handleDownloadClick();
                                 },
                             },
                         }}
@@ -226,7 +231,7 @@ const TemplateTable = forwardRef<
 
                             trackEvent({
                                 category: 'template-action',
-                                action: 'add-entity click',
+                                action: 'add entity click',
                             });
                         }}
                         setUpdatedEntities={setUpdatedEntities}

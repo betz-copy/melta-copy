@@ -78,7 +78,7 @@ const GraphTopBar: React.FC<GraphTopBarProps> = ({ onReset, set3DView, is3DView,
                                     set3DView(true);
 
                                     trackEvent({
-                                        category: '3D mode',
+                                        category: '3D-mode',
                                         action: 'click',
                                     });
                                 }}

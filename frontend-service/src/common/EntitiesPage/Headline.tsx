@@ -203,7 +203,7 @@ const EntitiesPageHeadline: React.FC<{
                 }
             }
             trackEvent({
-                category: 'topBar-action',
+                category: 'top-bar-action',
                 action: 'add entity',
             });
         };
@@ -215,17 +215,20 @@ const EntitiesPageHeadline: React.FC<{
         }
     };
 
-    const handleToggleChange = (_e: React.MouseEvent<HTMLElement>, newValue: 'cards-view' | 'templates-tables-view') => {
-        if (newValue !== null) {
-            viewModeProps.setViewMode(newValue);
-            if (newValue === 'cards-view') {
-                trackEvent({
-                    category: 'view-mode',
-                    action: 'cards-view',
-                });
+    const handleToggleChange = useCallback(
+        (_e: React.MouseEvent<HTMLElement>, newValue: 'cards-view' | 'templates-tables-view') => {
+            if (newValue !== null) {
+                viewModeProps.setViewMode(newValue);
+                if (newValue === 'cards-view') {
+                    trackEvent({
+                        category: 'view-mode',
+                        action: 'cards view',
+                    });
+                }
             }
-        }
-    };
+        },
+        [viewModeProps, trackEvent],
+    );
 
     return (
         <Grid
@@ -303,7 +306,7 @@ const EntitiesPageHeadline: React.FC<{
                                 onClick={() => {
                                     excelExportProps.onExcelExport();
                                     trackEvent({
-                                        category: 'topBar-action',
+                                        category: 'top-bar-action',
                                         action: 'download templates',
                                     });
                                 }}

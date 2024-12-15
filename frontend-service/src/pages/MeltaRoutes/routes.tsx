@@ -45,6 +45,8 @@ export const MeltaRoutesInner: React.FC = () => {
     const [open, setOpen] = useState(false);
 
     const [location, navigate] = useLocation();
+    const [entityMatch, entityParams] = useRoute('/entity/:entityId');
+    const [match] = useRoute('/entity/:entityId/graph');
 
     const { setIsOpen, setCurrentStep } = useTour();
 
@@ -128,10 +130,15 @@ export const MeltaRoutesInner: React.FC = () => {
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     useEffect(() => {
-        trackPageView({ documentTitle: '/', href: '/' });
-    }, []);
+        if (entityMatch && entityParams) {
+            const { entityId } = entityParams;
 
-    const [match] = useRoute('/entity/:entityId/graph');
+            trackPageView({
+                documentTitle: `Entity Page - ${entityId}`,
+                href: window.location.href,
+            });
+        }
+    }, [entityMatch, entityParams, trackPageView]);
 
     return (
         <>

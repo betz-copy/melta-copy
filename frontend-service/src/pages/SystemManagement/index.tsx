@@ -52,7 +52,7 @@ const SystemManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateAction
     };
 
     useEffect(() => {
-        const tabPath = `/504/operational.mlt/systemManagement?tab=${tabValue}`;
+        const tabPath = window.location.href;
         trackPageView({
             documentTitle: `System Management - ${tabValue}`,
             href: tabPath,

@@ -220,7 +220,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
 
                                     trackEvent({
                                         category: 'side-bar',
-                                        action: 'search-icon click',
+                                        action: 'search icon click',
                                     });
                                 }}
                             >
@@ -282,7 +282,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                                         if (isActive) {
                                             trackPageView({
                                                 documentTitle: `Category page - ${category.displayName}`,
-                                                href: `/504/operational.mlt/category/${category._id}`,
+                                                href: window.location.href,
                                             });
                                         }
                                     }}
@@ -393,7 +393,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                             if (isActive) {
                                 trackPageView({
                                     documentTitle: 'iFrames page',
-                                    href: '/504/operational.mlt/iframes',
+                                    href: window.location.href,
                                 });
                             }
                         }}
@@ -414,7 +414,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                             if (isActive) {
                                 trackPageView({
                                     documentTitle: 'Rule Management page',
-                                    href: '/504/operational.mlt/rule-management',
+                                    href: window.location.href,
                                 });
                             }
                         }}
@@ -435,7 +435,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                             if (isActive) {
                                 trackPageView({
                                     documentTitle: 'Gantts page',
-                                    href: '/504/operational.mlt/gantts',
+                                    href: window.location.href,
                                 });
                             }
                         }}
@@ -453,7 +453,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                             if (isActive) {
                                 trackPageView({
                                     documentTitle: 'Processes page',
-                                    href: '/504/operational.mlt/processes',
+                                    href: window.location.href,
                                 });
                             }
                         }}
@@ -495,7 +495,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                                 if (isActive) {
                                     trackPageView({
                                         documentTitle: 'PermissionsManagement page',
-                                        href: '/504/operational.mlt/permissions-management',
+                                        href: window.location.href,
                                     });
                                 }
                             }}

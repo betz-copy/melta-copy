@@ -206,7 +206,7 @@ export const getColumnDefs = <Data extends any = IEntity>({
             cellRenderer: memo<{ data: Data }>(({ data }) => {
                 const entity = getEntityPropertiesData(data);
                 const { disabled: disabledEntity } = entity;
-                const { trackEvent, trackPageView } = useMatomo();
+                const { trackEvent } = useMatomo();
 
                 return (
                     <Grid flexWrap="nowrap">
@@ -214,14 +214,7 @@ export const getColumnDefs = <Data extends any = IEntity>({
                             <Link
                                 href={`/entity/${getEntityPropertiesData(data)._id}`}
                                 onClick={(e) => {
-                                    if (!hasPermissionToCategory) {
-                                        e.preventDefault();
-                                    } else {
-                                        trackPageView({
-                                            documentTitle: `Entity page - ${getEntityPropertiesData(data)._id}`,
-                                            href: `/504/operational.mlt/entity/${getEntityPropertiesData(data)._id}`,
-                                        });
-                                    }
+                                    if (!hasPermissionToCategory) e.preventDefault();
                                 }}
                                 data-tour="entity-page"
                             >
@@ -270,7 +263,7 @@ export const getColumnDefs = <Data extends any = IEntity>({
                         )}
                         {onNavigateToRow && (
                             <Link
-                                href={`/entity/${getEntityPropertiesData(data)._id}/graph`}
+                                href={window.location.href}
                                 onClick={(e) => {
                                     if (disabledEntity) {
                                         e.preventDefault();
