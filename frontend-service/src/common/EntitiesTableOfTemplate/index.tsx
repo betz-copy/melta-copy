@@ -505,6 +505,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
 
                         const savedFilterModel = LocalStorage.get(`tableFilter-${saveStorageProps.pageType}-${template._id}`);
                         if (savedFilterModel) params.api.setFilterModel({ ...savedFilterModel });
+                        else if (rowModelType !== 'clientSide') params.api.setFilterModel(defaultFilterModel);
                     }}
                     onFirstDataRendered={(params) => {
                         const savedPage = sessionStorage.getItem(`currentPage-${saveStorageProps.pageType}-${template._id}`);
