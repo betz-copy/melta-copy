@@ -63,8 +63,11 @@ export class UnauthorizedError extends ServiceError {
 }
 
 export class ValidationError extends ServiceError {
-    constructor(message: string) {
-        super(StatusCodes.BAD_REQUEST, message);
+    constructor(
+        message: string,
+        public metadata: object = {},
+    ) {
+        super(StatusCodes.BAD_REQUEST, message, metadata);
         this.name = 'TemplateValidationError';
     }
 }

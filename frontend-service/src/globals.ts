@@ -233,6 +233,7 @@ export const environment = {
         width: '24px',
         height: '24px',
     },
+    loadExcel: { excelExtension: '.xlsx', acceptedFilesTypes: { 'excel/xlsx': ['.xlsx', '.xls'] }, filesLimit: 5, entitiesLimit: 500 },
     draftAutoSaveDebounce: 250,
     fileExtensions: {
         image: ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'webp', 'ico', 'psd', 'raw', 'heif', 'indd', 'ai', 'eps'],
@@ -1263,10 +1264,10 @@ export const environment = {
             'prw',
         ],
     },
-    matomo: {
-        urlBase: 'matomo.yesodot.services.idf',
-        siteId: 24,
-    },
+    // matomo: {
+    //     urlBase: 'matomo.yesodot.services.idf',
+    //     siteId: 24,
+    // },
     systemManagement: {
         actions: {
             unusedPropertyErrorCodeTs: '6133',

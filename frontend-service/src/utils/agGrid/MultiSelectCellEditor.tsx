@@ -3,15 +3,15 @@ import { Select, MenuItem, Checkbox, ListItemText, FormControl } from '@mui/mate
 
 interface MultiSelectCellEditorProps {
     values: string[];
-    value: string[];
+    value?: string[];
     onValueChange: (newValue: string[]) => void;
 }
 
 const MultiSelectCellEditor: React.FC<MultiSelectCellEditorProps> = ({ values, value, onValueChange }) => {
-    const [selectedValues, setSelectedValues] = useState<string[]>(value);
+    const [selectedValues, setSelectedValues] = useState<string[]>(value || []);
 
     useEffect(() => {
-        setSelectedValues(value);
+        setSelectedValues(value || []);
     }, [value]);
 
     const handleChange = (event: React.ChangeEvent<{ value: unknown }>) => {
