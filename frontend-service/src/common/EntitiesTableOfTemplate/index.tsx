@@ -212,7 +212,10 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             onFilter,
             hasPermissionToCategory,
             ignoreType,
+<<<<<<< HEAD
             mainEntity,
+=======
+>>>>>>> 7b3b53f4b14f52143f1309d22dab7a8940084f31
             refetch,
             hasInstances,
             paginationPageSizeSelector = environment.agGrid.paginationPageSizeSelector as unknown as number[],
