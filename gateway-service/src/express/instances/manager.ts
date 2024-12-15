@@ -254,6 +254,28 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         }
     };
 
+    updateTemplateCurrentNumbers = async (
+        template: IMongoEntityTemplatePopulated,
+        serialStarters: Record<string, number>,
+        succeededIndex: number,
+    ) => {
+        const serialProperties = Object.entries(template.properties.properties)
+            .filter(([_key, value]) => value.type === 'number' && !!value.serialStarter && !!value.serialCurrent)
+            .reduce((acc, [key, value]) => {
+                acc[key] = { ...value, serialCurrent: serialStarters[key] + succeededIndex };
+                return acc;
+            }, {});
+        const { category, _id, createdAt, updatedAt, disabled, ...restOfEntityTemplate } = template;
+        await this.entityTemplateService.updateEntityTemplate(template._id, {
+            ...restOfEntityTemplate,
+            category: category._id,
+            properties: {
+                ...template.properties,
+                properties: { ...template.properties.properties, ...serialProperties },
+            },
+        });
+    };
+
     async loadEntities(
         templateId: string,
         userId: string,
@@ -271,21 +293,22 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         const succeededEntities: IEntity[] = [];
         const failedEntities: IFailedEntity[] = [];
         const allBrokenRulesEntities: IBrokenRuleEntity[] = [];
-        let succeededIndex = 0;
 
         for (const entity of entities!) {
             try {
                 // eslint-disable-next-line no-loop-func
-                const serialNumbers = Object.fromEntries(Object.entries(serialStarters).map(([key, value]) => [key, value + succeededIndex]));
+                const serialNumbers = Object.fromEntries(
+                    Object.entries(serialStarters).map(([key, value]) => [key, value + succeededEntities.length]),
+                );
                 const result = await this.createEntityInstance(entity, [], insertBrokenEntities?.ignoredRules || [], userId, serialNumbers);
                 succeededEntities.push(result);
-                succeededIndex++;
             } catch (error) {
                 this.handleLoadEntitiesErrors(error, failedEntities, entity, allBrokenRulesEntities);
             }
         }
 
         const brokenRulesEntities = await updateIdOfBrokenRules(allBrokenRulesEntities);
+        if (serialStarters) await this.updateTemplateCurrentNumbers(template, serialStarters, succeededEntities.length);
 
         return { succeededEntities, failedEntities, brokenRulesEntities };
     }
@@ -304,7 +327,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
     ): Promise<IEntity['properties']> {
         const updatedProperties: IEntity['properties'] = { ...entityProperties };
 
-        let isTemplateUpdated = false;
+        let isTemplateUpdated = serialNumbers ?? false;
         const updatedTemplateProperties = {
             ...entityTemplate.properties.properties,
         };
