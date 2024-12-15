@@ -27,6 +27,7 @@ export interface IUniqueConstraint {
     constraintName: string;
     templateId: string;
     properties: string[];
+    values?: Record<string, any>;
 }
 
 export interface IRequiredConstraint {
@@ -111,6 +112,7 @@ export interface ISearchBatchBody {
         };
     };
     sort?: ISearchSort;
+    shouldSemanticSearch?: boolean;
 }
 
 export interface ISearchResult {
@@ -135,7 +137,9 @@ export interface IExportEntitiesBody {
         [templateId: string]: {
             filter?: ISearchFilter;
             sort?: ISearchSort;
-            displayColumns: string[];
+            displayColumns?: string[];
+            headersOnly?: boolean;
+            insertEntities?: Record<string, any>[];
         };
     };
 }

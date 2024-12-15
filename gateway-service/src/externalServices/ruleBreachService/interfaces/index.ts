@@ -1,3 +1,6 @@
+import { IRequiredConstraint, IUniqueConstraint, IValidationError } from '../../instanceService/interfaces/entities';
+import { IActionMetadataPopulated, IBrokenRulePopulated } from './populated';
+
 export interface ICreateRelationshipMetadata {
     relationshipTemplateId: string;
     sourceEntityId: string;
@@ -94,3 +97,27 @@ export interface IRuleBreachRequest extends IRuleBreach {
     reviewedAt?: Date;
     status: RuleBreachRequestStatus;
 }
+
+export enum ActionErrors {
+    validation = 'VALIDATION',
+    unique = 'UNIQUE',
+    required = 'REQUIRED',
+}
+
+export type IFailedEntity = {
+    properties: Record<string, any>;
+    errors: { type: ActionErrors; metadata: IValidationError | IUniqueConstraint | IRequiredConstraint }[];
+};
+
+export type IActionPopulated = {
+    actionType: ActionTypes;
+    actionMetadata: IActionMetadataPopulated;
+};
+
+export type IBrokenRuleEntity = {
+    rawBrokenRules: IBrokenRule[];
+    brokenRules: IBrokenRulePopulated[];
+    actions: IActionPopulated[];
+    rawActions: IAction[];
+    entities: { properties: Record<string, any> }[];
+};

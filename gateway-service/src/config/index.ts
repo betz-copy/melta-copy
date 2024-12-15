@@ -28,8 +28,8 @@ const config = {
 
     frontendConfig: {
         matotmo: {
-            baseUrl: env.get('MATOMO_BASE_URL').default('http://localhost:8016').required().asString(),
-            siteId: env.get('MATOMO_SITE_ID').default(1).required().asInt(),
+            baseUrl: env.get('FRONTEND_CONFIG_MATOMO_BASE_URL').default('http://localhost:8016').required().asString(),
+            siteId: env.get('FRONTEND_CONFIG_MATOMO_SITE_ID').default(1).required().asInt(),
         },
     },
 
@@ -163,6 +163,8 @@ const config = {
         ruleBlock: 'RULE_BLOCK',
         ruleHasAlertsOrRequests: 'RULE_HAS_ALERTS_OR_REQUESTS',
         failedToDeleteField: 'FAILED_DELETE_FIELD',
+        failedConstraintsValidation: 'FAILED_CONSTRAINTS_VALIDATION',
+        templateValidationError: 'TemplateValidationError',
     },
     rabbit: {
         url: env.get('RABBIT_URL').required().asUrlString(),
@@ -206,6 +208,11 @@ const config = {
     excel: {
         multipleFilesName: env.get('MULTIPLE_FILES_NAME').default('attachmentZip').asString(),
         columnWidth: env.get('COLUMN_WIDTH').default(20).asIntPositive(),
+    },
+    loadExcel: {
+        maxValidationRow: env.get('MAX_VALIDATION_ROW').default(100).asIntPositive(),
+        minValidationRow: env.get('MIN_VALIDATION_ROW').default(2).asIntPositive(),
+        entitiesFileLimit: env.get('ENTITIES_FILE_LIMIT').default(500).asIntPositive(),
     },
 };
 
