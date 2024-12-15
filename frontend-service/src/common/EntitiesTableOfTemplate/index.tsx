@@ -161,6 +161,7 @@ export type EntitiesTableOfTemplateProps<Data> = {
     mainEntity?: IEntityExpanded;
     hasInstances?: boolean;
     paginationPageSizeSelector?: boolean | number[];
+    withoutResizeBox?: boolean;
 };
 
 export type EntitiesTableOfTemplateRef<Data> = {
@@ -199,6 +200,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             mainEntity,
             hasInstances,
             paginationPageSizeSelector = environment.agGrid.paginationPageSizeSelector as unknown as number[],
+            withoutResizeBox,
         }: EntitiesTableOfTemplateProps<Data>,
         ref: ForwardedRef<EntitiesTableOfTemplateRef<Data>>,
     ) => {
@@ -218,7 +220,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         const tableRef = useRef<HTMLDivElement>(null);
 
         const minHeightTable = rowHeight * pageRowCount + rowHeight * 2;
-        const [gridHeight, setGridHeight] = useState<number>(rowHeight * defaultExpandedRowCount);
+        const [gridHeight, setGridHeight] = useState<number>(() => (withoutResizeBox ? rowHeight * 7 : rowHeight * defaultExpandedRowCount));
 
         const getSortModel = () => {
             const colState = gridRef.current!.api.getColumnState();
@@ -508,7 +510,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                         position: 'left',
                     }}
                     statusBar={
-                        rowModelType === 'infinite'
+                        rowModelType === 'infinite' && !withoutResizeBox
                             ? {
                                   statusPanels: [
                                       {
@@ -525,7 +527,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             </Box>
         );
 
-        return rowModelType === 'infinite' ? (
+        return rowModelType === 'infinite' && !withoutResizeBox ? (
             <ResizeBox initialHeight={gridHeight} setHeight={setGridHeight} minHeight={minHeightTable} templateId={template._id}>
                 {gridContent}
             </ResizeBox>

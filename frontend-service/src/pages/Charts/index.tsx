@@ -1,18 +1,24 @@
 import { Grid } from '@mui/material';
-import i18next from 'i18next';
-import React, { useEffect } from 'react';
+import React from 'react';
+import { useQueryClient } from 'react-query';
+import { useParams } from 'wouter';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { ChartHeader } from './ChartHeader';
 
 interface IChartsPageProps {
     setTitle: React.Dispatch<React.SetStateAction<string>>;
 }
 
-const ChartsPage: React.FC<IChartsPageProps> = ({ setTitle }) => {
-    useEffect(() => setTitle(i18next.t('pages.charts')), [setTitle]);
+const ChartsPage: React.FC<IChartsPageProps> = () => {
+    const { templateId } = useParams();
+
+    const queryClient = useQueryClient();
+    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+    const template = entityTemplates.get(templateId as string) as IMongoEntityTemplatePopulated;
 
     return (
         <Grid>
-            <ChartHeader />
+            <ChartHeader template={template} />
         </Grid>
     );
 };

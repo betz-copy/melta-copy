@@ -1011,6 +1011,17 @@ export default {
             deleteGroupBy: 'מחק קיבוץ',
         },
     },
+    charts: {
+        chart: 'תרשים',
+        visualDefinition: 'הגדרות ויזואלזציה',
+        generalDetails: 'פרטים כלליים',
+        chartDetails: 'פרטי התרשים',
+        permissions: 'הרשאות',
+        personal: 'אישי',
+        protected: 'לכל המשתמשים',
+        name: 'שם',
+        description: 'תיאור',
+    },
     workspaces: {
         goBack: 'חזור',
         createNew: 'צור סביבת עבודה חדשה',

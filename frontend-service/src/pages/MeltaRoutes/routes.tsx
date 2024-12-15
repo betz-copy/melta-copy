@@ -160,12 +160,12 @@ export const MeltaRoutesInner: React.FC = () => {
                                 <RuleManagement setTitle={setTitle} />
                             </Route>
 
-                            <Route path="/charts">
-                                <Charts setTitle={setTitle} />
+                            <Route path="/charts/:templateId/chart">
+                                <ChartPage />
                             </Route>
 
                             <Route path="/charts/:templateId">
-                                <ChartPage />
+                                <Charts setTitle={setTitle} />
                             </Route>
 
                             <Route path="/gantts">
