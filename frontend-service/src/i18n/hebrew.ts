@@ -751,6 +751,7 @@ export default {
             chooseFile: 'בחירת קובץ',
             dragFile: 'גרור את הקובץ לכאן',
             dragFiles: 'גרור את הקבצים לכאן',
+            scanFromImage: 'סריקה מתמונה',
         },
     },
     errorCodes: {
@@ -1164,5 +1165,6 @@ export default {
         imgName: 'שם התמונה',
         fileName: 'שם הקובץ',
         takePicture: 'צלם תמונה',
+        blackAndWhite: 'שחור לבן',
     },
 };

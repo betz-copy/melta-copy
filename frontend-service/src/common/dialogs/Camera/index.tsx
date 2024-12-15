@@ -29,6 +29,7 @@ const Camera: React.FC<ICameraProps> = ({ stream, setStream, open, setOpen, setI
 
     const onCloseCamera = async () => {
         setOpen(false);
+        setOpenImageView(false);
         stream.getVideoTracks().forEach((track) => {
             track.stop();
         });

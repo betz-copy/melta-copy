@@ -53,7 +53,6 @@ const CameraView: React.FC<ICameraViewProps> = ({
 
         stream.getVideoTracks().forEach((track) => track.stop());
         setStream(null);
-        setOpenCamera(false);
         setOpenImageView(true);
     };
 

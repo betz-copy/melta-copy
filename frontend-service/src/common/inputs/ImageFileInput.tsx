@@ -38,6 +38,7 @@ const FileInput: React.FC<FileInputProps> = ({ file, onDeleteFile, onDropFile, i
     };
 
     const onDrop = (acceptedFiles: File[]) => {
+        if (acceptedFiles[0].type.startsWith('image/')) setImgURL(URL.createObjectURL(acceptedFiles[0]));
         onDropFile(acceptedFiles[0]);
     };
 
@@ -96,7 +97,7 @@ const FileInput: React.FC<FileInputProps> = ({ file, onDeleteFile, onDropFile, i
 
     const isFileFromInput = useMemo(() => file instanceof File, [file]);
 
-    const imageExtensions = ['png', 'jpg', 'jpeg', 'gif', 'svg'];
+    const imageExtensions = ['png', 'jpg', 'jpeg', 'svg'];
 
     const isImageFile = () => {
         if (!file) return false;
@@ -112,6 +113,8 @@ const FileInput: React.FC<FileInputProps> = ({ file, onDeleteFile, onDropFile, i
 
         return false;
     };
+    console.log({ openImageView });
+    console.log({ imgURL });
 
     return (
         <>
@@ -149,7 +152,7 @@ const FileInput: React.FC<FileInputProps> = ({ file, onDeleteFile, onDropFile, i
                                         )}
 
                                         {isImageFile() && (
-                                            <MeltaTooltip title="סריקה מתמונה">
+                                            <MeltaTooltip title={i18next.t('input.imagePicker.scanFromImage')}>
                                                 <IconButton
                                                     style={{
                                                         height: '25px',
@@ -169,6 +172,7 @@ const FileInput: React.FC<FileInputProps> = ({ file, onDeleteFile, onDropFile, i
                                                 e.preventDefault();
                                                 e.stopPropagation();
                                                 onDeleteFile(e);
+                                                setImgURL(null);
                                             }}
                                             size="small"
                                         >
@@ -224,6 +228,7 @@ const FileInput: React.FC<FileInputProps> = ({ file, onDeleteFile, onDropFile, i
                     imgURL={imgURL}
                     setImgURL={setImgURL}
                     setOpenImageView={setOpenImageView}
+                    openCamera={openCamera}
                     openImageView={openImageView}
                     onPictureTaken={onDropFile}
                 />

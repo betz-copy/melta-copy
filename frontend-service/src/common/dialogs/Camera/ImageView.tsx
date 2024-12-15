@@ -16,11 +16,12 @@ interface IImageView {
     imgURL: string;
     setImgURL: React.Dispatch<React.SetStateAction<string | null>>;
     setOpenImageView: React.Dispatch<React.SetStateAction<boolean>>;
+    openCamera: boolean;
     openImageView: boolean;
     onPictureTaken: (file: File) => void;
 }
 
-const ImageView: React.FC<IImageView> = ({ setStream, imgURL, setImgURL, setOpenImageView, openImageView, onPictureTaken }) => {
+const ImageView: React.FC<IImageView> = ({ setStream, imgURL, setImgURL, setOpenImageView, openCamera, openImageView, onPictureTaken }) => {
     const [usePdf, setUsePdf] = useState(false);
     const [applyFilter, setApplyFilter] = useState(false);
     const [imgName, setImgName] = useState<string | null>(null);
@@ -37,19 +38,19 @@ const ImageView: React.FC<IImageView> = ({ setStream, imgURL, setImgURL, setOpen
         const file = await urlToFile();
         onPictureTaken(file);
         setOpenImageView(false);
-        setImgURL(null);
         setImgName(null);
     };
 
     const onClose = async () => {
-        setImgURL(null);
         setImgName(null);
-        try {
-            const userStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-            setStream(userStream);
-        } catch {
-            toast.error(i18next.t('camera.cameraNotFound'));
-        }
+        setOpenImageView(false);
+        if (openCamera)
+            try {
+                const userStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+                setStream(userStream);
+            } catch {
+                toast.error(i18next.t('camera.cameraNotFound'));
+            }
     };
 
     const handleExportToPDF = () => {
@@ -117,6 +118,8 @@ const ImageView: React.FC<IImageView> = ({ setStream, imgURL, setImgURL, setOpen
         setStream(null);
     };
 
+    console.log('In Image View');
+
     return (
         <Dialog open={openImageView} onClose={onCloseImageView} maxWidth={false} sx={{ maxWidth: 1500, mx: 'auto' }}>
             <DialogContent sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
@@ -166,7 +169,7 @@ const ImageView: React.FC<IImageView> = ({ setStream, imgURL, setImgURL, setOpen
                             <IconButton onClick={() => setUsePdf(!usePdf)}>
                                 <PictureAsPdf color={usePdf ? 'primary' : 'disabled'} />
                             </IconButton>
-                            <MeltaTooltip title="שחור לבן" placement="bottom">
+                            <MeltaTooltip title={i18next.t('camera.blackAndWhite')} placement="bottom">
                                 <IconButton onClick={() => setApplyFilter(!applyFilter)}>
                                     <FilterBAndW color={applyFilter ? 'primary' : 'disabled'} />
                                 </IconButton>
