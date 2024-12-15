@@ -28,6 +28,7 @@ export const TableButton: React.FC<{
                 ...(iconButtonWithPopoverProps.iconButtonProps?.style ?? {}),
             }}
             disabled={disableButton}
+            buttonStyle={{ ':hover': { textDecoration: 'underline' } }}
         >
             {children ?? (
                 <>

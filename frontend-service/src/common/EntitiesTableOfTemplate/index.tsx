@@ -171,6 +171,7 @@ export type EntitiesTableOfTemplateProps<Data> = {
     };
     onFilter?: () => void;
     mainEntity?: IEntityExpanded;
+    ignoreType?: boolean;
     refetch?: () => void;
     hasInstances?: boolean;
     paginationPageSizeSelector?: boolean | number[];
@@ -210,6 +211,8 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             saveStorageProps,
             onFilter,
             hasPermissionToCategory,
+            ignoreType,
+            mainEntity,
             refetch,
             hasInstances,
             paginationPageSizeSelector = environment.agGrid.paginationPageSizeSelector as unknown as number[],
@@ -323,11 +326,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         const columnDefProps: IGetColumnDefsOptions<Data> = {
             template,
             getEntityPropertiesData,
-            onNavigateToRow: showNavigateToRowButton
-                ? (data) => {
-                      navigate(`/entity/${getEntityPropertiesData(data)._id}`);
-                  }
-                : undefined,
+            onNavigateToRow: showNavigateToRowButton ? (data) => navigate(`/entity/${getEntityPropertiesData(data)._id}`) : undefined,
             deleteRowButtonProps,
             menuRowButtonProps,
             hideNonPreview,
@@ -337,6 +336,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             defaultColumnsOrder,
             defaultColumnWidths,
             rowHeight,
+            ignoreType,
             navigate,
             setSelectedRow,
             setOpenDeleteDialog,
@@ -352,7 +352,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
 
         const rowModelProps = useMemo(
             () => getRowModelProps(rowModelType, template, rowData, pageRowCount, quickFilterText, datasourceOnFail, hasInstances),
-            [rowModelType, template, rowData, pageRowCount, quickFilterText, hasInstances],
+            [rowModelType, template, rowData, pageRowCount, quickFilterText, mainEntity, hasInstances],
         );
 
         const gridStyles = {
@@ -436,6 +436,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             >
                 <AgGridReact<Data>
                     ref={gridRef}
+                    suppressDragLeaveHidesColumns={ignoreType}
                     getRowStyle={(params): RowStyle | undefined => {
                         if (params.data && getEntityPropertiesData(params.data).disabled) {
                             return { background: darkMode ? '' : '#FAFAFA', color: darkMode ? '#7f7f7f' : 'rgb(159 147 147 / 40%)' };
@@ -504,7 +505,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
 
                         const savedFilterModel = LocalStorage.get(`tableFilter-${saveStorageProps.pageType}-${template._id}`);
                         if (savedFilterModel) params.api.setFilterModel({ ...savedFilterModel });
-                        else params.api.setFilterModel(defaultFilterModel);
+                        else if (rowModelType !== 'clientSide') params.api.setFilterModel(defaultFilterModel);
                     }}
                     onFirstDataRendered={(params) => {
                         const savedPage = sessionStorage.getItem(`currentPage-${saveStorageProps.pageType}-${template._id}`);

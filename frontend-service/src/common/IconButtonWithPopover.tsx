@@ -1,5 +1,5 @@
 import React, { CSSProperties } from 'react';
-import { IconButton } from '@mui/material';
+import { IconButton, SxProps, Theme } from '@mui/material';
 import { MeltaTooltip } from './MeltaTooltip';
 
 const IconButtonWithPopover: React.FC<{
@@ -21,11 +21,12 @@ const IconButtonWithPopover: React.FC<{
         | 'top-end'
         | 'top-start'
         | 'top';
-}> = ({ children, iconButtonProps, popoverText, disabledToolTip = false, disabled, style, placement = 'bottom' }) => {
+    buttonStyle?: SxProps<Theme>;
+}> = ({ children, iconButtonProps, popoverText, disabledToolTip = false, disabled, style, placement = 'bottom', buttonStyle }) => {
     return (
         <MeltaTooltip title={popoverText} disableHoverListener={disabledToolTip} placement={placement}>
             <span>
-                <IconButton {...iconButtonProps} style={style} disabled={disabled}>
+                <IconButton {...iconButtonProps} style={style} disabled={disabled} sx={buttonStyle}>
                     {children}
                 </IconButton>
             </span>

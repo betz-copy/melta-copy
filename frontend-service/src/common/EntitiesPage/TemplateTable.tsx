@@ -5,6 +5,7 @@ import {
     Download,
     Expand,
     TableRowsOutlined,
+    Upload,
 } from '@mui/icons-material';
 import { Box, CircularProgress, Dialog, Grid, useTheme } from '@mui/material';
 import i18next from 'i18next';
@@ -32,8 +33,12 @@ import { TableButton } from '../TableButton';
 import { AddEntityButton } from './AddEntityButton';
 import { DraftCard } from './DraftCard';
 import { ResetFilterButton } from './ResetFilterButton';
+import { LoadExcelButton } from './LoadExcelButton';
 
-const { defaultRowHeight, defaultFontSize, defaultExpandedTableHeight } = environment.agGrid;
+const {
+    agGrid: { defaultRowHeight, defaultFontSize, defaultExpandedTableHeight },
+    loadExcel: { excelExtension },
+} = environment;
 
 export type TemplateTableRef = EntitiesTableOfTemplateRef<IEntity>;
 
@@ -69,7 +74,7 @@ const TemplateTable = forwardRef<
     const { isLoading: isExportingTableToExcelFile, mutateAsync: exportTemplateToExcel } = useMutation(
         async () => {
             return exportEntitiesRequest({
-                fileName: `${template.displayName}.xlsx`,
+                fileName: `${template.displayName}${excelExtension}`,
                 textSearch: quickFilterText,
                 templates: {
                     [template._id]: {
@@ -85,7 +90,7 @@ const TemplateTable = forwardRef<
                 toast.error(i18next.t('failedToExportTable'));
             },
             onSuccess(data) {
-                fileDownload(data, `${template.displayName}.xlsx`);
+                fileDownload(data, `${template.displayName}${excelExtension}`);
             },
         },
     );
@@ -115,6 +120,17 @@ const TemplateTable = forwardRef<
     useEffect(() => {
         sessionStorage.setItem(`isExpand-${template._id}`, isExpand.toString());
     }, [isExpand, template._id]);
+
+    const checkIfLoadEntityIsDisabled = () => {
+        const { properties } = template.properties;
+        const requiredProperties = new Set(template.properties.required);
+
+        return Object.entries(properties).some(([key, property]) => {
+            return (property.format === 'fileId' || property.format === 'relationshipReference') && requiredProperties.has(key);
+        });
+    };
+
+    const isLoadExcelDisabled = !userHasWritePermissions || checkIfLoadEntityIsDisabled();
 
     return (
         <Grid container minWidth="fit-content">
@@ -183,6 +199,28 @@ const TemplateTable = forwardRef<
                 </Grid>
 
                 <Grid container item flexGrow={1} width={0} justifyContent="flex-end" alignItems="center">
+                    <LoadExcelButton
+                        disabled={isLoadExcelDisabled}
+                        initialValues={{ template, properties: { disabled: false }, attachmentsProperties: {} }}
+                        style={{
+                            display: 'flex',
+                            gap: '0.25rem',
+                            borderRadius: '5px',
+                            fontSize: '0.75rem',
+                            color: theme.palette.primary.main,
+                        }}
+                        onSuccessCreate={() => entitiesTableRef.current?.refreshServerSide()}
+                        popoverText={isLoadExcelDisabled ? i18next.t('wizard.entity.loadEntities.tableCantLoadEntities') : undefined}
+                    >
+                        <Upload
+                            fontSize="small"
+                            sx={{
+                                opacity: isLoadExcelDisabled ? 0.3 : 1,
+                                pointerEvents: isLoadExcelDisabled ? 'none' : 'auto',
+                            }}
+                        />
+                        {i18next.t('entitiesTableOfTemplate.loadEntitiesTitle')}
+                    </LoadExcelButton>
                     <AddEntityButton
                         initialStep={1}
                         disabled={!userHasWritePermissions}

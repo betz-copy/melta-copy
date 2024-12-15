@@ -13,7 +13,9 @@ export interface IExportEntitiesBody {
         [templateId: string]: {
             filter?: ISearchFilter;
             sort?: ISearchSort;
-            displayColumns: string[];
+            displayColumns?: string[];
+            headersOnly?: boolean;
+            insertEntities?: Record<string, any>[];
         };
     };
 }
