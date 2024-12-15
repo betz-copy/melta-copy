@@ -85,11 +85,11 @@ export const numberColDef = <Data extends any = IEntity>(
     valueGetter: ValueGetterFunc<Data>,
     value: Partial<IEntitySingleProperty>,
     hardcodedWidth: number | undefined,
-    editable?: (data: any) => boolean,
     hideColumn = false,
     hideValue = false,
     ignoreType = false,
     searchValue: string | undefined = undefined,
+    editable: (data: any) => boolean = () => false,
 ): ColDef => {
     return {
         field,
@@ -118,11 +118,11 @@ export const regexColDef = <Data extends any = IEntity>(
     valueGetter: ValueGetterFunc<Data>,
     value: Partial<IEntitySingleProperty>,
     hardcodedWidth: number | undefined,
-    editable?: (data: any) => boolean,
     hideColumn = false,
     hideValue = false,
     ignoreType = false,
     searchValue: string | undefined = undefined,
+    editable: (data: any) => boolean = () => false,
 ): ColDef => {
     return {
         field,
@@ -147,11 +147,11 @@ export const stringColDef = <Data extends any = IEntity>(
     valueGetter: ValueGetterFunc<Data>,
     value: Partial<IEntitySingleProperty>,
     hardcodedWidth: number | undefined,
-    editable?: (data: any) => boolean,
     hideColumn = false,
     hideValue = false,
     ignoreType = false,
     searchValue: string | undefined = undefined,
+    editable: (data: any) => boolean = () => false,
 ): ColDef => {
     return {
         field,
@@ -231,11 +231,11 @@ export const booleanColDef = <Data extends any = IEntity>(
     valueGetter: ValueGetterFunc<Data>,
     value: Partial<IEntitySingleProperty>,
     hardcodedWidth: number | undefined,
-    editable?: (data: any) => boolean,
     hideColumn = false,
     hideValue = false,
     ignoreType = false,
     searchValue: string | undefined = undefined,
+    editable: (data: any) => boolean = () => false,
 ): ColDef => {
     const formatValue = (propertyValue: boolean | null | undefined) => {
         if (!propertyValue) return i18next.t('booleanOptions.no');
@@ -276,11 +276,11 @@ export const enumColDef = <Data extends any = IEntity>(
     values: Array<string>,
     hardcodedWidth: number | undefined,
     enumColorOptions?: Record<string, string>,
-    editable?: (data: any) => boolean,
     hideColumn = false,
     hideValue = false,
     ignoreType = false,
     searchValue: string | undefined = undefined,
+    editable: (data: any) => boolean = () => false,
 ): ColDef => {
     const filterParams: ISetFilterParams<Data, string | undefined> = {
         suppressMiniFilter: true,
@@ -323,11 +323,11 @@ export const enumArrayColDef = <Data extends any = IEntity>(
     hardcodedWidth: number | undefined,
     rowHeight: number,
     enumColorOptions?: Record<string, string>,
-    editable?: (data: any) => boolean,
     hideColumn = false,
     hideValue = false,
     ignoreType = false,
     searchValue: string | undefined = undefined,
+    editable: (data: any) => boolean = () => false,
 ): ColDef => {
     const filterParams: ISetFilterParams<Data, string | undefined> = {
         suppressMiniFilter: true,
@@ -418,12 +418,12 @@ export const dateColDef = <Data extends any = IEntity>(
     valueGetter: ValueGetterFunc<Data>,
     value: Partial<IEntitySingleProperty>,
     hardcodedWidth?: number,
-    editable?: (data: any) => boolean,
     hideColumn = false,
     hideValue = false,
     calculateTime = false,
     ignoreType = false,
     searchValue: string | undefined = undefined,
+    editable: (data: any) => boolean = () => false,
 ): ColDef => {
     const { format } = value;
 

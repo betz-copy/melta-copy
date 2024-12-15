@@ -93,11 +93,11 @@ export const getColumnDefs = <Data extends any = IEntity>({
                 valueGetter,
                 propertyTemplate,
                 defaultColumnWidths[property],
-                editable,
                 hideColumn,
                 hideField,
                 ignoreType,
                 searchValue,
+                editable,
             );
         if (type === 'boolean')
             return booleanColDef(
@@ -105,11 +105,11 @@ export const getColumnDefs = <Data extends any = IEntity>({
                 valueGetter,
                 propertyTemplate,
                 defaultColumnWidths[property],
-                editable,
                 hideColumn,
                 hideField,
                 ignoreType,
                 searchValue,
+                editable,
             );
         if (format === 'date' || format === 'date-time')
             return dateColDef(
@@ -117,12 +117,12 @@ export const getColumnDefs = <Data extends any = IEntity>({
                 valueGetter,
                 propertyTemplate,
                 defaultColumnWidths[property],
-                editable,
                 hideColumn,
                 hideField,
                 calculateTime,
                 ignoreType,
                 searchValue,
+                editable,
             );
         if (format === 'fileId')
             return fileColDef(
@@ -153,11 +153,11 @@ export const getColumnDefs = <Data extends any = IEntity>({
                 propertyTemplate.enum,
                 defaultColumnWidths[property],
                 template.enumPropertiesColors?.[property],
-                editable,
                 hideColumn,
                 hideField,
                 ignoreType,
                 searchValue,
+                editable,
             );
         if (propertyTemplate.pattern)
             return regexColDef(
@@ -165,11 +165,11 @@ export const getColumnDefs = <Data extends any = IEntity>({
                 valueGetter,
                 propertyTemplate,
                 defaultColumnWidths[property],
-                editable,
                 hideColumn,
                 hideField,
                 ignoreType,
                 searchValue,
+                editable,
             );
         if (propertyTemplate.items?.enum)
             return enumArrayColDef(
@@ -180,11 +180,11 @@ export const getColumnDefs = <Data extends any = IEntity>({
                 defaultColumnWidths[property],
                 rowHeight,
                 template.enumPropertiesColors?.[property],
-                editable,
                 hideColumn,
                 hideField,
                 ignoreType,
                 searchValue,
+                editable,
             );
         if (propertyTemplate.items) {
             return enumFilesColDef(
@@ -203,11 +203,11 @@ export const getColumnDefs = <Data extends any = IEntity>({
             valueGetter,
             propertyTemplate,
             defaultColumnWidths[property],
-            editable,
             hideColumn,
             hideField,
             ignoreType,
             searchValue,
+            editable,
         );
     });
     columnDefs.push(
@@ -218,7 +218,6 @@ export const getColumnDefs = <Data extends any = IEntity>({
                 title: i18next.t('entitiesTableOfTemplate.disabledHeaderName'),
             },
             defaultColumnWidths.disabled,
-            undefined,
             defaultVisibleColumns.disabled !== undefined ? !defaultVisibleColumns.disabled : true,
         ),
     );
@@ -232,7 +231,6 @@ export const getColumnDefs = <Data extends any = IEntity>({
                 format: 'date-time',
             },
             defaultColumnWidths.createdAt,
-            undefined,
             defaultVisibleColumns.createdAt !== undefined ? !defaultVisibleColumns.createdAt : true,
         ),
     );
@@ -246,7 +244,6 @@ export const getColumnDefs = <Data extends any = IEntity>({
                 format: 'date-time',
             },
             defaultColumnWidths.updatedAt,
-            undefined,
             defaultVisibleColumns.updatedAt !== undefined ? !defaultVisibleColumns.updatedAt : true,
         ),
     );
