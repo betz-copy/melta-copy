@@ -3,6 +3,7 @@
 import React, { ForwardedRef, forwardRef, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import {
     BodyScrollEvent,
+    CellEditingStoppedEvent,
     ColumnMovedEvent,
     ColumnResizedEvent,
     ColumnVisibleEvent,
@@ -670,7 +671,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                         }
                         localeText={agGridLocaleText}
                         paginationPageSizeSelector={paginationPageSizeSelector}
-                        onCellEditingStopped={(params) => {
+                        onCellEditingStopped={(params: CellEditingStoppedEvent) => {
                             setCurrEditingCell(undefined);
                             if (params.valueChanged === false) return;
                             const updatedProperties = {
