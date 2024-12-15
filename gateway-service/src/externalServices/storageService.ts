@@ -3,6 +3,7 @@ import fs from 'fs';
 import config from '../config';
 import DefaultExternalServiceApi from '../utils/express/externalService';
 import { UploadedFile } from '../utils/busboy/interface';
+import fsCreateReadStream from '../utils/fs';
 
 const {
     service: { docxHeaders },
@@ -15,6 +16,8 @@ export class StorageService extends DefaultExternalServiceApi {
     }
 
     async uploadFile(file: UploadedFile) {
+        console.log('blablabla');
+
         const formData = new FormData();
         const fileStream = fs.createReadStream(file.path);
         formData.append('file', fileStream, file.originalname);
@@ -29,7 +32,7 @@ export class StorageService extends DefaultExternalServiceApi {
     async uploadFiles(files: UploadedFile[]) {
         const formData = new FormData();
 
-        const fileStreamsPromises = files.map((file) => fs.createReadStream(file.path));
+        const fileStreamsPromises = files.map((file) => fsCreateReadStream(file.path));
         const fileStreams = await Promise.all(fileStreamsPromises);
 
         fileStreams.forEach((fileStream, index) => {

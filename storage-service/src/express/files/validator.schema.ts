@@ -12,14 +12,14 @@ export const defaultSchema = Joi.object({
 
 // POST /api/files
 export const uploadFileRequestSchema = Joi.object({
-    file: Joi.required(),
+    file: Joi.array(),
     query: {},
     params: {},
 });
 
 // POST /api/files/bulk
 export const uploadFilesRequestSchema = Joi.object({
-    files: Joi.required(),
+    files: Joi.array(),
     query: {},
     params: {},
 });

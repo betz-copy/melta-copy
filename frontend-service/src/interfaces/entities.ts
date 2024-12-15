@@ -1,3 +1,4 @@
+import { Readable } from 'stream';
 import { IMongoEntityTemplatePopulated } from './entityTemplates';
 import { IMongoRelationshipTemplate } from './relationshipTemplates';
 import { IRelationship } from './relationships';
@@ -112,6 +113,18 @@ export interface ISearchBatchBody {
     };
     sort?: ISearchSort;
     shouldSemanticSearch?: boolean;
+}
+
+export interface UploadedFile {
+    fieldname: string;
+    originalname: string;
+    encoding: string;
+    mimetype: string;
+    size: number;
+    path: string;
+    stream?: Readable;
+    destination?: string;
+    buffer?: Buffer;
 }
 
 export interface ISearchResult {

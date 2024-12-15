@@ -26,7 +26,7 @@ export default class TemplatesController extends DefaultController<TemplatesMana
 
     // categories
     async createCategory(req: Request, res: Response) {
-        res.json(await this.manager.createCategory(req.body, req.file as unknown as UploadedFile));
+        res.json(await this.manager.createCategory(req.body, req.files as unknown as UploadedFile));
     }
 
     async deleteCategory(req: Request, res: Response) {
@@ -34,7 +34,7 @@ export default class TemplatesController extends DefaultController<TemplatesMana
     }
 
     async updateCategory(req: Request, res: Response) {
-        res.json(await this.manager.updateCategory(req.params.id, req.body, req.file as unknown as UploadedFile));
+        res.json(await this.manager.updateCategory(req.params.id, req.body, req.files as unknown as UploadedFile));
     }
 
     async searchCategories(req: Request, res: Response) {

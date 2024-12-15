@@ -24,7 +24,7 @@ export class IFrameController extends DefaultController<IFrameManager> {
     }
 
     async createIFrame(req: Request, res: Response) {
-        res.json(await this.manager.createIFrame(req.body, req.file as unknown as UploadedFile));
+        res.json(await this.manager.createIFrame(req.body, req.files as unknown as UploadedFile));
     }
 
     async deleteIFrame(req: Request, res: Response) {
@@ -32,7 +32,7 @@ export class IFrameController extends DefaultController<IFrameManager> {
     }
 
     async updateIFrame(req: Request, res: Response) {
-        res.json(await this.manager.updateIFrame(req.params.iFrameId, req.body, req.file as unknown as UploadedFile));
+        res.json(await this.manager.updateIFrame(req.params.iFrameId, req.body, req.files as unknown as UploadedFile));
     }
 }
 

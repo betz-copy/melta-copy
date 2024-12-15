@@ -12,6 +12,7 @@ import {
     IGraphFilterBodyBatch,
     ISearchEntitiesByTemplatesBody,
     ICountSearchResult,
+    UploadedFile,
 } from '../interfaces/entities';
 import { EntityWizardValues } from '../common/dialogs/entity';
 import { IRuleBreach } from '../interfaces/ruleBreaches/ruleBreach';
@@ -52,19 +53,22 @@ export const getRelationshipInstancesCountByTemplateIdRequest = async (templateI
 export const createEntityRequest = async (entity: EntityWizardValues, ignoredRules?: IRuleBreach['brokenRules']) => {
     const formData = new FormData();
 
-    // const filesToUpload: any = [];
+    const filesToUpload: any = [];
     Object.entries(entity.attachmentsProperties).forEach(([key, value]: [string, any]) => {
         if (Array.isArray(value)) {
             value.forEach((file, index) => {
                 if (file instanceof File && entity.template.properties.properties[key].items) {
-                    formData.append(`${key}.${index}`, file);
+                    filesToUpload.push([`${key}.${index}`, file]);
                 } else if (file instanceof File) {
-                    formData.append(`${key}`, file);
+                    filesToUpload.push([`${key}`, file]);
                 }
             });
         } else {
-            formData.append(`${key}`, value);
+            filesToUpload.push([`${key}`, value]);
         }
+    });
+    filesToUpload.forEach(([key, value]) => {
+        formData.append(key, value as Blob);
     });
     formData.append(
         'properties',
@@ -79,9 +83,9 @@ export const createEntityRequest = async (entity: EntityWizardValues, ignoredRul
     if (ignoredRules) {
         formData.append('ignoredRules', JSON.stringify(ignoredRules));
     }
+    console.log({ filesToUpload }, { formData });
 
     const { data } = await axios.post<IEntity>(entities, formData);
-
     return data;
 };
 
@@ -96,9 +100,12 @@ export const updateEntityRequestForMultiple = async (
     ignoredRules?: IRuleBreach['brokenRules'],
 ) => {
     const formData = new FormData();
+    console.log('i am here');
 
     const filesToUpload: any = [];
     const unchangedFiles: any = []; /// //send single file as array to the back
+    console.log('newnewenwnenew', newEntityData.attachmentsProperties);
+
     Object.entries(newEntityData.attachmentsProperties).forEach(([key, value]: [string, any]) => {
         if (Array.isArray(value) && value) {
             value.forEach((file, index) => {
@@ -119,7 +126,8 @@ export const updateEntityRequestForMultiple = async (
         }
     });
     filesToUpload.forEach(([key, value]) => {
-        formData.append(key, value as Blob);
+        formData.append(key, value as UploadedFile);
+        console.log('ababab: ', formData.get(key));
     });
     unchangedFiles.forEach(([key, _value]) => {
         newEntityData.properties[key] = [];
@@ -136,6 +144,8 @@ export const updateEntityRequestForMultiple = async (
             }
         }
     });
+    console.log({ filesToUpload }, { formData });
+
     formData.append(
         'properties',
         JSON.stringify(
@@ -144,15 +154,21 @@ export const updateEntityRequestForMultiple = async (
             ),
         ),
     );
+    console.log(newEntityData.properties);
+
     formData.append('templateId', newEntityData.template._id);
 
     if (ignoredRules) {
         formData.append('ignoredRules', JSON.stringify(ignoredRules));
     }
+    // console.log({filesToUpload});
+
+    console.log('i am formdata', formData.getAll('multifile'));
 
     const { data } = await axios.put<IEntity>(`${entities}/${entityId}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
     });
+    console.log('reach here');
 
     return data;
 };
