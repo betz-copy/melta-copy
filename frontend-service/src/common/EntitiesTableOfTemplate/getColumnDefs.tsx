@@ -65,20 +65,19 @@ export const getColumnDefs = <Data extends any = IEntity>({
                 ? !defaultVisibleColumns[property]
                 : hideNonPreview && !template.propertiesPreview.includes(property);
 
-        const editable = !disableEditCell && !propertyTemplate.readOnly;
-
+        const editable = (data: any) => !disableEditCell && !propertyTemplate.readOnly && data && !getEntityPropertiesData(data).disabled;
         if (type === 'number')
-            return numberColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn, hideField, searchValue, editable);
+            return numberColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], editable, hideColumn, hideField, searchValue);
         if (type === 'boolean')
             return booleanColDef(
                 property,
                 valueGetter,
                 propertyTemplate,
                 defaultColumnWidths[property],
+                editable,
                 hideColumn,
                 hideField,
                 searchValue,
-                editable,
             );
         if (format === 'date' || format === 'date-time')
             return dateColDef(
@@ -86,11 +85,11 @@ export const getColumnDefs = <Data extends any = IEntity>({
                 valueGetter,
                 propertyTemplate,
                 defaultColumnWidths[property],
+                editable,
                 hideColumn,
                 hideField,
                 calculateTime,
                 searchValue,
-                editable,
             );
         if (format === 'fileId')
             return fileColDef(
@@ -121,13 +120,13 @@ export const getColumnDefs = <Data extends any = IEntity>({
                 propertyTemplate.enum,
                 defaultColumnWidths[property],
                 template.enumPropertiesColors?.[property],
+                editable,
                 hideColumn,
                 hideField,
                 searchValue,
-                editable,
             );
         if (propertyTemplate.pattern)
-            return regexColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn, hideField, searchValue, editable);
+            return regexColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], editable, hideColumn, hideField, searchValue);
         if (propertyTemplate.items?.enum)
             return enumArrayColDef(
                 property,
@@ -137,10 +136,10 @@ export const getColumnDefs = <Data extends any = IEntity>({
                 defaultColumnWidths[property],
                 rowHeight,
                 template.enumPropertiesColors?.[property],
+                editable,
                 hideColumn,
                 hideField,
                 searchValue,
-                editable,
             );
         if (propertyTemplate.items) {
             return enumFilesColDef(
@@ -154,7 +153,7 @@ export const getColumnDefs = <Data extends any = IEntity>({
                 Object.values(template.entitiesWithFiles ?? {}).flat(),
             );
         }
-        return stringColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn, hideField, searchValue, editable);
+        return stringColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], editable, hideColumn, hideField, searchValue);
     });
     columnDefs.push(
         booleanColDef(
@@ -164,6 +163,7 @@ export const getColumnDefs = <Data extends any = IEntity>({
                 title: i18next.t('entitiesTableOfTemplate.disabledHeaderName'),
             },
             defaultColumnWidths.disabled,
+            undefined,
             defaultVisibleColumns.disabled !== undefined ? !defaultVisibleColumns.disabled : true,
         ),
     );
@@ -177,6 +177,7 @@ export const getColumnDefs = <Data extends any = IEntity>({
                 format: 'date-time',
             },
             defaultColumnWidths.createdAt,
+            undefined,
             defaultVisibleColumns.createdAt !== undefined ? !defaultVisibleColumns.createdAt : true,
         ),
     );
@@ -190,6 +191,7 @@ export const getColumnDefs = <Data extends any = IEntity>({
                 format: 'date-time',
             },
             defaultColumnWidths.updatedAt,
+            undefined,
             defaultVisibleColumns.updatedAt !== undefined ? !defaultVisibleColumns.updatedAt : true,
         ),
     );
