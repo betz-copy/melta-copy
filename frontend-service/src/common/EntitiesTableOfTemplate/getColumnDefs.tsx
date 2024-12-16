@@ -49,6 +49,7 @@ export interface IGetColumnDefsOptions<Data extends any> {
         unknown
     >;
     searchValue?: string;
+    disableEditCell?: boolean;
 }
 
 export const getColumnDefs = <Data extends any = IEntity>({
@@ -70,6 +71,7 @@ export const getColumnDefs = <Data extends any = IEntity>({
     setOpenDeleteDialog,
     updateEntityStatus,
     searchValue,
+    disableEditCell,
 }: IGetColumnDefsOptions<Data>): ColDef[] => {
     const columnDefs = template.propertiesOrder.map((property) => {
         const propertyTemplate = { ...template.properties.properties[property] };
@@ -87,6 +89,7 @@ export const getColumnDefs = <Data extends any = IEntity>({
 
         if (propertyTemplate.archive) propertyTemplate.title = `${propertyTemplate.title} ${i18next.t('entitiesTableOfTemplate.archiveTitle')}`;
 
+        const editable = (data: any) => !disableEditCell && !propertyTemplate.readOnly && data && !getEntityPropertiesData(data).disabled;
         if (type === 'number')
             return numberColDef(
                 property,
@@ -97,6 +100,7 @@ export const getColumnDefs = <Data extends any = IEntity>({
                 hideField,
                 ignoreType,
                 searchValue,
+                editable,
             );
         if (type === 'boolean')
             return booleanColDef(
@@ -108,6 +112,7 @@ export const getColumnDefs = <Data extends any = IEntity>({
                 hideField,
                 ignoreType,
                 searchValue,
+                editable,
             );
         if (format === 'date' || format === 'date-time')
             return dateColDef(
@@ -120,6 +125,7 @@ export const getColumnDefs = <Data extends any = IEntity>({
                 calculateTime,
                 ignoreType,
                 searchValue,
+                editable,
             );
         if (format === 'fileId')
             return fileColDef(
@@ -141,6 +147,7 @@ export const getColumnDefs = <Data extends any = IEntity>({
                 propertyTemplate.relationshipReference!.relatedTemplateField,
                 hideColumn,
                 searchValue,
+                editable,
             );
         if (propertyTemplate.enum)
             return enumColDef(
@@ -154,6 +161,7 @@ export const getColumnDefs = <Data extends any = IEntity>({
                 hideField,
                 ignoreType,
                 searchValue,
+                editable,
             );
         if (propertyTemplate.pattern)
             return regexColDef(
@@ -165,6 +173,7 @@ export const getColumnDefs = <Data extends any = IEntity>({
                 hideField,
                 ignoreType,
                 searchValue,
+                editable,
             );
         if (propertyTemplate.items?.enum)
             return enumArrayColDef(
@@ -179,6 +188,7 @@ export const getColumnDefs = <Data extends any = IEntity>({
                 hideField,
                 ignoreType,
                 searchValue,
+                editable,
             );
         if (propertyTemplate.items) {
             return enumFilesColDef(
@@ -192,7 +202,17 @@ export const getColumnDefs = <Data extends any = IEntity>({
                 Object.values(template.entitiesWithFiles ?? {}).flat(),
             );
         }
-        return stringColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn, hideField, ignoreType, searchValue);
+        return stringColDef(
+            property,
+            valueGetter,
+            propertyTemplate,
+            defaultColumnWidths[property],
+            hideColumn,
+            hideField,
+            ignoreType,
+            searchValue,
+            editable,
+        );
     });
     columnDefs.push(
         booleanColDef(

@@ -19,7 +19,11 @@ import { getFileName } from '../getFileName';
 import { agGridLocaleText } from './agGridLocaleText';
 import OverflowWrapper from './OverflowWrapper';
 import { Value } from './Value';
+import { IEntitySingleProperty } from '../../interfaces/entityTemplates';
+import SelectCellEditor from './SelectCellEditor';
+import DateTimeCellEditor from './DateTimeCellEditor';
 import { ActionErrors } from '../../interfaces/ruleBreaches/actionMetadata';
+import RelationshipRefCellEditor from './RelationshipRefCellEditor';
 
 const isPropertyInvalid = <Data extends any = IEntity>(props: ICellRendererParams<Data, any | undefined>, property: string, ignoreType = false) => {
     if (!ignoreType || !props.data?.errors) return false;
@@ -80,12 +84,13 @@ const errorColDef = <Data extends any = IEntity>(props: ICellRendererParams<Data
 export const numberColDef = <Data extends any = IEntity>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
-    value: { title: string },
+    value: Partial<IEntitySingleProperty>,
     hardcodedWidth: number | undefined,
     hideColumn = false,
     hideValue = false,
     ignoreType = false,
     searchValue: string | undefined = undefined,
+    editable: (data: any) => boolean = () => false,
 ): ColDef => {
     return {
         field,
@@ -99,18 +104,26 @@ export const numberColDef = <Data extends any = IEntity>(
         width: hardcodedWidth,
         flex: hardcodedWidth ? 0 : 1,
         hide: hideColumn,
+        editable: (params) => (editable?.(params.data) ?? false) && value.serialStarter === undefined,
+        cellEditor: 'agNumberCellEditor',
+        cellEditorParams: {
+            precision: 2,
+            step: 1,
+            showStepperButtons: true,
+        },
     };
 };
 
 export const regexColDef = <Data extends any = IEntity>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
-    value: { title: string },
+    value: Partial<IEntitySingleProperty>,
     hardcodedWidth: number | undefined,
     hideColumn = false,
     hideValue = false,
     ignoreType = false,
     searchValue: string | undefined = undefined,
+    editable: (data: any) => boolean = () => false,
 ): ColDef => {
     return {
         field,
@@ -125,18 +138,21 @@ export const regexColDef = <Data extends any = IEntity>(
         flex: hardcodedWidth ? 0 : 1,
         hide: hideColumn,
         cellStyle: { direction: 'ltr' },
+        editable: (params) => editable?.(params.data) ?? false,
+        cellEditor: 'agTextCellEditor',
     };
 };
 
 export const stringColDef = <Data extends any = IEntity>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
-    value: { title: string },
+    value: Partial<IEntitySingleProperty>,
     hardcodedWidth: number | undefined,
     hideColumn = false,
     hideValue = false,
     ignoreType = false,
     searchValue: string | undefined = undefined,
+    editable: (data: any) => boolean = () => false,
 ): ColDef => {
     return {
         field,
@@ -150,6 +166,9 @@ export const stringColDef = <Data extends any = IEntity>(
         width: hardcodedWidth,
         flex: hardcodedWidth ? 0 : 1,
         hide: hideColumn,
+        editable: (params) => editable?.(params.data) ?? false,
+        cellEditor: value.format === 'text-area' ? 'agLargeTextCellEditor' : 'agTextCellEditor',
+        cellEditorPopup: value.format === 'text-area',
     };
 };
 
@@ -174,18 +193,20 @@ export const fileColDef = <Data extends any = IEntity>(
         width: hardcodedWidth,
         flex: hardcodedWidth ? 0 : 1,
         hide: hideColumn,
+        editable: false,
     };
 };
 
 export const relatedTemplateColDef = <Data extends any = IEntity>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
-    value: { title: string },
+    value: Partial<IEntitySingleProperty>,
     hardcodedWidth: number | undefined,
     relatedTemplateId: string,
     relatedTemplateField: string,
     hideColumn = false,
     searchValue: string | undefined = undefined,
+    editable: (data: any) => boolean = () => false,
 ): ColDef => {
     return {
         field,
@@ -204,18 +225,25 @@ export const relatedTemplateColDef = <Data extends any = IEntity>(
         width: hardcodedWidth,
         flex: hardcodedWidth ? 0 : 1,
         hide: hideColumn,
+        editable: (params) => editable?.(params.data) ?? false,
+        cellEditor: RelationshipRefCellEditor,
+        cellEditorParams: {
+            relatedTemplateId,
+            template: value,
+        },
     };
 };
 
 export const booleanColDef = <Data extends any = IEntity>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
-    value: { title: string },
+    value: Partial<IEntitySingleProperty>,
     hardcodedWidth: number | undefined,
     hideColumn = false,
     hideValue = false,
     ignoreType = false,
     searchValue: string | undefined = undefined,
+    editable: (data: any) => boolean = () => false,
 ): ColDef => {
     const formatValue = (propertyValue: boolean | null | undefined) => {
         if (!propertyValue) return i18next.t('booleanOptions.no');
@@ -244,13 +272,15 @@ export const booleanColDef = <Data extends any = IEntity>(
         width: hardcodedWidth,
         flex: hardcodedWidth ? 0 : 1,
         hide: hideColumn,
+        editable: (params) => editable?.(params.data) ?? false,
+        cellEditor: 'agCheckboxCellEditor',
     };
 };
 
 export const enumColDef = <Data extends any = IEntity>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
-    value: { title: string },
+    value: Partial<IEntitySingleProperty>,
     values: Array<string>,
     hardcodedWidth: number | undefined,
     enumColorOptions?: Record<string, string>,
@@ -258,6 +288,7 @@ export const enumColDef = <Data extends any = IEntity>(
     hideValue = false,
     ignoreType = false,
     searchValue: string | undefined = undefined,
+    editable: (data: any) => boolean = () => false,
 ): ColDef => {
     const filterParams: ISetFilterParams<Data, string | undefined> = {
         suppressMiniFilter: true,
@@ -284,13 +315,19 @@ export const enumColDef = <Data extends any = IEntity>(
         width: hardcodedWidth,
         flex: hardcodedWidth ? 0 : 1,
         hide: hideColumn,
+        editable: (params) => editable?.(params.data) ?? false,
+        cellEditor: SelectCellEditor,
+        cellEditorParams: {
+            values,
+            multiple: false,
+        },
     };
 };
 
 export const enumArrayColDef = <Data extends any = IEntity>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
-    value: { title: string },
+    value: Partial<IEntitySingleProperty>,
     values: Array<string>,
     hardcodedWidth: number | undefined,
     rowHeight: number,
@@ -299,6 +336,7 @@ export const enumArrayColDef = <Data extends any = IEntity>(
     hideValue = false,
     ignoreType = false,
     searchValue: string | undefined = undefined,
+    editable: (data: any) => boolean = () => false,
 ): ColDef => {
     const filterParams: ISetFilterParams<Data, string | undefined> = {
         suppressMiniFilter: true,
@@ -331,6 +369,12 @@ export const enumArrayColDef = <Data extends any = IEntity>(
         width: hardcodedWidth,
         flex: hardcodedWidth ? 0 : 1,
         hide: hideColumn,
+        editable: (params) => editable?.(params.data) ?? false,
+        cellEditor: SelectCellEditor,
+        cellEditorParams: {
+            values,
+            multiple: true,
+        },
     };
 };
 
@@ -375,19 +419,21 @@ export const enumFilesColDef = <Data extends any = IEntity>(
         width: hardcodedWidth,
         flex: hardcodedWidth ? 0 : 1,
         hide: hideColumn,
+        editable: false,
     };
 };
 
 export const dateColDef = <Data extends any = IEntity>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
-    value: Record<string, any>,
+    value: Partial<IEntitySingleProperty>,
     hardcodedWidth?: number,
     hideColumn = false,
     hideValue = false,
     calculateTime = false,
     ignoreType = false,
     searchValue: string | undefined = undefined,
+    editable: (data: any) => boolean = () => false,
 ): ColDef => {
     const { format } = value;
 
@@ -437,6 +483,9 @@ export const dateColDef = <Data extends any = IEntity>(
         width: hardcodedWidth,
         flex: hardcodedWidth ? 0 : 1,
         hide: hideColumn,
+        editable: (params) => editable?.(params.data) ?? false,
+        cellEditor: DateTimeCellEditor,
+        cellEditorParams: { dateOrDateTime: format === 'date-time' ? 'dateTime' : 'date' },
     };
 };
 
