@@ -26,7 +26,7 @@ export const TemplateFields = ({
 }) => {
     console.log({ templateFileProperties, values }); // TODO - fix this component....
     return (
-        <Grid container flexDirection="column" width="100%">
+        <Grid container flexDirection="column" width="100%" height="100%" justifyContent="space-between">
             <Grid
                 item
                 sx={{

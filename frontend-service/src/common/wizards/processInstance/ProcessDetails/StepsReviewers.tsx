@@ -37,15 +37,17 @@ const ReviewCard = ({ stepTemplate, values, setFieldValue, isEditMode, processIn
             <Card
                 ref={cardRef}
                 sx={{
-                    height: isEditMode || !processInstance ? '30vh' : '25vh',
-                    minHeight: '150px',
-                    backgroundColor: darkMode ? '#303030' : 'white',
+                    height: isEditMode || !processInstance ? '250px' : '25vh',
+                    // minHeight: '150px',
+                    backgroundColor: darkMode ? '#303030' : '#f7f9fc',
+                    boxShadow: 'none',
+                    borderRadius: '20px',
                 }}
             >
                 <CardHeader
                     avatar={
                         stepTemplate.iconFileId ? (
-                            <CustomIcon iconUrl={stepTemplate.iconFileId} width="30px" height="30px" />
+                            <CustomIcon iconUrl={stepTemplate.iconFileId} width="30px" height="30px" color="#1E2775" />
                         ) : (
                             <HiveIcon fontSize="large" />
                         )
@@ -53,12 +55,14 @@ const ReviewCard = ({ stepTemplate, values, setFieldValue, isEditMode, processIn
                     title={
                         <MeltaTooltip title={stepTemplate.displayName} arrow>
                             <Typography
-                                variant="h5"
                                 style={{
                                     whiteSpace: 'nowrap',
                                     overflow: 'hidden',
                                     textOverflow: 'ellipsis',
                                     maxWidth: cardWidth ? `${cardWidth - 75}px` : '200px',
+                                    fontSize: '16px',
+                                    color: '#1E2775',
+                                    fontWeight: '600',
                                 }}
                             >
                                 {stepTemplate.displayName}
@@ -107,52 +111,57 @@ const StepsReviewers: React.FC<IDetailsStepProp> = ({ detailsFormikData, isEditM
     const { values, setFieldValue, submitForm } = detailsFormikData;
 
     return (
-        <Card sx={{ border: 'none', boxShadow: 'none', background: 'transparent' }}>
-            <CardContent
-                sx={{
-                    height: '56vh',
-                    overflowY: 'auto',
-                    '&::-webkit-scrollbar': {
-                        width: '5px',
-                    },
-                }}
-            >
-                <Grid container rowSpacing={3}>
-                    {values.template?.steps.map((stepTemplate: IMongoStepTemplatePopulated) => (
-                        <Grid key={stepTemplate._id} item xs={12} sm={6} md={4}>
-                            <ReviewCard
-                                stepTemplate={stepTemplate}
-                                values={values}
-                                setFieldValue={setFieldValue}
-                                isEditMode={isEditMode}
-                                processInstance={processInstance}
-                            />
-                        </Grid>
-                    ))}
-                </Grid>
-            </CardContent>
-
-            <Grid item container sx={{ justifyContent: 'space-between', alignItems: 'flex-start', padding: 1 }}>
+        <Card sx={{ border: 'none', boxShadow: 'none', background: 'transparent', height: '100%', justifyContent: 'space-between', padding: '20px' }}>
+            <Grid container item flexDirection="column" height="100%" sx={{ justifyContent: 'space-between' }}>
                 <Grid item>
-                    <Fab onClick={onBack} color="primary" variant="extended">
-                        <NavigateNextIcon />
-                        {i18next.t('wizard.processInstance.backTo')}
-                    </Fab>
+                    <CardContent
+                        sx={{
+                            // height: '56vh',
+                            overflowY: 'auto',
+                            '&::-webkit-scrollbar': {
+                                width: '5px',
+                            },
+                        }}
+                    >
+                        <Grid container rowSpacing={3}>
+                            {values.template?.steps.map((stepTemplate: IMongoStepTemplatePopulated) => (
+                                <Grid key={stepTemplate._id} item xs={12} sm={6} md={4}>
+                                    <ReviewCard
+                                        stepTemplate={stepTemplate}
+                                        values={values}
+                                        setFieldValue={setFieldValue}
+                                        isEditMode={isEditMode}
+                                        processInstance={processInstance}
+                                    />
+                                </Grid>
+                            ))}
+                        </Grid>
+                    </CardContent>
                 </Grid>
-                {!processInstance && (
+
+                <Grid item container sx={{ justifyContent: 'space-between', alignItems: 'flex-start', padding: 1 }}>
                     <Grid item>
-                        <Fab
-                            onClick={() => {
-                                submitForm();
-                            }}
-                            variant="extended"
-                            color="primary"
-                        >
-                            {i18next.t('wizard.processInstance.createProcess')}
-                            <NavigateBeforeIcon />
+                        <Fab size="small" onClick={onBack} color="primary" variant="extended">
+                            <NavigateNextIcon />
+                            {i18next.t('wizard.processInstance.backTo')}
                         </Fab>
                     </Grid>
-                )}
+                    {!processInstance && (
+                        <Grid item>
+                            <Fab
+                                size="small"
+                                onClick={() => {
+                                    submitForm();
+                                }}
+                                variant="extended"
+                                color="primary"
+                            >
+                                {i18next.t('wizard.processInstance.createProcess')}
+                                <NavigateBeforeIcon />
+                            </Fab>
+                        </Grid>
+                    )}
+                </Grid>
             </Grid>
         </Card>
     );

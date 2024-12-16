@@ -31,10 +31,14 @@ export enum StatusColors {
     All = '#0288d1',
 }
 export enum StatusColorsNames {
-    Pending = 'warning',
-    Approved = 'success',
-    Rejected = 'error',
-    Archived = 'disabled',
+    // Pending = 'warning',
+    // Approved = 'success',
+    // Rejected = 'error',
+    // Archived = 'disabled',
+    Pending = '#ff8f00',
+    Approved = '#2e7d32',
+    Rejected = '#d32f2f',
+    Archived = '#B0B0B0',
 }
 export const StyledCard = styled(Card)(({ theme }) => ({
     background: theme.palette.mode === 'light' ? '#FFFFFF 0% 0% no-repeat padding-box' : undefined,
@@ -242,17 +246,25 @@ const ProcessCard: React.FC<{
             <StyledCard onClick={() => setOpen({ isOpen: true })}>
                 {!isLoading ? (
                     <CardContent>
-                        <Grid container direction="column" alignItems="center" justifyContent="center" spacing={2}>
-                            <Grid item container direction="row" justifyContent="center" alignItems="center" spacing={1}>
-                                <Grid item>
-                                    <StatusIcon fontSize="medium" color={statusColorName(processInstance.status, processInstance.archived)} />
+                        <Grid container direction="column" alignItems="center" justifyContent="center" spacing={1}>
+                            <Grid item container direction="row" justifyContent="space-between" alignItems="center" wrap="nowrap" spacing={1}>
+                                <Grid container item alignItems="center">
+                                    <Grid
+                                        item
+                                        style={{
+                                            height: '20px',
+                                            width: '3px',
+                                            backgroundColor: statusColorName(processInstance.status, processInstance.archived),
+                                            borderRadius: '20px',
+                                        }}
+                                    />
+                                    <Grid item sx={{ paddingLeft: '5px' }}>
+                                        <Typography component="h6" variant="h6" noWrap>
+                                            {processInstance.name}
+                                        </Typography>
+                                    </Grid>
                                 </Grid>
                                 <Grid item>
-                                    <Typography component="h6" variant="h6" noWrap>
-                                        {processInstance.name}
-                                    </Typography>
-                                </Grid>
-                                <Grid>
                                     {isEditMode && (
                                         <>
                                             <IconButton onClick={handleClick}>
@@ -302,6 +314,28 @@ const ProcessCard: React.FC<{
                                     )}
                                 </Grid>
                             </Grid>
+                            <Grid item container justifyContent="space-between">
+                                <Grid item>
+                                    <Typography fontSize="14px" style={{ color: '#787C9E' }} noWrap>
+                                        {`${i18next.t('processInstancesPage.process')}: ${
+                                            processTemplatesMap.get(currProcessInstance.templateId)!.displayName
+                                        }`}
+                                    </Typography>
+                                </Grid>
+                                <Grid item>
+                                    <Typography fontSize="14px" style={{ color: '#787C9E' }} noWrap>
+                                        {`${new Date(processInstance.startDate).toLocaleDateString('he-IL', {
+                                            year: '2-digit',
+                                            month: '2-digit',
+                                            day: '2-digit',
+                                        })} - ${new Date(processInstance.endDate).toLocaleDateString('he-IL', {
+                                            year: '2-digit',
+                                            month: '2-digit',
+                                            day: '2-digit',
+                                        })}`}
+                                    </Typography>
+                                </Grid>
+                            </Grid>
                             <Grid item container justifyContent="center" spacing={4}>
                                 {processInstance.steps.map((step, index) => {
                                     const stepTemplate = processTemplate.steps[index];
@@ -316,6 +350,25 @@ const ProcessCard: React.FC<{
                                         </Grid>
                                     );
                                 })}
+                            </Grid>
+                            <Grid item container justifyContent="space-between">
+                                <Grid item>
+                                    <Typography fontSize="14px" style={{ color: '#787C9E' }} noWrap>
+                                        {`${i18next.t('processInstancesPage.createdBy')}: ---`}
+                                    </Typography>
+                                </Grid>
+                                <Grid item>
+                                    <Typography fontSize="14px" style={{ color: '#787C9E' }} noWrap>
+                                        {`${i18next.t('processInstancesPage.createdAt')}: ${new Date(processInstance.createdAt).toLocaleDateString(
+                                            'he-IL',
+                                            {
+                                                year: '2-digit',
+                                                month: '2-digit',
+                                                day: '2-digit',
+                                            },
+                                        )}`}
+                                    </Typography>
+                                </Grid>
                             </Grid>
                         </Grid>
                     </CardContent>

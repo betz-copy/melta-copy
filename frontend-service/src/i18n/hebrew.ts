@@ -904,6 +904,9 @@ export default {
         newBreachDetected: 'זוהתה הפרת חוק חדשה',
     },
     processInstancesPage: {
+        process: 'תהליך',
+        createdBy: 'נוצר ע"י',
+        createdAt: 'נוצר ב',
         failedToCreateProcess: 'נכשל ליצור תהליך',
         processCreatedSuccessfully: 'תהליך נוצר בהצלחה',
         failedToDeleteProcess: 'נכשל למחוק תהליך',

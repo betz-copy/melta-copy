@@ -46,7 +46,7 @@ export const ReviewerSelector: React.FC<ReviewerSelectorProps> = ({ forcedReview
                 flexWrap="nowrap"
                 sx={{
                     overflowY: 'auto',
-                    maxHeight: !isViewMode ? '140px' : '160px',
+                    maxHeight: !isViewMode ? '110px' : '130px',
                     '&::-webkit-scrollbar': {
                         width: '3px',
                     },
@@ -54,15 +54,15 @@ export const ReviewerSelector: React.FC<ReviewerSelectorProps> = ({ forcedReview
             >
                 {forcedReviewers?.map((reviewer) => (
                     <Grid item key={reviewer._id}>
-                        <Chip label={reviewer.fullName} variant="outlined" disabled />
+                        <Chip label={reviewer.fullName} sx={{ backgroundColor: '#c5c6d4' }} disabled />
                     </Grid>
                 ))}
                 {reviewers?.map((reviewer) => (
                     <Grid item key={reviewer._id}>
                         {isViewMode ? (
-                            <Chip label={reviewer.fullName} variant="outlined" />
+                            <Chip label={reviewer.fullName} sx={{ backgroundColor: '#E0E1ED' }} />
                         ) : (
-                            <Chip label={reviewer.fullName} variant="outlined" onDelete={() => onRemove(reviewer, reviewers)} />
+                            <Chip label={reviewer.fullName} sx={{ backgroundColor: '#E0E1ED' }} onDelete={() => onRemove(reviewer, reviewers)} />
                         )}
                     </Grid>
                 ))}

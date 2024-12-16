@@ -20,7 +20,12 @@ export const GeneralDetailsFields = ({
 }) => {
     return (
         <Grid item>
-            <BlueTitle title={i18next.t('wizard.processInstance.generalDetails')} component="h6" variant="h6" style={{ marginBottom: '30px' }} />
+            <BlueTitle
+                title={i18next.t('wizard.processInstance.generalDetails')}
+                component="h6"
+                variant="h6"
+                style={{ marginBottom: '30px', marginTop: '20px', fontSize: '16px' }}
+            />
             <Grid container direction="column" spacing={3}>
                 <Grid item>
                     <Autocomplete
@@ -40,6 +45,7 @@ export const GeneralDetailsFields = ({
                                 sx={{
                                     '& .MuiInputBase-root': {
                                         borderRadius: '10px',
+                                        backgroundColor: 'white',
                                     },
                                     '& fieldset': {
                                         borderColor: '#CCCFE5',
@@ -73,6 +79,7 @@ export const GeneralDetailsFields = ({
                         sx={{
                             '& .MuiInputBase-root': {
                                 borderRadius: '10px',
+                                backgroundColor: 'white',
                             },
                             '& fieldset': {
                                 borderColor: '#CCCFE5',
@@ -113,6 +120,7 @@ export const GeneralDetailsFields = ({
                                     sx={{
                                         '& .MuiInputBase-root': {
                                             borderRadius: '10px',
+                                            backgroundColor: 'white',
                                         },
                                         '& fieldset': {
                                             borderColor: '#CCCFE5',
@@ -152,6 +160,7 @@ export const GeneralDetailsFields = ({
                                     sx={{
                                         '& .MuiInputBase-root': {
                                             borderRadius: '10px',
+                                            backgroundColor: 'white',
                                         },
                                         '& fieldset': {
                                             borderColor: '#CCCFE5',

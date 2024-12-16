@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Dialog, DialogTitle, DialogContent, IconButton, Grid } from '@mui/material';
+import { Dialog, IconButton, Grid, Box, Stepper, Step, StepLabel, Divider } from '@mui/material';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { AxiosError } from 'axios';
@@ -22,6 +22,15 @@ interface ISimpleDialogProps {
     open: boolean;
     onClose: () => void;
 }
+
+const steps = [
+    {
+        label: i18next.t('wizard.processInstance.generalDetails'),
+    },
+    {
+        label: i18next.t('wizard.processInstance.stepsReviewers'),
+    },
+];
 
 const CreateProcess: React.FC<ISimpleDialogProps> = ({ open, onClose }) => {
     const queryClient = useQueryClient();
@@ -169,40 +178,60 @@ const CreateProcess: React.FC<ISimpleDialogProps> = ({ open, onClose }) => {
                         />
                     </Grid>
                 </Grid>
-                <Grid item flexBasis="75%">
+                <Grid container item flexBasis="75%" flexDirection="column">
+                    {values.template && (
+                        <Grid item flexBasis="10%">
+                            <Box sx={{ width: '40%', padding: 3 }}>
+                                <Stepper nonLinear activeStep={activeProcessDetailsStep}>
+                                    {steps.map(({ label }) => (
+                                        <Step key={label}>
+                                            <StepLabel>{label}</StepLabel>
+                                        </Step>
+                                    ))}
+                                </Stepper>
+                            </Box>
+                        </Grid>
+                    )}
+                    {/* <Grid item container width="100%" flexDirection="column" alignItems="center" alignSelf="center"> */}
+                    <Divider variant="middle" />
+                    {/* </Grid> */}
                     {values.template && activeProcessDetailsStep === 0 && (
-                        <TemplateFields
-                            toPrint={false}
-                            values={values}
-                            viewMode={viewMode}
-                            errors={errors}
-                            touched={touched}
-                            setFieldValue={setFieldValue}
-                            setFieldTouched={setFieldTouched}
-                            templateFileProperties={templateFileProperties}
-                            handleBlur={handleBlur}
-                            templateEntityReferenceProperties={templateEntityReferenceProperties}
-                            onNext={handleNext}
-                        />
+                        <Grid item flexBasis="85%">
+                            <TemplateFields
+                                toPrint={false}
+                                values={values}
+                                viewMode={viewMode}
+                                errors={errors}
+                                touched={touched}
+                                setFieldValue={setFieldValue}
+                                setFieldTouched={setFieldTouched}
+                                templateFileProperties={templateFileProperties}
+                                handleBlur={handleBlur}
+                                templateEntityReferenceProperties={templateEntityReferenceProperties}
+                                onNext={handleNext}
+                            />
+                        </Grid>
                     )}
                     {values.template && activeProcessDetailsStep === 1 && (
-                        <StepsReviewers
-                            detailsFormikData={detailsFormikData}
-                            onNext={handleNext}
-                            onBack={handleBack}
-                            processInstance={undefined}
-                            // toPrint={false}
-                            // values={values}
-                            // viewMode={viewMode}
-                            // errors={errors}
-                            // touched={touched}
-                            // setFieldValue={setFieldValue}
-                            // setFieldTouched={setFieldTouched}
-                            // templateFileProperties={templateFileProperties}
-                            // handleBlur={handleBlur}
-                            // templateEntityReferenceProperties={templateEntityReferenceProperties}
-                            // onNext={handleNext}
-                        />
+                        <Grid item flexBasis="80%">
+                            <StepsReviewers
+                                detailsFormikData={detailsFormikData}
+                                onNext={handleNext}
+                                onBack={handleBack}
+                                processInstance={undefined}
+                                // toPrint={false}
+                                // values={values}
+                                // viewMode={viewMode}
+                                // errors={errors}
+                                // touched={touched}
+                                // setFieldValue={setFieldValue}
+                                // setFieldTouched={setFieldTouched}
+                                // templateFileProperties={templateFileProperties}
+                                // handleBlur={handleBlur}
+                                // templateEntityReferenceProperties={templateEntityReferenceProperties}
+                                // onNext={handleNext}
+                            />
+                        </Grid>
                     )}
                     {/* <ProcessDetails detailsFormikData={detailsFormikData} /> */}
                 </Grid>
