@@ -24,6 +24,7 @@ import SelectCellEditor from './SelectCellEditor';
 import DateTimeCellEditor from './DateTimeCellEditor';
 import { ActionErrors } from '../../interfaces/ruleBreaches/actionMetadata';
 import RelationshipRefCellEditor from './RelationshipRefCellEditor';
+import { convertToPlainText } from '../HtmlTagsStringValue';
 
 const isPropertyInvalid = <Data extends any = IEntity>(props: ICellRendererParams<Data, any | undefined>, property: string, ignoreType = false) => {
     if (!ignoreType || !props.data?.errors) return false;
@@ -168,6 +169,10 @@ export const stringColDef = <Data extends any = IEntity>(
         hide: hideColumn,
         editable: (params) => editable?.(params.data) ?? false,
         cellEditor: value.format === 'text-area' ? 'agLargeTextCellEditor' : 'agTextCellEditor',
+        cellEditorParams: (params) => ({
+            ...params,
+            value: convertToPlainText(params.value),
+        }),
         cellEditorPopup: value.format === 'text-area',
     };
 };
