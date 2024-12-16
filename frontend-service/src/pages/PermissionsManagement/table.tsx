@@ -19,7 +19,7 @@ import { agGridLocaleText } from '../../utils/agGrid/agGridLocaleText';
 import { translatedEnumColDef } from '../../utils/agGrid/commonColDefs';
 import { trycatch } from '../../utils/trycatch';
 
-const { defaultRowHeight } = environment.agGrid;
+const { defaultRowHeight, defaultFontSize } = environment.agGrid;
 const { infiniteScrollPageCount } = environment.permission;
 
 const scopesTranslation: Record<string, string> = i18next.t('permissions.scopes', { returnObjects: true });
@@ -261,7 +261,14 @@ const PermissionsTable = forwardRef<PermissionsTableRef<IUser>, PermissionsTable
             <AgGridReact<IUser>
                 ref={gridRef}
                 className={`ag-theme-material${darkMode ? '-dark' : ''}`}
-                containerStyle={{ height: '780px', width: '100%', marginBottom: '30px', fontFamily: 'Rubik', fontSize: '16px', borderRadius: '70px' }}
+                containerStyle={{
+                    height: '780px',
+                    width: '100%',
+                    marginBottom: '30px',
+                    fontFamily: 'Rubik',
+                    fontSize: `${defaultFontSize}px`,
+                    borderRadius: '70px',
+                }}
                 defaultColDef={defaultColDef}
                 columnDefs={columnDefs(workspace._id, categories, onDeletePermissionsOfUser, onEditPermissionsOfUser)}
                 getRowId={(params) => getRowId(params.data)}
