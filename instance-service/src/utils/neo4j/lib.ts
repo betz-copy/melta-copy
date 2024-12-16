@@ -78,7 +78,7 @@ const normalizeFields = (properties: Record<string, any>): Record<string, any> =
     if (userKeys.size) {
         userKeys.forEach((userKey) => {
             props[userKey] = JSON.stringify({
-                _id: properties[`${userKey}${userFieldSuffix.id}${config.neo4j.userFieldPropertySuffix}`],
+                _id: properties[`${userKey}${userFieldSuffix._id}${config.neo4j.userFieldPropertySuffix}`],
                 fullName: properties[`${userKey}${userFieldSuffix.fullName}${config.neo4j.userFieldPropertySuffix}`],
                 jobTitle: properties[`${userKey}${userFieldSuffix.jobTitle}${config.neo4j.userFieldPropertySuffix}`],
                 hierarchy: properties[`${userKey}${userFieldSuffix.hierarchy}${config.neo4j.userFieldPropertySuffix}`],

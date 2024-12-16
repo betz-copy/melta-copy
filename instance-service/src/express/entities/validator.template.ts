@@ -39,7 +39,7 @@ export const usersFieldsSuffix = {
 };
 
 export const userFieldSuffix = {
-    id: '.id',
+    _id: '.id',
     fullName: '.fullName',
     jobTitle: '.jobTitle',
     hierarchy: '.hierarchy',
@@ -465,12 +465,9 @@ export const addStringFieldsAndNormalizeDateValues = (
         const propertyValue = entityProperties[key];
         const { type, format, items } = value;
         if (format === 'user') {
-            normalizedEntity[`${key}${userFieldSuffix.id}${config.neo4j.userFieldPropertySuffix}`] = JSON.parse(propertyValue)._id;
-            normalizedEntity[`${key}${userFieldSuffix.fullName}${config.neo4j.userFieldPropertySuffix}`] = JSON.parse(propertyValue).fullName;
-            normalizedEntity[`${key}${userFieldSuffix.jobTitle}${config.neo4j.userFieldPropertySuffix}`] = JSON.parse(propertyValue).jobTitle;
-            normalizedEntity[`${key}${userFieldSuffix.hierarchy}${config.neo4j.userFieldPropertySuffix}`] = JSON.parse(propertyValue).hierarchy;
-            normalizedEntity[`${key}${userFieldSuffix.mail}${config.neo4j.userFieldPropertySuffix}`] = JSON.parse(propertyValue).mail;
-
+            Object.entries(userFieldSuffix).forEach(([fieldKey, fieldValue]) => {
+                normalizedEntity[`${key}${fieldValue}${config.neo4j.userFieldPropertySuffix}`] = JSON.parse(propertyValue)[fieldKey];
+            });
             return;
         }
 
