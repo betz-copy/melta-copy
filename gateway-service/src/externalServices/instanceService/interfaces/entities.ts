@@ -1,5 +1,8 @@
 import { IRelationship } from './relationships';
 import { IRelationshipTemplate } from '../../templates/relationshipsTemplateService';
+import { IEntitySingleProperty } from '../../templates/entityTemplateService';
+import { ActionErrors, IAction, IActionPopulated, IBrokenRule } from '../../ruleBreachService/interfaces';
+import { IBrokenRulePopulated } from '../../ruleBreachService/interfaces/populated';
 
 export interface IEntity {
     templateId: string;
@@ -15,11 +18,22 @@ export interface IEntityExpanded {
     }[];
 }
 
+export interface IBrokenRulesError {
+    metadata: {
+        errorCode: 'RULE_BLOCK';
+        rawBrokenRules: IBrokenRule[];
+        brokenRules: IBrokenRulePopulated[];
+        actions: IActionPopulated[];
+        rawActions: IAction[];
+    };
+}
+
 export interface IUniqueConstraint {
     type: 'UNIQUE';
     constraintName: string;
     templateId: string;
     properties: string[];
+    values?: Record<string, any>;
 }
 
 export interface IRequiredConstraint {
@@ -27,6 +41,18 @@ export interface IRequiredConstraint {
     constraintName: string;
     templateId: string;
     property: string;
+    index?: number;
+}
+
+export type IValidationError = { message: string; path: string; schemaPath: string; params: Partial<IEntitySingleProperty> };
+
+export interface IValidationErrorData {
+    type: string;
+    message: string;
+    metadata: {
+        properties: Record<string, any>;
+        errors: { type: ActionErrors.validation; metadata: IValidationError }[];
+    };
 }
 
 export type IConstraint = IRequiredConstraint | IUniqueConstraint;
@@ -112,7 +138,7 @@ export interface ISearchResult {
 export interface ICountSearchResult {
     count: number;
     templateId: string;
-    entityIdsToInclude: Record<string, string[]>; // { entityId: minioFileIds:[] }
+    entitiesWithFiles: Record<string, string[]>; // { entityId: minioFileIds:[] }
 }
 
 export interface IDeleteBodyBase {

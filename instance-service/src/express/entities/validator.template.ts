@@ -26,6 +26,7 @@ import {
     ISearchFilter,
     IUniqueConstraintOfTemplate,
 } from './interface';
+import { ActionErrors } from '../bulkActions/interface';
 
 const { neo4j } = config;
 
@@ -86,7 +87,20 @@ export class EntityValidator extends DefaultController {
         const valid = validateFunction(properties);
 
         if (!valid) {
-            throw new ValidationError(`Entity does not match template schema: ${JSON.stringify(validateFunction.errors)}`);
+            const errors = validateFunction.errors?.map((error) => ({
+                type: ActionErrors.validation,
+                metadata: {
+                    message: error.message,
+                    path: error.instancePath,
+                    schemaPath: error.schemaPath,
+                    params: error.params,
+                },
+            }));
+
+            throw new ValidationError(`Entity does not match template schema`, {
+                properties,
+                errors: errors || [],
+            });
         }
     }
 

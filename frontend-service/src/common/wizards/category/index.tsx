@@ -1,11 +1,11 @@
+/* eslint-disable react/no-unstable-nested-components */
 import React from 'react';
-
 import { toast } from 'react-toastify';
 import i18next from 'i18next';
 import { useMutation, useQueryClient } from 'react-query';
 import { AxiosError } from 'axios';
-import { StepsType, Wizard, WizardBaseType } from '../index';
-import { CreateCategoryName, createCategoryNameSchema } from './CreateCategoryName';
+import { StepType, Wizard, WizardBaseType } from '../index';
+import { CreateCategoryName, useCreateCategoryNameSchema } from './CreateCategoryName';
 import { createCategoryRequest, updateCategoryRequest } from '../../../services/templates/categoriesService';
 import { ICategory, ICategoryMap } from '../../../interfaces/categories';
 import { ChooseIcon } from './ChooseIcon';
@@ -16,22 +16,6 @@ import { ErrorToast } from '../../ErrorToast';
 export interface CategoryWizardValues extends Omit<ICategory, 'iconFileId'> {
     icon?: fileDetails;
 }
-const steps: StepsType<CategoryWizardValues> = [
-    {
-        label: i18next.t('wizard.category.chooseName'),
-        component: (props) => <CreateCategoryName {...props} />,
-        validationSchema: createCategoryNameSchema,
-    },
-    {
-        label: i18next.t('wizard.category.chooseIcon'),
-        component: (props) => <ChooseIcon {...props} />,
-    },
-    {
-        label: i18next.t('wizard.category.chooseColor'),
-        component: (props) => <ChooseColor {...props} />,
-        validationSchema: chooseColorSchema,
-    },
-];
 
 const CategoryWizard: React.FC<WizardBaseType<CategoryWizardValues>> = ({
     open,
@@ -41,6 +25,9 @@ const CategoryWizard: React.FC<WizardBaseType<CategoryWizardValues>> = ({
     isEditMode = false,
 }) => {
     const queryClient = useQueryClient();
+
+    const currentCategoryId = isEditMode ? (initialValues as CategoryWizardValues & { _id: string })._id : undefined;
+
     const { isLoading, mutateAsync } = useMutation(
         (category: CategoryWizardValues) =>
             isEditMode === true
@@ -63,6 +50,24 @@ const CategoryWizard: React.FC<WizardBaseType<CategoryWizardValues>> = ({
         },
     );
 
+    const steps: StepType<CategoryWizardValues>[] = [
+        {
+            label: i18next.t('wizard.category.chooseName'),
+            // eslint-disable-next-line @typescript-eslint/no-shadow
+            component: (props, { isEditMode }) => <CreateCategoryName {...props} isEditMode={isEditMode} />,
+            validationSchema: useCreateCategoryNameSchema(currentCategoryId),
+        },
+        {
+            label: i18next.t('wizard.category.chooseIcon'),
+            component: (props) => <ChooseIcon {...props} />,
+        },
+        {
+            label: i18next.t('wizard.category.chooseColor'),
+            component: (props) => <ChooseColor {...props} />,
+            validationSchema: chooseColorSchema,
+        },
+    ];
+
     return (
         <Wizard
             open={open}
@@ -70,7 +75,9 @@ const CategoryWizard: React.FC<WizardBaseType<CategoryWizardValues>> = ({
             initialValues={initialValues}
             initialStep={initialStep}
             isEditMode={isEditMode}
-            title={i18next.t('wizard.category.title')}
+            title={
+                isEditMode ? `${i18next.t('wizard.category.updateTitle')} - ${initialValues.displayName}` : i18next.t('wizard.category.createTitle')
+            }
             steps={steps}
             isLoading={isLoading}
             submitFunction={(values) => mutateAsync(values)}

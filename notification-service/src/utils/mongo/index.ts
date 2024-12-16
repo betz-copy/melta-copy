@@ -1,6 +1,6 @@
 import { connection, ClientSession } from 'mongoose';
 
-const transaction = async <T, Func extends (session: ClientSession) => Promise<T>>(func: Func): Promise<T> => {
+export const transaction = async <T, Func extends (session: ClientSession) => Promise<T>>(func: Func): Promise<T> => {
     let ret;
 
     await connection.transaction(async (session) => {
@@ -10,4 +10,17 @@ const transaction = async <T, Func extends (session: ClientSession) => Promise<T
     return ret;
 };
 
-export default transaction;
+export const UPDATE_CREATED_AT = [
+    {
+        $addFields: {
+            createdAt: {
+                $ifNull: ['$notificationDate', '$createdAt'],
+            },
+        },
+    },
+    {
+        $project: {
+            notificationDate: 0,
+        },
+    },
+];

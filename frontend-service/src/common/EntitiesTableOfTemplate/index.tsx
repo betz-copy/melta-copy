@@ -17,30 +17,35 @@ import { AgGridReact } from '@ag-grid-community/react';
 import { Box, CircularProgress, debounce } from '@mui/material';
 import i18next from 'i18next';
 import isEqual from 'lodash.isequal';
-import pickBy from 'lodash.pickby';
 import sortBy from 'lodash.sortby';
 import React, { ForwardedRef, forwardRef, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { toast } from 'react-toastify';
 import { useLocation } from 'wouter';
 import '../../css/resizeTable.css';
 import '../../css/table.css';
+
+import { AxiosError } from 'axios';
+import { useMutation } from 'react-query';
 import { environment } from '../../globals';
-import { IEntity, IEntityExpanded } from '../../interfaces/entities';
+import { IDeleteEntityBody, IEntity, IEntityExpanded } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IRelationship } from '../../interfaces/relationships';
-import { searchEntitiesOfTemplateRequest } from '../../services/entitiesService';
+import { IRuleBreach } from '../../interfaces/ruleBreaches/ruleBreach';
+import { deleteEntityRequest, searchEntitiesOfTemplateRequest, updateEntityStatusRequest } from '../../services/entitiesService';
 import { useDarkModeStore } from '../../stores/darkMode';
+import { agGridLocaleText } from '../../utils/agGrid/agGridLocaleText';
 import { agGridToSearchEntitiesOfTemplateRequest } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 import { DateFilterComponent } from '../../utils/agGrid/DateFilterComponent';
 import { IAGGridRequest } from '../../utils/agGrid/interfaces';
 import useDeepCompareMemo from '../../utils/hooks/useDeepCompareMemo';
 import { LocalStorage } from '../../utils/localStorage';
 import { trycatch } from '../../utils/trycatch';
+import { AreYouSureDialog } from '../dialogs/AreYouSureDialog';
 import { MultiSelectStatusBar } from '../EntitiesPage/MultiSelectStatusBar';
 import { ResizeBox } from '../EntitiesPage/ResizeBox';
 import { RowCountGridStatusBar } from '../EntitiesPage/RowCountGridStatusBar';
+import { ErrorToast } from '../ErrorToast';
 import { getColumnDefs, IGetColumnDefsOptions } from './getColumnDefs';
-import { agGridLocaleText } from '../../utils/agGrid/agGridLocaleText';
 
 const { rowCount, defaultExpandedRowCount } = environment.agGrid;
 
@@ -51,9 +56,14 @@ export const defaultFilterModel = {
     },
 };
 
-export interface IButtonProps<Data> {
+export interface IButtonPopoverProps<Data> {
     onClick: (entity: Data) => void;
     popoverText: string;
+    disabledButton: boolean;
+}
+
+export interface IButtonProps<Data> {
+    onClick: (e: React.MouseEvent<HTMLButtonElement>, entity: Data) => void;
     disabledButton: boolean;
 }
 
@@ -72,7 +82,8 @@ export const getDatasource = <Data extends any = IEntity>(
                 });
                 return;
             }
-            const agGridRequest = { ...params.request, filterModel: { ...defaultFilterModel, ...params.request.filterModel } };
+
+            const agGridRequest = { ...params.request, filterModel: { ...params.request.filterModel } };
 
             const { result: data, err } = await trycatch(() =>
                 searchEntitiesOfTemplateRequest(
@@ -134,12 +145,13 @@ export const getRowModelProps = <Data extends any = IEntity>(
 const LoadingCellRenderer = () => <CircularProgress size={20} sx={{ marginLeft: 1 }} />;
 
 export type EntitiesTableOfTemplateProps<Data> = {
-    template: IMongoEntityTemplatePopulated & { entityIdsToInclude?: string[] };
+    template: IMongoEntityTemplatePopulated & { entitiesWithFiles?: string[] };
     entities?: Data[];
     onRowSelected?: (data: Data) => void;
     showNavigateToRowButton: boolean;
-    deleteRowButtonProps?: IButtonProps<Data>;
-    editRowButtonProps?: IButtonProps<Data>;
+    deleteRowButtonProps?: IButtonPopoverProps<Data>;
+    editRowButtonProps?: IButtonPopoverProps<Data>;
+    menuRowButtonProps?: boolean;
     hasPermissionToCategory?: boolean;
     getRowId: (data: Data) => string;
     getEntityPropertiesData: (data: Data) => IEntity['properties'];
@@ -163,6 +175,8 @@ export type EntitiesTableOfTemplateProps<Data> = {
     };
     onFilter?: () => void;
     mainEntity?: IEntityExpanded;
+    ignoreType?: boolean;
+    refetch?: () => void;
     hasInstances?: boolean;
     paginationPageSizeSelector?: boolean | number[];
 };
@@ -191,6 +205,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             rowModelType,
             deleteRowButtonProps,
             editRowButtonProps,
+            menuRowButtonProps,
             rowData,
             quickFilterText,
             rowHeight,
@@ -200,6 +215,9 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             saveStorageProps,
             onFilter,
             hasPermissionToCategory,
+            ignoreType,
+            mainEntity,
+            refetch,
             hasInstances,
             multipleSelect,
             paginationPageSizeSelector = environment.agGrid.paginationPageSizeSelector as unknown as number[],
@@ -218,6 +236,49 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         const defaultColumnWidths = savedColumnWidths ? JSON.parse(savedColumnWidths) : {};
 
         const [_, navigate] = useLocation();
+
+        const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+        const closeDeleteDialog = () => {
+            setOpenDeleteDialog(false);
+        };
+        const [selectedRow, setSelectedRow] = useState('');
+        const { isLoading: isDeleteLoading, mutateAsync: deleteMutation } = useMutation(
+            (id: string) =>
+                deleteEntityRequest({
+                    selectAll: false,
+                    templateId: template?._id as string,
+                    idsToInclude: [id],
+                    deleteAllRelationships: false,
+                } as IDeleteEntityBody<false>),
+            {
+                onError: (error: AxiosError) => {
+                    toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.entity.failedToDelete')} />);
+                },
+                onSuccess: () => {
+                    refetch?.();
+                    toast.success(i18next.t('wizard.entity.deletedSuccessfully'));
+                },
+                onSettled: () => {
+                    closeDeleteDialog();
+                    setSelectedRow('');
+                },
+            },
+        );
+        const { mutateAsync: updateEntityStatus } = useMutation(
+            ({ currEntity, disabled, ignoredRules }: { currEntity: IEntity; disabled: boolean; ignoredRules?: IRuleBreach['brokenRules'] }) =>
+                updateEntityStatusRequest(currEntity.properties._id, disabled, JSON.stringify(ignoredRules)),
+            {
+                onSuccess: (data) => {
+                    if (data.properties.disabled) toast.success(i18next.t('entityPage.disabledSuccessfully'));
+                    else toast.success(i18next.t('entityPage.activatedSuccessfully'));
+                    refetch?.();
+                },
+                onError: (_err: AxiosError, { disabled }) => {
+                    if (disabled) toast.error(i18next.t('entityPage.failedToDisable'));
+                    else toast.error(i18next.t('entityPage.failedToActivate'));
+                },
+            },
+        );
 
         const gridRef = useRef<AgGridReact<Data>>(null);
         const tableRef = useRef<HTMLDivElement>(null);
@@ -279,6 +340,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             getEntityPropertiesData,
             onNavigateToRow: showNavigateToRowButton ? (data) => navigate(`/entity/${getEntityPropertiesData(data)._id}`) : undefined,
             deleteRowButtonProps,
+            menuRowButtonProps,
             hideNonPreview,
             editRowButtonProps,
             hasPermissionToCategory,
@@ -286,6 +348,11 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             defaultColumnsOrder,
             defaultColumnWidths,
             rowHeight,
+            ignoreType,
+            navigate,
+            setSelectedRow,
+            setOpenDeleteDialog,
+            updateEntityStatus,
             searchValue: quickFilterText,
         };
 
@@ -298,7 +365,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
 
         const rowModelProps = useMemo(
             () => getRowModelProps(rowModelType, template, rowData, pageRowCount, quickFilterText, datasourceOnFail, hasInstances),
-            [rowModelType, template, rowData, pageRowCount, quickFilterText, hasInstances],
+            [rowModelType, template, rowData, pageRowCount, quickFilterText, mainEntity, hasInstances],
         );
 
         const gridStyles = {
@@ -313,6 +380,11 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
 
         const handleColumnVisible = (params: ColumnVisibleEvent<Data>) => {
             if (!saveStorageProps.shouldSaveVisibleColumns) return;
+            if (params?.column?.getColId() && params.column.getColId() === 'disabled') {
+                const { disabled, ...rest } = params.api.getFilterModel();
+                const filterModel = params.column.isVisible() ? params.api.getFilterModel() : { ...rest, ...defaultFilterModel };
+                params.api.setFilterModel(filterModel);
+            }
             const columnState = params.api.getColumnState();
             const updatedVisibleColumns = columnState.reduce<Record<string, boolean>>((acc, col) => {
                 acc[col.colId] = !col.hide;
@@ -365,7 +437,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             if (!saveStorageProps.shouldSaveScrollPosition) return;
             if (params.api.getVerticalPixelRange().top >= 0 && rowModelType === 'infinite')
                 sessionStorage.setItem(`scrollPosition-${template._id}`, JSON.stringify(params.api.getVerticalPixelRange().top));
-        }, 300);
+        }, 500);
 
         const statusPanels = useMemo(() => {
             const panels: StatusPanelDef[] = [{ statusPanel: RowCountGridStatusBar, align: 'right' }];
@@ -403,6 +475,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             >
                 <AgGridReact<Data>
                     ref={gridRef}
+                    suppressDragLeaveHidesColumns={ignoreType}
                     getRowStyle={(params): RowStyle | undefined => {
                         if (params.data && getEntityPropertiesData(params.data).disabled) {
                             return { background: darkMode ? '' : '#FAFAFA', color: darkMode ? '#7f7f7f' : 'rgb(159 147 147 / 40%)' };
@@ -446,10 +519,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                             if (isEqual(filterModel, defaultFilterModel)) {
                                 LocalStorage.remove(`tableFilter-${saveStorageProps.pageType}-${template._id}`);
                             } else {
-                                LocalStorage.set(
-                                    `tableFilter-${saveStorageProps.pageType}-${template._id}`,
-                                    pickBy(filterModel, (_value, key) => key !== 'disabled'),
-                                );
+                                LocalStorage.set(`tableFilter-${saveStorageProps.pageType}-${template._id}`, filterModel);
                             }
                         }
                     }}
@@ -475,6 +545,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
 
                         const savedFilterModel = LocalStorage.get(`tableFilter-${saveStorageProps.pageType}-${template._id}`);
                         if (savedFilterModel) params.api.setFilterModel({ ...savedFilterModel });
+                        else if (rowModelType !== 'clientSide') params.api.setFilterModel(defaultFilterModel);
                     }}
                     onFirstDataRendered={(params) => {
                         const savedPage = sessionStorage.getItem(`currentPage-${saveStorageProps.pageType}-${template._id}`);
@@ -503,7 +574,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                                             });
                                         }
                                     }
-                                }, 150);
+                                }, 300);
                             }
                         }
                     }}
@@ -540,6 +611,14 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                     statusBar={rowModelType === 'infinite' ? { statusPanels } : undefined}
                     localeText={agGridLocaleText}
                     paginationPageSizeSelector={paginationPageSizeSelector}
+                />
+                <AreYouSureDialog
+                    open={openDeleteDialog && selectedRow !== ''}
+                    handleClose={closeDeleteDialog}
+                    onYes={() => {
+                        deleteMutation(selectedRow);
+                    }}
+                    isLoading={isDeleteLoading}
                 />
             </Box>
         );

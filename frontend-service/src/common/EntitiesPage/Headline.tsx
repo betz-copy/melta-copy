@@ -103,6 +103,7 @@ export const GlobalSearchBar: React.FC<{
                             semanticSearch: (!convertToBool(urlSemanticSearch!)).toString(),
                         })
                     }
+                    sx={{ padding: 0, paddingLeft: 0.5 }}
                 >
                     {boolUrl ? <AutoAwesome color="primary" /> : <AutoAwesomeOutlinedIcon />}
                 </IconButton>
@@ -203,6 +204,7 @@ const EntitiesPageHeadline: React.FC<{
             onAddEntity(entity.properties._id);
         }
     };
+
     return (
         <Grid
             container
