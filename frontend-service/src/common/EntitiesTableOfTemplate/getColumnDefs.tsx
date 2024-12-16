@@ -51,6 +51,7 @@ export interface IGetColumnDefsOptions<Data extends any> {
         unknown
     >;
     searchValue?: string;
+    disableEditCell?: boolean;
 }
 
 export const getColumnDefs = <Data extends any = IEntity>({
@@ -72,20 +73,25 @@ export const getColumnDefs = <Data extends any = IEntity>({
     setOpenDeleteDialog,
     updateEntityStatus,
     searchValue,
+    disableEditCell,
 }: IGetColumnDefsOptions<Data>): ColDef[] => {
     const columnDefs = template.propertiesOrder.map((property) => {
-        const propertyTemplate = template.properties.properties[property];
-        const { type, format, calculateTime } = propertyTemplate;
+        const propertyTemplate = { ...template.properties.properties[property] };
+        const { type, format, calculateTime, archive } = propertyTemplate;
 
         const hideField = template.properties.hide.includes(property);
 
         const valueGetter: ValueGetterFunc = ({ data }) => (data ? getEntityPropertiesData(data)[property] : undefined);
 
         const hideColumn =
-            defaultVisibleColumns[property] !== undefined
+            archive ||
+            (defaultVisibleColumns[property] !== undefined
                 ? !defaultVisibleColumns[property]
-                : hideNonPreview && !template.propertiesPreview.includes(property);
+                : hideNonPreview && !template.propertiesPreview.includes(property));
 
+        if (propertyTemplate.archive) propertyTemplate.title = `${propertyTemplate.title} ${i18next.t('entitiesTableOfTemplate.archiveTitle')}`;
+
+        const editable = (data: any) => !disableEditCell && !propertyTemplate.readOnly && data && !getEntityPropertiesData(data).disabled;
         if (type === 'number')
             return numberColDef(
                 property,
@@ -96,6 +102,7 @@ export const getColumnDefs = <Data extends any = IEntity>({
                 hideField,
                 ignoreType,
                 searchValue,
+                editable,
             );
         if (type === 'boolean')
             return booleanColDef(
@@ -107,6 +114,7 @@ export const getColumnDefs = <Data extends any = IEntity>({
                 hideField,
                 ignoreType,
                 searchValue,
+                editable,
             );
         if (format === 'date' || format === 'date-time')
             return dateColDef(
@@ -119,6 +127,7 @@ export const getColumnDefs = <Data extends any = IEntity>({
                 calculateTime,
                 ignoreType,
                 searchValue,
+                editable,
             );
         if (format === 'fileId')
             return fileColDef(
@@ -140,6 +149,7 @@ export const getColumnDefs = <Data extends any = IEntity>({
                 propertyTemplate.relationshipReference!.relatedTemplateField,
                 hideColumn,
                 searchValue,
+                editable,
             );
         if (propertyTemplate.enum)
             return enumColDef(
@@ -153,6 +163,7 @@ export const getColumnDefs = <Data extends any = IEntity>({
                 hideField,
                 ignoreType,
                 searchValue,
+                editable,
             );
         if (propertyTemplate.pattern)
             return regexColDef(
@@ -164,6 +175,7 @@ export const getColumnDefs = <Data extends any = IEntity>({
                 hideField,
                 ignoreType,
                 searchValue,
+                editable,
             );
         if (propertyTemplate.items?.enum)
             return enumArrayColDef(
@@ -178,6 +190,7 @@ export const getColumnDefs = <Data extends any = IEntity>({
                 hideField,
                 ignoreType,
                 searchValue,
+                editable,
             );
         if (propertyTemplate.items?.format === 'fileId') {
             return enumFilesColDef(property, valueGetter, { title: propertyTemplate.title }, defaultColumnWidths[property], rowHeight);
@@ -196,7 +209,17 @@ export const getColumnDefs = <Data extends any = IEntity>({
                 hideColumn,
             );
         }
-        return stringColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn, hideField, ignoreType, searchValue);
+        return stringColDef(
+            property,
+            valueGetter,
+            propertyTemplate,
+            defaultColumnWidths[property],
+            hideColumn,
+            hideField,
+            ignoreType,
+            searchValue,
+            editable,
+        );
     });
     columnDefs.push(
         booleanColDef(
@@ -267,6 +290,7 @@ export const getColumnDefs = <Data extends any = IEntity>({
             cellRenderer: memo<{ data: Data }>(({ data }) => {
                 const entity = getEntityPropertiesData(data);
                 const { disabled: disabledEntity } = entity;
+
                 return (
                     <Grid container flexWrap="nowrap">
                         {onNavigateToRow && (
