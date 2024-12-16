@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import Avatar from '@mui/material/Avatar';
 import { useQuery } from 'react-query';
 import { IUser } from '../interfaces/users';
@@ -16,33 +16,22 @@ interface UserAvatarProps {
 
 const { kartoffelProfile } = environment.users;
 
-const UserAvatar: React.FC<UserAvatarProps> = ({ user, size = 48, bgColor, defaultProfile = false }) => {
+const UserAvatar: React.FC<UserAvatarProps> = ({ user, size = 48, bgColor }) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
     // eslint-disable-next-line no-nested-ternary
     const fontColor = !bgColor ? '#1E2775' : darkMode ? 'black' : 'white';
 
-    const { data: profile, isError } = useQuery(
-        ['userProfile', user.preferences.profilePath],
-        async () => {
-            const { profilePath } = user.preferences;
-            if (!profilePath) return '';
-            if (profilePath.startsWith('/icons/profileAvatar')) return profilePath;
-            const img = new Image();
-            img.src = await getUserProfileRequest(
-                profilePath === kartoffelProfile ? { kartoffelId: user.externalMetadata.kartoffelId } : { profilePath },
-            );
-            return img as any;
-        },
-        {
-            enabled: !defaultProfile,
-            retry: false,
-            onError: (error) => {
-                console.error('Failed to fetch profile image:', error);
-            },
-        },
-    );
-    console.log({ profile });
+    const { data: profile, isError } = useQuery(['userProfile', user.preferences.profilePath], async () => {
+        const { profilePath } = user.preferences;
+        if (!profilePath) return '';
+
+        const imageUrl = await getUserProfileRequest(
+            profilePath === kartoffelProfile ? { kartoffelId: user.externalMetadata.kartoffelId } : { profilePath },
+        );
+
+        return imageUrl;
+    });
 
     return (
         <Avatar
@@ -60,28 +49,19 @@ const UserAvatar: React.FC<UserAvatarProps> = ({ user, size = 48, bgColor, defau
                 border: '3px solid #FF006B',
             }}
         >
-            {/* {profile && !isError ? ( */}
-            <img
-                src={profile ?? ''}
-                // onLoad={(event) => {
-                //     const img = event.target as HTMLImageElement;
-                //     const aspectRatio = img.naturalWidth / img.naturalHeight;
-                //     const containerHeight = window.innerHeight * 0.95;
-                //     const containerWidth = containerHeight * aspectRatio;
-
-                //     if (containerWidth > window.innerWidth) {
-                //         img.style.width = '100%';
-                //         img.style.height = 'auto';
-                //     } else {
-                //         img.style.height = '95vh';
-                //         img.style.width = 'auto';
-                //     }
-                // }}
-                // style={{ maxWidth: '100%', maxHeight: '95vh', transformOrigin: 'center center' }}
-            />
-            {/* ) : (
+            {profile && !isError ? (
+                <img
+                    src={profile}
+                    alt="User"
+                    style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                    }}
+                />
+            ) : (
                 getNameInitials(user)
-            )} */}
+            )}
         </Avatar>
     );
 };

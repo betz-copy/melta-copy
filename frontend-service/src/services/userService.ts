@@ -4,7 +4,6 @@ import { NotificationType } from '../interfaces/notifications';
 import { ICompactNullablePermissions, ICompactPermissions, IPermission, ISubCompactPermissions } from '../interfaces/permissions/permissions';
 import { IExternalUser, IUser, IUserPreferences, IUserSearchBody } from '../interfaces/users';
 import { RecursiveNullable } from '../utils/types';
-import { apiUrlToImageSource, apiUrlToProfileImageSource } from './storageService';
 
 const { users } = environment.api;
 
@@ -81,11 +80,5 @@ export const getUserProfileRequest = async ({ profilePath, kartoffelId }: { prof
             responseType: 'blob',
         },
     );
-    // const blob = new Blob([data]);
-    console.log({ data }, URL.createObjectURL(data));
-
-    
-    const data2 = await apiUrlToImageSource(`/api${environment.api.storage}/${profilePath}`, 'users-global-bucket');
-    console.log({ data2 });
     return URL.createObjectURL(data);
 };

@@ -52,21 +52,13 @@ export class StorageService extends DefaultExternalServiceApi {
     }
 
     async downloadProfileFile(path: string) {
-        console.log('hellllllllllllllllllllllllo', { path });
         const { data } = await this.api.get(`${downloadFileRoute}/${encodeURIComponent(path)}`, {
-            responseType: 'arraybuffer',
+            responseType: 'stream',
             headers: {
                 [workspaceIdHeaderName]: usersGlobalBucketName,
             },
         });
-        // console.log({ instanceof: data instanceof Buffer });
-
-        // const blob = new Blob([data], { type: 'image/png' });
-        // console.log({ blob }, URL.createObjectURL(blob));
-        
         return data;
-
-        // return data;
     }
 
     async downloadFile(path: string) {
