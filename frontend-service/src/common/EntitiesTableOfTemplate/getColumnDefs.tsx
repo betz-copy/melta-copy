@@ -260,6 +260,7 @@ export const getColumnDefs = <Data extends any = IEntity>({
             cellRenderer: memo<{ data: Data }>(({ data }) => {
                 const entity = getEntityPropertiesData(data);
                 const { disabled: disabledEntity } = entity;
+
                 return (
                     <Grid container flexWrap="nowrap">
                         {onNavigateToRow && (
