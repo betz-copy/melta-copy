@@ -357,7 +357,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
 
         const gridStyles = {
             '.ag-center-cols-viewport': {
-                minHeight: `${rowHeight * (hasInstances ? pageRowCount : 2)}px !important`,
+                minHeight: `${rowHeight * (hasInstances === false ? 2 : pageRowCount)}px !important`,
             },
             '.ag-paging-panel': {
                 height: '45px',
