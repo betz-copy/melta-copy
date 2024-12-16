@@ -575,7 +575,7 @@ export default {
             failedToEdit: 'נכשל בעריכת ישות',
             failedToDuplicate: 'נכשל בשכפול ישות',
             deletedSuccessfully: 'ישות נמחקה בהצלחה',
-            deletedEntitiesSuccessForAdmin: 'ישויות נמחקו בהצלחה (מלבד ישויות המשויכיות כשדה לישות אחרת)',
+            deletedEntitiesSuccessForAdmin: 'ישויות נמחקו בהצלחה (מלבד ישויות המשויכיות כשדה קשר לישות אחרת)',
             deletedEntitiesSuccess: 'ישויות נמחקו בהצלחה',
             failedToDelete: 'מחיקה נכשלה.',
             typeEntityTemplateForConfirmDelete: 'הקלד את שם התבנית "{{displayName}}" לצורך אישור המחיקה',
@@ -812,7 +812,7 @@ export default {
         RULE_BLOCK: 'עבר על חוקים',
         RULE_HAS_ALERTS_OR_REQUESTS: 'לחוק קיימים התראות/בקשות. ניתן רק להשבית אותו',
         FILES_TOO_BIG: 'סך גודל הקבצים גדול מדי',
-        ENTITY_HAS_RELATIONSHIPS_REFERENCE: 'כל הישויות שנבחרו מקשורת כשדה בישות אחרת',
+        ENTITY_HAS_RELATIONSHIPS_REFERENCE: 'כל הישויות שנבחרו מקושרות כשדה קשר בישות אחרת',
     },
     tourText: {
         sideBar: 'סרגל הניווט הראשי של המערכת למעבר בין עולמות התוכן והעמודים השונים',
