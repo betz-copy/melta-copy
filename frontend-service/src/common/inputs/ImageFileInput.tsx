@@ -106,7 +106,7 @@ const FileInput: React.FC<FileInputProps> = ({ file, onDeleteFile, onDropFile, i
         }
 
         if ('name' in file && typeof file.name === 'string') {
-            const extension = file.name.split('.').pop()?.toLowerCase() as 'png' | 'jpg' | 'jpeg' | 'svg';
+            const extension = getFileExtension(file.name);
             return environment.fileExtensions.imageToManipulate.includes(extension);
         }
 
