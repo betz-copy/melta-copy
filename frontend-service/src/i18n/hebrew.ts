@@ -783,6 +783,7 @@ export default {
             chooseFromOptions: 'בחירה מאפשרויות',
             chooseFile: 'בחירת קובץ',
             dragFile: 'גרור את הקובץ לכאן',
+            scanFromImage: 'סריקה מתמונה',
             dragFiles: 'יש לגרור קבצים כאן',
             or: 'או',
             dropFile: 'שחרר את הקובץ כאן להעלאה',
@@ -1197,6 +1198,8 @@ export default {
         cameraNotFound: 'מצלמה לא נמצאה',
         somethingWentWrong: 'משהו השתבש, אנא נסה שנית',
         imgName: 'שם התמונה',
+        fileName: 'שם הקובץ',
         takePicture: 'צלם תמונה',
+        blackAndWhite: 'שחור לבן',
     },
 };
