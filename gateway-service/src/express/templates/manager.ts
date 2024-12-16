@@ -532,20 +532,21 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         allRelevantGanttsWithoutDuplicate.forEach(({ items }) => {
             items.forEach(({ entityTemplate: { endDateField, fieldsToShow, id, startDateField }, connectedEntityTemplates }) => {
                 properties.forEach((property) => {
-                    const found =
+                    const isFieldUsed =
                         (id === entityTemplateId && fieldsToShow.includes(property)) ||
                         startDateField === property ||
                         endDateField === property ||
-                        connectedEntityTemplates.some(({ relationshipTemplateId }) => {
+                        connectedEntityTemplates.some(({ relationshipTemplateId, fieldsToShow: connectedFields }) => {
                             const currentRelationShip = allRelationShips.find(({ _id }) => _id === relationshipTemplateId);
 
                             return (
-                                currentRelationShip?.destinationEntityId === entityTemplateId ||
-                                currentRelationShip?.sourceEntityId === entityTemplateId
+                                (currentRelationShip?.destinationEntityId === entityTemplateId ||
+                                    currentRelationShip?.sourceEntityId === entityTemplateId) &&
+                                connectedFields.includes(property)
                             );
                         });
 
-                    if (found)
+                    if (isFieldUsed)
                         throw new BadRequestError('can not delete field that used in gantts', {
                             errorCode: config.errorCodes.failedToDeleteField,
                             type: 'gantts',
@@ -628,18 +629,15 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
     ) {
         if (!removedProperties.length) return;
 
-        const removedFilesProperties = removedProperties.reduce(
-            (acc, propertyToRemove) => {
-                const { format, items } = currentTemplate.properties.properties[propertyToRemove];
+        const removedFilesProperties = removedProperties.reduce((acc, propertyToRemove) => {
+            const { format, items } = currentTemplate.properties.properties[propertyToRemove];
 
-                if (format === 'fileId' || items?.format === 'fileId') {
-                    acc[propertyToRemove] = items?.format === 'fileId';
-                }
+            if (format === 'fileId' || items?.format === 'fileId') {
+                acc[propertyToRemove] = items?.format === 'fileId';
+            }
 
-                return acc;
-            },
-            {} as Record<string, boolean>,
-        );
+            return acc;
+        }, {} as Record<string, boolean>);
 
         if (Object.keys(removedFilesProperties).length) {
             await this.deleteFilesOfDeletedProperty(id, removedFilesProperties, count);
