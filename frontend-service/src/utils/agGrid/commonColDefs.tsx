@@ -20,7 +20,7 @@ import { agGridLocaleText } from './agGridLocaleText';
 import OverflowWrapper from './OverflowWrapper';
 import { Value } from './Value';
 import { IEntitySingleProperty } from '../../interfaces/entityTemplates';
-import MultiSelectCellEditor from './MultiSelectCellEditor';
+import SelectCellEditor from './SelectCellEditor';
 import DateTimeCellEditor from './DateTimeCellEditor';
 import { ActionErrors } from '../../interfaces/ruleBreaches/actionMetadata';
 import RelationshipRefCellEditor from './RelationshipRefCellEditor';
@@ -168,6 +168,7 @@ export const stringColDef = <Data extends any = IEntity>(
         hide: hideColumn,
         editable: (params) => editable?.(params.data) ?? false,
         cellEditor: value.format === 'text-area' ? 'agLargeTextCellEditor' : 'agTextCellEditor',
+        cellEditorPopup: value.format === 'text-area',
     };
 };
 
@@ -315,9 +316,10 @@ export const enumColDef = <Data extends any = IEntity>(
         flex: hardcodedWidth ? 0 : 1,
         hide: hideColumn,
         editable: (params) => editable?.(params.data) ?? false,
-        cellEditor: 'agSelectCellEditor',
+        cellEditor: SelectCellEditor,
         cellEditorParams: {
             values,
+            multiple: false,
         },
     };
 };
@@ -368,9 +370,10 @@ export const enumArrayColDef = <Data extends any = IEntity>(
         flex: hardcodedWidth ? 0 : 1,
         hide: hideColumn,
         editable: (params) => editable?.(params.data) ?? false,
-        cellEditor: MultiSelectCellEditor,
+        cellEditor: SelectCellEditor,
         cellEditorParams: {
             values,
+            multiple: true,
         },
     };
 };
@@ -481,7 +484,8 @@ export const dateColDef = <Data extends any = IEntity>(
         flex: hardcodedWidth ? 0 : 1,
         hide: hideColumn,
         editable: (params) => editable?.(params.data) ?? false,
-        cellEditor: format === 'date-time' ? DateTimeCellEditor : 'agDateStringCellEditor',
+        cellEditor: DateTimeCellEditor,
+        cellEditorParams: { dateOrDateTime: format === 'date-time' ? 'dateTime' : 'date' },
     };
 };
 

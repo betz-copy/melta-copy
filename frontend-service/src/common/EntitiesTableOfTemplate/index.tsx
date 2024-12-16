@@ -470,6 +470,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                                     toast.error(
                                         `${i18next.t('wizard.entity.failedToEdit')}: ${i18next.t('wizard.entity.missingInputForRequiredField')}`,
                                     );
+                                    gridRef.current?.api.refreshServerSide();
                                     break;
                                 case 'UNIQUE':
                                     const { properties } = errorMetadata.constraint as Omit<IUniqueConstraint, 'constraintName'>;
@@ -483,6 +484,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                                             )} ${uniqueProp.substring(uniqueProp.indexOf('-') + 1)}`,
                                         );
                                     });
+                                    gridRef.current?.api.refreshServerSide();
                                     break;
                                 default:
                                     break;
@@ -490,6 +492,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                             break;
                         case errorCodes.actionsCustomError:
                             toast.error(errorMetadata?.message);
+                            gridRef.current?.api.refreshServerSide();
                             break;
                         case errorCodes.ruleBlock:
                             const { brokenRules, rawBrokenRules, actions, rawActions } = errorMetadata;
@@ -679,6 +682,14 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                                 [params.column.getColId()]: params.newValue === '' || params.newValue.length === 0 ? undefined : params.newValue,
                             };
                             setCurrEntity({ templateId: template._id, properties: params.data?.properties });
+
+                            const properties: any = { properties: updatedProperties };
+                            gridRef.current?.api.forEachNode((rowNode) => {
+                                if (rowNode.data && getRowId(properties) === getRowId(rowNode.data)) {
+                                    rowNode.updateData(properties);
+                                }
+                            });
+
                             updateMutation({
                                 newEntityData: {
                                     template,

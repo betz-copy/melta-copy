@@ -13,7 +13,7 @@ interface RelationshipRefCellEditorProps {
     stopEditing: (cancel?: boolean) => void;
 }
 
-const RelationshipRefCellEditor: React.FC<RelationshipRefCellEditorProps> = ({ value, onValueChange, relatedTemplateId, template, stopEditing }) => {
+const RelationshipRefCellEditor: React.FC<RelationshipRefCellEditorProps> = ({ value, onValueChange, relatedTemplateId, template }) => {
     const [inputValue, setInputValue] = React.useState('');
 
     const queryClient = useQueryClient();
@@ -25,7 +25,6 @@ const RelationshipRefCellEditor: React.FC<RelationshipRefCellEditorProps> = ({ v
     const handleEntityChange = (_event: React.SyntheticEvent, chosenEntity: IEntity | null) => {
         onValueChange(chosenEntity);
         setInputValue('');
-        stopEditing();
     };
 
     return (
