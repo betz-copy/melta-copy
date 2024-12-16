@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 import { FilterQuery } from 'mongoose';
 import { IBaseUser, IUser } from './interface';
 import { UsersModel } from './model';
@@ -5,6 +6,8 @@ import { PermissionsManager } from '../permissions/manager';
 import { typedObjectEntries } from '../../utils';
 import { UserDoesNotExistError } from './errors';
 import { ISubCompactPermissions } from '../permissions/interface/permissions';
+import { IAgGridRequest } from '../../utils/agGrid/interfaces';
+import { translateAgGridFilterModel, translateAgGridSortModel } from '../../utils/agGrid';
 
 export class UsersManager {
     static async getUserById(id: string, workspaceIds?: string[]): Promise<IUser> {
@@ -23,20 +26,29 @@ export class UsersManager {
         workspaceIds: string[] | undefined,
         limit: number,
         step: number,
+        { displayName, permissionsManagement, templatesManagement, rulesManagement, processesManagement, ...query }: FilterQuery<IBaseUser> = {},
+        { displayName: displayNameSort }: Record<string, number> = {},
     ): Promise<{ users: IBaseUser[]; count: number }> {
-        const query: FilterQuery<IBaseUser> = {};
+        const sort: FilterQuery<IBaseUser> = {};
+        if (displayName) query.$or = [{ fullName: displayName.$regex }, { jobTitle: displayName.$regex }, { hierarchy: displayName.$regex }];
 
         if (search) {
             const searchRegex = { $regex: new RegExp(search, 'i') };
-
-            query.$or = [
+            const searchQuery = [
                 { fullName: searchRegex },
                 { jobTitle: searchRegex },
                 { hierarchy: searchRegex },
                 { mail: searchRegex },
                 { 'externalMetadata.kartoffelId': searchRegex },
             ];
+
+            if (query.$or) {
+                query.$and = [{ $or: query.$or }, { $or: searchQuery }];
+                delete query.$or;
+            } else query.$or = searchQuery;
         }
+
+        if (displayNameSort) sort.fullName = displayNameSort;
 
         if (permissions || workspaceIds) {
             const simplePermissions = await PermissionsManager.searchBySubCompactPermissions(permissions ?? {}, workspaceIds);
@@ -44,7 +56,7 @@ export class UsersManager {
             query._id = { $in: [...usersIds] };
         }
 
-        const users = await UsersModel.find(query, {}, { limit, skip: step * limit })
+        const users = await UsersModel.find(query, {}, { limit, skip: step * limit, sort })
             .lean()
             .exec();
 
@@ -64,15 +76,16 @@ export class UsersManager {
         return users.map(({ _id }) => _id);
     }
 
-    static async searchUsers(
-        search: string | undefined,
-        permissions: ISubCompactPermissions | undefined,
-        workspaceIds: string[] | undefined,
-        limit: number,
-        step: number,
-    ): Promise<{ users: IUser[]; count: number }> {
-        const { users, count } = await this.searchBaseUsers(search, permissions, workspaceIds, limit, step);
-        return { users: await this.appendPermissionsToUsers(users), count };
+    static async searchUsers(request: IAgGridRequest): Promise<{ users: IUser[]; count: number }> {
+        const { limit, step, workspaceIds, permissions, filterModel, sortModel, search } = request;
+
+        const sort = translateAgGridSortModel(sortModel);
+        const query = translateAgGridFilterModel(filterModel);
+
+        const { users, count } = await this.searchBaseUsers(search, permissions, workspaceIds, limit, step, query, sort);
+        const permissionsToUsers = await this.appendPermissionsToUsers(users);
+
+        return { users: permissionsToUsers, count };
     }
 
     static async createUser({ permissions, ...userData }: Omit<IUser, '_id'>): Promise<IUser> {
@@ -101,5 +114,23 @@ export class UsersManager {
 
     private static async appendPermissionsToUsers(users: IBaseUser[]): Promise<IUser[]> {
         return Promise.all(users.map((user) => this.baseUserToUser(user)));
+    }
+
+    static async searchUsersByPermissions(workspaceId: string, pagination?: { step: number; limit: number }): Promise<IUser[]> {
+        const permissions = await PermissionsManager.getPermissionsByWorkspaceId(workspaceId, pagination);
+
+        const users = await UsersModel.find({ _id: { $in: permissions.map(({ userId }) => userId) } })
+            .lean()
+            .exec();
+
+        return this.appendPermissionsToUsers(users);
+    }
+
+    static async searchUsersByPermWithCount(workspaceId: string, limit: number, step: number): Promise<{ users: IUser[]; count: number }> {
+        const { permissions, count } = await PermissionsManager.getPermissionsByWorkspaceIdWithCount(workspaceId, limit, step);
+
+        const users = await Promise.all(permissions.map(({ userId }) => this.getUserById(userId)));
+
+        return { users, count };
     }
 }

@@ -1,10 +1,11 @@
 import { Box, Button, debounce, useScrollTrigger } from '@mui/material';
 import { useTour } from '@reactour/tour';
 import i18next from 'i18next';
-import React, { lazy, Suspense, useEffect, useState } from 'react';
+import React, { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { Route, Switch, useLocation, useRoute } from 'wouter';
+import { useMatomo } from '@datapunt/matomo-tracker-react';
 import { SideBar } from '../../common/sideBar';
 import { TopBar } from '../../common/TopBar';
 import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
@@ -19,6 +20,7 @@ import {
     PermissionsManagementProtectedRoute,
     SystemManagementProtectedRoute,
 } from '../../utils/ProtectedRoutes';
+import { environment } from '../../globals';
 
 const GlobalSearch = lazy(() => import('../GlobalSearch'));
 const Category = lazy(() => import('../Category'));
@@ -42,7 +44,7 @@ export const MeltaRoutesInner: React.FC = () => {
     const [title, setTitle] = useState('');
     const [open, setOpen] = useState(false);
 
-    const [_, navigate] = useLocation();
+    const [location, navigate] = useLocation();
 
     const { setIsOpen, setCurrentStep } = useTour();
 
@@ -53,28 +55,45 @@ export const MeltaRoutesInner: React.FC = () => {
 
     const meltaPlus = useMeltaPlusStore((state) => state.meltaPlus);
 
-    const [pageScrollTarget, setPageScrollTarget] = useState<HTMLElement | undefined>(undefined);
-    const trigger = useScrollTrigger({ target: pageScrollTarget, disableHysteresis: true, threshold: 300 });
+    const pageScrollTargetRef = useRef<HTMLElement | null>(null);
+    const trigger = useScrollTrigger({ target: pageScrollTargetRef.current ?? undefined, disableHysteresis: true, threshold: 300 });
+
+    const { trackPageView } = useMatomo();
 
     useEffect(() => {
-        const savedScrollPosition = sessionStorage.getItem(`pageScrollPosition-${window.location.pathname}`);
+        trackPageView({ documentTitle: '/', href: '/' });
+    }, []);
 
-        if (savedScrollPosition && pageScrollTarget) {
-            setTimeout(() => {
-                requestAnimationFrame(() => {
+    useEffect(() => {
+        const savedScrollPosition = sessionStorage.getItem(`pageScrollPosition-${location}`);
+
+        if (savedScrollPosition && pageScrollTargetRef.current) {
+            const savedScrollPositionNumber = parseInt(savedScrollPosition, 10);
+            const pageScrollTarget = pageScrollTargetRef.current;
+            let attempts = 0;
+            const maxAttempts = 50;
+
+            const tryScrollToSavedPosition = () => {
+                if (pageScrollTarget.scrollHeight >= savedScrollPositionNumber + pageScrollTarget.clientHeight) {
                     pageScrollTarget.scrollTo({
-                        top: parseInt(savedScrollPosition, 10),
+                        top: savedScrollPositionNumber,
                         behavior: 'smooth',
                     });
-                });
-            }, 150);
+                } else if (attempts < maxAttempts) {
+                    attempts += 1;
+                    setTimeout(tryScrollToSavedPosition, environment.attemptInterval);
+                }
+            };
+            tryScrollToSavedPosition();
         }
 
         const handleScroll = debounce(() => {
-            if (pageScrollTarget) {
-                sessionStorage.setItem(`pageScrollPosition-${window.location.pathname}`, pageScrollTarget.scrollTop.toString());
+            if (pageScrollTargetRef.current) {
+                sessionStorage.setItem(`pageScrollPosition-${location}`, pageScrollTargetRef.current.scrollTop.toString());
             }
         }, 300);
+
+        const pageScrollTarget = pageScrollTargetRef.current;
 
         if (pageScrollTarget) {
             pageScrollTarget.addEventListener('scroll', handleScroll);
@@ -85,7 +104,7 @@ export const MeltaRoutesInner: React.FC = () => {
                 pageScrollTarget.removeEventListener('scroll', handleScroll);
             }
         };
-    }, [pageScrollTarget, window.location.pathname]);
+    }, [location]);
 
     useEffect(() => {
         const didTour = LocalStorage.get<boolean>('didTour');
@@ -119,8 +138,8 @@ export const MeltaRoutesInner: React.FC = () => {
             <SideBar toggleDrawer={() => setOpen(!open)} isDrawerOpen={open} />
             <MainBox
                 id="main-box"
-                ref={(ref) => {
-                    if (ref) setPageScrollTarget(ref as HTMLElement);
+                ref={(ref: HTMLElement | null) => {
+                    pageScrollTargetRef.current = ref;
                 }}
                 style={{ overflowY: match ? 'hidden' : 'auto', overflowAnchor: 'none' }}
             >

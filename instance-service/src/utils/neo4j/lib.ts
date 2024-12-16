@@ -7,6 +7,7 @@ import config from '../../config';
 import { EntityManager } from '../../express/entities/manager';
 import { IFormulaCauses } from '../../express/rules/interfaces/formulaWithCauses';
 import { userFieldSuffix, usersFieldsSuffix } from '../../express/entities/validator.template';
+import { ISemanticSearchResult } from '../../externalServices/semanticSearch/interface';
 
 type Node = Neo4jNode<number>;
 type Relationship = Neo4jRelationship<number>;
@@ -93,10 +94,10 @@ type ResponseType = 'singleResponse' | 'singleResponseNotNullable' | 'multipleRe
 type Response<ResType extends ResponseType, Data> = ResType extends 'singleResponse'
     ? Data | null
     : ResType extends 'singleResponseNotNullable'
-      ? Data
-      : ResType extends 'multipleResponses'
-        ? Data[]
-        : never;
+    ? Data
+    : ResType extends 'multipleResponses'
+    ? Data[]
+    : never;
 
 const nodeToEntity = (node: Node): IEntity => {
     const entity = {
@@ -123,12 +124,31 @@ export const normalizeResponseCount = (result: QueryResult): number => {
     return result.records[0].get(0);
 };
 
-export const normalizeResponseTemplatesCount = (result: QueryResult): { templateId: string; count: number }[] => {
-    return result.records.map((record) => ({
-        templateId: record.get('templateId'),
-        count: +record.get('count'),
-        entityIdsToInclude: (record.has('entityIdsToInclude') && record.get('entityIdsToInclude')) ?? undefined,
-    }));
+const formatEntitiesWithFiles = (entitiesWithFiles: ISemanticSearchResult[string]): Record<string, string[]> =>
+    Object.entries(entitiesWithFiles).reduce((acc, [entityId, entityData]) => {
+        entityData.forEach(({ minioFileId }) => {
+            if (!acc[entityId]) acc[entityId] = [];
+            acc[entityId].push(minioFileId);
+        });
+        return acc;
+    }, {});
+
+export const normalizeResponseTemplatesCount = (
+    result: QueryResult,
+): { templateId: string; count: number; entitiesWithFiles?: Record<string, string[]> }[] => {
+    // entitiesWithFiles: { entityId: minioFileId[] }
+    return result.records.map((record) => {
+        const formattedObject: { templateId: string; count: number; entitiesWithFiles?: Record<string, string[]> } = {
+            templateId: record.get('templateId'),
+            count: +record.get('count'),
+        };
+
+        if (record.has('entitiesWithFiles') && record.get('entitiesWithFiles')) {
+            formattedObject.entitiesWithFiles = formatEntitiesWithFiles(record.get('entitiesWithFiles') as ISemanticSearchResult[string]);
+        }
+
+        return formattedObject;
+    });
 };
 
 export const normalizeRuleResult = (result: QueryResult) => {
