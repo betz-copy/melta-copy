@@ -23,6 +23,7 @@ import { IEntitySingleProperty } from '../../interfaces/entityTemplates';
 import MultiSelectCellEditor from './MultiSelectCellEditor';
 import DateTimeCellEditor from './DateTimeCellEditor';
 import { ActionErrors } from '../../interfaces/ruleBreaches/actionMetadata';
+import RelationshipRefCellEditor from './RelationshipRefCellEditor';
 
 const isPropertyInvalid = <Data extends any = IEntity>(props: ICellRendererParams<Data, any | undefined>, property: string, ignoreType = false) => {
     if (!ignoreType || !props.data?.errors) return false;
@@ -198,12 +199,13 @@ export const fileColDef = <Data extends any = IEntity>(
 export const relatedTemplateColDef = <Data extends any = IEntity>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
-    value: { title: string },
+    value: Partial<IEntitySingleProperty>,
     hardcodedWidth: number | undefined,
     relatedTemplateId: string,
     relatedTemplateField: string,
     hideColumn = false,
     searchValue: string | undefined = undefined,
+    editable: (data: any) => boolean = () => false,
 ): ColDef => {
     return {
         field,
@@ -222,7 +224,12 @@ export const relatedTemplateColDef = <Data extends any = IEntity>(
         width: hardcodedWidth,
         flex: hardcodedWidth ? 0 : 1,
         hide: hideColumn,
-        editable: false,
+        editable: (params) => editable?.(params.data) ?? false,
+        cellEditor: RelationshipRefCellEditor,
+        cellEditorParams: {
+            relatedTemplateId,
+            template: value,
+        },
     };
 };
 

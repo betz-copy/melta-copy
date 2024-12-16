@@ -676,7 +676,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                             if (params.valueChanged === false) return;
                             const updatedProperties = {
                                 ...params.data?.properties,
-                                [params.column.getColId()]: params.newValue === '' || [] ? undefined : params.newValue,
+                                [params.column.getColId()]: params.newValue === '' || params.newValue.length === 0 ? undefined : params.newValue,
                             };
                             setCurrEntity({ templateId: template._id, properties: params.data?.properties });
                             updateMutation({
