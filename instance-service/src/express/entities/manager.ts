@@ -968,6 +968,8 @@ export class EntityManager extends DefaultManagerNeo4j {
 
         const isPropertyRelationships = allRelevantRelationshipWithoutDuplicate.filter((relationship) => relationship.isProperty);
 
+        if (!isPropertyRelationships.length) entitiesCanDelete.push(...entitiesToDelete);
+
         for (const entity of entitiesToDelete)
             for (const { _id: relationshipId, name } of isPropertyRelationships) {
                 if (properties[name]?.relationshipReference?.relationshipTemplateId === relationshipId) continue;
