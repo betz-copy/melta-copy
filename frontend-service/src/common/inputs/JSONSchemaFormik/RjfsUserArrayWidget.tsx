@@ -4,10 +4,13 @@ import { Box, Grid } from '@mui/material';
 import UserAutocomplete from '../UserAutocomplete';
 import CreateUserCard from '../../wizards/processTemplate/ApproverCard';
 
-const RjfsUserArrayWidget = ({ label, value, onChange, rawErrors = [] }: WidgetProps) => {
+const RjfsUserArrayWidget = ({ label, value, onChange, rawErrors = [], onBlur, onFocus }: WidgetProps) => {
     const [inputValue, setInputValue] = React.useState('');
-    const [currentUsers, setCurrentUsers] = React.useState(value && value.length && value[0] ? value.map((user) => JSON.parse(user)) : []);
-    if (!currentUsers.length) onChange(undefined);
+    const [currentUsers, setCurrentUsers] = React.useState(
+        (value && value.length && value[0] ? value.map((user) => JSON.parse(user)) : []).filter((user) => !!user),
+    );
+
+    if (!currentUsers.length || !currentUsers[0]) onChange(undefined);
 
     return (
         <Box sx={{ bgcolor: 'white' }}>
@@ -32,6 +35,8 @@ const RjfsUserArrayWidget = ({ label, value, onChange, rawErrors = [] }: WidgetP
                         );
                         setInputValue('');
                     }}
+                    onBlur={onBlur}
+                    onFocus={onFocus}
                     isError={rawErrors.length > 0}
                     displayValue={inputValue}
                     onDisplayValueChange={(_, newDisplayValue) => setInputValue(newDisplayValue)}
