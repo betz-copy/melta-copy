@@ -10,6 +10,7 @@ import { Cropper } from 'react-cropper';
 import 'cropperjs/dist/cropper.css';
 import jsPDF from 'jspdf';
 import { MeltaTooltip } from '../../MeltaTooltip';
+import { filterImageData } from '../../../utils/filterImageData';
 
 interface IImageView {
     setStream: React.Dispatch<React.SetStateAction<MediaStream | null>>;
@@ -18,10 +19,20 @@ interface IImageView {
     setOpenImageView: React.Dispatch<React.SetStateAction<boolean>>;
     openCamera: boolean;
     openImageView: boolean;
+    setOpenCamera: React.Dispatch<React.SetStateAction<boolean>>;
     onPictureTaken: (file: File) => void;
 }
 
-const ImageView: React.FC<IImageView> = ({ setStream, imgURL, setImgURL, setOpenImageView, openCamera, openImageView, onPictureTaken }) => {
+const ImageView: React.FC<IImageView> = ({
+    setStream,
+    imgURL,
+    setImgURL,
+    setOpenImageView,
+    openCamera,
+    openImageView,
+    setOpenCamera,
+    onPictureTaken,
+}) => {
     const [usePdf, setUsePdf] = useState(false);
     const [applyFilter, setApplyFilter] = useState(false);
     const [imgName, setImgName] = useState<string | null>(null);
@@ -39,6 +50,7 @@ const ImageView: React.FC<IImageView> = ({ setStream, imgURL, setImgURL, setOpen
         onPictureTaken(file);
         setOpenImageView(false);
         setImgName(null);
+        setOpenCamera(false);
     };
 
     const onClose = async () => {
@@ -69,27 +81,7 @@ const ImageView: React.FC<IImageView> = ({ setStream, imgURL, setImgURL, setOpen
         if (!context) return;
 
         if (applyFilter) {
-            context.filter = 'grayscale(100%) contrast(150%) brightness(120%)';
-            context.drawImage(croppedCanvas, 0, 0);
-
-            const imageData = context.getImageData(0, 0, filteredCanvas.width, filteredCanvas.height);
-            const { data } = imageData;
-
-            for (let i = 0; i < data.length; i += 4) {
-                // Calculate the brightness of the pixel (using the average of RGB values)
-                const brightness = 0.2126 * data[i] + 0.7152 * data[i + 1] + 0.0722 * data[i + 2];
-
-                // Threshold: If brightness is above the threshold, make it white, otherwise black
-                const threshold = 150;
-                const color = brightness > threshold ? 255 : 0;
-
-                // Set the new pixel color (RGB)
-                data[i] = color; // Red
-                data[i + 1] = color; // Green
-                data[i + 2] = color; // Blue
-            }
-
-            context.putImageData(imageData, 0, 0);
+            filterImageData(context, croppedCanvas, filteredCanvas);
         } else {
             context.drawImage(croppedCanvas, 0, 0);
         }
@@ -104,24 +96,27 @@ const ImageView: React.FC<IImageView> = ({ setStream, imgURL, setImgURL, setOpen
         onPictureTaken(file);
 
         setOpenImageView(false);
+        setOpenCamera(false);
         setImgURL(null);
         setImgName(null);
     };
 
-    const uploadImgOrPdf = async () => {
+    const uploadImgOrPdf = () => {
         if (usePdf) handleExportToPDF();
         else handleUploadPng();
     };
 
-    const onCloseImageView = async () => {
-        setOpenImageView(false);
-        setStream(null);
+    const pdfClick = () => {
+        if (usePdf) {
+            setUsePdf(false);
+            setApplyFilter(false);
+        } else {
+            setUsePdf(true);
+        }
     };
 
-    console.log('In Image View');
-
     return (
-        <Dialog open={openImageView} onClose={onCloseImageView} maxWidth={false} sx={{ maxWidth: 1500, mx: 'auto' }}>
+        <Dialog open={openImageView} onClose={onClose} maxWidth={false} sx={{ maxWidth: 1500, mx: 'auto' }}>
             <DialogContent sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                 <Grid style={{ position: 'absolute', left: '0.2rem', top: '0.2rem' }}>
                     <IconButton onClick={onClose}>
@@ -166,11 +161,11 @@ const ImageView: React.FC<IImageView> = ({ setStream, imgURL, setImgURL, setOpen
                                     style={{ color: !formikProps.values || !imgName ? '#CCCFE5' : '#1E2775', width: '25px', height: '25px' }}
                                 />
                             </IconButton>
-                            <IconButton onClick={() => setUsePdf(!usePdf)}>
+                            <IconButton onClick={pdfClick}>
                                 <PictureAsPdf color={usePdf ? 'primary' : 'disabled'} />
                             </IconButton>
                             <MeltaTooltip title={i18next.t('camera.blackAndWhite')} placement="bottom">
-                                <IconButton onClick={() => setApplyFilter(!applyFilter)}>
+                                <IconButton onClick={() => setApplyFilter(!applyFilter)} disabled={!usePdf}>
                                     <FilterBAndW color={applyFilter ? 'primary' : 'disabled'} />
                                 </IconButton>
                             </MeltaTooltip>

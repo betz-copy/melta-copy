@@ -11,6 +11,7 @@ import OpenPreview from '../FilePreview/OpenPreview';
 import { getFileName } from '../../utils/getFileName';
 import { MeltaTooltip } from '../MeltaTooltip';
 import ImageView from '../dialogs/Camera/ImageView';
+import { environment } from '../../globals';
 
 interface FileInputProps {
     file: Partial<File> | { name: string } | undefined;
@@ -97,8 +98,6 @@ const FileInput: React.FC<FileInputProps> = ({ file, onDeleteFile, onDropFile, i
 
     const isFileFromInput = useMemo(() => file instanceof File, [file]);
 
-    const imageExtensions = ['png', 'jpg', 'jpeg', 'svg'];
-
     const isImageFile = () => {
         if (!file) return false;
 
@@ -107,14 +106,12 @@ const FileInput: React.FC<FileInputProps> = ({ file, onDeleteFile, onDropFile, i
         }
 
         if ('name' in file && typeof file.name === 'string') {
-            const extension = file.name.split('.').pop()?.toLowerCase();
-            return imageExtensions.includes(extension || '');
+            const extension = file.name.split('.').pop()?.toLowerCase() as 'png' | 'jpg' | 'jpeg' | 'svg';
+            return environment.fileExtensions.imageToManipulate.includes(extension);
         }
 
         return false;
     };
-    console.log({ openImageView });
-    console.log({ imgURL });
 
     return (
         <>
@@ -230,6 +227,7 @@ const FileInput: React.FC<FileInputProps> = ({ file, onDeleteFile, onDropFile, i
                     setOpenImageView={setOpenImageView}
                     openCamera={openCamera}
                     openImageView={openImageView}
+                    setOpenCamera={setOpenCamera}
                     onPictureTaken={onDropFile}
                 />
             )}

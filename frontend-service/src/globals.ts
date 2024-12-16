@@ -236,6 +236,7 @@ export const environment = {
     draftAutoSaveDebounce: 250,
     fileExtensions: {
         image: ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'webp', 'ico', 'psd', 'raw', 'heif', 'indd', 'ai', 'eps'],
+        imageToManipulate: ['png', 'jpg', 'jpeg', 'svg'],
         video: ['mp4', 'mov', 'avi', 'wmv', 'flv', 'mkv', 'webm', 'avchd', '3gp', '3g2', '3gpp', '3gpp2', 'm4v'],
         audio: ['mp3', 'wav', 'ogg', 'flac', 'wma', 'aac', 'm4a'],
         document: [
