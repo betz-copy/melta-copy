@@ -617,18 +617,20 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                 freeSolo
                                                 value={value.options}
                                                 onChange={(_e, currValue) => {
-                                                    currValue[currValue.length - 1] = currValue[currValue.length - 1].trim();
+                                                    const lastValue = currValue.pop();
+                                                    const trimmedValue = lastValue ? [...currValue, lastValue.trim()] : [];
+
                                                     if (isDisabled) {
-                                                        updateOldDisabledEnumVals(currValue);
+                                                        updateOldDisabledEnumVals(trimmedValue);
                                                     } else {
                                                         setValues?.((prev) => ({
                                                             ...prev,
-                                                            options: currValue,
+                                                            options: trimmedValue,
                                                         }));
                                                     }
                                                 }}
-                                                isOptionEqualToValue={(option, value) => {
-                                                    return option.trim() === value.trim() || option.trim().length === 0;
+                                                isOptionEqualToValue={(option, inputValue) => {
+                                                    return option.trim() === inputValue.trim() || option.trim().length === 0;
                                                 }}
                                                 renderTags={(tagValue, getTagProps) =>
                                                     tagValue.map((option, tagIndex) => {
@@ -746,11 +748,13 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                                 e.stopPropagation();
                                                                                 if (e.key === 'Enter') {
                                                                                     e.preventDefault();
+                                                                                    const localOptionTrimmed = localOption.trim();
+
                                                                                     if (
                                                                                         tagIndex > initialOptionArray.length - 1 ||
-                                                                                        value.options[tagIndex] === localOption.trim() ||
-                                                                                        value.options.includes(localOption.trim()) ||
-                                                                                        localOption.trim().length === 0
+                                                                                        value.options[tagIndex] === localOptionTrimmed ||
+                                                                                        value.options.includes(localOptionTrimmed) ||
+                                                                                        localOptionTrimmed.length === 0
                                                                                     ) {
                                                                                         setOpen(false);
                                                                                         handleSaveEdit(editIndex!);
@@ -771,7 +775,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                                 {isDeleteLoading ? <CircularProgress size={20} /> : <DeleteIcon />}
                                                                             </IconButton>
                                                                         )}
-                                                                        {editError && (
+                                                                        {!!editError && (
                                                                             <Typography variant="body2" color="error">
                                                                                 {i18next.t(editError)}
                                                                             </Typography>
