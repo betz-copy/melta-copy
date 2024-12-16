@@ -38,7 +38,7 @@ if (import.meta.env.DEV && !import.meta.env.VITE_APP_IS_DOCKER) {
     const [
         { mockCategories },
         { mockGetAllTemplates },
-        { mockConfig },
+        // { mockConfig },
         { mockEntites },
         { mockEntityTemplates },
         { mockRelationshipTemplates },
@@ -54,7 +54,7 @@ if (import.meta.env.DEV && !import.meta.env.VITE_APP_IS_DOCKER) {
     ] = await Promise.all([
         import('./mocks/templates/categories'),
         import('./mocks/templates/getAllTemplates'),
-        import('./mocks/config'),
+        // import('./mocks/config'),
         import('./mocks/entities'),
         import('./mocks/templates/entityTemplates'),
         import('./mocks/templates/relationshipTemplates'),
@@ -71,7 +71,7 @@ if (import.meta.env.DEV && !import.meta.env.VITE_APP_IS_DOCKER) {
 
     const mock = new MockAdapter(axios, { delayResponse: 500 });
 
-    mockConfig(mock);
+    // mockConfig(mock);
     mockGetAllTemplates(mock);
     mockCategories(mock);
     mockEntityTemplates(mock);

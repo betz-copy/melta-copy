@@ -40,7 +40,6 @@ const NavButton: React.FC<NavButtonProps> = ({
             return;
         }
 
-        // Clear sessionStorage if not active
         if (!isActive) {
             sessionStorage.clear();
         }
@@ -53,7 +52,7 @@ const NavButton: React.FC<NavButtonProps> = ({
             <MeltaTooltip
                 title={disabled ? (i18next.t('permissions.dontHavePermissionsToCategory') as string) : extension ?? text}
                 placement="left-start"
-                disableHoverListener={!disabled && isDrawerOpen && !extension} // when drawer is opened text is already shown, so no need for tooltip
+                disableHoverListener={!disabled && isDrawerOpen && !extension}
             >
                 <div>
                     <ListItemButton
