@@ -28,6 +28,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
     isError: boolean;
     helperText?: string;
     size?: 'small' | 'medium';
+    style?: React.CSSProperties;
 }> = ({
     template,
     showField,
@@ -42,6 +43,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
     isError,
     helperText,
     size,
+    style,
 }) => {
     const [inputValue, setInputValue] = useState<string>(displayValue || '');
     const [allEntities, setAllEntities] = useState<IEntity[]>([]);
@@ -128,6 +130,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
             onInputChange={handleInputChange}
             disabled={disabled}
             onBlur={onBlur}
+            style={style}
             options={allEntities}
             loading={isLoading || isFetchingNextPage}
             loadingText={i18next.t('templateEntitiesAutocomplete.loading')}
