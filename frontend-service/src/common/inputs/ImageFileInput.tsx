@@ -9,6 +9,7 @@ import { getFileExtension } from '../../utils/getFileType';
 import FileIcon from '../FilePreview/FileIcon';
 import OpenPreview from '../FilePreview/OpenPreview';
 import { getFileName } from '../../utils/getFileName';
+import { LoadingFilesInput } from './LoadingFilesInput';
 
 interface FileInputProps {
     file: Partial<File> | { name: string } | undefined;
@@ -18,10 +19,24 @@ interface FileInputProps {
     acceptedFilesTypes?: Accept;
     fileFieldName?: string;
     errorText?: string;
+    setErrorText?: React.Dispatch<React.SetStateAction<string | undefined>>;
     disableCamera?: boolean;
+    isLoading?: boolean;
+    comment?: string;
 }
 
-const FileInput: React.FC<FileInputProps> = ({ file, onDeleteFile, onDropFile, inputText, acceptedFilesTypes, errorText, disableCamera = false }) => {
+const FileInput: React.FC<FileInputProps> = ({
+    file,
+    onDeleteFile,
+    onDropFile,
+    inputText,
+    acceptedFilesTypes,
+    errorText,
+    setErrorText,
+    disableCamera = false,
+    isLoading,
+    comment,
+}) => {
     const theme = useTheme();
 
     const [stream, setStream] = useState<MediaStream | null>(null);
@@ -71,20 +86,30 @@ const FileInput: React.FC<FileInputProps> = ({ file, onDeleteFile, onDropFile, i
         }
     };
 
-    const inputStyle = {
+    const style = {
         border: isDragActive ? `2px dashed ${theme.palette.primary.main}` : '1px solid #c4c4c4',
         borderRadius: '10px',
         borderColor: '#CCCFE5',
         color: '#9398C2',
         width: '100%',
-        height: '40px',
         display: 'flex',
-        padding: '0px 10px',
-        alignItems: 'center',
+        padding: '5px 20px',
         cursor: 'pointer',
     };
+    const inputStyle = { ...style, height: '40px', alignItems: 'center', padding: '0px 10px' };
 
     const isFileFromInput = useMemo(() => file instanceof File, [file]);
+
+    if ((isLoading || errorText) && file)
+        return (
+            <LoadingFilesInput
+                files={[file]}
+                errorText={errorText}
+                setErrorText={setErrorText}
+                inputWidth={inputWidth}
+                isFileFromInput={isFileFromInput}
+            />
+        );
 
     return (
         <>
@@ -167,6 +192,11 @@ const FileInput: React.FC<FileInputProps> = ({ file, onDeleteFile, onDropFile, i
                                 {i18next.t('input.imagePicker.dragFile')}
                             </Typography>
                         </Grid>
+                    )}
+                    {comment && (
+                        <Typography fontSize="12px" color="#9398C2" paddingLeft="7px">
+                            {comment}
+                        </Typography>
                     )}
                     {errorText && (
                         <p id="error" style={errorStyle}>

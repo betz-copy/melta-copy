@@ -32,6 +32,13 @@ export const searchUsersRequestSchema = joi.object({
         workspaceIds: joi.array().items(MongoIdSchema.required()),
         limit: joi.number().integer().required(),
         step: joi.number().integer(),
+        filterModel: joi.object(),
+        sortModel: joi.array().items(
+            joi.object({
+                colId: joi.string(),
+                sort: joi.string(),
+            }),
+        ),
     },
     params: {},
 });
@@ -88,4 +95,13 @@ export const searchExternalUsersRequestSchema = joi.object({
     },
     body: {},
     params: {},
+});
+
+//GET /api/users/search/:workspaceId
+export const searchUsersByPermissionsSchema = joi.object({
+    query: {},
+    body: {},
+    params: {
+        workspaceId: joi.string().required(),
+    },
 });

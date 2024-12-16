@@ -9,6 +9,8 @@ import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
 import EntityCard from '../../pages/GlobalSearch/components/entityCard';
 import { getEntitiesWithDirectConnections } from '../../services/entitiesService';
 import { InfiniteScroll } from '../InfiniteScroll';
+import { useSearchParams } from '../../utils/hooks/useSearchParams';
+import { convertToBool } from '../../utils/convertStringToBool';
 
 const { infiniteScrollPageCount } = environment.entitiesCardsView;
 
@@ -25,6 +27,9 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
     const [entitiesCount, setEntitiesCount] = useState<number | null>(null);
     const [openCardsMap, setOpenCardsMap] = useState<Map<string, boolean>>(new Map());
     const queryClient = useQueryClient();
+    const [urlSearchParams, _setUrlSearchParams] = useSearchParams();
+    const urlSemanticSearch = urlSearchParams.get('semanticSearch');
+    console.log(urlSemanticSearch);
 
     const refetch = () => queryClient.invalidateQueries({ queryKey: ['searchEntities', templateIds, searchInput], exact: true });
 
@@ -45,7 +50,7 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
             <Grid item>
                 <Grid container>
                     <InfiniteScroll<IEntityWithDirectConnections & { minioFileIds?: string[] }>
-                        queryKey={['searchEntities', templateIds, searchInput]}
+                        queryKey={['searchEntities', templateIds, searchInput, urlSemanticSearch]}
                         queryFunction={async ({ pageParam: startRow = 0 }) => {
                             if (startRow === 0) {
                                 setEntitiesCount(null);
@@ -56,6 +61,7 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
                                 limit: infiniteScrollPageCount,
                                 textSearch: searchInput,
                                 templates: Object.fromEntries(templateIds.map((templateId) => [templateId, { showRelationships: false }])),
+                                shouldSemanticSearch: convertToBool(urlSemanticSearch!),
                             });
 
                             setEntitiesCount(searchEntitiesResult.count);

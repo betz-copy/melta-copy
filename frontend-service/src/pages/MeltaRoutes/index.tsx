@@ -13,10 +13,10 @@ import { getAllTemplates, GetAllTemplatesType } from '../../services/templates/g
 import { getFile } from '../../services/workspacesService';
 import { useUserStore } from '../../stores/user';
 import { useWorkspaceStore } from '../../stores/workspace';
-import { getWorkspacePermissions } from '../../utils/permissions';
 import { mapTemplates } from '../../utils/templates';
 import ErrorPage from '../ErrorPage';
 import { MeltaRoutesInner } from './routes';
+import { handleWorkspace } from '../../utils/permissions';
 
 interface IMeltaRoutesProps {
     path: string;
@@ -61,22 +61,7 @@ export const MeltaRoutes: React.FC<IMeltaRoutesProps> = ({ path }) => {
         enabled: Boolean(workspace?._id),
     });
 
-    useEffect(() => {
-        const handleWorkspace = async () => {
-            if (!workspace) return;
-
-            setWorkspace(workspace);
-            document.title = workspace.displayName;
-
-            const workspacePermissions = await getWorkspacePermissions(workspace._id, currentUser.permissions);
-            if (workspacePermissions) currentUser.permissions[workspace._id] = workspacePermissions;
-
-            if (currentUser.currentWorkspacePermissions !== currentUser.permissions[workspace._id])
-                setUser({ ...currentUser, currentWorkspacePermissions: currentUser.permissions[workspace._id] });
-        };
-
-        handleWorkspace();
-    }, [workspace, setWorkspace, currentUser, setUser]);
+    useEffect(() => handleWorkspace(workspace?.displayName ?? '', setWorkspace, workspace), [workspace, setWorkspace, currentUser, setUser]);
 
     const isLoading = useMemo(() => isLoadingAllTemplates || isLoadingWorkspace, [isLoadingAllTemplates, isLoadingWorkspace]);
     const isError = useMemo(() => isErrorAllTemplates || isErrorWorkspace, [isErrorAllTemplates, isErrorWorkspace]);

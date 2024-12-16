@@ -6,7 +6,7 @@ import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import { Utils as QbUtils, ImmutableTree } from '@react-awesome-query-builder/mui';
 
-import { StepsType, Wizard, WizardBaseType } from '../index';
+import { StepType, Wizard, WizardBaseType } from '../index';
 import { CreateRule, createRuleSchema } from './CreateRule';
 import { ErrorToast } from '../../ErrorToast';
 import { IRule, IRuleMap } from '../../../interfaces/rules';
@@ -17,7 +17,7 @@ export interface RuleWizardValues extends Omit<IRule, 'formula'> {
     formula: ImmutableTree;
 }
 
-const steps: StepsType<RuleWizardValues> = [
+const steps: StepType<RuleWizardValues>[] = [
     {
         label: i18next.t('wizard.rule.ruleMetadata'),
         component: (props, { isEditMode }) => <CreateRule {...props} isEditMode={isEditMode} />,
@@ -76,7 +76,7 @@ const RuleWizard: React.FC<WizardBaseType<RuleWizardValues>> = ({
             initialValues={initialValues}
             initialStep={initialStep}
             isEditMode={isEditMode}
-            title={i18next.t('wizard.rule.title')}
+            title={isEditMode ? i18next.t('wizard.rule.updateTitle') : i18next.t('wizard.rule.createTitle')}
             steps={steps}
             isLoading={isLoading}
             submitFunction={(values) => mutateAsync(values)}
