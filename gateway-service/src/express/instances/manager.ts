@@ -2,7 +2,7 @@
 /* eslint-disable no-continue */
 /* eslint-disable no-plusplus */
 /* eslint-disable no-await-in-loop */
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import { stream } from 'exceljs';
 import { promises as fsp } from 'fs';
 import { Dictionary } from 'lodash';
@@ -11,6 +11,7 @@ import { menash } from 'menashmq';
 import config from '../../config';
 import { InstancesService } from '../../externalServices/instanceService';
 import {
+    IBrokenRulesError,
     ICountSearchResult,
     IEntity,
     ISearchBatchBody,
@@ -20,11 +21,14 @@ import {
 } from '../../externalServices/instanceService/interfaces/entities';
 import { IRelationship } from '../../externalServices/instanceService/interfaces/relationships';
 import {
+    ActionErrors,
     ActionTypes,
     IAction,
     IBrokenRule,
+    IBrokenRuleEntity,
     ICreateEntityMetadata,
     ICreateRelationshipMetadata,
+    IFailedEntity,
     IUpdateEntityMetadata,
     RuleBreachRequestStatus,
 } from '../../externalServices/ruleBreachService/interfaces';
@@ -35,7 +39,7 @@ import {
     IMongoEntityTemplatePopulated,
 } from '../../externalServices/templates/entityTemplateService';
 import { trycatch } from '../../utils';
-import { createWorksheet, createWorkbook, styleAWorksheet } from '../../utils/excel/excelFunctions';
+import { createWorkbook, createWorksheet, styleAWorksheet } from '../../utils/excel/createFunctions';
 import DefaultManagerProxy from '../../utils/express/manager';
 import logger from '../../utils/logger/logsLogger';
 import { objectFilter } from '../../utils/object';
@@ -46,6 +50,7 @@ import { IExportEntitiesBody } from './interfaces';
 import { RabbitManager } from '../../utils/rabbit';
 import { SemanticSearchService } from '../../externalServices/semanticSearch';
 import { WorkspaceService } from '../workspaces/service';
+import { getValidationErrorEntities, readExcelFile, updateIdOfBrokenRules } from '../../utils/excel/getFunctions';
 import { formatEntitiesBulkSearch, sortEntities } from '../../utils/semantic';
 
 const { errorCodes, rabbit, ruleBreachService } = config;
@@ -138,9 +143,9 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         workbook: stream.xlsx.WorkbookWriter,
         workspace: { path: string; id: string },
     ): Promise<void> {
-        const tasks = Object.entries(templates).map(async ([templateId, { filter, sort, displayColumns }]) => {
+        const tasks = Object.entries(templates).map(async ([templateId, { filter, sort, displayColumns, headersOnly, insertEntities }]) => {
             const template = await this.entityTemplateService.getEntityTemplateById(templateId);
-            await this.createWorksheet(workbook, template, filter, sort, textSearch, displayColumns, workspace);
+            await this.createWorksheet(workbook, template, filter, sort, textSearch, workspace, displayColumns, headersOnly, insertEntities);
         });
 
         await Promise.all(tasks);
@@ -152,11 +157,21 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         filter: ISearchFilter | undefined,
         sort: ISearchSort | undefined,
         textSearch: string | undefined,
-        displayColumns: string[],
         workspace: { path: string; id: string },
+        displayColumns?: string[],
+        headersOnly?: boolean,
+        insertEntities?: Record<string, any>[],
     ) {
-        const worksheet = await createWorksheet(workbook, template, displayColumns);
+        const worksheet = await createWorksheet(workbook, template, displayColumns, headersOnly || !!insertEntities);
         const { searchEntitiesChunkSize } = config.service;
+
+        if (headersOnly) return;
+
+        if (insertEntities) {
+            styleAWorksheet(worksheet, insertEntities, template, workspace, displayColumns);
+            return;
+        }
+
         const templateCount = await this.getEntitiesCountByTemplates(true, {
             templateIds: [template._id],
             textSearch,
@@ -177,11 +192,125 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 worksheet,
                 chunk.map((row) => row.entity.properties),
                 template,
-                displayColumns,
                 workspace,
+                displayColumns,
+                headersOnly,
                 skip,
             );
         }
+    }
+
+    getSerialStarters = (template: IMongoEntityTemplatePopulated): Record<string, number> => {
+        return Object.entries(template.properties.properties)
+            .filter(([_key, value]) => value.type === 'number' && value.serialStarter !== undefined)
+            .reduce((acc, [key, value]) => {
+                acc[key] = value.serialCurrent || 0;
+                return acc;
+            }, {});
+    };
+
+    handleLoadEntitiesErrors = (error, failedEntities: IFailedEntity[], entity: IEntity, allBrokenRulesEntities: IBrokenRuleEntity[]) => {
+        if (error instanceof AxiosError) {
+            const { data } = error.response!;
+
+            if (data.metadata && data.metadata.errorCode === errorCodes.failedConstraintsValidation) {
+                const { constraint } = data.metadata;
+                switch (constraint.type) {
+                    case ActionErrors.unique:
+                        failedEntities.push({
+                            properties: entity.properties,
+                            errors: [{ type: ActionErrors.unique, metadata: constraint }],
+                        });
+                        break;
+                    case ActionErrors.required:
+                        failedEntities.push({
+                            properties: entity.properties,
+                            errors: [{ type: ActionErrors.required, metadata: constraint }],
+                        });
+                        break;
+                    default:
+                        break;
+                }
+            }
+            if (data.type === errorCodes.templateValidationError) getValidationErrorEntities(error as AxiosError, failedEntities);
+        } else if ((error as IBrokenRulesError).metadata.errorCode === errorCodes.ruleBlock) {
+            allBrokenRulesEntities.push({
+                brokenRules: error.metadata.brokenRules,
+                rawBrokenRules: error.metadata.rawBrokenRules,
+                actions: error.metadata.actions ?? [
+                    {
+                        actionType: ActionTypes.CreateEntity,
+                        actionMetadata: entity,
+                    },
+                ],
+                rawActions: error.metadata.rawActions ?? [
+                    {
+                        actionType: ActionTypes.CreateEntity,
+                        actionMetadata: entity,
+                    },
+                ],
+                entities: [{ properties: entity.properties }],
+            });
+        }
+    };
+
+    updateTemplateCurrentNumbers = async (
+        template: IMongoEntityTemplatePopulated,
+        serialStarters: Record<string, number>,
+        succeededIndex: number,
+    ) => {
+        const serialProperties = Object.entries(template.properties.properties)
+            .filter(([_key, value]) => value.type === 'number' && !!value.serialStarter && !!value.serialCurrent)
+            .reduce((acc, [key, value]) => {
+                acc[key] = { ...value, serialCurrent: serialStarters[key] + succeededIndex };
+                return acc;
+            }, {});
+        const { category, _id, createdAt, updatedAt, disabled, ...restOfEntityTemplate } = template;
+        await this.entityTemplateService.updateEntityTemplate(template._id, {
+            ...restOfEntityTemplate,
+            category: category._id,
+            properties: {
+                ...template.properties,
+                properties: { ...template.properties.properties, ...serialProperties },
+            },
+        });
+    };
+
+    async loadEntities(
+        templateId: string,
+        userId: string,
+        files?: Express.Multer.File[],
+        insertBrokenEntities?: { entitiesToCreate: IEntity[]; ignoredRules: IBrokenRule[] },
+    ) {
+        let entities = insertBrokenEntities?.entitiesToCreate;
+        const template = await this.entityTemplateService.getEntityTemplateById(templateId);
+
+        if (files && !entities) {
+            const actions = await readExcelFile(files, template);
+            entities = actions.map((action) => action.actionMetadata as IEntity);
+        }
+        const serialStarters = this.getSerialStarters(template);
+        const succeededEntities: IEntity[] = [];
+        const failedEntities: IFailedEntity[] = [];
+        const allBrokenRulesEntities: IBrokenRuleEntity[] = [];
+
+        for (const entity of entities!) {
+            try {
+                // eslint-disable-next-line no-loop-func
+                const serialNumbers = Object.fromEntries(
+                    Object.entries(serialStarters).map(([key, value]) => [key, value + succeededEntities.length]),
+                );
+                const result = await this.createEntityInstance(entity, [], insertBrokenEntities?.ignoredRules || [], userId, serialNumbers);
+                succeededEntities.push(result);
+            } catch (error) {
+                this.handleLoadEntitiesErrors(error, failedEntities, entity, allBrokenRulesEntities);
+            }
+        }
+
+        const brokenRulesEntities = await updateIdOfBrokenRules(allBrokenRulesEntities);
+        if (serialStarters) await this.updateTemplateCurrentNumbers(template, serialStarters, succeededEntities.length);
+
+        return { succeededEntities, failedEntities, brokenRulesEntities };
     }
 
     getEntityFileProperties(entityProperties: IEntity['properties'], template: IEntityTemplatePopulated): Record<string, string | string[]> {
@@ -194,19 +323,21 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
     private async setSerialPropertiesAndUpdateTemplate(
         entityProperties: IEntity['properties'],
         entityTemplate: IMongoEntityTemplatePopulated,
+        serialNumbers?: Record<string, number>,
     ): Promise<IEntity['properties']> {
         const updatedProperties: IEntity['properties'] = { ...entityProperties };
 
-        let isTemplateUpdated = false;
+        let isTemplateUpdated = serialNumbers ?? false;
         const updatedTemplateProperties = {
             ...entityTemplate.properties.properties,
         };
 
         Object.keys(entityTemplate.properties.properties).forEach((key) => {
             if (entityTemplate.properties.properties[key].serialCurrent !== undefined) {
-                updatedProperties[key] = Number(entityTemplate.properties.properties[key].serialCurrent);
+                const serialCurrent = serialNumbers ? serialNumbers[key] : Number(entityTemplate.properties.properties[key].serialCurrent);
+                updatedProperties[key] = serialCurrent;
 
-                const serialNum: number = Number(entityTemplate.properties.properties[key].serialCurrent) + 1;
+                const serialNum: number = serialCurrent + 1;
                 const newSerialNumberObj = { ...entityTemplate.properties.properties[key], serialCurrent: serialNum };
                 updatedTemplateProperties[key] = newSerialNumberObj;
                 isTemplateUpdated = true;
@@ -227,11 +358,11 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         return updatedProperties;
     }
 
-    async handlePreparationsBeforeCreateEntity(instanceData: IEntity, files: Express.Multer.File[]) {
+    async handlePreparationsBeforeCreateEntity(instanceData: IEntity, files: Express.Multer.File[], serialNumbers?: Record<string, number>) {
         const { props: propertiesWithFiles, files: upserstedFiles } = await this.uploadInstanceFiles(files, instanceData.properties);
 
         const entityTemplate = await this.entityTemplateService.getEntityTemplateById(instanceData.templateId);
-        const newInstanceProperties = await this.setSerialPropertiesAndUpdateTemplate(propertiesWithFiles, entityTemplate);
+        const newInstanceProperties = await this.setSerialPropertiesAndUpdateTemplate(propertiesWithFiles, entityTemplate, serialNumbers);
 
         return {
             templateId: instanceData.templateId,
@@ -245,9 +376,10 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         files: Express.Multer.File[],
         ignoredRules: IBrokenRule[],
         userId: string,
+        serialNumbers?: Record<string, number>,
         createAlert: boolean = true,
     ) {
-        const { templateId, properties, files: upserstedFiles } = await this.handlePreparationsBeforeCreateEntity(instanceData, files);
+        const { templateId, properties, files: upserstedFiles } = await this.handlePreparationsBeforeCreateEntity(instanceData, files, serialNumbers);
 
         const { createdEntity, actions } = await this.service
             .createEntityInstance({ properties, templateId }, ignoredRules, userId)
