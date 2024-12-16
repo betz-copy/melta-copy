@@ -688,6 +688,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                             });
                         }}
                         onCellClicked={(params) => {
+                            if (params.colDef.headerName === i18next.t('entitiesTableOfTemplate.actionsHeaderName')) return;
                             setCurrEditingCell(params);
                             if (currEditingCell && currEditingCell.value !== params.value) params.api.stopEditing();
                         }}
