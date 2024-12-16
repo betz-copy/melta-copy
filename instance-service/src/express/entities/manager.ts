@@ -1517,12 +1517,13 @@ export class EntityManager extends DefaultManagerNeo4j {
 
         const createRequiredConstraintsPromises = requiredConstraintsToCreate.map(async (constraint) => {
             let queryAccordingToFieldType = constraint.property;
+            const constraintProp = template.properties.properties[constraint.property];
 
-            if (template.properties.properties[constraint.property].format === 'relationshipReference') {
+            if (constraintProp.format === 'relationshipReference') {
                 queryAccordingToFieldType = `${constraint.property}.properties._id_reference`;
-            } else if (template.properties.properties[constraint.property].format === 'user') {
+            } else if (constraintProp.format === 'user') {
                 queryAccordingToFieldType = `${constraint.property}.id_userField`;
-            } else if (template.properties.properties[constraint.property].items?.format === 'user') {
+            } else if (constraintProp.items?.format === 'user') {
                 queryAccordingToFieldType = `${constraint.property}.ids_usersFields`;
             }
             await transaction
@@ -1697,23 +1698,11 @@ export class EntityManager extends DefaultManagerNeo4j {
     }
 
     getUserProperties(userProperty: string) {
-        return [
-            `${userProperty}${userFieldSuffix.id}${config.neo4j.userFieldPropertySuffix}`,
-            `${userProperty}${userFieldSuffix.fullName}${config.neo4j.userFieldPropertySuffix}`,
-            `${userProperty}${userFieldSuffix.jobTitle}${config.neo4j.userFieldPropertySuffix}`,
-            `${userProperty}${userFieldSuffix.hierarchy}${config.neo4j.userFieldPropertySuffix}`,
-            `${userProperty}${userFieldSuffix.mail}${config.neo4j.userFieldPropertySuffix}`,
-        ];
+        return Object.values(userFieldSuffix).map((value) => `${userProperty}${value}${config.neo4j.userFieldPropertySuffix}`);
     }
 
     getUsersArrayProperties(userProperty: string) {
-        return [
-            `${userProperty}${usersFieldsSuffix.ids}${config.neo4j.usersFieldsPropertySuffix}`,
-            `${userProperty}${usersFieldsSuffix.fullNames}${config.neo4j.usersFieldsPropertySuffix}`,
-            `${userProperty}${usersFieldsSuffix.jobTitles}${config.neo4j.usersFieldsPropertySuffix}`,
-            `${userProperty}${usersFieldsSuffix.hierarchies}${config.neo4j.usersFieldsPropertySuffix}`,
-            `${userProperty}${usersFieldsSuffix.mails}${config.neo4j.usersFieldsPropertySuffix}`,
-        ];
+        return Object.values(usersFieldsSuffix).map((value) => `${userProperty}${value}${config.neo4j.usersFieldsPropertySuffix}`);
     }
 
     async deletePropertiesOfTemplate(templateId: string, properties: string[], currentTemplateProperties: Record<string, IEntitySingleProperty>) {
@@ -1733,9 +1722,6 @@ export class EntityManager extends DefaultManagerNeo4j {
                 continue;
             }
 
-            // const isStringType = propertyTemplate.type === 'string';
-
-            // propertiesToRemove.push(property, ...(isStringType ? [] : [`${property}${config.neo4j.stringPropertySuffix}`]));
             const { type, format, items } = propertyTemplate;
             propertiesToRemove.push(property);
 

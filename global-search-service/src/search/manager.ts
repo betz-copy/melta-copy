@@ -135,18 +135,14 @@ export default class Manager extends DefaultManagerNeo4j {
 
         Object.entries(template.properties.properties).map(async ([key, value]) => {
             if (value.format === 'user') {
-                userProperties.push(`${key}${userFieldSuffix.id}${config.neo4j.userFieldPropertySuffix}`);
-                userProperties.push(`${key}${userFieldSuffix.fullName}${config.neo4j.userFieldPropertySuffix}`);
-                userProperties.push(`${key}${userFieldSuffix.jobTitle}${config.neo4j.userFieldPropertySuffix}`);
-                userProperties.push(`${key}${userFieldSuffix.hierarchy}${config.neo4j.userFieldPropertySuffix}`);
-                userProperties.push(`${key}${userFieldSuffix.mail}${config.neo4j.userFieldPropertySuffix}`);
+                userProperties.push(
+                    ...Object.values(userFieldSuffix).map((fieldSuffix) => `${key}${fieldSuffix}${config.neo4j.userFieldPropertySuffix}`),
+                );
             }
             if (value.items?.format === 'user') {
-                userProperties.push(`${key}${usersFieldsSuffix.ids}${config.neo4j.usersFieldsPropertySuffix}`);
-                userProperties.push(`${key}${usersFieldsSuffix.fullNames}${config.neo4j.usersFieldsPropertySuffix}`);
-                userProperties.push(`${key}${usersFieldsSuffix.jobTitles}${config.neo4j.usersFieldsPropertySuffix}`);
-                userProperties.push(`${key}${usersFieldsSuffix.hierarchies}${config.neo4j.usersFieldsPropertySuffix}`);
-                userProperties.push(`${key}${usersFieldsSuffix.mails}${config.neo4j.usersFieldsPropertySuffix}`);
+                userProperties.push(
+                    ...Object.values(usersFieldsSuffix).map((fieldSuffix) => `${key}${fieldSuffix}${config.neo4j.usersFieldsPropertySuffix}`),
+                );
             }
         });
 
