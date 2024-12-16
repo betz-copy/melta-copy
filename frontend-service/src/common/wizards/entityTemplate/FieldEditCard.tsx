@@ -27,6 +27,8 @@ import {
     NotificationsOff as NotificationsOffIcon,
     Alarm as CustomAlertIcon,
     Update as DailyAlertIcon,
+    Archive,
+    Unarchive,
 } from '@mui/icons-material';
 import AddIcon from '@mui/icons-material/Add';
 import { Draggable } from 'react-beautiful-dnd';
@@ -88,6 +90,7 @@ export interface FieldEditCardProps {
     setUniqueConstraints?: (uniqueConstraints: SetStateAction<IUniqueConstraintOfTemplate[]>) => void;
     supportEditEnum?: boolean;
     supportUnique?: boolean;
+    supportArchive?: boolean;
     hasActions?: boolean;
 }
 
@@ -115,6 +118,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     supportRelationshipReference,
     supportEditEnum,
     supportUnique,
+    supportArchive,
     hasActions,
 }) => {
     const currentUser = useUserStore((state) => state.user);
@@ -517,6 +521,14 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
             options: [...value.options.slice(0, initialOptionArray.length), ...newValues],
             optionColors: tempColors,
         }));
+    };
+
+    const archiveButtonTooltip = () => {
+        if (value.required) return i18next.t('wizard.entityTemplate.cannotArchiveIfRequired');
+        if (value.uniqueCheckbox) return i18next.t('wizard.entityTemplate.cannotArchiveIfUnique');
+        if (value.preview) return i18next.t('wizard.entityTemplate.cannotArchiveIfPreview');
+        if (value.archive) return i18next.t('wizard.entityTemplate.removeFromArchive');
+        return i18next.t('wizard.entityTemplate.moveToArchive');
     };
 
     return (
@@ -956,6 +968,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                       areThereAnyInstances &&
                                                                       (isNewProperty || (!isNewProperty && !initialValue?.required))) ||
                                                                 value.deleted ||
+                                                                value.archive ||
                                                                 disableRemoveRequire
                                                             }
                                                             checked={value.required}
@@ -975,7 +988,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                 readOnly: checked || undefined,
                                                             }));
                                                         }}
-                                                        disabled={value.required}
+                                                        disabled={value.required || value.archive}
                                                         checked={value.readOnly}
                                                     />
                                                 }
@@ -988,7 +1001,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                             id={preview}
                                                             name={preview}
                                                             onChange={onChange}
-                                                            disabled={value.hide || value.deleted}
+                                                            disabled={value.hide || value.deleted || value.archive}
                                                             checked={value.preview}
                                                         />
                                                     }
@@ -1002,7 +1015,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                             id={hide}
                                                             name={hide}
                                                             onChange={onChange}
-                                                            disabled={value.preview || value.deleted}
+                                                            disabled={value.preview || value.deleted || value.archive}
                                                             checked={value.hide}
                                                         />
                                                     }
@@ -1016,6 +1029,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                             id={String(unique)}
                                                             name={String(unique)}
                                                             checked={unique}
+                                                            disabled={value.archive}
                                                             onChange={(_e, checked) => {
                                                                 setValues((prevValue) => ({
                                                                     ...prevValue,
@@ -1061,6 +1075,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                 }));
                                                             }}
                                                             checked={value.type === 'text-area'}
+                                                            disabled={value.archive}
                                                         />
                                                     }
                                                     label={i18next.t('propertyTypes.text-area')}
@@ -1071,7 +1086,19 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                             disableHoverListener={!initialValue?.required}
                                             title={i18next.t('wizard.entityTemplate.cantDeleteUniqueOrRequiredFields')}
                                         >
-                                            <Grid>
+                                            <Grid display="flex">
+                                                {supportArchive && isEditMode && (
+                                                    <MeltaTooltip title={archiveButtonTooltip()} placement="right">
+                                                        <Box>
+                                                            <IconButton
+                                                                onClick={() => setFieldValue('archive', !value.archive)}
+                                                                disabled={value.required || value.uniqueCheckbox || value.preview}
+                                                            >
+                                                                {value.archive ? <Unarchive color="primary" /> : <Archive />}
+                                                            </IconButton>
+                                                        </Box>
+                                                    </MeltaTooltip>
+                                                )}
                                                 <IconButton
                                                     onClick={() => remove(index, isNewProperty)}
                                                     disabled={

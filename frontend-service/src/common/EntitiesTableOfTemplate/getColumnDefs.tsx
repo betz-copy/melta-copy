@@ -72,17 +72,20 @@ export const getColumnDefs = <Data extends any = IEntity>({
     searchValue,
 }: IGetColumnDefsOptions<Data>): ColDef[] => {
     const columnDefs = template.propertiesOrder.map((property) => {
-        const propertyTemplate = template.properties.properties[property];
-        const { type, format, calculateTime } = propertyTemplate;
+        const propertyTemplate = { ...template.properties.properties[property] };
+        const { type, format, calculateTime, archive } = propertyTemplate;
 
         const hideField = template.properties.hide.includes(property);
 
         const valueGetter: ValueGetterFunc = ({ data }) => (data ? getEntityPropertiesData(data)[property] : undefined);
 
         const hideColumn =
-            defaultVisibleColumns[property] !== undefined
+            archive ||
+            (defaultVisibleColumns[property] !== undefined
                 ? !defaultVisibleColumns[property]
-                : hideNonPreview && !template.propertiesPreview.includes(property);
+                : hideNonPreview && !template.propertiesPreview.includes(property));
+
+        if (propertyTemplate.archive) propertyTemplate.title = `${propertyTemplate.title} ${i18next.t('entitiesTableOfTemplate.archiveTitle')}`;
 
         if (type === 'number')
             return numberColDef(
