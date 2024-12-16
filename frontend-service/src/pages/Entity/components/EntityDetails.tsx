@@ -6,6 +6,8 @@ import {
     DoNotDisturbOffOutlined as DoNotDisturbOffOutlinedIcon,
     Edit as EditIcon,
     MoreVertOutlined,
+    Unarchive,
+    Archive,
 } from '@mui/icons-material';
 import { Card, CardContent, Grid, IconButton, Menu } from '@mui/material';
 import { AxiosError } from 'axios';
@@ -45,6 +47,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
     const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
     const queryClient = useQueryClient();
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+    const [displayArchiveProperties, setDisplayArchiveProperties] = useState(false);
 
     const currentUser = useUserStore((state) => state.user);
     const darkMode = useDarkModeStore((state) => state.darkMode);
@@ -137,6 +140,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
 
     const canWriteInstance = checkUserCategoryPermission(currentUser.currentWorkspacePermissions, entityTemplate.category, PermissionScope.write);
     const isEntityDisabled = expandedEntity.entity.properties.disabled;
+
     return (
         <>
             <Card
@@ -253,6 +257,13 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                                         icon={isEntityDisabled ? DoNotDisturbOffOutlinedIcon : DoNotDisturbOnOutlinedIcon}
                                         text={isEntityDisabled ? i18next.t('actions.activate') : i18next.t('actions.disable')}
                                     />
+                                    <TooltipMenuButton
+                                        tooltipTitle={i18next.t('permissions.dontHaveWritePermissionsToCategory')}
+                                        onClick={() => setDisplayArchiveProperties(!displayArchiveProperties)}
+                                        disabled={!canWriteInstance}
+                                        icon={displayArchiveProperties ? Archive : Unarchive}
+                                        text={displayArchiveProperties ? i18next.t('entityPage.hideArchive') : i18next.t('entityPage.displayArchive')}
+                                    />
                                 </Menu>
                             </Grid>
                         </Grid>
@@ -274,6 +285,26 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                                     textWrap
                                     mode="normal"
                                 />
+                                {displayArchiveProperties && (
+                                    <EntityProperties
+                                        entityTemplate={entityTemplate}
+                                        properties={entity.properties}
+                                        style={{
+                                            flexDirection: 'row',
+                                            flexWrap: 'wrap',
+                                            rowGap: '20px',
+                                            columnGap: '20px',
+                                            alignItems: 'center',
+                                            width: '100%',
+                                        }}
+                                        innerStyle={{ width: '32%' }}
+                                        textWrap
+                                        mode="normal"
+                                        displayArchiveProperties
+                                        showDivider
+                                        dividerTitle={i18next.t('entityPage.archiveTitle')}
+                                    />
+                                )}
                             </Grid>
 
                             <Grid item>

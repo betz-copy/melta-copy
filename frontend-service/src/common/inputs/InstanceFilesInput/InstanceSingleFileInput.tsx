@@ -2,6 +2,7 @@ import React from 'react';
 import i18next from 'i18next';
 import { Box } from '@mui/material';
 import { Field, FormikProps } from 'formik';
+import { Accept } from 'react-dropzone';
 import { ProcessStepValues } from '../../wizards/processInstance/ProcessSteps';
 import { ProcessDetailsValues } from '../../wizards/processInstance/ProcessDetails';
 import FileInput from '../ImageFileInput';
@@ -15,6 +16,7 @@ interface InstanceFileInputProps {
     required: Boolean;
     value: File | undefined;
     error: string | undefined;
+    acceptedFilesTypes?: Accept;
     setFieldTouched: FormikProps<ProcessFormikProps>['setFieldTouched'];
     setExternalErrors?: React.Dispatch<
         React.SetStateAction<{
@@ -23,6 +25,10 @@ interface InstanceFileInputProps {
             action: string;
         }>
     >;
+    onDrop?: (file: File) => Promise<void>;
+    isLoading?: boolean;
+    disableCamera?: boolean;
+    comment?: string;
 }
 
 export const InstanceSingleFileInput: React.FC<InstanceFileInputProps> = ({
@@ -34,6 +40,11 @@ export const InstanceSingleFileInput: React.FC<InstanceFileInputProps> = ({
     error,
     setFieldTouched,
     setExternalErrors,
+    acceptedFilesTypes,
+    onDrop,
+    isLoading,
+    disableCamera,
+    comment,
 }) => {
     return (
         <Box
@@ -56,6 +67,7 @@ export const InstanceSingleFileInput: React.FC<InstanceFileInputProps> = ({
                 inputText={`${fieldTemplateTitle} ${required ? '*' : ''}`}
                 file={value}
                 onDropFile={(acceptedFile) => {
+                    if (onDrop) onDrop(acceptedFile);
                     setFieldValue(fileFieldName, acceptedFile);
                     setFieldTouched(fileFieldName, true, false);
                     setExternalErrors?.((prev) => ({ ...prev, files: false }));
@@ -66,7 +78,11 @@ export const InstanceSingleFileInput: React.FC<InstanceFileInputProps> = ({
                     setFieldTouched(fileFieldName, true, false);
                     setExternalErrors?.((prev) => ({ ...prev, files: false }));
                 }}
+                acceptedFilesTypes={acceptedFilesTypes}
                 errorText={error}
+                isLoading={isLoading}
+                disableCamera={disableCamera}
+                comment={comment}
             />
         </Box>
     );
