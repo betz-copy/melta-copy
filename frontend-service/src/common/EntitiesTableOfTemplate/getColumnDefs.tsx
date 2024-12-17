@@ -5,7 +5,7 @@ import React, { memo } from 'react';
 import { Link } from 'wouter';
 import { AxiosError } from 'axios';
 import { UseMutateAsyncFunction } from 'react-query';
-import { IButtonPopoverProps } from '.';
+import { EntityData, IButtonPopoverProps } from '.';
 import { IEntity } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import {
@@ -53,7 +53,7 @@ export interface IGetColumnDefsOptions<Data extends any> {
     disableEditCell?: boolean;
 }
 
-export const getColumnDefs = <Data extends any = IEntity>({
+export const getColumnDefs = <Data extends any = EntityData>({
     template,
     getRowId,
     getEntityPropertiesData,

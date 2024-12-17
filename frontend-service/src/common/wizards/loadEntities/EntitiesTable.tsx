@@ -86,7 +86,7 @@ export const EntitiesTable: React.FC<{
                     rowModelType="clientSide"
                     rowHeight={defaultRowHeight}
                     fontSize={`${defaultFontSize}px`}
-                    rowData={rowData as (IEntity | IFailedEntity)[] | undefined}
+                    rowData={rowData as (IEntity | IFailedEntity)[]}
                     saveStorageProps={{
                         shouldSaveFilter: false,
                         shouldSaveWidth: false,

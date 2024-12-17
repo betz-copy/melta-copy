@@ -76,7 +76,7 @@ export interface IButtonProps<Data> {
     disabledButton: boolean;
 }
 
-type EntityData = IEntity | IFailedEntity;
+export type EntityData = IEntity | IFailedEntity;
 
 export const getDatasource = <Data extends any = EntityData>(
     template: IMongoEntityTemplatePopulated,
