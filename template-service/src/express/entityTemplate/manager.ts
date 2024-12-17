@@ -40,6 +40,10 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
         return this.model.find(query).populate('category').limit(limit).skip(skip).lean().exec();
     }
 
+    getAllTemplates() {
+        return this.model.find().lean().exec();
+    }
+
     getTemplateById(id: string): Promise<IEntityTemplatePopulated> {
         return this.model
             .findById(id)

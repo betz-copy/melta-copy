@@ -3,6 +3,7 @@ import { InstancesService } from '../../externalServices/instanceService';
 import { IFilterOfTemplate, ISearchEntitiesOfTemplateBody } from '../../externalServices/instanceService/interfaces/entities';
 import { EntityTemplateService } from '../../externalServices/templates/entityTemplateService';
 import DefaultManagerProxy from '../../utils/express/manager';
+import { TemplateNamesAndId } from './interfaces';
 
 export class FlowCubeManager extends DefaultManagerProxy<null> {
     private instancesService: InstancesService;
@@ -57,5 +58,13 @@ export class FlowCubeManager extends DefaultManagerProxy<null> {
         const res = await this.instancesService.searchEntitiesOfTemplateRequest(templateId, convertedSearchBody);
         const convertToFlow = res.entities.map((entity) => entity.entity.properties);
         return convertToFlow;
+    }
+
+    async getAllTemplatesNameAndIdByWorkspaceId(workspaceId: string): Promise<TemplateNamesAndId[]> {
+        const templates = await this.entityTemplateService.getAllTemplatesByWorkspaceId(workspaceId);
+
+        return templates.map(({ _id, name, displayName }) => {
+            return { _id, name, displayName };
+        });
     }
 }

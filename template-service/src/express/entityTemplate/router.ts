@@ -5,6 +5,7 @@ import EntityTemplateController from './controller';
 import {
     createEntityTemplateSchema,
     deleteEntityTemplateSchema,
+    getAllTemplatesSchema,
     getEntityTemplateByIdSchema,
     getTemplatesUsingRelationshipReferanceSchema,
     searchEntityTemplatesSchema,
@@ -22,6 +23,8 @@ const validatorController = createController(EntityTemplateValidator, true);
 entityTemplateRouter.post('/search', ValidateRequest(searchEntityTemplatesSchema), controller.searchEntityTemplates);
 
 entityTemplateRouter.get('/:templateId', ValidateRequest(getEntityTemplateByIdSchema), controller.getEntityTemplateById);
+
+entityTemplateRouter.get('/', ValidateRequest(getAllTemplatesSchema), controller.getAllTemplates);
 
 entityTemplateRouter.get(
     '/related/:relatedTemplateId',

@@ -47,6 +47,10 @@ class EntityTemplateController extends DefaultController<IMongoEntityTemplate, E
         const actionToUpsert = fetchPropertyFromRequest<string>(req, 'actions');
         res.json(await this.manager.updateEntityTemplateAction(id, actionToUpsert));
     }
+
+    async getAllTemplates(_req: Request, res: Response) {
+        res.json(await this.manager.getAllTemplates());
+    }
 }
 
 export default EntityTemplateController;
