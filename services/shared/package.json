@@ -8,12 +8,7 @@
     "clean": "rimraf dist"
   },
   "dependencies": {
-    "dotenv": "^16.4.7",
-    "env-var": "^7.5.0",
-    "joi": "^17.11.0",
-    "mongoose": "^8.8.1",
-    "winston": "^3.17.0",
-    "winston-daily-rotate-file": "^5.0.0"
+    "mongoose": "^8.8.1"
   },
   "devDependencies": {
     "@types/mongoose": "^5.11.96",
