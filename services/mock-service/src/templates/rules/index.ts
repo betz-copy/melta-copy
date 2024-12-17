@@ -1,8 +1,7 @@
-import { IMongoEntityTemplate, IMongoRelationshipTemplate } from '@microservices/shared';
+import { IMongoEntityTemplate, IMongoRelationshipTemplate, IMongoRule } from '@microservices/shared';
 import config from '../../config';
 import { rulesCreator } from '../../mocks/rules';
 import { createAxiosInstance } from '../../utils/axios';
-import { IMongoRule } from './interfaces';
 
 const {
     url,

@@ -1,4 +1,4 @@
-import { IRule } from '../templates/rules/interfaces';
+import { IRule } from '@microservices/shared';
 
 export const rulesCreator = (
     fliesOnId: string,
