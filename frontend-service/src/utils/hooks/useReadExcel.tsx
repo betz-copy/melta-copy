@@ -23,15 +23,15 @@ const convertFileDataToRowData = (gridData: any[][], headers: string[], template
 
             return isEmptyRow ? null : { properties: rowObject };
         })
-        .filter((rowObject) => rowObject !== null);
+        .filter((rowObject): rowObject is { properties: Record<string, any> } => rowObject !== null);
 };
 
-const importDataToGrid = (fileData: any[][], template: IMongoEntityTemplatePopulated): { properties: Record<string, any> }[] | null => {
-    if (fileData.length === 0) return null;
+const importDataToGrid = (fileData: any[][], template: IMongoEntityTemplatePopulated): { properties: Record<string, any> }[] => {
+    if (fileData.length === 0) return [];
 
     const headers = fileData[0] as string[];
     const newRows = convertFileDataToRowData(fileData.slice(1), headers, template);
-    return newRows || null;
+    return newRows;
 };
 
 const createFileObject = (files?: File[]): Record<string, File> | undefined => {

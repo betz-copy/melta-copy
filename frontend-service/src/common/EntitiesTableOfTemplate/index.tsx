@@ -53,6 +53,7 @@ import { ActionTypes, IAction, IActionPopulated } from '../../interfaces/ruleBre
 import ActionOnEntityWithRuleBreachDialog from '../../pages/Entity/components/ActionOnEntityWithRuleBreachDialog';
 import { ErrorToast } from '../ErrorToast';
 import { AreYouSureDialog } from '../dialogs/AreYouSureDialog';
+import { IFailedEntity } from '../wizards/loadEntities';
 
 const { errorCodes } = environment;
 const { rowCount, defaultExpandedRowCount } = environment.agGrid;
@@ -75,7 +76,9 @@ export interface IButtonProps<Data> {
     disabledButton: boolean;
 }
 
-export const getDatasource = <Data extends any = IEntity>(
+type EntityData = IEntity | IFailedEntity;
+
+export const getDatasource = <Data extends any = EntityData>(
     template: IMongoEntityTemplatePopulated,
     quickFilterText?: string,
     onFail?: (err: unknown) => void,
@@ -120,7 +123,7 @@ export type IConnection = {
     destinationEntity: IEntity;
 };
 
-export const getRowModelProps = <Data extends any = IEntity>(
+export const getRowModelProps = <Data extends any = EntityData>(
     rowModelType: 'serverSide' | 'clientSide' | 'infinite',
     template: IMongoEntityTemplatePopulated,
     rowData: Data[] | undefined,
@@ -162,7 +165,7 @@ export type EntitiesTableOfTemplateProps<Data> = {
     menuRowButtonProps?: boolean;
     hasPermissionToCategory?: boolean;
     getRowId: (data: Data) => string;
-    getEntityPropertiesData: (data: Data) => IEntity['properties'];
+    getEntityPropertiesData: (data: Data) => Partial<IEntity['properties']>;
     rowModelType: 'serverSide' | 'clientSide' | 'infinite';
     rowData?: Data[];
     quickFilterText?: string;
@@ -186,6 +189,7 @@ export type EntitiesTableOfTemplateProps<Data> = {
     refetch?: () => void;
     hasInstances?: boolean;
     paginationPageSizeSelector?: boolean | number[];
+    editable?: boolean;
 };
 
 export type EntitiesTableOfTemplateRef<Data> = {
@@ -227,6 +231,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             refetch,
             hasInstances,
             paginationPageSizeSelector = environment.agGrid.paginationPageSizeSelector as unknown as number[],
+            editable = true,
         }: EntitiesTableOfTemplateProps<Data>,
         ref: ForwardedRef<EntitiesTableOfTemplateRef<Data>>,
     ) => {
@@ -337,6 +342,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         const columnDefProps: IGetColumnDefsOptions<Data> = {
             template,
             getEntityPropertiesData,
+            getRowId,
             onNavigateToRow: showNavigateToRowButton ? (data) => navigate(`/entity/${getEntityPropertiesData(data)._id}`) : undefined,
             deleteRowButtonProps,
             menuRowButtonProps,
@@ -353,7 +359,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             setOpenDeleteDialog,
             updateEntityStatus,
             searchValue: quickFilterText,
-            disableEditCell: editRowButtonProps?.disabledButton,
+            disableEditCell: !editable || editRowButtonProps?.disabledButton,
         };
         const columnDefs = useDeepCompareMemo(() => getColumnDefs(columnDefProps), [columnDefProps]);
 
@@ -752,6 +758,6 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
     },
 );
 
-export default EntitiesTableOfTemplate as <Data = IEntity>(
+export default EntitiesTableOfTemplate as <Data = EntityData>(
     props: EntitiesTableOfTemplateProps<Data> & { ref?: React.ForwardedRef<EntitiesTableOfTemplateRef<Data>> },
 ) => ReturnType<typeof EntitiesTableOfTemplate>;

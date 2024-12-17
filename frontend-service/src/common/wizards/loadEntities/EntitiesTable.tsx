@@ -8,11 +8,12 @@ import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplat
 import { environment } from '../../../globals';
 import { TableButton } from '../../TableButton';
 import { IEntity } from '../../../interfaces/entities';
+import { IFailedEntity } from '.';
 
 const { defaultRowHeight, defaultFontSize } = environment.agGrid;
 
 export const EntitiesTable: React.FC<{
-    rowData?: IEntity[];
+    rowData?: IEntity[] | IFailedEntity[];
     template: IMongoEntityTemplatePopulated;
     defaultExpanded: boolean;
     icon: React.JSX.Element;
@@ -85,7 +86,7 @@ export const EntitiesTable: React.FC<{
                     rowModelType="clientSide"
                     rowHeight={defaultRowHeight}
                     fontSize={`${defaultFontSize}px`}
-                    rowData={rowData}
+                    rowData={rowData as (IEntity | IFailedEntity)[] | undefined}
                     saveStorageProps={{
                         shouldSaveFilter: false,
                         shouldSaveWidth: false,
@@ -97,6 +98,7 @@ export const EntitiesTable: React.FC<{
                     }}
                     ignoreType
                     showNavigateToRowButton={false}
+                    editable={false}
                 />
             </AccordionDetails>
         </Accordion>
