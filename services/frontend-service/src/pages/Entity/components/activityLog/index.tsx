@@ -3,12 +3,12 @@ import { Button, Divider } from '@mui/material';
 import i18next from 'i18next';
 import React, { useEffect } from 'react';
 import { toast } from 'react-toastify';
-import { IEntityExpanded, IMongoEntityTemplatePopulated } from '@microservices/shared';
+import { IEntityExpanded, IMongoEntityTemplatePopulated, IMongoActivityLog } from '@microservices/shared';
 import { InfiniteScroll } from '../../../../common/InfiniteScroll';
 import { MeltaTooltip } from '../../../../common/MeltaTooltip';
 import PopperSidebar from '../../../../common/PopperSidebar';
 import { environment } from '../../../../globals';
-import { getActivityLogRequest, IActivityLog } from '../../../../services/activityLogService';
+import { getActivityLogRequest } from '../../../../services/activityLogService';
 import ActivityLogRow from './ActivityLogRow';
 
 const { infiniteScrollPageCount } = environment.activityLog;
@@ -37,7 +37,7 @@ const ActivityLog: React.FC<{ expandedEntity: IEntityExpanded; entityTemplate: I
             </MeltaTooltip>
 
             <PopperSidebar open={openPopper} setOpen={setOpenPopper} title={i18next.t('entityPage.activityLog.header')} side="left">
-                <InfiniteScroll<IActivityLog>
+                <InfiniteScroll<IMongoActivityLog>
                     queryKey={['getActivityLogRequest', entityId]}
                     queryFunction={({ pageParam }) =>
                         getActivityLogRequest(entityId, infiniteScrollPageCount, pageParam, [

@@ -21,15 +21,13 @@ import {
     IProcessReviewerUpdateNotificationMetadata,
     IProcessStatusUpdateNotificationMetadata,
     NotificationType,
-} from '@microservices/shared';
-import config from '../../../config';
-import { InstancesService } from '../../../externalServices/instanceService';
-import {
     IArchiveProcessNotificationMetadataPopulated,
     IDeleteProcessNotificationMetadataPopulated,
     INewProcessNotificationMetadataPopulated,
     IProcessStatusUpdateNotificationMetadataPopulated,
-} from '../../../externalServices/notificationService/interfaces/populated';
+} from '@microservices/shared';
+import config from '../../../config';
+import { InstancesService } from '../../../externalServices/instanceService';
 import { ProcessService } from '../../../externalServices/processService';
 import { StorageService } from '../../../externalServices/storageService';
 import { EntityTemplateService } from '../../../externalServices/templates/entityTemplateService';

@@ -1,4 +1,4 @@
-import { IActivityLog } from './interface';
+import { IMongoActivityLog } from '@microservices/shared';
 import config from '../../config';
 import { DefaultExternalServiceRabbit } from '../../utils/rabbit/manager';
 import { ServiceError } from '../../express/error';
@@ -6,7 +6,7 @@ import { ServiceError } from '../../express/error';
 const { rabbit } = config;
 
 export class ActivityLogProducer extends DefaultExternalServiceRabbit {
-    async createActivityLog(activityLog: Omit<IActivityLog, '_id'>) {
+    async createActivityLog(activityLog: Omit<IMongoActivityLog, '_id'>) {
         try {
             this.sendToQueue(rabbit.activityLogQueue, activityLog);
         } catch (error) {

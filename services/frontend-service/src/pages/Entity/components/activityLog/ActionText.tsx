@@ -4,10 +4,9 @@ import i18next from 'i18next';
 import React from 'react';
 import { useQueryClient } from 'react-query';
 import { useLocation } from 'wouter';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated, IRelationshipTemplateMap } from '@microservices/shared';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated, IRelationshipTemplateMap, IMongoActivityLog } from '@microservices/shared';
 import { MeltaTooltip } from '../../../../common/MeltaTooltip';
 import RelationshipReferenceView from '../../../../common/RelationshipReferenceView';
-import { IActivityLog } from '../../../../services/activityLogService';
 import { containsHTMLTags, getFirstLine, getNumLines } from '../../../../utils/HtmlTagsStringValue';
 import { getFilesName } from '../../../../utils/getFileName';
 
@@ -245,7 +244,7 @@ const UpdateEntityMetadataActionText: React.FC<{
 };
 
 const ActionText: React.FC<{
-    log: IActivityLog;
+    log: IMongoActivityLog;
     entityTemplate: IMongoEntityTemplatePopulated;
 }> = ({ log: { metadata, action }, entityTemplate }) => {
     if (action === 'CREATE_RELATIONSHIP' || action === 'DELETE_RELATIONSHIP')

@@ -29,10 +29,12 @@ import {
     IUniqueConstraint,
     IUniqueConstraintOfTemplate,
     IRelationship,
+    IUpdatedFields,
+    ActionsLog,
+    IMongoActivityLog,
 } from '@microservices/shared';
 import { EntitiesIdsRulesReasonsMap, IEntityCrudAction, IExecutionOutput, IGetExpandedEntityBody, RunRuleReason } from './interface';
 import config from '../../config';
-import { ActionsLog, IActivityLog, IUpdatedFields } from '../../externalServices/activityLog/interface';
 import { ActivityLogProducer } from '../../externalServices/activityLog/producer';
 import { EntityTemplateManagerService } from '../../externalServices/templates/entityTemplateManager';
 import { RelationshipsTemplateManagerService } from '../../externalServices/templates/relationshipTemplateManager';
@@ -270,7 +272,7 @@ export class EntityManager extends DefaultManagerNeo4j {
             }),
         );
 
-        const allActivityLogsToCreate: Omit<IActivityLog, '_id'>[] = [];
+        const allActivityLogsToCreate: Omit<IMongoActivityLog, '_id'>[] = [];
 
         allActivityLogsToCreate.push({
             action: duplicatedFromId ? ActionsLog.DUPLICATE_ENTITY : ActionsLog.CREATE_ENTITY,
@@ -1180,7 +1182,7 @@ export class EntityManager extends DefaultManagerNeo4j {
         userId?: string,
     ) {
         const activityLogUpdatedFields: IUpdatedFields[] = [];
-        const activityLogsToCreate: Omit<IActivityLog, '_id'>[] = [];
+        const activityLogsToCreate: Omit<IMongoActivityLog, '_id'>[] = [];
 
         const entity = await this.getEntityByIdInTransaction(id, transaction);
 

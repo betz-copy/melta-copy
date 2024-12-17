@@ -26,6 +26,8 @@ import {
     ITemplateSearchBody,
     IRelationship,
     RuleBreachRequestStatus,
+    logger,
+    IExportEntitiesBody,
 } from '@microservices/shared';
 import config from '../../config';
 import { InstancesService } from '../../externalServices/instanceService';
@@ -35,12 +37,10 @@ import { EntityTemplateService } from '../../externalServices/templates/entityTe
 import { trycatch } from '../../utils';
 import { createWorksheet, createWorkbook, styleAWorksheet } from '../../utils/excel/excelFunctions';
 import DefaultManagerProxy from '../../utils/express/manager';
-import { logger } from '@microservices/shared';
 import { objectFilter } from '../../utils/object';
 import { BadRequestError } from '../error';
 import RuleBreachesManager from '../ruleBreaches/manager';
 import { patchDocumentAsStream } from './documentExport';
-import { IExportEntitiesBody } from './interfaces';
 import { RabbitManager } from '../../utils/rabbit';
 import { SemanticSearchService } from '../../externalServices/semanticSearch';
 import { ISemanticSearchResult } from '../../externalServices/semanticSearch/interface';

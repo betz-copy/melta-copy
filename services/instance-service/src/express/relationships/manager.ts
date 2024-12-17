@@ -1,8 +1,7 @@
 /* eslint-disable no-await-in-loop */
 import { Transaction } from 'neo4j-driver';
-import { IMongoRelationshipTemplate, IBrokenRule, IRelationship } from '@microservices/shared';
+import { ActionsLog, IMongoRelationshipTemplate, IBrokenRule, IRelationship, IMongoActivityLog } from '@microservices/shared';
 import config from '../../config';
-import { ActionsLog, IActivityLog } from '../../externalServices/activityLog/interface';
 import { ActivityLogProducer } from '../../externalServices/activityLog/producer';
 import { RelationshipsTemplateManagerService } from '../../externalServices/templates/relationshipTemplateManager';
 import {
@@ -151,7 +150,7 @@ export class RelationshipManager extends DefaultManagerNeo4j {
     createRelationshipInTransaction = async (transaction: Transaction, relationship: IRelationship, userId: string) => {
         const { templateId, properties, sourceEntityId, destinationEntityId } = relationship;
 
-        const activityLogsToCreate: Omit<IActivityLog, '_id'>[] = [];
+        const activityLogsToCreate: Omit<IMongoActivityLog, '_id'>[] = [];
 
         const createdRelationship = await runInTransactionAndNormalize(
             transaction,

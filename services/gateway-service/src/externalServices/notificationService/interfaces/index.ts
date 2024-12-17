@@ -10,8 +10,8 @@ import {
     IRuleBreachRequestNotificationMetadata,
     IRuleBreachResponseNotificationMetadata,
     NotificationType,
+    INotificationMetadataPopulated,
 } from '@microservices/shared';
-import { INotificationMetadataPopulated } from './populated';
 
 export interface IMailNotification {
     viewers: string[];

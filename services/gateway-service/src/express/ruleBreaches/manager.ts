@@ -26,6 +26,10 @@ import {
     IRelationship,
     IAgGridRequest,
     basicFilterOperationTypes,
+    INotificationMetadataPopulated,
+    IRuleBreachAlertNotificationMetadataPopulated,
+    IRuleBreachRequestNotificationMetadataPopulated,
+    IRuleBreachResponseNotificationMetadataPopulated,
 } from '@microservices/shared';
 import { trycatch } from '../../utils';
 import { BadRequestError, ForbiddenError } from '../error';
@@ -33,12 +37,6 @@ import { InstancesManager } from '../instances/manager';
 
 import config from '../../config';
 import { InstancesService } from '../../externalServices/instanceService';
-import {
-    INotificationMetadataPopulated,
-    IRuleBreachAlertNotificationMetadataPopulated,
-    IRuleBreachRequestNotificationMetadataPopulated,
-    IRuleBreachResponseNotificationMetadataPopulated,
-} from '../../externalServices/notificationService/interfaces/populated';
 import { RuleBreachService } from '../../externalServices/ruleBreachService';
 import {
     IActionMetadataPopulated,

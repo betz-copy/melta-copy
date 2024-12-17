@@ -2,15 +2,14 @@ import React from 'react';
 import { Typography, Grid, Skeleton } from '@mui/material';
 import { useQuery } from 'react-query';
 import randomColor from 'randomcolor';
-import { IMongoEntityTemplatePopulated } from '@microservices/shared';
-import { IActivityLog } from '../../../../services/activityLogService';
+import { IMongoEntityTemplatePopulated, IMongoActivityLog } from '@microservices/shared';
 import { getUserByIdRequest } from '../../../../services/userService';
 import ActionText from './ActionText';
 import { getShortDate } from '../../../../utils/date';
 import UserAvatar from '../../../../common/UserAvatar';
 import { useDarkModeStore } from '../../../../stores/darkMode';
 
-const ActivityLogRow: React.FC<{ log: IActivityLog; entityTemplate: IMongoEntityTemplatePopulated }> = ({ log, entityTemplate }) => {
+const ActivityLogRow: React.FC<{ log: IMongoActivityLog; entityTemplate: IMongoEntityTemplatePopulated }> = ({ log, entityTemplate }) => {
     const { data: user, isLoading } = useQuery(['getUserById', log.userId], () => getUserByIdRequest(log.userId));
 
     const darkMode = useDarkModeStore((state) => state.darkMode);

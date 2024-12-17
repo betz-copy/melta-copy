@@ -9,17 +9,15 @@ import {
     IDeleteProcessNotificationMetadata,
     NotificationType,
     IEntity,
-} from '@microservices/shared';
-import config from '../../config';
-import { UsersManager } from '../../express/users/manager';
-import {
     IArchiveProcessNotificationMetadataPopulated,
     IDateAboutToExpireMetadataPopulated,
     INewProcessNotificationMetadataPopulated,
     IRuleBreachAlertNotificationMetadataPopulated,
     IRuleBreachRequestNotificationMetadataPopulated,
     IRuleBreachResponseNotificationMetadataPopulated,
-} from '../../externalServices/notificationService/interfaces/populated';
+} from '@microservices/shared';
+import config from '../../config';
+import { UsersManager } from '../../express/users/manager';
 import {
     ICreateRelationshipMetadataPopulated,
     IDeleteRelationshipMetadataPopulated,

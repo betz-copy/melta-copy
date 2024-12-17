@@ -14,8 +14,8 @@ import {
     IBrokenRule,
     IEntity,
     IRelationship,
+    IMongoActivityLog,
 } from '@microservices/shared';
-import { IActivityLog } from '../../externalServices/activityLog/interface';
 import { ActivityLogProducer } from '../../externalServices/activityLog/producer';
 import { EntityTemplateManagerService } from '../../externalServices/templates/entityTemplateManager';
 import { RelationshipsTemplateManagerService } from '../../externalServices/templates/relationshipTemplateManager';
@@ -283,7 +283,7 @@ export class BulkActionManager extends DefaultManagerNeo4j {
         userId: string,
     ) {
         const results: (IEntity | IRelationship)[] = [];
-        const allActivityLogsToCreate: Omit<IActivityLog, '_id'>[] = [];
+        const allActivityLogsToCreate: Omit<IMongoActivityLog, '_id'>[] = [];
 
         for (const action of actions) {
             switch (action.actionType) {

@@ -1,149 +1,146 @@
-import { IEntity } from "./entity";
-import { IMongoStepInstancePopulated } from "./process";
-import {
-  IMongoProcessInstanceReviewerPopulated,
-  Status,
-} from "./process/instances/process";
-import {
-  IRuleBreachAlertPopulated,
-  IRuleBreachRequestPopulated,
-} from "./ruleBreach";
+import { IEntity } from './entity';
+import { IMongoStepInstancePopulated } from './process';
+import { IMongoProcessInstanceReviewerPopulated, Status } from './process/instances/process';
+import { IRuleBreachAlertPopulated, IRuleBreachRequestPopulated } from './ruleBreach';
 
 export enum NotificationType {
-  ruleBreachAlert = "ruleBreachAlert",
-  ruleBreachRequest = "ruleBreachRequest",
-  ruleBreachResponse = "ruleBreachResponse",
+    ruleBreachAlert = 'ruleBreachAlert',
+    ruleBreachRequest = 'ruleBreachRequest',
+    ruleBreachResponse = 'ruleBreachResponse',
 
-  processReviewerUpdate = "processReviewerUpdate",
-  processStatusUpdate = "processStatusUpdate",
-  newProcess = "newProcess",
-  deleteProcess = "deleteProcess",
-  archivedProcess = "archivedProcess",
+    processReviewerUpdate = 'processReviewerUpdate',
+    processStatusUpdate = 'processStatusUpdate',
+    newProcess = 'newProcess',
+    deleteProcess = 'deleteProcess',
+    archivedProcess = 'archivedProcess',
 
-  dateAboutToExpire = "dateAboutToExpire",
+    dateAboutToExpire = 'dateAboutToExpire',
 }
 
 export interface IRuleBreachAlertNotificationMetadata {
-  alertId: string;
+    alertId: string;
 }
 
 export interface IRuleBreachRequestNotificationMetadata {
-  requestId: string;
+    requestId: string;
 }
 export interface IRuleBreachResponseNotificationMetadata {
-  requestId: string;
+    requestId: string;
 }
 
 export interface IProcessReviewerUpdateNotificationMetadata {
-  processId: string;
-  addedStepIds: string[];
-  deletedStepIds: string[];
-  unchangedStepIds: string[];
+    processId: string;
+    addedStepIds: string[];
+    deletedStepIds: string[];
+    unchangedStepIds: string[];
 }
 export interface IProcessStatusUpdateNotificationMetadata {
-  processId: string;
-  stepId?: string;
-  status: Status;
+    processId: string;
+    stepId?: string;
+    status: Status;
 }
 export interface INewProcessNotificationMetadata {
-  processId: string;
+    processId: string;
 }
 export interface IDeleteProcessNotificationMetadata {
-  processName: string;
+    processName: string;
 }
 export interface IArchiveProcessNotificationMetadata {
-  processId: string;
-  isArchived?: boolean;
+    processId: string;
+    isArchived?: boolean;
 }
 export interface IDateAboutToExpireNotificationMetadata {
-  entityId: string;
-  propertyName: string;
-  datePropertyValue: Date;
+    entityId: string;
+    propertyName: string;
+    datePropertyValue: Date;
 }
 
 export type INotificationMetadata =
-  | IRuleBreachAlertNotificationMetadata
-  | IRuleBreachRequestNotificationMetadata
-  | IRuleBreachResponseNotificationMetadata
-  | IProcessReviewerUpdateNotificationMetadata
-  | IProcessStatusUpdateNotificationMetadata
-  | INewProcessNotificationMetadata
-  | IDateAboutToExpireNotificationMetadata
-  | IDeleteProcessNotificationMetadata
-  | IArchiveProcessNotificationMetadata;
+    | IRuleBreachAlertNotificationMetadata
+    | IRuleBreachRequestNotificationMetadata
+    | IRuleBreachResponseNotificationMetadata
+    | IProcessReviewerUpdateNotificationMetadata
+    | IProcessStatusUpdateNotificationMetadata
+    | INewProcessNotificationMetadata
+    | IDateAboutToExpireNotificationMetadata
+    | IDeleteProcessNotificationMetadata
+    | IArchiveProcessNotificationMetadata;
 
 export interface INotification<T = INotificationMetadata> {
-  viewers: string[];
-  type: NotificationType;
-  metadata: T;
-  createdAt: Date;
-  _id: string;
+    viewers: string[];
+    type: NotificationType;
+    metadata: T;
+    createdAt: Date;
+    _id: string;
 }
 
 export type INotificationCountGroups = Record<string, NotificationType[]>;
 
 export interface INotificationGroupCountDetails {
-  groups: Record<string, number>;
-  total: number;
+    groups: Record<string, number>;
+    total: number;
 }
 
 export interface IBasicNotificationQuery {
-  types?: NotificationType[];
-  startDate?: Date;
-  endDate?: Date;
-  viewerId?: string;
+    types?: NotificationType[];
+    startDate?: Date;
+    endDate?: Date;
+    viewerId?: string;
 }
 
 export interface IRuleBreachAlertNotificationMetadataPopulated {
-  alert: IRuleBreachAlertPopulated;
+    alert: IRuleBreachAlertPopulated;
 }
 export interface IRuleBreachRequestNotificationMetadataPopulated {
-  request: IRuleBreachRequestPopulated;
+    request: IRuleBreachRequestPopulated;
 }
 export interface IRuleBreachResponseNotificationMetadataPopulated {
-  request: IRuleBreachRequestPopulated;
+    request: IRuleBreachRequestPopulated;
 }
 
 export interface IProcessReviewerUpdateNotificationMetadataPopulated {
-  process: IMongoProcessInstanceReviewerPopulated | null;
-  addedSteps: (IMongoStepInstancePopulated | null)[];
-  deletedSteps: (IMongoStepInstancePopulated | null)[];
-  unchangedSteps: (IMongoStepInstancePopulated | null)[];
+    process: IMongoProcessInstanceReviewerPopulated | null;
+    addedSteps: (IMongoStepInstancePopulated | null)[];
+    deletedSteps: (IMongoStepInstancePopulated | null)[];
+    unchangedSteps: (IMongoStepInstancePopulated | null)[];
 }
 export interface IProcessStatusUpdateNotificationMetadataPopulated {
-  process: IMongoProcessInstanceReviewerPopulated | null;
-  step?: IMongoStepInstancePopulated | null;
-  status: Status;
+    process: IMongoProcessInstanceReviewerPopulated | null;
+    step?: IMongoStepInstancePopulated | null;
+    status: Status;
 }
 export interface INewProcessNotificationMetadataPopulated {
-  process: IMongoProcessInstanceReviewerPopulated | null;
+    process: IMongoProcessInstanceReviewerPopulated | null;
 }
 export interface IDeleteProcessNotificationMetadataPopulated {
-  processName: string;
+    processName: string;
 }
 export interface IArchiveProcessNotificationMetadataPopulated {
-  process: IMongoProcessInstanceReviewerPopulated | null;
-  isArchived?: boolean;
+    process: IMongoProcessInstanceReviewerPopulated | null;
+    isArchived?: boolean;
 }
 export interface IDateAboutToExpireMetadataPopulated {
-  entity: IEntity | null;
-  propertyName: string;
-  datePropertyValue: Date;
+    entity: IEntity | null;
+    propertyName: string;
+    datePropertyValue: Date;
 }
 export type INotificationMetadataPopulated =
-  | IRuleBreachAlertNotificationMetadataPopulated
-  | IRuleBreachRequestNotificationMetadataPopulated
-  | IRuleBreachResponseNotificationMetadataPopulated
-  | IProcessReviewerUpdateNotificationMetadataPopulated
-  | IProcessStatusUpdateNotificationMetadataPopulated
-  | INewProcessNotificationMetadataPopulated
-  | IDateAboutToExpireMetadataPopulated
-  | IDeleteProcessNotificationMetadataPopulated
-  | IArchiveProcessNotificationMetadataPopulated;
+    | IRuleBreachAlertNotificationMetadataPopulated
+    | IRuleBreachRequestNotificationMetadataPopulated
+    | IRuleBreachResponseNotificationMetadataPopulated
+    | IProcessReviewerUpdateNotificationMetadataPopulated
+    | IProcessStatusUpdateNotificationMetadataPopulated
+    | INewProcessNotificationMetadataPopulated
+    | IDateAboutToExpireMetadataPopulated
+    | IDeleteProcessNotificationMetadataPopulated
+    | IArchiveProcessNotificationMetadataPopulated;
 
 export interface INotificationPopulated<T = INotificationMetadataPopulated> {
-  type: NotificationType;
-  metadata: T;
-  createdAt: Date;
-  _id: string;
+    type: NotificationType;
+    metadata: T;
+    createdAt: Date;
+    _id: string;
 }
+
+// This is the interface implimentation from gateway-service
+// export interface INotificationPopulated<T = INotificationMetadataPopulated> extends Omit<INotification<T>, 'viewers'> {}
