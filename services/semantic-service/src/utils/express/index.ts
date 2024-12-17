@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
+import { FunctionKey } from '@microservices/shared';
 import config from '../../config';
 import { ServiceError } from '../../express/error';
-import { FunctionKey } from '../types';
 import DefaultController from './controller';
 
 export const createController = <T extends InstanceType<typeof DefaultController>>(Controller: { new (workspaceId: string): T }) => {

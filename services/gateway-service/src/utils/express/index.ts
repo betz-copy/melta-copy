@@ -5,7 +5,7 @@ import config from '../../config';
 import { InvalidWorkspaceHeaderError } from '../../express/error';
 import { WorkspaceService } from '../../express/workspaces/service';
 import dataLogger from '../logger/dataLogger';
-import { FunctionKey } from '../types';
+import { FunctionKey } from '@microservices/shared';
 import DefaultController from './controller';
 
 const { workspaceIdHeaderName } = config.service;

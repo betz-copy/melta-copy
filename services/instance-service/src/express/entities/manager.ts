@@ -32,6 +32,7 @@ import {
     IUpdatedFields,
     ActionsLog,
     IMongoActivityLog,
+    ISemanticSearchResult,
 } from '@microservices/shared';
 import { EntitiesIdsRulesReasonsMap, IEntityCrudAction, IExecutionOutput, IGetExpandedEntityBody, RunRuleReason } from './interface';
 import config from '../../config';
@@ -64,7 +65,6 @@ import { addStringFieldsAndNormalizeDateValues } from './validator.template';
 import { executeActionCodeAndGetEntitiesToUpdate } from '../../utils/actions/executeScript';
 import BulkActionManager from '../bulkActions/manager';
 import { isBodyFunctionHasContent } from '../../utils/actions/isBodyFunctionHasContent';
-import { ISemanticSearchResult } from '../../externalServices/semanticSearch/interface';
 
 const { brokenRulesFakeEntityIdPrefix } = config;
 

@@ -11,10 +11,10 @@ import {
     ITemplateSearchBody,
     IUniqueConstraintOfTemplate,
     IRelationship,
+    ISemanticSearchResult,
 } from '@microservices/shared';
 import config from '../../config';
 import DefaultExternalServiceApi from '../../utils/express/externalService';
-import { ISemanticSearchResult } from '../semanticSearch/interface';
 
 const {
     instanceService: {

@@ -1,7 +1,6 @@
-import { ISearchBatchBody, ISearchSort } from '@microservices/shared';
+import { ISearchBatchBody, ISearchSort, ISemanticSearchResult } from '@microservices/shared';
 import config from '../../config';
 import DefaultExternalServiceApi from '../../utils/express/externalService';
-import { ISemanticSearchResult } from './interface';
 
 const {
     semanticSearchService: { url, searchRoute },

@@ -14,6 +14,7 @@ export * from './interfaces/activityLog';
 export * from './interfaces/iframe';
 export * from './interfaces/gantt';
 export * from './interfaces/ruleBreach/agGrid';
+export * from './interfaces/semanticSearch';
 
 export * from './utils/types';
 export { default as logger } from './utils/logger/logsLogger';

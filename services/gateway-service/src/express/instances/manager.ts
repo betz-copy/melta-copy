@@ -28,6 +28,7 @@ import {
     RuleBreachRequestStatus,
     logger,
     IExportEntitiesBody,
+    ISemanticSearchResult,
 } from '@microservices/shared';
 import config from '../../config';
 import { InstancesService } from '../../externalServices/instanceService';
@@ -43,7 +44,6 @@ import RuleBreachesManager from '../ruleBreaches/manager';
 import { patchDocumentAsStream } from './documentExport';
 import { RabbitManager } from '../../utils/rabbit';
 import { SemanticSearchService } from '../../externalServices/semanticSearch';
-import { ISemanticSearchResult } from '../../externalServices/semanticSearch/interface';
 import { WorkspaceService } from '../workspaces/service';
 
 const { errorCodes, rabbit, ruleBreachService } = config;

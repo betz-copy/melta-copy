@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import config from '../../config';
 import { BadRequestError } from '../../express/error';
-import { FunctionKey } from '../types';
+import { FunctionKey } from '@microservices/shared';
 import DefaultController from './controller';
 
 export const wrapMiddleware = (func: (req: Request, res?: Response) => Promise<void>) => {
