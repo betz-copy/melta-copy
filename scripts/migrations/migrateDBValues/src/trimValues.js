@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import { MongoClient } from "mongodb";
 import neo4j from "neo4j-driver";
 import config from "./config/index.js";
 import {
@@ -31,21 +30,19 @@ const generateQuery = (results) => {
   }, "");
 };
 
-const getDBTrimmedValue = async (client, dbName) => {
-  const currentDb = client.db(dbName);
-
-  const collections = await currentDb.listCollections().toArray();
+const getDBTrimmedValue = async (dbName) => {
+  const db = mongoose.connection.client.db(dbName);
+  const collections = await db.listCollections().toArray();
   const collectionNames = collections.map((col) => col.name);
 
   if (collectionNames.includes(mongo.targetCollection)) {
     console.log(`Applying aggregation to ${dbName}.${mongo.targetCollection}`);
 
     const pipeline = getTrimmedValueAggregation;
-    const results = await currentDb
+    const results = await db
       .collection(mongo.targetCollection)
       .aggregate(pipeline)
       .toArray();
-
     const query = generateQuery(results);
 
     return { dbName, entities: results, query };
@@ -54,17 +51,14 @@ const getDBTrimmedValue = async (client, dbName) => {
   return null;
 };
 
-const getTrimmedValues = async (client) => {
+const getTrimmedValues = async (dbList) => {
   const data = [];
 
-  const adminDb = client.db().admin();
-  const dbs = (await adminDb.listDatabases()).databases;
-
   await Promise.all(
-    dbs.map(async (database) => {
+    dbList.map(async (database) => {
       const dbName = database.name;
 
-      const newData = await getDBTrimmedValue(client, dbName);
+      const newData = await getDBTrimmedValue(dbName);
       if (newData) data.push(newData);
     })
   );
@@ -74,10 +68,9 @@ const getTrimmedValues = async (client) => {
   return data;
 };
 
-const trimValuesInDB = async (client, dbName) => {
-  const currentDb = client.db(dbName);
-
-  const collections = await currentDb.listCollections().toArray();
+const trimValuesInDB = async (dbName) => {
+  const db = mongoose.connection.client.db(dbName);
+  const collections = await db.listCollections().toArray();
   const collectionNames = collections.map((col) => col.name);
 
   if (collectionNames.includes(mongo.targetCollection)) {
@@ -86,8 +79,7 @@ const trimValuesInDB = async (client, dbName) => {
     );
 
     const pipeline = trimValuesInMongoAggregation;
-
-    const result = await currentDb
+    const result = await db
       .collection(mongo.targetCollection)
       .updateMany({}, pipeline);
 
@@ -97,12 +89,9 @@ const trimValuesInDB = async (client, dbName) => {
   }
 };
 
-const trimValuesMongo = async (client) => {
-  const adminDb = client.db().admin();
-  const dbs = (await adminDb.listDatabases()).databases;
-
+const trimValuesMongo = async (dbList) => {
   await Promise.all(
-    dbs.map(async (database) => await trimValuesInDB(client, database.name))
+    dbList.map(async (database) => await trimValuesInDB(database.name))
   );
 
   console.log("finish trim mongo");
@@ -140,11 +129,9 @@ const trimValuesNeo = async (driver, data) => {
   }
 };
 const connectToMongo = async () => {
-  const client = new MongoClient(mongo.uri);
-  await client.connect();
-  console.log("Connected to MongoDB");
+  await mongoose.connect(mongo.uri);
 
-  return client;
+  console.log("Connected to MongoDB");
 };
 
 const connectToNeo = async () => {
@@ -156,14 +143,24 @@ const connectToNeo = async () => {
 
   return driver;
 };
+
+const listDatabasesWithMongoose = async () => {
+  const adminDb = mongoose.connection.db.admin();
+  const result = await adminDb.listDatabases();
+  console.log("Databases:", result.databases);
+
+  return result.databases;
+};
+
 const main = async () => {
   try {
-    const mongoClient = await connectToMongo();
+    await connectToMongo();
     const neoDriver = await connectToNeo();
+    const dbList = await listDatabasesWithMongoose();
 
-    const data = await getTrimmedValues(mongoClient);
+    const data = await getTrimmedValues(dbList);
 
-    await trimValuesMongo(mongoClient);
+    await trimValuesMongo(dbList);
 
     await trimValuesNeo(neoDriver, data);
   } catch (error) {
