@@ -5,6 +5,7 @@ import { IMongoRelationshipTemplate } from './relationshipsTemplateService';
 
 const {
     templateService: {
+        baseRoute,
         entities: { baseEntitiesRoute, baseCategoriesRoute },
     },
 } = config;
@@ -144,6 +145,12 @@ export class EntityTemplateService extends TemplatesManagerService {
     // entity templates
     async searchEntityTemplates(body: ISearchEntityTemplatesBody = {}) {
         const { data } = await this.api.post<IMongoEntityTemplatePopulated[]>(`${baseEntitiesRoute}/search`, body);
+
+        return data;
+    }
+
+    async getAllTemplatesByWorkspaceId(workspaceId: string) {
+        const { data } = await this.api.get<IMongoEntityTemplate[]>(`${baseRoute}/entities/`, { headers: { workspaceId } });
 
         return data;
     }

@@ -9,3 +9,11 @@ export const searchFlowCubeRequestSchema = Joi.object({
         templateId: Joi.string().required(),
     },
 });
+
+export const getAllTemplatesByNameAndIdSchema = Joi.object({
+    body: {},
+    query: {},
+    params: {
+        workspaceId: Joi.string().required(),
+    },
+});
