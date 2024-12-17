@@ -10,12 +10,17 @@ import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../inte
 import { ChartType } from '../chartsType';
 import { ChartDetails } from './ChartDetails';
 
-const data = [
-    { month: 'January', sales: 30, profit: 15 },
-    { month: 'February', sales: 40, profit: 20 },
-    { month: 'March', sales: 50, profit: 25 },
-    { month: 'April', sales: 60, profit: 30 },
-];
+const data = {
+    xAxis: 'name',
+    yAxis: 'score',
+    aggregation: 'average',
+    data: [
+        { x: 'Lorem ipsum', y: 40 },
+        { x: 'Lorem minim', y: 30 },
+        { x: 'Ut fugiat incididunt in sunt', y: 10 },
+        { x: 'Ut quis et commodo', y: 20 },
+    ],
+};
 
 const { defaultRowHeight, defaultFontSize } = environment.agGrid;
 
@@ -26,6 +31,19 @@ const ChartPage: React.FC = () => {
 
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+    const template = entityTemplates.get(templateId as string) as IMongoEntityTemplatePopulated;
+    const {
+        properties: { properties },
+        propertiesOrder,
+    } = template;
+
+    const defaultAggregationFunctions = ['כמות רשומות', 'ממוצע', 'מינימום', 'מקסימום'];
+    const xProperties = [...defaultAggregationFunctions, ...propertiesOrder];
+    const numericProperties = Object.entries(properties)
+        .filter(([_, value]) => value.type === 'number' && !value.serialStarter)
+        .map(([name]) => name);
+
+    const yProperties = [...defaultAggregationFunctions, ...numericProperties];
 
     const [xAxis, setXAxis] = useState<string>('');
     const [yAxis, setYAxis] = useState<string>('');
@@ -44,11 +62,11 @@ const ChartPage: React.FC = () => {
                             height: '66%',
                         }}
                     >
-                        <ChartType xAxis={xAxis} yAxis={yAxis} name={title} data={data} />
+                        <ChartType xAxis={xAxis} yAxis={yAxis} name={title} res={data} chartType="pie" />
                     </Grid>
                     <Grid sx={{ height: '30vh', borderTop: `1px solid ${theme.palette.mode === 'dark' ? '#444' : '#dddddd'}` }}>
                         <EntitiesTableOfTemplate
-                            template={entityTemplates.get(templateId as string) as IMongoEntityTemplatePopulated}
+                            template={template}
                             getRowId={(currentEntity) => currentEntity.properties._id}
                             getEntityPropertiesData={(currentEntity) => currentEntity.properties}
                             rowModelType="infinite"
@@ -68,7 +86,6 @@ const ChartPage: React.FC = () => {
                         />
                     </Grid>
                 </Grid>
-
                 <Grid
                     item
                     xs={3}

@@ -1,4 +1,4 @@
-import { useTheme } from '@mui/material';
+import { Box, useTheme } from '@mui/material';
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
 import React from 'react';
@@ -8,16 +8,22 @@ interface IChartGenerator {
     xAxis: string;
     yAxis: string;
     name: string;
+    chartType: 'pie' | 'bar' | 'line';
 }
 
-const ChartType: React.FC<IChartGenerator> = ({ xAxis, yAxis, name, res }) => {
+const ChartType: React.FC<IChartGenerator> = ({ res, chartType, xAxis, yAxis, name }) => {
     const { data, xAxis: xLabel, yAxis: yLabel } = res;
     const theme = useTheme();
     const darkMode = theme.palette.mode === 'dark';
 
-    const chartOptions = {
+    const seriesData = data.map((item) => ({
+        name: item.x,
+        y: item.y,
+    }));
+
+    const chartOptions: Highcharts.Options = {
         chart: {
-            type: 'line',
+            type: chartType,
             backgroundColor: darkMode ? '#131313' : '#fcfeff',
         },
         title: {
@@ -45,21 +51,6 @@ const ChartType: React.FC<IChartGenerator> = ({ xAxis, yAxis, name, res }) => {
 
             categories: data.map((point) => point.x),
         },
-        colorAxis: {
-            gridLineColor: darkMode ? '#444' : '#dddddd',
-            labels: {
-                style: {
-                    color: darkMode ? '#fff' : '#000',
-                },
-            },
-            lineColor: darkMode ? '#444' : '#dddddd',
-            tickColor: darkMode ? '#444' : '#dddddd',
-            title: {
-                style: {
-                    color: darkMode ? '#fff' : '#000',
-                },
-            },
-        },
 
         yAxis: {
             gridLineColor: darkMode ? '#444' : '#dddddd',
@@ -86,17 +77,31 @@ const ChartType: React.FC<IChartGenerator> = ({ xAxis, yAxis, name, res }) => {
         credits: {
             enabled: false,
         },
+        tooltip: {
+            pointFormat: chartType === 'pie' ? '{series.name}: <b>{point.percentage:.1f}%</b>' : '<b>{point.y}</b>',
+        },
+        plotOptions: {
+            pie: {
+                allowPointSelect: true,
+                cursor: 'pointer',
+                dataLabels: {
+                    enabled: true,
+                    format: '{point.name}: {point.percentage:.1f}%',
+                },
+            },
+        },
         series: [
             {
                 name: yLabel,
-                data: data.map((point) => point.y),
+                type: chartType,
+                data: chartType === 'pie' ? seriesData : seriesData.map((item) => item.y),
                 color: theme.palette.primary.main,
             },
         ],
     };
 
     return (
-        <div
+        <Box
             style={{
                 width: '90%',
                 height: '100%',
@@ -105,7 +110,7 @@ const ChartType: React.FC<IChartGenerator> = ({ xAxis, yAxis, name, res }) => {
             }}
         >
             {xAxis && yAxis && <HighchartsReact highcharts={Highcharts} options={chartOptions} />}
-        </div>
+        </Box>
     );
 };
 export { ChartType };
