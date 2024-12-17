@@ -44,6 +44,28 @@ const config = {
         relationshipReferencePropertySuffix: env.get('RELATIONSHIP_REFERENCE_PROPERTY_SUFFIX').default('_reference').asString(),
         usersFieldsPropertySuffix: env.get('USERS_FIELDS_PROPERTY_SUFFIX').default('_usersFields').asString(),
         userFieldPropertySuffix: env.get('USER_FIELD_PROPERTY_SUFFIX').default('_userField').asString(),
+        userOriginalAndSuffixFieldsMap: env
+            .get('USER_ORIGINAL_AND_SUFFIX_FIELDS_MAP')
+            .default([
+                { originalFieldName: '_id', suffixFieldName: '.id' },
+                { originalFieldName: 'fullName', suffixFieldName: '.fullName' },
+                { originalFieldName: 'jobTitle', suffixFieldName: '.jobTitle' },
+                { originalFieldName: 'hierarchy', suffixFieldName: '.hierarchy' },
+                { originalFieldName: 'mail', suffixFieldName: '.mail' },
+            ])
+            .required()
+            .asJsonArray() as Array<{ originalFieldName: string; suffixFieldName: string }>,
+        usersArrayOriginalAndSuffixFieldsMap: env
+            .get('USERS_ARRAY_ORIGINAL_AND_SUFFIX_FIELDS_MAP')
+            .default([
+                { originalFieldName: '_id', suffixFieldName: '.ids' },
+                { originalFieldName: 'fullName', suffixFieldName: '.fullNames' },
+                { originalFieldName: 'jobTitle', suffixFieldName: '.jobTitles' },
+                { originalFieldName: 'hierarchy', suffixFieldName: '.hierarchies' },
+                { originalFieldName: 'mail', suffixFieldName: '.mails' },
+            ])
+            .required()
+            .asJsonArray() as Array<{ originalFieldName: string; suffixFieldName: string }>,
         workspaceNamePrefix: env.get('NEO4J_WORKSPACE_NAME_PREFIX').default('workspace-').asString(),
         dummyTemplateId: env.get('NEO4J_DUMMY_TEMPLATE_ID').default('DUMMY').asString(),
     },

@@ -30,22 +30,6 @@ import { ActionErrors } from '../bulkActions/interface';
 
 const { neo4j } = config;
 
-export const usersFieldsSuffix = {
-    ids: '.ids',
-    fullNames: '.fullNames',
-    jobTitles: '.jobTitles',
-    hierarchies: '.hierarchies',
-    mails: '.mails',
-};
-
-export const userFieldSuffix = {
-    _id: '.id',
-    fullName: '.fullName',
-    jobTitle: '.jobTitle',
-    hierarchy: '.hierarchy',
-    mail: '.mail',
-};
-
 const ajv = new Ajv();
 
 ajv.addFormat('fileId', /.*/);
@@ -466,28 +450,19 @@ export const addStringFieldsAndNormalizeDateValues = (
         const propertyValue = entityProperties[key];
         const { type, format, items } = value;
         if (format === 'user') {
-            Object.entries(userFieldSuffix).forEach(([fieldKey, fieldValue]) => {
-                normalizedEntity[`${key}${fieldValue}${config.neo4j.userFieldPropertySuffix}`] = JSON.parse(propertyValue)[fieldKey];
+            config.neo4j.userOriginalAndSuffixFieldsMap.forEach((userField) => {
+                normalizedEntity[`${key}${userField.suffixFieldName}${config.neo4j.userFieldPropertySuffix}`] =
+                    JSON.parse(propertyValue)[userField.originalFieldName];
             });
             return;
         }
 
         if (type === 'array' && items?.format === 'user') {
-            normalizedEntity[`${key}${usersFieldsSuffix.ids}${config.neo4j.usersFieldsPropertySuffix}`] = propertyValue.map(
-                (user) => JSON.parse(user)._id,
-            );
-            normalizedEntity[`${key}${usersFieldsSuffix.fullNames}${config.neo4j.usersFieldsPropertySuffix}`] = propertyValue.map(
-                (user) => JSON.parse(user).fullName,
-            );
-            normalizedEntity[`${key}${usersFieldsSuffix.jobTitles}${config.neo4j.usersFieldsPropertySuffix}`] = propertyValue.map(
-                (user) => JSON.parse(user).jobTitle,
-            );
-            normalizedEntity[`${key}${usersFieldsSuffix.hierarchies}${config.neo4j.usersFieldsPropertySuffix}`] = propertyValue.map(
-                (user) => JSON.parse(user).hierarchy,
-            );
-            normalizedEntity[`${key}${usersFieldsSuffix.mails}${config.neo4j.usersFieldsPropertySuffix}`] = propertyValue.map(
-                (user) => JSON.parse(user).mail,
-            );
+            config.neo4j.usersArrayOriginalAndSuffixFieldsMap.forEach((userField) => {
+                normalizedEntity[`${key}${userField.suffixFieldName}${config.neo4j.usersFieldsPropertySuffix}`] = propertyValue.map(
+                    (user) => JSON.parse(user)[userField.originalFieldName],
+                );
+            });
 
             return;
         }

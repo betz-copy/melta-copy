@@ -21,21 +21,6 @@ const {
     fileIdLength,
 } = config;
 
-export const usersFieldsSuffix = {
-    ids: '.ids',
-    fullNames: '.fullNames',
-    jobTitles: '.jobTitles',
-    hierarchies: '.hierarchies',
-    mails: '.mails',
-};
-
-export const userFieldSuffix = {
-    id: '.id',
-    fullName: '.fullName',
-    jobTitle: '.jobTitle',
-    hierarchy: '.hierarchy',
-    mail: '.mail',
-};
 
 export default class Manager extends DefaultManagerNeo4j {
     private templateManagerService: TemplateManagerService;
@@ -136,12 +121,16 @@ export default class Manager extends DefaultManagerNeo4j {
         Object.entries(template.properties.properties).map(async ([key, value]) => {
             if (value.format === 'user') {
                 userProperties.push(
-                    ...Object.values(userFieldSuffix).map((fieldSuffix) => `${key}${fieldSuffix}${config.neo4j.userFieldPropertySuffix}`),
+                    ...config.neo4j.userOriginalAndSuffixFieldsMap.map(
+                        (userField) => `${key}${userField.suffixFieldName}${config.neo4j.userFieldPropertySuffix}`,
+                    ),
                 );
             }
             if (value.items?.format === 'user') {
                 userProperties.push(
-                    ...Object.values(usersFieldsSuffix).map((fieldSuffix) => `${key}${fieldSuffix}${config.neo4j.usersFieldsPropertySuffix}`),
+                    ...config.neo4j.usersArrayOriginalAndSuffixFieldsMap.map(
+                        (userField) => `${key}${userField.suffixFieldName}${config.neo4j.usersFieldsPropertySuffix}`,
+                    ),
                 );
             }
         });

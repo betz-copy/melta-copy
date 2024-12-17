@@ -54,7 +54,7 @@ import {
     IUniqueConstraintOfTemplate,
     RunRuleReason,
 } from './interface';
-import { addStringFieldsAndNormalizeDateValues, userFieldSuffix, usersFieldsSuffix } from './validator.template';
+import { addStringFieldsAndNormalizeDateValues } from './validator.template';
 import { ActionTypes, IAction, ICreateEntityMetadata, IDuplicateEntityMetadata, IUpdateEntityMetadata } from '../bulkActions/interface';
 import { executeActionCodeAndGetEntitiesToUpdate } from '../../utils/actions/executeScript';
 import BulkActionManager from '../bulkActions/manager';
@@ -1709,11 +1709,15 @@ export class EntityManager extends DefaultManagerNeo4j {
     }
 
     getUserProperties(userProperty: string) {
-        return Object.values(userFieldSuffix).map((value) => `${userProperty}${value}${config.neo4j.userFieldPropertySuffix}`);
+        return config.neo4j.userOriginalAndSuffixFieldsMap.map(
+            (userField) => `${userProperty}${userField.suffixFieldName}${config.neo4j.userFieldPropertySuffix}`,
+        );
     }
 
     getUsersArrayProperties(userProperty: string) {
-        return Object.values(usersFieldsSuffix).map((value) => `${userProperty}${value}${config.neo4j.usersFieldsPropertySuffix}`);
+        return config.neo4j.usersArrayOriginalAndSuffixFieldsMap.map(
+            (userField) => `${userProperty}${userField.suffixFieldName}${config.neo4j.usersFieldsPropertySuffix}`,
+        );
     }
 
     async deletePropertiesOfTemplate(templateId: string, properties: string[], currentTemplateProperties: Record<string, IEntitySingleProperty>) {
