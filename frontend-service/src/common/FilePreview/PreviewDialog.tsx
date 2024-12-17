@@ -59,8 +59,6 @@ const PreviewDialog: React.FC<PreviewProps> = ({ fileId, contentType, open, setO
         }, 5000);
     };
 
-    console.log({ data });
-
     useEffect(() => {
         const handleScroll = async () => {
             if (containerRef.current) {
