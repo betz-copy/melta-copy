@@ -6,10 +6,10 @@ import {
     ICompactPermissions,
     IPermission,
     ISubCompactPermissions,
+    RecursiveNullable,
 } from '@microservices/shared';
 import axios from '../axios';
 import { environment } from '../globals';
-import { RecursiveNullable } from '../utils/types';
 
 const { users } = environment.api;
 

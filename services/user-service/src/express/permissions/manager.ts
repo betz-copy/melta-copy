@@ -6,10 +6,10 @@ import {
     ICompactPermissions,
     IPermission,
     ISubCompactPermissions,
+    RecursiveNullable,
 } from '@microservices/shared';
 import { flattenObject, typedObjectEntries } from '../../utils';
 import { transaction } from '../../utils/mongoose';
-import { RecursiveNullable } from '../../utils/types';
 import { UsersManager } from '../users/manager';
 import { SinglePermissionOfTypePerUserError } from './errors';
 import { PermissionsModel } from './model';

@@ -7,9 +7,10 @@ import {
     ICompactPermissions,
     IPermission,
     ISubCompactPermissions,
+    DeepPartial,
+    RecursiveNullable,
 } from '@microservices/shared';
 import config from '../../config';
-import { DeepPartial, RecursiveNullable } from '../../utils/types';
 
 const {
     userService: { url, usersRoute, permissionsRoute, requestTimeout },
