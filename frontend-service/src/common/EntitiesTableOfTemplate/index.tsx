@@ -53,7 +53,6 @@ import { ActionTypes, IAction, IActionPopulated } from '../../interfaces/ruleBre
 import ActionOnEntityWithRuleBreachDialog from '../../pages/Entity/components/ActionOnEntityWithRuleBreachDialog';
 import { ErrorToast } from '../ErrorToast';
 import { AreYouSureDialog } from '../dialogs/AreYouSureDialog';
-import { IFailedEntity } from '../wizards/loadEntities';
 
 const { errorCodes } = environment;
 const { rowCount, defaultExpandedRowCount } = environment.agGrid;

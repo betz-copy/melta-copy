@@ -5,8 +5,8 @@ import React, { memo } from 'react';
 import { Link } from 'wouter';
 import { AxiosError } from 'axios';
 import { UseMutateAsyncFunction } from 'react-query';
-import { EntityData, IButtonPopoverProps } from '.';
-import { IEntity } from '../../interfaces/entities';
+import { IButtonPopoverProps } from '.';
+import { EntityData, IEntity } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import {
     booleanColDef,
