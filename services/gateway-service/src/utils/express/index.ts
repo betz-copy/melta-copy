@@ -1,11 +1,10 @@
 import { NextFunction, Request, Response } from 'express';
 import { get } from 'lodash';
 import { StatusCodes } from 'http-status-codes';
+import { FunctionKey, dataLogger } from '@microservices/shared';
 import config from '../../config';
 import { InvalidWorkspaceHeaderError } from '../../express/error';
 import { WorkspaceService } from '../../express/workspaces/service';
-import dataLogger from '../logger/dataLogger';
-import { FunctionKey } from '@microservices/shared';
 import DefaultController from './controller';
 
 const { workspaceIdHeaderName } = config.service;

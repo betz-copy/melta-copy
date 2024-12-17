@@ -1,7 +1,7 @@
 import 'elastic-apm-node/start';
 import menash from 'menashmq';
-import config from './config';
 import { logger } from '@microservices/shared';
+import config from './config';
 import { checkForDateNotifications } from './cron/dateNotificationsCheck';
 
 const { service, rabbit, notifications } = config;

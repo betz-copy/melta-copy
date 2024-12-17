@@ -18,6 +18,8 @@ export * from './interfaces/semanticSearch';
 
 export * from './utils/types';
 export { default as logger } from './utils/logger/logsLogger';
+export { default as dataLogger } from './utils/logger/dataLogger';
+
 // Exporting all enums and functions so frontend can use them too
 export {
     ActionTypes,

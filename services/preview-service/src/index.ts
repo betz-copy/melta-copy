@@ -1,9 +1,9 @@
 import 'elastic-apm-node/start';
 import menash from 'menashmq';
+import { logger } from '@microservices/shared';
 import { config } from './config';
 import { Server } from './express/server';
 import PreviewConsumer from './rabbit/consumer';
-import { logger } from '@microservices/shared';
 
 const {
     rabbit,

@@ -2,9 +2,9 @@ import 'elastic-apm-node/start';
 import menash from 'menashmq';
 import * as mongoose from 'mongoose';
 import axios from 'axios';
+import { logger } from '@microservices/shared';
 import Server from './express/server';
 import config from './config';
-import { logger } from '@microservices/shared';
 
 const { service, rabbit, mongo } = config;
 
