@@ -19,6 +19,7 @@ import { expandEntityToNeoQuery, getExpandedFilteredGraphRecursively } from '../
 import {
     generateDefaultProperties,
     getNeo4jDateTime,
+    normalizeChartResponse,
     normalizeGetDbConstraints,
     normalizeNeighborsOfEntityForRule,
     normalizeResponseCount,
@@ -53,6 +54,8 @@ import {
     IUniqueConstraint,
     IUniqueConstraintOfTemplate,
     RunRuleReason,
+    IAxisField,
+    IAggregation,
 } from './interface';
 import { addStringFieldsAndNormalizeDateValues } from './validator.template';
 import { ActionTypes, IAction, ICreateEntityMetadata, IDuplicateEntityMetadata, IUpdateEntityMetadata } from '../bulkActions/interface';
@@ -1724,5 +1727,58 @@ export class EntityManager extends DefaultManagerNeo4j {
                 this.relationshipManager.deleteRelationshipByTemplateIds(transaction, relationshipTemplatesToRemove),
             ]);
         });
+    }
+
+    getXAggregation(xAxis: IAxisField): IAggregation {
+        if (typeof xAxis === 'string') return { type: 'none', field: xAxis };
+
+        return xAxis;
+    }
+
+    getYAggregation(yAxis: IAxisField): IAggregation {
+        if (typeof yAxis === 'string') return { type: 'none', field: yAxis };
+        if (yAxis.type === 'countAll') return { type: 'countAll', field: '*' };
+        return yAxis;
+    }
+
+    buildAggregationQuery(xAxis: IAxisField, yAxis: IAxisField, templateId: string): string {
+        const xAgg = this.getXAggregation(xAxis);
+        const yAgg = this.getYAggregation(yAxis);
+
+        const xAggregation = this.generateAggregation(xAgg, 'x');
+        const yAggregation = this.generateAggregation(yAgg, 'y');
+
+        return `MATCH (n: \`${templateId}\`)
+          RETURN ${xAggregation}, ${yAggregation}
+          ORDER BY x
+        `;
+    }
+
+    generateAggregation(agg: IAggregation, alias: string): string {
+        const { type, field } = agg;
+
+        switch (type) {
+            case 'countAll':
+                return `COUNT(${field}) AS ${alias}`;
+            case 'countDistinct':
+                return `COUNT(DISTINCT n.${field}) AS ${alias}`;
+            case 'sum':
+                return `SUM(n.${field}) AS ${alias}`;
+            case 'average':
+                return `AVG(n.${field}) AS ${alias}`;
+            case 'maximum':
+                return `MAX(n.${field}) AS ${alias}`;
+            case 'minimum':
+                return `MIN(n.${field}) AS ${alias}`;
+            default:
+                return `n.${field} AS ${alias}`;
+        }
+    }
+
+    async getChart(xAxis: IAxisField, yAxis: IAxisField, templateId: string) {
+        console.log('hi i am in manager');
+        const query = this.buildAggregationQuery(xAxis, yAxis, templateId);
+        console.dir({ query });
+        return this.neo4jClient.readTransaction(query, normalizeChartResponse);
     }
 }

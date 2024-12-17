@@ -51,6 +51,7 @@ InstancesRouter.post(
     InstancesValidatorMiddleware.validateUserCanSearchEntitiesOfTemplate,
     InstanceManagerProxy,
 );
+InstancesRouter.post('/entities/chart/:templateId', InstanceManagerProxy);
 
 InstancesRouter.post(
     '/entities/count',
