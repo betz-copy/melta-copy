@@ -4,13 +4,14 @@ import HighchartsReact from 'highcharts-react-official';
 import React from 'react';
 
 interface IChartGenerator {
-    data: any[];
+    res: { xAxis: string; yAxis: string; aggregation: string; data: { x: any; y: any }[] };
     xAxis: string;
     yAxis: string;
     name: string;
 }
 
-const ChartType: React.FC<IChartGenerator> = ({ xAxis, yAxis, name, data }) => {
+const ChartType: React.FC<IChartGenerator> = ({ xAxis, yAxis, name, res }) => {
+    const { data, xAxis: xLabel, yAxis: yLabel } = res;
     const theme = useTheme();
     const darkMode = theme.palette.mode === 'dark';
 
@@ -39,14 +40,13 @@ const ChartType: React.FC<IChartGenerator> = ({ xAxis, yAxis, name, data }) => {
                 style: {
                     color: darkMode ? '#fff' : '#000',
                 },
-                text: xAxis,
+                text: xLabel,
             },
 
-            categories: data.map((row) => row[xAxis]),
+            categories: data.map((point) => point.x),
         },
-        yAxis: {
+        colorAxis: {
             gridLineColor: darkMode ? '#444' : '#dddddd',
-
             labels: {
                 style: {
                     color: darkMode ? '#fff' : '#000',
@@ -60,16 +60,36 @@ const ChartType: React.FC<IChartGenerator> = ({ xAxis, yAxis, name, data }) => {
                 },
             },
         },
+
+        yAxis: {
+            gridLineColor: darkMode ? '#444' : '#dddddd',
+
+            labels: {
+                style: {
+                    color: darkMode ? '#fff' : '#000',
+                },
+            },
+            lineColor: darkMode ? '#444' : '#dddddd',
+            tickColor: darkMode ? '#444' : '#dddddd',
+            title: {
+                style: {
+                    color: darkMode ? '#fff' : '#000',
+                    text: yLabel,
+                },
+            },
+        },
         legend: {
             itemStyle: {
                 color: darkMode ? '#fff' : '#000',
             },
         },
-        credits: 'foo',
+        credits: {
+            enabled: false,
+        },
         series: [
             {
-                name: yAxis,
-                data: data.map((row) => row[yAxis]),
+                name: yLabel,
+                data: data.map((point) => point.y),
                 color: theme.palette.primary.main,
             },
         ],
