@@ -27,7 +27,7 @@ import { useMutation } from 'react-query';
 import { AxiosError } from 'axios';
 
 import { environment } from '../../globals';
-import { IEntity, IEntityExpanded, IUniqueConstraint } from '../../interfaces/entities';
+import { EntityData, IEntity, IEntityExpanded, IUniqueConstraint } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IRelationship } from '../../interfaces/relationships';
 import {
@@ -75,8 +75,6 @@ export interface IButtonProps<Data> {
     onClick: (e: React.MouseEvent<HTMLButtonElement>, entity: Data) => void;
     disabledButton: boolean;
 }
-
-export type EntityData = IEntity | IFailedEntity;
 
 export const getDatasource = <Data extends any = EntityData>(
     template: IMongoEntityTemplatePopulated,
