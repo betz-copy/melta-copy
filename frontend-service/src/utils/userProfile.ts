@@ -4,12 +4,12 @@ import { IUser } from '../interfaces/users';
 const { kartoffelProfile } = environment.users;
 
 export const isProfileFile = (profilePath?: string): boolean => {
-    return !!profilePath && profilePath !== '' && !profilePath.startsWith('/icons/profileAvatar') && profilePath !== kartoffelProfile;
+    return !!profilePath && profilePath !== '' && profilePath !== kartoffelProfile;
 };
 
 export const defaultInputType = (profilePath?: string) => {
-    if (!profilePath || profilePath.startsWith('/icons/profileAvatar')) return 'chooseAvatar';
-    if (profilePath === kartoffelProfile) return 'kartoffelProfile';
+    if (!profilePath) return 'chooseAvatar';
+    if (profilePath === kartoffelProfile) return kartoffelProfile;
     return 'chooseFile';
 };
 

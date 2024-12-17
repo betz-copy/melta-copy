@@ -72,13 +72,9 @@ export const deletePermissionsFromMetadata = async (
     return data;
 };
 
-export const getUserProfileRequest = async ({ profilePath, kartoffelId }: { profilePath?: string; kartoffelId?: string }) => {
-    const { data } = await axios.post(
-        `${users}/user-profile`,
-        { profilePath, kartoffelId },
-        {
-            responseType: 'blob',
-        },
-    );
+export const getUserProfileRequest = async (id: string) => {
+    const { data } = await axios.get(`${users}/user-profile/${id}`, {
+        responseType: 'blob',
+    });
     return URL.createObjectURL(data);
 };

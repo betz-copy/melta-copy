@@ -22,7 +22,7 @@ const UserPreferencesMetadataSchema = joi.object({
     darkMode: ExtendedJoi.boolean(),
     mailsNotificationsTypes: ExtendedJoi.stringToArray(),
     profilePath: joi.string().pattern(profilePathPattern).messages({
-        'string.pattern.base': 'profilePath must start with "/icons/profileAvatar/", or a valid UUID, or kartoffelProfile string',
+        'string.pattern.base': 'profilePath must start with a valid UUID, or kartoffelProfile string',
     }),
 });
 
@@ -42,16 +42,13 @@ export const getUserByIdRequestSchema = joi.object({
     },
 });
 
-// POST /api/users/user-profile
+// GET /api/users/user-profile/:userId
 export const getUserProfileRequestSchema = joi.object({
     query: {},
-    body: {
-        kartoffelId: joi.string(),
-        profilePath: joi.string().pattern(profilePathPattern).messages({
-            'string.pattern.base': 'profilePath must start with "/icons/profileAvatar/", or a valid UUID, or kartoffelProfile string',
-        }),
+    body: {},
+    params: {
+        userId: joi.string().required(),
     },
-    params: {},
 });
 
 // POST /api/users/search

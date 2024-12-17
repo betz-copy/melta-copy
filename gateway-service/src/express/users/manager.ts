@@ -28,8 +28,11 @@ export class UsersManager {
         return UserService.getUserById(userId, workspaceIds);
     }
 
-    static async getUserProfile(profilePath?: string, kartoffelId?: string) {
-        if (kartoffelId) return Kartoffel.getUserProfile(kartoffelId);
+    static async getUserProfile(userId: string) {
+        const user: IUser = await UserService.getUserById(userId);
+        const { profilePath } = user.preferences;
+        if (!profilePath) return null;
+        if (profilePath === 'kartoffelProfile') return Kartoffel.getUserProfile(user.externalMetadata.kartoffelId);
         return this.storageService.downloadProfileFile(profilePath!);
     }
 
@@ -84,6 +87,7 @@ export class UsersManager {
         const user = await UserService.getUserById(userId);
         const { profilePath: currentProfilePath } = user.preferences || {};
         const updates: Partial<IBaseUser['preferences']> = { ...preferences };
+
         const deleteCurrentProfileFile = async () => {
             if (currentProfilePath && isProfileFileType(currentProfilePath)) {
                 await menash.send(
@@ -102,7 +106,7 @@ export class UsersManager {
             updates.profilePath = newProfilePath;
         } else if (currentProfilePath && (!preferences.profilePath || preferences.profilePath !== currentProfilePath)) {
             await deleteCurrentProfileFile();
-            updates.profilePath = preferences.profilePath || undefined;
+            updates.profilePath = preferences.profilePath;
         }
         return UserService.updateUser(userId, { preferences: updates });
     }

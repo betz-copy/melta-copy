@@ -2,9 +2,7 @@
 import { pipeline } from 'stream';
 import { promisify } from 'util';
 import lodashIsEqual from 'lodash.isequal';
-import config from '../config';
 
-const { avatarsFolderPath, kartoffelProfileStartPath } = config.userService;
 // eslint-disable-next-line import/prefer-default-export
 export const promisePipe = promisify(pipeline);
 
@@ -47,10 +45,5 @@ export const typedObjectEntries = <T extends Object>(obj: T): [keyof T, T[keyof 
 };
 
 export const isProfileFileType = (profilePath: string): boolean => {
-    return (
-        !!profilePath &&
-        profilePath !== '' &&
-        !profilePath.startsWith(avatarsFolderPath) &&
-        !kartoffelProfileStartPath.some((path: string) => profilePath.startsWith(path))
-    );
+    return !!profilePath && profilePath !== '' && profilePath !== 'kartoffelProfile';
 };

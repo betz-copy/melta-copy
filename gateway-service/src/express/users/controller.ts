@@ -11,7 +11,7 @@ export class UsersController {
     }
 
     static async getUserProfile(req: Request, res: Response) {
-        const stream = await UsersManager.getUserProfile(req.body.profilePath, req.body.kartoffelId);
+        const stream = await UsersManager.getUserProfile(req.params.userId);
         res.setHeader('Content-Type', 'image/*');
         stream.pipe(res);
     }

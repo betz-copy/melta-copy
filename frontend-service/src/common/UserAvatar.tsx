@@ -5,7 +5,6 @@ import { IUser } from '../interfaces/users';
 import { useDarkModeStore } from '../stores/darkMode';
 import { getNameInitials } from '../utils/userProfile';
 import { getUserProfileRequest } from '../services/userService';
-import { environment } from '../globals';
 
 interface UserAvatarProps {
     user: IUser;
@@ -13,8 +12,6 @@ interface UserAvatarProps {
     bgColor?: string;
     defaultProfile?: boolean;
 }
-
-const { kartoffelProfile } = environment.users;
 
 const UserAvatar: React.FC<UserAvatarProps> = ({ user, size = 48, bgColor }) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
@@ -25,12 +22,7 @@ const UserAvatar: React.FC<UserAvatarProps> = ({ user, size = 48, bgColor }) => 
     const { data: profile, isError } = useQuery(['userProfile', user.preferences.profilePath], async () => {
         const { profilePath } = user.preferences;
         if (!profilePath) return '';
-
-        const imageUrl = await getUserProfileRequest(
-            profilePath === kartoffelProfile ? { kartoffelId: user.externalMetadata.kartoffelId } : { profilePath },
-        );
-
-        return imageUrl;
+        return getUserProfileRequest(user._id);
     });
 
     return (
@@ -52,7 +44,6 @@ const UserAvatar: React.FC<UserAvatarProps> = ({ user, size = 48, bgColor }) => 
             {profile && !isError ? (
                 <img
                     src={profile}
-                    alt="User"
                     style={{
                         width: '100%',
                         height: '100%',

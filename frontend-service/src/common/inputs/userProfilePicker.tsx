@@ -1,22 +1,25 @@
-import { Avatar, Box, Grid, IconButton, ToggleButton, ToggleButtonGroup } from '@mui/material';
+import { Avatar, Box, Grid, ToggleButton, ToggleButtonGroup } from '@mui/material';
 import i18next from 'i18next';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
+import PaymentIcon from '@mui/icons-material/Payment';
 import fileDetails from '../../interfaces/fileDetails';
 import { IUser } from '../../interfaces/users';
 import FileInput from './ImageFileInput';
 import { getNameInitials } from '../../utils/userProfile';
 import { allProfileAvatars } from '../../utils/icons';
-import { getUserProfileRequest } from '../../services/userService';
+import { environment } from '../../globals';
 
 type InputSelectType = 'chooseFile' | 'chooseAvatar' | 'kartoffelProfile';
 
 export interface UserProfilePickerProps {
     imageName?: string;
-    onPick: (profileImage: fileDetails | string | undefined) => void;
+    onPick: (profileImage?: fileDetails | string) => void;
     onDelete: () => void;
     defaultInputType?: InputSelectType;
     user: IUser;
 }
+
+const { kartoffelProfile } = environment.users;
 
 const UserProfilePicker: React.FC<UserProfilePickerProps> = ({ imageName, onPick, onDelete, defaultInputType, user }) => {
     const [inputType, setInputType] = useState(defaultInputType);
@@ -26,30 +29,24 @@ const UserProfilePicker: React.FC<UserProfilePickerProps> = ({ imageName, onPick
     const [selectedIcon, setSelectedIcon] = useState<string | undefined>(user.preferences.profilePath ?? undefined);
 
     const allAvatarPaths = allProfileAvatars;
-    const [kartoffelProfile, setKartoffelProfile] = useState<string>();
+
     const handleToggleChange = (_event: React.MouseEvent<HTMLElement>, selected: InputSelectType | null) => {
         if (!selected) return;
         setInputType(selected);
-        onPick(selected === 'chooseFile' ? fileInputValue : selectedIcon);
+
+        if (selected === kartoffelProfile) onPick(kartoffelProfile);
+        else onPick(selected === 'chooseFile' ? fileInputValue : selectedIcon);
     };
 
-    const handleAvatarClick = (iconPath?: string) => {
-        setSelectedIcon(iconPath ?? undefined);
-        onPick(iconPath);
+    const handleIconClick = async (iconName?: string) => {
+        setSelectedIcon(iconName ?? undefined);
+        if (iconName) {
+            const imageBlob = await fetch(`${environment.avatarIconPath}${iconName}`).then((res) => res.blob());
+            const file = new File([imageBlob], iconName, { type: 'image/png' });
+            onPick({ file, name: file.name });
+        } else onPick();
     };
 
-    useEffect(() => {
-        const fetchKartoffelUserProfile = async () => {
-            try {
-                const kartoffelProfileImg = await getUserProfileRequest({ kartoffelId: user.externalMetadata.kartoffelId });
-                setKartoffelProfile(kartoffelProfileImg);
-            } catch (error) {
-                console.error('Failed to fetch Kartoffel user profile:', error);
-            }
-        };
-
-        fetchKartoffelUserProfile();
-    }, [user]);
     return (
         <Grid container direction="column" alignItems="center" spacing={1}>
             <Grid item margin={0}>
@@ -60,8 +57,9 @@ const UserProfilePicker: React.FC<UserProfilePickerProps> = ({ imageName, onPick
                     <ToggleButton value="chooseFile" sx={{ width: '10rem' }}>
                         {i18next.t('input.imagePicker.chooseFile')}
                     </ToggleButton>
-                    <ToggleButton value="kartoffelProfile" sx={{ width: '10rem' }} disabled={!kartoffelProfile}>
+                    <ToggleButton value="kartoffelProfile" sx={{ width: '10rem', display: 'flex', justifyContent: 'space-evenly' }}>
                         {i18next.t('input.imagePicker.kartoffelProfile')}
+                        {inputType === kartoffelProfile && <PaymentIcon />}
                     </ToggleButton>
                 </ToggleButtonGroup>
             </Grid>
@@ -70,24 +68,24 @@ const UserProfilePicker: React.FC<UserProfilePickerProps> = ({ imageName, onPick
                 <Grid item>
                     <Box style={{ border: '1px solid #ccc', borderRadius: '8px' }}>
                         <Grid container sx={{ display: 'flex', justifyContent: 'space-evenly' }}>
-                            {allAvatarPaths.map((iconPath, index) => (
+                            {allAvatarPaths.map((iconName, index) => (
                                 // eslint-disable-next-line react/no-array-index-key
                                 <Grid item key={index} padding={2}>
                                     <Avatar
-                                        src={iconPath}
+                                        src={`${environment.avatarIconPath}${iconName}`}
                                         style={{
                                             width: 50,
                                             height: 50,
                                             cursor: 'pointer',
                                             boxShadow:
-                                                selectedIcon === iconPath ? '0px 4px 20px rgba(0, 0, 0, 1.5)' : '0px 4px 5px rgba(0, 0, 0, 0.5)',
-                                            border: selectedIcon === iconPath ? '2.5px solid green' : '',
+                                                selectedIcon === iconName ? '0px 4px 20px rgba(0, 0, 0, 1.5)' : '0px 4px 5px rgba(0, 0, 0, 0.5)',
+                                            border: selectedIcon === iconName ? '2.5px solid green' : '',
                                         }}
-                                        onClick={() => handleAvatarClick(iconPath)}
+                                        onClick={() => handleIconClick(iconName!)}
                                     />
                                 </Grid>
                             ))}
-                            <Grid item padding={2} onClick={() => handleAvatarClick()}>
+                            <Grid item padding={2}>
                                 <Avatar
                                     style={{
                                         width: 50,
@@ -103,7 +101,7 @@ const UserProfilePicker: React.FC<UserProfilePickerProps> = ({ imageName, onPick
                                         fontSize: Math.round(25),
                                         fontWeight: 500,
                                     }}
-                                    onClick={() => handleAvatarClick()}
+                                    onClick={() => handleIconClick()}
                                 >
                                     {getNameInitials(user)}
                                 </Avatar>
@@ -131,32 +129,6 @@ const UserProfilePicker: React.FC<UserProfilePickerProps> = ({ imageName, onPick
                         disableCamera
                         disablePreview
                     />
-                </Grid>
-            )}
-            {inputType === 'kartoffelProfile' && (
-                <Grid padding="20px">
-                    <IconButton
-                        onClick={() => {
-                            handleAvatarClick('kartoffelProfile');
-                        }}
-                        style={{
-                            width: 50,
-                            height: 50,
-                            cursor: 'pointer',
-                            boxShadow: selectedIcon === 'kartoffelProfile' ? '0px 4px 10px rgba(0, 0, 0, 0.8)' : '',
-                            border: selectedIcon === 'kartoffelProfile' ? '3px solid green' : '',
-                        }}
-                        disabled={!kartoffelProfile}
-                    >
-                        <Avatar
-                            style={{
-                                width: 50,
-                                height: 50,
-                                cursor: 'pointer',
-                            }}
-                            src={kartoffelProfile}
-                        />
-                    </IconButton>
                 </Grid>
             )}
         </Grid>

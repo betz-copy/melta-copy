@@ -56,7 +56,7 @@ const UserProfile: React.FC<{
                 <Grid item>
                     <UserProfilePicker
                         user={existingUser}
-                        onPick={(value: any) => {
+                        onPick={(value?: any) => {
                             setProfilePreference(value?.file ? { icon: value } : { profilePath: value });
                         }}
                         onDelete={() => setProfilePreference({})}

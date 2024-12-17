@@ -29,7 +29,7 @@ usersRouter.get('/external', ValidateRequest(searchExternalUsersRequestSchema), 
 
 usersRouter.get('/:userId', ValidateRequest(getUserByIdRequestSchema), wrapController(UsersController.getUserById));
 
-usersRouter.post('/user-profile', ValidateRequest(getUserProfileRequestSchema), wrapController(UsersController.getUserProfile));
+usersRouter.get('/user-profile/:userId', ValidateRequest(getUserProfileRequestSchema), wrapController(UsersController.getUserProfile));
 
 usersRouter.post('/search-ids', ValidateRequest(searchUsersRequestSchema), wrapController(UsersController.searchUserIds));
 
