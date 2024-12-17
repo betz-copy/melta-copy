@@ -9,10 +9,9 @@ interface ICameraProps {
     setImgURL: React.Dispatch<React.SetStateAction<string | null>>;
     setOpen: React.Dispatch<React.SetStateAction<boolean>>;
     setOpenImageView: React.Dispatch<React.SetStateAction<boolean>>;
-    onPictureTaken: (file: File) => void;
 }
 
-const Camera: React.FC<ICameraProps> = ({ stream, setStream, open, setOpen, setImgURL, setOpenImageView, onPictureTaken }) => {
+const Camera: React.FC<ICameraProps> = ({ stream, setStream, open, setOpen, setImgURL, setOpenImageView }) => {
     const [videoRef, setVideoRef] = useState<HTMLVideoElement | null>(null);
     const cameraSize = { width: 1000, height: 775 };
 
@@ -46,7 +45,6 @@ const Camera: React.FC<ICameraProps> = ({ stream, setStream, open, setOpen, setI
                     setStream={setStream}
                     setImgURL={setImgURL}
                     setOpenImageView={setOpenImageView}
-                    setOpenCamera={setOpen}
                     cameraSize={cameraSize}
                 />
             </DialogContent>

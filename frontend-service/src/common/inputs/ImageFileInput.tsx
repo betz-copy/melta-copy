@@ -276,7 +276,6 @@ const FileInput: React.FC<FileInputProps> = ({
                     open={openCamera}
                     setOpen={setOpenCamera}
                     setImgURL={setImgURL}
-                    onPictureTaken={onDropFile}
                     setOpenImageView={setOpenImageView}
                 />
             )}

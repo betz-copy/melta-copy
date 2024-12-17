@@ -1,3 +1,4 @@
+import { IFailedEntity } from '../common/wizards/loadEntities';
 import { IMongoEntityTemplatePopulated } from './entityTemplates';
 import { IMongoRelationshipTemplate } from './relationshipTemplates';
 import { IRelationship } from './relationships';
@@ -153,3 +154,5 @@ export interface IGraphFilterBody {
 export interface IGraphFilterBodyBatch {
     [key: string]: IGraphFilterBody;
 }
+
+export type EntityData = IEntity | IFailedEntity;

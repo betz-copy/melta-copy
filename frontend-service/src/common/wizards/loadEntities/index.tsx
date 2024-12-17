@@ -24,7 +24,7 @@ export interface EntitiesWizardValues {
     template?: IMongoEntityTemplatePopulated;
 }
 
-type IValidationError = { message: string; path: string; schemaPath: string; params: Partial<IEntitySingleProperty> };
+export type IValidationError = { message: string; path: string; schemaPath: string; params: Partial<IEntitySingleProperty> };
 
 export type IBrokenRuleEntity = {
     rawBrokenRules: IBrokenRule[];
@@ -37,12 +37,19 @@ export type IBrokenRuleEntity = {
     entities: { properties: Record<string, any> }[];
 };
 
+export interface IError {
+    type: ActionErrors;
+    metadata: IValidationError | IUniqueConstraint | IRequiredConstraint;
+}
+
+export interface IFailedEntity {
+    properties: Record<string, any>;
+    errors: IError[];
+}
+
 export interface ITablesResults {
     succeededEntities: ICreateEntityMetadata[];
-    failedEntities: {
-        properties: Record<string, any>;
-        errors: { type: ActionErrors; metadata: IValidationError | IUniqueConstraint | IRequiredConstraint }[];
-    }[];
+    failedEntities: IFailedEntity[];
     brokenRulesEntities?: IBrokenRuleEntity;
 }
 
