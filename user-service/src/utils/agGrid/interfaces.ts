@@ -65,8 +65,8 @@ export interface IAgGridRequest {
     workspaceIds: string[] | undefined;
     limit: number;
     step: number;
-    filterModel: Record<string, IAgGridFilterModel>;
-    sortModel: IAgGridSort[];
+    filterModel?: Record<string, IAgGridFilterModel>;
+    sortModel?: IAgGridSort[];
 }
 
 export type FilterQuery =
