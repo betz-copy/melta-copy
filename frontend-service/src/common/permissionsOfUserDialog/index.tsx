@@ -87,9 +87,6 @@ const PermissionsOfUserDialog: React.FC<{
                                                 fontSize: '16px',
                                                 fontFamily: 'Rubik',
                                             }}
-                                            sx={{
-                                                borderBottom: tabValue === tabName ? `2px solid ${theme.palette.primary.main}` : '',
-                                            }}
                                         />
                                     ))}
                                 </TabList>
