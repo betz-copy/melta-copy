@@ -35,16 +35,11 @@ const formatExcel = (value: Excel.CellValue | string, propertyTemplate: IEntityS
             if (format === 'email' && typeof value === 'object') return (value as any).text;
             if (format === 'date') return new Date(value as string).toLocaleDateString('en-CA');
             if (format === 'date-time') return new Date(value as string).toISOString();
-            if (propertyTemplate.enum && typeof value === 'object' && 'richText' in value)
-                return value?.richText
-                    .map((item) => item.text)
-                    .filter((text) => text !== ', ')
-                    .join('');
-            return value?.toString();
+            break;
         case 'array':
             if (propertyTemplate.items && propertyTemplate.items.type === 'string' && typeof value === 'object' && 'richText' in value)
                 return value?.richText.map((item) => item.text).filter((text) => text !== ', ' && text !== ',');
-            break;
+            return (value as string).split(',').map((val) => val.trim());
         default:
             break;
     }
