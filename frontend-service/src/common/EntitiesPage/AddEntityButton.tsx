@@ -52,6 +52,7 @@ const AddEntityButton: React.FC<{
                         (disabled ? i18next.t('permissions.dontHaveWritePermissions') : i18next.t('entitiesTableOfTemplate.addEntity')),
                     disabledToolTip,
                 }}
+                disableButton={disabled}
             >
                 {children}
             </TableButton>

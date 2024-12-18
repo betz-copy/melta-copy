@@ -24,12 +24,13 @@ import { useUserStore } from '../../../stores/user';
 import { getEntityTemplateColor } from '../../../utils/colors';
 import { getFileName } from '../../../utils/getFileName';
 import { getFileNameWithoutExtension, getPreviewContentType } from '../../../utils/getFileType';
-import { checkUserCategoryPermission } from '../../../utils/permissions/instancePermissions';
+import { checkUserInstancePermission } from '../../../utils/permissions/instancePermissions';
 import { EntityDates } from '../../Entity/components/EntityDates';
 import { EntityDisableCheckbox } from '../../Entity/components/EntityDisableCheckbox';
 import { EntityWizardValues } from '../../../common/dialogs/entity';
 import { NoFile } from './NoFile';
 import { HighlightText } from '../../../utils/HighlightText';
+import { InstancesSubclassesPermissions } from '../../../interfaces/permissions/permissions';
 
 export const StyledCard = styled(Card)(({ theme }) => ({
     background: theme.palette.mode === 'light' ? '#FFFFFF 0% 0% no-repeat padding-box' : undefined,
@@ -78,9 +79,10 @@ const EntityCard: React.FC<EntityCardProps> = ({
     const cardRef = useRef<HTMLDivElement>(null);
     const currentUser = useUserStore((state) => state.user);
 
-    const userHasWritePermissions = checkUserCategoryPermission(
+    const userHasWritePermissions = checkUserInstancePermission(
+        InstancesSubclassesPermissions.categories,
         currentUser.currentWorkspacePermissions,
-        entityTemplate.category,
+        entityTemplate.category._id,
         PermissionScope.write,
     );
 

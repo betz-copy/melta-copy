@@ -17,7 +17,9 @@ import { useDarkModeStore } from '../../stores/darkMode';
 import { useUserStore } from '../../stores/user';
 import { useWorkspaceStore } from '../../stores/workspace';
 import {
-    checkUserCategoryPermission,
+    changeGivenInstancePermission,
+    changeUserInstancePermission,
+    checkUserInstancePermission,
     getCategoryPermissionsToSyncAndDelete,
     getUserPermissionScopeOfCategory,
 } from '../../utils/permissions/instancePermissions';
@@ -25,6 +27,8 @@ import { didPermissionsChange, userHasNoPermissions } from '../../utils/permissi
 import UserAutocomplete from '../inputs/UserAutocomplete';
 import InstancesPermissionsCard from './instancesPermissionsCard';
 import ManagementPermissionsCard from './managementPermissionsCard';
+import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
+import { InstancesSubclassesPermissions } from '../../interfaces/permissions/permissions';
 
 const defaultEmptyUser = {
     _id: '',
@@ -60,8 +64,16 @@ const PermissionsOfUserDialog: React.FC<{
 
     const queryClient = useQueryClient();
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
+    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
 
-    console.log({ categories });
+    const categoryEntity = new Map(categories);
+
+    Array.from(entityTemplates.values()).forEach((entity) => {
+        const category: any = { ...categoryEntity.get(entity.category._id) };
+        const displayEntity = { id: entity._id, name: entity.displayName };
+        category.entityTemplates = category?.entityTemplates ? [...category.entityTemplates, displayEntity] : [displayEntity];
+        categoryEntity.set(entity.category._id, category);
+    });
 
     const { mutate: createUser } = useMutation(
         (formUser: IUser) =>
@@ -153,6 +165,31 @@ const PermissionsOfUserDialog: React.FC<{
                 {(formikProps: FormikProps<IUser>) => {
                     const currentPermissions = formikProps.values.permissions[workspace._id];
                     const categoriesPermissions = currentPermissions?.instances?.categories ?? {};
+                    const entityTemplatesPermissions = currentPermissions?.instances?.entityTemplates ?? {};
+
+                    // console.log(
+                    //     // changeUserInstancePermission(InstancesSubclassesPermissions.categories, currentPermissions, '1', true, PermissionScope.read),
+                    //     { categoryEntity },
+                    //     changeGivenInstancePermission(
+                    //         categoryEntity,
+                    //         currentPermissions,
+                    //         InstancesSubclassesPermissions.entityTemplates,
+                    //         true,
+                    //         // '675581a7f9282cfbea8b3e78',
+                    //         // PermissionScope.read,
+                    //         // { id: '675581a7f9282cfbea8b3e4c', type: InstancesSubclassesPermissions.categories },
+                    //         '675581a7f9282cfbea8b3e53',
+                    //         PermissionScope.read,
+                    //         { id: '675581a7f9282cfbea8b3e50', type: InstancesSubclassesPermissions.categories },
+                    //     ),
+                    // );
+
+                    // console.log({ formikProps });
+
+                    // console.log({ categoriesPermissions });
+
+                    // console.log({ currentPermissions });
+                    // console.log(Object.keys(InstancesSubclassesPermissions).indexOf(InstancesSubclassesPermissions.entityTemplates));
 
                     const handleManagementPermissionCheck = (path: string, checked: boolean) => {
                         formikProps.setFieldValue(path, checked ? { scope: PermissionScope.write } : null);
@@ -241,14 +278,24 @@ const PermissionsOfUserDialog: React.FC<{
                                 <Box margin={1}>
                                     <InstancesPermissionsCard
                                         viewMode={mode === 'view'}
-                                        categoriesCheckboxProps={Array.from(categories.values(), (currCategory) => ({
+                                        categoryEntity={categoryEntity}
+                                        formikProps={formikProps}
+                                        permissionsPath={permissionsPath}
+                                        currentPermissions={currentPermissions}
+                                        categoriesCheckboxProps={Array.from(categoryEntity.values(), (currCategory) => ({
                                             categoryId: currCategory._id,
+                                            entityTemplates: currCategory.entityTemplates,
                                             categoryDisplayName: currCategory.displayName,
                                             disabled: formikProps.isSubmitting || currentPermissions?.admin?.scope === PermissionScope.write,
                                             scope: getUserPermissionScopeOfCategory(categoriesPermissions, currCategory._id),
                                             permissionType: {
                                                 read: {
-                                                    checked: checkUserCategoryPermission(currentPermissions, currCategory, PermissionScope.read),
+                                                    checked: checkUserInstancePermission(
+                                                        InstancesSubclassesPermissions.categories,
+                                                        currentPermissions,
+                                                        currCategory._id,
+                                                        PermissionScope.read,
+                                                    ),
                                                     onChange:
                                                         mode === 'view'
                                                             ? () => {}
@@ -256,11 +303,17 @@ const PermissionsOfUserDialog: React.FC<{
                                                                   formikProps.setFieldValue(`${permissionsPath}.instances.categories`, {
                                                                       ...categoriesPermissions,
                                                                       [currCategory._id]: checked ? { scope: PermissionScope.read } : null,
+                                                                      //   ...changeFunc(),
                                                                   });
                                                               },
                                                 },
                                                 write: {
-                                                    checked: checkUserCategoryPermission(currentPermissions, currCategory, PermissionScope.write),
+                                                    checked: checkUserInstancePermission(
+                                                        InstancesSubclassesPermissions.categories,
+                                                        currentPermissions,
+                                                        currCategory._id,
+                                                        PermissionScope.write,
+                                                    ),
                                                     onChange:
                                                         mode === 'view'
                                                             ? () => {}
@@ -304,6 +357,7 @@ const PermissionsOfUserDialog: React.FC<{
                                                                             )
                                                                           : {},
                                                                   );
+                                                                  formikProps.setFieldValue(`${permissionsPath}.instances.entityTemplates`, {});
                                                               },
                                                           },
                                                           read: {
@@ -343,6 +397,7 @@ const PermissionsOfUserDialog: React.FC<{
                                                                           }),
                                                                       ),
                                                                   );
+                                                                  formikProps.setFieldValue(`${permissionsPath}.instances.entityTemplates`, {});
                                                               },
                                                           },
                                                       },

@@ -20,12 +20,12 @@ import { ICategoryMap } from '../../interfaces/categories';
 import { IEntity, IEntityExpanded } from '../../interfaces/entities';
 import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
 import { PermissionScope } from '../../interfaces/permissions';
-import { ISubCompactPermissions } from '../../interfaces/permissions/permissions';
+import { InstancesSubclassesPermissions, ISubCompactPermissions } from '../../interfaces/permissions/permissions';
 import { IRelationship } from '../../interfaces/relationships';
 import { IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
 import { getExpandedEntityByIdRequest } from '../../services/entitiesService';
 import { useUserStore } from '../../stores/user';
-import { checkUserCategoryPermission } from '../../utils/permissions/instancePermissions';
+import { checkUserInstancePermission } from '../../utils/permissions/instancePermissions';
 import { populateRelationshipTemplate } from '../../utils/templates';
 import { EntityDetails } from './components/EntityDetails';
 import { EntityTopBar } from './components/TopBar';
@@ -377,9 +377,10 @@ const Entity: React.FC = () => {
     const isEntityDisabled = expandedEntity.entity.properties.disabled;
     const currentEntityTemplate = entityTemplates.get(expandedEntity.entity.templateId)!;
 
-    const hasWritePermissionToCurrCategory = checkUserCategoryPermission(
+    const hasWritePermissionToCurrCategory = checkUserInstancePermission(
+        InstancesSubclassesPermissions.categories,
         currentUser.currentWorkspacePermissions,
-        currentEntityTemplate.category,
+        currentEntityTemplate.category._id,
         PermissionScope.write,
     );
     const populatedRelationshipTemplates = Array.from(relationshipTemplates.values(), (currRelationshipTemplate) =>

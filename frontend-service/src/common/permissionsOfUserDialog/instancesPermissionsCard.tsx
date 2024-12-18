@@ -17,22 +17,25 @@ export type permissionTypeCheckboxProps = {
 };
 const InstancesPermissionsCard: React.FC<{
     viewMode: boolean;
+    categoryEntity: any;
+    currentPermissions: any;
+    formikProps: any;
+    permissionsPath: any;
     categoriesCheckboxProps: {
         categoryId: string;
         categoryDisplayName: string;
         disabled: boolean;
         permissionType: permissionTypeCheckboxProps;
         scope?: PermissionScope;
+        entityTemplates: any[];
     }[];
     checkboxAllProps?: {
         permissionType: permissionTypeCheckboxProps;
         indeterminate: boolean;
     };
-}> = ({ categoriesCheckboxProps, viewMode, checkboxAllProps }) => {
+}> = ({ categoriesCheckboxProps, viewMode, checkboxAllProps, currentPermissions, formikProps, permissionsPath, categoryEntity }) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const bgcolor = darkMode ? '#242424' : 'white';
-
-    console.log({ categoriesCheckboxProps }, { checkboxAllProps });
 
     return (
         <Card variant="outlined" sx={{ bgcolor, overflowY: 'auto', maxHeight: 500 }}>
@@ -88,14 +91,25 @@ const InstancesPermissionsCard: React.FC<{
                             <Divider />
                         </Grid>
                     </Grid>
-                    {categoriesCheckboxProps.map(({ categoryId, categoryDisplayName, disabled, permissionType }) => (
-                        <CategoryCheckboxPermission
-                            categoryDisplayName={categoryDisplayName}
-                            viewMode={viewMode}
-                            disabled={disabled}
-                            permissionType={permissionType}
-                            key={categoryId}
-                        />
+                    {categoriesCheckboxProps.map(({ categoryId, categoryDisplayName, disabled, permissionType, entityTemplates }) => (
+                        <>
+                            <CategoryCheckboxPermission
+                                currentPermissions={currentPermissions}
+                                categoryDisplayName={categoryDisplayName}
+                                viewMode={viewMode}
+                                categoryEntity={categoryEntity}
+                                disabled={disabled}
+                                permissionType={permissionType}
+                                key={categoryId}
+                                formikProps={formikProps}
+                                entityTemplates={entityTemplates}
+                                permissionsPath={permissionsPath}
+                                categoryId={categoryId}
+                            />
+                            <Grid item xs={12}>
+                                <Divider sx={{ opacity: 0.5 }} />
+                            </Grid>
+                        </>
                     ))}
                 </Grid>
             </CardContent>

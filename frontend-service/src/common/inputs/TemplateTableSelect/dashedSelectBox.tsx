@@ -6,9 +6,10 @@ import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplat
 import { IEntity } from '../../../interfaces/entities';
 import { AddIconWithText } from '../../AddIconWithText';
 import IconButtonWithPopover from '../../IconButtonWithPopover';
-import { checkUserCategoryPermission } from '../../../utils/permissions/instancePermissions';
+import { checkUserInstancePermission } from '../../../utils/permissions/instancePermissions';
 import { PermissionScope } from '../../../interfaces/permissions';
 import { useUserStore } from '../../../stores/user';
+import { InstancesSubclassesPermissions } from '../../../interfaces/permissions/permissions';
 
 const DashedSelectBox: React.FC<{
     text: string;
@@ -27,7 +28,12 @@ const DashedSelectBox: React.FC<{
 
     const userHasPermissions = !entityTemplate
         ? undefined
-        : checkUserCategoryPermission(currentUser.currentWorkspacePermissions, entityTemplate.category, checkUsersPermissions);
+        : checkUserInstancePermission(
+              InstancesSubclassesPermissions.categories,
+              currentUser.currentWorkspacePermissions,
+              entityTemplate.category._id,
+              checkUsersPermissions,
+          );
 
     const disabled = !entityTemplate || userHasPermissions === false;
 

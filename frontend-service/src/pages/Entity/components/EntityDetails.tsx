@@ -27,12 +27,13 @@ import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreac
 import { deleteEntityRequest, updateEntityStatusRequest } from '../../../services/entitiesService';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { useUserStore } from '../../../stores/user';
-import { checkUserCategoryPermission } from '../../../utils/permissions/instancePermissions';
+import { checkUserInstancePermission } from '../../../utils/permissions/instancePermissions';
 import { EditEntityDetails } from './EditEntityDetails';
 import { EntityDates } from './EntityDates';
 import { EntityDisableCheckbox } from './EntityDisableCheckbox';
 import TooltipMenuButton from './TooltipMenuButton';
 import UpdateStatusWithRuleBreachDialog from './UpdateStatusWithRuleBreachDialog';
+import { InstancesSubclassesPermissions } from '../../../interfaces/permissions/permissions';
 
 const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; expandedEntity: IEntityExpanded }> = ({
     entityTemplate,
@@ -134,7 +135,12 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
         );
     }
 
-    const canWriteInstance = checkUserCategoryPermission(currentUser.currentWorkspacePermissions, entityTemplate.category, PermissionScope.write);
+    const canWriteInstance = checkUserInstancePermission(
+        InstancesSubclassesPermissions.categories,
+        currentUser.currentWorkspacePermissions,
+        entityTemplate.category._id,
+        PermissionScope.write,
+    );
     const isEntityDisabled = expandedEntity.entity.properties.disabled;
     return (
         <>

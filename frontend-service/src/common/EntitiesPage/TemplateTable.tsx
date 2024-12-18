@@ -21,7 +21,7 @@ import { useDraftIdStore, useDraftsStore } from '../../stores/drafts';
 import { useUserStore } from '../../stores/user';
 import { filterModelToFilterOfTemplate, sortModelToSortOfSearchRequest } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 import { getEntityTemplateColor } from '../../utils/colors';
-import { checkUserCategoryPermission } from '../../utils/permissions/instancePermissions';
+import { checkUserInstancePermission } from '../../utils/permissions/instancePermissions';
 import { BlueTitle } from '../BlueTitle';
 import { CustomIcon } from '../CustomIcon';
 import { EntityWizardValues } from '../dialogs/entity';
@@ -32,6 +32,7 @@ import { TableButton } from '../TableButton';
 import { AddEntityButton } from './AddEntityButton';
 import { DraftCard } from './DraftCard';
 import { ResetFilterButton } from './ResetFilterButton';
+import { InstancesSubclassesPermissions } from '../../interfaces/permissions/permissions';
 
 const { defaultRowHeight, defaultFontSize, defaultExpandedTableHeight } = environment.agGrid;
 
@@ -107,7 +108,12 @@ const TemplateTable = forwardRef<
     });
     const entityTemplateColor = getEntityTemplateColor(template);
 
-    const userHasWritePermissions = checkUserCategoryPermission(currentUser.currentWorkspacePermissions, template.category, PermissionScope.write);
+    const userHasWritePermissions = checkUserInstancePermission(
+        InstancesSubclassesPermissions.categories,
+        currentUser.currentWorkspacePermissions,
+        template.category._id,
+        PermissionScope.write,
+    );
 
     const drafts = useDraftsStore((state) => state.drafts);
 
