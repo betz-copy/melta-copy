@@ -173,6 +173,7 @@ export default {
         deleteFieldValue: 'לא ניתן למחוק ערך בשימוש',
         updateEnumField: 'לא ניתן לעדכן ערך זה',
         previewLoadingError: 'שגיאה בטעינת הקובץ',
+        emptyInputError: 'אין להכניס ערך ריק'
     },
     addRelationshipDialog: {
         title: 'הוסף קשר',
