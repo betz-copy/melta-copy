@@ -702,7 +702,8 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                             });
                         }}
                         onCellClicked={(params) => {
-                            if (!params.colDef.cellEditor) return;
+                            const isHidden = template.properties.hide.includes(params.colDef.field!);
+                            if (isHidden || !params.colDef.cellEditor) return;
                             setCurrEditingCell(params);
                             if (currEditingCell && currEditingCell.value !== params.value) params.api.stopEditing();
                         }}

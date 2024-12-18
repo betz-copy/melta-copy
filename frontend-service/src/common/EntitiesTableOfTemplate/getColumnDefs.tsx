@@ -77,6 +77,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
 }: IGetColumnDefsOptions<Data>): ColDef[] => {
     const columnDefs = template.propertiesOrder.map((property) => {
         const propertyTemplate = { ...template.properties.properties[property] };
+        const hiddenProperties = template.properties.hide;
         const { type, format, calculateTime, archive } = propertyTemplate;
 
         const hideField = template.properties.hide.includes(property);
@@ -91,7 +92,9 @@ export const getColumnDefs = <Data extends any = EntityData>({
 
         if (propertyTemplate.archive) propertyTemplate.title = `${propertyTemplate.title} ${i18next.t('entitiesTableOfTemplate.archiveTitle')}`;
 
-        const editable = (data: any) => !disableEditCell && !propertyTemplate.readOnly && data && !getEntityPropertiesData(data).disabled;
+        const editable = (data: any) =>
+            !disableEditCell && !propertyTemplate.readOnly && data && !getEntityPropertiesData(data).disabled && !hiddenProperties.includes(property);
+
         if (type === 'number')
             return numberColDef(
                 property,
