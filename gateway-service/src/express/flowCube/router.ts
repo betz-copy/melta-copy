@@ -25,4 +25,12 @@ FlowCubeRouter.get(
     FlowCubeControllerMiddleware.getAllTemplatesNameAndIdByWorkspaceId,
 );
 
+// FlowCubeRouter.get(
+//     '/:workspaceId/templates/:templateId',
+//     ValidateRequest(),
+//     InstancesValidatorMiddleware.validateUserCanSearchEntitiesOfTemplate,
+//     wrapMiddleware(translateWorkspaceParameter),
+
+// );
+
 export default FlowCubeRouter;
