@@ -54,6 +54,7 @@ import { getValidationErrorEntities, readExcelFile, updateIdOfBrokenRules } from
 import { formatEntitiesBulkSearch, sortEntities } from '../../utils/semantic';
 
 const { errorCodes, rabbit, ruleBreachService } = config;
+const { filesLimit } = config.loadExcel;
 
 export class InstancesManager extends DefaultManagerProxy<InstancesService> {
     private entityTemplateService: EntityTemplateService;
@@ -289,6 +290,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         const failedEntities: IFailedEntity[] = [];
 
         if (files && !entities) {
+            if (files?.length > filesLimit) throw new BadRequestError('files limit', {});
             const actions = await readExcelFile(files, template, failedEntities);
             entities = actions.map((action) => action.actionMetadata as IEntity);
         }
