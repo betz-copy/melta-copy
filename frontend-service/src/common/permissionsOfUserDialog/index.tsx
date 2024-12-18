@@ -61,12 +61,12 @@ const PermissionsOfUserDialog: React.FC<{
                     sx={{
                         width: '100%',
                         height: '100%',
-                        padding: '0 20px 0px 20px',
+                        padding: '0 10px 0px 10px',
                     }}
                 >
                     <TabContext value={tabValue}>
                         <Grid container direction="column">
-                            <Grid item marginBottom={1}>
+                            <Grid item>
                                 <TabList
                                     onChange={(_event, newValue) => {
                                         if (newValue === 'myPermissions' && isPreferencesUpdated) {
@@ -97,7 +97,7 @@ const PermissionsOfUserDialog: React.FC<{
                             <Grid item>
                                 {Object.entries(tabsComponentsMapping).map(([tabName, tabComponent]) => {
                                     return (
-                                        <TabPanel key={tabName} value={tabName}>
+                                        <TabPanel key={tabName} value={tabName} sx={{ padding: 0 }}>
                                             {tabComponent}
                                         </TabPanel>
                                     );
@@ -106,7 +106,7 @@ const PermissionsOfUserDialog: React.FC<{
                         </Grid>
                     </TabContext>
 
-                    <Grid display="flex" sx={{ position: 'absolute', bottom: 13, left: 15 }}>
+                    <Grid display="flex" sx={{ position: 'absolute', bottom: 15, left: 15 }}>
                         {mode === 'view' && (
                             <Button
                                 onClick={() => {

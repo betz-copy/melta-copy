@@ -1,10 +1,11 @@
 import { menash } from 'menashmq';
 import config from '../config';
 import { INotificationMetadata, NotificationType } from '../externalServices/notificationService/interfaces';
-import { MailManager } from './mailNotifications';
 import { IMailNotificationMetadataPopulated } from './mailNotifications/interfaces';
 import { UsersManager } from '../express/users/manager';
 import { IUser } from '../externalServices/userService/interfaces/users';
+import logger from './logger/logsLogger';
+import { MailManager } from './mailNotifications';
 
 const {
     rabbit,
@@ -37,5 +38,19 @@ export class RabbitManager {
         const viewersData: IUser[] = await Promise.all(viewers);
 
         return viewersData.filter((viewer: IUser) => viewer.preferences.mailsNotificationsTypes?.includes(type));
+    }
+
+    async indexFiles(templateId: string, entityId: string, minioFileIds: string[]) {
+        const fileData = { templateId, entityId, minioFileIds };
+        await menash.send(rabbit.insertDocsSemanticQueue, fileData, { headers: { [workspaceIdHeaderName]: this.workspaceId } }).catch((err) => {
+            logger.error('Failed at indexing file', err);
+        });
+    }
+
+    async deleteFiles(templateId: string, entityId: string, minioFileIds: string[]) {
+        const fileData = { templateId, entityId, minioFileIds };
+        await menash.send(rabbit.deleteDocsSemanticQueue, fileData, { headers: { [workspaceIdHeaderName]: this.workspaceId } }).catch((err) => {
+            logger.error('Failed at deleting file', err);
+        });
     }
 }

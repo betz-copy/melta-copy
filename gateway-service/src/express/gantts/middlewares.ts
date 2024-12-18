@@ -2,7 +2,7 @@ import { Request } from 'express';
 import { GanttsService, IGantt } from '../../externalServices/ganttsService';
 import { Authorizer } from '../../utils/authorizer';
 import DefaultController from '../../utils/express/controller';
-import { ServiceError } from '../error';
+import { ForbiddenError } from '../error';
 import { InstancesValidator } from '../instances/middlewares';
 
 export class GanttsValidator extends DefaultController {
@@ -25,7 +25,7 @@ export class GanttsValidator extends DefaultController {
             .filter((templateId) => !allowedEntityTemplateIds.includes(templateId));
 
         if (unauthorizedTemplates.length > 0) {
-            throw new ServiceError(403, 'user not authorized', {
+            throw new ForbiddenError('user not authorized', {
                 metadata: `unauthorized gantt items' entity templates ${JSON.stringify(unauthorizedTemplates)}`,
             });
         }

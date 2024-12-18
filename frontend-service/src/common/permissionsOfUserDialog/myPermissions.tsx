@@ -155,7 +155,6 @@ const MyPermissions: React.FC<{
                         <DialogTitle>
                             {mode === 'edit' && i18next.t('permissions.permissionsOfUserDialog.editTitle')}
                             {mode === 'create' && i18next.t('permissions.permissionsOfUserDialog.createTitle')}
-                            {mode === 'view' && i18next.t('permissions.permissionsOfUserDialog.readTitle')}
                         </DialogTitle>
                         <DialogContent>
                             <Box margin={1} sx={{ bgcolor: darkMode ? '#242424' : 'white' }}>

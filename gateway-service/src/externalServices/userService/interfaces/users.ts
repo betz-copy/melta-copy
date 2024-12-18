@@ -28,6 +28,8 @@ export interface IUserSearchBody {
     workspaceIds?: string[];
     limit: number;
     step?: number;
+    filterModel?: Record<string, object>;
+    sortModel?: object[];
 }
 
 export type IExternalUser = Omit<IUser, 'fullName' | 'jobTitle' | 'hierarchy' | 'mail'> &

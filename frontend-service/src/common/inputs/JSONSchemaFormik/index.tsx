@@ -49,6 +49,7 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
     });
     ajv.addKeyword({ keyword: 'isDailyAlert' });
     ajv.addKeyword({ keyword: 'calculateTime' });
+    ajv.addKeyword({ keyword: 'archive', type: 'boolean' });
     ajv.addKeyword({
         keyword: 'serialStarter',
     });
@@ -80,9 +81,12 @@ const formikErrorsToRjsfExtraErrors = (formikErrors: Record<string, string>): Er
 
 const mergeErrorSchemas = (errors1: ErrorSchema<{}>, errors2: ErrorSchema<{}>) => {
     const merged = { ...errors1 };
+    // eslint-disable-next-line no-restricted-syntax
     for (const key in errors2) {
+        // eslint-disable-next-line no-prototype-builtins
         if (errors2.hasOwnProperty(key)) {
             if (!merged[key]) merged[key] = errors2[key];
+            // eslint-disable-next-line no-underscore-dangle
             else merged[key].__errors = [...new Set([...merged[key].__errors, ...errors2[key].__errors])];
         }
     }
@@ -137,6 +141,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
             id="json-schema"
             schema={schema}
             uiSchema={mapValues(schema.properties, (propertySchema): UiSchema => {
+                if (propertySchema.archive) return {};
                 if (propertySchema.readOnly)
                     return {
                         'ui:options': {

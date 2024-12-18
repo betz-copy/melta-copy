@@ -1,8 +1,10 @@
 import { Router } from 'express';
 import multer from 'multer';
+import { createProxyMiddleware } from 'http-proxy-middleware';
 import { wrapController, wrapMulter } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
 import { UsersController } from './controller';
+import config from '../../config';
 import {
     createUserRequestSchema,
     deletePermissionsFromMetadataRequestSchema,
@@ -10,16 +12,25 @@ import {
     getMyUserRequestSchema,
     getUserByIdRequestSchema,
     searchExternalUsersRequestSchema,
+    searchUsersByPermissionsSchema,
     searchUsersRequestSchema,
     syncUserPermissionsRequestSchema,
     updateUserExternalMetadataRequestSchema,
     updateUserPreferencesMetadataRequestSchema,
 } from './validator.schema';
-import config from '../../config';
+import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
 
 const {
     service: { uploadsFolderPath },
 } = config;
+
+const { userService } = config;
+
+const UserManagerProxy = createProxyMiddleware({
+    target: `${userService.url}${userService.usersRoute}`,
+    changeOrigin: true,
+    proxyTimeout: userService.requestTimeout,
+});
 
 export const usersRouter: Router = Router();
 
@@ -35,7 +46,12 @@ usersRouter.post('/search-ids', ValidateRequest(searchUsersRequestSchema), wrapC
 
 usersRouter.post('/search', ValidateRequest(searchUsersRequestSchema), wrapController(UsersController.searchUsers));
 
-usersRouter.post('/', ValidateRequest(createUserRequestSchema), wrapController(UsersController.createUser));
+usersRouter.post(
+    '/',
+    AuthorizerControllerMiddleware.userCanWritePermissions,
+    ValidateRequest(createUserRequestSchema),
+    wrapController(UsersController.createUser),
+);
 
 usersRouter.patch(
     '/:userId/preferences',
@@ -46,14 +62,23 @@ usersRouter.patch(
 
 usersRouter.patch(
     '/:userId/external',
+    AuthorizerControllerMiddleware.userCanWritePermissions,
     ValidateRequest(updateUserExternalMetadataRequestSchema),
     wrapController(UsersController.updateUserExternalMetadata),
 );
 
-usersRouter.post('/:userId/permissions/sync', ValidateRequest(syncUserPermissionsRequestSchema), wrapController(UsersController.syncUserPermissions));
+usersRouter.post(
+    '/:userId/permissions/sync',
+    AuthorizerControllerMiddleware.userCanWritePermissions,
+    ValidateRequest(syncUserPermissionsRequestSchema),
+    wrapController(UsersController.syncUserPermissions),
+);
 
 usersRouter.patch(
     '/metadata',
+    AuthorizerControllerMiddleware.userCanWritePermissions,
     ValidateRequest(deletePermissionsFromMetadataRequestSchema),
     wrapController(UsersController.deletePermissionsFromMetadata),
 );
+
+usersRouter.get('/search/:workspaceId', ValidateRequest(searchUsersByPermissionsSchema), UserManagerProxy);

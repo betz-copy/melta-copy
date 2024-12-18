@@ -2,7 +2,7 @@ import axios from '../axios';
 import { environment } from '../globals';
 import { NotificationType } from '../interfaces/notifications';
 import { ICompactNullablePermissions, ICompactPermissions, IPermission, ISubCompactPermissions } from '../interfaces/permissions/permissions';
-import { IExternalUser, IUser, IUserPreferences, IUserSearchBody } from '../interfaces/users';
+import { IExternalUser, IMongoUser, IUser, IUserPreferences, IUserSearchBody } from '../interfaces/users';
 import { RecursiveNullable } from '../utils/types';
 
 const { users } = environment.api;
@@ -77,4 +77,9 @@ export const getUserProfileRequest = async (id: string) => {
         responseType: 'blob',
     });
     return URL.createObjectURL(data);
+};
+
+export const searchUsersByPermissions = async (workspaceId: string): Promise<IMongoUser[]> => {
+    const { data } = await axios.get<IMongoUser[]>(`${users}/search/${workspaceId}`);
+    return data;
 };

@@ -6,7 +6,7 @@ import ajv from '../../../utils/ajv';
 import ElasticSearchManager from '../../../utils/elastic/documentsOnElastic';
 import { getTemplateAggregation, searchAllowedProcessInstanceForReviewerAggregation, transaction } from '../../../utils/mongo';
 import { DefaultManagerMongo } from '../../../utils/mongo/manager';
-import { InstancePropertiesValidationError, NotFoundError, ServiceError, ValidationError } from '../../error';
+import { InstancePropertiesValidationError, InstanceNotFoundError, ServiceError, ValidationError } from '../../error';
 import { IMongoProcessTemplate, IProcessDetails } from '../../templates/processes/interface';
 import ProcessTemplateManager from '../../templates/processes/manager';
 import { IMongoStepTemplate } from '../../templates/steps/interface';
@@ -101,17 +101,17 @@ class ProcessInstanceManager extends DefaultManagerMongo<IProcessInstance> {
     }
 
     async getProcessById<T extends boolean = true>(id: string, shouldPopulate: T = true as T): Promise<ProcessInstanceType<T>> {
-        const query = this.model.findById(id).orFail(new NotFoundError('process', id)).lean();
+        const query = this.model.findById(id).orFail(new InstanceNotFoundError('process', id)).lean();
         return (shouldPopulate ? query.populate(config.processFields.steps) : query).exec() as unknown as Promise<ProcessInstanceType<T>>;
     }
 
     async getProcessesByTemplateId(id: string) {
-        return this.model.find({ templateId: id }).orFail(new NotFoundError('process', id)).lean().exec();
+        return this.model.find({ templateId: id }).orFail(new InstanceNotFoundError('process', id)).lean().exec();
     }
 
     async getProcessTemplateByProcessId(id: string): Promise<IMongoProcessTemplate> {
         const [result] = await getTemplateAggregation(this.model, config.mongo.processTemplatesCollectionName, id);
-        if (!result) throw new NotFoundError('process', id);
+        if (!result) throw new InstanceNotFoundError('process', id);
         return result;
     }
 
@@ -145,7 +145,7 @@ class ProcessInstanceManager extends DefaultManagerMongo<IProcessInstance> {
         const { steps: processSteps } = await this.getProcessById(id);
         const deletedProcess: IMongoProcessInstance = await transaction(async (session) => {
             await this.stepInstanceManager.deleteStepsByIds(stepsIds, session);
-            return this.model.findByIdAndDelete(id, { session }).orFail(new NotFoundError('process', id)).lean();
+            return this.model.findByIdAndDelete(id, { session }).orFail(new InstanceNotFoundError('process', id)).lean();
         });
         await this.elasticSearchManager.deleteDocumentOnElastic(deletedProcess._id);
 
@@ -154,7 +154,7 @@ class ProcessInstanceManager extends DefaultManagerMongo<IProcessInstance> {
 
     async updateProcess(id: string, updatedData: UpdateProcessReqBody) {
         const currProcess = await this.getProcessById(id, false);
-        if (currProcess.archived) throw new ServiceError(500, 'Can`t edit an archived process');
+        if (currProcess.archived) throw new ServiceError(undefined, 'Can`t edit an archived process');
 
         if (!updatedData.steps) {
             return this.model
@@ -162,7 +162,7 @@ class ProcessInstanceManager extends DefaultManagerMongo<IProcessInstance> {
                     new: true,
                 })
                 .populate(config.processFields.steps)
-                .orFail(new NotFoundError('process', id))
+                .orFail(new InstanceNotFoundError('process', id))
                 .lean();
         }
 
@@ -183,7 +183,7 @@ class ProcessInstanceManager extends DefaultManagerMongo<IProcessInstance> {
                     session,
                 })
                 .populate(config.processFields.steps)
-                .orFail(new NotFoundError('process', id))
+                .orFail(new InstanceNotFoundError('process', id))
                 .lean();
         });
 
@@ -202,7 +202,7 @@ class ProcessInstanceManager extends DefaultManagerMongo<IProcessInstance> {
         return this.model
             .findByIdAndUpdate(id, { archived }, { new: true })
             .populate(config.processFields.steps)
-            .orFail(new NotFoundError('process', id))
+            .orFail(new InstanceNotFoundError('process', id))
             .lean();
     }
 
@@ -248,7 +248,7 @@ class ProcessInstanceManager extends DefaultManagerMongo<IProcessInstance> {
 
     async updateStatus(id: string, status: Status, session?: ClientSession) {
         const { status: currStatus } = await this.getProcessById(id);
-        if (currStatus === status) throw new ServiceError(500, `status of process has not changed, get the same status: ${status}`);
+        if (currStatus === status) throw new ServiceError(undefined, `status of process has not changed, get the same status: ${status}`);
         return this.model.findByIdAndUpdate(id, { status, reviewedAt: new Date() }, { session });
     }
 }

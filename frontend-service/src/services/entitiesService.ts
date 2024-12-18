@@ -11,15 +11,49 @@ import {
     IExportEntitiesBody,
     IGraphFilterBodyBatch,
     ISearchEntitiesByTemplatesBody,
+    ICountSearchResult,
 } from '../interfaces/entities';
 import { EntityWizardValues } from '../common/dialogs/entity';
-import { IRuleBreach } from '../interfaces/ruleBreaches/ruleBreach';
+import { IBrokenRule, IRuleBreach } from '../interfaces/ruleBreaches/ruleBreach';
 import { filterModelToFilterOfGraph } from '../pages/Graph/GraphFilterToBackend';
+import { ITablesResults } from '../common/wizards/loadEntities';
+import { ICreateEntityMetadata } from '../interfaces/ruleBreaches/actionMetadata';
 
 const { entities, relationships } = environment.api;
 
 export const exportEntitiesRequest = async (body: IExportEntitiesBody) => {
     const { data } = await axios.post(`${entities}/export`, body, { responseType: 'blob' });
+    return data;
+};
+
+export const loadEntitiesRequest = async (
+    templateId: string,
+    files?: Record<string, File>,
+    insertBrokenEntities?: { entitiesToCreate: ICreateEntityMetadata[]; ignoredRules: IBrokenRule[] },
+): Promise<ITablesResults> => {
+    const formData = new FormData();
+    if (files)
+        Object.entries(files).forEach(([key, value]) => {
+            formData.append(key, value as Blob);
+        });
+    formData.append('templateId', templateId);
+
+    if (insertBrokenEntities) {
+        const { entitiesToCreate = [], ignoredRules = [] } = insertBrokenEntities;
+
+        const insertBrokenEntitiesObject = {
+            entitiesToCreate: entitiesToCreate.map((entity) => ({
+                templateId: entity.templateId,
+                properties: mapValues(entity.properties, (property) => property),
+            })),
+            ignoredRules,
+        };
+
+        formData.append('insertBrokenEntities', JSON.stringify(insertBrokenEntitiesObject));
+    }
+
+    const { data } = await axios.post(`${entities}/loadEntities`, formData);
+
     return data;
 };
 
@@ -226,8 +260,8 @@ export const searchEntitiesOfTemplateRequest = async (templateId: string, search
     return data;
 };
 
-export const getCountByTemplateIdsRequest = async (templateIds: string[], textSearch: string) => {
-    const { data } = await axios.post<{ templateId: string; count: number }[]>(`${entities}/count`, { templateIds, textSearch });
+export const getCountByTemplateIdsRequest = async (templateIds: string[], textSearch: string = '', shouldSemanticSearch: boolean = false) => {
+    const { data } = await axios.post<ICountSearchResult[]>(`${entities}/count`, { templateIds, textSearch, shouldSemanticSearch });
     return data;
 };
 

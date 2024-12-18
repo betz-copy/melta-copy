@@ -1,14 +1,19 @@
 import React, { MouseEventHandler, useEffect, useMemo, useRef, useState } from 'react';
 import { IconButton, Grid, useTheme, Typography } from '@mui/material';
-import { CloseOutlined as DeleteIcon, CameraAltOutlined as CameraIcon, Visibility } from '@mui/icons-material';
+import { CloseOutlined as DeleteIcon, CameraAltOutlined as CameraIcon, Visibility, DocumentScanner } from '@mui/icons-material';
 import { Accept, useDropzone } from 'react-dropzone';
 import i18next from 'i18next';
 import { toast } from 'react-toastify';
+import { useMatomo } from '@datapunt/matomo-tracker-react';
 import Camera from '../dialogs/Camera';
 import { getFileExtension } from '../../utils/getFileType';
 import FileIcon from '../FilePreview/FileIcon';
 import OpenPreview from '../FilePreview/OpenPreview';
 import { getFileName } from '../../utils/getFileName';
+import { MeltaTooltip } from '../MeltaTooltip';
+import ImageView from '../dialogs/Camera/ImageView';
+import { environment } from '../../globals';
+import { LoadingFilesInput } from './LoadingFilesInput';
 
 interface FileInputProps {
     file: Partial<File> | { name: string } | undefined;
@@ -18,8 +23,12 @@ interface FileInputProps {
     inputText: string;
     acceptedFilesTypes?: Accept;
     errorText?: string;
+    setErrorText?: React.Dispatch<React.SetStateAction<string | undefined>>;
     disableCamera?: boolean;
     disablePreview?: boolean;
+    disableScanner?: boolean;
+    isLoading?: boolean;
+    comment?: string;
 }
 
 const FileInput: React.FC<FileInputProps> = ({
@@ -31,11 +40,18 @@ const FileInput: React.FC<FileInputProps> = ({
     errorText,
     disableCamera = false,
     disablePreview = false,
+    disableScanner = false,
+    setErrorText,
+    isLoading,
+    comment,
 }) => {
     const theme = useTheme();
+    const { trackEvent } = useMatomo();
 
     const [stream, setStream] = useState<MediaStream | null>(null);
-    const [open, setOpen] = useState(false);
+    const [openCamera, setOpenCamera] = useState(false);
+    const [imgURL, setImgURL] = useState<string | null>(null);
+    const [openImageView, setOpenImageView] = useState(false);
 
     const errorStyle = {
         color: '#d32f2f',
@@ -44,6 +60,7 @@ const FileInput: React.FC<FileInputProps> = ({
     };
 
     const onDrop = (acceptedFiles: File[]) => {
+        if (acceptedFiles[0].type.startsWith('image/')) setImgURL(URL.createObjectURL(acceptedFiles[0]));
         onDropFile(acceptedFiles[0]);
     };
 
@@ -76,26 +93,56 @@ const FileInput: React.FC<FileInputProps> = ({
         try {
             const userStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
             setStream(userStream);
-            setOpen(true);
+            setOpenCamera(true);
         } catch {
             toast.error(i18next.t('camera.cameraNotFound'));
         }
     };
 
-    const inputStyle = {
+    const onScannerClick = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+        event.stopPropagation();
+        setOpenImageView(true);
+    };
+
+    const style = {
         border: isDragActive ? `2px dashed ${theme.palette.primary.main}` : '1px solid #c4c4c4',
         borderRadius: '10px',
         borderColor: '#CCCFE5',
         color: '#9398C2',
         width: '100%',
-        height: '40px',
         display: 'flex',
-        padding: '0px 10px',
-        alignItems: 'center',
+        padding: '5px 20px',
         cursor: 'pointer',
     };
 
+    const inputStyle = { ...style, height: '40px', alignItems: 'center', padding: '0px 10px' };
+
     const isFileFromInput = useMemo(() => file instanceof File, [file]);
+
+    const isImageFile = () => {
+        if (!file) return false;
+
+        if ('type' in file && typeof file.type === 'string') {
+            return file.type.startsWith('image/');
+        }
+
+        if ('name' in file && typeof file.name === 'string') {
+            const extension = getFileExtension(file.name);
+            return environment.fileExtensions.imageToManipulate.includes(extension);
+        }
+
+        return false;
+    };
+    if ((isLoading || errorText) && file)
+        return (
+            <LoadingFilesInput
+                files={[file]}
+                errorText={errorText}
+                setErrorText={setErrorText}
+                inputWidth={inputWidth}
+                isFileFromInput={isFileFromInput}
+            />
+        );
 
     return (
         <>
@@ -132,11 +179,28 @@ const FileInput: React.FC<FileInputProps> = ({
                                             <OpenPreview fileId={file.name!} img={<Visibility fontSize="small" />} showText={false} />
                                         )}
 
+                                        {isImageFile() && !disableScanner && (
+                                            <MeltaTooltip title={i18next.t('input.imagePicker.scanFromImage')}>
+                                                <IconButton
+                                                    style={{
+                                                        height: '25px',
+                                                        width: '25px',
+                                                        borderRadius: '7px',
+                                                        marginLeft: '5px',
+                                                    }}
+                                                    onClick={onScannerClick}
+                                                    size="small"
+                                                >
+                                                    <DocumentScanner style={{ width: '20px', height: '20px' }} />
+                                                </IconButton>
+                                            </MeltaTooltip>
+                                        )}
                                         <IconButton
                                             onClick={(e) => {
                                                 e.preventDefault();
                                                 e.stopPropagation();
                                                 onDeleteFile(e);
+                                                setImgURL(null);
                                             }}
                                             size="small"
                                         >
@@ -159,7 +223,13 @@ const FileInput: React.FC<FileInputProps> = ({
                                         borderRadius: '7px',
                                         marginLeft: '5px',
                                     }}
-                                    onClick={onCameraClick}
+                                    onClick={(event) => {
+                                        onCameraClick(event);
+                                        trackEvent({
+                                            category: 'entity',
+                                            action: 'camera icon click',
+                                        });
+                                    }}
                                 >
                                     <CameraIcon style={{ color: '#1E2775', width: '20px', height: '20px' }} />
                                 </IconButton>
@@ -179,6 +249,11 @@ const FileInput: React.FC<FileInputProps> = ({
                             </Typography>
                         </Grid>
                     )}
+                    {comment && (
+                        <Typography fontSize="12px" color="#9398C2" paddingLeft="7px">
+                            {comment}
+                        </Typography>
+                    )}
                     {errorText && (
                         <p id="error" style={errorStyle}>
                             {errorText}
@@ -186,7 +261,28 @@ const FileInput: React.FC<FileInputProps> = ({
                     )}
                 </Grid>
             </Grid>
-            {open && <Camera stream={stream!} setStream={setStream} open={open} setOpen={setOpen} onPictureTaken={onDropFile} />}
+            {openImageView && imgURL && (
+                <ImageView
+                    setStream={setStream}
+                    imgURL={imgURL}
+                    setImgURL={setImgURL}
+                    setOpenImageView={setOpenImageView}
+                    openCamera={openCamera}
+                    openImageView={openImageView}
+                    setOpenCamera={setOpenCamera}
+                    onPictureTaken={onDropFile}
+                />
+            )}
+            {openCamera && (
+                <Camera
+                    stream={stream!}
+                    setStream={setStream}
+                    open={openCamera}
+                    setOpen={setOpenCamera}
+                    setImgURL={setImgURL}
+                    setOpenImageView={setOpenImageView}
+                />
+            )}
         </>
     );
 };

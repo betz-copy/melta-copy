@@ -201,6 +201,7 @@ export const environment = {
         maxConcurrentDatasourceRequests: 1,
         infiniteInitialRowCount: 1,
         defaultExpandedTableHeight: 650,
+        paginationPageSizeSelector: [5, 10, 25, 50],
     },
     activityLog: {
         infiniteScrollPageCount: 10,
@@ -216,6 +217,7 @@ export const environment = {
     minimumSupportedChromeVersion: 85,
     fileIdLength: 32,
     maxDateTimestamp: 8640000000000000,
+    attemptInterval: 100,
     errorCodes: {
         ruleBlock: 'RULE_BLOCK',
         failedToCreateConstraints: 'FAILED_TO_CREATE_CONSTRAINTS',
@@ -235,11 +237,13 @@ export const environment = {
         width: '24px',
         height: '24px',
     },
+    loadExcel: { excelExtension: '.xlsx', acceptedFilesTypes: { 'excel/xlsx': ['.xlsx', '.xls'] }, filesLimit: 5, entitiesLimit: 500 },
     draftAutoSaveDebounce: 250,
     profileIconsCount: 19,
     avatarIconPath: '/icons/profileAvatar/',
     fileExtensions: {
         image: ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'webp', 'ico', 'psd', 'raw', 'heif', 'indd', 'ai', 'eps'],
+        imageToManipulate: ['png', 'jpg', 'jpeg', 'svg'] as string[],
         video: ['mp4', 'mov', 'avi', 'wmv', 'flv', 'mkv', 'webm', 'avchd', '3gp', '3g2', '3gpp', '3gpp2', 'm4v'],
         audio: ['mp3', 'wav', 'ogg', 'flac', 'wma', 'aac', 'm4a'],
         document: [
@@ -1267,10 +1271,10 @@ export const environment = {
             'prw',
         ],
     },
-    matomo: {
-        urlBase: 'matomo.yesodot.services.idf',
-        siteId: 24,
-    },
+    // matomo: {
+    //     urlBase: 'matomo.yesodot.services.idf',
+    //     siteId: 24,
+    // },
     systemManagement: {
         actions: {
             unusedPropertyErrorCodeTs: '6133',

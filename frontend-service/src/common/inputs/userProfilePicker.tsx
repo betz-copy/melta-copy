@@ -128,6 +128,7 @@ const UserProfilePicker: React.FC<UserProfilePickerProps> = ({ imageName, onPick
                         acceptedFilesTypes={{ 'image/png': ['.png', '.jpg'] }}
                         disableCamera
                         disablePreview
+                        disableScanner
                     />
                 </Grid>
             )}

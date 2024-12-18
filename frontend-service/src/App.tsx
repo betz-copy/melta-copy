@@ -11,20 +11,24 @@ import './css/index.css';
 import './css/loading.css';
 import { environment } from './globals';
 import Main from './Main';
-import matomoInstance from './matomo';
 import ErrorPage from './pages/ErrorPage';
 import { AuthService } from './services/authService';
 import { BackendConfigState, getBackendConfigRequest } from './services/backendConfigService';
 import { getMyUserRequest } from './services/userService';
-import { getById } from './services/workspacesService';
+import { getById, getWorkspaceHierarchyIds } from './services/workspacesService';
 import { useUserStore } from './stores/user';
 import { useDarkModeStore } from './stores/darkMode';
+import { useWorkspaceStore } from './stores/workspace';
+import { getWorkspacePermissions } from './utils/permissions';
+import { useMatomoInstance } from './matomo';
 
 const App: React.FC = () => {
     const [isLoadingUser, setIsLoadingUser] = useState(true);
     const [isErrorMyUser, setIsErrorMyUser] = useState(false);
 
     const [location, navigate] = useLocation();
+
+    const matomoInstance = useMatomoInstance();
 
     useEffect(() => {
         const browser = Bowser.getParser(window.navigator.userAgent);
@@ -41,6 +45,7 @@ const App: React.FC = () => {
     const setUser = useUserStore((state) => state.setUser);
 
     const setDarkMode = useDarkModeStore((state) => state.setDarkMode);
+    const workspaceStore = useWorkspaceStore((state) => state.workspace);
 
     const { isError: isErrorBackendConfig } = useQuery<BackendConfigState>('getBackendConfig', getBackendConfigRequest, {
         onError: () => {
@@ -48,6 +53,27 @@ const App: React.FC = () => {
         },
         enabled: !isLoadingUser && !isErrorMyUser,
     });
+
+    const { data: hierarchyIds } = useQuery({
+        queryKey: ['getWorkspaceHierarchyIds', workspaceStore._id],
+        queryFn: () => getWorkspaceHierarchyIds(workspaceStore._id),
+        enabled: Boolean(workspaceStore._id),
+        initialData: [],
+    });
+
+    useEffect(() => {
+        if (!workspaceStore._id) return;
+
+        const handleWorkspace = async () => {
+            const workspacePermissions = await getWorkspacePermissions(currentUser.permissions, hierarchyIds!);
+            if (workspacePermissions) currentUser.permissions[workspaceStore._id] = workspacePermissions;
+
+            if (currentUser.currentWorkspacePermissions !== currentUser.permissions[workspaceStore._id])
+                setUser({ ...currentUser, currentWorkspacePermissions: currentUser.permissions[workspaceStore._id] });
+        };
+
+        handleWorkspace();
+    }, [currentUser, hierarchyIds, setUser, workspaceStore]);
 
     useEffect(() => {
         const initUser = async () => {
@@ -84,7 +110,7 @@ const App: React.FC = () => {
         };
 
         initUser();
-    }, [setUser, navigate]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [setUser, navigate, workspaceStore]); // eslint-disable-line react-hooks/exhaustive-deps
 
     if (isErrorMyUser) return <ErrorPage errorText={i18next.t('errorPage.noPermissions')} />;
 
@@ -95,7 +121,7 @@ const App: React.FC = () => {
     if (isErrorBackendConfig) return <ErrorPage errorText={i18next.t('errorPage.systemUnavailable')} />;
 
     return (
-        <MatomoProvider value={matomoInstance}>
+        <MatomoProvider value={matomoInstance!}>
             <Main />;
         </MatomoProvider>
     );

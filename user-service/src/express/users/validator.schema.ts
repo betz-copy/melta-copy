@@ -3,6 +3,7 @@ import { mongoIdSchema } from '../../utils/joi/schemas';
 import { SubCompactPermissionSchema } from '../../utils/joi/schemas/permission/compact';
 import { partialBaseUserSchema, userSchema } from '../../utils/joi/schemas/user';
 import { config } from '../../config';
+import { agGridDateFilterSchema, agGridNumberFilterSchema, agGridSetFilterSchema, agGridTextFilterSchema } from './agGridValidator.schema';
 
 const { maxFindLimit } = config.mongo;
 
@@ -32,11 +33,20 @@ export const getUserByExternalIdRequestSchema = joi.object({
 export const searchUsersRequestSchema = joi.object({
     query: {},
     body: joi.object({
-        search: joi.string(),
         permissions: SubCompactPermissionSchema,
         workspaceIds: joi.array().items(mongoIdSchema.required()),
         limit: joi.number().integer().min(1).max(maxFindLimit).required(),
         step: joi.number().integer().min(0).default(0),
+        search: joi.string(),
+        filterModel: joi
+            .object()
+            .pattern(/^/, joi.alternatives(agGridTextFilterSchema, agGridDateFilterSchema, agGridNumberFilterSchema, agGridSetFilterSchema)),
+        sortModel: joi.array().items(
+            joi.object({
+                colId: joi.string(),
+                sort: joi.string().valid('asc', 'desc'),
+            }),
+        ),
     }),
     params: {},
 });
@@ -76,4 +86,13 @@ export const updateUsersBulkRequestSchema = joi.object({
     query: {},
     body: joi.object().pattern(mongoIdSchema, partialBaseUserSchema.required()),
     params: {},
+});
+
+// GET /api/users/search/:workspaceId
+export const searchUsersByPermissionsSchema = joi.object({
+    query: {},
+    body: {},
+    params: {
+        workspaceId: joi.string().required(),
+    },
 });

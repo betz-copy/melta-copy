@@ -77,14 +77,14 @@ const MyAccount: React.FC<{
     );
 
     return (
-        <>
+        <Grid container>
             <Grid
                 container
                 item
-                spacing={2}
                 sx={{
-                    padding: '0px 15px 9px 8px',
-                    marginBottom: '0.8px',
+                    padding: '0px 17px 6px 10px',
+                    margin: '20px',
+                    marginBottom: '25px',
                     border: '1px solid #ccc',
                     borderRadius: '8px',
                 }}
@@ -149,7 +149,7 @@ const MyAccount: React.FC<{
                     {i18next.t('user.save')}
                 </Button>
             </Grid>
-        </>
+        </Grid>
     );
 };
 export default MyAccount;
