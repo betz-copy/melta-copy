@@ -663,7 +663,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                             position: 'left',
                         }}
                         statusBar={
-                            rowModelType === 'infinite'
+                            rowModelType === 'infinite' && !withoutResizeBox
                                 ? {
                                       statusPanels: [
                                           {
