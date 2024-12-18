@@ -83,6 +83,7 @@ export const InstanceSingleFileInput: React.FC<InstanceFileInputProps> = ({
                 isLoading={isLoading}
                 disableCamera={disableCamera}
                 comment={comment}
+                scanFromImage
             />
         </Box>
     );
