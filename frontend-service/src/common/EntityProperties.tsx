@@ -14,7 +14,6 @@ import { ColoredEnumChip } from './ColoredEnumChip';
 import OpenPreview from './FilePreview/OpenPreview';
 import { MeltaTooltip } from './MeltaTooltip';
 import RelationshipReferenceView from './RelationshipReferenceView';
-import { VerifyLink } from './VerifyLink';
 import { getFixedNumber, getTextDirection } from '../utils/stringValues';
 import { HighlightText } from '../utils/HighlightText';
 import { BlueTitle } from './BlueTitle';
