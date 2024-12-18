@@ -286,13 +286,14 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         let entities = insertBrokenEntities?.entitiesToCreate;
         const template = await this.entityTemplateService.getEntityTemplateById(templateId);
 
+        const failedEntities: IFailedEntity[] = [];
+
         if (files && !entities) {
-            const actions = await readExcelFile(files, template);
+            const actions = await readExcelFile(files, template, failedEntities);
             entities = actions.map((action) => action.actionMetadata as IEntity);
         }
         const serialStarters = this.getSerialStarters(template);
         const succeededEntities: IEntity[] = [];
-        const failedEntities: IFailedEntity[] = [];
         const allBrokenRulesEntities: IBrokenRuleEntity[] = [];
 
         for (const entity of entities!) {
