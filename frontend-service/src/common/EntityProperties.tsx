@@ -259,7 +259,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                                                 direction: propertySchema.type === 'number' ? 'rtl' : textDirection,
                                             }}
                                         >
-                                            <HighlightText text={innerContent} searchedText={searchedText} />
+                                            <HighlightText text={innerContent} searchedText={searchedText} isLink />
                                         </Typography>
                                     </MeltaTooltip>
                                     <Grid item>
