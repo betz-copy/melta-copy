@@ -545,6 +545,8 @@ const Entity: React.FC = () => {
                                             currentUser.currentWorkspacePermissions,
                                         );
 
+                                        const isAdmin = Boolean(currentUser.currentWorkspacePermissions?.admin) || false;
+
                                         return (
                                             <TabPanel key={_id} value={String(index)}>
                                                 {connectionsTemplatesOfCategory.map((connectionTemplate, connectedRelationshipTemplateIndex) => (
@@ -556,7 +558,7 @@ const Entity: React.FC = () => {
                                                         connectionTemplate={connectionTemplate}
                                                         isEditButtonsDisabled={isEditButtonsDisabled}
                                                         disabledButtonText={disabledButtonText}
-                                                        hasPermissionToCategory={Boolean(permissionToRelatedCategory)}
+                                                        hasPermissionToCategory={Boolean(permissionToRelatedCategory) || isAdmin}
                                                     />
                                                 ))}
                                             </TabPanel>

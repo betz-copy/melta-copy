@@ -896,11 +896,10 @@ export class EntityManager extends DefaultManagerNeo4j {
     }
 
     async deleteEntityById(id: string, deleteAllRelationships: boolean) {
-        try {
-            return this.neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
+        return this.neo4jClient
+            .performComplexTransaction('writeTransaction', async (transaction) => {
                 const entityToDelete = await this.getEntityByIdInTransaction(id, transaction);
                 const entityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(entityToDelete.templateId);
-
                 await Promise.all(
                     Object.entries(entityTemplate.properties.properties).map(async ([name, property]) => {
                         if (property.format === 'relationshipReference' && entityToDelete.properties[name]) {
@@ -925,16 +924,16 @@ export class EntityManager extends DefaultManagerNeo4j {
                 }
 
                 return id;
-            });
-        } catch (error) {
-            if (error instanceof Neo4jError && error.code === 'Neo.ClientError.Schema.ConstraintValidationFailed') {
-                throw new ServiceError(badRequestStatus, `[NEO4J] entity "${id}" has existing relationships. Delete them first.`, {
-                    errorCode: config.errorCodes.entityHasRelationships,
-                });
-            }
+            })
+            .catch((error: any) => {
+                if (error instanceof Neo4jError && error.code === 'Neo.ClientError.Schema.ConstraintValidationFailed') {
+                    throw new ServiceError(badRequestStatus, `[NEO4J] entity "${id}" has existing relationships. Delete them first.`, {
+                        errorCode: config.errorCodes.entityHasRelationships,
+                    });
+                }
 
-            throw error;
-        }
+                throw error;
+            });
     }
 
     async getIsFieldUsed(id: string, fieldValue: string, fieldName: string, type: string) {

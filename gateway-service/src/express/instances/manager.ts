@@ -179,7 +179,8 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
         const { count, entitiesWithFiles } = templateCount?.[0] ?? { count: 0, entitiesWithFiles: {} };
 
-        for (let skip = 0; count ?? 0 - skip > 0; skip += searchEntitiesChunkSize) {
+        // Remove the ?? 0 because it create infinite loop
+        for (let skip = 0; (count ?? 0) - skip > 0; skip += searchEntitiesChunkSize) {
             const { entities: chunk } = await this.service.searchEntitiesOfTemplateRequest(template._id, {
                 skip,
                 limit: searchEntitiesChunkSize,
