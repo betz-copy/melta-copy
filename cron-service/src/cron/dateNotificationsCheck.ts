@@ -97,7 +97,6 @@ const sendNotificationsForEntityTemplate = async (
 
     if (propertiesWithDateNotifications.length > 0) {
         const instances = await getFilteredInstances(instancesService, entityTemplate._id, propertiesWithDateNotifications);
-        
         await Promise.all(
             propertiesWithDateNotifications.map(async ({ propertyName, dateNotificationValue, isDailyAlert }) => {
                 instances.map(async ({ entity }) => {
