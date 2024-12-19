@@ -78,11 +78,20 @@ export const formatEntitiesBulkSearch = (searchResults: ISearchResult, query: st
     return { formattedEntities: { ...searchResults, entities: entitiesWithFileIds }, textsForReranking };
 };
 
-export const createTextsFromEntitiesWithFiles = (entitiesWithFiles: ISemanticSearchResult[string]) =>
-    Object.entries(entitiesWithFiles).reduce((acc, [entityId, value]) => {
-        Object.values(value).forEach(({ text }) => {
-            pushToTextsForReranking(acc, text, entityId);
-        });
+export const createTextsFromEntitiesWithFiles = (searchResults: ISearchResult, entitiesWithFiles: ISemanticSearchResult[string], query: string) =>
+    searchResults.entities.reduce((acc, entity) => {
+        const {
+            properties: { _id: entityId },
+        } = entity.entity;
+
+        if (!entitiesWithFiles[entityId]) {
+            const text = searchEntityPropertiesForQuery(entity.entity.properties, query);
+            pushToTextsForReranking(acc, text ?? query, entityId);
+        } else {
+            entitiesWithFiles[entityId].forEach(({ text }) => {
+                pushToTextsForReranking(acc, text, entityId);
+            });
+        }
 
         return acc;
     }, {});

@@ -173,7 +173,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
             return searchResult;
         }
 
-        const texts = createTextsFromEntitiesWithFiles(entitiesWithFiles);
+        const texts = createTextsFromEntitiesWithFiles(searchResult, entitiesWithFiles, body.textSearch);
         const rerank = await this.semanticSearchSearch.rerank({ query: body.textSearch, texts: Object.keys(texts) });
 
         if (!rerank?.length) {
