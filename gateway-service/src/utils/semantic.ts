@@ -78,7 +78,18 @@ export const formatEntitiesBulkSearch = (searchResults: ISearchResult, query: st
     return { formattedEntities: { ...searchResults, entities: entitiesWithFileIds }, textsForReranking };
 };
 
-export const createTextsFromEntitiesWithFiles = (searchResults: ISearchResult, entitiesWithFiles: ISemanticSearchResult[string], query: string) =>
+/**
+ * Create an object with text as key, and entityIds as value.
+ * @param searchResults search results from instance service (neo4j)
+ * @param entitiesWithFiles search results from semantic service on specific template
+ * @param query what the user searched for
+ * @returns Record<string, string[]>, example: { text1: entityIds1[], text2: entityIds2[], ... }
+ */
+export const createTextsFromEntitiesWithFiles = (
+    searchResults: ISearchResult,
+    entitiesWithFiles: ISemanticSearchResult[string],
+    query: string,
+): Record<string, string[]> =>
     searchResults.entities.reduce((acc, entity) => {
         const {
             properties: { _id: entityId },
