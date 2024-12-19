@@ -6,7 +6,7 @@ import i18next from 'i18next';
 import { useMutation, useQueryClient } from 'react-query';
 import { AxiosError } from 'axios';
 import { v4 as uuid } from 'uuid';
-import { StepsType, Wizard, WizardBaseType } from '../index';
+import { StepType, Wizard, WizardBaseType } from '../index';
 import { ErrorToast } from '../../ErrorToast';
 import { addDetailsFieldsSchema, AddDetailsFields } from './AddDetailsFields';
 import { CreateTemplateName, useCreateOrEditTemplateNameSchema } from '../entityTemplate/CreateTemplateName'; // Import the schema
@@ -58,8 +58,9 @@ const ProcessTemplateWizard: React.FC<WizardBaseType<ProcessTemplateWizardValues
     isEditMode = false,
 }) => {
     const queryClient = useQueryClient();
+    const templates = queryClient.getQueryData<IProcessTemplateMap>('getProcessTemplates') || new Map();
 
-    const createTemplateNameSchema = useCreateOrEditTemplateNameSchema();
+    const createTemplateNameSchema = useCreateOrEditTemplateNameSchema(templates);
 
     const { isLoading, mutateAsync } = useMutation(
         (processTemplate: ProcessTemplateWizardValues) =>
@@ -87,7 +88,7 @@ const ProcessTemplateWizard: React.FC<WizardBaseType<ProcessTemplateWizardValues
         },
     );
 
-    const stepsComponents: StepsType<ProcessTemplateWizardValues> = [
+    const stepsComponents: StepType<ProcessTemplateWizardValues>[] = [
         {
             label: i18next.t('wizard.processTemplate.chooseProcessTemplateName'),
             component: (props, { isEditMode }) => <CreateTemplateName {...props} isEditMode={isEditMode} />,

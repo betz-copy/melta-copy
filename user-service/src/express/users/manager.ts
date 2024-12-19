@@ -79,8 +79,8 @@ export class UsersManager {
     static async searchUsers(request: IAgGridRequest): Promise<{ users: IUser[]; count: number }> {
         const { limit, step, workspaceIds, permissions, filterModel, sortModel, search } = request;
 
-        const sort = translateAgGridSortModel(sortModel);
-        const query = translateAgGridFilterModel(filterModel);
+        const sort = sortModel ? translateAgGridSortModel(sortModel) : {};
+        const query = filterModel ? translateAgGridFilterModel(filterModel) : {};
 
         const { users, count } = await this.searchBaseUsers(search, permissions, workspaceIds, limit, step, query, sort);
         const permissionsToUsers = await this.appendPermissionsToUsers(users);
@@ -114,5 +114,23 @@ export class UsersManager {
 
     private static async appendPermissionsToUsers(users: IBaseUser[]): Promise<IUser[]> {
         return Promise.all(users.map((user) => this.baseUserToUser(user)));
+    }
+
+    static async searchUsersByPermissions(workspaceId: string, pagination?: { step: number; limit: number }): Promise<IUser[]> {
+        const permissions = await PermissionsManager.getPermissionsByWorkspaceId(workspaceId, pagination);
+
+        const users = await UsersModel.find({ _id: { $in: permissions.map(({ userId }) => userId) } })
+            .lean()
+            .exec();
+
+        return this.appendPermissionsToUsers(users);
+    }
+
+    static async searchUsersByPermWithCount(workspaceId: string, limit: number, step: number): Promise<{ users: IUser[]; count: number }> {
+        const { permissions, count } = await PermissionsManager.getPermissionsByWorkspaceIdWithCount(workspaceId, limit, step);
+
+        const users = await Promise.all(permissions.map(({ userId }) => this.getUserById(userId)));
+
+        return { users, count };
     }
 }

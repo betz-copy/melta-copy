@@ -4,14 +4,17 @@ import { ArrowForward as ArrowForwardIcon, ArrowBack as ArrowBackIcon, Done as D
 import i18next from 'i18next';
 import { FormikProps } from 'formik';
 import isEqual from 'lodash.isequal';
+import { StepType } from '..';
 
 const StepperActions = <T extends object>({
+    step,
     handleBack,
     isLastStep,
     isFirstStep,
     isLoading,
     formikProps,
 }: {
+    step: StepType<T>;
     handleBack: () => void;
     isLastStep: boolean;
     isFirstStep: boolean;
@@ -23,30 +26,47 @@ const StepperActions = <T extends object>({
     return (
         <Grid container justifyContent="space-between" padding="0px 25px">
             <Grid item>
-                <Button variant="outlined" onClick={handleBack} disabled={isLoading || isFirstStep} style={{ display: isFirstStep ? 'none' : '' }}>
-                    <ArrowBackIcon
-                        style={{
-                            transform: 'scaleX(-1)',
+                {step.stepperActions?.disable !== 'back' && (
+                    <Button
+                        variant="outlined"
+                        onClick={() => {
+                            if (step.stepperActions?.back?.onClick) step.stepperActions?.back?.onClick();
+                            else handleBack();
                         }}
-                    />
-                    {i18next.t('wizard.back')}
-                </Button>
-            </Grid>
-            <Grid item>
-                {/* type submit for formik goto next step */}
-                <Button type="submit" variant="contained" disabled={isLoading || (isLastStep && isSameObject)}>
-                    {i18next.t(isLastStep ? 'wizard.finish' : 'wizard.next')}
-                    {isLoading && <CircularProgress size={20} />}
-                    {isLastStep ? (
-                        <DoneIcon />
-                    ) : (
-                        <ArrowForwardIcon
+                        disabled={isLoading || isFirstStep}
+                        style={{ display: isFirstStep ? 'none' : '', gap: '5px', borderRadius: '7px' }}
+                    >
+                        <ArrowBackIcon
                             style={{
                                 transform: 'scaleX(-1)',
                             }}
                         />
-                    )}
-                </Button>
+                        {step.stepperActions?.back?.text ?? i18next.t('wizard.back')}
+                    </Button>
+                )}
+            </Grid>
+            <Grid item>
+                {/* type submit for formik goto next step */}
+                {step.stepperActions?.disable !== 'next' && (
+                    <Button
+                        type="submit"
+                        variant="contained"
+                        disabled={isLoading || (isLastStep && isSameObject)}
+                        style={{ gap: '5px', borderRadius: '7px' }}
+                    >
+                        {step.stepperActions?.next?.text ?? i18next.t(isLastStep ? 'wizard.finish' : 'wizard.next')}
+                        {isLoading && <CircularProgress size={20} />}
+                        {isLastStep ? (
+                            <DoneIcon />
+                        ) : (
+                            <ArrowForwardIcon
+                                style={{
+                                    transform: 'scaleX(-1)',
+                                }}
+                            />
+                        )}
+                    </Button>
+                )}
             </Grid>
         </Grid>
     );

@@ -2,6 +2,7 @@ import React, { ReactElement, useEffect } from 'react';
 import { Grid, Box, Tab, useTheme } from '@mui/material';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import i18next from 'i18next';
+import { useMatomo } from '@datapunt/matomo-tracker-react';
 import { CategoriesRow } from './components/CategoriesRow';
 import { EntityTemplatesRow } from './components/EntityTemplatesRow';
 import { RelationshipTemplatesRow } from './components/RelationshipTemplatesRow';
@@ -15,6 +16,7 @@ import { useSearchParams } from '../../utils/hooks/useSearchParams';
 
 const SystemManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> }> = ({ setTitle }) => {
     const theme = useTheme();
+    const { trackPageView } = useMatomo();
 
     useEffect(() => setTitle(i18next.t('pages.systemManagement')), [setTitle]);
 
@@ -48,6 +50,14 @@ const SystemManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateAction
             currentUser.currentWorkspacePermissions.processes?.scope === PermissionScope.write ||
             currentUser.currentWorkspacePermissions.admin?.scope === PermissionScope.write,
     };
+
+    useEffect(() => {
+        const tabPath = window.location.href;
+        trackPageView({
+            documentTitle: `System Management - ${tabValue}`,
+            href: tabPath,
+        });
+    }, [tabValue, trackPageView]);
 
     return (
         <Box
