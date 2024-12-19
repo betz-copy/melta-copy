@@ -53,6 +53,10 @@ export const EntityTemplateSchema = new mongoose.Schema(
         documentTemplatesIds: {
             type: [String],
         },
+        path: {
+            type: String,
+            index: true,
+        },
     },
     {
         timestamps: true,

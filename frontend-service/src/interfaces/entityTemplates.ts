@@ -51,6 +51,7 @@ export interface IEntityTemplate {
     actions?: string;
     uniqueConstraints: IUniqueConstraintOfTemplate[];
     documentTemplatesIds?: string[];
+    path?: string;
 }
 
 export interface IEntityTemplatePopulated extends Omit<IEntityTemplate, 'category'> {

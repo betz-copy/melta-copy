@@ -39,6 +39,7 @@ export interface IEntityTemplate {
     propertiesPreview: string[];
     disabled: boolean;
     documentTemplatesIds?: string[];
+    path?: string;
 }
 
 export interface ISearchEntityTemplatesBody {
