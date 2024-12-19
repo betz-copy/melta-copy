@@ -6,11 +6,15 @@ import { getLocalFileData } from './utils/fs';
 import fs from 'fs/promises';
 import { createReadStream } from 'node:fs';
 import Melta from './externalServices/melta';
+import { delay } from './utils/delay';
 
 const {
     remoteFolder: { path: incomingFolderPath, isFtp },
     interval: { minFileAge, watchInterval },
     instance: { localDownloadFilePath },
+    melta: {
+        batch: { batchDelay, batchSize },
+    },
 } = config;
 
 export default class FolderWatcher {
@@ -42,23 +46,27 @@ export default class FolderWatcher {
             folderItems = await getLocalFileData(list, folderPath);
         }
 
-        // eslint-disable-next-line consistent-return
-        await Promise.allSettled(
-            folderItems.map(async ({ name, age, fileWithoutExtension, ext }) => {
-                if (age >= minFileAge) return;
+        for (let i = 0; i < folderItems.length; i += batchSize) {
+            const batch = folderItems.slice(i, i + batchSize);
 
-                // If its a file then create an entity.
-                if (ext && fileWithoutExtension) {
-                    const templateId: string = currentTemplateId ?? (await Melta.createTemplate(name, folderPath));
-                    await FolderWatcher.ftpClient.downloadTo(localDownloadFilePath, `${folderPath}/${name}`);
+            // eslint-disable-next-line consistent-return
+            await Promise.all(
+                batch.map(async ({ age, name, ext, fileWithoutExtension }) => {
+                    if (age >= minFileAge) return;
 
-                    return Melta.createEntity(fileWithoutExtension, ext, templateId, createReadStream(localDownloadFilePath));
-                }
+                    if (ext && fileWithoutExtension) {
+                        const templateId: string = currentTemplateId ?? (await Melta.createTemplate(name, folderPath));
+                        await FolderWatcher.ftpClient.downloadTo(localDownloadFilePath, `${folderPath}/${name}`);
+                        await Melta.createEntity(fileWithoutExtension, ext, templateId, createReadStream(localDownloadFilePath));
+                        await fs.rm(localDownloadFilePath);
+                    } else {
+                        const templateId = await Melta.createTemplate(name, folderPath);
+                        await this.handleFolder(`${folderPath}/${name}`, templateId);
+                    }
+                }),
+            );
 
-                // If its a folder create a template.
-                const templateId = await Melta.createTemplate(name, folderPath);
-                return this.handleFolder(`${folderPath}/${name}`, templateId);
-            }),
-        );
+            await delay(batchDelay);
+        }
     }
 }

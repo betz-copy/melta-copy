@@ -28,7 +28,11 @@ const config = {
         jwt: env.get('MELTA_JWT').required().asString(),
         templatesApi: env.get('MELTA_TEMPLATES_API').default('/api/templates').asString(),
         instancesApi: env.get('MELTA_INSTANCES_API').default('/api/instances').asString(),
-        timeout: env.get('DRIVE_TIMEOUT').default(60000).asInt(),
+        timeout: env.get('MELTA_TIMEOUT').default(60000).asInt(),
+        batch: {
+            batchDelay: env.get('MELTA_BATCH_DELAY').default(60000).asInt(),
+            batchSize: env.get('MELTA_BATCH_SIZE').default(10).asInt(),
+        },
     },
 };
 
