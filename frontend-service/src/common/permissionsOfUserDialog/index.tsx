@@ -1,6 +1,6 @@
 import CloseIcon from '@mui/icons-material/Close';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
-import { Box, Button, Dialog, Grid, IconButton, Tab, useTheme } from '@mui/material';
+import { Box, Button, Dialog, Grid, IconButton, Tab } from '@mui/material';
 import { useTour } from '@reactour/tour';
 import i18next from 'i18next';
 import React, { ReactElement } from 'react';
@@ -22,7 +22,6 @@ const PermissionsOfUserDialog: React.FC<{
     const { setIsOpen, setCurrentStep } = useTour();
 
     const darkMode = useDarkModeStore((state) => state.darkMode);
-    const theme = useTheme();
 
     const initialTab = mode === 'view' ? 'myAccount' : 'myPermissions';
     const [tabValue, setTabValue] = React.useState(initialTab);

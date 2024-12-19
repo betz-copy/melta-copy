@@ -2,6 +2,7 @@ import React from 'react';
 import Avatar from '@mui/material/Avatar';
 import { useQuery } from 'react-query';
 import { useMatomo } from '@datapunt/matomo-tracker-react';
+import { toast } from 'react-toastify';
 import { IUser } from '../interfaces/users';
 import { useDarkModeStore } from '../stores/darkMode';
 import { getNameInitials } from '../utils/userProfile';
@@ -12,9 +13,10 @@ interface UserAvatarProps {
     size?: number;
     bgColor?: string;
     defaultProfile?: boolean;
+    userProfileImage?: string;
 }
 
-const UserAvatar: React.FC<UserAvatarProps> = ({ user, size = 48, bgColor }) => {
+const UserAvatar: React.FC<UserAvatarProps> = ({ user, size = 48, bgColor, userProfileImage }) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const { trackEvent } = useMatomo();
 
@@ -22,10 +24,9 @@ const UserAvatar: React.FC<UserAvatarProps> = ({ user, size = 48, bgColor }) => 
     const fontColor = !bgColor ? '#1E2775' : darkMode ? 'black' : 'white';
 
     const { data: profile, isError } = useQuery(['userProfile', user.preferences.profilePath], async () => {
-        const { profilePath } = user.preferences;
-        if (!profilePath) return '';
-        return getUserProfileRequest(user._id);
+        return user.preferences.profilePath ? getUserProfileRequest(user._id) : '';
     });
+    // if (isError) toast.error('djgdkjbgkd');
 
     return (
         <Avatar
@@ -49,9 +50,9 @@ const UserAvatar: React.FC<UserAvatarProps> = ({ user, size = 48, bgColor }) => 
                 });
             }}
         >
-            {profile && !isError ? (
+            {userProfileImage || (profile && !isError) ? (
                 <img
-                    src={profile}
+                    src={userProfileImage ?? profile}
                     style={{
                         width: '100%',
                         height: '100%',

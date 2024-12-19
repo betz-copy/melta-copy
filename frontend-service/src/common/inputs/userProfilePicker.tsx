@@ -12,16 +12,17 @@ import { environment } from '../../globals';
 type InputSelectType = 'chooseFile' | 'chooseAvatar' | 'kartoffelProfile';
 
 export interface UserProfilePickerProps {
-    imageName?: string;
+    user: IUser;
     onPick: (profileImage?: fileDetails | string) => void;
     onDelete: () => void;
+    imageName?: string;
     defaultInputType?: InputSelectType;
-    user: IUser;
+    setUserProfileImage: React.Dispatch<React.SetStateAction<string | undefined>>;
 }
 
 const { kartoffelProfile } = environment.users;
 
-const UserProfilePicker: React.FC<UserProfilePickerProps> = ({ imageName, onPick, onDelete, defaultInputType, user }) => {
+const UserProfilePicker: React.FC<UserProfilePickerProps> = ({ imageName, onPick, onDelete, defaultInputType, user, setUserProfileImage }) => {
     const [inputType, setInputType] = useState(defaultInputType);
     const [fileInputValue, setFileInputValue] = useState<fileDetails | undefined>(
         imageName ? { file: { name: imageName }, name: imageName } : undefined,
@@ -43,6 +44,7 @@ const UserProfilePicker: React.FC<UserProfilePickerProps> = ({ imageName, onPick
         if (iconName) {
             const imageBlob = await fetch(`${environment.avatarIconPath}${iconName}`).then((res) => res.blob());
             const file = new File([imageBlob], iconName, { type: 'image/png' });
+            setUserProfileImage(`${environment.avatarIconPath}${iconName}`);
             onPick({ file, name: file.name });
         } else onPick();
     };
@@ -111,11 +113,12 @@ const UserProfilePicker: React.FC<UserProfilePickerProps> = ({ imageName, onPick
                 </Grid>
             )}
             {inputType === 'chooseFile' && (
-                <Grid item width="50%">
+                <Grid item width="100%">
                     <FileInput
                         onDropFile={(acceptedFile) => {
                             const detailedFile = { file: acceptedFile, name: acceptedFile.name };
                             setFileInputValue(detailedFile);
+                            setUserProfileImage(URL.createObjectURL(acceptedFile));
                             onPick(detailedFile);
                         }}
                         onDeleteFile={(event: React.MouseEvent<HTMLButtonElement>) => {
@@ -126,7 +129,6 @@ const UserProfilePicker: React.FC<UserProfilePickerProps> = ({ imageName, onPick
                         file={fileInputValue?.file}
                         inputText={i18next.t('user.addFile')}
                         acceptedFilesTypes={{ 'image/png': ['.png', '.jpg'] }}
-                        disableCamera
                         disablePreview
                         disableScanner
                     />

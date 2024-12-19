@@ -1,10 +1,11 @@
-import { Button, Grid } from '@mui/material';
-import React from 'react';
+import { Grid, IconButton } from '@mui/material';
+import React, { useState } from 'react';
 import i18next from 'i18next';
 import UserAvatar from '../../UserAvatar';
 import { UserProfilePicker } from '../../inputs/userProfilePicker';
 import { defaultInputType, isProfileFile } from '../../../utils/userProfile';
 import { IUser } from '../../../interfaces/users';
+import { MeltaTooltip } from '../../MeltaTooltip';
 
 const UserProfile: React.FC<{
     existingUser: IUser;
@@ -13,47 +14,24 @@ const UserProfile: React.FC<{
     setEditProfile: (editProfile: boolean) => void;
     profilePreference: { profilePath?: string; icon?: any };
     setProfilePreference: (profilePreference: { profilePath?: string; icon?: any }) => void;
-}> = ({ existingUser, editProfile, darkMode, profilePreference, setProfilePreference, setEditProfile }) => {
+}> = ({ existingUser, editProfile, setProfilePreference, setEditProfile }) => {
+    const [userProfileImage, setUserProfileImage] = useState<string>();
     return (
         <Grid container display="flex" justifyContent="center" padding={2}>
             <Grid item width="100%" display="flex" justifyItems="start">
-                <Grid direction="column" display="flex" alignItems="center">
-                    <UserAvatar user={existingUser} size={100} />
-                    <Grid item>
-                        <Button
-                            onClick={() => {
-                                setEditProfile(!editProfile);
-                            }}
-                            sx={{ color: darkMode ? 'white' : 'black', marginTop: '5px' }}
-                        >
-                            {i18next.t(`user.${editProfile ? 'close' : 'edit'}`)}
-                        </Button>
-                        {editProfile && (
-                            <Button
-                                onClick={() => {
-                                    const updatedPreferences = { ...profilePreference };
-                                    delete updatedPreferences.icon;
-
-                                    if (existingUser.preferences.profilePath) {
-                                        updatedPreferences.profilePath = existingUser.preferences.profilePath;
-                                    } else {
-                                        delete updatedPreferences.profilePath;
-                                    }
-
-                                    setProfilePreference(updatedPreferences);
-                                    setEditProfile(!editProfile);
-                                }}
-                                sx={{ justifyContent: 'center', color: darkMode ? 'white' : 'black', marginTop: '5px' }}
-                            >
-                                {i18next.t('user.cancel')}
-                            </Button>
-                        )}
-                    </Grid>
-                </Grid>
+                <MeltaTooltip title={i18next.t(`user.${editProfile ? 'close' : 'edit'}`)} placement="left">
+                    <IconButton
+                        onClick={() => {
+                            setEditProfile(!editProfile);
+                        }}
+                    >
+                        <UserAvatar user={existingUser} size={100} userProfileImage={userProfileImage} />
+                    </IconButton>
+                </MeltaTooltip>
             </Grid>
 
             {editProfile && (
-                <Grid item>
+                <Grid item marginTop={2}>
                     <UserProfilePicker
                         user={existingUser}
                         onPick={(value?: any) => {
@@ -62,6 +40,7 @@ const UserProfile: React.FC<{
                         onDelete={() => setProfilePreference({})}
                         imageName={isProfileFile(existingUser.preferences.profilePath) ? existingUser.preferences.profilePath : undefined}
                         defaultInputType={defaultInputType(existingUser.preferences.profilePath)}
+                        setUserProfileImage={setUserProfileImage}
                     />
                 </Grid>
             )}
