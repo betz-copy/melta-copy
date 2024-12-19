@@ -3,8 +3,10 @@ import { Grid } from '@mui/material';
 import i18next from 'i18next';
 import React, { memo } from 'react';
 import { Link } from 'wouter';
-import { IButtonProps } from '.';
-import { IEntity } from '../../interfaces/entities';
+import { AxiosError } from 'axios';
+import { UseMutateAsyncFunction } from 'react-query';
+import { IButtonPopoverProps } from '.';
+import { EntityData, IEntity } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import {
     booleanColDef,
@@ -20,53 +22,103 @@ import {
 } from '../../utils/agGrid/commonColDefs';
 import IconButtonWithPopover from '../IconButtonWithPopover';
 import { ImageWithDisable } from '../ImageWithDisable';
+import { CardMenu } from '../../pages/SystemManagement/components/CardMenu';
+import { IRuleBreach } from '../../interfaces/ruleBreaches/ruleBreach';
 
 export interface IGetColumnDefsOptions<Data extends any> {
-    template: IMongoEntityTemplatePopulated & { entityIdsToInclude?: string[] };
-    getEntityPropertiesData: (data: Data) => IEntity['properties'];
+    template: IMongoEntityTemplatePopulated & { entitiesWithFiles?: string[] };
+    getRowId: (data: Data) => string;
+    getEntityPropertiesData: (data: Data) => Partial<IEntity['properties']>;
     onNavigateToRow?: (entity: Data) => void;
-    deleteRowButtonProps?: IButtonProps<Data>;
+    deleteRowButtonProps?: IButtonPopoverProps<Data>;
+    menuRowButtonProps?: boolean;
     hideNonPreview?: boolean;
-    editRowButtonProps?: IButtonProps<Data>;
+    editRowButtonProps?: IButtonPopoverProps<Data>;
     hasPermissionToCategory?: boolean;
     defaultVisibleColumns?: { [key: string]: boolean };
     defaultColumnsOrder?: { [key: string]: { order: number } };
     defaultColumnWidths?: { [key: string]: number };
     rowHeight: number;
+    ignoreType?: boolean;
+    navigate: (to: string, options?: { replace?: boolean; state?: any }) => void;
+    setSelectedRow: React.Dispatch<React.SetStateAction<string>>;
+    setOpenDeleteDialog: React.Dispatch<React.SetStateAction<boolean>>;
+    updateEntityStatus: UseMutateAsyncFunction<
+        IEntity,
+        AxiosError<any, any>,
+        { currEntity: IEntity; disabled: boolean; ignoredRules?: IRuleBreach['brokenRules'] },
+        unknown
+    >;
     searchValue?: string;
+    disableEditCell?: boolean;
 }
 
-export const getColumnDefs = <Data extends any = IEntity>({
+export const getColumnDefs = <Data extends any = EntityData>({
     template,
+    getRowId,
     getEntityPropertiesData,
     onNavigateToRow,
     hideNonPreview = false,
     deleteRowButtonProps,
     editRowButtonProps,
+    menuRowButtonProps,
     hasPermissionToCategory = true,
     defaultVisibleColumns = {},
     defaultColumnsOrder = {},
     defaultColumnWidths = {},
     rowHeight,
+    ignoreType,
+    navigate,
+    setSelectedRow,
+    setOpenDeleteDialog,
+    updateEntityStatus,
     searchValue,
+    disableEditCell,
 }: IGetColumnDefsOptions<Data>): ColDef[] => {
     const columnDefs = template.propertiesOrder.map((property) => {
-        const propertyTemplate = template.properties.properties[property];
-        const { type, format, calculateTime } = propertyTemplate;
+        const propertyTemplate = { ...template.properties.properties[property] };
+        const hiddenProperties = template.properties.hide;
+        const { type, format, calculateTime, archive } = propertyTemplate;
 
         const hideField = template.properties.hide.includes(property);
 
         const valueGetter: ValueGetterFunc = ({ data }) => (data ? getEntityPropertiesData(data)[property] : undefined);
 
         const hideColumn =
-            defaultVisibleColumns[property] !== undefined
+            archive ||
+            (defaultVisibleColumns[property] !== undefined
                 ? !defaultVisibleColumns[property]
-                : hideNonPreview && !template.propertiesPreview.includes(property);
+                : hideNonPreview && !template.propertiesPreview.includes(property));
+
+        if (propertyTemplate.archive) propertyTemplate.title = `${propertyTemplate.title} ${i18next.t('entitiesTableOfTemplate.archiveTitle')}`;
+
+        const editable = (data: any) =>
+            !disableEditCell && !propertyTemplate.readOnly && data && !getEntityPropertiesData(data).disabled && !hiddenProperties.includes(property);
 
         if (type === 'number')
-            return numberColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn, hideField, searchValue);
+            return numberColDef(
+                property,
+                valueGetter,
+                propertyTemplate,
+                defaultColumnWidths[property],
+                hideColumn,
+                hideField,
+                ignoreType,
+                searchValue,
+                editable,
+            );
         if (type === 'boolean')
-            return booleanColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn, hideField, searchValue);
+            return booleanColDef(
+                property,
+                valueGetter,
+                propertyTemplate,
+                defaultColumnWidths[property],
+                hideColumn,
+                hideField,
+                ignoreType,
+                searchValue,
+                editable,
+            );
         if (format === 'date' || format === 'date-time')
             return dateColDef(
                 property,
@@ -76,7 +128,9 @@ export const getColumnDefs = <Data extends any = IEntity>({
                 hideColumn,
                 hideField,
                 calculateTime,
+                ignoreType,
                 searchValue,
+                editable,
             );
         if (format === 'fileId')
             return fileColDef(
@@ -86,7 +140,7 @@ export const getColumnDefs = <Data extends any = IEntity>({
                 defaultColumnWidths[property],
                 hideColumn,
                 searchValue,
-                Object.values(template.entityIdsToInclude ?? {}).flat(),
+                Object.values(template.entitiesWithFiles ?? {}).flat(),
             );
         if (format === 'relationshipReference')
             return relatedTemplateColDef(
@@ -98,6 +152,7 @@ export const getColumnDefs = <Data extends any = IEntity>({
                 propertyTemplate.relationshipReference!.relatedTemplateField,
                 hideColumn,
                 searchValue,
+                editable,
             );
         if (propertyTemplate.enum)
             return enumColDef(
@@ -109,10 +164,22 @@ export const getColumnDefs = <Data extends any = IEntity>({
                 template.enumPropertiesColors?.[property],
                 hideColumn,
                 hideField,
+                ignoreType,
                 searchValue,
+                editable,
             );
         if (propertyTemplate.pattern)
-            return regexColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn, hideField, searchValue);
+            return regexColDef(
+                property,
+                valueGetter,
+                propertyTemplate,
+                defaultColumnWidths[property],
+                hideColumn,
+                hideField,
+                ignoreType,
+                searchValue,
+                editable,
+            );
         if (propertyTemplate.items?.enum)
             return enumArrayColDef(
                 property,
@@ -124,7 +191,9 @@ export const getColumnDefs = <Data extends any = IEntity>({
                 template.enumPropertiesColors?.[property],
                 hideColumn,
                 hideField,
+                ignoreType,
                 searchValue,
+                editable,
             );
         if (propertyTemplate.items) {
             return enumFilesColDef(
@@ -135,10 +204,20 @@ export const getColumnDefs = <Data extends any = IEntity>({
                 rowHeight,
                 false,
                 searchValue,
-                Object.values(template.entityIdsToInclude ?? {}).flat(),
+                Object.values(template.entitiesWithFiles ?? {}).flat(),
             );
         }
-        return stringColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn, hideField, searchValue);
+        return stringColDef(
+            property,
+            valueGetter,
+            propertyTemplate,
+            defaultColumnWidths[property],
+            hideColumn,
+            hideField,
+            ignoreType,
+            searchValue,
+            editable,
+        );
     });
     columnDefs.push(
         booleanColDef(
@@ -190,82 +269,124 @@ export const getColumnDefs = <Data extends any = IEntity>({
         return orderA - orderB;
     });
 
-    if (onNavigateToRow || deleteRowButtonProps || editRowButtonProps) {
+    if (onNavigateToRow || deleteRowButtonProps || editRowButtonProps || menuRowButtonProps) {
         columnDefs.push({
             headerName: i18next.t('entitiesTableOfTemplate.actionsHeaderName'),
             pinned: 'left',
             menuTabs: [],
             sortable: false,
-            width: 180,
+            width: 200,
             flex: 0,
             resizable: false,
             lockPosition: true,
             lockPinned: true,
             suppressColumnsToolPanel: true,
+            cellStyle: {
+                display: 'flex',
+                justifyContent: 'center',
+            },
             cellRenderer: memo<{ data: Data }>(({ data }) => {
                 const entity = getEntityPropertiesData(data);
                 const { disabled: disabledEntity } = entity;
+
                 return (
-                    <Grid flexWrap="nowrap">
+                    <Grid container flexWrap="nowrap">
                         {onNavigateToRow && (
-                            <Link
-                                href={`/entity/${getEntityPropertiesData(data)._id}`}
-                                onClick={(e) => {
-                                    if (!hasPermissionToCategory) e.preventDefault();
-                                }}
-                                data-tour="entity-page"
-                            >
-                                <IconButtonWithPopover
-                                    popoverText={
-                                        !hasPermissionToCategory
-                                            ? i18next.t('permissions.dontHavePermissionToEntityPage')
-                                            : i18next.t('entitiesTableOfTemplate.navigateToEntityPage')
-                                    }
-                                    disabled={!hasPermissionToCategory}
+                            <Grid item>
+                                <Link
+                                    href={`/entity/${getEntityPropertiesData(data)._id}`}
+                                    onClick={(e) => {
+                                        if (!hasPermissionToCategory) e.preventDefault();
+                                    }}
+                                    data-tour="entity-page"
                                 >
-                                    <img src="/icons/read-more-icon.svg" />
-                                </IconButtonWithPopover>
-                            </Link>
+                                    <IconButtonWithPopover
+                                        popoverText={
+                                            !hasPermissionToCategory
+                                                ? i18next.t('permissions.dontHavePermissionToEntityPage')
+                                                : i18next.t('entitiesTableOfTemplate.navigateToEntityPage')
+                                        }
+                                        disabled={!hasPermissionToCategory}
+                                    >
+                                        <img src="/icons/read-more-icon.svg" />
+                                    </IconButtonWithPopover>
+                                </Link>
+                            </Grid>
                         )}
                         {deleteRowButtonProps && (
-                            <IconButtonWithPopover
-                                popoverText={disabledEntity ? i18next.t('entityPage.disabledEntity') : deleteRowButtonProps.popoverText}
-                                iconButtonProps={{
-                                    onClick: () => deleteRowButtonProps.onClick(data),
-                                }}
-                                disabled={deleteRowButtonProps.disabledButton || disabledEntity}
-                            >
-                                <ImageWithDisable srcPath="/icons/delete-icon.svg" disabled={deleteRowButtonProps.disabledButton || disabledEntity} />
-                            </IconButtonWithPopover>
+                            <Grid item>
+                                <IconButtonWithPopover
+                                    popoverText={disabledEntity ? i18next.t('entityPage.disabledEntity') : deleteRowButtonProps.popoverText}
+                                    iconButtonProps={{
+                                        onClick: () => deleteRowButtonProps.onClick(data),
+                                    }}
+                                    disabled={deleteRowButtonProps.disabledButton || disabledEntity}
+                                >
+                                    <ImageWithDisable
+                                        srcPath="/icons/delete-icon.svg"
+                                        disabled={deleteRowButtonProps.disabledButton || disabledEntity}
+                                    />
+                                </IconButtonWithPopover>
+                            </Grid>
                         )}
                         {editRowButtonProps && (
-                            <IconButtonWithPopover
-                                popoverText={disabledEntity ? i18next.t('entityPage.disabledEntity') : editRowButtonProps.popoverText}
-                                iconButtonProps={{
-                                    onClick: () => editRowButtonProps.onClick(data),
-                                }}
-                                disabled={editRowButtonProps.disabledButton || disabledEntity}
-                            >
-                                <ImageWithDisable srcPath="/icons/edit-icon.svg" disabled={editRowButtonProps.disabledButton || disabledEntity} />
-                            </IconButtonWithPopover>
+                            <Grid item>
+                                <IconButtonWithPopover
+                                    popoverText={disabledEntity ? i18next.t('entityPage.disabledEntity') : editRowButtonProps.popoverText}
+                                    iconButtonProps={{
+                                        onClick: () => editRowButtonProps.onClick(data),
+                                    }}
+                                    disabled={editRowButtonProps.disabledButton || disabledEntity}
+                                >
+                                    <ImageWithDisable srcPath="/icons/edit-icon.svg" disabled={editRowButtonProps.disabledButton || disabledEntity} />
+                                </IconButtonWithPopover>
+                            </Grid>
                         )}
                         {onNavigateToRow && (
-                            <Link
-                                href={`/entity/${getEntityPropertiesData(data)._id}/graph`}
-                                onClick={(e) => {
-                                    if (disabledEntity) e.preventDefault();
-                                }}
-                                data-tour="entity-page"
-                            >
-                                <IconButtonWithPopover
-                                    iconButtonProps={{
-                                        disabled: disabledEntity,
+                            <Grid item>
+                                <Link
+                                    href={`/entity/${getRowId(data)}/graph`}
+                                    onClick={(e) => {
+                                        if (disabledEntity) e.preventDefault();
                                     }}
-                                    popoverText={disabledEntity ? i18next.t('permissions.dontHavePermissionsToCategory') : i18next.t('actions.graph')}
+                                    data-tour="entity-page"
                                 >
-                                    <img src="/icons/graph-icon.svg" />
-                                </IconButtonWithPopover>
-                            </Link>
+                                    <IconButtonWithPopover
+                                        iconButtonProps={{
+                                            disabled: disabledEntity,
+                                        }}
+                                        popoverText={
+                                            disabledEntity ? i18next.t('permissions.dontHavePermissionsToCategory') : i18next.t('actions.graph')
+                                        }
+                                    >
+                                        <img src="/icons/graph-icon.svg" />
+                                    </IconButtonWithPopover>
+                                </Link>
+                            </Grid>
+                        )}
+
+                        {menuRowButtonProps && (
+                            <Grid item>
+                                <CardMenu
+                                    onDuplicateClick={() => {
+                                        navigate(`/entity/${getRowId(data)}/duplicate`, {
+                                            state: { entityTemplate: template, expandedEntity: { entity: data } },
+                                        });
+                                    }}
+                                    onDeleteClick={() => {
+                                        setSelectedRow(getRowId(data));
+                                        setOpenDeleteDialog(true);
+                                    }}
+                                    onDisableClick={() => {
+                                        updateEntityStatus({ currEntity: data as IEntity, disabled: !getEntityPropertiesData(data).disabled });
+                                    }}
+                                    disabledProps={{
+                                        isDisabled: getEntityPropertiesData(data).disabled,
+                                        isEditDisabled: menuRowButtonProps,
+                                        tooltipTitle: i18next.t('systemManagement.disabledEntity'),
+                                    }}
+                                />
+                            </Grid>
                         )}
                     </Grid>
                 );

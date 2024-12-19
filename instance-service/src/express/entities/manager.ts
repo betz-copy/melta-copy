@@ -11,7 +11,12 @@ import config from '../../config';
 import { ActionsLog, IActivityLog, IUpdatedFields } from '../../externalServices/activityLog/interface';
 import { ActivityLogProducer } from '../../externalServices/activityLog/producer';
 import { EntityTemplateManagerService } from '../../externalServices/templates/entityTemplateManager';
-import { IEntitySingleProperty, IMongoEntityTemplate, IRelationshipReference } from '../../externalServices/templates/interfaces/entityTemplates';
+import {
+    IEntitySingleProperty,
+    IEntityTemplate,
+    IMongoEntityTemplate,
+    IRelationshipReference,
+} from '../../externalServices/templates/interfaces/entityTemplates';
 import { IMongoRule } from '../../externalServices/templates/interfaces/rules';
 import { RelationshipsTemplateManagerService } from '../../externalServices/templates/relationshipTemplateManager';
 import { arraysEqualsNonOrdered } from '../../utils/lib';
@@ -180,21 +185,31 @@ export class EntityManager extends DefaultManagerNeo4j {
                 constraint: requiredConstraint,
                 neo4jMessage,
             });
-        } else if (neo4jMessage.includes('already exists with') || neo4jMessage.includes('uniqueConstraint')) {
+        } else if (neo4jMessage.includes('already exists with')) {
             let label = '';
             let properties: any[] = [];
-            if (neo4jMessage.includes('already exists with')) {
+            const values = {};
+
+            if (neo4jMessage.includes('uniqueConstraint')) {
+                label = neo4jMessage.substr(neo4jMessage.indexOf(':') + 1, 24);
+                const keys = neo4jMessage.substring(neo4jMessage.indexOf('{') + 1, neo4jMessage.indexOf('}'));
+                properties = keys.split(',').map((key) => key.trim());
+            } else {
                 // neo4jMessage = Node(...) already exists with label `someLabel...` and properties `property1` = ..., `property2` = ...
                 // support unique w/ multiple props
                 const variableMatchesInMessage = neo4jMessage.matchAll(/`(.*?)`/g)!;
                 [label, ...properties] = Array.from(variableMatchesInMessage).map((match) => match[1]);
+
+                // get unique values
+                const valueMatch = neo4jMessage.match(/= '(.*?)'/);
+                if (valueMatch) {
+                    const propertyValue = valueMatch[1];
+                    values[properties[0]] = propertyValue;
+                }
+
                 properties = properties.map((property) =>
                     property.endsWith(config.neo4j.relationshipReferencePropertySuffix) ? property.split('.')[0] : property,
                 );
-            } else {
-                label = neo4jMessage.substr(neo4jMessage.indexOf(':') + 1, 24);
-                const keys = neo4jMessage.substring(neo4jMessage.indexOf('{') + 1, neo4jMessage.indexOf('}'));
-                properties = keys.split(',').map((key) => key.trim());
             }
 
             const uniqueConstraint: Omit<IUniqueConstraint, 'constraintName'> = {
@@ -202,6 +217,7 @@ export class EntityManager extends DefaultManagerNeo4j {
                 templateId: label,
                 uniqueGroupName: '',
                 properties,
+                values,
             };
 
             throw new ServiceError(badRequestStatus, `[NEO4J] instance has duplicates on unique properties`, {
@@ -713,7 +729,7 @@ export class EntityManager extends DefaultManagerNeo4j {
                 RETURN node
                 ${entityIdMatch}
             }
-            RETURN templateId, count(node) as count ${includeSemantic ? ', $semanticSearchResult[templateId] as entityIdsToInclude' : ''};
+            RETURN templateId, count(node) as count ${includeSemantic ? ', $semanticSearchResult[templateId] as entitiesWithFiles' : ''};
         `;
 
         return this.neo4jClient.readTransaction(query, normalizeResponseTemplatesCount, {
@@ -880,11 +896,10 @@ export class EntityManager extends DefaultManagerNeo4j {
     }
 
     async deleteEntityById(id: string, deleteAllRelationships: boolean) {
-        try {
-            return this.neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
+        return this.neo4jClient
+            .performComplexTransaction('writeTransaction', async (transaction) => {
                 const entityToDelete = await this.getEntityByIdInTransaction(id, transaction);
                 const entityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(entityToDelete.templateId);
-
                 await Promise.all(
                     Object.entries(entityTemplate.properties.properties).map(async ([name, property]) => {
                         if (property.format === 'relationshipReference' && entityToDelete.properties[name]) {
@@ -909,16 +924,16 @@ export class EntityManager extends DefaultManagerNeo4j {
                 }
 
                 return id;
-            });
-        } catch (error) {
-            if (error instanceof Neo4jError && error.code === 'Neo.ClientError.Schema.ConstraintValidationFailed') {
-                throw new ServiceError(badRequestStatus, `[NEO4J] entity "${id}" has existing relationships. Delete them first.`, {
-                    errorCode: config.errorCodes.entityHasRelationships,
-                });
-            }
+            })
+            .catch((error: any) => {
+                if (error instanceof Neo4jError && error.code === 'Neo.ClientError.Schema.ConstraintValidationFailed') {
+                    throw new ServiceError(badRequestStatus, `[NEO4J] entity "${id}" has existing relationships. Delete them first.`, {
+                        errorCode: config.errorCodes.entityHasRelationships,
+                    });
+                }
 
-            throw error;
-        }
+                throw error;
+            });
     }
 
     async getIsFieldUsed(id: string, fieldValue: string, fieldName: string, type: string) {
@@ -1134,7 +1149,12 @@ export class EntityManager extends DefaultManagerNeo4j {
         return { fixedProperties, createdRelationships, deletedRelationships };
     }
 
-    async updateRelationshipReference(updatedEntity: IEntity, updatedProperties: string[], transaction: Transaction) {
+    async updateRelationshipReference(
+        updatedEntity: IEntity,
+        updatedProperties: string[],
+        transaction: Transaction,
+        entityTemplate?: IEntityTemplate,
+    ) {
         const { templateId, properties: entityProperties } = updatedEntity;
         const entitiesNeedToUpdate = await this.getRelatedEntitiesOfEntity(templateId, [entityProperties._id], transaction);
 
@@ -1145,9 +1165,16 @@ export class EntityManager extends DefaultManagerNeo4j {
                 const relatedEntitiesChangedValues = { updatedAt: getNeo4jDateTime() };
                 updatedProperties.forEach((updatedProperty) => {
                     if (entityProperties[updatedProperty]) {
-                        relatedEntitiesChangedValues[
-                            `${fieldToChange}.properties.${updatedProperty}${config.neo4j.relationshipReferencePropertySuffix}`
-                        ] = entityProperties[updatedProperty];
+                        if (entityTemplate?.properties.properties[updatedProperty]?.format === 'relationshipReference') {
+                            const fieldName = entityTemplate?.properties.properties[updatedProperty].relationshipReference?.relatedTemplateField;
+                            relatedEntitiesChangedValues[
+                                `${fieldToChange}.properties.${updatedProperty}${config.neo4j.relationshipReferencePropertySuffix}`
+                            ] = entityProperties[updatedProperty].properties[fieldName!];
+                        } else {
+                            relatedEntitiesChangedValues[
+                                `${fieldToChange}.properties.${updatedProperty}${config.neo4j.relationshipReferencePropertySuffix}`
+                            ] = entityProperties[updatedProperty];
+                        }
                     }
                 });
 
@@ -1218,7 +1245,7 @@ export class EntityManager extends DefaultManagerNeo4j {
             },
         );
 
-        await this.updateRelationshipReference(updatedEntity, updatedProperties, transaction);
+        await this.updateRelationshipReference(updatedEntity, updatedProperties, transaction, entityTemplate);
 
         const fields = Object.keys(entityTemplate.properties.properties);
         for (let i = 0; i < fields.length; i++) {

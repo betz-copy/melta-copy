@@ -5,6 +5,7 @@ import { Grid, IconButton, Typography, useTheme } from '@mui/material';
 import { DropResult } from 'react-beautiful-dnd';
 import FilterAltOffIcon from '@mui/icons-material/FilterAltOff';
 import AddIcon from '@mui/icons-material/Add';
+import { FilterList } from '@mui/icons-material';
 import { TopBarGrid } from '../../common/TopBar';
 import { BlueTitle } from '../../common/BlueTitle';
 import { environment } from '../../globals';
@@ -72,7 +73,7 @@ const IFramesPageHeadline: React.FC<{
                 <Grid item>
                     <SelectCheckbox
                         title={i18next.t('iFrames.arrangementIFrames')}
-                        img={<img src="/icons/select-checkbox.svg" />}
+                        img={<FilterList fontSize="small" />}
                         options={allIFramesAllowed ?? []}
                         selectedOptions={[]}
                         setSelectedOptions={() => {}}

@@ -1,2 +1,2 @@
 // { [templateId]: { [entityId]: minioFileIds } }
-export type ISemanticSearchResult = Record<string, Record<string, string[]>>;
+export type ISemanticSearchMinioResult = Record<string, Record<string, string[]>>;
