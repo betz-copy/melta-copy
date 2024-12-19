@@ -37,6 +37,7 @@ import { CardMenu } from './CardMenu';
 import { CodeEditorDialog } from './codeEditor';
 import { CreateButton } from './CreateButton';
 import { FilterButton } from './FilterButton';
+import { ChooseTemplatePathDialog } from '../../../common/dialogs/ChooseTemplatePathDialog';
 
 const { infiniteScrollPageCount } = environment.processInstances;
 
@@ -77,6 +78,12 @@ interface EntityTemplateCardProps {
             entityTemplate: IMongoEntityTemplatePopulated | null;
         }>
     >;
+    setAddPathDialogState: React.Dispatch<
+        React.SetStateAction<{
+            isWizardOpen: boolean;
+            entityTemplate: IMongoEntityTemplatePopulated | null;
+        }>
+    >;
     updateEntityTemplateStatusAsync: UseMutateAsyncFunction<
         IMongoEntityTemplatePopulated,
         unknown,
@@ -93,6 +100,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
     setEntityTemplateWizardDialogState,
     setDeleteEntityTemplateDialogState,
     setAddActionsDialogState,
+    setAddPathDialogState,
     updateEntityTemplateStatusAsync,
 }) => {
     const [isHoverOnCard, setIsHoverOnCard] = useState(false);
@@ -183,6 +191,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                 }}
                                 onDeleteClick={() => setDeleteEntityTemplateDialogState({ isDialogOpen: true, entityTemplateId: entityTemplate._id })}
                                 onAddActionsClick={() => setAddActionsDialogState({ isWizardOpen: true, entityTemplate })}
+                                onAddPathClick={() => setAddPathDialogState({ isWizardOpen: true, entityTemplate })}
                                 onDisableClick={() =>
                                     updateEntityTemplateStatusAsync({ entityTemplateId: entityTemplate._id, disabled: !entityTemplate.disabled })
                                 }
@@ -335,6 +344,12 @@ interface CategoryEntitiesBoxProps {
             entityTemplate: IMongoEntityTemplatePopulated | null;
         }>
     >;
+    setAddPathDialogState: React.Dispatch<
+        React.SetStateAction<{
+            isWizardOpen: boolean;
+            entityTemplate: IMongoEntityTemplatePopulated | null;
+        }>
+    >;
     updateEntityTemplateStatusAsync: UseMutateAsyncFunction<
         IMongoEntityTemplatePopulated,
         unknown,
@@ -352,6 +367,7 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
     setEntityTemplateWizardDialogState,
     setDeleteEntityTemplateDialogState,
     setAddActionsDialogState,
+    setAddPathDialogState,
     updateEntityTemplateStatusAsync,
     loadedEntityTemplateId,
 }) => {
@@ -452,6 +468,7 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                                                     setDeleteEntityTemplateDialogState={setDeleteEntityTemplateDialogState}
                                                     setEntityTemplateWizardDialogState={setEntityTemplateWizardDialogState}
                                                     setAddActionsDialogState={setAddActionsDialogState}
+                                                    setAddPathDialogState={setAddPathDialogState}
                                                     updateEntityTemplateStatusAsync={updateEntityTemplateStatusAsync}
                                                 />
                                             )}
@@ -500,6 +517,14 @@ const EntityTemplatesRow: React.FC = () => {
     });
 
     const [addActionsToEntityTemplateDialogState, setAddActionsToEntityTemplateDialogState] = useState<{
+        isWizardOpen: boolean;
+        entityTemplate: IMongoEntityTemplatePopulated | null;
+    }>({
+        isWizardOpen: false,
+        entityTemplate: null,
+    });
+
+    const [addPathToEntityTemplateDialogState, setPathActionsToEntityTemplateDialogState] = useState<{
         isWizardOpen: boolean;
         entityTemplate: IMongoEntityTemplatePopulated | null;
     }>({
@@ -681,6 +706,7 @@ const EntityTemplatesRow: React.FC = () => {
                                     updateEntityTemplateStatusAsync={updateEntityTemplateStatusAsync}
                                     loadedEntityTemplateId={loadedEntityTemplateId}
                                     setAddActionsDialogState={setAddActionsToEntityTemplateDialogState}
+                                    setAddPathDialogState={setPathActionsToEntityTemplateDialogState}
                                 />
                             </Grid>
                         )}
@@ -706,6 +732,11 @@ const EntityTemplatesRow: React.FC = () => {
                 entityTemplate={addActionsToEntityTemplateDialogState.entityTemplate}
                 searchText={searchText}
                 categoriesToShow={categoriesToShow}
+            />
+            <ChooseTemplatePathDialog
+                open={addPathToEntityTemplateDialogState.isWizardOpen}
+                handleClose={() => setPathActionsToEntityTemplateDialogState({ isWizardOpen: false, entityTemplate: null })}
+                entityTemplate={addPathToEntityTemplateDialogState.entityTemplate}
             />
         </Grid>
     );

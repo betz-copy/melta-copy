@@ -56,6 +56,7 @@ export const createEntityTemplateSchema = Joi.object({
         enumPropertiesColors: enumPropertiesColorsSchema,
         documentTemplatesIds: Joi.array().items(Joi.string()),
         actions: Joi.forbidden(),
+        path: Joi.string(),
     },
     query: {},
     params: {},
@@ -75,6 +76,7 @@ export const updateEntityTemplateSchema = Joi.object({
         enumPropertiesColors: enumPropertiesColorsSchema,
         documentTemplatesIds: Joi.array().items(Joi.string()),
         actions: Joi.string(),
+        path: Joi.string(),
     }).min(1),
     query: {},
     params: {

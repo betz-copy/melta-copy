@@ -87,6 +87,7 @@ export default {
         expansion: 'הרחבה',
         favorites: 'מועדפים',
         addActions: 'הוספת פעולות',
+        addPath: 'הוספת נתיב',
     },
     entityPage: {
         deleteRelationshipPopoverText: 'מחק קשר',
@@ -239,6 +240,7 @@ export default {
         fluidSimulation: '???',
     },
     systemManagement: {
+        addPathToTemplate: 'הוסף נתיב לתבנית',
         newCategory: 'קטגוריה חדשה',
         newCollection: 'מאגד חדש',
         newEntityTemplate: 'תבנית ישות חדשה',
@@ -280,6 +282,14 @@ export default {
         title: 'האם אתה בטוח?',
         yes: 'אשר',
         no: 'ביטול',
+    },
+    addPathToTemplateDialog: {
+        convertToRootPath: 'הפוך לנתיב ראשי',
+        closeBtn: 'סגור',
+        createBtn: 'הוסף',
+        failedToCreatePath: 'נכשל להוסיף נתיב',
+        succeededToCreatePath: 'הנתיב נוסף בהצלחה',
+        pathAlreadyExists: 'הנתיב כבר קיים',
     },
     draftSaveDialog: {
         exitTitle: 'בחרת לצאת ללא שמירת השינויים',
