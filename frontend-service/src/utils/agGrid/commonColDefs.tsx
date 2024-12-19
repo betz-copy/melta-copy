@@ -45,7 +45,7 @@ const isPropertyInvalid = <Data extends any = EntityData>(
             case ActionErrors.unique:
                 return (error.metadata as IUniqueConstraint).properties.some((errorProperty) => errorProperty === property);
             case ActionErrors.validation:
-                return (error.metadata as IValidationError).path.slice(1) === property;
+                return (error.metadata as IValidationError).path.slice(1).includes(property);
             default:
                 break;
         }
@@ -53,7 +53,11 @@ const isPropertyInvalid = <Data extends any = EntityData>(
     });
 };
 
-const errorColDef = <Data extends any = EntityData>(props: ICellRendererParams<Data, any | undefined>, error: IError) => {
+const errorColDef = <Data extends any = EntityData>(
+    props: ICellRendererParams<Data, any | undefined>,
+    error: IError,
+    value: Partial<IEntitySingleProperty>,
+) => {
     let message = '';
     switch (error.type) {
         case ActionErrors.required:
@@ -63,11 +67,12 @@ const errorColDef = <Data extends any = EntityData>(props: ICellRendererParams<D
             message = i18next.t('wizard.entity.someEntityAlreadyHasTheSameField');
             break;
         case ActionErrors.validation:
-            message = (error.metadata as IValidationError).message.includes('must be')
-                ? `${i18next.t('wizard.entity.loadEntities.notValid')} ${i18next.t(
-                      `propertyTypes.${(error.metadata as IValidationError).params.format ?? (error.metadata as IValidationError).params.type}`,
-                  )}`
-                : (error.metadata as IValidationError).message;
+            if (value.patternCustomErrorMessage) message = value.patternCustomErrorMessage;
+            else if ((error.metadata as IValidationError).message.includes('must')) {
+                const allowedValues = (error.metadata as IValidationError).params.allowedValues?.join(', ');
+                const typeDescription = i18next.t(`propertyTypes.${value.format ?? value.type}`);
+                message = `${i18next.t('wizard.entity.loadEntities.notValid')} ${allowedValues || typeDescription}`;
+            } else message = (error.metadata as IValidationError).message;
             break;
         default:
             break;
@@ -75,7 +80,7 @@ const errorColDef = <Data extends any = EntityData>(props: ICellRendererParams<D
 
     return (
         <Box display="flex" justifyContent="center" alignItems="center" gap={1} width="100%">
-            <Value hideValue={false} value={props.value ?? i18next.t('validation.required')} color="#A40000" />
+            <Value hideValue={false} value={props.value.toString() ?? i18next.t('validation.required')} color="#A40000" />
             <Tooltip
                 title={message}
                 placement="top"
@@ -121,7 +126,7 @@ export const numberColDef = <Data extends any = EntityData>(
         filter: 'agNumberColumnFilter',
         cellRenderer: (props: ICellRendererParams<Data, number | undefined>) => {
             const error = isPropertyInvalid(props, field, ignoreType);
-            if (error) return errorColDef(props, error);
+            if (error) return errorColDef(props, error, value);
             return <Value hideValue={hideValue} value={props.value?.toString() ?? ''} isNumberField={!ignoreType} searchValue={searchValue} />;
         },
         width: hardcodedWidth,
@@ -153,7 +158,7 @@ export const regexColDef = <Data extends any = EntityData>(
         headerName: value.title,
         cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => {
             const error = isPropertyInvalid(props, field, ignoreType);
-            if (error) return errorColDef(props, error);
+            if (error) return errorColDef(props, error, value);
             return <Value hideValue={hideValue} value={props.value ?? ''} searchValue={searchValue} />;
         },
         valueGetter,
@@ -183,7 +188,7 @@ export const stringColDef = <Data extends any = EntityData>(
         headerName: value.title,
         cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => {
             const error = isPropertyInvalid(props, field, ignoreType);
-            if (error) return errorColDef(props, error);
+            if (error) return errorColDef(props, error, value);
             return <Value hideValue={hideValue} value={props.value?.toString() ?? ''} searchValue={searchValue} />;
         },
         valueGetter,
@@ -294,7 +299,7 @@ export const booleanColDef = <Data extends any = EntityData>(
         valueGetter,
         cellRenderer: (props: ICellRendererParams<Data, boolean | undefined>) => {
             const error = isPropertyInvalid(props, field, ignoreType);
-            if (error) return errorColDef(props, error);
+            if (error) return errorColDef(props, error, value);
             return <Value hideValue={hideValue} value={formatValue(props.value)} searchValue={searchValue} />;
         },
         filter: 'agSetColumnFilter',
@@ -331,7 +336,7 @@ export const enumColDef = <Data extends any = EntityData>(
         valueGetter,
         cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => {
             const error = isPropertyInvalid(props, field, ignoreType);
-            if (error) return errorColDef(props, error);
+            if (error) return errorColDef(props, error, value);
             return (
                 <Value
                     searchValue={searchValue}
@@ -381,7 +386,7 @@ export const enumArrayColDef = <Data extends any = EntityData>(
         cellRenderer: (props: ICellRendererParams<Data, string[] | undefined>) => {
             if (!props.value) return '';
             const error = isPropertyInvalid(props, field, ignoreType);
-            if (error) return errorColDef(props, error);
+            if (error) return errorColDef(props, error, value);
             if (ignoreType) return typeof props.value === 'string' ? props.value : props.value.join(', ');
 
             return (
@@ -500,7 +505,7 @@ export const dateColDef = <Data extends any = EntityData>(
         valueGetter,
         cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => {
             const error = isPropertyInvalid(props, field, ignoreType);
-            if (error) return errorColDef(props, error);
+            if (error) return errorColDef(props, error, value);
             return (
                 <Value
                     searchValue={searchValue}
