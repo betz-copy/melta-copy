@@ -2,17 +2,22 @@ import axios from 'axios';
 import config from '../config';
 import formData from 'form-data';
 import { ReadStream } from 'fs-extra';
+import { IMeltaEntityTemplate } from '../utils/interface';
 
 const {
     melta: { baseURL, templatesApi, timeout, jwt },
     template: { iconFileId },
+    remoteFolder: { path: incomingFolderPath },
 } = config;
 
 export default class Melta {
     public static api = axios.create({ baseURL, timeout, headers: { Authorization: `Bearer ${jwt}` } });
 
     static async createTemplate(name: string, folderPath: string) {
-        const { data } = await this.api.post(templatesApi, {
+        // The root of all templates should begin with / and not with the folder path we read from.
+        const realPath = folderPath.replaceAll(incomingFolderPath, '');
+
+        const { data } = await this.api.post<IMeltaEntityTemplate & { _id: string }>(templatesApi, {
             name,
             displayName: name,
             category: 'IDKKKK', // TODO: what category?
@@ -21,7 +26,7 @@ export default class Melta {
             propertiesOrder: ['fileName', 'extension'],
             propertiesTypeOrder: ['properties', 'attachmentProperties'],
             propertiesPreview: ['fileName', 'extension'],
-            path: folderPath, // TODO: path includes the name or no?
+            path: realPath, // TODO: path includes the name or no?
             properties: {
                 hide: [],
                 type: 'object',

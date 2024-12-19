@@ -54,14 +54,19 @@ export default class FolderWatcher {
                 batch.map(async ({ age, name, ext, fileWithoutExtension }) => {
                     if (age >= minFileAge) return;
 
+                    // Create root template
+                    if (!currentTemplateId) {
+                        const templateId = await Melta.createTemplate(name, folderPath);
+                        return this.handleFolder(folderPath, templateId._id);
+                    }
+
                     if (ext && fileWithoutExtension) {
-                        const templateId: string = currentTemplateId ?? (await Melta.createTemplate(name, folderPath));
                         await FolderWatcher.ftpClient.downloadTo(localDownloadFilePath, `${folderPath}/${name}`);
-                        await Melta.createEntity(fileWithoutExtension, ext, templateId, createReadStream(localDownloadFilePath));
+                        await Melta.createEntity(fileWithoutExtension, ext, currentTemplateId, createReadStream(localDownloadFilePath));
                         await fs.rm(localDownloadFilePath);
                     } else {
                         const templateId = await Melta.createTemplate(name, folderPath);
-                        await this.handleFolder(`${folderPath}/${name}`, templateId);
+                        await this.handleFolder(`${folderPath}/${name}`, templateId._id);
                     }
                 }),
             );
