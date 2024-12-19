@@ -78,7 +78,12 @@ export const formatEntitiesBulkSearch = (searchResults: ISearchResult, query: st
     return { formattedEntities: { ...searchResults, entities: entitiesWithFileIds }, textsForReranking };
 };
 
-export const createTextsFromEntitiesWithFiles = (entitiesWithFiles: ISemanticSearchResult[string]) =>
+/**
+ * Create an object with text as key, and entityIds as value.
+ * @param entitiesWithFiles search results from semantic service on specific template
+ * @returns Record<string, string[]>, example: { text1: entityIds1[], text2: entityIds2[], ... }
+ */
+export const createTextsFromEntitiesWithFiles = (entitiesWithFiles: ISemanticSearchResult[string]): Record<string, string[]> =>
     Object.entries(entitiesWithFiles).reduce((acc, [entityId, value]) => {
         Object.values(value).forEach(({ text }) => {
             pushToTextsForReranking(acc, text, entityId);
