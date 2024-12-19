@@ -198,6 +198,7 @@ const config = {
         ruleHasAlertsOrRequests: 'RULE_HAS_ALERTS_OR_REQUESTS',
         failedToDeleteField: 'FAILED_DELETE_FIELD',
         moreThenOneRelationshipInstanceExist: 'MORE_THEN_ONE_RELATIONSHIP_INSTANCE_EXIST',
+        failedToArchiveField: 'FAILED_ARCHIVE_FIELD',
         failedConstraintsValidation: 'FAILED_CONSTRAINTS_VALIDATION',
         templateValidationError: 'TemplateValidationError',
     },

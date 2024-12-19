@@ -63,8 +63,14 @@ export class FlowCubeManager extends DefaultManagerProxy<null> {
     async getAllTemplatesNameAndIdByWorkspaceId(workspaceId: string): Promise<TemplateNamesAndId[]> {
         const templates = await this.entityTemplateService.getAllTemplatesByWorkspaceId(workspaceId);
 
-        return templates.map(({ _id, name, displayName }) => {
-            return { _id, name, displayName };
+        return templates.map(({ _id, displayName }) => {
+            return { Value: _id, Name: displayName };
         });
+    }
+
+    async getEntityTemplateById(_workspaceId: string, templateId: string) {
+        const template = await this.entityTemplateService.getEntityTemplateById(templateId);
+
+        return template;
     }
 }

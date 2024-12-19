@@ -3,7 +3,7 @@ import { createWorkspacesController, translateWorkspaceParameter, wrapMiddleware
 import ValidateRequest from '../../utils/joi';
 import { InstancesValidator } from '../instances/middlewares';
 import FlowCubeController from './controller';
-import { getAllTemplatesByNameAndIdSchema, searchFlowCubeRequestSchema } from './validator.schema';
+import { getAllTemplatesByNameAndIdSchema, getEntityTemplateByIdSchema, searchFlowCubeRequestSchema } from './validator.schema';
 
 const FlowCubeRouter: Router = Router();
 const FlowCubeControllerMiddleware = createWorkspacesController(FlowCubeController);
@@ -18,19 +18,19 @@ FlowCubeRouter.post(
     FlowCubeControllerMiddleware.searchFlowCube,
 );
 
-FlowCubeRouter.get(
+FlowCubeRouter.post(
     '/:workspaceId/templates',
     ValidateRequest(getAllTemplatesByNameAndIdSchema),
     wrapMiddleware(translateWorkspaceParameter),
     FlowCubeControllerMiddleware.getAllTemplatesNameAndIdByWorkspaceId,
 );
 
-// FlowCubeRouter.get(
-//     '/:workspaceId/templates/:templateId',
-//     ValidateRequest(),
-//     InstancesValidatorMiddleware.validateUserCanSearchEntitiesOfTemplate,
-//     wrapMiddleware(translateWorkspaceParameter),
-
-// );
+FlowCubeRouter.post(
+    '/:workspaceId/templates/:templateId',
+    ValidateRequest(getEntityTemplateByIdSchema),
+    InstancesValidatorMiddleware.validateUserCanSearchEntitiesOfTemplate,
+    wrapMiddleware(translateWorkspaceParameter),
+    FlowCubeControllerMiddleware.getEntityTemplateById,
+);
 
 export default FlowCubeRouter;
