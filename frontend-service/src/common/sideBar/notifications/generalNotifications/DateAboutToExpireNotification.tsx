@@ -12,9 +12,12 @@ export const DateAboutToExpireNotification: React.FC<{ notificationMetadata: IDa
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const entityTemplate = entity ? entityTemplates.get(entity.templateId)! : null;
+    const datePast = new Date(datePropertyValue) < new Date();
+
     return (
         <Grid container direction="column" spacing={1}>
             <Grid item>
+                {datePast && <Typography fontWeight="bold">{`${i18next.t('dateAboutToExpireNotification.payAttention')}`}</Typography>}
                 <Typography display="inline">{`${i18next.t('dateAboutToExpireNotification.propertyValue')} `}</Typography>
                 <Typography display="inline" fontWeight="bold">
                     {new Date(datePropertyValue).toLocaleDateString('he-IL')}
@@ -24,7 +27,7 @@ export const DateAboutToExpireNotification: React.FC<{ notificationMetadata: IDa
                 </Typography>
                 <Typography display="inline">{` ${i18next.t('dateAboutToExpireNotification.entityTemplateName')} `} </Typography>
                 <EntityLink entity={entity} entityTemplate={entityTemplate} />
-                <Typography display="inline">{` ${i18next.t('dateAboutToExpireNotification.aboutToExpire')} `} </Typography>
+                <Typography display="inline">{` ${i18next.t(`dateAboutToExpireNotification.${datePast ? 'pase' : 'aboutToExpire'}`)} `}</Typography>
             </Grid>
         </Grid>
     );

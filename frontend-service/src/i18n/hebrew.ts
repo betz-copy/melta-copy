@@ -894,6 +894,8 @@ export default {
         propertyValue: 'התאריך',
         entityTemplateName: 'בישות',
         aboutToExpire: 'מתקרב',
+        payAttention: 'שים לב,',
+        pase: 'עבר',
     },
     processStatusUpdateNotification: {
         statusUpdate: ' עדכון סטטוס',

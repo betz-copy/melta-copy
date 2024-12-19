@@ -13,14 +13,13 @@ import * as schedule from 'node-schedule';
 
 const { notifications } = config;
 
-const checkNotificationDateInCustomAlert = (datePropertyValue: Date, dateNotification: number) => {
+const checkNotificationDateInCustomAlert = (datePropertyValue: Date) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
     const dateNotificationOptions = notifications.dateAlertOptions;
 
     return dateNotificationOptions.some((option) => {
-        if (dateNotification < option) return false;
         const notificationDate = new Date(datePropertyValue);
         notificationDate.setDate(notificationDate.getDate() - option);
         notificationDate.setHours(0, 0, 0, 0);
@@ -36,20 +35,28 @@ const getFilteredInstances = async (
     const { count } = await instancesService.searchEntitiesOfTemplateRequest(entityTemplateId, { limit: 1 });
     const today = new Date();
 
-    const dateNotificationFilterQuery = propertiesWithDateNotifications.map((prop) => {
+    const dateNotificationFilterQuery = propertiesWithDateNotifications.flatMap((prop) => {
         const notificationDate = new Date();
         notificationDate.setDate(today.getDate() + prop.dateNotificationValue);
+
         const startDate = prop.isDateTime ? today.toISOString() : today.toISOString().split('T')[0];
         const endDate = prop.isDateTime
             ? new Date(notificationDate.setUTCHours(23, 59, 59, 999)).toISOString()
             : notificationDate.toISOString().split('T')[0];
 
-        return {
-            [prop.propertyName]: {
-                $gte: startDate,
-                $lte: endDate,
+        return [
+            {
+                [prop.propertyName]: {
+                    $gte: startDate,
+                    $lte: endDate,
+                },
             },
-        };
+            {
+                [prop.propertyName]: {
+                    $lte: startDate,
+                },
+            },
+        ];
     });
 
     const { entities } = await instancesService.searchEntitiesOfTemplateRequest(entityTemplateId, {
@@ -96,21 +103,16 @@ const sendNotificationsForEntityTemplate = async (
 
     if (propertiesWithDateNotifications.length > 0) {
         const instances = await getFilteredInstances(instancesService, entityTemplate._id, propertiesWithDateNotifications);
-
         await Promise.all(
             propertiesWithDateNotifications.map(async ({ propertyName, dateNotificationValue, isDailyAlert }) => {
                 instances.map(async ({ entity }) => {
-                    const datePropertyValueDateFormat = new Date(entity.properties[propertyName]);
                     const datePropertyValue = new Date(entity.properties[propertyName]);
-
-                    if (datePropertyValueDateFormat.setHours(0, 0, 0, 0) < today.setHours(0, 0, 0, 0)) return;
-
                     const notificationDate = new Date(entity.properties[propertyName]);
                     notificationDate.setDate(datePropertyValue.getDate() - dateNotificationValue);
 
                     if (
                         (isDailyAlert && notificationDate.getTime() <= today.getTime()) ||
-                        (!isDailyAlert && checkNotificationDateInCustomAlert(datePropertyValue, dateNotificationValue))
+                        (!isDailyAlert && checkNotificationDateInCustomAlert(datePropertyValue))
                     ) {
                         await rabbitManager.createNotification<IDateAboutToExpireNotificationMetadata>(
                             userIdsWithPermission,
