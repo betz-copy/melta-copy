@@ -9,5 +9,5 @@ export interface IRerankRequest {
 export interface IRerankResult {
     index: number;
     text: string;
-    score: string;
+    score: number;
 }
