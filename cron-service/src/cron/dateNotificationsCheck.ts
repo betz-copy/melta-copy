@@ -39,20 +39,18 @@ const getFilteredInstances = async (
     const { count } = await instancesService.searchEntitiesOfTemplateRequest(entityTemplateId, { limit: 1 });
     const today = new Date();
 
-    const dateNotificationFilterQuery = propertiesWithDateNotifications.flatMap((prop) => {
+    const dateNotificationFilterQuery = propertiesWithDateNotifications.map((prop) => {
         const notificationDate = new Date();
         notificationDate.setDate(today.getDate() + prop.dateNotificationValue);
         const endDate = prop.isDateTime
             ? new Date(notificationDate.setUTCHours(23, 59, 59, 999)).toISOString()
             : notificationDate.toISOString().split('T')[0];
 
-        return [
-            {
-                [prop.propertyName]: {
-                    $lte: endDate,
-                },
+        return {
+            [prop.propertyName]: {
+                $lte: endDate,
             },
-        ];
+        };
     });
 
     const { entities } = await instancesService.searchEntitiesOfTemplateRequest(entityTemplateId, {
@@ -99,6 +97,7 @@ const sendNotificationsForEntityTemplate = async (
 
     if (propertiesWithDateNotifications.length > 0) {
         const instances = await getFilteredInstances(instancesService, entityTemplate._id, propertiesWithDateNotifications);
+       
         await Promise.all(
             propertiesWithDateNotifications.map(async ({ propertyName, dateNotificationValue, isDailyAlert }) => {
                 instances.map(async ({ entity }) => {
