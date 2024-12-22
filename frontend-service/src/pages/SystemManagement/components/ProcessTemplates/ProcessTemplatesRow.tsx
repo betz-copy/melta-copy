@@ -53,7 +53,14 @@ const ProcessTemplatesRow: React.FC = () => {
                 toast.success(i18next.t('wizard.processTemplate.deletedSuccessfully'));
             },
             onError: (error: AxiosError) => {
-                toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.processTemplate.failedToDelete')} />);
+                toast.error(
+                    <ErrorToast
+                        axiosError={error}
+                        defaultErrorMessage={`${i18next.t('wizard.processTemplate.failedToDelete')} ${i18next.t(
+                            'wizard.processTemplate.hasInstances',
+                        )}`}
+                    />,
+                );
             },
         },
     );

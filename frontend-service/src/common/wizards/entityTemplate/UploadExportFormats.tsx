@@ -20,6 +20,7 @@ export const UploadExportFormats: React.FC<StepComponentProps<EntityTemplateWiza
                 required={false}
                 value={values.documentTemplatesIds}
                 error={errors.documentTemplatesIds}
+                acceptedFilesTypes={{ 'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['docx'] }}
             />
         </Box>
     </Box>

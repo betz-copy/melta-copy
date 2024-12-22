@@ -1,11 +1,13 @@
+/* eslint-disable @typescript-eslint/no-shadow */
+/* eslint-disable react/no-unstable-nested-components */
 import React from 'react';
 import { toast } from 'react-toastify';
 import i18next from 'i18next';
 import { useMutation, useQueryClient } from 'react-query';
 import { AxiosError } from 'axios';
-import { StepsType, Wizard, WizardBaseType } from '../index';
+import { StepType, Wizard, WizardBaseType } from '../index';
 import { ChooseCategory, chooseCategorySchema } from './ChooseCategory';
-import { CreateTemplateName, createTemplateNameSchema } from './CreateTemplateName';
+import { CreateTemplateName, useCreateOrEditTemplateNameSchema } from './CreateTemplateName';
 import { AddFields, addFieldsSchema } from './AddFields';
 import { createEntityTemplateRequest, formToJSONSchema, updateEntityTemplateRequest } from '../../../services/templates/enitityTemplatesService';
 import { IEntityTemplateMap, IEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
@@ -21,21 +23,18 @@ import { mapTemplates } from '../../../utils/templates';
 
 const { errorCodes } = environment;
 
-// TODO: implement type array to all types
-interface IBaseFormInputPropertyTypes {
+export interface EntityTemplateFormInputProperties {
+    name: string;
+    title: string;
     type: string;
+    id: string;
     options: string[];
     pattern: string;
     patternCustomErrorMessage: string;
-}
-export interface EntityTemplateFormInputProperties extends IBaseFormInputPropertyTypes {
-    name: string;
-    title: string;
     required: boolean;
     preview: boolean;
     hide: boolean;
     readOnly?: true;
-    id: string;
     uniqueCheckbox?: boolean;
     groupName?: string;
     optionColors: Record<string, string>;
@@ -43,12 +42,14 @@ export interface EntityTemplateFormInputProperties extends IBaseFormInputPropert
     isDailyAlert: boolean | null | undefined;
     calculateTime: boolean | null | undefined;
     serialStarter: number | undefined;
+    deleted?: boolean | undefined;
     relationshipReference?: {
         relationshipTemplateId?: string;
         relationshipTemplateDirection: 'outgoing' | 'incoming';
         relatedTemplateId: string;
         relatedTemplateField: string;
     };
+    archive?: boolean;
 }
 export interface EntityTemplateWizardValues
     extends Omit<
@@ -57,36 +58,11 @@ export interface EntityTemplateWizardValues
     > {
     properties: EntityTemplateFormInputProperties[];
     attachmentProperties: EntityTemplateFormInputProperties[];
+    archiveProperties: EntityTemplateFormInputProperties[];
     uniqueConstraints?: IUniqueConstraintOfTemplate[];
     icon?: fileDetails;
     documentTemplatesIds?: File[];
 }
-
-const steps: StepsType<EntityTemplateWizardValues> = [
-    {
-        label: i18next.t('wizard.entityTemplate.chooseCategroy'),
-        component: (props) => <ChooseCategory {...props} />,
-        validationSchema: chooseCategorySchema,
-    },
-    {
-        label: i18next.t('wizard.entityTemplate.chooseEntityTemplateName'),
-        component: (props, { isEditMode }) => <CreateTemplateName {...props} isEditMode={isEditMode} />,
-        validationSchema: createTemplateNameSchema,
-    },
-    {
-        label: i18next.t('wizard.entityTemplate.chooseIcon'),
-        component: (props) => <ChooseIcon {...props} />,
-    },
-    {
-        label: i18next.t('wizard.entityTemplate.properties'),
-        component: (props, { isEditMode, setBlock }) => <AddFields {...props} isEditMode={isEditMode} setBlock={setBlock} />,
-        validationSchema: addFieldsSchema,
-    },
-    {
-        label: i18next.t('wizard.entityTemplate.exportDocuments'),
-        component: (props) => <UploadExportFormats {...props} />,
-    },
-];
 
 const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>> = ({
     open,
@@ -99,6 +75,7 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
         category: { displayName: '', name: '', _id: '', color: '' },
         disabled: false,
         properties: [],
+        archiveProperties: [],
         attachmentProperties: [],
         propertiesTypeOrder: ['properties', 'attachmentProperties'],
         uniqueConstraints: [],
@@ -107,6 +84,11 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
     isEditMode = false,
 }) => {
     const queryClient = useQueryClient();
+
+    const currentTemplateId = isEditMode ? (initialValues as EntityTemplateWizardValues & { _id: string })._id : undefined;
+    const templates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates') || new Map();
+
+    const createTemplateNameSchema = useCreateOrEditTemplateNameSchema(templates, currentTemplateId);
 
     const { isLoading, mutateAsync } = useMutation(
         (entityTemplate: EntityTemplateWizardValues) =>
@@ -133,10 +115,26 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
             },
             onError: (error: AxiosError, entityTemplateValues) => {
                 const errorMetadata = error.response?.data?.metadata;
+
+                if (isEditMode && errorMetadata?.errorCode === errorCodes.failedToDeleteField) {
+                    const { type, property, relatedTemplateName } = errorMetadata;
+
+                    const errorMessages = {
+                        rules: `${i18next.t('wizard.entityTemplate.failedToDeleteFieldThatUsedInRules', { property })}`,
+                        gantts: `${i18next.t('wizard.entityTemplate.failedToDeleteFieldThatUsedInGantts', { property })}`,
+                        relationshipReference: `${i18next.t('wizard.entityTemplate.failedToDeleteFieldThatUsedInRelationshipReference', {
+                            property,
+                            relatedTemplateName,
+                        })}`,
+                    };
+
+                    toast.error(errorMessages[type]);
+                    return;
+                }
                 if (isEditMode && errorMetadata?.errorCode === errorCodes.failedToCreateConstraints) {
                     const { constraint }: { constraint: IConstraint } = errorMetadata;
 
-                    const newEntityTemplate = formToJSONSchema(entityTemplateValues);
+                    const newEntityTemplate = formToJSONSchema(entityTemplateValues, false);
 
                     if (constraint.type === 'REQUIRED') {
                         const { title: constraintPropertyDisplayName } = newEntityTemplate.properties.properties[constraint.property];
@@ -165,11 +163,36 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
                     toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.entityTemplate.failedToCreate')} />);
                 }
 
-                // eslint-disable-next-line no-console
                 console.log('failed to create/update entity template. error', error);
             },
         },
     );
+
+    const steps: StepType<EntityTemplateWizardValues>[] = [
+        {
+            label: i18next.t('wizard.entityTemplate.chooseCategroy'),
+            component: (props) => <ChooseCategory {...props} />,
+            validationSchema: chooseCategorySchema,
+        },
+        {
+            label: i18next.t('wizard.entityTemplate.chooseEntityTemplateName'),
+            component: (props, { isEditMode }) => <CreateTemplateName {...props} isEditMode={isEditMode} />,
+            validationSchema: createTemplateNameSchema,
+        },
+        {
+            label: i18next.t('wizard.entityTemplate.chooseIcon'),
+            component: (props) => <ChooseIcon {...props} />,
+        },
+        {
+            label: i18next.t('wizard.entityTemplate.properties'),
+            component: (props, { isEditMode, setBlock }) => <AddFields {...props} isEditMode={isEditMode} setBlock={setBlock} />,
+            validationSchema: addFieldsSchema,
+        },
+        {
+            label: i18next.t('wizard.entityTemplate.exportDocuments'),
+            component: (props) => <UploadExportFormats {...props} />,
+        },
+    ];
 
     return (
         <Wizard
@@ -178,7 +201,11 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
             initialValues={initialValues}
             initialStep={initialStep}
             isEditMode={isEditMode}
-            title={i18next.t('wizard.entityTemplate.title')}
+            title={
+                isEditMode
+                    ? `${i18next.t('wizard.entityTemplate.updateTitle')} - ${initialValues.displayName}`
+                    : i18next.t('wizard.entityTemplate.createTitle')
+            }
             steps={steps}
             isLoading={isLoading}
             submitFunction={(values) => mutateAsync(values)}

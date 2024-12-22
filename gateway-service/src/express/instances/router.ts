@@ -16,9 +16,11 @@ import {
     exportEntityToDocumentSchema,
     exportEntityToDocumentSchemaByEntityId,
     searchEntitiesBatchRequestSchema,
+    getEntitiesCountByTemplates,
     searchEntitiesByTemplatesSchema,
     updateEntityInstanceSchema,
     updateEntityStatusSchema,
+    loadEntitiesSchema,
 } from './validator.schema';
 
 const { instanceService } = config;
@@ -42,7 +44,7 @@ InstancesRouter.post(
     '/entities/search/batch',
     ValidateRequest(searchEntitiesBatchRequestSchema),
     InstancesValidatorMiddleware.validateUserCanSearchEntitiesBatch,
-    InstanceManagerProxy,
+    InstancesControllerMiddleware.searchEntitiesBatch,
 );
 InstancesRouter.post(
     '/entities/search/template/:templateId',
@@ -50,7 +52,12 @@ InstancesRouter.post(
     InstanceManagerProxy,
 );
 
-InstancesRouter.post('/entities/count', InstancesValidatorMiddleware.validateUserCanSearchEntitiesByTemplates, InstanceManagerProxy);
+InstancesRouter.post(
+    '/entities/count',
+    ValidateRequest(getEntitiesCountByTemplates),
+    InstancesValidatorMiddleware.validateUserCanSearchEntitiesByTemplates,
+    InstancesControllerMiddleware.getEntitiesCountByTemplates,
+);
 
 InstancesRouter.post(
     '/entities/search/templates',
@@ -65,6 +72,15 @@ InstancesRouter.post(
     ValidateRequest(exportEntitiesSchema),
     InstancesControllerMiddleware.exportEntities,
 );
+
+InstancesRouter.post(
+    '/entities/loadEntities',
+    wrapMulter(multer({ dest: config.service.uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).any()),
+    InstancesValidatorMiddleware.validateUserCanCreateEntityInstance,
+    ValidateRequest(loadEntitiesSchema),
+    InstancesControllerMiddleware.loadEntities,
+);
+
 InstancesRouter.get('/entities/:id', InstancesValidatorMiddleware.validateUserCanReadEntityInstance, InstanceManagerProxy);
 InstancesRouter.get('/entities/constraints/:templateId', AuthorizerControllerMiddleware.userCanReadTemplates, InstanceManagerProxy);
 

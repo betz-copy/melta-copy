@@ -1,128 +1,280 @@
-import { ColDef, ICellRendererParams, IDateFilterParams, ISetFilterParams, ValueFormatterParams, ValueGetterFunc } from '@ag-grid-community/core';
+import {
+    ColDef,
+    ICellRendererParams,
+    IDateFilterParams,
+    ISetFilterParams,
+    ValueFormatterParams,
+    ValueGetterFunc,
+    ValueGetterParams,
+} from '@ag-grid-community/core';
 import i18next from 'i18next';
 import React from 'react';
+import { Box, Tooltip, tooltipClasses } from '@mui/material';
+import { PriorityHigh } from '@mui/icons-material';
 import OpenPreview from '../../common/FilePreview/OpenPreview';
-import { IEntity } from '../../interfaces/entities';
+import RelationshipReferenceView from '../../common/RelationshipReferenceView';
+import { EntityData, IEntity, IRequiredConstraint, IUniqueConstraint } from '../../interfaces/entities';
 import { getDateWithoutTime, getLongDate } from '../date';
+import { getFileName } from '../getFileName';
+import { agGridLocaleText } from './agGridLocaleText';
 import OverflowWrapper from './OverflowWrapper';
 import { Value } from './Value';
-import { agGridLocaleText } from './agGridLocaleText';
-import { getFileName } from '../getFileName';
-import RelationshipReferenceView from '../../common/RelationshipReferenceView';
+import { IEntitySingleProperty } from '../../interfaces/entityTemplates';
+import SelectCellEditor from './SelectCellEditor';
+import DateTimeCellEditor from './DateTimeCellEditor';
+import { ActionErrors } from '../../interfaces/ruleBreaches/actionMetadata';
+import RelationshipRefCellEditor from './RelationshipRefCellEditor';
+import { convertToPlainText } from '../HtmlTagsStringValue';
+import { IError, IFailedEntity, IValidationError } from '../../common/wizards/loadEntities';
 
-export const numberColDef = <Data extends any = IEntity>(
+const hasErrors = (data: any): data is IFailedEntity => {
+    return data && Array.isArray(data.errors) && data.errors.every((error) => 'type' in error && 'metadata' in error);
+};
+
+const isPropertyInvalid = <Data extends any = EntityData>(
+    props: ICellRendererParams<Data, any | undefined>,
+    property: string,
+    ignoreType = false,
+) => {
+    if (!ignoreType || !hasErrors(props.data)) return undefined;
+
+    return props.data.errors.find((error) => {
+        switch (error.type) {
+            case ActionErrors.required:
+                return (error.metadata as IRequiredConstraint).property === property;
+            case ActionErrors.unique:
+                return (error.metadata as IUniqueConstraint).properties.some((errorProperty) => errorProperty === property);
+            case ActionErrors.validation:
+                return (error.metadata as IValidationError).path.slice(1) === property;
+            default:
+                break;
+        }
+        return undefined;
+    });
+};
+
+const errorColDef = <Data extends any = EntityData>(props: ICellRendererParams<Data, any | undefined>, error: IError) => {
+    let message = '';
+    switch (error.type) {
+        case ActionErrors.required:
+            message = i18next.t('wizard.entity.loadEntities.required');
+            break;
+        case ActionErrors.unique:
+            message = i18next.t('wizard.entity.someEntityAlreadyHasTheSameField');
+            break;
+        case ActionErrors.validation:
+            message = (error.metadata as IValidationError).message.includes('must be')
+                ? `${i18next.t('wizard.entity.loadEntities.notValid')} ${i18next.t(
+                      `propertyTypes.${(error.metadata as IValidationError).params.format ?? (error.metadata as IValidationError).params.type}`,
+                  )}`
+                : (error.metadata as IValidationError).message;
+            break;
+        default:
+            break;
+    }
+
+    return (
+        <Box display="flex" justifyContent="center" alignItems="center" gap={1} width="100%">
+            <Value hideValue={false} value={props.value ?? i18next.t('validation.required')} color="#A40000" />
+            <Tooltip
+                title={message}
+                placement="top"
+                arrow
+                PopperProps={{
+                    sx: {
+                        [`& .${tooltipClasses.tooltip}`]: {
+                            fontSize: '1rem',
+                            backgroundColor: 'white',
+                            borderRadius: '10px',
+                            marginLeft: '5px',
+                            color: '#A40000',
+                            fontWeight: 400,
+                            boxShadow: '0px 2.05px 6.16px 0px #00000040',
+                        },
+                        '& .MuiTooltip-arrow': {
+                            color: 'white',
+                        },
+                    },
+                }}
+            >
+                <PriorityHigh color="error" fontSize="small" />
+            </Tooltip>
+        </Box>
+    );
+};
+
+export const numberColDef = <Data extends any = EntityData>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
-    value: { title: string },
+    value: Partial<IEntitySingleProperty>,
     hardcodedWidth: number | undefined,
     hideColumn = false,
     hideValue = false,
-): ColDef<Data> => {
+    ignoreType = false,
+    searchValue: string | undefined = undefined,
+    editable: (data: any) => boolean = () => false,
+): ColDef => {
     return {
         field,
         headerName: value.title,
         valueGetter,
         filter: 'agNumberColumnFilter',
-        cellRenderer: (props: ICellRendererParams<Data, number | undefined>) => <Value hideValue={hideValue} value={props.value?.toString() ?? ''} />,
+        cellRenderer: (props: ICellRendererParams<Data, number | undefined>) => {
+            const error = isPropertyInvalid(props, field, ignoreType);
+            if (error) return errorColDef(props, error);
+            return <Value hideValue={hideValue} value={props.value?.toString() ?? ''} isNumberField={!ignoreType} searchValue={searchValue} />;
+        },
         width: hardcodedWidth,
         flex: hardcodedWidth ? 0 : 1,
         hide: hideColumn,
+        editable: (params) => (editable(params.data) ?? false) && value.serialStarter === undefined,
+        cellEditor: 'agNumberCellEditor',
+        cellEditorParams: {
+            precision: 2,
+            step: 1,
+            showStepperButtons: true,
+        },
     };
 };
 
-export const regexColDef = <Data extends any = IEntity>(
+export const regexColDef = <Data extends any = EntityData>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
-    value: { title: string },
+    value: Partial<IEntitySingleProperty>,
     hardcodedWidth: number | undefined,
     hideColumn = false,
     hideValue = false,
-): ColDef<Data> => {
+    ignoreType = false,
+    searchValue: string | undefined = undefined,
+    editable: (data: any) => boolean = () => false,
+): ColDef => {
     return {
         field,
         headerName: value.title,
-        cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => <Value hideValue={hideValue} value={props.value ?? ''} />,
+        cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => {
+            const error = isPropertyInvalid(props, field, ignoreType);
+            if (error) return errorColDef(props, error);
+            return <Value hideValue={hideValue} value={props.value ?? ''} searchValue={searchValue} />;
+        },
         valueGetter,
         filter: 'agTextColumnFilter',
         width: hardcodedWidth,
         flex: hardcodedWidth ? 0 : 1,
         hide: hideColumn,
         cellStyle: { direction: 'ltr' },
+        editable: (params) => editable(params.data) ?? false,
+        cellEditor: 'agTextCellEditor',
     };
 };
 
-export const stringColDef = <Data extends any = IEntity>(
+export const stringColDef = <Data extends any = EntityData>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
-    value: { title: string },
+    value: Partial<IEntitySingleProperty>,
     hardcodedWidth: number | undefined,
     hideColumn = false,
     hideValue = false,
-): ColDef<Data> => {
+    ignoreType = false,
+    searchValue: string | undefined = undefined,
+    editable: (data: any) => boolean = () => false,
+): ColDef => {
     return {
         field,
         headerName: value.title,
-        cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => <Value hideValue={hideValue} value={props.value ?? ''} />,
+        cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => {
+            const error = isPropertyInvalid(props, field, ignoreType);
+            if (error) return errorColDef(props, error);
+            return <Value hideValue={hideValue} value={props.value?.toString() ?? ''} searchValue={searchValue} />;
+        },
         valueGetter,
         filter: 'agTextColumnFilter',
         width: hardcodedWidth,
         flex: hardcodedWidth ? 0 : 1,
         hide: hideColumn,
+        editable: (params) => editable(params.data) ?? false,
+        cellEditor: value.format === 'text-area' ? 'agLargeTextCellEditor' : 'agTextCellEditor',
+        cellEditorParams: (params) => ({
+            ...params,
+            value: convertToPlainText(params.value),
+        }),
+        cellEditorPopup: value.format === 'text-area',
     };
 };
 
-export const fileColDef = <Data extends any = IEntity>(
+export const fileColDef = <Data extends any = EntityData>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
     value: { title: string },
     hardcodedWidth: number | undefined,
     hideColumn = false,
-): ColDef<Data> => {
+    searchValue: string | undefined = undefined,
+    entityIdsToInclude: string[] | undefined = undefined,
+): ColDef => {
     return {
         field,
         headerName: value.title,
         valueGetter,
-        cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => (props.value ? <OpenPreview fileId={props.value} /> : null),
+        cellRenderer: (props: ICellRendererParams<Data, string | undefined>) =>
+            props.value?.toString() ? (
+                <OpenPreview fileId={props.value?.toString()} searchValue={searchValue} entityIdsToInclude={entityIdsToInclude} />
+            ) : null,
         filter: 'agTextColumnFilter',
         width: hardcodedWidth,
         flex: hardcodedWidth ? 0 : 1,
         hide: hideColumn,
+        editable: false,
     };
 };
 
-export const relatedTemplateColDef = <Data extends any = IEntity>(
+export const relatedTemplateColDef = <Data extends any = EntityData>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
-    value: { title: string },
+    value: Partial<IEntitySingleProperty>,
     hardcodedWidth: number | undefined,
     relatedTemplateId: string,
     relatedTemplateField: string,
     hideColumn = false,
-): ColDef<Data> => {
+    searchValue: string | undefined = undefined,
+    editable: (data: any) => boolean = () => false,
+): ColDef => {
     return {
         field,
         headerName: value.title,
         valueGetter,
         cellRenderer: (props: ICellRendererParams<Data, IEntity | undefined>) =>
             props.value ? (
-                <RelationshipReferenceView entity={props.value} relatedTemplateId={relatedTemplateId} relatedTemplateField={relatedTemplateField} />
+                <RelationshipReferenceView
+                    entity={props.value}
+                    relatedTemplateId={relatedTemplateId}
+                    relatedTemplateField={relatedTemplateField}
+                    searchValue={searchValue}
+                />
             ) : null,
         filter: 'agTextColumnFilter',
         width: hardcodedWidth,
         flex: hardcodedWidth ? 0 : 1,
         hide: hideColumn,
+        editable: (params) => editable(params.data) ?? false,
+        cellEditor: RelationshipRefCellEditor,
+        cellEditorParams: {
+            relatedTemplateId,
+            template: value,
+        },
     };
 };
 
-export const booleanColDef = <Data extends any = IEntity>(
+export const booleanColDef = <Data extends any = EntityData>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
-    value: { title: string },
+    value: Partial<IEntitySingleProperty>,
     hardcodedWidth: number | undefined,
     hideColumn = false,
     hideValue = false,
-): ColDef<Data> => {
-    const formatValue = (propertyValue: boolean | undefined) => {
+    ignoreType = false,
+    searchValue: string | undefined = undefined,
+    editable: (data: any) => boolean = () => false,
+): ColDef => {
+    const formatValue = (propertyValue: boolean | null | undefined) => {
         if (!propertyValue) return i18next.t('booleanOptions.no');
         return i18next.t('booleanOptions.yes');
     };
@@ -140,25 +292,34 @@ export const booleanColDef = <Data extends any = IEntity>(
         field,
         headerName: value.title,
         valueGetter,
-        cellRenderer: (props: ICellRendererParams<Data, boolean | undefined>) => <Value hideValue={hideValue} value={formatValue(props.value)} />,
+        cellRenderer: (props: ICellRendererParams<Data, boolean | undefined>) => {
+            const error = isPropertyInvalid(props, field, ignoreType);
+            if (error) return errorColDef(props, error);
+            return <Value hideValue={hideValue} value={formatValue(props.value)} searchValue={searchValue} />;
+        },
         filter: 'agSetColumnFilter',
         filterParams,
         width: hardcodedWidth,
         flex: hardcodedWidth ? 0 : 1,
         hide: hideColumn,
+        editable: (params) => editable(params.data) ?? false,
+        cellEditor: 'agCheckboxCellEditor',
     };
 };
 
-export const enumColDef = <Data extends any = IEntity>(
+export const enumColDef = <Data extends any = EntityData>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
-    value: { title: string },
+    value: Partial<IEntitySingleProperty>,
     values: Array<string>,
     hardcodedWidth: number | undefined,
     enumColorOptions?: Record<string, string>,
     hideColumn = false,
     hideValue = false,
-): ColDef<Data> => {
+    ignoreType = false,
+    searchValue: string | undefined = undefined,
+    editable: (data: any) => boolean = () => false,
+): ColDef => {
     const filterParams: ISetFilterParams<Data, string | undefined> = {
         suppressMiniFilter: true,
         values: [...values, undefined],
@@ -169,27 +330,45 @@ export const enumColDef = <Data extends any = IEntity>(
         headerName: value.title,
         valueGetter,
         cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => {
-            return <Value hideValue={hideValue} value={props.value ?? ''} color={props.value && enumColorOptions?.[props.value]} />;
+            const error = isPropertyInvalid(props, field, ignoreType);
+            if (error) return errorColDef(props, error);
+            return (
+                <Value
+                    searchValue={searchValue}
+                    hideValue={hideValue}
+                    value={props.value ?? ''}
+                    color={props.value && enumColorOptions?.[props.value]}
+                />
+            );
         },
         filter: 'agSetColumnFilter',
         filterParams,
         width: hardcodedWidth,
         flex: hardcodedWidth ? 0 : 1,
         hide: hideColumn,
+        editable: (params) => editable(params.data) ?? false,
+        cellEditor: SelectCellEditor,
+        cellEditorParams: {
+            values,
+            multiple: false,
+        },
     };
 };
 
-export const enumArrayColDef = <Data extends any = IEntity>(
+export const enumArrayColDef = <Data extends any = EntityData>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
-    value: { title: string },
+    value: Partial<IEntitySingleProperty>,
     values: Array<string>,
     hardcodedWidth: number | undefined,
     rowHeight: number,
     enumColorOptions?: Record<string, string>,
     hideColumn = false,
     hideValue = false,
-): ColDef<Data> => {
+    ignoreType = false,
+    searchValue: string | undefined = undefined,
+    editable: (data: any) => boolean = () => false,
+): ColDef => {
     const filterParams: ISetFilterParams<Data, string | undefined> = {
         suppressMiniFilter: true,
         values: [...values, undefined],
@@ -199,35 +378,48 @@ export const enumArrayColDef = <Data extends any = IEntity>(
         field,
         headerName: value.title,
         valueGetter,
-
         cellRenderer: (props: ICellRendererParams<Data, string[] | undefined>) => {
             if (!props.value) return '';
+            const error = isPropertyInvalid(props, field, ignoreType);
+            if (error) return errorColDef(props, error);
+            if (ignoreType) return typeof props.value === 'string' ? props.value : props.value.join(', ');
+
             return (
                 <OverflowWrapper
+                    searchValue={searchValue}
                     items={props.value}
                     getItemKey={(item) => item}
-                    renderItem={(item) => <Value hideValue={hideValue} value={item} color={enumColorOptions?.[item] || 'default'} />}
+                    renderItem={(item) => (
+                        <Value hideValue={hideValue} value={item} color={enumColorOptions?.[item] || 'default'} searchValue={searchValue} />
+                    )}
                     containerStyle={{ height: `${rowHeight}px` }}
                 />
             );
         },
-
         filter: 'agSetColumnFilter',
         filterParams,
         width: hardcodedWidth,
         flex: hardcodedWidth ? 0 : 1,
         hide: hideColumn,
+        editable: (params) => editable(params.data) ?? false,
+        cellEditor: SelectCellEditor,
+        cellEditorParams: {
+            values,
+            multiple: true,
+        },
     };
 };
 
-export const enumFilesColDef = <Data extends any = IEntity>(
+export const enumFilesColDef = <Data extends any = EntityData>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
     value: { title: string },
     hardcodedWidth: number | undefined,
     rowHeight: number,
     hideColumn = false,
-): ColDef<Data> => {
+    searchValue: string | undefined = undefined,
+    entityIdsToInclude: string[] | undefined = undefined,
+): ColDef => {
     const filterParams: ISetFilterParams<Data, string | undefined> = {
         suppressMiniFilter: true,
         values: [], // You may need to fetch enum values dynamically or provide them here
@@ -243,9 +435,10 @@ export const enumFilesColDef = <Data extends any = IEntity>(
                 const items = enumArray.map((file) => getFileName(file));
                 return (
                     <OverflowWrapper
+                        searchValue={searchValue}
                         items={enumArray}
                         getItemKey={(item) => item}
-                        renderItem={(item) => <OpenPreview fileId={item} />}
+                        renderItem={(item) => <OpenPreview fileId={item} entityIdsToInclude={entityIdsToInclude} searchValue={searchValue} />}
                         containerStyle={{ height: `${rowHeight}px` }}
                         files={items}
                     />
@@ -258,22 +451,27 @@ export const enumFilesColDef = <Data extends any = IEntity>(
         width: hardcodedWidth,
         flex: hardcodedWidth ? 0 : 1,
         hide: hideColumn,
+        editable: false,
     };
 };
 
-export const dateColDef = <Data extends any = IEntity>(
+export const dateColDef = <Data extends any = EntityData>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
-    value: { title: string; format?: string },
+    value: Partial<IEntitySingleProperty>,
     hardcodedWidth?: number,
     hideColumn = false,
     hideValue = false,
     calculateTime = false,
-): ColDef<Data> => {
+    ignoreType = false,
+    searchValue: string | undefined = undefined,
+    editable: (data: any) => boolean = () => false,
+): ColDef => {
     const { format } = value;
 
-    const formatDate = (dateValue: string | undefined) => {
+    const formatDate = (dateValue: string | null | undefined) => {
         if (!dateValue) return '';
+        if (ignoreType) return dateValue;
 
         if (format === 'date') return getDateWithoutTime(new Date(dateValue));
 
@@ -300,28 +498,52 @@ export const dateColDef = <Data extends any = IEntity>(
         field,
         headerName: value.title,
         valueGetter,
-        cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => (
-            <Value hideValue={hideValue} value={formatDate(props.value)} calculateTime={calculateTime} />
-        ),
+        cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => {
+            const error = isPropertyInvalid(props, field, ignoreType);
+            if (error) return errorColDef(props, error);
+            return (
+                <Value
+                    searchValue={searchValue}
+                    hideValue={hideValue}
+                    value={formatDate(props.value?.toString())}
+                    calculateTime={ignoreType ? false : calculateTime}
+                />
+            );
+        },
         filter: 'agDateColumnFilter',
         filterParams,
         minWidth: format === 'date-time' ? 220 : undefined,
         width: hardcodedWidth,
         flex: hardcodedWidth ? 0 : 1,
         hide: hideColumn,
+        editable: (params) => editable(params.data) ?? false,
+        cellEditor: DateTimeCellEditor,
+        cellEditorParams: { dateOrDateTime: format === 'date-time' ? 'dateTime' : 'date' },
     };
 };
 
-export const translatedEnumColDef = <Data extends any = IEntity>(
-    field: string,
-    valueGetter: ValueGetterFunc<Data>,
-    value: { title: string },
-    valuesMap: Record<string, string>,
-    hardcodedWidth?: number,
+interface TranslatedEnumColDefOptions<Data> {
+    field: string;
+    valueGetter: (params: ValueGetterParams<Data>) => string | undefined;
+    title: string;
+    valuesMap: Record<string, string>;
+    hardcodedWidth?: number;
+    hideColumn?: boolean;
+    hideValue?: boolean;
+    searchValue?: string;
+}
+
+export const translatedEnumColDef = <Data extends any = EntityData>({
+    field,
+    valueGetter,
+    title,
+    valuesMap,
+    hardcodedWidth,
     hideColumn = false,
     hideValue = false,
-): ColDef<Data> => {
-    const formatValue = (propertyValue: string | undefined) => (propertyValue ? valuesMap[propertyValue] : '');
+    searchValue = undefined,
+}: TranslatedEnumColDefOptions<Data>): ColDef => {
+    const formatValue = (propertyValue: string | null | undefined) => (propertyValue ? valuesMap[propertyValue] : '');
 
     const filterParams: ISetFilterParams<Data, string | undefined> = {
         suppressMiniFilter: true,
@@ -335,9 +557,11 @@ export const translatedEnumColDef = <Data extends any = IEntity>(
 
     return {
         field,
-        headerName: value.title,
+        headerName: title,
         valueGetter,
-        cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => <Value hideValue={hideValue} value={formatValue(props.value)} />,
+        cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => {
+            return <Value hideValue={hideValue} value={formatValue(props.value)} searchValue={searchValue} />;
+        },
         filter: 'agSetColumnFilter',
         filterParams,
         width: hardcodedWidth,

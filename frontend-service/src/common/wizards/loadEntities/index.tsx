@@ -98,13 +98,13 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
             return loadEntitiesRequest(template!._id, files);
         },
         {
-            onError() {
-                toast.error(i18next.t('wizard.entity.loadEntities.failedLoadEntities'));
-                setStepsData((prev) => ({ ...prev, status: StepStatus.excelUploadResult }));
-            },
             async onSuccess(data) {
                 setStepsData((prev) => ({ ...prev, status: StepStatus.excelUploadResult, data }));
                 return data;
+            },
+            onError() {
+                toast.error(i18next.t('wizard.entity.loadEntities.failedLoadEntities'));
+                setStepsData((prev) => ({ ...prev, status: StepStatus.excelUploadResult }));
             },
         },
     );
@@ -114,14 +114,14 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
             return loadEntitiesRequest(template!._id, undefined, insertBrokenEntities);
         },
         {
-            onError() {
-                toast.error(i18next.t('wizard.entity.loadEntities.failedLoadEntities'));
-                setStepsData((prev) => ({ ...prev, status: StepStatus.excelUploadResult }));
-            },
             async onSuccess(data) {
                 setCreateOrUpdateWithRuleBreachDialogState({ isOpen: false });
                 onClose();
                 return data;
+            },
+            onError() {
+                toast.error(i18next.t('wizard.entity.loadEntities.failedLoadEntities'));
+                setStepsData((prev) => ({ ...prev, status: StepStatus.excelUploadResult }));
             },
         },
     );
@@ -136,11 +136,11 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
             });
         },
         {
-            onError() {
-                toast.error(i18next.t('failedToExportTable'));
-            },
             onSuccess(data) {
                 fileDownload(data, `${template?.displayName}${excelExtension}`);
+            },
+            onError() {
+                toast.error(i18next.t('failedToExportTable'));
             },
         },
     );

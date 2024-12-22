@@ -1,6 +1,7 @@
 /* eslint-disable no-param-reassign */
 import axiosInstance from 'axios';
 import MockAdapter from 'axios-mock-adapter';
+import { StatusCodes } from 'http-status-codes';
 import { environment } from './globals';
 import { AuthService } from './services/authService';
 import { useWorkspaceStore } from './stores/workspace';
@@ -23,7 +24,7 @@ axios.interceptors.request.use((config) => {
 axios.interceptors.response.use(
     (response) => response,
     (error) => {
-        if (error.response?.status === 401) {
+        if (error.response?.status === StatusCodes.UNAUTHORIZED) {
             AuthService.logout();
         }
 
@@ -37,7 +38,7 @@ if (import.meta.env.DEV && !import.meta.env.VITE_APP_IS_DOCKER) {
     const [
         { mockCategories },
         { mockGetAllTemplates },
-        { mockConfig },
+        // { mockConfig },
         { mockEntites },
         { mockEntityTemplates },
         { mockRelationshipTemplates },
@@ -53,7 +54,7 @@ if (import.meta.env.DEV && !import.meta.env.VITE_APP_IS_DOCKER) {
     ] = await Promise.all([
         import('./mocks/templates/categories'),
         import('./mocks/templates/getAllTemplates'),
-        import('./mocks/config'),
+        // import('./mocks/config'),
         import('./mocks/entities'),
         import('./mocks/templates/entityTemplates'),
         import('./mocks/templates/relationshipTemplates'),
@@ -70,7 +71,7 @@ if (import.meta.env.DEV && !import.meta.env.VITE_APP_IS_DOCKER) {
 
     const mock = new MockAdapter(axios, { delayResponse: 500 });
 
-    mockConfig(mock);
+    // mockConfig(mock);
     mockGetAllTemplates(mock);
     mockCategories(mock);
     mockEntityTemplates(mock);

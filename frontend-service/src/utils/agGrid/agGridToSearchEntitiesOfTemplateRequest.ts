@@ -1,5 +1,5 @@
 import { environment } from '../../globals';
-import { IFilterOfTemplate, ISearchEntitiesOfTemplateBody } from '../../interfaces/entities';
+import { ICountSearchResult, IFilterOfTemplate, ISearchEntitiesOfTemplateBody } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { getDayStart, getDayEnd } from '../date';
 import { addDefaultFieldsToTemplate } from '../templates';
@@ -212,7 +212,7 @@ export const sortModelToSortOfSearchRequest = (sortModel: IAGGridSort[]): ISearc
 
 export const agGridToSearchEntitiesOfTemplateRequest = (
     agGridRequest: IAGGridRequest,
-    entityTemplate: IMongoEntityTemplatePopulated,
+    entityTemplate: IMongoEntityTemplatePopulated & { entitiesWithFiles?: ICountSearchResult['entitiesWithFiles'] },
 ): ISearchEntitiesOfTemplateBody => {
     const { startRow, endRow, filterModel, quickFilter, sortModel } = agGridRequest;
     return {
@@ -222,5 +222,6 @@ export const agGridToSearchEntitiesOfTemplateRequest = (
         filter: filterModelToFilterOfTemplate(filterModel, entityTemplate),
         showRelationships: false,
         sort: sortModelToSortOfSearchRequest(sortModel),
+        entityIdsToInclude: entityTemplate.entitiesWithFiles ? Object.keys(entityTemplate.entitiesWithFiles) : undefined,
     };
 };

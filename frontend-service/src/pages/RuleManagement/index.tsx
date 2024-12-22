@@ -78,7 +78,7 @@ export const RuleBreachDialogContainer: React.FC<RuleBreachDialogContainerProps>
 
 const RuleManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> }> = ({ setTitle }) => {
     const workspace = useWorkspaceStore((state) => state.workspace);
-    const { defaultRowHeight } = workspace.metadata.agGrid;
+    const { defaultRowHeight, defaultFontSize } = workspace.metadata.agGrid;
 
     const { breachType, ruleBreachId } = useParams<{ breachType: string; ruleBreachId: string }>();
     const [_, navigate] = useLocation();
@@ -97,7 +97,7 @@ const RuleManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<s
                 <BlueTitle title={i18next.t('ruleManagement.alerts')} component="h5" variant="h5" />
                 <RuleBreachTable
                     rowHeight={defaultRowHeight}
-                    fontSize="16px"
+                    fontSize={`${defaultFontSize}px`}
                     minColumnWidth={200}
                     breachType="alert"
                     onReviewBreachClick={onReviewBreachClick}
@@ -108,7 +108,7 @@ const RuleManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<s
                 <RuleBreachTable
                     ref={ruleBreachRequestsRef}
                     rowHeight={defaultRowHeight}
-                    fontSize="16px"
+                    fontSize={`${defaultFontSize}px`}
                     minColumnWidth={200}
                     breachType="request"
                     onReviewBreachClick={onReviewBreachClick}

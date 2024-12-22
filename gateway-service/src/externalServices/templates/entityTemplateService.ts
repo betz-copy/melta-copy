@@ -20,6 +20,12 @@ export interface IMongoCategory extends ICategory {
     createdAt: string;
     updatedAt: string;
 }
+export interface ISearchCategoriesBody {
+    search?: string;
+    ids?: string[];
+    limit?: number;
+    skip?: number;
+}
 
 export interface IEntitySingleProperty {
     title: string;
@@ -41,12 +47,14 @@ export interface IEntitySingleProperty {
     calculateTime?: boolean;
     serialStarter?: number;
     serialCurrent?: number;
+    isNewPropNameEqualDeletedPropName?: boolean;
     relationshipReference?: {
         relationshipTemplateId?: string;
         relationshipTemplateDirection: 'outgoing' | 'incoming';
         relatedTemplateId: string;
         relatedTemplateField: string;
     };
+    archive?: boolean;
 }
 
 export interface IEntityTemplate {

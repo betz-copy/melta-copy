@@ -17,9 +17,7 @@ export class UsersController {
     }
 
     static async searchUsers(req: Request, res: Response) {
-        const { search, permissions, workspaceIds, limit, step } = req.body;
-
-        res.json(await UsersManager.searchUsers(search, permissions, workspaceIds, limit, step));
+        res.json(await UsersManager.searchUsers(req.body));
     }
 
     static async createUser(req: Request, res: Response) {
@@ -32,5 +30,9 @@ export class UsersController {
 
     static async updateUsersBulk(req: Request, res: Response) {
         res.json(await UsersManager.updateUsersBulk(req.body));
+    }
+
+    static async searchUsersByPermissions(req: Request, res: Response) {
+        res.json(await UsersManager.searchUsersByPermissions(req.params.workspaceId));
     }
 }

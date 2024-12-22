@@ -1,4 +1,4 @@
-import React, { SetStateAction, useCallback, useRef } from 'react';
+import React, { SetStateAction, useCallback, useRef, useState } from 'react';
 import { Accordion, AccordionDetails, AccordionSummary, Box, Button, Grid, styled, Typography } from '@mui/material';
 import { DragDropContext, DraggableProvided, Droppable } from 'react-beautiful-dnd';
 import { v4 as uuid } from 'uuid';
@@ -10,6 +10,8 @@ import { FieldEditCardProps, MemoFieldEditCard } from './FieldEditCard';
 import { MemoAttachmentEditCard } from './AttachmentEditCard';
 import { StepComponentHelpers } from '..';
 import { CommonFormInputProperties } from './commonInterfaces';
+import { AreYouSureDialog } from '../../dialogs/AreYouSureDialog';
+import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IUniqueConstraintOfTemplate } from '../../../interfaces/entities';
 
 export const FieldBlockAccordion = styled(Accordion)({
@@ -37,9 +39,13 @@ interface FieldBlockProps<PropertiesType extends string, Values extends Record<P
     supportEntityReferenceType: boolean;
     supportChangeToRequiredWithInstances: boolean;
     supportArrayFields: boolean;
+    supportDeleteForExistingInstances: boolean;
     supportRelationshipReference: boolean;
     supportEditEnum?: boolean;
     supportUnique?: boolean;
+    supportArchive?: boolean;
+    supportAddFieldButton?: boolean;
+    hasActions?: boolean;
     draggable?: { isDraggable: false } | { isDraggable: true; dragHandleProps: DraggableProvided['dragHandleProps'] };
 }
 
@@ -61,9 +67,13 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
     supportEntityReferenceType,
     supportChangeToRequiredWithInstances,
     supportArrayFields,
+    supportDeleteForExistingInstances,
     supportRelationshipReference,
     supportEditEnum,
     supportUnique,
+    supportArchive,
+    supportAddFieldButton = true,
+    hasActions,
     draggable = { isDraggable: false },
     initialFieldCardDataOnAdd = {
         name: '',
@@ -82,10 +92,14 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
         calculateTime: undefined,
         relationshipReference: undefined,
         serialStarter: 0,
+        archive: false,
     },
 }: React.PropsWithChildren<FieldBlockProps<PropertiesType, Values>>) => {
     // copy of values of formik in order to show changes on inputs fast (formik rerenders are slow)
     const [displayValues, setDisplayValues] = React.useState(values[propertiesType]);
+    const [showAreUSureDialogForRemoveProperty, setShowAreUSureDialogForRemoveProperty] = useState(false);
+    const [selectedIndexToRemove, setSelectedIndexForRemove] = useState(-1);
+
     // using displayValues ref because update functions (push/remove/...) are not updated for the field cards on
     // every re-render and if displayValues changes, it does not update in the functions of the field cards.
     // therefore using a reference for them to always use the current displayValues.
@@ -110,13 +124,34 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
         updateFormik();
     };
 
-    const remove = (index: number) => {
+    const setFieldDisplayValue = (index: number, field: keyof Values, value: any) => {
         const displayValuesCopy = [...displayValuesRef.current] as Values[PropertiesType];
 
-        displayValuesCopy.splice(index, 1);
+        displayValuesCopy[index] = { ...displayValuesCopy[index], [field]: value };
 
         setDisplayValues(displayValuesCopy);
         updateFormik();
+    };
+
+    const onDeleteSure = () => {
+        setShowAreUSureDialogForRemoveProperty(false);
+        setFieldDisplayValue(selectedIndexToRemove, 'deleted' as keyof Values, true);
+    };
+
+    const remove = (index: number, isNewProperty: Boolean) => {
+        const displayValuesCopy = [...displayValuesRef.current] as Values[PropertiesType];
+        const isDeleted = displayValuesCopy[index].deleted;
+
+        if (isDeleted) {
+            setFieldDisplayValue(index, 'deleted' as keyof Values, false);
+        } else if (areThereAnyInstances && !isNewProperty) {
+            setShowAreUSureDialogForRemoveProperty(true);
+            setSelectedIndexForRemove(index);
+        } else {
+            displayValuesCopy.splice(index, 1);
+            setDisplayValues(displayValuesCopy);
+            updateFormik();
+        }
     };
 
     const move = (src: number, dst: number) => {
@@ -124,14 +159,6 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
 
         displayValuesCopy.splice(dst, 0, displayValuesCopy.splice(src, 1)[0]);
 
-        setDisplayValues(displayValuesCopy);
-        updateFormik();
-    };
-
-    const setFieldDisplayValue = (index: number, field: keyof Values, value: any) => {
-        const displayValuesCopy = [...displayValuesRef.current] as Values[PropertiesType];
-
-        displayValuesCopy[index] = { ...displayValuesCopy[index], [field]: value };
         setDisplayValues(displayValuesCopy);
         updateFormik();
     };
@@ -160,6 +187,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
     const setFieldDisplayValueWrapper = (index: number) => (field: keyof Values, value: any) => setFieldDisplayValue(index, field, value);
     const setDisplayValueWrapper = (index: number) => (value: SetStateAction<CommonFormInputProperties>) => setDisplayValue(index, value);
     const isFieldBlockError = Boolean(touched?.[propertiesType]) && Boolean(errors?.[propertiesType]);
+
     return (
         <FieldBlockAccordion style={{ border: isFieldBlockError ? '1px solid red' : '' }}>
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
@@ -203,12 +231,19 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
                                                 supportChangeToRequiredWithInstances,
                                                 templateId: (values as any)._id,
                                                 supportArrayFields,
+                                                supportDeleteForExistingInstances,
                                                 supportEditEnum,
                                                 supportRelationshipReference,
                                                 supportUnique,
+                                                supportArchive,
+                                                hasActions,
                                             };
 
-                                            if (propertiesType === 'properties' || propertiesType === 'detailsProperties') {
+                                            if (
+                                                propertiesType === 'properties' ||
+                                                propertiesType === 'detailsProperties' ||
+                                                propertiesType === 'archiveProperties'
+                                            ) {
                                                 return (
                                                     <MemoFieldEditCard
                                                         {...props}
@@ -226,14 +261,16 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
                                         })}
 
                                         {droppableProvided.placeholder}
-                                        <Button
-                                            type="button"
-                                            variant="contained"
-                                            style={{ margin: '8px' }}
-                                            onClick={() => push({ id: uuid(), ...initialFieldCardDataOnAdd })}
-                                        >
-                                            <Typography>{addPropertyButtonLabel}</Typography>
-                                        </Button>
+                                        {supportAddFieldButton && (
+                                            <Button
+                                                type="button"
+                                                variant="contained"
+                                                style={{ margin: '8px' }}
+                                                onClick={() => push({ id: uuid(), ...initialFieldCardDataOnAdd })}
+                                            >
+                                                <Typography>{addPropertyButtonLabel}</Typography>
+                                            </Button>
+                                        )}
 
                                         {errors?.[propertiesType] === i18next.t('validation.oneField') && (
                                             <div style={{ color: '#d32f2f' }}>{i18next.t('validation.oneField')}</div>
@@ -245,6 +282,17 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
                     )}
                 </FieldArray>
             </AccordionDetails>
+            <AreYouSureDialog
+                open={showAreUSureDialogForRemoveProperty}
+                handleClose={() => setShowAreUSureDialogForRemoveProperty(false)}
+                title={i18next.t('systemManagement.deleteField')}
+                body={`${i18next.t('systemManagement.warningOnDeleteField')}
+                    ${selectedIndexToRemove > -1 && displayValuesRef.current[selectedIndexToRemove].title}
+                    ${i18next.t('systemManagement.continueWarningOnDeleteField')} ${
+                    (initialValues as unknown as IMongoEntityTemplatePopulated)?.displayName
+                }`}
+                onYes={onDeleteSure}
+            />
         </FieldBlockAccordion>
     );
 };

@@ -227,7 +227,7 @@ const Graph: React.FC = () => {
         nodeRelSize: graphSettings.nodeSizeMultiplier,
         cooldownTicks: 50,
         backgroundColor: 'rgb(0,0,0,0)',
-        nodeLabel: renderTooltip,
+        nodeLabel: (node) => renderTooltip(node),
         linkDirectionalArrowRelPos: 1,
         linkDirectionalArrowLength: 3,
         linkDirectionalParticles: 4,

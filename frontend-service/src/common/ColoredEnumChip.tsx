@@ -7,11 +7,20 @@ interface ColoredEnumChipProps {
     color?: string | 'default';
     style?: CSSProperties;
     icon?: React.ReactElement;
+    searchValue?: string;
 }
 
-export const ColoredEnumChip: React.FC<ColoredEnumChipProps> = ({ label, color, style, icon }) => {
-    const backgroundColor = color !== 'default' && color ? colorWithOpacity(color, 0.1) : '#F7F7F7';
+export const ColoredEnumChip: React.FC<ColoredEnumChipProps> = ({ label, color, style, icon, searchValue }) => {
+    const shouldHighlight = searchValue && label.toString().includes(searchValue);
     const textColor = color === 'default' ? '#000' : color;
+    let backgroundColor;
+
+    if (color !== 'default' && color) {
+        backgroundColor = colorWithOpacity(color, shouldHighlight ? 0.25 : 0.1);
+    } else {
+        backgroundColor = shouldHighlight ? '#d3d1d1' : '#F7F7F7';
+    }
+
     return (
         <Chip
             icon={icon}
@@ -21,7 +30,7 @@ export const ColoredEnumChip: React.FC<ColoredEnumChipProps> = ({ label, color, 
                 height: '25px',
                 borderRadius: '6px',
                 border: 0,
-                fontWeight: '500',
+                fontWeight: shouldHighlight ? '700' : '400',
                 color: textColor,
                 backgroundColor,
                 fontFamily: 'Rubik',

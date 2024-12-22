@@ -1,3 +1,5 @@
+import React, { useRef, useState } from 'react';
+import { useQuery, useQueryClient } from 'react-query';
 import {
     Add as PlusIcon,
     Air as FluidSimulationIcon,
@@ -10,10 +12,9 @@ import {
 } from '@mui/icons-material';
 import { Box, Button, Grid, IconButton, Slide, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
-import React, { useRef, useState } from 'react';
-import { useQuery, useQueryClient } from 'react-query';
 import { useLocation } from 'wouter';
-
+import StarBorderPurple500Icon from '@mui/icons-material/StarBorderPurple500';
+import { useMatomo } from '@datapunt/matomo-tracker-react';
 import { environment } from '../../globals';
 import { ICategoryMap } from '../../interfaces/categories';
 import { INotificationCountGroups } from '../../interfaces/notifications';
@@ -27,6 +28,7 @@ import { sideBarTransition } from '../../theme';
 import { CustomIcon, CustomImage } from '../CustomIcon';
 import { GlobalSearchBar } from '../EntitiesPage/Headline';
 import IconButtonWithPopover from '../IconButtonWithPopover';
+import { searchIFrames } from '../../services/iFramesService';
 import { MeltaIcon } from '../MeltaIcon';
 import PermissionsOfUserDialog from '../permissionsOfUserDialog';
 import { NavButton } from './NavButton';
@@ -57,6 +59,11 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
 
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
 
+    const iFramesStored = localStorage.getItem('iFramesOrder');
+    const { data } = useQuery('allIFrames', () => searchIFrames(iFramesStored ? { ids: JSON.parse(iFramesStored) } : {}));
+
+    const iFramesInSidebar = data?.filter((iFrame) => iFrame.placeInSideBar);
+
     const [isMyPermissionsDialogOpen, setIsMyPermissionsDialogOpen] = useState<boolean>(false);
     const [isNotificationsScreenOpen, setIsNotificationsScreenOpen] = useState<boolean>(false);
 
@@ -69,6 +76,11 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
 
     const [_, navigate] = useLocation();
 
+    const handleMenuItemClick = (event, id: string) => {
+        event.stopPropagation();
+        event.preventDefault();
+        navigate(`/iframes/${id}`);
+    };
     const { data: notificationCountDetailsResponse, refetch: updateNotificationCountDetails } = useQuery(
         ['getMyNotificationCount', isNotificationsScreenOpen],
         () => getMyNotificationGroupCountRequest(isNotificationsScreenOpen ? (notifications.groups as unknown as INotificationCountGroups) : {}),
@@ -82,6 +94,8 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
 
     const meltaPlus = useMeltaPlusStore((state) => state.meltaPlus);
     const toggleMeltaPlus = useMeltaPlusStore((state) => state.toggleMeltaPlus);
+
+    const { trackEvent, trackPageView } = useMatomo();
     const workspace = useWorkspaceStore((state) => state.workspace);
 
     return (
@@ -195,9 +209,20 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                                 size="small"
                                 borderRadius="30px"
                                 width="199px"
+                                autoSearch
+                                showAiButton
                             />
                         ) : (
-                            <Grid onClick={() => toggleDrawer()}>
+                            <Grid
+                                onClick={() => {
+                                    toggleDrawer();
+
+                                    trackEvent({
+                                        category: 'side-bar',
+                                        action: 'search icon click',
+                                    });
+                                }}
+                            >
                                 <IconButtonWithPopover
                                     popoverText={isDrawerOpen ? '' : i18next.t('pages.globalSearch')}
                                     disabledToolTip={isDrawerOpen}
@@ -249,7 +274,16 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                                     to={`/category/${category._id}`}
                                     text={category.displayName}
                                     isDrawerOpen={isDrawerOpen}
-                                    onChangeToActive={(isActive) => handleChangeActiveButton(isActive, category._id)}
+                                    onChangeToActive={(isActive) => {
+                                        handleChangeActiveButton(isActive, category._id);
+
+                                        if (isActive) {
+                                            trackPageView({
+                                                documentTitle: `Category page - ${category.displayName}`,
+                                                href: window.location.href,
+                                            });
+                                        }
+                                    }}
                                     isActiveButton={activeButton === category._id}
                                 >
                                     {category.iconFileId ? (
@@ -279,7 +313,16 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                             to="/fluid-simulation"
                             text={i18next.t('pages.fluidSimulation')}
                             isDrawerOpen={isDrawerOpen}
-                            onChangeToActive={(isActive) => handleChangeActiveButton(isActive, 'fluid-simulation')}
+                            onChangeToActive={(isActive) => {
+                                handleChangeActiveButton(isActive, 'fluid-simulation');
+
+                                if (isActive) {
+                                    trackEvent({
+                                        category: 'side-bar',
+                                        action: 'MELTA PLUS',
+                                    });
+                                }
+                            }}
                             isActiveButton={activeButton === 'fluid-simulation'}
                         >
                             <FluidSimulationIcon
@@ -290,10 +333,90 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                     )}
 
                     <NavButton
+                        to="/iframes"
+                        text={i18next.t('pages.iFrames')}
+                        extension={
+                            iFramesInSidebar?.length! > 0 ? (
+                                <Grid container display="flex" flexDirection="column">
+                                    <Grid item width="150px" maxHeight="450px" sx={{ overflow: 'auto' }}>
+                                        {iFramesInSidebar?.map((iFrame) => (
+                                            <Grid
+                                                key={iFrame._id}
+                                                onClick={(event) => {
+                                                    handleMenuItemClick(event, iFrame._id);
+                                                }}
+                                                sx={{
+                                                    '&:hover': {
+                                                        backgroundColor: '#B8B8B8',
+                                                        borderRadius: '5px',
+                                                    },
+                                                    padding: '9px 9px 9px 18px',
+                                                    display: 'flex',
+                                                    flexDirection: 'row',
+                                                }}
+                                            >
+                                                {iFrame.iconFileId ? (
+                                                    <CustomIcon color="white" iconUrl={iFrame.iconFileId!} height="15px" width="15px" />
+                                                ) : (
+                                                    <HiveIcon style={{ color: 'white' }} fontSize="inherit" />
+                                                )}
+                                                <Typography
+                                                    style={{
+                                                        fontFamily: 'Rubik',
+                                                        fontSize: '14px',
+                                                        fontWeight: '400',
+                                                        lineHeight: '17px',
+                                                        letterSpacing: '0em',
+                                                        textAlign: 'right',
+                                                        width: '125px',
+                                                        height: '17px',
+                                                        marginRight: '10px',
+                                                        textOverflow: 'ellipsis',
+                                                        whiteSpace: 'nowrap',
+                                                        overflow: 'hidden',
+                                                    }}
+                                                >
+                                                    {iFrame.name}
+                                                </Typography>
+                                            </Grid>
+                                        ))}
+                                    </Grid>
+                                </Grid>
+                            ) : (
+                                i18next.t('pages.iFrames')
+                            )
+                        }
+                        isDrawerOpen={isDrawerOpen}
+                        onChangeToActive={(isActive) => {
+                            handleChangeActiveButton(isActive, 'iFrames');
+                            if (isActive) {
+                                trackPageView({
+                                    documentTitle: 'iFrames page',
+                                    href: window.location.href,
+                                });
+                            }
+                        }}
+                        isActiveButton={activeButton === 'iFrames'}
+                    >
+                        <StarBorderPurple500Icon
+                            fontSize="large"
+                            sx={{ color: activeButton === 'iFrames' ? '#545eb9' : 'white', ...workspace.metadata.iconSize }}
+                        />
+                    </NavButton>
+
+                    <NavButton
                         to="/rule-management"
                         text={i18next.t('pages.ruleManagement')}
                         isDrawerOpen={isDrawerOpen}
-                        onChangeToActive={(isActive) => handleChangeActiveButton(isActive, 'rule-management')}
+                        onChangeToActive={(isActive) => {
+                            handleChangeActiveButton(isActive, 'rule-management');
+                            if (isActive) {
+                                trackPageView({
+                                    documentTitle: 'Rule Management page',
+                                    href: window.location.href,
+                                });
+                            }
+                        }}
                         isActiveButton={activeButton === 'rule-management'}
                     >
                         <GavelIcon
@@ -306,7 +429,15 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                         to="/gantts"
                         text={i18next.t('pages.gantts')}
                         isDrawerOpen={isDrawerOpen}
-                        onChangeToActive={(isActive) => handleChangeActiveButton(isActive, 'gantts')}
+                        onChangeToActive={(isActive) => {
+                            handleChangeActiveButton(isActive, 'gantts');
+                            if (isActive) {
+                                trackPageView({
+                                    documentTitle: 'Gantts page',
+                                    href: window.location.href,
+                                });
+                            }
+                        }}
                         isActiveButton={activeButton === 'gantts'}
                     >
                         <CalendarIcon
@@ -319,7 +450,15 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                         to="/processes"
                         text={i18next.t('pages.processInstances')}
                         isDrawerOpen={isDrawerOpen}
-                        onChangeToActive={(isActive) => handleChangeActiveButton(isActive, 'processes')}
+                        onChangeToActive={(isActive) => {
+                            handleChangeActiveButton(isActive, 'processes');
+                            if (isActive) {
+                                trackPageView({
+                                    documentTitle: 'Processes page',
+                                    href: window.location.href,
+                                });
+                            }
+                        }}
                         isActiveButton={activeButton === 'processes'}
                     >
                         <CustomImage
@@ -353,7 +492,15 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                             to="/permissions-management"
                             text={i18next.t('permissions.permissionsManagementPageTitle')}
                             isDrawerOpen={isDrawerOpen}
-                            onChangeToActive={(isActive) => handleChangeActiveButton(isActive, 'permissions-management')}
+                            onChangeToActive={(isActive) => {
+                                handleChangeActiveButton(isActive, 'permissions-management');
+                                if (isActive) {
+                                    trackPageView({
+                                        documentTitle: 'PermissionsManagement page',
+                                        href: window.location.href,
+                                    });
+                                }
+                            }}
                             isActiveButton={activeButton === 'permissions-management'}
                         >
                             <ManageAccountsIcon
@@ -385,7 +532,15 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                 )}
                 <Grid item>
                     <IconButton
-                        onClick={toggleDrawer}
+                        onClick={() => {
+                            if (!isDrawerOpen) {
+                                trackEvent({
+                                    category: 'side-bar',
+                                    action: 'open',
+                                });
+                            }
+                            toggleDrawer();
+                        }}
                         style={{
                             height: '50px',
                             width: '27px',

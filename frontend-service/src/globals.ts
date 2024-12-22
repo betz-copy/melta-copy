@@ -16,6 +16,7 @@ export const environment = {
         processTemplates: '/processes/templates',
         processes: '/processes/instances',
         gantts: '/gantts',
+        iFrames: '/iframes',
         storage: '/files',
         preview: '/preview',
         permissions: '/permissions',
@@ -95,6 +96,18 @@ export const environment = {
     },
     entitiesProperties: {
         maxNumOfCharactersNotInFullWidth: 700,
+        numOfFixedDigits: 18,
+    },
+    iFrames: {
+        iFrameDimensionKey: 'iFrameDimension_',
+        iFramesOrderKey: 'iFramesOrder',
+        sideBarOpenKey: 'isSideBarOpen',
+        infiniteScrollPageCount: 6,
+        sideBarWidth: 200,
+        iFrameSpace: 10,
+        sideBarOpenWidth: 320,
+        sideBarCloseWidth: 140,
+        relativeMaxHight: 160,
     },
     notifications: {
         updateInterval: 1000 * 60 * 10,
@@ -179,15 +192,20 @@ export const environment = {
     minimumSupportedChromeVersion: 85,
     fileIdLength: 32,
     maxDateTimestamp: 8640000000000000,
+    attemptInterval: 100,
     errorCodes: {
         ruleBlock: 'RULE_BLOCK',
         failedToCreateConstraints: 'FAILED_TO_CREATE_CONSTRAINTS',
         failedConstraintsValidation: 'FAILED_CONSTRAINTS_VALIDATION',
+        failedToDeleteField: 'FAILED_DELETE_FIELD',
         actionsCustomError: 'ACTIONS_CUSTOM_ERROR',
     },
+    loadExcel: { excelExtension: '.xlsx', acceptedFilesTypes: { 'excel/xlsx': ['.xlsx', '.xls'] }, filesLimit: 5, entitiesLimit: 500 },
+
     draftAutoSaveDebounce: 250,
     fileExtensions: {
         image: ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'webp', 'ico', 'psd', 'raw', 'heif', 'indd', 'ai', 'eps'],
+        imageToManipulate: ['png', 'jpg', 'jpeg', 'svg'] as string[],
         video: ['mp4', 'mov', 'avi', 'wmv', 'flv', 'mkv', 'webm', 'avchd', '3gp', '3g2', '3gpp', '3gpp2', 'm4v'],
         audio: ['mp3', 'wav', 'ogg', 'flac', 'wma', 'aac', 'm4a'],
         document: [
@@ -1215,10 +1233,10 @@ export const environment = {
             'prw',
         ],
     },
-    matomo: {
-        urlBase: 'matomo.yesodot.services.idf',
-        siteId: 24,
-    },
+    // matomo: {
+    //     urlBase: 'matomo.yesodot.services.idf',
+    //     siteId: 24,
+    // },
     systemManagement: {
         actions: {
             unusedPropertyErrorCodeTs: '6133',

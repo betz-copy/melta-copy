@@ -1,6 +1,6 @@
 import { ConsumerMessage } from 'menashmq';
 import { FilesManager } from '../express/files/manager';
-import logger from '../utils/logger/logsLogger';
+import { ServiceError } from '../express/error';
 import { config } from '../config';
 
 const {
@@ -17,8 +17,8 @@ class PreviewConsumer {
             else await manager.uploadFilePreview(msgContent.toString());
             msg.ack();
         } catch (err: any) {
-            logger.error('Rabbit consumer error: ', { error: err });
             msg.nack(false);
+            throw new ServiceError(undefined, 'Rabbit consumer error', { error: err });
         }
     }
 }

@@ -13,6 +13,7 @@ import { toast } from 'react-toastify';
 import { v4 as uuid } from 'uuid';
 import { useLocation } from 'wouter';
 import { cloneDeep } from 'lodash';
+import { StatusCodes } from 'http-status-codes';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IEntity, IUniqueConstraint } from '../../../interfaces/entities';
 import { createEntityRequest, updateEntityRequestForMultiple } from '../../../services/entitiesService';
@@ -138,7 +139,7 @@ const CreateOrEditEntityDetails: React.FC<{
     }, [entityToUpdate, entityTemplate, initialTemplateFileKeys]);
 
     const handleMutationError = (err: AxiosError, template: IMongoEntityTemplatePopulated, newEntityData?: EntityWizardValues | undefined) => {
-        if (err.response?.status === 413) setExternalErrors((prev) => ({ ...prev, files: true }));
+        if (err.response?.status === StatusCodes.REQUEST_TOO_LONG) setExternalErrors((prev) => ({ ...prev, files: true }));
 
         const errorMetadata = err.response?.data?.metadata;
 

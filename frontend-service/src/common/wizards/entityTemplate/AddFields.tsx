@@ -66,7 +66,13 @@ const addFieldsSchema = Yup.object({
                 }),
             }),
         )
-        .min(1, i18next.t('validation.oneField')),
+        .min(1, i18next.t('validation.oneField'))
+        .test(i18next.t('validation.oneField'), i18next.t('validation.oneField'), (value) =>
+            value ? value.some((obj) => !('deleted' in obj) || obj.deleted === false) : false,
+        )
+        .test(i18next.t('validation.oneField'), i18next.t('validation.oneField'), (value) =>
+            value ? value.some((obj) => !('archive' in obj) || obj.archive === false || obj.archive === undefined) : false,
+        ),
     attachmentProperties: Yup.array().of(
         attachmentPropertiesBaseSchema.shape({
             required: Yup.boolean().required(i18next.t('validation.required')),
@@ -84,6 +90,8 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
     isEditMode,
     setBlock,
 }) => {
+    const hasActions = Boolean(initialValues?.actions);
+
     const { data: areThereInstancesByTemplateIdResponse } = useQuery(
         ['areThereInstancesByTemplateId', (values as EntityTemplateWizardValues & { _id: string })._id],
         () =>
@@ -112,6 +120,16 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
         newPropertiesTypeOrder.splice(destination.index, 0, movedOption);
 
         setFieldValue('propertiesTypeOrder', newPropertiesTypeOrder);
+    };
+
+    const getTitle = (itemId: string): string => {
+        const titles: Record<string, string> = {
+            properties: i18next.t('wizard.entityTemplate.properties'),
+            attachmentProperties: i18next.t('wizard.entityTemplate.attachments'),
+            archiveProperties: i18next.t('wizard.entityTemplate.archiveProperties'),
+        };
+
+        return titles[itemId] || '';
     };
 
     return (
@@ -154,11 +172,7 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
                                             areThereAnyInstances={areThereAnyInstances}
                                             isEditMode={isEditMode}
                                             setBlock={setBlock}
-                                            title={
-                                                itemId === 'properties'
-                                                    ? i18next.t('wizard.entityTemplate.properties')
-                                                    : i18next.t('wizard.entityTemplate.attachments')
-                                            }
+                                            title={getTitle(itemId)}
                                             addPropertyButtonLabel={
                                                 itemId === 'properties'
                                                     ? i18next.t('wizard.entityTemplate.addProperty')
@@ -171,8 +185,12 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
                                             supportChangeToRequiredWithInstances
                                             supportRelationshipReference
                                             supportArrayFields
+                                            supportDeleteForExistingInstances
                                             supportEditEnum
                                             supportUnique
+                                            supportArchive
+                                            supportAddFieldButton={itemId === 'attachmentProperties' || itemId === 'properties'}
+                                            hasActions={hasActions}
                                             draggable={{ isDraggable: true, dragHandleProps: draggableProvided.dragHandleProps }}
                                         />
                                     </Grid>

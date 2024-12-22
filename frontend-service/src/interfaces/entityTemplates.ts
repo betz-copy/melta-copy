@@ -22,12 +22,14 @@ export interface IEntitySingleProperty {
     calculateTime?: boolean;
     serialStarter?: number;
     serialCurrent?: number;
+    isNewPropNameEqualDeletedPropName?: boolean;
     relationshipReference?: {
         relationshipTemplateId?: string;
         relationshipTemplateDirection: 'outgoing' | 'incoming';
         relatedTemplateId: string;
         relatedTemplateField: string;
     };
+    archive?: boolean;
 }
 
 export interface IEntityTemplate {
@@ -43,7 +45,7 @@ export interface IEntityTemplate {
     disabled: boolean;
     category: IMongoCategory['_id'];
     propertiesOrder: string[];
-    propertiesTypeOrder: ('properties' | 'attachmentProperties')[];
+    propertiesTypeOrder: ('properties' | 'attachmentProperties' | 'archiveProperties')[];
     propertiesPreview: string[];
     enumPropertiesColors?: Record<string, Record<string, string>>; // { [fieldName]: { [enumOption1]: [color1], [enumOption2]: [color2] } }
     actions?: string;

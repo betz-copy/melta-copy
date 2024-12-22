@@ -20,6 +20,8 @@ export interface IMetadata {
         cacheBlockSize: number;
         maxConcurrentDatasourceRequests: number;
         infiniteInitialRowCount: number;
+        defaultExpandedTableHeight: number;
+        paginationPageSizeSelector: Array<number>;
     };
     activityLog: {
         infiniteScrollPageCount: number;

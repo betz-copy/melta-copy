@@ -1,23 +1,36 @@
-import { Box, Grid, IconButton, Link, Typography } from '@mui/material';
-import React, { ReactNode, useState } from 'react';
+import { Grid, IconButton, Link, Typography } from '@mui/material';
+import React, { ReactNode, useMemo, useState } from 'react';
+import { AutoAwesome } from '@mui/icons-material';
+import i18next from 'i18next';
 import { environment } from '../../globals';
 import { getFileName } from '../../utils/getFileName';
 import { getFileExtension, getFileNameWithoutExtension, getPreviewContentType } from '../../utils/getFileType';
 import FileIcon from './FileIcon';
 import { PreviewDialog } from './PreviewDialog';
+import { HighlightText } from '../../utils/HighlightText';
+import { MeltaTooltip } from '../MeltaTooltip';
 import { useWorkspaceStore } from '../../stores/workspace';
 
-const OpenPreviewContent: React.FC<{ fileName: string; onClick?: () => Promise<void>; img?: ReactNode; showText?: boolean }> = ({
-    fileName,
-    onClick,
-    img,
-    showText,
-}) => {
+const OpenPreviewContent: React.FC<{
+    fileName: string;
+    onClick?: () => Promise<void>;
+    img?: ReactNode;
+    showText?: boolean;
+    searchValue?: string;
+    highlightAll?: boolean;
+}> = ({ fileName, onClick, img, showText, searchValue, highlightAll }) => {
+    const text = useMemo(() => getFileNameWithoutExtension(fileName), [fileName]);
     const workspace = useWorkspaceStore((state) => state.workspace);
 
     return (
         <Grid style={{ overflow: 'hidden', whiteSpace: 'nowrap', maxWidth: '100%' }}>
-            <IconButton sx={{ borderRadius: 10, maxWidth: '100%' }} onClick={onClick}>
+            <IconButton
+                sx={{ borderRadius: 10, maxWidth: '100%', gap: '10px' }}
+                onClick={(e) => {
+                    e.stopPropagation();
+                    onClick?.();
+                }}
+            >
                 {img ?? <FileIcon extension={getFileExtension(fileName)} style={{ height: '18px' }} />}
                 {showText && (
                     <Typography
@@ -30,8 +43,14 @@ const OpenPreviewContent: React.FC<{ fileName: string; onClick?: () => Promise<v
                             maxWidth: '100%',
                         }}
                     >
-                        {getFileNameWithoutExtension(fileName)}
+                        <HighlightText text={text} searchedText={highlightAll ? text : searchValue} />
                     </Typography>
+                )}
+
+                {highlightAll && (
+                    <MeltaTooltip title={i18next.t('entitiesTableOfTemplate.semanticSearch')} arrow>
+                        <AutoAwesome style={{ height: '18px' }} />
+                    </MeltaTooltip>
                 )}
             </IconButton>
         </Grid>
@@ -43,7 +62,10 @@ const OpenPreview: React.FC<{
     img?: ReactNode;
     showText?: boolean;
     download?: boolean;
-}> = ({ fileId, img, showText = true, download }) => {
+    onClick?: () => Promise<void>;
+    searchValue?: string;
+    entityIdsToInclude?: string[];
+}> = ({ fileId, img, showText = true, download, onClick, searchValue, entityIdsToInclude }) => {
     const fileName = typeof fileId === 'string' ? getFileName(fileId) : fileId.name;
     const [open, setOpen] = useState(false);
     const contentType = getPreviewContentType(fileName);
@@ -52,18 +74,41 @@ const OpenPreview: React.FC<{
         setOpen(true);
     };
 
+    const highlightAll = useMemo(() => {
+        const isFileNameSearched = searchValue && fileName.toLowerCase().includes(searchValue);
+        return !isFileNameSearched && entityIdsToInclude?.includes(typeof fileId === 'string' ? fileId : fileId.name);
+    }, [entityIdsToInclude, fileId, fileName, searchValue]);
+
+    if (download) {
+        const content = (
+            <OpenPreviewContent
+                fileName={fileName}
+                img={img}
+                showText={showText}
+                searchValue={searchValue}
+                onClick={onClick}
+                highlightAll={highlightAll}
+            />
+        );
+        return onClick ? (
+            content
+        ) : (
+            <Link href={`/api${environment.api.storage}/${fileId}`} target="_blank" download>
+                {content}
+            </Link>
+        );
+    }
     return (
         <Grid>
-            {download ? (
-                <Link href={`/api${environment.api.storage}/${fileId}`} target="_blank" download>
-                    <OpenPreviewContent fileName={fileName} img={img} showText={showText} />
-                </Link>
-            ) : (
-                <Box>
-                    <OpenPreviewContent fileName={fileName} onClick={handleButtonClick} img={img} showText={showText} />
-                    {open && <PreviewDialog fileId={fileId} setOpen={setOpen} open={open} fileName={fileName} contentType={contentType} />}
-                </Box>
-            )}
+            <OpenPreviewContent
+                fileName={fileName}
+                onClick={handleButtonClick}
+                img={img}
+                showText={showText}
+                searchValue={searchValue}
+                highlightAll={highlightAll}
+            />
+            {open && <PreviewDialog fileId={fileId} setOpen={setOpen} open={open} fileName={fileName} contentType={contentType} />}
         </Grid>
     );
 };

@@ -10,6 +10,10 @@ const config = {
     mongo: {
         url: env.get('MONGO_URL').required().asString(),
         ganttsCollectionName: env.get('MONGO_GANTTS_COLLECTION_NAME').required().asString(),
+        connectionOptions: {
+            maxIdleTimeMS: env.get('MONGO_MAX_IDLE_CONNECTION_TIME').default(10000).asIntPositive(), // Maximum time (in ms) that a connection can be idle before being closed
+            socketTimeoutMS: env.get('MONGO_MAX_IDLE_SOCKET_TIME').default(10000).asIntPositive(), // Maximum idle time for an active connection
+        },
     },
     logs: {
         format: env.get('LOGGING_DATE_FORMAT').default('YYYY-MM-DD HH:mm:ss').asString(),

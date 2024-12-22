@@ -13,7 +13,7 @@ import { getAllTemplates, GetAllTemplatesType } from '../../services/templates/g
 import { getFile } from '../../services/workspacesService';
 import { useUserStore } from '../../stores/user';
 import { defaultMetadata, useWorkspaceStore } from '../../stores/workspace';
-import { getWorkspacePermissions } from '../../utils/permissions';
+import { getWorkspacePermissions, handleWorkspace } from '../../utils/permissions';
 import { mapTemplates } from '../../utils/templates';
 import ErrorPage from '../ErrorPage';
 import { MeltaRoutesInner } from './routes';
@@ -61,22 +61,24 @@ export const MeltaRoutes: React.FC<IMeltaRoutesProps> = ({ path }) => {
         enabled: Boolean(workspace?._id),
     });
 
-    useEffect(() => {
-        const handleWorkspace = async () => {
-            if (!workspace) return;
+    // useEffect(() => {
+    //     const handleWorkspace = async () => {
+    //         if (!workspace) return;
 
-            setWorkspace({ ...workspace, metadata: { ...defaultMetadata, ...workspace.metadata } });
-            document.title = workspace.displayName;
+    //         setWorkspace({ ...workspace, metadata: { ...defaultMetadata, ...workspace.metadata } });
+    //         document.title = workspace.displayName;
 
-            const workspacePermissions = await getWorkspacePermissions(workspace._id, currentUser.permissions);
-            if (workspacePermissions) currentUser.permissions[workspace._id] = workspacePermissions;
+    //         const workspacePermissions = await getWorkspacePermissions(workspace._id, currentUser.permissions);
+    //         if (workspacePermissions) currentUser.permissions[workspace._id] = workspacePermissions;
 
-            if (currentUser.currentWorkspacePermissions !== currentUser.permissions[workspace._id])
-                setUser({ ...currentUser, currentWorkspacePermissions: currentUser.permissions[workspace._id] });
-        };
+    //         if (currentUser.currentWorkspacePermissions !== currentUser.permissions[workspace._id])
+    //             setUser({ ...currentUser, currentWorkspacePermissions: currentUser.permissions[workspace._id] });
+    //     };
 
-        handleWorkspace();
-    }, [workspace, setWorkspace, currentUser, setUser]);
+    //     handleWorkspace();
+    // }, [workspace, setWorkspace, currentUser, setUser]);
+
+    useEffect(() => handleWorkspace(workspace?.displayName ?? '', setWorkspace, workspace), [workspace, setWorkspace, currentUser, setUser]);
 
     const isLoading = useMemo(() => isLoadingAllTemplates || isLoadingWorkspace, [isLoadingAllTemplates, isLoadingWorkspace]);
     const isError = useMemo(() => isErrorAllTemplates || isErrorWorkspace, [isErrorAllTemplates, isErrorWorkspace]);

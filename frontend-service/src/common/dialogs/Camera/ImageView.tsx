@@ -1,23 +1,43 @@
-import { Grid, IconButton, TextField } from '@mui/material';
-import React, { useState } from 'react';
-import { Check as CheckIcon, Close as CloseIcon } from '@mui/icons-material';
+/* eslint-disable new-cap */
+/* eslint-disable import/no-extraneous-dependencies */
+import { Box, Dialog, DialogContent, Grid, IconButton, TextField } from '@mui/material';
+import React, { useRef, useState } from 'react';
+import { Check as CheckIcon, Close as CloseIcon, PictureAsPdf, FilterBAndW } from '@mui/icons-material';
 import i18next from 'i18next';
 import { Form, Formik, FormikProps } from 'formik';
 import { toast } from 'react-toastify';
+import { Cropper } from 'react-cropper';
+import 'cropperjs/dist/cropper.css';
+import jsPDF from 'jspdf';
+import { MeltaTooltip } from '../../MeltaTooltip';
+import { filterImageData } from '../../../utils/filterImageData';
 
 interface IImageView {
     setStream: React.Dispatch<React.SetStateAction<MediaStream | null>>;
     imgURL: string;
     setImgURL: React.Dispatch<React.SetStateAction<string | null>>;
-    setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+    setOpenImageView: React.Dispatch<React.SetStateAction<boolean>>;
+    openCamera: boolean;
+    openImageView: boolean;
+    setOpenCamera: React.Dispatch<React.SetStateAction<boolean>>;
     onPictureTaken: (file: File) => void;
-    cameraSize: { width: number; height: number };
 }
 
-const ImageView: React.FC<IImageView> = ({ setStream, imgURL, setImgURL, setOpen, onPictureTaken, cameraSize }) => {
+const ImageView: React.FC<IImageView> = ({
+    setStream,
+    imgURL,
+    setImgURL,
+    setOpenImageView,
+    openCamera,
+    openImageView,
+    setOpenCamera,
+    onPictureTaken,
+}) => {
+    const [usePdf, setUsePdf] = useState(false);
+    const [applyFilter, setApplyFilter] = useState(false);
     const [imgName, setImgName] = useState<string | null>(null);
-    const iconSize = '23px';
-    const { width, height } = cameraSize;
+
+    const cropperRef = useRef<any>(null);
 
     const urlToFile = async () => {
         const response = await fetch(imgURL!);
@@ -25,51 +45,135 @@ const ImageView: React.FC<IImageView> = ({ setStream, imgURL, setImgURL, setOpen
         return new File([blob], `${imgName!}.png`);
     };
 
-    const uploadImg = async () => {
+    const handleUploadPng = async () => {
         const file = await urlToFile();
         onPictureTaken(file);
-        setOpen(false);
+        setOpenImageView(false);
+        setImgName(null);
+        setOpenCamera(false);
+    };
+
+    const onClose = async () => {
+        setImgName(null);
+        setOpenImageView(false);
+        if (openCamera)
+            try {
+                const userStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+                setStream(userStream);
+            } catch {
+                toast.error(i18next.t('camera.cameraNotFound'));
+            }
+    };
+
+    const handleExportToPDF = () => {
+        if (!cropperRef.current) return;
+
+        const { cropper } = cropperRef.current;
+        const croppedCanvas = cropper.getCroppedCanvas();
+
+        if (!croppedCanvas) return;
+
+        const filteredCanvas = document.createElement('canvas');
+        filteredCanvas.width = croppedCanvas.width;
+        filteredCanvas.height = croppedCanvas.height;
+
+        const context = filteredCanvas.getContext('2d');
+        if (!context) return;
+
+        if (applyFilter) {
+            filterImageData(context, croppedCanvas, filteredCanvas);
+        } else {
+            context.drawImage(croppedCanvas, 0, 0);
+        }
+
+        const croppedImageURL = filteredCanvas.toDataURL('image/png');
+
+        const pdf = new jsPDF();
+        pdf.addImage(croppedImageURL, 'PNG', 10, 10, 190, 0);
+        const pdfBlob = pdf.output('blob');
+
+        const file = new File([pdfBlob], `${imgName}.pdf`, { type: 'application/pdf' });
+        onPictureTaken(file);
+
+        setOpenImageView(false);
+        setOpenCamera(false);
         setImgURL(null);
         setImgName(null);
     };
 
-    const onClose = async () => {
-        setImgURL(null);
-        setImgName(null);
-        try {
-            const userStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-            setStream(userStream);
-        } catch {
-            toast.error(i18next.t('camera.cameraNotFound'));
+    const uploadImgOrPdf = () => {
+        if (usePdf) handleExportToPDF();
+        else handleUploadPng();
+    };
+
+    const pdfClick = () => {
+        if (usePdf) {
+            setUsePdf(false);
+            setApplyFilter(false);
+        } else {
+            setUsePdf(true);
         }
     };
 
     return (
-        <>
-            <Grid style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                <IconButton onClick={onClose}>
-                    <CloseIcon style={{ width: iconSize, height: iconSize }} />
-                </IconButton>
-            </Grid>
-            <img src={imgURL} alt="cameraPic" style={{ paddingLeft: '10px', paddingRight: '10px', width, height }} />
-            <Formik initialValues={{ name: imgName }} onSubmit={async (value) => setImgName(value.name)}>
-                {(formikProps: FormikProps<string>) => (
-                    <Form style={{ display: 'flex', justifyContent: 'center' }}>
-                        <TextField
-                            label={i18next.t('camera.imgName')}
-                            value={imgName}
-                            onChange={(e) => setImgName(e.target.value)}
-                            variant="standard"
-                            type="text"
-                            sx={{ width: 260 }}
+        <Dialog open={openImageView} onClose={onClose} maxWidth={false} sx={{ maxWidth: 1500, mx: 'auto' }}>
+            <DialogContent sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                <Grid style={{ position: 'absolute', left: '0.2rem', top: '0.2rem' }}>
+                    <IconButton onClick={onClose}>
+                        <CloseIcon style={{ width: '1.5rem', height: '1.5rem' }} />
+                    </IconButton>
+                </Grid>
+                <Box sx={{ padding: '10px' }}>
+                    {usePdf ? (
+                        <Cropper
+                            src={imgURL}
+                            ref={cropperRef}
+                            style={{ width: 1000, height: 775 }}
+                            zoomTo={0.5}
+                            initialAspectRatio={1}
+                            preview=".img-preview"
+                            viewMode={1}
+                            minCropBoxHeight={10}
+                            minCropBoxWidth={10}
+                            background={false}
+                            responsive
+                            autoCropArea={1}
+                            checkOrientation={false}
+                            guides
                         />
-                        <IconButton disabled={!formikProps.values || !imgName} type="submit" onClick={() => uploadImg()}>
-                            <CheckIcon style={{ color: !formikProps.values || !imgName ? '#CCCFE5' : '#1E2775', width: '25px', height: '25px' }} />
-                        </IconButton>
-                    </Form>
-                )}
-            </Formik>
-        </>
+                    ) : (
+                        <img src={imgURL} alt="cameraPic" style={{ width: 1000, height: 775 }} />
+                    )}
+                </Box>
+                <Formik initialValues={{ name: imgName }} onSubmit={async (value) => setImgName(value.name)}>
+                    {(formikProps: FormikProps<string>) => (
+                        <Form style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                            <TextField
+                                label={usePdf ? i18next.t('camera.fileName') : i18next.t('camera.imgName')}
+                                value={imgName}
+                                onChange={(e) => setImgName(e.target.value)}
+                                variant="standard"
+                                type="text"
+                                sx={{ width: 260 }}
+                            />
+                            <IconButton disabled={!formikProps.values || !imgName} type="submit" onClick={() => uploadImgOrPdf()}>
+                                <CheckIcon
+                                    style={{ color: !formikProps.values || !imgName ? '#CCCFE5' : '#1E2775', width: '25px', height: '25px' }}
+                                />
+                            </IconButton>
+                            <IconButton onClick={pdfClick}>
+                                <PictureAsPdf color={usePdf ? 'primary' : 'disabled'} />
+                            </IconButton>
+                            <MeltaTooltip title={i18next.t('camera.blackAndWhite')} placement="bottom">
+                                <IconButton onClick={() => setApplyFilter(!applyFilter)} disabled={!usePdf}>
+                                    <FilterBAndW color={applyFilter ? 'primary' : 'disabled'} />
+                                </IconButton>
+                            </MeltaTooltip>
+                        </Form>
+                    )}
+                </Formik>
+            </DialogContent>
+        </Dialog>
     );
 };
 

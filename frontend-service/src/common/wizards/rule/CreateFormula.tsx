@@ -15,7 +15,7 @@ import {
 } from '@react-awesome-query-builder/mui';
 import i18next from 'i18next';
 import { ThemeProvider } from '@mui/material';
-import { StepComponentProps, StepsType } from '../index';
+import { StepComponentProps, StepType } from '../index';
 import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { getFieldsConfigOfRule } from '../../../utils/rules/fields';
@@ -30,7 +30,7 @@ import { lightTheme } from '../../../theme';
 
 const { MuiTextWidget } = MuiWidgets;
 
-export const formulaValidation: StepsType<RuleWizardValues>[number]['validate'] = (values) => {
+export const formulaValidation: StepType<RuleWizardValues>[][number]['validate'] = (values) => {
     try {
         RuleParser.jsonTreeToFormula(Utils.getTree(values.formula) as JsonItem);
     } catch (err) {

@@ -2,7 +2,7 @@
 import pickBy from 'lodash.pickby';
 import { IEntity } from '../../externalServices/instanceService/interfaces/entities';
 import { trycatch } from '../../utils';
-import { ServiceError } from '../error';
+import { BadRequestError, ForbiddenError } from '../error';
 import { InstancesManager } from '../instances/manager';
 
 import config from '../../config';
@@ -157,7 +157,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
 
     checkIfRuleBreachRequestIsReviewable(ruleBreachRequest: IRuleBreachRequest) {
         if (ruleBreachRequest.status !== RuleBreachRequestStatus.Pending) {
-            throw new ServiceError(400, 'rule breach requests was already reviewed');
+            throw new BadRequestError('rule breach requests was already reviewed');
         }
     }
 
@@ -259,7 +259,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
                         ruleBreachRequest.brokenRules,
                     );
             } catch (error: any) {
-                if (error instanceof ServiceError && error.metadata.errorCode === errorCodes.ruleBlock) {
+                if (error.metadata.errorCode === errorCodes.ruleBlock) {
                     await this.service.updateRuleBreachRequestBrokenRules(ruleBreachRequestId, error.metadata.rawBrokenRules);
                 }
 
@@ -368,7 +368,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
         const { templateId, properties } = action.actionMetadata;
         const instancesManager = new InstancesManager(this.workspaceId);
 
-        const entity = await instancesManager.createEntityInstance({ templateId, properties }, [], brokenRules, originUserId, false);
+        const entity = await instancesManager.createEntityInstance({ templateId, properties }, [], brokenRules, originUserId, undefined, false);
 
         await this.service.updateRuleBreachRequestActionsMetadata(_id, [
             {
@@ -519,7 +519,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
         const ruleBreachRequest = await this.service.getRuleBreachRequestById(ruleBreachRequestId);
 
         if (ruleBreachRequest.originUserId !== user.id) {
-            throw new ServiceError(403, 'only the origin user can cancel rule breach request');
+            throw new ForbiddenError('only the origin user can cancel rule breach request');
         }
 
         return this.discardRuleBreachRequest(ruleBreachRequest, user, RuleBreachRequestStatus.Canceled);
@@ -573,7 +573,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
             return;
         }
 
-        throw new ServiceError(400, 'shouldnt upload files to create rule breach request if not create/duplicate/update entity');
+        throw new BadRequestError('shouldnt upload files to create rule breach request if not create/duplicate/update entity');
     }
 
     private async deleteRuleBreachFiles(ruleBreach: Omit<IRuleBreachRequest | IRuleBreachAlert, '_id' | 'createdAt' | 'originUserId'>) {
@@ -640,14 +640,17 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
         };
     }
 
+    async updateManyRuleBreachRequestsStatusesByRelatedEntityId(entityId: string, status: RuleBreachRequestStatus): Promise<IRuleBreachRequest[]> {
+        return this.service.updateManyRuleBreachRequestsStatusesByRelatedEntityId(entityId, status);
+    }
+
     async getRuleBreachRequestById(ruleBreachRequestId: string, user?: Express.User): Promise<IRuleBreachRequestPopulated> {
         const ruleBreachRequest = await this.service.getRuleBreachRequestById(ruleBreachRequestId);
 
         if (user && ruleBreachRequest.originUserId !== user.id) {
             const userPermissions = await this.authorizer.getWorkspacePermissions(user.id);
-            if (!userPermissions.admin?.scope && userPermissions.rules?.scope !== PermissionScope.write) {
-                throw new ServiceError(403, 'user does not have permissions to this rule breach request');
-            }
+            if (!userPermissions.admin?.scope && userPermissions.rules?.scope !== PermissionScope.write)
+                throw new ForbiddenError('user does not have permissions to this rule breach request');
         }
 
         return this.populateRuleBreachRequest(ruleBreachRequest);
@@ -658,9 +661,8 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
 
         if (user && ruleBreachAlert.originUserId !== user.id) {
             const userPermissions = await this.authorizer.getWorkspacePermissions(user.id);
-            if (!userPermissions.admin?.scope && userPermissions.rules?.scope !== PermissionScope.write) {
-                throw new ServiceError(403, 'user does not have permissions to this rule breach request');
-            }
+            if (!userPermissions.admin?.scope && userPermissions.rules?.scope !== PermissionScope.write)
+                throw new ForbiddenError('user does not have permissions to this rule breach alert');
         }
 
         return this.populateRuleBreachAlert(ruleBreachAlert);
@@ -688,17 +690,29 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
         return entitiesMap.get(entityId) ?? null;
     }
 
-    private populateRelationshipForBrokenRules(relationshipId: string, relationshipsMap: Map<string, IEntity>): IRelationshipForBrokenRules {
+    private populateRelationshipForBrokenRules(
+        relationshipId: string,
+        relationshipsMap: Map<string, IRelationship>,
+        entitiesMap: Map<string, IEntity>,
+    ): IRelationshipForBrokenRules {
         if (relationshipId.startsWith(ruleBreachService.brokenRulesFakeEntityIdPrefix)) {
             return relationshipId;
         }
-        return relationshipsMap.get(relationshipId) ?? null;
+        const relationship = relationshipsMap.get(relationshipId) ?? null;
+
+        if (!relationship) return null;
+
+        return {
+            ...relationship,
+            sourceEntity: entitiesMap.get(relationship.sourceEntityId)!,
+            destinationEntity: entitiesMap.get(relationship.destinationEntityId)!,
+        };
     }
 
     private populateBrokenRule(
         { ruleId, failures }: IBrokenRule,
         entitiesMap: Map<string, IEntity>,
-        relationshipsMap: Map<string, IEntity>,
+        relationshipsMap: Map<string, IRelationship>,
     ): IBrokenRulePopulated {
         const failuresPopulated: IBrokenRulePopulated['failures'] = failures.map((failure) => {
             return {
@@ -709,7 +723,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
                     if (cause.instance.aggregatedRelationship) {
                         const { relationshipId, otherEntityId } = cause.instance.aggregatedRelationship;
                         aggregatedRelationship = {
-                            relationship: this.populateRelationshipForBrokenRules(relationshipId, relationshipsMap),
+                            relationship: this.populateRelationshipForBrokenRules(relationshipId, relationshipsMap, entitiesMap),
                             otherEntity: this.populateEntityForBrokenRules(otherEntityId, entitiesMap),
                         };
                     }
@@ -731,37 +745,44 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
     }
 
     public async populateBrokenRules(brokenRules: IBrokenRule[]): Promise<IBrokenRulePopulated[]> {
-        const entitiyIds = new Set<string>();
+        const entityIds = new Set<string>();
         const relationshipIds = new Set<string>();
         brokenRules.forEach(({ failures }) => {
             failures.forEach(({ entityId, causes }) => {
-                entitiyIds.add(entityId);
+                entityIds.add(entityId);
 
                 causes.forEach(({ instance }) => {
-                    entitiyIds.add(instance.entityId);
+                    entityIds.add(instance.entityId);
 
                     if (instance.aggregatedRelationship) {
-                        entitiyIds.add(instance.aggregatedRelationship.otherEntityId);
+                        entityIds.add(instance.aggregatedRelationship.otherEntityId);
                         relationshipIds.add(instance.aggregatedRelationship.relationshipId);
                     }
                 });
             });
         });
 
-        // no point to do getInstanceById to unexisting entity
-        entitiyIds.forEach((str) => {
-            if (str.startsWith(ruleBreachService.brokenRulesFakeEntityIdPrefix)) {
-                entitiyIds.delete(str);
-            }
-        });
         relationshipIds.forEach((str) => {
             if (str.startsWith(ruleBreachService.brokenRulesFakeEntityIdPrefix)) {
                 relationshipIds.delete(str);
             }
         });
 
-        const entities = await this.instancesService.getEntityInstancesByIds(Array.from(entitiyIds));
-        const relationships = await this.instancesService.getEntityInstancesByIds(Array.from(relationshipIds));
+        const relationships = await this.instancesService.getRelationshipsByIds(Array.from(relationshipIds));
+
+        relationships.forEach((relationship) => {
+            entityIds.add(relationship.sourceEntityId);
+            entityIds.add(relationship.destinationEntityId);
+        });
+
+        // no point to do getInstanceById to unexisting entity
+        entityIds.forEach((str) => {
+            if (str.startsWith(ruleBreachService.brokenRulesFakeEntityIdPrefix)) {
+                entityIds.delete(str);
+            }
+        });
+
+        const entities = await this.instancesService.getEntityInstancesByIds(Array.from(entityIds));
 
         const entitiesMap = new Map(entities.map((entity) => [entity.properties._id, entity]));
         const relationshipsMap = new Map(relationships.map((relationship) => [relationship.properties._id, relationship]));
@@ -812,6 +833,11 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
 
         const entityTemplate = await this.entityTemplateService.getEntityTemplateById(templateId);
         const createdEntityWithPopulatedRelationshipReferences = await this.getPopulatedRelationshipReferences(entityTemplate, properties);
+
+        await this.instancesService.getEntityInstanceById(properties._id).catch(() => {
+            createdEntityWithPopulatedRelationshipReferences._id = null;
+        });
+
         return { ...actionMetadata, properties: createdEntityWithPopulatedRelationshipReferences };
     }
 
@@ -859,6 +885,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
         if (entityId.startsWith(ruleBreachService.brokenRulesFakeEntityIdPrefix)) {
             const numberPart = parseInt(entityId.slice(1, -4), 10);
             entity = actions[numberPart].actionMetadata as IEntity;
+            entity.properties._id = entityId;
         } else entity = await this.instancesService.getEntityInstanceById(entityId).catch(() => null);
 
         if (entity) {

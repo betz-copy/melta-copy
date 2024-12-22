@@ -1,12 +1,12 @@
 import React, { PropsWithChildren, useEffect, useState } from 'react';
-import { Dialog, DialogTitle, DialogContent, IconButton } from '@mui/material';
+import { Dialog, DialogTitle, DialogContent, IconButton, Box } from '@mui/material';
 import { Close as CloseIcon } from '@mui/icons-material';
 import { Formik, Form, FormikProps, FormikConfig } from 'formik';
 import * as Yup from 'yup';
 import { ObjectShape } from 'yup/lib/object';
-
-import { Stepper } from './stepper';
 import { useDarkModeStore } from '../../stores/darkMode';
+import { StepperActions } from './stepper/StepperActions';
+import { Stepper } from './stepper';
 
 export interface StepComponentHelpers {
     isEditMode: boolean;
@@ -24,12 +24,19 @@ export type WizardBaseType<T extends object> = {
     isEditMode?: boolean;
 };
 
-export type StepsType<T extends object> = {
+export type StepType<T extends object> = {
     label: string;
+    description?: string;
     component: (formikProps: FormikProps<T>, helpers: StepComponentHelpers) => JSX.Element;
     validationSchema?: ObjectShape | Yup.ObjectSchema<ObjectShape>;
     validate?: FormikConfig<T>['validate'];
-}[];
+    stepperActions?: {
+        disable?: 'all' | 'back' | 'next';
+        back?: { text?: string; onClick?: () => void };
+        next?: { text?: string; onClick?: () => void };
+    };
+    invisibleBeforeStep?: boolean;
+};
 
 const Wizard = <T extends object>({
     open,
@@ -41,17 +48,23 @@ const Wizard = <T extends object>({
     isLoading,
     submitFunction,
     isEditMode,
+    direction = 'row',
+    showPrevSteps = false,
 }: PropsWithChildren<
     WizardBaseType<T> & {
         initialValues: T;
         title: string;
-        steps: StepsType<T>;
+        steps: StepType<T>[];
         isLoading: boolean;
         submitFunction: (values: T) => Promise<any>;
+        direction?: 'row' | 'column';
+        showPrevSteps?: boolean;
     }
 >): JSX.Element | null => {
     const [activeStep, setActiveStep] = useState(initialStep);
     const isLastStep = activeStep === steps.length - 1;
+
+    const [block, setBlock] = useState(false);
 
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
@@ -69,7 +82,7 @@ const Wizard = <T extends object>({
             maxWidth="lg"
             fullWidth
             PaperProps={{ sx: { bgcolor: darkMode ? '#060606' : 'white' } }}
-            style={{ height: '80%', margin: 'auto' }}
+            style={{ height: '100%', margin: 'auto' }}
             disableEnforceFocus
         >
             {/* disableEnforceFocus added for 'raqb' component as mentioned in docs https://github.com/ukrbublik/react-awesome-query-builder#api */}
@@ -103,6 +116,7 @@ const Wizard = <T extends object>({
                         if (isLastStep) {
                             await submitFunction(values);
                         } else {
+                            steps[activeStep].stepperActions?.next?.onClick?.();
                             setActiveStep((prevActiveStep) => prevActiveStep + 1);
                             actions.setTouched({});
                             actions.setSubmitting(false);
@@ -113,12 +127,25 @@ const Wizard = <T extends object>({
                         <Form>
                             <Stepper
                                 activeStep={activeStep}
-                                handleBack={handleBack}
                                 steps={steps}
-                                isLoading={isLoading}
                                 formikProps={formikProps}
+                                setBlock={setBlock}
                                 isEditMode={!!isEditMode}
+                                direction={direction}
+                                showPrevSteps={showPrevSteps}
                             />
+                            {steps[activeStep].stepperActions?.disable !== 'all' && (
+                                <Box sx={{ position: 'sticky', bottom: 0 }}>
+                                    <StepperActions
+                                        step={steps[activeStep]}
+                                        handleBack={handleBack}
+                                        isLastStep={isLastStep}
+                                        isFirstStep={activeStep === 0}
+                                        isLoading={isLoading || block}
+                                        formikProps={formikProps}
+                                    />
+                                </Box>
+                            )}
                         </Form>
                     )}
                 </Formik>

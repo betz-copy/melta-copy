@@ -27,11 +27,13 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
         enumPropertiesColors,
         uniqueConstraints,
         documentTemplatesIds,
+        propertiesTypeOrder,
         ...restOfEntityTemplate
     } = entityTemplate;
 
     const propertiesArray: EntityTemplateFormInputProperties[] = [];
     const attachmentProperties: EntityTemplateFormInputProperties[] = [];
+    const archiveProperties: EntityTemplateFormInputProperties[] = [];
 
     propertiesOrder.forEach((key) => {
         const value = properties.properties[key];
@@ -64,14 +66,19 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
             isDailyAlert: value.isDailyAlert ?? undefined,
             serialStarter: value.serialStarter,
             relationshipReference: value.relationshipReference || undefined,
+            archive: value.archive || undefined,
         };
 
         if (value.format === 'fileId' || value.items?.format === 'fileId') {
             attachmentProperties.push(property);
+        } else if (value.archive) {
+            archiveProperties.push(property);
         } else {
             propertiesArray.push(property);
         }
     });
+
+    if (archiveProperties.length !== 0 && !propertiesTypeOrder.includes('archiveProperties')) propertiesTypeOrder.push('archiveProperties');
 
     const documentTemplates = documentTemplatesIds?.map((documentTemplateId) => ({ name: documentTemplateId } as File));
 
@@ -82,17 +89,27 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
             icon: { file, name: getFileName(iconFileId) },
             properties: propertiesArray,
             attachmentProperties,
+            archiveProperties,
             uniqueConstraints,
             documentTemplatesIds: documentTemplates,
+            propertiesTypeOrder,
         };
     }
 
-    return { ...restOfEntityTemplate, properties: propertiesArray, attachmentProperties, uniqueConstraints, documentTemplatesIds: documentTemplates };
+    return {
+        ...restOfEntityTemplate,
+        properties: propertiesArray,
+        attachmentProperties,
+        archiveProperties,
+        uniqueConstraints,
+        documentTemplatesIds: documentTemplates,
+        propertiesTypeOrder,
+    };
 };
 
-export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTemplate => {
+export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode: boolean): IEntityTemplate => {
     // change to support file types
-    const { properties, attachmentProperties, propertiesTypeOrder, documentTemplatesIds, ...restOfProperties } = values;
+    const { properties, attachmentProperties, archiveProperties, propertiesTypeOrder, documentTemplatesIds, ...restOfProperties } = values;
     const serialsUniqueConstraints: string[][] = [];
     const propertiesOrder: string[] = [];
     const attachmentPropertiesOrder: string[] = [];
@@ -108,6 +125,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTem
 
     properties.forEach(
         ({
+            id,
             name,
             title,
             type,
@@ -122,92 +140,208 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTem
             calculateTime,
             serialStarter,
             hide,
+            deleted,
             readOnly,
             relationshipReference,
+            archive,
         }) => {
-            let propertyType: IEntitySingleProperty['type'];
-            switch (type) {
-                case 'string':
-                case 'number':
-                case 'boolean':
-                    propertyType = type;
-                    break;
-                case 'serialNumber':
-                    propertyType = 'number';
-                    break;
-                case 'enumArray':
-                    propertyType = 'array';
-                    break;
-                default:
-                    propertyType = 'string';
-            }
+            if (!deleted) {
+                let propertyType: IEntitySingleProperty['type'];
+                switch (type) {
+                    case 'string':
+                    case 'number':
+                    case 'boolean':
+                        propertyType = type;
+                        break;
+                    case 'serialNumber':
+                        propertyType = 'number';
+                        break;
+                    case 'enumArray':
+                        propertyType = 'array';
+                        break;
+                    default:
+                        propertyType = 'string';
+                }
 
-            schema.properties[name] = {
-                title,
-                type: propertyType,
-                format: stringFormats.includes(type) ? type : undefined,
-                enum: type === 'enum' ? options : undefined,
-                items: type === 'enumArray' ? { type: 'string', enum: options } : undefined,
-                minItems: type === 'enumArray' ? 1 : undefined,
-                readOnly,
-                uniqueItems: type === 'enumArray' ? true : undefined,
-                pattern: type === 'pattern' ? pattern : undefined,
-                patternCustomErrorMessage: type === 'pattern' ? patternCustomErrorMessage : undefined,
-                dateNotification: dateNotification as number | undefined,
-                calculateTime: calculateTime ?? undefined,
-                isDailyAlert: isDailyAlert ?? (dateNotification !== undefined ? true : undefined),
-                serialStarter: type === 'serialNumber' ? serialStarter : undefined,
-                serialCurrent: type === 'serialNumber' ? serialStarter : undefined,
-                relationshipReference: relationshipReference
-                    ? {
-                          relationshipTemplateId: relationshipReference!.relationshipTemplateId,
-                          relationshipTemplateDirection: relationshipReference!.relationshipTemplateDirection,
-                          relatedTemplateId: relationshipReference!.relatedTemplateId,
-                          relatedTemplateField: relationshipReference!.relatedTemplateField,
-                      }
-                    : undefined,
-            };
+                schema.properties[name] = {
+                    title,
+                    type: propertyType,
+                    format: stringFormats.includes(type) ? type : undefined,
+                    enum: type === 'enum' ? options : undefined,
+                    items: type === 'enumArray' ? { type: 'string', enum: options } : undefined,
+                    minItems: type === 'enumArray' ? 1 : undefined,
+                    readOnly,
+                    archive,
+                    uniqueItems: type === 'enumArray' ? true : undefined,
+                    pattern: type === 'pattern' ? pattern : undefined,
+                    patternCustomErrorMessage: type === 'pattern' ? patternCustomErrorMessage : undefined,
+                    dateNotification: dateNotification as number | undefined,
+                    calculateTime: calculateTime ?? undefined,
+                    isDailyAlert: isDailyAlert ?? (dateNotification !== undefined ? true : undefined),
+                    serialStarter: type === 'serialNumber' ? serialStarter : undefined,
+                    serialCurrent: type === 'serialNumber' ? serialStarter : undefined,
+                    relationshipReference: relationshipReference
+                        ? {
+                              relationshipTemplateId: relationshipReference!.relationshipTemplateId,
+                              relationshipTemplateDirection: relationshipReference!.relationshipTemplateDirection,
+                              relatedTemplateId: relationshipReference!.relatedTemplateId,
+                              relatedTemplateField: relationshipReference!.relatedTemplateField,
+                          }
+                        : undefined,
+                };
 
-            propertiesOrder.push(name);
+                if (isEditMode) {
+                    schema.properties[name] = {
+                        ...schema.properties[name],
+                        isNewPropNameEqualDeletedPropName: properties.some((property) => property.id !== id && property.name === name),
+                    };
+                }
 
-            if (required) schema.required.push(name);
-            if (hide) schema.hide.push(name);
-            if (preview) propertiesPreview.push(name);
-            if (type === 'serialNumber') serialsUniqueConstraints.push([name]);
-            if (type === 'enum' || type === 'enumArray') {
-                Object.entries(optionColors).forEach(([option, color]) => {
-                    if (!color) return;
+                propertiesOrder.push(name);
 
-                    if (!enumPropertiesColors) enumPropertiesColors = {};
-                    if (!enumPropertiesColors[name]) enumPropertiesColors[name] = {};
+                if (required) schema.required.push(name);
+                if (hide) schema.hide.push(name);
+                if (preview) propertiesPreview.push(name);
+                if (type === 'serialNumber') serialsUniqueConstraints.push([name]);
+                if (type === 'enum' || type === 'enumArray') {
+                    Object.entries(optionColors).forEach(([option, color]) => {
+                        if (!color) return;
 
-                    enumPropertiesColors[name][option] = color;
-                });
+                        if (!enumPropertiesColors) enumPropertiesColors = {};
+                        if (!enumPropertiesColors[name]) enumPropertiesColors[name] = {};
+
+                        enumPropertiesColors[name][option] = color;
+                    });
+                }
             }
         },
     );
 
-    attachmentProperties.forEach(({ name, title, required, type }) => {
-        if (type === 'multipleFiles') {
-            schema.properties[name] = {
-                title,
-                type: 'array',
-                items: {
+    archiveProperties.forEach(
+        ({
+            id,
+            name,
+            title,
+            type,
+            required,
+            preview,
+            options,
+            optionColors,
+            pattern,
+            patternCustomErrorMessage,
+            dateNotification,
+            isDailyAlert,
+            calculateTime,
+            serialStarter,
+            hide,
+            deleted,
+            readOnly,
+            relationshipReference,
+            archive,
+        }) => {
+            if (!deleted) {
+                let propertyType: IEntitySingleProperty['type'];
+                switch (type) {
+                    case 'string':
+                    case 'number':
+                    case 'boolean':
+                        propertyType = type;
+                        break;
+                    case 'serialNumber':
+                        propertyType = 'number';
+                        break;
+                    case 'enumArray':
+                        propertyType = 'array';
+                        break;
+                    default:
+                        propertyType = 'string';
+                }
+
+                schema.properties[name] = {
+                    title,
+                    type: propertyType,
+                    format: stringFormats.includes(type) ? type : undefined,
+                    enum: type === 'enum' ? options : undefined,
+                    items: type === 'enumArray' ? { type: 'string', enum: options } : undefined,
+                    minItems: type === 'enumArray' ? 1 : undefined,
+                    readOnly,
+                    archive,
+                    uniqueItems: type === 'enumArray' ? true : undefined,
+                    pattern: type === 'pattern' ? pattern : undefined,
+                    patternCustomErrorMessage: type === 'pattern' ? patternCustomErrorMessage : undefined,
+                    dateNotification: dateNotification as number | undefined,
+                    calculateTime: calculateTime ?? undefined,
+                    isDailyAlert: isDailyAlert ?? (dateNotification !== undefined ? true : undefined),
+                    serialStarter: type === 'serialNumber' ? serialStarter : undefined,
+                    serialCurrent: type === 'serialNumber' ? serialStarter : undefined,
+                    relationshipReference: relationshipReference
+                        ? {
+                              relationshipTemplateId: relationshipReference!.relationshipTemplateId,
+                              relationshipTemplateDirection: relationshipReference!.relationshipTemplateDirection,
+                              relatedTemplateId: relationshipReference!.relatedTemplateId,
+                              relatedTemplateField: relationshipReference!.relatedTemplateField,
+                          }
+                        : undefined,
+                };
+
+                if (isEditMode) {
+                    schema.properties[name] = {
+                        ...schema.properties[name],
+                        isNewPropNameEqualDeletedPropName: properties.some((property) => property.id !== id && property.name === name),
+                    };
+                }
+
+                propertiesOrder.push(name);
+
+                if (required) schema.required.push(name);
+                if (hide) schema.hide.push(name);
+                if (preview) propertiesPreview.push(name);
+                if (type === 'serialNumber') serialsUniqueConstraints.push([name]);
+                if (type === 'enum' || type === 'enumArray') {
+                    Object.entries(optionColors).forEach(([option, color]) => {
+                        if (!color) return;
+
+                        if (!enumPropertiesColors) enumPropertiesColors = {};
+                        if (!enumPropertiesColors[name]) enumPropertiesColors[name] = {};
+
+                        enumPropertiesColors[name][option] = color;
+                    });
+                }
+            }
+        },
+    );
+
+    attachmentProperties.forEach(({ id, name, title, required, type, deleted }) => {
+        if (!deleted) {
+            if (type === 'multipleFiles') {
+                schema.properties[name] = {
+                    title,
+                    type: 'array',
+                    items: {
+                        type: 'string',
+                        format: 'fileId',
+                    },
+                    minItems: 1,
+                };
+            } else {
+                schema.properties[name] = {
+                    title,
                     type: 'string',
                     format: 'fileId',
-                },
-                minItems: 1,
-            };
-        } else {
-            schema.properties[name] = {
-                title,
-                type: 'string',
-                format: 'fileId',
-            };
-        }
-        attachmentPropertiesOrder.push(name);
+                };
+            }
 
-        if (required) schema.required.push(name);
+            if (isEditMode) {
+                schema.properties[name] = {
+                    ...schema.properties[name],
+                    isNewPropNameEqualDeletedPropName: attachmentProperties.some((property) => property.id !== id && property.name === name),
+                };
+            }
+
+            attachmentPropertiesOrder.push(name);
+
+            if (required) schema.required.push(name);
+        }
     });
 
     return {
@@ -233,7 +367,7 @@ const searchEntityTemplates = async (searchQuery: ISearchEntityTemplateQuery) =>
 const createEntityTemplateRequest = async (newEntityTemplate: EntityTemplateWizardValues) => {
     const formData = new FormData();
 
-    const entityTemplate = formToJSONSchema(newEntityTemplate);
+    const entityTemplate = formToJSONSchema(newEntityTemplate, false);
 
     if (newEntityTemplate.icon) {
         formData.append('file', newEntityTemplate.icon.file as File);
@@ -245,6 +379,10 @@ const createEntityTemplateRequest = async (newEntityTemplate: EntityTemplateWiza
 
     if (entityTemplate.enumPropertiesColors) {
         formData.append('enumPropertiesColors', JSON.stringify(entityTemplate.enumPropertiesColors));
+    }
+
+    if (entityTemplate.propertiesTypeOrder.includes('archiveProperties')) {
+        entityTemplate.propertiesTypeOrder = entityTemplate.propertiesTypeOrder.filter((str) => str !== 'archiveProperties');
     }
 
     formData.append('displayName', entityTemplate.displayName);
@@ -272,7 +410,7 @@ const updateEntityTemplateRequest = async (entityTemplateId: string, updatedEnti
     const formData = new FormData();
     const entityTemplate: IEntityTemplate =
         'attachmentProperties' in updatedEntityTemplate // its type is - EntityTemplateWizardValues
-            ? formToJSONSchema(updatedEntityTemplate as EntityTemplateWizardValues)
+            ? formToJSONSchema(updatedEntityTemplate as EntityTemplateWizardValues, true)
             : updatedEntityTemplate;
 
     if ('attachmentProperties' in updatedEntityTemplate && updatedEntityTemplate.icon) {
@@ -291,6 +429,10 @@ const updateEntityTemplateRequest = async (entityTemplateId: string, updatedEnti
 
     if (entityTemplate.enumPropertiesColors) {
         formData.append('enumPropertiesColors', JSON.stringify(entityTemplate.enumPropertiesColors));
+    }
+
+    if (entityTemplate.propertiesTypeOrder.includes('archiveProperties')) {
+        entityTemplate.propertiesTypeOrder = entityTemplate.propertiesTypeOrder.filter((str) => str !== 'archiveProperties');
     }
 
     formData.append('displayName', entityTemplate.displayName);

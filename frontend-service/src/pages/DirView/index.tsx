@@ -8,7 +8,7 @@ import { MainBox } from '../../Main.styled';
 import { getDir, getFile } from '../../services/workspacesService';
 import { useUserStore } from '../../stores/user';
 import { defaultMetadata, useWorkspaceStore } from '../../stores/workspace';
-import { getWorkspacePermissions } from '../../utils/permissions';
+import { getWorkspacePermissions, handleWorkspace } from '../../utils/permissions';
 import ErrorPage from '../ErrorPage';
 import { PermissionsDialog } from './PermissionsDialog';
 import { Topbar } from './Topbar';
@@ -34,22 +34,27 @@ const DirView: React.FC<{ params: { '*': string } }> = ({ params }) => {
         { queryKey: ['workspace', location], queryFn: () => getFile(location) },
     ]);
 
-    useEffect(() => {
-        const handleWorkspace = async () => {
-            if (!currentWorkspace) return;
+    // useEffect(() => {
+    //     const handleWorkspace = async () => {
+    //         if (!currentWorkspace) return;
 
-            setWorkspace({ ...currentWorkspace, metadata: { ...defaultMetadata, ...currentWorkspace.metadata } });
-            document.title = environment.defaultTitle;
+    //         setWorkspace({ ...currentWorkspace, metadata: { ...defaultMetadata, ...currentWorkspace.metadata } });
+    //         document.title = environment.defaultTitle;
 
-            const workspacePermissions = await getWorkspacePermissions(currentWorkspace._id, currentUser.permissions);
-            if (workspacePermissions) currentUser.permissions[currentWorkspace._id] = workspacePermissions;
+    //         const workspacePermissions = await getWorkspacePermissions(currentWorkspace._id, currentUser.permissions);
+    //         if (workspacePermissions) currentUser.permissions[currentWorkspace._id] = workspacePermissions;
 
-            if (currentUser.currentWorkspacePermissions !== currentUser.permissions[currentWorkspace._id])
-                setUser({ ...currentUser, currentWorkspacePermissions: currentUser.permissions[currentWorkspace._id] });
-        };
+    //         if (currentUser.currentWorkspacePermissions !== currentUser.permissions[currentWorkspace._id])
+    //             setUser({ ...currentUser, currentWorkspacePermissions: currentUser.permissions[currentWorkspace._id] });
+    //     };
 
-        handleWorkspace();
-    }, [currentWorkspace, setWorkspace, currentUser, setUser]);
+    //     handleWorkspace();
+    // }, [currentWorkspace, setWorkspace, currentUser, setUser]);
+
+    useEffect(
+        () => handleWorkspace(environment.defaultTitle, setWorkspace, currentWorkspace),
+        [currentWorkspace, setWorkspace, currentUser, setUser],
+    );
 
     if (isError) return <ErrorPage errorText={i18next.t('workspaces.requestedWorkspaceDoesntExist')} />;
 

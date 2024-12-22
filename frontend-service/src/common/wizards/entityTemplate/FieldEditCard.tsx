@@ -21,11 +21,14 @@ import {
 } from '@mui/material';
 import {
     Delete as DeleteIcon,
+    DeleteForever as DeleteOff,
     DragHandle as DragHandleIcon,
     NotificationsActive as NotificationsActiveIcon,
     NotificationsOff as NotificationsOffIcon,
     Alarm as CustomAlertIcon,
     Update as DailyAlertIcon,
+    Archive,
+    Unarchive,
 } from '@mui/icons-material';
 import AddIcon from '@mui/icons-material/Add';
 import { Draggable } from 'react-beautiful-dnd';
@@ -35,7 +38,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { dateNotificationTypes, validPropertyTypes } from './AddFields';
-import { CommonFormInputProperties } from './commonInterfaces';
+import { CommonFormInputProperties, IRelationshipReference } from './commonInterfaces';
 import { MinimizedColorPicker } from '../../inputs/MinimizedColorPicker';
 import { MeltaCheckbox } from '../../MeltaCheckbox';
 import { deleteEnumFieldRequest, updateEnumFieldRequest } from '../../../services/templates/enitityTemplatesService';
@@ -44,6 +47,8 @@ import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { MeltaTooltip } from '../../MeltaTooltip';
 import { IUniqueConstraintOfTemplate } from '../../../interfaces/entities';
 import RelationshipReferenceField from './RelationshipReferenceField';
+import { PermissionScope } from '../../../interfaces/permissions';
+import { useUserStore } from '../../../stores/user';
 
 enum dateNotificationOptions {
     day = 1,
@@ -73,17 +78,20 @@ export interface FieldEditCardProps {
     errors?: FormikErrors<CommonFormInputProperties>;
     setFieldValue: (field: keyof CommonFormInputProperties, value: any) => void;
     onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-    remove: (index: number) => any;
+    remove: (index: number, isNewProperty: boolean) => any;
     supportSerialNumberType: boolean;
     supportEntityReferenceType: boolean;
     supportChangeToRequiredWithInstances: boolean;
     templateId: string;
     supportArrayFields: boolean;
+    supportDeleteForExistingInstances: boolean;
     supportRelationshipReference: boolean;
     uniqueConstraints?: IUniqueConstraintOfTemplate[];
     setUniqueConstraints?: (uniqueConstraints: SetStateAction<IUniqueConstraintOfTemplate[]>) => void;
     supportEditEnum?: boolean;
     supportUnique?: boolean;
+    supportArchive?: boolean;
+    hasActions?: boolean;
 }
 
 export const FieldEditCard: React.FC<FieldEditCardProps> = ({
@@ -106,10 +114,15 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     supportChangeToRequiredWithInstances,
     templateId,
     supportArrayFields,
+    supportDeleteForExistingInstances,
     supportRelationshipReference,
     supportEditEnum,
     supportUnique,
+    supportArchive,
+    hasActions,
 }) => {
+    const currentUser = useUserStore((state) => state.user);
+
     const isText = value.type === 'string' || value.type === 'text-area';
 
     const name = `properties[${index}].name`;
@@ -313,9 +326,26 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     const [editIndex, setEditIndex] = useState<number | null>(null);
 
     const queryClient = useQueryClient();
+    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+
+    const relationshipRefs = Array.from(entityTemplates.values()).reduce((acc: IRelationshipReference[], template) => {
+        const properties = template.properties?.properties || {};
+
+        const references = Object.values(properties).reduce((refAcc: IRelationshipReference[], property) => {
+            if (property.format === 'relationshipReference' && property.relationshipReference) refAcc.push(property.relationshipReference);
+
+            return refAcc;
+        }, []);
+
+        return acc.concat(references);
+    }, []);
+
+    const disableRemoveRequire = Boolean(
+        relationshipRefs.find((ref) => ref.relatedTemplateField === value.name && ref.relatedTemplateId === templateId) !== undefined,
+    );
 
     const [localOption, setLocalOption] = useState<string>('');
-    const [duplicate, setDuplicate] = useState<boolean>(false);
+    const [editError, setEditError] = useState<string>('');
 
     const chipRefs = useRef<(HTMLDivElement | null)[]>([]);
     const [open, setOpen] = useState<boolean>(false);
@@ -327,7 +357,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     const handleEditChange = (e, _tagIndex) => {
         e.preventDefault();
         setLocalOption(e.target.value);
-        setDuplicate(false);
+        setEditError('');
     };
     const { mutate: updateEnumField, isLoading } = useMutation(
         (mutationArgs: { id: string; tagIndex: number; option: string; fieldValue: any }) => {
@@ -439,26 +469,29 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     };
 
     useEffect(() => {
-        if (!editIndex) setDuplicate(false);
+        if (!editIndex) setEditError('');
     }, [editIndex]);
 
     const handleSaveEdit = (tagIndex: number) => {
         const checkIfOldEnumValue = initialOptionArray.length > tagIndex && isDisabled;
-        setDuplicate(false);
-        if (value.options[tagIndex] === localOption) setEditIndex(null);
-        else if (value.options.includes(localOption)) {
-            setDuplicate(true);
+        const trimValue = localOption.trim();
+        setEditError('');
+        if (value.options[tagIndex] === trimValue) setEditIndex(null);
+        else if (trimValue.length === 0) {
+            setEditError('errorPage.emptyInputError');
+        } else if (value.options.includes(trimValue)) {
+            setEditError('errorPage.duplicateValue');
         } else if (checkIfOldEnumValue) {
-            handleUpdateEnumField(templateId, tagIndex, localOption, value);
+            handleUpdateEnumField(templateId, tagIndex, trimValue, value);
             return;
         } else {
             const oldColor = value.optionColors?.[value.options[tagIndex]];
-            const newOptions = value.options.map((option, valIndex) => (valIndex === tagIndex ? localOption : option));
+            const newOptions = value.options.map((option, valIndex) => (valIndex === tagIndex ? trimValue : option));
 
             if (oldColor) {
                 const newOptionColors = { ...value.optionColors! };
                 delete newOptionColors[value.options[tagIndex]];
-                setValues?.((prev) => ({ ...prev, optionColors: { ...newOptionColors, [localOption]: oldColor }, options: newOptions }));
+                setValues?.((prev) => ({ ...prev, optionColors: { ...newOptionColors, [trimValue]: oldColor }, options: newOptions }));
             } else {
                 setValues?.((prev) => ({ ...prev, options: newOptions }));
             }
@@ -493,11 +526,27 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
         }));
     };
 
+    const archiveButtonTooltip = () => {
+        if (value.required) return i18next.t('wizard.entityTemplate.cannotArchiveIfRequired');
+        if (value.uniqueCheckbox) return i18next.t('wizard.entityTemplate.cannotArchiveIfUnique');
+        if (value.preview) return i18next.t('wizard.entityTemplate.cannotArchiveIfPreview');
+        if (value.archive) return i18next.t('wizard.entityTemplate.removeFromArchive');
+        return i18next.t('wizard.entityTemplate.moveToArchive');
+    };
+
     return (
         <Draggable draggableId={value.id} index={index}>
             {(draggableProvided) => (
                 <Grid item ref={draggableProvided.innerRef} {...draggableProvided.draggableProps} alignSelf="stretch" marginBottom="1rem">
-                    <Card elevation={3} sx={{ padding: '0.5rem' }}>
+                    <Card
+                        elevation={3}
+                        sx={{
+                            padding: '0.5rem',
+                            ...(value.deleted && {
+                                backgroundColor: 'rgb(224, 225, 237,0.4)',
+                            }),
+                        }}
+                    >
                         <CardContent sx={{ '&:last-child': { padding: 0 } }}>
                             <Grid container justifyContent="space-between" wrap="nowrap" alignItems="center">
                                 <Box {...draggableProvided.dragHandleProps}>
@@ -514,7 +563,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                             onChange={onChange}
                                             error={touchedName && Boolean(errorName)}
                                             helperText={touchedName && errorName}
-                                            disabled={isDisabled}
+                                            disabled={isDisabled || value.deleted}
                                             sx={{ marginRight: '5px' }}
                                             fullWidth
                                         />
@@ -528,6 +577,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                             helperText={touchedTitle && errorTitle}
                                             sx={{ marginRight: '5px' }}
                                             fullWidth
+                                            disabled={value.deleted}
                                         />
                                         <TextField
                                             select
@@ -545,7 +595,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                             }}
                                             error={touchedType && Boolean(errorType)}
                                             helperText={touchedType && errorType}
-                                            disabled={isDisabled}
+                                            disabled={isDisabled || value.deleted}
                                             sx={{ marginRight: '5px' }}
                                             fullWidth
                                         >
@@ -579,14 +629,20 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                 freeSolo
                                                 value={value.options}
                                                 onChange={(_e, currValue) => {
+                                                    const lastValue = currValue.pop();
+                                                    const trimmedValue = lastValue ? [...currValue, lastValue.trim()] : [];
+
                                                     if (isDisabled) {
-                                                        updateOldDisabledEnumVals(currValue);
+                                                        updateOldDisabledEnumVals(trimmedValue);
                                                     } else {
                                                         setValues?.((prev) => ({
                                                             ...prev,
-                                                            options: currValue,
+                                                            options: trimmedValue,
                                                         }));
                                                     }
+                                                }}
+                                                isOptionEqualToValue={(option, inputValue) => {
+                                                    return option.trim() === inputValue.trim() || option.trim().length === 0;
                                                 }}
                                                 renderTags={(tagValue, getTagProps) =>
                                                     tagValue.map((option, tagIndex) => {
@@ -639,7 +695,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                     {supportEditEnum && (
                                                                         <MemoizedIconButton
                                                                             onClick={() => {
-                                                                                setDuplicate(false);
+                                                                                setEditError('');
                                                                                 setEditIndex(tagIndex);
                                                                                 setLocalOption(value.options[tagIndex]);
                                                                             }}
@@ -685,8 +741,8 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                         style={{
                                                                             display: 'flex',
                                                                             alignItems: 'center',
-                                                                            borderColor: duplicate ? 'red' : 'inherit',
-                                                                            borderStyle: duplicate ? 'solid' : 'inherit',
+                                                                            borderColor: editError !== '' ? 'red' : 'inherit',
+                                                                            borderStyle: editError !== '' ? 'solid' : 'inherit',
                                                                             borderWidth: '1px',
                                                                             borderRadius: '10px',
                                                                         }}
@@ -704,10 +760,13 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                                 e.stopPropagation();
                                                                                 if (e.key === 'Enter') {
                                                                                     e.preventDefault();
+                                                                                    const localOptionTrimmed = localOption.trim();
+
                                                                                     if (
                                                                                         tagIndex > initialOptionArray.length - 1 ||
-                                                                                        value.options[tagIndex] === localOption ||
-                                                                                        value.options.includes(localOption)
+                                                                                        value.options[tagIndex] === localOptionTrimmed ||
+                                                                                        value.options.includes(localOptionTrimmed) ||
+                                                                                        localOptionTrimmed.length === 0
                                                                                     ) {
                                                                                         setOpen(false);
                                                                                         handleSaveEdit(editIndex!);
@@ -728,9 +787,9 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                                 {isDeleteLoading ? <CircularProgress size={20} /> : <DeleteIcon />}
                                                                             </IconButton>
                                                                         )}
-                                                                        {duplicate && (
+                                                                        {!!editError && (
                                                                             <Typography variant="body2" color="error">
-                                                                                {i18next.t('errorPage.duplicateValue')}
+                                                                                {i18next.t(editError)}
                                                                             </Typography>
                                                                         )}
                                                                     </Box>
@@ -750,6 +809,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                 )}
                                                 sx={{ marginRight: '5px' }}
                                                 fullWidth
+                                                disabled={value.deleted}
                                             />
                                         )}
 
@@ -763,7 +823,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                     onChange={onChange}
                                                     error={touchedPattern && Boolean(errorPattern)}
                                                     helperText={touchedPattern && errorPattern}
-                                                    disabled={isDisabled}
+                                                    disabled={isDisabled || value.deleted}
                                                     dir="ltr"
                                                     sx={{ marginRight: '5px' }}
                                                     fullWidth
@@ -782,6 +842,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                     }
                                                     sx={{ marginRight: '5px' }}
                                                     fullWidth
+                                                    disabled={value.deleted}
                                                 />
                                             </>
                                         )}
@@ -797,7 +858,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                 type="number"
                                                 error={touchedSerialStarter && Boolean(errorSerialStarter)}
                                                 helperText={touchedSerialStarter && errorSerialStarter}
-                                                disabled={isDisabled}
+                                                disabled={isDisabled || value.deleted}
                                                 dir="ltr"
                                                 sx={{ marginRight: '5px' }}
                                                 fullWidth
@@ -820,6 +881,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                     <IconButton
                                                         onClick={() => setFieldValue('dateNotification', undefined)}
                                                         sx={{ borderRadius: 10 }}
+                                                        disabled={value.deleted}
                                                     >
                                                         <NotificationsActiveIcon />
                                                     </IconButton>
@@ -856,6 +918,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                         helperText={touchedDateNotification && errorDateNotification}
                                                         sx={{ marginRight: '5px', marginTop: '5px' }}
                                                         fullWidth
+                                                        disabled={value.deleted}
                                                     >
                                                         {dateNotificationTypes.map((notificationType) => (
                                                             <MenuItem key={notificationType} value={dateNotificationOptions[notificationType]}>
@@ -865,7 +928,11 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                     </TextField>
                                                 </Grid>
                                             ) : (
-                                                <IconButton onClick={() => setFieldValue('dateNotification', null)} sx={{ borderRadius: 10 }}>
+                                                <IconButton
+                                                    onClick={() => setFieldValue('dateNotification', null)}
+                                                    sx={{ borderRadius: 10 }}
+                                                    disabled={value.deleted}
+                                                >
                                                     <NotificationsOffIcon />
                                                 </IconButton>
                                             ))}
@@ -911,7 +978,10 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                     ? false
                                                                     : isEditMode &&
                                                                       areThereAnyInstances &&
-                                                                      (isNewProperty || (!isNewProperty && !initialValue?.required)))
+                                                                      (isNewProperty || (!isNewProperty && !initialValue?.required))) ||
+                                                                value.deleted ||
+                                                                value.archive ||
+                                                                disableRemoveRequire
                                                             }
                                                             checked={value.required}
                                                         />
@@ -927,10 +997,10 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                         onChange={(_e, checked) => {
                                                             setValues?.((prevValue) => ({
                                                                 ...prevValue,
-                                                                readOnly: checked ? checked : undefined,
+                                                                readOnly: checked || undefined,
                                                             }));
                                                         }}
-                                                        disabled={value.required}
+                                                        disabled={value.required || value.archive}
                                                         checked={value.readOnly}
                                                     />
                                                 }
@@ -943,7 +1013,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                             id={preview}
                                                             name={preview}
                                                             onChange={onChange}
-                                                            disabled={value.hide}
+                                                            disabled={value.hide || value.deleted || value.archive}
                                                             checked={value.preview}
                                                         />
                                                     }
@@ -957,7 +1027,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                             id={hide}
                                                             name={hide}
                                                             onChange={onChange}
-                                                            disabled={value.preview}
+                                                            disabled={value.preview || value.deleted || value.archive}
                                                             checked={value.hide}
                                                         />
                                                     }
@@ -971,6 +1041,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                             id={String(unique)}
                                                             name={String(unique)}
                                                             checked={unique}
+                                                            disabled={value.archive}
                                                             onChange={(_e, checked) => {
                                                                 setValues((prevValue) => ({
                                                                     ...prevValue,
@@ -1016,16 +1087,45 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                 }));
                                                             }}
                                                             checked={value.type === 'text-area'}
+                                                            disabled={value.archive}
                                                         />
                                                     }
                                                     label={i18next.t('propertyTypes.text-area')}
                                                 />
                                             )}
                                         </Box>
-
-                                        <IconButton disabled={isDisabled} onClick={() => remove(index)}>
-                                            <DeleteIcon />
-                                        </IconButton>
+                                        <Grid display="flex">
+                                            {supportArchive && isEditMode && (
+                                                <MeltaTooltip title={archiveButtonTooltip()} placement="right">
+                                                    <Box>
+                                                        <IconButton
+                                                            onClick={() => setFieldValue('archive', !value.archive)}
+                                                            disabled={value.required || value.uniqueCheckbox || value.preview}
+                                                        >
+                                                            {value.archive ? <Unarchive color="primary" /> : <Archive />}
+                                                        </IconButton>
+                                                    </Box>
+                                                </MeltaTooltip>
+                                            )}
+                                            <MeltaTooltip
+                                                disableHoverListener={!initialValue?.required}
+                                                title={i18next.t('wizard.entityTemplate.cantDeleteUniqueOrRequiredFields')}
+                                            >
+                                                <Box>
+                                                    <IconButton
+                                                        onClick={() => remove(index, isNewProperty)}
+                                                        disabled={
+                                                            !supportDeleteForExistingInstances ||
+                                                            initialValue?.required ||
+                                                            currentUser.currentWorkspacePermissions.admin?.scope !== PermissionScope.write ||
+                                                            hasActions
+                                                        }
+                                                    >
+                                                        {value.deleted ? <DeleteOff /> : <DeleteIcon />}
+                                                    </IconButton>
+                                                </Box>
+                                            </MeltaTooltip>
+                                        </Grid>
                                     </Grid>
                                     <Grid item container justifyContent="space-between" alignItems="center" flexWrap="nowrap">
                                         {unique && value.type !== 'serialNumber' && (
