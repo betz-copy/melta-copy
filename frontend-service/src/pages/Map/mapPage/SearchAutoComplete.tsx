@@ -53,6 +53,12 @@ const SearchAutoComplete = ({ selectedTemplates, handleEntityClick }: props) => 
     );
 
     useEffect(() => {
+        if (!inputValue && Object.keys(templatesObject).length > 0) {
+            setInputValue(' ');
+        }
+    }, [templatesObject, inputValue]);
+
+    useEffect(() => {
         if (data) {
             setSearchResults(data.pages.flatMap(({ entities }) => entities.map(({ entity }) => entity)));
         }
@@ -98,6 +104,7 @@ const SearchAutoComplete = ({ selectedTemplates, handleEntityClick }: props) => 
             sx={{
                 '.MuiAutocomplete-inputRoot': {
                     maxHeight: '34px',
+                    boxShadow: '-2px 2px 6px 0px #1E27754D',
                 },
                 '& .MuiInputLabel-root': {
                     fontFamily: 'Rubik',

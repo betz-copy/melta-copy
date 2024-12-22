@@ -19,7 +19,7 @@ const EntityPopup = ({ header, properties, entityTemplate }: MapPopupProps) => {
 
     return (
         <Popup keepInView>
-            <Grid item xs={6} sx={{ display: 'flex', justifyContent: 'center' }}>
+            <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'center' }}>
                 <Typography variant="h6" color="textPrimary" fontWeight="bold">
                     {header}
                 </Typography>
