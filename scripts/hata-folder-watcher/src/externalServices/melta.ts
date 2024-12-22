@@ -19,14 +19,14 @@ export default class Melta {
 
         const { data } = await this.api.post<IMeltaEntityTemplate & { _id: string }>(templatesApi, {
             name,
-            displayName: name,
-            category: 'IDKKKK', // TODO: what category?
+            ditsplayName: name,
+            category: 'IDKKKK', // TODO: what caegory?
             iconFileId,
             disabled: false,
             propertiesOrder: ['fileName', 'extension'],
             propertiesTypeOrder: ['properties', 'attachmentProperties'],
             propertiesPreview: ['fileName', 'extension'],
-            path: realPath, // TODO: path includes the name or no?
+            path: realPath,
             properties: {
                 hide: [],
                 type: 'object',
@@ -67,6 +67,7 @@ export default class Melta {
         return data;
     }
 
+    // TODO: Upsert entity if the fileWithoutExtension already exists.
     static async createEntity(fileWithoutExtension: string, ext: string, templateId: string, file: ReadStream) {
         const form = new formData();
 
