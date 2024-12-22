@@ -16,6 +16,8 @@ const UserProfile: React.FC<{
     setProfilePreference: (profilePreference: { profilePath?: string; icon?: any }) => void;
 }> = ({ existingUser, editProfile, setProfilePreference, setEditProfile }) => {
     const [userProfileImage, setUserProfileImage] = useState<string>();
+    const [isDefaultProfile, setIsDefaultProfile] = useState<boolean>(false);
+
     return (
         <Grid container display="flex" justifyContent="center" padding={2}>
             <Grid item width="100%" display="flex" justifyItems="start">
@@ -25,7 +27,7 @@ const UserProfile: React.FC<{
                             setEditProfile(!editProfile);
                         }}
                     >
-                        <UserAvatar user={existingUser} size={100} userProfileImage={userProfileImage} />
+                        <UserAvatar user={existingUser} size={100} userProfileImage={userProfileImage} isDefaultProfile={isDefaultProfile} />
                     </IconButton>
                 </MeltaTooltip>
             </Grid>
@@ -41,6 +43,7 @@ const UserProfile: React.FC<{
                         imageName={isProfileFile(existingUser.preferences.profilePath) ? existingUser.preferences.profilePath : undefined}
                         defaultInputType={defaultInputType(existingUser.preferences.profilePath)}
                         setUserProfileImage={setUserProfileImage}
+                        setIsDefaultProfile={setIsDefaultProfile}
                     />
                 </Grid>
             )}

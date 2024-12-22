@@ -11,11 +11,11 @@ interface UserAvatarProps {
     user: IUser;
     size?: number;
     bgColor?: string;
-    defaultProfile?: boolean;
+    isDefaultProfile: boolean;
     userProfileImage?: string;
 }
 
-const UserAvatar: React.FC<UserAvatarProps> = ({ user, size = 48, bgColor, userProfileImage }) => {
+const UserAvatar: React.FC<UserAvatarProps> = ({ user, size = 48, bgColor, userProfileImage, isDefaultProfile}) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const { trackEvent } = useMatomo();
 
@@ -48,7 +48,7 @@ const UserAvatar: React.FC<UserAvatarProps> = ({ user, size = 48, bgColor, userP
                 });
             }}
         >
-            {userProfileImage || (profile && !isError) ? (
+            {userProfileImage || (profile && !isError && !isDefaultProfile) ? (
                 <img
                     src={userProfileImage ?? profile}
                     style={{

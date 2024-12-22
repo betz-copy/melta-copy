@@ -19,11 +19,12 @@ export interface UserProfilePickerProps {
     imageName?: string;
     defaultInputType?: InputSelectType;
     setUserProfileImage: React.Dispatch<React.SetStateAction<string | undefined>>;
+    setIsDefaultProfile: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const { kartoffelProfile } = environment.users;
 
-const UserProfilePicker: React.FC<UserProfilePickerProps> = ({ imageName, onPick, onDelete, defaultInputType, user, setUserProfileImage }) => {
+const UserProfilePicker: React.FC<UserProfilePickerProps> = ({ imageName, onPick, onDelete, defaultInputType, user, setUserProfileImage, setIsDefaultProfile }) => {
     const [inputType, setInputType] = useState(defaultInputType);
     const [fileInputValue, setFileInputValue] = useState<fileDetails | undefined>(
         imageName ? { file: { name: imageName }, name: imageName } : undefined,
@@ -48,7 +49,11 @@ const UserProfilePicker: React.FC<UserProfilePickerProps> = ({ imageName, onPick
             const file = new File([imageBlob], iconName, { type: 'image/png' });
             setUserProfileImage(`${environment.avatarIconPath}${iconName}`);
             onPick({ file, name: file.name });
-        } else onPick();
+        } else {
+            setUserProfileImage(undefined);
+            setIsDefaultProfile(true)
+            onPick();
+        }
     };
 
     useEffect(() => {
