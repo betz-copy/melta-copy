@@ -736,7 +736,7 @@ const EntityTemplatesRow: React.FC = () => {
             <ChooseTemplatePathDialog
                 open={addPathToEntityTemplateDialogState.isWizardOpen}
                 handleClose={() => setPathActionsToEntityTemplateDialogState({ isWizardOpen: false, entityTemplate: null })}
-                entityTemplate={addPathToEntityTemplateDialogState.entityTemplate}
+                currEntityTemplate={addPathToEntityTemplateDialogState.entityTemplate}
             />
         </Grid>
     );

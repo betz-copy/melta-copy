@@ -125,6 +125,8 @@ templatesRouter.patch(
     ValidateRequest(updateEntityTemplateStatusSchema),
     templatesControllerMiddleware.updateEntityTemplateStatus,
 );
+
+templatesRouter.patch('/entities/:id/path', AuthorizerControllerMiddleware.userCanWriteTemplates, TemplatesServiceProxy);
 templatesRouter.delete(
     '/entities/:id',
     ValidateRequest(deleteEntityTemplateSchema),

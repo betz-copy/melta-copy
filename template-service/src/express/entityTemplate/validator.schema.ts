@@ -1,5 +1,5 @@
 import Joi from 'joi';
-import { MongoIdSchema, variableNameValidation } from '../../utils/joi';
+import { FilePathSchema, MongoIdSchema, variableNameValidation } from '../../utils/joi';
 import {
     enumPropertiesColorsSchema,
     innerPropertiesSchema,
@@ -56,7 +56,6 @@ export const createEntityTemplateSchema = Joi.object({
         enumPropertiesColors: enumPropertiesColorsSchema,
         documentTemplatesIds: Joi.array().items(Joi.string()),
         actions: Joi.forbidden(),
-        path: Joi.string(),
     },
     query: {},
     params: {},
@@ -76,7 +75,6 @@ export const updateEntityTemplateSchema = Joi.object({
         enumPropertiesColors: enumPropertiesColorsSchema,
         documentTemplatesIds: Joi.array().items(Joi.string()),
         actions: Joi.string(),
-        path: Joi.string(),
     }).min(1),
     query: {},
     params: {
@@ -88,6 +86,17 @@ export const updateEntityTemplateSchema = Joi.object({
 export const updateEntityTemplateStatusSchema = Joi.object({
     body: {
         disabled: Joi.boolean().required(),
+    },
+    query: {},
+    params: {
+        templateId: MongoIdSchema.required(),
+    },
+});
+
+// PUT /api/entities/templates/:templateId/path
+export const updateEntityTemplatePathSchema = Joi.object({
+    body: {
+        path: FilePathSchema.required(),
     },
     query: {},
     params: {

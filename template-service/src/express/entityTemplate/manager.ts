@@ -1,9 +1,11 @@
 import { ClientSession, FilterQuery } from 'mongoose';
+import { parse as parsePath } from 'node:path/posix';
 import config from '../../config';
 import { escapeRegExp } from '../../utils';
+
 import { DefaultManagerMongo } from '../../utils/mongo/manager';
 import { withTransaction } from '../../utils/mongoose';
-import { NotFoundError } from '../error';
+import { NotFoundError, PathDoesNotExistError } from '../error';
 import GlobalSearchIndexCreator from '../externalServices/globalSearchIndexCreator';
 import { IRelationshipTemplate } from '../relationshipTemplate/interface';
 import RelationshipTemplateManager from '../relationshipTemplate/manager';
@@ -251,6 +253,21 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
             .orFail(new NotFoundError('Entity Template not found'))
             .lean()
             .exec();
+    }
+
+    async updateEntityTemplatePath(id: string, path: string) {
+        return this.model
+            .findByIdAndUpdate(id, { path }, { new: true })
+            .populate('category')
+            .orFail(new NotFoundError('Entity Template not found'))
+            .lean()
+            .exec();
+    }
+
+    async getTemplateByPath(path: string) {
+        const { dir, name } = parsePath(path);
+
+        return this.model.findOne({ path: dir, name }).orFail(new PathDoesNotExistError(path)).lean().exec();
     }
 
     async updateEntityTemplateAction(id: string, actions: string) {
