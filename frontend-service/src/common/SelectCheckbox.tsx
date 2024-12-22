@@ -1,5 +1,5 @@
 /* eslint-disable no-nested-ternary */
-import { Menu, Search } from '@mui/icons-material';
+import { Menu, Search, Hive as HiveIcon } from '@mui/icons-material';
 import {
     Box,
     Button,
@@ -25,6 +25,7 @@ import { IoIosArrowBack, IoIosArrowDown, IoIosArrowUp } from 'react-icons/io';
 import { MeltaTooltip } from './MeltaTooltip';
 import { MeltaCheckbox } from './MeltaCheckbox';
 import { useDarkModeStore } from '../stores/darkMode';
+import { CustomIcon } from './CustomIcon';
 
 export type MenuItemContentProps<Option = any> = {
     checked?: boolean;
@@ -38,7 +39,18 @@ export type MenuItemContentProps<Option = any> = {
     showIcon?: boolean;
 };
 
-export const MenuItemContent: React.FC<MenuItemContentProps> = ({ checked, indeterminate, label, isDraggable, group, insideGroup }) => {
+export const MenuItemContent: React.FC<MenuItemContentProps> = ({
+    checked,
+    indeterminate,
+    label,
+    isDraggable,
+    group,
+    insideGroup,
+    showIcon,
+    option,
+}) => {
+    const theme = useTheme();
+
     return (
         <>
             {!group && (
@@ -57,7 +69,15 @@ export const MenuItemContent: React.FC<MenuItemContentProps> = ({ checked, indet
                     {isDraggable && <Menu sx={{ fontSize: '1rem' }} />}
                 </Grid>
             )}
-            <MeltaCheckbox checked={checked} indeterminate={indeterminate} />
+            {showIcon ? (
+                option.iconFileId?.length > 0 ? (
+                    <CustomIcon color={theme.palette.primary.main} iconUrl={option.iconFileId!} height="15px" width="15px" />
+                ) : (
+                    <HiveIcon style={{ color: theme.palette.primary.main }} fontSize="inherit" />
+                )
+            ) : (
+                <MeltaCheckbox checked={checked} indeterminate={indeterminate} />
+            )}
 
             <ListItemText
                 primary={
@@ -489,7 +509,6 @@ export const ChooseAllMenuItem = <Option extends any, Group extends any>({
                 indeterminate={selectedOptionsFiltered.length < optionsFiltered.length && selectedOptionsFiltered.length > 0}
                 label={i18next.t('selectChooseAll')}
                 order={0}
-                showIcon={false}
             />
         </MenuItem>
     );

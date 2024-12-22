@@ -1,8 +1,9 @@
 import { Readable } from 'stream';
+import { IFailedEntity } from '../common/wizards/loadEntities';
 import { IMongoEntityTemplatePopulated } from './entityTemplates';
 import { IMongoRelationshipTemplate } from './relationshipTemplates';
 import { IRelationship } from './relationships';
-import { ISemanticSearchMinioResult } from './semanticSearch';
+import { ISemanticSearchResult } from './semanticSearch';
 
 export interface IEntity {
     templateId: string;
@@ -28,6 +29,7 @@ export interface IUniqueConstraint {
     constraintName: string;
     templateId: string;
     properties: string[];
+    values?: Record<string, any>;
 }
 
 export interface IRequiredConstraint {
@@ -92,7 +94,7 @@ export interface ISearchEntitiesOfTemplateBody {
     filter?: ISearchFilter;
     showRelationships?: boolean | Array<IMongoRelationshipTemplate['_id']>;
     sort?: ISearchSort;
-    entityIdsToInclude?: string[];
+    entitiesWithFiles?: ICountSearchResult['entitiesWithFiles'];
 }
 
 export interface ISearchEntitiesByTemplatesBody {
@@ -139,7 +141,8 @@ export interface ISearchResultByTemplates {
 export interface ICountSearchResult {
     templateId: string;
     count: number;
-    entitiesWithFiles?: ISemanticSearchMinioResult[string];
+    entitiesWithFiles?: ISemanticSearchResult[string];
+    texts?: string[];
 }
 
 export interface IExportEntitiesBody {
@@ -149,7 +152,9 @@ export interface IExportEntitiesBody {
         [templateId: string]: {
             filter?: ISearchFilter;
             sort?: ISearchSort;
-            displayColumns: string[];
+            displayColumns?: string[];
+            headersOnly?: boolean;
+            insertEntities?: Record<string, any>[];
         };
     };
 }
@@ -163,3 +168,5 @@ export interface IGraphFilterBody {
 export interface IGraphFilterBodyBatch {
     [key: string]: IGraphFilterBody;
 }
+
+export type EntityData = IEntity | IFailedEntity;
