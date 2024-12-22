@@ -274,12 +274,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
             )}
             {mapPopupOpen && (
                 <Dialog open={mapPopupOpen} onClose={() => setMapPopupOpen(false)}>
-                    <EntityWithLocationFields
-                        entity={entity}
-                        entityTemplate={entityTemplate}
-                        darkMode={darkMode}
-                        styles={{ height: '800px', width: '600px' }}
-                    />
+                    <EntityWithLocationFields entity={entity} entityTemplate={entityTemplate} styles={{ height: '800px', width: '600px' }} />
                 </Dialog>
             )}
         </>

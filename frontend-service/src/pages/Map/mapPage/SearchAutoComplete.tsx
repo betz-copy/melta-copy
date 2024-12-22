@@ -95,11 +95,24 @@ const SearchAutoComplete = ({ selectedTemplates, handleEntityClick }: props) => 
             noOptionsText={i18next.t('templateEntitiesAutocomplete.noOptions')}
             isOptionEqualToValue={(option, currValue) => option.properties._id === currValue.properties._id}
             filterOptions={(options) => options}
+            sx={{
+                '.MuiAutocomplete-inputRoot': {
+                    maxHeight: '34px',
+                },
+                '& .MuiInputLabel-root': {
+                    fontFamily: 'Rubik',
+                    fontSize: '14px',
+                },
+            }}
             renderInput={(params) => (
                 <TextField
                     {...params}
                     onChange={(e) => debouncedSearch(e.target.value)}
-                    sx={{ backgroundColor: theme.palette.background.default, width: 400, borderRadius: '10px' }}
+                    sx={{
+                        backgroundColor: theme.palette.background.default,
+                        width: 400,
+                        borderRadius: '10px',
+                    }}
                     label={i18next.t('globalSearch.searchInPage')}
                     size="small"
                     variant="outlined"

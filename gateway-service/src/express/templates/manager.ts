@@ -777,7 +777,6 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             iconFileId,
             documentTemplatesIds,
         });
-        console.log('I am in manager now');
 
         await this.deletePropertyOfEntityTemplate(id, count, removedProperties, currTemplate);
 

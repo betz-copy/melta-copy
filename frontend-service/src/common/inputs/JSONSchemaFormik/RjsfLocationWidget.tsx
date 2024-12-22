@@ -9,6 +9,31 @@ import { convertToPlainText, containsHTMLTags } from '../../../utils/HtmlTagsStr
 import { getFixedNumber, getTextDirection } from '../../../utils/stringValues';
 import LocationField from '../../../pages/Map/LocationField';
 
+export const validateLocation = (value: string) => {
+    const locationString = value.trim();
+
+    const [longitude, latitude] = locationString
+        .split(',')
+        .map((v) => v.trim())
+        .map(Number);
+
+    if (locationString.startsWith('POLYGON')) {
+        const prefix = 'POLYGON((';
+        const suffix = '))';
+        if (locationString.startsWith(prefix) && locationString.endsWith(suffix)) {
+            const coordinates = locationString.slice(prefix.length, -suffix.length).split(',');
+            for (let i = 0; i < coordinates.length; i++) {
+                const [lng, lat] = coordinates[i].split(' ').map(Number);
+                if (Number.isNaN(lng) || Number.isNaN(lat)) return false;
+            }
+            return true;
+        }
+        return false;
+    }
+
+    if (Number.isNaN(longitude) || Number.isNaN(latitude)) return false;
+    return true;
+};
 const RjsfLocationWidget = ({
     id,
     placeholder,
@@ -32,8 +57,10 @@ const RjsfLocationWidget = ({
     propertyReadOnly,
     ...textFieldProps
 }: WidgetProps) => {
+    const [error, setError] = useState(false);
     const _onChange = ({ target: { value: newValue } }: React.ChangeEvent<HTMLInputElement>) => {
         const parsedValue = (type || schema.type) === 'number' && newValue !== '' ? Number(newValue) : newValue;
+        setError(validateLocation(parsedValue.toString()));
         onChange(newValue === '' ? options.emptyValue : parsedValue);
     };
     const _onBlur = ({ target: { value: newValue } }: React.FocusEvent<HTMLInputElement>) => onBlur(id, newValue);
@@ -79,16 +106,16 @@ const RjsfLocationWidget = ({
                     [value === undefined ? 'endAdornment' : 'startAdornment']: (
                         <InputAdornment
                             position={value === undefined ? 'end' : 'start'}
-                            onClick={() => setMapOpen(true)}
+                            onClick={() => (error ? '' : setMapOpen(true))}
                             style={{ cursor: 'pointer' }}
                         >
-                            <MapIcon />
+                            <MapIcon color={error ? 'disabled' : 'action'} />
                         </InputAdornment>
                     ),
                 }}
                 type={(options.inputType ?? inputType) as string}
                 value={finalValue}
-                error={rawErrors.length > 0}
+                error={error || rawErrors.length > 0}
                 onChange={_onChange}
                 onBlur={_onBlur}
                 onFocus={_onFocus}

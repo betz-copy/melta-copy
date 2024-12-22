@@ -53,7 +53,6 @@ export default class TemplatesController extends DefaultController<TemplatesMana
     }
 
     async updateEntityTemplate(req: Request, res: Response) {
-        console.log('here')
         res.json(await this.manager.updateEntityTemplate(req.params.id, req.body, req.files as Record<string, Express.Multer.File[]>));
     }
 

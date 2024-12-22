@@ -179,6 +179,7 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
                                             supportDeleteForExistingInstances
                                             supportEditEnum
                                             supportUnique
+                                            supportLocation
                                             hasActions={hasActions}
                                             draggable={{ isDraggable: true, dragHandleProps: draggableProvided.dragHandleProps }}
                                         />

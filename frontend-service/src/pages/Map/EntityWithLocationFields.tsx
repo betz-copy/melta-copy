@@ -7,16 +7,17 @@ import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates'
 import { jerusalemCoordinates, UpdateMapBounds } from '../../utils/map';
 import { IEntity } from '../../interfaces/entities';
 import { useEntityWithLocationFields } from '../../utils/hooks/useLocation';
+import { useDarkModeStore } from '../../stores/darkMode';
 
 type Props = {
     entity: IEntity;
     entityTemplate: IMongoEntityTemplatePopulated;
-    darkMode: boolean;
     styles?: React.CSSProperties;
 };
 
-const EntityWithLocationFields = ({ styles, entity, entityTemplate, darkMode }: Props) => {
+const EntityWithLocationFields = ({ styles, entity, entityTemplate }: Props) => {
     const { bounds, polygons, propertyDefinitions, markers } = useEntityWithLocationFields({ entityTemplate, entity });
+    const darkMode = useDarkModeStore((state) => state.darkMode);
 
     return (
         <MapContainer
@@ -30,7 +31,7 @@ const EntityWithLocationFields = ({ styles, entity, entityTemplate, darkMode }: 
                 [90, 180],
             ]}
         >
-            <UpdateMapBounds bounds={bounds} />
+            {polygons.length > 0 && <UpdateMapBounds bounds={bounds} />}
 
             <LayersControl position="topright">
                 {/* Base Layers */}

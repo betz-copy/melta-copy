@@ -9,7 +9,7 @@ const { notifications, ajvCustomFormats } = config;
 
 const ajv = new Ajv();
 ajv.addFormat('fileId', ajvCustomFormats.fileIdFieldRegex);
-ajv.addFormat('text-area',ajvCustomFormats.textAreaFieldRegex);
+ajv.addFormat('text-area', ajvCustomFormats.textAreaFieldRegex);
 ajv.addFormat('relationshipReference', ajvCustomFormats.relationshipReferenceFieldRegex);
 ajv.addFormat('location', ajvCustomFormats.locationFieldRegex);
 

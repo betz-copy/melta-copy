@@ -16,7 +16,7 @@ import RjsfTextWidget from './RjsfStringWidget';
 import RjfsTextAreaWidget from './RjfsTextAreaWidget';
 import './form.css';
 import RjfsTemplateReferenceWidget from './RjfsTemplateReferenceWidget';
-import RjsfLocationWidget from './RjsfLocationWidget';
+import RjsfLocationWidget, { validateLocation } from './RjsfLocationWidget';
 
 const ajvErrorsToFormikErrors = (schema: IMongoEntityTemplatePopulated['properties'], ajvErrors: ErrorObject[]): FormikErrors<any> => {
     const formikErrorsEntries = ajvErrors.map((ajvError) => {
@@ -43,7 +43,7 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
     const ajv = new Ajv({ allErrors: true });
     ajv.addFormat('fileId', /.*/);
     ajv.addFormat('text-area', /.*/);
-    ajv.addFormat('location', /.*/);
+    ajv.addFormat('location', (value: string) => validateLocation(value));
     addFormats(ajv);
     ajv.addVocabulary(['patternCustomErrorMessage', 'hide']);
     ajv.addKeyword({

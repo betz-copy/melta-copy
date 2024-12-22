@@ -35,7 +35,6 @@ const config = {
         textAreaFieldRegex: env.get('TEXT_AREA_FIELD_REGEX').default(/.*/).asRegExp(),
         relationshipReferenceFieldRegex: env.get('RELATIONSHIP_REFERENCE_FIELD_REGEX').default(/.*/).asRegExp(),
         locationFieldRegex: env.get('LOCATION_FIELD_REGEX').default(/.*/).asRegExp(),
-
     },
     logs: {
         format: env.get('LOGGING_DATE_FORMAT').default('YYYY-MM-DD HH:mm:ss').asString(),

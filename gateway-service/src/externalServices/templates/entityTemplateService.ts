@@ -158,7 +158,6 @@ export class EntityTemplateService extends TemplatesManagerService {
     }
 
     async updateEntityTemplate(entityTemplateId: string, updatedEntityTemplate: Omit<IEntityTemplate, 'disabled'>) {
-        console.log("I am here idiottttttt")
         const { data } = await this.api.put<IMongoEntityTemplatePopulated>(`${baseEntitiesRoute}/${entityTemplateId}`, updatedEntityTemplate);
 
         return data;
