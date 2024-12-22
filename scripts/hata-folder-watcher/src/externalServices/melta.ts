@@ -6,7 +6,7 @@ import { IMeltaEntityTemplate } from '../utils/interface';
 import { v4 as uuid } from 'uuid';
 
 const {
-    melta: { baseURL, templatesApi, timeout, jwt, workspaceId, category, cookieName },
+    melta: { baseURL, templatesApi, timeout, jwt, workspaceId, category, cookieName, instancesApi },
     template: { iconFileId },
     remoteFolder: { path: incomingFolderPath },
 } = config;
@@ -91,7 +91,7 @@ export default class Melta {
             form.append('properties', JSON.stringify({ fileName: fileWithoutExtension, extension: ext }));
             form.append('file', file);
 
-            const { data } = await this.api.post(baseURL, form);
+            const { data } = await this.api.post(instancesApi, form);
 
             return data;
         } catch (e) {
