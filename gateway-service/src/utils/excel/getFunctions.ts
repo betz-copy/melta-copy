@@ -51,7 +51,8 @@ export const isExcludedColumn = (propertyTemplate: IEntitySingleProperty) => {
     const isRelationshipRef = propertyTemplate.format === 'relationshipReference' || propertyTemplate.relationshipReference;
     const isFile = propertyTemplate.format === 'fileId' || (propertyTemplate.type === 'array' && propertyTemplate.items?.format === 'fileId');
     const isSerialNumber = propertyTemplate.type === 'number' && propertyTemplate.serialCurrent;
-    return !isRelationshipRef && !isFile && !isSerialNumber;
+    const isLocation = propertyTemplate.format === 'location';
+    return !isRelationshipRef && !isFile && !isSerialNumber && !isLocation;
 };
 
 type IFailedProperties = {

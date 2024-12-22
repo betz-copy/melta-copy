@@ -27,6 +27,7 @@ export default {
     copyUrl: 'העתק קישור',
     successfullyCopied: 'הקישור הועתק בהצלחה',
     soon: 'בקרוב...',
+    map: 'מפה',
     general: 'כללי',
     agGridTimes: {
         hours: 'שעות',

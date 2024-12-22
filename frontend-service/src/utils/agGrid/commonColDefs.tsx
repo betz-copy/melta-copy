@@ -223,7 +223,6 @@ export const fileColDef = <Data extends any = EntityData>(
         width: hardcodedWidth,
         flex: hardcodedWidth ? 0 : 1,
         hide: hideColumn,
-        editable: false,
     };
 };
 
@@ -476,7 +475,6 @@ export const enumFilesColDef = <Data extends any = EntityData>(
         width: hardcodedWidth,
         flex: hardcodedWidth ? 0 : 1,
         hide: hideColumn,
-        editable: false,
     };
 };
 

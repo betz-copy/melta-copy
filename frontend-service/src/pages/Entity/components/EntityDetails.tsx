@@ -144,7 +144,9 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
 
     const canWriteInstance = checkUserCategoryPermission(currentUser.currentWorkspacePermissions, entityTemplate.category, PermissionScope.write);
     const isEntityDisabled = expandedEntity.entity.properties.disabled;
-    const includeLocationProperty = Object.values(entityTemplate.properties.properties).some((key) => key.format === 'location');
+    const includeLocationProperty = Object.entries(entityTemplate.properties.properties).some(
+        ([field, property]) => property.format === 'location' && entity.properties[field] !== undefined,
+    );
 
     return (
         <>
@@ -162,7 +164,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                             <Grid container flexDirection="row" flexWrap="nowrap" justifyContent="flex-end" alignItems="center">
                                 {includeLocationProperty && (
                                     <Grid onClick={() => setMapPopupOpen(true)}>
-                                        <IconButtonWithPopover popoverText="מפה">
+                                        <IconButtonWithPopover popoverText={i18next.t('map')}>
                                             <MapIcon />
                                         </IconButtonWithPopover>
                                     </Grid>
