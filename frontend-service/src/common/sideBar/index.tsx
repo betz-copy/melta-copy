@@ -95,7 +95,12 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
     const meltaPlus = useMeltaPlusStore((state) => state.meltaPlus);
     const toggleMeltaPlus = useMeltaPlusStore((state) => state.toggleMeltaPlus);
 
+<<<<<<< Updated upstream
+    const { trackEvent } = useMatomo();
+    const { trackPageView } = useMatomo();
+=======
     const { trackEvent, trackPageView } = useMatomo();
+>>>>>>> Stashed changes
     const workspace = useWorkspaceStore((state) => state.workspace);
 
     return (

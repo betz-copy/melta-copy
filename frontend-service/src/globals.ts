@@ -202,6 +202,9 @@ export const environment = {
     },
 
     loadExcel: { excelExtension: '.xlsx', acceptedFilesTypes: { 'excel/xlsx': ['.xlsx', '.xls'] }, filesLimit: 5, entitiesLimit: 500 },
+    agGrid: {
+        paginationPageSizeSelector: [5, 10, 25, 50],
+    },
 
     draftAutoSaveDebounce: 250,
     fileExtensions: {

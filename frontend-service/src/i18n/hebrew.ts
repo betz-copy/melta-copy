@@ -1216,6 +1216,8 @@ export default {
         fileName: 'שם הקובץ',
         takePicture: 'צלם תמונה',
         blackAndWhite: 'שחור לבן',
+<<<<<<< Updated upstream
+=======
     },
     DynamicsConfigs: {
         isDrawerOpen: 'תפריט צד פתוח',
@@ -1251,5 +1253,6 @@ export default {
             width: 'רוחב אייקון',
             height: 'גובה אייקון',
         },
+>>>>>>> Stashed changes
     },
 };
