@@ -1,6 +1,6 @@
 import { Avatar, Box, Grid, ToggleButton, ToggleButtonGroup } from '@mui/material';
 import i18next from 'i18next';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import PaymentIcon from '@mui/icons-material/Payment';
 import fileDetails from '../../interfaces/fileDetails';
 import { IUser } from '../../interfaces/users';
@@ -8,6 +8,7 @@ import FileInput from './ImageFileInput';
 import { getNameInitials } from '../../utils/userProfile';
 import { allProfileAvatars } from '../../utils/icons';
 import { environment } from '../../globals';
+import { getKartoffelUserProfileRequest } from '../../services/userService';
 
 type InputSelectType = 'chooseFile' | 'chooseAvatar' | 'kartoffelProfile';
 
@@ -28,6 +29,7 @@ const UserProfilePicker: React.FC<UserProfilePickerProps> = ({ imageName, onPick
         imageName ? { file: { name: imageName }, name: imageName } : undefined,
     );
     const [selectedIcon, setSelectedIcon] = useState<string | undefined>(user.preferences.profilePath ?? undefined);
+    const [kartoffelUserProfile, setKartoffelUserProfile] = useState<string>();
 
     const allAvatarPaths = allProfileAvatars;
 
@@ -49,6 +51,19 @@ const UserProfilePicker: React.FC<UserProfilePickerProps> = ({ imageName, onPick
         } else onPick();
     };
 
+    useEffect(() => {
+        const fetchUserProfile = async () => {
+            try {
+                const kartoffelProfileImage = await getKartoffelUserProfileRequest(user.externalMetadata.kartoffelId);
+                setKartoffelUserProfile(kartoffelProfileImage);
+            } catch (error) {
+                console.error('Failed to fetch Kartoffel user profile:', error);
+            }
+        };
+
+        fetchUserProfile();
+    }, [user]);
+
     return (
         <Grid container direction="column" alignItems="center" spacing={1}>
             <Grid item margin={0}>
@@ -59,10 +74,17 @@ const UserProfilePicker: React.FC<UserProfilePickerProps> = ({ imageName, onPick
                     <ToggleButton value="chooseFile" sx={{ width: '10rem' }}>
                         {i18next.t('input.imagePicker.chooseFile')}
                     </ToggleButton>
-                    <ToggleButton value="kartoffelProfile" sx={{ width: '10rem', display: 'flex', justifyContent: 'space-evenly' }}>
-                        {i18next.t('input.imagePicker.kartoffelProfile')}
-                        {inputType === kartoffelProfile && <PaymentIcon />}
-                    </ToggleButton>
+                        <ToggleButton
+                            value="kartoffelProfile"
+                            sx={{ width: '10rem', display: 'flex', justifyContent: 'space-evenly' }}
+                            disabled={!kartoffelUserProfile}
+                            onClick={() => {  
+                                setUserProfileImage(kartoffelUserProfile);
+                            }}
+                        >
+                            {i18next.t('input.imagePicker.kartoffelProfile')}
+                            {inputType === kartoffelProfile && <PaymentIcon />}
+                        </ToggleButton>
                 </ToggleButtonGroup>
             </Grid>
 

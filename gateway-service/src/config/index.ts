@@ -157,7 +157,7 @@ const config = {
         requestTimeout: env.get('KARTOFFEL_REQUEST_TIMEOUT').default(10000).asIntPositive(),
         searchRoute: env.get('KARTOFFEL_SEARCH_ROUTE').default('/search').asString(),
         fieldToSearch: env.get('KARTOFFEL_FIELDS_TO_SEARCH').default('fullName,uniqueId,personalNumber,identityCard').asString(),
-        profilePath: env.get('KARTOFFEL_PROFILE_PATH').default('/pictures/profile').asString(),
+        profilePath: env.get('KARTOFFEL_PROFILE_PATH').default('pictures/profile').asString(),
     },
     errorCodes: {
         categoryHasTemplates: 'CATEGORY_HAS_TEMPLATES',

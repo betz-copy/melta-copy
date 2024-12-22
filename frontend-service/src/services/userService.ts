@@ -17,6 +17,11 @@ export const getUserByIdRequest = async (userId: string) => {
     return data;
 };
 
+export const getKartoffelUserProfileRequest = async (kartoffelId: string) => {
+    const { data } = await axios.get<string>(`${users}/kartoffelUserProfile/${kartoffelId}`);
+    return data;
+};
+
 export const searchUsersRequest = async (searchBody: IUserSearchBody) => {
     const { data } = await axios.post<{ users: IUser[]; count: number }>(`${users}/search`, searchBody);
     return data;

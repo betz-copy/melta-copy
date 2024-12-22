@@ -2,7 +2,6 @@ import React from 'react';
 import Avatar from '@mui/material/Avatar';
 import { useQuery } from 'react-query';
 import { useMatomo } from '@datapunt/matomo-tracker-react';
-import { toast } from 'react-toastify';
 import { IUser } from '../interfaces/users';
 import { useDarkModeStore } from '../stores/darkMode';
 import { getNameInitials } from '../utils/userProfile';
@@ -26,7 +25,6 @@ const UserAvatar: React.FC<UserAvatarProps> = ({ user, size = 48, bgColor, userP
     const { data: profile, isError } = useQuery(['userProfile', user.preferences.profilePath], async () => {
         return user.preferences.profilePath ? getUserProfileRequest(user._id) : '';
     });
-    // if (isError) toast.error('djgdkjbgkd');
 
     return (
         <Avatar

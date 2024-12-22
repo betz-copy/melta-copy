@@ -29,6 +29,10 @@ export class UsersManager {
         return UserService.getUserById(userId, workspaceIds);
     }
 
+    static async getKartoffelUserProfileRequest(kartoffelId: string) {
+        return Kartoffel.getUserProfile(kartoffelId);
+    }
+
     static async getUserProfile(userId: string) {
         const user: IUser = await UserService.getUserById(userId);
         const { profilePath } = user.preferences;

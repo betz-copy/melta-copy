@@ -30,7 +30,7 @@ export class Kartoffel {
     };
 
     static getUserProfile = async (kartoffelId: string) => {
-        const { data } = await this.kartoffel.get<IKartoffelUser>(`${baseEntitiesRoute}/${kartoffelId}${profilePath}`);
+        const { data } = await this.kartoffel.get<string>(`${baseEntitiesRoute}/${kartoffelId}/${profilePath}`);
         return data;
     };
 }
