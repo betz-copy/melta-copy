@@ -21,6 +21,7 @@ import {
     searchEntitiesByLocationRequestSchema,
     updateEntityInstanceSchema,
     updateEntityStatusSchema,
+    loadEntitiesSchema,
 } from './validator.schema';
 
 const { instanceService } = config;
@@ -57,7 +58,7 @@ InstancesRouter.post(
 InstancesRouter.post(
     '/entities/search/template/:templateId',
     InstancesValidatorMiddleware.validateUserCanSearchEntitiesOfTemplate,
-    InstanceManagerProxy,
+    InstancesControllerMiddleware.searchEntitiesOfTemplate,
 );
 
 InstancesRouter.post(
@@ -80,6 +81,15 @@ InstancesRouter.post(
     ValidateRequest(exportEntitiesSchema),
     InstancesControllerMiddleware.exportEntities,
 );
+
+InstancesRouter.post(
+    '/entities/loadEntities',
+    wrapMulter(multer({ dest: config.service.uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).any()),
+    InstancesValidatorMiddleware.validateUserCanCreateEntityInstance,
+    ValidateRequest(loadEntitiesSchema),
+    InstancesControllerMiddleware.loadEntities,
+);
+
 InstancesRouter.get('/entities/:id', InstancesValidatorMiddleware.validateUserCanReadEntityInstance, InstanceManagerProxy);
 InstancesRouter.get('/entities/constraints/:templateId', AuthorizerControllerMiddleware.userCanReadTemplates, InstanceManagerProxy);
 

@@ -13,7 +13,7 @@ import { getBreachAlertById, getBreachRequestById } from '../../services/ruleBre
 import RuleBreachDialog from './ruleBreachDialog';
 import { RuleBreachTable } from './table';
 
-const { defaultRowHeight } = environment.agGrid;
+const { defaultRowHeight, defaultFontSize } = environment.agGrid;
 
 interface RuleBreachDialogContainerProps {
     breachType: string;
@@ -96,7 +96,7 @@ const RuleManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<s
                 <BlueTitle title={i18next.t('ruleManagement.alerts')} component="h5" variant="h5" />
                 <RuleBreachTable
                     rowHeight={defaultRowHeight}
-                    fontSize="16px"
+                    fontSize={`${defaultFontSize}px`}
                     minColumnWidth={200}
                     breachType="alert"
                     onReviewBreachClick={onReviewBreachClick}
@@ -107,7 +107,7 @@ const RuleManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<s
                 <RuleBreachTable
                     ref={ruleBreachRequestsRef}
                     rowHeight={defaultRowHeight}
-                    fontSize="16px"
+                    fontSize={`${defaultFontSize}px`}
                     minColumnWidth={200}
                     breachType="request"
                     onReviewBreachClick={onReviewBreachClick}

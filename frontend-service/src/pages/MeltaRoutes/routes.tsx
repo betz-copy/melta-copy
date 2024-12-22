@@ -46,6 +46,8 @@ export const MeltaRoutesInner: React.FC = () => {
     const [open, setOpen] = useState(false);
 
     const [location, navigate] = useLocation();
+    const [entityMatch, entityParams] = useRoute('/entity/:entityId');
+    const [match] = useRoute('/entity/:entityId/graph');
 
     const { setIsOpen, setCurrentStep } = useTour();
 
@@ -60,10 +62,6 @@ export const MeltaRoutesInner: React.FC = () => {
     const trigger = useScrollTrigger({ target: pageScrollTargetRef.current ?? undefined, disableHysteresis: true, threshold: 300 });
 
     const { trackPageView } = useMatomo();
-
-    useEffect(() => {
-        trackPageView({ documentTitle: '/', href: '/' });
-    }, []);
 
     useEffect(() => {
         const savedScrollPosition = sessionStorage.getItem(`pageScrollPosition-${location}`);
@@ -132,7 +130,16 @@ export const MeltaRoutesInner: React.FC = () => {
         }
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-    const [match] = useRoute('/entity/:entityId/graph');
+    useEffect(() => {
+        if (entityMatch && entityParams) {
+            const { entityId } = entityParams;
+
+            trackPageView({
+                documentTitle: `Entity Page - ${entityId}`,
+                href: window.location.href,
+            });
+        }
+    }, [entityMatch, entityParams, trackPageView]);
 
     return (
         <>

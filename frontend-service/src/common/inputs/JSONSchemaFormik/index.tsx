@@ -51,6 +51,7 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
     });
     ajv.addKeyword({ keyword: 'isDailyAlert' });
     ajv.addKeyword({ keyword: 'calculateTime' });
+    ajv.addKeyword({ keyword: 'archive', type: 'boolean' });
     ajv.addKeyword({
         keyword: 'serialStarter',
     });
@@ -142,6 +143,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
             id="json-schema"
             schema={schema}
             uiSchema={mapValues(schema.properties, (propertySchema): UiSchema => {
+                if (propertySchema.archive) return {};
                 if (propertySchema.readOnly)
                     return {
                         'ui:options': {

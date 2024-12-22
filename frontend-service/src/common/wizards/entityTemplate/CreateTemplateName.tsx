@@ -1,17 +1,11 @@
-import React from 'react';
-import { TextField, Grid } from '@mui/material';
-import * as Yup from 'yup';
+import { Grid, TextField } from '@mui/material';
 import i18next from 'i18next';
-import { useQueryClient } from 'react-query';
+import React from 'react';
+import * as Yup from 'yup';
 import { variableNameValidation } from '../../../utils/validation';
 import { StepComponentProps } from '../index';
-import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 
-export const useCreateOrEditTemplateNameSchema = (currentTemplateId?: string) => {
-    const queryClient = useQueryClient();
-
-    const templates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates') || new Map();
-
+export const useCreateOrEditTemplateNameSchema = (templates: Map<any, any>, currentTemplateId?: string) => {
     const otherTemplates = Array.from(templates.values()).filter((template) => template._id !== currentTemplateId);
 
     const existingTemplateNames = otherTemplates.map((template) => template.name);

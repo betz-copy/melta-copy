@@ -27,6 +27,7 @@ export interface IEntitySingleProperty {
     };
     minItems?: 1;
     uniqueItems?: true;
+    archive?: boolean;
 }
 
 export interface IProperties {

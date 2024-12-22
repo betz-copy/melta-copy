@@ -368,7 +368,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
         const { templateId, properties } = action.actionMetadata;
         const instancesManager = new InstancesManager(this.workspaceId);
 
-        const entity = await instancesManager.createEntityInstance({ templateId, properties }, [], brokenRules, originUserId, false);
+        const entity = await instancesManager.createEntityInstance({ templateId, properties }, [], brokenRules, originUserId, undefined, false);
 
         await this.service.updateRuleBreachRequestActionsMetadata(_id, [
             {
@@ -745,17 +745,17 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
     }
 
     public async populateBrokenRules(brokenRules: IBrokenRule[]): Promise<IBrokenRulePopulated[]> {
-        const entitiyIds = new Set<string>();
+        const entityIds = new Set<string>();
         const relationshipIds = new Set<string>();
         brokenRules.forEach(({ failures }) => {
             failures.forEach(({ entityId, causes }) => {
-                entitiyIds.add(entityId);
+                entityIds.add(entityId);
 
                 causes.forEach(({ instance }) => {
-                    entitiyIds.add(instance.entityId);
+                    entityIds.add(instance.entityId);
 
                     if (instance.aggregatedRelationship) {
-                        entitiyIds.add(instance.aggregatedRelationship.otherEntityId);
+                        entityIds.add(instance.aggregatedRelationship.otherEntityId);
                         relationshipIds.add(instance.aggregatedRelationship.relationshipId);
                     }
                 });
@@ -771,18 +771,18 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
         const relationships = await this.instancesService.getRelationshipsByIds(Array.from(relationshipIds));
 
         relationships.forEach((relationship) => {
-            entitiyIds.add(relationship.sourceEntityId);
-            entitiyIds.add(relationship.destinationEntityId);
+            entityIds.add(relationship.sourceEntityId);
+            entityIds.add(relationship.destinationEntityId);
         });
 
         // no point to do getInstanceById to unexisting entity
-        entitiyIds.forEach((str) => {
+        entityIds.forEach((str) => {
             if (str.startsWith(ruleBreachService.brokenRulesFakeEntityIdPrefix)) {
-                entitiyIds.delete(str);
+                entityIds.delete(str);
             }
         });
 
-        const entities = await this.instancesService.getEntityInstancesByIds(Array.from(entitiyIds));
+        const entities = await this.instancesService.getEntityInstancesByIds(Array.from(entityIds));
 
         const entitiesMap = new Map(entities.map((entity) => [entity.properties._id, entity]));
         const relationshipsMap = new Map(relationships.map((relationship) => [relationship.properties._id, relationship]));

@@ -15,6 +15,7 @@ import { Box, Button, Grid, IconButton, Slide, Typography, useTheme } from '@mui
 import i18next from 'i18next';
 import { useLocation } from 'wouter';
 import StarBorderPurple500Icon from '@mui/icons-material/StarBorderPurple500';
+import { useMatomo } from '@datapunt/matomo-tracker-react';
 import { environment } from '../../globals';
 import { ICategoryMap } from '../../interfaces/categories';
 import { INotificationCountGroups } from '../../interfaces/notifications';
@@ -95,6 +96,8 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
     const meltaPlus = useMeltaPlusStore((state) => state.meltaPlus);
     const toggleMeltaPlus = useMeltaPlusStore((state) => state.toggleMeltaPlus);
 
+    const { trackEvent } = useMatomo();
+    const { trackPageView } = useMatomo();
     const workspace = useWorkspaceStore((state) => state.workspace);
 
     return (
@@ -212,7 +215,16 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                                 showAiButton
                             />
                         ) : (
-                            <Grid onClick={() => toggleDrawer()}>
+                            <Grid
+                                onClick={() => {
+                                    toggleDrawer();
+
+                                    trackEvent({
+                                        category: 'side-bar',
+                                        action: 'search icon click',
+                                    });
+                                }}
+                            >
                                 <IconButtonWithPopover
                                     popoverText={isDrawerOpen ? '' : i18next.t('pages.globalSearch')}
                                     disabledToolTip={isDrawerOpen}
@@ -265,7 +277,16 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                                     to={`/category/${category._id}`}
                                     text={category.displayName}
                                     isDrawerOpen={isDrawerOpen}
-                                    onChangeToActive={(isActive) => handleChangeActiveButton(isActive, category._id)}
+                                    onChangeToActive={(isActive) => {
+                                        handleChangeActiveButton(isActive, category._id);
+
+                                        if (isActive) {
+                                            trackPageView({
+                                                documentTitle: `Category page - ${category.displayName}`,
+                                                href: window.location.href,
+                                            });
+                                        }
+                                    }}
                                     isActiveButton={activeButton === category._id}
                                 >
                                     {category.iconFileId ? (
@@ -294,7 +315,16 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                             to="/fluid-simulation"
                             text={i18next.t('pages.fluidSimulation')}
                             isDrawerOpen={isDrawerOpen}
-                            onChangeToActive={(isActive) => handleChangeActiveButton(isActive, 'fluid-simulation')}
+                            onChangeToActive={(isActive) => {
+                                handleChangeActiveButton(isActive, 'fluid-simulation');
+
+                                if (isActive) {
+                                    trackEvent({
+                                        category: 'side-bar',
+                                        action: 'MELTA PLUS',
+                                    });
+                                }
+                            }}
                             isActiveButton={activeButton === 'fluid-simulation'}
                         >
                             <FluidSimulationIcon
@@ -359,7 +389,15 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                             )
                         }
                         isDrawerOpen={isDrawerOpen}
-                        onChangeToActive={(isActive: boolean) => handleChangeActiveButton(isActive, 'iFrames')}
+                        onChangeToActive={(isActive) => {
+                            handleChangeActiveButton(isActive, 'iFrames');
+                            if (isActive) {
+                                trackPageView({
+                                    documentTitle: 'iFrames page',
+                                    href: window.location.href,
+                                });
+                            }
+                        }}
                         isActiveButton={activeButton === 'iFrames'}
                     >
                         <StarBorderPurple500Icon
@@ -382,7 +420,15 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                         to="/rule-management"
                         text={i18next.t('pages.ruleManagement')}
                         isDrawerOpen={isDrawerOpen}
-                        onChangeToActive={(isActive) => handleChangeActiveButton(isActive, 'rule-management')}
+                        onChangeToActive={(isActive) => {
+                            handleChangeActiveButton(isActive, 'rule-management');
+                            if (isActive) {
+                                trackPageView({
+                                    documentTitle: 'Rule Management page',
+                                    href: window.location.href,
+                                });
+                            }
+                        }}
                         isActiveButton={activeButton === 'rule-management'}
                     >
                         <GavelIcon
@@ -395,7 +441,15 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                         to="/gantts"
                         text={i18next.t('pages.gantts')}
                         isDrawerOpen={isDrawerOpen}
-                        onChangeToActive={(isActive) => handleChangeActiveButton(isActive, 'gantts')}
+                        onChangeToActive={(isActive) => {
+                            handleChangeActiveButton(isActive, 'gantts');
+                            if (isActive) {
+                                trackPageView({
+                                    documentTitle: 'Gantts page',
+                                    href: window.location.href,
+                                });
+                            }
+                        }}
                         isActiveButton={activeButton === 'gantts'}
                     >
                         <CalendarIcon fontSize="large" sx={{ color: activeButton === 'gantts' ? '#545eb9' : 'white', ...environment.iconSize }} />
@@ -405,7 +459,15 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                         to="/processes"
                         text={i18next.t('pages.processInstances')}
                         isDrawerOpen={isDrawerOpen}
-                        onChangeToActive={(isActive) => handleChangeActiveButton(isActive, 'processes')}
+                        onChangeToActive={(isActive) => {
+                            handleChangeActiveButton(isActive, 'processes');
+                            if (isActive) {
+                                trackPageView({
+                                    documentTitle: 'Processes page',
+                                    href: window.location.href,
+                                });
+                            }
+                        }}
                         isActiveButton={activeButton === 'processes'}
                     >
                         <CustomImage
@@ -439,7 +501,15 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                             to="/permissions-management"
                             text={i18next.t('permissions.permissionsManagementPageTitle')}
                             isDrawerOpen={isDrawerOpen}
-                            onChangeToActive={(isActive) => handleChangeActiveButton(isActive, 'permissions-management')}
+                            onChangeToActive={(isActive) => {
+                                handleChangeActiveButton(isActive, 'permissions-management');
+                                if (isActive) {
+                                    trackPageView({
+                                        documentTitle: 'PermissionsManagement page',
+                                        href: window.location.href,
+                                    });
+                                }
+                            }}
                             isActiveButton={activeButton === 'permissions-management'}
                         >
                             <ManageAccountsIcon
@@ -470,7 +540,15 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
 
                 <Grid item>
                     <IconButton
-                        onClick={toggleDrawer}
+                        onClick={() => {
+                            if (!isDrawerOpen) {
+                                trackEvent({
+                                    category: 'side-bar',
+                                    action: 'open',
+                                });
+                            }
+                            toggleDrawer();
+                        }}
                         style={{
                             height: '50px',
                             width: '27px',

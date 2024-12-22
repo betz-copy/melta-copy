@@ -3,7 +3,7 @@ import { toast } from 'react-toastify';
 import i18next from 'i18next';
 import { useMutation, useQueryClient } from 'react-query';
 import { AxiosError } from 'axios';
-import { StepsType, Wizard, WizardBaseType } from '../index';
+import { StepType, Wizard, WizardBaseType } from '../index';
 import fileDetails from '../../../interfaces/fileDetails';
 import { ErrorToast } from '../../ErrorToast';
 import { IFrame, IMongoIFrame } from '../../../interfaces/iFrames';
@@ -19,7 +19,7 @@ export type IFrameWizardBaseType = WizardBaseType<IFrameWizardValues> & {
     setIFramesOrder: (value: { name: string; id: string }[]) => void;
 };
 
-const steps: StepsType<IFrameWizardValues> = [
+const steps: StepType<IFrameWizardValues>[] = [
     {
         label: i18next.t('wizard.iFrame.editDetails'),
         component: (props) => <CreateIFrameDetails {...props} />,

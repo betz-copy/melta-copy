@@ -26,7 +26,7 @@ export type ISemanticSearchResult = Record<string, Record<string, { minioFileId:
 export interface IRerankResult {
     index: number;
     text: string;
-    score: string;
+    score: number;
 }
 
 export interface IRerankRequest {

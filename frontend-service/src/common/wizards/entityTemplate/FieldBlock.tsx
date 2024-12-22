@@ -44,6 +44,8 @@ interface FieldBlockProps<PropertiesType extends string, Values extends Record<P
     supportEditEnum?: boolean;
     supportUnique?: boolean;
     supportLocation?: boolean;
+    supportArchive?: boolean;
+    supportAddFieldButton?: boolean;
     hasActions?: boolean;
     draggable?: { isDraggable: false } | { isDraggable: true; dragHandleProps: DraggableProvided['dragHandleProps'] };
 }
@@ -71,6 +73,8 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
     supportEditEnum,
     supportUnique,
     supportLocation,
+    supportArchive,
+    supportAddFieldButton = true,
     hasActions,
     draggable = { isDraggable: false },
     initialFieldCardDataOnAdd = {
@@ -90,6 +94,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
         calculateTime: undefined,
         relationshipReference: undefined,
         serialStarter: 0,
+        archive: false,
     },
 }: React.PropsWithChildren<FieldBlockProps<PropertiesType, Values>>) => {
     // copy of values of formik in order to show changes on inputs fast (formik rerenders are slow)
@@ -184,6 +189,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
     const setFieldDisplayValueWrapper = (index: number) => (field: keyof Values, value: any) => setFieldDisplayValue(index, field, value);
     const setDisplayValueWrapper = (index: number) => (value: SetStateAction<CommonFormInputProperties>) => setDisplayValue(index, value);
     const isFieldBlockError = Boolean(touched?.[propertiesType]) && Boolean(errors?.[propertiesType]);
+
     return (
         <FieldBlockAccordion style={{ border: isFieldBlockError ? '1px solid red' : '' }}>
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
@@ -232,10 +238,15 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
                                                 supportRelationshipReference,
                                                 supportUnique,
                                                 supportLocation,
+                                                supportArchive,
                                                 hasActions,
                                             };
 
-                                            if (propertiesType === 'properties' || propertiesType === 'detailsProperties') {
+                                            if (
+                                                propertiesType === 'properties' ||
+                                                propertiesType === 'detailsProperties' ||
+                                                propertiesType === 'archiveProperties'
+                                            ) {
                                                 return (
                                                     <MemoFieldEditCard
                                                         {...props}
@@ -253,14 +264,16 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
                                         })}
 
                                         {droppableProvided.placeholder}
-                                        <Button
-                                            type="button"
-                                            variant="contained"
-                                            style={{ margin: '8px' }}
-                                            onClick={() => push({ id: uuid(), ...initialFieldCardDataOnAdd })}
-                                        >
-                                            <Typography>{addPropertyButtonLabel}</Typography>
-                                        </Button>
+                                        {supportAddFieldButton && (
+                                            <Button
+                                                type="button"
+                                                variant="contained"
+                                                style={{ margin: '8px' }}
+                                                onClick={() => push({ id: uuid(), ...initialFieldCardDataOnAdd })}
+                                            >
+                                                <Typography>{addPropertyButtonLabel}</Typography>
+                                            </Button>
+                                        )}
 
                                         {errors?.[propertiesType] === i18next.t('validation.oneField') && (
                                             <div style={{ color: '#d32f2f' }}>{i18next.t('validation.oneField')}</div>
@@ -279,7 +292,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
                 body={`${i18next.t('systemManagement.warningOnDeleteField')}
                     ${selectedIndexToRemove > -1 && displayValuesRef.current[selectedIndexToRemove].title}
                     ${i18next.t('systemManagement.continueWarningOnDeleteField')} ${
-                    (initialValues as unknown as IMongoEntityTemplatePopulated).displayName
+                    (initialValues as unknown as IMongoEntityTemplatePopulated)?.displayName
                 }`}
                 onYes={onDeleteSure}
             />

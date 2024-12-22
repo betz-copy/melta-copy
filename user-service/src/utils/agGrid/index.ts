@@ -5,7 +5,7 @@ import {
     basicFilterOperationTypes,
     FilterQuery,
     filterTypes,
-    IAgGridRequest,
+    IAgGridFilterModel,
     IAgGridSort,
     numberFilterOperationTypes,
     textFilterOperationTypes,
@@ -51,29 +51,35 @@ const translateAgGridFilter = (
     }
 };
 
-export const translateAgGridFilterModel = (filterModel: IAgGridRequest['filterModel']) => {
-    return Object.entries(filterModel).reduce((acc, [field, filter]) => {
-        switch (filter.filterType) {
-            case filterTypes.text:
-                acc[field] = translateAgGridFilter(filter.type, filter.filter);
-                break;
-            case filterTypes.number:
-                acc[field] = translateAgGridFilter(filter.type, filter.filter, filter.filterTo);
-                break;
-            case filterTypes.date:
-                acc[field] = translateAgGridFilter(filter.type, filter.dateFrom, filter.dateTo);
-                break;
-            case filterTypes.set:
-                acc[field] = { $in: filter.values };
-                break;
-        }
-        return acc;
-    }, {} as Record<string, FilterQuery>);
+export const translateAgGridFilterModel = (filterModel: Record<string, IAgGridFilterModel>) => {
+    return Object.entries(filterModel).reduce(
+        (acc, [field, filter]) => {
+            switch (filter.filterType) {
+                case filterTypes.text:
+                    acc[field] = translateAgGridFilter(filter.type, filter.filter);
+                    break;
+                case filterTypes.number:
+                    acc[field] = translateAgGridFilter(filter.type, filter.filter, filter.filterTo);
+                    break;
+                case filterTypes.date:
+                    acc[field] = translateAgGridFilter(filter.type, filter.dateFrom, filter.dateTo);
+                    break;
+                case filterTypes.set:
+                    acc[field] = { $in: filter.values };
+                    break;
+            }
+            return acc;
+        },
+        {} as Record<string, FilterQuery>,
+    );
 };
 
 export const translateAgGridSortModel = (sortModel: IAgGridSort[]) => {
-    return sortModel.reduce((acc, { colId, sort: sortType }) => {
-        acc[colId] = sortType === 'asc' ? 1 : -1;
-        return acc;
-    }, {} as Record<string, number>);
+    return sortModel.reduce(
+        (acc, { colId, sort: sortType }) => {
+            acc[colId] = sortType === 'asc' ? 1 : -1;
+            return acc;
+        },
+        {} as Record<string, number>,
+    );
 };
