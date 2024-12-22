@@ -270,6 +270,61 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
         return this.model.findOne({ path: dir, name }).orFail(new PathDoesNotExistError(path)).lean().exec();
     }
 
+    getRootTemplateByCategory(categoryId: string) {
+        return this.model.findOne({ path: '/', category: categoryId }).lean().exec();
+    }
+
+    async getSubTemplatesTree(categoryId: string) {
+        const templatesWithPath = await this.model
+            .find({ path: { $ne: null }, category: categoryId })
+            .populate<Pick<IEntityTemplatePopulated, 'category'>>('category')
+            .lean()
+            .exec();
+        const rootTemplate = templatesWithPath.find((template) => template.path === '/');
+
+        if (!templatesWithPath?.length || !rootTemplate) return [];
+        console.log(0);
+        console.log(templatesWithPath);
+
+        templatesWithPath.sort((a, b) => a.path!.split('/').length - b.path!.split('/').length).pop();
+
+        console.log(1);
+        console.log(templatesWithPath);
+        type IEntityTemplatePopulatedWithChildren = IEntityTemplatePopulated & { children: IEntityTemplatePopulatedWithChildren[] };
+
+        const result = {
+            ...rootTemplate,
+            children: [] as IEntityTemplatePopulatedWithChildren[],
+        };
+
+        templatesWithPath.forEach((child) => {
+            const { path } = child;
+
+            const levels = path!.substring(path!.indexOf(rootTemplate.name) + rootTemplate.name.length + 1).split('/');
+            const { length: levelsLength } = levels;
+            let reference = result.children;
+            levels.forEach((level, index) => {
+                const isLastLevel = levelsLength - index === 1;
+                if (isLastLevel && level === '') {
+                    reference.push({ ...child, children: [] });
+                } else {
+                    const childRef = reference.find((subChild) => subChild.name === level);
+                    if (!childRef) {
+                        throw new PathDoesNotExistError(level);
+                    }
+                    childRef.children ??= [];
+                    if (isLastLevel) {
+                        childRef.children.push({ ...child, children: [] });
+                    } else {
+                        reference = childRef.children;
+                    }
+                }
+            });
+        });
+
+        return result;
+    }
+
     async updateEntityTemplateAction(id: string, actions: string) {
         return this.model
             .findByIdAndUpdate(id, { actions }, { new: true })

@@ -290,6 +290,7 @@ export default {
         failedToCreatePath: 'נכשל להוסיף נתיב',
         succeededToCreatePath: 'הנתיב נוסף בהצלחה',
         pathAlreadyExists: 'הנתיב כבר קיים',
+        failedToRecieveTemplatesTree: 'נכשל לקבל עץ תבניות',
     },
     draftSaveDialog: {
         exitTitle: 'בחרת לצאת ללא שמירת השינויים',

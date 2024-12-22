@@ -6,10 +6,10 @@ import { useMutation, useQueryClient } from 'react-query';
 import { AxiosError } from 'axios';
 import { toast } from 'react-toastify';
 import { Done } from '@mui/icons-material';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { updateEntityTemplatePathRequest } from '../../services/templates/enitityTemplatesService';
+import FolderTree, { testData } from 'react-folder-tree';
+import { IEntityTemplateMap, IEntityTemplatePopulatedWithChildren, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { getEntityTemplatesTree, updateEntityTemplatePathRequest } from '../../services/templates/enitityTemplatesService';
 import { ErrorToast } from '../ErrorToast';
-import { EntityTemplatesTree } from '../EntityTemplatesTree';
 
 const ChooseTemplatePathDialog: React.FC<{
     open: boolean;
@@ -20,6 +20,7 @@ const ChooseTemplatePathDialog: React.FC<{
 
     const [validationErrors, setValidationErrors] = useState(false);
     const [pathValue, setPathValue] = useState('/');
+    const [entityTemplatesTree, setEntityTemplatesTree] = useState<IEntityTemplatePopulatedWithChildren | null>(null);
 
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
@@ -29,7 +30,7 @@ const ChooseTemplatePathDialog: React.FC<{
 
     const hasRootPath = entityTemplateMapByCategory.some((entityTemplate) => entityTemplate.path === '/');
 
-    const { mutateAsync, isLoading } = useMutation(
+    const { mutateAsync: updateEntityTemplatePath, isLoading } = useMutation(
         () => {
             return updateEntityTemplatePathRequest(currEntityTemplate._id, pathValue);
         },
@@ -50,13 +51,31 @@ const ChooseTemplatePathDialog: React.FC<{
         },
     );
 
+    const { mutateAsync, isLoading: isLoadingTemplatesTree } = useMutation(
+        () => {
+            return getEntityTemplatesTree(currEntityTemplate.category._id);
+        },
+        {
+            onError: (err: AxiosError) => {
+                toast.error(<ErrorToast axiosError={err} defaultErrorMessage={i18next.t('addPathToTemplateDialog.failedToRecieveTemplatesTree')} />);
+            },
+            onSuccess: (data) => {
+                setEntityTemplatesTree(data);
+            },
+        },
+    );
+
     const handleConvertToRootPath = async () => {
         setPathValue('/');
-        await mutateAsync();
+        await updateEntityTemplatePath();
     };
 
     const handleAddPath = async () => {
-        await mutateAsync();
+        await updateEntityTemplatePath();
+    };
+
+    const selectFatherTemplate = (nodeData: any) => {
+        setPathValue(nodeData.name);
     };
 
     useEffect(() => {
@@ -65,45 +84,53 @@ const ChooseTemplatePathDialog: React.FC<{
     }, [pathValue]);
 
     return (
-        <Box>
-            <Dialog open={open} onClose={handleClose}>
-                <DialogTitle>{`${i18next.t('systemManagement.addPathToTemplate')}: ${currEntityTemplate?.displayName}`}</DialogTitle>
+        <Dialog
+            open={open}
+            onClose={handleClose}
+            fullWidth
+            maxWidth="xl"
+            PaperProps={{
+                style: {
+                    height: '85vh',
+                    overflowY: 'visible',
+                },
+            }}
+        >
+            <DialogTitle>{`${i18next.t('systemManagement.addPathToTemplate')}: ${currEntityTemplate?.displayName}`}</DialogTitle>
 
-                <DialogActions>
-                    {!hasRootPath ? (
+            <DialogActions>
+                {!hasRootPath ? (
+                    <Button
+                        type="submit"
+                        variant="contained"
+                        disabled={isLoading || validationErrors}
+                        sx={{ borderRadius: '10px' }}
+                        onClick={handleConvertToRootPath}
+                    >
+                        {i18next.t('addPathToTemplateDialog.convertToRootPath')}
+                        {isLoading && <CircularProgress size={20} />}
+                        <Done />
+                    </Button>
+                ) : (
+                    <Box sx={{ direction: 'rtl' }}>
+                        {isLoadingTemplatesTree && (
+                            <FolderTree data={entityTemplatesTree!} readOnly showCheckbox={false} onNameClick={selectFatherTemplate} />
+                        )}
                         <Button
                             type="submit"
                             variant="contained"
-                            disabled={isLoading || validationErrors}
+                            disabled={isLoading}
                             sx={{ borderRadius: '10px' }}
                             onClick={handleConvertToRootPath}
                         >
-                            {i18next.t('addPathToTemplateDialog.convertToRootPath')}
+                            {i18next.t('addPathToTemplateDialog.createBtn')}
                             {isLoading && <CircularProgress size={20} />}
                             <Done />
                         </Button>
-                    ) : (
-                        <Box>
-                            <EntityTemplatesTree
-                                title={i18next.t('addPathToTemplateDialog.createBtn')}
-                                entityTemplates={entityTemplateMapByCategory}
-                            />
-                            <Button
-                                type="submit"
-                                variant="contained"
-                                disabled={isLoading || validationErrors}
-                                sx={{ borderRadius: '10px' }}
-                                onClick={handleAddPath}
-                            >
-                                {i18next.t('addPathToTemplateDialog.createBtn')}
-                                {isLoading && <CircularProgress size={20} />}
-                                <Done />
-                            </Button>
-                        </Box>
-                    )}
-                </DialogActions>
-            </Dialog>
-        </Box>
+                    </Box>
+                )}
+            </DialogActions>
+        </Dialog>
     );
 };
 

@@ -66,6 +66,8 @@ export interface IMongoEntityTemplatePopulated extends IEntityTemplatePopulated 
     _id: string;
 }
 
+export type IEntityTemplatePopulatedWithChildren = IMongoEntityTemplatePopulated & { children: IEntityTemplatePopulatedWithChildren[] };
+
 export type IEntityTemplateMap = Map<string, IMongoEntityTemplatePopulated>;
 
 export interface ISearchEntityTemplateQuery {

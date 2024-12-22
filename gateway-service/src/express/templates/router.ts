@@ -127,6 +127,8 @@ templatesRouter.patch(
 );
 
 templatesRouter.patch('/entities/:id/path', AuthorizerControllerMiddleware.userCanWriteTemplates, TemplatesServiceProxy);
+templatesRouter.get('/entities/subTemplates/:categoryId', TemplatesServiceProxy); // TODO: add permissions checking
+
 templatesRouter.delete(
     '/entities/:id',
     ValidateRequest(deleteEntityTemplateSchema),

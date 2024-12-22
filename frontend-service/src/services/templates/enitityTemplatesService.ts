@@ -6,6 +6,7 @@ import {
     IEntitySingleProperty,
     IEntityTemplate,
     IEntityTemplateMap,
+    IEntityTemplatePopulatedWithChildren,
     IMongoEntityTemplatePopulated,
     ISearchEntityTemplateQuery,
 } from '../../interfaces/entityTemplates';
@@ -491,6 +492,11 @@ const updateActionToEntity = async (entityTemplateId: string, actions: string) =
     return data;
 };
 
+const getEntityTemplatesTree = async (categoryId: string) => {
+    const { data } = await axios.get<IEntityTemplatePopulatedWithChildren>(`${entityTemplates}/subTemplates/${categoryId}`);
+    return data;
+};
+
 export {
     createEntityTemplateRequest,
     searchEntityTemplates,
@@ -502,4 +508,5 @@ export {
     deleteEnumFieldRequest,
     updateActionToEntity,
     updateEntityTemplatePathRequest,
+    getEntityTemplatesTree,
 };
