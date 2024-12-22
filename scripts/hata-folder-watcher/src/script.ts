@@ -21,13 +21,15 @@ export default class FolderWatcher {
     static ftpClient = new Client();
 
     public static async watch() {
+        const realPath = String.raw`${incomingFolderPath}`;
+
         if (isFtp) await connectToFtp(FolderWatcher.ftpClient);
 
-        console.log(`Started watching Folder ${incomingFolderPath}`);
+        console.log(`Started watching Folder ${realPath}`);
 
         setInterval(async () => {
             try {
-                await FolderWatcher.handleFolder(incomingFolderPath);
+                await FolderWatcher.handleFolder(realPath);
             } catch (error) {
                 console.error('Error thrown while watching folder', { error });
                 throw error;
@@ -50,14 +52,14 @@ export default class FolderWatcher {
             const batch = folderItems.slice(i, i + batchSize);
 
             // eslint-disable-next-line consistent-return
-            await Promise.all(
+            await Promise.allSettled(
                 batch.map(async ({ age, name, ext, fileWithoutExtension }) => {
                     if (age >= minFileAge) return;
 
                     // Create root template
                     if (!currentTemplateId) {
-                        const templateId = await Melta.createTemplate(name, folderPath);
-                        return this.handleFolder(folderPath, templateId._id);
+                        const templateId = await Melta.createTemplate(folderPath, folderPath);
+                        return this.handleFolder(folderPath, templateId?._id);
                     }
 
                     if (ext && fileWithoutExtension) {
@@ -66,7 +68,7 @@ export default class FolderWatcher {
                         await fs.rm(localDownloadFilePath);
                     } else {
                         const templateId = await Melta.createTemplate(name, folderPath);
-                        await this.handleFolder(`${folderPath}/${name}`, templateId._id);
+                        await this.handleFolder(`${folderPath}/${name}`, templateId?._id);
                     }
                 }),
             );

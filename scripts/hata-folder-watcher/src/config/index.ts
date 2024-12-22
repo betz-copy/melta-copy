@@ -25,9 +25,12 @@ const config = {
     },
     melta: {
         baseURL: env.get('MELTA_BASE_URL').required().asString(),
+        cookieName: env.get('MELTA_COOKIE_NAME').default('rabaz-access-token').asString(),
         jwt: env.get('MELTA_JWT').required().asString(),
-        templatesApi: env.get('MELTA_TEMPLATES_API').default('/api/templates').asString(),
-        instancesApi: env.get('MELTA_INSTANCES_API').default('/api/instances').asString(),
+        workspaceId: env.get('MELTA_WORKSPACE_ID').required().asString(),
+        category: env.get('MELTA_CATEGORY_ID').required().asString(),
+        templatesApi: env.get('MELTA_TEMPLATES_API').default('/api/templates/entities').asString(),
+        instancesApi: env.get('MELTA_INSTANCES_API').default('/api/instances/entities').asString(),
         timeout: env.get('MELTA_TIMEOUT').default(60000).asInt(),
         batch: {
             batchDelay: env.get('MELTA_BATCH_DELAY').default(60000).asInt(),
