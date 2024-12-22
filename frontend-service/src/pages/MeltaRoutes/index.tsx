@@ -12,8 +12,8 @@ import { IRuleMap } from '../../interfaces/rules';
 import { getAllTemplates, GetAllTemplatesType } from '../../services/templates/getAllTemplates';
 import { getFile } from '../../services/workspacesService';
 import { useUserStore } from '../../stores/user';
-import { defaultMetadata, useWorkspaceStore } from '../../stores/workspace';
-import { getWorkspacePermissions, handleWorkspace } from '../../utils/permissions';
+import { useWorkspaceStore } from '../../stores/workspace';
+import { handleWorkspace } from '../../utils/permissions';
 import { mapTemplates } from '../../utils/templates';
 import ErrorPage from '../ErrorPage';
 import { MeltaRoutesInner } from './routes';
@@ -78,7 +78,7 @@ export const MeltaRoutes: React.FC<IMeltaRoutesProps> = ({ path }) => {
     //     handleWorkspace();
     // }, [workspace, setWorkspace, currentUser, setUser]);
 
-    useEffect(() => handleWorkspace(workspace?.displayName ?? '', setWorkspace, workspace), [workspace, setWorkspace, currentUser, setUser]);
+    useEffect(() => handleWorkspace(workspace?.displayName ?? '', setWorkspace), [workspace, setWorkspace, currentUser, setUser]);
 
     const isLoading = useMemo(() => isLoadingAllTemplates || isLoadingWorkspace, [isLoadingAllTemplates, isLoadingWorkspace]);
     const isError = useMemo(() => isErrorAllTemplates || isErrorWorkspace, [isErrorAllTemplates, isErrorWorkspace]);

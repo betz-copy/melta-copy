@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 /* eslint-disable no-case-declarations */
 import React, { ForwardedRef, forwardRef, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import {
@@ -55,7 +56,6 @@ import { AreYouSureDialog } from '../dialogs/AreYouSureDialog';
 import { useWorkspaceStore } from '../../stores/workspace';
 
 const { errorCodes } = environment;
-// const { rowCount, defaultExpandedRowCount } = environment.agGrid;
 
 export const defaultFilterModel = {
     disabled: {
@@ -128,6 +128,7 @@ export const getRowModelProps = <Data extends any = EntityData>(
     quickFilterText?: string,
     datasourceOnFail?: (err: unknown) => void,
     hasInstances?: boolean,
+    workspaceMetadata?: { cacheBlockSize: number; maxConcurrentDatasourceRequests: number },
 ): React.ComponentProps<typeof AgGridReact<Data>> => {
     if (rowModelType === 'clientSide') {
         return {
@@ -137,8 +138,9 @@ export const getRowModelProps = <Data extends any = EntityData>(
             paginationPageSize,
         };
     }
-    const workspace = useWorkspaceStore((state) => state.workspace);
-    const { cacheBlockSize, maxConcurrentDatasourceRequests } = workspace.metadata.agGrid;
+
+    // const workspace = useWorkspaceStore((state) => state.workspace);
+    const { cacheBlockSize, maxConcurrentDatasourceRequests } = workspaceMetadata || {};
 
     return {
         rowModelType: 'serverSide',
@@ -372,8 +374,8 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         };
 
         const rowModelProps = useMemo(
-            () => getRowModelProps(rowModelType, template, rowData, pageRowCount, quickFilterText, datasourceOnFail, hasInstances),
-            [rowModelType, template, rowData, pageRowCount, quickFilterText, mainEntity, hasInstances],
+            () => getRowModelProps(rowModelType, template, rowData, pageRowCount!, quickFilterText, datasourceOnFail, hasInstances),
+            [rowModelType, template, rowData, pageRowCount!, quickFilterText, mainEntity, hasInstances],
         );
 
         const gridStyles = {

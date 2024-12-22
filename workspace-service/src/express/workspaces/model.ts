@@ -17,7 +17,6 @@ const MetadataSchema = new mongoose.Schema<IMetadata>(
             maxConcurrentDatasourceRequests: { type: Number },
             infiniteInitialRowCount: { type: Number },
             defaultExpandedTableHeight: { type: Number },
-            paginationPageSizeSelector: { type: Array },
         },
         activityLog: {
             infiniteScrollPageCount: { type: Number },

@@ -1228,6 +1228,7 @@ export default {
             cacheBlockSize: 'גודל בלוק זיכרון מטמון ב-agGrid',
             maxConcurrentDatasourceRequests: 'מספר בקשות בו זמנית למקור נתונים ב-agGrid',
             infiniteInitialRowCount: 'מספר שורות התחלתי במצב אינסופי ב-agGrid',
+            defaultExpandedTableHeight: 'ערך דיפולטיבי גובה טבלה',
         },
         activityLog: {
             infiniteScrollPageCount: 'מספר עמודים בגלילה אינסופית ביומן פעילות',

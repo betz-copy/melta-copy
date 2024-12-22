@@ -14,7 +14,6 @@ import { useWorkspaceStore, WorkspaceState } from '../../stores/workspace';
 import { translatedEnumColDef } from '../../utils/agGrid/commonColDefs';
 import { searchUsersRequest } from '../../services/userService';
 import { trycatch } from '../../utils/trycatch';
-import { IWorkspace } from '../../interfaces/workspaces';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { agGridLocaleText } from '../../utils/agGrid/agGridLocaleText';
 

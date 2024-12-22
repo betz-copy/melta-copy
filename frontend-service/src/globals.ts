@@ -200,6 +200,7 @@ export const environment = {
         failedToDeleteField: 'FAILED_DELETE_FIELD',
         actionsCustomError: 'ACTIONS_CUSTOM_ERROR',
     },
+
     loadExcel: { excelExtension: '.xlsx', acceptedFilesTypes: { 'excel/xlsx': ['.xlsx', '.xls'] }, filesLimit: 5, entitiesLimit: 500 },
 
     draftAutoSaveDebounce: 250,

@@ -16,9 +16,11 @@ const ConfigurationManagement: React.FC = () => {
     }, [configs]);
 
     const updateConfig = (path: string, newValue: any) => {
-        const updated = deepClone(updatedConfigs);
-        setNestedValue(updated, path, newValue);
-        setUpdatedConfigs(updated);
+        setUpdatedConfigs((prevConfigs) => {
+            const updated = deepClone(prevConfigs);
+            setNestedValue(updated, path, newValue);
+            return updated;
+        });
     };
 
     // eslint-disable-next-line @typescript-eslint/no-shadow

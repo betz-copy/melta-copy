@@ -21,7 +21,6 @@ export interface IMetadata {
         maxConcurrentDatasourceRequests: number;
         infiniteInitialRowCount: number;
         defaultExpandedTableHeight: number;
-        paginationPageSizeSelector: Array<number>;
     };
     activityLog: {
         infiniteScrollPageCount: number;

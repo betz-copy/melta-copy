@@ -18,8 +18,8 @@ export const defaultMetadata = {
         cacheBlockSize: 5,
         maxConcurrentDatasourceRequests: 1,
         infiniteInitialRowCount: 10,
-        defaultExpandedTableHeight: 650,
-        paginationPageSizeSelector: [5, 10, 25, 50],
+        defaultExpandedTableHeight: 50,
+        // paginationPageSizeSelector: [5, 10, 25, 50],
     },
     activityLog: {
         infiniteScrollPageCount: 10,
@@ -42,7 +42,7 @@ export const defaultMetadata = {
         width: '24px',
         height: '24px',
     },
-} as const;
+};
 
 export const useWorkspaceStore = create<WorkspaceState>((set) => ({
     workspace: {
