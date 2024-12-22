@@ -40,7 +40,7 @@ class EntityController extends DefaultController<EntityManager> {
     }
 
     async getEntityById(req: Request, res: Response) {
-        res.json(await this.manager.getEntityByProp(req.params.id));
+        res.json(await this.manager.getEntityByProp(req.params.id, req.query.key as string));
     }
 
     async getEntitiesByIds(req: Request, res: Response) {
@@ -69,7 +69,7 @@ class EntityController extends DefaultController<EntityManager> {
         res.json(
             await this.manager.updateEntityById(
                 req.params.value,
-                req.body.key,
+                req.query.key as string,
                 req.body.properties,
                 entityTemplate,
                 req.body.ignoredRules,

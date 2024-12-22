@@ -774,17 +774,15 @@ export class EntityManager extends DefaultManagerNeo4j {
         return { entities, count };
     }
 
-    async getEntityByProp<T extends '_id' | string = '_id'>(value: string, key: T = '_id' as T) {
-        const node = await this.neo4jClient.readTransaction(
-            `MATCH (e {${key}: '${value}'}) RETURN e`,
-            normalizeReturnedEntity(key === '_id' ? 'singleResponse' : 'multipleResponses'),
-        );
+    async getEntityByProp(value: string, key = '_id') {
+        // TODO: add support for when multiple entities return.
+        const node = await this.neo4jClient.readTransaction(`MATCH (e {${key}: '${value}'}) RETURN e`, normalizeReturnedEntity('singleResponse'));
 
         if (!node) {
             throw new NotFoundError(`[NEO4J] entity "${value}" not found`);
         }
 
-        return node as T extends '_id' ? IEntity : IEntity[];
+        return node;
     }
 
     static fixReturnedEntityReferencesFields(entity: IEntity) {
@@ -1298,6 +1296,7 @@ export class EntityManager extends DefaultManagerNeo4j {
     }
 
     relationshipReferenceObjectToId(entity: IEntity, entityTemplate: IMongoEntityTemplate) {
+        console.log({ entity, entityTemplate });
         const entityAfterManipulations = JSON.parse(JSON.stringify(entity.properties));
 
         Object.entries(entityTemplate.properties.properties).forEach(([name, value]) => {
@@ -1321,66 +1320,60 @@ export class EntityManager extends DefaultManagerNeo4j {
         ignoredRules: IBrokenRule[],
         userId: string,
     ) {
-        const entities = await this.getEntityByProp(value, key);
+        // TODO: add support for updating multiple
+        const entity = await this.getEntityByProp(value, key);
+        const unPopulatedEntity = this.relationshipReferenceObjectToId(entity, entityTemplate);
 
-        const allSettledResults = await Promise.allSettled(
-            (!Array.isArray(entities) ? [entities] : entities).map(async (entity) => {
-                const unPopulatedEntity = this.relationshipReferenceObjectToId(entity, entityTemplate);
+        if (entity.properties.disabled) throw new ValidationError(`[NEO4J] cannot update disabled entity.`);
 
-                if (entity.properties.disabled) throw new ValidationError(`[NEO4J] cannot update disabled entity.`);
+        if (entityTemplate.actions && isBodyFunctionHasContent(entityTemplate.actions, IEntityCrudAction.onUpdateEntity)) {
+            const actions = await this.buildActionsArray(
+                IEntityCrudAction.onUpdateEntity,
+                entityProperties,
+                entityTemplate,
+                userId,
+                unPopulatedEntity,
+            );
 
-                if (entityTemplate.actions && isBodyFunctionHasContent(entityTemplate.actions, IEntityCrudAction.onUpdateEntity)) {
-                    const actions = await this.buildActionsArray(
-                        IEntityCrudAction.onUpdateEntity,
-                        entityProperties,
-                        entityTemplate,
-                        userId,
-                        unPopulatedEntity,
-                    );
+            const bulkManager = new BulkActionManager(this.workspaceId);
 
-                    const bulkManager = new BulkActionManager(this.workspaceId);
+            const results = await bulkManager.runBulkOfActions(actions, ignoredRules, false, userId);
+            const updatedEntity = await this.getEntityByProp(results[0].properties._id);
+            const fixedActions = this.fixActions(actions, results);
 
-                    const results = await bulkManager.runBulkOfActions(actions, ignoredRules, false, userId);
-                    const updatedEntity = await this.getEntityByProp(results[0].properties._id);
-                    const fixedActions = this.fixActions(actions, results);
+            return { updatedEntity, actions: fixedActions };
+        }
 
-                    return { updatedEntity, actions: fixedActions };
-                }
+        return this.neo4jClient
+            .performComplexTransaction('writeTransaction', async (transaction) => {
+                const updatedProperties = this.getKeysOfUpdatedProperties(
+                    entity.properties,
+                    { ...entityProperties, updatedAt: new Date().toISOString() },
+                    entityTemplate,
+                );
 
-                return this.neo4jClient
-                    .performComplexTransaction('writeTransaction', async (transaction) => {
-                        const updatedProperties = this.getKeysOfUpdatedProperties(
-                            entity.properties,
-                            { ...entityProperties, updatedAt: new Date().toISOString() },
-                            entityTemplate,
-                        );
+                const ruleFailuresBeforeAction = await this.runRulesDependOnEntityUpdate(transaction, entity, updatedProperties);
 
-                        const ruleFailuresBeforeAction = await this.runRulesDependOnEntityUpdate(transaction, entity, updatedProperties);
+                const { updatedEntity, activityLogsToCreate } = await this.updateEntityByIdInnerTransaction(
+                    value,
+                    entityProperties,
+                    entityTemplate,
+                    transaction,
+                    userId,
+                );
 
-                        const { updatedEntity, activityLogsToCreate } = await this.updateEntityByIdInnerTransaction(
-                            value,
-                            entityProperties,
-                            entityTemplate,
-                            transaction,
-                            userId,
-                        );
+                const ruleFailuresAfterAction = await this.runRulesDependOnEntityUpdate(transaction, updatedEntity, updatedProperties);
 
-                        const ruleFailuresAfterAction = await this.runRulesDependOnEntityUpdate(transaction, updatedEntity, updatedProperties);
+                throwIfActionCausedRuleFailures(ignoredRules, ruleFailuresBeforeAction, ruleFailuresAfterAction, [{}]);
 
-                        throwIfActionCausedRuleFailures(ignoredRules, ruleFailuresBeforeAction, ruleFailuresAfterAction, [{}]);
+                const activityLogsPromises = activityLogsToCreate.map((activityLogToCreate) =>
+                    this.activityLogProducer.createActivityLog(activityLogToCreate),
+                );
+                await Promise.all(activityLogsPromises);
 
-                        const activityLogsPromises = activityLogsToCreate.map((activityLogToCreate) =>
-                            this.activityLogProducer.createActivityLog(activityLogToCreate),
-                        );
-                        Promise.all(activityLogsPromises);
-
-                        return { updatedEntity };
-                    })
-                    .catch((err) => this.throwServiceErrorIfFailedConstraintsValidation(err)); // constraint validation is performed on end of transaction
-            }),
-        );
-
-        return allSettledResults.flatMap((res) => (res.status === 'fulfilled' ? res.value : []));
+                return { updatedEntity };
+            })
+            .catch((err) => this.throwServiceErrorIfFailedConstraintsValidation(err)); // constraint validation is performed on end of transactionF
     }
 
     async updateRelationshipReferencesEnumField(

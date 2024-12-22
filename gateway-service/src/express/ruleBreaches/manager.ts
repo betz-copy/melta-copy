@@ -434,6 +434,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
 
         await instancesManager.updateEntityInstance(
             entityId,
+            '_id',
             { ...entity, properties: newEntityPropertiesWithoutNulls },
             [],
             brokenRules,

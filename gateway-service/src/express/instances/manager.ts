@@ -673,12 +673,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
     ) {
         // TODO: deal with files?
         const { props: uploadedFilesAndProperties, files: updatedFiles } = await this.uploadInstanceFiles(files, updatedInstanceData.properties);
-
-        const entities = await this.service.getEntityInstanceById(value, key);
-
-        await Promise.allSettled((currentEntity) => {
-            
-        });
+        const currentEntity = await this.service.getEntityInstanceById(value, key);
 
         const entityTemplate = await this.entityTemplateService.getEntityTemplateById(currentEntity.templateId);
 
@@ -693,6 +688,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 },
                 ignoredRules,
                 userId,
+                key,
             )
             .catch((err) => this.handleBrokenRulesError(err));
         await this.deleteUnusedFiles(currentEntity, updatedInstanceData, files).catch((error) =>

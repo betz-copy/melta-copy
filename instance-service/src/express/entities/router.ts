@@ -21,7 +21,7 @@ import {
     updateEntityStatusByIdRequestSchema,
     updateEnumFieldRequestSchema,
     deletePropertiesOfTemplateRequestSchema,
-    updateEntityByValueRequestSchema,
+    // updateEntityByValueRequestSchema,
 } from './validator.schema';
 import { EntityValidator } from './validator.template';
 
@@ -81,8 +81,8 @@ entityRouter.delete('/:id', ValidateRequest(deleteEntityByIdRequestSchema), enti
 entityRouter.delete('/', ValidateRequest(deleteEntitiesByTemplateIdRequestSchema), entityController.deleteEntitiesByTemplateId);
 entityRouter.put(
     '/:value',
-    ValidateRequest(updateEntityByValueRequestSchema),
-    entityValidatorController.validateEntityRequest,
+    // ValidateRequest(updateEntityByValueRequestSchema),
+    // entityValidatorController.validateEntityRequest,
     entityController.updateEntityById,
 );
 entityRouter.patch('/:id/status', ValidateRequest(updateEntityStatusByIdRequestSchema), entityController.updateStatusById);

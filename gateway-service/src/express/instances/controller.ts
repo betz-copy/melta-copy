@@ -33,8 +33,8 @@ export class InstancesController extends DefaultController<InstancesManager> {
         const { ignoredRules, ...instanceData } = req.body;
         res.json(
             await this.manager.updateEntityInstance(
-                req.params.value,
-                req.query.key,
+                req.params.id,
+                req.query.key as string,
                 instanceData,
                 req.files as Express.Multer.File[],
                 ignoredRules,

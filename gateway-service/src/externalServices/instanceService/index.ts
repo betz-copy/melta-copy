@@ -49,9 +49,9 @@ export class InstancesService extends DefaultExternalServiceApi {
         return data;
     }
 
-    async getEntityInstanceById<T extends '_id' | string = '_id'>(id: string, key: T = '_id' as T) {
+    async getEntityInstanceById(id: string, key = '_id') {
         const { data } = await this.api.get<IEntity>(`${baseEntitiesRoute}/${id}`, { params: { key } });
-        return data as T extends '_id' ? IEntity : IEntity[];
+        return data;
     }
 
     async getEntityInstancesByIds(ids: string[]) {
@@ -70,12 +70,16 @@ export class InstancesService extends DefaultExternalServiceApi {
         return data;
     }
 
-    async updateEntityInstance(id: string, entity: IEntity, ignoredRules: IBrokenRule[], userId: string) {
-        const { data } = await this.api.put<{ updatedEntity: IEntity; actions?: IAction[] }>(`${baseEntitiesRoute}/${id}`, {
-            ...entity,
-            ignoredRules,
-            userId,
-        });
+    async updateEntityInstance(id: string, entity: IEntity, ignoredRules: IBrokenRule[], userId: string, key = '_id') {
+        const { data } = await this.api.put<{ updatedEntity: IEntity; actions?: IAction[] }>(
+            `${baseEntitiesRoute}/${id}`,
+            {
+                ...entity,
+                ignoredRules,
+                userId,
+            },
+            { params: { key } },
+        );
 
         return data;
     }
