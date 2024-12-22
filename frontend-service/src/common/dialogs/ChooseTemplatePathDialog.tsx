@@ -88,7 +88,17 @@ const ChooseTemplatePathDialog: React.FC<{
                                 title={i18next.t('addPathToTemplateDialog.createBtn')}
                                 entityTemplates={entityTemplateMapByCategory}
                             />
-                            <Button onClick={handleAddPath}>{i18next.t('addPathToTemplateDialog.createBtn')}</Button>
+                            <Button
+                                type="submit"
+                                variant="contained"
+                                disabled={isLoading || validationErrors}
+                                sx={{ borderRadius: '10px' }}
+                                onClick={handleAddPath}
+                            >
+                                {i18next.t('addPathToTemplateDialog.createBtn')}
+                                {isLoading && <CircularProgress size={20} />}
+                                <Done />
+                            </Button>
                         </Box>
                     )}
                 </DialogActions>
