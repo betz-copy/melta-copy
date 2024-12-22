@@ -265,18 +265,19 @@ export const updateEntityStatusByIdRequestSchema = Joi.object({
 });
 
 /**
- * PUT /api/instances/entities/:id
+ * PUT /api/instances/entities/:value
  */
-export const updateEntityByIdRequestSchema = Joi.object({
+export const updateEntityByValueRequestSchema = Joi.object({
     body: {
         properties: Joi.object().required(),
         templateId: Joi.string().required(),
         ignoredRules: Joi.array().items(brokenRuleSchema).default([]),
         userId: Joi.string().required(),
+        key: Joi.string().default('_id'),
     },
     query: {},
     params: {
-        id: Joi.string().required(),
+        value: Joi.string().required(),
     },
 });
 

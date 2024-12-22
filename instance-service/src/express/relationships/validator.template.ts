@@ -36,8 +36,8 @@ export default class RelationshipValidator extends DefaultController<EntityManag
 
         const [relationshipTemplate, sourceEntity, destinationEntity] = await Promise.all([
             this.getRelationshipTemplateByIdOrThrowValidationError(templateId),
-            this.manager.getEntityById(sourceEntityId),
-            this.manager.getEntityById(destinationEntityId),
+            this.manager.getEntityByProp(sourceEntityId),
+            this.manager.getEntityByProp(destinationEntityId),
         ]);
 
         if (

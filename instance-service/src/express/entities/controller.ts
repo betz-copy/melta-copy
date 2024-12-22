@@ -40,7 +40,7 @@ class EntityController extends DefaultController<EntityManager> {
     }
 
     async getEntityById(req: Request, res: Response) {
-        res.json(await this.manager.getEntityById(req.params.id));
+        res.json(await this.manager.getEntityByProp(req.params.id));
     }
 
     async getEntitiesByIds(req: Request, res: Response) {
@@ -66,7 +66,16 @@ class EntityController extends DefaultController<EntityManager> {
 
     async updateEntityById(req: Request, res: Response) {
         const entityTemplate = fetchPropertyFromRequest<IMongoEntityTemplate>(req, 'entityTemplate');
-        res.json(await this.manager.updateEntityById(req.params.id, req.body.properties, entityTemplate, req.body.ignoredRules, req.body.userId));
+        res.json(
+            await this.manager.updateEntityById(
+                req.params.value,
+                req.body.key,
+                req.body.properties,
+                entityTemplate,
+                req.body.ignoredRules,
+                req.body.userId,
+            ),
+        );
     }
 
     async updateEnumFieldValue(req: Request, res: Response) {

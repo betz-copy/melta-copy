@@ -18,10 +18,10 @@ import {
     searchEntitiesByTemplatesSchema,
     searchEntitiesOfTemplateRequestSchema,
     updateConstraintsOfTemplateRequestSchema,
-    updateEntityByIdRequestSchema,
     updateEntityStatusByIdRequestSchema,
     updateEnumFieldRequestSchema,
     deletePropertiesOfTemplateRequestSchema,
+    updateEntityByValueRequestSchema,
 } from './validator.schema';
 import { EntityValidator } from './validator.template';
 
@@ -80,8 +80,8 @@ entityRouter.post('/ids', ValidateRequest(getEntitiesByIdsRequestSchema), entity
 entityRouter.delete('/:id', ValidateRequest(deleteEntityByIdRequestSchema), entityController.deleteEntityById);
 entityRouter.delete('/', ValidateRequest(deleteEntitiesByTemplateIdRequestSchema), entityController.deleteEntitiesByTemplateId);
 entityRouter.put(
-    '/:id',
-    ValidateRequest(updateEntityByIdRequestSchema),
+    '/:value',
+    ValidateRequest(updateEntityByValueRequestSchema),
     entityValidatorController.validateEntityRequest,
     entityController.updateEntityById,
 );

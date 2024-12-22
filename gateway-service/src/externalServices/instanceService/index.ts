@@ -49,9 +49,9 @@ export class InstancesService extends DefaultExternalServiceApi {
         return data;
     }
 
-    async getEntityInstanceById(id: string) {
-        const { data } = await this.api.get<IEntity>(`${baseEntitiesRoute}/${id}`);
-        return data;
+    async getEntityInstanceById<T extends '_id' | string = '_id'>(id: string, key: T = '_id' as T) {
+        const { data } = await this.api.get<IEntity>(`${baseEntitiesRoute}/${id}`, { params: { key } });
+        return data as T extends '_id' ? IEntity : IEntity[];
     }
 
     async getEntityInstancesByIds(ids: string[]) {

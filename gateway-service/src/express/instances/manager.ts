@@ -663,15 +663,22 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
     }
 
     async updateEntityInstance(
-        id: string,
+        value: string,
+        key: string,
         updatedInstanceData: IEntity,
         files: Express.Multer.File[],
         ignoredRules: IBrokenRule[],
         userId: string,
         createAlert: boolean = true,
     ) {
+        // TODO: deal with files?
         const { props: uploadedFilesAndProperties, files: updatedFiles } = await this.uploadInstanceFiles(files, updatedInstanceData.properties);
-        const currentEntity = await this.service.getEntityInstanceById(id);
+
+        const entities = await this.service.getEntityInstanceById(value, key);
+
+        await Promise.allSettled((currentEntity) => {
+            
+        });
 
         const entityTemplate = await this.entityTemplateService.getEntityTemplateById(currentEntity.templateId);
 
@@ -679,7 +686,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
         const { updatedEntity, actions } = await this.service
             .updateEntityInstance(
-                id,
+                value,
                 {
                     templateId: updatedInstanceData.templateId,
                     properties: { ...uploadedFilesAndProperties },
@@ -689,7 +696,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
             )
             .catch((err) => this.handleBrokenRulesError(err));
         await this.deleteUnusedFiles(currentEntity, updatedInstanceData, files).catch((error) =>
-            logger.error(`failed to delete files of instanceId ${id}`, { error }),
+            logger.error(`failed to delete files of instanceId ${value}`, { error }),
         );
 
         const updatedFields: Record<string, any> = {};
@@ -728,7 +735,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
                         {
                             actionType: ActionTypes.UpdateEntity,
                             actionMetadata: {
-                                entityId: id,
+                                entityId: value,
                                 before: currentEntity.properties,
                                 updatedFields,
                             },

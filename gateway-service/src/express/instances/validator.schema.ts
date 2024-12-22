@@ -27,9 +27,10 @@ export const updateEntityInstanceSchema = Joi.object({
         templateId: Joi.string().required(),
         properties: ExtendedJoi.stringToObject(), // properties is json string (because of form data)
         ignoredRules: ExtendedJoi.stringToArray().items(brokenRuleSchema).default([]),
+        key: Joi.string().default('id'),
     }).unknown(true),
     query: {},
-    params: { id: Joi.string().required() },
+    params: { value: Joi.string().required() },
     files: Joi.array().items(fileSchema),
 });
 
