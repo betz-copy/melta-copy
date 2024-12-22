@@ -97,7 +97,7 @@ export default {
         createdAt: 'תאריך יצירה',
         updatedAt: 'תאריך עדכון',
         relationshipTitle: 'קשרים',
-        save: 'hhשמירה',
+        save: 'שמירה',
         cancel: 'ביטול',
         duplicate: 'שכפל',
         disable: 'לא פעיל',
@@ -1216,8 +1216,6 @@ export default {
         fileName: 'שם הקובץ',
         takePicture: 'צלם תמונה',
         blackAndWhite: 'שחור לבן',
-<<<<<<< Updated upstream
-=======
     },
     DynamicsConfigs: {
         isDrawerOpen: 'תפריט צד פתוח',
@@ -1253,6 +1251,5 @@ export default {
             width: 'רוחב אייקון',
             height: 'גובה אייקון',
         },
->>>>>>> Stashed changes
     },
 };

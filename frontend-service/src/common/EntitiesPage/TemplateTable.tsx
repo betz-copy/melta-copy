@@ -34,17 +34,10 @@ import { TableButton } from '../TableButton';
 import { AddEntityButton } from './AddEntityButton';
 import { DraftCard } from './DraftCard';
 import { ResetFilterButton } from './ResetFilterButton';
-<<<<<<< Updated upstream
-import { LoadExcelButton } from './LoadExcelButton';
-
-const {
-    agGrid: { defaultRowHeight, defaultFontSize, defaultExpandedTableHeight },
-=======
 import { useWorkspaceStore } from '../../stores/workspace';
 import { LoadExcelButton } from './LoadExcelButton';
 
 const {
->>>>>>> Stashed changes
     loadExcel: { excelExtension },
 } = environment;
 

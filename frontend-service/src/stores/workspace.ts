@@ -42,7 +42,7 @@ export const defaultMetadata = {
         width: '24px',
         height: '24px',
     },
-};
+} as const;
 
 export const useWorkspaceStore = create<WorkspaceState>((set) => ({
     workspace: {

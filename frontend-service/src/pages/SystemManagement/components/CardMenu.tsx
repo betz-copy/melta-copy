@@ -23,11 +23,8 @@ export const CardMenu: React.FC<{
     onDuplicateClick?: MouseEventHandler;
     onAddActionsClick?: MouseEventHandler;
 }> = ({ onEditClick, onDeleteClick, disabledProps, onDisableClick, onDuplicateClick, onAddActionsClick }) => {
-<<<<<<< Updated upstream
-=======
     const workspace = useWorkspaceStore((state) => state.workspace);
 
->>>>>>> Stashed changes
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
     const open = Boolean(anchorEl);
 
