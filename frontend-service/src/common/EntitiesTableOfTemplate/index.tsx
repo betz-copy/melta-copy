@@ -1,4 +1,9 @@
 /* eslint-disable no-case-declarations */
+/* eslint-disable no-param-reassign */
+<<<<<<< Updated upstream
+=======
+/* eslint-disable no-case-declarations */
+>>>>>>> Stashed changes
 import React, { ForwardedRef, forwardRef, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import {
     BodyScrollEvent,
@@ -52,10 +57,15 @@ import { ActionTypes, IAction, IActionPopulated } from '../../interfaces/ruleBre
 import ActionOnEntityWithRuleBreachDialog from '../../pages/Entity/components/ActionOnEntityWithRuleBreachDialog';
 import { ErrorToast } from '../ErrorToast';
 import { AreYouSureDialog } from '../dialogs/AreYouSureDialog';
+<<<<<<< Updated upstream
+
+const { errorCodes } = environment;
+const { rowCount, defaultExpandedRowCount } = environment.agGrid;
+=======
 import { useWorkspaceStore } from '../../stores/workspace';
 
 const { errorCodes } = environment;
-// const { rowCount, defaultExpandedRowCount } = environment.agGrid;
+>>>>>>> Stashed changes
 
 export const defaultFilterModel = {
     disabled: {
@@ -128,6 +138,7 @@ export const getRowModelProps = <Data extends any = EntityData>(
     quickFilterText?: string,
     datasourceOnFail?: (err: unknown) => void,
     hasInstances?: boolean,
+    workspaceMetadata?: { cacheBlockSize: number; maxConcurrentDatasourceRequests: number },
 ): React.ComponentProps<typeof AgGridReact<Data>> => {
     if (rowModelType === 'clientSide') {
         return {
@@ -137,8 +148,9 @@ export const getRowModelProps = <Data extends any = EntityData>(
             paginationPageSize,
         };
     }
-    const workspace = useWorkspaceStore((state) => state.workspace);
-    const { cacheBlockSize, maxConcurrentDatasourceRequests } = workspace.metadata.agGrid;
+
+    // const workspace = useWorkspaceStore((state) => state.workspace);
+    const { cacheBlockSize, maxConcurrentDatasourceRequests } = workspaceMetadata || {};
 
     return {
         rowModelType: 'serverSide',
@@ -227,7 +239,11 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             mainEntity,
             refetch,
             hasInstances,
+<<<<<<< Updated upstream
+            paginationPageSizeSelector = environment.agGrid.paginationPageSizeSelector as unknown as number[],
+=======
             paginationPageSizeSelector,
+>>>>>>> Stashed changes
             editable = true,
         }: EntitiesTableOfTemplateProps<Data>,
         ref: ForwardedRef<EntitiesTableOfTemplateRef<Data>>,
@@ -372,8 +388,8 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         };
 
         const rowModelProps = useMemo(
-            () => getRowModelProps(rowModelType, template, rowData, pageRowCount, quickFilterText, datasourceOnFail, hasInstances),
-            [rowModelType, template, rowData, pageRowCount, quickFilterText, mainEntity, hasInstances],
+            () => getRowModelProps(rowModelType, template, rowData, pageRowCount!, quickFilterText, datasourceOnFail, hasInstances),
+            [rowModelType, template, rowData, pageRowCount!, quickFilterText, mainEntity, hasInstances],
         );
 
         const gridStyles = {

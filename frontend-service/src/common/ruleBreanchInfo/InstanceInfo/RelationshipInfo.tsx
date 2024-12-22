@@ -2,13 +2,13 @@ import React, { useState } from 'react';
 import { Collapse, Divider, Grid, Paper, Typography, useTheme } from '@mui/material';
 import { ExpandLess as ExpandLessIcon, ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
 import { useQueryClient } from 'react-query';
-import { environment } from '../../../globals';
 import { RelationshipTitle } from '../../RelationshipTitle';
 import { IMongoRelationshipTemplatePopulated } from '../../../interfaces/relationshipTemplates';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { EntityPropertiesInternal } from '../../EntityProperties';
 import { EntityTemplateColor } from '../../EntityTemplateColor';
 import { getEntityTemplateColor } from '../../../utils/colors';
+import { useWorkspaceStore } from '../../../stores/workspace';
 
 interface RelationshipInfoProps {
     relationship: IMongoRelationshipTemplatePopulated | null;
@@ -17,6 +17,8 @@ interface RelationshipInfoProps {
 
 export const RelationshipInfo: React.FC<RelationshipInfoProps> = ({ relationship, failedProperties }) => {
     const theme = useTheme();
+    const workspace = useWorkspaceStore((state) => state.workspace);
+    const { headlineSubTitleFontSize } = workspace.metadata.mainFontSizes;
 
     const [open, setOpen] = useState(false);
 
@@ -39,7 +41,7 @@ export const RelationshipInfo: React.FC<RelationshipInfoProps> = ({ relationship
                 <Grid item>
                     <Typography
                         style={{
-                            fontSize: environment.mainFontSizes.headlineSubTitleFontSize,
+                            fontSize: headlineSubTitleFontSize,
                             color: theme.palette.primary.main,
                             fontWeight: 'bold',
                             textOverflow: 'ellipsis',

@@ -9,8 +9,11 @@ import React, { Dispatch, SetStateAction, useCallback, useEffect, useRef, useSta
 import { debounce } from 'lodash';
 import AutoAwesomeOutlinedIcon from '@mui/icons-material/AutoAwesomeOutlined';
 import { useMatomo } from '@datapunt/matomo-tracker-react';
+<<<<<<< Updated upstream
+=======
 import { IEntity } from '../../interfaces/entities';
 import { IMongoCategory } from '../../interfaces/categories';
+>>>>>>> Stashed changes
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import SearchInput from '../inputs/SearchInput';
 import { AddEntityButton } from './AddEntityButton';

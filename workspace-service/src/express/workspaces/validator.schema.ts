@@ -14,6 +14,7 @@ const metadataSchema = Joi.object({
         cacheBlockSize: Joi.number(),
         maxConcurrentDatasourceRequests: Joi.number(),
         infiniteInitialRowCount: Joi.number(),
+        defaultExpandedTableHeight: Joi.number(),
     }).optional(),
     activityLog: Joi.object({
         infiniteScrollPageCount: Joi.number(),

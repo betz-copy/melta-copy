@@ -14,9 +14,14 @@ import { useWorkspaceStore, WorkspaceState } from '../../stores/workspace';
 import { translatedEnumColDef } from '../../utils/agGrid/commonColDefs';
 import { searchUsersRequest } from '../../services/userService';
 import { trycatch } from '../../utils/trycatch';
-import { IWorkspace } from '../../interfaces/workspaces';
+<<<<<<< Updated upstream
+
+const { defaultRowHeight, defaultFontSize } = environment.agGrid;
+const { infiniteScrollPageCount } = environment.permission;
+=======
 import { useDarkModeStore } from '../../stores/darkMode';
 import { agGridLocaleText } from '../../utils/agGrid/agGridLocaleText';
+>>>>>>> Stashed changes
 
 const scopesTranslation: Record<string, string> = i18next.t('permissions.scopes', { returnObjects: true });
 

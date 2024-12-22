@@ -10,9 +10,15 @@ import { environment } from '../../../globals';
 import EntitiesTableOfTemplate from '../../EntitiesTableOfTemplate';
 import { InstanceFileInput } from '../../inputs/InstanceFilesInput/InstanceFileInput';
 import { useReadExcel } from '../../../utils/hooks/useReadExcel';
+<<<<<<< Updated upstream
 
 const {
     agGrid: { defaultRowHeight, defaultFontSize },
+=======
+import { useWorkspaceStore } from '../../../stores/workspace';
+
+const {
+>>>>>>> Stashed changes
     loadExcel: { excelExtension, acceptedFilesTypes },
 } = environment;
 
@@ -29,6 +35,11 @@ export const UploadExcel: React.FC<{
     const [errorText, setErrorText] = useState<string | undefined>();
 
     const { readFile, rowData } = useReadExcel();
+<<<<<<< Updated upstream
+=======
+    const workspace = useWorkspaceStore((state) => state.workspace);
+    const { defaultRowHeight, defaultFontSize } = workspace.metadata.agGrid;
+>>>>>>> Stashed changes
 
     if (stepsData.status === StepStatus.uploadExcel)
         return (

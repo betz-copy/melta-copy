@@ -7,8 +7,8 @@ import { IWorkspace } from '../../interfaces/workspaces';
 import { MainBox } from '../../Main.styled';
 import { getDir, getFile } from '../../services/workspacesService';
 import { useUserStore } from '../../stores/user';
-import { defaultMetadata, useWorkspaceStore } from '../../stores/workspace';
-import { getWorkspacePermissions, handleWorkspace } from '../../utils/permissions';
+import { useWorkspaceStore } from '../../stores/workspace';
+import { handleWorkspace } from '../../utils/permissions';
 import ErrorPage from '../ErrorPage';
 import { PermissionsDialog } from './PermissionsDialog';
 import { Topbar } from './Topbar';
@@ -51,10 +51,7 @@ const DirView: React.FC<{ params: { '*': string } }> = ({ params }) => {
     //     handleWorkspace();
     // }, [currentWorkspace, setWorkspace, currentUser, setUser]);
 
-    useEffect(
-        () => handleWorkspace(environment.defaultTitle, setWorkspace, currentWorkspace),
-        [currentWorkspace, setWorkspace, currentUser, setUser],
-    );
+    useEffect(() => handleWorkspace(environment.defaultTitle, setWorkspace), [currentWorkspace, setWorkspace, currentUser, setUser]);
 
     if (isError) return <ErrorPage errorText={i18next.t('workspaces.requestedWorkspaceDoesntExist')} />;
 
