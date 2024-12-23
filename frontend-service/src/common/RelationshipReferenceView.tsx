@@ -22,6 +22,7 @@ interface RelationshipReferenceViewProps {
 }
 const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({ entity, relatedTemplateId, relatedTemplateField, searchValue }) => {
     const workspace = useWorkspaceStore((state) => state.workspace);
+    const { height, width } = workspace.metadata.iconSize;
     const queryClient = useQueryClient();
 
     const theme = useTheme();
@@ -40,12 +41,7 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({ e
                     color={entityTemplateColor}
                     icon={
                         relatedEntityTemplate.iconFileId ? (
-                            <CustomIcon
-                                iconUrl={relatedEntityTemplate.iconFileId}
-                                height={workspace.metadata.iconSize.height}
-                                width={workspace.metadata.iconSize.width}
-                                color={theme.palette.primary.main}
-                            />
+                            <CustomIcon iconUrl={relatedEntityTemplate.iconFileId} height={height} width={width} color={theme.palette.primary.main} />
                         ) : (
                             <DefaultEntityTemplateIcon
                                 sx={{

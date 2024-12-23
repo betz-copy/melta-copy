@@ -19,7 +19,6 @@ export const defaultMetadata = {
         maxConcurrentDatasourceRequests: 1,
         infiniteInitialRowCount: 10,
         defaultExpandedTableHeight: 50,
-        // paginationPageSizeSelector: [5, 10, 25, 50],
     },
     activityLog: {
         infiniteScrollPageCount: 10,

@@ -1,14 +1,4 @@
 {
-<<<<<<< HEAD
-  "peacock.color": "#cfcfc4",
-  "workbench.colorCustomizations": {
-    "statusBar.background": "#cfcfc4",
-    "statusBar.foreground": "#15202b",
-    "statusBarItem.hoverBackground": "#b8b8a8",
-    "statusBarItem.remoteBackground": "#cfcfc4",
-    "statusBarItem.remoteForeground": "#15202b"
-  }
-=======
   "eslint.validate": ["javascript", "typescript"],
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": "explicit"
@@ -44,5 +34,4 @@
     "statusBarItem.remoteForeground": "#e7e7e7"
   },
   "peacock.color": "#007fff"
->>>>>>> 2ed6d8ab7db98d51a341e7a7666298f4ded33501
 }

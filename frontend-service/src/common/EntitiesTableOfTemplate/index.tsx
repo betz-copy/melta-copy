@@ -139,7 +139,6 @@ export const getRowModelProps = <Data extends any = EntityData>(
         };
     }
 
-    // const workspace = useWorkspaceStore((state) => state.workspace);
     const { cacheBlockSize, maxConcurrentDatasourceRequests } = workspaceMetadata || {};
 
     return {

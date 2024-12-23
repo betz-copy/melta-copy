@@ -63,7 +63,7 @@ export const updateOne = async (id: string, workspaceValues: WorkspaceWizardValu
     return data;
 };
 
-export const updateMetadata = async (id: string, updatedMetadata: Partial<IMetadata>) => {
+export const updateMetadata = async (id: string, updatedMetadata: Partial<IMetadata> = {}) => {
     const metadataToSend = updatedMetadata || {};
     const { data } = await axios.patch<IWorkspace>(`${workspaces}/${id}/metadata`, metadataToSend);
     return data;

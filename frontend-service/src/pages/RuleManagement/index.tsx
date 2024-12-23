@@ -11,12 +11,8 @@ import { IRuleBreachRequestPopulated } from '../../interfaces/ruleBreaches/ruleB
 import { getBreachAlertById, getBreachRequestById } from '../../services/ruleBreachesService';
 import RuleBreachDialog from './ruleBreachDialog';
 import { RuleBreachTable } from './table';
-<<<<<<< Updated upstream
 
-const { defaultRowHeight, defaultFontSize } = environment.agGrid;
-=======
 import { useWorkspaceStore } from '../../stores/workspace';
->>>>>>> Stashed changes
 
 interface RuleBreachDialogContainerProps {
     breachType: string;

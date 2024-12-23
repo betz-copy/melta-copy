@@ -9,8 +9,5 @@
 # git commit --no-verify for override
 
 export NODE_OPTIONS=--max-old-space-size=8000
-<<<<<<< HEAD
 # cd ./frontend-service/ && npm run lint && npm run build
-=======
 cd ./frontend-service/ && npm run lint && npm run build
->>>>>>> 2ed6d8ab7db98d51a341e7a7666298f4ded33501

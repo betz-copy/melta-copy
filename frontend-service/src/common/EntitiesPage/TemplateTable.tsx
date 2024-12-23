@@ -146,7 +146,7 @@ const TemplateTable = forwardRef<
     };
 
     const isLoadExcelDisabled = !userHasWritePermissions || checkIfLoadEntityIsDisabled();
-
+    const { height, width } = workspace.metadata.iconSize;
     return (
         <Grid container minWidth="fit-content">
             <Grid container justifyContent="space-between" width="fit-content" minWidth="fit-content">
@@ -156,18 +156,13 @@ const TemplateTable = forwardRef<
                     </Grid>
                     <Grid item minWidth="fit-content" sx={{ display: 'flex', justifyContent: 'center', alignContent: 'center' }}>
                         {template.iconFileId ? (
-                            <CustomIcon
-                                iconUrl={template.iconFileId}
-                                height={workspace.metadata.iconSize.height}
-                                width={workspace.metadata.iconSize.width}
-                                color={theme.palette.primary.main}
-                            />
+                            <CustomIcon iconUrl={template.iconFileId} height={height} width={width} color={theme.palette.primary.main} />
                         ) : (
                             <DefaultEntityTemplateIcon
                                 sx={{
                                     color: theme.palette.primary.main,
-                                    height: workspace.metadata.iconSize.height,
-                                    width: workspace.metadata.iconSize.width,
+                                    height,
+                                    width,
                                 }}
                             />
                         )}
