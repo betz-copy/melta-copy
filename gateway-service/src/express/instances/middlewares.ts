@@ -97,8 +97,9 @@ export class InstancesValidator extends DefaultController {
 
     private async validateUserPermissionForEntityInstance(req: Request, permissionScope: PermissionScope) {
         const instanceId = req.params.id;
+        const { key } = req.query;
 
-        const { templateId } = await this.instancesService.getEntityInstanceById(instanceId);
+        const { templateId } = await this.instancesService.getEntityInstanceByValueAndKey(instanceId, key as string);
         const categoryId = await this.getCategoryIdFromTemplateId(templateId);
 
         const userPermissions = await this.authorizer.getWorkspacePermissions(req.user!.id);

@@ -64,10 +64,11 @@ class EntityController extends DefaultController<EntityManager> {
         res.json(await this.manager.updateStatusById(req.params.id, req.body.disabled, req.body.ignoredRules, req.body.userId));
     }
 
+    // Update a single entity that the key prop is equal to the provided value (only works for single entity update)
     async updateEntityById(req: Request, res: Response) {
         const entityTemplate = fetchPropertyFromRequest<IMongoEntityTemplate>(req, 'entityTemplate');
         res.json(
-            await this.manager.updateEntityById(
+            await this.manager.updateEntityByValueAndKey(
                 req.params.value,
                 req.query.key as string,
                 req.body.properties,

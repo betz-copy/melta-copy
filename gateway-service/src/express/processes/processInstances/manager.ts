@@ -82,7 +82,7 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
         const userPermissions = await new Authorizer(this.workspaceId).getWorkspacePermissions(userId);
 
         const promises = entityProperties.map(async ([key]) => {
-            const entity = await this.instancesService.getEntityInstanceById(properties[key]).catch((error) => {
+            const entity = await this.instancesService.getEntityInstanceByValueAndKey(properties[key]).catch((error) => {
                 if (axios.isAxiosError(error) && error.response?.status === StatusCodes.NOT_FOUND) return properties[key];
                 throw error;
             });
@@ -144,7 +144,7 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
             Object.entries(schema.properties).map(async ([key, value]) => {
                 if (value.format === PropertyFormats.EntityReference && properties[key] !== undefined) {
                     try {
-                        await this.instancesService.getEntityInstanceById(properties[key]);
+                        await this.instancesService.getEntityInstanceByValueAndKey(properties[key]);
                     } catch {
                         throw new EntityNotExist(properties[key]);
                     }

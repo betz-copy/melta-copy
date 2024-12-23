@@ -179,7 +179,7 @@ export class NotificationsManager extends DefaultManagerProxy<NotificationServic
         metadata: IDateAboutToExpireNotificationMetadata,
     ): Promise<IDateAboutToExpireMetadataPopulated> {
         const { entityId, propertyName, datePropertyValue } = metadata;
-        const entity = await this.instancesService.getEntityInstanceById(entityId).catch(() => null);
+        const entity = await this.instancesService.getEntityInstanceByValueAndKey(entityId).catch(() => null);
         return {
             entity,
             propertyName,

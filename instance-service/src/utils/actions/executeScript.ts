@@ -84,7 +84,7 @@ const manipulateOnExecutionOutput = async (
         executionOutput.map(async ({ entityId, properties }) => {
             if (!entityId) throw new ValidationError('cant create new entity by code');
 
-            const currentEntity = await entityManager.getEntityByIdInTransaction(entityId, transaction);
+            const currentEntity = await entityManager.getEntityByValueAndKeyInTransaction(entityId, transaction);
             const currentEntityTemplate = entitiesTemplatesByIds.get(currentEntity.templateId)!;
             const entityAfterManipulations = JSON.parse(JSON.stringify({ entityId, properties }));
 

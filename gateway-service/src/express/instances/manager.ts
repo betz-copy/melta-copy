@@ -597,7 +597,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         duplicateFileProperties = true,
         createAlert: boolean = true,
     ) {
-        const currentEntity = await this.service.getEntityInstanceById(id);
+        const currentEntity = await this.service.getEntityInstanceByValueAndKey(id);
         const currentEntityTemplate = await this.entityTemplateService.getEntityTemplateById(currentEntity.templateId);
 
         const fileProperties = this.getEntityFileProperties(instanceData.properties, currentEntityTemplate);
@@ -662,18 +662,18 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         });
     }
 
+    // Update only one entity where value is in the key property.
     async updateEntityInstance(
         value: string,
-        key: string,
         updatedInstanceData: IEntity,
         files: Express.Multer.File[],
         ignoredRules: IBrokenRule[],
         userId: string,
         createAlert: boolean = true,
+        key = '_id',
     ) {
-        // TODO: deal with files?
         const { props: uploadedFilesAndProperties, files: updatedFiles } = await this.uploadInstanceFiles(files, updatedInstanceData.properties);
-        const currentEntity = await this.service.getEntityInstanceById(value, key);
+        const currentEntity = await this.service.getEntityInstanceByValueAndKey(value, key);
 
         const entityTemplate = await this.entityTemplateService.getEntityTemplateById(currentEntity.templateId);
 
@@ -764,7 +764,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
     }
 
     async deleteEntityInstance(id: string) {
-        const currentEntity = await this.service.getEntityInstanceById(id);
+        const currentEntity = await this.service.getEntityInstanceByValueAndKey(id);
         const deletedInstance = await this.service.deleteEntityInstance(id);
 
         await this.ruleBreachesManager.updateManyRuleBreachRequestsStatusesByRelatedEntityId(id, RuleBreachRequestStatus.Canceled);

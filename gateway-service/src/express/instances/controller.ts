@@ -34,11 +34,12 @@ export class InstancesController extends DefaultController<InstancesManager> {
         res.json(
             await this.manager.updateEntityInstance(
                 req.params.id,
-                req.query.key as string,
                 instanceData,
                 req.files as Express.Multer.File[],
                 ignoredRules,
                 req.user!.id,
+                true,
+                req.query.key as string,
             ),
         );
     }
@@ -93,7 +94,7 @@ export class InstancesController extends DefaultController<InstancesManager> {
         res.send(
             await this.manager.exportEntityToDocumentTemplate({
                 documentTemplateId: req.query.documentTemplateId as string,
-                entityProperties: (await this.manager.service.getEntityInstanceById(req.params.entityId)).properties,
+                entityProperties: (await this.manager.service.getEntityInstanceByValueAndKey(req.params.entityId)).properties,
             }),
         );
     }

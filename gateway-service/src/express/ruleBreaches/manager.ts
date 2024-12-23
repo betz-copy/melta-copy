@@ -426,7 +426,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
         const { entityId, updatedFields } = action.actionMetadata;
         const instancesManager = new InstancesManager(this.workspaceId);
 
-        const entity = await this.instancesService.getEntityInstanceById(entityId);
+        const entity = await this.instancesService.getEntityInstanceByValueAndKey(entityId);
         const newEntityProperties = { ...entity.properties, ...updatedFields };
 
         // updatedFields specifies fields to remove w/ nulls. but shouldn't be in the IEntity properties
@@ -434,7 +434,6 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
 
         await instancesManager.updateEntityInstance(
             entityId,
-            '_id',
             { ...entity, properties: newEntityPropertiesWithoutNulls },
             [],
             brokenRules,
@@ -466,7 +465,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
                 if (entityId.startsWith(ruleBreachService.brokenRulesFakeEntityIdPrefix)) {
                     const numberPart = parseInt(entityId.slice(1, -4), 10);
                     before = actions[numberPart].actionMetadata as ICreateEntityMetadata;
-                } else before = await this.instancesService.getEntityInstanceById(entityId);
+                } else before = await this.instancesService.getEntityInstanceByValueAndKey(entityId);
 
                 return {
                     actionType: action.actionType,
@@ -557,7 +556,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
         if (action.actionType === ActionTypes.DuplicateEntity) {
             const { templateId, properties, entityIdToDuplicate } = action.actionMetadata as IDuplicateEntityMetadata;
 
-            const currentEntity = await this.instancesService.getEntityInstanceById(entityIdToDuplicate);
+            const currentEntity = await this.instancesService.getEntityInstanceByValueAndKey(entityIdToDuplicate);
             const currentEntityTemplate = await this.entityTemplateService.getEntityTemplateById(templateId);
 
             const fileProperties = instancesManager.getEntityFileProperties(properties, currentEntityTemplate);
@@ -603,7 +602,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
                 const numberPart = parseInt(entityId.slice(1, -4), 10);
                 entityTemplateId = (ruleBreach.actions[numberPart].actionMetadata as ICreateEntityMetadataPopulated).templateId;
             } else {
-                const entity = await this.instancesService.getEntityInstanceById((action.actionMetadata as IUpdateEntityMetadata).entityId);
+                const entity = await this.instancesService.getEntityInstanceByValueAndKey((action.actionMetadata as IUpdateEntityMetadata).entityId);
                 entityTemplateId = entity.templateId;
             }
 
@@ -795,10 +794,10 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
         const [sourceEntity, destinationEntity] = await Promise.all([
             sourceEntityId.startsWith(ruleBreachService.brokenRulesFakeEntityIdPrefix)
                 ? sourceEntityId
-                : this.instancesService.getEntityInstanceById(sourceEntityId).catch(() => null),
+                : this.instancesService.getEntityInstanceByValueAndKey(sourceEntityId).catch(() => null),
             destinationEntityId.startsWith(ruleBreachService.brokenRulesFakeEntityIdPrefix)
                 ? destinationEntityId
-                : this.instancesService.getEntityInstanceById(destinationEntityId).catch(() => null),
+                : this.instancesService.getEntityInstanceByValueAndKey(destinationEntityId).catch(() => null),
         ]);
 
         return {
@@ -835,7 +834,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
         const entityTemplate = await this.entityTemplateService.getEntityTemplateById(templateId);
         const createdEntityWithPopulatedRelationshipReferences = await this.getPopulatedRelationshipReferences(entityTemplate, properties);
 
-        await this.instancesService.getEntityInstanceById(properties._id).catch(() => {
+        await this.instancesService.getEntityInstanceByValueAndKey(properties._id).catch(() => {
             createdEntityWithPopulatedRelationshipReferences._id = null;
         });
 
@@ -847,7 +846,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
 
         const entityToDuplicate = entityIdToDuplicate.startsWith(ruleBreachService.brokenRulesFakeEntityIdPrefix)
             ? entityIdToDuplicate
-            : await this.instancesService.getEntityInstanceById(entityIdToDuplicate).catch(() => null);
+            : await this.instancesService.getEntityInstanceByValueAndKey(entityIdToDuplicate).catch(() => null);
 
         const entityTemplate = await this.entityTemplateService.getEntityTemplateById(templateId);
         const duplicatedEntityWithPopulatedRelationshipReferences = await this.getPopulatedRelationshipReferences(entityTemplate, properties);
@@ -867,7 +866,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
                 const propertyValue = properties[name];
 
                 if (value.format === 'relationshipReference' && propertyValue && typeof propertyValue === 'string') {
-                    populatedProperties[name] = await this.instancesService.getEntityInstanceById(propertyValue).catch(() => null);
+                    populatedProperties[name] = await this.instancesService.getEntityInstanceByValueAndKey(propertyValue).catch(() => null);
                 }
             }),
         );
@@ -887,7 +886,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
             const numberPart = parseInt(entityId.slice(1, -4), 10);
             entity = actions[numberPart].actionMetadata as IEntity;
             entity.properties._id = entityId;
-        } else entity = await this.instancesService.getEntityInstanceById(entityId).catch(() => null);
+        } else entity = await this.instancesService.getEntityInstanceByValueAndKey(entityId).catch(() => null);
 
         if (entity) {
             const { templateId, properties } = entity;
@@ -917,7 +916,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
     ): Promise<IUpdateEntityStatusMetadataPopulated> {
         const { entityId, ...restOfMetadata } = actionMetadata;
 
-        const entity = await this.instancesService.getEntityInstanceById(entityId).catch(() => null);
+        const entity = await this.instancesService.getEntityInstanceByValueAndKey(entityId).catch(() => null);
 
         return {
             ...restOfMetadata,
