@@ -6,7 +6,7 @@ import { IEntity } from '../../externalServices/instanceService/interfaces/entit
 import config from '../../config/index';
 import { excelConfig } from './excelConfig';
 import { hexToARGB } from './colors';
-import { isExcludedColumn } from './getFunctions';
+import { isIncludedColumn } from './getFunctions';
 
 interface IExcelStyle {
     columnHeader: {
@@ -48,8 +48,9 @@ const excelStyle: IExcelStyle = {
 const SKIP_ROW_HEADER = 2;
 
 const createWorkbook = async (fileName: string) => {
+    const name = fileName.replace(/\//g, '');
     const fileOption = {
-        filename: `${config.service.excelFilePath}/${uuidv4()}${fileName}`,
+        filename: `${config.service.excelFilePath}/${uuidv4()}${name}`,
         useStyles: true,
         useSharedStrings: true,
     };
@@ -127,7 +128,7 @@ const createWorksheet = async (
     let columnIndex = 0;
 
     Object.entries(properties).forEach(([propertyKey, propertyTemplate]) => {
-        const shouldAddColumn = displayColumns?.includes(propertyKey) || headersOnly ? isExcludedColumn(propertyTemplate) : true;
+        const shouldAddColumn = headersOnly ? isIncludedColumn(propertyTemplate) : displayColumns?.includes(propertyKey);
 
         if (shouldAddColumn) {
             // TODO: make data validation work in office excel
@@ -219,7 +220,7 @@ const styleAWorksheet = (
         rows.forEach((row, index) => {
             const rowIndex = index + skip;
             const cell = worksheet.getCell(`${indexToExcelColumn(columnIndex + 1)}${rowIndex + SKIP_ROW_HEADER}`);
-            if (row[key] !== undefined) {
+            if (row[key] !== undefined && value !== undefined) {
                 cell.alignment = excelStyle.cell.alignment;
                 cell.font = excelStyle.cell.font;
 
@@ -255,7 +256,7 @@ const styleAWorksheet = (
                     // Check if value is simple list
                     if (!headersOnly)
                         if (value.type === 'string' && value.enum) {
-                            if (template.enumPropertiesColors && template.enumPropertiesColors[key][row[key]])
+                            if (template.enumPropertiesColors && template.enumPropertiesColors?.[key]?.[row?.[key]])
                                 cell.font = { ...excelStyle.cell.font, color: { argb: hexToARGB(template.enumPropertiesColors[key][row[key]]) } };
                         }
 
