@@ -176,6 +176,7 @@ export default {
         deleteFieldValue: 'לא ניתן למחוק ערך בשימוש',
         updateEnumField: 'לא ניתן לעדכן ערך זה',
         previewLoadingError: 'שגיאה בטעינת הקובץ',
+        emptyInputError: 'אין להכניס ערך ריק',
     },
     addRelationshipDialog: {
         title: 'הוסף קשר',
@@ -630,8 +631,8 @@ export default {
                 required: 'ליישות חסרה שדה חובה',
                 createdSuccessfully: 'ישויות נוצרו בהצלחה',
                 tableCantLoadEntities: 'טבלה זו לא תומכת בטעינה מקבצים',
-                limitNumberFiles: 'ניתן לעלות עד 5 קבצים',
-                limitNumberEntities: 'ניתן להעלות עד 500 ישויות בקובץ',
+                limitNumberFiles: `ניתן לעלות ${environment.loadExcel.filesLimit} של קבצים`,
+                limitNumberEntities: `ניתן להעלות עד ${environment.loadExcel.entitiesLimit} ישויות בקובץ`,
                 emptyExcel: 'יש להעלות קבצים עם יישויות',
                 failedReadingFiles: 'שגיאה בקריאת קבצים',
                 filesWrongTemplate: 'חלק מקבצים אלו לא מתאימים לתבנית',

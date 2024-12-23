@@ -15,6 +15,7 @@ import {
     ICountSearchResult,
     IEntity,
     ISearchBatchBody,
+    ISearchEntitiesOfTemplateBody,
     ISearchFilter,
     ISearchSort,
     ITemplateSearchBody,
@@ -50,10 +51,12 @@ import { IExportEntitiesBody } from './interfaces';
 import { RabbitManager } from '../../utils/rabbit';
 import { SemanticSearchService } from '../../externalServices/semanticSearch';
 import { WorkspaceService } from '../workspaces/service';
+import { createTextsFromEntitiesWithFiles, formatEntitiesBulkSearch, sortEntities } from '../../utils/semantic';
+import { ISemanticSearchResult } from '../../externalServices/semanticSearch/interface';
 import { getValidationErrorEntities, readExcelFile, updateIdOfBrokenRules } from '../../utils/excel/getFunctions';
-import { formatEntitiesBulkSearch, sortEntities } from '../../utils/semantic';
 
 const { errorCodes, rabbit, ruleBreachService } = config;
+const { filesLimit } = config.loadExcel;
 
 export class InstancesManager extends DefaultManagerProxy<InstancesService> {
     private entityTemplateService: EntityTemplateService;
@@ -149,6 +152,35 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         });
 
         await Promise.all(tasks);
+    }
+
+    async searchEntitiesOfTemplate(
+        templateId: string,
+        searchBody: ISearchEntitiesOfTemplateBody & { entitiesWithFiles: ISemanticSearchResult[string] },
+    ) {
+        const { entitiesWithFiles, ...body } = searchBody;
+
+        if (!entitiesWithFiles || !Object.keys(entitiesWithFiles)?.length || !body.textSearch) {
+            return this.service.searchEntitiesOfTemplateRequest(templateId, body);
+        }
+
+        const searchResult = await this.service.searchEntitiesOfTemplateRequest(templateId, {
+            ...body,
+            entityIdsToInclude: Object.keys(entitiesWithFiles),
+        });
+
+        if (body.sort?.length) {
+            return searchResult;
+        }
+
+        const texts = createTextsFromEntitiesWithFiles(searchResult, entitiesWithFiles, body.textSearch);
+        const rerank = await this.semanticSearchSearch.rerank({ query: body.textSearch, texts: Object.keys(texts) });
+
+        if (!rerank?.length) {
+            return searchResult;
+        }
+
+        return { ...searchResult, entities: sortEntities(searchResult.entities, rerank, texts) };
     }
 
     private async createWorksheet(
@@ -289,6 +321,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         const failedEntities: IFailedEntity[] = [];
 
         if (files && !entities) {
+            if (files?.length > filesLimit) throw new BadRequestError('files limit', {});
             const actions = await readExcelFile(files, template, failedEntities);
             entities = actions.map((action) => action.actionMetadata as IEntity);
         }

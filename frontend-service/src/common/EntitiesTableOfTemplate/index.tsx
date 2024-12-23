@@ -680,9 +680,12 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                         onCellEditingStopped={(params: CellEditingStoppedEvent) => {
                             setCurrEditingCell(undefined);
                             if (params.valueChanged === false) return;
+                            const isEmpty = params.newValue === '' || params.newValue === null || params.newValue.length === 0;
+                            const isRequired = template.properties.required.includes(params.colDef.field!);
                             const updatedProperties = {
                                 ...params.data?.properties,
-                                [params.column.getColId()]: params.newValue === '' || params.newValue.length === 0 ? undefined : params.newValue,
+                                // eslint-disable-next-line no-nested-ternary
+                                [params.column.getColId()]: isEmpty ? (isRequired ? undefined : '') : params.newValue,
                             };
                             setCurrEntity({ templateId: template._id, properties: params.data?.properties });
 
