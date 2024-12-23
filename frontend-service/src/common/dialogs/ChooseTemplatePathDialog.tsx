@@ -2,11 +2,11 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Button, CircularProgress, Dialog, DialogActions, DialogTitle } from '@mui/material';
 import i18next from 'i18next';
-import { useMutation, useQueryClient } from 'react-query';
+import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { AxiosError } from 'axios';
 import { toast } from 'react-toastify';
 import { Done } from '@mui/icons-material';
-import FolderTree, { testData } from 'react-folder-tree';
+import FolderTree, { NodeData, testData } from 'react-folder-tree';
 import { IEntityTemplateMap, IEntityTemplatePopulatedWithChildren, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { getEntityTemplatesTree, updateEntityTemplatePathRequest } from '../../services/templates/enitityTemplatesService';
 import { ErrorToast } from '../ErrorToast';
@@ -20,7 +20,6 @@ const ChooseTemplatePathDialog: React.FC<{
 
     const [validationErrors, setValidationErrors] = useState(false);
     const [pathValue, setPathValue] = useState('/');
-    const [entityTemplatesTree, setEntityTemplatesTree] = useState<IEntityTemplatePopulatedWithChildren | null>(null);
 
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
@@ -50,20 +49,37 @@ const ChooseTemplatePathDialog: React.FC<{
             },
         },
     );
-
-    const { mutateAsync, isLoading: isLoadingTemplatesTree } = useMutation(
-        () => {
-            return getEntityTemplatesTree(currEntityTemplate.category._id);
-        },
-        {
-            onError: (err: AxiosError) => {
-                toast.error(<ErrorToast axiosError={err} defaultErrorMessage={i18next.t('addPathToTemplateDialog.failedToRecieveTemplatesTree')} />);
-            },
-            onSuccess: (data) => {
-                setEntityTemplatesTree(data);
-            },
-        },
+    const { data: entityTemplatesTree, isLoading: isLoadingTemplatesTree } = useQuery(['getTemplatesTree', currEntityTemplate.category._id], () =>
+        getEntityTemplatesTree(currEntityTemplate.category._id),
     );
+
+    const cleanTemplatesTree = (templatesTree: IEntityTemplatePopulatedWithChildren) => {
+        const cleanChildren = (children: IEntityTemplatePopulatedWithChildren[]) => {
+            return children?.map((child) => {
+                return {
+                    name: child.displayName,
+                    path: child.path,
+                };
+            });
+        };
+
+        const cleanTree = (tree: IEntityTemplatePopulatedWithChildren): NodeData => {
+            return {
+                name: tree.displayName,
+                path: tree.path,
+                children: cleanChildren(tree.children),
+            };
+        };
+
+        return cleanTree(templatesTree);
+    };
+
+    // const test = {
+    //     name: entityTemplatesTree!.name,
+    //     children: entityTemplatesTree!.children.map((child) => ({
+    //         name: child.name,
+    //     })),
+    // };
 
     const handleConvertToRootPath = async () => {
         setPathValue('/');
@@ -74,8 +90,10 @@ const ChooseTemplatePathDialog: React.FC<{
         await updateEntityTemplatePath();
     };
 
-    const selectFatherTemplate = (nodeData: any) => {
-        setPathValue(nodeData.name);
+    const selectFatherTemplate = ({ nodeData }: { nodeData: NodeData }) => {
+        console.log(`${nodeData.path}${nodeData.name}`);
+
+        setPathValue(`${nodeData.path}${nodeData.name}`);
     };
 
     useEffect(() => {
@@ -112,10 +130,24 @@ const ChooseTemplatePathDialog: React.FC<{
                         <Done />
                     </Button>
                 ) : (
-                    <Box sx={{ direction: 'rtl' }}>
-                        {isLoadingTemplatesTree && (
-                            <FolderTree data={entityTemplatesTree!} readOnly showCheckbox={false} onNameClick={selectFatherTemplate} />
+                    <Box sx={{ direction: 'rtl', display: 'flex', flexDirection: 'column', gap: '10px', padding: '10px' }}>
+                        {!isLoadingTemplatesTree && (
+                            <FolderTree
+                                initOpenStatus="closed"
+                                initCheckedStatus="unchecked"
+                                showCheckbox={false}
+                                data={cleanTemplatesTree(entityTemplatesTree!)}
+                                onNameClick={selectFatherTemplate}
+                            />
                         )}
+                        <input
+                            type="text"
+                            value={pathValue}
+                            disabled
+                            // onChange={(e) => setPathValue(e.target.value)}
+                            placeholder={i18next.t('addPathToTemplateDialog.pathPlaceholder')}
+                            style={{ borderRadius: '10px', padding: '10px' }}
+                        />
                         <Button
                             type="submit"
                             variant="contained"

@@ -286,7 +286,7 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
         console.log(0);
         console.log(templatesWithPath);
 
-        templatesWithPath.sort((a, b) => a.path!.split('/').length - b.path!.split('/').length).pop();
+        templatesWithPath.sort((a, b) => a.path!.split('/').length - b.path!.split('/').length).shift();
 
         console.log(1);
         console.log(templatesWithPath);
