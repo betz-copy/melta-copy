@@ -11,13 +11,14 @@ export interface FlowParameter {
     DisplayName: string;
     Description: string;
     IsSingleValue: boolean;
-    option: Array<any>;
+    Options: Array<any>;
     IsContains: boolean;
 }
 
 export interface Attribute {
     $name: string;
     Name: string;
+    Value?: string;
 }
 
 export interface FlowField {
@@ -25,5 +26,5 @@ export interface FlowField {
     Name: string;
     DisplayName: string;
     Type: string;
-    Attributes: Attribute[];
+    Attributes?: Attribute[];
 }

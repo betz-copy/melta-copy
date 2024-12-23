@@ -26,7 +26,7 @@ FlowCubeRouter.post(
 );
 
 FlowCubeRouter.post(
-    '/:workspaceId/templates/:templateId',
+    '/:workspaceId/templates/templateId',
     ValidateRequest(getEntityTemplateByIdSchema),
     InstancesValidatorMiddleware.validateUserCanSearchEntitiesOfTemplate,
     wrapMiddleware(translateWorkspaceParameter),
