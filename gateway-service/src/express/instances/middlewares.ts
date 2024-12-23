@@ -117,6 +117,10 @@ export class InstancesValidator extends DefaultController {
     }
 
     async validateUserCanWriteEntityInstance(req: Request) {
+        if (req.query.upsert) {
+            await this.validateUserCanCreateEntityInstance(req);
+            return;
+        }
         await this.validateUserPermissionForEntityInstance(req, PermissionScope.write);
     }
 
@@ -228,6 +232,8 @@ export class InstancesValidator extends DefaultController {
     async validateUserCanIgnoreRules(req: Request) {
         const { ignoredRules } = req.body;
         const { user } = req;
+
+        if (req.query?.upsert) return;
 
         if (!user) throw new ServiceError(undefined, 'req.user is undefined');
 

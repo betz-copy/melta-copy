@@ -40,6 +40,7 @@ export class InstancesController extends DefaultController<InstancesManager> {
                 req.user!.id,
                 true,
                 req.query.key as string,
+                !!req.query.upsert,
             ),
         );
     }
