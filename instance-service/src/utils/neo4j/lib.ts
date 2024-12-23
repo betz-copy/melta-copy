@@ -84,12 +84,11 @@ export const normalizeResponseCount = (result: QueryResult): number => {
     return result.records[0].get(0);
 };
 
-export const normalizeChartResponse = (result: QueryResult) => {
-    return result.records.map((record) => ({
+export const normalizeChartResponse = (result: QueryResult) =>
+    result.records.map((record) => ({
         x: record.get('x'),
         y: record.get('y'),
     }));
-};
 
 const formatEntitiesWithFiles = (entitiesWithFiles: ISemanticSearchResult[string]): Record<string, string[]> =>
     Object.entries(entitiesWithFiles).reduce((acc, [entityId, entityData]) => {

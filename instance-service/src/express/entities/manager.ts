@@ -1776,9 +1776,8 @@ export class EntityManager extends DefaultManagerNeo4j {
     }
 
     async getChart(xAxis: IAxisField, yAxis: IAxisField, templateId: string) {
-        console.log('hi i am in manager');
         const query = this.buildAggregationQuery(xAxis, yAxis, templateId);
-        console.dir({ query });
+
         return this.neo4jClient.readTransaction(query, normalizeChartResponse);
     }
 }

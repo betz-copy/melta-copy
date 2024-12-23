@@ -1,16 +1,17 @@
+import { Group as AllUsers, PermIdentity as PersonalIcon } from '@mui/icons-material';
 import { Grid, TextField, ToggleButton, ToggleButtonGroup, Typography, useTheme } from '@mui/material';
-import React from 'react';
-import { PermIdentity as PersonalIcon, Group as AllUsers } from '@mui/icons-material';
+import { FormikProps } from 'formik';
 import i18next from 'i18next';
+import React from 'react';
 import { MeltaTooltip } from '../../../common/MeltaTooltip';
+import { IBasicChart } from '../../../interfaces/charts';
+import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { ChartTypesEdit } from './ChartTypesEdit';
 
-const ChartDetails: React.FC<{
-    xAxis: string;
-    setXAxis: React.Dispatch<React.SetStateAction<string>>;
-    yAxis: string;
-    setYAxis: React.Dispatch<React.SetStateAction<string>>;
-}> = ({ xAxis, setXAxis, yAxis, setYAxis }) => {
+const ChartSideBar: React.FC<{
+    formik: FormikProps<IBasicChart>;
+    entityTemplate: IMongoEntityTemplatePopulated;
+}> = ({ formik, entityTemplate }) => {
     const theme = useTheme();
 
     return (
@@ -24,26 +25,40 @@ const ChartDetails: React.FC<{
                 <Grid container direction="column" spacing={2} marginTop={1}>
                     <Grid item>
                         <TextField
-                            placeholder={i18next.t('charts.name')}
+                            id="name"
+                            name="name"
                             label={i18next.t('charts.name')}
+                            placeholder={i18next.t('charts.name')}
+                            value={formik.values.name}
+                            onChange={formik.handleChange}
+                            onBlur={formik.handleBlur}
+                            error={formik.touched.name && Boolean(formik.errors.name)}
+                            helperText={formik.touched.name && formik.errors.name}
                             variant="outlined"
                             sx={{ width: '400px' }}
                         />
                     </Grid>
                     <Grid item>
                         <TextField
+                            id="description"
+                            name="description"
                             multiline
-                            placeholder={i18next.t('charts.description')}
                             label={i18next.t('charts.description')}
-                            rows={4}
+                            placeholder={i18next.t('charts.description')}
+                            value={formik.values.description}
+                            onChange={formik.handleChange}
+                            onBlur={formik.handleBlur}
+                            error={formik.touched.description && Boolean(formik.errors.description)}
+                            helperText={formik.touched.description && formik.errors.description}
                             variant="outlined"
+                            rows={4}
                             sx={{ width: '400px' }}
                         />
                     </Grid>
                 </Grid>
             </Grid>
 
-            <ChartTypesEdit xAxis={xAxis} setXAxis={setXAxis} yAxis={yAxis} setYAxis={setYAxis} />
+            <ChartTypesEdit formik={formik} formikValues={formik.values} entityTemplate={entityTemplate} />
 
             <Grid container direction="column" marginTop={2} spacing={2}>
                 <Grid item>
@@ -86,4 +101,4 @@ const ChartDetails: React.FC<{
     );
 };
 
-export { ChartDetails };
+export { ChartSideBar };

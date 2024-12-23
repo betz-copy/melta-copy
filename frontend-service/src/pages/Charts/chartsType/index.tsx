@@ -2,28 +2,38 @@ import { Box, useTheme } from '@mui/material';
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
 import React from 'react';
+import { useQuery } from 'react-query';
+import { IBasicChart, IChartType } from '../../../interfaces/charts';
+import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { getChartOfTemplate } from '../../../services/entitiesService';
 
 interface IChartGenerator {
-    res: { xAxis: string; yAxis: string; aggregation: string; data: { x: any; y: any }[] };
-    xAxis: string;
-    yAxis: string;
-    name: string;
-    chartType: 'pie' | 'bar' | 'line';
+    formikValues: IBasicChart;
+    template: IMongoEntityTemplatePopulated;
 }
 
-const ChartType: React.FC<IChartGenerator> = ({ res, chartType, xAxis, yAxis, name }) => {
-    const { data, xAxis: xLabel, yAxis: yLabel } = res;
+const ChartGenerator: React.FC<IChartGenerator> = ({ formikValues, template }) => {
+    const { data } = useQuery(
+        ['chart', template._id, formikValues.xAxis.field, formikValues.yAxis.field],
+        () => getChartOfTemplate(formikValues.xAxis.field, formikValues.yAxis.field, template._id),
+        {
+            enabled: Boolean(formikValues.xAxis.field && formikValues.yAxis.field),
+        },
+    );
+
+    const { name, description, type, xAxis, yAxis } = formikValues;
+
     const theme = useTheme();
     const darkMode = theme.palette.mode === 'dark';
 
-    const seriesData = data.map((item) => ({
+    const seriesData = data?.map((item) => ({
         name: item.x,
         y: item.y,
     }));
 
     const chartOptions: Highcharts.Options = {
         chart: {
-            type: chartType,
+            type,
             backgroundColor: darkMode ? '#131313' : '#fcfeff',
         },
         title: {
@@ -33,6 +43,7 @@ const ChartType: React.FC<IChartGenerator> = ({ res, chartType, xAxis, yAxis, na
 
             text: name,
         },
+        subtitle: { text: description },
         xAxis: {
             gridLineColor: darkMode ? '#444' : '#dddddd',
             labels: {
@@ -46,10 +57,10 @@ const ChartType: React.FC<IChartGenerator> = ({ res, chartType, xAxis, yAxis, na
                 style: {
                     color: darkMode ? '#fff' : '#000',
                 },
-                text: xLabel,
+                text: xAxis.title,
             },
 
-            categories: data.map((point) => point.x),
+            categories: data?.map((point) => point.x),
         },
 
         yAxis: {
@@ -65,7 +76,7 @@ const ChartType: React.FC<IChartGenerator> = ({ res, chartType, xAxis, yAxis, na
             title: {
                 style: {
                     color: darkMode ? '#fff' : '#000',
-                    text: yLabel,
+                    text: yAxis.title,
                 },
             },
         },
@@ -78,7 +89,7 @@ const ChartType: React.FC<IChartGenerator> = ({ res, chartType, xAxis, yAxis, na
             enabled: false,
         },
         tooltip: {
-            pointFormat: chartType === 'pie' ? '{series.name}: <b>{point.percentage:.1f}%</b>' : '<b>{point.y}</b>',
+            pointFormat: type === IChartType.Pie ? '{series.name}: <b>{point.percentage:.1f}%</b>' : '<b>{point.y}</b>',
         },
         plotOptions: {
             pie: {
@@ -92,10 +103,10 @@ const ChartType: React.FC<IChartGenerator> = ({ res, chartType, xAxis, yAxis, na
         },
         series: [
             {
-                name: yLabel,
-                type: chartType,
-                data: chartType === 'pie' ? seriesData : seriesData.map((item) => item.y),
+                name: yAxis.title,
+                data: type === IChartType.Pie ? seriesData : seriesData?.map((item) => item.y),
                 color: theme.palette.primary.main,
+                type,
             },
         ],
     };
@@ -113,4 +124,5 @@ const ChartType: React.FC<IChartGenerator> = ({ res, chartType, xAxis, yAxis, na
         </Box>
     );
 };
-export { ChartType };
+
+export { ChartGenerator };

@@ -1,80 +1,39 @@
-import { BarChart as BarChartIcon, PieChart as PieChartIcon, Money as NumberChartIcon, ShowChart as ShowChartIcon } from '@mui/icons-material';
-import { Box, Grid, Typography, useTheme } from '@mui/material';
-import React, { ReactNode, useState } from 'react';
+import { BarChart as BarChartIcon, Money as NumberChartIcon, PieChart as PieChartIcon, ShowChart as ShowChartIcon } from '@mui/icons-material';
+import { Box, Grid, Typography } from '@mui/material';
+import { FormikProps } from 'formik';
 import i18next from 'i18next';
-import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
-import { BarChart } from '../chartsType/BarChart';
-import { LineChart } from '../chartsType/LineChart';
+import React, { useMemo } from 'react';
+import { IBasicChart, IChartType } from '../../../interfaces/charts';
+import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { BarOrLineChart } from '../chartsType/BarChart';
 import { NumberChart } from '../chartsType/NumberChart';
 import { PieChart } from '../chartsType/PieChart';
-
-const ChartTypeButton: React.FC<{
-    icon: React.ElementType;
-    buttonId: string;
-    selectedButton: string | null;
-    handleClick: (buttonId: string) => void;
-    popoverText: string;
-}> = ({ icon: Icon, buttonId, selectedButton, handleClick, popoverText }) => {
-    const theme = useTheme();
-
-    return (
-        <IconButtonWithPopover
-            iconButtonProps={{
-                onClick: () => {
-                    handleClick(buttonId);
-                },
-            }}
-            style={{
-                color: selectedButton === buttonId ? theme.palette.secondary.main : theme.palette.primary.main,
-                borderRadius: '5px',
-                padding: '8px',
-            }}
-            popoverText={popoverText}
-        >
-            <Icon fontSize="large" />
-        </IconButtonWithPopover>
-    );
-};
+import { ChartTypeButton } from './ChartTypeButton';
 
 interface ChartProps {
-    xAxis: string;
-    setXAxis: React.Dispatch<React.SetStateAction<string>>;
-    yAxis: string;
-    setYAxis: React.Dispatch<React.SetStateAction<string>>;
+    formik: FormikProps<IBasicChart>;
+    formikValues: IBasicChart;
+    entityTemplate: IMongoEntityTemplatePopulated;
 }
 
-const withChartProps = (
-    ChartComponent: React.FC<ChartProps>,
-    xAxis: string,
-    setXAxis: React.Dispatch<React.SetStateAction<string>>,
-    yAxis: string,
-    setYAxis: React.Dispatch<React.SetStateAction<string>>,
-): ReactNode => <ChartComponent xAxis={xAxis} setXAxis={setXAxis} yAxis={yAxis} setYAxis={setYAxis} />;
-// const chartsEditCompetent: Record<string, ReactNode> = {
-//     numberChart: <NumberChart />,
-//     barChart: <BarChart />,
-//     pieChart: <PieChart />,
-//     lineChart: <LineChart />,
-// };
+const charts: Record<IChartType, React.FC<ChartProps>> = {
+    [IChartType.Number]: NumberChart,
+    [IChartType.Bar]: BarOrLineChart,
+    [IChartType.Pie]: PieChart,
+    [IChartType.Line]: BarOrLineChart,
+};
 
-const ChartTypesEdit: React.FC<{
-    xAxis: string;
-    setXAxis: React.Dispatch<React.SetStateAction<string>>;
-    yAxis: string;
-    setYAxis: React.Dispatch<React.SetStateAction<string>>;
-}> = ({ xAxis, setXAxis, yAxis, setYAxis }) => {
-    const [selectedButton, setSelectedButton] = useState<string | null>(null);
+const chartTypeButtons = [
+    { icon: NumberChartIcon, type: IChartType.Number, label: i18next.t('charts.lineChartSettings') },
+    { icon: BarChartIcon, type: IChartType.Bar, label: i18next.t('charts.barChartSettings') },
+    { icon: PieChartIcon, type: IChartType.Pie, label: i18next.t('charts.pieChartSettings') },
+    { icon: ShowChartIcon, type: IChartType.Line, label: i18next.t('charts.lineChartSettings') },
+];
 
-    const handleButtonClick = (buttonId: string) => {
-        setSelectedButton(buttonId);
-    };
+const ChartTypesEdit: React.FC<ChartProps> = ({ formik, formikValues, entityTemplate }) => {
+    const SelectedChartType = useMemo(() => charts[formikValues.type], [formikValues.type]);
 
-    const chartsEditComponent: Record<string, ReactNode> = {
-        numberChart: withChartProps(NumberChart, xAxis, setXAxis, yAxis, setYAxis),
-        barChart: withChartProps(BarChart, xAxis, setXAxis, yAxis, setYAxis),
-        pieChart: withChartProps(PieChart, xAxis, setXAxis, yAxis, setYAxis),
-        lineChart: withChartProps(LineChart, xAxis, setXAxis, yAxis, setYAxis),
-    };
+    const handleButtonClick = (buttonId: string) => formik.setFieldValue('type', buttonId);
 
     return (
         <Grid>
@@ -82,41 +41,24 @@ const ChartTypesEdit: React.FC<{
                 <Typography variant="subtitle1">{i18next.t('charts.chartDetails')}</Typography>
 
                 <Grid item container spacing={2} marginTop={2}>
-                    <ChartTypeButton
-                        icon={NumberChartIcon}
-                        buttonId="numberChart"
-                        selectedButton={selectedButton}
-                        handleClick={handleButtonClick}
-                        popoverText="Line Chart Settings"
-                    />
-                    <ChartTypeButton
-                        icon={BarChartIcon}
-                        buttonId="barChart"
-                        selectedButton={selectedButton}
-                        handleClick={handleButtonClick}
-                        popoverText="Bar Chart Settings"
-                    />
-                    <ChartTypeButton
-                        icon={PieChartIcon}
-                        buttonId="pieChart"
-                        selectedButton={selectedButton}
-                        handleClick={handleButtonClick}
-                        popoverText="Pie Chart Settings"
-                    />
-                    <ChartTypeButton
-                        icon={ShowChartIcon}
-                        buttonId="lineChart"
-                        selectedButton={selectedButton}
-                        handleClick={handleButtonClick}
-                        popoverText="Line Chart Settings"
-                    />
+                    {chartTypeButtons.map(({ icon, type, label }) => (
+                        <ChartTypeButton
+                            key={type}
+                            icon={icon}
+                            buttonId={type}
+                            selectedButton={formikValues.type}
+                            handleClick={handleButtonClick}
+                            popoverText={label}
+                        />
+                    ))}
                 </Grid>
             </Grid>
 
             <Grid item>
-                <Box marginTop={3}>{chartsEditComponent[selectedButton || '']}</Box>
+                <Box>{formikValues.type && <SelectedChartType formik={formik} formikValues={formikValues} entityTemplate={entityTemplate} />}</Box>
             </Grid>
         </Grid>
     );
 };
+
 export { ChartTypesEdit };

@@ -18,6 +18,7 @@ import { IBrokenRule, IRuleBreach } from '../interfaces/ruleBreaches/ruleBreach'
 import { filterModelToFilterOfGraph } from '../pages/Graph/GraphFilterToBackend';
 import { ITablesResults } from '../common/wizards/loadEntities';
 import { ICreateEntityMetadata } from '../interfaces/ruleBreaches/actionMetadata';
+import { IAxisField } from '../interfaces/charts';
 
 const { entities, relationships } = environment.api;
 
@@ -283,5 +284,11 @@ export const getEntitiesWithDirectConnections = async (searchBody: ISearchBatchB
 
 export const exportEntityToDocumentRequest = async (documentTemplateId: string, entityProperties: EntityWizardValues['properties']) => {
     const { data } = await axios.post<Blob>(`${entities}/export/document`, { documentTemplateId, entityProperties }, { responseType: 'blob' });
+    return data;
+};
+
+export const getChartOfTemplate = async (xAxis: IAxisField, yAxis: IAxisField, templateId: string) => {
+    const { data } = await axios.post<{ x: any; y: any }[]>(`${entities}/chart/${templateId}`, { xAxis, yAxis });
+
     return data;
 };

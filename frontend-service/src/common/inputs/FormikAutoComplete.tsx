@@ -1,6 +1,6 @@
-import React, { CSSProperties } from 'react';
 import { Autocomplete, Chip, TextField } from '@mui/material';
 import { FormikProps, getIn } from 'formik';
+import React, { CSSProperties } from 'react';
 
 interface IFormikAutoCompleteProps<T> {
     formik: FormikProps<any>;

@@ -1075,6 +1075,7 @@ export default {
         protected: 'לכל המשתמשים',
         name: 'שם',
         description: 'תיאור',
+        axis: 'ציר',
     },
     workspaces: {
         goBack: 'חזור',
