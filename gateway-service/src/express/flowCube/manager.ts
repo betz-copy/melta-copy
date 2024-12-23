@@ -71,18 +71,18 @@ export class FlowCubeManager extends DefaultManagerProxy<null> {
     async getEntityTemplateById(templateId: string) {
         const template = await this.entityTemplateService.getEntityTemplateById(templateId);
         const { name, displayName, properties } = template;
-        const parameters: FlowParameter[] = Object.entries(properties.properties).map(([key, value]) => ({
-            Name: key,
-            $name: value.type as String,
-            ColumnName: key,
-            isRequired: false,
-            DisplayName: value.title,
-            Description: value.title,
-            IsSingleValue: !!value.uniqueItems,
-            Options: [] as Array<any>,
-            IsContains: false,
-        }));
+        // const parameters: FlowParameter[] = Object.entries(properties.properties).map(([key, value]) => ({
+        //     Name: key,
+        //     $name: value.type as String,
+        //     ColumnName: key,
+        //     isRequired: false,
+        //     DisplayName: value.title,
+        //     Description: value.title,
+        //     IsSingleValue: !!value.uniqueItems,
+        //     Options: [] as Array<any>,
+        //     IsContains: false,
+        // }));
 
-        return parameters;
+        return template;
     }
 }
