@@ -49,6 +49,7 @@
     "@mui/material": "^5.16.9",
     "@mui/styles": "^5.2.3",
     "@mui/x-date-pickers": "^5.0.20",
+    "@mui/x-tree-view": "^7.23.2",
     "@react-awesome-query-builder/mui": "^6.4.2",
     "@reactour/tour": "^3.1.2",
     "@rjsf/core": "^5.18.1",

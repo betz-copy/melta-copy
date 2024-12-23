@@ -283,13 +283,10 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
         const rootTemplate = templatesWithPath.find((template) => template.path === '/');
 
         if (!templatesWithPath?.length || !rootTemplate) return [];
-        console.log(0);
-        console.log(templatesWithPath);
 
-        templatesWithPath.sort((a, b) => a.path!.split('/').length - b.path!.split('/').length).shift();
+        templatesWithPath.sort((a, b) => a.path!.split('/').length - b.path!.split('/').length);
+        templatesWithPath.pop();
 
-        console.log(1);
-        console.log(templatesWithPath);
         type IEntityTemplatePopulatedWithChildren = IEntityTemplatePopulated & { children: IEntityTemplatePopulatedWithChildren[] };
 
         const result = {
@@ -300,7 +297,7 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
         templatesWithPath.forEach((child) => {
             const { path } = child;
 
-            const levels = path!.substring(path!.indexOf(rootTemplate.name) + rootTemplate.name.length + 1).split('/');
+            const levels = path!.substring(path!.indexOf(rootTemplate.displayName) + rootTemplate.displayName.length + 1).split('/');
             const { length: levelsLength } = levels;
             let reference = result.children;
             levels.forEach((level, index) => {
@@ -308,7 +305,7 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
                 if (isLastLevel && level === '') {
                     reference.push({ ...child, children: [] });
                 } else {
-                    const childRef = reference.find((subChild) => subChild.name === level);
+                    const childRef = reference.find((subChild) => subChild.displayName === level);
                     if (!childRef) {
                         throw new PathDoesNotExistError(level);
                     }

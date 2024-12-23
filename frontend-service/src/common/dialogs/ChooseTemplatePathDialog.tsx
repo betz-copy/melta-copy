@@ -6,10 +6,11 @@ import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { AxiosError } from 'axios';
 import { toast } from 'react-toastify';
 import { Done } from '@mui/icons-material';
-import FolderTree, { NodeData, testData } from 'react-folder-tree';
+import FolderTree, { NodeData } from 'react-folder-tree';
 import { IEntityTemplateMap, IEntityTemplatePopulatedWithChildren, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { getEntityTemplatesTree, updateEntityTemplatePathRequest } from '../../services/templates/enitityTemplatesService';
 import { ErrorToast } from '../ErrorToast';
+import TemplatesTree from '../TemplatesTree';
 
 const ChooseTemplatePathDialog: React.FC<{
     open: boolean;
@@ -90,10 +91,8 @@ const ChooseTemplatePathDialog: React.FC<{
         await updateEntityTemplatePath();
     };
 
-    const selectFatherTemplate = ({ nodeData }: { nodeData: NodeData }) => {
-        console.log(`${nodeData.path}${nodeData.name}`);
-
-        setPathValue(`${nodeData.path}${nodeData.name}`);
+    const selectFatherTemplate = (selectedPath: string) => {
+        setPathValue(selectedPath);
     };
 
     useEffect(() => {
@@ -130,16 +129,8 @@ const ChooseTemplatePathDialog: React.FC<{
                         <Done />
                     </Button>
                 ) : (
-                    <Box sx={{ direction: 'rtl', display: 'flex', flexDirection: 'column', gap: '10px', padding: '10px' }}>
-                        {!isLoadingTemplatesTree && (
-                            <FolderTree
-                                initOpenStatus="closed"
-                                initCheckedStatus="unchecked"
-                                showCheckbox={false}
-                                data={cleanTemplatesTree(entityTemplatesTree!)}
-                                onNameClick={selectFatherTemplate}
-                            />
-                        )}
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: '10px', padding: '10px' }}>
+                        {!isLoadingTemplatesTree && <TemplatesTree onClickItem={selectFatherTemplate} templatesWithchildren={entityTemplatesTree!} />}
                         <input
                             type="text"
                             value={pathValue}
