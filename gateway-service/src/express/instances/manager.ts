@@ -674,19 +674,23 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         upsert = false,
     ) {
         const { props: uploadedFilesAndProperties, files: updatedFiles } = await this.uploadInstanceFiles(files, updatedInstanceData.properties);
+        let currentEntity: IEntity;
 
-        if (upsert) {
-            return this.service.createEntityInstance(
-                {
-                    templateId: updatedInstanceData.templateId,
-                    properties: { ...uploadedFilesAndProperties },
-                },
-                ignoredRules,
-                userId,
-            );
+        try {
+            currentEntity = await this.service.getEntityInstanceByValueAndKey(value, key);
+        } catch (e) {
+            if (upsert)
+                return this.service.createEntityInstance(
+                    {
+                        templateId: updatedInstanceData.templateId,
+                        properties: { ...uploadedFilesAndProperties },
+                    },
+                    ignoredRules,
+                    userId,
+                );
+
+            throw e;
         }
-
-        const currentEntity = await this.service.getEntityInstanceByValueAndKey(value, key);
 
         const entityTemplate = await this.entityTemplateService.getEntityTemplateById(currentEntity.templateId);
 
