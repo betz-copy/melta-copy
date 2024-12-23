@@ -15,19 +15,8 @@ export const defaultMetadata = {
         defaultExpandedRowCount: 13,
         defaultRowHeight: 50,
         defaultFontSize: 14,
-        cacheBlockSize: 5,
-        maxConcurrentDatasourceRequests: 1,
         infiniteInitialRowCount: 10,
         defaultExpandedTableHeight: 50,
-    },
-    activityLog: {
-        infiniteScrollPageCount: 10,
-    },
-    processInstances: {
-        infiniteScrollPageCount: 10,
-    },
-    permission: {
-        infiniteScrollPageCount: 13,
     },
     mainFontSizes: {
         headlineTitleFontSize: '24px',

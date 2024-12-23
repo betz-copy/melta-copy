@@ -98,6 +98,15 @@ export const environment = {
         maxNumOfCharactersNotInFullWidth: 700,
         numOfFixedDigits: 18,
     },
+    permission: {
+        infiniteScrollPageCount: 13,
+    },
+    activityLog: {
+        infiniteScrollPageCount: 10,
+    },
+    processInstances: {
+        infiniteScrollPageCount: 10,
+    },
     iFrames: {
         iFrameDimensionKey: 'iFrameDimension_',
         iFramesOrderKey: 'iFramesOrder',
@@ -203,6 +212,8 @@ export const environment = {
 
     loadExcel: { excelExtension: '.xlsx', acceptedFilesTypes: { 'excel/xlsx': ['.xlsx', '.xls'] }, filesLimit: 5, entitiesLimit: 500 },
     agGrid: {
+        cacheBlockSize: 5,
+        maxConcurrentDatasourceRequests: 1,
         paginationPageSizeSelector: [5, 10, 25, 50],
     },
 

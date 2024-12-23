@@ -128,7 +128,6 @@ export const getRowModelProps = <Data extends any = EntityData>(
     quickFilterText?: string,
     datasourceOnFail?: (err: unknown) => void,
     hasInstances?: boolean,
-    workspaceMetadata?: { cacheBlockSize: number; maxConcurrentDatasourceRequests: number },
 ): React.ComponentProps<typeof AgGridReact<Data>> => {
     if (rowModelType === 'clientSide') {
         return {
@@ -139,7 +138,7 @@ export const getRowModelProps = <Data extends any = EntityData>(
         };
     }
 
-    const { cacheBlockSize, maxConcurrentDatasourceRequests } = workspaceMetadata || {};
+    const { cacheBlockSize, maxConcurrentDatasourceRequests } = environment.agGrid;
 
     return {
         rowModelType: 'serverSide',

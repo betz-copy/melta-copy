@@ -14,7 +14,7 @@ import { InfiniteScroll } from '../../common/InfiniteScroll';
 import './ProcessesList.css';
 import { useUserStore } from '../../stores/user';
 import { PermissionScope } from '../../interfaces/permissions';
-import { useWorkspaceStore } from '../../stores/workspace';
+import { environment } from '../../globals';
 
 const ProcessesList: React.FC<{
     onSetStartDate: (newStartDateInput: Date) => void;
@@ -24,9 +24,7 @@ const ProcessesList: React.FC<{
     endDateInput: Date | null;
     templatesToShowCheckbox: IMongoProcessTemplatePopulated[]; // todo: support in backend
 }> = ({ templatesToShowCheckbox, search, startDateInput, endDateInput }) => {
-    const workspace = useWorkspaceStore((state) => state.workspace);
-
-    const { infiniteScrollPageCount } = workspace.metadata.processInstances;
+    const { infiniteScrollPageCount } = environment.processInstances;
 
     const [statusFilter, setStatusFilter] = useState<'all' | Status | undefined>('all');
 

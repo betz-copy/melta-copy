@@ -97,7 +97,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
 
     const { trackEvent, trackPageView } = useMatomo();
     const workspace = useWorkspaceStore((state) => state.workspace);
-
+    const { iconSize } = workspace.metadata;
     return (
         <Drawer ref={drawerRef} variant="permanent" open={isDrawerOpen} data-tour="side-bar" style={{ zIndex: '1' }} sx={{ zIndex: '1' }}>
             <Grid container direction="column" wrap="nowrap" height="100%" sx={{ bgcolor: darkMode ? '#000' : theme.palette.primary.main }}>
@@ -227,7 +227,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                                     popoverText={isDrawerOpen ? '' : i18next.t('pages.globalSearch')}
                                     disabledToolTip={isDrawerOpen}
                                     placement="left"
-                                    style={{ ...workspace.metadata.iconSize }}
+                                    style={{ ...iconSize }}
                                 >
                                     <img src="/icons/search-icon.svg" style={{ alignSelf: 'center', height: '25px' }} />
                                 </IconButtonWithPopover>
@@ -298,7 +298,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                                             fontSize="large"
                                             sx={{
                                                 color: activeButton === category._id ? '#545eb9' : 'white',
-                                                ...workspace.metadata.iconSize,
+                                                ...iconSize,
                                             }}
                                         />
                                     )}
@@ -327,7 +327,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                         >
                             <FluidSimulationIcon
                                 fontSize="large"
-                                sx={{ color: activeButton === 'fluid-simulation' ? '#545eb9' : 'white', ...workspace.metadata.iconSize }}
+                                sx={{ color: activeButton === 'fluid-simulation' ? '#545eb9' : 'white', ...iconSize }}
                             />
                         </NavButton>
                     )}
@@ -398,10 +398,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                         }}
                         isActiveButton={activeButton === 'iFrames'}
                     >
-                        <StarBorderPurple500Icon
-                            fontSize="large"
-                            sx={{ color: activeButton === 'iFrames' ? '#545eb9' : 'white', ...workspace.metadata.iconSize }}
-                        />
+                        <StarBorderPurple500Icon fontSize="large" sx={{ color: activeButton === 'iFrames' ? '#545eb9' : 'white', ...iconSize }} />
                     </NavButton>
 
                     <NavButton
@@ -419,10 +416,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                         }}
                         isActiveButton={activeButton === 'rule-management'}
                     >
-                        <GavelIcon
-                            fontSize="large"
-                            sx={{ color: activeButton === 'rule-management' ? '#545eb9' : 'white', ...workspace.metadata.iconSize }}
-                        />
+                        <GavelIcon fontSize="large" sx={{ color: activeButton === 'rule-management' ? '#545eb9' : 'white', ...iconSize }} />
                     </NavButton>
 
                     <NavButton
@@ -440,10 +434,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                         }}
                         isActiveButton={activeButton === 'gantts'}
                     >
-                        <CalendarIcon
-                            fontSize="large"
-                            sx={{ color: activeButton === 'gantts' ? '#545eb9' : 'white', ...workspace.metadata.iconSize }}
-                        />
+                        <CalendarIcon fontSize="large" sx={{ color: activeButton === 'gantts' ? '#545eb9' : 'white', ...iconSize }} />
                     </NavButton>
 
                     <NavButton
@@ -479,10 +470,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                             onChangeToActive={(isActive) => handleChangeActiveButton(isActive, 'system-management')}
                             isActiveButton={activeButton === 'system-management'}
                         >
-                            <WidgetsIcon
-                                fontSize="large"
-                                sx={{ color: activeButton === 'system-management' ? '#545eb9' : 'white', ...workspace.metadata.iconSize }}
-                            />
+                            <WidgetsIcon fontSize="large" sx={{ color: activeButton === 'system-management' ? '#545eb9' : 'white', ...iconSize }} />
                         </NavButton>
                     )}
 
@@ -507,7 +495,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                                 fontSize="large"
                                 sx={{
                                     color: activeButton === 'permissions-management' ? '#545eb9' : 'white',
-                                    ...workspace.metadata.iconSize,
+                                    ...iconSize,
                                 }}
                             />
                         </NavButton>
@@ -525,7 +513,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                                 onChangeToActive={() => {}}
                                 onClick={() => queryClient.removeQueries('getAllTemplates')}
                             >
-                                <ExitIcon fontSize="large" sx={{ color: 'white', ...workspace.metadata.iconSize }} />
+                                <ExitIcon fontSize="large" sx={{ color: 'white', ...iconSize }} />
                             </NavButton>
                         </Grid>
                     </>

@@ -17,19 +17,8 @@ export interface IMetadata {
         defaultExpandedRowCount: number;
         defaultRowHeight: number;
         defaultFontSize: number;
-        cacheBlockSize: number;
-        maxConcurrentDatasourceRequests: number;
         infiniteInitialRowCount: number;
         defaultExpandedTableHeight: number;
-    };
-    activityLog: {
-        infiniteScrollPageCount: number;
-    };
-    processInstances: {
-        infiniteScrollPageCount: number;
-    };
-    permission: {
-        infiniteScrollPageCount: number;
     };
     mainFontSizes: {
         headlineTitleFontSize: string;

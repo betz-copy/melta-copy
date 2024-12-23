@@ -13,11 +13,10 @@ import { deleteProcessTemplateRequest, processTemplateObjectToProcessTemplateFor
 import { CreateButton } from '../CreateButton';
 import { ProcessTemplateCard } from './ProcessTemplateCard';
 import { InfiniteScroll } from '../../../../common/InfiniteScroll';
-import { useWorkspaceStore } from '../../../../stores/workspace';
+import { environment } from '../../../../globals';
 
 const ProcessTemplatesRow: React.FC = () => {
-    const workspace = useWorkspaceStore((state) => state.workspace);
-    const { infiniteScrollPageCount } = workspace.metadata.processInstances;
+    const { infiniteScrollPageCount } = environment.processInstances;
 
     const [searchText, setSearchText] = useState('');
     const [deleteProcessTemplateDialogState, setDeleteProcessTemplateDialogState] = useState<{

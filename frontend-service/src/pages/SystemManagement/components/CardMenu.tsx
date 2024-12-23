@@ -24,7 +24,7 @@ export const CardMenu: React.FC<{
     onAddActionsClick?: MouseEventHandler;
 }> = ({ onEditClick, onDeleteClick, disabledProps, onDisableClick, onDuplicateClick, onAddActionsClick }) => {
     const workspace = useWorkspaceStore((state) => state.workspace);
-
+    const { iconSize } = workspace.metadata;
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
     const open = Boolean(anchorEl);
 
@@ -48,7 +48,7 @@ export const CardMenu: React.FC<{
 
     return (
         <>
-            <IconButton onClick={handleClick} style={workspace.metadata.iconSize}>
+            <IconButton onClick={handleClick} style={{ ...iconSize }}>
                 <OptionsIcon />
             </IconButton>
             <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>

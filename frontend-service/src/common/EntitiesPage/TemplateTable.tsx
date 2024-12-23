@@ -54,6 +54,7 @@ const TemplateTable = forwardRef<
 >(({ template, quickFilterText, page, setUpdatedEntities }, ref) => {
     const workspace = useWorkspaceStore((state) => state.workspace);
     const { defaultRowHeight, defaultFontSize, defaultExpandedTableHeight } = workspace.metadata.agGrid;
+    const { height, width } = workspace.metadata.iconSize;
 
     const currentUser = useUserStore((state) => state.user);
 
@@ -146,7 +147,6 @@ const TemplateTable = forwardRef<
     };
 
     const isLoadExcelDisabled = !userHasWritePermissions || checkIfLoadEntityIsDisabled();
-    const { height, width } = workspace.metadata.iconSize;
     return (
         <Grid container minWidth="fit-content">
             <Grid container justifyContent="space-between" width="fit-content" minWidth="fit-content">

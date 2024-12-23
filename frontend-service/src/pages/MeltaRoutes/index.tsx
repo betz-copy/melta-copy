@@ -61,23 +61,6 @@ export const MeltaRoutes: React.FC<IMeltaRoutesProps> = ({ path }) => {
         enabled: Boolean(workspace?._id),
     });
 
-    // useEffect(() => {
-    //     const handleWorkspace = async () => {
-    //         if (!workspace) return;
-
-    //         setWorkspace({ ...workspace, metadata: { ...defaultMetadata, ...workspace.metadata } });
-    //         document.title = workspace.displayName;
-
-    //         const workspacePermissions = await getWorkspacePermissions(workspace._id, currentUser.permissions);
-    //         if (workspacePermissions) currentUser.permissions[workspace._id] = workspacePermissions;
-
-    //         if (currentUser.currentWorkspacePermissions !== currentUser.permissions[workspace._id])
-    //             setUser({ ...currentUser, currentWorkspacePermissions: currentUser.permissions[workspace._id] });
-    //     };
-
-    //     handleWorkspace();
-    // }, [workspace, setWorkspace, currentUser, setUser]);
-
     useEffect(() => handleWorkspace(workspace?.displayName ?? '', setWorkspace), [workspace, setWorkspace, currentUser, setUser]);
 
     const isLoading = useMemo(() => isLoadingAllTemplates || isLoadingWorkspace, [isLoadingAllTemplates, isLoadingWorkspace]);

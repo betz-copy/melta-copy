@@ -46,8 +46,8 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({ e
                             <DefaultEntityTemplateIcon
                                 sx={{
                                     color: theme.palette.primary.main,
-                                    height: workspace.metadata.iconSize.height,
-                                    width: workspace.metadata.iconSize.width,
+                                    height,
+                                    width,
                                 }}
                             />
                         )
@@ -101,16 +101,16 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({ e
                             relatedEntityTemplate.iconFileId ? (
                                 <CustomIcon
                                     iconUrl={relatedEntityTemplate.iconFileId}
-                                    height={workspace.metadata.iconSize.height}
-                                    width={workspace.metadata.iconSize.width}
+                                    height={height}
+                                    width={width}
                                     color={theme.palette.primary.main}
                                 />
                             ) : (
                                 <DefaultEntityTemplateIcon
                                     sx={{
                                         color: theme.palette.primary.main,
-                                        height: workspace.metadata.iconSize.height,
-                                        width: workspace.metadata.iconSize.width,
+                                        height,
+                                        width,
                                     }}
                                 />
                             )

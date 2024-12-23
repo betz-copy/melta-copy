@@ -29,6 +29,7 @@ import { CardMenu } from './CardMenu';
 import { CreateButton } from './CreateButton';
 import { FilterButton } from './FilterButton';
 import { useWorkspaceStore } from '../../../stores/workspace';
+import { environment } from '../../../globals';
 
 interface RelationshipTemplateCardProps {
     relationshipTemplate: IMongoRelationshipTemplatePopulated;
@@ -132,7 +133,7 @@ const defaultRelationshipTemplate: IMongoRelationshipTemplate = {
 
 const RelationshipTemplatesRow: React.FC = () => {
     const workspace = useWorkspaceStore((state) => state.workspace);
-    const { infiniteScrollPageCount } = workspace.metadata.processInstances;
+    const { infiniteScrollPageCount } = environment.processInstances;
 
     const queryClient = useQueryClient();
 

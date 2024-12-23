@@ -10,15 +10,13 @@ import { IEntityExpanded } from '../../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { getActivityLogRequest, IActivityLog } from '../../../../services/activityLogService';
 import ActivityLogRow from './ActivityLogRow';
-import { useWorkspaceStore } from '../../../../stores/workspace';
+import { environment } from '../../../../globals';
 
 const ActivityLog: React.FC<{ expandedEntity: IEntityExpanded; entityTemplate: IMongoEntityTemplatePopulated }> = ({
     expandedEntity,
     entityTemplate,
 }) => {
-    const workspace = useWorkspaceStore((state) => state.workspace);
-
-    const { infiniteScrollPageCount } = workspace.metadata.activityLog;
+    const { infiniteScrollPageCount } = environment.activityLog;
 
     const [openPopper, setOpenPopper] = React.useState(false);
     const entityId = expandedEntity.entity.properties._id;

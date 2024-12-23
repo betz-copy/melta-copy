@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-use-before-define */
 import { Grid, Card, CardContent, Box, Divider, Button, IconButton, CircularProgress, Typography } from '@mui/material';
 import { Done as DoneIcon, Clear as ClearIcon, Close as CloseIcon } from '@mui/icons-material';
 import i18next from 'i18next';
@@ -194,9 +193,6 @@ const CreateOrEditEntityDetails: React.FC<{
         {
             onSuccess: (data) => {
                 if (onSuccessUpdate) onSuccessUpdate(data);
-                if (shouldNavigateToEntityPage === true) {
-                    navigate(`/entity/${data.properties._id}`);
-                }
             },
             onError: (err: AxiosError, { newEntityData }) => {
                 handleMutationError(err, entityTemplate, newEntityData);

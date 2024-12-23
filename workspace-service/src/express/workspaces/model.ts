@@ -13,19 +13,8 @@ const MetadataSchema = new mongoose.Schema<IMetadata>(
             defaultExpandedRowCount: { type: Number },
             defaultRowHeight: { type: Number },
             defaultFontSize: { type: Number },
-            cacheBlockSize: { type: Number },
-            maxConcurrentDatasourceRequests: { type: Number },
             infiniteInitialRowCount: { type: Number },
             defaultExpandedTableHeight: { type: Number },
-        },
-        activityLog: {
-            infiniteScrollPageCount: { type: Number },
-        },
-        processInstances: {
-            infiniteScrollPageCount: { type: Number },
-        },
-        permission: {
-            infiniteScrollPageCount: { type: Number },
         },
         mainFontSizes: {
             headlineTitleFontSize: { type: String },

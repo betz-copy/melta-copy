@@ -11,19 +11,8 @@ const metadataSchema = Joi.object({
         defaultExpandedRowCount: Joi.number(),
         defaultRowHeight: Joi.number(),
         defaultFontSize: Joi.number(),
-        cacheBlockSize: Joi.number(),
-        maxConcurrentDatasourceRequests: Joi.number(),
         infiniteInitialRowCount: Joi.number(),
         defaultExpandedTableHeight: Joi.number(),
-    }).optional(),
-    activityLog: Joi.object({
-        infiniteScrollPageCount: Joi.number(),
-    }).optional(),
-    processInstances: Joi.object({
-        infiniteScrollPageCount: Joi.number(),
-    }).optional(),
-    permission: Joi.object({
-        infiniteScrollPageCount: Joi.number(),
     }).optional(),
     mainFontSizes: Joi.object({
         headlineTitleFontSize: Joi.string(),
