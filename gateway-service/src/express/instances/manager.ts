@@ -313,7 +313,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
     async loadEntities(
         templateId: string,
         userId: string,
-        files?: Express.Multer.File[],
+        files?: UploadedFile[],
         insertBrokenEntities?: { entitiesToCreate: IEntity[]; ignoredRules: IBrokenRule[] },
     ) {
         let entities = insertBrokenEntities?.entitiesToCreate;

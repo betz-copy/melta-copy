@@ -21,6 +21,7 @@ import {
     IUpdateEntityMetadataPopulated,
 } from '../../externalServices/ruleBreachService/interfaces/populated';
 import config from '../../config';
+import { UploadedFile } from '../busboy/interface';
 
 const { entitiesFileLimit, invalidDate, invalidTime } = config.loadExcel;
 
@@ -84,7 +85,7 @@ const handleFailedEntities = (rowData: Record<string, any>, failedProperties: IF
     };
     failedEntities.push(failedEntity);
 };
-const readExcelFile = async (files: Express.Multer.File[], template: IMongoEntityTemplatePopulated, failedEntities: IFailedEntity[]) => {
+const readExcelFile = async (files: UploadedFile[], template: IMongoEntityTemplatePopulated, failedEntities: IFailedEntity[]) => {
     const allActions: IAction[] = [];
 
     const columns = Object.fromEntries(

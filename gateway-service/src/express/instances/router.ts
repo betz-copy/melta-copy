@@ -75,7 +75,7 @@ InstancesRouter.post(
 
 InstancesRouter.post(
     '/entities/loadEntities',
-    wrapMulter(multer({ dest: config.service.uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).any()),
+    busboyMiddleware,
     InstancesValidatorMiddleware.validateUserCanCreateEntityInstance,
     ValidateRequest(loadEntitiesSchema),
     InstancesControllerMiddleware.loadEntities,
