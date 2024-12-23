@@ -24,7 +24,15 @@ export interface UserProfilePickerProps {
 
 const { kartoffelProfile } = environment.users;
 
-const UserProfilePicker: React.FC<UserProfilePickerProps> = ({ imageName, onPick, onDelete, defaultInputType, user, setUserProfileImage, setIsDefaultProfile }) => {
+const UserProfilePicker: React.FC<UserProfilePickerProps> = ({
+    imageName,
+    onPick,
+    onDelete,
+    defaultInputType,
+    user,
+    setUserProfileImage,
+    setIsDefaultProfile,
+}) => {
     const [inputType, setInputType] = useState(defaultInputType);
     const [fileInputValue, setFileInputValue] = useState<fileDetails | undefined>(
         imageName ? { file: { name: imageName }, name: imageName } : undefined,
@@ -51,7 +59,7 @@ const UserProfilePicker: React.FC<UserProfilePickerProps> = ({ imageName, onPick
             onPick({ file, name: file.name });
         } else {
             setUserProfileImage(undefined);
-            setIsDefaultProfile(true)
+            setIsDefaultProfile(true);
             onPick();
         }
     };
@@ -79,17 +87,17 @@ const UserProfilePicker: React.FC<UserProfilePickerProps> = ({ imageName, onPick
                     <ToggleButton value="chooseFile" sx={{ width: '10rem' }}>
                         {i18next.t('input.imagePicker.chooseFile')}
                     </ToggleButton>
-                        <ToggleButton
-                            value="kartoffelProfile"
-                            sx={{ width: '10rem', display: 'flex', justifyContent: 'space-evenly' }}
-                            disabled={!kartoffelUserProfile}
-                            onClick={() => {  
-                                setUserProfileImage(kartoffelUserProfile);
-                            }}
-                        >
-                            {i18next.t('input.imagePicker.kartoffelProfile')}
-                            {inputType === kartoffelProfile && <PaymentIcon />}
-                        </ToggleButton>
+                    <ToggleButton
+                        value="kartoffelProfile"
+                        sx={{ width: '10rem', display: 'flex', justifyContent: 'space-evenly' }}
+                        disabled={!kartoffelUserProfile}
+                        onClick={() => {
+                            setUserProfileImage(kartoffelUserProfile);
+                        }}
+                    >
+                        {i18next.t('input.imagePicker.kartoffelProfile')}
+                        {inputType === kartoffelProfile && <PaymentIcon />}
+                    </ToggleButton>
                 </ToggleButtonGroup>
             </Grid>
 
