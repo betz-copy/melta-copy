@@ -157,7 +157,6 @@ const UserProfilePicker: React.FC<UserProfilePickerProps> = ({ imageName, onPick
                         inputText={i18next.t('user.addFile')}
                         acceptedFilesTypes={{ 'image/png': ['.png', '.jpg'] }}
                         disablePreview
-                        disableScanner
                     />
                 </Grid>
             )}

@@ -179,7 +179,8 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
         const { count, entitiesWithFiles } = templateCount?.[0] ?? { count: 0, entitiesWithFiles: {} };
 
-        for (let skip = 0; count ?? 0 - skip > 0; skip += searchEntitiesChunkSize) {
+        // Remove the ?? 0 because it create infinite loop
+        for (let skip = 0; (count ?? 0) - skip > 0; skip += searchEntitiesChunkSize) {
             const { entities: chunk } = await this.service.searchEntitiesOfTemplateRequest(template._id, {
                 skip,
                 limit: searchEntitiesChunkSize,
@@ -285,13 +286,14 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         let entities = insertBrokenEntities?.entitiesToCreate;
         const template = await this.entityTemplateService.getEntityTemplateById(templateId);
 
+        const failedEntities: IFailedEntity[] = [];
+
         if (files && !entities) {
-            const actions = await readExcelFile(files, template);
+            const actions = await readExcelFile(files, template, failedEntities);
             entities = actions.map((action) => action.actionMetadata as IEntity);
         }
         const serialStarters = this.getSerialStarters(template);
         const succeededEntities: IEntity[] = [];
-        const failedEntities: IFailedEntity[] = [];
         const allBrokenRulesEntities: IBrokenRuleEntity[] = [];
 
         for (const entity of entities!) {

@@ -1082,36 +1082,38 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                 />
                                             )}
                                         </Box>
-                                        <MeltaTooltip
-                                            disableHoverListener={!initialValue?.required}
-                                            title={i18next.t('wizard.entityTemplate.cantDeleteUniqueOrRequiredFields')}
-                                        >
-                                            <Grid display="flex">
-                                                {supportArchive && isEditMode && (
-                                                    <MeltaTooltip title={archiveButtonTooltip()} placement="right">
-                                                        <Box>
-                                                            <IconButton
-                                                                onClick={() => setFieldValue('archive', !value.archive)}
-                                                                disabled={value.required || value.uniqueCheckbox || value.preview}
-                                                            >
-                                                                {value.archive ? <Unarchive color="primary" /> : <Archive />}
-                                                            </IconButton>
-                                                        </Box>
-                                                    </MeltaTooltip>
-                                                )}
-                                                <IconButton
-                                                    onClick={() => remove(index, isNewProperty)}
-                                                    disabled={
-                                                        !supportDeleteForExistingInstances ||
-                                                        initialValue?.required ||
-                                                        currentUser.currentWorkspacePermissions.admin?.scope !== PermissionScope.write ||
-                                                        hasActions
-                                                    }
-                                                >
-                                                    {value.deleted ? <DeleteOff /> : <DeleteIcon />}
-                                                </IconButton>
-                                            </Grid>
-                                        </MeltaTooltip>
+                                        <Grid display="flex">
+                                            {supportArchive && isEditMode && (
+                                                <MeltaTooltip title={archiveButtonTooltip()} placement="right">
+                                                    <Box>
+                                                        <IconButton
+                                                            onClick={() => setFieldValue('archive', !value.archive)}
+                                                            disabled={value.required || value.uniqueCheckbox || value.preview}
+                                                        >
+                                                            {value.archive ? <Unarchive color="primary" /> : <Archive />}
+                                                        </IconButton>
+                                                    </Box>
+                                                </MeltaTooltip>
+                                            )}
+                                            <MeltaTooltip
+                                                disableHoverListener={!initialValue?.required}
+                                                title={i18next.t('wizard.entityTemplate.cantDeleteUniqueOrRequiredFields')}
+                                            >
+                                                <Box>
+                                                    <IconButton
+                                                        onClick={() => remove(index, isNewProperty)}
+                                                        disabled={
+                                                            !supportDeleteForExistingInstances ||
+                                                            initialValue?.required ||
+                                                            currentUser.currentWorkspacePermissions.admin?.scope !== PermissionScope.write ||
+                                                            hasActions
+                                                        }
+                                                    >
+                                                        {value.deleted ? <DeleteOff /> : <DeleteIcon />}
+                                                    </IconButton>
+                                                </Box>
+                                            </MeltaTooltip>
+                                        </Grid>
                                     </Grid>
                                     <Grid item container justifyContent="space-between" alignItems="center" flexWrap="nowrap">
                                         {unique && value.type !== 'serialNumber' && (

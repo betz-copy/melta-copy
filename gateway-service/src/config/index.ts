@@ -219,6 +219,8 @@ const config = {
         maxValidationRow: env.get('MAX_VALIDATION_ROW').default(100).asIntPositive(),
         minValidationRow: env.get('MIN_VALIDATION_ROW').default(2).asIntPositive(),
         entitiesFileLimit: env.get('ENTITIES_FILE_LIMIT').default(500).asIntPositive(),
+        invalidDate: env.get('INVALID_DATE').default('Invalid Date').asString(),
+        invalidTime: env.get('INVALID_TIME').default('Invalid time value').asString(),
     },
 };
 

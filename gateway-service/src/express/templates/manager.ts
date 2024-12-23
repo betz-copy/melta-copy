@@ -630,15 +630,18 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
     ) {
         if (!removedProperties.length) return;
 
-        const removedFilesProperties = removedProperties.reduce((acc, propertyToRemove) => {
-            const { format, items } = currentTemplate.properties.properties[propertyToRemove];
+        const removedFilesProperties = removedProperties.reduce(
+            (acc, propertyToRemove) => {
+                const { format, items } = currentTemplate.properties.properties[propertyToRemove];
 
-            if (format === 'fileId' || items?.format === 'fileId') {
-                acc[propertyToRemove] = items?.format === 'fileId';
-            }
+                if (format === 'fileId' || items?.format === 'fileId') {
+                    acc[propertyToRemove] = items?.format === 'fileId';
+                }
 
-            return acc;
-        }, {} as Record<string, boolean>);
+                return acc;
+            },
+            {} as Record<string, boolean>,
+        );
 
         if (Object.keys(removedFilesProperties).length) {
             await this.deleteFilesOfDeletedProperty(id, removedFilesProperties, count);
@@ -799,8 +802,17 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         return archivePropertiesNumber < Object.values(updatedTemplateProperties).length;
     }
 
-    updateEntityTemplateStatus(id: string, disabledStatus: boolean) {
-        return this.entityTemplateService.updateEntityTemplateStatus(id, disabledStatus);
+    async updateEntityTemplateStatus(id: string, disabledStatus: boolean) {
+        const updatedEntityTemplate = await this.entityTemplateService.updateEntityTemplateStatus(id, disabledStatus);
+
+        const allConstraints = await this.instancesService.getAllConstraints();
+        const constraintsOfTemplate = allConstraints.find(({ templateId }) => templateId === updatedEntityTemplate._id);
+
+        return this.populateTemplateConstraints(
+            updatedEntityTemplate,
+            constraintsOfTemplate?.requiredConstraints ?? [],
+            constraintsOfTemplate?.uniqueConstraints ?? [],
+        );
     }
 
     removeBasicFields(template: IMongoEntityTemplatePopulated) {
