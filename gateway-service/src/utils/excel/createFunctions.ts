@@ -1,11 +1,12 @@
 /* eslint-disable no-param-reassign */
 import Excel from 'exceljs';
 import { v4 as uuidv4 } from 'uuid';
-import config from '../../config/index';
-import { IEntity } from '../../externalServices/instanceService/interfaces/entities';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../externalServices/templates/entityTemplateService';
+import { IEntity } from '../../externalServices/instanceService/interfaces/entities';
+import config from '../../config/index';
 import { excelConfig } from './excelConfig';
 import { hexToARGB } from './colors';
+import { isExcludedColumn } from './getFunctions';
 
 interface IExcelStyle {
     columnHeader: {
@@ -58,20 +59,97 @@ const createWorkbook = async (fileName: string) => {
     };
 };
 
-const createWorksheet = async (workbook: Excel.Workbook, template: IMongoEntityTemplatePopulated, displayColumns: string[]) => {
+const TypesToHebrew = (propertyTemplate: IEntitySingleProperty) => {
+    const { propertyType } = excelConfig;
+    const type = excelConfig.propertyType[propertyTemplate.format ? propertyTemplate.format : propertyTemplate.type];
+
+    if (type === propertyType.string) {
+        if (propertyTemplate.enum) return `${propertyType.enum}: ${propertyTemplate.enum.join('/ ')}`;
+        if (propertyTemplate.pattern) return `${propertyType.regex}`;
+    }
+    if (type === propertyType.array && propertyTemplate.items?.type === 'string')
+        return `${propertyType.multiEnum}: ${propertyTemplate.items.enum?.join(', ')}`;
+
+    return type;
+};
+
+export const indexToExcelColumn = (index: number): string => {
+    let columnName = '';
+    const NUMBER_OF_ENGLISH_LETTERS = 26;
+    const A_ASCII_CODE = 65;
+
+    while (index > 0) {
+        index--;
+        columnName = String.fromCharCode((index % NUMBER_OF_ENGLISH_LETTERS) + A_ASCII_CODE) + columnName;
+        index = Math.floor(index / NUMBER_OF_ENGLISH_LETTERS);
+    }
+
+    return columnName;
+};
+
+// TODO: make data validation work in office excel
+// const columnDataValidation = (worksheet: Excel.Worksheet, propertyTemplate: IEntitySingleProperty, columnIndex: number) => {
+//     switch (propertyTemplate.type) {
+//         case 'boolean':
+//             booleanValidation(worksheet, columnIndex);
+//             break;
+//         case 'number':
+//             numberValidation(worksheet, columnIndex);
+//             break;
+//         default:
+//             break;
+//     }
+
+//     if (propertyTemplate.type === 'string' && propertyTemplate.enum) listValidation(worksheet, propertyTemplate, columnIndex);
+
+//     switch (propertyTemplate.format) {
+//         case 'date':
+//             dateValidation(worksheet, columnIndex);
+//             break;
+//         case 'email':
+//             mailValidation(worksheet, columnIndex);
+//             break;
+//         default:
+//             break;
+//     }
+// };
+
+const createWorksheet = async (
+    workbook: Excel.Workbook,
+    template: IMongoEntityTemplatePopulated,
+    displayColumns?: string[],
+    headersOnly?: boolean,
+) => {
     const worksheet = workbook.addWorksheet(template.displayName);
     const { properties } = template.properties;
 
-    const sheetColumns: Partial<Excel.Column>[] = displayColumns
-        .filter((key) => properties[key])
-        .map((key) => ({
-            key,
-            header: properties[key].title,
-            width: config.excel.columnWidth,
-        }));
+    const sheetColumns: Partial<Excel.Column>[] = [];
+    let columnIndex = 0;
 
-    const externalColumns = excelConfig.excelDefaultColumns.filter((externalColumn) => displayColumns.includes(externalColumn.key));
-    worksheet.columns = sheetColumns.concat(externalColumns);
+    Object.entries(properties).forEach(([propertyKey, propertyTemplate]) => {
+        const shouldAddColumn = displayColumns?.includes(propertyKey) || headersOnly ? isExcludedColumn(propertyTemplate) : true;
+
+        if (shouldAddColumn) {
+            // TODO: make data validation work in office excel
+            // columnDataValidation(worksheet, propertyTemplate, columnIndex);
+            columnIndex++;
+            sheetColumns.push({
+                key: propertyKey,
+                header: propertyTemplate.title,
+                width: 20,
+            });
+        }
+    });
+    const externalColumns = excelConfig.excelDefaultColumns.filter((externalColumn) => displayColumns?.includes(externalColumn.key));
+    worksheet.columns = headersOnly ? sheetColumns : sheetColumns.concat(externalColumns);
+    worksheet.getRow(1).eachCell((cell) => {
+        cell.font = excelStyle.columnHeader.font;
+        cell.alignment = excelStyle.columnHeader.alignment;
+        if (headersOnly) {
+            const type = TypesToHebrew(Object.values(properties).find((propertyTemplate) => propertyTemplate.title === cell.value)!);
+            cell.note = type;
+        }
+    });
     return worksheet;
 };
 
@@ -114,27 +192,14 @@ const fixComplexProperties = (
     return false;
 };
 
-const indexToExcelColumn = (index: number): string => {
-    let columnName = '';
-    const NUMBER_OF_ENGLISH_LETTERS = 26;
-    const A_ASCII_CODE = 65;
-
-    while (index > 0) {
-        index--;
-        columnName = String.fromCharCode((index % NUMBER_OF_ENGLISH_LETTERS) + A_ASCII_CODE) + columnName;
-        index = Math.floor(index / NUMBER_OF_ENGLISH_LETTERS);
-    }
-
-    return columnName;
-};
-
 const styleAWorksheet = (
     worksheet: Excel.Worksheet,
     rows: IEntity['properties'][],
     template: IMongoEntityTemplatePopulated,
-    displayColumns: string[],
     workspace: { path: string; id: string },
-    skip: number,
+    displayColumns?: string[],
+    headersOnly?: boolean,
+    skip: number = 0,
 ) => {
     worksheet.getRow(1).eachCell((cell) => {
         cell.font = excelStyle.columnHeader.font;
@@ -144,7 +209,7 @@ const styleAWorksheet = (
     const { createdAt, updatedAt, disabled } = template;
 
     const allProperties: Record<string, any> = Object.entries({ ...properties, disabled, createdAt, updatedAt })
-        .filter(([key]) => displayColumns.includes(key))
+        .filter(([key]) => displayColumns?.includes(key))
         .reduce((acc, [key, value]) => {
             acc[key] = value;
             return acc;
@@ -159,9 +224,9 @@ const styleAWorksheet = (
                 cell.font = excelStyle.cell.font;
 
                 const isComplex = fixComplexProperties(cell, row, [key, value], rowIndex, workspace);
-
                 if (!isComplex) {
                     cell.value = row[key];
+
                     if (typeof cell.value === 'boolean') {
                         cell.value = cell.value ? excelConfig.TRUE_TO_HEBREW : excelConfig.FALSE_TO_HEBREW;
                     }
@@ -188,15 +253,19 @@ const styleAWorksheet = (
                     }
 
                     // Check if value is simple list
-                    if (value.type === 'string' && value.enum)
-                        cell.font = { ...excelStyle.cell.font, color: { argb: hexToARGB(template.enumPropertiesColors![key][row[key]]) } };
+                    if (!headersOnly)
+                        if (value.type === 'string' && value.enum) {
+                            if (template.enumPropertiesColors && template.enumPropertiesColors[key][row[key]])
+                                cell.font = { ...excelStyle.cell.font, color: { argb: hexToARGB(template.enumPropertiesColors[key][row[key]]) } };
+                        }
 
                     // Check if value is multiple list
-                    if (value.type === 'array' && value.items?.type === 'string' && value.items.enum) cell.value = row[key].join(', ');
+                    if (!headersOnly)
+                        if (value.type === 'array' && value.items?.type === 'string' && value.items.enum) cell.value = row[key].join(', ');
                 }
             }
         });
     });
 };
 
-export { createWorkbook, createWorksheet, styleAWorksheet };
+export { createWorkbook, createWorksheet, styleAWorksheet, fixComplexProperties };

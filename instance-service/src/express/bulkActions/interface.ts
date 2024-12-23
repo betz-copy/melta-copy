@@ -54,3 +54,9 @@ export interface IAction {
     actionType: ActionTypes;
     actionMetadata: IActionMetadata;
 }
+
+export enum ActionErrors {
+    validation = 'VALIDATION',
+    unique = 'UNIQUE',
+    required = 'REQUIRED',
+}

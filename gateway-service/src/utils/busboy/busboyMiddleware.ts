@@ -1,70 +1,88 @@
-// busboyMiddleware.ts
 import Busboy from 'busboy';
+import path from 'path';
+import fs from 'fs';
+import os from 'os';
 import { Request, Response, NextFunction } from 'express';
-import { Readable } from 'stream';
-import config from '../../config';
 import { UploadedFile } from './interface';
 
-declare global {
-    namespace Express {
-        interface Request {
-            files?: UploadedFile[];
-            parsedBody?: Record<string, string | string[]>;
-        }
+// eslint-disable-next-line consistent-return
+export const busboyMiddleware = (req: Request, _res: Response, next: NextFunction) => {
+    if (!req.headers['content-type'] || !req.headers['content-type'].startsWith('multipart/form-data')) {
+        return next(new Error('Content-Type must be multipart/form-data'));
     }
-}
 
-export const busboyMiddleware = <T>(fileHandler: (body: Record<string, string | string[]>, file: Readable | undefined) => Promise<T>) => {
-    return (req: Request, _res: Response, next: NextFunction) => {
-        new Promise<T>((resolve, reject) => {
-            req.on('error', (err) => {
-                reject(new Error(`Error uploading file: ${err.message}`));
+    const busboy = Busboy({ headers: req.headers });
+    const uploadedFiles: UploadedFile[] = [];
+    const fields: { [key: string]: any } = {};
+
+    let fileWritesInProgress = 0;
+    let busboyFinished = false;
+
+    busboy.on('file', (fieldname, file, { encoding, filename, mimeType: mimetype }) => {
+        if (filename) {
+            const tempFilePath = path.join(os.tmpdir(), `upload-${Date.now()}-${Math.random().toString(36).substring(7)}`);
+            const writeStream = fs.createWriteStream(tempFilePath);
+            let fileSize = 0;
+
+            file.on('data', (data) => {
+                fileSize += data.length;
             });
 
-            const { maxFileSize } = config.service;
+            fileWritesInProgress++;
 
-            const busboy = Busboy({ headers: req.headers, limits: { files: 1, fileSize: maxFileSize } });
+            file.pipe(writeStream);
 
-            let fileUpload: Promise<any> | undefined;
+            writeStream.on('close', () => {
+                const readableStream = fs.createReadStream(tempFilePath);
+                uploadedFiles.push({
+                    fieldname,
+                    originalname: filename,
+                    encoding,
+                    mimetype,
+                    path: tempFilePath,
+                    size: fileSize,
+                    stream: readableStream,
+                });
 
-            const body: Record<string, string | string[]> = {};
-            busboy.on('field', (field, val) => {
-                if (body[field]) {
-                    if (!Array.isArray(body[field])) body[field] = [body[field] as string];
-                    (body[field] as string[]).push(val);
-                } else {
-                    body[field] = val;
+                console.log(`File processed: ${filename}, Size: ${fileSize} bytes`);
+
+                fileWritesInProgress--;
+
+                if (fileWritesInProgress === 0 && busboyFinished) {
+                    req.body = { ...req.body, ...fields, files: uploadedFiles };
+                    console.log('All files uploaded:', uploadedFiles);
+                    next();
                 }
             });
 
-            busboy.on('file', (field, file) => {
-                if (field === 'file' && !fileUpload) {
-                    fileUpload = fileHandler(body, file).catch(reject);
-                } else {
-                    file.resume();
-                }
+            writeStream.on('error', (err) => {
+                console.error('Write Stream Error:', err);
+                return next(err);
             });
+        } else {
+            file.resume();
+        }
+    });
 
-            busboy.on('error', (err: Error) => {
-                reject(new Error(`Error uploading file: ${err.message}`));
-            });
+    busboy.on('field', (fieldName, value) => {
+        fields[fieldName] = value;
+        console.log(`Field [${fieldName}]: value: ${value}`);
+    });
 
-            busboy.on('finish', () => {
-                if (!fileUpload) {
-                    resolve(fileHandler(body, undefined));
-                } else {
-                    fileUpload.then(resolve).catch(reject);
-                }
-            });
+    busboy.on('finish', () => {
+        busboyFinished = true;
+        console.log('Busboy finished processing');
+        if (fileWritesInProgress === 0) {
+            req.body = { ...req.body, ...fields, files: uploadedFiles };
+            console.log('All files uploaded (finish event):', uploadedFiles);
+            next();
+        }
+    });
 
-            req.pipe(busboy);
-        })
-            .then((result) => {
-                req.parsedBody = result as any;
-                next();
-            })
-            .catch((err) => {
-                next(err);
-            });
-    };
+    busboy.on('error', (err) => {
+        console.error('Busboy Error:', err);
+        next(err);
+    });
+
+    req.pipe(busboy);
 };

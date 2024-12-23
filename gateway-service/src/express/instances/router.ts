@@ -19,6 +19,7 @@ import {
     searchEntitiesByTemplatesSchema,
     updateEntityInstanceSchema,
     updateEntityStatusSchema,
+    loadEntitiesSchema,
 } from './validator.schema';
 import { busboyMiddleware } from '../../utils/busboy/busboyMiddleware';
 
@@ -48,7 +49,7 @@ InstancesRouter.post(
 InstancesRouter.post(
     '/entities/search/template/:templateId',
     InstancesValidatorMiddleware.validateUserCanSearchEntitiesOfTemplate,
-    InstanceManagerProxy,
+    InstancesControllerMiddleware.searchEntitiesOfTemplate,
 );
 
 InstancesRouter.post(
@@ -71,6 +72,15 @@ InstancesRouter.post(
     ValidateRequest(exportEntitiesSchema),
     InstancesControllerMiddleware.exportEntities,
 );
+
+InstancesRouter.post(
+    '/entities/loadEntities',
+    busboyMiddleware,
+    InstancesValidatorMiddleware.validateUserCanCreateEntityInstance,
+    ValidateRequest(loadEntitiesSchema),
+    InstancesControllerMiddleware.loadEntities,
+);
+
 InstancesRouter.get('/entities/:id', InstancesValidatorMiddleware.validateUserCanReadEntityInstance, InstanceManagerProxy);
 InstancesRouter.get('/entities/constraints/:templateId', AuthorizerControllerMiddleware.userCanReadTemplates, InstanceManagerProxy);
 
@@ -90,6 +100,10 @@ InstancesRouter.post(
 );
 InstancesRouter.put(
     '/entities/:id',
+    (req, _res, next) => {
+        console.log('************', req.body);
+        next();
+    },
     busboyMiddleware,
     ValidateRequest(updateEntityInstanceSchema),
     InstancesValidatorMiddleware.validateUserCanWriteEntityInstance,

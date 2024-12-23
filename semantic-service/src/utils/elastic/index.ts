@@ -11,9 +11,9 @@ const {
         url,
         vectorDims,
         similarityAlgorithm,
-        knnGroupSize,
         lexicalFuzziness,
         queryMinScore,
+        knnGroupSize,
         rrfWindowConstant,
         rrfRankConstant,
         rrfWindowFieldName,
@@ -165,8 +165,12 @@ class ElasticClient {
             },
         };
 
-        const response = await ElasticClient.client!.search<IElasticDoc, IGroupByUniquePropAggregate>(searchBody);
-        return this.formatElasticResponse(response);
+        try {
+            const response = await ElasticClient.client!.search<IElasticDoc, IGroupByUniquePropAggregate>(searchBody);
+            return this.formatElasticResponse(response);
+        } catch (e) {
+            return undefined;
+        }
     }
 
     async bulkIndexDocuments(documents: IElasticDoc[]) {

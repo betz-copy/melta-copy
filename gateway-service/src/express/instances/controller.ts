@@ -24,7 +24,14 @@ export class InstancesController extends DefaultController<InstancesManager> {
         }
     }
 
+    async loadEntities(req: Request, res: Response) {
+        res.json(
+            await this.manager.loadEntities(req.body.templateId, req.user!.id, req.files as unknown as UploadedFile[], req.body.insertBrokenEntities),
+        );
+    }
+
     async updateEntityInstance(req: Request, res: Response) {
+        console.log('**************');
         const { ignoredRules, ...instanceData } = req.body;
         res.json(
             await this.manager.updateEntityInstance(req.params.id, instanceData, req.files as unknown as UploadedFile[], ignoredRules, req.user!.id),
@@ -34,6 +41,10 @@ export class InstancesController extends DefaultController<InstancesManager> {
     async searchEntitiesBatch(req: Request, res: Response) {
         const { shouldSemanticSearch, ...body } = req.body;
         res.json(await this.manager.searchEntitiesBatch(shouldSemanticSearch, body));
+    }
+
+    async searchEntitiesOfTemplate(req: Request, res: Response) {
+        res.json(await this.manager.searchEntitiesOfTemplate(req.params.templateId, req.body));
     }
 
     async getEntitiesCountByTemplates(req: Request, res: Response) {

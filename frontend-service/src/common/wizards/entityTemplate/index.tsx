@@ -5,7 +5,7 @@ import { toast } from 'react-toastify';
 import i18next from 'i18next';
 import { useMutation, useQueryClient } from 'react-query';
 import { AxiosError } from 'axios';
-import { StepsType, Wizard, WizardBaseType } from '../index';
+import { StepType, Wizard, WizardBaseType } from '../index';
 import { ChooseCategory, chooseCategorySchema } from './ChooseCategory';
 import { CreateTemplateName, useCreateOrEditTemplateNameSchema } from './CreateTemplateName';
 import { AddFields, addFieldsSchema } from './AddFields';
@@ -49,6 +49,7 @@ export interface EntityTemplateFormInputProperties {
         relatedTemplateId: string;
         relatedTemplateField: string;
     };
+    archive?: boolean;
 }
 export interface EntityTemplateWizardValues
     extends Omit<
@@ -57,6 +58,7 @@ export interface EntityTemplateWizardValues
     > {
     properties: EntityTemplateFormInputProperties[];
     attachmentProperties: EntityTemplateFormInputProperties[];
+    archiveProperties: EntityTemplateFormInputProperties[];
     uniqueConstraints?: IUniqueConstraintOfTemplate[];
     icon?: fileDetails;
     documentTemplatesIds?: File[];
@@ -73,6 +75,7 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
         category: { displayName: '', name: '', _id: '', color: '' },
         disabled: false,
         properties: [],
+        archiveProperties: [],
         attachmentProperties: [],
         propertiesTypeOrder: ['properties', 'attachmentProperties'],
         uniqueConstraints: [],
@@ -83,8 +86,9 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
     const queryClient = useQueryClient();
 
     const currentTemplateId = isEditMode ? (initialValues as EntityTemplateWizardValues & { _id: string })._id : undefined;
+    const templates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates') || new Map();
 
-    const createTemplateNameSchema = useCreateOrEditTemplateNameSchema(currentTemplateId);
+    const createTemplateNameSchema = useCreateOrEditTemplateNameSchema(templates, currentTemplateId);
 
     const { isLoading, mutateAsync } = useMutation(
         (entityTemplate: EntityTemplateWizardValues) =>
@@ -164,7 +168,7 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
         },
     );
 
-    const steps: StepsType<EntityTemplateWizardValues> = [
+    const steps: StepType<EntityTemplateWizardValues>[] = [
         {
             label: i18next.t('wizard.entityTemplate.chooseCategroy'),
             component: (props) => <ChooseCategory {...props} />,
