@@ -23,14 +23,9 @@ const TemplatesTree: React.FC<TemplatesTreeProps> = ({ templatesWithchildren, on
     };
 
     const renderTree = (template: IEntityTemplatePopulatedWithChildren, nodeId: string): React.ReactNode => {
-        // Each folder will be its own TreeItem.
-        // Then we map any children to nested TreeItems.
         return (
             <TreeItem key={nodeId} itemId={renderItemPath(template.path!, template.displayName)} label={template.displayName}>
-                {template.children?.map((child) =>
-                    // We create a unique node ID for each child
-                    renderTree(child, renderItemPath(template.path!, template.displayName)),
-                )}
+                {template.children?.map((child) => renderTree(child, renderItemPath(template.path!, template.displayName)))}
             </TreeItem>
         );
     };

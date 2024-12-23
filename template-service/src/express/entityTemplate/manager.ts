@@ -280,12 +280,17 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
             .populate<Pick<IEntityTemplatePopulated, 'category'>>('category')
             .lean()
             .exec();
-        const rootTemplate = templatesWithPath.find((template) => template.path === '/');
 
-        if (!templatesWithPath?.length || !rootTemplate) return [];
+        if (!templatesWithPath?.length) return [];
+
+        console.log(1);
+        console.log(templatesWithPath);
 
         templatesWithPath.sort((a, b) => a.path!.split('/').length - b.path!.split('/').length);
-        templatesWithPath.pop();
+        console.log(2);
+        console.log(templatesWithPath);
+
+        const rootTemplate = templatesWithPath.shift()!;
 
         type IEntityTemplatePopulatedWithChildren = IEntityTemplatePopulated & { children: IEntityTemplatePopulatedWithChildren[] };
 

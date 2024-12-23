@@ -6,8 +6,7 @@ import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { AxiosError } from 'axios';
 import { toast } from 'react-toastify';
 import { Done } from '@mui/icons-material';
-import FolderTree, { NodeData } from 'react-folder-tree';
-import { IEntityTemplateMap, IEntityTemplatePopulatedWithChildren, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { getEntityTemplatesTree, updateEntityTemplatePathRequest } from '../../services/templates/enitityTemplatesService';
 import { ErrorToast } from '../ErrorToast';
 import TemplatesTree from '../TemplatesTree';
@@ -50,44 +49,13 @@ const ChooseTemplatePathDialog: React.FC<{
             },
         },
     );
+
     const { data: entityTemplatesTree, isLoading: isLoadingTemplatesTree } = useQuery(['getTemplatesTree', currEntityTemplate.category._id], () =>
         getEntityTemplatesTree(currEntityTemplate.category._id),
     );
 
-    const cleanTemplatesTree = (templatesTree: IEntityTemplatePopulatedWithChildren) => {
-        const cleanChildren = (children: IEntityTemplatePopulatedWithChildren[]) => {
-            return children?.map((child) => {
-                return {
-                    name: child.displayName,
-                    path: child.path,
-                };
-            });
-        };
-
-        const cleanTree = (tree: IEntityTemplatePopulatedWithChildren): NodeData => {
-            return {
-                name: tree.displayName,
-                path: tree.path,
-                children: cleanChildren(tree.children),
-            };
-        };
-
-        return cleanTree(templatesTree);
-    };
-
-    // const test = {
-    //     name: entityTemplatesTree!.name,
-    //     children: entityTemplatesTree!.children.map((child) => ({
-    //         name: child.name,
-    //     })),
-    // };
-
     const handleConvertToRootPath = async () => {
         setPathValue('/');
-        await updateEntityTemplatePath();
-    };
-
-    const handleAddPath = async () => {
         await updateEntityTemplatePath();
     };
 
@@ -135,14 +103,13 @@ const ChooseTemplatePathDialog: React.FC<{
                             type="text"
                             value={pathValue}
                             disabled
-                            // onChange={(e) => setPathValue(e.target.value)}
                             placeholder={i18next.t('addPathToTemplateDialog.pathPlaceholder')}
                             style={{ borderRadius: '10px', padding: '10px' }}
                         />
                         <Button
                             type="submit"
                             variant="contained"
-                            disabled={isLoading}
+                            disabled={isLoading || !!currEntityTemplate.path}
                             sx={{ borderRadius: '10px' }}
                             onClick={handleConvertToRootPath}
                         >
