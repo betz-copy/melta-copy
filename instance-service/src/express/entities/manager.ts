@@ -1376,7 +1376,7 @@ export class EntityManager extends DefaultManagerNeo4j {
 
                 return { updatedEntity };
             })
-            .catch((err) => this.throwServiceErrorIfFailedConstraintsValidation(err)); // constraint validation is performed on end of transactionF
+            .catch((err) => this.throwServiceErrorIfFailedConstraintsValidation(err)); // constraint validation is performed on end of transaction
     }
 
     async updateRelationshipReferencesEnumField(
