@@ -3,7 +3,7 @@ import { InstancesService } from '../../externalServices/instanceService';
 import { IFilterOfTemplate, ISearchEntitiesOfTemplateBody } from '../../externalServices/instanceService/interfaces/entities';
 import { EntityTemplateService } from '../../externalServices/templates/entityTemplateService';
 import DefaultManagerProxy from '../../utils/express/manager';
-import { TemplateNamesAndId } from './interfaces';
+import { FlowParameter, TemplateNamesAndId } from './interfaces';
 
 export class FlowCubeManager extends DefaultManagerProxy<null> {
     private instancesService: InstancesService;
@@ -64,13 +64,25 @@ export class FlowCubeManager extends DefaultManagerProxy<null> {
         const templates = await this.entityTemplateService.getAllTemplatesByWorkspaceId(workspaceId);
 
         return templates.map(({ _id, displayName }) => {
-            return { Value: _id, Name: displayName };
+            return { Value: displayName, Name: _id };
         });
     }
 
-    async getEntityTemplateById(_workspaceId: string, templateId: string) {
+    async getEntityTemplateById(templateId: string) {
         const template = await this.entityTemplateService.getEntityTemplateById(templateId);
+        const { name, displayName, properties } = template;
+        const parameters: FlowParameter[] = Object.entries(properties.properties).map(([key, value]) => ({
+            Name: key,
+            $name: value.type as String,
+            ColumnName: key,
+            isRequired: false,
+            DisplayName: value.title,
+            Description: value.title,
+            IsSingleValue: !!value.uniqueItems,
+            Options: [] as Array<any>,
+            IsContains: false,
+        }));
 
-        return template;
+        return parameters;
     }
 }
