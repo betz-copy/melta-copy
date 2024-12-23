@@ -588,6 +588,11 @@ const CreateOrEditEntityDetails: React.FC<{
                                                                 <DoneIcon />
                                                             )
                                                         }
+                                                        onClick={() =>
+                                                            Object.keys(errors).length > 0
+                                                                ? ''
+                                                                : setTimeout(() => (externalErrors ? undefined : handleClose()), 5000)
+                                                        }
                                                         disabled={!dirty || isUpdateLoading || isCreateLoading}
                                                     >
                                                         {i18next.t('entityPage.save')}
