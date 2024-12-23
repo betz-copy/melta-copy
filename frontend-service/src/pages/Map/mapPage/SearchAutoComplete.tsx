@@ -147,7 +147,6 @@ const SearchAutoComplete = ({ selectedTemplates, handleEntityClick }: props) => 
                                                     <EntityPropertiesInternal
                                                         properties={option.properties}
                                                         entityTemplate={template}
-                                                        // showPreviewPropertiesOnly
                                                         mode="white"
                                                         textWrap
                                                     />

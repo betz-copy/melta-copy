@@ -12,6 +12,24 @@ import { EditableMapControl } from './MapControl';
 import MapFilters from './MapFilters';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 
+export const BaseLayers = () => {
+    return (
+        <>
+            <LayersControl.BaseLayer checked name="OpenStreetMap">
+                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+            </LayersControl.BaseLayer>
+
+            <LayersControl.BaseLayer name="Esri World Imagery">
+                <TileLayer url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}" />
+            </LayersControl.BaseLayer>
+
+            <LayersControl.BaseLayer name="OpenTopoMap">
+                <TileLayer url="https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png" />
+            </LayersControl.BaseLayer>
+        </>
+    );
+};
+
 const MapPage = () => {
     const queryClient = useQueryClient();
     const entityTemplateMap = queryClient.getQueryData<IEntityTemplateMap>(['getEntityTemplates']);
@@ -38,18 +56,7 @@ const MapPage = () => {
                 maxBoundsViscosity={1}
             >
                 <LayersControl position="topright">
-                    {/* Base Layers */}
-                    <LayersControl.BaseLayer checked name="OpenStreetMap">
-                        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                    </LayersControl.BaseLayer>
-
-                    <LayersControl.BaseLayer name="Esri World Imagery">
-                        <TileLayer url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}" />
-                    </LayersControl.BaseLayer>
-
-                    <LayersControl.BaseLayer name="OpenTopoMap">
-                        <TileLayer url="https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png" />
-                    </LayersControl.BaseLayer>
+                    <BaseLayers />
                 </LayersControl>
 
                 {/* Feature Group for Draw Controls */}

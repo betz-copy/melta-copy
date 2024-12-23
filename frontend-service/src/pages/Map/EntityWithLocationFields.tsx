@@ -1,5 +1,5 @@
 import React from 'react';
-import { MapContainer, Marker, TileLayer, Polygon, LayersControl, LayerGroup } from 'react-leaflet';
+import { MapContainer, Marker, Polygon, LayersControl, LayerGroup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-draw/dist/leaflet.draw.css';
 import EntityPopup from './EntityPopup';
@@ -8,6 +8,7 @@ import { jerusalemCoordinates, UpdateMapBounds } from '../../utils/map';
 import { IEntity } from '../../interfaces/entities';
 import { useEntityWithLocationFields } from '../../utils/hooks/useLocation';
 import { useDarkModeStore } from '../../stores/darkMode';
+import { BaseLayers } from './mapPage';
 
 type Props = {
     entity: IEntity;
@@ -34,18 +35,7 @@ const EntityWithLocationFields = ({ styles, entity, entityTemplate }: Props) => 
             {polygons.length > 0 && <UpdateMapBounds bounds={bounds} />}
 
             <LayersControl position="topright">
-                {/* Base Layers */}
-                <LayersControl.BaseLayer checked name="OpenStreetMap">
-                    <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                </LayersControl.BaseLayer>
-
-                <LayersControl.BaseLayer name="Esri World Imagery">
-                    <TileLayer url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}" />
-                </LayersControl.BaseLayer>
-
-                <LayersControl.BaseLayer name="OpenTopoMap">
-                    <TileLayer url="https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png" />
-                </LayersControl.BaseLayer>
+                <BaseLayers />
 
                 {/* Overlay Layers */}
                 <LayersControl.Overlay checked name="Polygons">

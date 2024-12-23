@@ -73,11 +73,8 @@ const OpenMap: React.FC<{
     return (
         <Grid>
             {download ? (
-                // TODO: think what to do when it's print mode!
-                // <Link href={`/api${environment.api.storage}/${fileId}`} target="_blank" download>
                 <OpenMapContent field={field} showText={showText} searchValue={searchValue} />
             ) : (
-                // </Link>
                 <Box>
                     <OpenMapContent
                         field={field}

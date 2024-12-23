@@ -1,11 +1,12 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useMemo, useState } from 'react';
-import { MapContainer, TileLayer, LayersControl, LayerGroup, FeatureGroup, Marker, Popup, Polygon } from 'react-leaflet';
+import { MapContainer, LayersControl, LayerGroup, FeatureGroup, Marker, Popup, Polygon } from 'react-leaflet';
 import L, { LatLng } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-draw/dist/leaflet.draw.css';
 import { EditControl } from 'react-leaflet-draw';
 import { bindPopupForMarker, bindPopupForPolygon, jerusalemCoordinates, latLngToString, stringToCoordinates, UpdateMapBounds } from '../../utils/map';
+import { BaseLayers } from './mapPage';
 
 type Props = {
     defaultLocation?: string;
@@ -76,18 +77,7 @@ const LocationField = ({ defaultLocation, styles, updateValue }: Props) => {
             <UpdateMapBounds bounds={bounds} />
 
             <LayersControl position="topright">
-                <LayersControl.BaseLayer checked name="OpenStreetMap">
-                    <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                </LayersControl.BaseLayer>
-
-                <LayersControl.BaseLayer name="Esri World Imagery">
-                    <TileLayer url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}" />
-                </LayersControl.BaseLayer>
-
-                <LayersControl.BaseLayer name="OpenTopoMap">
-                    <TileLayer url="https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png" />
-                </LayersControl.BaseLayer>
-
+                <BaseLayers />
                 <LayerGroup>
                     <FeatureGroup>
                         {markerPosition && (
