@@ -6,6 +6,7 @@ import { useQuery } from 'react-query';
 import { IBasicChart, IChartType } from '../../../interfaces/charts';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { getChartOfTemplate } from '../../../services/entitiesService';
+import { NumberChartGenerator } from './NumberChartGenerator';
 
 interface IChartGenerator {
     formikValues: IBasicChart;
@@ -120,7 +121,7 @@ const ChartGenerator: React.FC<IChartGenerator> = ({ formikValues, template }) =
                 alignContent: 'center',
             }}
         >
-            {xAxis && yAxis && <HighchartsReact highcharts={Highcharts} options={chartOptions} />}
+            {xAxis && yAxis && (type === IChartType.Number ? <div /> : <HighchartsReact highcharts={Highcharts} options={chartOptions} />)}
         </Box>
     );
 };

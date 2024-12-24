@@ -1,7 +1,8 @@
 import { Grid } from '@mui/material';
 import { FormikProps } from 'formik';
+import i18next from 'i18next';
 import React from 'react';
-import { Axises, IBasicChart } from '../../../interfaces/charts';
+import { IBasicChart, OptionsType } from '../../../interfaces/charts';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { AxisInput } from '../ChartPage/AggregationInput';
 
@@ -13,10 +14,26 @@ const BarOrLineChart: React.FC<{
     return (
         <Grid container spacing={2}>
             <Grid item>
-                <AxisInput formikField="xAxis" axis={Axises.X} formik={formik} entityTemplate={entityTemplate} formikValues={formikValues} />
+                <AxisInput
+                    formikField="xAxis"
+                    formik={formik}
+                    entityTemplate={entityTemplate}
+                    formikValues={formikValues}
+                    label={`${i18next.t('charts.axis')} x`}
+                    showTitle
+                    optionsType={OptionsType.AggregationAndAllProperties}
+                />
             </Grid>
             <Grid item>
-                <AxisInput formikField="yAxis" axis={Axises.Y} formik={formik} entityTemplate={entityTemplate} formikValues={formikValues} />
+                <AxisInput
+                    formikField="yAxis"
+                    formik={formik}
+                    entityTemplate={entityTemplate}
+                    formikValues={formikValues}
+                    label={`${i18next.t('charts.axis')} y`}
+                    showTitle
+                    optionsType={OptionsType.AggregationAndNumberProperties}
+                />
             </Grid>
         </Grid>
     );

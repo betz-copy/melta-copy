@@ -36,4 +36,11 @@ export enum Axises {
     Y = 'y',
 }
 
+export enum OptionsType {
+    Aggregation = 'aggregation',
+    AllProperties = 'allProperties',
+    AggregationAndNumberProperties = 'aggregationAndNumberProperties',
+    AggregationAndAllProperties = 'aggregationAndAllProperties',
+}
+
 export const isAggregation = (field: IAxisField): field is IAggregation => typeof field !== 'string';

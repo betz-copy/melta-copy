@@ -164,7 +164,7 @@ export interface IExecutionOutput {
 
 export interface IAggregation {
     type: 'countAll' | 'countDistinct' | 'average' | 'sum' | 'maximum' | 'minimum' | 'none';
-    field?: string;
+    byField?: string;
 }
 
 export type IAxisField = IAggregation | string;

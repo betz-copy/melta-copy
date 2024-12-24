@@ -1076,6 +1076,11 @@ export default {
         name: 'שם',
         description: 'תיאור',
         axis: 'ציר',
+        byField: 'לפי שדה',
+        title: 'כותרת',
+        dividedBy: 'חלוקה לפי שדה',
+        sumBy: 'סכום עפ"י',
+        AccumulateAccordingTo: 'צבור לפי',
     },
     workspaces: {
         goBack: 'חזור',
