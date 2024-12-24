@@ -87,8 +87,6 @@ export const splitTextIntoChunks = async (
 
     const chunksForEmbedding = getTextForEmbedding(splitText);
 
-    console.log('chunksForEmbedding', chunksForEmbedding);
-
     const chunks: IElasticDoc[] = [];
 
     await Promise.all(
