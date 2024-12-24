@@ -597,7 +597,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         duplicateFileProperties = true,
         createAlert: boolean = true,
     ) {
-        const currentEntity = await this.service.getEntityInstanceById(id);
+        const currentEntity = await this.service.getEntityInstanceByProperty(id);
         const currentEntityTemplate = await this.entityTemplateService.getEntityTemplateById(currentEntity.templateId);
 
         const fileProperties = this.getEntityFileProperties(instanceData.properties, currentEntityTemplate);
@@ -673,7 +673,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
     ) {
         // TODO: deal with files?
         const { props: uploadedFilesAndProperties, files: updatedFiles } = await this.uploadInstanceFiles(files, updatedInstanceData.properties);
-        const currentEntity = await this.service.getEntityInstanceById(value, key);
+        const currentEntity = await this.service.getEntityInstanceByProperty(value, updatedInstanceData.templateId, key);
 
         const entityTemplate = await this.entityTemplateService.getEntityTemplateById(currentEntity.templateId);
 
@@ -764,7 +764,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
     }
 
     async deleteEntityInstance(id: string) {
-        const currentEntity = await this.service.getEntityInstanceById(id);
+        const currentEntity = await this.service.getEntityInstanceByProperty(id);
         const deletedInstance = await this.service.deleteEntityInstance(id);
 
         await this.ruleBreachesManager.updateManyRuleBreachRequestsStatusesByRelatedEntityId(id, RuleBreachRequestStatus.Canceled);

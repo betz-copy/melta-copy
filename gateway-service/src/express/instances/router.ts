@@ -99,10 +99,10 @@ InstancesRouter.post(
     InstancesControllerMiddleware.createEntityInstance,
 );
 InstancesRouter.put(
-    '/entities/:id',
+    '/entities/:value',
     wrapMulter(multer({ dest: config.service.uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).any()),
     ValidateRequest(updateEntityInstanceSchema),
-    InstancesValidatorMiddleware.validateUserCanWriteEntityInstance,
+    InstancesValidatorMiddleware.validateUserPermissionForEntityInstanceByValue,
     InstancesValidatorMiddleware.validateUserCanIgnoreRules,
     InstancesControllerMiddleware.updateEntityInstance,
 );

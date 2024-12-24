@@ -29,7 +29,7 @@ export const updateEntityInstanceSchema = Joi.object({
         ignoredRules: ExtendedJoi.stringToArray().items(brokenRuleSchema).default([]),
     }).unknown(true),
     query: { key: Joi.string().default('_id') },
-    params: { id: Joi.string().required() },
+    params: { value: Joi.string().required() },
     files: Joi.array().items(fileSchema),
 });
 

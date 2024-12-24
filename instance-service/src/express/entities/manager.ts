@@ -774,9 +774,14 @@ export class EntityManager extends DefaultManagerNeo4j {
         return { entities, count };
     }
 
-    async getEntityByProp(value: string, key = '_id') {
+    async getEntityByProp(value: string, templateId?: string, key = '_id') {
+        const labelClause = templateId ? `WHERE e:\`${templateId}\`` : '';
+
         // TODO: add support for when multiple entities return.
-        const node = await this.neo4jClient.readTransaction(`MATCH (e {${key}: '${value}'}) RETURN e`, normalizeReturnedEntity('singleResponse'));
+        const node = await this.neo4jClient.readTransaction(
+            `MATCH (e{${key}: '${value}'}) ${labelClause} RETURN e`,
+            normalizeReturnedEntity('singleResponse'),
+        );
 
         if (!node) {
             throw new NotFoundError(`[NEO4J] entity "${value}" not found`);
@@ -1312,7 +1317,7 @@ export class EntityManager extends DefaultManagerNeo4j {
         return { ...entity, properties: entityAfterManipulations } as IEntity;
     }
 
-    async updateEntityById(
+    async updateEntityByProp(
         value: string,
         key: string,
         entityProperties: Record<string, any>,
@@ -1321,7 +1326,7 @@ export class EntityManager extends DefaultManagerNeo4j {
         userId: string,
     ) {
         // TODO: add support for updating multiple
-        const entity = await this.getEntityByProp(value, key);
+        const entity = await this.getEntityByProp(value, entityTemplate._id, key);
         const unPopulatedEntity = this.relationshipReferenceObjectToId(entity, entityTemplate);
 
         if (entity.properties.disabled) throw new ValidationError(`[NEO4J] cannot update disabled entity.`);

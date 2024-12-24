@@ -49,8 +49,8 @@ export class InstancesService extends DefaultExternalServiceApi {
         return data;
     }
 
-    async getEntityInstanceById(id: string, key = '_id') {
-        const { data } = await this.api.get<IEntity>(`${baseEntitiesRoute}/${id}`, { params: { key } });
+    async getEntityInstanceByProperty(value: string, templateId?: string, key = '_id') {
+        const { data } = await this.api.get<IEntity>(`${baseEntitiesRoute}/${value}`, { params: { key, ...(templateId && { templateId }) } });
         return data;
     }
 

@@ -11,7 +11,7 @@ import {
     getAllConstraintsRequestSchema,
     getConstraintsOfTemplateRequestSchema,
     getEntitiesByIdsRequestSchema,
-    getEntityByIdRequestSchema,
+    getEntityByValueRequestSchema,
     getExpandedGraphByIdRequestSchema,
     getIfValuefieldIsUsedRequestSchema,
     searchEntitiesBatchRequestSchema,
@@ -21,7 +21,7 @@ import {
     updateEntityStatusByIdRequestSchema,
     updateEnumFieldRequestSchema,
     deletePropertiesOfTemplateRequestSchema,
-    // updateEntityByValueRequestSchema,
+    updateEntityByValueRequestSchema,
 } from './validator.schema';
 import { EntityValidator } from './validator.template';
 
@@ -75,15 +75,15 @@ entityRouter.post(
 );
 
 entityRouter.post('/', ValidateRequest(createEntityRequestSchema), entityValidatorController.validateEntityRequest, entityController.createEntity);
-entityRouter.get('/:id', ValidateRequest(getEntityByIdRequestSchema), entityController.getEntityById);
+entityRouter.get('/:value', ValidateRequest(getEntityByValueRequestSchema), entityController.getEntityByProp);
 entityRouter.post('/ids', ValidateRequest(getEntitiesByIdsRequestSchema), entityController.getEntitiesByIds);
 entityRouter.delete('/:id', ValidateRequest(deleteEntityByIdRequestSchema), entityController.deleteEntityById);
 entityRouter.delete('/', ValidateRequest(deleteEntitiesByTemplateIdRequestSchema), entityController.deleteEntitiesByTemplateId);
 entityRouter.put(
     '/:value',
-    // ValidateRequest(updateEntityByValueRequestSchema),
-    // entityValidatorController.validateEntityRequest,
-    entityController.updateEntityById,
+    ValidateRequest(updateEntityByValueRequestSchema),
+    entityValidatorController.validateEntityRequest,
+    entityController.updateEntityByProp,
 );
 entityRouter.patch('/:id/status', ValidateRequest(updateEntityStatusByIdRequestSchema), entityController.updateStatusById);
 entityRouter.patch(

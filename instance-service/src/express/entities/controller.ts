@@ -39,8 +39,8 @@ class EntityController extends DefaultController<EntityManager> {
         res.json(await this.manager.searchEntitiesBatch(req.body, entityTemplatesMap));
     }
 
-    async getEntityById(req: Request, res: Response) {
-        res.json(await this.manager.getEntityByProp(req.params.id, req.query.key as string));
+    async getEntityByProp(req: Request, res: Response) {
+        res.json(await this.manager.getEntityByProp(req.params.value, req.query.templateId as string, req.query.key as string));
     }
 
     async getEntitiesByIds(req: Request, res: Response) {
@@ -64,10 +64,10 @@ class EntityController extends DefaultController<EntityManager> {
         res.json(await this.manager.updateStatusById(req.params.id, req.body.disabled, req.body.ignoredRules, req.body.userId));
     }
 
-    async updateEntityById(req: Request, res: Response) {
+    async updateEntityByProp(req: Request, res: Response) {
         const entityTemplate = fetchPropertyFromRequest<IMongoEntityTemplate>(req, 'entityTemplate');
         res.json(
-            await this.manager.updateEntityById(
+            await this.manager.updateEntityByProp(
                 req.params.value,
                 req.query.key as string,
                 req.body.properties,
