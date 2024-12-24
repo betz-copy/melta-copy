@@ -95,10 +95,12 @@ export class InstancesValidator extends DefaultController {
         await this.validateHasPermissionsToEntitiesInTemplates(req.user!, Object.keys(templates));
     }
 
-    private async validateUserPermissionForEntityInstance(req: Request, permissionScope: PermissionScope) {
-        const instanceId = req.params.id;
+    private async validateUserPermissionForEntityInstance(req: Request, permissionScope: PermissionScope, paramValue = '_id') {
+        const instanceId = req.params[paramValue];
 
-        const { templateId } = await this.instancesService.getEntityInstanceById(instanceId);
+        const { templateId } = req.body.templateId
+            ? req.body
+            : await this.instancesService.getEntityInstanceByProperty(instanceId, req.query.key as string);
         const categoryId = await this.getCategoryIdFromTemplateId(templateId);
 
         const userPermissions = await this.authorizer.getWorkspacePermissions(req.user!.id);
@@ -115,7 +117,15 @@ export class InstancesValidator extends DefaultController {
         (req as RequestWithPermissionsOfUserId).permissionsOfUserId = userPermissions;
     }
 
+    async validateUserPermissionForEntityInstanceByValue(req: Request) {
+        await this.validateUserPermissionForEntityInstance(req, PermissionScope.write, 'value');
+    }
+
     async validateUserCanWriteEntityInstance(req: Request) {
+        if (req.query.upsert) {
+            await this.validateUserCanCreateEntityInstance(req);
+            return;
+        }
         await this.validateUserPermissionForEntityInstance(req, PermissionScope.write);
     }
 
@@ -227,6 +237,8 @@ export class InstancesValidator extends DefaultController {
     async validateUserCanIgnoreRules(req: Request) {
         const { ignoredRules } = req.body;
         const { user } = req;
+
+        if (req.query?.upsert) return;
 
         if (!user) throw new ServiceError(undefined, 'req.user is undefined');
 

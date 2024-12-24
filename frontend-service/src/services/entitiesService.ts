@@ -126,9 +126,10 @@ export const updateEntityStatusRequest = async (entityId: string, disabled: bool
 };
 
 export const updateEntityRequestForMultiple = async (
-    entityId: string,
+    entityValue: string,
     newEntityData: EntityWizardValues,
     ignoredRules?: IRuleBreach['brokenRules'],
+    entityKey = '_id',
 ) => {
     const formData = new FormData();
 
@@ -184,7 +185,7 @@ export const updateEntityRequestForMultiple = async (
     if (ignoredRules) {
         formData.append('ignoredRules', JSON.stringify(ignoredRules));
     }
-    const { data } = await axios.put<IEntity>(`${entities}/${entityId}`, formData);
+    const { data } = await axios.put<IEntity>(`${entities}/${entityValue}`, formData, { params: { key: entityKey } });
     return data;
 };
 
@@ -271,8 +272,8 @@ export const searchEntitiesByTemplatesRequest = async (searchBodyByTemplates: IS
     return data;
 };
 
-export const getEntityById = async (entityId: string) => {
-    const { data } = await axios.get<IEntity>(`${entities}/${entityId}`);
+export const getEntityById = async (entityId: string, templateId?: string, key = '_id') => {
+    const { data } = await axios.get<IEntity>(`${entities}/${entityId}`, { params: { key, ...(templateId && { templateId }) } });
     return data;
 };
 

@@ -7,11 +7,11 @@ const { searchEntitiesMaxLimit } = config;
 /**
  * GET /api/instances/entities/:id
  */
-export const getEntityByIdRequestSchema = Joi.object({
-    query: {},
+export const getEntityByValueRequestSchema = Joi.object({
+    query: { key: Joi.string().default('_id'), templateId: Joi.string() },
     body: {},
     params: {
-        id: Joi.string().required(),
+        value: Joi.string().required(),
     },
 });
 
@@ -265,18 +265,18 @@ export const updateEntityStatusByIdRequestSchema = Joi.object({
 });
 
 /**
- * PUT /api/instances/entities/:id
+ * PUT /api/instances/entities/:value
  */
-export const updateEntityByIdRequestSchema = Joi.object({
+export const updateEntityByValueRequestSchema = Joi.object({
     body: {
         properties: Joi.object().required(),
         templateId: Joi.string().required(),
         ignoredRules: Joi.array().items(brokenRuleSchema).default([]),
         userId: Joi.string().required(),
     },
-    query: {},
+    query: { key: Joi.string().default('_id'), templateId: Joi.string() },
     params: {
-        id: Joi.string().required(),
+        value: Joi.string().required(),
     },
 });
 

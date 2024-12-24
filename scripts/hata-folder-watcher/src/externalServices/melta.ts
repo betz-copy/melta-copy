@@ -82,16 +82,16 @@ export default class Melta {
         }
     }
 
-    // TODO: Upsert entity if the fileWithoutExtension already exists.
     static async createEntity(fileWithoutExtension: string, ext: string, templateId: string, file: ReadStream) {
         try {
             const form = new formData();
+            const fileName = `${fileWithoutExtension}.${ext}`;
 
             form.append('templateId', templateId);
-            form.append('properties', JSON.stringify({ fileName: fileWithoutExtension, extension: ext }));
+            form.append('properties', JSON.stringify({ fileName, extension: ext }));
             form.append('file', file);
 
-            const { data } = await this.api.post(instancesApi, form);
+            const { data } = await this.api.put(`${instancesApi}/${fileName}`, form, { params: { key: 'fileName' } });
 
             return data;
         } catch (e) {

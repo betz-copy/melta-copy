@@ -148,7 +148,7 @@ export class BulkActionManager extends DefaultManagerNeo4j {
                 } else if (action.actionType === ActionTypes.UpdateEntity) {
                     const actionMetadata = action.actionMetadata as IUpdateEntityMetadata;
                     if (!actionMetadata.entityId.startsWith(brokenRulesFakeEntityIdPrefix)) {
-                        const entity = await this.entityManager.getEntityById(actionMetadata.entityId);
+                        const entity = await this.entityManager.getEntityByProp(actionMetadata.entityId);
                         const entityTemplate = await this.entityTemplateService.getEntityTemplateById(entity.templateId);
                         entitiesTemplatesIdsOfRules.add(entityTemplate._id);
 
@@ -398,7 +398,7 @@ export class BulkActionManager extends DefaultManagerNeo4j {
             [ActionTypes.UpdateEntity]: async (action) => {
                 const actionMetadata = action.actionMetadata as IUpdateEntityMetadata;
                 if (!actionMetadata.entityId.startsWith(brokenRulesFakeEntityIdPrefix)) {
-                    const entity = await this.entityManager.getEntityById(actionMetadata.entityId);
+                    const entity = await this.entityManager.getEntityByProp(actionMetadata.entityId);
                     const entityTemplate = await this.entityTemplateService.getEntityTemplateById(entity.templateId);
 
                     entityTemplateIds.push(entityTemplate._id);
