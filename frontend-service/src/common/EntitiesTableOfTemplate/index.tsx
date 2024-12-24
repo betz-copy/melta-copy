@@ -333,7 +333,11 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                     gridApi.openToolPanel('columns');
                 }
             },
-            getDisplayColumns: () => gridRef.current?.api.getAllDisplayedColumns().map((column) => column.getColId()) || [],
+            getDisplayColumns: () =>
+                gridRef.current?.api
+                    .getAllDisplayedColumns()
+                    .map((column) => column.getColId())
+                    .filter((colId) => colId !== '0' && colId !== '1') || [],
         }));
 
         const columnDefProps: IGetColumnDefsOptions<Data> = {
