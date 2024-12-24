@@ -6,6 +6,7 @@ import config from '../../config';
 import { streamToBuffer } from '../fs';
 import logger from '../logger/logsLogger';
 import readExcelData from '../excel';
+import { extractPptxText } from '../pptxExtractor';
 
 const { url: endPoint, port, accessKey, secretKey, useSSL, transportAgent } = config.minio;
 
@@ -69,7 +70,7 @@ export class MinIOClient {
             case 'csv':
                 return readExcelData(fileStream, fileExtension);
             case 'pptx':
-                return undefined;
+                return extractPptxText(buffer); // Pls use your custom extractor here
             default:
                 return undefined;
         }
