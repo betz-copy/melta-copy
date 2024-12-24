@@ -662,18 +662,35 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         });
     }
 
+    // Update only one entity where value is in the key property.
     async updateEntityInstance(
         value: string,
-        key: string,
         updatedInstanceData: IEntity,
         files: Express.Multer.File[],
         ignoredRules: IBrokenRule[],
         userId: string,
         createAlert: boolean = true,
+        key = '_id',
+        upsert = false,
     ) {
-        // TODO: deal with files?
         const { props: uploadedFilesAndProperties, files: updatedFiles } = await this.uploadInstanceFiles(files, updatedInstanceData.properties);
-        const currentEntity = await this.service.getEntityInstanceByProperty(value, updatedInstanceData.templateId, key);
+        let currentEntity: IEntity;
+
+        try {
+            currentEntity = await this.service.getEntityInstanceByProperty(value, updatedInstanceData.templateId, key);
+        } catch (e) {
+            if (upsert)
+                return this.service.createEntityInstance(
+                    {
+                        templateId: updatedInstanceData.templateId,
+                        properties: { ...uploadedFilesAndProperties },
+                    },
+                    ignoredRules,
+                    userId,
+                );
+
+            throw e;
+        }
 
         const entityTemplate = await this.entityTemplateService.getEntityTemplateById(currentEntity.templateId);
 

@@ -39,6 +39,9 @@ export class InstancesController extends DefaultController<InstancesManager> {
                 req.files as Express.Multer.File[],
                 ignoredRules,
                 req.user!.id,
+                true,
+                req.query.key as string,
+                !!req.query.upsert,
             ),
         );
     }
