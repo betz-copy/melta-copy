@@ -16,7 +16,7 @@ export const defaultMetadata = {
         defaultRowHeight: 50,
         defaultFontSize: 14,
         infiniteInitialRowCount: 10,
-        defaultExpandedTableHeight: 50,
+        defaultExpandedTableHeight: 650,
     },
     mainFontSizes: {
         headlineTitleFontSize: '24px',

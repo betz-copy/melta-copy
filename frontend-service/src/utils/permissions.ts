@@ -12,7 +12,12 @@ export const getWorkspacePermissions = async (permissions: IUser['permissions'],
 
 export const handleWorkspace = (title: string, setWorkspace: WorkspaceState['setWorkspace'], workspace?: WorkspaceState['workspace']) => {
     if (!workspace) return;
-    setWorkspace({ ...workspace, metadata: { ...defaultMetadata, ...workspace.metadata } });
-
+    setWorkspace({
+        ...workspace,
+        metadata: {
+            ...defaultMetadata,
+            ...(workspace.metadata || {}),
+        },
+    });
     document.title = title;
 };

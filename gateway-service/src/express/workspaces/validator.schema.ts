@@ -37,6 +37,7 @@ const workspaceSchema = Joi.object({
     colors: ExtendedJoi.stringToObject(),
     iconFileId: Joi.string(),
     logoFileId: Joi.string(),
+    metadata: metadataSchema,
 });
 
 // POST /api/workspaces/ids

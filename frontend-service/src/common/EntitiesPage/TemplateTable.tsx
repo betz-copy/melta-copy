@@ -204,7 +204,6 @@ const TemplateTable = forwardRef<
                             iconButtonProps: {
                                 onClick: () => {
                                     handleExpandClick();
-
                                     trackEvent({
                                         category: 'template-action',
                                         action: isExpand ? 'off' : 'on',
