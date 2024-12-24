@@ -212,8 +212,11 @@ const CreateOrEditEntityDetails: React.FC<{
                 onSuccessCreate?.(currEntity);
                 onSuccessUpdate?.(currEntity);
                 entityId = currEntity.properties._id;
-                if (shouldNavigateToEntityPage === true) {
-                    navigate(`/entity/${currEntity.properties._id}`);
+
+                if (Object.values(externalErrors.unique).length === 0 || !externalErrors.files || externalErrors.action.length === 0) {
+                    if (shouldNavigateToEntityPage === true) {
+                        navigate(`/entity/${currEntity.properties._id}`);
+                    }
                 }
             },
             onError: (err: AxiosError, { newEntityData }) => {
@@ -301,10 +304,6 @@ const CreateOrEditEntityDetails: React.FC<{
             onSubmit={async (values, formikHelpers) => {
                 formikHelpers.setTouched({});
                 await mutationPromiseToastify(values);
-                if (shouldNavigateToEntityPage === true) {
-                    navigate(`/entity/${entityId}`);
-                }
-
                 if (!draftId) return;
 
                 // delete the draft after the debounce

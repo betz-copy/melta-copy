@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Grid } from '@mui/material';
 import { useWorkspaceStore, defaultMetadata } from '../../../../stores/workspace';
 import { Field } from './Field';
@@ -11,7 +11,7 @@ const ConfigurationManagement: React.FC = () => {
     const configs = workspace.metadata;
     const [updatedConfigs, setUpdatedConfigs] = useState<any>({});
 
-    useEffect(() => {
+    useMemo(() => {
         setUpdatedConfigs(deepClone(configs));
     }, [configs]);
 

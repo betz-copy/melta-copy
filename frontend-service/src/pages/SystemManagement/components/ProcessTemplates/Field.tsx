@@ -28,7 +28,13 @@ const Field: React.FC<FieldProps> = ({ keyPath, value, defaultValue, updateConfi
         setIsModified(false);
     }, [value]);
 
+    const isValidInput = (val: any) => {
+        // eslint-disable-next-line no-restricted-globals
+        return val !== 'px' && val !== null && !(typeof val === 'number' && isNaN(val));
+    };
+
     const handleUpdate = async () => {
+        if (!isValidInput(inputValue)) return;
         updateConfig(keyPath, inputValue);
 
         const changes = {};
@@ -73,7 +79,7 @@ const Field: React.FC<FieldProps> = ({ keyPath, value, defaultValue, updateConfi
 
     const handleInputChange = (newValue: string | number | boolean) => {
         setInputValue(newValue);
-        setIsModified(newValue !== value);
+        setIsModified(isValidInput(newValue) && newValue !== value);
     };
 
     switch (typeof value) {
@@ -232,7 +238,8 @@ const Field: React.FC<FieldProps> = ({ keyPath, value, defaultValue, updateConfi
                                             InputProps={{ disableUnderline: true }}
                                             onChange={(e) => {
                                                 const newValue = parseInt(e.target.value, 10);
-                                                handleInputChange(newValue);
+                                                // eslint-disable-next-line no-restricted-globals
+                                                if (newValue > 0 || isNaN(newValue)) handleInputChange(newValue);
                                             }}
                                         />
                                     </Grid>
