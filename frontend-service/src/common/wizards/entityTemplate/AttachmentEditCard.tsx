@@ -108,7 +108,7 @@ export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
                                             name={type}
                                             value={value.type}
                                             onChange={onChange}
-                                            disabled={isDisabled}
+                                            // disabled={isDisabled}
                                             sx={{ marginRight: '5px' }}
                                             fullWidth
                                         >

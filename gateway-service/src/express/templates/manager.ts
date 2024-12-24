@@ -709,6 +709,8 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         updatedTemplateData: Omit<IEntityTemplateWithConstraints, 'disabled'> & { file?: string },
         { file, files }: { file?: [Express.Multer.File]; files?: Express.Multer.File[] },
     ): Promise<IMongoEntityTemplateWithConstraintsPopulated> {
+        console.log({ updatedTemplateData, file, files });
+
         await this.entityTemplateService.getCategoryById(updatedTemplateData.category);
 
         const { count } = await this.instancesService.searchEntitiesOfTemplateRequest(id, { limit: 1 });
@@ -734,9 +736,11 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
         if (count > 0) {
             if (updatedTemplateData.name !== currTemplate.name) throw new BadRequestError('can not change template name');
+            console.log('helooo');
 
             Object.entries(currTemplate.properties.properties).forEach(([key, value]) => {
                 const newValue = updatedTemplateData.properties.properties[key];
+                console.log({ value, newValue });
 
                 if ((!newValue || newValue?.isNewPropNameEqualDeletedPropName) && !currTemplate.actions) removedProperties.push(key);
                 else {
