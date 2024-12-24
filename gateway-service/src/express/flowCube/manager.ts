@@ -3,7 +3,7 @@ import { InstancesService } from '../../externalServices/instanceService';
 import { IFilterOfTemplate, ISearchEntitiesOfTemplateBody } from '../../externalServices/instanceService/interfaces/entities';
 import { EntityTemplateService } from '../../externalServices/templates/entityTemplateService';
 import DefaultManagerProxy from '../../utils/express/manager';
-import { FlowParameter, TemplateNamesAndId } from './interfaces';
+import { FlowField, FlowParameter, TemplateNamesAndId } from './interfaces';
 
 export class FlowCubeManager extends DefaultManagerProxy<null> {
     private instancesService: InstancesService;
@@ -68,21 +68,29 @@ export class FlowCubeManager extends DefaultManagerProxy<null> {
         });
     }
 
-    async getEntityTemplateById(templateId: string) {
+    async getEntityTemplateById(templateId: string): Promise<{ PARAMETERS: FlowParameter[]; FIELDS: FlowField[] }> {
         const template = await this.entityTemplateService.getEntityTemplateById(templateId);
-        const { name, displayName, properties } = template;
-        // const parameters: FlowParameter[] = Object.entries(properties.properties).map(([key, value]) => ({
-        //     Name: key,
-        //     $name: value.type as String,
-        //     ColumnName: key,
-        //     isRequired: false,
-        //     DisplayName: value.title,
-        //     Description: value.title,
-        //     IsSingleValue: !!value.uniqueItems,
-        //     Options: [] as Array<any>,
-        //     IsContains: false,
-        // }));
+        const { properties } = template;
 
-        return template;
+        const parameters: FlowParameter[] = Object.entries(properties.properties).map(([key, value]) => ({
+            Name: key,
+            $name: value.type as string,
+            ColumnName: key,
+            isRequired: false,
+            DisplayName: value.title,
+            Description: value.title,
+            IsSingleValue: !!value.uniqueItems,
+            Options: [] as Array<any>,
+            IsContains: false,
+        }));
+
+        const fields: FlowField[] = Object.entries(properties.properties).map(([key, value]) => ({
+            $name: key,
+            Name: key,
+            DisplayName: value.title,
+            Type: value.type as string,
+        }));
+
+        return { PARAMETERS: parameters, FIELDS: fields };
     }
 }

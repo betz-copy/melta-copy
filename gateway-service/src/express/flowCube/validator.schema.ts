@@ -21,5 +21,7 @@ export const getAllTemplatesByNameAndIdSchema = Joi.object({
 export const getEntityTemplateByIdSchema = Joi.object({
     body: Joi.object().pattern(Joi.string(), Joi.any()),
     query: {},
-    params: {},
+    params: {
+        workspaceId: Joi.string().required(),
+    },
 });
