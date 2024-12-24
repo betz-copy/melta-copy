@@ -34,7 +34,6 @@ export class InstancesController extends DefaultController<InstancesManager> {
         res.json(
             await this.manager.updateEntityInstance(
                 req.params.value,
-                req.query.key as string,
                 instanceData,
                 req.files as Express.Multer.File[],
                 ignoredRules,
