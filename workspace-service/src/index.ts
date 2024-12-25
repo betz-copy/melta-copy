@@ -24,7 +24,7 @@ const handleRootDocument = async () => {
         path: '/',
         type: WorkspaceTypes.dir,
         colors: config.service.rootWorkspaceColors,
-        metadata: {},
+        // metadata: {},
     });
     logger.info('Root document created');
 };

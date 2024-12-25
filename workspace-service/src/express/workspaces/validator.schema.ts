@@ -115,7 +115,6 @@ export const updateOneSchema = Joi.object({
 export const updateMetadataSchema = Joi.object({
     query: {},
     body: metadataSchema,
-
     params: {
         id: MongoIdSchema.required(),
     },
