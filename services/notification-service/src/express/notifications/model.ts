@@ -1,6 +1,6 @@
 import * as mongoose from 'mongoose';
 
-export const NotificationsSchema = new mongoose.Schema(
+const NotificationsSchema = new mongoose.Schema(
     {
         viewers: {
             type: [String],
@@ -17,3 +17,5 @@ export const NotificationsSchema = new mongoose.Schema(
     },
     { timestamps: true, versionKey: false },
 );
+
+export default NotificationsSchema;

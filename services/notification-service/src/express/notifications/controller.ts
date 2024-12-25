@@ -1,6 +1,5 @@
 import { Request, Response } from 'express';
-import { INotification } from '@microservices/shared';
-import DefaultController from '../../utils/express/controller';
+import { INotification, DefaultController } from '@microservices/shared';
 import { NotificationsManager } from './manager';
 
 class NotificationsController extends DefaultController<INotification, NotificationsManager> {
