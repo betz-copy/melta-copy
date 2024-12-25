@@ -6,12 +6,12 @@ import {
     IBrokenRule,
     IRuleBreach,
     IAgGridRequest,
+    DefaultManagerMongo,
 } from '@microservices/shared';
 import config from '../../config';
 import { translateAgGridFilterModel, translateAgGridSortModel } from '../../utils/agGrid';
-import { DefaultManagerMongo } from '../../utils/mongo/manager';
 import { RuleBreachDoesNotExistError } from '../error';
-import { RuleBreachRequestsSchema } from './model';
+import RuleBreachRequestsSchema from './model';
 
 export default class RuleBreachRequestsManager extends DefaultManagerMongo<IRuleBreachRequest> {
     constructor(workspaceId: string) {

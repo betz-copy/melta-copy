@@ -1,6 +1,5 @@
 import { Request, Response } from 'express';
-import { IRuleBreachAlert } from '@microservices/shared';
-import DefaultController from '../../utils/express/controller';
+import { IRuleBreachAlert, DefaultController } from '@microservices/shared';
 import RuleBreachAlertsManager from './manager';
 
 export default class RuleBreachAlertsController extends DefaultController<IRuleBreachAlert, RuleBreachAlertsManager> {
