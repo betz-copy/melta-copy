@@ -1,6 +1,5 @@
-import { IActivityLog } from '@microservices/shared';
+import { DefaultManagerMongo, IActivityLog } from '@microservices/shared';
 import config from '../../config';
-import DefaultManagerMongo from '../../utils/mongo/manager';
 import ActivityLogSchema from './model';
 
 export default class ActivityLogManager extends DefaultManagerMongo<IActivityLog> {
