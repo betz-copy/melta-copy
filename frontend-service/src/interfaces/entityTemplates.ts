@@ -19,7 +19,7 @@ export interface IEntitySingleProperty {
     uniqueCheckbox?: boolean;
     dateNotification?: number;
     isDailyAlert?: boolean;
-    isdatePastAlert?: boolean;
+    isDatePastAlert?: boolean;
     calculateTime?: boolean;
     serialStarter?: number;
     serialCurrent?: number;

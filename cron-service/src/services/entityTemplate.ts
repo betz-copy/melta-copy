@@ -37,7 +37,7 @@ export interface IEntitySingleProperty {
     patternCustomErrorMessage?: string;
     dateNotification?: number;
     isDailyAlert?: boolean;
-    isdatePastAlert?: boolean;
+    isDatePastAlert?: boolean;
     alertDatePast?: boolean;
     calculateTime?: boolean;
     serialStarter?: number;

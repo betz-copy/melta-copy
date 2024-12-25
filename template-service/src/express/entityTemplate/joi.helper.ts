@@ -31,7 +31,7 @@ ajv.addKeyword({
 });
 ajv.addKeyword({ keyword: 'calculateTime', type: 'boolean' });
 ajv.addKeyword({ keyword: 'isDailyAlert', type: 'boolean' });
-ajv.addKeyword({ keyword: 'isdatePastAlert', type: 'boolean' });
+ajv.addKeyword({ keyword: 'isDatePastAlert', type: 'boolean' });
 ajv.addKeyword({ keyword: 'archive', type: 'boolean' });
 
 const stringFormats = ['date', 'date-time', 'email', 'fileId', 'text-area', 'relationshipReference'];
@@ -84,7 +84,7 @@ const propertiesArraySchema = Joi.array()
             isDailyAlert: Joi.boolean()
                 .when('format', { not: Joi.valid('date', 'date-time'), then: Joi.forbidden() })
                 .when('type', { not: 'string', then: Joi.forbidden() }),
-            isdatePastAlert: Joi.boolean()
+            isDatePastAlert: Joi.boolean()
                 .when('format', { not: Joi.valid('date', 'date-time'), then: Joi.forbidden() })
                 .when('type', { not: 'string', then: Joi.forbidden() }),
             relationshipReference: Joi.object({

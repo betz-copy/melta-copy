@@ -43,7 +43,7 @@ ajv.addKeyword({
 });
 ajv.addKeyword({ keyword: 'calculateTime', type: 'boolean' });
 ajv.addKeyword({ keyword: 'isDailyAlert', type: 'boolean' });
-ajv.addKeyword({ keyword: 'isdatePastAlert', type: 'boolean' });
+ajv.addKeyword({ keyword: 'isDatePastAlert', type: 'boolean' });
 ajv.addKeyword({ keyword: 'archive', type: 'boolean' });
 ajv.addKeyword({
     keyword: 'serialStarter',

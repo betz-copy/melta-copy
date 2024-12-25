@@ -7,7 +7,7 @@ interface IEntitySingleProperty {
     patternCustomErrorMessage?: string;
     dateNotification?: number;
     isDailyAlert?: boolean;
-    isdatePastAlert?: boolean;
+    isDatePastAlert?: boolean;
     calculateTime?: boolean;
     items?: {
         type: 'string';
