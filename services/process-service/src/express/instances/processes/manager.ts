@@ -15,12 +15,12 @@ import {
     ProcessInstanceDocument,
     Status,
     UpdateProcessReqBody,
+    DefaultManagerMongo,
 } from '@microservices/shared';
 import config from '../../../config';
 import ajv from '../../../utils/ajv';
 import ElasticSearchManager from '../../../utils/elastic/documentsOnElastic';
 import { getTemplateAggregation, searchAllowedProcessInstanceForReviewerAggregation, transaction } from '../../../utils/mongo';
-import { DefaultManagerMongo } from '../../../utils/mongo/manager';
 import { InstancePropertiesValidationError, InstanceNotFoundError, ServiceError, ValidationError } from '../../error';
 import ProcessTemplateManager from '../../templates/processes/manager';
 import StepInstanceManager from '../steps/manager';
@@ -177,7 +177,7 @@ class ProcessInstanceManager extends DefaultManagerMongo<IProcessInstance> {
         const updatedProcess: IMongoProcessInstancePopulated = await transaction(async (session) => {
             await this.stepInstanceManager.updateStepsReviewers(stepsReviewers, session);
 
-            const { steps, ...processData } = updatedData;
+            const { steps: _steps, ...processData } = updatedData;
             return this.model
                 .findByIdAndUpdate(id, processData, {
                     new: true,

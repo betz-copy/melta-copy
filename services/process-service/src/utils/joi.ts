@@ -1,7 +1,6 @@
 import { Request } from 'express';
 import * as Joi from 'joi';
-import { ProcessPropertyFormats } from '@microservices/shared';
-import { wrapValidator } from './express';
+import { wrapValidator, ProcessPropertyFormats } from '@microservices/shared';
 import config from '../config';
 import ajv from './ajv';
 

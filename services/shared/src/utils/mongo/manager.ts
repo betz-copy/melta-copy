@@ -4,7 +4,7 @@ abstract class DefaultManagerMongo<T> {
     public model: Model<T>;
 
     constructor(
-        private workspaceId: string,
+        protected workspaceId: string,
         private collectionName: string,
         private modelSchema: Schema,
     ) {

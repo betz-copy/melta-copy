@@ -1,10 +1,9 @@
 /* eslint-disable class-methods-use-this */
 import { ClientSession } from 'mongoose';
-import { IMongoStepTemplate, IMongoStepInstance, IStepInstance, UpdateStepReqBody } from '@microservices/shared';
+import { IMongoStepTemplate, IMongoStepInstance, IStepInstance, UpdateStepReqBody, DefaultManagerMongo } from '@microservices/shared';
 import config from '../../../config';
 import ElasticSearchManager from '../../../utils/elastic/documentsOnElastic';
 import { getTemplateAggregation, transaction } from '../../../utils/mongo';
-import { DefaultManagerMongo } from '../../../utils/mongo/manager';
 import { InstanceNotFoundError, NotFoundError, ServiceError, StepNotPartOfProcessError, ValidationError } from '../../error';
 import ProcessInstanceManager from '../processes/manager';
 import { StepInstanceSchema } from './model';
@@ -14,6 +13,7 @@ export default class StepInstanceManager extends DefaultManagerMongo<IStepInstan
 
     constructor(workspaceId: string) {
         super(workspaceId, config.mongo.stepInstancesCollectionName, StepInstanceSchema);
+        this.workspaceId = workspaceId;
         this.elasticSearchManager = new ElasticSearchManager(workspaceId);
     }
 

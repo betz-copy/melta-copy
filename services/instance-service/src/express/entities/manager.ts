@@ -70,7 +70,7 @@ const { brokenRulesFakeEntityIdPrefix } = config;
 
 const { BAD_REQUEST: badRequestStatus } = StatusCodes;
 
-export class EntityManager extends DefaultManagerNeo4j {
+class EntityManager extends DefaultManagerNeo4j {
     private entityTemplateManagerService: EntityTemplateManagerService;
 
     private relationshipsTemplateManagerService: RelationshipsTemplateManagerService;
@@ -1720,3 +1720,5 @@ export class EntityManager extends DefaultManagerNeo4j {
         });
     }
 }
+
+export default EntityManager;

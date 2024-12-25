@@ -1,6 +1,7 @@
 /* eslint-disable class-methods-use-this */
 import { Request } from 'express';
 import {
+    DefaultController,
     IMongoStepTemplate,
     IProcessDetails,
     CreateProcessReqBody,
@@ -9,7 +10,6 @@ import {
     UpdateProcessReqBody,
 } from '@microservices/shared';
 import ajv from '../../../utils/ajv';
-import DefaultController from '../../../utils/express/controller';
 import { InstancePropertiesValidationError, ValidationError } from '../../error';
 import ProcessTemplateManager from '../../templates/processes/manager';
 import StepInstanceManager from '../steps/manager';

@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { createController } from '../../../utils/express';
+import { createController } from '@microservices/shared';
 import ValidateRequest from '../../../utils/joi';
 import StepInstanceController from './controller';
 import { getStepByIdRequestSchema, getTemplateByInstanceIdRequestSchema, updateStepSchema } from './validator.schema';

@@ -7,7 +7,7 @@ const {
     service: { workspaceIdHeaderName },
 } = config;
 
-export class RabbitManager {
+class RabbitManager {
     private workspaceId: string;
 
     constructor(workspaceId: string) {
@@ -24,3 +24,5 @@ export class RabbitManager {
         await menash.send(rabbit.notificationQueue, { viewers, type, metadata }, { headers: { [workspaceIdHeaderName]: this.workspaceId } });
     }
 }
+
+export default RabbitManager;

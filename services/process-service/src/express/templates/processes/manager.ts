@@ -8,11 +8,11 @@ import {
     IProcessTemplate,
     IProcessTemplatePopulated,
     IProcessTemplateSearchProperties,
+    DefaultManagerMongo,
 } from '@microservices/shared';
 import config from '../../../config';
 import { escapeRegExp } from '../../../utils';
 import { getProcessTemplatesByReviewerIdAggregation, transaction } from '../../../utils/mongo';
-import { DefaultManagerMongo } from '../../../utils/mongo/manager';
 import { ServiceError, TemplateNotFoundError } from '../../error';
 import ProcessInstanceManager from '../../instances/processes/manager';
 import StepTemplateManager from '../steps/manager';
