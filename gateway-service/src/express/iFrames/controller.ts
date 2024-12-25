@@ -2,7 +2,6 @@ import { Request, Response } from 'express';
 import { IFrameManager } from './manager';
 import DefaultController from '../../utils/express/controller';
 import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
-import { UploadedFile } from '../../utils/busboy/interface';
 
 export class IFrameController extends DefaultController<IFrameManager> {
     constructor(workspaceId: string) {
@@ -24,7 +23,7 @@ export class IFrameController extends DefaultController<IFrameManager> {
     }
 
     async createIFrame(req: Request, res: Response) {
-        res.json(await this.manager.createIFrame(req.body, req.files as unknown as UploadedFile));
+        res.json(await this.manager.createIFrame(req.body, req.file));
     }
 
     async deleteIFrame(req: Request, res: Response) {
@@ -32,7 +31,7 @@ export class IFrameController extends DefaultController<IFrameManager> {
     }
 
     async updateIFrame(req: Request, res: Response) {
-        res.json(await this.manager.updateIFrame(req.params.iFrameId, req.body, req.files as unknown as UploadedFile));
+        res.json(await this.manager.updateIFrame(req.params.iFrameId, req.body, req.file));
     }
 }
 

@@ -12,7 +12,6 @@ import {
     IGraphFilterBodyBatch,
     ISearchEntitiesByTemplatesBody,
     ICountSearchResult,
-    UploadedFile,
 } from '../interfaces/entities';
 import { EntityWizardValues } from '../common/dialogs/entity';
 import { IBrokenRule, IRuleBreach } from '../interfaces/ruleBreaches/ruleBreach';
@@ -159,8 +158,7 @@ export const updateEntityRequestForMultiple = async (
         }
     });
     filesToUpload.forEach(([key, value]) => {
-        formData.append(key, value as UploadedFile);
-        console.log('ababab: ', formData.get(key));
+        formData.append(key, value);
     });
     unchangedFiles.forEach(([key, _value]) => {
         newEntityData.properties[key] = [];
@@ -196,7 +194,7 @@ export const updateEntityRequestForMultiple = async (
     }
     // console.log({filesToUpload});
 
-    console.log('i am formdata', formData.getAll('multifile'));
+    console.log('i am formdata', formData);
 
     const { data } = await axios.put<IEntity>(`${entities}/${entityId}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },

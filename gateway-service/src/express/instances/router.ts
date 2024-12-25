@@ -100,6 +100,10 @@ InstancesRouter.post(
 );
 InstancesRouter.put(
     '/entities/:id',
+    (req, _res, next) => {
+        console.log('************', req.body);
+        next();
+    },
     busboyMiddleware,
     ValidateRequest(updateEntityInstanceSchema),
     InstancesValidatorMiddleware.validateUserCanWriteEntityInstance,
