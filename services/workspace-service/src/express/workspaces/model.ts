@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import { Colors, IWorkspace } from '@microservices/shared';
-import { config } from '../../config';
+import config from '../../config';
 import { BadRequestError } from '../error';
 import { AllowedEmptyString } from '../../utils/mongoose';
 
@@ -54,4 +54,6 @@ WorkspacesSchema.post('findOneAndUpdate', handleMongooseDuplicateKeyError);
 
 WorkspacesSchema.index({ name: 1, path: 1, type: 1 }, { unique: true });
 
-export const WorkspacesModel = mongoose.model<IWorkspace>(config.mongo.workspacesCollectionName, WorkspacesSchema);
+const WorkspacesModel = mongoose.model<IWorkspace>(config.mongo.workspacesCollectionName, WorkspacesSchema);
+
+export default WorkspacesModel;

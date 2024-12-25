@@ -3,9 +3,9 @@ import { parse as parsePath } from 'node:path/posix';
 import { IWorkspace, WorkspaceTypes } from '@microservices/shared';
 import { transaction } from '../../utils/mongoose';
 import { DocumentNotFoundError, PathDoesNotExistError, PathIsNotFolderError, WorkspaceUnderRootMustBeDirError } from '../error';
-import { WorkspacesModel } from './model';
+import WorkspacesModel from './model';
 
-export class WorkspacesManager {
+class WorkspacesManager {
     static async getWorkspaceIds(type: IWorkspace['type']) {
         const workspaces = await WorkspacesModel.find({ type }, { _id: 1 }).lean().exec();
 
@@ -125,3 +125,5 @@ export class WorkspacesManager {
         });
     }
 }
+
+export default WorkspacesManager;
