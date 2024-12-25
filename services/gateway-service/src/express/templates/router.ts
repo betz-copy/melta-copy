@@ -1,9 +1,10 @@
 import { Router } from 'express';
 import { createProxyMiddleware, fixRequestBody } from 'http-proxy-middleware';
 import multer from 'multer';
+import { createController } from '@microservices/shared';
 import config from '../../config';
 import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
-import { createWorkspacesController, wrapMulter } from '../../utils/express';
+import { wrapMulter } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
 import TemplatesController from './controller';
 import { TemplatesValidator } from './middlewares';
@@ -45,8 +46,8 @@ const TemplatesServiceProxy = createProxyMiddleware({
 
 const templatesRouter: Router = Router();
 
-const templatesControllerMiddleware = createWorkspacesController(TemplatesController);
-const templatesValidatorMiddleware = createWorkspacesController(TemplatesValidator, true);
+const templatesControllerMiddleware = createController(TemplatesController);
+const templatesValidatorMiddleware = createController(TemplatesValidator, true);
 
 // all needed categories
 templatesRouter.get('/all', AuthorizerControllerMiddleware.userHasSomePermissions, templatesControllerMiddleware.getAllAllowedTemplates);

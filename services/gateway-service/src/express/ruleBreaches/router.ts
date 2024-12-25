@@ -1,8 +1,9 @@
 import { Router } from 'express';
 import multer from 'multer';
+import { createController } from '@microservices/shared';
 import config from '../../config';
 import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
-import { createWorkspacesController, wrapMulter } from '../../utils/express';
+import { wrapMulter } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
 import RuleBreachesController from './controller';
 import {
@@ -19,7 +20,7 @@ import {
 
 const RulesBreachesRouter: Router = Router();
 
-const RulesBreachesControllerMiddleware = createWorkspacesController(RuleBreachesController);
+const RulesBreachesControllerMiddleware = createController(RuleBreachesController);
 
 RulesBreachesRouter.post(
     '/requests',

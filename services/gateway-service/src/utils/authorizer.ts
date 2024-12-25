@@ -1,10 +1,9 @@
 import { Request } from 'express';
-import { PermissionScope, PermissionType, ISubCompactPermissions } from '@microservices/shared';
+import { PermissionScope, PermissionType, ISubCompactPermissions, createController } from '@microservices/shared';
 import { typedObjectEntries } from '.';
 import { UserIncorrectScopeError, UserNotAuthorizedError } from '../express/error';
 import { WorkspaceService } from '../express/workspaces/service';
 import { UserService } from '../externalServices/userService';
-import { createWorkspacesController } from './express';
 import DefaultController from './express/controller';
 import { WorkspaceManager } from '../express/workspaces/manager';
 
@@ -107,4 +106,4 @@ export class Authorizer extends DefaultController {
     }
 }
 
-export const AuthorizerControllerMiddleware = createWorkspacesController(Authorizer, true);
+export const AuthorizerControllerMiddleware = createController(Authorizer, true);

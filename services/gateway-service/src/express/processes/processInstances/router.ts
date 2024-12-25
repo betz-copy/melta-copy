@@ -1,7 +1,8 @@
 import { Router } from 'express';
 import multer from 'multer';
+import { createController } from '@microservices/shared';
 import config from '../../../config';
-import { createWorkspacesController, wrapMulter } from '../../../utils/express';
+import { wrapMulter } from '../../../utils/express';
 
 import InstancesController from './controller';
 import {
@@ -17,7 +18,7 @@ import { AuthorizerControllerMiddleware } from '../../../utils/authorizer';
 
 const InstancesRouter: Router = Router();
 
-const InstancesControllerMiddleware = createWorkspacesController(InstancesController);
+const InstancesControllerMiddleware = createController(InstancesController);
 
 InstancesRouter.get('/:id', ValidateRequest(getProcessInstanceSchema), InstancesControllerMiddleware.getProcessInstance);
 InstancesRouter.post(

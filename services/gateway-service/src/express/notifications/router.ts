@@ -1,6 +1,6 @@
 import { Router } from 'express';
+import { createController } from '@microservices/shared';
 import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
-import { createWorkspacesController } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
 import NotificationsController from './controller';
 import {
@@ -13,7 +13,7 @@ import {
 
 const notificationsRouter: Router = Router();
 
-const NotificationsControllerMiddleware = createWorkspacesController(NotificationsController);
+const NotificationsControllerMiddleware = createController(NotificationsController);
 
 notificationsRouter.get(
     '/my',

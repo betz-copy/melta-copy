@@ -1,6 +1,6 @@
 import { Router } from 'express';
+import { createController } from '@microservices/shared';
 import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
-import { createWorkspacesController } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
 import { GanttController } from './controller';
 import { GanttsValidator } from './middlewares';
@@ -8,8 +8,8 @@ import { createGanttSchema, deleteGanttSchema, getGanttByIdSchema, searchGanttsS
 
 const GanttsRouter: Router = Router();
 
-const GanttsControllerMiddleware = createWorkspacesController(GanttController);
-const GanttsValidatorMiddleware = createWorkspacesController(GanttsValidator, true);
+const GanttsControllerMiddleware = createController(GanttController);
+const GanttsValidatorMiddleware = createController(GanttsValidator, true);
 
 GanttsRouter.get(
     '/:ganttId',

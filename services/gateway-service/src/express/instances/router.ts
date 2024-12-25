@@ -1,8 +1,9 @@
 import { Router } from 'express';
 import { createProxyMiddleware, fixRequestBody } from 'http-proxy-middleware';
 import multer from 'multer';
+import { createController } from '@microservices/shared';
 import config from '../../config';
-import { wrapMulter, createWorkspacesController } from '../../utils/express';
+import { wrapMulter } from '../../utils/express';
 import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
 import ValidateRequest from '../../utils/joi';
 import { InstancesController } from './controller';
@@ -35,8 +36,8 @@ const InstanceManagerProxy = createProxyMiddleware({
 
 const InstancesRouter: Router = Router();
 
-const InstancesControllerMiddleware = createWorkspacesController(InstancesController);
-const InstancesValidatorMiddleware = createWorkspacesController(InstancesValidator, true);
+const InstancesControllerMiddleware = createController(InstancesController);
+const InstancesValidatorMiddleware = createController(InstancesValidator, true);
 
 // entities (Instances)
 InstancesRouter.post(

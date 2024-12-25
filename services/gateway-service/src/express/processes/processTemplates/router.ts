@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import multer from 'multer';
-import { createWorkspacesController, wrapMulter } from '../../../utils/express';
+import { createController } from '@microservices/shared';
+import { wrapMulter } from '../../../utils/express';
 import ProcessTemplatesController from './controller';
 import config from '../../../config';
 import ValidateRequest from '../../../utils/joi';
@@ -19,7 +20,7 @@ const {
 
 const TemplatesRouter: Router = Router();
 
-const TemplatesControllerMiddleware = createWorkspacesController(ProcessTemplatesController);
+const TemplatesControllerMiddleware = createController(ProcessTemplatesController);
 
 TemplatesRouter.get(
     '/:id',

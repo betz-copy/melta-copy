@@ -1,11 +1,10 @@
 import { NextFunction, Request, Response } from 'express';
 import { get } from 'lodash';
 import { StatusCodes } from 'http-status-codes';
-import { FunctionKey, dataLogger } from '@microservices/shared';
+import { dataLogger } from '@microservices/shared';
 import config from '../../config';
 import { InvalidWorkspaceHeaderError } from '../../express/error';
 import { WorkspaceService } from '../../express/workspaces/service';
-import DefaultController from './controller';
 
 const { workspaceIdHeaderName } = config.service;
 
@@ -68,8 +67,6 @@ export const wrapController = <ExtendedRequest extends Request<any, any, any, an
     };
 };
 
-export type RequestWithQuery<Query> = Request<any, any, any, Query>;
-
 const handleMulterErrors = (err, _req, res, next) => {
     if (!err) {
         return next();
@@ -99,37 +96,6 @@ export const getWorkspaceId = async (req: Request) => {
     await WorkspaceService.getById(workspaceId); // check if workspace exists
 
     return workspaceId;
-};
-
-export const createWorkspacesController = <T extends InstanceType<typeof DefaultController<any>>>(
-    Controller: { new (workspaceId: string): T },
-    isMiddleware = false,
-) => {
-    return new Proxy(
-        {},
-        {
-            get: (_, funcName: string) => {
-                return async (req: Request, res: Response, next: NextFunction) => {
-                    const workspaceId = await getWorkspaceId(req).catch(next);
-
-                    if (!workspaceId) return;
-
-                    if (isMiddleware) {
-                        (new Controller(workspaceId)[funcName] as Function)(req, res, next).then(next).catch(next);
-                        return;
-                    }
-
-                    (new Controller(workspaceId)[funcName] as Function)(req, res, next).catch(next);
-                };
-            },
-        },
-    ) as {
-        [K in FunctionKey<T, (req: Request, res: Response, next?: NextFunction) => Promise<void>>]: (
-            req: Request,
-            res: Response,
-            next: NextFunction,
-        ) => void;
-    };
 };
 
 export const translateWorkspaceParameter = async (req: Request) => {

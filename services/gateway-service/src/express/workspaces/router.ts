@@ -1,8 +1,9 @@
 import { Router } from 'express';
 import multer from 'multer';
+import { createController } from '@microservices/shared';
 import config from '../../config';
 import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
-import { createWorkspacesController, wrapController } from '../../utils/express';
+import { wrapController } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
 import { WorkspaceController } from './controller';
 import {
@@ -15,7 +16,7 @@ import {
     updateOneSchema,
 } from './validator.schema';
 
-const controller = createWorkspacesController(WorkspaceController);
+const controller = createController(WorkspaceController);
 
 export const workspaceRouter: Router = Router();
 

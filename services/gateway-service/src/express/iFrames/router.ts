@@ -1,7 +1,8 @@
 import { Router } from 'express';
 import multer from 'multer';
+import { createController } from '@microservices/shared';
 import IFramesController from './controller';
-import { createWorkspacesController, wrapMulter } from '../../utils/express';
+import { wrapMulter } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
 import { createIFrameSchema, deleteIFrameSchema, getIFrameByIdSchema, searchIFramesSchema, updateIFrameSchema } from './validator.schema';
 import { IFramesValidator } from './middlewares';
@@ -9,8 +10,8 @@ import config from '../../config';
 import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
 
 export const iFramesRouter: Router = Router();
-const IFramesControllerMiddleware = createWorkspacesController(IFramesController);
-const IFramesValidatorMiddleware = createWorkspacesController(IFramesValidator, true);
+const IFramesControllerMiddleware = createController(IFramesController);
+const IFramesValidatorMiddleware = createController(IFramesValidator, true);
 
 const {
     service: { uploadsFolderPath },

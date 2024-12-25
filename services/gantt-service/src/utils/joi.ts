@@ -1,6 +1,6 @@
+import { wrapValidator } from '@microservices/shared';
 import { Request } from 'express';
 import * as Joi from 'joi';
-import { wrapValidator } from './express';
 
 export const MongoIdSchema = Joi.string().regex(/^[0-9a-fA-F]{24}$/, 'valid MongoId');
 
