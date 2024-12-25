@@ -8,7 +8,7 @@ import { streamToBuffer } from '../fs';
 
 const { url: endPoint, port, accessKey, secretKey, useSSL, transportAgent } = config.minio;
 
-export class MinIOClient {
+class MinIOClient {
     private minioClient: Client;
 
     constructor(private bucketName: string) {
@@ -69,3 +69,5 @@ export class MinIOClient {
         }
     }
 }
+
+export default MinIOClient;

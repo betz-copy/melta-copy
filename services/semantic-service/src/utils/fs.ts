@@ -2,7 +2,7 @@ import { Stream } from 'stream';
 import { chunk } from 'llm-chunk';
 import config from '../config';
 import { IElasticDoc } from '../express/semantics/interface';
-import { ModelApiService } from '../externalServices/modelApi';
+import ModelApiService from '../externalServices/modelApi';
 
 const {
     model: { charsToRemove, sentenceSplitter, maxSentenceLength, llmChunkSplitterOptions },
@@ -84,8 +84,6 @@ export const splitTextIntoChunks = async (
     const splitText = chunk(cleanedText, llmChunkSplitterOptions);
 
     const chunksForEmbedding = getTextForEmbedding(splitText);
-
-    console.log('chunksForEmbedding', chunksForEmbedding);
 
     const chunks: IElasticDoc[] = [];
 

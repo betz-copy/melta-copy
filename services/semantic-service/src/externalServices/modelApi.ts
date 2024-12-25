@@ -5,7 +5,7 @@ const {
     modelApi: { url, searchRoute, endpoint },
 } = config;
 
-export class ModelApiService {
+class ModelApiService {
     static api = axios.create({ baseURL: url });
 
     static async embed(texts: string[]): Promise<number[][]> {
@@ -22,3 +22,5 @@ export class ModelApiService {
         }
     }
 }
+
+export default ModelApiService;
