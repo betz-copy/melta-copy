@@ -8,7 +8,11 @@ const {
 } = config;
 
 export class RabbitManager {
-    constructor(private workspaceId: string) {}
+    private workspaceId: string;
+
+    constructor(workspaceId: string) {
+        this.workspaceId = workspaceId;
+    }
 
     async createNotification<NotificationMetadata extends INotificationMetadata>(
         viewers: string[],

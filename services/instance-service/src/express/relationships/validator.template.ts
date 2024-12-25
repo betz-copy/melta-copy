@@ -1,8 +1,8 @@
 import axios from 'axios';
 import { Request } from 'express';
 import { StatusCodes } from 'http-status-codes';
+import { addPropertyToRequest } from '@microservices/shared';
 import { RelationshipsTemplateManagerService } from '../../externalServices/templates/relationshipTemplateManager';
-import { addPropertyToRequest } from '../../utils/express';
 import DefaultController from '../../utils/express/controller';
 import { trycatch } from '../../utils/lib';
 import { EntityManager } from '../entities/manager';

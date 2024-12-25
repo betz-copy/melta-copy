@@ -76,7 +76,7 @@ const entityTemplateObjectToEntityTemplateForm = (
         }
     });
 
-    const documentTemplates = documentTemplatesIds?.map((documentTemplateId) => ({ name: documentTemplateId } as File));
+    const documentTemplates = documentTemplatesIds?.map((documentTemplateId) => ({ name: documentTemplateId }) as File);
 
     if (iconFileId) {
         const file: Partial<File> = { name: iconFileId };

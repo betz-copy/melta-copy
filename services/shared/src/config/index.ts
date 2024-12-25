@@ -2,6 +2,13 @@ import * as env from 'env-var';
 import './dotenv';
 
 const config = {
+    service: {
+        workspaceIdHeaderName: env.get('WORKSPACE_ID_HEADER_NAME').default('workspace-id').asString(),
+        serviceName: env.get('SERVICE_NAME').default('shared-service').asString(),
+        environment: env.get('ENVIRONMENT').default('dev').required().asString(),
+        version: env.get('SERVICE_VERSION').default('1.0.0').asString(),
+        port: env.get('PORT').default('3000').asPortNumber(),
+    },
     logs: {
         format: env.get('LOGGING_DATE_FORMAT').default('YYYY-MM-DD HH:mm:ss').asString(),
         enableFile: env.get('ENABLE_FILE_LOGGING').default('false').asBool(),

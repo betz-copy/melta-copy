@@ -2,9 +2,9 @@ import * as http from 'http';
 import { Client } from 'minio';
 import pdf from 'pdf-parse';
 import * as mammoth from 'mammoth';
+import { logger } from '@microservices/shared';
 import config from '../../config';
 import { streamToBuffer } from '../fs';
-import { logger } from '@microservices/shared';
 
 const { url: endPoint, port, accessKey, secretKey, useSSL, transportAgent } = config.minio;
 

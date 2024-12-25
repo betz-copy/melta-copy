@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import { FunctionKey } from '@microservices/shared';
+import { FunctionKey, MiddlewareFunction } from '@microservices/shared';
 import config from '../../config';
 import { BadRequestError } from '../../express/error';
 import DefaultController from './controller';
@@ -14,16 +14,12 @@ export const createController = <T extends InstanceType<typeof DefaultController
 
                     if (typeof workspaceId !== 'string') return next(new BadRequestError('Invalid workspace id in header'));
 
-                    return (new Controller(workspaceId)[funcName] as Function)(req, res, next).catch(next);
+                    return (new Controller(workspaceId)[funcName] as MiddlewareFunction)(req, res, next).catch(next);
                 };
             },
         },
     ) as {
-        [K in FunctionKey<T, (req: Request, res: Response, next?: NextFunction) => Promise<void>>]: (
-            req: Request,
-            res: Response,
-            next: NextFunction,
-        ) => void;
+        [K in FunctionKey<T, MiddlewareFunction>]: (req: Request, res: Response, next: NextFunction) => void;
     };
 };
 

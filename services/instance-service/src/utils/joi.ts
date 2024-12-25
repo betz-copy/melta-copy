@@ -1,6 +1,6 @@
+import { wrapValidator } from '@microservices/shared';
 import { Request } from 'express';
 import Joi from 'joi';
-import { wrapValidator } from './express';
 
 const defaultValidationOptions: Joi.ValidationOptions = {
     abortEarly: false,

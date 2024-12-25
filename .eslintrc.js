@@ -54,7 +54,6 @@ module.exports = {
     "no-plusplus": "off",
     "max-classes-per-file": "off",
     "class-methods-use-this": "off",
-    "import/prefer-default-export": "off",
     "@typescript-eslint/no-wrapper-object-types": "off",
     "@typescript-eslint/no-explicit-any": "off",
     "valid-typeof": ["error", { requireStringLiterals: false }],

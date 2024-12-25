@@ -6,6 +6,7 @@ import {
     IEntityTemplatePopulated,
     PermissionScope,
     PermissionType,
+    logger,
 } from '@microservices/shared';
 import * as schedule from 'node-schedule';
 import config from '../config';
@@ -14,7 +15,6 @@ import { InstancesService } from '../services/instance';
 import { EntityTemplateService } from '../services/entityTemplate';
 import { WorkspaceManager } from '../workspaces/manager';
 import { RabbitManager } from '../utils/rabbit/rabbit';
-import { logger } from '@microservices/shared';
 
 const { notifications } = config;
 

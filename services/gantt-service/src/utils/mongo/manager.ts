@@ -1,4 +1,5 @@
-import { Schema, connection, Model } from 'mongoose';
+import type { Schema, Model } from 'mongoose';
+import { connection } from 'mongoose';
 
 export abstract class DefaultManagerMongo<T> {
     public model: Model<T>;

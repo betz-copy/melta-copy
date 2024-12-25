@@ -1,8 +1,9 @@
-import { NextFunction, Request, Response } from 'express';
-import { FunctionKey } from '@microservices/shared';
-import config from '../../config';
-import { BadRequestError } from '../../express/error';
+/* eslint-disable @typescript-eslint/no-unsafe-function-type */
+import { Request, Response, NextFunction } from 'express';
 import DefaultController from './controller';
+import config from '../../config';
+import { BadRequestError } from './error';
+import { FunctionKey } from '../types';
 
 export const wrapMiddleware = (func: (req: Request, res?: Response) => Promise<void>) => {
     return (req: Request, res: Response, next: NextFunction) => {
@@ -14,13 +15,20 @@ export const wrapMiddleware = (func: (req: Request, res?: Response) => Promise<v
 
 export const wrapValidator = wrapMiddleware;
 
-export const wrapController = <ExtendedRequest extends Request<any, any, any, any> = Request, ExtendedResponse extends Response = Response>(
+export const extendedWrapController = <ExtendedRequest extends Request<any, any, any, any> = Request, ExtendedResponse extends Response = Response>(
     func: (req: ExtendedRequest, res: ExtendedResponse, next?: NextFunction) => Promise<void>,
 ) => {
     return (req: ExtendedRequest, res: ExtendedResponse, next: NextFunction) => {
         func(req, res, next).catch(next);
     };
 };
+
+export const wrapController = (func: (req: Request, res: Response, next?: NextFunction) => Promise<void>) => {
+    return (req: Request, res: Response, next: NextFunction) => {
+        func(req, res, next).catch(next);
+    };
+};
+
 export const addPropertyToRequest = (req: any, key: string, value: any) => {
     req[key] = value;
 };
@@ -29,9 +37,7 @@ export const fetchPropertyFromRequest = <T>(req: any, key: string): T => {
     return req[key];
 };
 
-type IMiddlewareFunction = (req: Request, res: Response, next?: NextFunction) => Promise<void>;
-
-export const createController = <T extends InstanceType<typeof DefaultController<any>>>(
+export const createController = <T extends InstanceType<typeof DefaultController<any, any>>>(
     Controller: { new (workspaceId: string): T },
     isMiddleware = false,
 ) => {
@@ -44,14 +50,18 @@ export const createController = <T extends InstanceType<typeof DefaultController
 
                     if (typeof workspaceId !== 'string') return next(new BadRequestError('Invalid workspace id in header'));
 
-                    if (isMiddleware) return (new Controller(workspaceId)[funcName] as IMiddlewareFunction)(req, res, next).then(next).catch(next);
+                    if (isMiddleware) return (new Controller(workspaceId)[funcName] as Function)(req, res, next).then(next).catch(next);
 
-                    return (new Controller(workspaceId)[funcName] as IMiddlewareFunction)(req, res, next).catch(next);
+                    return (new Controller(workspaceId)[funcName] as Function)(req, res, next).catch(next);
                 };
             },
         },
     ) as {
-        [K in FunctionKey<T, IMiddlewareFunction>]: (req: Request, res: Response, next: NextFunction) => void;
+        [K in FunctionKey<T, (req: Request, res: Response, next?: NextFunction) => Promise<void>>]: (
+            req: Request,
+            res: Response,
+            next: NextFunction,
+        ) => void;
     };
 };
 

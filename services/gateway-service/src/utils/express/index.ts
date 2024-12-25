@@ -9,16 +9,6 @@ import DefaultController from './controller';
 
 const { workspaceIdHeaderName } = config.service;
 
-export const wrapMiddleware = (func: (req: Request, res?: Response) => Promise<void>) => {
-    return (req: Request, res: Response, next: NextFunction) => {
-        func(req, res)
-            .then(() => next())
-            .catch(next);
-    };
-};
-
-export const wrapValidator = wrapMiddleware;
-
 interface IWrapControllerOptions {
     toLog: boolean;
     logRequestFields: Array<{ key: string; path: string }>;
