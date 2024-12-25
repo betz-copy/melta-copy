@@ -24,6 +24,7 @@ export interface IFilterDatesRange {
     dateNotificationValue: number;
     isDateTime: boolean;
     isDailyAlert: boolean;
+    isdatePastAlert: boolean;
 }
 
 export interface IFilterOfField {

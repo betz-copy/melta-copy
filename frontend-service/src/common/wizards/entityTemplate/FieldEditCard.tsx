@@ -155,6 +155,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
 
     const dateNotification = `properties[${index}].dateNotification`;
     const isDailyAlert = `properties[${index}].isDailyAlert`;
+    const isdatePastAlert = `properties[${index}].isdatePastAlert`;
     const calculateTime = `properties[${index}].calculateTime`;
     const touchedDateNotification = touched?.dateNotification;
     const errorDateNotification = errors?.dateNotification;
@@ -163,7 +164,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     const preview = `properties[${index}].preview`;
     const hide = `properties[${index}].hide`;
     const readOnly = `properties[${index}].readOnly`;
-
+    console.log({ isdatePastAlert });
     const unique =
         value.type !== 'serialNumber' &&
         uniqueConstraints &&
@@ -895,6 +896,24 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                             </MeltaTooltip>
                                                         </ToggleButton>
                                                     </ToggleButtonGroup>
+                                                    <FormControlLabel
+                                                        control={
+                                                            <Switch
+                                                                id={isdatePastAlert}
+                                                                name={isdatePastAlert}
+                                                                onChange={(_e, checked) => {
+                                                                    console.log({ checked });
+
+                                                                    setValues?.((prevValue) => ({
+                                                                        ...prevValue,
+                                                                        isdatePastAlert: checked,
+                                                                    }));
+                                                                }}
+                                                                checked={value.isdatePastAlert ?? true}
+                                                            />
+                                                        }
+                                                        label="התראה על תאריך שעבר"
+                                                    />
                                                     <TextField
                                                         select
                                                         label={i18next.t('wizard.entityTemplate.dateNotification')}

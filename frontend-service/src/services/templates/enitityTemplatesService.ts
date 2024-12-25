@@ -64,6 +64,7 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
             patternCustomErrorMessage: value.patternCustomErrorMessage || '',
             dateNotification: value.dateNotification,
             isDailyAlert: value.isDailyAlert ?? undefined,
+            isdatePastAlert: value.isdatePastAlert ?? undefined,
             serialStarter: value.serialStarter,
             relationshipReference: value.relationshipReference || undefined,
             archive: value.archive || undefined,
@@ -137,6 +138,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
             patternCustomErrorMessage,
             dateNotification,
             isDailyAlert,
+            isdatePastAlert,
             calculateTime,
             serialStarter,
             hide,
@@ -162,6 +164,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                     default:
                         propertyType = 'string';
                 }
+                console.log('in service',{ isdatePastAlert });
 
                 schema.properties[name] = {
                     title,
@@ -178,6 +181,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                     dateNotification: dateNotification as number | undefined,
                     calculateTime: calculateTime ?? undefined,
                     isDailyAlert: isDailyAlert ?? (dateNotification !== undefined ? true : undefined),
+                    isdatePastAlert: isdatePastAlert ?? (dateNotification !== undefined ? true : undefined),
                     serialStarter: type === 'serialNumber' ? serialStarter : undefined,
                     serialCurrent: type === 'serialNumber' ? serialStarter : undefined,
                     relationshipReference: relationshipReference
@@ -231,6 +235,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
             patternCustomErrorMessage,
             dateNotification,
             isDailyAlert,
+            isdatePastAlert,
             calculateTime,
             serialStarter,
             hide,
@@ -272,6 +277,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                     dateNotification: dateNotification as number | undefined,
                     calculateTime: calculateTime ?? undefined,
                     isDailyAlert: isDailyAlert ?? (dateNotification !== undefined ? true : undefined),
+                    isdatePastAlert: isdatePastAlert ?? (dateNotification !== undefined ? true : undefined),
                     serialStarter: type === 'serialNumber' ? serialStarter : undefined,
                     serialCurrent: type === 'serialNumber' ? serialStarter : undefined,
                     relationshipReference: relationshipReference

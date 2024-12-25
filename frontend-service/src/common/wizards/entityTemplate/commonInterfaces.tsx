@@ -16,6 +16,7 @@ export interface CommonFormInputProperties {
     patternCustomErrorMessage: string;
     dateNotification?: number | null;
     isDailyAlert?: boolean | null;
+    isdatePastAlert?: boolean | null;
     calculateTime?: boolean | null;
     serialStarter?: number;
     relationshipReference?: IRelationshipReference;

@@ -44,6 +44,7 @@ export interface IEntitySingleProperty {
     patternCustomErrorMessage?: string;
     dateNotification?: number;
     isDailyAlert?: boolean;
+    isdatePastAlert?: boolean;
     calculateTime?: boolean;
     serialStarter?: number;
     serialCurrent?: number;

@@ -2,9 +2,11 @@ import React from 'react';
 import { Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
 import { useQueryClient } from 'react-query';
-import { IDateAboutToExpireMetadataPopulated } from '../../../../interfaces/notifications';
+import { IDateAboutToExpireMetadataPopulated, NotificationType } from '../../../../interfaces/notifications';
 import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
 import { EntityLink } from '../../../EntityLink';
+import { NotificationColor } from '../../../notificationColor';
+import { environment } from '../../../../globals';
 
 export const DateAboutToExpireNotification: React.FC<{ notificationMetadata: IDateAboutToExpireMetadataPopulated }> = ({
     notificationMetadata: { entity, propertyName, datePropertyValue },
@@ -12,12 +14,22 @@ export const DateAboutToExpireNotification: React.FC<{ notificationMetadata: IDa
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const entityTemplate = entity ? entityTemplates.get(entity.templateId)! : null;
-    const datePast = new Date(datePropertyValue) < new Date();
+    const { notificationsMoreData } = environment.notifications;
+    const color = notificationsMoreData.general.find((notificationData) => notificationData.type === NotificationType.dateAboutToExpire)?.color;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const datePast = new Date(datePropertyValue) < today;
 
     return (
         <Grid container direction="column" spacing={1}>
+            <Grid container>
+                <NotificationColor color={color!} />
+                <Typography display="inline" color="primary" fontWeight="bold" paddingLeft="10px">
+                    {datePast ? i18next.t('dateAboutToExpireNotification.datePast') : i18next.t('dateAboutToExpireNotification.dateAboutToExpire')}
+                </Typography>
+            </Grid>
             <Grid item>
-                {datePast && <Typography fontWeight="bold">{`${i18next.t('dateAboutToExpireNotification.payAttention')}`}</Typography>}
+                {/* {datePast && <Typography fontWeight="bold">{`${i18next.t('dateAboutToExpireNotification.payAttention')}`}</Typography>} */}
                 <Typography display="inline">{`${i18next.t('dateAboutToExpireNotification.propertyValue')} `}</Typography>
                 <Typography display="inline" fontWeight="bold">
                     {new Date(datePropertyValue).toLocaleDateString('he-IL')}
@@ -27,7 +39,7 @@ export const DateAboutToExpireNotification: React.FC<{ notificationMetadata: IDa
                 </Typography>
                 <Typography display="inline">{` ${i18next.t('dateAboutToExpireNotification.entityTemplateName')} `} </Typography>
                 <EntityLink entity={entity} entityTemplate={entityTemplate} />
-                <Typography display="inline">{` ${i18next.t(`dateAboutToExpireNotification.${datePast ? 'pase' : 'aboutToExpire'}`)} `}</Typography>
+                <Typography display="inline">{` ${i18next.t(`dateAboutToExpireNotification.${datePast ? 'past' : 'aboutToExpire'}`)} `}</Typography>
             </Grid>
         </Grid>
     );

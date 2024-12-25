@@ -895,7 +895,9 @@ export default {
         entityTemplateName: 'בישות',
         aboutToExpire: 'מתקרב',
         payAttention: 'שים לב,',
-        pase: 'עבר',
+        past: 'עבר',
+        datePast: 'תאריך עבר',
+        dateAboutToExpire: 'תאריך מתקרב',
     },
     processStatusUpdateNotification: {
         statusUpdate: ' עדכון סטטוס',
