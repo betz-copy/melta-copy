@@ -1,10 +1,10 @@
 import { menash } from 'menashmq';
 import { Stream } from 'stream';
-import { config } from '../../config';
+import { DefaultManagerMinio } from '@microservices/shared';
+import config from '../../config';
 import { getFileExtension, isFileDocument } from '../../utils/fileHelper';
 import { ServiceError } from '../error';
 import { generatePath } from '../../utils/generatePath';
-import DefaultManagerMinio from '../../utils/minio/manager';
 
 const {
     rabbit,
@@ -12,7 +12,7 @@ const {
     service: { workspaceIdHeaderName },
 } = config;
 
-export class FilesManager extends DefaultManagerMinio {
+class FilesManager extends DefaultManagerMinio {
     uploadFile(file?: Express.Multer.File) {
         return file;
     }
@@ -101,3 +101,5 @@ export class FilesManager extends DefaultManagerMinio {
         });
     }
 }
+
+export default FilesManager;

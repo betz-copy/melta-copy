@@ -1,8 +1,8 @@
 import 'dotenv/config';
 import * as env from 'env-var';
-import { fileExtension } from './documentExtension';
+import fileExtension from './documentExtension';
 
-export const config = {
+const config = {
     multer: {
         fileKeyName: 'file',
         filesKeyName: 'files',
@@ -69,3 +69,5 @@ export const config = {
         documentType: env.get('DOCUMENT_PREVIEW_FILE_TYPE').default(fileExtension.document).asArray(),
     },
 };
+
+export default config;

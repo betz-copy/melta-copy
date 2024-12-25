@@ -1,10 +1,11 @@
+/* eslint-disable consistent-return */
 import { NextFunction, Request, Response } from 'express';
 import Multer from 'multer';
 import { callbackify } from 'util';
-import { config } from '../../config';
+import { DefaultManagerMinio } from '@microservices/shared';
+import config from '../../config';
 import { BadRequestError } from '../../express/error';
 import { generatePath } from '../generatePath';
-import DefaultManagerMinio from './manager';
 
 const { fileKeyName, filesKeyName } = config.multer;
 

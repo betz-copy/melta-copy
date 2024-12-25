@@ -5,10 +5,10 @@ import helmet from 'helmet';
 
 import { once } from 'events';
 import { errorMiddleware } from './error';
-import { appRouter } from './router';
-import { config } from '../config';
+import appRouter from './router';
+import config from '../config';
 
-export class Server {
+class Server {
     private app: express.Application;
 
     private http: http.Server;
@@ -36,3 +36,5 @@ export class Server {
         await once(this.http, 'listening');
     }
 }
+
+export default Server;

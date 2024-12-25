@@ -9,6 +9,22 @@ const config = {
         version: env.get('SERVICE_VERSION').default('1.0.0').asString(),
         port: env.get('PORT').default('3000').asPortNumber(),
     },
+    minio: {
+        url: env.get('MINIO_ENDPOINT').default('localhost').asString(),
+        port: env.get('MINIO_PORT').default(9000).asPortNumber(),
+        accessKey: env.get('MINIO_ACCESS_KEY').default('minioadmin').asString(),
+        secretKey: env.get('MINIO_SECRET_KEY').default('minioadmin').asString(),
+        bucketName: env.get('MINIO_BUCKET_NAME').default('bucket').asString(),
+        useSSL: false,
+        transportAgent: {
+            timeout: env.get('TRANSPORT_AGENT_TIMEOUT').default(60000).asIntPositive(),
+            maxSockets: env.get('TRANSPORT_AGENT_MAX_SOCKETS').default(1000).asIntPositive(),
+            keepAlive: env.get('TRANSPORT_AGENT_KEEP_ALIVE').default(1).asBool(),
+            keepAliveMsecs: env.get('TRANSPORT_AGENT_KEEP_ALIVE_MSECS').default(1000).asIntPositive(),
+        },
+        useDevBucket: env.get('USE_DEV_BUCKETS').default('false').asBool(),
+        devBucketPrefix: env.get('DEV_BUCKET_PREFIX').default('dev-').asString(),
+    },
     logs: {
         format: env.get('LOGGING_DATE_FORMAT').default('YYYY-MM-DD HH:mm:ss').asString(),
         enableFile: env.get('ENABLE_FILE_LOGGING').default('false').asBool(),

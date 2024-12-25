@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { createController } from '../../utils/express';
+import { createController } from '@microservices/shared';
 import { ValidateRequest } from '../../utils/joi';
 import { MinioMulter } from '../../utils/minio';
 import FilesController, { workspaceIdInHeader } from './controller';
@@ -26,4 +26,4 @@ filesRouter.post('/duplicate-bulk', ValidateRequest(bulkFilesRequestSchema), fil
 filesRouter.post('/bulk', MinioMulter.uploadToMinio, ValidateRequest(uploadFilesRequestSchema), filesController.uploadFiles);
 filesRouter.post('/', MinioMulter.uploadBulkToMinio, ValidateRequest(uploadFileRequestSchema), filesController.uploadFile);
 
-export { filesRouter };
+export default filesRouter;

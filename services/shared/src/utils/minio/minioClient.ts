@@ -1,12 +1,12 @@
 import * as http from 'http';
 import { BucketItem, Client, CopyConditions } from 'minio';
 import { Readable } from 'stream';
-import { config } from '../../config';
-import { logger } from '@microservices/shared';
+import logger from '../logger/logsLogger';
+import config from '../../config';
 
 const { url: endPoint, port, accessKey, secretKey, useSSL, transportAgent } = config.minio;
 
-export class MinIOClient {
+class MinIOClient {
     private minioClient: Client;
 
     constructor(private bucketName: string) {
@@ -93,3 +93,5 @@ export class MinIOClient {
         return this.wrapDBNotExistsError(() => this.minioClient.putObject(this.bucketName, destinationFilePath, fileStream, size, metaData));
     }
 }
+
+export default MinIOClient;

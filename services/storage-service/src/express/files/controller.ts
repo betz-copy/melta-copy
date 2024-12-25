@@ -1,10 +1,10 @@
 import * as archiver from 'archiver';
-import * as express from 'express';
+import express from 'express';
 import { StatusCodes } from 'http-status-codes';
 import DefaultController from '../../utils/express/controller';
 import { getFileName } from '../../utils/generatePath';
 import { ServiceError } from '../error';
-import { FilesManager } from './manager';
+import FilesManager from './manager';
 
 export default class FilesController extends DefaultController<FilesManager> {
     constructor(workspaceId: string) {

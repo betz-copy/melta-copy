@@ -1,6 +1,7 @@
+/* eslint-disable import/prefer-default-export */
 import * as Joi from 'joi';
 import { Request } from 'express';
-import { wrapValidator } from './express';
+import { wrapValidator } from '@microservices/shared';
 
 const defaultValidationOptions: Joi.ValidationOptions = {
     abortEarly: false,
