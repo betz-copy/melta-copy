@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
+import { FunctionKey } from '@microservices/shared';
 import config from '../../config';
 import { BadRequestError } from '../../express/error';
-import { FunctionKey } from '@microservices/shared';
 import DefaultController from './controller';
 
 export const wrapMiddleware = (func: (req: Request, res?: Response) => Promise<void>) => {
@@ -29,6 +29,8 @@ export const fetchPropertyFromRequest = <T>(req: any, key: string): T => {
     return req[key];
 };
 
+type IMiddlewareFunction = (req: Request, res: Response, next?: NextFunction) => Promise<void>;
+
 export const createController = <T extends InstanceType<typeof DefaultController<any>>>(
     Controller: { new (workspaceId: string): T },
     isMiddleware = false,
@@ -42,18 +44,14 @@ export const createController = <T extends InstanceType<typeof DefaultController
 
                     if (typeof workspaceId !== 'string') return next(new BadRequestError('Invalid workspace id in header'));
 
-                    if (isMiddleware) return (new Controller(workspaceId)[funcName] as Function)(req, res, next).then(next).catch(next);
+                    if (isMiddleware) return (new Controller(workspaceId)[funcName] as IMiddlewareFunction)(req, res, next).then(next).catch(next);
 
-                    return (new Controller(workspaceId)[funcName] as Function)(req, res, next).catch(next);
+                    return (new Controller(workspaceId)[funcName] as IMiddlewareFunction)(req, res, next).catch(next);
                 };
             },
         },
     ) as {
-        [K in FunctionKey<T, (req: Request, res: Response, next?: NextFunction) => Promise<void>>]: (
-            req: Request,
-            res: Response,
-            next: NextFunction,
-        ) => void;
+        [K in FunctionKey<T, IMiddlewareFunction>]: (req: Request, res: Response, next: NextFunction) => void;
     };
 };
 

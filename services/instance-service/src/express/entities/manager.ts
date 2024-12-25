@@ -379,7 +379,7 @@ export class EntityManager extends DefaultManagerNeo4j {
         relatedTemplates.add(_id);
 
         Object.values(properties).forEach((value) => {
-            if (value.format === 'relationshipReference') relatedTemplates.add(value.relationshipReference?.relatedTemplateId!);
+            if (value.format === 'relationshipReference') relatedTemplates.add(value.relationshipReference!.relatedTemplateId);
         });
 
         const entityTemplates = await this.entityTemplateManagerService.searchEntityTemplates({
@@ -476,7 +476,7 @@ export class EntityManager extends DefaultManagerNeo4j {
                     actionType: ActionTypes.UpdateEntity,
                     actionMetadata: {
                         entityId: entity?.properties._id,
-                        updatedFields: this.getUpdatedProperties(entity?.properties!, properties, entityTemplate),
+                        updatedFields: this.getUpdatedProperties(entity?.properties ?? {}, properties, entityTemplate),
                         before: entity?.properties,
                     } as IUpdateEntityMetadata,
                 };
@@ -1068,7 +1068,7 @@ export class EntityManager extends DefaultManagerNeo4j {
     }
 
     private removeBasicProperties(properties: Record<string, any>) {
-        const { createdAt, updatedAt, _id, disabled, ...rest } = properties;
+        const { createdAt: _createdAt, updatedAt: _updatedAt, _id, disabled: _disabled, ...rest } = properties;
         return rest;
     }
 

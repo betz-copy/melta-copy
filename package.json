@@ -10,6 +10,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "pre-push": "cd ./services/frontend-service && npm run lint && node --max_old_space_size=16384 npm run build",
     "build": "npm run build --workspaces",
+    "lint": "npm run lint --workspaces",
     "clean": "rimraf ./services/**/dist && rimraf ./packages/**/dist",
     "clean:node_modules": "rimraf ./services/**/node_modules && rimraf ./node_modules",
     "start-ui": "npm run -w services/frontend-service start:docker"

@@ -22,5 +22,6 @@
     "isolatedModules": true,
     "moduleResolution": "node",
     "lib": ["ES2020.Promise"]
-  }
+  },
+  "exclude": ["node_modules", "dist", ".eslintrc.js"]
 }
