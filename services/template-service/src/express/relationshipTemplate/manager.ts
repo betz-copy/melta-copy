@@ -1,10 +1,9 @@
 import { ClientSession, FilterQuery } from 'mongoose';
-import { IMongoRelationshipTemplate, IRelationshipTemplate } from '@microservices/shared';
+import { DefaultManagerMongo, IMongoRelationshipTemplate, IRelationshipTemplate } from '@microservices/shared';
 import config from '../../config';
 import { NotFoundError } from '../error';
 import { escapeRegExp } from '../../utils';
-import { DefaultManagerMongo } from '../../utils/mongo/manager';
-import { RelationshipTemplateSchema } from './model';
+import RelationshipTemplateSchema from './model';
 
 export class RelationshipTemplateManager extends DefaultManagerMongo<IMongoRelationshipTemplate> {
     constructor(workspaceId: string) {

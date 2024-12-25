@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
-import { IMongoRule } from '@microservices/shared';
-import DefaultController from '../../utils/express/controller';
-import { RuleManager } from './manager';
+import { DefaultController, IMongoRule } from '@microservices/shared';
+import RuleManager from './manager';
 
 class RuleController extends DefaultController<IMongoRule, RuleManager> {
     constructor(workspaceId: string) {

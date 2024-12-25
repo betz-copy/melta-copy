@@ -1,12 +1,11 @@
 import { FilterQuery } from 'mongoose';
-import { IMongoRule, IRule } from '@microservices/shared';
+import { DefaultManagerMongo, IMongoRule, IRule } from '@microservices/shared';
 import { NotFoundError } from '../error';
 import config from '../../config';
 import { escapeRegExp } from '../../utils';
-import { DefaultManagerMongo } from '../../utils/mongo/manager';
-import { RuleTemplateSchema } from './model';
+import RuleTemplateSchema from './model';
 
-export class RuleManager extends DefaultManagerMongo<IMongoRule> {
+class RuleManager extends DefaultManagerMongo<IMongoRule> {
     constructor(workspaceId: string) {
         super(workspaceId, config.mongo.ruleCollectionName, RuleTemplateSchema);
     }
@@ -62,3 +61,5 @@ export class RuleManager extends DefaultManagerMongo<IMongoRule> {
         return this.model.find(query).limit(limit).skip(skip).lean().exec();
     }
 }
+
+export default RuleManager;

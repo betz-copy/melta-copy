@@ -1,6 +1,6 @@
+import { wrapValidator } from '@microservices/shared';
 import { Request } from 'express';
 import Joi from 'joi';
-import { wrapValidator } from './express';
 
 export const defaultValidationOptions: Joi.ValidationOptions = {
     abortEarly: false,
@@ -8,7 +8,7 @@ export const defaultValidationOptions: Joi.ValidationOptions = {
     convert: true,
 };
 
-export const joiValidate = <T extends any>(schema: Joi.AnySchema<any>, data: T, options: Joi.ValidationOptions = defaultValidationOptions): T => {
+export const joiValidate = <T>(schema: Joi.AnySchema<any>, data: T, options: Joi.ValidationOptions = defaultValidationOptions): T => {
     const { error, value } = schema.validate(data, options);
     if (error) {
         throw error;

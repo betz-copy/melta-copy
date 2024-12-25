@@ -1,3 +1,4 @@
+/* eslint-disable import/prefer-default-export */
 import * as ts from 'typescript-actions';
 import * as fs from 'fs';
 import * as path from 'path';

@@ -8,7 +8,7 @@ const generateFromString = (
 
     if (format === 'date' || format === 'date-time') return 'Date';
 
-    if (format === 'relationshipReference') return entitiesTemplatesByIds.get(relationshipReference?.relatedTemplateId!)!.name;
+    if (format === 'relationshipReference') return entitiesTemplatesByIds.get(relationshipReference!.relatedTemplateId)!.name;
 
     return 'string';
 };

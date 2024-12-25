@@ -1,14 +1,12 @@
 import { Request } from 'express';
 import * as ts from 'typescript-actions';
-import { IEntityTemplatePopulated, IMongoEntityTemplate } from '@microservices/shared';
-import DefaultController from '../../utils/express/controller';
+import { addPropertyToRequest, DefaultController, IEntityTemplatePopulated, IMongoEntityTemplate } from '@microservices/shared';
 import { generateInterfaceWithRelationships } from '../../utils/entityTemplateActions/interfacesGenerator';
 import { BadRequestError } from '../error';
 import EntityTemplateManager from './manager';
-import { addPropertyToRequest } from '../../utils/express';
 import { compileTsCode } from '../../utils/entityTemplateActions/tsCompiler';
 
-export class EntityTemplateValidator extends DefaultController<IMongoEntityTemplate, EntityTemplateManager> {
+class EntityTemplateValidator extends DefaultController<IMongoEntityTemplate, EntityTemplateManager> {
     constructor(workspaceId: string) {
         super(new EntityTemplateManager(workspaceId));
     }
@@ -18,7 +16,7 @@ export class EntityTemplateValidator extends DefaultController<IMongoEntityTempl
         relatedTemplates.add(_id);
 
         Object.values(properties).forEach((value) => {
-            if (value.format === 'relationshipReference') relatedTemplates.add(value.relationshipReference?.relatedTemplateId!);
+            if (value.format === 'relationshipReference') relatedTemplates.add(value.relationshipReference!.relatedTemplateId);
         });
 
         const entityTemplates = await this.manager.getTemplates({ ids: Array.from(relatedTemplates), limit: 0, skip: 0 });
@@ -81,3 +79,5 @@ export class EntityTemplateValidator extends DefaultController<IMongoEntityTempl
         }
     };
 }
+
+export default EntityTemplateValidator;

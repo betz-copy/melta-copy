@@ -17,8 +17,8 @@ import {
     IRegularFunction,
     ISumAggFunction,
     IAggregationGroup,
+    DefaultController,
 } from '@microservices/shared';
-import DefaultController from '../../utils/express/controller';
 import { defaultValidationOptions, joiValidate } from '../../utils/joi';
 import EntityTemplateManager from '../entityTemplate/manager';
 import { RelationshipTemplateManager } from '../relationshipTemplate/manager';
@@ -130,7 +130,7 @@ const formulaSchema = Joi.alternatives(
     Joi.object({ isAggregationGroup: Joi.boolean().valid(true).required() }).unknown(true),
 ).messages({ 'alternatives.match': 'formula must be one of equation/group/aggregationGroup' });
 
-export class RuleValidator extends DefaultController<IMongoRelationshipTemplate, RelationshipTemplateManager> {
+class RuleValidator extends DefaultController<IMongoRelationshipTemplate, RelationshipTemplateManager> {
     private entityTemplateManager: EntityTemplateManager;
 
     constructor(workspaceId: string) {
@@ -462,3 +462,5 @@ export class RuleValidator extends DefaultController<IMongoRelationshipTemplate,
         await this.validateRuleFormula(req.body);
     }
 }
+
+export default RuleValidator;

@@ -16,6 +16,7 @@ export const withTransaction = async <Func extends (session: ClientSession) => P
     } finally {
         const { err: endSessionErr } = await trycatch(() => session.endSession());
         if (endSessionErr) {
+            // eslint-disable-next-line no-unsafe-finally
             throw new ServiceError(undefined, 'failed to end session. possible resource leak', { error: endSessionErr });
         }
     }

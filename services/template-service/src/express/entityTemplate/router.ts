@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { createController } from '../../utils/express';
+import { createController } from '@microservices/shared';
 import ValidateRequest from '../../utils/joi';
 import EntityTemplateController from './controller';
 import {
@@ -12,7 +12,7 @@ import {
     updateEntityTemplateSchema,
     updateEntityTemplateStatusSchema,
 } from './validator.schema';
-import { EntityTemplateValidator } from './validator.template';
+import EntityTemplateValidator from './validator.template';
 
 const entityTemplateRouter: Router = Router();
 
