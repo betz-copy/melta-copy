@@ -2,6 +2,7 @@ import http from 'http';
 import { Client } from 'minio';
 import pdf from 'pdf-parse';
 import mammoth from 'mammoth';
+import { Duplex } from 'stream';
 import config from '../../config';
 import { streamToBuffer } from '../fs';
 import logger from '../logger/logsLogger';
@@ -9,6 +10,16 @@ import readExcelData from '../excel';
 import { extractPptxText } from '../pptx';
 
 const { url: endPoint, port, accessKey, secretKey, useSSL, transportAgent } = config.minio;
+
+export enum FileTypes {
+    PDF = 'pdf',
+    TXT = 'txt',
+    DOC = 'doc',
+    DOCX = 'docx',
+    XLSX = 'xlsx',
+    CSV = 'csv',
+    PPTX = 'pptx',
+}
 
 export class MinIOClient {
     private minioClient: Client;
@@ -54,23 +65,39 @@ export class MinIOClient {
         return this.wrapDBNotExistsError(() => this.minioClient.getObject(this.bucketName, filePath));
     }
 
+    bufferToStream(buffer: Buffer) {
+        const stream = new Duplex();
+        stream.push(buffer);
+        stream.push(null);
+        return stream;
+    }
+
     async readFile(filePath: string): Promise<string | undefined> {
         const fileStream = await this.downloadFileStream(filePath);
-        const buffer = await streamToBuffer(fileStream);
         const fileExtension = filePath.split('.').pop();
+
         switch (fileExtension) {
-            case 'pdf':
+            case FileTypes.PDF: {
+                const buffer = await streamToBuffer(fileStream);
                 return (await pdf(buffer)).text;
-            case 'txt':
+            }
+            case FileTypes.TXT: {
+                const buffer = await streamToBuffer(fileStream);
                 return buffer.toString();
-            case 'doc':
-            case 'docx':
+            }
+            case FileTypes.DOC:
+            case FileTypes.DOCX: {
+                const buffer = await streamToBuffer(fileStream);
                 return (await mammoth.extractRawText({ buffer })).value;
-            case 'xlsx':
-            case 'csv':
+            }
+            case FileTypes.XLSX:
+            case FileTypes.CSV: {
                 return readExcelData(fileStream, fileExtension);
-            case 'pptx':
-                return extractPptxText(buffer); // Pls use your custom extractor here
+            }
+            case FileTypes.PPTX: {
+                const buffer = await streamToBuffer(fileStream);
+                return extractPptxText(buffer);
+            }
             default:
                 return undefined;
         }

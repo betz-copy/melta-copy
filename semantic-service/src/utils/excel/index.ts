@@ -1,11 +1,17 @@
 import Excel from 'exceljs';
 import { Stream } from 'stream';
+import { FileTypes } from '../minio/minioClient';
 
-const readExcelData = async (fileStream: Stream, type: 'csv' | 'xlsx') => {
+const readExcelData = async (fileStream: Stream, type: FileTypes.CSV | FileTypes.XLSX) => {
     const workbook = new Excel.Workbook();
 
-    if (type === 'xlsx') await workbook.xlsx.read(fileStream);
-    else await workbook.csv.read(fileStream);
+    if (type === FileTypes.XLSX) {
+        await workbook.xlsx.read(fileStream);
+    } else if (type === FileTypes.CSV) {
+        await workbook.csv.read(fileStream);
+    } else {
+        throw new Error('Unsupported file type');
+    }
 
     const worksheet = workbook.worksheets[0];
     const excelData: string[] = [];

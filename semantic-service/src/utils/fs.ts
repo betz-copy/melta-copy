@@ -12,8 +12,9 @@ const {
 } = config;
 
 export const streamToBuffer = (stream: Stream) => {
+    const buffer: Uint8Array[] = [];
+
     return new Promise<Buffer>((resolve, reject) => {
-        const buffer: Uint8Array[] = [];
         stream.on('data', (dataChunk) => buffer.push(dataChunk));
         stream.on('end', () => resolve(Buffer.concat(buffer)));
         stream.on('error', reject);
