@@ -42,6 +42,15 @@ const config = {
         },
         useDevBucket: env.get('USE_DEV_BUCKETS').default('false').asBool(),
         devBucketPrefix: env.get('DEV_BUCKET_PREFIX').default('dev-').asString(),
+        pptx: {
+            extractingTextTags: env.get('PPTX_EXTRACTING_TEXT_TAGS').default(['a:t']).asArray(),
+            extractingDiagramTags: env.get('PPTX_EXTRACTING_DIAGRAM_TAGS').default(['dgm:t', 'a:t']).asArray(),
+            diagramTypesToFilterBy: env
+                .get('PPTX_DIAGRAM_TYPES_TO_FILTER_BY')
+                .default(['http://schemas.openxmlformats.org/officeDocument/2006/relationships/diagramData'])
+                .asArray(),
+            slidesSplitter: env.get('PPTX_SLIDES_SPLITTER').default('\n###\n').asString(),
+        },
     },
     rabbit: {
         url: env.get('RABBIT_URL').required().asString(),

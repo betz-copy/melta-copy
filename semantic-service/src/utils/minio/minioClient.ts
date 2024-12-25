@@ -6,7 +6,7 @@ import config from '../../config';
 import { streamToBuffer } from '../fs';
 import logger from '../logger/logsLogger';
 import readExcelData from '../excel';
-import { extractPptxText } from '../pptxExtractor';
+import { extractPptxText } from '../pptx';
 
 const { url: endPoint, port, accessKey, secretKey, useSSL, transportAgent } = config.minio;
 
