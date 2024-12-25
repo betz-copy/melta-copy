@@ -24,7 +24,7 @@ const config = {
         charsToRemove: env.get('MODEL_CHARS_TO_REMOVE').default('\n\t').asString(),
         llmChunkSplitterOptions: env
             .get('LLM_CHUNK_SPLITTER_OPTIONS')
-            .default({ minLength: 128, maxLength: 512, splitter: 'sentence' })
+            .default({ minLength: 128, maxLength: 512, splitter: 'sentence', delimiters: '\n###\n' })
             .asJsonObject() as SplitOptions,
     },
     minio: {
