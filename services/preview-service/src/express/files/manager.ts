@@ -3,7 +3,7 @@ import { Readable } from 'stream';
 import { promisify } from 'util';
 import { menash } from 'menashmq';
 import { streamToBuffer } from '../../utils/fs';
-import { config } from '../../config';
+import config from '../../config';
 import { NotFoundError } from '../error';
 import DefaultManagerMinio from '../../utils/minio/manager';
 
@@ -14,7 +14,7 @@ const {
 } = config;
 
 const libreConvert = promisify(libreoffice.convert);
-export class FilesManager extends DefaultManagerMinio {
+class FilesManager extends DefaultManagerMinio {
     async getFilePreview(filePath: string, contentType: string) {
         const pdfFileName =
             contentType !== 'document' ? filePath : `${document.previewPrefix}${filePath.replace(/\.[^/.]+$/, '')}${document.previewFileType}`;
@@ -49,3 +49,5 @@ export class FilesManager extends DefaultManagerMinio {
         return res;
     }
 }
+
+export default FilesManager;

@@ -4,11 +4,11 @@ import { once } from 'events';
 import express from 'express';
 import * as http from 'http';
 
-import { config } from '../config';
+import config from '../config';
 import { errorMiddleware } from './error';
-import { appRouter } from './router';
+import appRouter from './router';
 
-export class Server {
+class Server {
     private app: express.Application;
 
     private http: http.Server;
@@ -41,3 +41,5 @@ export class Server {
         await once(this.http, 'listening');
     }
 }
+
+export default Server;

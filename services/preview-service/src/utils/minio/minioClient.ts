@@ -1,11 +1,11 @@
 import * as minio from 'minio';
 import { Readable } from 'stream';
-import { config } from '../../config';
 import { logger } from '@microservices/shared';
+import config from '../../config';
 
 const { url: endPoint, port, accessKey, secretKey, useSSL } = config.minio;
 
-export class MinIOClient {
+class MinIOClient {
     private minioClient: minio.Client;
 
     constructor(private bucketName: string) {
@@ -48,3 +48,5 @@ export class MinIOClient {
         return this.wrapDBNotExistsError(() => this.minioClient.statObject(this.bucketName, filePath));
     }
 }
+
+export default MinIOClient;
