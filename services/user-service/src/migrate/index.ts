@@ -1,9 +1,8 @@
 import { isAxiosError } from 'axios';
-import { PermissionScope, ICompactPermissions, ISubCompactPermissions } from '@microservices/shared';
-import { config } from './config';
+import { PermissionScope, ICompactPermissions, ISubCompactPermissions, logger } from '@microservices/shared';
+import config from './config';
 import { IPermissionsOfUser } from './old_interfaces';
 import { createNewUser, getOldPermissionsOfUsers } from './requests';
-import { logger } from '@microservices/shared';
 
 const oldPermissionsToNewPermissions = (
     oldPermissions: IPermissionsOfUser[],

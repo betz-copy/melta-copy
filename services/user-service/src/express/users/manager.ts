@@ -1,11 +1,11 @@
 import { FilterQuery } from 'mongoose';
 import { ISubCompactPermissions, IBaseUser, IUser } from '@microservices/shared';
-import { UsersModel } from './model';
-import { PermissionsManager } from '../permissions/manager';
+import UsersModel from './model';
+import PermissionsManager from '../permissions/manager';
 import { typedObjectEntries } from '../../utils';
 import { UserDoesNotExistError } from './errors';
 
-export class UsersManager {
+class UsersManager {
     static async getUserById(id: string, workspaceIds?: string[]): Promise<IUser> {
         const baseUser = await UsersModel.findById(id).orFail(new UserDoesNotExistError(id)).lean().exec();
         return this.baseUserToUser(baseUser, workspaceIds);
@@ -102,3 +102,5 @@ export class UsersManager {
         return Promise.all(users.map((user) => this.baseUserToUser(user)));
     }
 }
+
+export default UsersManager;

@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { wrapController } from '../../utils/express';
+import { wrapController } from '@microservices/shared';
 import { ValidateRequest } from '../../utils/joi';
 import {
     createUserRequestSchema,
@@ -9,9 +9,9 @@ import {
     updateUserRequestSchema,
     updateUsersBulkRequestSchema,
 } from './validator.schema';
-import { UsersController } from './controller';
+import UsersController from './controller';
 
-export const usersRouter: Router = Router();
+const usersRouter: Router = Router();
 
 usersRouter.post('/find-by-id/:id', ValidateRequest(getUserByIdRequestSchema), wrapController(UsersController.getUserById));
 usersRouter.post(
@@ -27,3 +27,5 @@ usersRouter.post('/', ValidateRequest(createUserRequestSchema), wrapController(U
 
 usersRouter.patch('/:id', ValidateRequest(updateUserRequestSchema), wrapController(UsersController.updateUser));
 usersRouter.patch('/bulk', ValidateRequest(updateUsersBulkRequestSchema), wrapController(UsersController.updateUsersBulk));
+
+export default usersRouter;

@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
-import { UsersManager } from './manager';
+import UsersManager from './manager';
 
-export class UsersController {
+class UsersController {
     static async getUserById(req: Request, res: Response) {
         res.json(await UsersManager.getUserById(req.params.id, req.body.workspaceIds));
     }
@@ -34,3 +34,5 @@ export class UsersController {
         res.json(await UsersManager.updateUsersBulk(req.body));
     }
 }
+
+export default UsersController;

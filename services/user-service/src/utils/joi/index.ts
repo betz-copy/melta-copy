@@ -1,6 +1,6 @@
+import { wrapValidator } from '@microservices/shared';
 import { Request } from 'express';
 import * as Joi from 'joi';
-import { wrapValidator } from '../express';
 
 const defaultValidationOptions: Joi.ValidationOptions = {
     abortEarly: false,
@@ -19,6 +19,7 @@ const normalizeRequest = (req: any, value: any) => {
     req.params = value.params;
 };
 
+// eslint-disable-next-line import/prefer-default-export
 export const ValidateRequest = (schema: Joi.ObjectSchema<any>, options: Joi.ValidationOptions = defaultValidationOptions) => {
     const validator = async (req: Request) => {
         const { error, value } = schema.unknown().validate(req, options);

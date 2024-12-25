@@ -1,6 +1,6 @@
 import * as mongoose from 'mongoose';
 import { IBaseUser } from '@microservices/shared';
-import { config } from '../../config';
+import config from '../../config';
 
 const UserSchema = new mongoose.Schema(
     {
@@ -46,4 +46,6 @@ const UserSchema = new mongoose.Schema(
     { timestamps: true, versionKey: false },
 );
 
-export const UsersModel = mongoose.model<IBaseUser>(config.mongo.usersCollectionName, UserSchema);
+const UsersModel = mongoose.model<IBaseUser>(config.mongo.usersCollectionName, UserSchema);
+
+export default UsersModel;

@@ -2,7 +2,7 @@ import * as joi from 'joi';
 import { mongoIdSchema } from '../../utils/joi/schemas';
 import { SubCompactPermissionSchema } from '../../utils/joi/schemas/permission/compact';
 import { partialBaseUserSchema, userSchema } from '../../utils/joi/schemas/user';
-import { config } from '../../config';
+import config from '../../config';
 
 const { maxFindLimit } = config.mongo;
 

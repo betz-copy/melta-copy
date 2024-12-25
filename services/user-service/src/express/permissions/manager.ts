@@ -10,11 +10,11 @@ import {
 } from '@microservices/shared';
 import { flattenObject, typedObjectEntries } from '../../utils';
 import { transaction } from '../../utils/mongoose';
-import { UsersManager } from '../users/manager';
+import UsersManager from '../users/manager';
 import { SinglePermissionOfTypePerUserError } from './errors';
-import { PermissionsModel } from './model';
+import PermissionsModel from './model';
 
-export class PermissionsManager {
+class PermissionsManager {
     static async getCompactPermissions(permissions: IPermission[]): Promise<ICompactPermissions> {
         const compactPermissions: ICompactPermissions = {};
 
@@ -94,8 +94,8 @@ export class PermissionsManager {
         if (workspaceIds && workspaceIds.length > 1) {
             workspaceIds.pop();
 
-            workspaceIds.forEach((workspaceId) => {
-                subQueries.push({ type: PermissionType.admin, metadata: { scope: PermissionScope.write }, workspaceId });
+            workspaceIds.forEach((innerWorkspaceId) => {
+                subQueries.push({ type: PermissionType.admin, metadata: { scope: PermissionScope.write }, innerWorkspaceId });
             });
         }
 
@@ -104,3 +104,5 @@ export class PermissionsManager {
         return PermissionsModel.find(query).lean().exec();
     }
 }
+
+export default PermissionsManager;

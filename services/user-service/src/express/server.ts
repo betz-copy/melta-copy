@@ -4,8 +4,8 @@ import helmet from 'helmet';
 
 import { once } from 'events';
 import { errorMiddleware } from './error';
-import { appRouter } from './router';
-import { config } from '../config';
+import appRouter from './router';
+import config from '../config';
 
 class Server {
     private app: express.Application;
