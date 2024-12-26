@@ -10,11 +10,11 @@ import {
 } from '@microservices/shared';
 import * as schedule from 'node-schedule';
 import config from '../config';
-import { UsersManager } from '../users/manager';
-import { InstancesService } from '../services/instance';
-import { EntityTemplateService } from '../services/entityTemplate';
-import { WorkspaceManager } from '../workspaces/manager';
-import { RabbitManager } from '../utils/rabbit/rabbit';
+import UsersManager from '../users/manager';
+import InstancesService from '../services/instance';
+import EntityTemplateService from '../services/entityTemplate';
+import WorkspaceManager from '../workspaces/manager';
+import RabbitManager from '../utils/rabbit/rabbit';
 
 const { notifications } = config;
 
@@ -86,11 +86,19 @@ const sendNotificationsForEntityTemplate = async (
     const userIdsWithPermission = await UsersManager.searchUserIds({
         workspaceIds,
         permissions: {
-            // @ts-ignore
+            // TODO: Yona - Check if this change is OK?
             [PermissionType.instances]: {
                 categories: {
                     [entityTemplate.category._id]: {
-                        scope: PermissionScope.write,
+                        entityTemplates: {
+                            [entityTemplate._id]: {
+                                fields: {
+                                    '*': {
+                                        scope: PermissionScope.write,
+                                    },
+                                },
+                            },
+                        },
                     },
                 },
             },
@@ -141,7 +149,7 @@ const sendNotificationsForEntityTemplate = async (
     }
 };
 
-export const checkForDateNotifications = async () => {
+const checkForDateNotifications = async () => {
     schedule.scheduleJob(notifications.dateAlertTime, async () => {
         logger.info('Checking for Date Notifications...');
         const workspaceIds = await WorkspaceManager.getWorkspaceIds(WorkspaceTypes.mlt);
@@ -166,3 +174,5 @@ export const checkForDateNotifications = async () => {
         );
     });
 };
+
+export default checkForDateNotifications;

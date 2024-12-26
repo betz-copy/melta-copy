@@ -6,7 +6,7 @@ const {
     workspaceService: { url, baseRoute, requestTimeout },
 } = config;
 
-export class WorkspaceService {
+class WorkspaceService {
     private static api = axios.create({
         baseURL: `${url}${baseRoute}`,
         timeout: requestTimeout,
@@ -22,3 +22,5 @@ export class WorkspaceService {
         return data;
     }
 }
+
+export default WorkspaceService;

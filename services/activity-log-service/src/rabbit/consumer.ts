@@ -1,9 +1,8 @@
 import { ConsumerMessage } from 'menashmq';
 
-import { IActivityLog } from '@microservices/shared';
+import { ServiceError, IActivityLog } from '@microservices/shared';
 import ActivityLogManager from '../express/activityLog/manager';
 import { basicValidateRequest } from '../utils/joi';
-import { ServiceError } from '../express/error';
 import activityLogSchema from '../utils/rabbit/joi.schema';
 import config from '../config';
 

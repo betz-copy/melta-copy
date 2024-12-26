@@ -6,7 +6,7 @@ const {
     instanceService: { url, baseEntitiesRoute, requestTimeout, searchOfTemplateRoute },
 } = config;
 
-export class InstancesService extends DefaultExternalServiceApi {
+class InstancesService extends DefaultExternalServiceApi {
     constructor(workspaceId: string) {
         super(workspaceId, { baseURL: url, timeout: requestTimeout });
     }
@@ -17,3 +17,5 @@ export class InstancesService extends DefaultExternalServiceApi {
         return data;
     }
 }
+
+export default InstancesService;
