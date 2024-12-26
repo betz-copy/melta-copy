@@ -42,7 +42,6 @@ const getFilteredInstances = async (
         const notificationDate = new Date();
         notificationDate.setDate(today.getDate() + dateNotificationValue);
         const startDate = isDateTime ? today.toISOString() : today.toISOString().split('T')[0];
-
         const endDate = isDateTime
             ? new Date(notificationDate.setUTCHours(23, 59, 59, 999)).toISOString()
             : notificationDate.toISOString().split('T')[0];
