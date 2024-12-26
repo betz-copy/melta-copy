@@ -25,7 +25,6 @@ interface IMeltaRoutesProps {
 export const MeltaRoutes: React.FC<IMeltaRoutesProps> = ({ path }) => {
     const setWorkspace = useWorkspaceStore((state) => state.setWorkspace);
     const currentUser = useUserStore((state) => state.user);
-    const setUser = useUserStore((state) => state.setUser);
 
     const queryClient = useQueryClient();
 

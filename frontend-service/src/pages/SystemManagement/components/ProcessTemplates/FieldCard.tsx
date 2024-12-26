@@ -18,7 +18,7 @@ const FieldCard: React.FC<FieldCardProps> = ({ keyPath, title, input, handleUpda
         <Grid item key={keyPath}>
             <ViewingCard
                 width={400}
-                cursor="auto"
+                cursor
                 title={
                     <Grid direction="column" container gap="10px">
                         <Grid item container direction="row" justifyContent="space-between" alignItems="center" paddingLeft="20px" flexWrap="nowrap">
