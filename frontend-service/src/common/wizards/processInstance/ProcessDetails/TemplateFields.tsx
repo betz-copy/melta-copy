@@ -1,7 +1,9 @@
-import { Fab, Grid } from '@mui/material';
+import { Button, Fab, Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
 import { Field } from 'formik';
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
+import Groups2Icon from '@mui/icons-material/Groups2';
+import EditIcon from '@mui/icons-material/Edit';
 import { Dictionary } from 'lodash';
 import React from 'react';
 import { FileAttachments } from './FileAttachmentFields';
@@ -23,6 +25,7 @@ export const TemplateFields = ({
     handleBlur,
     templateEntityReferenceProperties,
     onNext,
+    setEditMode,
 }) => {
     console.log({ templateFileProperties, values }); // TODO - fix this component....
     return (
@@ -31,7 +34,6 @@ export const TemplateFields = ({
                 item
                 sx={{
                     overflowY: 'auto',
-                    paddingLeft: toPrint ? 0 : 3,
                 }}
                 // xs={toPrint ? 15 : 7}
             >
@@ -93,9 +95,9 @@ export const TemplateFields = ({
                 )}
             </Grid>
             {!toPrint && (
-                <Grid item>
-                    <Grid item padding={3}>
-                        {values.template && (
+                <Grid container item justifyContent="flex-end" alignSelf="flex-end" alignContent="flex-end">
+                    <Grid item>
+                        {/* {values.template && !viewMode && (
                             <Fab
                                 size="small"
                                 onClick={() => {
@@ -105,9 +107,57 @@ export const TemplateFields = ({
                                 color="primary"
                             >
                                 <NavigateBeforeIcon />
-                                {i18next.t(viewMode ? 'wizard.processInstance.showStepsReviewers' : 'wizard.processInstance.moveToStepsReviewers')}
+                                {i18next.t('wizard.processInstance.moveToStepsReviewers')}
                             </Fab>
-                        )}
+                        )} */}
+                        {/* {
+                            // TODO - on click
+                            values.template && viewMode && (
+                                <Grid container gap="5px" width="100%" wrap="nowrap">
+                                    <Grid item flexBasis="20%">
+                                        <Button
+                                            onClick={() => {
+                                                console.log('click edittt');
+                                                setEditMode(true);
+                                            }}
+                                            style={{
+                                                borderRadius: '7px',
+                                                border: 'solid 1px #1E2775',
+                                                width: '35px',
+                                                height: '35px',
+                                                backgroundColor: '#EBEFFA',
+                                            }}
+                                        >
+                                            <Grid item alignSelf="center" width="35px" height="35px">
+                                                <EditIcon sx={{ height: '100%' }} />
+                                            </Grid>
+                                        </Button>
+                                    </Grid>
+                                    <Grid item flexBasis="50%">
+                                        <Button
+                                            style={{
+                                                borderRadius: '7px',
+                                                border: 'solid 1px #1E2775',
+                                                width: '140px',
+                                                height: '35px',
+                                                backgroundColor: '#EBEFFA',
+                                            }}
+                                        >
+                                            <Grid container justifyContent="center" alignItems="center" gap="10px">
+                                                <Grid item alignSelf="center" style={{ height: '100%' }}>
+                                                    <Groups2Icon sx={{ height: '100%', marginTop: '7px' }} />
+                                                </Grid>
+                                                <Grid item>
+                                                    <Typography fontSize="14px" fontWeight="400">
+                                                        {i18next.t('wizard.processInstance.showStepsReviewers')}
+                                                    </Typography>
+                                                </Grid>
+                                            </Grid>
+                                        </Button>
+                                    </Grid>
+                                </Grid>
+                            )
+                        } */}
                     </Grid>
                 </Grid>
             )}

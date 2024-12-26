@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { Dialog, IconButton, Grid, Box, Stepper, Step, StepLabel, Divider } from '@mui/material';
+import { Dialog, IconButton, Grid, Box, Stepper, Step, StepLabel, Divider, Fab } from '@mui/material';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { AxiosError } from 'axios';
 import CloseIcon from '@mui/icons-material/Close';
 import { pickBy } from 'lodash';
+import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
 import i18next from 'i18next';
 import { ProcessDetailsValues } from './ProcessDetails';
 import { IMongoProcessTemplatePopulated, IProcessTemplateMap } from '../../../interfaces/processes/processTemplate';
@@ -150,7 +151,6 @@ const CreateProcess: React.FC<ISimpleDialogProps> = ({ open, onClose }) => {
                     padding={3}
                     style={{
                         backgroundColor: '#F0F2F7',
-                        // backgroundColor: darkMode ? '#343536' : '#F0F2F7',
                         borderBottomLeftRadius: '20px',
                         borderTopLeftRadius: '20px',
                         boxShadow: '10px 10px 15px 10px #888888',
@@ -178,7 +178,7 @@ const CreateProcess: React.FC<ISimpleDialogProps> = ({ open, onClose }) => {
                         />
                     </Grid>
                 </Grid>
-                <Grid container item flexBasis="75%" flexDirection="column">
+                <Grid container item flexBasis="75%" flexDirection="column" height="100%">
                     {values.template && (
                         <Grid item flexBasis="10%">
                             <Box sx={{ width: '40%', padding: 3 }}>
@@ -196,24 +196,44 @@ const CreateProcess: React.FC<ISimpleDialogProps> = ({ open, onClose }) => {
                     <Divider variant="middle" />
                     {/* </Grid> */}
                     {values.template && activeProcessDetailsStep === 0 && (
-                        <Grid item flexBasis="85%">
-                            <TemplateFields
-                                toPrint={false}
-                                values={values}
-                                viewMode={viewMode}
-                                errors={errors}
-                                touched={touched}
-                                setFieldValue={setFieldValue}
-                                setFieldTouched={setFieldTouched}
-                                templateFileProperties={templateFileProperties}
-                                handleBlur={handleBlur}
-                                templateEntityReferenceProperties={templateEntityReferenceProperties}
-                                onNext={handleNext}
-                            />
+                        <Grid item container flexDirection="column" flexBasis="85%" height="100%">
+                            <Grid item height="90%">
+                                <TemplateFields
+                                    toPrint={false}
+                                    values={values}
+                                    viewMode={viewMode}
+                                    setEditMode={() => {}}
+                                    errors={errors}
+                                    touched={touched}
+                                    setFieldValue={setFieldValue}
+                                    setFieldTouched={setFieldTouched}
+                                    templateFileProperties={templateFileProperties}
+                                    handleBlur={handleBlur}
+                                    templateEntityReferenceProperties={templateEntityReferenceProperties}
+                                    onNext={handleNext}
+                                />
+                            </Grid>
+                            <Grid item container height="10%" width="100%" justifyContent="flex-end">
+                                <Grid>
+                                    {values.template && !viewMode && (
+                                        <Fab
+                                            size="small"
+                                            onClick={() => {
+                                                handleNext();
+                                            }}
+                                            variant="extended"
+                                            color="primary"
+                                        >
+                                            <NavigateBeforeIcon />
+                                            {i18next.t('wizard.processInstance.moveToStepsReviewers')}
+                                        </Fab>
+                                    )}
+                                </Grid>
+                            </Grid>
                         </Grid>
                     )}
                     {values.template && activeProcessDetailsStep === 1 && (
-                        <Grid item flexBasis="80%">
+                        <Grid item flexBasis="80%" height="80%">
                             <StepsReviewers
                                 detailsFormikData={detailsFormikData}
                                 onNext={handleNext}

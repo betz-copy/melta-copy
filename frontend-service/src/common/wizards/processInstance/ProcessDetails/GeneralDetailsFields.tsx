@@ -20,14 +20,16 @@ export const GeneralDetailsFields = ({
 }) => {
     return (
         <Grid item>
-            <BlueTitle
-                title={i18next.t('wizard.processInstance.generalDetails')}
-                component="h6"
-                variant="h6"
-                style={{ marginBottom: '30px', marginTop: '20px', fontSize: '16px' }}
-            />
-            <Grid container direction="column" spacing={3}>
-                <Grid item>
+            {!viewMode && (
+                <BlueTitle
+                    title={i18next.t('wizard.processInstance.generalDetails')}
+                    component="h6"
+                    variant="h6"
+                    style={{ marginBottom: '30px', marginTop: '20px', fontSize: '16px' }}
+                />
+            )}
+            <Grid container spacing={3}>
+                <Grid item width="100%">
                     <Autocomplete
                         id="template"
                         options={Array.from(processTemplatesMap.values())}
@@ -45,7 +47,7 @@ export const GeneralDetailsFields = ({
                                 sx={{
                                     '& .MuiInputBase-root': {
                                         borderRadius: '10px',
-                                        backgroundColor: 'white',
+                                        backgroundColor: viewMode ? 'transparent' : 'white',
                                     },
                                     '& fieldset': {
                                         borderColor: '#CCCFE5',
@@ -58,6 +60,11 @@ export const GeneralDetailsFields = ({
                                 fullWidth
                                 name="template"
                                 variant={variant}
+                                InputProps={{
+                                    ...params.InputProps,
+                                    disableUnderline: !!viewMode,
+                                    endAdornment: viewMode ? null : params.InputProps.endAdornment,
+                                }}
                                 InputLabelProps={{
                                     shrink: viewMode || undefined,
                                 }}
@@ -71,41 +78,43 @@ export const GeneralDetailsFields = ({
                         )}
                     />
                 </Grid>
-                <Grid item>
-                    <TextField
-                        id="name"
-                        name="name"
-                        size="small"
-                        sx={{
-                            '& .MuiInputBase-root': {
-                                borderRadius: '10px',
-                                backgroundColor: 'white',
-                            },
-                            '& fieldset': {
-                                borderColor: '#CCCFE5',
-                                color: '#CCCFE5',
-                            },
-                            '& label': {
-                                color: '#9398C2',
-                            },
-                        }}
-                        fullWidth
-                        label={i18next.t('wizard.processInstance.processInstanceName')}
-                        value={values.name}
-                        variant={variant}
-                        InputLabelProps={{
-                            shrink: viewMode || undefined,
-                        }}
-                        onChange={(e) => setFieldValue('name', e.target.value)}
-                        helperText={touched.name ? errors.name : ''}
-                        error={touched.name && Boolean(errors.name)}
-                        onBlur={handleBlur}
-                        InputProps={{
-                            readOnly: viewMode,
-                        }}
-                    />
-                </Grid>
-                <Grid item>
+                {!viewMode && (
+                    <Grid item width={viewMode ? '50%' : '100%'} minWidth={viewMode ? '100px' : undefined}>
+                        <TextField
+                            id="name"
+                            name="name"
+                            size="small"
+                            sx={{
+                                '& .MuiInputBase-root': {
+                                    borderRadius: '10px',
+                                    backgroundColor: viewMode ? 'transparent' : 'white',
+                                },
+                                '& fieldset': {
+                                    borderColor: '#CCCFE5',
+                                    color: '#CCCFE5',
+                                },
+                                '& label': {
+                                    color: '#9398C2',
+                                },
+                            }}
+                            fullWidth
+                            label={i18next.t('wizard.processInstance.processInstanceName')}
+                            value={values.name}
+                            variant={variant}
+                            InputLabelProps={{
+                                shrink: viewMode || undefined,
+                            }}
+                            onChange={(e) => setFieldValue('name', e.target.value)}
+                            helperText={touched.name ? errors.name : ''}
+                            error={touched.name && Boolean(errors.name)}
+                            onBlur={handleBlur}
+                            InputProps={{
+                                readOnly: viewMode,
+                            }}
+                        />
+                    </Grid>
+                )}
+                <Grid item width={viewMode ? '50%' : '100%'} minWidth={viewMode ? '100px' : undefined}>
                     <LocalizationProvider dateAdapter={AdapterDateFns}>
                         <DatePicker
                             maxDate={values.endDate}
@@ -114,13 +123,15 @@ export const GeneralDetailsFields = ({
                             onChange={(newStartDate) => {
                                 setFieldValue('startDate', newStartDate);
                             }}
+                            disableOpenPicker={viewMode}
+                            InputProps={{ disableUnderline: viewMode }}
                             renderInput={(params) => (
                                 <TextField
                                     size="small"
                                     sx={{
                                         '& .MuiInputBase-root': {
                                             borderRadius: '10px',
-                                            backgroundColor: 'white',
+                                            backgroundColor: viewMode ? 'transparent' : 'white',
                                         },
                                         '& fieldset': {
                                             borderColor: '#CCCFE5',
@@ -145,7 +156,7 @@ export const GeneralDetailsFields = ({
                         />
                     </LocalizationProvider>
                 </Grid>
-                <Grid item>
+                <Grid item width={viewMode ? '50%' : '100%'} minWidth={viewMode ? '100px' : undefined}>
                     <LocalizationProvider dateAdapter={AdapterDateFns}>
                         <DatePicker
                             minDate={values.startDate}
@@ -154,13 +165,15 @@ export const GeneralDetailsFields = ({
                             onChange={(newEndDate) => {
                                 setFieldValue('endDate', newEndDate);
                             }}
+                            disableOpenPicker={viewMode}
+                            InputProps={{ disableUnderline: viewMode }}
                             renderInput={(params) => (
                                 <TextField
                                     size="small"
                                     sx={{
                                         '& .MuiInputBase-root': {
                                             borderRadius: '10px',
-                                            backgroundColor: 'white',
+                                            backgroundColor: viewMode ? 'transparent' : 'white',
                                         },
                                         '& fieldset': {
                                             borderColor: '#CCCFE5',

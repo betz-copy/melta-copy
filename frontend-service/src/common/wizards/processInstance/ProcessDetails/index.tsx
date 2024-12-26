@@ -7,8 +7,6 @@ import StepsReviewers from './StepsReviewers';
 import { IMongoProcessTemplatePopulated } from '../../../../interfaces/processes/processTemplate';
 import { IMongoProcessInstancePopulated, IReferencedEntityForProcess, StepsObjectPopulated } from '../../../../interfaces/processes/processInstance';
 import { getAllFieldsTouched } from '../../../../utils/processWizard/formik';
-import GeneralDetails from './GeneralDetails';
-import { TemplateFields } from './TemplateFields';
 import { initDetailsValues } from './detailsFormik';
 import { setInitialStepsObject } from '../../../../utils/processWizard/steps';
 
@@ -48,148 +46,148 @@ interface ProcessDetailsProps {
     processInstance?: IMongoProcessInstancePopulated;
 }
 
-const steps = [
-    {
-        label: i18next.t('wizard.processInstance.generalDetails'),
-        component: GeneralDetails,
-        // component: GeneralDetailsFields,
-    },
-    {
-        label: i18next.t('wizard.processInstance.stepsReviewers'),
-        component: StepsReviewers,
-    },
-];
+// const steps = [
+//     {
+//         label: i18next.t('wizard.processInstance.generalDetails'),
+//         component: GeneralDetails,
+//         // component: GeneralDetailsFields,
+//     },
+//     {
+//         label: i18next.t('wizard.processInstance.stepsReviewers'),
+//         component: StepsReviewers,
+//     },
+// ];
 
 const RenderFormStep: React.FC<RenderFormStepProps> = ({ step, ...props }) => {
     const Component = step.component;
     return <Component {...props} />;
 };
 
-const ProcessDetails: React.FC<ProcessDetailsProps> = ({ detailsFormikData, isEditMode, processInstance }) => {
-    const [activeProcessDetailsStep, setActiveProcessDetailsStep] = React.useState(0);
+// const ProcessDetails: React.FC<ProcessDetailsProps> = ({ detailsFormikData, isEditMode, processInstance }) => {
+//     const [activeProcessDetailsStep, setActiveProcessDetailsStep] = React.useState(0);
 
-    const handleNext = () => {
-        const currentTouched: Record<string, any> = getAllFieldsTouched(detailsFormikData.values);
+//     const handleNext = () => {
+//         const currentTouched: Record<string, any> = getAllFieldsTouched(detailsFormikData.values);
 
-        const templateFileProperties = detailsFormikData.values.template
-            ? pickBy(
-                  detailsFormikData.values.template.details.properties.properties,
-                  (value) => (value.type === 'array' && value.items?.format === 'fileId') || value.format === 'fileId',
-              )
-            : undefined;
-        const templateEntityReferenceProperties = detailsFormikData.values.template
-            ? pickBy(detailsFormikData.values.template.details.properties.properties, (value) => value.format === 'entityReference')
-            : undefined;
+//         const templateFileProperties = detailsFormikData.values.template
+//             ? pickBy(
+//                   detailsFormikData.values.template.details.properties.properties,
+//                   (value) => (value.type === 'array' && value.items?.format === 'fileId') || value.format === 'fileId',
+//               )
+//             : undefined;
+//         const templateEntityReferenceProperties = detailsFormikData.values.template
+//             ? pickBy(detailsFormikData.values.template.details.properties.properties, (value) => value.format === 'entityReference')
+//             : undefined;
 
-        const detailsAttachments = {};
-        Object.keys(templateFileProperties!).forEach((fileField) => {
-            detailsAttachments[fileField] = true;
-        });
-        currentTouched.detailsAttachments = detailsAttachments;
+//         const detailsAttachments = {};
+//         Object.keys(templateFileProperties!).forEach((fileField) => {
+//             detailsAttachments[fileField] = true;
+//         });
+//         currentTouched.detailsAttachments = detailsAttachments;
 
-        const entityReferences = {};
-        Object.keys(templateEntityReferenceProperties!).forEach((entityField) => {
-            entityReferences[entityField] = true;
-        });
-        currentTouched.entityReferences = entityReferences;
+//         const entityReferences = {};
+//         Object.keys(templateEntityReferenceProperties!).forEach((entityField) => {
+//             entityReferences[entityField] = true;
+//         });
+//         currentTouched.entityReferences = entityReferences;
 
-        detailsFormikData.setTouched(currentTouched);
+//         detailsFormikData.setTouched(currentTouched);
 
-        if (detailsFormikData.isValid) setActiveProcessDetailsStep((prevActiveStep) => prevActiveStep + 1);
-    };
+//         if (detailsFormikData.isValid) setActiveProcessDetailsStep((prevActiveStep) => prevActiveStep + 1);
+//     };
 
-    const { values, touched, errors, setFieldValue, setFieldTouched, handleBlur, resetForm } = detailsFormikData;
-    const [previousTemplate, setPreviousTemplate] = useState<IMongoProcessTemplatePopulated>();
-    const viewMode = false;
-    const variant = viewMode ? 'standard' : 'outlined';
-    const templateFileProperties = values.template
-        ? pickBy(
-              values.template.details.properties.properties,
-              (value) => (value.type === 'array' && value.items?.format === 'fileId') || value.format === 'fileId',
-          )
-        : undefined;
+//     const { values, touched, errors, setFieldValue, setFieldTouched, handleBlur, resetForm } = detailsFormikData;
+//     const [previousTemplate, setPreviousTemplate] = useState<IMongoProcessTemplatePopulated>();
+//     const viewMode = false;
+//     const variant = viewMode ? 'standard' : 'outlined';
+//     const templateFileProperties = values.template
+//         ? pickBy(
+//               values.template.details.properties.properties,
+//               (value) => (value.type === 'array' && value.items?.format === 'fileId') || value.format === 'fileId',
+//           )
+//         : undefined;
 
-    const templateEntityReferenceProperties = values.template
-        ? pickBy(values.template.details.properties.properties, (value) => value.format === 'entityReference')
-        : undefined;
+//     const templateEntityReferenceProperties = values.template
+//         ? pickBy(values.template.details.properties.properties, (value) => value.format === 'entityReference')
+//         : undefined;
 
-    useEffect(() => {
-        if (values.template) {
-            setPreviousTemplate(values.template);
-            if (values.template.name !== previousTemplate?.name) {
-                resetForm({
-                    values: {
-                        template: values.template,
-                        details: initDetailsValues(values.template),
-                        detailsAttachments: {},
-                        endDate: null,
-                        entityReferences: {},
-                        name: '',
-                        startDate: null,
-                        steps: {},
-                    },
-                });
-            }
-            setFieldValue('steps', setInitialStepsObject(values.template.steps));
-        }
-    }, [values.template?._id]);
+//     useEffect(() => {
+//         if (values.template) {
+//             setPreviousTemplate(values.template);
+//             if (values.template.name !== previousTemplate?.name) {
+//                 resetForm({
+//                     values: {
+//                         template: values.template,
+//                         details: initDetailsValues(values.template),
+//                         detailsAttachments: {},
+//                         endDate: null,
+//                         entityReferences: {},
+//                         name: '',
+//                         startDate: null,
+//                         steps: {},
+//                     },
+//                 });
+//             }
+//             setFieldValue('steps', setInitialStepsObject(values.template.steps));
+//         }
+//     }, [values.template?._id]);
 
-    const handleBack = () => {
-        setActiveProcessDetailsStep((prevActiveStep) => prevActiveStep - 1);
-    };
+//     const handleBack = () => {
+//         setActiveProcessDetailsStep((prevActiveStep) => prevActiveStep - 1);
+//     };
 
-    return (
-        <Box
-            sx={{
-                paddingRight: 3,
-                paddingLeft: 3,
-                width: 1,
-                height: 1,
-            }}
-        >
-            {/* <Grid container direction="column">
-                <Grid item>
-                    <Box sx={{ width: '100%', paddingBottom: 5, paddingTop: 1 }}>
-                        <Stepper nonLinear activeStep={activeProcessDetailsStep}>
-                            {steps.map(({ label }) => (
-                                <Step key={label}>
-                                    <StepLabel>{label}</StepLabel>
-                                </Step>
-                            ))}
-                        </Stepper>
-                    </Box>
-                </Grid>
-                <Grid item>
-                    <RenderFormStep
-                        step={steps[activeProcessDetailsStep]}
-                        detailsFormikData={detailsFormikData}
-                        onNext={handleNext}
-                        onBack={handleBack}
-                        isEditMode={isEditMode}
-                        processInstance={processInstance}
-                    />
-                </Grid>
-            </Grid> */}
-            <Grid item flexBasis="50%">
-                {values.template && (
-                    <TemplateFields
-                        toPrint={false}
-                        // toPrint={toPrint}
-                        values={values}
-                        viewMode={viewMode}
-                        errors={errors}
-                        touched={touched}
-                        setFieldValue={setFieldValue}
-                        setFieldTouched={setFieldTouched}
-                        templateFileProperties={templateFileProperties}
-                        handleBlur={handleBlur}
-                        templateEntityReferenceProperties={templateEntityReferenceProperties}
-                        onNext={handleNext}
-                    />
-                )}
-            </Grid>
-        </Box>
-    );
-};
+//     return (
+//         <Box
+//             sx={{
+//                 paddingRight: 3,
+//                 paddingLeft: 3,
+//                 width: 1,
+//                 height: 1,
+//             }}
+//         >
+//             {/* <Grid container direction="column">
+//                 <Grid item>
+//                     <Box sx={{ width: '100%', paddingBottom: 5, paddingTop: 1 }}>
+//                         <Stepper nonLinear activeStep={activeProcessDetailsStep}>
+//                             {steps.map(({ label }) => (
+//                                 <Step key={label}>
+//                                     <StepLabel>{label}</StepLabel>
+//                                 </Step>
+//                             ))}
+//                         </Stepper>
+//                     </Box>
+//                 </Grid>
+//                 <Grid item>
+//                     <RenderFormStep
+//                         step={steps[activeProcessDetailsStep]}
+//                         detailsFormikData={detailsFormikData}
+//                         onNext={handleNext}
+//                         onBack={handleBack}
+//                         isEditMode={isEditMode}
+//                         processInstance={processInstance}
+//                     />
+//                 </Grid>
+//             </Grid> */}
+//             <Grid item flexBasis="50%">
+//                 {values.template && (
+//                     <TemplateFields
+//                         toPrint={false}
+//                         // toPrint={toPrint}
+//                         values={values}
+//                         viewMode={viewMode}
+//                         errors={errors}
+//                         touched={touched}
+//                         setFieldValue={setFieldValue}
+//                         setFieldTouched={setFieldTouched}
+//                         templateFileProperties={templateFileProperties}
+//                         handleBlur={handleBlur}
+//                         templateEntityReferenceProperties={templateEntityReferenceProperties}
+//                         onNext={handleNext}
+//                     />
+//                 )}
+//             </Grid>
+//         </Box>
+//     );
+// };
 
-export default ProcessDetails;
+// export default ProcessDetails;

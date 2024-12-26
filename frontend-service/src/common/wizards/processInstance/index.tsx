@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, Dialog, DialogTitle, DialogContent, DialogActions, Grid, CircularProgress, IconButton } from '@mui/material';
+import { Button, Dialog, DialogTitle, DialogContent, DialogActions, Grid, CircularProgress, IconButton, Typography } from '@mui/material';
 import { Done as DoneIcon, Clear as ClearIcon } from '@mui/icons-material';
 import i18next from 'i18next';
 import { makeStyles } from '@mui/styles';
@@ -7,6 +7,7 @@ import { UseMutateAsyncFunction, useMutation, useQueryClient } from 'react-query
 import { toast } from 'react-toastify';
 import { AxiosError } from 'axios';
 import EditIcon from '@mui/icons-material/Edit';
+import CloseIcon from '@mui/icons-material/Close';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import lodashIsEqual from 'lodash.isequal';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -14,7 +15,7 @@ import UnarchiveIcon from '@mui/icons-material/Unarchive';
 import ArchiveIcon from '@mui/icons-material/Archive';
 import { ProcessSideStepper } from './ProcessSideStepper';
 import { BlueTitle } from '../../BlueTitle';
-import ProcessDetails, { ProcessDetailsValues } from './ProcessDetails';
+import { ProcessDetailsValues } from './ProcessDetails';
 import { IMongoProcessInstancePopulated, Status } from '../../../interfaces/processes/processInstance';
 import { IMongoProcessTemplatePopulated, IProcessTemplateMap } from '../../../interfaces/processes/processTemplate';
 import { getInitialDetailsValues, useProcessDetailsFormik } from './ProcessDetails/detailsFormik';
@@ -27,6 +28,8 @@ import { MeltaTooltip } from '../../MeltaTooltip';
 import { Print } from '../../../pages/ProcessInstances/print';
 import { PermissionScope } from '../../../interfaces/permissions';
 import { useUserStore } from '../../../stores/user';
+import { GeneralDetailsFields } from './ProcessDetails/GeneralDetailsFields';
+import GeneralDetails from './ProcessDetails/GeneralDetails';
 
 interface IProcessInstanceWizard {
     open: boolean;
@@ -90,58 +93,62 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({
     const detailsFormikData = useProcessDetailsFormik(processInstance, processTemplatesMap, mutateAsync);
     const [activeStep, setActiveStep] = React.useState(stepTemplate ? 1 : 0);
 
+    console.log({ activeStep });
+
+    console.log({ processInstance });
+
     const classes = wizardContentStyles();
 
-    const nextBthText = i18next.t(activeStep === 0 ? 'wizard.processInstance.nextToSteps' : 'wizard.processInstance.nextToSummaryDetails');
-    const steps = [
-        {
-            label: i18next.t('wizard.processInstance.processDetails'),
-            component: <ProcessDetails detailsFormikData={detailsFormikData} isEditMode={isEditMode} processInstance={processInstance} />,
-        },
-        {
-            label: i18next.t('wizard.processInstance.processSteps'),
-            component: (
-                <ProcessStepsStep
-                    processTemplate={processTemplate}
-                    processInstance={currProcessInstance}
-                    onStepUpdateSuccess={async (stepInstance) => {
-                        setCurrProcessInstance((prev) => {
-                            const newSteps = prev.steps;
-                            const updatedStepIndex = newSteps.findIndex((step) => step._id === stepInstance._id);
-                            newSteps[updatedStepIndex] = stepInstance;
-                            return { ...prev, steps: newSteps };
-                        });
+    // const nextBthText = i18next.t(activeStep === 0 ? 'wizard.processInstance.nextToSteps' : 'wizard.processInstance.nextToSummaryDetails');
+    // const steps = [
+    //     {
+    //         label: i18next.t('wizard.processInstance.processDetails'),
+    //         component: <ProcessDetails detailsFormikData={detailsFormikData} isEditMode={isEditMode} processInstance={processInstance} />,
+    //     },
+    //     {
+    //         label: i18next.t('wizard.processInstance.processSteps'),
+    //         component: (
+    //             <ProcessStepsStep
+    //                 processTemplate={processTemplate}
+    //                 processInstance={currProcessInstance}
+    //                 onStepUpdateSuccess={async (stepInstance) => {
+    //                     setCurrProcessInstance((prev) => {
+    //                         const newSteps = prev.steps;
+    //                         const updatedStepIndex = newSteps.findIndex((step) => step._id === stepInstance._id);
+    //                         newSteps[updatedStepIndex] = stepInstance;
+    //                         return { ...prev, steps: newSteps };
+    //                     });
 
-                        const newProcess = await getProcessByIdRequest(processInstance._id);
-                        setCurrProcessInstance(newProcess);
-                        setIsProcessChanged(true);
-                    }}
-                    isStepEditMode={isStepEditMode}
-                    setIsStepEditMode={setIsStepEditMode}
-                    defaultStepTemplate={stepTemplate}
-                />
-            ),
-        },
+    //                     const newProcess = await getProcessByIdRequest(processInstance._id);
+    //                     setCurrProcessInstance(newProcess);
+    //                     setIsProcessChanged(true);
+    //                 }}
+    //                 isStepEditMode={isStepEditMode}
+    //                 setIsStepEditMode={setIsStepEditMode}
+    //                 defaultStepTemplate={stepTemplate}
+    //             />
+    //         ),
+    //     },
 
-        {
-            label: i18next.t('wizard.processInstance.processSummary'),
-            component: (
-                <ProcessSummary
-                    isPrinting={false}
-                    processInstance={currProcessInstance}
-                    processTemplate={processTemplatesMap.get(currProcessInstance.templateId)!}
-                />
-            ),
-        },
-    ];
+    //     // {
+    //     //     label: i18next.t('wizard.processInstance.processSummary'),
+    //     //     component: (
+    //     //         <ProcessSummary
+    //     //             isPrinting={false}
+    //     //             processInstance={currProcessInstance}
+    //     //             processTemplate={processTemplatesMap.get(currProcessInstance.templateId)!}
+    //     //         />
+    //     //     ),
+    //     // },
+    // ];
 
-    const handleNext = () => {
-        setActiveStep((prevActiveStep) => (prevActiveStep < steps.length ? prevActiveStep + 1 : prevActiveStep));
-    };
+    // const handleNext = () => {
+    //     setActiveStep((prevActiveStep) => (prevActiveStep < steps.length ? prevActiveStep + 1 : prevActiveStep));
+    // };
 
-    const handleBack = () => {
-        setActiveStep((prevActiveStep) => (prevActiveStep > 0 ? prevActiveStep - 1 : prevActiveStep));
-    };
+    // const handleBack = () => {
+    //     setActiveStep((prevActiveStep) => (prevActiveStep > 0 ? prevActiveStep - 1 : prevActiveStep));
+    // };
 
     const handleSubmit = () => {
         if (activeStep === 0) detailsFormikData.submitForm();
@@ -202,7 +209,7 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({
                 },
             }}
         >
-            <DialogTitle height="8vh" margin={0} display="flex" justifyContent="space-between" alignItems="center">
+            {/* <DialogTitle height="8vh" margin={0} display="flex" justifyContent="space-between" alignItems="center">
                 <BlueTitle title={detailsFormikData.values.name} variant="h4" component="p" />
                 <Grid>
                     <Grid container>
@@ -310,18 +317,126 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({
                         </Grid>
                     </Grid>
                 </Grid>
-            </DialogTitle>
+            </DialogTitle> */}
             <DialogContent dividers className={classes.container}>
-                <Grid className={classes.stepper}>
+                <IconButton
+                    aria-label="close"
+                    disabled={isEditMode || isStepEditMode}
+                    onClick={() => onClose(isProcessChanged)}
+                    sx={{
+                        position: 'absolute',
+                        right: 8,
+                        top: 8,
+                        color: (theme) => theme.palette.grey[500],
+                    }}
+                >
+                    <CloseIcon fontSize="large" />
+                </IconButton>
+                {/* 
                     <ProcessSideStepper
-                        steps={steps.map((step) => step.label)}
-                        activeStep={activeStep}
-                        title={isEditMode ? i18next.t('wizard.processInstance.editProcess') : i18next.t('wizard.processInstance.showProcess')}
+                    steps={steps.map((step) => step.label)}
+                    activeStep={activeStep}
+                    title={isEditMode ? i18next.t('wizard.processInstance.editProcess') : i18next.t('wizard.processInstance.showProcess')}
                     />
+                    */}
+                {/* <Grid className={classes.stepper}>
+                </Grid> 
+                <Grid className={classes.content}>{steps[activeStep].component}</Grid> */}
+                <Grid container flexDirection="row" height="100%" flexWrap="nowrap">
+                    <Grid
+                        container
+                        item
+                        height="100%"
+                        flexDirection="column"
+                        alignItems="center"
+                        flexBasis="20%"
+                        padding={3}
+                        style={{
+                            backgroundColor: '#F0F2F7',
+                            borderBottomLeftRadius: '20px',
+                            borderTopLeftRadius: '20px',
+                            boxShadow: '10px 10px 15px 10px #888888',
+                        }}
+                    >
+                        <Grid container item flexDirection="column" width="100%" height="100%">
+                            <Grid item>
+                                <BlueTitle
+                                    title={processInstance.name}
+                                    component="h5"
+                                    variant="h5"
+                                    style={{
+                                        fontWeight: 500,
+                                        opacity: 0.9,
+                                        maxWidth: '200px',
+                                        maxHeight: '200px',
+                                        textOverflow: 'ellipsis',
+                                        overflow: 'hidden',
+                                        whiteSpace: 'nowrap',
+                                    }}
+                                />
+                            </Grid>
+                            <Grid item height="90%">
+                                <GeneralDetails
+                                    detailsFormikData={detailsFormikData}
+                                    processInstance={processInstance}
+                                    toPrint={false}
+                                    // isEditMode={false}
+                                    onNext={() => {}}
+                                    onBack={() => {}}
+                                    key={`${processInstance._id}//${processInstance.name}`}
+                                />
+                            </Grid>
+                            {/* <GeneralDetailsFields
+                            processTemplatesMap={processTemplatesMap}
+                            setFieldValue={setFieldValue}
+                            values={values}
+                            isEditMode={false}
+                            processInstance={undefined} 
+                            viewMode={viewMode}
+                            variant={variant}
+                            touched={touched}
+                            errors={errors}
+                            handleBlur={handleBlur}
+                            setFieldTouched={setFieldTouched}
+                        /> */}
+                        </Grid>
+                    </Grid>
+                    <Grid container item flexBasis="75%" flexDirection="column" padding="15px">
+                        {activeStep === 0 && (
+                            <ProcessSummary
+                                isPrinting={false}
+                                processInstance={currProcessInstance}
+                                processTemplate={processTemplatesMap.get(currProcessInstance.templateId)!}
+                                setActiveStep={setActiveStep}
+                            />
+                        )}
+                        {/* {activeStep !== 0 && <Grid className={classes.content}>{steps[activeStep].component}</Grid>} */}
+                        {activeStep !== 0 && (
+                            <ProcessStepsStep
+                                processTemplate={processTemplate}
+                                processInstance={currProcessInstance}
+                                onStepUpdateSuccess={async (stepInstance) => {
+                                    setCurrProcessInstance((prev) => {
+                                        const newSteps = prev.steps;
+                                        const updatedStepIndex = newSteps.findIndex((step) => step._id === stepInstance._id);
+                                        newSteps[updatedStepIndex] = stepInstance;
+                                        return { ...prev, steps: newSteps };
+                                    });
+
+                                    const newProcess = await getProcessByIdRequest(processInstance._id);
+                                    setCurrProcessInstance(newProcess);
+                                    setIsProcessChanged(true);
+                                }}
+                                isStepEditMode={isStepEditMode}
+                                setIsStepEditMode={setIsStepEditMode}
+                                defaultStepTemplate={processTemplate.steps[activeStep - 1]}
+                                setActiveStep={setActiveStep}
+                            />
+                        )}
+                    </Grid>
                 </Grid>
-                <Grid className={classes.content}>{steps[activeStep].component}</Grid>
             </DialogContent>
-            <DialogActions>
+            {/* <DialogActions>
                 {activeStep > 0 && (
                     <Button onClick={handleBack} disabled={isEditMode || isStepEditMode}>
                         {i18next.t('processInstancesPage.backBth')}
@@ -335,7 +450,7 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({
                         {nextBthText}
                     </Button>
                 )}
-            </DialogActions>
+            </DialogActions> */}
 
             <AreYouSureDialog
                 open={deleteDialogState}

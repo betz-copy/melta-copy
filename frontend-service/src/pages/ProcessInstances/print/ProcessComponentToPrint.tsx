@@ -33,6 +33,7 @@ const ProcessComponentToPrint: React.FC<{
                     detailsFormikData={detailsFormikData}
                     processInstance={processInstance}
                     toPrint
+                    isEditMode={false}
                     onNext={() => {}}
                     onBack={() => {}}
                     key={`${processInstance._id}//${processInstance.name}`}

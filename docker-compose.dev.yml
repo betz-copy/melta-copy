@@ -224,7 +224,8 @@ services:
 
   nginx:
     ports:
-      - 81:80
+      - 80:80
+      # - 81:80
     restart: always
     volumes:
       - logs:/usr/src/app/logs

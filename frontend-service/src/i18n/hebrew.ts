@@ -641,9 +641,16 @@ export default {
                 StepStatusNotYetBeeUpdated: 'טרם עודכן סטטוס של שלב זה',
                 printedBy: 'הודפס ע"י',
                 printedAt: 'תאריך',
+                processStatuses: {
+                    approved: 'הושלם',
+                    rejected: 'נדחה',
+                    pending: 'ממתין',
+                },
             },
             step: {
                 stepStatus: 'סטטוס שלב',
+                prevStep: 'שלב קודם',
+                nextStep: 'שלב הבא',
                 editStepBth: 'ערוך שלב',
                 editedSuccessfully: 'שלב עודכן בהצלחה',
                 failedToEdit: 'נכשל לערוך שלב',

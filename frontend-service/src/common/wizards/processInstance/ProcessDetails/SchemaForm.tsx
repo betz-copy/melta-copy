@@ -26,12 +26,14 @@ export const SchemaForm = ({ viewMode, values, errors, touched, setFieldValue, s
 
     return (
         <Box paddingTop={0.5} paddingLeft={1}>
-            <BlueTitle
-                title={i18next.t('wizard.entityTemplate.properties')}
-                style={{ marginTop: toPrint ? '30px' : undefined }}
-                component="h6"
-                variant="h6"
-            />
+            {!viewMode && (
+                <BlueTitle
+                    title={i18next.t('wizard.entityTemplate.properties')}
+                    style={{ marginTop: toPrint ? '30px' : undefined, fontSize: '16px' }}
+                    component="h6"
+                    variant="h6"
+                />
+            )}
             <JSONSchemaFormik
                 schema={schema}
                 values={{ ...values, properties: values.details }}

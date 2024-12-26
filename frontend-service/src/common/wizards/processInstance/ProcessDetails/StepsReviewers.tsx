@@ -113,19 +113,20 @@ const StepsReviewers: React.FC<IDetailsStepProp> = ({ detailsFormikData, isEditM
     return (
         <Card sx={{ border: 'none', boxShadow: 'none', background: 'transparent', height: '100%', justifyContent: 'space-between', padding: '20px' }}>
             <Grid container item flexDirection="column" height="100%" sx={{ justifyContent: 'space-between' }}>
-                <Grid item>
+                <Grid item height="90%">
                     <CardContent
                         sx={{
                             // height: '56vh',
-                            overflowY: 'auto',
+                            // overflowY: 'auto',
+                            height: '100%',
                             '&::-webkit-scrollbar': {
                                 width: '5px',
                             },
                         }}
                     >
-                        <Grid container rowSpacing={3}>
+                        <Grid container rowSpacing={3} flexWrap="wrap" sx={{ overflowY: 'auto' }} height="100%">
                             {values.template?.steps.map((stepTemplate: IMongoStepTemplatePopulated) => (
-                                <Grid key={stepTemplate._id} item xs={12} sm={6} md={4}>
+                                <Grid item key={stepTemplate._id} xs={12} sm={6} md={4}>
                                     <ReviewCard
                                         stepTemplate={stepTemplate}
                                         values={values}

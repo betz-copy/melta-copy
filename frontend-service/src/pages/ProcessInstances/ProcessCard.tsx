@@ -1,5 +1,21 @@
 import React, { CSSProperties, useState } from 'react';
-import { Box, Card, CardContent, Grid, Typography, styled, IconButton, Menu, Skeleton } from '@mui/material';
+import {
+    Box,
+    Card,
+    CardContent,
+    Grid,
+    Typography,
+    styled,
+    IconButton,
+    Menu,
+    Skeleton,
+    Stepper,
+    Step,
+    StepLabel,
+    Divider,
+    StepConnector,
+    stepConnectorClasses,
+} from '@mui/material';
 import { ScatterPlotOutlined as HiveIcon, FiberManualRecordOutlined as StatusIcon, Unarchive } from '@mui/icons-material';
 import { useMutation, useQueryClient } from 'react-query';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -22,6 +38,7 @@ import { MeltaTooltip } from '../../common/MeltaTooltip';
 import { Print } from './print';
 import { ProcessDetailsValues } from '../../common/wizards/processInstance/ProcessDetails';
 import { ErrorToast } from '../../common/ErrorToast';
+import { getFontColor } from '../../common/wizards/processInstance/ProcessSummaryStep/ProcessStatus';
 
 export enum StatusColors {
     Pending = '#ff8f00',
@@ -36,10 +53,33 @@ export enum StatusColorsNames {
     // Rejected = 'error',
     // Archived = 'disabled',
     Pending = '#ff8f00',
-    Approved = '#2e7d32',
+    Approved = '#1ABC00',
     Rejected = '#d32f2f',
     Archived = '#B0B0B0',
 }
+
+export enum StatusFontColors {
+    // Pending = 'warning',
+    // Approved = 'success',
+    // Rejected = 'error',
+    // Archived = 'disabled',
+    Pending = '#FF9900',
+    Approved = '#1ABC00',
+    Rejected = '#FF2E00',
+    Archived = '#B0B0B0',
+}
+
+export enum StatusBackgroundColors {
+    // Pending = 'warning',
+    // Approved = 'success',
+    // Rejected = 'error',
+    // Archived = 'disabled',
+    Pending = '#FF99001A',
+    Approved = '#E0F0DD',
+    Rejected = '#F7CDC4',
+    Archived = '#B0B0B0',
+}
+
 export const StyledCard = styled(Card)(({ theme }) => ({
     background: theme.palette.mode === 'light' ? '#FFFFFF 0% 0% no-repeat padding-box' : undefined,
     boxShadow: '0px 3px 6px #00000029',
@@ -81,7 +121,7 @@ const statusColorName = (status: Status, isArchived?: boolean): StatusColorsName
     }
 };
 
-const StepIcon: React.FC<{
+export const StepIcon: React.FC<{
     step: IMongoStepInstancePopulated;
     stepTemplate: IMongoStepTemplatePopulated;
     iconColor: string;
@@ -91,9 +131,10 @@ const StepIcon: React.FC<{
             defaultStepTemplate?: IMongoStepTemplatePopulated | undefined;
         }>
     >;
-}> = ({ step, stepTemplate, iconColor, setOpen }) => {
-    const color = getStatusColor(step.status);
-    const border: CSSProperties['border'] = `2px solid ${color}`;
+    displayTitle?: boolean;
+}> = ({ step, stepTemplate, iconColor, setOpen, displayTitle = true }) => {
+    // const color = getStatusColor(step.status);
+    // const border: CSSProperties['border'] = `2px solid ${color}`;
 
     const stageNameRef = React.useRef<any>(null);
     const [isOverflowing, setIsOverflowing] = React.useState(false);
@@ -128,12 +169,13 @@ const StepIcon: React.FC<{
                 <Box
                     sx={{
                         borderRadius: '50%',
-                        border,
+                        backgroundColor: '#E0E1ED',
+                        // border,
                         display: 'flex',
                         justifyContent: 'center',
                         alignItems: 'center',
-                        width: '60px',
-                        height: '60px',
+                        width: '40px',
+                        height: '40px',
                         ':hover': { transform: 'scale(1.1)' },
                         cursor: 'pointer',
                     }}
@@ -143,18 +185,53 @@ const StepIcon: React.FC<{
                     }}
                 >
                     {stepTemplate.iconFileId ? (
-                        <CustomIcon color={iconColor} iconUrl={stepTemplate.iconFileId} width="40px" height="40px" />
+                        <CustomIcon color={iconColor} iconUrl={stepTemplate.iconFileId} width="25px" height="25px" />
                     ) : (
-                        <HiveIcon sx={{ color: iconColor }} fontSize="large" />
+                        <HiveIcon sx={{ color: iconColor }} width="25px" height="25px" />
                     )}
                 </Box>
-                <Typography ref={stageNameRef} noWrap sx={{ maxWidth: '8em', textOverflow: 'ellipsis' }} variant="caption">
-                    {stepTemplate.displayName}
-                </Typography>
+                {step.status === Status.Approved && <img src="/icons/check-icon.svg" style={{ marginRight: '35px' }} />}
+                {step.status === Status.Rejected && <img src="/icons/uncheck-icon.svg" style={{ marginRight: '35px' }} />}
+                {displayTitle && (
+                    <Typography ref={stageNameRef} noWrap sx={{ maxWidth: '8em', textOverflow: 'ellipsis' }} variant="caption">
+                        {stepTemplate.displayName}
+                    </Typography>
+                )}
             </Grid>
         </MeltaTooltip>
     );
 };
+
+const StepIconComponent = (
+    stepInstance: IMongoStepInstancePopulated,
+    stepTemplate: IMongoStepTemplatePopulated,
+    setOpen: (x: any) => any,
+    stepStatus: Status,
+    stepId: string,
+) => (
+    <Grid container flexDirection="column" justifyContent="center" width="100%" gap="10px">
+        <Grid item key={stepId}>
+            <StepIcon
+                step={stepInstance}
+                stepTemplate={stepTemplate}
+                iconColor={stepStatus === Status.Pending ? getStatusColor(stepStatus) : '#787C9E'}
+                setOpen={setOpen}
+            />
+        </Grid>
+    </Grid>
+);
+
+// const StepperConnector = styled(StepConnector)(({ theme }) => ({
+//     [`& .${stepConnectorClasses.line}`]: {
+//         height: 2,
+//         border: 0,
+//         backgroundColor: '#eaeaf0',
+//         borderRadius: 1,
+//         ...theme.applyStyles('dark', {
+//             backgroundColor: theme.palette.grey[800],
+//         }),
+//     },
+// }));
 
 const ProcessCard: React.FC<{
     processInstance: IMongoProcessInstancePopulated;
@@ -240,6 +317,18 @@ const ProcessCard: React.FC<{
             },
         },
     );
+
+    const StepperConnector = styled(StepConnector)(({ theme }) => ({
+        [`& .${stepConnectorClasses.line}`]: {
+            height: 2,
+            border: 0,
+            backgroundColor: getFontColor(processInstance.status),
+            borderRadius: 1,
+            ...theme.applyStyles('dark', {
+                backgroundColor: theme.palette.grey[800],
+            }),
+        },
+    }));
 
     return (
         <div>
@@ -336,20 +425,83 @@ const ProcessCard: React.FC<{
                                     </Typography>
                                 </Grid>
                             </Grid>
-                            <Grid item container justifyContent="center" spacing={4}>
-                                {processInstance.steps.map((step, index) => {
-                                    const stepTemplate = processTemplate.steps[index];
-                                    return (
-                                        <Grid item key={stepTemplate.name}>
-                                            <StepIcon
-                                                step={step}
-                                                stepTemplate={stepTemplate}
-                                                iconColor={getStatusColor(step.status)}
-                                                setOpen={setOpen}
-                                            />
-                                        </Grid>
-                                    );
-                                })}
+                            <Grid item justifyContent="center" spacing={4}>
+                                <Stepper
+                                    style={{ flexWrap: 'wrap' }}
+                                    // connector={
+                                    //     <Divider
+                                    //         variant="fullWidth"
+                                    //         style={{ backgroundColor: getFontColor(processInstance.status), width: '100%' }}
+                                    //     />
+
+                                    // }
+                                    connector={<StepperConnector />}
+                                    alternativeLabel
+                                >
+                                    {processInstance.steps.map((step, index) => {
+                                        const stepTemplate = processTemplate.steps[index];
+                                        return (
+                                            <Step style={{ display: 'flex', alignItems: 'center' }} key={step._id}>
+                                                <Grid
+                                                    container
+                                                    flexDirection="column"
+                                                    justifyContent="center"
+                                                    width="100%"
+                                                    alignSelf="center"
+                                                    gap="10px"
+                                                >
+                                                    <StepLabel
+                                                        // eslint-disable-next-line react/no-unstable-nested-components
+                                                        StepIconComponent={() =>
+                                                            StepIconComponent(step, stepTemplate, setOpen, step.status, step._id)
+                                                        }
+                                                        // return (
+                                                        //     <Grid
+                                                        //         container
+                                                        //         flexDirection="column"
+                                                        //         justifyContent="center"
+                                                        //         width="100%"
+                                                        //         gap="10px"
+                                                        //     >
+                                                        //         <Grid item key={stepTemplate.name}>
+                                                        //             <StepIcon
+                                                        //                 step={step}
+                                                        //                 stepTemplate={stepTemplate}
+                                                        //                 iconColor={
+                                                        //                     step.status === Status.Pending
+                                                        //                         ? getStatusColor(step.status)
+                                                        //                         : '#787C9E'
+                                                        //                 }
+                                                        //                 setOpen={setOpen}
+                                                        //             />
+                                                        //         </Grid>
+                                                        //     </Grid>
+                                                        // );
+                                                    />
+                                                </Grid>
+                                            </Step>
+                                        );
+                                    })}
+                                </Stepper>
+                            </Grid>
+                            <Grid item container justifyContent="space-between">
+                                <Grid item>
+                                    <Typography fontSize="14px" style={{ color: '#787C9E' }} noWrap>
+                                        {`${i18next.t('processInstancesPage.createdBy')}: ---`}
+                                    </Typography>
+                                </Grid>
+                                <Grid item>
+                                    <Typography fontSize="14px" style={{ color: '#787C9E' }} noWrap>
+                                        {`${i18next.t('processInstancesPage.createdAt')}: ${new Date(processInstance.createdAt).toLocaleDateString(
+                                            'he-IL',
+                                            {
+                                                year: '2-digit',
+                                                month: '2-digit',
+                                                day: '2-digit',
+                                            },
+                                        )}`}
+                                    </Typography>
+                                </Grid>
                             </Grid>
                             <Grid item container justifyContent="space-between">
                                 <Grid item>

@@ -127,12 +127,12 @@ const StepsStatuses: React.FC<{
 
     return (
         <>
-            <BlueTitle
+            {/* <BlueTitle
                 title={i18next.t('wizard.processInstance.summary.subProcessStatus')}
                 component="h5"
                 variant="h5"
                 style={{ fontSize: '30px', fontWeight: 600, opacity: 0.9, display: 'flex', justifyContent: 'center', padding: '10px' }}
-            />
+            /> */}
             <Box display="flex" justifyContent="center" paddingBottom={2}>
                 <Typography variant="body1" style={{ margin: '0 10px' }}>{` ${i18next.t(
                     'wizard.processInstance.step.pendingSteps',
