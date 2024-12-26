@@ -16,7 +16,7 @@ module.exports = {
     "plugin:@typescript-eslint/recommended",
     "plugin:prettier/recommended",
   ],
-  plugins: ["@typescript-eslint"],
+  plugins: ["@typescript-eslint", "prettier"],
   ignorePatterns: ["dist", "node_modules", "tests", ".eslintrc.js"],
   settings: {
     "import/resolver": {

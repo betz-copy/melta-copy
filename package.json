@@ -1,54 +1,55 @@
 {
-  "name": "melta",
-  "version": "1.0.1",
-  "description": "",
-  "main": "index.js",
-  "workspaces": [
-    "services/*"
-  ],
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "pre-push": "cd ./services/frontend-service && npm run lint && node --max_old_space_size=16384 npm run build",
-    "build": "npm run build --workspaces",
-    "lint": "npm run lint --workspaces",
-    "clean": "rimraf ./services/**/dist && rimraf ./packages/**/dist",
-    "clean:node_modules": "rimraf ./services/**/node_modules && rimraf ./node_modules",
-    "start-ui": "npm run -w services/frontend-service start:docker"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/melta-team/melta.git"
-  },
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/melta-team/melta/issues"
-  },
-  "homepage": "https://github.com/melta-team/melta#readme",
-  "devDependencies": {
-    "@types/node": "^22.3.0",
-    "@types/morgan": "^1.9.9",
-    "@typescript-eslint/eslint-plugin": "^8.1.0",
-    "@typescript-eslint/parser": "^8.1.0",
-    "eslint": "^8.2.0",
-    "husky": "^6.0.0",
-    "rimraf": "^5.0.0",
-    "typescript": "^5.5.4",
-    "eslint-config-prettier": "^9.1.0"
-  },
-  "dependencies": {
-    "date-fns": "^2.30.0",
-    "mongoose": "^8.8.1",
-    "axios": "^1.7.7",
-    "dotenv": "^16.4.5",
-    "elastic-apm-node": "^4.7.3",
-    "env-var": "^7.5.0",
-    "winston": "^3.14.1",
-    "winston-daily-rotate-file": "^5.0.0",
-    "express": "^4.19.2",
-    "morgan": "^1.10.0",
-    "helmet": "^7.1.0",
-    "joi": "^17.13.3",
-    "prettier": "^3.3.3"
-  }
+    "name": "melta",
+    "version": "1.0.1",
+    "description": "",
+    "main": "index.js",
+    "workspaces": [
+        "services/*"
+    ],
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "pre-push": "cd ./services/frontend-service && npm run lint && node --max_old_space_size=16384 npm run build",
+        "build": "npm run build --workspaces",
+        "lint": "npm run lint --workspaces",
+        "prettier": "npm run prettier --workspaces",
+        "clean": "rimraf ./services/**/dist && rimraf ./packages/**/dist",
+        "clean:node_modules": "rimraf ./services/**/node_modules && rimraf ./node_modules",
+        "start-ui": "npm run -w services/frontend-service start:docker"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/melta-team/melta.git"
+    },
+    "author": "",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/melta-team/melta/issues"
+    },
+    "homepage": "https://github.com/melta-team/melta#readme",
+    "devDependencies": {
+        "@types/node": "^22.3.0",
+        "@types/morgan": "^1.9.9",
+        "@typescript-eslint/eslint-plugin": "^8.1.0",
+        "@typescript-eslint/parser": "^8.1.0",
+        "eslint": "^8.2.0",
+        "husky": "^6.0.0",
+        "rimraf": "^5.0.0",
+        "typescript": "^5.5.4",
+        "eslint-config-prettier": "^9.1.0"
+    },
+    "dependencies": {
+        "date-fns": "^2.30.0",
+        "mongoose": "^8.8.1",
+        "axios": "^1.7.7",
+        "dotenv": "^16.4.5",
+        "elastic-apm-node": "^4.7.3",
+        "env-var": "^7.5.0",
+        "winston": "^3.14.1",
+        "winston-daily-rotate-file": "^5.0.0",
+        "express": "^4.19.2",
+        "morgan": "^1.10.0",
+        "helmet": "^7.1.0",
+        "joi": "^17.13.3",
+        "prettier": "^3.3.3"
+    }
 }
