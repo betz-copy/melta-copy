@@ -211,7 +211,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
             }, {});
     };
 
-    handleLoadEntitiesErrors = (error, failedEntities: IFailedEntity[], entity: IEntity, allBrokenRulesEntities: IBrokenRuleEntity[]) => {
+    handleLoadEntitiesErrors = (error: any, failedEntities: IFailedEntity[], entity: IEntity, allBrokenRulesEntities: IBrokenRuleEntity[]) => {
         if (error instanceof AxiosError) {
             const { data } = error.response!;
 
@@ -295,20 +295,35 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
             entities = actions.map((action) => action.actionMetadata as IEntity);
         }
         const serialStarters = this.getSerialStarters(template);
+        const generateSerialNumbers = (index: number) =>
+            Object.fromEntries(Object.entries(serialStarters).map(([key, value]) => [key, value + index]));
+
         const succeededEntities: IEntity[] = [];
         const allBrokenRulesEntities: IBrokenRuleEntity[] = [];
 
-        for (const entity of entities!) {
-            try {
-                // eslint-disable-next-line no-loop-func
-                const serialNumbers = Object.fromEntries(
-                    Object.entries(serialStarters).map(([key, value]) => [key, value + succeededEntities.length]),
-                );
-                const result = await this.createEntityInstance(entity, [], insertBrokenEntities?.ignoredRules || [], userId, serialNumbers);
-                succeededEntities.push(result);
-            } catch (error) {
-                this.handleLoadEntitiesErrors(error, failedEntities, entity, allBrokenRulesEntities);
+        if (Object.entries(serialStarters).length > 0) {
+            for (const entity of entities!) {
+                try {
+                    const serialNumbers = generateSerialNumbers(succeededEntities.length);
+                    const result = await this.createEntityInstance(entity, [], insertBrokenEntities?.ignoredRules || [], userId, serialNumbers);
+                    succeededEntities.push(result);
+                } catch (error) {
+                    this.handleLoadEntitiesErrors(error, failedEntities, entity, allBrokenRulesEntities);
+                }
             }
+        } else {
+            await Promise.all(
+                entities!.map(async (entity) => {
+                    try {
+                        const result = await this.createEntityInstance(entity, [], insertBrokenEntities?.ignoredRules || [], userId);
+                        succeededEntities.push(result);
+                        return result;
+                    } catch (error) {
+                        this.handleLoadEntitiesErrors(error, failedEntities, entity, allBrokenRulesEntities);
+                        return null;
+                    }
+                }),
+            );
         }
 
         const brokenRulesEntities = await updateIdOfBrokenRules(allBrokenRulesEntities);

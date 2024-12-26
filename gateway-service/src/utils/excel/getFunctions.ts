@@ -84,6 +84,7 @@ const handleFailedEntities = (rowData: Record<string, any>, failedProperties: IF
     };
     failedEntities.push(failedEntity);
 };
+
 const readExcelFile = async (files: Express.Multer.File[], template: IMongoEntityTemplatePopulated, failedEntities: IFailedEntity[]) => {
     const allActions: IAction[] = [];
 
@@ -104,6 +105,7 @@ const readExcelFile = async (files: Express.Multer.File[], template: IMongoEntit
                 if (rowIndex === 1) return; // skip header row
                 const failedProperties: IFailedProperties = [];
                 const rowData: Record<string, any> = {};
+
                 Object.entries(columns).forEach(([key, value], columnIndex) => {
                     const cellValue = row.getCell(columnIndex + 1).value;
                     try {
