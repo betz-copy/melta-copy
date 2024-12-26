@@ -422,6 +422,7 @@ export class BulkActionManager extends DefaultManagerNeo4j {
                 'writeTransaction',
                 async (transaction) => {
                     const { entityTemplateIds, relationshipTemplateIds } = await this.processBeforeRunBulk(actions, transaction);
+
                     // get all entityTemplates group by entityTemplateId
                     const [entityTemplates, relationshipTemplates] = await Promise.all([
                         this.entityTemplateService.searchEntityTemplates({ ids: [...entityTemplateIds] }),

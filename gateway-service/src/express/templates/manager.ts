@@ -1051,7 +1051,6 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         validateNoDependentRules(rules);
     }
 
-    // eslint-disable-next-line consistent-return
     async convertRelationshipToRelationshipField(
         relationshipTemplateId: string,
         { fieldName, displayFieldName, relationshipReference },
@@ -1088,8 +1087,10 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             relationshipReference.relatedTemplateField,
         );
 
-        const restOfEntityTemplate = this.removeBasicFields(await this.entityTemplateService.getEntityTemplateById(entityIdToUpdate));
-        const entityTemplateToUpdate = {
+        const restOfEntityTemplate: Omit<IEntityTemplatePopulated, 'disabled'> = this.removeBasicFields(
+            await this.entityTemplateService.getEntityTemplateById(entityIdToUpdate),
+        );
+        const entityTemplateToUpdate: Omit<IEntityTemplate, 'disabled'> = {
             ...restOfEntityTemplate,
             category: restOfEntityTemplate.category._id,
             properties: {

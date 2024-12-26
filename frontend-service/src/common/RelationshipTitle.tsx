@@ -35,7 +35,7 @@ const ArrowHead: React.FC = () => {
     );
 };
 
-export const TextComponent: React.FC<{ title: string; style?: CSSProperties }> = ({ title, style }) => {
+const TextComponent: React.FC<{ title: string; style?: CSSProperties }> = ({ title, style }) => {
     return (
         <MeltaTooltip title={title}>
             <Typography

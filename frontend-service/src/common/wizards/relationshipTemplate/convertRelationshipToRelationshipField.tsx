@@ -31,6 +31,13 @@ const ConvertToRelationship: React.FC<IConvertToRelationship> = ({ open, handleC
     const displayFieldNamesExisting = Object.values(newSourceEntity?.properties.properties || {}).map(
         (property: IEntitySingleProperty) => property?.title,
     );
+    const textFieldStyle = {
+        '& .MuiFormHelperText-root': {
+            fontSize: '0.75rem',
+            lineHeight: '1rem',
+        },
+        width: 280,
+    };
 
     return (
         <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
@@ -102,13 +109,7 @@ const ConvertToRelationship: React.FC<IConvertToRelationship> = ({ open, handleC
                                                     error={formik.touched.fieldName && Boolean(formik.errors.fieldName)}
                                                     helperText={formik.touched.fieldName && formik.errors.fieldName}
                                                     size="small"
-                                                    sx={{
-                                                        '& .MuiFormHelperText-root': {
-                                                            fontSize: '0.75rem',
-                                                            lineHeight: '1rem',
-                                                        },
-                                                        width: 280,
-                                                    }}
+                                                    sx={textFieldStyle}
                                                 />
                                             </Grid>
                                             <Grid item>
@@ -122,13 +123,7 @@ const ConvertToRelationship: React.FC<IConvertToRelationship> = ({ open, handleC
                                                     error={formik.touched.displayFieldName && Boolean(formik.errors.displayFieldName)}
                                                     helperText={formik.touched.displayFieldName && formik.errors.displayFieldName}
                                                     size="small"
-                                                    sx={{
-                                                        '& .MuiFormHelperText-root': {
-                                                            fontSize: '0.75rem',
-                                                            lineHeight: '1rem',
-                                                        },
-                                                        width: 280,
-                                                    }}
+                                                    sx={textFieldStyle}
                                                 />
                                             </Grid>
                                         </Grid>

@@ -452,5 +452,6 @@ export const addStringFieldsAndNormalizeDateValues = (
 
         normalizedEntity[key] = propertyValue;
     });
+
     return normalizedEntity;
 };

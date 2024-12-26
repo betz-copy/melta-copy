@@ -7,6 +7,20 @@ import {
     previewPropertiesSchema,
     orderPropertiesTypeSchema,
 } from './joi.helper';
+
+const entityTemplateSchema = {
+    name: variableNameValidation.required(),
+    displayName: Joi.string().required(),
+    category: Joi.string().required(),
+    properties: innerPropertiesSchema.required(),
+    iconFileId: Joi.string().allow(null),
+    propertiesOrder: orderPropertiesSchema.required(),
+    propertiesTypeOrder: orderPropertiesTypeSchema.required(),
+    propertiesPreview: previewPropertiesSchema.required(),
+    enumPropertiesColors: enumPropertiesColorsSchema,
+    documentTemplatesIds: Joi.array().items(Joi.string()),
+};
+
 // POST /api/entities/templates/search
 export const searchEntityTemplatesSchema = Joi.object({
     query: {},
@@ -44,17 +58,8 @@ export const deleteEntityTemplateSchema = Joi.object({
 // POST api/entities/templates
 export const createEntityTemplateSchema = Joi.object({
     body: {
-        name: variableNameValidation.required(),
-        displayName: Joi.string().required(),
-        category: Joi.string().required(),
+        ...entityTemplateSchema,
         disabled: Joi.boolean().default(false),
-        properties: innerPropertiesSchema.required(),
-        iconFileId: Joi.string().allow(null), // todo: iconFileId is optional and nullable, should be only one of them
-        propertiesOrder: orderPropertiesSchema.required(),
-        propertiesTypeOrder: orderPropertiesTypeSchema.required(),
-        propertiesPreview: previewPropertiesSchema.required(),
-        enumPropertiesColors: enumPropertiesColorsSchema,
-        documentTemplatesIds: Joi.array().items(Joi.string()),
         actions: Joi.forbidden(),
     },
     query: {},
@@ -64,16 +69,7 @@ export const createEntityTemplateSchema = Joi.object({
 // PUT /api/entities/templates/:templateId
 export const updateEntityTemplateSchema = Joi.object({
     body: {
-        name: variableNameValidation.required(),
-        displayName: Joi.string().required(),
-        category: Joi.string().required(),
-        properties: innerPropertiesSchema.required(),
-        iconFileId: Joi.string().allow(null),
-        propertiesOrder: orderPropertiesSchema.required(),
-        propertiesTypeOrder: orderPropertiesTypeSchema.required(),
-        propertiesPreview: previewPropertiesSchema.required(),
-        enumPropertiesColors: enumPropertiesColorsSchema,
-        documentTemplatesIds: Joi.array().items(Joi.string()),
+        ...entityTemplateSchema,
         actions: Joi.string(),
         allowToDeleteRelationshipFields: Joi.boolean(),
     },
@@ -97,16 +93,7 @@ export const updateEntityTemplateStatusSchema = Joi.object({
 // PUT /api/entities/templates/convertToRelationshipField/:templateId/:relationshipTemplateId
 export const convertToRelationshipFieldRequestSchema = Joi.object({
     body: Joi.object({
-        name: variableNameValidation.required(),
-        displayName: Joi.string().required(),
-        category: Joi.string().required(),
-        properties: innerPropertiesSchema.required(),
-        iconFileId: Joi.string().allow(null),
-        propertiesOrder: orderPropertiesSchema.required(),
-        propertiesTypeOrder: orderPropertiesTypeSchema.required(),
-        propertiesPreview: previewPropertiesSchema.required(),
-        enumPropertiesColors: enumPropertiesColorsSchema,
-        documentTemplatesIds: Joi.array().items(Joi.string()),
+        ...entityTemplateSchema,
         actions: Joi.string(),
     }).min(1),
     query: {},

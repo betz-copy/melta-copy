@@ -171,7 +171,7 @@ export class EntityTemplateService extends TemplatesManagerService {
         return data;
     }
 
-    async convertToRelationshipField(entityTemplateId: string, relationshipTemplateId: string, updatedData) {
+    async convertToRelationshipField(entityTemplateId: string, relationshipTemplateId: string, updatedData: Omit<IEntityTemplate, 'disabled'>) {
         const { data } = await this.api.put<{
             updatedRelationShipTemplate: IMongoRelationshipTemplate;
             updatedEntityTemplate: IMongoEntityTemplatePopulated;
