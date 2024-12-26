@@ -1,5 +1,6 @@
 import React from 'react';
 import Avatar from '@mui/material/Avatar';
+import { useMatomo } from '@datapunt/matomo-tracker-react';
 import { IUser } from '../interfaces/users';
 import { useDarkModeStore } from '../stores/darkMode';
 
@@ -19,6 +20,7 @@ const getNameInitials = (user: IUser): string => {
 
 const UserAvatar: React.FC<UserAvatarProps> = ({ user, size = 48, bgColor }) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
+    const { trackEvent } = useMatomo();
 
     // eslint-disable-next-line no-nested-ternary
     const fontColor = !bgColor ? '#1E2775' : darkMode ? 'black' : 'white';
@@ -35,6 +37,12 @@ const UserAvatar: React.FC<UserAvatarProps> = ({ user, size = 48, bgColor }) => 
                 backgroundColor: bgColor ?? '#fcfeff',
                 fontWeight: 500,
                 color: fontColor,
+            }}
+            onClick={() => {
+                trackEvent({
+                    category: 'side-bar',
+                    action: 'profile avatar',
+                });
             }}
         >
             {getNameInitials(user)}
