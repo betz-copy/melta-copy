@@ -91,12 +91,13 @@ export const environment = {
             heatmapModeKey: 'heatmapMode',
         },
     },
-    entitiesCardsView: {
-        infiniteScrollPageCount: 12,
-    },
+
     entitiesProperties: {
         maxNumOfCharactersNotInFullWidth: 700,
         numOfFixedDigits: 18,
+    },
+    entitiesCardsView: {
+        infiniteScrollPageCount: 12,
     },
     permission: {
         infiniteScrollPageCount: 13,

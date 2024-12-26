@@ -36,7 +36,7 @@ const OpenPreviewContent: React.FC<{
                     <Typography
                         sx={{
                             marginRight: '5px',
-                            fontSize: workspace.metadata.mainFontSizes.headlineSubTitleFontSize,
+                            fontSize: workspace.metadata.agGrid.defaultFontSize,
                             textOverflow: 'ellipsis',
                             overflow: 'hidden',
                             whiteSpace: 'nowrap',

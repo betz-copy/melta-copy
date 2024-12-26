@@ -1,6 +1,6 @@
 import { Box, ButtonBase, Card, CircularProgress, Grid, Skeleton, SxProps, Typography } from '@mui/material';
 import i18next from 'i18next';
-import React, { CSSProperties, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
@@ -9,13 +9,12 @@ import { IFile } from '../../interfaces/preview';
 import { VideoPreview } from './VideoPreview';
 import { useFilePreview } from '../../utils/hooks/useFilePreview';
 import { PreviewDialog } from './PreviewDialog';
+import { useWorkspaceStore } from '../../stores/workspace';
 
 pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
 
 interface IPreviewProps {
     file: IFile;
-    height?: CSSProperties['maxHeight'];
-    width?: CSSProperties['maxWidth'];
     sx?: SxProps;
 }
 const shouldDisplayImage = (type: string) => ['image'].includes(type);
@@ -23,7 +22,9 @@ const shouldDisplayVideoOrAudio = (type: string) => ['video', 'audio'].includes(
 const shouldDisplayDocument = (type: string) => ['document', 'pdf'].includes(type);
 const isUnsupported = (type: string) => type === 'unsupported';
 
-const SmallPreview: React.FC<IPreviewProps> = ({ file, width = '100%', height, sx }) => {
+const SmallPreview: React.FC<IPreviewProps> = ({ file, sx }) => {
+    const workspace = useWorkspaceStore((state) => state.workspace);
+    const { smallPreviewHeight } = workspace.metadata;
     const [noSuchKeyError, setNoSuchKeyError] = useState<boolean>(true);
     const { data, isLoading: loading, isError: error } = useFilePreview(file.id, file.contentType, setNoSuchKeyError);
     const { contentType } = file;
@@ -32,13 +33,20 @@ const SmallPreview: React.FC<IPreviewProps> = ({ file, width = '100%', height, s
     const previewContent = useMemo(() => {
         if (loading)
             return (
-                <Box sx={{ width, height, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Box
+                    sx={{
+                        height: `${smallPreviewHeight.number}${smallPreviewHeight.unit}`,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                    }}
+                >
                     <CircularProgress size={20} />
                 </Box>
             );
         if (error || !data) {
             return (
-                <Card sx={{ height, width }} elevation={10}>
+                <Card elevation={10}>
                     <Typography
                         style={{
                             fontSize: '20px',
@@ -58,7 +66,7 @@ const SmallPreview: React.FC<IPreviewProps> = ({ file, width = '100%', height, s
         }
         if (isUnsupported(contentType))
             return (
-                <Card sx={{ bgcolor: '#4c494c', display: 'grid', height, width }} elevation={10}>
+                <Card sx={{ bgcolor: '#4c494c', display: 'grid' }} elevation={10}>
                     <Typography
                         variant="body1"
                         sx={{
@@ -77,19 +85,18 @@ const SmallPreview: React.FC<IPreviewProps> = ({ file, width = '100%', height, s
         if (shouldDisplayVideoOrAudio(contentType))
             return (
                 <Box sx={{ display: 'flex', justifyContent: 'center', alignContent: 'center', alignItems: 'center', backgroundColor: 'black' }}>
-                    <VideoPreview data={data} maxHeight={height} maxWidth={width} />
+                    <VideoPreview data={data} />
                 </Box>
             );
         if (shouldDisplayImage(contentType))
             return (
-                <Box sx={{ maxHeight: height, display: 'flex', alignItems: 'center', alignContent: 'center' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', alignContent: 'center' }}>
                     <img
                         src={data}
                         style={{
                             position: 'relative',
                             right: '50%',
                             transform: 'translate(50%)',
-                            maxHeight: height,
                             objectFit: 'cover',
                             display: 'block',
                             borderRadius: '1rem',
@@ -105,7 +112,7 @@ const SmallPreview: React.FC<IPreviewProps> = ({ file, width = '100%', height, s
             );
 
         return (
-            <Box sx={{ width, height, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <Skeleton variant="rectangular" sx={{ borderRadius: '1rem' }} />
             </Box>
         );
@@ -114,15 +121,7 @@ const SmallPreview: React.FC<IPreviewProps> = ({ file, width = '100%', height, s
     return (
         <Grid container sx={{ height: '100%', overflowY: 'hidden', overflowX: 'hidden', fontSize: 'small' }} justifyContent="center">
             <Grid item sx={sx}>
-                <ButtonBase
-                    sx={{
-                        height,
-                        width,
-                    }}
-                    onClick={() => setIsOpen(true)}
-                >
-                    {previewContent}
-                </ButtonBase>
+                <ButtonBase onClick={() => setIsOpen(true)}>{previewContent}</ButtonBase>
 
                 {isOpen && <PreviewDialog fileName={file.name} fileId={file.id} contentType={contentType} open={isOpen} setOpen={setIsOpen} />}
             </Grid>
