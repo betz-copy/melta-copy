@@ -1,7 +1,8 @@
 import { menash } from 'menashmq';
 import { INotificationMetadata, NotificationType, logger } from '@microservices/shared';
 import config from '../config';
-import { MailManager } from './mailNotifications';
+// eslint-disable-next-line import/extensions
+import MailManager from './mailNotifications';
 import { IMailNotificationMetadataPopulated } from './mailNotifications/interfaces';
 
 const {
@@ -9,8 +10,12 @@ const {
     service: { workspaceIdHeaderName },
 } = config;
 
-export class RabbitManager {
-    constructor(private workspaceId: string) {}
+class RabbitManager {
+    private workspaceId: string;
+
+    constructor(workspaceId: string) {
+        this.workspaceId = workspaceId;
+    }
 
     async createNotification<
         NotificationMetadata extends INotificationMetadata,
@@ -39,3 +44,5 @@ export class RabbitManager {
         });
     }
 }
+
+export default RabbitManager;

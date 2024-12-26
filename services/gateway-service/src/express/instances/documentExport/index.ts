@@ -1,3 +1,4 @@
+/* eslint-disable import/prefer-default-export */
 import { load } from 'cheerio';
 import { IPatch, patchDocument, PatchType, TextRun } from 'docx';
 import { toHebrewJewishDate, toJewishDate } from 'jewish-date';

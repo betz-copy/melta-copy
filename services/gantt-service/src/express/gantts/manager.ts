@@ -1,6 +1,5 @@
 import { FilterQuery } from 'mongoose';
-import { DefaultManagerMongo, IGantt, ISearchGanttsBody } from '@microservices/shared';
-import { NotFoundError } from '../error';
+import { DefaultManagerMongo, IGantt, ISearchGanttsBody, NotFoundError } from '@microservices/shared';
 import config from '../../config';
 import { escapeRegExp } from '../../utils';
 import { GanttSchema } from './model';

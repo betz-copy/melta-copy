@@ -16,7 +16,7 @@ const {
     userService: { url, usersRoute, permissionsRoute, requestTimeout },
 } = config;
 
-export class UserService {
+class UserService {
     private static userService = axios.create({
         baseURL: url,
         timeout: requestTimeout,
@@ -70,3 +70,5 @@ export class UserService {
         return data;
     }
 }
+
+export default UserService;

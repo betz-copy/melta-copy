@@ -5,17 +5,17 @@ import {
     UpdateStepReqBody,
     IMongoProcessInstanceReviewerPopulated,
     IMongoProcessInstancePopulated,
+    logger,
 } from '@microservices/shared';
-import { ProcessService } from '../../../externalServices/processService';
-import { StorageService } from '../../../externalServices/storageService';
+import ProcessService from '../../../externalServices/processService';
+import StorageService from '../../../externalServices/storageService';
 import DefaultManagerProxy from '../../../utils/express/manager';
 import { removeTmpFile } from '../../../utils/fs';
-import { InstancesManager } from '../../instances/manager';
-import { UsersManager } from '../../users/manager';
+import InstancesManager from '../../instances/manager';
+import UsersManager from '../../users/manager';
 import ProcessesInstancesManager from '../processInstances/manager';
-import { logger } from '@microservices/shared';
 
-export default class StepsInstancesManager extends DefaultManagerProxy<ProcessService> {
+class StepsInstancesManager extends DefaultManagerProxy<ProcessService> {
     private storageService: StorageService;
 
     private instancesManager: InstancesManager;
@@ -49,7 +49,7 @@ export default class StepsInstancesManager extends DefaultManagerProxy<ProcessSe
         const propertiesPromise =
             step.properties && processInstancesManager.getPropertiesWithEntities(step.properties, stepTemplate.properties, userId);
         return Promise.all([reviewerPromise, populatedReviewersPromise, propertiesPromise]).then(([reviewer, populatedReviewers, properties]) => {
-            const { reviewerId, ...populatedStep } = {
+            const { reviewerId: _reviewerId, ...populatedStep } = {
                 ...step,
                 reviewers: populatedReviewers,
                 reviewer,
@@ -118,3 +118,5 @@ export default class StepsInstancesManager extends DefaultManagerProxy<ProcessSe
         return this.getStepInstanceWithEntitesAndReviewers(updatedStep, userId);
     }
 }
+
+export default StepsInstancesManager;

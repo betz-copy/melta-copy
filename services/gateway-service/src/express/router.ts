@@ -4,7 +4,7 @@ import { wrapMiddleware } from '@microservices/shared';
 import authenticationRouter from './authentication/router';
 import config from '../config';
 import apiRouter from './apiRouter';
-import { UserService } from '../externalServices/userService';
+import UserService from '../externalServices/userService';
 
 const appRouter = Router();
 

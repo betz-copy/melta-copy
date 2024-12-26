@@ -1,7 +1,7 @@
 import { IMongoRelationshipTemplate, ISearchRelationshipTemplatesBody, IRule, ISearchRulesBody } from '@microservices/shared';
 
 import config from '../../config';
-import { TemplatesManagerService } from '.';
+import TemplatesManagerService from '.';
 import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
 
 const {

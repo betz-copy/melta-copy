@@ -11,8 +11,8 @@ import notificationsRouter from './notifications/router';
 import processesRouter from './processes/router';
 import RulesBreachesRouter from './ruleBreaches/router';
 import templatesRouter from './templates/router';
-import { usersRouter } from './users/router';
-import { workspaceRouter } from './workspaces/router';
+import usersRouter from './users/router';
+import workspaceRouter from './workspaces/router';
 
 const apiRouter = Router();
 

@@ -13,7 +13,7 @@ import DefaultExternalServiceApi from '../../utils/express/externalService';
 
 const { url, baseRoute, requestTimeout } = config.ruleBreachService;
 
-export class RuleBreachService extends DefaultExternalServiceApi {
+class RuleBreachService extends DefaultExternalServiceApi {
     constructor(workspaceId: string) {
         super(workspaceId, { baseURL: `${url}${baseRoute}`, timeout: requestTimeout });
     }
@@ -102,3 +102,5 @@ export class RuleBreachService extends DefaultExternalServiceApi {
         return data;
     }
 }
+
+export default RuleBreachService;

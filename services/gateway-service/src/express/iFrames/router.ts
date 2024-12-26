@@ -5,7 +5,7 @@ import IFramesController from './controller';
 import { wrapMulter } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
 import { createIFrameSchema, deleteIFrameSchema, getIFrameByIdSchema, searchIFramesSchema, updateIFrameSchema } from './validator.schema';
-import { IFramesValidator } from './middlewares';
+import IFramesValidator from './middlewares';
 import config from '../../config';
 import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
 

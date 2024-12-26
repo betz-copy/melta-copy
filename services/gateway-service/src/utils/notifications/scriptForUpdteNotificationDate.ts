@@ -1,8 +1,6 @@
-import { IEntityTemplate, IMongoEntityTemplatePopulated, WorkspaceTypes } from '@microservices/shared';
-import { ServiceError } from '../../express/error';
-import { WorkspaceManager } from '../../express/workspaces/manager';
-import { EntityTemplateService } from '../../externalServices/templates/entityTemplateService';
-import { logger } from '@microservices/shared';
+import { IEntityTemplate, IMongoEntityTemplatePopulated, ServiceError, WorkspaceTypes, logger } from '@microservices/shared';
+import WorkspaceManager from '../../express/workspaces/manager';
+import EntityTemplateService from '../../externalServices/templates/entityTemplateService';
 
 enum dateNotificationOptions {
     day = 1,
@@ -14,7 +12,7 @@ enum dateNotificationOptions {
 }
 
 const checkDateNotification = async (entityTemplateService: EntityTemplateService, entityTemplate: IMongoEntityTemplatePopulated) => {
-    const { _id, createdAt, updatedAt, ...restProperties } = entityTemplate;
+    const { _id, createdAt: _createdAt, updatedAt: _updatedAt, ...restProperties } = entityTemplate;
     let updatedProperties = '';
 
     let hasDateNotification = false;

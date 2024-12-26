@@ -1,4 +1,4 @@
-export const excelConfig = {
+const excelConfig = {
     excelDefaultColumns: [
         { key: 'disabled', header: '?מושבת', width: 20 },
         { key: 'createdAt', header: 'תאריך יצירה', width: 20 },
@@ -11,3 +11,5 @@ export const excelConfig = {
     regexOfDateFormat: /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])/,
     regexOfTextAreaFormat: /<[a-z][\s\S]*>/i,
 };
+
+export default excelConfig;

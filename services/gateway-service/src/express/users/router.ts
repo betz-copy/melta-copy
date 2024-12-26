@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { wrapController } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
-import { UsersController } from './controller';
+import UsersController from './controller';
 import {
     createUserRequestSchema,
     deletePermissionsFromMetadataRequestSchema,
@@ -13,7 +13,7 @@ import {
     updateUserExternalMetadataRequestSchema,
 } from './validator.schema';
 
-export const usersRouter: Router = Router();
+const usersRouter: Router = Router();
 
 usersRouter.get('/my', ValidateRequest(getMyUserRequestSchema), wrapController(UsersController.getMyUser));
 
@@ -39,3 +39,5 @@ usersRouter.patch(
     ValidateRequest(deletePermissionsFromMetadataRequestSchema),
     wrapController(UsersController.deletePermissionsFromMetadata),
 );
+
+export default usersRouter;

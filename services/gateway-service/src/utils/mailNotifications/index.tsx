@@ -17,7 +17,7 @@ import {
     IRuleBreachResponseNotificationMetadataPopulated,
 } from '@microservices/shared';
 import config from '../../config';
-import { UsersManager } from '../../express/users/manager';
+import UsersManager from '../../express/users/manager';
 import {
     ICreateRelationshipMetadataPopulated,
     IDeleteRelationshipMetadataPopulated,
@@ -26,16 +26,16 @@ import {
     IUpdateEntityMetadataPopulated,
     IUpdateEntityStatusMetadataPopulated,
 } from '../../externalServices/ruleBreachService/interfaces/populated';
-import { EntityTemplateService } from '../../externalServices/templates/entityTemplateService';
+import EntityTemplateService from '../../externalServices/templates/entityTemplateService';
 import { RelationshipsTemplateService } from '../../externalServices/templates/relationshipsTemplateService';
-import { hebrew } from './hebrew';
+import hebrew from './hebrew';
 import {
     IMailNotification,
     IMailNotificationMetadataPopulated,
     IProcessReviewerUpdateMailNotificationMetadataPopulated,
     IProcessStatusUpdateMailNotificationMetadataPopulated,
 } from './interfaces';
-import { mailConfig } from './mailConfig';
+import mailConfig from './mailConfig';
 
 const { mailTitle } = mailConfig;
 const {
@@ -43,7 +43,7 @@ const {
     service: { meltaBaseUrl },
 } = config;
 
-export class MailManager {
+class MailManager {
     private entityTemplateService: EntityTemplateService;
 
     private relationshipsTemplateService: RelationshipsTemplateService;
@@ -429,3 +429,5 @@ export class MailManager {
         };
     }
 }
+
+export default MailManager;

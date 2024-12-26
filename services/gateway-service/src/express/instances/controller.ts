@@ -1,10 +1,10 @@
 import { promises as fsp } from 'fs';
 import { promisify } from 'util';
 import { Request, Response } from 'express';
-import { InstancesManager } from './manager';
+import InstancesManager from './manager';
 import DefaultController from '../../utils/express/controller';
 
-export class InstancesController extends DefaultController<InstancesManager> {
+class InstancesController extends DefaultController<InstancesManager> {
     constructor(workspaceId: string) {
         super(new InstancesManager(workspaceId));
     }
@@ -87,3 +87,5 @@ export class InstancesController extends DefaultController<InstancesManager> {
         res.json(await this.manager.runBulkOfActions(actionsGroups, req.query.dryRun as unknown as boolean, req.user!.id, ignoredRules));
     }
 }
+
+export default InstancesController;

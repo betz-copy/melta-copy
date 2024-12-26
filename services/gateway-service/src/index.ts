@@ -36,7 +36,7 @@ const initializeMongo = async () => {
 
         logger.info('Mongo connection established');
     } catch (err) {
-        console.log({ err });
+        logger.error('Mongo connection error', { err });
     }
 };
 

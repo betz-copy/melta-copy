@@ -6,7 +6,7 @@ import {
     IMongoEntityTemplatePopulated,
     ISearchEntityTemplatesBody,
 } from '@microservices/shared';
-import { TemplatesManagerService } from '.';
+import TemplatesManagerService from '.';
 import config from '../../config';
 import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
 
@@ -20,7 +20,7 @@ export interface RequestWithSearchEntityTemplateBody extends RequestWithPermissi
     searchQuery: ISearchEntityTemplatesBody;
 }
 
-export class EntityTemplateService extends TemplatesManagerService {
+class EntityTemplateService extends TemplatesManagerService {
     // categories
     async getAllCategories() {
         const { data } = await this.api.get<IMongoCategory[]>(baseCategoriesRoute);
@@ -91,3 +91,5 @@ export class EntityTemplateService extends TemplatesManagerService {
         return data;
     }
 }
+
+export default EntityTemplateService;

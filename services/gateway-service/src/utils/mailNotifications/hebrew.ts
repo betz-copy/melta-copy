@@ -1,4 +1,4 @@
-export const hebrew = {
+const hebrew = {
     titles: {
         meltaNotificationTitlePrefix: 'התראה מערכת מלתעות -',
         ruleBreachAlert: `התראת חריגת חוקה`,
@@ -85,3 +85,5 @@ export const hebrew = {
         pending: 'ממתין',
     },
 };
+
+export default hebrew;

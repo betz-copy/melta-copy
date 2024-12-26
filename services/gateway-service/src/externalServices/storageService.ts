@@ -8,7 +8,7 @@ const {
     storageService: { url, uploadFileRoute, uploadFilesRoute, downloadFileRoute, deleteFileRoute, deleteFilesRoute, duplicateFilesRoute },
 } = config;
 
-export class StorageService extends DefaultExternalServiceApi {
+class StorageService extends DefaultExternalServiceApi {
     constructor(workspaceId: string) {
         super(workspaceId, { baseURL: url });
     }
@@ -72,3 +72,5 @@ export class StorageService extends DefaultExternalServiceApi {
         return data;
     }
 }
+
+export default StorageService;

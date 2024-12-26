@@ -30,14 +30,15 @@ import {
     IRuleBreachAlertNotificationMetadataPopulated,
     IRuleBreachRequestNotificationMetadataPopulated,
     IRuleBreachResponseNotificationMetadataPopulated,
+    BadRequestError,
+    ForbiddenError,
 } from '@microservices/shared';
 import { trycatch } from '../../utils';
-import { BadRequestError, ForbiddenError } from '../error';
-import { InstancesManager } from '../instances/manager';
+import InstancesManager from '../instances/manager';
 
 import config from '../../config';
-import { InstancesService } from '../../externalServices/instanceService';
-import { RuleBreachService } from '../../externalServices/ruleBreachService';
+import InstancesService from '../../externalServices/instanceService';
+import RuleBreachService from '../../externalServices/ruleBreachService';
 import {
     IActionMetadataPopulated,
     IBrokenRulePopulated,
@@ -55,14 +56,14 @@ import {
     IUpdateEntityMetadataPopulated,
     IUpdateEntityStatusMetadataPopulated,
 } from '../../externalServices/ruleBreachService/interfaces/populated';
-import { StorageService } from '../../externalServices/storageService';
-import { EntityTemplateService } from '../../externalServices/templates/entityTemplateService';
+import StorageService from '../../externalServices/storageService';
+import EntityTemplateService from '../../externalServices/templates/entityTemplateService';
 import { IAgGridResult } from '../../utils/agGrid/interface';
 import { Authorizer } from '../../utils/authorizer';
 import DefaultManagerProxy from '../../utils/express/manager';
-import { RabbitManager } from '../../utils/rabbit';
-import { UsersManager } from '../users/manager';
-import { WorkspaceManager } from '../workspaces/manager';
+import RabbitManager from '../../utils/rabbit';
+import UsersManager from '../users/manager';
+import WorkspaceManager from '../workspaces/manager';
 
 const { errorCodes, ruleBreachService } = config;
 

@@ -1,10 +1,10 @@
 import { IFilterOfTemplate, ISearchEntitiesOfTemplateBody } from '@microservices/shared';
 import config from '../../config';
-import { InstancesService } from '../../externalServices/instanceService';
-import { EntityTemplateService } from '../../externalServices/templates/entityTemplateService';
+import InstancesService from '../../externalServices/instanceService';
+import EntityTemplateService from '../../externalServices/templates/entityTemplateService';
 import DefaultManagerProxy from '../../utils/express/manager';
 
-export class FlowCubeManager extends DefaultManagerProxy<null> {
+class FlowCubeManager extends DefaultManagerProxy<null> {
     private instancesService: InstancesService;
 
     private entityTemplateService: EntityTemplateService;
@@ -59,3 +59,5 @@ export class FlowCubeManager extends DefaultManagerProxy<null> {
         return convertToFlow;
     }
 }
+
+export default FlowCubeManager;

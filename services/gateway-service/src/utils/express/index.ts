@@ -4,7 +4,7 @@ import { StatusCodes } from 'http-status-codes';
 import { dataLogger } from '@microservices/shared';
 import config from '../../config';
 import { InvalidWorkspaceHeaderError } from '../../express/error';
-import { WorkspaceService } from '../../express/workspaces/service';
+import WorkspaceService from '../../express/workspaces/service';
 
 const { workspaceIdHeaderName } = config.service;
 
@@ -84,7 +84,7 @@ export const wrapMulter = (upload: any) => {
             if (err) {
                 return handleMulterErrors(err, req, res, next);
             }
-            next();
+            return next(); // TODO: Yona - check if this is OK?
         });
     };
 };

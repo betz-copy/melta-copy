@@ -5,7 +5,7 @@ import config from '../../config';
 import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
 import { wrapController } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
-import { WorkspaceController } from './controller';
+import WorkspaceController from './controller';
 import {
     createOneSchema,
     getByIdSchema,
@@ -18,7 +18,7 @@ import {
 
 const controller = createController(WorkspaceController);
 
-export const workspaceRouter: Router = Router();
+const workspaceRouter: Router = Router();
 
 workspaceRouter.post(
     '/ids',
@@ -54,3 +54,5 @@ workspaceRouter.put(
     AuthorizerControllerMiddleware.userCanWriteWorkspaces,
     controller.updateOne,
 );
+
+export default workspaceRouter;

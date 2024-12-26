@@ -9,15 +9,15 @@ import {
     IMongoProcessInstancePopulated,
     IProcessInstanceSearchProperties,
     Status,
+    ServiceError,
 } from '@microservices/shared';
 import config from '../../../config';
-import { ProcessService } from '../../../externalServices/processService';
-import { StorageService } from '../../../externalServices/storageService';
+import ProcessService from '../../../externalServices/processService';
+import StorageService from '../../../externalServices/storageService';
 import { Authorizer } from '../../../utils/authorizer';
 import DefaultManagerProxy from '../../../utils/express/manager';
 import { removeTmpFile } from '../../../utils/fs';
-import { ServiceError } from '../../error';
-import { UsersManager } from '../../users/manager';
+import UsersManager from '../../users/manager';
 import ProcessesInstancesManager from '../processInstances/manager';
 
 const { internalSearchPullLimit } = config.processService;

@@ -19,7 +19,7 @@ const {
     processService: { url, templatesBaseRoute, instancesBaseRoute, requestTimeout },
 } = config;
 
-export class ProcessService extends DefaultExternalServiceApi {
+class ProcessService extends DefaultExternalServiceApi {
     constructor(private workspaceId: string) {
         super(workspaceId, { baseURL: url, timeout: requestTimeout });
     }
@@ -128,3 +128,5 @@ export class ProcessService extends DefaultExternalServiceApi {
         return data;
     }
 }
+
+export default ProcessService;

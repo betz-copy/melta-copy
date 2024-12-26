@@ -1,12 +1,10 @@
 import { FilterQuery, Types } from 'mongoose';
 import { StatusCodes } from 'http-status-codes';
-import { ISearchIFramesBody, IFrame, IMongoIFrame } from '@microservices/shared';
+import { ISearchIFramesBody, IFrame, IMongoIFrame, DefaultManagerMongo, ServiceError } from '@microservices/shared';
 import config from '../../config';
-import { StorageService } from '../../externalServices/storageService';
+import StorageService from '../../externalServices/storageService';
 import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
 import { removeTmpFile } from '../../utils/fs';
-import { DefaultManagerMongo } from '../../utils/mongo/manager';
-import { ServiceError } from '../error';
 import IFrameSchema from './model';
 
 export class IFrameManager extends DefaultManagerMongo<IMongoIFrame> {

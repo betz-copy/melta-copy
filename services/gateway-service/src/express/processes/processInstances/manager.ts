@@ -25,22 +25,22 @@ import {
     IDeleteProcessNotificationMetadataPopulated,
     INewProcessNotificationMetadataPopulated,
     IProcessStatusUpdateNotificationMetadataPopulated,
+    ServiceError,
 } from '@microservices/shared';
 import config from '../../../config';
-import { InstancesService } from '../../../externalServices/instanceService';
-import { ProcessService } from '../../../externalServices/processService';
-import { StorageService } from '../../../externalServices/storageService';
-import { EntityTemplateService } from '../../../externalServices/templates/entityTemplateService';
+import InstancesService from '../../../externalServices/instanceService';
+import ProcessService from '../../../externalServices/processService';
+import StorageService from '../../../externalServices/storageService';
+import EntityTemplateService from '../../../externalServices/templates/entityTemplateService';
 import { filteredMap } from '../../../utils';
 import { Authorizer } from '../../../utils/authorizer';
 import DefaultManagerProxy from '../../../utils/express/manager';
 import { removeTmpFile } from '../../../utils/fs';
 import { IProcessReviewerUpdateMailNotificationMetadataPopulated } from '../../../utils/mailNotifications/interfaces';
-import { RabbitManager } from '../../../utils/rabbit';
-import { ServiceError } from '../../error';
-import { InstancesManager } from '../../instances/manager';
-import { UsersManager } from '../../users/manager';
-import { WorkspaceManager } from '../../workspaces/manager';
+import RabbitManager from '../../../utils/rabbit';
+import InstancesManager from '../../instances/manager';
+import UsersManager from '../../users/manager';
+import WorkspaceManager from '../../workspaces/manager';
 import { EntityNotExist, NotFoundError } from '../error';
 import StepsInstancesManager from '../stepInstances/manager';
 

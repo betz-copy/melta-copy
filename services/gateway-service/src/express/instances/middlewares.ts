@@ -1,17 +1,16 @@
 import { Request } from 'express';
 import lodashUniqby from 'lodash.uniqby';
-import { IMongoEntityTemplatePopulated, IRule, PermissionScope, IAction, IRelationship } from '@microservices/shared';
-import { InstancesService } from '../../externalServices/instanceService';
-import { EntityTemplateService } from '../../externalServices/templates/entityTemplateService';
+import { IMongoEntityTemplatePopulated, IRule, PermissionScope, IAction, IRelationship, ForbiddenError, ServiceError } from '@microservices/shared';
+import InstancesService from '../../externalServices/instanceService';
+import EntityTemplateService from '../../externalServices/templates/entityTemplateService';
 import { RelationshipsTemplateService } from '../../externalServices/templates/relationshipsTemplateService';
 import { Authorizer, RequestWithPermissionsOfUserId } from '../../utils/authorizer';
 import { getWorkspaceId } from '../../utils/express';
 import DefaultController from '../../utils/express/controller';
-import { ForbiddenError, ServiceError } from '../error';
 import { TemplatesManager } from '../templates/manager';
-import { InstancesManager } from './manager';
+import InstancesManager from './manager';
 
-export class InstancesValidator extends DefaultController {
+class InstancesValidator extends DefaultController {
     private entityTemplateService: EntityTemplateService;
 
     private instancesService: InstancesService;
@@ -240,3 +239,5 @@ export class InstancesValidator extends DefaultController {
         }
     }
 }
+
+export default InstancesValidator;

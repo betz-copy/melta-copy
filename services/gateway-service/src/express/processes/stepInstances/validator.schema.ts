@@ -1,3 +1,4 @@
+/* eslint-disable import/prefer-default-export */
 import Joi from 'joi';
 import { ExtendedJoi, MongoIdSchema, fileSchema } from '../../../utils/joi';
 

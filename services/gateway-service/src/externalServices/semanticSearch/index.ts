@@ -1,4 +1,4 @@
-import { ISearchBatchBody, ISearchSort, ISemanticSearchResult } from '@microservices/shared';
+import { ISearchBatchBody, ISearchSort, ISemanticSearchResult, logger } from '@microservices/shared';
 import config from '../../config';
 import DefaultExternalServiceApi from '../../utils/express/externalService';
 
@@ -22,8 +22,8 @@ export class SemanticSearchService extends DefaultExternalServiceApi {
         try {
             const { data } = await this.api.post<ISemanticSearchResult>(searchRoute, searchBody);
             return data;
-        } catch (e) {
-            console.log(e);
+        } catch (error) {
+            logger.error("Error in SemanticSearchService's search", { error });
             return {};
         }
     }

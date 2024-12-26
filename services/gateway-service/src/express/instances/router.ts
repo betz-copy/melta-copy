@@ -6,8 +6,8 @@ import config from '../../config';
 import { wrapMulter } from '../../utils/express';
 import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
 import ValidateRequest from '../../utils/joi';
-import { InstancesController } from './controller';
-import { InstancesValidator } from './middlewares';
+import InstancesController from './controller';
+import InstancesValidator from './middlewares';
 import {
     createEntityInstanceSchema,
     createRelationshipSchema,

@@ -32,13 +32,13 @@ import {
     isDeleteProcessNotification,
     isArchiveProcessNotification,
 } from '../../externalServices/notificationService/interfaces';
-import { NotificationService } from '../../externalServices/notificationService';
+import NotificationService from '../../externalServices/notificationService';
 import RuleBreachesManager from '../ruleBreaches/manager';
 import ProcessesInstancesManager from '../processes/processInstances/manager';
-import { InstancesService } from '../../externalServices/instanceService';
+import InstancesService from '../../externalServices/instanceService';
 import DefaultManagerProxy from '../../utils/express/manager';
 
-export class NotificationsManager extends DefaultManagerProxy<NotificationService> {
+class NotificationsManager extends DefaultManagerProxy<NotificationService> {
     private instancesService: InstancesService;
 
     private ruleBreachesManager: RuleBreachesManager;
@@ -188,7 +188,7 @@ export class NotificationsManager extends DefaultManagerProxy<NotificationServic
     }
 
     async populateNotification(notification: INotification, userId: string): Promise<INotificationPopulated> {
-        const { viewers, ...restOfNotification } = notification;
+        const { viewers: _viewers, ...restOfNotification } = notification;
 
         let populatedMetadata: INotificationMetadataPopulated | null;
 

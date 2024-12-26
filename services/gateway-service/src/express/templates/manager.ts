@@ -22,24 +22,26 @@ import {
     IMongoEntityTemplateWithConstraints,
     IMongoEntityTemplateWithConstraintsPopulated,
     IUpdateOrDeleteEnumFieldReqData,
+    BadRequestError,
+    NotFoundError,
+    ServiceError,
 } from '@microservices/shared';
 import config from '../../config';
-import { InstancesService } from '../../externalServices/instanceService';
-import { ProcessService } from '../../externalServices/processService';
-import { RuleBreachService } from '../../externalServices/ruleBreachService';
-import { StorageService } from '../../externalServices/storageService';
-import { EntityTemplateService } from '../../externalServices/templates/entityTemplateService';
+import InstancesService from '../../externalServices/instanceService';
+import ProcessService from '../../externalServices/processService';
+import RuleBreachService from '../../externalServices/ruleBreachService';
+import StorageService from '../../externalServices/storageService';
+import EntityTemplateService from '../../externalServices/templates/entityTemplateService';
 import { RelationshipsTemplateService } from '../../externalServices/templates/relationshipsTemplateService';
 import { trycatch } from '../../utils';
 import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
 import DefaultManagerProxy from '../../utils/express/manager';
 import { removeTmpFile } from '../../utils/fs';
-import { BadRequestError, NotFoundError, ServiceError } from '../error';
 import ProcessTemplatesManager from '../processes/processTemplates/manager';
-import { UsersManager } from '../users/manager';
+import UsersManager from '../users/manager';
 import { getParametersOfFormula } from './rules';
-import { GanttsService } from '../../externalServices/ganttsService';
-import { checkPropertyInUsedFromFormula } from './rules/checkIfPropertyInUsed';
+import GanttsService from '../../externalServices/ganttsService';
+import checkPropertyInUsedFromFormula from './rules/checkIfPropertyInUsed';
 
 const {
     categoryHasTemplates,
@@ -652,7 +654,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
             Object.entries(currentTemplate.properties.properties).forEach(([name, value]) => {
                 if (value.format === 'relationshipReference' && value.relationshipReference) {
-                    const { relationshipTemplateId, ...restData } = value.relationshipReference;
+                    const { relationshipTemplateId: _relationshipTemplateId, ...restData } = value.relationshipReference;
                     manipulatedTemplate.properties.properties[name].relationshipReference = restData;
                 }
             });
@@ -791,7 +793,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
     }
 
     removeBasicFields(template: IMongoEntityTemplatePopulated) {
-        const { createdAt, updatedAt, _id, disabled, ...rest } = template;
+        const { createdAt: _createdAt, updatedAt: _updatedAt, _id, disabled: _disabled, ...rest } = template;
         return rest;
     }
 
@@ -814,7 +816,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         let templateEnumFieldValues = [...curentTemplateEnum];
         if (update) templateEnumFieldValues[valueIndex] = field;
         // eslint-disable-next-line @typescript-eslint/no-shadow
-        else templateEnumFieldValues = templateEnumFieldValues.filter((_, index) => valueIndex !== index);
+        else templateEnumFieldValues = templateEnumFieldValues.filter((_value, index) => valueIndex !== index);
         const templateWithoutProperties: Omit<IEntityTemplatePopulated, 'disabled' | '_id'> = this.removeBasicFields(template);
         if (template.enumPropertiesColors?.[values.name]?.[fieldValue] !== undefined) {
             let newFieldName: Record<string, string>;

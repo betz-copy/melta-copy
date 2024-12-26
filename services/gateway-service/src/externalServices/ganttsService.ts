@@ -6,7 +6,7 @@ const {
     ganttService: { url, baseRoute, requestTimeout },
 } = config;
 
-export class GanttsService extends DefaultExternalServiceApi {
+class GanttsService extends DefaultExternalServiceApi {
     constructor(workspaceId: string) {
         super(workspaceId, { baseURL: `${url}${baseRoute}`, timeout: requestTimeout });
     }
@@ -36,3 +36,5 @@ export class GanttsService extends DefaultExternalServiceApi {
         return data;
     }
 }
+
+export default GanttsService;

@@ -29,26 +29,25 @@ import {
     logger,
     IExportEntitiesBody,
     ISemanticSearchResult,
+    BadRequestError,
 } from '@microservices/shared';
 import config from '../../config';
-import { InstancesService } from '../../externalServices/instanceService';
-
-import { StorageService } from '../../externalServices/storageService';
-import { EntityTemplateService } from '../../externalServices/templates/entityTemplateService';
+import InstancesService from '../../externalServices/instanceService';
+import StorageService from '../../externalServices/storageService';
+import EntityTemplateService from '../../externalServices/templates/entityTemplateService';
 import { trycatch } from '../../utils';
 import { createWorksheet, createWorkbook, styleAWorksheet } from '../../utils/excel/excelFunctions';
 import DefaultManagerProxy from '../../utils/express/manager';
 import { objectFilter } from '../../utils/object';
-import { BadRequestError } from '../error';
 import RuleBreachesManager from '../ruleBreaches/manager';
 import { patchDocumentAsStream } from './documentExport';
-import { RabbitManager } from '../../utils/rabbit';
+import RabbitManager from '../../utils/rabbit';
 import { SemanticSearchService } from '../../externalServices/semanticSearch';
-import { WorkspaceService } from '../workspaces/service';
+import WorkspaceService from '../workspaces/service';
 
 const { errorCodes, rabbit, ruleBreachService } = config;
 
-export class InstancesManager extends DefaultManagerProxy<InstancesService> {
+class InstancesManager extends DefaultManagerProxy<InstancesService> {
     private entityTemplateService: EntityTemplateService;
 
     private storageService: StorageService;
@@ -212,7 +211,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
             }
         });
         if (isTemplateUpdated) {
-            const { category, _id, createdAt, updatedAt, disabled, ...restOfEntityTemplate } = entityTemplate;
+            const { category, _id, createdAt: _createdAt, updatedAt: _updatedAt, disabled: _disabled, ...restOfEntityTemplate } = entityTemplate;
             await this.entityTemplateService.updateEntityTemplate(entityTemplate._id, {
                 ...restOfEntityTemplate,
                 category: category._id,
@@ -784,3 +783,5 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         return this.service.runBulkOfActions(newActionsGroups, dryRun, userId, ignoredRules);
     }
 }
+
+export default InstancesManager;

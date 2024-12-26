@@ -7,7 +7,7 @@ import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
 import { wrapMulter } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
 import TemplatesController from './controller';
-import { TemplatesValidator } from './middlewares';
+import TemplatesValidator from './middlewares';
 import {
     createCategorySchema,
     createEntityTemplateSchema,

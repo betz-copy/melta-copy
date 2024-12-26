@@ -10,13 +10,13 @@ import {
     IPermission,
     ISubCompactPermissions,
 } from '@microservices/shared';
-import { Kartoffel } from '../../externalServices/kartoffel';
+import Kartoffel from '../../externalServices/kartoffel';
 import { IKartoffelUser, IKartoffelUserDigitalIdentity } from '../../externalServices/kartoffel/interface';
-import { UserService } from '../../externalServices/userService';
+import UserService from '../../externalServices/userService';
 import { objectContains } from '../../utils';
 import { DigitalIdentitySourceDoesNotExistsError, KartoffelUserMissingDataError } from './error';
 
-export class UsersManager {
+class UsersManager {
     static async getUserById(userId: string, workspaceIds?: string[]): Promise<IUser> {
         return UserService.getUserById(userId, workspaceIds);
     }
@@ -49,10 +49,12 @@ export class UsersManager {
             return { ...existingUser, permissions: { ...existingUser.permissions, ...newPermissions } };
         }
 
-        const { _id, displayName, existingDigitalIdentitySource, ...digitalIdentity } = await this.getExternalUserDigitalIdentity(
-            kartoffelId,
-            digitalIdentitySource,
-        );
+        const {
+            _id,
+            displayName: _displayName,
+            existingDigitalIdentitySource: _existingDigitalIdentitySource,
+            ...digitalIdentity
+        } = await this.getExternalUserDigitalIdentity(kartoffelId, digitalIdentitySource);
 
         UsersManager.validateDigitalIdentity(kartoffelId, digitalIdentity);
 
@@ -82,10 +84,13 @@ export class UsersManager {
     static async syncUser(userId: string): Promise<IUser> {
         const user = await UserService.getUserById(userId);
 
-        const { _id, displayName, permissions, existingDigitalIdentitySource, ...digitalIdentity } = await this.getExternalUserDigitalIdentity(
-            user.externalMetadata.kartoffelId,
-            user.externalMetadata.digitalIdentitySource,
-        );
+        const {
+            _id,
+            displayName: _displayName,
+            permissions: _permissions,
+            existingDigitalIdentitySource: _existingDigitalIdentitySource,
+            ...digitalIdentity
+        } = await this.getExternalUserDigitalIdentity(user.externalMetadata.kartoffelId, user.externalMetadata.digitalIdentitySource);
 
         UsersManager.validateDigitalIdentity(user.externalMetadata.kartoffelId, digitalIdentity);
 
@@ -158,3 +163,5 @@ export class UsersManager {
         };
     }
 }
+
+export default UsersManager;

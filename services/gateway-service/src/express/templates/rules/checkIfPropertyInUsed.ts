@@ -12,10 +12,10 @@ import {
     isAggregationGroup,
     isGroup,
     IFormula,
+    ServiceError,
 } from '@microservices/shared';
 
 import config from '../../../config';
-import { ServiceError } from '../../error';
 
 const checkPropertyInUsed = ({ variable, property }: IPropertyOfVariable | ISumAggFunction, entityId: string, properties: string[]) => {
     if (
@@ -51,7 +51,7 @@ const checkPropertyInUsedFromEquation = (formula: IEquation, entityId: string, p
     checkPropertyInUsedFromArgument(formula.rhsArgument, entityId, properties);
 };
 
-export const checkPropertyInUsedFromFormula = (formula: IFormula, entityId: string, properties: string[]) => {
+const checkPropertyInUsedFromFormula = (formula: IFormula, entityId: string, properties: string[]) => {
     if (isGroup(formula)) {
         return formula.subFormulas.map((subFormula) => checkPropertyInUsedFromFormula(subFormula, entityId, properties));
     }
@@ -70,3 +70,5 @@ export const checkPropertyInUsedFromFormula = (formula: IFormula, entityId: stri
 
     throw new Error('unexpected formula, must be group/equation/aggeregationGroup');
 };
+
+export default checkPropertyInUsedFromFormula;
