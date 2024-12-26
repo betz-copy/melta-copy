@@ -1353,6 +1353,7 @@ export class EntityManager extends DefaultManagerNeo4j {
                         entityId,
                         {
                             ...entityProperties,
+
                             [fieldName]: addFieldToSrcEntity ? relationship.destinationEntityId : relationship.sourceEntityId,
                         },
                         entityTemplate,
