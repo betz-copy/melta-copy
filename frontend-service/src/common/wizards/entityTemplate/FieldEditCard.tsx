@@ -155,7 +155,6 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
 
     const dateNotification = `properties[${index}].dateNotification`;
     const isDailyAlert = `properties[${index}].isDailyAlert`;
-    const isDatePastAlert = `properties[${index}].isDatePastAlert`;
     const calculateTime = `properties[${index}].calculateTime`;
     const touchedDateNotification = touched?.dateNotification;
     const errorDateNotification = errors?.dateNotification;
