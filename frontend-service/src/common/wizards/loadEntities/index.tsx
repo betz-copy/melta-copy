@@ -104,12 +104,11 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
         },
         {
             async onSuccess(data) {
-                setStepsData((prev) => ({ ...prev, status: StepStatus.excelUploadResult, data }));
+                setStepsData((prev) => ({ ...prev, data }));
                 return data;
             },
             onError() {
                 toast.error(i18next.t('wizard.entity.loadEntities.failedLoadEntities'));
-                setStepsData((prev) => ({ ...prev, status: StepStatus.excelUploadResult }));
             },
         },
     );
@@ -126,7 +125,6 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
             },
             onError() {
                 toast.error(i18next.t('wizard.entity.loadEntities.failedLoadEntities'));
-                setStepsData((prev) => ({ ...prev, status: StepStatus.excelUploadResult }));
             },
         },
     );
@@ -204,6 +202,7 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
                     text: i18next.t('wizard.entity.loadEntities.loadEntities'),
                     onClick: async () => {
                         if (stepsData.status === StepStatus.previewExcelRows) {
+                            setStepsData((prev) => ({ ...prev, status: StepStatus.excelUploadResult }));
                             const data = await loadEntities(stepsData.files!);
                             const hasFailedEntities = data.failedEntities.length > 0;
                             const hasBrokenRulesEntities = !!data.brokenRulesEntities?.entities?.length;
