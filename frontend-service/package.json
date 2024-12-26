@@ -6,12 +6,8 @@
     "build": "tsc && vite build",
     "eslint": "eslint -h",
     "lint": "eslint --ext .ts,.tsx .",
-<<<<<<< HEAD
-    "lint:fix": "eslint --ext .ts,.tsx . --fix"
-=======
     "lint:fix": "eslint --ext .ts,.tsx . --fix",
     "postinstall": "patch-package"
->>>>>>> 28a457c2c1361fa3643ebabdae55ccc114ba4a07
   },
   "browserslist": {
     "production": [
