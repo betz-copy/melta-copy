@@ -5,6 +5,7 @@ import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../exte
 import { excelConfig } from './excelConfig';
 import { BadRequestError, ServiceError } from '../../express/error';
 import {
+    ActionErrors,
     ActionTypes,
     IAction,
     IActionPopulated,
@@ -21,7 +22,7 @@ import {
 } from '../../externalServices/ruleBreachService/interfaces/populated';
 import config from '../../config';
 
-const { entitiesFileLimit } = config.loadExcel;
+const { entitiesFileLimit, invalidDate, invalidTime } = config.loadExcel;
 
 const formatExcel = (value: Excel.CellValue | string, propertyTemplate: IEntitySingleProperty) => {
     const { type, format } = propertyTemplate;
@@ -35,7 +36,7 @@ const formatExcel = (value: Excel.CellValue | string, propertyTemplate: IEntityS
             if (format === 'email' && typeof value === 'object') return (value as any).text;
             if (format === 'date') return new Date(value as string).toLocaleDateString('en-CA');
             if (format === 'date-time') return new Date(value as string).toISOString();
-            break;
+            return value?.toString();
         case 'array':
             if (propertyTemplate.items && propertyTemplate.items.type === 'string' && typeof value === 'object' && 'richText' in value)
                 return value?.richText.map((item) => item.text).filter((text) => text !== ', ' && text !== ',');
@@ -46,18 +47,48 @@ const formatExcel = (value: Excel.CellValue | string, propertyTemplate: IEntityS
     return value;
 };
 
-export const isExcludedColumn = (propertyTemplate: IEntitySingleProperty) => {
+export const isIncludedColumn = (propertyTemplate: IEntitySingleProperty) => {
     const isRelationshipRef = propertyTemplate.format === 'relationshipReference' || propertyTemplate.relationshipReference;
     const isFile = propertyTemplate.format === 'fileId' || (propertyTemplate.type === 'array' && propertyTemplate.items?.format === 'fileId');
     const isSerialNumber = propertyTemplate.type === 'number' && propertyTemplate.serialCurrent;
     return !isRelationshipRef && !isFile && !isSerialNumber;
 };
 
-const readExcelFile = async (files: Express.Multer.File[], template: IMongoEntityTemplatePopulated) => {
+type IFailedProperties = {
+    key: string;
+    value: IEntitySingleProperty;
+    cellValue: Excel.CellValue;
+    dateOrTime: 'date' | 'date-time';
+}[];
+
+const handleFailedEntities = (rowData: Record<string, any>, failedProperties: IFailedProperties, failedEntities: IFailedEntity[]) => {
+    const failedEntityProperties = {
+        ...rowData,
+        ...failedProperties.reduce((acc, { key, cellValue }) => {
+            acc[key] = cellValue;
+            return acc;
+        }, {}),
+    };
+
+    const failedEntity: IFailedEntity = {
+        properties: failedEntityProperties,
+        errors: failedProperties.map(({ key, value, dateOrTime }) => ({
+            type: ActionErrors.validation,
+            metadata: {
+                message: `must be valid ${dateOrTime ? 'date' : 'date-time'}`,
+                path: `/${key}`,
+                params: value,
+                schemaPath: `#/properties/${key}/type`,
+            },
+        })),
+    };
+    failedEntities.push(failedEntity);
+};
+const readExcelFile = async (files: Express.Multer.File[], template: IMongoEntityTemplatePopulated, failedEntities: IFailedEntity[]) => {
     const allActions: IAction[] = [];
 
     const columns = Object.fromEntries(
-        Object.entries(template.properties.properties).filter(([_propertyKey, propertyTemplate]) => isExcludedColumn(propertyTemplate)),
+        Object.entries(template.properties.properties).filter(([_propertyKey, propertyTemplate]) => isIncludedColumn(propertyTemplate)),
     );
 
     await Promise.all(
@@ -71,18 +102,26 @@ const readExcelFile = async (files: Express.Multer.File[], template: IMongoEntit
 
             worksheet.eachRow((row, rowIndex) => {
                 if (rowIndex === 1) return; // skip header row
-
+                const failedProperties: IFailedProperties = [];
                 const rowData: Record<string, any> = {};
                 Object.entries(columns).forEach(([key, value], columnIndex) => {
                     const cellValue = row.getCell(columnIndex + 1).value;
-                    const formatCellValue = formatExcel(cellValue, value);
-                    rowData[key] = formatCellValue;
+                    try {
+                        const formatCellValue = formatExcel(cellValue, value);
+                        if (formatCellValue === invalidDate) failedProperties.push({ key, value, cellValue, dateOrTime: 'date' });
+                        else rowData[key] = formatCellValue;
+                    } catch (error: any) {
+                        console.error("there's an error in the entity", { error });
+                        if (error.message.includes(invalidTime)) failedProperties.push({ key, value, cellValue, dateOrTime: 'date-time' });
+                    }
                 });
 
-                allActions.push({
-                    actionType: ActionTypes.CreateEntity,
-                    actionMetadata: { templateId: template._id, properties: rowData },
-                });
+                if (failedProperties.length > 0) handleFailedEntities(rowData, failedProperties, failedEntities);
+                else
+                    allActions.push({
+                        actionType: ActionTypes.CreateEntity,
+                        actionMetadata: { templateId: template._id, properties: rowData },
+                    });
             });
 
             if (allActions.length > entitiesFileLimit) throw new BadRequestError(`file limit: more than ${entitiesFileLimit} entities`, file);

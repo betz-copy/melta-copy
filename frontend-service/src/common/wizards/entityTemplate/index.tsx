@@ -87,8 +87,9 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
     const queryClient = useQueryClient();
 
     const currentTemplateId = isEditMode ? (initialValues as EntityTemplateWizardValues & { _id: string })._id : undefined;
+    const templates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates') || new Map();
 
-    const createTemplateNameSchema = useCreateOrEditTemplateNameSchema(currentTemplateId);
+    const createTemplateNameSchema = useCreateOrEditTemplateNameSchema(templates, currentTemplateId);
 
     const { isLoading, mutateAsync } = useMutation(
         (entityTemplate: EntityTemplateWizardValues) =>

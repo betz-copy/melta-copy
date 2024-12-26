@@ -49,7 +49,7 @@ InstancesRouter.post(
 InstancesRouter.post(
     '/entities/search/template/:templateId',
     InstancesValidatorMiddleware.validateUserCanSearchEntitiesOfTemplate,
-    InstanceManagerProxy,
+    InstancesControllerMiddleware.searchEntitiesOfTemplate,
 );
 
 InstancesRouter.post(

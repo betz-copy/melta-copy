@@ -65,7 +65,7 @@ const errorColDef = <Data extends any = EntityData>(props: ICellRendererParams<D
         case ActionErrors.validation:
             message = (error.metadata as IValidationError).message.includes('must be')
                 ? `${i18next.t('wizard.entity.loadEntities.notValid')} ${i18next.t(
-                      `propertyTypes.${(error.metadata as IValidationError).params.type}`,
+                      `propertyTypes.${(error.metadata as IValidationError).params.format ?? (error.metadata as IValidationError).params.type}`,
                   )}`
                 : (error.metadata as IValidationError).message;
             break;
@@ -127,7 +127,7 @@ export const numberColDef = <Data extends any = EntityData>(
         width: hardcodedWidth,
         flex: hardcodedWidth ? 0 : 1,
         hide: hideColumn,
-        editable: (params) => (editable?.(params.data) ?? false) && value.serialStarter === undefined,
+        editable: (params) => (editable(params.data) ?? false) && value.serialStarter === undefined,
         cellEditor: 'agNumberCellEditor',
         cellEditorParams: {
             precision: 2,
@@ -162,7 +162,7 @@ export const regexColDef = <Data extends any = EntityData>(
         flex: hardcodedWidth ? 0 : 1,
         hide: hideColumn,
         cellStyle: { direction: 'ltr' },
-        editable: (params) => editable?.(params.data) ?? false,
+        editable: (params) => editable(params.data) ?? false,
         cellEditor: 'agTextCellEditor',
     };
 };
@@ -191,7 +191,7 @@ export const stringColDef = <Data extends any = EntityData>(
         width: hardcodedWidth,
         flex: hardcodedWidth ? 0 : 1,
         hide: hideColumn,
-        editable: (params) => editable?.(params.data) ?? false,
+        editable: (params) => editable(params.data) ?? false,
         cellEditor: value.format === 'text-area' ? 'agLargeTextCellEditor' : 'agTextCellEditor',
         cellEditorParams: (params) => ({
             ...params,
@@ -254,7 +254,7 @@ export const relatedTemplateColDef = <Data extends any = EntityData>(
         width: hardcodedWidth,
         flex: hardcodedWidth ? 0 : 1,
         hide: hideColumn,
-        editable: (params) => editable?.(params.data) ?? false,
+        editable: (params) => editable(params.data) ?? false,
         cellEditor: RelationshipRefCellEditor,
         cellEditorParams: {
             relatedTemplateId,
@@ -302,7 +302,7 @@ export const booleanColDef = <Data extends any = EntityData>(
         width: hardcodedWidth,
         flex: hardcodedWidth ? 0 : 1,
         hide: hideColumn,
-        editable: (params) => editable?.(params.data) ?? false,
+        editable: (params) => editable(params.data) ?? false,
         cellEditor: 'agCheckboxCellEditor',
     };
 };
@@ -346,7 +346,7 @@ export const enumColDef = <Data extends any = EntityData>(
         width: hardcodedWidth,
         flex: hardcodedWidth ? 0 : 1,
         hide: hideColumn,
-        editable: (params) => editable?.(params.data) ?? false,
+        editable: (params) => editable(params.data) ?? false,
         cellEditor: SelectCellEditor,
         cellEditorParams: {
             values,
@@ -401,7 +401,7 @@ export const enumArrayColDef = <Data extends any = EntityData>(
         width: hardcodedWidth,
         flex: hardcodedWidth ? 0 : 1,
         hide: hideColumn,
-        editable: (params) => editable?.(params.data) ?? false,
+        editable: (params) => editable(params.data) ?? false,
         cellEditor: SelectCellEditor,
         cellEditorParams: {
             values,
@@ -516,7 +516,7 @@ export const dateColDef = <Data extends any = EntityData>(
         width: hardcodedWidth,
         flex: hardcodedWidth ? 0 : 1,
         hide: hideColumn,
-        editable: (params) => editable?.(params.data) ?? false,
+        editable: (params) => editable(params.data) ?? false,
         cellEditor: DateTimeCellEditor,
         cellEditorParams: { dateOrDateTime: format === 'date-time' ? 'dateTime' : 'date' },
     };

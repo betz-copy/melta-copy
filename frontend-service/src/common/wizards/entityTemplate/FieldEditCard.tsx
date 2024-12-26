@@ -346,7 +346,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     );
 
     const [localOption, setLocalOption] = useState<string>('');
-    const [duplicate, setDuplicate] = useState<boolean>(false);
+    const [editError, setEditError] = useState<string>('');
 
     const chipRefs = useRef<(HTMLDivElement | null)[]>([]);
     const [open, setOpen] = useState<boolean>(false);
@@ -358,7 +358,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     const handleEditChange = (e, _tagIndex) => {
         e.preventDefault();
         setLocalOption(e.target.value);
-        setDuplicate(false);
+        setEditError('');
     };
     const { mutate: updateEnumField, isLoading } = useMutation(
         (mutationArgs: { id: string; tagIndex: number; option: string; fieldValue: any }) => {
@@ -470,26 +470,29 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     };
 
     useEffect(() => {
-        if (!editIndex) setDuplicate(false);
+        if (!editIndex) setEditError('');
     }, [editIndex]);
 
     const handleSaveEdit = (tagIndex: number) => {
         const checkIfOldEnumValue = initialOptionArray.length > tagIndex && isDisabled;
-        setDuplicate(false);
-        if (value.options[tagIndex] === localOption) setEditIndex(null);
-        else if (value.options.includes(localOption)) {
-            setDuplicate(true);
+        const trimValue = localOption.trim();
+        setEditError('');
+        if (value.options[tagIndex] === trimValue) setEditIndex(null);
+        else if (trimValue.length === 0) {
+            setEditError('errorPage.emptyInputError');
+        } else if (value.options.includes(trimValue)) {
+            setEditError('errorPage.duplicateValue');
         } else if (checkIfOldEnumValue) {
-            handleUpdateEnumField(templateId, tagIndex, localOption, value);
+            handleUpdateEnumField(templateId, tagIndex, trimValue, value);
             return;
         } else {
             const oldColor = value.optionColors?.[value.options[tagIndex]];
-            const newOptions = value.options.map((option, valIndex) => (valIndex === tagIndex ? localOption : option));
+            const newOptions = value.options.map((option, valIndex) => (valIndex === tagIndex ? trimValue : option));
 
             if (oldColor) {
                 const newOptionColors = { ...value.optionColors! };
                 delete newOptionColors[value.options[tagIndex]];
-                setValues?.((prev) => ({ ...prev, optionColors: { ...newOptionColors, [localOption]: oldColor }, options: newOptions }));
+                setValues?.((prev) => ({ ...prev, optionColors: { ...newOptionColors, [trimValue]: oldColor }, options: newOptions }));
             } else {
                 setValues?.((prev) => ({ ...prev, options: newOptions }));
             }
@@ -627,14 +630,20 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                 freeSolo
                                                 value={value.options}
                                                 onChange={(_e, currValue) => {
+                                                    const lastValue = currValue.pop();
+                                                    const trimmedValue = lastValue ? [...currValue, lastValue.trim()] : [];
+
                                                     if (isDisabled) {
-                                                        updateOldDisabledEnumVals(currValue);
+                                                        updateOldDisabledEnumVals(trimmedValue);
                                                     } else {
                                                         setValues?.((prev) => ({
                                                             ...prev,
-                                                            options: currValue,
+                                                            options: trimmedValue,
                                                         }));
                                                     }
+                                                }}
+                                                isOptionEqualToValue={(option, inputValue) => {
+                                                    return option.trim() === inputValue.trim() || option.trim().length === 0;
                                                 }}
                                                 renderTags={(tagValue, getTagProps) =>
                                                     tagValue.map((option, tagIndex) => {
@@ -687,7 +696,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                     {supportEditEnum && (
                                                                         <MemoizedIconButton
                                                                             onClick={() => {
-                                                                                setDuplicate(false);
+                                                                                setEditError('');
                                                                                 setEditIndex(tagIndex);
                                                                                 setLocalOption(value.options[tagIndex]);
                                                                             }}
@@ -733,8 +742,8 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                         style={{
                                                                             display: 'flex',
                                                                             alignItems: 'center',
-                                                                            borderColor: duplicate ? 'red' : 'inherit',
-                                                                            borderStyle: duplicate ? 'solid' : 'inherit',
+                                                                            borderColor: editError !== '' ? 'red' : 'inherit',
+                                                                            borderStyle: editError !== '' ? 'solid' : 'inherit',
                                                                             borderWidth: '1px',
                                                                             borderRadius: '10px',
                                                                         }}
@@ -752,10 +761,13 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                                 e.stopPropagation();
                                                                                 if (e.key === 'Enter') {
                                                                                     e.preventDefault();
+                                                                                    const localOptionTrimmed = localOption.trim();
+
                                                                                     if (
                                                                                         tagIndex > initialOptionArray.length - 1 ||
-                                                                                        value.options[tagIndex] === localOption ||
-                                                                                        value.options.includes(localOption)
+                                                                                        value.options[tagIndex] === localOptionTrimmed ||
+                                                                                        value.options.includes(localOptionTrimmed) ||
+                                                                                        localOptionTrimmed.length === 0
                                                                                     ) {
                                                                                         setOpen(false);
                                                                                         handleSaveEdit(editIndex!);
@@ -776,9 +788,9 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                                 {isDeleteLoading ? <CircularProgress size={20} /> : <DeleteIcon />}
                                                                             </IconButton>
                                                                         )}
-                                                                        {duplicate && (
+                                                                        {!!editError && (
                                                                             <Typography variant="body2" color="error">
-                                                                                {i18next.t('errorPage.duplicateValue')}
+                                                                                {i18next.t(editError)}
                                                                             </Typography>
                                                                         )}
                                                                     </Box>
@@ -1105,36 +1117,38 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                 />
                                             )}
                                         </Box>
-                                        <MeltaTooltip
-                                            disableHoverListener={!initialValue?.required}
-                                            title={i18next.t('wizard.entityTemplate.cantDeleteUniqueOrRequiredFields')}
-                                        >
-                                            <Grid display="flex">
-                                                {supportArchive && isEditMode && (
-                                                    <MeltaTooltip title={archiveButtonTooltip()} placement="right">
-                                                        <Box>
-                                                            <IconButton
-                                                                onClick={() => setFieldValue('archive', !value.archive)}
-                                                                disabled={value.required || value.uniqueCheckbox || value.preview}
-                                                            >
-                                                                {value.archive ? <Unarchive color="primary" /> : <Archive />}
-                                                            </IconButton>
-                                                        </Box>
-                                                    </MeltaTooltip>
-                                                )}
-                                                <IconButton
-                                                    onClick={() => remove(index, isNewProperty)}
-                                                    disabled={
-                                                        !supportDeleteForExistingInstances ||
-                                                        initialValue?.required ||
-                                                        currentUser.currentWorkspacePermissions.admin?.scope !== PermissionScope.write ||
-                                                        hasActions
-                                                    }
-                                                >
-                                                    {value.deleted ? <DeleteOff /> : <DeleteIcon />}
-                                                </IconButton>
-                                            </Grid>
-                                        </MeltaTooltip>
+                                        <Grid display="flex">
+                                            {supportArchive && isEditMode && (
+                                                <MeltaTooltip title={archiveButtonTooltip()} placement="right">
+                                                    <Box>
+                                                        <IconButton
+                                                            onClick={() => setFieldValue('archive', !value.archive)}
+                                                            disabled={value.required || value.uniqueCheckbox || value.preview}
+                                                        >
+                                                            {value.archive ? <Unarchive color="primary" /> : <Archive />}
+                                                        </IconButton>
+                                                    </Box>
+                                                </MeltaTooltip>
+                                            )}
+                                            <MeltaTooltip
+                                                disableHoverListener={!initialValue?.required}
+                                                title={i18next.t('wizard.entityTemplate.cantDeleteUniqueOrRequiredFields')}
+                                            >
+                                                <Box>
+                                                    <IconButton
+                                                        onClick={() => remove(index, isNewProperty)}
+                                                        disabled={
+                                                            !supportDeleteForExistingInstances ||
+                                                            initialValue?.required ||
+                                                            currentUser.currentWorkspacePermissions.admin?.scope !== PermissionScope.write ||
+                                                            hasActions
+                                                        }
+                                                    >
+                                                        {value.deleted ? <DeleteOff /> : <DeleteIcon />}
+                                                    </IconButton>
+                                                </Box>
+                                            </MeltaTooltip>
+                                        </Grid>
                                     </Grid>
                                     <Grid item container justifyContent="space-between" alignItems="center" flexWrap="nowrap">
                                         {unique && value.type !== 'serialNumber' && (
