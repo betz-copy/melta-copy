@@ -1,18 +1,17 @@
 import { ConsumerMessage } from 'menashmq';
 import { StatusCodes } from 'http-status-codes';
+import { logger, ServiceError } from '@microservices/shared';
 import { basicValidateRequest } from '../utils/joi';
 import { Action, IUpdateIndexRequest } from './interfaces';
 import Manager from './manager';
 import { requestSchema } from './validator.schema';
-import { logger } from '@microservices/shared';
-import { ServiceError } from '../error';
 import config from '../config';
 
 const {
     service: { workspaceIdHeaderName },
 } = config;
 
-export const updateIndexConsumeFunction = async (msg: ConsumerMessage) => {
+const updateIndexConsumeFunction = async (msg: ConsumerMessage) => {
     const msgContent = msg.getContent();
     const { action, templateId }: IUpdateIndexRequest = basicValidateRequest(requestSchema, msgContent);
 
@@ -51,3 +50,5 @@ export const updateIndexConsumeFunction = async (msg: ConsumerMessage) => {
     logger.info(`Successfully updated search index!`);
     msg.ack();
 };
+
+export default updateIndexConsumeFunction;

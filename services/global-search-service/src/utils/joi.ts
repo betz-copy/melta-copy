@@ -6,6 +6,7 @@ const defaultValidationOptions: Joi.ValidationOptions = {
     convert: true,
 };
 
+// eslint-disable-next-line import/prefer-default-export
 export const basicValidateRequest = (schema: Joi.ObjectSchema<any>, value: any, options: Joi.ValidationOptions = defaultValidationOptions) => {
     const { error, value: newValue } = schema.unknown().validate(value, options);
 

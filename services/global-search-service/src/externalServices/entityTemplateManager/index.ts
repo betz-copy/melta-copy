@@ -12,7 +12,7 @@ const {
     },
 } = config;
 
-export class TemplateManagerService extends DefaultExternalService {
+class TemplateManagerService extends DefaultExternalService {
     constructor(workspaceId: string) {
         super(workspaceId, axios.create({ baseURL: url, timeout }));
     }
@@ -27,3 +27,5 @@ export class TemplateManagerService extends DefaultExternalService {
         return data;
     }
 }
+
+export default TemplateManagerService;

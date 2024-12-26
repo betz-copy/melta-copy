@@ -1,10 +1,9 @@
 /* eslint-disable class-methods-use-this */
 import { QueryResult, Transaction } from 'neo4j-driver';
-import { IEntityTemplate, IMongoEntityTemplate } from '@microservices/shared';
+import { IEntityTemplate, IMongoEntityTemplate, logger } from '@microservices/shared';
 import config from '../config';
-import { TemplateManagerService } from '../externalServices/entityTemplateManager';
+import TemplateManagerService from '../externalServices/entityTemplateManager';
 import DefaultManagerNeo4j from '../utils/neo4j/manager';
-import { logger } from '@microservices/shared';
 
 const {
     neo4j: {
@@ -70,7 +69,9 @@ export default class Manager extends DefaultManagerNeo4j {
                 await this.createIndex(primaryIndexName, labels, properties, transaction);
             })
             .catch((error) => {
-                logger.error(`Failed to create primary index for ${primaryIndexName}`, { error });
+                logger.error(`Failed to create primary index for ${primaryIndexName}`, {
+                    error,
+                });
             });
     }
 
