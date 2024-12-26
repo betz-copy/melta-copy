@@ -46,6 +46,7 @@ interface RelationshipTemplateCardProps {
         }>
     >;
 }
+const { infiniteScrollPageCount } = environment.processInstances;
 
 const RelationshipTemplateCard: React.FC<RelationshipTemplateCardProps> = ({
     relationshipTemplate,
@@ -133,7 +134,7 @@ const defaultRelationshipTemplate: IMongoRelationshipTemplate = {
 
 const RelationshipTemplatesRow: React.FC = () => {
     const workspace = useWorkspaceStore((state) => state.workspace);
-    const { infiniteScrollPageCount } = environment.processInstances;
+    const config = workspace.metadata;
 
     const queryClient = useQueryClient();
 
@@ -345,11 +346,11 @@ const RelationshipTemplatesRow: React.FC = () => {
                                             color={theme.palette.primary.main}
                                         />
                                     ) : (
-                                        <AppRegistrationIcon color="primary" style={workspace.metadata.iconSize} fontSize="small" />
+                                        <AppRegistrationIcon color="primary" style={config.iconSize} fontSize="small" />
                                     )}
                                     <Typography
                                         color={theme.palette.primary.main}
-                                        style={{ fontSize: workspace.metadata.mainFontSizes.headlineSubTitleFontSize, fontWeight: '400' }}
+                                        style={{ fontSize: config.mainFontSizes.headlineSubTitleFontSize, fontWeight: '400' }}
                                     >
                                         {relationshipTemplateWithEntity.entityTemplate.displayName}
                                     </Typography>

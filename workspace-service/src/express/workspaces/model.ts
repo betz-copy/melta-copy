@@ -13,11 +13,11 @@ const MetadataSchema = new mongoose.Schema<IMetadata>(
             defaultExpandedRowCount: { type: Number },
             defaultRowHeight: { type: Number },
             defaultFontSize: { type: Number },
-            infiniteInitialRowCount: { type: Number },
             defaultExpandedTableHeight: { type: Number },
         },
         mainFontSizes: {
             headlineTitleFontSize: { type: String },
+            entityTemplateTitleFontSize: { type: String },
             headlineSubTitleFontSize: { type: String },
         },
         smallPreviewHeight: {

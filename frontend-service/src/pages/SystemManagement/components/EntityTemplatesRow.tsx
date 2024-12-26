@@ -39,6 +39,8 @@ import { FilterButton } from './FilterButton';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { environment } from '../../../globals';
 
+const { infiniteScrollPageCount } = environment.processInstances;
+
 const defaultEntityTemplatePopulated: IMongoEntityTemplatePopulated = {
     _id: '',
     propertiesOrder: [],
@@ -470,8 +472,6 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
 };
 
 const EntityTemplatesRow: React.FC = () => {
-    const { infiniteScrollPageCount } = environment.processInstances;
-
     const queryClient = useQueryClient();
 
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;

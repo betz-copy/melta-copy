@@ -15,15 +15,15 @@ export const defaultMetadata = {
         defaultExpandedRowCount: 13,
         defaultRowHeight: 50,
         defaultFontSize: 14,
-        infiniteInitialRowCount: 10,
         defaultExpandedTableHeight: 650,
     },
     mainFontSizes: {
         headlineTitleFontSize: '24px',
+        entityTemplateTitleFontSize: '20px',
         headlineSubTitleFontSize: '14px',
     },
     smallPreviewHeight: {
-        number: '150',
+        number: '150px',
         unit: '1px',
     },
     iconSize: {

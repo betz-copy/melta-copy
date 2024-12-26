@@ -16,6 +16,8 @@ import { useUserStore } from '../../stores/user';
 import { PermissionScope } from '../../interfaces/permissions';
 import { environment } from '../../globals';
 
+const { infiniteScrollPageCount } = environment.processInstances;
+
 const ProcessesList: React.FC<{
     onSetStartDate: (newStartDateInput: Date) => void;
     onSetEndDate: (newEndDateInput: Date) => void;
@@ -24,8 +26,6 @@ const ProcessesList: React.FC<{
     endDateInput: Date | null;
     templatesToShowCheckbox: IMongoProcessTemplatePopulated[]; // todo: support in backend
 }> = ({ templatesToShowCheckbox, search, startDateInput, endDateInput }) => {
-    const { infiniteScrollPageCount } = environment.processInstances;
-
     const [statusFilter, setStatusFilter] = useState<'all' | Status | undefined>('all');
 
     const queryClient = useQueryClient();

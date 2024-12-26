@@ -22,11 +22,11 @@ export interface IMetadata {
         defaultExpandedRowCount: number;
         defaultRowHeight: number;
         defaultFontSize: number;
-        infiniteInitialRowCount: number;
         defaultExpandedTableHeight: number;
     };
     mainFontSizes: {
         headlineTitleFontSize: string;
+        entityTemplateTitleFontSize: string;
         headlineSubTitleFontSize: string;
     };
     smallPreviewHeight: {

@@ -58,7 +58,6 @@ export const WorkspaceWizard: React.FC<WizardBaseType<WorkspaceWizardValues>> = 
         icon: undefined,
         logo: undefined,
         colors: { primary: '#2D3686' },
-        // metadata: {},
     },
     isEditMode = false,
 }) => {

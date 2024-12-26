@@ -9,7 +9,7 @@ const ConfigurationManagement: React.FC = () => {
     const updateWorkspaceMetadata = useWorkspaceStore((state) => state.updateWorkspaceMetadata);
 
     const configs = workspace.metadata;
-    const [updatedConfigs, setUpdatedConfigs] = useState<any>({});
+    const [updatedConfigs, setUpdatedConfigs] = useState<Record<string, any>>({});
 
     useMemo(() => {
         setUpdatedConfigs(deepClone(configs));
@@ -24,7 +24,7 @@ const ConfigurationManagement: React.FC = () => {
     };
 
     // eslint-disable-next-line @typescript-eslint/no-shadow
-    const renderFields = (configs: any, parentKey = '') => {
+    const renderFields = (configs: Record<string, any>, parentKey = '') => {
         return Object.entries(configs).map(([key, value]) => {
             const fullKey = parentKey ? `${parentKey}.${key}` : key;
             if (typeof value === 'object' && value !== null && !Array.isArray(value)) {

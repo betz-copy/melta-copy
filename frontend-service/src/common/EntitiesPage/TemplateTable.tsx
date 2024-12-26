@@ -169,7 +169,13 @@ const TemplateTable = forwardRef<
                     </Grid>
                     <Grid item minWidth="fit-content" style={{ whiteSpace: 'nowrap', overflow: 'hidden' }}>
                         <BlueTitle
-                            style={{ minWidth: 'fit-content', whiteSpace: 'nowrap', overflow: 'hidden', fontWeight: '500', fontSize: '20px' }}
+                            style={{
+                                minWidth: 'fit-content',
+                                whiteSpace: 'nowrap',
+                                overflow: 'hidden',
+                                fontWeight: '500',
+                                fontSize: workspace.metadata.mainFontSizes.entityTemplateTitleFontSize,
+                            }}
                             title={template.displayName}
                             component="h5"
                             variant="h5"

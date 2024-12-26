@@ -125,6 +125,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, setDeleteCategory
 
 const CategoriesRow: React.FC = () => {
     const workspace = useWorkspaceStore((state) => state.workspace);
+    const { headlineSubTitleFontSize } = workspace.metadata.mainFontSizes;
 
     const queryClient = useQueryClient();
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
@@ -170,7 +171,7 @@ const CategoriesRow: React.FC = () => {
                     <Grid item container justifyContent="space-between" alignItems="center" height="40px">
                         <Typography
                             style={{
-                                fontSize: workspace.metadata.mainFontSizes.headlineSubTitleFontSize,
+                                fontSize: headlineSubTitleFontSize,
                                 fontWeight: '400',
                                 color: '#9398C2',
                             }}

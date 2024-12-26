@@ -11,11 +11,11 @@ const metadataSchema = Joi.object({
         defaultExpandedRowCount: Joi.number(),
         defaultRowHeight: Joi.number(),
         defaultFontSize: Joi.number(),
-        infiniteInitialRowCount: Joi.number(),
         defaultExpandedTableHeight: Joi.number(),
     }).optional(),
     mainFontSizes: Joi.object({
         headlineTitleFontSize: Joi.string(),
+        entityTemplateTitleFontSize: Joi.string(),
         headlineSubTitleFontSize: Joi.string(),
     }).optional(),
     smallPreviewHeight: Joi.object({

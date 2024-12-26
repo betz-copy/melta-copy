@@ -1221,19 +1221,19 @@ export default {
         isDrawerOpen: 'תפריט צד פתוח',
         shouldNavigateToEntityPage: 'עבור לעמוד פרט בעת יצירת/עריכת ישות',
         agGrid: {
-            rowCount: 'מספר שורות ב-agGrid',
-            defaultExpandedRowCount: 'מספר שורות מורחבות ברירת מחדל ב-agGrid',
-            defaultRowHeight: 'גובה שורה ברירת מחדל ב-agGrid',
-            defaultFontSize: 'גודל גופן ברירת מחדל ב-agGrid',
-            infiniteInitialRowCount: 'מספר שורות התחלתי במצב אינסופי ב-agGrid',
-            defaultExpandedTableHeight: 'ערך דיפולטיבי גובה טבלה',
+            rowCount: 'מספר שורות בטבלה במצב סגור',
+            defaultExpandedRowCount: 'מספר שורות בטבלה במצב פתוח',
+            defaultRowHeight: 'גובה שורה בטבלה',
+            defaultFontSize: 'גודל גופן טקסט בטבלה',
+            defaultExpandedTableHeight: 'גודל טבלה במצב פתוח',
         },
         mainFontSizes: {
             headlineTitleFontSize: 'גודל גופן כותרת ראשית',
-            headlineSubTitleFontSize: 'גודל גופן כותרת משנה',
+            entityTemplateTitleFontSize: 'גודל גופן כותרת טבלה',
+            headlineSubTitleFontSize: 'גודל גופן כותרת משנית',
         },
         smallPreviewHeight: {
-            number: 'מספר גובה תצוגה מקדימה קטנה',
+            number: 'גובה תצוגה מקדימה קטנה',
             unit: 'יחידת גובה תצוגה מקדימה קטנה',
         },
         iconSize: {

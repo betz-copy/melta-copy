@@ -7,7 +7,8 @@ export const ViewingCard: React.FC<{
     expendedCard?: React.ReactNode;
     onHover?: (isHover: boolean) => void;
     width?: number;
-}> = ({ title, expendedCard, onHover, width }) => {
+    cursor?: boolean;
+}> = ({ title, expendedCard, onHover, width, cursor }) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const [open, setOpen] = useState<boolean>(false);
 
@@ -23,7 +24,7 @@ export const ViewingCard: React.FC<{
                     boxShadow: '-2px 2px 6px 0px rgba(30, 39, 117, 0.30)',
                     justifyContent: 'center',
                     alignItems: 'center',
-                    cursor: 'pointer',
+                    cursor: cursor ? 'auto' : 'pointer',
                     height: 'fit-content',
                     width: width ? `${width}px` : '100%',
                 }}

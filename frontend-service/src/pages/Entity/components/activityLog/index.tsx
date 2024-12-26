@@ -12,12 +12,12 @@ import { getActivityLogRequest, IActivityLog } from '../../../../services/activi
 import ActivityLogRow from './ActivityLogRow';
 import { environment } from '../../../../globals';
 
+const { infiniteScrollPageCount } = environment.activityLog;
+
 const ActivityLog: React.FC<{ expandedEntity: IEntityExpanded; entityTemplate: IMongoEntityTemplatePopulated }> = ({
     expandedEntity,
     entityTemplate,
 }) => {
-    const { infiniteScrollPageCount } = environment.activityLog;
-
     const [openPopper, setOpenPopper] = React.useState(false);
     const entityId = expandedEntity.entity.properties._id;
     useEffect(() => {
