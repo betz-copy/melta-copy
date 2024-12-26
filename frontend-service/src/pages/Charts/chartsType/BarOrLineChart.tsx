@@ -12,7 +12,7 @@ const BarOrLineChart: React.FC<{
     entityTemplate: IMongoEntityTemplatePopulated;
 }> = ({ formik, formikValues, entityTemplate }) => {
     return (
-        <Grid container spacing={2}>
+        <Grid container direction="column" spacing={2}>
             <Grid item>
                 <AxisInput
                     formikField="xAxis"
@@ -22,6 +22,7 @@ const BarOrLineChart: React.FC<{
                     label={`${i18next.t('charts.axis')} x`}
                     showTitle
                     optionsType={OptionsType.AggregationAndAllProperties}
+                    byFieldOptionsType={OptionsType.NumberProperties}
                 />
             </Grid>
             <Grid item>
@@ -33,6 +34,7 @@ const BarOrLineChart: React.FC<{
                     label={`${i18next.t('charts.axis')} y`}
                     showTitle
                     optionsType={OptionsType.AggregationAndNumberProperties}
+                    byFieldOptionsType={OptionsType.NumberProperties}
                 />
             </Grid>
         </Grid>

@@ -1,10 +1,10 @@
 import { Group as AllUsers, PermIdentity as PersonalIcon } from '@mui/icons-material';
-import { Grid, TextField, ToggleButton, ToggleButtonGroup, Typography, useTheme } from '@mui/material';
+import { Grid, TextField, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
 import { FormikProps } from 'formik';
 import i18next from 'i18next';
 import React from 'react';
 import { MeltaTooltip } from '../../../common/MeltaTooltip';
-import { IBasicChart } from '../../../interfaces/charts';
+import { IBasicChart, IPermission } from '../../../interfaces/charts';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { ChartTypesEdit } from './ChartTypesEdit';
 
@@ -12,8 +12,6 @@ const ChartSideBar: React.FC<{
     formik: FormikProps<IBasicChart>;
     entityTemplate: IMongoEntityTemplatePopulated;
 }> = ({ formik, entityTemplate }) => {
-    const theme = useTheme();
-
     return (
         <Grid container direction="column">
             <Grid item>
@@ -58,7 +56,9 @@ const ChartSideBar: React.FC<{
                 </Grid>
             </Grid>
 
-            <ChartTypesEdit formik={formik} formikValues={formik.values} entityTemplate={entityTemplate} />
+            <Grid item>
+                <ChartTypesEdit formik={formik} formikValues={formik.values} entityTemplate={entityTemplate} />
+            </Grid>
 
             <Grid container direction="column" marginTop={2} spacing={2}>
                 <Grid item>
@@ -71,25 +71,17 @@ const ChartSideBar: React.FC<{
                         color="primary"
                         size="small"
                         sx={{ height: '35px', color: 'red' }}
-                        // value={}
-                        onChange={(_event: React.MouseEvent<HTMLElement>, newIsDailyAlert: boolean) => {
-                            console.log('hi', newIsDailyAlert);
+                        value={formik.values.permission}
+                        onChange={(_event: React.MouseEvent<HTMLElement>, permission: IPermission) => {
+                            formik.setFieldValue('permission', permission);
                         }}
                     >
-                        <ToggleButton
-                            value
-                            sx={{
-                                '&.Mui-selected': {
-                                    backgroundColor: theme.palette.primary.main,
-                                    color: 'white',
-                                },
-                            }}
-                        >
+                        <ToggleButton value={IPermission.Private}>
                             <MeltaTooltip title={i18next.t('charts.personal')}>
                                 <PersonalIcon />
                             </MeltaTooltip>
                         </ToggleButton>
-                        <ToggleButton value={false}>
+                        <ToggleButton value={IPermission.Protected}>
                             <MeltaTooltip title={i18next.t('charts.protected')}>
                                 <AllUsers />
                             </MeltaTooltip>

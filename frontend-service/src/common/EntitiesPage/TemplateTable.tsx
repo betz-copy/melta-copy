@@ -238,8 +238,8 @@ const TemplateTable = forwardRef<
                             popoverText: i18next.t('pages.charts'),
                             iconButtonProps: { onClick: () => navigate(`/charts/${template._id}`) },
                         }}
-                        icon={isExportingTableToExcelFile ? <CircularProgress size="24px" /> : <BarChart fontSize="small" />}
-                        text={isExportingTableToExcelFile ? '' : i18next.t('pages.charts')}
+                        icon={<BarChart fontSize="small" />}
+                        text={i18next.t('pages.charts')}
                     />
                 </Grid>
 

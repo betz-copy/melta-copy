@@ -2,29 +2,21 @@ import { Box, useTheme } from '@mui/material';
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
 import React from 'react';
-import { useQuery } from 'react-query';
-import { IBasicChart, IChartType } from '../../../interfaces/charts';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { getChartOfTemplate } from '../../../services/entitiesService';
-import { NumberChartGenerator } from './NumberChartGenerator';
+import { HighchartType, IBasicChart, IChartType } from '../../../interfaces/charts';
 
-interface IChartGenerator {
+interface HighchartGeneratorProps {
+    data: { x: any; y: any }[] | undefined;
+    isLoading: boolean;
     formikValues: IBasicChart;
-    template: IMongoEntityTemplatePopulated;
+    isQueryEnabled: boolean;
+    type: HighchartType;
 }
 
-const ChartGenerator: React.FC<IChartGenerator> = ({ formikValues, template }) => {
-    const { data } = useQuery(
-        ['chart', template._id, formikValues.xAxis.field, formikValues.yAxis.field],
-        () => getChartOfTemplate(formikValues.xAxis.field, formikValues.yAxis.field, template._id),
-        {
-            enabled: Boolean(formikValues.xAxis.field && formikValues.yAxis.field),
-        },
-    );
-
-    const { name, description, type, xAxis, yAxis } = formikValues;
+const HiighchartGenerator: React.FC<HighchartGeneratorProps> = ({ data, isLoading, formikValues, isQueryEnabled, type }) => {
+    const { name, description, xAxis, yAxis } = formikValues;
 
     const theme = useTheme();
+
     const darkMode = theme.palette.mode === 'dark';
 
     const seriesData = data?.map((item) => ({
@@ -121,9 +113,9 @@ const ChartGenerator: React.FC<IChartGenerator> = ({ formikValues, template }) =
                 alignContent: 'center',
             }}
         >
-            {xAxis && yAxis && (type === IChartType.Number ? <div /> : <HighchartsReact highcharts={Highcharts} options={chartOptions} />)}
+            {isQueryEnabled && !isLoading && <HighchartsReact highcharts={Highcharts} options={chartOptions} />}
         </Box>
     );
 };
 
-export { ChartGenerator };
+export { HiighchartGenerator };

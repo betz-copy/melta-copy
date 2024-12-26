@@ -19,6 +19,7 @@ const NumberChart: React.FC<{
             label={`${i18next.t('charts.AccumulateAccordingTo')}`}
             showTitle={false}
             optionsType={OptionsType.Aggregation}
+            byFieldOptionsType={OptionsType.AllProperties}
         />
     );
 };

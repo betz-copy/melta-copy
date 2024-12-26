@@ -287,7 +287,7 @@ export const exportEntityToDocumentRequest = async (documentTemplateId: string, 
     return data;
 };
 
-export const getChartOfTemplate = async (xAxis: IAxisField, yAxis: IAxisField, templateId: string) => {
+export const getChartOfTemplate = async (xAxis: IAxisField, yAxis: IAxisField | undefined, templateId: string) => {
     const { data } = await axios.post<{ x: any; y: any }[]>(`${entities}/chart/${templateId}`, { xAxis, yAxis });
 
     return data;

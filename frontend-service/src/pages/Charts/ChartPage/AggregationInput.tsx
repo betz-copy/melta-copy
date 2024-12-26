@@ -1,5 +1,5 @@
 import { Grid, TextField, Typography } from '@mui/material';
-import { FormikProps } from 'formik';
+import { FormikProps, getIn } from 'formik';
 import i18next from 'i18next';
 import React from 'react';
 import { FormikAutoComplete } from '../../../common/inputs/FormikAutoComplete';
@@ -15,9 +15,21 @@ interface AxisInputProps {
     entityTemplate: IMongoEntityTemplatePopulated;
     showTitle: boolean;
     optionsType: OptionsType;
+    byFieldOptionsType?: OptionsType;
 }
 
-const AxisInput: React.FC<AxisInputProps> = ({ formik, entityTemplate, formikField, formikValues, label, showTitle, optionsType }) => {
+const AxisInput: React.FC<AxisInputProps> = ({
+    formik,
+    entityTemplate,
+    formikField,
+    formikValues,
+    label,
+    showTitle,
+    optionsType,
+    byFieldOptionsType,
+}) => {
+    const error = getIn(formik.touched, `${formikField}.title`) && getIn(formik.errors, `${formikField}.title`);
+
     const entityTemplateFields = entityTemplate && Object.keys(entityTemplate.properties.properties);
     const entityTemplateDNumberFields = filteredMap(Object.entries(entityTemplate.properties.properties), ([property, value]) => ({
         include: value.type === 'number' && !value.serialStarter,
@@ -28,13 +40,14 @@ const AxisInput: React.FC<AxisInputProps> = ({ formik, entityTemplate, formikFie
 
     const typeOptions: Record<OptionsType, string[]> = {
         [OptionsType.Aggregation]: aggregationOptions,
-        [OptionsType.AggregationAndAllProperties]: [...entityTemplateFields, ...aggregationOptions],
         [OptionsType.AllProperties]: entityTemplateFields,
+        [OptionsType.NumberProperties]: entityTemplateDNumberFields,
+        [OptionsType.AggregationAndAllProperties]: [...entityTemplateFields, ...aggregationOptions],
         [OptionsType.AggregationAndNumberProperties]: [...entityTemplateDNumberFields, ...aggregationOptions],
     };
 
     return (
-        <Grid container spacing={2}>
+        <Grid container direction="column" spacing={2}>
             {showTitle && (
                 <>
                     <Grid item>
@@ -46,6 +59,9 @@ const AxisInput: React.FC<AxisInputProps> = ({ formik, entityTemplate, formikFie
                             name={`${formikField}.title`}
                             onChange={(e) => formik.setFieldValue(`${formikField}.title`, e.target.value)}
                             value={formikValues[formikField]?.title || ''}
+                            onBlur={formik.handleBlur}
+                            error={Boolean(error)}
+                            helperText={error}
                             fullWidth
                             margin="normal"
                             sx={{ width: '400px' }}
@@ -62,7 +78,7 @@ const AxisInput: React.FC<AxisInputProps> = ({ formik, entityTemplate, formikFie
                     multiple={false}
                     onChange={(newValue) => {
                         if (newValue && typeof newValue === 'string' && aggregationOptions.includes(newValue as IAggregation['type']))
-                            formik.setFieldValue(`${formikField}.field`, { type: newValue } as IAggregation);
+                            formik.setFieldValue(`${formikField}.field`, { type: newValue, byField: '' } as IAggregation);
                         else formik.setFieldValue(`${formikField}.field`, newValue as string);
                     }}
                     style={{ width: '400px' }}
@@ -73,7 +89,7 @@ const AxisInput: React.FC<AxisInputProps> = ({ formik, entityTemplate, formikFie
                     <FormikAutoComplete
                         formik={formik}
                         formikField={`${formikField}.field.byField`}
-                        options={entityTemplateDNumberFields}
+                        options={byFieldOptionsType ? typeOptions[byFieldOptionsType] : []}
                         label={`${i18next.t('charts.byField')}`}
                         multiple={false}
                         style={{

@@ -4,6 +4,7 @@ export interface IBasicChart {
     type: IChartType;
     xAxis: IAxis;
     yAxis: IAxis;
+    permission: IPermission;
 }
 
 export interface IChart extends IBasicChart {
@@ -26,9 +27,14 @@ export interface IAggregation {
 
 export type IAxisField = IAggregation | string;
 
-interface IAxis {
+export interface IAxis {
     field: IAxisField;
     title: string;
+}
+
+export enum IPermission {
+    Protected = 'protected',
+    Private = 'private',
 }
 
 export enum Axises {
@@ -39,8 +45,11 @@ export enum Axises {
 export enum OptionsType {
     Aggregation = 'aggregation',
     AllProperties = 'allProperties',
+    NumberProperties = 'numberProperties',
     AggregationAndNumberProperties = 'aggregationAndNumberProperties',
     AggregationAndAllProperties = 'aggregationAndAllProperties',
 }
+
+export type HighchartType = Exclude<IChartType, IChartType.Number>;
 
 export const isAggregation = (field: IAxisField): field is IAggregation => typeof field !== 'string';

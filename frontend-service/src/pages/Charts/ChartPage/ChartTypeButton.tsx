@@ -21,7 +21,6 @@ const ChartTypeButton: React.FC<{
             style={{
                 color: selectedButton === buttonId ? theme.palette.secondary.main : theme.palette.primary.main,
                 borderRadius: '5px',
-                padding: '8px',
             }}
             popoverText={popoverText}
         >

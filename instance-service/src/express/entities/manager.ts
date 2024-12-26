@@ -1747,12 +1747,11 @@ export class EntityManager extends DefaultManagerNeo4j {
         if (yAggregation)
             query += `
               RETURN ${xAggregation}, ${yAggregation}
-              ORDER BY x
+              ORDER BY y
             `;
         else
             query += `
               RETURN ${xAggregation}
-              ORDER BY x
             `;
 
         return query;

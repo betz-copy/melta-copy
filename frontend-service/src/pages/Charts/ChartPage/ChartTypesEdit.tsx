@@ -5,7 +5,7 @@ import i18next from 'i18next';
 import React, { useMemo } from 'react';
 import { IBasicChart, IChartType } from '../../../interfaces/charts';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { BarOrLineChart } from '../chartsType/BarChart';
+import { BarOrLineChart } from '../chartsType/BarOrLineChart';
 import { NumberChart } from '../chartsType/NumberChart';
 import { PieChart } from '../chartsType/PieChart';
 import { ChartTypeButton } from './ChartTypeButton';
@@ -33,7 +33,19 @@ const chartTypeButtons = [
 const ChartTypesEdit: React.FC<ChartProps> = ({ formik, formikValues, entityTemplate }) => {
     const SelectedChartType = useMemo(() => charts[formikValues.type], [formikValues.type]);
 
-    const handleButtonClick = (buttonId: string) => formik.setFieldValue('type', buttonId);
+    const handleButtonClick = (buttonId: string) => {
+        formik.setFieldValue('type', buttonId);
+
+        formik.setFieldValue('xAxis', {
+            title: '',
+            field: '',
+        });
+
+        formik.setFieldValue('yAxis', {
+            title: '',
+            field: '',
+        });
+    };
 
     return (
         <Grid>
