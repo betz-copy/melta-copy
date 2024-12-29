@@ -1,7 +1,7 @@
 import { Box, Divider, Grid, Step, StepConnector, stepConnectorClasses, StepIconProps, StepLabel, Stepper, styled, Typography } from '@mui/material';
 import React from 'react';
 import i18next from 'i18next';
-import ProcessStatus, { StatusDisplay } from './ProcessStatus';
+import ProcessStatus, { ReviewedAtProcessStatus, StatusDisplay } from './ProcessStatus';
 import StepsStatuses from './StepsStatuses';
 import { IMongoProcessInstancePopulated, Status } from '../../../../interfaces/processes/processInstance';
 import { IMongoProcessTemplatePopulated } from '../../../../interfaces/processes/processTemplate';
@@ -9,6 +9,8 @@ import { getStepTemplateByStepInstance } from '../../../../utils/processWizard/s
 import { StepIcon } from '../../../../pages/ProcessInstances/ProcessCard';
 import { IMongoStepInstancePopulated } from '../../../../interfaces/processes/stepInstance';
 import { IMongoStepTemplatePopulated } from '../../../../interfaces/processes/stepTemplate';
+import { CommentsDetails } from '../ProcessSteps/processStep';
+import { MeltaTooltip } from '../../../MeltaTooltip';
 
 export interface ProcessSummaryProp {
     processInstance: IMongoProcessInstancePopulated;
@@ -86,61 +88,82 @@ const ProcessSummary = React.forwardRef<HTMLDivElement, ProcessSummaryProp>(({ p
                             alternativeLabel
                         >
                             {processInstance.steps.map((stepInstance, index) => (
-                                <Step style={{ minWidth: '175px', height: '170px', display: 'flex', alignItems: 'center' }} key={stepInstance._id}>
-                                    <>
-                                        <Grid container flexDirection="column" justifyContent="center" width="100%" alignSelf="center" gap="10px">
-                                            <Grid item width="100%" alignSelf="center">
-                                                <Typography color="#1E2775" fontSize="12px" fontWeight="500" textAlign="center">
-                                                    {`${i18next.t('wizard.processTemplate.level')} ${index + 1}: ${
-                                                        getStepTemplateByStepInstance(stepInstance, processTemplate).displayName
-                                                    }`}
-                                                </Typography>
-                                            </Grid>
-                                            <StepLabel
-                                                // StepIconComponent={() => {
-                                                //     return (
-                                                //         <Grid container flexDirection="column" justifyContent="center" width="100%" gap="10px">
-                                                //             <StepIcon
-                                                //                 iconColor="#9398C2"
-                                                //                 step={stepInstance}
-                                                //                 stepTemplate={processTemplate.steps[index]}
-                                                //                 setOpen={() => {
-                                                //                     // TODO - set active step
-                                                //                     setActiveStep(index + 1);
-                                                //                 }}
-                                                //                 displayTitle={false}
-                                                //             />
-                                                //             <Grid item alignSelf="center" width="100%">
-                                                //                 <StatusDisplay
-                                                //                     status={stepInstance.status}
-                                                //                     displayIcon={false}
-                                                //                     text={i18next.t(
-                                                //                         `wizard.processInstance.summary.processStatuses.${stepInstance.status}`,
-                                                //                     )}
-                                                //                 />
-                                                //             </Grid>
-                                                //         </Grid>
-                                                //     );
-                                                // }}
-                                                StepIconComponent={() =>
-                                                    StepIconComponent(
-                                                        stepInstance,
-                                                        processTemplate.steps[index],
-                                                        setActiveStep,
-                                                        index,
-                                                        stepInstance.status,
-                                                    )
-                                                }
-                                            />
+                                <Step style={{ minWidth: '175px', height: '200px', display: 'flex', alignItems: 'center' }} key={stepInstance._id}>
+                                    <Grid
+                                        container
+                                        flexDirection="column"
+                                        justifyContent="center"
+                                        width="100%"
+                                        alignSelf="center"
+                                        alignItems="center"
+                                        gap="10px"
+                                    >
+                                        <Grid item width="100%" alignSelf="center">
+                                            <Typography color="#1E2775" fontSize="12px" fontWeight="500" textAlign="center">
+                                                {`${i18next.t('wizard.processTemplate.level')} ${index + 1}: ${
+                                                    getStepTemplateByStepInstance(stepInstance, processTemplate).displayName
+                                                }`}
+                                            </Typography>
                                         </Grid>
-                                        {/* <Grid>
+                                        <StepLabel
+                                            // StepIconComponent={() => {
+                                            //     return (
+                                            //         <Grid container flexDirection="column" justifyContent="center" width="100%" gap="10px">
+                                            //             <StepIcon
+                                            //                 iconColor="#9398C2"
+                                            //                 step={stepInstance}
+                                            //                 stepTemplate={processTemplate.steps[index]}
+                                            //                 setOpen={() => {
+                                            //                     // TODO - set active step
+                                            //                     setActiveStep(index + 1);
+                                            //                 }}
+                                            //                 displayTitle={false}
+                                            //             />
+                                            //             <Grid item alignSelf="center" width="100%">
+                                            //                 <StatusDisplay
+                                            //                     status={stepInstance.status}
+                                            //                     displayIcon={false}
+                                            //                     text={i18next.t(
+                                            //                         `wizard.processInstance.summary.processStatuses.${stepInstance.status}`,
+                                            //                     )}
+                                            //                 />
+                                            //             </Grid>
+                                            //         </Grid>
+                                            //     );
+                                            // }}
+                                            StepIconComponent={() =>
+                                                StepIconComponent(
+                                                    stepInstance,
+                                                    processTemplate.steps[index],
+                                                    setActiveStep,
+                                                    index,
+                                                    stepInstance.status,
+                                                )
+                                            }
+                                        />
+                                        <Grid item container position="absolute" top="165px" alignItems="center" justifyContent="center">
+                                            <Grid item>
+                                                <ReviewedAtProcessStatus instance={stepInstance} />
+                                            </Grid>
+                                            {stepInstance.comments && (
+                                                <Grid item>
+                                                    <MeltaTooltip title={<CommentsDetails values={stepInstance} />}>
+                                                        <Grid item>
+                                                            <img src="/icons/comment-icon.svg" />
+                                                        </Grid>
+                                                    </MeltaTooltip>
+                                                </Grid>
+                                            )}
+                                        </Grid>
+                                    </Grid>
+                                    {/* <Grid>
                                             {index % 5 !== 4 && (
                                                 <Grid>
                                                     <Divider style={{ width: '100px' }} />
                                                 </Grid>
                                             )}
                                         </Grid> */}
-                                        {/* <Grid>
+                                    {/* <Grid>
                                             {index === 4 && (
                                                 <Divider
                                                     style={{
@@ -155,7 +178,6 @@ const ProcessSummary = React.forwardRef<HTMLDivElement, ProcessSummaryProp>(({ p
                                                 />
                                             )}
                                         </Grid> */}
-                                    </>
                                 </Step>
                             ))}
                         </Stepper>
