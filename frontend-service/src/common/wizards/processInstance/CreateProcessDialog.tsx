@@ -196,8 +196,8 @@ const CreateProcess: React.FC<ISimpleDialogProps> = ({ open, onClose }) => {
                     <Divider variant="middle" />
                     {/* </Grid> */}
                     {values.template && activeProcessDetailsStep === 0 && (
-                        <Grid item container flexDirection="column" flexBasis="85%" height="100%">
-                            <Grid item height="90%">
+                        <Grid item container flexDirection="column" height="85%" justifyContent="space-between">
+                            <Grid item height="85%">
                                 <TemplateFields
                                     toPrint={false}
                                     values={values}
