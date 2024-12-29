@@ -40,7 +40,7 @@ export const CommentsDetails: FC<{ values: ProcessStepValues | IMongoStepInstanc
             <Grid item>
                 <img src="/icons/comment-icon.svg" />
             </Grid>
-            <Grid item height="100%">
+            <Grid item>
                 <Typography
                     variant="body1"
                     sx={{
