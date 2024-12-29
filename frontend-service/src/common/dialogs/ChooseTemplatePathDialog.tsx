@@ -94,9 +94,14 @@ const ChooseTemplatePathDialog: React.FC<{
                             <Tree
                                 multi={false}
                                 treeItems={[entityTemplatesTree ?? { _id: '/', children: [], displayName: '/', path: '/' }]}
-                                getItemId={(item) => (item?.path ? `${item.path}${item?.displayName}` : uuid())}
+                                getItemId={(item) => {
+                                    return item?.path ? `${item.path}/${item?.displayName}` : uuid();
+                                }}
                                 getItemLabel={(item) => item?.displayName ?? ''}
-                                onSelectItems={(selectedPath) => setPathValue((selectedPath as string) ?? '/')}
+                                onSelectItems={(selectedPath) => {
+                                    const path = (selectedPath as string) ?? '/';
+                                    setPathValue(path.replaceAll(/\/\//g, '/'));
+                                }}
                                 preSelectedItemsIds={
                                     currEntityTemplate.path ? [`${currEntityTemplate.path}/${currEntityTemplate.displayName}`] : undefined
                                 }
