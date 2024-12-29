@@ -34,6 +34,31 @@ const TemplatesSelectCheckbox: React.FC<{
     size?: 'small' | 'medium';
     toTopBar?: boolean;
 }> = ({ title, templates, selectedTemplates, setSelectedTemplates, categories, isDraggableDisabled, setTemplates, size, toTopBar }) => {
+    // TODO: convert to Tree component
+    // let formattedTemplates: any[] = templates;
+
+    // if (categories) {
+    //     const templatesByCategory = {};
+
+    //     // Group templates by category ID
+    //     templates.forEach((template) => {
+    //         const categoryId = template.category._id;
+    //         if (!templatesByCategory[categoryId]) {
+    //             templatesByCategory[categoryId] = [];
+    //         }
+    //         templatesByCategory[categoryId].push(template);
+    //     });
+
+    //     formattedTemplates = Object.entries(templatesByCategory).map(([categoryId, currTemplates]) => {
+    //         const category = categories.find((currCategory) => currCategory._id === categoryId);
+
+    //         return {
+    //             ...category,
+    //             children: currTemplates,
+    //         };
+    //     });
+    // }
+
     return (
         <SelectCheckbox
             title={title}

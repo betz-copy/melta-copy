@@ -1,15 +1,16 @@
 /* eslint-disable react-hooks/rules-of-hooks */
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Box, Button, CircularProgress, Dialog, DialogActions, DialogTitle } from '@mui/material';
 import i18next from 'i18next';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { AxiosError } from 'axios';
 import { toast } from 'react-toastify';
 import { Done } from '@mui/icons-material';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { v4 as uuid } from 'uuid';
+import { IEntityTemplateMap, IEntityTemplatePopulatedWithChildren, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { getEntityTemplatesTree, updateEntityTemplatePathRequest } from '../../services/templates/enitityTemplatesService';
 import { ErrorToast } from '../ErrorToast';
-import TemplatesTree from '../TemplatesTree';
+import Tree from '../Tree';
 
 const ChooseTemplatePathDialog: React.FC<{
     open: boolean;
@@ -90,9 +91,12 @@ const ChooseTemplatePathDialog: React.FC<{
                 ) : (
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: '10px', padding: '10px' }}>
                         {!isLoadingTemplatesTree && (
-                            <TemplatesTree
-                                onClickItem={(selectedPath) => setPathValue(selectedPath)}
-                                templatesWithChildren={[entityTemplatesTree ?? { _id: '/', children: [], displayName: '/', path: '/' }]}
+                            <Tree
+                                multi={false}
+                                treeItems={[entityTemplatesTree ?? { _id: '/', children: [], displayName: '/', path: '/' }]}
+                                getItemId={(item) => (item?.path ? `${item.path}${item?.displayName}` : uuid())}
+                                getItemLabel={(item) => item?.displayName ?? ''}
+                                onSelectItems={(selectedPath) => setPathValue((selectedPath as string) ?? '/')}
                             />
                         )}
                         <input
