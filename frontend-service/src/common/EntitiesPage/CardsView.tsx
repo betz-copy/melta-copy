@@ -29,7 +29,6 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
     const queryClient = useQueryClient();
     const [urlSearchParams, _setUrlSearchParams] = useSearchParams();
     const urlSemanticSearch = urlSearchParams.get('semanticSearch');
-    console.log(urlSemanticSearch);
 
     const refetch = () => queryClient.invalidateQueries({ queryKey: ['searchEntities', templateIds, searchInput], exact: true });
 

@@ -30,9 +30,7 @@ const ChooseTemplatePathDialog: React.FC<{
     const hasRootPath = entityTemplateMapByCategory.some((entityTemplate) => entityTemplate.path === '/');
 
     const { mutateAsync: updateEntityTemplatePath, isLoading } = useMutation(
-        () => {
-            return updateEntityTemplatePathRequest(currEntityTemplate._id, pathValue);
-        },
+        () => updateEntityTemplatePathRequest(currEntityTemplate._id, pathValue),
         {
             onError: (err: AxiosError) => {
                 toast.error(<ErrorToast axiosError={err} defaultErrorMessage={i18next.t('addPathToTemplateDialog.failedToCreatePath')} />);
@@ -59,10 +57,6 @@ const ChooseTemplatePathDialog: React.FC<{
         await updateEntityTemplatePath();
     };
 
-    const selectFatherTemplate = (selectedPath: string) => {
-        setPathValue(selectedPath);
-    };
-
     useEffect(() => {
         const pathRegex = /^\/(?:[^/]*\/?)*$/;
         setValidationErrors(!pathRegex.test(pathValue));
@@ -72,12 +66,9 @@ const ChooseTemplatePathDialog: React.FC<{
         <Dialog
             open={open}
             onClose={handleClose}
-            fullWidth
-            maxWidth="xl"
             PaperProps={{
                 style: {
-                    height: '85vh',
-                    overflowY: 'visible',
+                    alignItems: 'center',
                 },
             }}
         >
@@ -98,7 +89,12 @@ const ChooseTemplatePathDialog: React.FC<{
                     </Button>
                 ) : (
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: '10px', padding: '10px' }}>
-                        {!isLoadingTemplatesTree && <TemplatesTree onClickItem={selectFatherTemplate} templatesWithchildren={entityTemplatesTree!} />}
+                        {!isLoadingTemplatesTree && (
+                            <TemplatesTree
+                                onClickItem={(selectedPath) => setPathValue(selectedPath)}
+                                templatesWithChildren={[entityTemplatesTree ?? { _id: '/', children: [], displayName: '/', path: '/' }]}
+                            />
+                        )}
                         <input
                             type="text"
                             value={pathValue}
@@ -109,7 +105,7 @@ const ChooseTemplatePathDialog: React.FC<{
                         <Button
                             type="submit"
                             variant="contained"
-                            disabled={isLoading || !!currEntityTemplate.path}
+                            disabled={isLoading || pathValue === '/'}
                             sx={{ borderRadius: '10px' }}
                             onClick={handleConvertToRootPath}
                         >
