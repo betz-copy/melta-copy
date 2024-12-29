@@ -9,7 +9,8 @@ interface TreeProps<T> {
     getItemLabel: (item: T) => string;
     multi: boolean;
     onSelectItems?: (item: string | string[]) => any;
-    isDraggable?: boolean;
+    isDraggable?: boolean; // TODO
+    preSelectedItemsIds?: string[];
 }
 
 function getItemDescendantsIds<T>(item: TreeViewBaseItem, getItemId: (item: T) => string) {
@@ -23,10 +24,12 @@ function getItemDescendantsIds<T>(item: TreeViewBaseItem, getItemId: (item: T) =
     return ids;
 }
 
-const Tree = <T,>({ treeItems, onSelectItems, getItemId, getItemLabel, multi }: TreeProps<T>): React.ReactElement => {
+const Tree = <T,>({ treeItems, onSelectItems, getItemId, getItemLabel, multi, preSelectedItemsIds }: TreeProps<T>): React.ReactElement => {
     const [selectedItems, setSelectedItems] = useState<string[]>([]);
     const toggledItemRef = useRef<{ [itemId: string]: boolean }>({});
     const apiRef = useTreeViewApiRef();
+    const expandedItemIds = preSelectedItemsIds?.flatMap((itemId) => itemId.split('/'));
+    console.log(expandedItemIds);
 
     const handleItemSelectionToggle = (_event: React.SyntheticEvent, itemId: string, isSelected: boolean) => {
         toggledItemRef.current[itemId] = isSelected;
@@ -70,6 +73,10 @@ const Tree = <T,>({ treeItems, onSelectItems, getItemId, getItemLabel, multi }: 
         onSelectItems(multi ? selectedItems : selectedItems[0]);
     }, [JSON.stringify(selectedItems)]);
 
+    useEffect(() => {
+        setSelectedItems(preSelectedItemsIds ?? []);
+    }, [JSON.stringify(preSelectedItemsIds)]);
+
     return (
         <RichTreeView
             style={{ direction: 'rtl' }}
@@ -79,6 +86,7 @@ const Tree = <T,>({ treeItems, onSelectItems, getItemId, getItemLabel, multi }: 
             getItemId={getItemId}
             getItemLabel={getItemLabel}
             apiRef={apiRef}
+            expandedItems={expandedItemIds}
             selectedItems={selectedItems}
             onSelectedItemsChange={handleSelectedItemsChange}
             onItemSelectionToggle={handleItemSelectionToggle}

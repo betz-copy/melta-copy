@@ -97,6 +97,9 @@ const ChooseTemplatePathDialog: React.FC<{
                                 getItemId={(item) => (item?.path ? `${item.path}${item?.displayName}` : uuid())}
                                 getItemLabel={(item) => item?.displayName ?? ''}
                                 onSelectItems={(selectedPath) => setPathValue((selectedPath as string) ?? '/')}
+                                preSelectedItemsIds={
+                                    currEntityTemplate.path ? [`${currEntityTemplate.path}/${currEntityTemplate.displayName}`] : undefined
+                                }
                             />
                         )}
                         <input
