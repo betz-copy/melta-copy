@@ -503,25 +503,6 @@ const ProcessCard: React.FC<{
                                     </Typography>
                                 </Grid>
                             </Grid>
-                            <Grid item container justifyContent="space-between">
-                                <Grid item>
-                                    <Typography fontSize="14px" style={{ color: '#787C9E' }} noWrap>
-                                        {`${i18next.t('processInstancesPage.createdBy')}: ---`}
-                                    </Typography>
-                                </Grid>
-                                <Grid item>
-                                    <Typography fontSize="14px" style={{ color: '#787C9E' }} noWrap>
-                                        {`${i18next.t('processInstancesPage.createdAt')}: ${new Date(processInstance.createdAt).toLocaleDateString(
-                                            'he-IL',
-                                            {
-                                                year: '2-digit',
-                                                month: '2-digit',
-                                                day: '2-digit',
-                                            },
-                                        )}`}
-                                    </Typography>
-                                </Grid>
-                            </Grid>
                         </Grid>
                     </CardContent>
                 ) : (
