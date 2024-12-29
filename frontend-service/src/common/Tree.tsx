@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { RichTreeView, TreeViewBaseItem, useTreeViewApiRef } from '@mui/x-tree-view';
+import { ChevronLeft, ExpandLess } from '@mui/icons-material';
 import { TreeType } from '../interfaces/Tree';
 
 interface TreeProps<T> {
@@ -22,7 +23,7 @@ function getItemDescendantsIds<T>(item: TreeViewBaseItem, getItemId: (item: T) =
     return ids;
 }
 
-const Tree = <T,>({ treeItems, onSelectItems, getItemId, getItemLabel, multi, isDraggable }: TreeProps<T>): React.ReactElement => {
+const Tree = <T,>({ treeItems, onSelectItems, getItemId, getItemLabel, multi }: TreeProps<T>): React.ReactElement => {
     const [selectedItems, setSelectedItems] = useState<string[]>([]);
     const toggledItemRef = useRef<{ [itemId: string]: boolean }>({});
     const apiRef = useTreeViewApiRef();
@@ -43,7 +44,7 @@ const Tree = <T,>({ treeItems, onSelectItems, getItemId, getItemLabel, multi, is
         const itemsToUnSelect: { [itemId: string]: boolean } = {};
 
         Object.entries(toggledItemRef.current).forEach(([itemId, isSelected]) => {
-            const item = apiRef.current!.getItem(itemId);
+            const item = (apiRef.current as any)!.getItem(itemId);
 
             if (isSelected) {
                 itemsToSelect.push(...getItemDescendantsIds(item, getItemId));
@@ -71,6 +72,7 @@ const Tree = <T,>({ treeItems, onSelectItems, getItemId, getItemLabel, multi, is
 
     return (
         <RichTreeView
+            style={{ direction: 'rtl' }}
             checkboxSelection
             multiSelect
             items={treeItems}
@@ -80,6 +82,10 @@ const Tree = <T,>({ treeItems, onSelectItems, getItemId, getItemLabel, multi, is
             selectedItems={selectedItems}
             onSelectedItemsChange={handleSelectedItemsChange}
             onItemSelectionToggle={handleItemSelectionToggle}
+            slots={{
+                expandIcon: ChevronLeft,
+                collapseIcon: ExpandLess,
+            }}
         />
     );
 };

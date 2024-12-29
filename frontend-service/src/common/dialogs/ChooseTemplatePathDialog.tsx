@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/rules-of-hooks */
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Box, Button, CircularProgress, Dialog, DialogActions, DialogTitle } from '@mui/material';
 import i18next from 'i18next';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
@@ -7,7 +7,7 @@ import { AxiosError } from 'axios';
 import { toast } from 'react-toastify';
 import { Done } from '@mui/icons-material';
 import { v4 as uuid } from 'uuid';
-import { IEntityTemplateMap, IEntityTemplatePopulatedWithChildren, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { getEntityTemplatesTree, updateEntityTemplatePathRequest } from '../../services/templates/enitityTemplatesService';
 import { ErrorToast } from '../ErrorToast';
 import Tree from '../Tree';
