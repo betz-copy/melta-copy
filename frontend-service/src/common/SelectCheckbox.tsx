@@ -288,9 +288,9 @@ export const SelectOptionsMenuItemsGrouped = <Option extends any, Group extends 
                 const groupId = getGroupId(group);
                 const isOpen = openMap[groupId] || false;
 
-                const optionsOfGroup = optionsByGroups[getGroupId(group)];
-                const filteredOptionsOfGroup = filteredOptionsByGroups[getGroupId(group)];
-                const selectedOptionsOfGroup = selectedOptionsByGroups[getGroupId(group)];
+                const optionsOfGroup = optionsByGroups[groupId];
+                const filteredOptionsOfGroup = filteredOptionsByGroups[groupId];
+                const selectedOptionsOfGroup = selectedOptionsByGroups[groupId];
                 return (
                     <Fragment key={groupId}>
                         <Box display="flex" flex="row">
@@ -305,7 +305,7 @@ export const SelectOptionsMenuItemsGrouped = <Option extends any, Group extends 
                                 onClick={() => {
                                     setSelectedOptions((prevSelectedOptions) => {
                                         const prevSelectedOptionsOfGroup = prevSelectedOptions.filter(
-                                            (option) => getGroupId(getGroupOfOption(option, groups)) === getGroupId(group),
+                                            (option) => getGroupId(getGroupOfOption(option, groups)) === groupId,
                                         );
                                         const prevChecked = optionsOfGroup.length === prevSelectedOptionsOfGroup.length;
                                         const prevFiltered = selectedOptionsOfGroup.length === filteredOptionsOfGroup.length;
