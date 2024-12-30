@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/rules-of-hooks */
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Box, Button, CircularProgress, Dialog, DialogActions, DialogTitle } from '@mui/material';
 import i18next from 'i18next';
 import { useMutation, useQuery, useQueryClient } from 'react-query';

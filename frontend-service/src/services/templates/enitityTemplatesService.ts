@@ -407,7 +407,7 @@ const updateEntityTemplateStatusRequest = async (entityTemplateId: string, disab
     return data;
 };
 
-const updateEntityTemplatePathRequest = async (entityTemplateId: string, newPath: string) => {
+const updateEntityTemplatePathRequest = async (entityTemplateId: string, newPath?: string) => {
     const { data } = await axios.patch<IMongoEntityTemplatePopulated>(`${entityTemplates}/${entityTemplateId}/path`, {
         path: newPath,
     });
