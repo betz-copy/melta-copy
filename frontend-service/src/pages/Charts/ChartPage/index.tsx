@@ -1,7 +1,7 @@
 import { Grid, useTheme } from '@mui/material';
 import { Form, Formik } from 'formik';
 import i18next from 'i18next';
-import React, { CSSProperties } from 'react';
+import React, { CSSProperties, useState } from 'react';
 import { useQueryClient } from 'react-query';
 import { useParams } from 'wouter';
 import * as Yup from 'yup';
@@ -12,6 +12,7 @@ import { IAxisField, IBasicChart, IChartType, IPermission } from '../../../inter
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { ChartSideBar } from './ChartSideBar';
 import { ChartGenerator } from '../chartGenerator.tsx';
+import { ChartTopBar } from './TopBar';
 
 export const chartValidationSchema = Yup.object({
     name: Yup.string().min(2, i18next.t('validation.variableName')).required(i18next.t('validation.required')),
@@ -54,30 +55,33 @@ const ChartPage: React.FC = () => {
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const template = entityTemplates.get(templateId as string) as IMongoEntityTemplatePopulated;
 
+    const [edit, setEdit] = useState(true);
+
     return (
         <Formik<IBasicChart>
             initialValues={initialValues}
             onSubmit={(values) => console.log('bye', { values })}
-            onReset={() => console.log('hi')}
+            onReset={() => setEdit(false)}
             validationSchema={chartValidationSchema}
             enableReinitialize
         >
             {(formik) => (
                 <Form>
-                    <TopBar title={i18next.t('charts.chart')} />
-                    <Grid container style={{ height: '65vh' }} spacing={4}>
+                    {/* <TopBar title={i18next.t('charts.chart')} /> */}
+                    <ChartTopBar edit={edit} onEdit={() => setEdit(true)} isLoading={false} />
+                    <Grid container style={{ height: '100%' }} spacing={4}>
                         <Grid item xs={9}>
                             <Grid
                                 sx={{
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
-                                    height: '66%',
+                                    height: '68%',
                                 }}
                             >
                                 <ChartGenerator formikValues={formik.values} template={template} />
                             </Grid>
-                            <Grid sx={{ height: '30vh', borderTop: `1px solid ${theme.palette.mode === 'dark' ? '#444' : '#dddddd'}` }}>
+                            <Grid sx={{ borderTop: `1px solid ${theme.palette.mode === 'dark' ? '#444' : '#dddddd'}` }}>
                                 <EntitiesTableOfTemplate
                                     template={template}
                                     getRowId={(currentEntity) => currentEntity.properties._id}

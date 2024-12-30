@@ -73,6 +73,8 @@ export default {
         editment: 'עריכת',
         createment: 'יצירת',
         delete: 'מחיקה',
+        save: 'שמירה',
+        cancel: 'ביטול',
         graph: 'גרף',
         disable: 'השבתה',
         activate: 'הפעלה',
