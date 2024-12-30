@@ -1172,10 +1172,11 @@ export class EntityManager extends DefaultManagerNeo4j {
                             const fieldName = property.relationshipReference?.relatedTemplateField;
                             relatedEntitiesChangedValues[
                                 `${fieldToChange}.properties.${updatedProperty}${config.neo4j.relationshipReferencePropertySuffix}`
-                            ] =
-                                property?.format === 'relationshipReference'
-                                    ? entityProperties[updatedProperty].properties[fieldName!]
-                                    : entityProperties[updatedProperty];
+                            ] = entityProperties[updatedProperty].properties[fieldName!];
+                        } else {
+                            relatedEntitiesChangedValues[
+                                `${fieldToChange}.properties.${updatedProperty}${config.neo4j.relationshipReferencePropertySuffix}`
+                            ] = entityProperties[updatedProperty];
                         }
                     }
                 });
