@@ -47,7 +47,7 @@ const Tree = <T,>({
 
     const handleSelectedItemsChange = (_event: React.SyntheticEvent, newSelectedItemsPaths: string[]) => {
         if (!multi) {
-            setSelectedItemsIds([newSelectedItemsPaths[0]]);
+            setSelectedItemsIds([newSelectedItemsPaths?.[0]]);
             return;
         }
 
@@ -83,7 +83,6 @@ const Tree = <T,>({
 
     useEffect(() => {
         if (!onSelectItems || selectedItemsIds.toString() === preSelectedItemsIds?.toString()) return;
-
         onSelectItems(multi ? selectedItemsIds : selectedItemsIds?.[0]);
     }, [JSON.stringify(selectedItemsIds)]);
 
