@@ -1,27 +1,27 @@
 import React, { useEffect, useState } from 'react';
 import { Dialog, IconButton, Grid, Box, Stepper, Step, StepLabel, Divider, Fab } from '@mui/material';
-import { useMutation, useQueryClient } from 'react-query';
-import { toast } from 'react-toastify';
-import { AxiosError } from 'axios';
+import { useQueryClient } from 'react-query';
 import CloseIcon from '@mui/icons-material/Close';
 import { pickBy } from 'lodash';
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
 import i18next from 'i18next';
-import { ProcessDetailsValues } from './ProcessDetails';
 import { IMongoProcessTemplatePopulated, IProcessTemplateMap } from '../../../interfaces/processes/processTemplate';
 import { initDetailsValues, useProcessDetailsFormik } from './ProcessDetails/detailsFormik';
-import { createProcessRequest } from '../../../services/processesService';
 import { BlueTitle } from '../../BlueTitle';
-import { ErrorToast } from '../../ErrorToast';
 import { getAllFieldsTouched } from '../../../utils/processWizard/formik';
 import { GeneralDetailsFields } from './ProcessDetails/GeneralDetailsFields';
 import { TemplateFields } from './ProcessDetails/TemplateFields';
 import { setInitialStepsObject } from '../../../utils/processWizard/steps';
 import StepsReviewers from './ProcessDetails/StepsReviewers';
+import { IMongoProcessInstancePopulated } from '../../../interfaces/processes/processInstance';
 
 interface ISimpleDialogProps {
     open: boolean;
     onClose: () => void;
+    processInstance?: IMongoProcessInstancePopulated;
+    viewMode?: boolean;
+    isEditMode?: boolean;
+    mutateAsync: any;
 }
 
 const steps = [
@@ -33,23 +33,11 @@ const steps = [
     },
 ];
 
-const CreateProcess: React.FC<ISimpleDialogProps> = ({ open, onClose }) => {
+const CreateOrEditProcess: React.FC<ISimpleDialogProps> = ({ open, onClose, processInstance, viewMode = false, isEditMode = false, mutateAsync }) => {
     const queryClient = useQueryClient();
     const processTemplatesMap = queryClient.getQueryData<IProcessTemplateMap>('getProcessTemplates')!;
 
-    const { mutateAsync } = useMutation((processData: ProcessDetailsValues) => createProcessRequest(processData), {
-        onSuccess: () => {
-            toast.success(i18next.t('processInstancesPage.processCreatedSuccessfully'));
-            onClose();
-            queryClient.resetQueries({ queryKey: ['searchProcesses'] }); // reset ProcessesList search results
-        },
-        onError: (error: AxiosError) => {
-            toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('processInstancesPage.failedToCreateProcess')} />);
-            console.log('Failed to create process. Error', error);
-        },
-    });
-
-    const detailsFormikData = useProcessDetailsFormik(undefined, processTemplatesMap, mutateAsync);
+    const detailsFormikData = useProcessDetailsFormik(processInstance, processTemplatesMap, mutateAsync);
 
     const [activeProcessDetailsStep, setActiveProcessDetailsStep] = React.useState(0);
 
@@ -87,9 +75,10 @@ const CreateProcess: React.FC<ISimpleDialogProps> = ({ open, onClose }) => {
         setActiveProcessDetailsStep((prevActiveStep) => prevActiveStep - 1);
     };
 
-    const { values, touched, errors, setFieldValue, setFieldTouched, handleBlur, resetForm } = detailsFormikData;
+    const { values, touched, errors, setFieldValue, setFieldTouched, handleBlur, resetForm, initialValues } = detailsFormikData;
+
+    console.log({ values, initialValues });
     const [previousTemplate, setPreviousTemplate] = useState<IMongoProcessTemplatePopulated>();
-    const viewMode = false;
     const variant = viewMode ? 'standard' : 'outlined';
     const templateFileProperties = values.template
         ? pickBy(
@@ -103,7 +92,7 @@ const CreateProcess: React.FC<ISimpleDialogProps> = ({ open, onClose }) => {
         : undefined;
 
     useEffect(() => {
-        if (values.template) {
+        if (values.template && !isEditMode) {
             setPreviousTemplate(values.template);
             if (values.template.name !== previousTemplate?.name) {
                 resetForm({
@@ -125,7 +114,6 @@ const CreateProcess: React.FC<ISimpleDialogProps> = ({ open, onClose }) => {
 
     return (
         <Dialog open={open} fullWidth maxWidth="xl" PaperProps={{ style: { height: '85vh' } }}>
-            {/* <BlueTitle title={i18next.t('processInstancesPage.addNewProcess')} variant="h4" component="symbol" /> */}
             <IconButton
                 aria-label="close"
                 onClick={() => {
@@ -158,7 +146,7 @@ const CreateProcess: React.FC<ISimpleDialogProps> = ({ open, onClose }) => {
                 >
                     <Grid item width="100%">
                         <BlueTitle
-                            title={i18next.t('processInstancesPage.addNewProcess')}
+                            title={isEditMode ? i18next.t('wizard.processInstance.editProcess') : i18next.t('processInstancesPage.addNewProcess')}
                             component="h5"
                             variant="h5"
                             style={{ fontWeight: 700, opacity: 0.9 }}
@@ -167,8 +155,8 @@ const CreateProcess: React.FC<ISimpleDialogProps> = ({ open, onClose }) => {
                             processTemplatesMap={processTemplatesMap}
                             setFieldValue={setFieldValue}
                             values={values}
-                            isEditMode={false}
-                            processInstance={undefined}
+                            isEditMode={isEditMode}
+                            processInstance={processInstance}
                             viewMode={viewMode}
                             variant={variant}
                             touched={touched}
@@ -192,9 +180,7 @@ const CreateProcess: React.FC<ISimpleDialogProps> = ({ open, onClose }) => {
                             </Box>
                         </Grid>
                     )}
-                    {/* <Grid item container width="100%" flexDirection="column" alignItems="center" alignSelf="center"> */}
                     <Divider variant="middle" />
-                    {/* </Grid> */}
                     {values.template && activeProcessDetailsStep === 0 && (
                         <Grid item container flexDirection="column" height="85%" justifyContent="space-between">
                             <Grid item height="85%">
@@ -238,26 +224,15 @@ const CreateProcess: React.FC<ISimpleDialogProps> = ({ open, onClose }) => {
                                 detailsFormikData={detailsFormikData}
                                 onNext={handleNext}
                                 onBack={handleBack}
-                                processInstance={undefined}
-                                // toPrint={false}
-                                // values={values}
-                                // viewMode={viewMode}
-                                // errors={errors}
-                                // touched={touched}
-                                // setFieldValue={setFieldValue}
-                                // setFieldTouched={setFieldTouched}
-                                // templateFileProperties={templateFileProperties}
-                                // handleBlur={handleBlur}
-                                // templateEntityReferenceProperties={templateEntityReferenceProperties}
-                                // onNext={handleNext}
+                                processInstance={processInstance}
+                                isEditMode={isEditMode}
                             />
                         </Grid>
                     )}
-                    {/* <ProcessDetails detailsFormikData={detailsFormikData} /> */}
                 </Grid>
             </Grid>
         </Dialog>
     );
 };
 
-export default CreateProcess;
+export default CreateOrEditProcess;

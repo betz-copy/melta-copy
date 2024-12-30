@@ -16,7 +16,7 @@ import {
     StepConnector,
     stepConnectorClasses,
 } from '@mui/material';
-import { ScatterPlotOutlined as HiveIcon, FiberManualRecordOutlined as StatusIcon, Unarchive } from '@mui/icons-material';
+import { Edit, ScatterPlotOutlined as HiveIcon, FiberManualRecordOutlined as StatusIcon, Unarchive } from '@mui/icons-material';
 import { useMutation, useQueryClient } from 'react-query';
 import DeleteIcon from '@mui/icons-material/Delete';
 import MoreVertSharpIcon from '@mui/icons-material/MoreVertSharp';
@@ -39,6 +39,7 @@ import { Print } from './print';
 import { ProcessDetailsValues } from '../../common/wizards/processInstance/ProcessDetails';
 import { ErrorToast } from '../../common/ErrorToast';
 import { getFontColor } from '../../common/wizards/processInstance/ProcessSummaryStep/ProcessStatus';
+import CreateOrEditProcess from '../../common/wizards/processInstance/CreateOrEditProcessDialog';
 
 export enum StatusColors {
     Pending = '#ff8f00',
@@ -362,6 +363,15 @@ const ProcessCard: React.FC<{
 
                                             <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleCloseMenu}>
                                                 <MenuButton
+                                                    onClick={(e) => {
+                                                        setIsEditMode(true);
+                                                        e.stopPropagation();
+                                                        handleCloseMenu(e);
+                                                    }}
+                                                    text={i18next.t('actions.edit')}
+                                                    icon={<Edit color="action" />}
+                                                />
+                                                <MenuButton
                                                     onClick={async (e: React.MouseEvent<HTMLLIElement, MouseEvent>) => {
                                                         e.stopPropagation();
                                                         setDeleteDialogState(true);
@@ -559,6 +569,15 @@ const ProcessCard: React.FC<{
                     setIsProcessChanged={setIsProcessChanged}
                     isEditMode={isEditModeProcess}
                     setIsEditMode={setIsEditMode}
+                />
+            )}
+            {isEditModeProcess && processInstance && (
+                <CreateOrEditProcess
+                    open={isEditModeProcess}
+                    onClose={() => setIsEditMode(false)}
+                    processInstance={processInstance}
+                    mutateAsync={mutateAsync}
+                    isEditMode
                 />
             )}
         </div>

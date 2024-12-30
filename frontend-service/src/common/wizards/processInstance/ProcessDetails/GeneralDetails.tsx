@@ -5,7 +5,6 @@ import React, { useEffect, useState } from 'react';
 import { useQueryClient } from 'react-query';
 import i18next from 'i18next';
 import Groups2Icon from '@mui/icons-material/Groups2';
-import EditIcon from '@mui/icons-material/Edit';
 import { IDetailsStepProp } from '.';
 import { IMongoProcessTemplatePopulated, IProcessTemplateMap } from '../../../../interfaces/processes/processTemplate';
 import { setInitialStepsObject } from '../../../../utils/processWizard/steps';
@@ -13,7 +12,14 @@ import { initDetailsValues } from './detailsFormik';
 import { GeneralDetailsFields } from './GeneralDetailsFields';
 import { TemplateFields } from './TemplateFields';
 
-const GeneralDetails: React.FC<IDetailsStepProp> = ({ detailsFormikData, onNext, processInstance, toPrint }) => {
+const GeneralDetails: React.FC<IDetailsStepProp> = ({
+    detailsFormikData,
+    onNext,
+    processInstance,
+    toPrint,
+    setContentDisplay = () => {},
+    contentDisplay = 'SUMMARY',
+}) => {
     const { values, touched, errors, setFieldValue, setFieldTouched, handleBlur, resetForm, submitForm, dirty } = detailsFormikData;
     const queryClient = useQueryClient();
     const processTemplatesMap = queryClient.getQueryData<IProcessTemplateMap>('getProcessTemplates')!;
@@ -111,7 +117,7 @@ const GeneralDetails: React.FC<IDetailsStepProp> = ({ detailsFormikData, onNext,
                                     // TODO - on click
                                     values.template && viewMode && !toPrint && (
                                         <Grid container gap="5px" width="100%" wrap="nowrap">
-                                            <Grid item flexBasis="20%">
+                                            {/* <Grid item flexBasis="20%">
                                                 <Button
                                                     onClick={() => {
                                                         console.log('click edittt');
@@ -130,33 +136,54 @@ const GeneralDetails: React.FC<IDetailsStepProp> = ({ detailsFormikData, onNext,
                                                         <EditIcon sx={{ height: '100%' }} />
                                                     </Grid>
                                                 </Button>
-                                            </Grid>
-                                            <Grid item flexBasis="50%">
-                                                <Button
-                                                    style={{
-                                                        borderRadius: '7px',
-                                                        border: 'solid 1px #1E2775',
-                                                        width: '140px',
-                                                        height: '35px',
-                                                        backgroundColor: '#EBEFFA',
-                                                    }}
-                                                >
-                                                    <Grid container justifyContent="center" alignItems="center" gap="10px">
-                                                        <Grid item alignSelf="center" style={{ height: '100%' }}>
-                                                            <Groups2Icon sx={{ height: '100%', marginTop: '7px' }} />
+                                            </Grid> */}
+                                            {contentDisplay === 'SUMMARY' && (
+                                                <Grid item flexBasis="50%">
+                                                    <Button
+                                                        style={{
+                                                            borderRadius: '7px',
+                                                            border: 'solid 1px #1E2775',
+                                                            width: '140px',
+                                                            height: '35px',
+                                                            backgroundColor: '#EBEFFA',
+                                                        }}
+                                                        onClick={() => setContentDisplay('REVIEWERS')}
+                                                    >
+                                                        <Grid container justifyContent="center" alignItems="center" gap="10px">
+                                                            <Grid item alignSelf="center" style={{ height: '100%' }}>
+                                                                <Groups2Icon sx={{ height: '100%', marginTop: '7px' }} />
+                                                            </Grid>
+                                                            <Grid item>
+                                                                <Typography fontSize="13px" fontWeight="400">
+                                                                    {i18next.t('wizard.processInstance.showStepsReviewers')}
+                                                                </Typography>
+                                                            </Grid>
                                                         </Grid>
-                                                        <Grid item>
-                                                            <Typography fontSize="14px" fontWeight="400">
-                                                                {i18next.t('wizard.processInstance.showStepsReviewers')}
-                                                            </Typography>
-                                                        </Grid>
-                                                    </Grid>
-                                                </Button>
-                                            </Grid>
+                                                    </Button>
+                                                </Grid>
+                                            )}
+                                            {contentDisplay === 'REVIEWERS' && (
+                                                <Grid item flexBasis="50%">
+                                                    <Button
+                                                        style={{
+                                                            borderRadius: '7px',
+                                                            border: 'solid 1px #1E2775',
+                                                            width: '140px',
+                                                            height: '35px',
+                                                            backgroundColor: '#EBEFFA',
+                                                        }}
+                                                        onClick={() => setContentDisplay('SUMMARY')}
+                                                    >
+                                                        <Typography fontSize="13px" fontWeight="400">
+                                                            {i18next.t('wizard.processInstance.nextToSummaryDetails')}
+                                                        </Typography>
+                                                    </Button>
+                                                </Grid>
+                                            )}
                                         </Grid>
                                     )
                                 }
-                                {values.template && !viewMode && !toPrint && (
+                                {/* {values.template && !viewMode && !toPrint && (
                                     <Grid container spacing={1} marginBottom={1}>
                                         <Grid item>
                                             <Button
@@ -183,7 +210,7 @@ const GeneralDetails: React.FC<IDetailsStepProp> = ({ detailsFormikData, onNext,
                                             </Button>
                                         </Grid>
                                     </Grid>
-                                )}
+                                )} */}
                             </Grid>
                         </Grid>
                     </FormikProvider>

@@ -1,35 +1,26 @@
 import React, { useState } from 'react';
-import { Button, Dialog, DialogTitle, DialogContent, DialogActions, Grid, CircularProgress, IconButton, Typography } from '@mui/material';
-import { Done as DoneIcon, Clear as ClearIcon } from '@mui/icons-material';
+import { Dialog, DialogContent, Grid, IconButton } from '@mui/material';
 import i18next from 'i18next';
 import { makeStyles } from '@mui/styles';
 import { UseMutateAsyncFunction, useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { AxiosError } from 'axios';
-import EditIcon from '@mui/icons-material/Edit';
 import CloseIcon from '@mui/icons-material/Close';
 // eslint-disable-next-line import/no-extraneous-dependencies
-import lodashIsEqual from 'lodash.isequal';
-import DeleteIcon from '@mui/icons-material/Delete';
-import UnarchiveIcon from '@mui/icons-material/Unarchive';
-import ArchiveIcon from '@mui/icons-material/Archive';
-import { ProcessSideStepper } from './ProcessSideStepper';
 import { BlueTitle } from '../../BlueTitle';
 import { ProcessDetailsValues } from './ProcessDetails';
 import { IMongoProcessInstancePopulated, Status } from '../../../interfaces/processes/processInstance';
 import { IMongoProcessTemplatePopulated, IProcessTemplateMap } from '../../../interfaces/processes/processTemplate';
-import { getInitialDetailsValues, useProcessDetailsFormik } from './ProcessDetails/detailsFormik';
+import { useProcessDetailsFormik } from './ProcessDetails/detailsFormik';
 import { getProcessByIdRequest, deleteProcessRequest, archiveProcessRequest } from '../../../services/processesService';
 import ProcessSummary from './ProcessSummaryStep/index';
 import ProcessStepsStep from './ProcessSteps/index';
 import { IMongoStepTemplatePopulated } from '../../../interfaces/processes/stepTemplate';
 import { AreYouSureDialog } from '../../dialogs/AreYouSureDialog';
-import { MeltaTooltip } from '../../MeltaTooltip';
-import { Print } from '../../../pages/ProcessInstances/print';
 import { PermissionScope } from '../../../interfaces/permissions';
 import { useUserStore } from '../../../stores/user';
-import { GeneralDetailsFields } from './ProcessDetails/GeneralDetailsFields';
 import GeneralDetails from './ProcessDetails/GeneralDetails';
+import StepsReviewers from './ProcessDetails/StepsReviewers';
 
 interface IProcessInstanceWizard {
     open: boolean;
@@ -92,6 +83,7 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({
 
     const detailsFormikData = useProcessDetailsFormik(processInstance, processTemplatesMap, mutateAsync);
     const [activeStep, setActiveStep] = React.useState(stepTemplate ? 1 : 0);
+    const [contentDisplay, setContentDisplay] = React.useState<'SUMMARY' | 'REVIEWERS'>('SUMMARY');
 
     console.log({ activeStep });
 
@@ -384,6 +376,11 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({
                                     onNext={() => {}}
                                     onBack={() => {}}
                                     key={`${processInstance._id}//${processInstance.name}`}
+                                    setContentDisplay={(val) => {
+                                        if (val === 'SUMMARY') setActiveStep(0);
+                                        setContentDisplay(val);
+                                    }}
+                                    contentDisplay={contentDisplay}
                                 />
                             </Grid>
                             {/* <GeneralDetailsFields
@@ -402,7 +399,7 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({
                         </Grid>
                     </Grid>
                     <Grid container item flexBasis="75%" flexDirection="column" padding="15px">
-                        {activeStep === 0 && (
+                        {activeStep === 0 && contentDisplay === 'SUMMARY' && (
                             <ProcessSummary
                                 isPrinting={false}
                                 processInstance={currProcessInstance}
@@ -411,7 +408,7 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({
                             />
                         )}
                         {/* {activeStep !== 0 && <Grid className={classes.content}>{steps[activeStep].component}</Grid>} */}
-                        {activeStep !== 0 && (
+                        {activeStep !== 0 && contentDisplay === 'SUMMARY' && (
                             <ProcessStepsStep
                                 processTemplate={processTemplate}
                                 processInstance={currProcessInstance}
@@ -431,6 +428,16 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({
                                 setIsStepEditMode={setIsStepEditMode}
                                 defaultStepTemplate={processTemplate.steps[activeStep - 1]}
                                 setActiveStep={setActiveStep}
+                            />
+                        )}
+                        {contentDisplay === 'REVIEWERS' && (
+                            <StepsReviewers
+                                detailsFormikData={detailsFormikData}
+                                onBack={() => {}}
+                                onNext={() => {}}
+                                processInstance={processInstance}
+                                isEditMode={false}
+                                viewMode
                             />
                         )}
                     </Grid>

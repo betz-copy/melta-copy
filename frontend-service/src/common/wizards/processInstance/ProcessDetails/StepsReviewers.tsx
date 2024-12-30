@@ -75,7 +75,7 @@ const ReviewCard = ({ stepTemplate, values, setFieldValue, isEditMode, processIn
                         reviewers={
                             processInstance
                                 ? values.steps[getStepInstanceByStepTemplateId(stepTemplate._id, processInstance)!._id]
-                                : values.steps[stepTemplate._id]
+                                : values.steps[stepTemplate._id] || []
                         }
                         forcedReviewers={stepTemplate.reviewers}
                         onAdd={(newReviewer, reviewers) => {
@@ -107,8 +107,8 @@ const ReviewCard = ({ stepTemplate, values, setFieldValue, isEditMode, processIn
         </Grid>
     );
 };
-const StepsReviewers: React.FC<IDetailsStepProp> = ({ detailsFormikData, isEditMode, processInstance, onBack }) => {
-    const { values, setFieldValue, submitForm } = detailsFormikData;
+const StepsReviewers: React.FC<IDetailsStepProp> = ({ detailsFormikData, isEditMode, processInstance, onBack, viewMode = false }) => {
+    const { values, setFieldValue, submitForm, dirty } = detailsFormikData;
 
     return (
         <Card sx={{ border: 'none', boxShadow: 'none', background: 'transparent', height: '100%', justifyContent: 'space-between', padding: '20px' }}>
@@ -142,10 +142,12 @@ const StepsReviewers: React.FC<IDetailsStepProp> = ({ detailsFormikData, isEditM
 
                 <Grid item container sx={{ justifyContent: 'space-between', alignItems: 'flex-start', padding: 1 }}>
                     <Grid item>
-                        <Fab size="small" onClick={onBack} color="primary" variant="extended">
-                            <NavigateNextIcon />
-                            {i18next.t('wizard.processInstance.backTo')}
-                        </Fab>
+                        {!viewMode && (
+                            <Fab size="small" onClick={onBack} color="primary" variant="extended">
+                                <NavigateNextIcon />
+                                {i18next.t('wizard.processInstance.backTo')}
+                            </Fab>
+                        )}
                     </Grid>
                     {!processInstance && (
                         <Grid item>
@@ -158,6 +160,22 @@ const StepsReviewers: React.FC<IDetailsStepProp> = ({ detailsFormikData, isEditM
                                 color="primary"
                             >
                                 {i18next.t('wizard.processInstance.createProcess')}
+                                <NavigateBeforeIcon />
+                            </Fab>
+                        </Grid>
+                    )}
+                    {isEditMode && (
+                        <Grid item>
+                            <Fab
+                                size="small"
+                                onClick={() => {
+                                    submitForm();
+                                }}
+                                disabled={!dirty}
+                                variant="extended"
+                                color="primary"
+                            >
+                                {i18next.t('wizard.processInstance.saveBth')}
                                 <NavigateBeforeIcon />
                             </Fab>
                         </Grid>

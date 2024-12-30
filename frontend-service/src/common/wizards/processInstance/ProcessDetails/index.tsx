@@ -31,6 +31,9 @@ export interface IDetailsStepProp extends IStepProps {
     isEditMode?: boolean;
     processInstance: IMongoProcessInstancePopulated | undefined;
     toPrint?: boolean;
+    setContentDisplay?: (val: 'SUMMARY' | 'REVIEWERS') => void;
+    contentDisplay?: 'SUMMARY' | 'REVIEWERS';
+    viewMode?: boolean;
 }
 
 interface RenderFormStepProps extends IDetailsStepProp {
