@@ -14,6 +14,7 @@ import fileDownload from 'js-file-download';
 import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
+import { useMatomo } from '@datapunt/matomo-tracker-react';
 import { environment } from '../../globals';
 import { IEntity } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
@@ -58,6 +59,7 @@ const TemplateTable = forwardRef<
     const drafts = useDraftsStore((state) => state.drafts);
 
     const setDraftId = useDraftIdStore((state) => state.setDraftId);
+    const { trackEvent } = useMatomo();
 
     const entitiesTableRef = useRef<EntitiesTableOfTemplateRef<IEntity>>(null);
 
@@ -130,6 +132,16 @@ const TemplateTable = forwardRef<
         sessionStorage.setItem(`isExpand-${template._id}`, isExpand.toString());
     }, [isExpand, template._id]);
 
+    const handleDownloadClick = () => {
+        exportTemplateToExcel();
+
+        trackEvent({
+            category: 'template-action',
+            action: 'download template click',
+            name: template.displayName,
+        });
+    };
+
     const checkIfLoadEntityIsDisabled = () => {
         const { properties } = template.properties;
         const requiredProperties = new Set(template.properties.required);
@@ -178,7 +190,16 @@ const TemplateTable = forwardRef<
                     <TableButton
                         iconButtonWithPopoverProps={{
                             popoverText: i18next.t('entitiesTableOfTemplate.columns'),
-                            iconButtonProps: { onClick: () => entitiesTableRef.current?.showSideBar() },
+                            iconButtonProps: {
+                                onClick: () => {
+                                    entitiesTableRef.current?.showSideBar();
+
+                                    trackEvent({
+                                        category: 'template-action',
+                                        action: 'show sidebar click',
+                                    });
+                                },
+                            },
                         }}
                         icon={<TableRowsOutlined fontSize="small" />}
                         text={i18next.t('entitiesTableOfTemplate.columns')}
@@ -188,7 +209,14 @@ const TemplateTable = forwardRef<
                         iconButtonWithPopoverProps={{
                             popoverText: isExpand ? i18next.t('entitiesTableOfTemplate.expandLess') : i18next.t('entitiesTableOfTemplate.expandMore'),
                             iconButtonProps: {
-                                onClick: handleExpandClick,
+                                onClick: () => {
+                                    handleExpandClick();
+
+                                    trackEvent({
+                                        category: 'template-action',
+                                        action: isExpand ? 'off' : 'on',
+                                    });
+                                },
                             },
                         }}
                         icon={isExpand ? <CloseFullscreenRounded fontSize="small" /> : <Expand fontSize="small" />}
@@ -200,7 +228,11 @@ const TemplateTable = forwardRef<
                     <TableButton
                         iconButtonWithPopoverProps={{
                             popoverText: i18next.t('entitiesTableOfTemplate.downloadOneTable'),
-                            iconButtonProps: { onClick: () => exportTemplateToExcel() },
+                            iconButtonProps: {
+                                onClick: () => {
+                                    handleDownloadClick();
+                                },
+                            },
                         }}
                         icon={isExportingTableToExcelFile ? <CircularProgress size="24px" /> : <Download fontSize="small" />}
                         text={isExportingTableToExcelFile ? '' : i18next.t('entitiesTableOfTemplate.downloadOneTableTitle')}
@@ -256,7 +288,14 @@ const TemplateTable = forwardRef<
                             fontSize: '0.75rem',
                             color: theme.palette.primary.main,
                         }}
-                        onSuccessCreate={() => entitiesTableRef.current?.refreshServerSide()}
+                        onSuccessCreate={() => {
+                            entitiesTableRef.current?.refreshServerSide();
+
+                            trackEvent({
+                                category: 'template-action',
+                                action: 'add entity click',
+                            });
+                        }}
                         setUpdatedEntities={setUpdatedEntities}
                     >
                         <AddCircle fontSize="small" sx={{ opacity: !userHasWritePermissions ? 0.3 : 1 }} />

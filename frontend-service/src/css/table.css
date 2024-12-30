@@ -47,3 +47,17 @@
     overflow: auto;
     padding: 0;
 }
+
+.ag-header-cell .ag-header-cell-menu-button,
+.ag-header-cell .ag-header-cell-filter-button {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+}
+
+.ag-header-cell:hover .ag-header-cell-menu-button,
+.ag-header-cell:hover .ag-header-cell-filter-button,
+.ag-header-cell.ag-header-cell-filtered .ag-header-cell-filter-button {
+    opacity: 1;
+    pointer-events: auto;
+}

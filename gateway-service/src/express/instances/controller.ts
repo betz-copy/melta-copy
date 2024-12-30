@@ -42,6 +42,10 @@ export class InstancesController extends DefaultController<InstancesManager> {
         res.json(await this.manager.searchEntitiesBatch(shouldSemanticSearch, body));
     }
 
+    async searchEntitiesOfTemplate(req: Request, res: Response) {
+        res.json(await this.manager.searchEntitiesOfTemplate(req.params.templateId, req.body));
+    }
+
     async getEntitiesCountByTemplates(req: Request, res: Response) {
         const { shouldSemanticSearch, ...body } = req.body;
         res.json(await this.manager.getEntitiesCountByTemplates(shouldSemanticSearch, body));
