@@ -94,9 +94,7 @@ const ChooseTemplatePathDialog: React.FC<{
                             <Tree
                                 multi={false}
                                 treeItems={[entityTemplatesTree ?? { _id: '/', children: [], displayName: '/', path: '/' }]}
-                                getItemId={(item) => {
-                                    return item?.path ? `${item.path}/${item?.displayName}` : uuid();
-                                }}
+                                getItemId={(item) => (item?.path ? `${item.path}/${item?.displayName}` : uuid())}
                                 getItemLabel={(item) => item?.displayName ?? ''}
                                 onSelectItems={(selectedPath) => {
                                     const path = (selectedPath as string) ?? '/';
@@ -105,6 +103,7 @@ const ChooseTemplatePathDialog: React.FC<{
                                 preSelectedItemsIds={
                                     currEntityTemplate.path ? [`${currEntityTemplate.path}/${currEntityTemplate.displayName}`] : undefined
                                 }
+                                preExpandedItemIds={currEntityTemplate?.path?.split('/').map((path) => `//${path}`)}
                             />
                         )}
                         <input
@@ -117,7 +116,7 @@ const ChooseTemplatePathDialog: React.FC<{
                         <Button
                             type="submit"
                             variant="contained"
-                            disabled={isLoading || pathValue === '/'}
+                            disabled={isLoading}
                             sx={{ borderRadius: '10px' }}
                             onClick={handleConvertToRootPath}
                         >

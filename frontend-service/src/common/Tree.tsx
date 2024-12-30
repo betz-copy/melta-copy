@@ -11,6 +11,7 @@ interface TreeProps<T> {
     onSelectItems?: (item: string | string[]) => any;
     isDraggable?: boolean; // TODO
     preSelectedItemsIds?: string[];
+    preExpandedItemIds?: string[];
 }
 
 function getItemDescendantsIds<T>(item: TreeViewBaseItem, getItemId: (item: T) => string) {
@@ -24,12 +25,21 @@ function getItemDescendantsIds<T>(item: TreeViewBaseItem, getItemId: (item: T) =
     return ids;
 }
 
-const Tree = <T,>({ treeItems, onSelectItems, getItemId, getItemLabel, multi, preSelectedItemsIds }: TreeProps<T>): React.ReactElement => {
-    const [selectedItems, setSelectedItems] = useState<string[]>([]);
+const Tree = <T,>({
+    treeItems,
+    onSelectItems,
+    getItemId,
+    getItemLabel,
+    multi,
+    preSelectedItemsIds,
+    preExpandedItemIds,
+}: TreeProps<T>): React.ReactElement => {
+    const [selectedItemsIds, setSelectedItemsIds] = useState<string[]>(preSelectedItemsIds ?? []);
+    const [expandedItemsIds, setExpandedItemsIds] = useState<string[]>(preExpandedItemIds ?? []);
+
     const toggledItemRef = useRef<{ [itemId: string]: boolean }>({});
+
     const apiRef = useTreeViewApiRef();
-    const expandedItemIds = preSelectedItemsIds?.flatMap((itemId) => itemId.split('/'));
-    console.log(expandedItemIds);
 
     const handleItemSelectionToggle = (_event: React.SyntheticEvent, itemId: string, isSelected: boolean) => {
         toggledItemRef.current[itemId] = isSelected;
@@ -37,11 +47,11 @@ const Tree = <T,>({ treeItems, onSelectItems, getItemId, getItemLabel, multi, pr
 
     const handleSelectedItemsChange = (_event: React.SyntheticEvent, newSelectedItemsPaths: string[]) => {
         if (!multi) {
-            setSelectedItems([newSelectedItemsPaths[0]]);
+            setSelectedItemsIds([newSelectedItemsPaths[0]]);
             return;
         }
 
-        setSelectedItems(newSelectedItemsPaths);
+        setSelectedItemsIds(newSelectedItemsPaths);
 
         const itemsToSelect: string[] = [];
         const itemsToUnSelect: { [itemId: string]: boolean } = {};
@@ -62,20 +72,20 @@ const Tree = <T,>({ treeItems, onSelectItems, getItemId, getItemLabel, multi, pr
             new Set([...newSelectedItemsPaths, ...itemsToSelect].filter((itemId) => !itemsToUnSelect[itemId])),
         );
 
-        setSelectedItems(newSelectedItemsWithChildren);
+        setSelectedItemsIds(newSelectedItemsWithChildren);
 
         toggledItemRef.current = {};
     };
 
-    useEffect(() => {
-        if (!onSelectItems) return;
-
-        onSelectItems(multi ? selectedItems : selectedItems[0]);
-    }, [JSON.stringify(selectedItems)]);
+    const handleExpandClick = (_event: React.SyntheticEvent, itemIds: string[]) => {
+        setExpandedItemsIds(itemIds);
+    };
 
     useEffect(() => {
-        setSelectedItems(preSelectedItemsIds ?? []);
-    }, [JSON.stringify(preSelectedItemsIds)]);
+        if (!onSelectItems || selectedItemsIds.toString() === preSelectedItemsIds?.toString()) return;
+
+        onSelectItems(multi ? selectedItemsIds : selectedItemsIds?.[0]);
+    }, [JSON.stringify(selectedItemsIds)]);
 
     return (
         <RichTreeView
@@ -86,10 +96,11 @@ const Tree = <T,>({ treeItems, onSelectItems, getItemId, getItemLabel, multi, pr
             getItemId={getItemId}
             getItemLabel={getItemLabel}
             apiRef={apiRef}
-            expandedItems={expandedItemIds}
-            selectedItems={selectedItems}
+            selectedItems={selectedItemsIds}
             onSelectedItemsChange={handleSelectedItemsChange}
             onItemSelectionToggle={handleItemSelectionToggle}
+            expandedItems={expandedItemsIds}
+            onExpandedItemsChange={handleExpandClick}
             slots={{
                 expandIcon: ChevronLeft,
                 collapseIcon: ExpandLess,

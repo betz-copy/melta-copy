@@ -286,7 +286,7 @@ export default {
     addPathToTemplateDialog: {
         convertToRootPath: 'הפוך לנתיב ראשי',
         closeBtn: 'סגור',
-        createBtn: 'הוסף',
+        createBtn: 'שמור',
         failedToCreatePath: 'נכשל להוסיף נתיב',
         succeededToCreatePath: 'הנתיב נוסף בהצלחה',
         pathAlreadyExists: 'הנתיב כבר קיים',
