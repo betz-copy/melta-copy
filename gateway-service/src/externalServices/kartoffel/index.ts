@@ -30,10 +30,8 @@ export class Kartoffel {
     };
 
     static getUserProfile = async (kartoffelId: string) => {
-        // const { data } = await this.kartoffel.get<string>(`${baseEntitiesRoute}/${kartoffelId}/${profilePath}`);
-        // return data;
-        const { personalNumber } = await this.getUserById(kartoffelId);
-        const { data } = await axios.get<string>(`${url}${baseEntitiesRoute}/${personalNumber}/${profilePath}`);
+        const { identityCard } = await this.getUserById(kartoffelId);
+        const { data } = await axios.get<string>(`${url}${baseEntitiesRoute}/${identityCard}/${profilePath}`);
         return data;
     };
 }
