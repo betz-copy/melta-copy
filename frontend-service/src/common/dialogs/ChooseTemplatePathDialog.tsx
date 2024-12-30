@@ -19,8 +19,7 @@ const ChooseTemplatePathDialog: React.FC<{
 }> = ({ open, handleClose, currEntityTemplate }) => {
     if (!currEntityTemplate) return null;
 
-    const [validationErrors, setValidationErrors] = useState(false);
-    const [pathValue, setPathValue] = useState('/');
+    const [pathValue, setPathValue] = useState<string | undefined>('/');
 
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
@@ -58,11 +57,6 @@ const ChooseTemplatePathDialog: React.FC<{
         await updateEntityTemplatePath();
     };
 
-    useEffect(() => {
-        const pathRegex = /^\/(?:[^/]*\/?)*$/;
-        setValidationErrors(!pathRegex.test(pathValue));
-    }, [pathValue]);
-
     return (
         <Dialog
             open={open}
@@ -77,13 +71,7 @@ const ChooseTemplatePathDialog: React.FC<{
 
             <DialogActions>
                 {!hasRootPath ? (
-                    <Button
-                        type="submit"
-                        variant="contained"
-                        disabled={isLoading || validationErrors}
-                        sx={{ borderRadius: '10px' }}
-                        onClick={handleConvertToRootPath}
-                    >
+                    <Button type="submit" variant="contained" disabled={isLoading} sx={{ borderRadius: '10px' }} onClick={handleConvertToRootPath}>
                         {i18next.t('addPathToTemplateDialog.convertToRootPath')}
                         {isLoading && <CircularProgress size={20} />}
                         <Done />
@@ -97,8 +85,8 @@ const ChooseTemplatePathDialog: React.FC<{
                                 getItemId={(item) => (item?.path ? `${item.path}/${item?.displayName}` : uuid())}
                                 getItemLabel={(item) => item?.displayName ?? ''}
                                 onSelectItems={(selectedPath) => {
-                                    const path = (selectedPath as string) ?? '/';
-                                    setPathValue(path.replaceAll(/\/\//g, '/'));
+                                    const path = selectedPath as string | undefined;
+                                    setPathValue(path?.replaceAll(/\/\//g, '/'));
                                 }}
                                 preSelectedItemsIds={
                                     currEntityTemplate.path ? [`${currEntityTemplate.path}/${currEntityTemplate.displayName}`] : undefined
