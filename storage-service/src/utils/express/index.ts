@@ -11,7 +11,6 @@ export const createController = <T extends InstanceType<typeof DefaultController
             get: (_, funcName: string) => {
                 return (req: Request, res: Response, next: NextFunction) => {
                     const workspaceId = req.headers[config.service.workspaceIdHeaderName];
-                    console.log({ workspaceId });
 
                     if (typeof workspaceId !== 'string') return next(new BadRequestError('Invalid workspace id in header'));
 
