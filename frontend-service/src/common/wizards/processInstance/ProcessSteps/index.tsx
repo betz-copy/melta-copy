@@ -52,6 +52,10 @@ const getVisibleSteps = (currentStep: number, totalSteps: number) => {
         startStep = totalSteps - visibleSteps;
     }
 
+    if (startStep < 0) {
+        startStep = 0;
+    }
+
     return { startStep, endStep };
 };
 
