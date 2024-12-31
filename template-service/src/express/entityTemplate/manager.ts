@@ -283,7 +283,18 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
 
         if (!templatesWithPath?.length) return [];
 
-        templatesWithPath.sort((a, b) => a.path!.split('/').length - b.path!.split('/').length);
+        templatesWithPath.sort((a, b) => {
+            if (a.path === '/' && b.path !== '/') {
+              return -1;
+            } else if (b.path === '/' && a.path !== '/') {
+              return 1;
+            } else {
+              const aSlashCount = (a.path.match(/\//g) || []).length;
+              const bSlashCount = (b.path.match(/\//g) || []).length;
+          
+              return aSlashCount - bSlashCount;
+            }
+          });
 
         const rootTemplate = templatesWithPath.pop()!;
 
