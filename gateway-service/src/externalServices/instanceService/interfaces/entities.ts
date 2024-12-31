@@ -110,6 +110,7 @@ export interface ISearchEntitiesOfTemplateBody {
     filter?: ISearchFilter;
     showRelationships?: boolean | Array<IRelationshipTemplate['_id']>;
     sort?: ISearchSort;
+    texts?: string[];
 }
 
 export interface ISearchBatchBody {

@@ -507,6 +507,7 @@ export default {
             },
             dateNotification: 'התראה לפני סיום',
             dailyAlert: 'התראה יומית',
+            datePastNotification: 'התראה על תאריך שעבר',
             customAlert:
                 'התראה יורדת \nתתבצע התראה בתאריך שנבחר ובכל התאריכים הבאים \nלדוגמא נבחר התראה שבוע לפני אז תתבצע התראה שבוע יומיים ויום לפני',
             serialStarter: 'מספר סידורי התחלתי',
@@ -895,6 +896,10 @@ export default {
         propertyValue: 'התאריך',
         entityTemplateName: 'בישות',
         aboutToExpire: 'מתקרב',
+        payAttention: 'שים לב,',
+        past: 'עבר',
+        datePast: 'תאריך עבר',
+        dateAboutToExpire: 'תאריך מתקרב',
     },
     processStatusUpdateNotification: {
         statusUpdate: ' עדכון סטטוס',

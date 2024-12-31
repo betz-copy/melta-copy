@@ -48,6 +48,7 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
         keyword: 'dateNotification',
     });
     ajv.addKeyword({ keyword: 'isDailyAlert' });
+    ajv.addKeyword({ keyword: 'isDatePastAlert' });
     ajv.addKeyword({ keyword: 'calculateTime' });
     ajv.addKeyword({ keyword: 'archive', type: 'boolean' });
     ajv.addKeyword({
