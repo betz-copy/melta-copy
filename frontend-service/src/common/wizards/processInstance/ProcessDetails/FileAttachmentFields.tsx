@@ -102,11 +102,15 @@ export const FileAttachmentsView: React.FC<FileAttachmentsProps> = ({ templateFi
     );
 };
 
-// TODO - fix problem...
 export const FileAttachments = ({ viewMode, templateFileProperties, values, errors, touched, setFieldValue, required, setFieldTouched, toPrint }) => {
     return (
-        <Box>
-            <BlueTitle title={i18next.t('wizard.entityTemplate.attachments')} component="h6" variant="h6" style={{ marginBottom: '22px' }} />
+        <Box paddingTop={0.5} paddingLeft={1} paddingRight={3}>
+            <BlueTitle
+                title={i18next.t('wizard.entityTemplate.attachments')}
+                component="h6"
+                variant="h6"
+                style={{ marginTop: toPrint ? '30px' : undefined, fontSize: '16px' }}
+            />
             {!viewMode ? (
                 <FileAttachmentsEdit
                     templateFileProperties={templateFileProperties}
