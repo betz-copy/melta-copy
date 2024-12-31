@@ -296,7 +296,7 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
             }
           });
 
-        const rootTemplate = templatesWithPath.pop()!;
+        const rootTemplate = templatesWithPath.shift()!;
 
         type IEntityTemplatePopulatedWithChildren = IEntityTemplatePopulated & { children: IEntityTemplatePopulatedWithChildren[] };
 
