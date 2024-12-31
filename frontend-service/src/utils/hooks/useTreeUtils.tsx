@@ -1,8 +1,7 @@
-import { TreeItem, TreeViewBaseItem } from '@mui/x-tree-view';
-import React, { useState } from 'react';
-import { Draggable } from 'react-beautiful-dnd';
+import { TreeViewBaseItem } from '@mui/x-tree-view-pro';
+import { useState } from 'react';
 
-export const useTreeUtils = (getItemId: (item) => string, getItemLabel: (item) => string, preSelectedItemsIds?: string[]) => {
+export const useTreeUtils = (getItemId: (item) => string, preSelectedItemsIds?: string[]) => {
     const [selectedItemsIds, setSelectedItemsIds] = useState<string[]>(preSelectedItemsIds ?? []);
 
     // Select functions
@@ -47,55 +46,5 @@ export const useTreeUtils = (getItemId: (item) => string, getItemLabel: (item) =
         setSelectedItemsIds(newSelectedItemsWithChildren);
     };
 
-    // Render functions
-    const renderTree = (items, countIndex = 0) =>
-        items.map((item, index) => {
-            const itemId = getItemId(item);
-            const label = getItemLabel(item);
-            const children = item.children || [];
-            const correctIndex = index + countIndex;
-
-            return (
-                <Draggable index={correctIndex} key={itemId} draggableId={itemId}>
-                    {(draggableProvided) => (
-                        <div ref={draggableProvided.innerRef} {...draggableProvided.draggableProps} {...draggableProvided.dragHandleProps}>
-                            <TreeItem itemId={itemId} label={label}>
-                                {children.length > 0 && renderTree(children, correctIndex + 1)}
-                            </TreeItem>
-                        </div>
-                    )}
-                </Draggable>
-            );
-        });
-
-    // Dragging functions
-    const reorderTree = (tree, draggableId, _sourceIndex, destinationIndex) => {
-        const reorderItems = (items) => {
-            return items.map((item) => {
-                if (item.id === draggableId) {
-                    return { ...item, index: destinationIndex };
-                }
-
-                if (item.children && item.children.length) {
-                    return { ...item, children: reorderItems(item.children) };
-                }
-                return item;
-            });
-        };
-
-        const reorderedItems = reorderItems(tree);
-        return reorderedItems;
-    };
-
-    const onDragEndHandler = (result, tree) => {
-        const { source, destination, draggableId } = result;
-
-        if (!destination) return tree;
-
-        const updatedTree = reorderTree(tree, draggableId, source.index, destination.index);
-
-        return updatedTree;
-    };
-
-    return { onDragEndHandler, handleSelectedItemsChange, selectedItemsIds, renderTree };
+    return { handleSelectedItemsChange, selectedItemsIds };
 };

@@ -80,6 +80,7 @@ const ChooseTemplatePathDialog: React.FC<{
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: '10px', padding: '10px' }}>
                         {!isLoadingTemplatesTree && (
                             <Tree
+                                isDraggable
                                 multi={false}
                                 treeItems={[entityTemplatesTree ?? { _id: '/', children: [], displayName: '/', path: '/' }]}
                                 getItemId={(item) => (item?.path ? `${item.path}/${item?.displayName}` : uuid())}
