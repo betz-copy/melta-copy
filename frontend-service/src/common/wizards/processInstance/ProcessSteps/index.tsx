@@ -1,21 +1,17 @@
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 /* eslint-disable jsx-a11y/anchor-is-valid */
-import { Box, Button, Divider, Grid, Step, StepLabel, Stepper, Tab, Typography, useTheme } from '@mui/material';
+import { Box, Divider, Grid, Step, StepLabel, Stepper, Typography, useTheme } from '@mui/material';
 import React from 'react';
-import { TabContext, TabList, TabPanel } from '@mui/lab';
 import TocIcon from '@mui/icons-material/Toc';
-import { ScatterPlotOutlined as HiveIcon } from '@mui/icons-material';
 import i18next from 'i18next';
 import { IMongoProcessTemplatePopulated } from '../../../../interfaces/processes/processTemplate';
 import { IMongoStepTemplatePopulated } from '../../../../interfaces/processes/stepTemplate';
 import { IMongoStepInstancePopulated } from '../../../../interfaces/processes/stepInstance';
 import { ProcessStep } from './processStep';
 import { IMongoProcessInstancePopulated, IReferencedEntityForProcess, Status } from '../../../../interfaces/processes/processInstance';
-import { CustomIcon } from '../../../CustomIcon';
 import { useDarkModeStore } from '../../../../stores/darkMode';
 import { StepIcon } from '../../../../pages/ProcessInstances/ProcessCard';
-import { Link } from 'wouter';
 
 export interface ProcessStepValues {
     properties: object;
@@ -42,6 +38,23 @@ const getStepTemplateByStepInstance = (
     return processTemplate.steps.find((step) => stepInstance.templateId === step._id)!;
 };
 
+const getVisibleSteps = (currentStep: number, totalSteps: number) => {
+    const visibleSteps = 5;
+    let startStep = currentStep - Math.floor(visibleSteps / 2);
+    let endStep = currentStep + Math.floor(visibleSteps / 2) + 1;
+
+    if (startStep < 0) {
+        startStep = 0;
+        endStep = visibleSteps;
+    }
+    if (endStep > totalSteps) {
+        endStep = totalSteps;
+        startStep = totalSteps - visibleSteps;
+    }
+
+    return { startStep, endStep };
+};
+
 const Steps: React.FC<IStepsProp> = ({
     processTemplate,
     processInstance,
@@ -63,14 +76,6 @@ const Steps: React.FC<IStepsProp> = ({
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const theme = useTheme();
     const defaultTabColor = darkMode ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)';
-
-    const amountOfVisibleStepsRange = 2;
-
-    console.log({
-        currStepInstanceIndex,
-        start: Math.max(currStepInstanceIndex - amountOfVisibleStepsRange, 0),
-        end: Math.min(currStepInstanceIndex + amountOfVisibleStepsRange + 1, processInstance.steps.length),
-    });
 
     return (
         <Grid
@@ -136,7 +141,7 @@ const Steps: React.FC<IStepsProp> = ({
             </TabContext> */}
             <Grid container item width="100%" justifyContent="space-between" alignItems="center">
                 <Grid item container width="80%">
-                    {currStepInstanceIndex - amountOfVisibleStepsRange > 0 && (
+                    {getVisibleSteps(currStepInstanceIndex, processInstance.steps.length).startStep > 0 && (
                         <Grid item>
                             <a
                                 onClick={() => {
@@ -155,8 +160,8 @@ const Steps: React.FC<IStepsProp> = ({
                         <Stepper style={{ display: 'flex', flexWrap: 'wrap' }} alternativeLabel>
                             {processInstance.steps
                                 .slice(
-                                    Math.max(currStepInstanceIndex - amountOfVisibleStepsRange, 0),
-                                    Math.min(currStepInstanceIndex + amountOfVisibleStepsRange + 1, processInstance.steps.length),
+                                    getVisibleSteps(currStepInstanceIndex, processInstance.steps.length).startStep,
+                                    getVisibleSteps(currStepInstanceIndex, processInstance.steps.length).endStep,
                                 )
                                 .map((stepInstance, index) => (
                                     <Step style={{ minWidth: '75px' }} key={stepInstance._id} active>
@@ -182,13 +187,17 @@ const Steps: React.FC<IStepsProp> = ({
                                                                     step={stepInstance}
                                                                     stepTemplate={
                                                                         processTemplate.steps[
-                                                                            index + Math.max(currStepInstanceIndex - amountOfVisibleStepsRange, 0)
+                                                                            index +
+                                                                                getVisibleSteps(currStepInstanceIndex, processInstance.steps.length)
+                                                                                    .startStep
                                                                         ]
                                                                     }
                                                                     setOpen={() => {
                                                                         setCurrStepInstance(stepInstance);
                                                                         setCurrStepInstanceIndex(
-                                                                            index + Math.max(currStepInstanceIndex - amountOfVisibleStepsRange, 0),
+                                                                            index +
+                                                                                getVisibleSteps(currStepInstanceIndex, processInstance.steps.length)
+                                                                                    .startStep,
                                                                         );
                                                                     }}
                                                                     displayTitle={false}
@@ -211,7 +220,7 @@ const Steps: React.FC<IStepsProp> = ({
                                 ))}
                         </Stepper>
                     </Grid>
-                    {currStepInstanceIndex + amountOfVisibleStepsRange + 1 < processInstance.steps.length && (
+                    {getVisibleSteps(currStepInstanceIndex, processInstance.steps.length).endStep < processInstance.steps.length && (
                         <Grid item>
                             <a
                                 onClick={() => {

@@ -170,7 +170,7 @@ const CreateOrEditProcess: React.FC<ISimpleDialogProps> = ({ open, onClose, proc
                     {values.template && (
                         <Grid item flexBasis="10%">
                             <Box sx={{ width: '40%', padding: 3 }}>
-                                <Stepper nonLinear activeStep={activeProcessDetailsStep}>
+                                <Stepper nonLinear activeStep={activeProcessDetailsStep} alternativeLabel>
                                     {steps.map(({ label }) => (
                                         <Step key={label}>
                                             <StepLabel>{label}</StepLabel>
