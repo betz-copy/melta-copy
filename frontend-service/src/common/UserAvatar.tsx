@@ -23,7 +23,7 @@ const UserAvatar: React.FC<UserAvatarProps> = ({ user, size = 48, bgColor, userP
     const fontColor = !bgColor ? '#1E2775' : darkMode ? 'black' : 'white';
 
     const { data: profile, isError } = useQuery(['userProfile', user.preferences.profilePath], async () => {
-        return user.preferences.profilePath ? getUserProfileRequest(user._id) : '';
+        return user.preferences.profilePath ? getUserProfileRequest(user) : '';
     });
 
     return (

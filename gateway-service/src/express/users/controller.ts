@@ -11,7 +11,9 @@ export class UsersController {
     }
 
     static async getKartoffelUserProfile(req: Request, res: Response) {
-        res.json(await UsersManager.getKartoffelUserProfileRequest(req.params.kartoffelId));
+        const stream = await UsersManager.getKartoffelUserProfileRequest(req.params.kartoffelId);
+        res.setHeader('Content-Type', 'image/*');
+        stream.pipe(res);
     }
 
     static async getUserProfile(req: Request, res: Response) {

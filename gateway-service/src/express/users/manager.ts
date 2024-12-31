@@ -40,10 +40,11 @@ export class UsersManager {
         if (!profilePath) return null;
 
         if (profilePath === 'kartoffelProfile') {
-            return Kartoffel.getUserProfile(user.externalMetadata.kartoffelId).catch((error) => {
+            return this.getKartoffelUserProfileRequest(user.externalMetadata.kartoffelId).catch((error) => {
                 throw new BadRequestError('kartoffel profile not found', { error });
             });
         }
+
         return this.storageService.downloadProfileFile(profilePath);
     }
 

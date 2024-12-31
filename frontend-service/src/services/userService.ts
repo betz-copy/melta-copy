@@ -5,7 +5,10 @@ import { ICompactNullablePermissions, ICompactPermissions, IPermission, ISubComp
 import { IExternalUser, IMongoUser, IUser, IUserPreferences, IUserSearchBody } from '../interfaces/users';
 import { RecursiveNullable } from '../utils/types';
 
-const { users } = environment.api;
+const {
+    api: { users },
+    users: { kartoffelProfile },
+} = environment;
 
 export const getMyUserRequest = async () => {
     const { data } = await axios.get<IUser>(`${users}/my`);
@@ -77,11 +80,15 @@ export const deletePermissionsFromMetadata = async (
     return data;
 };
 
-export const getUserProfileRequest = async (id: string) => {
-    const { data } = await axios.get(`${users}/user-profile/${id}`, {
-        responseType: 'blob',
-    });
-    return URL.createObjectURL(data);
+export const getUserProfileRequest = async (user: IUser) => {
+    const getFormattedPicture = (image: string) => (image.startsWith('/9j/') ? image : Buffer.from(image, 'base64').toString('utf-8'));
+    const isKartoffelProfile = user.preferences.profilePath === kartoffelProfile;
+
+    const { data } = await axios.get(`${users}/user-profile/${user._id}`, { responseType: 'blob' });
+
+    console.log({ data, profile: isKartoffelProfile ? `data:image/jpeg;base64,${getFormattedPicture(data)}` : URL.createObjectURL(data) });
+
+    return isKartoffelProfile ? `data:image/jpeg;base64,${getFormattedPicture(data)}` : URL.createObjectURL(data);
 };
 
 export const searchUsersByPermissions = async (workspaceId: string): Promise<IMongoUser[]> => {
