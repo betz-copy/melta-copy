@@ -15,6 +15,8 @@ export const config = {
         secretKey: env.get('MINIO_SECRET_KEY').default('minioadmin').asString(),
         bucketName: env.get('MINIO_BUCKET_NAME').default('bucket').asString(),
         useSSL: false,
+        useDevBucket: env.get('USE_DEV_BUCKETS').default('false').asBool(),
+        devBucketPrefix: env.get('DEV_BUCKET_PREFIX').default('dev-').asString(),
     },
     logs: {
         format: env.get('LOGGING_DATE_FORMAT').default('YYYY-MM-DD HH:mm:ss').asString(),

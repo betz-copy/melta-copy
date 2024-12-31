@@ -1,31 +1,23 @@
-import React, { forwardRef, memo, useImperativeHandle, useMemo, useRef } from 'react';
-import { Box, GlobalStyles } from '@mui/material';
-import { ReadMore as ReadMoreIcon } from '@mui/icons-material';
-
 import { ColDef, ICellRendererParams, IServerSideDatasource, ValueFormatterParams } from '@ag-grid-community/core';
 import { AgGridReact } from '@ag-grid-community/react';
-import '@noam7700/ag-grid-enterprise-core';
-import { ColumnsToolPanelModule } from '@noam7700/ag-grid-enterprise-column-tool-panel';
-import { MenuModule } from '@noam7700/ag-grid-enterprise-menu';
-import { SetFilterModule } from '@noam7700/ag-grid-enterprise-set-filter';
-import { ServerSideRowModelModule } from '@noam7700/ag-grid-enterprise-server-side-row-model';
+import { ReadMore as ReadMoreIcon } from '@mui/icons-material';
+import { Box, GlobalStyles } from '@mui/material';
 import i18next from 'i18next';
+import React, { forwardRef, memo, useImperativeHandle, useMemo, useRef } from 'react';
 import { toast } from 'react-toastify';
-
-import '@ag-grid-community/styles/ag-grid.css';
-import '@ag-grid-community/styles/ag-theme-material.css';
-import '../../css/table.css';
-
-import { DateFilterComponent } from '../../utils/agGrid/DateFilterComponent';
-import { trycatch } from '../../utils/trycatch';
-import { getRuleBreachAlertsRequest, getRuleBreachRequestsRequest } from '../../services/ruleBreachesService';
-import { dateColDef, enumArrayColDef, translatedEnumColDef } from '../../utils/agGrid/commonColDefs';
 import IconButtonWithPopover from '../../common/IconButtonWithPopover';
+import '../../css/table.css';
+import { environment } from '../../globals';
 import { ActionTypes } from '../../interfaces/ruleBreaches/actionMetadata';
+import { BreachType, IRuleBreachPopulated } from '../../interfaces/ruleBreaches/ruleBreach';
 import { IRuleBreachAlertPopulated } from '../../interfaces/ruleBreaches/ruleBreachAlert';
 import { IRuleBreachRequestPopulated, RuleBreachRequestStatus } from '../../interfaces/ruleBreaches/ruleBreachRequest';
-import { BreachType, IRuleBreachPopulated } from '../../interfaces/ruleBreaches/ruleBreach';
-import { environment } from '../../globals';
+import { getRuleBreachAlertsRequest, getRuleBreachRequestsRequest } from '../../services/ruleBreachesService';
+import { useDarkModeStore } from '../../stores/darkMode';
+import { agGridLocaleText } from '../../utils/agGrid/agGridLocaleText';
+import { dateColDef, enumArrayColDef, translatedEnumColDef } from '../../utils/agGrid/commonColDefs';
+import { DateFilterComponent } from '../../utils/agGrid/DateFilterComponent';
+import { trycatch } from '../../utils/trycatch';
 
 const getDatasource = (breachType: BreachType, onFail: ((err: unknown) => void) | undefined): IServerSideDatasource => {
     return {
@@ -68,7 +60,7 @@ const getColumnDefs = (
         colId: 'actions',
         sortable: false,
         filter: false,
-        suppressMenu: true,
+        suppressHeaderMenuButton: true,
         flex: 0,
         width: columnWidth,
         minWidth: columnWidth,
@@ -102,7 +94,7 @@ const getColumnDefs = (
             menuTabs: [],
             sortable: false,
         },
-        enumArrayColDef(
+        enumArrayColDef<IRuleBreachPopulated>(
             'actionType',
             ({ data }) => data?.actions.map((action) => actionTypeTranslations[action.actionType]),
             { title: i18next.t('ruleManagement.actionType') },
@@ -110,24 +102,24 @@ const getColumnDefs = (
             400,
             environment.agGrid.defaultRowHeight,
         ),
-        dateColDef('createdAt', ({ data }) => data?.createdAt, {
+        dateColDef<IRuleBreachPopulated>('createdAt', ({ data }) => data?.createdAt, {
             title: i18next.t('ruleManagement.createdAt'),
             format: 'date-time',
         }),
     ];
 
     const requestColDef: ColDef<IRuleBreachRequestPopulated>[] = [
-        translatedEnumColDef(
-            'status',
-            ({ data }) => data?.status,
-            { title: i18next.t('ruleManagement.approvalStatus') },
-            {
+        translatedEnumColDef<IRuleBreachRequestPopulated>({
+            field: 'status',
+            valueGetter: ({ data }) => data?.status,
+            title: i18next.t('ruleManagement.approvalStatus'),
+            valuesMap: {
                 [RuleBreachRequestStatus.Approved]: i18next.t('ruleManagement.approved'),
                 [RuleBreachRequestStatus.Denied]: i18next.t('ruleManagement.denied'),
                 [RuleBreachRequestStatus.Pending]: i18next.t('ruleManagement.pending'),
                 [RuleBreachRequestStatus.Canceled]: i18next.t('ruleManagement.canceled'),
             },
-        ),
+        }),
         {
             field: 'reviewer',
             headerName: i18next.t('ruleManagement.reviewer'),
@@ -136,7 +128,7 @@ const getColumnDefs = (
             menuTabs: [],
             sortable: false,
         },
-        dateColDef('reviewedAt', ({ data }) => data?.reviewedAt, {
+        dateColDef<IRuleBreachRequestPopulated>('reviewedAt', ({ data }) => data?.reviewedAt, {
             title: i18next.t('ruleManagement.reviewedAt'),
             format: 'date-time',
         }),
@@ -160,6 +152,8 @@ const RuleBreachTable = forwardRef<
         onReviewBreachClick: (ruleBreach: IRuleBreachAlertPopulated | IRuleBreachRequestPopulated, breachType: BreachType) => void;
     }
 >(({ rowHeight, pageRowCount = 5, fontSize, minColumnWidth, breachType, onReviewBreachClick }, ref) => {
+    const darkMode = useDarkModeStore((state) => state.darkMode);
+
     const gridRef = useRef<AgGridReact>(null);
     const columnDefs: ColDef[] = getColumnDefs(breachType, onReviewBreachClick);
 
@@ -172,7 +166,7 @@ const RuleBreachTable = forwardRef<
     const getGlobalStyles = () => {
         const styles = {
             '.ag-column-select-virtual-list-viewport': { height: `${rowHeight * pageRowCount}px !important` },
-            '.ag-center-cols-clipper': { minHeight: `${rowHeight * pageRowCount}px !important` },
+            '.ag-center-cols-viewport': { minHeight: `${rowHeight * pageRowCount}px !important` },
         };
 
         return styles;
@@ -190,7 +184,7 @@ const RuleBreachTable = forwardRef<
         <Box>
             <GlobalStyles styles={getGlobalStyles()} />
             <AgGridReact<IRuleBreachPopulated>
-                className="ag-theme-material"
+                className={`ag-theme-material${darkMode ? '-dark' : ''}`}
                 ref={gridRef}
                 containerStyle={{
                     width: '100%',
@@ -198,7 +192,6 @@ const RuleBreachTable = forwardRef<
                     fontSize,
                     fontWeight: 300,
                 }}
-                modules={[ServerSideRowModelModule, ColumnsToolPanelModule, MenuModule, SetFilterModule]}
                 domLayout="autoHeight"
                 getRowId={({ data }) => data._id}
                 columnDefs={columnDefs}
@@ -213,10 +206,10 @@ const RuleBreachTable = forwardRef<
                     agDateInput: DateFilterComponent,
                 }}
                 onFirstDataRendered={(params) => {
-                    params.columnApi.autoSizeColumns(['actions']);
+                    params.api.autoSizeColumns(['actions']);
                 }}
                 onGridReady={(params) => {
-                    params.columnApi.applyColumnState({ state: [{ colId: 'createdAt', sort: 'desc' }] });
+                    params.api.applyColumnState({ state: [{ colId: 'createdAt', sort: 'desc' }] });
                 }}
                 enableRtl
                 enableCellTextSelection
@@ -225,7 +218,7 @@ const RuleBreachTable = forwardRef<
                 suppressContextMenu
                 defaultColDef={{
                     filterParams: {
-                        suppressAndOrCondition: true,
+                        maxNumConditions: 1,
                         buttons: ['reset'],
                     },
                     sortable: true,
@@ -251,7 +244,8 @@ const RuleBreachTable = forwardRef<
                     ],
                     position: 'left',
                 }}
-                localeText={i18next.t('agGridLocaleText', { returnObjects: true })}
+                localeText={agGridLocaleText}
+                paginationPageSizeSelector={false}
             />
         </Box>
     );

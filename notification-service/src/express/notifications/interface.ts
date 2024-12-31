@@ -45,7 +45,7 @@ interface IArchiveProcessMetadata {
     processId: string;
     isArchived?: boolean;
 }
-interface IDateAboutToExpireMetadata {
+export interface IDateAboutToExpireMetadata {
     entityId: string;
     propertyName: string;
     datePropertyValue: Date;
@@ -67,6 +67,7 @@ export interface INotification {
     type: NotificationType;
     metadata: INotificationMetadata;
     createdAt: Date;
+    notificationDate?: Date;
 }
 
 export type INotificationCountGroups = Record<string, NotificationType[]>;

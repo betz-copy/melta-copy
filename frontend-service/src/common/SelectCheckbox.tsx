@@ -46,8 +46,8 @@ export const MenuItemContent: React.FC<MenuItemContentProps> = ({
     isDraggable,
     group,
     insideGroup,
-    option,
     showIcon,
+    option,
 }) => {
     const theme = useTheme();
 
@@ -78,6 +78,7 @@ export const MenuItemContent: React.FC<MenuItemContentProps> = ({
             ) : (
                 <MeltaCheckbox checked={checked} indeterminate={indeterminate} />
             )}
+
             <ListItemText
                 primary={
                     <MeltaTooltip title={label}>
@@ -89,7 +90,6 @@ export const MenuItemContent: React.FC<MenuItemContentProps> = ({
                                 lineHeight: '17px',
                                 letterSpacing: '0em',
                                 textAlign: 'right',
-                                color: '#101440',
                                 width: '120px',
                                 height: '17px',
                                 marginRight: '10px',
@@ -509,7 +509,6 @@ export const ChooseAllMenuItem = <Option extends any, Group extends any>({
                 indeterminate={selectedOptionsFiltered.length < optionsFiltered.length && selectedOptionsFiltered.length > 0}
                 label={i18next.t('selectChooseAll')}
                 order={0}
-                showIcon={false}
             />
         </MenuItem>
     );
@@ -638,7 +637,7 @@ const SelectCheckbox = <Option extends any, Group extends any>({
             >
                 {!isSelectDisabled && !hideSearchBar && <MiniFilter value={miniFilterValue} onChange={setMiniFilterValue} toTopBar={toTopBar} />}
                 {!isSelectDisabled && !hideChooseAll ? (
-                    <>
+                    <Box>
                         <ChooseAllMenuItem
                             options={options}
                             selectedOptionsFiltered={selectedOptionsFiltered}
@@ -648,7 +647,7 @@ const SelectCheckbox = <Option extends any, Group extends any>({
                         <Box sx={{ display: 'flex', justifyContent: 'center', my: '5px' }}>
                             <Divider style={{ width: '199px' }} />
                         </Box>
-                    </>
+                    </Box>
                 ) : (
                     <Typography color={theme.palette.primary.main} fontFamily="Rubik" fontWeight={400} marginX="16px" marginY="8px">
                         {title}

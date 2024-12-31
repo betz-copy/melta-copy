@@ -26,6 +26,7 @@ export interface CommonFormInputProperties {
     readOnly?: boolean;
     uniqueCheckbox?: boolean;
     groupName?: string;
+    archive?: boolean;
 }
 
 export interface ConvertToRelationshipFieldFormInputProperties {

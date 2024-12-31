@@ -20,6 +20,13 @@ export default class RuleBreachRequestsController extends DefaultController<IRul
         res.json(await this.manager.createRuleBreachRequest(req.body));
     }
 
+    async updateManyRuleBreachRequestsStatusesByRelatedEntityId(req: Request, res: Response) {
+        const { status } = req.body;
+        const { entityId } = req.params;
+
+        res.json(await this.manager.updateManyRuleBreachRequestsStatusesByRelatedEntityId(entityId, status));
+    }
+
     async updateRuleBreachRequestStatus(req: Request, res: Response) {
         const { ruleBreachRequestId } = req.params;
         const { reviewerId, status } = req.body;

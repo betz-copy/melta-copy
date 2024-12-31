@@ -1,5 +1,5 @@
 import { Visibility as VisibilityIcon, VisibilityOff as VisibilityOffIcon } from '@mui/icons-material';
-import { Grid, IconButton, Typography } from '@mui/material';
+import { Box, Divider, Grid, IconButton, Typography } from '@mui/material';
 import type { Property } from 'csstype';
 import i18next from 'i18next';
 import React, { CSSProperties } from 'react';
@@ -14,8 +14,9 @@ import { ColoredEnumChip } from './ColoredEnumChip';
 import OpenPreview from './FilePreview/OpenPreview';
 import { MeltaTooltip } from './MeltaTooltip';
 import RelationshipReferenceView from './RelationshipReferenceView';
-import { VerifyLink } from './VerifyLink';
 import { getFixedNumber, getTextDirection } from '../utils/stringValues';
+import { HighlightText } from '../utils/HighlightText';
+import { BlueTitle } from './BlueTitle';
 
 const { maxNumOfCharactersNotInFullWidth } = environment.entitiesProperties;
 
@@ -84,6 +85,10 @@ interface IEntityPropertiesProps {
     viewFirstLineOfLongText?: boolean;
     isPrintingMode?: boolean;
     pureString?: boolean;
+    searchedText?: string;
+    displayArchiveProperties?: boolean;
+    showDivider?: boolean;
+    dividerTitle?: string;
 }
 
 const getPropertyColor = (
@@ -116,6 +121,10 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
     viewFirstLineOfLongText = false,
     isPrintingMode = false,
     pureString = false,
+    searchedText,
+    displayArchiveProperties,
+    showDivider,
+    dividerTitle,
 }) => {
     let propertiesOrderedToShow: string[];
     if (overridePropertiesToShow) {
@@ -128,148 +137,154 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                 entityTemplate.properties.properties[propertyKey].format !== 'fileId' &&
                 entityTemplate.properties.properties[propertyKey].items?.format !== 'fileId',
         );
-    } else propertiesOrderedToShow = entityTemplate.propertiesOrder;
+    } else
+        propertiesOrderedToShow = displayArchiveProperties
+            ? entityTemplate.propertiesOrder.filter((propertyKey) => entityTemplate.properties.properties[propertyKey].archive)
+            : entityTemplate.propertiesOrder.filter((propertyKey) => !entityTemplate.properties.properties[propertyKey].archive);
 
     const [hideFieldsToDisplay, setHideFieldsToDisplay] = React.useState(entityTemplate.properties.hide);
+
     return (
-        <Grid container style={{ ...style, alignItems: textWrap ? 'flex-start' : 'center', alignContent: 'center' }}>
-            {propertiesOrderedToShow.map((propertyKey) => {
-                const propertySchema = entityTemplate.properties.properties[propertyKey];
-                const propertyValue = properties[propertyKey];
-                const hideField = entityTemplate.properties.hide.includes(propertyKey);
-                const containsHtmlTags = containsHTMLTags(propertyValue);
-                const stringFormatValue = formatToString(propertyValue, propertySchema, {
-                    keyEnumColors: (propertySchema.enum || propertySchema.items?.enum) && entityTemplate.enumPropertiesColors?.[propertyKey],
-                    isPrintingMode,
-                    pureString,
-                });
-
-                const propertyValueColor = getPropertyColor(
-                    propertyKey,
-                    propertiesToHighlight,
-                    propertiesToHighlightColor,
-                    mode,
-                    darkMode ? '#dcdde2' : '#53566E',
-                );
-                const propertyTitleColor = getPropertyColor(propertyKey, propertiesToHighlight, propertiesToHighlightColor, mode, '#9398C2');
-
-                let innerContent;
-                if (hideFieldsToDisplay.includes(propertyKey)) innerContent = <>••••••••</>;
-                else if (containsHtmlTags)
-                    innerContent = viewFirstLineOfLongText
-                        ? `${getFirstLine(stringFormatValue)}${getNumLines(stringFormatValue) > 1 ? '...' : ''}`
-                        : renderHTML(stringFormatValue);
-                else if (propertyValue && propertySchema.calculateTime) innerContent = <CalculateDateDifference date={stringFormatValue} />;
-                else if (propertyValue && propertySchema.type === 'number') innerContent = getFixedNumber(propertyValue);
-                else innerContent = stringFormatValue;
-
-                let titleContent;
-                if (hideFieldsToDisplay.includes(propertyKey) || propertySchema.format === 'fileId') titleContent = '';
-                else if (containsHtmlTags) titleContent = renderHTML(stringFormatValue);
-                else titleContent = innerContent;
-
-                const overrideStyleInLongText =
-                    containsHtmlTags &&
-                    !viewFirstLineOfLongText &&
-                    propertyValue &&
-                    getNumLines(stringFormatValue) > 1 &&
-                    stringFormatValue.length >= maxNumOfCharactersNotInFullWidth;
-
-                const textDirection =
-                    // todo: make getTextDirection handle all possible value and reuse everywhere
-                    propertySchema.format !== 'text-area' && propertySchema.format !== 'fileId' && propertySchema.format !== 'relationshipReference'
-                        ? getTextDirection(propertyValue, {
-                              type: propertySchema.type,
-                              serialCurrent: propertySchema.serialCurrent,
-                          })
-                        : 'rtl';
-                return (
-                    <Grid
-                        key={propertyKey}
-                        item
-                        container
-                        flexDirection="row"
-                        style={overrideStyleInLongText ? { width: '100%' } : innerStyle}
-                        alignItems={textWrap ? 'flex-start' : 'center'}
-                    >
-                        <Grid item container width="100%" flexWrap="nowrap" alignItems={textWrap ? 'flex-start' : 'center'}>
-                            <Grid
-                                item
-                                style={{
-                                    width: overrideStyleInLongText ? '10%' : '30%',
-                                }}
-                            >
-                                <MeltaTooltip disableHoverListener={textWrap} placement="bottom" title={propertySchema.title}>
-                                    <Typography
-                                        style={{
-                                            textOverflow: 'ellipsis',
-                                            whiteSpace: textWrap ? undefined : 'nowrap',
-                                            overflow: 'hidden',
-                                            textAlign: 'right',
-                                        }}
-                                        fontSize="14px"
-                                        color={propertyTitleColor}
-                                        fontWeight={mode === 'white' ? '800' : ''}
-                                    >
-                                        {propertySchema.title}:
-                                    </Typography>
-                                </MeltaTooltip>
-                            </Grid>
-                            <Grid
-                                item
-                                container
-                                flexDirection="row"
-                                alignItems={textWrap ? 'flex-start' : 'center'}
-                                flexWrap="nowrap"
-                                style={{
-                                    direction: 'rtl',
-                                    textAlign: 'right',
-                                    width: overrideStyleInLongText ? '90%' : '70%',
-                                }}
-                            >
-                                <MeltaTooltip
-                                    disableHoverListener={propertySchema.format === 'relationshipReference' ? true : textWrap}
-                                    placement="bottom"
-                                    title={<Grid style={{ maxHeight: '500px', overflowY: 'auto' }}>{titleContent}</Grid>}
+        <>
+            {showDivider && <Divider title={dividerTitle} sx={{ marginY: '1rem' }} />}
+            <Box sx={{ marginY: '1rem' }}>{dividerTitle && <BlueTitle title={dividerTitle} component="p" variant="subtitle1" />}</Box>
+            <Grid container style={{ ...style, alignItems: textWrap ? 'flex-start' : 'center', alignContent: 'center' }}>
+                {propertiesOrderedToShow.map((propertyKey) => {
+                    const propertySchema = entityTemplate.properties.properties[propertyKey];
+                    const propertyValue = properties[propertyKey];
+                    const hideField = entityTemplate.properties.hide.includes(propertyKey);
+                    const containsHtmlTags = containsHTMLTags(propertyValue);
+                    const stringFormatValue = formatToString(propertyValue, propertySchema, {
+                        keyEnumColors: (propertySchema.enum || propertySchema.items?.enum) && entityTemplate.enumPropertiesColors?.[propertyKey],
+                        isPrintingMode,
+                        pureString,
+                    });
+                    const propertyValueColor = getPropertyColor(
+                        propertyKey,
+                        propertiesToHighlight,
+                        propertiesToHighlightColor,
+                        mode,
+                        darkMode ? '#dcdde2' : '#53566E',
+                    );
+                    const propertyTitleColor = getPropertyColor(propertyKey, propertiesToHighlight, propertiesToHighlightColor, mode, '#9398C2');
+                    let innerContent;
+                    if (hideFieldsToDisplay.includes(propertyKey)) innerContent = <>••••••••</>;
+                    else if (containsHtmlTags)
+                        innerContent = viewFirstLineOfLongText
+                            ? `${getFirstLine(stringFormatValue)}${getNumLines(stringFormatValue) > 1 ? '...' : ''}`
+                            : renderHTML(stringFormatValue);
+                    else if (propertyValue && propertySchema.calculateTime)
+                        innerContent = <CalculateDateDifference date={stringFormatValue} searchValue={searchedText} />;
+                    else if (propertyValue && propertySchema.type === 'number') innerContent = getFixedNumber(propertyValue);
+                    else innerContent = stringFormatValue;
+                    let titleContent;
+                    if (hideFieldsToDisplay.includes(propertyKey) || propertySchema.format === 'fileId') titleContent = '';
+                    else if (containsHtmlTags) titleContent = renderHTML(stringFormatValue);
+                    else titleContent = innerContent;
+                    const overrideStyleInLongText =
+                        containsHtmlTags &&
+                        !viewFirstLineOfLongText &&
+                        propertyValue &&
+                        getNumLines(stringFormatValue) > 1 &&
+                        stringFormatValue.length >= maxNumOfCharactersNotInFullWidth;
+                    const textDirection =
+                        // todo: make getTextDirection handle all possible value and reuse everywhere
+                        propertySchema.format !== 'text-area' &&
+                        propertySchema.format !== 'fileId' &&
+                        propertySchema.format !== 'relationshipReference'
+                            ? getTextDirection(propertyValue, {
+                                  type: propertySchema.type,
+                                  serialCurrent: propertySchema.serialCurrent,
+                              })
+                            : 'rtl';
+                    return (
+                        <Grid
+                            key={propertyKey}
+                            item
+                            container
+                            flexDirection="row"
+                            style={overrideStyleInLongText ? { width: '100%' } : innerStyle}
+                            alignItems={textWrap ? 'flex-start' : 'center'}
+                        >
+                            <Grid item container width="100%" flexWrap="nowrap" alignItems={textWrap ? 'flex-start' : 'center'}>
+                                <Grid
+                                    item
+                                    style={{
+                                        width: overrideStyleInLongText ? '10%' : '30%',
+                                    }}
                                 >
-                                    <Typography
-                                        fontSize="14px"
-                                        color={propertyValueColor}
-                                        style={{
-                                            textOverflow: 'ellipsis',
-                                            whiteSpace: textWrap ? undefined : 'nowrap',
-                                            overflowX: 'hidden',
-                                            paddingLeft: '1rem',
-                                            maxHeight: isPrintingMode ? undefined : '350px',
-                                            direction: propertySchema.type === 'number' ? 'rtl' : textDirection,
-                                        }}
-                                    >
-                                        <VerifyLink>{innerContent}</VerifyLink>
-                                    </Typography>
-                                </MeltaTooltip>
-                                <Grid item>
-                                    {hideField && (
-                                        <IconButton
-                                            onClick={(event) => {
-                                                event.stopPropagation();
-                                                setHideFieldsToDisplay(() => {
-                                                    if (hideFieldsToDisplay.includes(propertyKey))
-                                                        return hideFieldsToDisplay.filter((hiddenProperty) => hiddenProperty !== propertyKey);
-                                                    return [...hideFieldsToDisplay, propertyKey];
-                                                });
+                                    <MeltaTooltip disableHoverListener={textWrap} placement="bottom" title={propertySchema.title}>
+                                        <Typography
+                                            style={{
+                                                textOverflow: 'ellipsis',
+                                                whiteSpace: textWrap ? undefined : 'nowrap',
+                                                overflow: 'hidden',
+                                                textAlign: 'right',
                                             }}
-                                            size="small"
+                                            fontSize="14px"
+                                            color={propertyTitleColor}
+                                            fontWeight={mode === 'white' ? '800' : ''}
                                         >
-                                            {hideFieldsToDisplay.includes(propertyKey) ? <VisibilityOffIcon /> : <VisibilityIcon />}
-                                        </IconButton>
-                                    )}
+                                            {propertySchema.title}:
+                                        </Typography>
+                                    </MeltaTooltip>
+                                </Grid>
+                                <Grid
+                                    item
+                                    container
+                                    flexDirection="row"
+                                    alignItems={textWrap ? 'flex-start' : 'center'}
+                                    flexWrap="nowrap"
+                                    style={{
+                                        direction: 'rtl',
+                                        textAlign: 'right',
+                                        width: overrideStyleInLongText ? '90%' : '70%',
+                                    }}
+                                >
+                                    <MeltaTooltip
+                                        disableHoverListener={propertySchema.format === 'relationshipReference' ? true : textWrap}
+                                        placement="bottom"
+                                        title={<Grid style={{ maxHeight: '500px', overflowY: 'auto' }}>{titleContent}</Grid>}
+                                    >
+                                        <Typography
+                                            fontSize="14px"
+                                            color={propertyValueColor}
+                                            style={{
+                                                textOverflow: 'ellipsis',
+                                                whiteSpace: textWrap ? undefined : 'nowrap',
+                                                overflowX: 'hidden',
+                                                paddingLeft: '1rem',
+                                                maxHeight: isPrintingMode ? undefined : '350px',
+                                                direction: propertySchema.type === 'number' ? 'rtl' : textDirection,
+                                            }}
+                                        >
+                                            <HighlightText text={innerContent} searchedText={searchedText} isLink />
+                                        </Typography>
+                                    </MeltaTooltip>
+                                    <Grid item>
+                                        {hideField && (
+                                            <IconButton
+                                                onClick={(event) => {
+                                                    event.stopPropagation();
+                                                    setHideFieldsToDisplay(() => {
+                                                        if (hideFieldsToDisplay.includes(propertyKey))
+                                                            return hideFieldsToDisplay.filter((hiddenProperty) => hiddenProperty !== propertyKey);
+                                                        return [...hideFieldsToDisplay, propertyKey];
+                                                    });
+                                                }}
+                                                size="small"
+                                            >
+                                                {hideFieldsToDisplay.includes(propertyKey) ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                                            </IconButton>
+                                        )}
+                                    </Grid>
                                 </Grid>
                             </Grid>
                         </Grid>
-                    </Grid>
-                );
-            })}
-        </Grid>
+                    );
+                })}
+            </Grid>
+        </>
     );
 };
 

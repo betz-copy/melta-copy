@@ -1,3 +1,4 @@
+import { AdvancedFilterModel, FilterModel, SortModelItem } from '@ag-grid-community/core';
 import { ICompactPermissions, ISubCompactPermissions } from './permissions/permissions';
 
 export interface IBaseUser {
@@ -19,12 +20,19 @@ export interface IUser extends IBaseUser {
     displayName: string; // custom displayName, not of kartoffel: `${fullName} - ${hierarchy}/${jobTitle}`
 }
 
+export interface IMongoUser extends IUser {
+    createdAt: Date;
+    updatedAt: Date;
+}
+
 export interface IUserSearchBody {
-    search?: string;
     permissions?: ISubCompactPermissions;
     workspaceIds?: string[];
     limit: number;
     step?: number;
+    search?: string;
+    filterModel?: AdvancedFilterModel | FilterModel | null;
+    sortModel?: SortModelItem[];
 }
 
 export type IExternalUser = Omit<IUser, 'fullName' | 'jobTitle' | 'hierarchy' | 'mail'> &

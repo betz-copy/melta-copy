@@ -1,14 +1,19 @@
 import { useTheme } from '@mui/material';
 import React from 'react';
 import IconButtonWithPopover from './IconButtonWithPopover';
+import { useDarkModeStore } from '../stores/darkMode';
 
 export const TableButton: React.FC<{
     iconButtonWithPopoverProps: React.ComponentProps<typeof IconButtonWithPopover>;
     icon?: React.ReactNode;
     text?: string;
     children?: React.ReactNode;
-}> = ({ iconButtonWithPopoverProps, icon, text, children }) => {
+    disableButton?: boolean;
+}> = ({ iconButtonWithPopoverProps, icon, text, children, disableButton }) => {
+    const darkMode = useDarkModeStore((state) => state.darkMode);
     const theme = useTheme();
+
+    const disabledColor = darkMode ? 'rgba(255, 255, 255, 0.26)' : 'rgba(0, 0, 0, 0.26)';
 
     return (
         <IconButtonWithPopover
@@ -18,9 +23,12 @@ export const TableButton: React.FC<{
                 gap: '0.25rem',
                 borderRadius: '5px',
                 fontSize: '0.75rem',
-                color: theme.palette.primary.main,
+                color: disableButton ? disabledColor : theme.palette.primary.main,
+
                 ...(iconButtonWithPopoverProps.iconButtonProps?.style ?? {}),
             }}
+            disabled={disableButton}
+            buttonStyle={{ ':hover': { textDecoration: 'underline' } }}
         >
             {children ?? (
                 <>
