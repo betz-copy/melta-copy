@@ -35,46 +35,61 @@ const TemplatesSelectCheckbox: React.FC<{
     toTopBar?: boolean;
 }> = ({ title, templates, selectedTemplates, setSelectedTemplates, categories, isDraggableDisabled, setTemplates, size, toTopBar }) => {
     // TODO: convert to Tree component
-    // let formattedTemplates: any[] = templates;
+    let formattedTemplates: any[] = templates;
 
-    // if (categories) {
-    //     const templatesByCategory = {};
+    if (categories) {
+        const templatesByCategory = {};
 
-    //     // Group templates by category ID
-    //     templates.forEach((template) => {
-    //         const categoryId = template.category._id;
-    //         if (!templatesByCategory[categoryId]) {
-    //             templatesByCategory[categoryId] = [];
-    //         }
-    //         templatesByCategory[categoryId].push(template);
-    //     });
+        // Group templates by category ID
+        templates.forEach((template) => {
+            const categoryId = template.category._id;
+            if (!templatesByCategory[categoryId]) {
+                templatesByCategory[categoryId] = [];
+            }
+            templatesByCategory[categoryId].push(template);
+        });
 
-    //     formattedTemplates = Object.entries(templatesByCategory).map(([categoryId, currTemplates]) => {
-    //         const category = categories.find((currCategory) => currCategory._id === categoryId);
+        formattedTemplates = Object.entries(templatesByCategory).map(([categoryId, currTemplates]) => {
+            const category = categories.find((currCategory) => currCategory._id === categoryId);
 
-    //         return {
-    //             ...category,
-    //             children: currTemplates,
-    //         };
-    //     });
-    // }
+            return {
+                ...category,
+                children: currTemplates,
+            };
+        });
+    }
 
     return (
         <SelectCheckbox
             title={title}
             img={title === i18next.t('entityTemplatesCheckboxLabel') ? <FilterList /> : undefined}
-            options={templates}
-            selectedOptions={selectedTemplates}
+            options={formattedTemplates}
+            selectedOptions={selectedTemplates.map(({ _id }) => _id)}
             setSelectedOptions={setSelectedTemplates}
             getOptionId={({ _id }) => _id}
             getOptionLabel={({ displayName }) => displayName}
-            groupsProps={getCategoriesSelectCheckboxGroupProps(categories)}
             isDraggableDisabled={isDraggableDisabled}
             setOptions={setTemplates}
             size={size}
             toTopBar={toTopBar}
         />
     );
+    // return (
+    //     <SelectCheckbox
+    //         title={title}
+    //         img={title === i18next.t('entityTemplatesCheckboxLabel') ? <FilterList /> : undefined}
+    //         options={templates}
+    //         selectedOptions={selectedTemplates}
+    //         setSelectedOptions={setSelectedTemplates}
+    //         getOptionId={({ _id }) => _id}
+    //         getOptionLabel={({ displayName }) => displayName}
+    //         groupsProps={getCategoriesSelectCheckboxGroupProps(categories)}
+    //         isDraggableDisabled={isDraggableDisabled}
+    //         setOptions={setTemplates}
+    //         size={size}
+    //         toTopBar={toTopBar}
+    //     />
+    // );
 };
 
 export default TemplatesSelectCheckbox;

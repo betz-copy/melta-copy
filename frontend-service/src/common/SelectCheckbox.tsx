@@ -26,6 +26,7 @@ import { MeltaTooltip } from './MeltaTooltip';
 import { MeltaCheckbox } from './MeltaCheckbox';
 import { useDarkModeStore } from '../stores/darkMode';
 import { CustomIcon } from './CustomIcon';
+import Tree from './Tree';
 
 export type MenuItemContentProps<Option = any> = {
     checked?: boolean;
@@ -654,7 +655,16 @@ const SelectCheckbox = <Option extends any, Group extends any>({
                     </Typography>
                 )}
 
-                {groupsProps.useGroups ? (
+                <Tree
+                    preSelectedItemsIds={[...selectedOptions]}
+                    getItemId={getOptionId}
+                    getItemLabel={getOptionLabel}
+                    multi
+                    treeItems={options as any}
+                    isDraggable={!isDraggableDisabled}
+                />
+
+                {/* {groupsProps.useGroups ? (
                     <SelectOptionsMenuItemsGrouped
                         options={options}
                         optionsFiltered={optionsFiltered}
@@ -680,7 +690,7 @@ const SelectCheckbox = <Option extends any, Group extends any>({
                         handleOnDragEnd={onDragEnd}
                         showIcon={showIcon}
                     />
-                )}
+                )} */}
             </Select>
         </FormControl>
     );
