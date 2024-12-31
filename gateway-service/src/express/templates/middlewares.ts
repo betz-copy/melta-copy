@@ -46,10 +46,12 @@ export class TemplatesValidator extends DefaultController {
 
     async getRelatedCategoriesFromRelationshipTemplate(relationshipTemplate: IRelationshipTemplate) {
         const { sourceEntityId, destinationEntityId } = relationshipTemplate;
+
         const [{ category: srcCategory }, { category: dstCategory }] = await Promise.all([
             this.entityTemplateService.getEntityTemplateById(sourceEntityId),
             this.entityTemplateService.getEntityTemplateById(destinationEntityId),
         ]);
+
         return lodashUniqby([srcCategory._id, dstCategory._id], '_id');
     }
 

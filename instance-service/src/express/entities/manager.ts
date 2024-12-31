@@ -1167,8 +1167,9 @@ export class EntityManager extends DefaultManagerNeo4j {
                 const relatedEntitiesChangedValues = { updatedAt: getNeo4jDateTime() };
                 updatedProperties.forEach((updatedProperty) => {
                     if (entityProperties[updatedProperty]) {
-                        if (entityTemplate?.properties.properties[updatedProperty]?.format === 'relationshipReference') {
-                            const fieldName = entityTemplate?.properties.properties[updatedProperty].relationshipReference?.relatedTemplateField;
+                        const property = entityTemplate?.properties.properties[updatedProperty];
+                        if (property?.format === 'relationshipReference') {
+                            const fieldName = property.relationshipReference?.relatedTemplateField;
                             relatedEntitiesChangedValues[
                                 `${fieldToChange}.properties.${updatedProperty}${config.neo4j.relationshipReferencePropertySuffix}`
                             ] = entityProperties[updatedProperty].properties[fieldName!];
@@ -1391,6 +1392,7 @@ export class EntityManager extends DefaultManagerNeo4j {
                         entityId,
                         {
                             ...entityProperties,
+
                             [fieldName]: addFieldToSrcEntity ? relationship.destinationEntityId : relationship.sourceEntityId,
                         },
                         entityTemplate,

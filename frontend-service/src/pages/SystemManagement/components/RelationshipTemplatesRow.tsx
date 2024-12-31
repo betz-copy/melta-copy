@@ -245,7 +245,7 @@ const RelationshipTemplatesRow: React.FC = () => {
                 queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) =>
                     entityTemplateMap!.set(updatedEntityTemplate._id, updatedEntityTemplate),
                 );
-                queryClient.invalidateQueries(['searchRelationshipTemplates']);
+                queryClient.invalidateQueries();
 
                 toast.success(i18next.t('wizard.relationshipTemplate.convertToRelationshipFieldSuccessfully'));
             },

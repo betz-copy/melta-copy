@@ -18,11 +18,13 @@ export interface IRelationshipTemplate {
     destinationEntityId: string;
     isProperty: boolean;
 }
+
 export interface IMongoRelationshipTemplate extends IRelationshipTemplate {
     _id: string;
     createdAt: string;
     updatedAt: string;
 }
+
 export interface ISearchRelationshipTemplatesBody extends ISearchBody {
     ids?: string[];
     sourceEntityIds?: string[];
@@ -41,6 +43,7 @@ export interface RequestWithSearchRelationshipTemplateBody extends RequestWithPe
 export interface RequestWithSearchRuleTemplateBody extends RequestWithPermissionsOfUserId {
     searchBody: ISearchRulesBody;
 }
+
 export interface IConvertRelationshipToRelationshipField {
     fieldName: string;
     displayFieldName: string;

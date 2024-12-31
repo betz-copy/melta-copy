@@ -148,7 +148,7 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
         return entityTemplate;
     }
 
-    async getTemplatesUsingRelationshipReferance(relatedTemplateId: string) {
+    async getTemplatesUsingRelationshipReference(relatedTemplateId: string) {
         return this.model
             .aggregate([
                 {
@@ -252,7 +252,7 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
         if (isPropertyTypeChanged || isNewPropertyAdded) {
             await this.globalSearchIndexCreator.sendUpdateIndexesOnUpdateTemplate(id);
 
-            const relatedTemplates = await this.getTemplatesUsingRelationshipReferance(id);
+            const relatedTemplates = await this.getTemplatesUsingRelationshipReference(id);
             await Promise.all(
                 relatedTemplates.map(async (relatedTemplate) => {
                     await this.globalSearchIndexCreator.sendUpdateIndexesOnUpdateTemplate(relatedTemplate._id);
@@ -272,16 +272,19 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
             .exec();
     }
 
-    async convertToRelationshipField(templateId: string, relationshipTemplateId: string, updatedEntityTemplateData) {
+    async convertToRelationshipField(
+        templateId: string,
+        relationshipTemplateId: string,
+        updatedEntityTemplateData: Omit<IEntityTemplate, 'disabled'>,
+    ) {
         return withTransaction(async (session: ClientSession) => {
+            const updatedEntityTemplate = await this.updateEntityTemplate(templateId, updatedEntityTemplateData, true, session);
+
             const updatedRelationShipTemplate = await this.relationshipTemplateManager.updateTemplateById(
                 relationshipTemplateId,
                 { isProperty: true },
                 session,
             );
-
-            const updatedEntityTemplate = await this.updateEntityTemplate(templateId, updatedEntityTemplateData, true, session);
-
             return { updatedRelationShipTemplate, updatedEntityTemplate };
         });
     }
