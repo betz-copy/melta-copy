@@ -27,77 +27,79 @@ export const TemplateFields = ({
     onNext,
     setEditMode,
 }) => {
-    console.log({ templateFileProperties, values }); // TODO - fix this component....
     return (
-        <Grid container flexDirection="column" width="100%" height="100%" justifyContent="space-between">
-            <Grid
-                item
-                sx={{
-                    overflowY: 'auto',
-                }}
-                // xs={toPrint ? 15 : 7}
-            >
-                {Object.keys(pickProcessFieldsPropertiesSchema(values.template?.details)?.properties).length !== 0 && (
-                    <SchemaForm {...{ viewMode, values, errors, touched, setFieldValue, setFieldTouched, toPrint }} />
-                )}
-                {Object.keys(templateFileProperties!).length !== 0 && (
-                    <FileAttachments
-                        {...{
-                            viewMode,
-                            templateFileProperties,
-                            values,
-                            errors,
-                            setFieldValue,
-                            required: values.template.details.properties.required || [],
-                            touched,
-                            handleBlur,
-                            setFieldTouched,
-                            toPrint,
-                        }}
-                    />
-                )}
-                {Object.keys(templateEntityReferenceProperties!).length !== 0 && (
-                    <Grid padding={1}>
-                        <BlueTitle
-                            title={i18next.t('wizard.processInstance.refEntities')}
-                            component="h6"
-                            variant="h6"
-                            style={{ marginBottom: '22px' }}
+        values.template && (
+            <Grid container flexDirection="column" width="100%" height="100%" justifyContent="space-between">
+                <Grid
+                    item
+                    sx={{
+                        overflowY: 'auto',
+                    }}
+                    // xs={toPrint ? 15 : 7}
+                >
+                    {Object.keys(pickProcessFieldsPropertiesSchema(values.template?.details)?.properties).length !== 0 && (
+                        <SchemaForm {...{ viewMode, values, errors, touched, setFieldValue, setFieldTouched, toPrint }} />
+                    )}
+                    {Object.keys(templateFileProperties!).length !== 0 && (
+                        <FileAttachments
+                            {...{
+                                viewMode,
+                                templateFileProperties,
+                                values,
+                                errors,
+                                setFieldValue,
+                                required: values.template.details.properties.required || [],
+                                touched,
+                                handleBlur,
+                                setFieldTouched,
+                                toPrint,
+                            }}
                         />
-                        {Object.entries((templateEntityReferenceProperties as Dictionary<IProcessSingleProperty>)!).map(([fieldName, { title }]) => (
-                            <Field
-                                key={fieldName}
-                                validate={(changedValue) => {
-                                    return (
-                                        values.template?.details.properties.required.includes(fieldName) &&
-                                        !changedValue?.entity &&
-                                        i18next.t('validation.requiredEntity')
-                                    );
-                                }}
-                                name={`entityReferences.${fieldName}`}
-                                component={EntityReference}
-                                errorText={
-                                    errors.entityReferences?.[fieldName] && touched.entityReferences?.[fieldName]
-                                        ? JSON.stringify(errors.entityReferences?.[fieldName])
-                                        : undefined
-                                }
-                                field={fieldName || ''}
-                                values={values}
-                                errors={errors}
-                                touched={touched}
-                                setFieldValue={setFieldValue}
-                                handleBlur={handleBlur}
-                                isViewMode={viewMode}
-                                title={title}
+                    )}
+                    {Object.keys(templateEntityReferenceProperties!).length !== 0 && (
+                        <Grid padding={1}>
+                            <BlueTitle
+                                title={i18next.t('wizard.processInstance.refEntities')}
+                                component="h6"
+                                variant="h6"
+                                style={{ marginBottom: '22px' }}
                             />
-                        ))}
-                    </Grid>
-                )}
-            </Grid>
-            {!toPrint && (
-                <Grid container item justifyContent="flex-end" alignSelf="flex-end" alignContent="flex-end">
-                    <Grid item>
-                        {/* {values.template && !viewMode && (
+                            {Object.entries((templateEntityReferenceProperties as Dictionary<IProcessSingleProperty>)!).map(
+                                ([fieldName, { title }]) => (
+                                    <Field
+                                        key={fieldName}
+                                        validate={(changedValue) => {
+                                            return (
+                                                values.template?.details.properties.required.includes(fieldName) &&
+                                                !changedValue?.entity &&
+                                                i18next.t('validation.requiredEntity')
+                                            );
+                                        }}
+                                        name={`entityReferences.${fieldName}`}
+                                        component={EntityReference}
+                                        errorText={
+                                            errors.entityReferences?.[fieldName] && touched.entityReferences?.[fieldName]
+                                                ? JSON.stringify(errors.entityReferences?.[fieldName])
+                                                : undefined
+                                        }
+                                        field={fieldName || ''}
+                                        values={values}
+                                        errors={errors}
+                                        touched={touched}
+                                        setFieldValue={setFieldValue}
+                                        handleBlur={handleBlur}
+                                        isViewMode={viewMode}
+                                        title={title}
+                                    />
+                                ),
+                            )}
+                        </Grid>
+                    )}
+                </Grid>
+                {!toPrint && (
+                    <Grid container item justifyContent="flex-end" alignSelf="flex-end" alignContent="flex-end">
+                        <Grid item>
+                            {/* {values.template && !viewMode && (
                             <Fab
                                 size="small"
                                 onClick={() => {
@@ -110,7 +112,7 @@ export const TemplateFields = ({
                                 {i18next.t('wizard.processInstance.moveToStepsReviewers')}
                             </Fab>
                         )} */}
-                        {/* {
+                            {/* {
                             // TODO - on click
                             values.template && viewMode && (
                                 <Grid container gap="5px" width="100%" wrap="nowrap">
@@ -158,9 +160,10 @@ export const TemplateFields = ({
                                 </Grid>
                             )
                         } */}
+                        </Grid>
                     </Grid>
-                </Grid>
-            )}
-        </Grid>
+                )}
+            </Grid>
+        )
     );
 };
