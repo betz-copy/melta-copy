@@ -74,8 +74,8 @@ const IFramesPageHeadline: React.FC<{
                     <SelectCheckbox
                         title={i18next.t('iFrames.arrangementIFrames')}
                         img={<FilterList fontSize="small" />}
-                        options={allIFramesAllowed ?? []}
-                        selectedOptions={[]}
+                        options={allIFramesAllowed ?? ([] as IMongoIFrame[])}
+                        selectedOptions={[] as IMongoIFrame[]}
                         setSelectedOptions={() => {}}
                         getOptionId={({ _id }) => _id}
                         getOptionLabel={({ name }) => name}

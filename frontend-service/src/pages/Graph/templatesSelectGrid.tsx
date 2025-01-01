@@ -136,14 +136,14 @@ const TemplatesSelectGrid: React.FC<{
                             {i18next.t('graph.filterTitle')}
                         </Typography>
                         <MiniFilter value={miniFilterValue} onChange={setMiniFilterValue} toTopBar={false} templatesSelectGrid />
-                        <ChooseAllMenuItem
+                        {/* <ChooseAllMenuItem
                             flattenedOptions={templates}
                             selectedOptions={selectedTemplatesFiltered}
                             setSelectedOptions={setSelectedTemplates}
                             optionsFiltered={templatesFiltered}
                             onClick={onClick}
                             getOptionId={getOptionId}
-                        />
+                        /> */}
                         <Box sx={{ display: 'flex', justifyContent: 'center', my: '5px' }}>
                             <Divider style={{ width: '199px' }} />
                         </Box>

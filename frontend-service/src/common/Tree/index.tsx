@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { RichTreeViewPro, useTreeViewApiRef } from '@mui/x-tree-view-pro';
+import React, { useEffect, useState } from 'react';
+import { RichTreeViewPro } from '@mui/x-tree-view-pro';
 import { ChevronLeft, ExpandLess } from '@mui/icons-material';
 import { Box, Divider } from '@mui/material';
 import { TreeType } from '../../interfaces/Tree';

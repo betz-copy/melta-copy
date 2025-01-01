@@ -1,5 +1,5 @@
 /* eslint-disable no-nested-ternary */
-import { Box, Button, Divider, FormControl, Grid, MenuItem, Select, SxProps, Theme, Typography, useTheme } from '@mui/material';
+import { Box, Button, Divider, FormControl, Grid, MenuItem, Select, SxProps, Theme, useTheme } from '@mui/material';
 import lodashGroupBy from 'lodash.groupby';
 import lodashUniqby from 'lodash.uniqby';
 import React, { Dispatch, Fragment, Key, PropsWithChildren, ReactElement, SetStateAction, useState } from 'react';
@@ -312,18 +312,15 @@ const SelectCheckbox = <Option extends any, Group extends any>({
     getOptionId,
     getOptionLabel,
     isDraggableDisabled = false,
-    setOptions,
     size = 'medium',
     overrideSx,
     toTopBar,
     horizontalOrigin = 154,
     handleCheckboxClick = () => {},
-    onDragEnd,
     isSelectDisabled = false,
     hideSearchBar,
     hideChooseAll,
     dynamicWidth,
-    showIcon = false,
 }: SelectCheckboxProps<Option, Group>) => {
     const [miniFilterValue, setMiniFilterValue] = useState('');
     const [isOpen, setIsOpen] = useState(false);
