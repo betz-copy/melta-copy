@@ -1,7 +1,7 @@
 import config from '../../config';
 import { InstancesService } from '../../externalServices/instanceService';
 import { IFilterOfTemplate, ISearchEntitiesOfTemplateBody } from '../../externalServices/instanceService/interfaces/entities';
-import { EntityTemplateService } from '../../externalServices/templates/entityTemplateService';
+import { EntityTemplateService, ISearchEntityTemplatesBody } from '../../externalServices/templates/entityTemplateService';
 import DefaultManagerProxy from '../../utils/express/manager';
 import { FlowField, FlowParameter, TemplateNamesAndId } from './interfaces';
 
@@ -60,15 +60,15 @@ export class FlowCubeManager extends DefaultManagerProxy<null> {
         return convertToFlow;
     }
 
-    async getAllTemplatesNameAndIdByWorkspaceId(workspaceId: string): Promise<TemplateNamesAndId[]> {
-        const templates = await this.entityTemplateService.getAllTemplatesByWorkspaceId(workspaceId);
+    async searchTemplatesNameAndIdInWorkspace(flowBody: any): Promise<TemplateNamesAndId[]> {
+        const templates = await this.entityTemplateService.searchEntityTemplates({ search: flowBody.Parameters.Value } as ISearchEntityTemplatesBody);
 
         return templates.map(({ _id, displayName }) => {
-            return { Value: displayName, Name: _id };
+            return { Value: _id, Name: displayName };
         });
     }
 
-    async getEntityTemplateById(templateId: string): Promise<{ PARAMETERS: FlowParameter[]; FIELDS: FlowField[] }> {
+    async getEntityTemplateById(templateId: string): Promise<{ Parameters: FlowParameter[]; Fields: FlowField[] }> {
         const template = await this.entityTemplateService.getEntityTemplateById(templateId);
         const { properties } = template;
 
@@ -91,6 +91,8 @@ export class FlowCubeManager extends DefaultManagerProxy<null> {
             Type: value.type as string,
         }));
 
-        return { PARAMETERS: parameters, FIELDS: fields };
+        return { Parameters: parameters, Fields: fields };
     }
+
+    // async getEntitiesByTemplate(templateId: string): Promise<any>
 }

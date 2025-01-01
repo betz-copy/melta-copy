@@ -10,8 +10,8 @@ export const searchFlowCubeRequestSchema = Joi.object({
     },
 });
 
-export const getAllTemplatesByNameAndIdSchema = Joi.object({
-    body: {},
+export const searchTemplatesNameAndIdInWorkspaceSchema = Joi.object({
+    body: Joi.object().pattern(Joi.string(), Joi.any()),
     query: {},
     params: {
         workspaceId: Joi.string().required(),

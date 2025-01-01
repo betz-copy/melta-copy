@@ -11,8 +11,8 @@ class FlowCubeController extends DefaultController<FlowCubeManager> {
         res.json(await this.manager.searchFlowCube(req.params.templateId, req.body));
     }
 
-    async getAllTemplatesNameAndIdByWorkspaceId(req: Request, res: Response) {
-        res.json(await this.manager.getAllTemplatesNameAndIdByWorkspaceId(req.params.workspaceId));
+    async searchTemplatesNameAndIdInWorkspace(req: Request, res: Response) {
+        res.json(await this.manager.searchTemplatesNameAndIdInWorkspace(req.body));
     }
 
     async getEntityTemplateById(req: Request, res: Response) {
