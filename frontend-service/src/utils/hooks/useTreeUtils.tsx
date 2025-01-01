@@ -22,6 +22,27 @@ function selectParentIfAllChildrenAreSelected<T>(treeItems: TreeType<T>[], newSe
     return newSelectedItemsWithChildren;
 }
 
+export const flattenTree = (options: any[]) => {
+    const revertedTemplates: any[] = [];
+
+    options.forEach((categoryWithTemplates) => {
+        const { children, ...category } = categoryWithTemplates;
+
+        children.forEach((template) => {
+            revertedTemplates.push({
+                ...template,
+                category: {
+                    _id: category._id,
+                    // You can add other properties of the category here if needed
+                    ...category,
+                },
+            });
+        });
+    });
+
+    return revertedTemplates;
+};
+
 export const useTreeUtils = <T,>(
     getItemId: (item: T) => string,
     parentInfersChildren?: boolean,
@@ -44,7 +65,7 @@ export const useTreeUtils = <T,>(
     };
 
     const handleSelectedItemsChange = (newSelectedItemsPaths: string[], multi: boolean, toggledItem: Record<string, boolean>, apiRef: any) => {
-        if (!multi) {
+        if (!multi || !parentInfersChildren) {
             setSelectedItemsIds([newSelectedItemsPaths?.[0]]);
             return;
         }
@@ -70,7 +91,7 @@ export const useTreeUtils = <T,>(
             new Set([...newSelectedItemsPaths, ...itemsToSelect].filter((itemId) => !itemsToUnSelect[itemId])),
         );
 
-        if (parentInfersChildren) selectParentIfAllChildrenAreSelected(treeItems, newSelectedItemsWithChildren, getItemId);
+        selectParentIfAllChildrenAreSelected(treeItems, newSelectedItemsWithChildren, getItemId);
 
         setSelectedItemsIds(newSelectedItemsWithChildren);
     };

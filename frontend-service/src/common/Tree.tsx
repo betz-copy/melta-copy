@@ -9,7 +9,7 @@ interface TreeProps<T> {
     getItemId: (item: T) => string;
     getItemLabel: (item: T) => string;
     multi: boolean;
-    onSelectItems?: (item: string | string[]) => any;
+    onSelectItems?: (itemIds: string | string[]) => any;
     isDraggable?: boolean;
     allowDraggingBetweenParents?: boolean;
     preSelectedItemsIds?: string[];

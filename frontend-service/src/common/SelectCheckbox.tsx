@@ -27,6 +27,7 @@ import { MeltaCheckbox } from './MeltaCheckbox';
 import { useDarkModeStore } from '../stores/darkMode';
 import { CustomIcon } from './CustomIcon';
 import Tree from './Tree';
+import { flattenTree } from '../utils/hooks/useTreeUtils';
 
 export type MenuItemContentProps<Option = any> = {
     checked?: boolean;
@@ -557,7 +558,9 @@ const SelectCheckbox = <Option extends any, Group extends any>({
     // eslint-disable-next-line no-nested-ternary
 
     const borderRadiusStyle = overrideSx ? (isOpen ? '12px 12px 12px 0' : '12px') : isOpen ? '7px 7px 0 0' : '7px';
-    const [openMap, setOpenMap] = useState<{ [groupId: string]: boolean }>({});
+
+    const flattenedTree = flattenTree(options);
+
     return (
         <FormControl style={{ borderRadius: isOpen ? '7px 7px 0 0' : '7px' }}>
             <Select
@@ -656,12 +659,16 @@ const SelectCheckbox = <Option extends any, Group extends any>({
                 )}
 
                 <Tree
-                    preSelectedItemsIds={[...selectedOptions]}
+                    preSelectedItemsIds={selectedOptions}
                     getItemId={getOptionId}
                     getItemLabel={getOptionLabel}
                     multi
                     treeItems={options as any}
                     isDraggable={!isDraggableDisabled}
+                    onSelectItems={(ids) => {
+                        const filteredOptions = flattenedTree.filter(({ _id }) => ids.includes(_id));
+                        setSelectedOptions(filteredOptions);
+                    }}
                 />
 
                 {/* {groupsProps.useGroups ? (
