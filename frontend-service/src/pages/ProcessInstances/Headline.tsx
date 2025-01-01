@@ -1,16 +1,12 @@
 import React, { Dispatch, SetStateAction } from 'react';
-import { Grid, IconButton, Typography, useTheme } from '@mui/material';
+import { Grid, Typography, useTheme } from '@mui/material';
 import { Add as AddIcon } from '@mui/icons-material';
 import i18next from 'i18next';
-import FilterAltOffIcon from '@mui/icons-material/FilterAltOff';
 import { TopBarGrid } from '../../common/TopBar';
 import { BlueTitle } from '../../common/BlueTitle';
-import { GlobalSearchBar } from '../../common/EntitiesPage/Headline';
-import ProcessTemplatesSelectCheckbox from './ProcessTemplatesCheckbox';
 import { AddProcessButton } from './AddProcessButton';
 import { IMongoProcessTemplatePopulated } from '../../interfaces/processes/processTemplate';
 import './ProcessesList.css';
-import DateRange from '../../common/inputs/DateRange';
 import { environment } from '../../globals';
 import { useUserStore } from '../../stores/user';
 import { PermissionScope } from '../../interfaces/permissions';
@@ -27,7 +23,7 @@ const ProcessInstancesHeadline: React.FC<{
     startDateInput: Date | null;
     endDateInput: Date | null;
     searchInput: string;
-}> = ({ onSearch, onSetStartDate, onSetEndDate, templatesSelectCheckboxProps, startDateInput, endDateInput, searchInput }) => {
+}> = () => {
     const theme = useTheme();
 
     const currentUser = useUserStore((state) => state.user);
