@@ -25,9 +25,8 @@ const ProcessesList: React.FC<{
     startDateInput: Date | null;
     endDateInput: Date | null;
     templatesToShowCheckbox: IMongoProcessTemplatePopulated[]; // todo: support in backend
-}> = ({ templatesToShowCheckbox, search, startDateInput, endDateInput }) => {
-    const [statusFilter, setStatusFilter] = useState<'all' | Status | undefined>('all');
-
+    statusFilter: 'all' | Status | undefined;
+}> = ({ templatesToShowCheckbox, search, startDateInput, endDateInput, statusFilter }) => {
     const queryClient = useQueryClient();
 
     const currentUser = useUserStore((state) => state.user);
@@ -46,66 +45,6 @@ const ProcessesList: React.FC<{
 
     return (
         <Grid container direction="column" spacing={2}>
-            <Grid item container id="processesFilter" alignItems="center" spacing={3}>
-                <Grid item>
-                    <Typography variant="h6">{i18next.t('processInstancesPage.filter')}</Typography>
-                </Grid>
-                <Grid item>
-                    <IconButton sx={{ flexDirection: 'column', width: '60px' }} onClick={() => setStatusFilter('all')}>
-                        {statusFilter === 'all' ? (
-                            <StatusIconFilled fontSize="medium" sx={{ color: `${StatusColors.All}` }} />
-                        ) : (
-                            <StatusIcon fontSize="medium" sx={{ color: `${StatusColors.All}` }} />
-                        )}
-
-                        <Typography variant="subtitle2" fontSize="10px">
-                            {i18next.t('processInstancesPage.allProcesses')}
-                        </Typography>
-                    </IconButton>
-                    <IconButton sx={{ flexDirection: 'column', width: '60px' }} onClick={() => setStatusFilter(Status.Pending)}>
-                        {statusFilter === Status.Pending ? (
-                            <StatusIconFilled fontSize="medium" sx={{ color: `${StatusColors.Pending}` }} />
-                        ) : (
-                            <StatusIcon fontSize="medium" sx={{ color: `${StatusColors.Pending}` }} />
-                        )}
-
-                        <Typography variant="subtitle2" fontSize="10px">
-                            {i18next.t('processInstancesPage.pendingProcesses')}
-                        </Typography>
-                    </IconButton>
-                    <IconButton sx={{ flexDirection: 'column', width: '60px' }} onClick={() => setStatusFilter(Status.Approved)}>
-                        {statusFilter === Status.Approved ? (
-                            <StatusIconFilled fontSize="medium" sx={{ color: `${StatusColors.Approved}` }} />
-                        ) : (
-                            <StatusIcon fontSize="medium" sx={{ color: `${StatusColors.Approved}` }} />
-                        )}
-                        <Typography variant="subtitle2" fontSize="10px">
-                            {i18next.t('processInstancesPage.approvedProcesses')}
-                        </Typography>
-                    </IconButton>
-                    <IconButton sx={{ flexDirection: 'column', width: '60px' }} onClick={() => setStatusFilter(Status.Rejected)}>
-                        {statusFilter === Status.Rejected ? (
-                            <StatusIconFilled fontSize="medium" sx={{ color: `${StatusColors.Rejected}` }} />
-                        ) : (
-                            <StatusIcon fontSize="medium" sx={{ color: `${StatusColors.Rejected}` }} />
-                        )}
-                        <Typography variant="subtitle2" fontSize="10px">
-                            {i18next.t('processInstancesPage.rejectedProcesses')}
-                        </Typography>
-                    </IconButton>
-                    <IconButton sx={{ flexDirection: 'column', width: '60px' }} onClick={() => setStatusFilter(undefined)}>
-                        {!statusFilter ? (
-                            <StatusIconFilled fontSize="medium" sx={{ color: `${StatusColors.Archived}` }} />
-                        ) : (
-                            <StatusIcon fontSize="medium" sx={{ color: `${StatusColors.Archived}` }} />
-                        )}
-
-                        <Typography variant="subtitle2" fontSize="10px">
-                            {i18next.t('processInstancesPage.archivedProcesses')}
-                        </Typography>
-                    </IconButton>
-                </Grid>
-            </Grid>
             <Grid item>
                 <ViewingBox minHeight="80vh">
                     <InfiniteScroll<IMongoProcessInstancePopulated>

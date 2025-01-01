@@ -19,8 +19,9 @@ const ProcessTemplatesSelectCheckbox: React.FC<{
             getOptionId={({ _id }) => _id}
             getOptionLabel={({ displayName }) => displayName}
             size="small"
-            toTopBar
+            toTopBar={false}
             isDraggableDisabled
+            overrideSx={{ width: '230px' }}
         />
     );
 };

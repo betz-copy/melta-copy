@@ -342,6 +342,7 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({
                         flexDirection="column"
                         alignItems="center"
                         flexBasis="20%"
+                        minWidth="280px"
                         padding={3}
                         style={{
                             backgroundColor: '#F0F2F7',

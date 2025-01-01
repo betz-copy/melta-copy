@@ -44,48 +44,6 @@ const ProcessInstancesHeadline: React.FC<{
                             style={{ fontSize: environment.mainFontSizes.headlineTitleFontSize }}
                         />
                     </Grid>
-                    <Grid item>
-                        <Grid container wrap="nowrap" gap="15px">
-                            <Grid item>
-                                <ProcessTemplatesSelectCheckbox
-                                    templates={templatesSelectCheckboxProps.templates}
-                                    selectedTemplates={templatesSelectCheckboxProps.templatesToShow}
-                                    setSelectedTemplates={templatesSelectCheckboxProps.setTemplatesToShow}
-                                />
-                            </Grid>
-                            <Grid item>
-                                <GlobalSearchBar
-                                    inputValue={searchInput}
-                                    setInputValue={onSearch}
-                                    onSearch={onSearch}
-                                    borderRadius="7px"
-                                    placeholder={i18next.t('globalSearch.searchInPage')}
-                                    toTopBar
-                                />
-                            </Grid>
-                        </Grid>
-                    </Grid>
-                    <Grid item>
-                        <DateRange
-                            onStartDateChange={onSetStartDate}
-                            onEndDateChange={onSetEndDate}
-                            startDateInput={startDateInput}
-                            endDateInput={endDateInput}
-                            directionIsRow
-                        />
-                    </Grid>
-                    <Grid item>
-                        <IconButton
-                            onClick={() => {
-                                onSetStartDate(null);
-                                onSetEndDate(null);
-                                onSearch('');
-                            }}
-                            sx={{ borderRadius: 10, height: '35px', width: '35px' }}
-                        >
-                            <FilterAltOffIcon />
-                        </IconButton>
-                    </Grid>
                 </Grid>
             </Grid>
 
