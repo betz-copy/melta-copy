@@ -29,6 +29,7 @@ export const updateTemplateByIdRequestSchema = Joi.object({
         displayName: Joi.string(),
         sourceEntityId: MongoIdSchema,
         destinationEntityId: MongoIdSchema,
+        isProperty: Joi.boolean(),
     },
     query: {},
     params: {

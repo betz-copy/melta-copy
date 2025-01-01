@@ -7,7 +7,7 @@ import { StatusCodes } from 'http-status-codes';
 import { logger } from 'elastic-apm-node';
 import config from '../../config';
 import { InstancesService } from '../../externalServices/instanceService';
-import { IUniqueConstraintOfTemplate } from '../../externalServices/instanceService/interfaces/entities';
+import { IConstraintsOfTemplate, IUniqueConstraintOfTemplate } from '../../externalServices/instanceService/interfaces/entities';
 import { ProcessService } from '../../externalServices/processService';
 import { RuleBreachService } from '../../externalServices/ruleBreachService';
 import { StorageService } from '../../externalServices/storageService';
@@ -21,6 +21,7 @@ import {
     ISearchEntityTemplatesBody,
 } from '../../externalServices/templates/entityTemplateService';
 import {
+    IMongoRelationshipTemplate,
     IRelationshipTemplate,
     ISearchRelationshipTemplatesBody,
     ISearchRulesBody,
@@ -41,10 +42,12 @@ import {
     IUpdateOrDeleteEnumFieldReqData,
 } from './interfaces';
 import { getParametersOfFormula } from './rules';
-import { IRule } from './rules/interfaces';
+import { IMongoRule, IRule } from './rules/interfaces';
 import { IFormula } from './rules/interfaces/formula';
 import { GanttsService } from '../../externalServices/ganttsService';
 import { checkPropertyInUsedFromFormula } from './rules/checkIfPropertyInUsed';
+import { IRelationship } from '../../externalServices/instanceService/interfaces/relationships';
+import { buildNewRelationshipField, validateNoDependentRules, validateRequiredConstraints, validateUniqueRelationships } from '../../utils/templates';
 
 const {
     categoryHasTemplates,
@@ -902,6 +905,30 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         }
     }
 
+    async handleConversionRollback(
+        entityTemplateId: string,
+        currentRelationshipTemplate: IMongoRelationshipTemplate,
+        rollBackTemplateWithoutProperties: Omit<IEntityTemplatePopulated, 'disabled'>,
+    ) {
+        try {
+            const { createdAt, updatedAt, _id, ...restRelationshipTemplate } = currentRelationshipTemplate;
+            await this.relationshipTemplateService.updateRelationshipTemplate(_id, restRelationshipTemplate);
+
+            await this.entityTemplateService.updateEntityTemplate(
+                entityTemplateId,
+                {
+                    ...rollBackTemplateWithoutProperties,
+                    category: rollBackTemplateWithoutProperties.category._id,
+                },
+                false,
+            );
+
+            logger.info('RollBack mongoDB succeeded', { rollBackTemplateWithoutProperties, restRelationshipTemplate });
+        } catch (error) {
+            throw new ServiceError(internalServerErrorStatus, 'RollBack mongoDB update failed', { error });
+        }
+    }
+
     async updateEntityEnumFieldValue(
         id: string,
         field: string,
@@ -1033,6 +1060,87 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         }
 
         return this.relationshipTemplateService.deleteRelationshipTemplate(templateId);
+    }
+
+    async validateConvertRelationshipToRelationshipField(
+        requiredConstraints: IConstraintsOfTemplate['requiredConstraints'],
+        existingRelationships: IRelationship[],
+        templateId: string,
+        addFieldToSrcEntity: boolean,
+    ) {
+        validateRequiredConstraints(requiredConstraints);
+        validateUniqueRelationships(existingRelationships, addFieldToSrcEntity);
+        const rules: IMongoRule[] = await this.instancesService.getDependantRules(await this.relationshipTemplateService.searchRules({}), templateId);
+        validateNoDependentRules(rules);
+    }
+
+    async convertRelationshipToRelationshipField(
+        relationshipTemplateId: string,
+        { fieldName, displayFieldName, relationshipReference },
+        userId: string,
+    ) {
+        const currentRelationshipTemplate: IMongoRelationshipTemplate =
+            await this.relationshipTemplateService.getRelationshipTemplateById(relationshipTemplateId);
+        const { sourceEntityId, destinationEntityId } = currentRelationshipTemplate;
+
+        const addFieldToSrcEntity = relationshipReference.relatedTemplateId === destinationEntityId;
+        const entityIdToUpdate = addFieldToSrcEntity ? sourceEntityId : destinationEntityId;
+
+        const [existingRelationships, { requiredConstraints: destRequiredConstraints }] = await Promise.all([
+            this.instancesService.getRelationshipsByEntitiesAndTemplate({
+                sourceEntityId,
+                destinationEntityId,
+                templateId: relationshipTemplateId,
+            }),
+            this.instancesService.getConstraintsOfTemplate(relationshipReference.relatedTemplateId),
+        ]);
+
+        await this.validateConvertRelationshipToRelationshipField(
+            destRequiredConstraints,
+            existingRelationships,
+            relationshipTemplateId,
+            addFieldToSrcEntity,
+        );
+
+        const newRelationshipField = buildNewRelationshipField(
+            displayFieldName,
+            relationshipTemplateId,
+            relationshipReference.relationshipTemplateDirection,
+            relationshipReference.relatedTemplateId,
+            relationshipReference.relatedTemplateField,
+        );
+
+        const restOfEntityTemplate: Omit<IEntityTemplatePopulated, 'disabled'> = this.removeBasicFields(
+            await this.entityTemplateService.getEntityTemplateById(entityIdToUpdate),
+        );
+        const entityTemplateToUpdate: Omit<IEntityTemplate, 'disabled'> = {
+            ...restOfEntityTemplate,
+            category: restOfEntityTemplate.category._id,
+            properties: {
+                ...restOfEntityTemplate.properties,
+                properties: {
+                    ...restOfEntityTemplate.properties.properties,
+                    [fieldName]: newRelationshipField,
+                },
+            },
+            propertiesOrder: [...restOfEntityTemplate.propertiesOrder, fieldName],
+        };
+
+        const { updatedRelationShipTemplate, updatedEntityTemplate } = await this.entityTemplateService.convertToRelationshipField(
+            entityIdToUpdate,
+            relationshipTemplateId,
+            entityTemplateToUpdate,
+        );
+
+        try {
+            if (existingRelationships.length > 0)
+                await this.instancesService.convertToRelationshipField(existingRelationships, addFieldToSrcEntity, fieldName, userId);
+        } catch (error) {
+            logger.error('Neo4j update failed: starting roll-back', { error });
+            await this.handleConversionRollback(entityIdToUpdate, currentRelationshipTemplate, restOfEntityTemplate);
+            throw new ServiceError(internalServerErrorStatus, 'Neo4j update failed: starting roll-back', { error });
+        }
+        return { updatedRelationShipTemplate, updatedEntityTemplate };
     }
 
     // entities

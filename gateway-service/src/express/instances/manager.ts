@@ -672,7 +672,6 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
     ) {
         const { props: uploadedFilesAndProperties, files: updatedFiles } = await this.uploadInstanceFiles(files, updatedInstanceData.properties);
         const currentEntity = await this.service.getEntityInstanceById(id);
-
         const entityTemplate = await this.entityTemplateService.getEntityTemplateById(currentEntity.templateId);
 
         this.checkSerialFieldWasUpdated(entityTemplate, updatedInstanceData.properties, currentEntity);
