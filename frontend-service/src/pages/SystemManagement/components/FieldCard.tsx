@@ -1,6 +1,6 @@
 import React from 'react';
 import { Grid, Typography } from '@mui/material';
-import { ViewingCard } from '../Card';
+import { ViewingCard } from './Card';
 import FieldButtons from './FieldButtons';
 
 interface FieldCardProps {

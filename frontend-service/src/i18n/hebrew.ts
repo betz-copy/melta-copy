@@ -413,6 +413,7 @@ export default {
         searchRules: 'חיפוש חוקים...',
         searchRelations: 'חיפוש קשרים...',
         searchProcesses: 'חיפוש תהליכים...',
+        searchConfig: 'חיפוש קונפיג...',
         searchInPage: 'חיפוש בעמוד',
         turnOnSemanticSearch: 'חיפוש חכם בתוכן הקבצים כבוי',
         turnOffSemanticSearch: 'חיפוש חכם בתוכן הקבצים דלוק',
@@ -614,8 +615,10 @@ export default {
                 required: 'ליישות חסרה שדה חובה',
                 createdSuccessfully: 'ישויות נוצרו בהצלחה',
                 tableCantLoadEntities: 'טבלה זו לא תומכת בטעינה מקבצים',
-                limitNumberFiles: `ניתן לעלות ${environment.loadExcel.filesLimit} של קבצים`,
-                limitNumberEntities: `ניתן להעלות עד ${environment.loadExcel.entitiesLimit} ישויות בקובץ`,
+                // limitNumberFiles: `ניתן לעלות ${workspace.metadata.excel.filesLimit} של קבצים`,
+                // limitNumberEntities: `ניתן להעלות עד ${workspace.metadata.excel.entitiesFileLimit} ישויות בקובץ`,
+                limitNumberFiles: 'ניתן להעלות מספר מוגבל של קבצים',
+                limitNumberEntities: 'ניתן להעלות מספר מוגבל של ישויות בקובץ',
                 emptyExcel: 'יש להעלות קבצים עם יישויות',
                 failedReadingFiles: 'שגיאה בקריאת קבצים',
                 filesWrongTemplate: 'חלק מקבצים אלו לא מתאימים לתבנית',
@@ -1232,13 +1235,13 @@ export default {
             entityTemplateTitleFontSize: 'גודל גופן כותרת טבלה',
             headlineSubTitleFontSize: 'גודל גופן כותרת משנית',
         },
-        smallPreviewHeight: {
-            number: 'גובה תצוגה מקדימה קטנה',
-            unit: 'יחידת גובה תצוגה מקדימה קטנה',
-        },
         iconSize: {
             width: 'רוחב אייקון',
             height: 'גובה אייקון',
+        },
+        excel: {
+            entitiesFileLimit: 'הגבלת מספר ישויות שניתן להעלות בקובץ',
+            filesLimit: 'הגבלת מספר קבצים שניתן להעלות',
         },
     },
 };

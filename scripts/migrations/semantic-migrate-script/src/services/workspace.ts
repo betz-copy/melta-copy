@@ -29,13 +29,13 @@ export interface IMetadata {
         entityTemplateTitleFontSize: string;
         headlineSubTitleFontSize: string;
     };
-    smallPreviewHeight: {
-        number: string;
-        unit: string;
-    };
     iconSize: {
         width: string;
         height: string;
+    };
+    excel: {
+        entitiesFileLimit: number;
+        filesLimit: number;
     };
 }
 export interface IWorkspace {

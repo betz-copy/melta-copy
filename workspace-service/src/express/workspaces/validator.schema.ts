@@ -18,13 +18,13 @@ const metadataSchema = Joi.object({
         entityTemplateTitleFontSize: Joi.string(),
         headlineSubTitleFontSize: Joi.string(),
     }).optional(),
-    smallPreviewHeight: Joi.object({
-        number: Joi.string(),
-        unit: Joi.string(),
-    }).optional(),
     iconSize: Joi.object({
         width: Joi.string(),
         height: Joi.string(),
+    }).optional(),
+    excel: Joi.object({
+        entitiesFileLimit: Joi.number(),
+        filesLimit: Joi.number(),
     }).optional(),
 }).optional();
 

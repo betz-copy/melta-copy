@@ -22,13 +22,13 @@ export const defaultMetadata = {
         entityTemplateTitleFontSize: '20px',
         headlineSubTitleFontSize: '14px',
     },
-    smallPreviewHeight: {
-        number: '150px',
-        unit: '1px',
-    },
     iconSize: {
         width: '24px',
         height: '24px',
+    },
+    excel: {
+        entitiesFileLimit: 500,
+        filesLimit: 5,
     },
 } as const;
 

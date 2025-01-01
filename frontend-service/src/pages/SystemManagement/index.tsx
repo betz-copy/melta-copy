@@ -13,7 +13,7 @@ import { NoPermissions } from './components/NoPermissions';
 import { useUserStore } from '../../stores/user';
 import { PermissionScope } from '../../interfaces/permissions';
 import { useSearchParams } from '../../utils/hooks/useSearchParams';
-import { ConfigurationManagement } from './components/ProcessTemplates/ConfigurationManagement';
+import { ConfigurationManagement } from './components/ConfigurationManagement';
 
 const SystemManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> }> = ({ setTitle }) => {
     const theme = useTheme();

@@ -91,7 +91,6 @@ export const environment = {
             heatmapModeKey: 'heatmapMode',
         },
     },
-
     entitiesProperties: {
         maxNumOfCharactersNotInFullWidth: 700,
         numOfFixedDigits: 18,
@@ -203,6 +202,7 @@ export const environment = {
     fileIdLength: 32,
     maxDateTimestamp: 8640000000000000,
     attemptInterval: 100,
+    unit: 'px',
     errorCodes: {
         ruleBlock: 'RULE_BLOCK',
         failedToCreateConstraints: 'FAILED_TO_CREATE_CONSTRAINTS',
@@ -211,7 +211,7 @@ export const environment = {
         actionsCustomError: 'ACTIONS_CUSTOM_ERROR',
     },
 
-    loadExcel: { excelExtension: '.xlsx', acceptedFilesTypes: { 'excel/xlsx': ['.xlsx', '.xls'] }, filesLimit: 5, entitiesLimit: 500 },
+    loadExcel: { excelExtension: '.xlsx', acceptedFilesTypes: { 'excel/xlsx': ['.xlsx', '.xls'] } },
     agGrid: {
         cacheBlockSize: 5,
         maxConcurrentDatasourceRequests: 1,

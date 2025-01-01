@@ -9,7 +9,6 @@ import { IFile } from '../../interfaces/preview';
 import { VideoPreview } from './VideoPreview';
 import { useFilePreview } from '../../utils/hooks/useFilePreview';
 import { PreviewDialog } from './PreviewDialog';
-import { useWorkspaceStore } from '../../stores/workspace';
 
 pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
 
@@ -23,8 +22,6 @@ const shouldDisplayDocument = (type: string) => ['document', 'pdf'].includes(typ
 const isUnsupported = (type: string) => type === 'unsupported';
 
 const SmallPreview: React.FC<IPreviewProps> = ({ file, sx }) => {
-    const workspace = useWorkspaceStore((state) => state.workspace);
-    const { smallPreviewHeight } = workspace.metadata;
     const [noSuchKeyError, setNoSuchKeyError] = useState<boolean>(true);
     const { data, isLoading: loading, isError: error } = useFilePreview(file.id, file.contentType, setNoSuchKeyError);
     const { contentType } = file;
@@ -35,7 +32,6 @@ const SmallPreview: React.FC<IPreviewProps> = ({ file, sx }) => {
             return (
                 <Box
                     sx={{
-                        height: `${smallPreviewHeight.number}${smallPreviewHeight.unit}`,
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',

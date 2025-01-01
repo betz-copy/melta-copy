@@ -2,9 +2,11 @@
 import React, { useState, useEffect } from 'react';
 import { TextField, Switch, InputAdornment } from '@mui/material';
 import i18next from 'i18next';
-import { updateMetadata } from '../../../../services/workspacesService';
-import { deepClone, setNestedValue } from '../../../../utils/configs/configsUtils';
+import { updateMetadata } from '../../../services/workspacesService';
+import { deepClone, setNestedValue } from '../../../utils/configs/configsUtils';
 import FieldCard from './FieldCard';
+import { IMetadata } from '../../../interfaces/workspaces';
+import { environment } from '../../../globals';
 
 interface FieldProps {
     keyPath: string;
@@ -29,7 +31,7 @@ const Field: React.FC<FieldProps> = ({ keyPath, value, defaultValue, updateConfi
         setIsModified(false);
     }, [value]);
 
-    const isValidInput = (val: any) => {
+    const isValidInput = (val: string | number | boolean) => {
         return val !== 'px' && val !== null && !(typeof val === 'number' && isNaN(val));
     };
 
@@ -37,7 +39,7 @@ const Field: React.FC<FieldProps> = ({ keyPath, value, defaultValue, updateConfi
         if (!isValidInput(inputValue)) return;
         updateConfig(keyPath, inputValue);
 
-        const changes: any = {};
+        const changes: Partial<IMetadata> = {};
         const keys = keyPath.split('.');
 
         if (keys.length > 1) {
@@ -84,6 +86,7 @@ const Field: React.FC<FieldProps> = ({ keyPath, value, defaultValue, updateConfi
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === 'Enter') {
+            if (['e', 'E', '+', '-'].includes(e.key)) e.preventDefault();
             handleUpdate();
         }
     };
@@ -100,7 +103,7 @@ const Field: React.FC<FieldProps> = ({ keyPath, value, defaultValue, updateConfi
                     InputProps={{
                         startAdornment:
                             typeof value === 'string' && (value as string).endsWith('px') ? (
-                                <InputAdornment position="start">px</InputAdornment>
+                                <InputAdornment position="start">{environment.unit}</InputAdornment>
                             ) : null,
                         disableUnderline: true,
                     }}
@@ -110,12 +113,7 @@ const Field: React.FC<FieldProps> = ({ keyPath, value, defaultValue, updateConfi
                             handleInputChange(`${newValue}px`);
                         }
                     }}
-                    onKeyDown={(e) => {
-                        if (['e', 'E', '+', '-'].includes(e.key)) {
-                            e.preventDefault();
-                            handleKeyDown(e);
-                        }
-                    }}
+                    onKeyDown={handleKeyDown}
                 />
             );
             break;

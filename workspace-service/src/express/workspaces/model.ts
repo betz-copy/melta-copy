@@ -20,13 +20,13 @@ const MetadataSchema = new mongoose.Schema<IMetadata>(
             entityTemplateTitleFontSize: { type: String },
             headlineSubTitleFontSize: { type: String },
         },
-        smallPreviewHeight: {
-            number: { type: String },
-            unit: { type: String },
-        },
         iconSize: {
             width: { type: String },
             height: { type: String },
+        },
+        excel: {
+            entitiesFileLimit: { type: Number },
+            filesLimit: { type: Number },
         },
     },
     { _id: false },
