@@ -1,7 +1,7 @@
-import { TreeViewBaseItem } from '@mui/x-tree-view-pro';
 import { useState } from 'react';
+import { TreeType } from '../../interfaces/Tree';
 
-function selectParentIfAllChildrenAreSelected(treeItems, newSelectedItemsWithChildren, getItemId) {
+function selectParentIfAllChildrenAreSelected<T>(treeItems: TreeType<T>[], newSelectedItemsWithChildren, getItemId) {
     treeItems.forEach((item) => {
         if (item?.children) {
             selectParentIfAllChildrenAreSelected(item.children, newSelectedItemsWithChildren, getItemId);
@@ -22,12 +22,17 @@ function selectParentIfAllChildrenAreSelected(treeItems, newSelectedItemsWithChi
     return newSelectedItemsWithChildren;
 }
 
-export const useTreeUtils = (getItemId: (item) => string, isParentsSelectable?: boolean, preSelectedItemsIds: string[] = [], treeItems = []) => {
+export const useTreeUtils = <T,>(
+    getItemId: (item: T) => string,
+    parentInfersChildren?: boolean,
+    preSelectedItemsIds: string[] = [],
+    treeItems: TreeType<T>[] = [],
+) => {
     const [selectedItemsIds, setSelectedItemsIds] = useState<string[]>(
-        isParentsSelectable ? preSelectedItemsIds ?? [] : selectParentIfAllChildrenAreSelected(treeItems, preSelectedItemsIds ?? [], getItemId),
+        parentInfersChildren ? selectParentIfAllChildrenAreSelected(treeItems, preSelectedItemsIds, getItemId) : preSelectedItemsIds,
     );
 
-    const getItemDescendantsIds = (item: TreeViewBaseItem) => {
+    const getItemDescendantsIds = (item: TreeType<T>) => {
         const ids: string[] = [];
 
         item?.children?.forEach((child) => {
@@ -65,7 +70,7 @@ export const useTreeUtils = (getItemId: (item) => string, isParentsSelectable?: 
             new Set([...newSelectedItemsPaths, ...itemsToSelect].filter((itemId) => !itemsToUnSelect[itemId])),
         );
 
-        if (!isParentsSelectable) selectParentIfAllChildrenAreSelected(treeItems, newSelectedItemsWithChildren, getItemId);
+        if (parentInfersChildren) selectParentIfAllChildrenAreSelected(treeItems, newSelectedItemsWithChildren, getItemId);
 
         setSelectedItemsIds(newSelectedItemsWithChildren);
     };

@@ -15,8 +15,8 @@ interface TreeProps<T> {
     preSelectedItemsIds?: string[];
     preExpandedItemIds?: string[];
 
-    // If parents is selectable than they are not simply representing the state of their children.
-    isParentsSelectable?: boolean;
+    // If true parents only represent the state of their children.
+    parentInfersChildren?: boolean;
 }
 
 const Tree = <T,>({
@@ -29,9 +29,9 @@ const Tree = <T,>({
     preExpandedItemIds,
     isDraggable,
     allowDraggingBetweenParents,
-    isParentsSelectable = false,
+    parentInfersChildren = true,
 }: TreeProps<T>): React.ReactElement => {
-    const { handleSelectedItemsChange, selectedItemsIds } = useTreeUtils(getItemId, isParentsSelectable, preSelectedItemsIds, treeItems);
+    const { handleSelectedItemsChange, selectedItemsIds } = useTreeUtils(getItemId, parentInfersChildren, preSelectedItemsIds, treeItems);
 
     const [expandedItemsIds, setExpandedItemsIds] = useState<string[]>(preExpandedItemIds ?? []);
 

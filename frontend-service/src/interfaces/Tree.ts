@@ -1,4 +1,4 @@
 export type TreeType<T> = T &
     Partial<T> & {
-        children: T[];
+        children: TreeType<T>[];
     };
