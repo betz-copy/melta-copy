@@ -1,6 +1,5 @@
 /* eslint-disable no-nested-ternary */
 import { Box, Button, Divider, FormControl, Grid, MenuItem, Select, SxProps, Theme, Typography, useTheme } from '@mui/material';
-import i18next from 'i18next';
 import lodashGroupBy from 'lodash.groupby';
 import lodashUniqby from 'lodash.uniqby';
 import React, { Dispatch, Fragment, Key, PropsWithChildren, ReactElement, SetStateAction, useState } from 'react';
@@ -11,6 +10,7 @@ import Tree from '../Tree';
 import { flattenTree } from '../../utils/hooks/useTreeUtils';
 import { MenuItemContent } from './MenuItemContent';
 import { MiniFilter } from './MiniFilter';
+import { TreeType } from '../../interfaces/Tree';
 
 export type SelectCheckboxGroupProps<Option extends any, Group extends any> = {
     groups: Group[];
@@ -22,7 +22,7 @@ export type SelectCheckboxGroupProps<Option extends any, Group extends any> = {
 export type SelectCheckboxProps<Option extends any, Group extends any = any> = PropsWithChildren<{
     title: string;
     img?: ReactElement;
-    options: Option[];
+    options: TreeType<Option>[];
     selectedOptions: Option[];
     setSelectedOptions: Dispatch<SetStateAction<Option[]>>;
     getOptionId: (option: Option) => string;
@@ -311,7 +311,6 @@ const SelectCheckbox = <Option extends any, Group extends any>({
     setSelectedOptions,
     getOptionId,
     getOptionLabel,
-    groupsProps = { useGroups: false },
     isDraggableDisabled = false,
     setOptions,
     size = 'medium',
@@ -330,6 +329,8 @@ const SelectCheckbox = <Option extends any, Group extends any>({
     const [isOpen, setIsOpen] = useState(false);
 
     const darkMode = useDarkModeStore((state) => state.darkMode);
+
+    const optionIds = selectedOptions.map(getOptionId);
 
     const theme = useTheme();
 
@@ -420,9 +421,9 @@ const SelectCheckbox = <Option extends any, Group extends any>({
                 {!isSelectDisabled && !hideSearchBar && <MiniFilter value={miniFilterValue} onChange={setMiniFilterValue} toTopBar={toTopBar} />}
 
                 <Tree
-                    selectAll
+                    selectAll={!hideChooseAll}
                     flattenedTree={flattenedTree}
-                    preSelectedItemsIds={selectedOptions}
+                    preSelectedItemsIds={optionIds}
                     getItemId={getOptionId}
                     getItemLabel={getOptionLabel}
                     multi

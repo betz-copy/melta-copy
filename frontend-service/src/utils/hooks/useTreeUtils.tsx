@@ -1,3 +1,6 @@
+// Most of the code here is taken from:
+// https://johnnyreilly.com/mui-react-tree-view-check-children-uncheck-parents
+
 import { useState } from 'react';
 import { cloneDeep } from 'lodash';
 import { TreeType } from '../../interfaces/Tree';
@@ -49,54 +52,102 @@ export const useTreeUtils = <T,>(
         parentInfersChildren ? selectParentIfAllChildrenAreSelected(treeItems, preSelectedItemsIds, getItemId) : preSelectedItemsIds,
     );
 
-    const getItemDescendantsIds = (item: TreeType<T>) => {
-        const ids: string[] = [];
-
-        item?.children?.forEach((child) => {
-            ids.push(getItemId(child));
-            ids.push(...getItemDescendantsIds(child));
-        });
-
-        return ids;
-    };
-
-    const handleSelectedItemsChange = (newSelectedItemsPaths: string[], multi: boolean, toggledItem: Record<string, boolean>, apiRef: any) => {
-        if (!multi || !parentInfersChildren) {
-            setSelectedItemsIds([newSelectedItemsPaths?.[0]]);
-            return;
+    function getParentNode(items: TreeType<T>[], id: string): TreeType<T> | undefined {
+        for (const item of items) {
+            if (item.children) {
+                if (item.children.some((child) => getItemId(child) === id)) {
+                    // The current item is the parent of the supplied id
+                    return item;
+                }
+                // Recursively call the function for the children of the current item
+                const parentNode = getParentNode(item.children, id);
+                if (parentNode) {
+                    return parentNode;
+                }
+            }
         }
 
-        const itemsToSelect: string[] = [];
-        const itemsToUnSelect: { [itemId: string]: boolean } = {};
+        // No parent found
+        return undefined;
+    }
 
-        Object.entries(toggledItem).forEach(([itemId, isSelected]) => {
-            const item = apiRef.getItem(itemId);
+    function getAllParentIds(items: TreeType<T>[], id: string) {
+        const parentIds: string[] = [];
+        let parent = getParentNode(items, id);
+        while (parent) {
+            parentIds.push(getItemId(parent));
+            parent = getParentNode(items, getItemId(parent));
+        }
+        return parentIds;
+    }
 
-            if (isSelected) {
-                itemsToSelect.push(...getItemDescendantsIds(item));
-            } else {
-                getItemDescendantsIds(item).forEach((descendantId) => {
-                    itemsToUnSelect[descendantId] = true;
-                });
+    function getSelectedIdsAndChildrenIds(items: TreeType<T>[], selectedIds: string[]) {
+        const selectedIdIncludingChildrenIds = new Set([...selectedIds]);
+
+        for (const item of items) {
+            if (selectedIds.includes(getItemId(item))) {
+                // Add the current item's id to the result array
+                selectedIdIncludingChildrenIds.add(getItemId(item));
+
+                // Recursively call the function for the children of the current item
+                if (item.children) {
+                    const childrenIds = item.children.map((child) => getItemId(child));
+                    const childrenSelectedIds = getSelectedIdsAndChildrenIds(item.children, childrenIds);
+                    childrenSelectedIds.forEach((selectedId) => selectedIdIncludingChildrenIds.add(selectedId));
+                }
+            } else if (item.children) {
+                // walk the children to see if selections lay in there also
+                const childrenSelectedIds = getSelectedIdsAndChildrenIds(item.children, selectedIds);
+                childrenSelectedIds.forEach((selectedId) => selectedIdIncludingChildrenIds.add(selectedId));
             }
-        });
+        }
 
-        const newSelectedItemsWithChildren = Array.from(
-            new Set([...newSelectedItemsPaths, ...itemsToSelect].filter((itemId) => !itemsToUnSelect[itemId])),
-        );
+        return [...Array.from(selectedIdIncludingChildrenIds)];
+    }
 
-        selectParentIfAllChildrenAreSelected(treeItems, newSelectedItemsWithChildren, getItemId);
+    function handleSelectedItemsChange(newIds: string[], multi: boolean): string[] {
+        if (!multi || !parentInfersChildren) {
+            return [newIds?.[0]];
+        }
 
-        setSelectedItemsIds(newSelectedItemsWithChildren);
-    };
+        const isDeselectingNode = selectedItemsIds.length > newIds.length;
+        if (isDeselectingNode) {
+            const removed = selectedItemsIds.filter((id) => !newIds.includes(id))[0];
 
-    const getSelectedLeafIds = (currentTreeItems = treeItems, leaves: TreeType<T>[] = []): TreeType<T>[] => {
+            const parentIdsToRemove = getAllParentIds(treeItems, removed);
+
+            const childIdsToRemove = getSelectedIdsAndChildrenIds(treeItems, [removed]);
+
+            const newIdsWithParentsAndChildrenRemoved = newIds.filter((id) => !parentIdsToRemove.includes(id) && !childIdsToRemove.includes(id));
+
+            return newIdsWithParentsAndChildrenRemoved;
+        }
+
+        const added = newIds.filter((id) => !selectedItemsIds.includes(id))[0];
+        const idsToSet = getSelectedIdsAndChildrenIds(treeItems, newIds);
+        let parent = getParentNode(treeItems, added);
+        while (parent) {
+            const childIds = parent.children?.map((node) => getItemId(node)) ?? [];
+            const allChildrenSelected = childIds.every((id) => idsToSet.includes(id));
+            if (allChildrenSelected) {
+                idsToSet.push(getItemId(parent));
+                parent = getParentNode(treeItems, getItemId(parent));
+            } else {
+                break;
+            }
+        }
+        return idsToSet;
+    }
+
+    const getSelectedLeafIds = (currentTreeItems = treeItems, leaves: string[] = []): string[] => {
         currentTreeItems.forEach((item) => {
             if (!item.children) {
                 const id = getItemId(item);
                 if (selectedItemsIds.includes(id)) leaves.push(id);
             } else {
-                getSelectedLeafIds(item.children).forEach((leaf) => leaves.push(leaf));
+                getSelectedLeafIds(item.children).forEach((leaf) => {
+                    leaves.push(leaf);
+                });
             }
         });
 

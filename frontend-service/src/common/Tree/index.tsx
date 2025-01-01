@@ -28,14 +28,14 @@ const Tree = <T,>({
     onSelectItems,
     getItemId,
     getItemLabel,
-    multi,
     preSelectedItemsIds,
     preExpandedItemIds,
     isDraggable,
     allowDraggingBetweenParents,
     selectAll,
-    parentInfersChildren = true,
     flattenedTree,
+    multi = true,
+    parentInfersChildren = true,
 }: TreeProps<T>): React.ReactElement => {
     const { handleSelectedItemsChange, selectedItemsIds, setSelectedItemsIds, getSelectedLeafIds } = useTreeUtils(
         getItemId,
@@ -46,13 +46,22 @@ const Tree = <T,>({
 
     const [expandedItemsIds, setExpandedItemsIds] = useState<string[]>(preExpandedItemIds ?? []);
 
-    const toggledItemRef = useRef<{ [itemId: string]: boolean }>({});
-
-    const apiRef = useTreeViewApiRef();
-
     useEffect(() => {
         if (!onSelectItems || selectedItemsIds.toString() === preSelectedItemsIds?.toString()) return;
-        onSelectItems(multi ? getSelectedLeafIds() : selectedItemsIds?.[0]);
+
+        let result: string[];
+
+        if (multi) {
+            if (parentInfersChildren) {
+                result = getSelectedLeafIds();
+            } else {
+                result = selectedItemsIds;
+            }
+        } else {
+            result = [selectedItemsIds?.[0]];
+        }
+
+        onSelectItems(result);
     }, [JSON.stringify(selectedItemsIds)]);
 
     return (
@@ -76,14 +85,9 @@ const Tree = <T,>({
                 items={treeItems}
                 getItemId={getItemId}
                 getItemLabel={getItemLabel}
-                apiRef={apiRef}
                 selectedItems={selectedItemsIds}
                 onSelectedItemsChange={(_event, itemIds) => {
-                    handleSelectedItemsChange(itemIds, multi, toggledItemRef.current, apiRef.current);
-                    toggledItemRef.current = {};
-                }}
-                onItemSelectionToggle={(_event: React.SyntheticEvent, itemId: string, isSelected: boolean) => {
-                    toggledItemRef.current[itemId] = isSelected;
+                    setSelectedItemsIds(handleSelectedItemsChange(itemIds, multi));
                 }}
                 onExpandedItemsChange={(_event: React.SyntheticEvent, itemIds: string[]) => {
                     setExpandedItemsIds(itemIds);
