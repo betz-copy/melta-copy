@@ -1,113 +1,16 @@
 /* eslint-disable no-nested-ternary */
-import { Menu, Search, Hive as HiveIcon } from '@mui/icons-material';
-import {
-    Box,
-    Button,
-    Divider,
-    FormControl,
-    Grid,
-    InputAdornment,
-    ListItemText,
-    MenuItem,
-    Select,
-    SxProps,
-    TextField,
-    Theme,
-    Typography,
-    useTheme,
-} from '@mui/material';
+import { Box, Button, Divider, FormControl, Grid, MenuItem, Select, SxProps, Theme, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import lodashGroupBy from 'lodash.groupby';
 import lodashUniqby from 'lodash.uniqby';
 import React, { Dispatch, Fragment, Key, PropsWithChildren, ReactElement, SetStateAction, useState } from 'react';
 import { DragDropContext, Draggable, Droppable, DropResult } from 'react-beautiful-dnd';
 import { IoIosArrowBack, IoIosArrowDown, IoIosArrowUp } from 'react-icons/io';
-import { MeltaTooltip } from './MeltaTooltip';
-import { MeltaCheckbox } from './MeltaCheckbox';
-import { useDarkModeStore } from '../stores/darkMode';
-import { CustomIcon } from './CustomIcon';
-import Tree from './Tree';
-import { flattenTree } from '../utils/hooks/useTreeUtils';
-
-export type MenuItemContentProps<Option = any> = {
-    checked?: boolean;
-    indeterminate?: boolean;
-    label: string;
-    order: number;
-    isDraggable?: boolean;
-    group?: boolean;
-    insideGroup?: boolean;
-    option?: Option;
-    showIcon?: boolean;
-};
-
-export const MenuItemContent: React.FC<MenuItemContentProps> = ({
-    checked,
-    indeterminate,
-    label,
-    isDraggable,
-    group,
-    insideGroup,
-    showIcon,
-    option,
-}) => {
-    const theme = useTheme();
-
-    return (
-        <>
-            {!group && (
-                <Grid
-                    style={{
-                        width: '24px',
-                        height: '24px',
-                        gap: '2px',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignContent: 'center',
-                        justifyContent: 'center',
-                        marginRight: insideGroup ? '30px' : '7px',
-                    }}
-                >
-                    {isDraggable && <Menu sx={{ fontSize: '1rem' }} />}
-                </Grid>
-            )}
-            {showIcon ? (
-                option.iconFileId?.length > 0 ? (
-                    <CustomIcon color={theme.palette.primary.main} iconUrl={option.iconFileId!} height="15px" width="15px" />
-                ) : (
-                    <HiveIcon style={{ color: theme.palette.primary.main }} fontSize="inherit" />
-                )
-            ) : (
-                <MeltaCheckbox checked={checked} indeterminate={indeterminate} />
-            )}
-
-            <ListItemText
-                primary={
-                    <MeltaTooltip title={label}>
-                        <Typography
-                            style={{
-                                fontFamily: 'Rubik',
-                                fontSize: '14px',
-                                fontWeight: '400',
-                                lineHeight: '17px',
-                                letterSpacing: '0em',
-                                textAlign: 'right',
-                                width: '120px',
-                                height: '17px',
-                                marginRight: '10px',
-                                textOverflow: 'ellipsis',
-                                whiteSpace: 'nowrap',
-                                overflow: 'hidden',
-                            }}
-                        >
-                            {label}
-                        </Typography>
-                    </MeltaTooltip>
-                }
-            />
-        </>
-    );
-};
+import { useDarkModeStore } from '../../stores/darkMode';
+import Tree from '../Tree';
+import { flattenTree } from '../../utils/hooks/useTreeUtils';
+import { MenuItemContent } from './MenuItemContent';
+import { MiniFilter } from './MiniFilter';
 
 export type SelectCheckboxGroupProps<Option extends any, Group extends any> = {
     groups: Group[];
@@ -400,122 +303,6 @@ export const getOptionsAndGroupsMiniFiltered = <Option extends any, Group extend
     return { optionsFiltered, groupsFiltered };
 };
 
-export const MiniFilter: React.FC<{ value: string; onChange: (value: string) => void; toTopBar?: boolean; templatesSelectGrid?: boolean }> = ({
-    value,
-    onChange,
-    toTopBar,
-    templatesSelectGrid,
-}) => {
-    const theme = useTheme();
-    const darkMode = useDarkModeStore((state) => state.darkMode);
-
-    // must wrap with TextField with Grid. no idea why, but it works :O
-    return (
-        <Grid container>
-            <Grid
-                item
-                xs={12}
-                width="199px"
-                height="34px"
-                style={{ display: 'flex', justifyContent: 'center', alignContent: 'center', maxHeight: '34px' }}
-            >
-                <TextField
-                    value={value}
-                    onChange={(e) => onChange(e.target.value)}
-                    onKeyDown={(e) => {
-                        if (e.key !== 'Escape') {
-                            // prevents autoselecting item while typing (default Select behaviour)
-                            e.stopPropagation();
-                        }
-                    }}
-                    sx={{
-                        ...(darkMode
-                            ? {}
-                            : {
-                                  background: toTopBar || templatesSelectGrid ? '#FFFFFF' : '#EBEFFA',
-                                  '& .MuiOutlinedInput-notchedOutline': { border: 'none' },
-                              }),
-                        boxShadow: templatesSelectGrid ? '-2px 2px 6px 0px #1E27754D' : '',
-                        borderRadius: '7px',
-                        width: '199px',
-                        height: '34px',
-                    }}
-                    placeholder={i18next.t('searchLabel')}
-                    fullWidth
-                    InputProps={{
-                        style: {
-                            fontFamily: 'Rubik',
-                            fontSize: '12px',
-                            textAlign: 'right',
-                            borderRadius: '7px',
-                        },
-                        endAdornment: (
-                            <InputAdornment
-                                position="end"
-                                sx={{
-                                    padding: '0px, 10px, 0px, 0px',
-                                    fontWeight: '400',
-                                    letterSpacing: '0em',
-                                    lineHeight: '16px',
-                                    gap: '10px',
-                                }}
-                            >
-                                <Divider
-                                    orientation="vertical"
-                                    style={{
-                                        width: '1px',
-                                        height: '20px',
-                                        borderRadius: '1.5px',
-                                        backgroundColor: theme.palette.primary.main,
-                                    }}
-                                />
-                                <Search sx={{ fontSize: '1.3rem', color: theme.palette.primary.main }} />
-                            </InputAdornment>
-                        ),
-                        startAdornment: <InputAdornment position="start" />,
-                    }}
-                />
-            </Grid>
-        </Grid>
-    );
-};
-
-export const ChooseAllMenuItem = <Option extends any, Group extends any>({
-    options,
-    selectedOptionsFiltered,
-    setSelectedOptions,
-    optionsFiltered,
-    onClick,
-}: {
-    options: Option[];
-    selectedOptionsFiltered: Option[];
-    setSelectedOptions: SelectCheckboxProps<Option, Group>['setSelectedOptions'];
-    optionsFiltered: Option[];
-    onClick?: () => void;
-}) => {
-    return (
-        <MenuItem
-            sx={{ width: '100%', height: '24px', padding: '0px', my: '10px' }}
-            onClick={() => {
-                const prevChecked = selectedOptionsFiltered.length === optionsFiltered.length;
-                if (prevChecked) {
-                    setSelectedOptions([]);
-                } else {
-                    setSelectedOptions(options);
-                }
-                onClick?.();
-            }}
-        >
-            <MenuItemContent
-                checked={selectedOptionsFiltered.length === optionsFiltered.length}
-                indeterminate={selectedOptionsFiltered.length < optionsFiltered.length && selectedOptionsFiltered.length > 0}
-                label={i18next.t('selectChooseAll')}
-                order={0}
-            />
-        </MenuItem>
-    );
-};
-
 const SelectCheckbox = <Option extends any, Group extends any>({
     title,
     img,
@@ -546,20 +333,11 @@ const SelectCheckbox = <Option extends any, Group extends any>({
 
     const theme = useTheme();
 
-    const { optionsFiltered, groupsFiltered } = getOptionsAndGroupsMiniFiltered(miniFilterValue, options, getOptionId, getOptionLabel, groupsProps);
-
-    let selectedOptionsFiltered;
-    if (!isSelectDisabled)
-        selectedOptionsFiltered = selectedOptions!.filter((selectedOption) => {
-            const isSelectedOptionInOptionsFiltered = optionsFiltered.some((option) => getOptionId(option) === getOptionId(selectedOption));
-            return isSelectedOptionInOptionsFiltered;
-        });
-
     // eslint-disable-next-line no-nested-ternary
 
     const borderRadiusStyle = overrideSx ? (isOpen ? '12px 12px 12px 0' : '12px') : isOpen ? '7px 7px 0 0' : '7px';
 
-    const flattenedTree = flattenTree(options);
+    const flattenedTree = flattenTree(options, getOptionId);
 
     return (
         <FormControl style={{ borderRadius: isOpen ? '7px 7px 0 0' : '7px' }}>
@@ -640,25 +418,10 @@ const SelectCheckbox = <Option extends any, Group extends any>({
                 }}
             >
                 {!isSelectDisabled && !hideSearchBar && <MiniFilter value={miniFilterValue} onChange={setMiniFilterValue} toTopBar={toTopBar} />}
-                {!isSelectDisabled && !hideChooseAll ? (
-                    <Box>
-                        <ChooseAllMenuItem
-                            options={options}
-                            selectedOptionsFiltered={selectedOptionsFiltered}
-                            setSelectedOptions={setSelectedOptions}
-                            optionsFiltered={optionsFiltered}
-                        />
-                        <Box sx={{ display: 'flex', justifyContent: 'center', my: '5px' }}>
-                            <Divider style={{ width: '199px' }} />
-                        </Box>
-                    </Box>
-                ) : (
-                    <Typography color={theme.palette.primary.main} fontFamily="Rubik" fontWeight={400} marginX="16px" marginY="8px">
-                        {title}
-                    </Typography>
-                )}
 
                 <Tree
+                    selectAll
+                    flattenedTree={flattenedTree}
                     preSelectedItemsIds={selectedOptions}
                     getItemId={getOptionId}
                     getItemLabel={getOptionLabel}
@@ -670,34 +433,6 @@ const SelectCheckbox = <Option extends any, Group extends any>({
                         setSelectedOptions(filteredOptions);
                     }}
                 />
-
-                {/* {groupsProps.useGroups ? (
-                    <SelectOptionsMenuItemsGrouped
-                        options={options}
-                        optionsFiltered={optionsFiltered}
-                        selectedOptions={selectedOptionsFiltered!}
-                        setSelectedOptions={setSelectedOptions}
-                        getOptionId={getOptionId}
-                        getOptionLabel={getOptionLabel}
-                        groupsProps={{ ...groupsProps, groups: groupsFiltered! }}
-                        isDraggableDisabled={isDraggableDisabled}
-                        setOptions={setOptions}
-                        openMap={openMap}
-                        setOpenMap={setOpenMap}
-                    />
-                ) : (
-                    <SelectOptionsMenuItems
-                        options={optionsFiltered}
-                        selectedOptions={selectedOptionsFiltered}
-                        setSelectedOptions={setSelectedOptions}
-                        getOptionId={getOptionId}
-                        getOptionLabel={getOptionLabel}
-                        isDraggableDisabled={isDraggableDisabled}
-                        setOptions={setOptions}
-                        handleOnDragEnd={onDragEnd}
-                        showIcon={showIcon}
-                    />
-                )} */}
             </Select>
         </FormControl>
     );

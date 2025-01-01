@@ -1,43 +1,39 @@
 import { useState } from 'react';
+import { cloneDeep } from 'lodash';
 import { TreeType } from '../../interfaces/Tree';
 
-function selectParentIfAllChildrenAreSelected<T>(treeItems: TreeType<T>[], newSelectedItemsWithChildren, getItemId) {
+function selectParentIfAllChildrenAreSelected<T>(treeItems: TreeType<T>[], newSelectedItemsWithChildren, getItemId: (item: T) => string) {
+    const updatedArray = cloneDeep(newSelectedItemsWithChildren);
+
     treeItems.forEach((item) => {
         if (item?.children) {
-            selectParentIfAllChildrenAreSelected(item.children, newSelectedItemsWithChildren, getItemId);
+            selectParentIfAllChildrenAreSelected(item.children, updatedArray, getItemId);
 
-            const allChildrenSelected = item.children.every((child) => newSelectedItemsWithChildren.includes(getItemId(child)));
+            const allChildrenSelected = item.children.every((child) => updatedArray.includes(getItemId(child)));
             if (allChildrenSelected) {
-                newSelectedItemsWithChildren.push(getItemId(item));
+                updatedArray.push(getItemId(item));
             } else {
-                const parentIndex = newSelectedItemsWithChildren.findIndex((id) => id === getItemId(item));
+                const parentIndex = updatedArray.findIndex((id) => id === getItemId(item));
 
                 if (parentIndex > -1) {
-                    newSelectedItemsWithChildren.splice(parentIndex, 1);
+                    updatedArray.splice(parentIndex, 1);
                 }
             }
         }
     });
 
-    return newSelectedItemsWithChildren;
+    return updatedArray;
 }
 
-export const flattenTree = (options: any[]) => {
-    const revertedTemplates: any[] = [];
+export const flattenTree = <T,>(treeItems: TreeType<T>[], getItemId: (item: T) => string, revertedTemplates: any[] = []): any[] => {
+    treeItems.forEach((categoryWithTemplates) => {
+        const { children, ...rest } = categoryWithTemplates;
 
-    options.forEach((categoryWithTemplates) => {
-        const { children, ...category } = categoryWithTemplates;
+        if (children) {
+            flattenTree(children, getItemId, revertedTemplates);
+        }
 
-        children.forEach((template) => {
-            revertedTemplates.push({
-                ...template,
-                category: {
-                    _id: category._id,
-                    // You can add other properties of the category here if needed
-                    ...category,
-                },
-            });
-        });
+        revertedTemplates.push(rest);
     });
 
     return revertedTemplates;
@@ -70,8 +66,6 @@ export const useTreeUtils = <T,>(
             return;
         }
 
-        setSelectedItemsIds(newSelectedItemsPaths);
-
         const itemsToSelect: string[] = [];
         const itemsToUnSelect: { [itemId: string]: boolean } = {};
 
@@ -96,5 +90,18 @@ export const useTreeUtils = <T,>(
         setSelectedItemsIds(newSelectedItemsWithChildren);
     };
 
-    return { handleSelectedItemsChange, selectedItemsIds, selectParentIfAllChildrenAreSelected };
+    const getSelectedLeafIds = (currentTreeItems = treeItems, leaves: TreeType<T>[] = []): TreeType<T>[] => {
+        currentTreeItems.forEach((item) => {
+            if (!item.children) {
+                const id = getItemId(item);
+                if (selectedItemsIds.includes(id)) leaves.push(id);
+            } else {
+                getSelectedLeafIds(item.children).forEach((leaf) => leaves.push(leaf));
+            }
+        });
+
+        return leaves;
+    };
+
+    return { handleSelectedItemsChange, selectedItemsIds, selectParentIfAllChildrenAreSelected, setSelectedItemsIds, getSelectedLeafIds };
 };

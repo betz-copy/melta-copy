@@ -6,16 +6,15 @@ import React, { Dispatch, useState } from 'react';
 import { IoIosArrowBack, IoIosArrowDown } from 'react-icons/io';
 import { useMatomo } from '@datapunt/matomo-tracker-react';
 import {
-    ChooseAllMenuItem,
     getOptionsAndGroupsMiniFiltered,
-    MiniFilter,
     SelectCheckboxGroupProps,
     SelectCheckboxProps,
     SelectOptionsMenuItemsGrouped,
-} from '../../common/SelectCheckbox';
+} from '../../common/SelectCheckBox';
 import { IMongoCategory } from '../../interfaces/categories';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { useDarkModeStore } from '../../stores/darkMode';
+import { MiniFilter } from '../../common/SelectCheckBox/MiniFilter';
 
 const useStyles = makeStyles(() => ({
     button: {
@@ -138,11 +137,12 @@ const TemplatesSelectGrid: React.FC<{
                         </Typography>
                         <MiniFilter value={miniFilterValue} onChange={setMiniFilterValue} toTopBar={false} templatesSelectGrid />
                         <ChooseAllMenuItem
-                            options={templates}
-                            selectedOptionsFiltered={selectedTemplatesFiltered}
+                            flattenedOptions={templates}
+                            selectedOptions={selectedTemplatesFiltered}
                             setSelectedOptions={setSelectedTemplates}
                             optionsFiltered={templatesFiltered}
                             onClick={onClick}
+                            getOptionId={getOptionId}
                         />
                         <Box sx={{ display: 'flex', justifyContent: 'center', my: '5px' }}>
                             <Divider style={{ width: '199px' }} />

@@ -12,7 +12,7 @@ import { environment } from '../../globals';
 import { GlobalSearchBar } from '../../common/EntitiesPage/Headline';
 import { LocalStorage } from '../../utils/localStorage';
 import { IMongoIFrame } from '../../interfaces/iFrames';
-import { SelectCheckbox } from '../../common/SelectCheckbox';
+import { SelectCheckbox } from '../../common/SelectCheckBox';
 import { useUserStore } from '../../stores/user';
 import { MeltaTooltip } from '../../common/MeltaTooltip';
 import IconButtonWithPopover from '../../common/IconButtonWithPopover';

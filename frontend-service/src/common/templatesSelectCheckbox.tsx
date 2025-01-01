@@ -1,27 +1,8 @@
 import { FilterList } from '@mui/icons-material';
 import i18next from 'i18next';
 import React, { Dispatch } from 'react';
-import { IMongoCategory } from '../interfaces/categories';
 import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
-import { SelectCheckbox, SelectCheckboxProps } from './SelectCheckbox';
-
-const getCategoriesSelectCheckboxGroupProps = (
-    categories: IMongoCategory[] | undefined,
-): SelectCheckboxProps<IMongoEntityTemplatePopulated, IMongoCategory>['groupsProps'] => {
-    if (!categories) {
-        return {
-            useGroups: false,
-        };
-    }
-
-    return {
-        useGroups: true,
-        groups: categories,
-        getGroupId: (category) => category._id,
-        getGroupLabel: (category) => category.displayName,
-        getGroupOfOption: (entityTemplate, _categories) => entityTemplate.category,
-    };
-};
+import { SelectCheckbox } from './SelectCheckBox';
 
 const TemplatesSelectCheckbox: React.FC<{
     title: string;
