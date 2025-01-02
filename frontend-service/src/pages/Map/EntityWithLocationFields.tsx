@@ -42,12 +42,7 @@ const EntityWithLocationFields = ({ styles, entity, entityTemplate }: Props) => 
                     <LayerGroup>
                         {polygons.map(({ key, position }) => (
                             <Polygon key={key} positions={position}>
-                                <EntityPopup
-                                    header={propertyDefinitions[key].title}
-                                    properties={entity.properties}
-                                    entityTemplate={entityTemplate}
-                                    darkMode={darkMode}
-                                />
+                                <EntityPopup header={propertyDefinitions[key].title} value={entity.properties[key]} darkMode={darkMode} />
                             </Polygon>
                         ))}
                     </LayerGroup>
@@ -57,12 +52,7 @@ const EntityWithLocationFields = ({ styles, entity, entityTemplate }: Props) => 
                     <LayerGroup>
                         {markers.map(({ key, position }) => (
                             <Marker key={key} position={position}>
-                                <EntityPopup
-                                    header={propertyDefinitions[key].title}
-                                    properties={entity.properties}
-                                    entityTemplate={entityTemplate}
-                                    darkMode={darkMode}
-                                />
+                                <EntityPopup header={propertyDefinitions[key].title} value={entity.properties[key]} darkMode={darkMode} />
                             </Marker>
                         ))}
                     </LayerGroup>

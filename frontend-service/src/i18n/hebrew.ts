@@ -1217,4 +1217,5 @@ export default {
         takePicture: 'צלם תמונה',
         blackAndWhite: 'שחור לבן',
     },
+    location: { noLayers: 'לא נמצאו שכבות' },
 };

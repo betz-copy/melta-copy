@@ -1,22 +1,14 @@
 import React from 'react';
 import { Popup } from 'react-leaflet';
 import { Grid, Typography } from '@mui/material';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 
 interface MapPopupProps {
-    properties: Record<string, any>;
+    value: string;
     header: string;
-    entityTemplate: IMongoEntityTemplatePopulated;
     darkMode?: boolean;
 }
 
-const EntityPopup = ({ header, properties, entityTemplate }: MapPopupProps) => {
-    const fieldsToShow = entityTemplate.propertiesPreview;
-
-    const filteredObject = Object.keys(properties)
-        .filter((key) => fieldsToShow.includes(key))
-        .reduce((acc, key) => ({ ...acc, [key]: properties[key] }), {});
-
+const EntityPopup = ({ header, value }: MapPopupProps) => {
     return (
         <Popup keepInView>
             <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'center' }}>
@@ -25,17 +17,8 @@ const EntityPopup = ({ header, properties, entityTemplate }: MapPopupProps) => {
                 </Typography>
             </Grid>
 
-            <Grid container spacing={0}>
-                {Object.keys(filteredObject).map((key) => (
-                    <React.Fragment key={key}>
-                        <Grid item xs={4}>
-                            <Typography>{entityTemplate.properties.properties[key].title}:</Typography>
-                        </Grid>
-                        <Grid item xs={8}>
-                            <Typography color="textSecondary">{filteredObject[key].toString()}</Typography>
-                        </Grid>
-                    </React.Fragment>
-                ))}
+            <Grid item xs={12}>
+                <Typography color="textSecondary">{value}</Typography>
             </Grid>
         </Popup>
     );

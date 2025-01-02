@@ -31,6 +31,15 @@ const config = {
             baseUrl: env.get('FRONTEND_CONFIG_MATOMO_BASE_URL').default('http://localhost:8016').required().asString(),
             siteId: env.get('FRONTEND_CONFIG_MATOMO_SITE_ID').default(1).required().asInt(),
         },
+        mapLayers: env
+            .get('FRONTEND_CONFIG_MAP_LAYERS')
+            .default({
+                OpenStreetMap: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                'Esri World Imagery': 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+                OpenTopoMap: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
+            })
+            .required()
+            .asJsonObject(),
     },
 
     authentication: {

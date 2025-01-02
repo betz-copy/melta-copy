@@ -15,6 +15,9 @@ import { getEntitiesByLocation } from '../../../services/entitiesService';
 import { stringToCoordinates, bindPopupForLine, bindPopupForCircle } from '../../../utils/map';
 import { getEntityTemplateColor } from '../../../utils/colors';
 import { useEntityWithLocationFields } from '../../../utils/hooks/useLocation';
+import { environment } from '../../../globals';
+
+const { maxRadius } = environment.map;
 
 const markerIcon = (color: string) =>
     L.divIcon({
@@ -129,19 +132,6 @@ export const EditableMapControl = ({
             toast.error(i18next.t('templateEntitiesAutocomplete.failedToSearchEntities'));
         },
     });
-
-    // Fetching all template at once
-    // const handleFetchLocationRequest = () => {
-    //     const templatesObject = filteredTemplatesIds.reduce((acc, templateId) => {
-    //         if (entityTemplateMap!.has(templateId)) {
-    //             return { ...acc, [templateId]: { filter: {} } };
-    //         }
-    //         return acc;
-    //     }, {});
-    //     if (templatesObject && circle) {
-    //         mutate({ textSearch: '', templates: templatesObject, circle });
-    //     }
-    // };
 
     useEffect(() => {
         searchResultGroupRef?.current?.clearLayers();

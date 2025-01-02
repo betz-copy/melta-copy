@@ -20,6 +20,7 @@ apiRouter.use('/config', (_req, res) =>
     res.json({
         matomoUrl: config.frontendConfig.matotmo.baseUrl,
         matomoSiteId: config.frontendConfig.matotmo.siteId,
+        mapLayers: config.frontendConfig.mapLayers,
     }),
 );
 

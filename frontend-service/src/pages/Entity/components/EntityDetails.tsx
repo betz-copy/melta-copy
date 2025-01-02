@@ -165,7 +165,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                                 {includeLocationProperty && (
                                     <Grid onClick={() => setMapPopupOpen(true)}>
                                         <IconButtonWithPopover popoverText={i18next.t('map')}>
-                                            <MapIcon />
+                                            <MapIcon sx={{ color: darkMode ? '#787c9e' : '#787c9e' }} />
                                         </IconButtonWithPopover>
                                     </Grid>
                                 )}
@@ -200,7 +200,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                                     </IconButtonWithPopover>
                                 </Grid>
                                 <IconButton onClick={handleClick}>
-                                    <MoreVertOutlined />
+                                    <MoreVertOutlined sx={{ color: darkMode ? '#787c9e' : '#787c9e' }} />
                                 </IconButton>
                                 <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
                                     <Grid>

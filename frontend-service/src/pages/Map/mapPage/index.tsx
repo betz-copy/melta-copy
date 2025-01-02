@@ -5,27 +5,30 @@ import 'leaflet-draw/dist/leaflet.draw.css';
 import L from 'leaflet';
 import { Box } from '@mui/material';
 import { useQueryClient } from 'react-query';
+import i18next from 'i18next';
 import { jerusalemCoordinates } from '../../../utils/map';
 import { IEntity } from '../../../interfaces/entities';
 import MapPageEntityDialog from './MapPageEntityDialog';
 import { EditableMapControl } from './MapControl';
 import MapFilters from './MapFilters';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { BackendConfigState } from '../../../services/backendConfigService';
 
 export const BaseLayers = () => {
+    const queryClient = useQueryClient();
+    const config = queryClient.getQueryData<BackendConfigState>('getBackendConfig');
+
+    if (!config) return <>{i18next.t('location.noLayers')}</>;
+
+    const { mapLayers } = config;
+
     return (
         <>
-            <LayersControl.BaseLayer checked name="OpenStreetMap">
-                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-            </LayersControl.BaseLayer>
-
-            <LayersControl.BaseLayer name="Esri World Imagery">
-                <TileLayer url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}" />
-            </LayersControl.BaseLayer>
-
-            <LayersControl.BaseLayer name="OpenTopoMap">
-                <TileLayer url="https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png" />
-            </LayersControl.BaseLayer>
+            {Object.entries(mapLayers).map(([name, url]) => (
+                <LayersControl.BaseLayer checked name={name} key={name}>
+                    <TileLayer url={url} />
+                </LayersControl.BaseLayer>
+            ))}
         </>
     );
 };

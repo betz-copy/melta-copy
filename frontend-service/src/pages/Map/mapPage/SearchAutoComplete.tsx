@@ -111,10 +111,13 @@ const SearchAutoComplete = ({ selectedTemplates, handleEntityClick }: props) => 
                     fontSize: '14px',
                 },
             }}
+            onInputChange={(event, _newInputValue, reason) => {
+                if (reason === 'reset') setInputValue('');
+                else debouncedSearch((event.target as HTMLInputElement).value);
+            }}
             renderInput={(params) => (
                 <TextField
                     {...params}
-                    onChange={(e) => debouncedSearch(e.target.value)}
                     sx={{
                         backgroundColor: theme.palette.background.default,
                         width: 400,
@@ -129,7 +132,7 @@ const SearchAutoComplete = ({ selectedTemplates, handleEntityClick }: props) => 
                 const template = selectedTemplates.find(({ _id }) => _id === option.templateId);
 
                 // TODO add template name below every item and take care of template not wxist
-                if (!template) return <>No templates Selected</>;
+                if (!template) return null;
 
                 const displayOptionValues = getTopNFieldsWithValues(option, template, 3);
 

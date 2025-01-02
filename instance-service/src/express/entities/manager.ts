@@ -827,7 +827,6 @@ export class EntityManager extends DefaultManagerNeo4j {
         let query: string | null = null;
 
         if (circle) query = this.buildCircleQuery();
-        // else if (polygon) query = this.buildPolygonQuery();
 
         if (!query) throw new Error('Payload must include either circle or polygon.');
 

@@ -24,7 +24,7 @@ const MapFilters = ({ selectedTemplates, setSelectedTemplates, moveToEntityLocat
     }, []);
 
     return (
-        <Grid item zIndex={1000} position="absolute" top={10} left={100} container wrap="nowrap" gap="15px">
+        <Grid item zIndex={1000} position="absolute" top={10} left={270} container wrap="nowrap" gap="15px">
             <Grid item>
                 <TemplatesSelectCheckbox
                     title={i18next.t('entityTemplatesCheckboxLabel')}
