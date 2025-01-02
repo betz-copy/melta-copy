@@ -1,5 +1,6 @@
 import JSZip from 'jszip';
 import { parseStringPromise } from 'xml2js';
+import { posix as path } from 'path';
 import config from '../../config';
 
 const { diagramTypesToFilterBy } = config.minio.pptx;
@@ -78,12 +79,12 @@ export const extractTextByTags = (obj: XMLObject, tags: string[]): string => {
  * @returns {string}
  */
 export const normalizeDiagramPath = (slidePath: string, target: string): string => {
-    const baseDir = slidePath.substring(0, slidePath.lastIndexOf('/'));
-    let upOne = baseDir.substring(0, baseDir.lastIndexOf('/'));
-    const normalizedTarget = target.substring(3);
-    upOne = upOne.substring(0, upOne.lastIndexOf('/')) || upOne;
+    // Get the directory of the slide (e.g., "ppt/slides")
+    const slideDir = path.dirname(slidePath);
 
-    return `${upOne}/${normalizedTarget}`;
+    // Join with the relative target (e.g., "../diagrams/data1.xml")
+    // This produces "ppt/diagrams/data1.xml"
+    return path.join(slideDir, target);
 };
 
 /**
