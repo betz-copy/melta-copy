@@ -60,16 +60,21 @@ export class FlowCubeManager extends DefaultManagerProxy<null> {
         return convertToFlow;
     }
 
-    async searchTemplatesNameAndIdInWorkspace(flowBody: any): Promise<TemplateNamesAndId[]> {
-        const templates = await this.entityTemplateService.searchEntityTemplates({ search: flowBody.Parameters.Value } as ISearchEntityTemplatesBody);
+    async searchTemplatesNameAndIdInWorkspace(body: any): Promise<TemplateNamesAndId[]> {
+        let searchEntityTemplatesBody = {};
+        if (body?.Parameters?.Value) {
+            searchEntityTemplatesBody = { search: body.Parameters.Value };
+        }
+
+        const templates = await this.entityTemplateService.searchEntityTemplates(searchEntityTemplatesBody as ISearchEntityTemplatesBody);
 
         return templates.map(({ _id, displayName }) => {
             return { Value: _id, Name: displayName };
         });
     }
 
-    async getEntityTemplateById(templateId: string): Promise<{ Parameters: FlowParameter[]; Fields: FlowField[] }> {
-        const template = await this.entityTemplateService.getEntityTemplateById(templateId);
+    async getEntityTemplateById(templateId: string[]): Promise<{ Parameters: FlowParameter[]; Fields: FlowField[] }> {
+        const template = await this.entityTemplateService.getEntityTemplateById(templateId[0]);
         const { properties } = template;
 
         const parameters: FlowParameter[] = Object.entries(properties.properties).map(([key, value]) => ({
