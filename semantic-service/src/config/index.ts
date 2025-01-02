@@ -51,6 +51,7 @@ const config = {
                 .asArray(',')
                 .map(String),
             slidesSplitter: env.get('PPTX_SLIDES_SPLITTER').default('\n###\n').asString(),
+            slidesPathRegex: env.get('PPTX_SLIDES_PATH_REGEX').default('^ppt\\/slides\\/slide\\d+\\.xml$').asString(),
         },
     },
     rabbit: {

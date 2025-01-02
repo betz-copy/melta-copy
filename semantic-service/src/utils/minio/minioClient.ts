@@ -2,24 +2,14 @@ import http from 'http';
 import { Client } from 'minio';
 import pdf from 'pdf-parse';
 import mammoth from 'mammoth';
-import { Duplex } from 'stream';
 import config from '../../config';
 import { streamToBuffer } from '../fs';
 import logger from '../logger/logsLogger';
 import readExcelData from '../excel';
 import { extractPptxText } from '../pptx';
+import { FileTypes } from '../types';
 
 const { url: endPoint, port, accessKey, secretKey, useSSL, transportAgent } = config.minio;
-
-export enum FileTypes {
-    PDF = 'pdf',
-    TXT = 'txt',
-    DOC = 'doc',
-    DOCX = 'docx',
-    XLSX = 'xlsx',
-    CSV = 'csv',
-    PPTX = 'pptx',
-}
 
 export class MinIOClient {
     private minioClient: Client;
@@ -63,13 +53,6 @@ export class MinIOClient {
 
     private downloadFileStream(filePath: string) {
         return this.wrapDBNotExistsError(() => this.minioClient.getObject(this.bucketName, filePath));
-    }
-
-    bufferToStream(buffer: Buffer) {
-        const stream = new Duplex();
-        stream.push(buffer);
-        stream.push(null);
-        return stream;
     }
 
     async readFile(filePath: string): Promise<string | undefined> {

@@ -2,7 +2,7 @@ import JSZip from 'jszip';
 import { parseStringPromise } from 'xml2js';
 import config from '../../config';
 
-const { extractingTextTags, extractingDiagramTags, diagramTypesToFilterBy } = config.minio.pptx;
+const { diagramTypesToFilterBy } = config.minio.pptx;
 
 interface Relationship {
     $: {
@@ -29,7 +29,7 @@ export interface XMLObject {
  * @param {string[]} tags - List of tag names to extract (e.g. ["a:t"], ["a:t", "dgm:t"]).
  * @returns {string} The extracted text, concatenated with spaces.
  */
-const extractTextByTags = (obj: XMLObject, tags: string[]): string => {
+export const extractTextByTags = (obj: XMLObject, tags: string[]): string => {
     let accumulatedText = '';
 
     const traverse = (node: XMLObject) => {
@@ -62,21 +62,6 @@ const extractTextByTags = (obj: XMLObject, tags: string[]): string => {
 
     return `${accumulatedText.trim()}\n`;
 };
-
-/**
- * Recursively extracts text from a slide object, primarily from <a:t> tags.
- * @param {XMLObject} slideObj - The parsed XML slide object.
- * @returns {string} - The extracted slide text.
- */
-export const extractTextFromSlide = (slideObj: XMLObject): string => extractTextByTags(slideObj, extractingTextTags);
-
-/**
- * Recursively extracts text from a SmartArt/diagram object.
- * Typical text tags include <dgm:t> and <a:t>.
- * @param {XMLObject} diagramObj - The parsed XML diagram object.
- * @returns {string} - The extracted diagram text.
- */
-export const extractDiagramText = (diagramObj: XMLObject): string => extractTextByTags(diagramObj, extractingDiagramTags);
 
 /**
  * Normalizes a diagram path relative to the current slide path.

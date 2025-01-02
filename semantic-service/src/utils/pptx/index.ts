@@ -1,16 +1,8 @@
 import JSZip from 'jszip';
-import {
-    extractDiagramText,
-    extractTextFromSlide,
-    findDiagramFiles,
-    normalizeDiagramPath,
-    readXmlFromZip,
-    RelsObject,
-    XMLObject,
-} from './helperFunctions';
+import { extractTextByTags, findDiagramFiles, normalizeDiagramPath, readXmlFromZip, RelsObject, XMLObject } from './helperFunctions';
 import config from '../../config';
 
-const { slidesSplitter } = config.minio.pptx;
+const { slidesSplitter, slidesPathRegex, extractingTextTags, extractingDiagramTags } = config.minio.pptx;
 
 /**
  * Reads a slide's .rels file to find SmartArt/diagram references and extracts their text.
@@ -32,7 +24,7 @@ async function readDiagramReferences(presentationZip: JSZip, slidePath: string):
 
             if (presentationZip.files[diagAbsPath]) {
                 const diagObj = await readXmlFromZip<XMLObject>(presentationZip, diagAbsPath);
-                diagramText += extractDiagramText(diagObj);
+                diagramText += extractTextByTags(diagObj, extractingDiagramTags);
             }
         }),
     );
@@ -48,9 +40,9 @@ async function readDiagramReferences(presentationZip: JSZip, slidePath: string):
  */
 async function readSlide(presentationZip: JSZip, slidePath: string): Promise<string> {
     const slideObj = await readXmlFromZip<XMLObject>(presentationZip, slidePath);
-    let slideText = slidesSplitter;
+    let slideText = '';
 
-    slideText += extractTextFromSlide(slideObj);
+    slideText += extractTextByTags(slideObj, extractingTextTags);
 
     slideText += await readDiagramReferences(presentationZip, slidePath);
 
@@ -64,9 +56,10 @@ async function readSlide(presentationZip: JSZip, slidePath: string): Promise<str
  */
 export const extractPptxText = async (fileBuffer: Buffer): Promise<string> => {
     const presentationZip = await JSZip.loadAsync(fileBuffer);
-    const slideFilePaths = Object.keys(presentationZip.files).filter((path) => /^ppt\/slides\/slide\d+\.xml$/i.test(path));
+    const slidesPathCheckRegex = new RegExp(slidesPathRegex, 'i');
+    const slideFilePaths = Object.keys(presentationZip.files).filter((path) => slidesPathCheckRegex.test(path));
 
     const slideTexts = await Promise.all(slideFilePaths.map((slidePath) => readSlide(presentationZip, slidePath)));
 
-    return slideTexts.join('');
+    return slideTexts.join(slidesSplitter);
 };
