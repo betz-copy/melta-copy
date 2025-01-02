@@ -31,7 +31,6 @@
     "minio": "^8.0.1",
     "mongoose": "^8.5.3",
     "morgan": "^1.10.0",
-    "office-text-extractor": "^3.0.3",
     "pdf-parse": "^1.1.1",
     "supertest": "^7.0.0",
     "uuid": "^10.0.0",
