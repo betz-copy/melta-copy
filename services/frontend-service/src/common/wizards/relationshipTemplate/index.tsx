@@ -81,7 +81,7 @@ const RelationshipTemplateWizard: React.FC<WizardBaseType<RelationshipTemplateWi
     const queryClient = useQueryClient();
     const { isLoading, mutateAsync } = useMutation(
         (relationshipTemplateForm: RelationshipTemplateWizardValues) => {
-            const { _id, createdAt, updatedAt, ...restOfRelationshipTemplateForm } = relationshipTemplateForm;
+            const { _id, createdAt: _createdAt, updatedAt: _updatedAt, ...restOfRelationshipTemplateForm } = relationshipTemplateForm;
             const relationshipTemplateBody = relationshipTemplateFormToRelationshipTemplateObject(restOfRelationshipTemplateForm);
             if (isEditMode) {
                 return updateRelationshipTemplateRequest(_id!, relationshipTemplateBody);

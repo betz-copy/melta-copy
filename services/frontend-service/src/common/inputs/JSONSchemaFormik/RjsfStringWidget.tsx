@@ -24,10 +24,10 @@ const RjsfTextWidget = ({
     schema,
     uiSchema,
     rawErrors = [],
-    formContext,
+    _formContext,
     registry,
-    color,
-    propertyReadOnly,
+    _color,
+    _propertyReadOnly,
     ...textFieldProps
 }: WidgetProps) => {
     const _onChange = ({ target: { value: newValue } }: React.ChangeEvent<HTMLInputElement>) => {

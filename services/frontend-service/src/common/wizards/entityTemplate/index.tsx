@@ -132,7 +132,7 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
                 try {
                     const relationshipTemplates = await getAllRelationshipTemplatesRequest();
                     queryClient.setQueryData<IRelationshipTemplateMap>('getRelationshipTemplates', mapTemplates(relationshipTemplates));
-                } catch (error) {
+                } catch {
                     toast.error(i18next.t('wizard.failedToUpdateSystemData'));
                 }
                 handleClose();

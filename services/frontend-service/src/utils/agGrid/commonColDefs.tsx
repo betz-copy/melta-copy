@@ -10,7 +10,7 @@ import { agGridLocaleText } from './agGridLocaleText';
 import OverflowWrapper from './OverflowWrapper';
 import { Value } from './Value';
 
-export const numberColDef = <Data extends any = IEntity>(
+export const numberColDef = <Data = IEntity,>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
     value: { title: string },
@@ -33,7 +33,7 @@ export const numberColDef = <Data extends any = IEntity>(
     };
 };
 
-export const regexColDef = <Data extends any = IEntity>(
+export const regexColDef = <Data = IEntity,>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
     value: { title: string },
@@ -57,7 +57,7 @@ export const regexColDef = <Data extends any = IEntity>(
     };
 };
 
-export const stringColDef = <Data extends any = IEntity>(
+export const stringColDef = <Data = IEntity,>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
     value: { title: string },
@@ -80,7 +80,7 @@ export const stringColDef = <Data extends any = IEntity>(
     };
 };
 
-export const fileColDef = <Data extends any = IEntity>(
+export const fileColDef = <Data = IEntity,>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
     value: { title: string },
@@ -104,7 +104,7 @@ export const fileColDef = <Data extends any = IEntity>(
     };
 };
 
-export const relatedTemplateColDef = <Data extends any = IEntity>(
+export const relatedTemplateColDef = <Data = IEntity,>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
     value: { title: string },
@@ -134,7 +134,7 @@ export const relatedTemplateColDef = <Data extends any = IEntity>(
     };
 };
 
-export const booleanColDef = <Data extends any = IEntity>(
+export const booleanColDef = <Data = IEntity,>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
     value: { title: string },
@@ -172,7 +172,7 @@ export const booleanColDef = <Data extends any = IEntity>(
     };
 };
 
-export const enumColDef = <Data extends any = IEntity>(
+export const enumColDef = <Data = IEntity,>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
     value: { title: string },
@@ -210,7 +210,7 @@ export const enumColDef = <Data extends any = IEntity>(
     };
 };
 
-export const enumArrayColDef = <Data extends any = IEntity>(
+export const enumArrayColDef = <Data = IEntity,>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
     value: { title: string },
@@ -254,7 +254,7 @@ export const enumArrayColDef = <Data extends any = IEntity>(
     };
 };
 
-export const enumFilesColDef = <Data extends any = IEntity>(
+export const enumFilesColDef = <Data = IEntity,>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
     value: { title: string },
@@ -298,7 +298,7 @@ export const enumFilesColDef = <Data extends any = IEntity>(
     };
 };
 
-export const dateColDef = <Data extends any = IEntity>(
+export const dateColDef = <Data = IEntity,>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
     value: Record<string, any>,
@@ -350,7 +350,7 @@ export const dateColDef = <Data extends any = IEntity>(
     };
 };
 
-export const translatedEnumColDef = <Data extends any = IEntity>(
+export const translatedEnumColDef = <Data = IEntity,>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
     value: { title: string },

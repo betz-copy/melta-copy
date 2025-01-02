@@ -34,7 +34,7 @@ import { DuplicateTopBar } from './DuplicateTopBar';
 
 const { errorCodes } = environment;
 
-const DuplicateEntity: React.FC<{}> = () => {
+const DuplicateEntity: React.FC = () => {
     const { state } = window.history;
 
     const {
@@ -127,7 +127,7 @@ const DuplicateEntity: React.FC<{}> = () => {
     const templateFileKeys = Object.keys(templateFilesProperties);
     const requiredFilesNames = entityTemplate.properties.required.filter((name) => templateFileKeys.includes(name));
 
-    const { _id, createdAt, updatedAt, disabled, ...entityToDuplicateData } = entity.properties;
+    const { _id, createdAt: _createdAt, updatedAt: _updatedAt, disabled: _disabled, ...entityToDuplicateData } = entity.properties;
 
     const fieldProperties = pickBy(entityToDuplicateData, (_value, key) => !templateFileKeys.includes(key)) as IEntity['properties'];
     const fileIdsProperties = pickBy(entityToDuplicateData, (_value, key) => templateFileKeys.includes(key));

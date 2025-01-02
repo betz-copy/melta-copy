@@ -87,14 +87,14 @@ export const MenuItemContent: React.FC<MenuItemContentProps> = ({ checked, indet
     );
 };
 
-export type SelectCheckboxGroupProps<Option extends any, Group extends any> = {
+export type SelectCheckboxGroupProps<Option, Group> = {
     groups: Group[];
     getGroupOfOption: (option: Option, groups: Group[]) => Group;
     getGroupId: (group: Group) => Key;
     getGroupLabel: (group: Group) => string;
 };
 
-export type SelectCheckboxProps<Option extends any, Group extends any = any> = PropsWithChildren<{
+export type SelectCheckboxProps<Option, Group = any> = PropsWithChildren<{
     title: string;
     img?: ReactElement;
     options: Option[];
@@ -118,14 +118,14 @@ export type SelectCheckboxProps<Option extends any, Group extends any = any> = P
     showIcon?: boolean;
 }>;
 
-export const groupByWithInitial = <T extends any>(collection: T[], keys: PropertyKey[], func: (value: T) => PropertyKey) => {
+export const groupByWithInitial = <T,>(collection: T[], keys: PropertyKey[], func: (value: T) => PropertyKey) => {
     const groupedCollectionInitial = Object.fromEntries(keys.map((key) => [key, [] as T[]]));
     const groupedCollection = lodashGroupBy(collection, func);
 
     return { ...groupedCollectionInitial, ...groupedCollection };
 };
 
-export const SelectOptionsMenuItems = <Option extends any, Group extends any>({
+export const SelectOptionsMenuItems = <Option, Group>({
     options,
     setOptions,
     selectedOptions,
@@ -223,7 +223,7 @@ export const SelectOptionsMenuItems = <Option extends any, Group extends any>({
     );
 };
 
-export const SelectOptionsMenuItemsGrouped = <Option extends any, Group extends any>({
+export const SelectOptionsMenuItemsGrouped = <Option, Group>({
     options,
     optionsFiltered,
     selectedOptions,
@@ -343,7 +343,7 @@ export const SelectOptionsMenuItemsGrouped = <Option extends any, Group extends 
     );
 };
 
-export const getOptionsAndGroupsMiniFiltered = <Option extends any, Group extends any>(
+export const getOptionsAndGroupsMiniFiltered = <Option, Group>(
     miniFilterValue: string,
     options: SelectCheckboxProps<Option, Group>['options'],
     getOptionId: SelectCheckboxProps<Option, Group>['getOptionId'],
@@ -458,7 +458,7 @@ export const MiniFilter: React.FC<{ value: string; onChange: (value: string) => 
     );
 };
 
-export const ChooseAllMenuItem = <Option extends any, Group extends any>({
+export const ChooseAllMenuItem = <Option, Group>({
     options,
     selectedOptionsFiltered,
     setSelectedOptions,
@@ -495,7 +495,7 @@ export const ChooseAllMenuItem = <Option extends any, Group extends any>({
     );
 };
 
-const SelectCheckbox = <Option extends any, Group extends any>({
+const SelectCheckbox = <Option, Group>({
     title,
     img,
     options,

@@ -26,7 +26,7 @@ const ComponentToPrint = React.forwardRef<
         setIsProcessChanged: React.Dispatch<React.SetStateAction<boolean>>;
         filesToPrint: IFile[];
         setSelectedFiles: React.Dispatch<React.SetStateAction<IFile[]>>;
-        setFilesLoadingStatus: React.Dispatch<React.SetStateAction<{}>>;
+        setFilesLoadingStatus: React.Dispatch<React.SetStateAction<object>>;
         options: {
             showSummary: boolean;
             showFiles: boolean;

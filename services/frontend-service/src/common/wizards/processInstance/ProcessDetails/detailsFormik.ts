@@ -23,7 +23,7 @@ const validationSchema = Yup.object().shape({
     steps: Yup.object().nullable().required('This field is required'),
 });
 
-export const initDetailsValues = (template: IMongoProcessTemplateReviewerPopulated): Object => {
+export const initDetailsValues = (template: IMongoProcessTemplateReviewerPopulated): object => {
     const details = {};
     Object.keys(template.details.properties.properties).forEach((field) => {
         details[field] = undefined;

@@ -20,7 +20,7 @@ import {
 import IconButtonWithPopover from '../IconButtonWithPopover';
 import { ImageWithDisable } from '../ImageWithDisable';
 
-export interface IGetColumnDefsOptions<Data extends any> {
+export interface IGetColumnDefsOptions<Data> {
     template: IMongoEntityTemplatePopulated & { entityIdsToInclude?: string[] };
     getEntityPropertiesData: (data: Data) => IEntity['properties'];
     onNavigateToRow?: (entity: Data) => void;
@@ -35,7 +35,7 @@ export interface IGetColumnDefsOptions<Data extends any> {
     searchValue?: string;
 }
 
-export const getColumnDefs = <Data extends any = IEntity>({
+export const getColumnDefs = <Data = IEntity,>({
     template,
     getEntityPropertiesData,
     onNavigateToRow,

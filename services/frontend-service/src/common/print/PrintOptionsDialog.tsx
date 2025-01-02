@@ -68,8 +68,8 @@ const PrintOptionsDialog: React.FC<{
     setFiles: React.Dispatch<React.SetStateAction<IFile[]>>;
     selectedFiles: IFile[];
     setSelectedFiles: React.Dispatch<React.SetStateAction<IFile[]>>;
-    filesLoadingStatus: {};
-    setFilesLoadingStatus: React.Dispatch<React.SetStateAction<{}>>;
+    filesLoadingStatus: object;
+    setFilesLoadingStatus: React.Dispatch<React.SetStateAction<object>>;
     entityConnections?: {
         connectionsTemplates: IConnectionTemplateOfExpandedEntity[];
         selectedConnections: IConnectionTemplateOfExpandedEntity[];

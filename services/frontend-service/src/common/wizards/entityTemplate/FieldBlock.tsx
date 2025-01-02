@@ -132,7 +132,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
         setFieldDisplayValue(selectedIndexToRemove, 'deleted' as keyof Values, true);
     };
 
-    const remove = (index: number, isNewProperty: Boolean) => {
+    const remove = (index: number, isNewProperty: boolean) => {
         const displayValuesCopy = [...displayValuesRef.current] as Values[PropertiesType];
         const isDeleted = displayValuesCopy[index].deleted;
 
@@ -275,8 +275,8 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
                 body={`${i18next.t('systemManagement.warningOnDeleteField')}
                     ${selectedIndexToRemove > -1 && displayValuesRef.current[selectedIndexToRemove].title}
                     ${i18next.t('systemManagement.continueWarningOnDeleteField')} ${
-                    (initialValues as unknown as IMongoEntityTemplatePopulated).displayName
-                }`}
+                        (initialValues as unknown as IMongoEntityTemplatePopulated).displayName
+                    }`}
                 onYes={onDeleteSure}
             />
         </FieldBlockAccordion>

@@ -18,7 +18,7 @@ const ComponentToPrint = React.forwardRef<
         connectionsTemplatesToPrint: IConnectionTemplateOfExpandedEntity[];
         filesToPrint: IFile[];
         setSelectedFiles: React.Dispatch<React.SetStateAction<IFile[]>>;
-        setFilesLoadingStatus: React.Dispatch<React.SetStateAction<{}>>;
+        setFilesLoadingStatus: React.Dispatch<React.SetStateAction<object>>;
         options: {
             showDate: boolean;
             showDisabled: boolean;

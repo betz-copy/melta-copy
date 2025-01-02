@@ -3,7 +3,7 @@ import { getDayEnd, getDayStart } from '../../utils/date';
 import { getFormattedDateAccordingToField } from '../../utils/gantts';
 
 export interface IGraphFilterToBackendBody {
-    [templateId: string]: { filter: ISearchFilter } | {};
+    [templateId: string]: { filter: ISearchFilter } | object;
 }
 
 const propertyAndValueRelation = (template: IMongoEntityTemplatePopulated, property: string, filterField: any): Record<string, IFilterOfField> => {
@@ -44,20 +44,23 @@ const propertyAndValueRelation = (template: IMongoEntityTemplatePopulated, prope
 };
 
 export const filterModelToFilterOfGraph = (filterModel: IGraphFilterBodyBatch): IGraphFilterToBackendBody['filters'] => {
-    const groupedByTemplate = Object.values(filterModel).reduce((acc: Record<string, Record<string, IFilterOfField>[]>, obj: IGraphFilterBody) => {
-        const { selectedTemplate, selectedProperty, filterField } = obj;
-        const { _id } = selectedTemplate;
+    const groupedByTemplate = Object.values(filterModel).reduce(
+        (acc: Record<string, Record<string, IFilterOfField>[]>, obj: IGraphFilterBody) => {
+            const { selectedTemplate, selectedProperty, filterField } = obj;
+            const { _id } = selectedTemplate;
 
-        if (!acc[_id]) {
-            // eslint-disable-next-line no-param-reassign
-            acc[_id] = [];
-        }
-        if (selectedProperty && selectedTemplate.properties.properties[selectedProperty].items?.enum && filterField.length > 0) {
-            acc[_id].push(propertyAndValueRelation(selectedTemplate, selectedProperty, filterField));
-        } else if (selectedProperty) acc[_id].push(propertyAndValueRelation(selectedTemplate, selectedProperty, filterField));
-        else acc[_id].push({});
-        return acc;
-    }, {} as Record<string, Record<string, IFilterOfField>[]>);
+            if (!acc[_id]) {
+                // eslint-disable-next-line no-param-reassign
+                acc[_id] = [];
+            }
+            if (selectedProperty && selectedTemplate.properties.properties[selectedProperty].items?.enum && filterField.length > 0) {
+                acc[_id].push(propertyAndValueRelation(selectedTemplate, selectedProperty, filterField));
+            } else if (selectedProperty) acc[_id].push(propertyAndValueRelation(selectedTemplate, selectedProperty, filterField));
+            else acc[_id].push({});
+            return acc;
+        },
+        {} as Record<string, Record<string, IFilterOfField>[]>,
+    );
     const result = Object.keys(groupedByTemplate).reduce((finalObj: Record<string, IGraphFilterToBackendBody['filters']>, template: string) => {
         // eslint-disable-next-line no-param-reassign
         finalObj[template] = {

@@ -126,7 +126,7 @@ export const updateProcessRequest = async (
     const { data } = await axios.put<IMongoProcessInstanceReviewerPopulated>(`${processes}/${processId}`, formData);
     return data;
 };
-export const archiveProcessRequest = async (processId: string, archived: Boolean) => {
+export const archiveProcessRequest = async (processId: string, archived: boolean) => {
     const { data } = await axios.patch<IMongoProcessInstanceReviewerPopulated>(`${processes}/archive/${processId}`, {
         archived,
     });

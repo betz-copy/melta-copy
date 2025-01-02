@@ -35,7 +35,7 @@ import isEqual from 'lodash.isequal';
 import EditIcon from '@mui/icons-material/Edit';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import { IUniqueConstraintOfTemplate, IEntityTemplateMap } from '@microservices/shared';
+import { IUniqueConstraintOfTemplate, IEntityTemplateMap, PermissionScope } from '@microservices/shared';
 import { dateNotificationTypes, validPropertyTypes } from './AddFields';
 import { CommonFormInputProperties, IRelationshipReference } from './commonInterfaces';
 import { MinimizedColorPicker } from '../../inputs/MinimizedColorPicker';
@@ -44,7 +44,6 @@ import { deleteEnumFieldRequest, updateEnumFieldRequest } from '../../../service
 import { AreYouSureDialog } from '../../dialogs/AreYouSureDialog';
 import { MeltaTooltip } from '../../MeltaTooltip';
 import RelationshipReferenceField from './RelationshipReferenceField';
-import { PermissionScope } from '@microservices/shared';
 import { useUserStore } from '../../../stores/user';
 
 enum dateNotificationOptions {

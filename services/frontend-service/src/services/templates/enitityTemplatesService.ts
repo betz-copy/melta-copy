@@ -95,7 +95,7 @@ const entityTemplateObjectToEntityTemplateForm = (
 
 export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode: boolean): IEntityTemplateWithConstraints => {
     // change to support file types
-    const { properties, attachmentProperties, propertiesTypeOrder, documentTemplatesIds, ...restOfProperties } = values;
+    const { properties, attachmentProperties, propertiesTypeOrder, documentTemplatesIds: _documentTemplatesIds, ...restOfProperties } = values;
     const serialsUniqueConstraints: string[][] = [];
     const propertiesOrder: string[] = [];
     const attachmentPropertiesOrder: string[] = [];

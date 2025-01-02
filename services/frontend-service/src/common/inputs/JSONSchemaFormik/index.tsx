@@ -72,13 +72,13 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
     return ajvErrorsToFormikErrors(schema, ajvErrors);
 };
 
-const formikErrorsToRjsfExtraErrors = (formikErrors: Record<string, string>): ErrorSchema<{}> => {
+const formikErrorsToRjsfExtraErrors = (formikErrors: Record<string, string>): ErrorSchema<object> => {
     // assuming no complex fields (nested/array). need recursion for nested fields
 
     return mapValues(formikErrors, (errorMessage) => ({ __errors: [errorMessage] }));
 };
 
-const mergeErrorSchemas = (errors1: ErrorSchema<{}>, errors2: ErrorSchema<{}>) => {
+const mergeErrorSchemas = (errors1: ErrorSchema<object>, errors2: ErrorSchema<object>) => {
     const merged = { ...errors1 };
     // eslint-disable-next-line no-restricted-syntax
     for (const key in errors2) {
@@ -129,11 +129,11 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
     }, [values.template]);
 
     const rjsfExtraErrors = formikErrorsToRjsfExtraErrors(errors as Record<string, string>);
-    const ajvExtraErrorsOnlyTouched: ErrorSchema<{}> = pickBy(rjsfExtraErrors, (_value, key) => touched[key]);
+    const ajvExtraErrorsOnlyTouched: ErrorSchema<object> = pickBy(rjsfExtraErrors, (_value, key) => touched[key]);
     const rjsfExtraUniqueErrors = formikErrorsToRjsfExtraErrors(uniqueErrors as Record<string, string>);
 
-    const notTouchedUnique: ErrorSchema<{}> = pickBy(rjsfExtraUniqueErrors, (_value, key) => !touched[key]);
-    const mergedErrors: ErrorSchema<{}> = mergeErrorSchemas(ajvExtraErrorsOnlyTouched, notTouchedUnique);
+    const notTouchedUnique: ErrorSchema<object> = pickBy(rjsfExtraUniqueErrors, (_value, key) => !touched[key]);
+    const mergedErrors: ErrorSchema<object> = mergeErrorSchemas(ajvExtraErrorsOnlyTouched, notTouchedUnique);
 
     return (
         <JSONSchemaForm

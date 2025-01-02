@@ -34,7 +34,7 @@ const getRjfsDateOrDateTimeWidget =
         schema,
         uiSchema,
         rawErrors = [],
-        formContext,
+        _formContext,
         registry,
         color,
         ...textFieldProps

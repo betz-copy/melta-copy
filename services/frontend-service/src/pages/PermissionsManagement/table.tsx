@@ -157,7 +157,7 @@ const columnDefs = (
     },
 ];
 
-const getDatasource = <Data extends any = IUser>(
+const getDatasource = <Data = IUser,>(
     { _id }: IWorkspace,
     quickFilter: string | undefined,
     onFail: (err: unknown) => void | undefined,
@@ -186,7 +186,7 @@ const getDatasource = <Data extends any = IUser>(
     };
 };
 
-const getRowModelProps = <Data extends any = IUser>(
+const getRowModelProps = <Data = IUser,>(
     workspace: IWorkspace,
     paginationPageSize: number,
     quickFilterText: string | undefined,

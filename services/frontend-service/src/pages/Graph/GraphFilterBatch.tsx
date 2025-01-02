@@ -22,7 +22,7 @@ const GraphFilterBatch: React.FC<GraphFilterBatchProps> = React.memo(
 
         const removeFilterFromFilterList = (filterKey) => {
             setFilterRecord((prev) => {
-                const { [filterKey]: deletedFilter, ...restFilters } = prev;
+                const { [filterKey]: _deletedFilter, ...restFilters } = prev;
                 return restFilters;
             });
             onFilter();

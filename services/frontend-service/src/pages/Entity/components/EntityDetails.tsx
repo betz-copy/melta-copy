@@ -171,8 +171,8 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplateWithConstrai
                                             !canWriteInstance
                                                 ? i18next.t('permissions.dontHaveWritePermissionsToCategory')
                                                 : isEntityDisabled
-                                                ? i18next.t('entityPage.disabledEntity')
-                                                : i18next.t('actions.edit')
+                                                  ? i18next.t('entityPage.disabledEntity')
+                                                  : i18next.t('actions.edit')
                                         }
                                         style={{
                                             cursor: !canWriteInstance || isEntityDisabled ? 'default' : 'pointer',
@@ -211,8 +211,8 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplateWithConstrai
                                             !canWriteInstance
                                                 ? i18next.t('permissions.dontHaveWritePermissionsToCategory')
                                                 : isEntityDisabled
-                                                ? i18next.t('entityPage.disabledEntity')
-                                                : ''
+                                                  ? i18next.t('entityPage.disabledEntity')
+                                                  : ''
                                         }
                                         onClick={() => {
                                             if (!canWriteInstance || isEntityDisabled) return;

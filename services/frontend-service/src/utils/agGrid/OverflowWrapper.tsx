@@ -13,7 +13,7 @@ interface IOverflowWrapperProps<T> {
     searchValue?: string;
 }
 
-const OverflowWrapper = <T extends any>({ items, renderItem, getItemKey, containerStyle, files, searchValue }: IOverflowWrapperProps<T>) => {
+const OverflowWrapper = <T,>({ items, renderItem, getItemKey, containerStyle, files, searchValue }: IOverflowWrapperProps<T>) => {
     const [visibleItems, setVisibleItems] = useState(items);
     const containerRef = useRef(null);
     const itemRefs = useRef<React.RefObject<HTMLDivElement>[]>([]);

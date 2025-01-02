@@ -10,7 +10,7 @@ interface InfiniteScrollProps<T> extends PureInfiniteScrollProps<T> {
     style?: object;
 }
 
-export const InfiniteScroll = <T extends any>({
+export const InfiniteScroll = <T,>({
     useContainer = true,
     direction = 'column',
     wrap = 'nowrap',

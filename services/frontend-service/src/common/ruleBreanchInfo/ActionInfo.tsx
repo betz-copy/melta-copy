@@ -97,18 +97,21 @@ export const EntityInfo: React.FC<EntityInfoProps> = ({
         );
         linkable = !entityForLink.properties._id.startsWith(environment.brokenRulesFakeEntityIdPrefix);
     } else {
-        const updatedProperties = actions.reduce((previousUpdatedProperties, currentAction) => {
-            if (
-                currentAction.actionType === ActionTypes.UpdateEntity &&
-                (currentAction.actionMetadata as IUpdateEntityMetadataPopulated).entity?.properties._id === (entity as IEntity).properties._id
-            ) {
-                return {
-                    ...previousUpdatedProperties,
-                    ...(currentAction.actionMetadata as IUpdateEntityMetadataPopulated).updatedFields,
-                };
-            }
-            return previousUpdatedProperties;
-        }, (entity as IEntity).properties);
+        const updatedProperties = actions.reduce(
+            (previousUpdatedProperties, currentAction) => {
+                if (
+                    currentAction.actionType === ActionTypes.UpdateEntity &&
+                    (currentAction.actionMetadata as IUpdateEntityMetadataPopulated).entity?.properties._id === (entity as IEntity).properties._id
+                ) {
+                    return {
+                        ...previousUpdatedProperties,
+                        ...(currentAction.actionMetadata as IUpdateEntityMetadataPopulated).updatedFields,
+                    };
+                }
+                return previousUpdatedProperties;
+            },
+            (entity as IEntity).properties,
+        );
 
         entityForLink = {
             templateId: (entity as IEntity).templateId,
@@ -281,7 +284,7 @@ const UpdateEntityActionInfo: React.FC<{
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const entityTemplate = !entity ? entityTemplates.get(actionMetadata.updatedFields.templateId) : entityTemplates.get(entity.templateId)!;
 
-    const { templateId, ...restFields } = actionMetadata.updatedFields;
+    const { templateId: _templateId, ...restFields } = actionMetadata.updatedFields;
     // TODO get properties of causes
 
     return (

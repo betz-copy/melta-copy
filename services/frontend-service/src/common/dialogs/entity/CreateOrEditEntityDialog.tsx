@@ -64,7 +64,7 @@ const convertIEntityToEntityWizardValues = (
     entityTemplate: IMongoEntityTemplateWithConstraintsPopulated,
     initialTemplateFileKeys: string[],
 ): EntityWizardValues => {
-    const { _id, createdAt, updatedAt, disabled, ...entityToUpdateData } = entityToUpdate.properties;
+    const { _id, createdAt: _createdAt, updatedAt: _updatedAt, disabled: _disabled, ...entityToUpdateData } = entityToUpdate.properties;
 
     const fieldProperties = pickBy(entityToUpdateData, (_value, key) => !initialTemplateFileKeys.includes(key));
     const fileIdsProperties = pickBy(entityToUpdateData, (_value, key) => initialTemplateFileKeys.includes(key));
@@ -97,13 +97,13 @@ const CreateOrEditEntityDetails: React.FC<{
     onError: (entity: EntityWizardValues) => void;
     externalErrors: {
         files: boolean;
-        unique: {};
+        unique: object;
         action: string;
     };
     setExternalErrors: React.Dispatch<
         React.SetStateAction<{
             files: boolean;
-            unique: {};
+            unique: object;
             action: string;
         }>
     >;

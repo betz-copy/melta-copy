@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 /* eslint-disable no-param-reassign */
 import {
     BodyScrollEvent,
@@ -51,7 +52,7 @@ export interface IButtonProps<Data> {
     disabledButton: boolean;
 }
 
-export const getDatasource = <Data extends any = IEntity>(
+export const getDatasource = <Data = IEntity,>(
     template: IMongoEntityTemplatePopulated,
     quickFilterText?: string,
     onFail?: (err: unknown) => void,
@@ -95,7 +96,7 @@ export type IConnection = {
     destinationEntity: IEntity;
 };
 
-export const getRowModelProps = <Data extends any = IEntity>(
+export const getRowModelProps = <Data = IEntity,>(
     rowModelType: 'serverSide' | 'clientSide' | 'infinite',
     template: IMongoEntityTemplatePopulated,
     rowData: Data[] | undefined,
@@ -174,7 +175,7 @@ export type EntitiesTableOfTemplateRef<Data> = {
 };
 
 const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, EntitiesTableOfTemplateProps<unknown>>(
-    <Data extends any>(
+    <Data,>(
         {
             template,
             onRowSelected,

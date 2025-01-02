@@ -21,7 +21,7 @@ export const DraftCard: React.FC<{ draft: Draft; openEditDialog: () => void }> =
         setAnchorEl(event.currentTarget);
     };
 
-    const { createdAt, disabled, _id, updatedAt, ...displayProperties } = draft.properties;
+    const { createdAt: _createdAt, disabled: _disabled, _id, updatedAt: _updatedAt, ...displayProperties } = draft.properties;
 
     const draftPropertiesToDisplayOnHover = useMemo(
         () =>

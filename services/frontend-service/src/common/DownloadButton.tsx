@@ -27,7 +27,7 @@ const DownloadButton: React.FC<{ fileId: string | File }> = ({ fileId }) => {
                     });
 
                     if (typeof fileId !== 'string') URL.revokeObjectURL(url);
-                } catch (error) {
+                } catch {
                     toast.error(i18next.t('errorPage.fileDownloadError'));
                 }
             }}

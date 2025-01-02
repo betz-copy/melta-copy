@@ -6,17 +6,17 @@ import TemplateEntitiesAutocomplete from '../TemplateEntitiesAutocomplete';
 
 const RjfsTemplateReferenceWidget = ({
     id,
-    required,
+    _required,
     disabled,
     label,
     value,
     onChange,
     onBlur,
-    onFocus,
+    _onFocus,
     rawErrors = [],
     schema,
-    uiSchema,
-    formContext,
+    _uiSchema,
+    _formContext,
     ...widgetProps
 }: WidgetProps) => {
     const [inputValue, setInputValue] = React.useState('');

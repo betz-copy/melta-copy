@@ -78,8 +78,8 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
                         useContainer={false}
                     >
                         {({ entity, minioFileIds }) => {
-                            const entityTemplates = queryClient.getQueryData<IEntityTemplateWithConstraintsMap>('getEntityTemplates');
-                            const entityTemplate = entityTemplates?.get(entity.templateId)!;
+                            const entityTemplates = queryClient.getQueryData<IEntityTemplateWithConstraintsMap>('getEntityTemplates')!;
+                            const entityTemplate = entityTemplates.get(entity.templateId)!;
                             return (
                                 <EntityCard
                                     minioFileId={minioFileIds?.[0]} // Navigate to the first found file

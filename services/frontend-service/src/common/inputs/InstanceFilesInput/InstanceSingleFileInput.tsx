@@ -12,14 +12,14 @@ interface InstanceFileInputProps {
     fileFieldName: string;
     fieldTemplateTitle: string;
     setFieldValue: (field: string, value: File | undefined) => void;
-    required: Boolean;
+    required: boolean;
     value: File | undefined;
     error: string | undefined;
     setFieldTouched: FormikProps<ProcessFormikProps>['setFieldTouched'];
     setExternalErrors?: React.Dispatch<
         React.SetStateAction<{
             files: boolean;
-            unique: {};
+            unique: object;
             action: string;
         }>
     >;

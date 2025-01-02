@@ -62,7 +62,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
         searchIFrames(iFramesStored ? { ids: JSON.parse(iFramesStored), limit: 0, skip: 0 } : { limit: 0, skip: 0 }),
     );
 
-    const iFramesInSidebar = data?.filter((iFrame) => iFrame.placeInSideBar);
+    const iFramesInSidebar = data?.filter((iFrame) => iFrame.placeInSideBar) || [];
 
     const [isMyPermissionsDialogOpen, setIsMyPermissionsDialogOpen] = useState<boolean>(false);
     const [isNotificationsScreenOpen, setIsNotificationsScreenOpen] = useState<boolean>(false);
@@ -308,7 +308,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                         to="/iframes"
                         text={i18next.t('pages.iFrames')}
                         extension={
-                            iFramesInSidebar?.length! > 0 ? (
+                            iFramesInSidebar.length > 0 ? (
                                 <Grid container display="flex" flexDirection="column">
                                     <Grid item width="150px" maxHeight="450px" sx={{ overflow: 'auto' }}>
                                         {iFramesInSidebar?.map((iFrame) => (

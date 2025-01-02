@@ -117,7 +117,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
     const displayKeys = [
         showField,
         (template.propertiesPreview[0] === showField
-            ? template.propertiesPreview[1] ?? template.propertiesOrder[0]
+            ? (template.propertiesPreview[1] ?? template.propertiesOrder[0])
             : template.propertiesPreview[0]) ?? template.propertiesOrder[0],
     ];
 
