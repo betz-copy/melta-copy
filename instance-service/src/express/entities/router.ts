@@ -23,6 +23,8 @@ import {
     updateEnumFieldRequestSchema,
     deletePropertiesOfTemplateRequestSchema,
     searchEntitiesByLocation,
+    getDependentRulesRequestSchema,
+    convertToRelationshipFieldRequestSchema,
 } from './validator.schema';
 import { EntityValidator } from './validator.template';
 
@@ -70,6 +72,8 @@ entityRouter.post('/search/location', ValidateRequest(searchEntitiesByLocation),
 entityRouter.put('/update-enum-field/:id', ValidateRequest(updateEnumFieldRequestSchema), entityController.updateEnumFieldValue);
 entityRouter.get('/get-is-field-used/:id', ValidateRequest(getIfValuefieldIsUsedRequestSchema), entityController.getIsFieldUsed);
 
+entityRouter.post('/rules/dependant', ValidateRequest(getDependentRulesRequestSchema), entityController.getDependentRules);
+
 entityRouter.post(
     '/expanded/:id',
     ValidateRequest(getExpandedGraphByIdRequestSchema),
@@ -87,6 +91,11 @@ entityRouter.put(
     ValidateRequest(updateEntityByIdRequestSchema),
     entityValidatorController.validateEntityRequest,
     entityController.updateEntityById,
+);
+entityRouter.patch(
+    '/convertToRelationshipField',
+    ValidateRequest(convertToRelationshipFieldRequestSchema),
+    entityController.convertToRelationshipField,
 );
 entityRouter.patch('/:id/status', ValidateRequest(updateEntityStatusByIdRequestSchema), entityController.updateStatusById);
 entityRouter.patch(
