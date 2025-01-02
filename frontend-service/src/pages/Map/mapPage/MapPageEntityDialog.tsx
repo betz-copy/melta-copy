@@ -1,6 +1,7 @@
 import React from 'react';
 import { Box, Dialog, Grid, Typography } from '@mui/material';
 import { useQueryClient } from 'react-query';
+import { AppRegistration as DefaultEntityTemplateIcon } from '@mui/icons-material';
 import i18next from 'i18next';
 import { useLocation } from 'wouter';
 import { IEntity } from '../../../interfaces/entities';
@@ -31,18 +32,27 @@ const MapPageEntityDialog = ({ open, onClose, entityWithMatchingField }: props) 
         <Dialog open={open} onClose={onClose} sx={{ opacity: 0.95 }}>
             <Box display="flex" justifyContent="space-between" alignItems="center" padding="10px 20px 0px 20px">
                 <Box display="flex" gap="10px" alignItems="center">
-                    <CustomIcon
-                        iconUrl={entityTemplate.iconFileId!}
-                        height={environment.iconSize.height}
-                        width={environment.iconSize.width}
-                        color={entityTemplateColor}
-                    />
+                    {entityTemplate.iconFileId ? (
+                        <CustomIcon
+                            iconUrl={entityTemplate.iconFileId}
+                            height={environment.iconSize.height}
+                            width={environment.iconSize.width}
+                            color={entityTemplateColor}
+                        />
+                    ) : (
+                        <DefaultEntityTemplateIcon
+                            sx={{ color: entityTemplateColor, height: environment.iconSize.height, width: environment.iconSize.width }}
+                        />
+                    )}
                     <Typography fontSize="20px" fontWeight={700}>
                         {entityTemplate.displayName} -
                     </Typography>
                     <Typography fontSize="18px" fontWeight={600}>
-                        ({i18next.t('wizard.processTemplate.field')}{' '}
-                        {entityTemplate.properties.properties[entityWithMatchingField.matchingField].title})
+                        (
+                        {`${i18next.t('wizard.processTemplate.field')} ${
+                            entityTemplate.properties.properties[entityWithMatchingField.matchingField].title
+                        }`}
+                        )
                     </Typography>
                 </Box>
                 <IconButtonWithPopover popoverText={i18next.t('entitiesTableOfTemplate.navigateToEntityPage')}>

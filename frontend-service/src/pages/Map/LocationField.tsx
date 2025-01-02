@@ -41,6 +41,12 @@ const LocationField = ({ defaultLocation, styles, updateValue }: Props) => {
         }
     };
 
+    const handleLayerDelete = (e: L.DrawEvents.Deleted) => {
+        e.layers.eachLayer((layer) => layer.remove());
+        setMarkerPosition(null);
+        setPolygonPosition(null);
+    };
+
     const handleLayerEdit = (e: L.DrawEvents.Edited) => {
         e.layers.eachLayer((layer) => {
             if (layer instanceof L.Marker) {
@@ -93,6 +99,7 @@ const LocationField = ({ defaultLocation, styles, updateValue }: Props) => {
                         )}
 
                         <EditControl
+                            key={`${markerPosition ? 'marker' : ''}-${polygonPosition ? 'polygon' : ''}`}
                             position="topright"
                             draw={{
                                 rectangle: false,
@@ -104,10 +111,11 @@ const LocationField = ({ defaultLocation, styles, updateValue }: Props) => {
                             }}
                             edit={{
                                 edit: defaultLocation ? {} : false, // Enable editing of existing layers only if exist
-                                remove: false,
+                                remove: true,
                             }}
                             onCreated={handleLayerCreate}
                             onEdited={handleLayerEdit}
+                            onDeleted={handleLayerDelete}
                         />
                     </FeatureGroup>
                 </LayerGroup>

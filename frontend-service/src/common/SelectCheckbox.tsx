@@ -624,7 +624,11 @@ const SelectCheckbox = <Option extends any, Group extends any>({
                     boxShadow: '-2px 2px 6px 0px #1E277540',
                     borderRadius: '8px',
                     ...(darkMode
-                        ? { color: theme.palette.primary.main, '& .MuiOutlinedInput-notchedOutline': { borderColor: '#d2d3e3' } }
+                        ? {
+                              background: toTopBar ? '' : '#131313',
+                              color: theme.palette.primary.main,
+                              '& .MuiOutlinedInput-notchedOutline': { borderColor: '#d2d3e3' },
+                          }
                         : {
                               '& .MuiOutlinedInput-notchedOutline': { display: 'none' },
                               background: toTopBar ? '#EBEFFA' : '#FFFFFF',

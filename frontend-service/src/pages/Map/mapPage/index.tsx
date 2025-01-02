@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { MapContainer, TileLayer, LayersControl, FeatureGroup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-draw/dist/leaflet.draw.css';
@@ -46,6 +46,13 @@ const MapPage = () => {
 
     const [searchedEntity, setSearchedEntity] = useState<IEntity>();
 
+    const filteredTemplatesIds = useMemo(() => selectedTemplates.map(({ _id }) => _id), [selectedTemplates]);
+    const onClear = () => {
+        featureGroupRef.current?.eachLayer((layer) => layer.remove());
+        searchResultGroupRef.current?.eachLayer((layer) => layer.remove());
+        searchedEntityGroupRef.current?.eachLayer((layer) => layer.remove());
+    };
+
     return (
         <Box position="relative" width="100%" height="100vh">
             <MapContainer
@@ -69,7 +76,7 @@ const MapPage = () => {
                         searchResultGroupRef={searchResultGroupRef}
                         searchedEntityGroupRef={searchedEntityGroupRef}
                         onSelectEntity={setSelectedEntity}
-                        filteredTemplatesIds={selectedTemplates.map(({ _id }) => _id)}
+                        filteredTemplatesIds={filteredTemplatesIds}
                         searchedEntity={searchedEntity}
                         entityTemplateMap={entityTemplateMap!}
                     />
@@ -84,6 +91,7 @@ const MapPage = () => {
                     setSelectedTemplates={setSelectedTemplates}
                     moveToEntityLocations={(entity: IEntity) => setSearchedEntity(entity)}
                     entityTemplateMap={entityTemplateMap!}
+                    onClear={onClear}
                 />
             </MapContainer>
             {selectedEntity && (

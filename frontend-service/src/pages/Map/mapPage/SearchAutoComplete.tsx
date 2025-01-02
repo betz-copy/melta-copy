@@ -112,8 +112,9 @@ const SearchAutoComplete = ({ selectedTemplates, handleEntityClick }: props) => 
                 },
             }}
             onInputChange={(event, _newInputValue, reason) => {
-                if (reason === 'reset') setInputValue('');
-                else debouncedSearch((event.target as HTMLInputElement).value);
+                if (reason === 'reset') {
+                    setInputValue('');
+                } else debouncedSearch((event.target as HTMLInputElement).value);
             }}
             renderInput={(params) => (
                 <TextField

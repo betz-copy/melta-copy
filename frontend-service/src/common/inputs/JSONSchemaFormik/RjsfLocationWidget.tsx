@@ -8,6 +8,9 @@ import MapIcon from '@mui/icons-material/Map';
 import { convertToPlainText, containsHTMLTags } from '../../../utils/HtmlTagsStringValue';
 import { getFixedNumber, getTextDirection } from '../../../utils/stringValues';
 import LocationField from '../../../pages/Map/LocationField';
+import { environment } from '../../../globals';
+
+const { polygon, polygonPrefix, polygonSuffix } = environment.map.polygon;
 
 export const validateLocation = (value: string) => {
     const locationString = value.trim();
@@ -17,11 +20,9 @@ export const validateLocation = (value: string) => {
         .map((v) => v.trim())
         .map(Number);
 
-    if (locationString.startsWith('POLYGON')) {
-        const prefix = 'POLYGON((';
-        const suffix = '))';
-        if (locationString.startsWith(prefix) && locationString.endsWith(suffix)) {
-            const coordinates = locationString.slice(prefix.length, -suffix.length).split(',');
+    if (locationString.startsWith(polygon)) {
+        if (locationString.startsWith(polygonPrefix) && locationString.endsWith(polygonSuffix)) {
+            const coordinates = locationString.slice(polygonPrefix.length, -polygonSuffix.length).split(',');
             for (let i = 0; i < coordinates.length; i++) {
                 const [lng, lat] = coordinates[i].split(' ').map(Number);
                 if (Number.isNaN(lng) || Number.isNaN(lat)) return false;

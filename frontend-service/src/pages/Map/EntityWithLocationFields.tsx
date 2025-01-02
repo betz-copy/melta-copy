@@ -32,7 +32,7 @@ const EntityWithLocationFields = ({ styles, entity, entityTemplate }: Props) => 
                 [90, 180],
             ]}
         >
-            {polygons.length > 0 && <UpdateMapBounds bounds={bounds} />}
+            {(polygons.length > 0 || markers.length > 0) && <UpdateMapBounds bounds={bounds} />}
 
             <LayersControl position="topright">
                 <BaseLayers />

@@ -4,18 +4,21 @@ import { useMap } from 'react-leaflet';
 import { useEffect } from 'react';
 import { IEntity } from '../interfaces/entities';
 import { IEntityTemplatePopulated } from '../interfaces/entityTemplates';
+import { environment } from '../globals';
+
+const {
+    polygon: { polygonPrefix, polygonSuffix },
+    units: { km, squaredKm },
+} = environment.map;
 
 export const jerusalemCoordinates: LatLngExpression = [31.7683, 35.2137];
 
 export const parsePolygon = (polygonStr: string): LatLng[] | undefined => {
-    const prefix = 'POLYGON((';
-    const suffix = '))';
-
-    if (!polygonStr.startsWith(prefix) || !polygonStr.endsWith(suffix)) {
+    if (!polygonStr.startsWith(polygonPrefix) || !polygonStr.endsWith(polygonSuffix)) {
         return undefined;
     }
 
-    const coordsStr = polygonStr.slice(prefix.length, -suffix.length);
+    const coordsStr = polygonStr.slice(polygonPrefix.length, -polygonSuffix.length);
     const coordPairs = coordsStr.split(',');
 
     const coordinates: LatLng[] = coordPairs.map((pair) => {
@@ -62,7 +65,7 @@ export const latLngToString = (latLng: LatLng | LatLng[], includePolygon = true)
     const matchedPoints = latLng.toString().match(/LatLng\(([^)]+)\)/g);
 
     if (!matchedPoints) {
-        return includePolygon ? 'POLYGON(())' : '';
+        return includePolygon ? `${polygonPrefix}${polygonSuffix}` : '';
     }
 
     const points = matchedPoints.map((point) =>
@@ -72,7 +75,7 @@ export const latLngToString = (latLng: LatLng | LatLng[], includePolygon = true)
             .trim(),
     );
 
-    return includePolygon ? `POLYGON((${points.join(',')}))` : points.join(',');
+    return includePolygon ? `${polygonPrefix}${points.join(',')}${polygonSuffix}` : points.join(',');
 };
 
 // ugly af find better solution
@@ -87,20 +90,20 @@ export const bindPopupForMarker = (coordinates: LatLng) => {
 export const bindPopupForLine = (coordinates: LatLng[]) => {
     const distanceMeters = calculateDistance(coordinates);
     const distanceKm = distanceMeters / 1000;
-    return `Distance: ${distanceKm.toFixed(2)} km`;
+    return `Distance: ${distanceKm.toFixed(2)} ${km}`;
 };
 
 export const bindPopupForPolygon = (coordinates: LatLng[]) => {
     const areaMeters = calculatePolygonArea(coordinates);
     const areaKm2 = areaMeters / 1_000_000;
-    return `Area: ${areaKm2.toFixed(2)} km²`;
+    return `Area: ${areaKm2.toFixed(2)} ${squaredKm}`;
 };
 
 export const bindPopupForCircle = (radius: number) => {
     const areaMeters = Math.PI * radius * radius;
     const areaKm2 = areaMeters / 1_000_000;
     const radiusKm = radius / 1000;
-    return `Area: ${areaKm2.toFixed(2)} km², Radius: ${radiusKm.toFixed(2)} Km`;
+    return `Area: ${areaKm2.toFixed(2)} ${squaredKm}, Radius: ${radiusKm.toFixed(2)} ${km}`;
 };
 
 export const extractLocationFieldsFromEntity = (entity: IEntity, entityTemplate: IEntityTemplatePopulated) => {

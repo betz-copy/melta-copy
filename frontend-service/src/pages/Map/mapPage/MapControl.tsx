@@ -42,9 +42,9 @@ type props = {
 };
 
 export const EditableMapControl = ({
-    featureGroupRef,
-    searchResultGroupRef,
-    searchedEntityGroupRef,
+    featureGroupRef, // line
+    searchResultGroupRef, // circle
+    searchedEntityGroupRef, // search
     onSelectEntity,
     filteredTemplatesIds,
     searchedEntity,
@@ -169,7 +169,7 @@ export const EditableMapControl = ({
             });
 
             map.fitBounds(searchedEntityBounds);
-        }
+        } else if (searchedEntityTemplate) toast.info(i18next.t('location.entityWithoutLocation'));
     }, [searchedEntityBounds, searchedEntityMarkers, searchedEntityPolygons, map]);
 
     return (
@@ -202,6 +202,10 @@ export const EditableMapControl = ({
                 if (layer instanceof L.Polyline && !(layer instanceof L.Polygon)) {
                     layer.bindPopup(bindPopupForLine(layer.getLatLngs() as L.LatLng[])).openPopup();
                 } else if (layer instanceof L.Circle) {
+                    if (layer.getRadius() > maxRadius) {
+                        toast.warn(i18next.t('location.radiusMaxLimit'));
+                        layer.setRadius(maxRadius);
+                    }
                     if (lastCircleRef.current) {
                         featureGroupRef?.current?.removeLayer(lastCircleRef.current);
                     }
@@ -219,14 +223,15 @@ export const EditableMapControl = ({
                 }
                 featureGroupRef?.current?.addLayer(layer);
             }}
-            onDeleted={(e) =>
+            onDeleted={(e) => {
                 e.layers.eachLayer((layer) => {
                     if (layer instanceof L.Circle && layer === lastCircleRef.current) {
                         lastCircleRef.current.remove();
                     }
                     featureGroupRef?.current?.removeLayer(layer);
-                })
-            }
+                });
+                searchResultGroupRef.current?.eachLayer((layer) => layer.remove());
+            }}
         />
     );
 };

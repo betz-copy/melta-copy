@@ -1,12 +1,28 @@
 import { useEffect, useMemo, useState } from 'react';
-import * as L from 'leaflet';
+import L from 'leaflet';
 import { parsePolygon, stringToCoordinates } from '../map';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IEntity } from '../../interfaces/entities';
+import { environment } from '../../globals';
+
+const { squareLength } = environment.map;
 
 type entityWithLocationsProps = {
     entity?: IEntity;
     entityTemplate?: IMongoEntityTemplatePopulated;
+};
+
+const createSquareAroundPoint = (center: L.LatLngExpression, sideLength: number): L.LatLngExpression[] => {
+    // eslint-disable-next-line no-nested-ternary
+    const [centerLat, centerLng] = center instanceof L.LatLng ? [center.lat, center.lng] : Array.isArray(center) ? center : [center.lat, center.lng];
+
+    const halfSide = sideLength / 2 / 111000;
+    const topLeft: L.LatLngExpression = [centerLat + halfSide, centerLng - halfSide];
+    const topRight: L.LatLngExpression = [centerLat + halfSide, centerLng + halfSide];
+    const bottomRight: L.LatLngExpression = [centerLat - halfSide, centerLng + halfSide];
+    const bottomLeft: L.LatLngExpression = [centerLat - halfSide, centerLng - halfSide];
+
+    return [topLeft, topRight, bottomRight, bottomLeft, topLeft];
 };
 
 export const useEntityWithLocationFields = ({ entityTemplate, entity }: entityWithLocationsProps) => {
@@ -34,7 +50,7 @@ export const useEntityWithLocationFields = ({ entityTemplate, entity }: entityWi
                 } else {
                     const position = stringToCoordinates(properties[key]);
                     markerList.push({ key, position: position.value as L.LatLngExpression });
-                    latLngList.push(position.value as L.LatLngExpression);
+                    latLngList.push(...createSquareAroundPoint(position.value as L.LatLngExpression, squareLength));
                 }
             }
         });

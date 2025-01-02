@@ -1217,5 +1217,10 @@ export default {
         takePicture: 'צלם תמונה',
         blackAndWhite: 'שחור לבן',
     },
-    location: { noLayers: 'לא נמצאו שכבות' },
+    location: {
+        noLayers: 'לא נמצאו שכבות',
+        entityWithoutLocation: 'ליישות אין ערך שדה מיקום',
+        clear: 'ניקוי תוצאות',
+        radiusMaxLimit: `חיפוש מוגבל עד ${environment.map.maxRadius / 1000} ק"מ`,
+    },
 };
