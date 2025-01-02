@@ -2,9 +2,9 @@ import axios from 'axios';
 import { IMongoEntityTemplate, IMongoGantt, IMongoRelationshipTemplate } from '@microservices/shared';
 import config from './config';
 import { getRandomGantts } from './mocks/gantts/generate';
-import { getHardcodedRealGantts } from './mocks/gantts/hardcoded';
+import getHardcodedRealGantts from './mocks/gantts/hardcoded';
 import { trycatch } from './utils';
-import { createAxiosInstance } from './utils/axios';
+import createAxiosInstance from './utils/axios';
 
 const { url, baseRoute, isAliveRoute } = config.ganttService;
 

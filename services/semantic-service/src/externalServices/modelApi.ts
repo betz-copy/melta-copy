@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { logger } from '@microservices/shared';
 import config from '../config';
 
 const {
@@ -16,8 +17,8 @@ class ModelApiService {
             });
 
             return data;
-        } catch (e) {
-            console.log('Error in ModelApiService.search', e);
+        } catch (error) {
+            logger.error('Error in ModelApiService.search', { error });
             return [[]];
         }
     }

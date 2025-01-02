@@ -1,6 +1,6 @@
 import { IMockRelationshipTemplate } from '../templates/relationshipTemplates';
 
-export const relationshipTemplates: IMockRelationshipTemplate[] = [
+const relationshipTemplates: IMockRelationshipTemplate[] = [
     {
         name: 'goingOn',
         displayName: 'משתתף ב',
@@ -65,3 +65,5 @@ export const relationshipTemplates: IMockRelationshipTemplate[] = [
         isProperty: false,
     },
 ];
+
+export default relationshipTemplates;

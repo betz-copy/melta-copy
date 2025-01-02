@@ -5,7 +5,7 @@ import _mapValues from 'lodash.mapvalues';
 import _sortBy from 'lodash.sortby';
 import { IAction, IBrokenRule, ICausesOfInstance } from '@microservices/shared';
 import config from '../../config';
-import { filteredMap } from '../../utils/filteredMap';
+import filteredMap from '../../utils/filteredMap';
 import { isEqualStripUndefined } from '../../utils/lib';
 import { BadRequestError } from '../error';
 import { getCausesOfRuleFailure } from './calcNewCausesOfRuleFailure';

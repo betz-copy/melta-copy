@@ -3,7 +3,7 @@ import neo4j, { QueryResult, Node as Neo4jNode, Relationship as Neo4jRelationshi
 import { fromZonedTime, toZonedTime } from 'date-fns-tz';
 import { IEntity, IEntityExpanded, IEntityWithDirectRelationships, IRelationship } from '@microservices/shared';
 import config from '../../config';
-import { EntityManager } from '../../express/entities/manager';
+import EntityManager from '../../express/entities/manager';
 import { IFormulaCauses } from '../../express/rules/interfaces/formulaWithCauses';
 
 type Node = Neo4jNode<number>;

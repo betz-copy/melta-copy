@@ -16,13 +16,13 @@ import {
     IRelationship,
     IMongoActivityLog,
 } from '@microservices/shared';
-import { ActivityLogProducer } from '../../externalServices/activityLog/producer';
-import { EntityTemplateManagerService } from '../../externalServices/templates/entityTemplateManager';
-import { RelationshipsTemplateManagerService } from '../../externalServices/templates/relationshipTemplateManager';
+import ActivityLogProducer from '../../externalServices/activityLog/producer';
+import EntityTemplateManagerService from '../../externalServices/templates/entityTemplateManager';
+import RelationshipsTemplateManagerService from '../../externalServices/templates/relationshipTemplateManager';
 import DefaultManagerNeo4j from '../../utils/neo4j/manager';
 import { EntitiesIdsRulesReasonsMap, RunRuleReason } from '../entities/interface';
-import { EntityManager } from '../entities/manager';
-import { RelationshipManager } from '../relationships/manager';
+import EntityManager from '../entities/manager';
+import RelationshipManager from '../relationships/manager';
 import { throwIfActionCausedRuleFailures } from '../rules/throwIfActionCausedRuleFailures';
 import config from '../../config';
 
@@ -497,7 +497,6 @@ export class BulkActionManager extends DefaultManagerNeo4j {
                 dryRun,
             )
             .catch((err) => {
-                console.log({ errFromBulk: err });
                 return this.entityManager.throwServiceErrorIfFailedConstraintsValidation(err);
             });
     }

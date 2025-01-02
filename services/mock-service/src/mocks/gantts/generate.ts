@@ -1,3 +1,4 @@
+/* eslint-disable import/prefer-default-export */
 import { IMongoEntityTemplate, IMongoRelationshipTemplate, IGantt, IGanttItem } from '@microservices/shared';
 import { pickOneIf, pickRandomSet, pickSetIf, popRandom } from '../../utils/mock';
 

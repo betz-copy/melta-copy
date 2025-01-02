@@ -1,7 +1,7 @@
 import { IEntityTemplateMock } from '../templates/entityTemplates';
 
 // TODO: create entityTemplates with backend service in order to add required+unique constraints
-export const entityTemplates: IEntityTemplateMock[] = [
+const entityTemplates: IEntityTemplateMock[] = [
     {
         name: 'trip',
         displayName: 'טיול',
@@ -176,18 +176,18 @@ export const entityTemplates: IEntityTemplateMock[] = [
                 Flighttype: {
                     type: 'string',
                     title: 'סוג טיסה',
-                    enum: ['ביזנס', 'עסקים','תיירים'],
+                    enum: ['ביזנס', 'עסקים', 'תיירים'],
                 },
                 FlightPlatform: {
                     type: 'string',
                     title: 'פלטפורמת טיסה',
                     enum: ['פלטפורמה א', 'פלטפורמה ב'],
-                },                
+                },
                 FlightDepart: {
                     type: 'string',
                     title: 'מוצא',
                     enum: ['וינה', 'אתונה', 'תל אביב', 'רומא'],
-                },                
+                },
                 FlightDest: {
                     type: 'string',
                     title: 'יעד',
@@ -458,3 +458,5 @@ export const entityTemplates: IEntityTemplateMock[] = [
         disabled: false,
     },
 ];
+
+export default entityTemplates;

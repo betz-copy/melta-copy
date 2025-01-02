@@ -5,7 +5,7 @@ const {
     service: { workspaceIdHeaderName },
 } = config;
 
-export class DefaultExternalServiceRabbit {
+class DefaultExternalServiceRabbit {
     protected workspaceId: string;
 
     constructor(workspaceId: string) {
@@ -16,3 +16,5 @@ export class DefaultExternalServiceRabbit {
         return menash.send(queueName, content, { headers: { [workspaceIdHeaderName]: this.workspaceId } });
     }
 }
+
+export default DefaultExternalServiceRabbit;

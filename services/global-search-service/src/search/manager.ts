@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /* eslint-disable class-methods-use-this */
 import { QueryResult, Transaction } from 'neo4j-driver';
 import { IEntityTemplate, IMongoEntityTemplate, logger } from '@microservices/shared';

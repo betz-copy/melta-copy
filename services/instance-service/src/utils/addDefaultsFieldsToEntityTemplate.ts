@@ -1,6 +1,6 @@
 import { IMongoEntityTemplate } from '@microservices/shared';
 
-export const addDefaultFieldsToTemplate = (entityTemplate: IMongoEntityTemplate): IMongoEntityTemplate => {
+const addDefaultFieldsToTemplate = (entityTemplate: IMongoEntityTemplate): IMongoEntityTemplate => {
     return {
         ...entityTemplate,
         properties: {
@@ -16,3 +16,5 @@ export const addDefaultFieldsToTemplate = (entityTemplate: IMongoEntityTemplate)
         propertiesOrder: [...entityTemplate.propertiesOrder, '_id', 'disabled', 'createdAt', 'updatedAt'] as IMongoEntityTemplate['propertiesOrder'],
     } as IMongoEntityTemplate;
 };
+
+export default addDefaultFieldsToTemplate;

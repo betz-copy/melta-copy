@@ -1,6 +1,6 @@
 import { ICategory } from '@microservices/shared';
 
-export const categories: ICategory[] = [
+const categories: ICategory[] = [
     {
         name: 'pepole',
         displayName: 'אנשים',
@@ -44,3 +44,5 @@ export const categories: ICategory[] = [
         iconFileId: null,
     },
 ];
+
+export default categories;

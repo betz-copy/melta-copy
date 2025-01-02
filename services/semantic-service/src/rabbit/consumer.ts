@@ -18,7 +18,7 @@ class SemanticConsumer {
 
             const manager = new SemanticManager(msg.properties.headers[workspaceIdHeaderName]);
 
-            console.log('Indexing files: ', value);
+            logger.info('Indexing files: ', { value });
 
             await manager.indexFiles(value);
 
@@ -36,7 +36,7 @@ class SemanticConsumer {
 
             const manager = new SemanticManager(msg.properties.headers[workspaceIdHeaderName]);
 
-            console.log('Deleting files: ', value);
+            logger.info('Deleting files: ', { value });
 
             await manager.deleteFiles(value.minioFileIds);
 

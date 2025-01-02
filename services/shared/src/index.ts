@@ -58,6 +58,3 @@ export { ServiceError, NotFoundError, ForbiddenError, BadRequestError, Unauthori
 export { default as DefaultController } from './utils/express/controller';
 
 export { default as DefaultManagerMongo } from './utils/mongo/manager';
-
-export { default as DefaultManagerMinio } from './utils/minio/manager';
-export { default as MinIOClient } from './utils/minio/minioClient';

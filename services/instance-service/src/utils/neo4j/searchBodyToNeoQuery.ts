@@ -10,7 +10,7 @@ import {
 } from '@microservices/shared';
 import { getNeo4jDate, getNeo4jDateTime } from './lib';
 import config from '../../config';
-import { addDefaultFieldsToTemplate } from '../addDefaultsFieldsToEntityTemplate';
+import addDefaultFieldsToTemplate from '../addDefaultsFieldsToEntityTemplate';
 
 const {
     neo4j: { specialCharsToEscapeNeo4jQuery },

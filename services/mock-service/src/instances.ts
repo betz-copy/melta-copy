@@ -1,11 +1,10 @@
-// @ts-ignore
-import { generate, format, JSONSchemaFaker } from 'json-schema-faker';
+import { JSONSchemaFaker } from 'json-schema-faker';
 import pLimit from 'p-limit';
 import axios from 'axios';
 import { IRelationship, IMongoEntityTemplate, IMongoRelationshipTemplate } from '@microservices/shared';
 import config from './config';
 import { trycatch } from './utils';
-import { createAxiosInstance } from './utils/axios';
+import createAxiosInstance from './utils/axios';
 
 const limit = pLimit(config.requestLimit);
 
@@ -65,6 +64,7 @@ export const createRelationshipInstances = async (
             const relevantDestinationEntities = entities.filter((entity) => entity.templateId === relationshipTemplate.destinationEntityId);
 
             if (relevantSourceEntities.length === 0 || relevantDestinationEntities.length === 0) {
+                // eslint-disable-next-line no-console
                 console.warn('No relevant source or destination entities found for this template, skipping...');
                 return [];
             }
@@ -90,6 +90,7 @@ export const createRelationshipInstances = async (
                         return data;
                     } catch (error) {
                         if (axios.isAxiosError(error) && error.response?.data.metadata?.errorCode === 'RELATIONSHIP_ALREADY_EXISTS') {
+                            // eslint-disable-next-line no-console
                             console.log('Relationship already exists, skipping...');
                         }
 

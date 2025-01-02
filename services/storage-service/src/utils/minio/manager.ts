@@ -3,7 +3,7 @@ import config from '../../config';
 
 const { useDevBucket, devBucketPrefix } = config.minio;
 
-abstract class DefaultManagerMinio {
+export default abstract class DefaultManagerMinio {
     public minioClient: MinIOClient;
 
     constructor(protected workspaceId: string) {
@@ -11,5 +11,3 @@ abstract class DefaultManagerMinio {
         this.minioClient = new MinIOClient(fixedBucketName);
     }
 }
-
-export default DefaultManagerMinio;

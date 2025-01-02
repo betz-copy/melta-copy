@@ -1,3 +1,4 @@
+/* eslint-disable import/prefer-default-export */
 import * as ts from 'typescript-actions';
 import * as vm from 'vm';
 import { Transaction } from 'neo4j-driver';
@@ -8,7 +9,7 @@ import { IEntityCrudAction, IExecutionOutput, isRelationshipReference } from '..
 import { EntityValidator } from '../../express/entities/validator.template';
 import config from '../../config';
 import { generateInterfaceWithRelationships } from './interfaceGenerator';
-import { EntityManager } from '../../express/entities/manager';
+import EntityManager from '../../express/entities/manager';
 import { BadRequestError, ValidationError } from '../../express/error';
 
 const { brokenRulesFakeEntityIdPrefix, errorCodes } = config;

@@ -1,7 +1,8 @@
+/* eslint-disable import/prefer-default-export */
 import { IMongoEntityTemplate, IMongoRelationshipTemplate, IMongoRule } from '@microservices/shared';
 import config from '../../config';
-import { rulesCreator } from '../../mocks/rules';
-import { createAxiosInstance } from '../../utils/axios';
+import rulesCreator from '../../mocks/rules';
+import createAxiosInstance from '../../utils/axios';
 
 const {
     url,

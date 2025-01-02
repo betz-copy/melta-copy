@@ -3,7 +3,7 @@ import { createController } from '@microservices/shared';
 import ValidateRequest from '../../utils/joi';
 import BulkActionController from './controller';
 import { runBulkOfActionsInMultipleTransactionsSchema } from './validator.schema';
-import { BulkActionValidator } from './validator.template';
+import BulkActionValidator from './validator.template';
 
 const bulkActionRouter: Router = Router();
 const bulkActionControllerMiddleware = createController(BulkActionController);

@@ -1,5 +1,5 @@
 import { IMongoRelationshipTemplate, ISearchRelationshipTemplatesBody, IMongoRule, ISearchRulesBody } from '@microservices/shared';
-import { TemplatesManagerService } from '.';
+import TemplatesManagerService from '.';
 import config from '../../config';
 
 const {
@@ -8,7 +8,7 @@ const {
     },
 } = config;
 
-export class RelationshipsTemplateManagerService extends TemplatesManagerService {
+class RelationshipsTemplateManagerService extends TemplatesManagerService {
     async searchRelationshipTemplates(searchBody: ISearchRelationshipTemplatesBody = {}) {
         const { data } = await this.api.post<IMongoRelationshipTemplate[]>(searchTemplatesRoute, searchBody);
 
@@ -30,3 +30,5 @@ export class RelationshipsTemplateManagerService extends TemplatesManagerService
         return data;
     }
 }
+
+export default RelationshipsTemplateManagerService;

@@ -1,6 +1,6 @@
 import { IRule } from '@microservices/shared';
 
-export const rulesCreator = (
+const rulesCreator = (
     fliesOnId: string,
     flightInTripId: string,
     departueFromId: string,
@@ -252,3 +252,5 @@ export const rulesCreator = (
         },
     },
 ];
+
+export default rulesCreator;

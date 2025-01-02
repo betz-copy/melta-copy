@@ -1,11 +1,11 @@
+/* eslint-disable import/prefer-default-export */
 /* eslint-disable no-plusplus */
-// @ts-ignore
-import { generate, format, JSONSchemaFaker } from 'json-schema-faker';
+import { JSONSchemaFaker } from 'json-schema-faker';
 import pLimit from 'p-limit';
 import { Axios } from 'axios';
 import { IMongoProcessTemplatePopulated } from '@microservices/shared';
 import config from './config';
-import { createAxiosInstance } from './utils/axios';
+import createAxiosInstance from './utils/axios';
 
 const limit = pLimit(config.requestLimit);
 

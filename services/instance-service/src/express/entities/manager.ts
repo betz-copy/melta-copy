@@ -36,9 +36,9 @@ import {
 } from '@microservices/shared';
 import { EntitiesIdsRulesReasonsMap, IEntityCrudAction, IExecutionOutput, IGetExpandedEntityBody, RunRuleReason } from './interface';
 import config from '../../config';
-import { ActivityLogProducer } from '../../externalServices/activityLog/producer';
-import { EntityTemplateManagerService } from '../../externalServices/templates/entityTemplateManager';
-import { RelationshipsTemplateManagerService } from '../../externalServices/templates/relationshipTemplateManager';
+import ActivityLogProducer from '../../externalServices/activityLog/producer';
+import EntityTemplateManagerService from '../../externalServices/templates/entityTemplateManager';
+import RelationshipsTemplateManagerService from '../../externalServices/templates/relationshipTemplateManager';
 import { arraysEqualsNonOrdered } from '../../utils/lib';
 import { expandEntityToNeoQuery, getExpandedFilteredGraphRecursively } from '../../utils/neo4j/getExpandedEntityByIdRecursive';
 import {
@@ -56,7 +56,7 @@ import {
 import DefaultManagerNeo4j from '../../utils/neo4j/manager';
 import { escapeNeo4jQuerySpecialChars, searchWithRelationshipsToNeoQuery } from '../../utils/neo4j/searchBodyToNeoQuery';
 import { NotFoundError, ServiceError, ValidationError } from '../error';
-import { RelationshipManager } from '../relationships/manager';
+import RelationshipManager from '../relationships/manager';
 import { filterDependentRulesOnEntity, filterDependentRulesViaAggregation } from '../rules/getParametersOfFormula';
 import { IRuleFailure } from '../rules/interfaces';
 import { runRulesOnEntity } from '../rules/runRulesOnEntity';
@@ -64,7 +64,7 @@ import { throwIfActionCausedRuleFailures } from '../rules/throwIfActionCausedRul
 import { addStringFieldsAndNormalizeDateValues } from './validator.template';
 import { executeActionCodeAndGetEntitiesToUpdate } from '../../utils/actions/executeScript';
 import BulkActionManager from '../bulkActions/manager';
-import { isBodyFunctionHasContent } from '../../utils/actions/isBodyFunctionHasContent';
+import isBodyFunctionHasContent from '../../utils/actions/isBodyFunctionHasContent';
 
 const { brokenRulesFakeEntityIdPrefix } = config;
 

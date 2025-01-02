@@ -41,10 +41,9 @@ const main = async () => {
     await Promise.all(
         oldPermissionsToNewPermissions(oldPermissionsOfUser).map(async (createUserBody) =>
             createNewUser(createUserBody).catch((err) => {
-                console.log(
-                    `failed to convert user ${createUserBody.kartoffelId} with source ${createUserBody.digitalIdentitySource} `,
-                    isAxiosError(err) ? err.response?.data : err,
-                );
+                logger.error(`failed to convert user ${createUserBody.kartoffelId} with source ${createUserBody.digitalIdentitySource} `, {
+                    error: isAxiosError(err) ? err.response?.data : err,
+                });
             }),
         ),
     );

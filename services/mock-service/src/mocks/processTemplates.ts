@@ -1,6 +1,6 @@
 import { ICreateProcessTemplateBody, ProcessPropertyFormats } from '@microservices/shared';
 
-export const getProcessTemplateToCreate = (userIds: string[], chance: Chance.Chance) => {
+const getProcessTemplateToCreate = (userIds: string[], chance: Chance.Chance) => {
     const processTemplates: ICreateProcessTemplateBody[] = [
         {
             name: 'createNewWeapon',
@@ -704,3 +704,5 @@ export const getProcessTemplateToCreate = (userIds: string[], chance: Chance.Cha
     ];
     return processTemplates;
 };
+
+export default getProcessTemplateToCreate;

@@ -2,7 +2,7 @@ import { IUser, IMongoCategory } from '@microservices/shared';
 import config from '../../config/index';
 import { getPermissionsToCreate } from './permissions';
 
-export const getUsersToCreate = (rootWorkspaceId: string, mainWorkspaceId: string, categories: IMongoCategory[]): Omit<IUser, '_id'>[] => {
+const getUsersToCreate = (rootWorkspaceId: string, mainWorkspaceId: string, categories: IMongoCategory[]): Omit<IUser, '_id'>[] => {
     return config.usersService.managersKartoffelIds.map((kartoffelId) => {
         return {
             displayName: 'נייקי אדידס',
@@ -21,3 +21,5 @@ export const getUsersToCreate = (rootWorkspaceId: string, mainWorkspaceId: strin
         };
     });
 };
+
+export default getUsersToCreate;

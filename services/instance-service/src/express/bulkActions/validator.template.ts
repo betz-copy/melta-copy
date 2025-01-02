@@ -11,10 +11,10 @@ import {
     IAction,
     IEntity,
 } from '@microservices/shared';
-import { EntityTemplateManagerService } from '../../externalServices/templates/entityTemplateManager';
-import { RelationshipsTemplateManagerService } from '../../externalServices/templates/relationshipTemplateManager';
+import EntityTemplateManagerService from '../../externalServices/templates/entityTemplateManager';
+import RelationshipsTemplateManagerService from '../../externalServices/templates/relationshipTemplateManager';
 import DefaultController from '../../utils/express/controller';
-import { EntityManager } from '../entities/manager';
+import EntityManager from '../entities/manager';
 import { ValidationError } from '../error';
 import config from '../../config';
 
@@ -46,7 +46,7 @@ ajv.addKeyword({
     type: 'number',
 });
 
-export class BulkActionValidator extends DefaultController {
+class BulkActionValidator extends DefaultController {
     private entityManager: EntityManager;
 
     private relationshipsTemplateManagerService: RelationshipsTemplateManagerService;
@@ -148,3 +148,5 @@ export class BulkActionValidator extends DefaultController {
         );
     }
 }
+
+export default BulkActionValidator;

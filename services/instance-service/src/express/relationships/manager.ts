@@ -2,8 +2,8 @@
 import { Transaction } from 'neo4j-driver';
 import { ActionsLog, IMongoRelationshipTemplate, IBrokenRule, IRelationship, IMongoActivityLog } from '@microservices/shared';
 import config from '../../config';
-import { ActivityLogProducer } from '../../externalServices/activityLog/producer';
-import { RelationshipsTemplateManagerService } from '../../externalServices/templates/relationshipTemplateManager';
+import ActivityLogProducer from '../../externalServices/activityLog/producer';
+import RelationshipsTemplateManagerService from '../../externalServices/templates/relationshipTemplateManager';
 import {
     generateDefaultProperties,
     getNeo4jDateTime,
@@ -13,11 +13,11 @@ import {
     runInTransactionAndNormalize,
 } from '../../utils/neo4j/lib';
 import DefaultManagerNeo4j from '../../utils/neo4j/manager';
-import { EntityManager } from '../entities/manager';
+import EntityManager from '../entities/manager';
 import { BadRequestError, NotFoundError } from '../error';
 import { throwIfActionCausedRuleFailures } from '../rules/throwIfActionCausedRuleFailures';
 
-export class RelationshipManager extends DefaultManagerNeo4j {
+class RelationshipManager extends DefaultManagerNeo4j {
     private relationshipsTemplateManagerService: RelationshipsTemplateManagerService;
 
     private activityLogProducer: ActivityLogProducer;
@@ -317,3 +317,5 @@ export class RelationshipManager extends DefaultManagerNeo4j {
         );
     }
 }
+
+export default RelationshipManager;

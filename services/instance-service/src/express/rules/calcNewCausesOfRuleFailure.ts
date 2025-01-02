@@ -25,7 +25,7 @@ import { IEquationCauses } from './interfaces/formulaWithCauses/equation';
 import { IAggregationGroupCauses, IGroupCauses } from './interfaces/formulaWithCauses/group';
 import { IArgumentCauses, IPropertyOfVariableCauses } from './interfaces/formulaWithCauses/argument';
 import { ICountAggFunctionCauses, IRegularFunctionCauses, ISumAggFunctionCauses } from './interfaces/formulaWithCauses/function';
-import { filteredMap } from '../../utils/filteredMap';
+import filteredMap from '../../utils/filteredMap';
 
 const getCausesOfPropertyOfVariable = (
     propertyOfVariableCauses: IPropertyOfVariableCauses,

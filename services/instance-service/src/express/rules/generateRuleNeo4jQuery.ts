@@ -474,6 +474,7 @@ const generateNeo4jQueryFromFormula = (formula: IFormula, withVariablesForSubQue
     throw new Error('unexpected formula, must be group/equation/aggeregationGroup');
 };
 
+// eslint-disable-next-line import/prefer-default-export
 export const generateNeo4jRuleQueryOnEntity = (rule: IMongoRule, entityId: string): CypherQuery => {
     const { entityTemplateId, formula } = rule;
 

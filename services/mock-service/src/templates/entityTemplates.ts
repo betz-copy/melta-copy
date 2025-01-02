@@ -1,6 +1,6 @@
 import { IEntityTemplate, IMongoEntityTemplate, IMongoCategory } from '@microservices/shared';
 import config from '../config';
-import { createAxiosInstance } from '../utils/axios';
+import createAxiosInstance from '../utils/axios';
 
 const {
     url,
