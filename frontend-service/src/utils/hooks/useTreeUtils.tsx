@@ -4,8 +4,10 @@
 import { useState } from 'react';
 import { cloneDeep } from 'lodash';
 import { TreeType } from '../../interfaces/Tree';
+import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IMongoCategory } from '../../interfaces/categories';
 
-function selectParentIfAllChildrenAreSelected<T>(treeItems: TreeType<T>[], newSelectedItemsWithChildren, getItemId: (item: T) => string) {
+function selectParentIfAllChildrenAreSelected<T, K>(treeItems: TreeType<T, K>[], newSelectedItemsWithChildren, getItemId: (item: T | K) => string) {
     const updatedArray = cloneDeep(newSelectedItemsWithChildren);
 
     treeItems.forEach((item) => {
@@ -28,7 +30,31 @@ function selectParentIfAllChildrenAreSelected<T>(treeItems: TreeType<T>[], newSe
     return updatedArray;
 }
 
-export const flattenTree = <T,>(treeItems: TreeType<T>[], getItemId: (item: T) => string, revertedTemplates: any[] = []): any[] => {
+export const formatTemplates = (
+    categories: IMongoCategory[],
+    templates: IMongoEntityTemplatePopulated[],
+): TreeType<IMongoCategory, IMongoEntityTemplatePopulated>[] => {
+    const templatesByCategory: Record<string, IMongoEntityTemplatePopulated[]> = {};
+
+    templates.forEach((template) => {
+        const categoryId = template.category._id;
+        if (!templatesByCategory[categoryId]) {
+            templatesByCategory[categoryId] = [];
+        }
+        templatesByCategory[categoryId].push(template);
+    });
+
+    return Object.entries(templatesByCategory).map(([categoryId, currTemplates]) => {
+        const category = categories.find((currCategory) => currCategory._id === categoryId)!;
+
+        return {
+            ...category,
+            children: currTemplates,
+        };
+    });
+};
+
+export const flattenTree = <T, K = T>(treeItems: TreeType<T, K>[], getItemId: (item: T) => string, revertedTemplates: any[] = []): any[] => {
     treeItems.forEach((categoryWithTemplates) => {
         const { children, ...rest } = categoryWithTemplates;
 
@@ -42,17 +68,17 @@ export const flattenTree = <T,>(treeItems: TreeType<T>[], getItemId: (item: T) =
     return revertedTemplates;
 };
 
-export const useTreeUtils = <T,>(
-    getItemId: (item: T) => string,
+export const useTreeUtils = <T, K>(
+    getItemId: (item: T | K) => string,
     parentInfersChildren?: boolean,
     preSelectedItemsIds: string[] = [],
-    treeItems: TreeType<T>[] = [],
+    treeItems: TreeType<T, K>[] = [],
 ) => {
     const [selectedItemsIds, setSelectedItemsIds] = useState<string[]>(
         parentInfersChildren ? selectParentIfAllChildrenAreSelected(treeItems, preSelectedItemsIds, getItemId) : preSelectedItemsIds,
     );
 
-    function getParentNode(items: TreeType<T>[], id: string): TreeType<T> | undefined {
+    function getParentNode(items: TreeType<T, K>[], id: string): TreeType<T, K> | undefined {
         for (const item of items) {
             if (item.children) {
                 if (item.children.some((child) => getItemId(child) === id)) {
@@ -71,7 +97,7 @@ export const useTreeUtils = <T,>(
         return undefined;
     }
 
-    function getAllParentIds(items: TreeType<T>[], id: string) {
+    function getAllParentIds(items: TreeType<T, K>[], id: string) {
         const parentIds: string[] = [];
         let parent = getParentNode(items, id);
         while (parent) {
@@ -81,7 +107,7 @@ export const useTreeUtils = <T,>(
         return parentIds;
     }
 
-    function getSelectedIdsAndChildrenIds(items: TreeType<T>[], selectedIds: string[]) {
+    function getSelectedIdsAndChildrenIds(items: TreeType<T, K>[], selectedIds: string[]) {
         const selectedIdIncludingChildrenIds = new Set([...selectedIds]);
 
         for (const item of items) {

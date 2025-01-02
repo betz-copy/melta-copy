@@ -15,6 +15,8 @@ import { IMongoCategory } from '../../interfaces/categories';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { MiniFilter } from '../../common/SelectCheckBox/MiniFilter';
+import Tree from '../../common/Tree';
+import { flattenTree, formatTemplates } from '../../utils/hooks/useTreeUtils';
 
 const useStyles = makeStyles(() => ({
     button: {
@@ -44,8 +46,9 @@ export const getCategoriesSelectCheckboxGroupProps = (
     };
 };
 
-const getOptionId: SelectCheckboxProps<IMongoEntityTemplatePopulated, IMongoCategory>['getOptionId'] = ({ _id }) => _id;
-const getOptionLabel: SelectCheckboxProps<IMongoEntityTemplatePopulated, IMongoCategory>['getOptionLabel'] = ({ displayName }) => displayName;
+const getOptionId: SelectCheckboxProps<IMongoEntityTemplatePopulated | IMongoCategory, IMongoCategory>['getOptionId'] = ({ _id }) => _id;
+const getOptionLabel: SelectCheckboxProps<IMongoEntityTemplatePopulated | IMongoCategory, IMongoCategory>['getOptionLabel'] = ({ displayName }) =>
+    displayName;
 
 const TemplatesSelectGrid: React.FC<{
     templates: IMongoEntityTemplatePopulated[];
@@ -82,6 +85,10 @@ const TemplatesSelectGrid: React.FC<{
     });
 
     const first3CategoriesFiltered = categoriesFiltered!.slice(0, 3);
+
+    const tree = formatTemplates(categories!, templates);
+    const flattenedTree = flattenTree(tree, getOptionId);
+
     const extendedCategoriesFiltered = categoriesFiltered!.slice(3);
     const [openMap, setOpenMap] = useState<{ [groupId: string]: boolean }>({});
 
@@ -136,32 +143,24 @@ const TemplatesSelectGrid: React.FC<{
                             {i18next.t('graph.filterTitle')}
                         </Typography>
                         <MiniFilter value={miniFilterValue} onChange={setMiniFilterValue} toTopBar={false} templatesSelectGrid />
-                        {/* <ChooseAllMenuItem
-                            flattenedOptions={templates}
-                            selectedOptions={selectedTemplatesFiltered}
-                            setSelectedOptions={setSelectedTemplates}
-                            optionsFiltered={templatesFiltered}
-                            onClick={onClick}
-                            getOptionId={getOptionId}
-                        /> */}
                         <Box sx={{ display: 'flex', justifyContent: 'center', my: '5px' }}>
                             <Divider style={{ width: '199px' }} />
                         </Box>
 
                         <Box style={{ maxHeight: '25rem', paddingBottom: '5px', overflowY: 'auto', overflowX: 'hidden' }}>
-                            <SelectOptionsMenuItemsGrouped
-                                options={templates}
-                                optionsFiltered={templatesFiltered}
-                                selectedOptions={selectedTemplatesFiltered}
-                                setSelectedOptions={setSelectedTemplates}
-                                getOptionId={getOptionId}
-                                getOptionLabel={getOptionLabel}
-                                groupsProps={{ ...groupsProps, groups: first3CategoriesFiltered }}
-                                isDraggableDisabled
-                                setOptions={setTemplates}
-                                setOpenMap={setOpenMap}
-                                openMap={openMap}
-                                onClick={onClick}
+                            <Tree
+                                selectAll
+                                flattenedTree={flattenedTree}
+                                preSelectedItemsIds={selectedTemplatesFiltered.map(({ _id }) => _id)}
+                                getItemId={getOptionId}
+                                getItemLabel={getOptionLabel}
+                                multi
+                                treeItems={tree}
+                                onSelectItems={(ids) => {
+                                    const filteredOptions = flattenedTree.filter(({ _id }) => ids.includes(_id));
+                                    setSelectedTemplates(filteredOptions);
+                                    onClick();
+                                }}
                             />
                             <Button
                                 style={{

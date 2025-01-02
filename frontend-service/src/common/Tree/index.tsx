@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { RichTreeViewPro } from '@mui/x-tree-view-pro';
 import { ChevronLeft, ExpandLess } from '@mui/icons-material';
 import { Box, Divider } from '@mui/material';
@@ -6,10 +6,10 @@ import { TreeType } from '../../interfaces/Tree';
 import { flattenTree, useTreeUtils } from '../../utils/hooks/useTreeUtils';
 import { SelectAll } from './SelectAll';
 
-interface TreeProps<T> {
-    treeItems: TreeType<T>[];
-    getItemId: (item: T) => string;
-    getItemLabel: (item: T) => string;
+interface TreeProps<T, K> {
+    treeItems: TreeType<T, K>[];
+    getItemId: (item: T | K) => string;
+    getItemLabel: (item: T | K) => string;
     multi: boolean;
     onSelectItems?: (itemIds: string | string[]) => any;
     isDraggable?: boolean;
@@ -17,13 +17,13 @@ interface TreeProps<T> {
     preSelectedItemsIds?: string[];
     preExpandedItemIds?: string[];
     selectAll?: boolean;
-    flattenedTree?: T[];
+    flattenedTree?: (T | K)[];
 
     // If true parents only represent the state of their children.
     parentInfersChildren?: boolean;
 }
 
-const Tree = <T,>({
+const Tree = <T, K>({
     treeItems,
     onSelectItems,
     getItemId,
@@ -36,7 +36,7 @@ const Tree = <T,>({
     flattenedTree,
     multi = true,
     parentInfersChildren = true,
-}: TreeProps<T>): React.ReactElement => {
+}: TreeProps<T, K>): React.ReactElement => {
     const { handleSelectedItemsChange, selectedItemsIds, setSelectedItemsIds, getSelectedLeafIds } = useTreeUtils(
         getItemId,
         parentInfersChildren,
@@ -44,10 +44,15 @@ const Tree = <T,>({
         treeItems,
     );
 
+    const isFirstRender = useRef<boolean>(true);
+
     const [expandedItemsIds, setExpandedItemsIds] = useState<string[]>(preExpandedItemIds ?? []);
 
     useEffect(() => {
-        if (!onSelectItems || selectedItemsIds.toString() === preSelectedItemsIds?.toString()) return;
+        if (!onSelectItems || isFirstRender.current) {
+            isFirstRender.current = false;
+            return;
+        }
 
         let result: string[];
 
