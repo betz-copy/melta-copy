@@ -2,6 +2,7 @@ import React from 'react';
 import { MapContainer, Marker, Polygon, LayersControl, LayerGroup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-draw/dist/leaflet.draw.css';
+import { CRS } from 'leaflet';
 import EntityPopup from './EntityPopup';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { jerusalemCoordinates, UpdateMapBounds } from '../../utils/map';
@@ -9,7 +10,6 @@ import { IEntity } from '../../interfaces/entities';
 import { useEntityWithLocationFields } from '../../utils/hooks/useLocation';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { BaseLayers } from './mapPage';
-import { CRS } from 'leaflet';
 
 type Props = {
     entity: IEntity;
