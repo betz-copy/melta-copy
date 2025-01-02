@@ -389,23 +389,23 @@ export class EntityManager extends DefaultManagerNeo4j {
         const entityTemplates = await this.entityTemplateManagerService.searchEntityTemplates({ limit: 0, skip: 0 });
         const templatesMap = new Map(entityTemplates.map((template) => [template._id, template]));
 
-        const template = templatesMap.get(templateId)!;
+        const baseTemplate = templatesMap.get(templateId)!;
 
-        const queue = [template.properties.properties];
-        const relationshipReferenceIdsMap = new Map([[templateId, template]]);
+        const templatePropertiesQueue = [baseTemplate.properties.properties];
+        const relationshipReferenceIdsMap = new Map([[templateId, baseTemplate]]);
 
-        while (queue.length > 0) {
-            const currentEntity = queue.shift()!;
+        while (templatePropertiesQueue.length > 0) {
+            const currentEntityProperties = templatePropertiesQueue.shift()!;
 
-            Object.values(currentEntity).forEach((propertyValues) => {
+            Object.values(currentEntityProperties).forEach((propertyValues) => {
                 if (propertyValues.format === 'relationshipReference') {
-                    const { relatedTemplateId = '' } = propertyValues.relationshipReference || {};
+                    const { relatedTemplateId = '' } = propertyValues.relationshipReference!;
 
                     if (!relationshipReferenceIdsMap.has(relatedTemplateId)) {
                         const relatedTemplate = templatesMap.get(relatedTemplateId)!;
                         relationshipReferenceIdsMap.set(relatedTemplateId, relatedTemplate);
 
-                        queue.push(relatedTemplate.properties.properties);
+                        templatePropertiesQueue.push(relatedTemplate.properties.properties);
                     }
                 }
             });

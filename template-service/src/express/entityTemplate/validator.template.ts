@@ -17,23 +17,23 @@ export class EntityTemplateValidator extends DefaultController<IMongoEntityTempl
         const entityTemplates = await this.manager.getTemplates({ limit: 0, skip: 0 });
         const templatesMap = new Map(entityTemplates.map((template) => [template._id, template]));
 
-        const template = templatesMap.get(templateId)!;
+        const baseTemplate = templatesMap.get(templateId)!;
 
-        const queue = [template.properties.properties];
-        const relationshipReferenceIdsMap = new Map([[templateId, template]]);
+        const entityPropertiesQueue = [baseTemplate.properties.properties];
+        const relationshipReferenceIdsMap = new Map([[templateId, baseTemplate]]);
 
-        while (queue.length > 0) {
-            const currentEntity = queue.shift()!;
+        while (entityPropertiesQueue.length > 0) {
+            const currentEntityProperties = entityPropertiesQueue.shift()!;
 
-            Object.values(currentEntity).forEach((propertyValues) => {
+            Object.values(currentEntityProperties).forEach((propertyValues) => {
                 if (propertyValues.format === 'relationshipReference') {
-                    const { relatedTemplateId = '' } = propertyValues.relationshipReference || {};
+                    const { relatedTemplateId = '' } = propertyValues.relationshipReference!;
 
                     if (!relationshipReferenceIdsMap.has(relatedTemplateId)) {
                         const relatedTemplate = templatesMap.get(relatedTemplateId)!;
                         relationshipReferenceIdsMap.set(relatedTemplateId, relatedTemplate);
 
-                        queue.push(relatedTemplate.properties.properties);
+                        entityPropertiesQueue.push(relatedTemplate.properties.properties);
                     }
                 }
             });
