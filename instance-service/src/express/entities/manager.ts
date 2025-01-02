@@ -385,21 +385,33 @@ export class EntityManager extends DefaultManagerNeo4j {
         return relatedEntityIdsByFieldToChange;
     }
 
-    async getAllRelationshipReferencesEntityTemplates({ _id, properties: { properties } }: IMongoEntityTemplate) {
-        const relatedTemplates: Set<string> = new Set<string>();
-        relatedTemplates.add(_id);
+    async getAllRelationshipReferencesEntityTemplates(templateId: string) {
+        const entityTemplates = await this.entityTemplateManagerService.searchEntityTemplates({ limit: 0, skip: 0 });
+        const templatesMap = new Map(entityTemplates.map((template) => [template._id, template]));
 
-        Object.values(properties).forEach((value) => {
-            if (value.format === 'relationshipReference') relatedTemplates.add(value.relationshipReference?.relatedTemplateId!);
-        });
+        const template = templatesMap.get(templateId)!;
 
-        const entityTemplates = await this.entityTemplateManagerService.searchEntityTemplates({
-            ids: Array.from(relatedTemplates),
-            limit: 0,
-            skip: 0,
-        });
+        const queue = [template.properties.properties];
+        const relationshipReferenceIdsMap = new Map([[templateId, template]]);
 
-        return new Map(entityTemplates.map((template) => [template._id, template]));
+        while (queue.length > 0) {
+            const currentEntity = queue.shift()!;
+
+            Object.values(currentEntity).forEach((propertyValues) => {
+                if (propertyValues.format === 'relationshipReference') {
+                    const { relatedTemplateId = '' } = propertyValues.relationshipReference || {};
+
+                    if (!relationshipReferenceIdsMap.has(relatedTemplateId)) {
+                        const relatedTemplate = templatesMap.get(relatedTemplateId)!;
+                        relationshipReferenceIdsMap.set(relatedTemplateId, relatedTemplate);
+
+                        queue.push(relatedTemplate.properties.properties);
+                    }
+                }
+            });
+        }
+
+        return relationshipReferenceIdsMap;
     }
 
     async createOrDuplicateAction(
@@ -561,7 +573,7 @@ export class EntityManager extends DefaultManagerNeo4j {
         entity?: IEntity,
         duplicatedFromId?: string,
     ) => {
-        const entitiesTemplatesByIds = await this.getAllRelationshipReferencesEntityTemplates(entityTemplate);
+        const entitiesTemplatesByIds = await this.getAllRelationshipReferencesEntityTemplates(entityTemplate._id);
 
         const mainAction = this.buildMainAction(crudAction, properties, entityTemplate, entity, duplicatedFromId);
 

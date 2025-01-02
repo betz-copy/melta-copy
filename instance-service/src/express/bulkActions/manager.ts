@@ -81,7 +81,10 @@ export class BulkActionManager extends DefaultManagerNeo4j {
         const newEntityProperties = { ...entity.properties, ...updatedFields };
 
         // updatedFields specifies fields to remove w/ nulls. but shouldn't be in the IEntity properties
-        const newEntityPropertiesWithoutNulls = pickBy(newEntityProperties, (property) => property !== null) as IEntity['properties'];
+        const newEntityPropertiesWithoutNulls = pickBy(
+            newEntityProperties,
+            (property) => property !== null && property !== undefined,
+        ) as IEntity['properties'];
         const entityAfterManipulations = JSON.parse(JSON.stringify(newEntityPropertiesWithoutNulls));
 
         Object.entries(entityTemplate.properties.properties).forEach(([name, value]) => {

@@ -1,28 +1,45 @@
 import { Request } from 'express';
 import * as ts from 'typescript-actions';
-import DefaultController from '../../utils/express/controller';
 import { generateInterfaceWithRelationships } from '../../utils/entityTemplateActions/interfacesGenerator';
-import { BadRequestError } from '../error';
-import { IEntityTemplatePopulated, IMongoEntityTemplate } from './interface';
-import EntityTemplateManager from './manager';
-import { addPropertyToRequest } from '../../utils/express';
 import { compileTsCode } from '../../utils/entityTemplateActions/tsCompiler';
+import { addPropertyToRequest } from '../../utils/express';
+import DefaultController from '../../utils/express/controller';
+import { BadRequestError } from '../error';
+import { IMongoEntityTemplate } from './interface';
+import EntityTemplateManager from './manager';
 
 export class EntityTemplateValidator extends DefaultController<IMongoEntityTemplate, EntityTemplateManager> {
     constructor(workspaceId: string) {
         super(new EntityTemplateManager(workspaceId));
     }
 
-    private getAllRelationshipReferencesEntityTemplates = async ({ _id, properties: { properties } }: IEntityTemplatePopulated) => {
-        const relatedTemplates: Set<string> = new Set<string>();
-        relatedTemplates.add(_id);
+    getAllRelationshipReferencesEntityTemplates = async (templateId: string) => {
+        const entityTemplates = await this.manager.getTemplates({ limit: 0, skip: 0 });
+        const templatesMap = new Map(entityTemplates.map((template) => [template._id, template]));
 
-        Object.values(properties).forEach((value) => {
-            if (value.format === 'relationshipReference') relatedTemplates.add(value.relationshipReference?.relatedTemplateId!);
-        });
+        const template = templatesMap.get(templateId)!;
 
-        const entityTemplates = await this.manager.getTemplates({ ids: Array.from(relatedTemplates), limit: 0, skip: 0 });
-        return new Map(entityTemplates.map((template) => [template._id, template]));
+        const queue = [template.properties.properties];
+        const relationshipReferenceIdsMap = new Map([[templateId, template]]);
+
+        while (queue.length > 0) {
+            const currentEntity = queue.shift()!;
+
+            Object.values(currentEntity).forEach((propertyValues) => {
+                if (propertyValues.format === 'relationshipReference') {
+                    const { relatedTemplateId = '' } = propertyValues.relationshipReference || {};
+
+                    if (!relationshipReferenceIdsMap.has(relatedTemplateId)) {
+                        const relatedTemplate = templatesMap.get(relatedTemplateId)!;
+                        relationshipReferenceIdsMap.set(relatedTemplateId, relatedTemplate);
+
+                        queue.push(relatedTemplate.properties.properties);
+                    }
+                }
+            });
+        }
+
+        return relationshipReferenceIdsMap;
     };
 
     private cleanActionCode = (action: string, entitiesTemplatesByIds: Map<string, IMongoEntityTemplate>) => {
@@ -46,8 +63,6 @@ export class EntityTemplateValidator extends DefaultController<IMongoEntityTempl
             params: { templateId },
         } = req;
 
-        const entityTemplate = await this.manager.getTemplateById(templateId);
-
         const filename = 'ast.ts';
         const customErrorCode = [
             'class CustomError extends Error {',
@@ -62,8 +77,7 @@ export class EntityTemplateValidator extends DefaultController<IMongoEntityTempl
         const sourceFile = ts.createSourceFile(filename, code, ts.ScriptTarget.ES5);
         compileTsCode(filename, sourceFile);
         // todo: ensure that the code doesn't use in global variables
-
-        const entityTemplatesByIds = await this.getAllRelationshipReferencesEntityTemplates(entityTemplate);
+        const entityTemplatesByIds = await this.getAllRelationshipReferencesEntityTemplates(templateId);
 
         addPropertyToRequest(req, 'actions', this.cleanActionCode(actions, entityTemplatesByIds));
     };
