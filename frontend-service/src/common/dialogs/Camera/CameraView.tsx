@@ -11,20 +11,10 @@ interface ICameraViewProps {
     setStream: React.Dispatch<React.SetStateAction<MediaStream | null>>;
     setImgURL: React.Dispatch<React.SetStateAction<string | null>>;
     setOpenImageView: React.Dispatch<React.SetStateAction<boolean>>;
-    setOpenCamera: React.Dispatch<React.SetStateAction<boolean>>;
     cameraSize: { width: number; height: number };
 }
 
-const CameraView: React.FC<ICameraViewProps> = ({
-    videoRef,
-    setVideoRef,
-    stream,
-    setStream,
-    setImgURL,
-    setOpenImageView,
-    setOpenCamera,
-    cameraSize,
-}) => {
+const CameraView: React.FC<ICameraViewProps> = ({ videoRef, setVideoRef, stream, setStream, setImgURL, setOpenImageView, cameraSize }) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const { width, height } = cameraSize;
 

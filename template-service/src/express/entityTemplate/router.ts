@@ -3,6 +3,7 @@ import { createController } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
 import EntityTemplateController from './controller';
 import {
+    convertToRelationshipFieldRequestSchema,
     createEntityTemplateSchema,
     deleteEntityTemplateSchema,
     getAllTemplatesSchema,
@@ -41,6 +42,12 @@ entityTemplateRouter.put(
     ValidateRequest(updateEntityTemplateSchema),
     validatorController.validateEntityTemplateUpdate,
     controller.updateEntityTemplate,
+);
+
+entityTemplateRouter.put(
+    '/convertToRelationshipField/:templateId/:relationshipTemplateId',
+    ValidateRequest(convertToRelationshipFieldRequestSchema),
+    controller.convertToRelationshipField,
 );
 
 entityTemplateRouter.patch(

@@ -18,6 +18,7 @@ import { ICategoryMap } from '../../../interfaces/categories';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IMongoRelationshipTemplate, IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
 import {
+    convertToRelationshipFieldRequest,
     deleteRelationshipTemplateRequest,
     relationshipTemplateObjectToRelationshipTemplateForm,
 } from '../../../services/templates/relationshipTemplatesService';
@@ -29,6 +30,8 @@ import { ViewingCard } from './Card';
 import { CardMenu } from './CardMenu';
 import { CreateButton } from './CreateButton';
 import { FilterButton } from './FilterButton';
+import { ConvertToRelationship } from '../../../common/wizards/relationshipTemplate/convertRelationshipToRelationshipField';
+import { IRelationshipReference } from '../../../common/wizards/entityTemplate/commonInterfaces';
 
 const { infiniteScrollPageCount } = environment.processInstances;
 
@@ -46,12 +49,19 @@ interface RelationshipTemplateCardProps {
             relationshipTemplateId: string | null;
         }>
     >;
+    setConvertToRelationshipFieldDialogState: React.Dispatch<
+        React.SetStateAction<{
+            isDialogOpen: boolean;
+            relationshipTemplate: IMongoRelationshipTemplate | null;
+        }>
+    >;
 }
 
 const RelationshipTemplateCard: React.FC<RelationshipTemplateCardProps> = ({
     relationshipTemplate,
     setRelationshipTemplateWizardDialogState,
     setDeleteRelationshipTemplateDialogState,
+    setConvertToRelationshipFieldDialogState,
 }) => {
     const [isHoverOnCard, setIsHoverOnCard] = useState(false);
     const [isDeleteButtonDisabled, setIsDeleteButtonDisabled] = useState(false);
@@ -104,6 +114,17 @@ const RelationshipTemplateCard: React.FC<RelationshipTemplateCardProps> = ({
                                     setDeleteRelationshipTemplateDialogState({
                                         isDialogOpen: true,
                                         relationshipTemplateId: relationshipTemplate._id,
+                                    });
+                                }}
+                                onConvertToRelationShipFieldClick={() => {
+                                    const { sourceEntity, destinationEntity, ...restOfRelationshipTemplate } = relationshipTemplate;
+                                    setConvertToRelationshipFieldDialogState({
+                                        isDialogOpen: true,
+                                        relationshipTemplate: {
+                                            sourceEntityId: sourceEntity._id,
+                                            destinationEntityId: destinationEntity._id,
+                                            ...restOfRelationshipTemplate,
+                                        },
                                     });
                                 }}
                                 disabledProps={{
@@ -167,6 +188,14 @@ const RelationshipTemplatesRow: React.FC = () => {
         relationshipTemplateId: null,
     });
 
+    const [convertToRelationshipFieldDialogState, setConvertToRelationshipFieldDialogState] = useState<{
+        isDialogOpen: boolean;
+        relationshipTemplate: IMongoRelationshipTemplate | null;
+    }>({
+        isDialogOpen: false,
+        relationshipTemplate: null,
+    });
+
     const [relationshipTemplateWizardDialogState, setRelationshipTemplateWizardDialogState] = useState<{
         isWizardOpen: boolean;
         relationshipTemplate: IMongoRelationshipTemplate | null;
@@ -189,6 +218,47 @@ const RelationshipTemplatesRow: React.FC = () => {
             toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.relationshipTemplate.failedToDelete')} />);
         },
     });
+
+    const { isLoading: convertToRelationshipFieldLoading, mutateAsync: convertRelationshipToRelationShipFieldRequest } = useMutation(
+        ({
+            id,
+            fieldName,
+            displayFieldName,
+            relationshipReference,
+        }: {
+            id: string;
+            fieldName: string;
+            displayFieldName: string;
+            relationshipReference: IRelationshipReference;
+        }) =>
+            convertToRelationshipFieldRequest(id, {
+                fieldName,
+                displayFieldName,
+                relationshipReference,
+            }),
+        {
+            onSuccess: ({ updatedRelationShipTemplate, updatedEntityTemplate }, { id }) => {
+                queryClient.setQueryData<IRelationshipTemplateMap>('getRelationshipTemplates', (relationshipTemplateMap) =>
+                    relationshipTemplateMap!.set(id, updatedRelationShipTemplate),
+                );
+
+                queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) =>
+                    entityTemplateMap!.set(updatedEntityTemplate._id, updatedEntityTemplate),
+                );
+                queryClient.invalidateQueries();
+
+                toast.success(i18next.t('wizard.relationshipTemplate.convertToRelationshipFieldSuccessfully'));
+            },
+            onError: (error: AxiosError) => {
+                toast.error(
+                    <ErrorToast
+                        axiosError={error}
+                        defaultErrorMessage={i18next.t('wizard.relationshipTemplate.failedToConvertToRelationshipField')}
+                    />,
+                );
+            },
+        },
+    );
 
     const getRelationshipGroupedByEntitiesTemplate = (
         relationships: IMongoRelationshipTemplatePopulated[],
@@ -385,6 +455,7 @@ const RelationshipTemplatesRow: React.FC = () => {
                                     relationshipTemplate={relationshipTemplate}
                                     setDeleteRelationshipTemplateDialogState={setDeleteRelationshipTemplateDialogState}
                                     setRelationshipTemplateWizardDialogState={setRelationshipTemplateWizardDialogState}
+                                    setConvertToRelationshipFieldDialogState={setConvertToRelationshipFieldDialogState}
                                 />
                             ))}
                         </Box>
@@ -406,6 +477,20 @@ const RelationshipTemplatesRow: React.FC = () => {
                 handleClose={() => setDeleteRelationshipTemplateDialogState({ isDialogOpen: false, relationshipTemplateId: null })}
                 onYes={() => mutateAsync(deleteRelationshipTemplateDialogState.relationshipTemplateId!)}
                 isLoading={isLoading}
+            />
+            <ConvertToRelationship
+                open={convertToRelationshipFieldDialogState.isDialogOpen}
+                handleClose={() => setConvertToRelationshipFieldDialogState({ isDialogOpen: false, relationshipTemplate: null })}
+                onYes={({ fieldName, displayFieldName, relationshipReference }) =>
+                    convertRelationshipToRelationShipFieldRequest({
+                        id: convertToRelationshipFieldDialogState.relationshipTemplate?._id!,
+                        fieldName,
+                        displayFieldName,
+                        relationshipReference,
+                    })
+                }
+                isLoading={convertToRelationshipFieldLoading}
+                relationshipTemplate={convertToRelationshipFieldDialogState.relationshipTemplate}
             />
         </Grid>
     );

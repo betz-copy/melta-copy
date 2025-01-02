@@ -27,6 +27,7 @@ interface FileInputProps {
     disableCamera?: boolean;
     isLoading?: boolean;
     comment?: string;
+    scanFromImage?: boolean;
 }
 
 const FileInput: React.FC<FileInputProps> = ({
@@ -40,6 +41,7 @@ const FileInput: React.FC<FileInputProps> = ({
     disableCamera = false,
     isLoading,
     comment,
+    scanFromImage,
 }) => {
     const theme = useTheme();
     const { trackEvent } = useMatomo();
@@ -175,7 +177,7 @@ const FileInput: React.FC<FileInputProps> = ({
                                             <OpenPreview fileId={file.name!} img={<Visibility fontSize="small" />} showText={false} />
                                         )}
 
-                                        {isImageFile() && (
+                                        {scanFromImage && isImageFile() && (
                                             <MeltaTooltip title={i18next.t('input.imagePicker.scanFromImage')}>
                                                 <IconButton
                                                     style={{
@@ -276,7 +278,6 @@ const FileInput: React.FC<FileInputProps> = ({
                     open={openCamera}
                     setOpen={setOpenCamera}
                     setImgURL={setImgURL}
-                    onPictureTaken={onDropFile}
                     setOpenImageView={setOpenImageView}
                 />
             )}

@@ -14,7 +14,6 @@ import { ColoredEnumChip } from './ColoredEnumChip';
 import OpenPreview from './FilePreview/OpenPreview';
 import { MeltaTooltip } from './MeltaTooltip';
 import RelationshipReferenceView from './RelationshipReferenceView';
-import { VerifyLink } from './VerifyLink';
 import { getFixedNumber, getTextDirection } from '../utils/stringValues';
 import { HighlightText } from '../utils/HighlightText';
 import { BlueTitle } from './BlueTitle';
@@ -259,9 +258,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                                                 direction: propertySchema.type === 'number' ? 'rtl' : textDirection,
                                             }}
                                         >
-                                            <VerifyLink>
-                                                <HighlightText text={innerContent} searchedText={searchedText} />
-                                            </VerifyLink>
+                                            <HighlightText text={innerContent} searchedText={searchedText} isLink />
                                         </Typography>
                                     </MeltaTooltip>
                                     <Grid item>
