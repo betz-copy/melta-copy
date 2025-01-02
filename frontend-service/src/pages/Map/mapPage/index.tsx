@@ -2,7 +2,7 @@ import React, { useMemo, useRef, useState } from 'react';
 import { MapContainer, TileLayer, LayersControl, FeatureGroup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-draw/dist/leaflet.draw.css';
-import L from 'leaflet';
+import L, { CRS } from 'leaflet';
 import { Box } from '@mui/material';
 import { useQueryClient } from 'react-query';
 import i18next from 'i18next';
@@ -64,6 +64,7 @@ const MapPage = () => {
                     [90, 180],
                 ]}
                 maxBoundsViscosity={1}
+                crs={CRS.EPSG3857}
             >
                 <LayersControl position="topright">
                     <BaseLayers />

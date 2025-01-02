@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useMemo, useState } from 'react';
 import { MapContainer, LayersControl, LayerGroup, FeatureGroup, Marker, Popup, Polygon } from 'react-leaflet';
-import L, { LatLng } from 'leaflet';
+import L, { CRS, LatLng } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-draw/dist/leaflet.draw.css';
 import { EditControl } from 'react-leaflet-draw';
@@ -79,6 +79,7 @@ const LocationField = ({ defaultLocation, styles, updateValue }: Props) => {
                 [-90, -180],
                 [90, 180],
             ]}
+            crs={CRS.EPSG3857}
         >
             <UpdateMapBounds bounds={bounds} />
 

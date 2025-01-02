@@ -9,6 +9,7 @@ import { IEntity } from '../../interfaces/entities';
 import { useEntityWithLocationFields } from '../../utils/hooks/useLocation';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { BaseLayers } from './mapPage';
+import { CRS } from 'leaflet';
 
 type Props = {
     entity: IEntity;
@@ -31,6 +32,7 @@ const EntityWithLocationFields = ({ styles, entity, entityTemplate }: Props) => 
                 [-90, -180],
                 [90, 180],
             ]}
+            crs={CRS.EPSG3857}
         >
             {(polygons.length > 0 || markers.length > 0) && <UpdateMapBounds bounds={bounds} />}
 
