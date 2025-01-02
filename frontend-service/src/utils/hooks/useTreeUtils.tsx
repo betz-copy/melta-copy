@@ -33,19 +33,22 @@ function selectParentIfAllChildrenAreSelected<T, K>(treeItems: TreeType<T, K>[],
 export const formatTemplates = (
     categories: IMongoCategory[],
     templates: IMongoEntityTemplatePopulated[],
+    getItemId: (item: IMongoCategory | IMongoEntityTemplatePopulated) => string,
 ): TreeType<IMongoCategory, IMongoEntityTemplatePopulated>[] => {
     const templatesByCategory: Record<string, IMongoEntityTemplatePopulated[]> = {};
 
     templates.forEach((template) => {
-        const categoryId = template.category._id;
+        const categoryId = getItemId(template.category);
+
         if (!templatesByCategory[categoryId]) {
             templatesByCategory[categoryId] = [];
         }
+
         templatesByCategory[categoryId].push(template);
     });
 
     return Object.entries(templatesByCategory).map(([categoryId, currTemplates]) => {
-        const category = categories.find((currCategory) => currCategory._id === categoryId)!;
+        const category = categories.find((currCategory) => getItemId(currCategory) === categoryId)!;
 
         return {
             ...category,
