@@ -2,21 +2,16 @@ import { FilterList } from '@mui/icons-material';
 import { Box, Button, Divider, Grid, SxProps, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import i18next from 'i18next';
-import React, { Dispatch, useState } from 'react';
+import React, { Dispatch, useEffect, useState } from 'react';
 import { IoIosArrowBack, IoIosArrowDown } from 'react-icons/io';
 import { useMatomo } from '@datapunt/matomo-tracker-react';
-import {
-    getOptionsAndGroupsMiniFiltered,
-    SelectCheckboxGroupProps,
-    SelectCheckboxProps,
-    SelectOptionsMenuItemsGrouped,
-} from '../../common/SelectCheckBox';
+import { getOptionsAndGroupsMiniFiltered, SelectCheckboxGroupProps, SelectCheckboxProps } from '../../common/SelectCheckBox';
 import { IMongoCategory } from '../../interfaces/categories';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { useDarkModeStore } from '../../stores/darkMode';
-import { MiniFilter } from '../../common/SelectCheckBox/MiniFilter';
 import Tree from '../../common/Tree';
 import { flattenTree, formatTemplates } from '../../utils/hooks/useTreeUtils';
+import { Search } from '../../common/SelectCheckBox/Search';
 
 const useStyles = makeStyles(() => ({
     button: {
@@ -50,6 +45,48 @@ const getOptionId: SelectCheckboxProps<IMongoEntityTemplatePopulated | IMongoCat
 const getOptionLabel: SelectCheckboxProps<IMongoEntityTemplatePopulated | IMongoCategory, IMongoCategory>['getOptionLabel'] = ({ displayName }) =>
     displayName;
 
+const getTreeOnSplittedTemplates = (splitTempaltes: IMongoEntityTemplatePopulated[], searchValue: string) => {
+    const categories = splitTempaltes.map(({ category }) => category);
+
+    const filteredCategories = categories?.filter((category) => splitTempaltes.some((template) => template.category._id === category._id));
+
+    const groupsProps = getCategoriesSelectCheckboxGroupProps(filteredCategories) as { useGroups: true } & SelectCheckboxGroupProps<
+        IMongoEntityTemplatePopulated,
+        IMongoCategory
+    >;
+
+    const { optionsFiltered: templatesFiltered, groupsFiltered: categoriesFiltered } = getOptionsAndGroupsMiniFiltered(
+        searchValue,
+        splitTempaltes,
+        getOptionId,
+        getOptionLabel,
+        groupsProps,
+    );
+
+    const tree = formatTemplates(categories, splitTempaltes, getOptionId);
+    const filteredTree = categoriesFiltered ? formatTemplates(categoriesFiltered, templatesFiltered, getOptionId) : templatesFiltered;
+
+    return { tree, flattenedTree: splitTempaltes, filteredTree };
+};
+
+const splitCategories = (templates: IMongoEntityTemplatePopulated[], categories?: IMongoCategory[], splitIndex = 3) => {
+    if (!categories?.length) return { firstSplittedTemplates: templates.slice(0, splitIndex), secondSplittedTemplates: templates.slice(splitIndex) };
+
+    const firstSplittedCategoryIds = categories?.slice(0, splitIndex).map(({ _id }) => _id);
+    const firstSplittedTemplates: IMongoEntityTemplatePopulated[] = [];
+    const secondSplittedTemplates: IMongoEntityTemplatePopulated[] = [];
+
+    templates.forEach((template) => {
+        if (firstSplittedCategoryIds?.includes(template.category._id)) {
+            firstSplittedTemplates.push(template);
+        } else {
+            secondSplittedTemplates.push(template);
+        }
+    });
+
+    return { firstSplittedTemplates, secondSplittedTemplates };
+};
+
 const TemplatesSelectGrid: React.FC<{
     templates: IMongoEntityTemplatePopulated[];
     selectedTemplates: IMongoEntityTemplatePopulated[];
@@ -59,38 +96,16 @@ const TemplatesSelectGrid: React.FC<{
     setOpenFilter: React.Dispatch<React.SetStateAction<boolean>>;
     openFilter: boolean;
     onClick: () => void;
-}> = ({ templates, selectedTemplates, setSelectedTemplates, categories, setTemplates, setOpenFilter, openFilter, onClick }) => {
+}> = ({ templates, selectedTemplates, setSelectedTemplates, categories, setOpenFilter, openFilter, onClick }) => {
     const classes = useStyles();
     const [showAll, setShowAll] = useState<boolean>(false);
 
     const [miniFilterValue, setMiniFilterValue] = useState('');
 
-    const filteredCategories = categories?.filter((category) => templates.some((template) => template.category._id === category._id));
+    const { firstSplittedTemplates, secondSplittedTemplates } = splitCategories(templates, categories);
 
-    const groupsProps = getCategoriesSelectCheckboxGroupProps(filteredCategories) as { useGroups: true } & SelectCheckboxGroupProps<
-        IMongoEntityTemplatePopulated,
-        IMongoCategory
-    >;
-    const { optionsFiltered: templatesFiltered, groupsFiltered: categoriesFiltered } = getOptionsAndGroupsMiniFiltered(
-        miniFilterValue,
-        templates,
-        getOptionId,
-        getOptionLabel,
-        groupsProps,
-    );
-
-    const selectedTemplatesFiltered = selectedTemplates.filter((selectedOption) => {
-        const isSelectedOptionInOptionsFiltered = templatesFiltered.some((option) => getOptionId(option) === getOptionId(selectedOption));
-        return isSelectedOptionInOptionsFiltered;
-    });
-
-    const first3CategoriesFiltered = categoriesFiltered!.slice(0, 3);
-
-    const tree = formatTemplates(categories!, templates);
-    const flattenedTree = flattenTree(tree, getOptionId);
-
-    const extendedCategoriesFiltered = categoriesFiltered!.slice(3);
-    const [openMap, setOpenMap] = useState<{ [groupId: string]: boolean }>({});
+    const firstTree = getTreeOnSplittedTemplates(firstSplittedTemplates, miniFilterValue);
+    const secondTree = getTreeOnSplittedTemplates(secondSplittedTemplates, miniFilterValue);
 
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const { trackEvent } = useMatomo();
@@ -142,7 +157,7 @@ const TemplatesSelectGrid: React.FC<{
                         >
                             {i18next.t('graph.filterTitle')}
                         </Typography>
-                        <MiniFilter value={miniFilterValue} onChange={setMiniFilterValue} toTopBar={false} templatesSelectGrid />
+                        <Search value={miniFilterValue} onChange={setMiniFilterValue} toTopBar={false} templatesSelectGrid />
                         <Box sx={{ display: 'flex', justifyContent: 'center', my: '5px' }}>
                             <Divider style={{ width: '199px' }} />
                         </Box>
@@ -150,15 +165,22 @@ const TemplatesSelectGrid: React.FC<{
                         <Box style={{ maxHeight: '25rem', paddingBottom: '5px', overflowY: 'auto', overflowX: 'hidden' }}>
                             <Tree
                                 selectAll
-                                flattenedTree={flattenedTree}
-                                preSelectedItemsIds={selectedTemplatesFiltered.map(({ _id }) => _id)}
+                                flattenedTree={firstTree.flattenedTree}
+                                preSelectedItemsIds={selectedTemplates.map(({ _id }) => _id)}
                                 getItemId={getOptionId}
                                 getItemLabel={getOptionLabel}
                                 multi
-                                treeItems={tree}
+                                treeItems={firstTree.tree}
+                                filteredTreeItems={firstTree.filteredTree}
                                 onSelectItems={(ids) => {
-                                    const filteredOptions = flattenedTree.filter(({ _id }) => ids.includes(_id));
-                                    setSelectedTemplates(filteredOptions);
+                                    const filteredFirstOptions = firstTree.flattenedTree.filter((option) => ids.includes(getOptionId(option)));
+                                    setSelectedTemplates((prev) => {
+                                        const prevIds = prev.map(getOptionId);
+                                        const filteredSecondOptions = secondTree.flattenedTree.filter((option) =>
+                                            prevIds.includes(getOptionId(option)),
+                                        );
+                                        return [...filteredFirstOptions, ...filteredSecondOptions];
+                                    });
                                     onClick();
                                 }}
                             />
@@ -189,19 +211,25 @@ const TemplatesSelectGrid: React.FC<{
                     {openFilter && showAll && (
                         <Box sx={{ zIndex: '100', position: 'absolute', width: '235px', ...floatingBoxStyle }}>
                             <div style={{ width: '100%', maxHeight: '28rem', overflowY: 'auto', paddingBottom: '4px' }}>
-                                <SelectOptionsMenuItemsGrouped
-                                    options={templates}
-                                    optionsFiltered={templatesFiltered}
-                                    selectedOptions={selectedTemplatesFiltered}
-                                    setSelectedOptions={setSelectedTemplates}
-                                    getOptionId={getOptionId}
-                                    getOptionLabel={getOptionLabel}
-                                    groupsProps={{ ...groupsProps, groups: extendedCategoriesFiltered }}
-                                    isDraggableDisabled
-                                    setOptions={setTemplates}
-                                    setOpenMap={setOpenMap}
-                                    openMap={openMap}
-                                    onClick={onClick}
+                                <Tree
+                                    flattenedTree={secondTree.flattenedTree}
+                                    preSelectedItemsIds={selectedTemplates.map(({ _id }) => _id)}
+                                    getItemId={getOptionId}
+                                    getItemLabel={getOptionLabel}
+                                    multi
+                                    treeItems={secondTree.tree}
+                                    filteredTreeItems={secondTree.filteredTree}
+                                    onSelectItems={(ids) => {
+                                        const filteredFirstOptions = secondTree.flattenedTree.filter((option) => ids.includes(getOptionId(option)));
+                                        setSelectedTemplates((prev) => {
+                                            const prevIds = prev.map(getOptionId);
+                                            const filteredSecondOptions = firstTree.flattenedTree.filter((option) =>
+                                                prevIds.includes(getOptionId(option)),
+                                            );
+                                            return [...filteredFirstOptions, ...filteredSecondOptions];
+                                        });
+                                        onClick();
+                                    }}
                                 />
                             </div>
                         </Box>

@@ -1,10 +1,10 @@
 import React from 'react';
-import { Search } from '@mui/icons-material';
+import { Search as SearchIcon } from '@mui/icons-material';
 import { TextField, InputAdornment, Divider, Grid, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import { useDarkModeStore } from '../../stores/darkMode';
 
-export const MiniFilter: React.FC<{ value: string; onChange: (value: string) => void; toTopBar?: boolean; templatesSelectGrid?: boolean }> = ({
+export const Search: React.FC<{ value: string; onChange: (value: string) => void; toTopBar?: boolean; templatesSelectGrid?: boolean }> = ({
     value,
     onChange,
     toTopBar,
@@ -73,7 +73,7 @@ export const MiniFilter: React.FC<{ value: string; onChange: (value: string) => 
                                         backgroundColor: theme.palette.primary.main,
                                     }}
                                 />
-                                <Search sx={{ fontSize: '1.3rem', color: theme.palette.primary.main }} />
+                                <SearchIcon sx={{ fontSize: '1.3rem', color: theme.palette.primary.main }} />
                             </InputAdornment>
                         ),
                         startAdornment: <InputAdornment position="start" />,
