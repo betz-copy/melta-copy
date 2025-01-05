@@ -8,6 +8,7 @@ import { promises as fsp } from 'fs';
 import { Dictionary } from 'lodash';
 import groupBy from 'lodash.groupby';
 import { menash } from 'menashmq';
+import { StatusCodes } from 'http-status-codes';
 import config from '../../config';
 import { InstancesService } from '../../externalServices/instanceService';
 import {
@@ -44,7 +45,7 @@ import { createWorkbook, createWorksheet, styleAWorksheet } from '../../utils/ex
 import DefaultManagerProxy from '../../utils/express/manager';
 import logger from '../../utils/logger/logsLogger';
 import { objectFilter } from '../../utils/object';
-import { BadRequestError } from '../error';
+import { BadRequestError, ServiceError } from '../error';
 import RuleBreachesManager from '../ruleBreaches/manager';
 import { patchDocumentAsStream } from './documentExport';
 import { IExportEntitiesBody } from './interfaces';
@@ -244,7 +245,9 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
     handleLoadEntitiesErrors = (error: any, failedEntities: IFailedEntity[], entity: IEntity, allBrokenRulesEntities: IBrokenRuleEntity[]) => {
         if (error instanceof AxiosError) {
-            const { data } = error.response!;
+            if (!error.response) throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, 'something went wrong :(', error);
+
+            const { data } = error.response;
 
             if (data.metadata && data.metadata.errorCode === errorCodes.failedConstraintsValidation) {
                 const { constraint } = data.metadata;
@@ -323,7 +326,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         if (files && !entities) {
             if (files?.length > filesLimit) throw new BadRequestError('files limit', {});
             const actions = await readExcelFile(files, template, failedEntities);
-            entities = actions.map((action) => action.actionMetadata as IEntity);
+            entities = actions;
         }
         const serialStarters = this.getSerialStarters(template);
         const generateSerialNumbers = (index: number) =>
