@@ -1,5 +1,5 @@
 import React from 'react';
-import { Grid, Typography } from '@mui/material';
+import { Grid, Typography, useTheme } from '@mui/material';
 import { ViewingCard } from './Card';
 import FieldButtons from './FieldButtons';
 
@@ -14,6 +14,7 @@ interface FieldCardProps {
 }
 
 const FieldCard: React.FC<FieldCardProps> = ({ keyPath, title, input, handleUpdate, isModified, handleReset, isValueDifferentFromDefault }) => {
+    const theme = useTheme();
     return (
         <Grid item key={keyPath}>
             <ViewingCard
@@ -27,7 +28,7 @@ const FieldCard: React.FC<FieldCardProps> = ({ keyPath, title, input, handleUpda
                                     sx={{
                                         fontSize: '14px',
                                         fontWeight: '400',
-                                        color: 'rgb(30, 39, 117)',
+                                        color: theme.palette.primary.main,
                                     }}
                                 >
                                     {title}

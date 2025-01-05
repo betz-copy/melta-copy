@@ -2,11 +2,13 @@
 import React, { useState, useEffect } from 'react';
 import { TextField, Switch, InputAdornment } from '@mui/material';
 import i18next from 'i18next';
+import { useQueryClient } from 'react-query';
 import { updateMetadata } from '../../../services/workspacesService';
 import { deepClone, setNestedValue } from '../../../utils/configs/configsUtils';
 import FieldCard from './FieldCard';
 import { IMetadata } from '../../../interfaces/workspaces';
 import { environment } from '../../../globals';
+import { BackendConfigState } from '../../../services/backendConfigService';
 
 interface FieldProps {
     keyPath: string;
@@ -23,7 +25,8 @@ const Field: React.FC<FieldProps> = ({ keyPath, value, defaultValue, updateConfi
 
     const [inputValue, setInputValue] = useState<string | number | boolean>(value);
     const [isModified, setIsModified] = useState(false);
-
+    const queryClient = useQueryClient();
+    const { unit } = environment;
     const isValueDifferentFromDefault = inputValue !== defaultValue;
 
     useEffect(() => {
@@ -32,7 +35,10 @@ const Field: React.FC<FieldProps> = ({ keyPath, value, defaultValue, updateConfi
     }, [value]);
 
     const isValidInput = (val: string | number | boolean) => {
-        return val !== 'px' && val !== null && !(typeof val === 'number' && isNaN(val));
+        return val !== unit && val !== null && !(typeof val === 'number' && isNaN(val));
+    };
+    const isGatewayConfig = (path: string) => {
+        return path === 'excel.entitiesFileLimit' || path === 'excel.filesLimit';
     };
 
     const handleUpdate = async () => {
@@ -53,6 +59,23 @@ const Field: React.FC<FieldProps> = ({ keyPath, value, defaultValue, updateConfi
 
         await updateMetadata(workspaceId, changes);
         updateWorkspaceMetadata(changes);
+
+        if (isGatewayConfig(keyPath)) {
+            queryClient.setQueryData<BackendConfigState>('getBackendConfig', (oldData) => {
+                if (!oldData) {
+                    throw new Error('Backend config data is undefined');
+                }
+                return {
+                    ...oldData,
+                    excel: {
+                        ...oldData.excel,
+                        [keys[1]]: inputValue,
+                    },
+                };
+            });
+        }
+        console.log(queryClient.getQueryData<BackendConfigState>('getBackendConfig'));
+
         setIsModified(false);
     };
 
@@ -76,9 +99,26 @@ const Field: React.FC<FieldProps> = ({ keyPath, value, defaultValue, updateConfi
 
         await updateMetadata(workspaceId, changes);
         updateWorkspaceMetadata(changes);
+
+        if (isGatewayConfig(keyPath)) {
+            // await updateGatewayConfig(workspaceId, { [keys[1]]: defaultValue });
+
+            queryClient.setQueryData<BackendConfigState>('getBackendConfig', (oldData) => {
+                if (!oldData) {
+                    throw new Error('Backend config data is undefined');
+                }
+                return {
+                    ...oldData,
+                    excel: {
+                        ...oldData.excel,
+                        [keys[1]]: defaultValue,
+                    },
+                };
+            });
+        }
+
         setIsModified(false);
     };
-
     const handleInputChange = (newValue: string | number | boolean) => {
         setInputValue(newValue);
         setIsModified(isValidInput(newValue) && newValue !== value);
@@ -97,20 +137,20 @@ const Field: React.FC<FieldProps> = ({ keyPath, value, defaultValue, updateConfi
         case 'string':
             inputElement = (
                 <TextField
-                    value={typeof inputValue === 'string' && inputValue.endsWith('px') ? inputValue.replace('px', '') : inputValue}
+                    value={typeof inputValue === 'string' && inputValue.endsWith(unit) ? inputValue.replace(unit, '') : inputValue}
                     variant="standard"
                     type="number"
                     InputProps={{
                         startAdornment:
-                            typeof value === 'string' && (value as string).endsWith('px') ? (
-                                <InputAdornment position="start">{environment.unit}</InputAdornment>
+                            typeof value === 'string' && (value as string).endsWith(unit) ? (
+                                <InputAdornment position="start">{unit}</InputAdornment>
                             ) : null,
                         disableUnderline: true,
                     }}
                     onChange={(e) => {
                         const newValue = e.target.value;
                         if (/^\d*$/.test(newValue)) {
-                            handleInputChange(`${newValue}px`);
+                            handleInputChange(`${newValue}${unit}`);
                         }
                     }}
                     onKeyDown={handleKeyDown}

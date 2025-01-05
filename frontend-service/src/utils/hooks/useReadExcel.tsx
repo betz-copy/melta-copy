@@ -4,6 +4,7 @@ import { toast } from 'react-toastify';
 import i18next from 'i18next';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { ISteps, StepStatus } from '../../common/wizards/loadEntities';
+import { useWorkspaceStore } from '../../stores/workspace';
 
 const convertFileDataToRowData = (gridData: any[][], headers: string[], template: IMongoEntityTemplatePopulated) => {
     return gridData
@@ -41,7 +42,7 @@ const createFileObject = (files?: File[]): Record<string, File> | undefined => {
 
 export const useReadExcel = () => {
     const [rowData, setRowData] = useState<any[]>([]);
-
+    const workspace = useWorkspaceStore((state) => state.workspace);
     const readFile = async (
         files: File[],
         template: IMongoEntityTemplatePopulated,
@@ -94,9 +95,14 @@ export const useReadExcel = () => {
             setStepsData((prev) => ({ ...prev, status: StepStatus.previewExcelRows, files: fileObject }));
         } catch (error) {
             if ((error as Error).message === 'Invalid File Type') toast.error(i18next.t('wizard.entity.loadEntities.wrongFileType'));
-            else if ((error as Error).message === 'files limit') toast.error(i18next.t('wizard.entity.loadEntities.limitNumberFiles'));
+            else if ((error as Error).message === 'files limit')
+                toast.error(i18next.t(`wizard.entity.loadEntities.limitNumberFiles ${workspace.metadata.excel.filesLimit}`));
             else if ((error as Error).message === 'file limit')
-                toast.error(`${i18next.t('wizard.entity.loadEntities.limitNumberEntities')} ${(error as any).metadata}`);
+                toast.error(
+                    `${i18next.t(`wizard.entity.loadEntities.limitNumberEntities ${workspace.metadata.excel.entitiesFileLimit}`)} ${
+                        (error as any).metadata
+                    }`,
+                );
             else if ((error as Error).message.includes('wrong template')) toast.error(i18next.t('wizard.entity.loadEntities.filesWrongTemplate'));
             else toast.error(i18next.t('wizard.entity.loadEntities.failedReadingFiles'));
         }

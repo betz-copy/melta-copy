@@ -6,11 +6,13 @@ const { config } = environment.api;
 export interface BackendConfigState {
     matomoUrl: string;
     matomoSiteId: number;
+    excel: {
+        entitiesFileLimit: number;
+        filesLimit: number;
+    };
 }
 
-const getBackendConfigRequest = async () => {
+export const getBackendConfigRequest = async () => {
     const { data } = await axios.get<BackendConfigState>(config);
     return data;
 };
-
-export { getBackendConfigRequest };
