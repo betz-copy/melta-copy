@@ -24,7 +24,7 @@ const config = {
         charsToRemove: env.get('MODEL_CHARS_TO_REMOVE').default('\n\t').asString(),
         llmChunkSplitterOptions: env
             .get('LLM_CHUNK_SPLITTER_OPTIONS')
-            .default({ minLength: 128, maxLength: 512, splitter: 'sentence' })
+            .default({ minLength: 128, maxLength: 512, splitter: 'sentence', delimiters: '\n###\n' })
             .asJsonObject() as SplitOptions,
     },
     minio: {
@@ -42,6 +42,17 @@ const config = {
         },
         useDevBucket: env.get('USE_DEV_BUCKETS').default('false').asBool(),
         devBucketPrefix: env.get('DEV_BUCKET_PREFIX').default('dev-').asString(),
+        pptx: {
+            extractingTextTags: env.get('PPTX_EXTRACTING_TEXT_TAGS').default('a:t').asArray(',').map(String),
+            extractingDiagramTags: env.get('PPTX_EXTRACTING_DIAGRAM_TAGS').default('dgm:t,a:t').asArray(',').map(String),
+            diagramTypesToFilterBy: env
+                .get('PPTX_DIAGRAM_TYPES_TO_FILTER_BY')
+                .default('http://schemas.openxmlformats.org/officeDocument/2006/relationships/diagramData')
+                .asArray(',')
+                .map(String),
+            slidesSplitter: env.get('PPTX_SLIDES_SPLITTER').default('\n###\n').asString(),
+            slidesPathRegex: env.get('PPTX_SLIDES_PATH_REGEX').default('^ppt\\/slides\\/slide\\d+\\.xml$').asString(),
+        },
     },
     rabbit: {
         url: env.get('RABBIT_URL').required().asString(),
