@@ -7,7 +7,6 @@ import { RecursiveNullable } from '../utils/types';
 
 const {
     api: { users },
-    users: { kartoffelProfile },
 } = environment;
 
 export const getMyUserRequest = async () => {
@@ -21,8 +20,8 @@ export const getUserByIdRequest = async (userId: string) => {
 };
 
 export const getKartoffelUserProfileRequest = async (kartoffelId: string) => {
-    const { data } = await axios.get<string>(`${users}/kartoffelUserProfile/${kartoffelId}`);
-    return data;
+    const { data } = await axios.get(`${users}/kartoffelUserProfile/${kartoffelId}`, { responseType: 'blob' });
+    return URL.createObjectURL(data);
 };
 
 export const searchUsersRequest = async (searchBody: IUserSearchBody) => {
@@ -81,14 +80,8 @@ export const deletePermissionsFromMetadata = async (
 };
 
 export const getUserProfileRequest = async (user: IUser) => {
-    const getFormattedPicture = (image: string) => (image.startsWith('/9j/') ? image : Buffer.from(image, 'base64').toString('utf-8'));
-    const isKartoffelProfile = user.preferences.profilePath === kartoffelProfile;
-
     const { data } = await axios.get(`${users}/user-profile/${user._id}`, { responseType: 'blob' });
-
-    console.log({ data, profile: isKartoffelProfile ? `data:image/jpeg;base64,${getFormattedPicture(data)}` : URL.createObjectURL(data) });
-
-    return isKartoffelProfile ? `data:image/jpeg;base64,${getFormattedPicture(data)}` : URL.createObjectURL(data);
+    return URL.createObjectURL(data);
 };
 
 export const searchUsersByPermissions = async (workspaceId: string): Promise<IMongoUser[]> => {
