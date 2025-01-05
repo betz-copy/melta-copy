@@ -24,8 +24,8 @@ export const BaseLayers = () => {
 
     return (
         <>
-            {Object.entries(mapLayers).map(([name, url]) => (
-                <LayersControl.BaseLayer checked name={name} key={name}>
+            {Object.entries(mapLayers).map(([name, url], index) => (
+                <LayersControl.BaseLayer checked={index === 0} name={name} key={name}>
                     <TileLayer url={url} />
                 </LayersControl.BaseLayer>
             ))}
