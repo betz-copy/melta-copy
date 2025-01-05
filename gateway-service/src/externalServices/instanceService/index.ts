@@ -114,7 +114,10 @@ export class InstancesService extends DefaultExternalServiceApi {
     }
 
     async searchEntitiesByLocationRequest(searchBody: ISearchEntitiesByLocationBody) {
-        const { data } = await this.api.post<any>(`${baseEntitiesRoute}${searchEntitiesByLocationRoute}`, searchBody);
+        const { data } = await this.api.post<{ node: IEntity; matchingFields: string[] }[]>(
+            `${baseEntitiesRoute}${searchEntitiesByLocationRoute}`,
+            searchBody,
+        );
 
         return data;
     }

@@ -138,10 +138,7 @@ const TemplateTable = forwardRef<
         const requiredProperties = new Set(template.properties.required);
 
         return Object.entries(properties).some(([key, property]) => {
-            return (
-                (property.format === 'fileId' || property.format === 'relationshipReference' || property.format === 'location') &&
-                requiredProperties.has(key)
-            );
+            return property.format && ['fileId', 'relationshipReference', 'location'].includes(property.format) && requiredProperties.has(key);
         });
     };
 

@@ -296,7 +296,6 @@ const getLocationPoint = (pointString: string, splitBy: ' ' | ',') => {
 };
 
 export const getNeo4jLocation = (locationString: string) => {
-    console.log('aaaaaaaaaaaaa', { locationString });
     if (!locationString.startsWith('POLYGON')) return getLocationPoint(locationString, ',');
 
     const prefix = 'POLYGON((';

@@ -62,8 +62,6 @@ const { filesLimit } = config.loadExcel;
 export class InstancesManager extends DefaultManagerProxy<InstancesService> {
     private entityTemplateService: EntityTemplateService;
 
-    private instancesService: InstancesService;
-
     private storageService: StorageService;
 
     private semanticSearchSearch: SemanticSearchService;
@@ -78,7 +76,6 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         super(new InstancesService(workspaceId));
         this.workspaceId = workspaceId;
         this.entityTemplateService = new EntityTemplateService(workspaceId);
-        this.instancesService = new InstancesService(workspaceId);
         this.storageService = new StorageService(workspaceId);
         this.semanticSearchSearch = new SemanticSearchService(workspaceId);
         this.ruleBreachesManager = new RuleBreachesManager(workspaceId);
@@ -966,6 +963,6 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
             return acc;
         }, {});
 
-        return this.instancesService.searchEntitiesByLocationRequest({ ...reqBody, templates: locationFieldsMap } as ISearchEntitiesByLocationBody);
+        return this.service.searchEntitiesByLocationRequest({ ...reqBody, templates: locationFieldsMap } as ISearchEntitiesByLocationBody);
     }
 }
