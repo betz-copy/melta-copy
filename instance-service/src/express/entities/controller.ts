@@ -76,8 +76,7 @@ class EntityController extends DefaultController<EntityManager> {
 
     async updateSingleFiledToMultiField(req: Request, res: Response) {
         const entityTemplate = fetchPropertyFromRequest<IMongoEntityTemplate>(req, 'entityTemplate');
-
-        res.json(await this.manager.updateConstraintsOfTemplate(entityTemplate, req.body.requiredConstraints, req.body.uniqueConstraints));
+        res.json(await this.manager.updateSingleFiledToMultiField(entityTemplate, req.body.singleFileToMultiFiles));
     }
 
     async getIsFieldUsed(req: Request, res: Response) {

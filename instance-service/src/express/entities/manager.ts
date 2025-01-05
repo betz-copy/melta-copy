@@ -1439,6 +1439,12 @@ export class EntityManager extends DefaultManagerNeo4j {
             });
     }
 
+    async updateSingleFiledToMultiField(entityTemplate: IMongoEntityTemplate, singleFileToMultiFiles: string[]) {
+        console.log({ entityTemplate, singleFileToMultiFiles });
+
+        // return null;
+    }
+
     private getConstraintFromName(constraintName: string): IConstraint {
         const [constraintTypePrefix, ...parts] = constraintName.split(config.constraintsNameDelimiter);
 

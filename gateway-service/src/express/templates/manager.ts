@@ -709,7 +709,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         updatedTemplateData: Omit<IEntityTemplateWithConstraints, 'disabled'> & { file?: string },
         { file, files }: { file?: [Express.Multer.File]; files?: Express.Multer.File[] },
     ): Promise<IMongoEntityTemplateWithConstraintsPopulated> {
-        console.log({ updatedTemplateData, file, files });
+        console.dir({ updatedTemplateData }, { depth: null });
 
         await this.entityTemplateService.getCategoryById(updatedTemplateData.category);
 
@@ -736,6 +736,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         const removedProperties: string[] = [];
         const archiveProperties: string[] = [];
         const singleFileToMultiFiles: string[] = [];
+
         if (count > 0) {
             if (updatedTemplateData.name !== currTemplate.name) throw new BadRequestError('can not change template name');
             console.log('helooo');
@@ -748,15 +749,8 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
                 else {
                     const isConvertSingleFileToMultiFiles = value.format === 'fileId' && newValue.items?.format === 'fileId';
                     if (value.serialCurrent !== undefined) updatedTemplateData.properties.properties[key].serialCurrent = value.serialCurrent;
-                    console.log('1!!!!!!!!!!!!!!!!!!!!!!!!');
+
                     if (value.type !== newValue.type && value.format !== 'fileId') throw new BadRequestError('can not change property type');
-                    console.log('2!!!!!!!!!!!!!!!!!!!!!!!!');
-
-                    if (!value.archive && newValue.archive && !currTemplate.actions) archiveProperties.push(key);
-
-                    if (isConvertSingleFileToMultiFiles) singleFileToMultiFiles.push(key);
-                    console.log('3!!!!!!!!!!!!!!!!!!!!!!!!');
-
                     if (
                         !(
                             (value.format === 'text-area' && !newValue.format && newValue.type === 'string') ||
@@ -766,13 +760,14 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
                         )
                     )
                         throw new BadRequestError('can not change property format');
-                    console.log('4!!!!!!!!!!!!!!!!!!!!!!!!');
-
                     if (value.enum && !value.enum?.every((val) => newValue.enum?.includes(val)))
                         throw new BadRequestError('can not remove options from enum');
                     if (value.serialStarter !== newValue.serialStarter) throw new BadRequestError('can not change property serial starter');
                     if (value.relationshipReference && !_isEqual(value.relationshipReference, newValue.relationshipReference))
                         throw new BadRequestError('can not change relationship reference fields');
+
+                    if (!value.archive && newValue.archive && !currTemplate.actions) archiveProperties.push(key);
+                    if (isConvertSingleFileToMultiFiles) singleFileToMultiFiles.push(key);
                 }
             });
         }

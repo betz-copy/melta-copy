@@ -55,7 +55,7 @@ export const updateSingleFieldToMultiFieldRequestSchema = Joi.object({
     }),
     query: {},
     params: {
-        templateId: Joi.string().required(),
+        id: Joi.string().required(),
     },
 });
 
