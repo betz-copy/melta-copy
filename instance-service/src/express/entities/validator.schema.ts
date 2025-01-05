@@ -47,6 +47,19 @@ export const updateEnumFieldRequestSchema = Joi.object({
 });
 
 /**
+ * PUT /api/instances/entities/update-single-field-to-multi-field/:id
+ */
+export const updateSingleFieldToMultiFieldRequestSchema = Joi.object({
+    body: Joi.object({
+        singleFileToMultiFiles: Joi.array().items(Joi.string()).required(),
+    }),
+    query: {},
+    params: {
+        templateId: Joi.string().required(),
+    },
+});
+
+/**
  * GET /api/instances/entities/get-is-field-used/:id
  */
 export const getIfValuefieldIsUsedRequestSchema = Joi.object({

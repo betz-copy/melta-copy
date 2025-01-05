@@ -159,6 +159,13 @@ export class InstancesService extends DefaultExternalServiceApi {
         return data;
     }
 
+    async updateSingleFieldToMultiField(templateId: string, propertiesToConvert: { singleFileToMultiFiles: string[] }) {
+        console.log({ templateId, propertiesToConvert });
+        const { data } = await this.api.put<any>(`${baseConstraintsRoute}/update-single-field-to-multi-field/${templateId}`, propertiesToConvert);
+
+        return data;
+    }
+
     async updateConstraintsOfTemplate(
         templateId: string,
         constraints: { requiredConstraints: string[]; uniqueConstraints: IUniqueConstraintOfTemplate[] },

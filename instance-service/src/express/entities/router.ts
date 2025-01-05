@@ -22,6 +22,7 @@ import {
     updateEntityStatusByIdRequestSchema,
     updateEnumFieldRequestSchema,
     deletePropertiesOfTemplateRequestSchema,
+    updateSingleFieldToMultiFieldRequestSchema,
 } from './validator.schema';
 import { EntityValidator } from './validator.template';
 
@@ -65,6 +66,11 @@ entityRouter.post(
 );
 
 entityRouter.put('/update-enum-field/:id', ValidateRequest(updateEnumFieldRequestSchema), entityController.updateEnumFieldValue);
+entityRouter.put(
+    '/update-single-field-to-multi-field/:id',
+    ValidateRequest(updateSingleFieldToMultiFieldRequestSchema),
+    entityController.updateSingleFiledToMultiField,
+);
 entityRouter.get('/get-is-field-used/:id', ValidateRequest(getIfValuefieldIsUsedRequestSchema), entityController.getIsFieldUsed);
 
 entityRouter.post(

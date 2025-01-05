@@ -716,6 +716,8 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         const { count } = await this.instancesService.searchEntitiesOfTemplateRequest(id, { limit: 1 });
         const currTemplate = await this.entityTemplateService.getEntityTemplateById(id);
 
+        console.log({ currTemplate });
+
         const populatedTemplates = await this.getAndPopulateAllTemplatesConstraints([currTemplate]);
         const [populatedCurrTemplate] = populatedTemplates;
 
@@ -733,28 +735,39 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
         const removedProperties: string[] = [];
         const archiveProperties: string[] = [];
-
+        const singleFileToMultiFiles: string[] = [];
         if (count > 0) {
             if (updatedTemplateData.name !== currTemplate.name) throw new BadRequestError('can not change template name');
             console.log('helooo');
 
             Object.entries(currTemplate.properties.properties).forEach(([key, value]) => {
                 const newValue = updatedTemplateData.properties.properties[key];
-                console.log({ value, newValue });
+                console.log({ value, newValue, key });
 
                 if ((!newValue || newValue?.isNewPropNameEqualDeletedPropName) && !currTemplate.actions) removedProperties.push(key);
                 else {
+                    const isConvertSingleFileToMultiFiles = value.format === 'fileId' && newValue.items?.format === 'fileId';
                     if (value.serialCurrent !== undefined) updatedTemplateData.properties.properties[key].serialCurrent = value.serialCurrent;
-                    if (value.type !== newValue.type) throw new BadRequestError('can not change property type');
+                    console.log('1!!!!!!!!!!!!!!!!!!!!!!!!');
+                    if (value.type !== newValue.type && value.format !== 'fileId') throw new BadRequestError('can not change property type');
+                    console.log('2!!!!!!!!!!!!!!!!!!!!!!!!');
+
                     if (!value.archive && newValue.archive && !currTemplate.actions) archiveProperties.push(key);
+
+                    if (isConvertSingleFileToMultiFiles) singleFileToMultiFiles.push(key);
+                    console.log('3!!!!!!!!!!!!!!!!!!!!!!!!');
+
                     if (
                         !(
                             (value.format === 'text-area' && !newValue.format && newValue.type === 'string') ||
                             (!value.format && value.type === 'string' && newValue.format === 'text-area') ||
-                            value.format === newValue.format
+                            value.format === newValue.format ||
+                            isConvertSingleFileToMultiFiles
                         )
                     )
                         throw new BadRequestError('can not change property format');
+                    console.log('4!!!!!!!!!!!!!!!!!!!!!!!!');
+
                     if (value.enum && !value.enum?.every((val) => newValue.enum?.includes(val)))
                         throw new BadRequestError('can not remove options from enum');
                     if (value.serialStarter !== newValue.serialStarter) throw new BadRequestError('can not change property serial starter');
@@ -791,6 +804,10 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         });
 
         await this.deletePropertyOfEntityTemplate(id, count, removedProperties, currTemplate);
+
+        await this.instancesService.updateSingleFieldToMultiField(id, {
+            singleFileToMultiFiles,
+        });
 
         await this.instancesService.updateConstraintsOfTemplate(id, {
             uniqueConstraints,
