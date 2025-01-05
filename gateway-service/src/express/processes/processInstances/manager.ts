@@ -320,6 +320,7 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
 
         if (!userPermissions.admin?.scope && userPermissions.processes?.scope !== PermissionScope.write) query.reviewerId = userId;
 
+        query.userId = userId;
         const processes = await this.service.searchProcessInstances(query);
         return Promise.all(processes.map((process) => this.getPopulatedProcess(process, userId)));
     }

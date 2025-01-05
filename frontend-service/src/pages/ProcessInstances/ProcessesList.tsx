@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
 import { toast } from 'react-toastify';
@@ -42,9 +42,51 @@ const ProcessesList: React.FC<{
     };
 
     const [loadingProcesses, setLoadingProcesses] = useState<Record<string, boolean>>({});
+    const [waitingForMeProcesses, setWaitingForMeProcesses] = useState<IMongoProcessInstancePopulated[]>([]);
+
+    useEffect(() => {
+        searchProcessesRequest({
+            searchText: search,
+            templateIds: templatesToShowCheckbox.map((template) => template._id),
+            startDate: startDateInput ?? undefined,
+            endDate: endDateInput ?? undefined,
+            status: getStatusFilter(statusFilter),
+            skip: 0,
+            limit: 0,
+            archived: statusFilter === undefined,
+            isWaitingForMeFilterOn: true,
+            isStepStatusPendeing: true,
+        }).then((processes) => setWaitingForMeProcesses(processes));
+    }, []);
 
     return (
-        <Grid container direction="column" spacing={2}>
+        <Grid item container direction="column" spacing={2}>
+            {waitingForMeProcesses.length > 0 && (
+                <Grid item container style={{ backgroundColor: '#CCCFE5', borderRadius: '20px', padding: '15px' }}>
+                    <Typography color="#1E2775" fontSize="16px" fontWeight="600">
+                        {i18next.t('processInstancesPage.waitForMyApprove')}
+                    </Typography>
+                    <ViewingBox minHeight="80vh">
+                        {waitingForMeProcesses.map((process) => (
+                            <Grid item key={process._id}>
+                                <ProcessCard
+                                    processInstance={process}
+                                    onChangedProcessDialogClose={(processId: string | null) => {
+                                        if (processId) {
+                                            setLoadingProcesses((prev) => ({ ...prev, [processId]: true }));
+                                            queryClient
+                                                .invalidateQueries(['searchProcesses'])
+                                                .finally(() => setLoadingProcesses((prev) => ({ ...prev, [processId]: false })));
+                                        } else queryClient.resetQueries({ queryKey: ['searchProcesses'] });
+                                    }}
+                                    isLoading={loadingProcesses[process._id] || false}
+                                    isEditMode={hasPermissionsToEditDetails}
+                                />
+                            </Grid>
+                        ))}
+                    </ViewingBox>
+                </Grid>
+            )}
             <Grid item>
                 <ViewingBox minHeight="80vh">
                     <InfiniteScroll<IMongoProcessInstancePopulated>
@@ -59,6 +101,7 @@ const ProcessesList: React.FC<{
                                 skip: pageParam,
                                 limit: infiniteScrollPageCount,
                                 archived: statusFilter === undefined,
+                                isWaitingForMeFilterOn: true,
                             });
                         }}
                         onQueryError={(error) => {

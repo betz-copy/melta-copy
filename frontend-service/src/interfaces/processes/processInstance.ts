@@ -47,6 +47,8 @@ export interface ISearchProcessInstancesBody extends IBaseSearchProperties {
     endDate?: Date;
     status?: Status[];
     archived?: boolean;
+    isWaitingForMeFilterOn?: boolean;
+    isStepStatusPendeing?: boolean;
 }
 
 export type StepsObjectPopulated = Record<string, IUser[]>;

@@ -75,6 +75,9 @@ export const searchInstanceRequestSchema = Joi.object({
         limit: Joi.number().integer().min(0).default(0),
         skip: Joi.number().integer().min(0).default(0),
         archived: Joi.boolean(),
+        isWaitingForMeFilterOn: Joi.boolean(),
+        isStepStatusPendeing: Joi.boolean(),
+        userId: Joi.string(),
     },
     params: {},
 });

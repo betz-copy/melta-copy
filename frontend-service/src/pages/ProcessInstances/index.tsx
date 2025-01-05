@@ -238,7 +238,7 @@ const ProcessInstancesPage: React.FC = () => {
                         />
                     </Grid>
                 </Grid>
-                <Grid item container width="80%" direction="column" marginBottom="2.5rem">
+                <Grid item container width="80%" direction="column" marginBottom="2.5rem" marginTop="15px">
                     <ProcessesList
                         search={searchInput}
                         onSetStartDate={onSetStartDate}
