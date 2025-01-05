@@ -196,8 +196,8 @@ services:
       FRONTEND_CONFIG_MATOMO_BASE_URL: http://localhost:8016
       FRONTEND_CONFIG_MATOMO_SITE_ID: 1
 
-  frontend-service:
-    build: ./frontend-service
+  # frontend-service:
+  #   build: ./frontend-service
 
   nginx:
     image: nginx:alpine
