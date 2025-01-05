@@ -47,7 +47,7 @@ const formatExcel = (value: Excel.CellValue | string, propertyTemplate: IEntityS
     return value;
 };
 
-export const isExcludedColumn = (propertyTemplate: IEntitySingleProperty) => {
+export const isIncludedColumn = (propertyTemplate: IEntitySingleProperty) => {
     const isRelationshipRef = propertyTemplate.format === 'relationshipReference' || propertyTemplate.relationshipReference;
     const isFile = propertyTemplate.format === 'fileId' || (propertyTemplate.type === 'array' && propertyTemplate.items?.format === 'fileId');
     const isSerialNumber = propertyTemplate.type === 'number' && propertyTemplate.serialCurrent;
@@ -88,7 +88,7 @@ const readExcelFile = async (files: Express.Multer.File[], template: IMongoEntit
     const allActions: IAction[] = [];
 
     const columns = Object.fromEntries(
-        Object.entries(template.properties.properties).filter(([_propertyKey, propertyTemplate]) => isExcludedColumn(propertyTemplate)),
+        Object.entries(template.properties.properties).filter(([_propertyKey, propertyTemplate]) => isIncludedColumn(propertyTemplate)),
     );
 
     await Promise.all(

@@ -75,6 +75,18 @@ export const getIfValuefieldIsUsedRequestSchema = Joi.object({
 });
 
 /**
+ * POST /api/instances/entities/rules/dependant
+ */
+export const getDependentRulesRequestSchema = Joi.object({
+    body: {
+        rules: Joi.array().required(),
+        relationshipTemplateId: Joi.string().required(),
+    },
+    params: {},
+    query: {},
+});
+
+/**
  * DELETE /api/instances/entities/:id?deleteAllRelationships=true
  */
 export const deleteEntityByIdRequestSchema = Joi.object({
@@ -286,11 +298,33 @@ export const updateEntityByIdRequestSchema = Joi.object({
         templateId: Joi.string().required(),
         ignoredRules: Joi.array().items(brokenRuleSchema).default([]),
         userId: Joi.string().required(),
+        convertToRelationshipField: Joi.boolean().default(false),
     },
     query: {},
     params: {
         id: Joi.string().required(),
     },
+});
+
+const relationshipsSchema = Joi.object({
+    templateId: Joi.string(),
+    properties: Joi.object(),
+    sourceEntityId: Joi.string(),
+    destinationEntityId: Joi.string(),
+});
+
+/**
+ * PATCH /api/instances/entities/convertToRelationshipField
+ */
+export const convertToRelationshipFieldRequestSchema = Joi.object({
+    body: {
+        existingRelationships: Joi.array().items(relationshipsSchema).required(),
+        addFieldToSrcEntity: Joi.boolean().required(),
+        fieldName: Joi.string().required(),
+        userId: Joi.string().required(),
+    },
+    query: {},
+    params: {},
 });
 
 export const getConstraintsOfTemplateRequestSchema = Joi.object({
