@@ -1,7 +1,7 @@
 import JSZip from 'jszip';
 import { parseStringPromise } from 'xml2js';
 import { posix as path } from 'path';
-import config from '../../config';
+import config from '../../../config';
 
 const { diagramTypesToFilterBy } = config.minio.pptx;
 
