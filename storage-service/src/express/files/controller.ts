@@ -14,6 +14,7 @@ export default class FilesController extends DefaultController<FilesManager> {
     async downloadFile(req: express.Request, res: express.Response) {
         const { path } = req.params;
         const [stream, fileStats] = await Promise.all([this.manager.downloadFile(path.toString()), this.manager.fileStat(path.toString())]);
+
         res.setHeader('Content-Type', fileStats.metaData['content-type']);
         res.setHeader('Content-Disposition', `attachment; filename=${getFileName(path)}`);
 

@@ -624,7 +624,6 @@ const SelectCheckbox = <Option extends any, Group extends any>({
                     fontSize: '14px',
                     fontWeight: 400,
                     boxShadow: toUserProfile ? '0px 3px 10px rgba(0,0,0,0.2)' : 'none',
-                    // eslint-disable-next-line no-nested-ternary
                     borderRadius: '8px',
                     ...(darkMode
                         ? { color: theme.palette.primary.main, '& .MuiOutlinedInput-notchedOutline': { borderColor: '#d2d3e3' } }

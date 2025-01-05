@@ -10,6 +10,5 @@ export const apiUrlToImageSource = async (url: ApiUrl, workspaceId?: string) => 
         responseType: 'blob',
         ...(workspaceId ? { headers: { [environment.workspaceIdHeaderName]: workspaceId } } : {}),
     });
-
     return URL.createObjectURL(data);
 };

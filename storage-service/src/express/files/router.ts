@@ -15,7 +15,6 @@ filesRouter.get('/zip/:path', ValidateRequest(defaultSchema), filesController.do
 filesRouter.get('/', filesController.listFiles);
 filesRouter.get('/:path/:workspaceId', ValidateRequest(workspaceSchema), workspaceIdInHeader);
 filesRouter.get('/:path', ValidateRequest(defaultSchema), filesController.downloadFile);
-
 filesRouter.get('/:path/stats', ValidateRequest(defaultSchema), filesController.fileStat);
 
 filesRouter.post('/delete-bulk', ValidateRequest(bulkFilesRequestSchema), filesController.deleteFiles);

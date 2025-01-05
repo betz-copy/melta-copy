@@ -5,6 +5,7 @@ import { config } from '../../config';
 import logger from '../logger/logsLogger';
 
 const { url: endPoint, port, accessKey, secretKey, useSSL, transportAgent } = config.minio;
+
 export class MinIOClient {
     private minioClient: Client;
 

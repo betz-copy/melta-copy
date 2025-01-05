@@ -381,7 +381,6 @@ export class MailManager {
 
     private async dateAboutToExpireMail({ entity, propertyName, datePropertyValue }: IDateAboutToExpireMetadataPopulated) {
         const entityTemplate = await this.entityTemplateService.getEntityTemplateById(entity!.templateId);
-
         return (
             <html>
                 <body dir="rtl">
