@@ -2,7 +2,7 @@ import { FilterList } from '@mui/icons-material';
 import { Box, Button, Divider, Grid, SxProps, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import i18next from 'i18next';
-import React, { Dispatch, useEffect, useState } from 'react';
+import React, { Dispatch, useState } from 'react';
 import { IoIosArrowBack, IoIosArrowDown } from 'react-icons/io';
 import { useMatomo } from '@datapunt/matomo-tracker-react';
 import { getOptionsAndGroupsMiniFiltered, SelectCheckboxGroupProps, SelectCheckboxProps } from '../../common/SelectCheckBox';
@@ -10,8 +10,9 @@ import { IMongoCategory } from '../../interfaces/categories';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { useDarkModeStore } from '../../stores/darkMode';
 import Tree from '../../common/Tree';
-import { flattenTree, formatTemplates } from '../../utils/hooks/useTreeUtils';
+import { formatTemplates } from '../../utils/hooks/useTreeUtils';
 import { Search } from '../../common/SelectCheckBox/Search';
+import { SelectAll } from '../../common/Tree/SelectAll';
 
 const useStyles = makeStyles(() => ({
     button: {
@@ -163,8 +164,22 @@ const TemplatesSelectGrid: React.FC<{
                         </Box>
 
                         <Box style={{ maxHeight: '25rem', paddingBottom: '5px', overflowY: 'auto', overflowX: 'hidden' }}>
+                            <Box>
+                                <SelectAll
+                                    allOptionIds={[...firstSplittedTemplates, ...secondSplittedTemplates].map(getOptionId)}
+                                    setSelectedOptionIds={(ids) => {
+                                        const populated = [...firstSplittedTemplates, ...secondSplittedTemplates].filter((option) =>
+                                            ids.includes(getOptionId(option)),
+                                        );
+                                        setSelectedTemplates(populated);
+                                    }}
+                                    selectedOptionIds={selectedTemplates.map(getOptionId)}
+                                />
+                                <Box sx={{ display: 'flex', justifyContent: 'center', my: '5px' }}>
+                                    <Divider style={{ width: '199px' }} />
+                                </Box>
+                            </Box>
                             <Tree
-                                selectAll
                                 flattenedTree={firstTree.flattenedTree}
                                 preSelectedItemsIds={selectedTemplates.map(({ _id }) => _id)}
                                 getItemId={getOptionId}

@@ -3,11 +3,17 @@
 
 import { useState } from 'react';
 import { cloneDeep } from 'lodash';
-import { TreeType } from '../../interfaces/Tree';
+import { TreeViewBaseItem } from '@mui/x-tree-view-pro';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IMongoCategory } from '../../interfaces/categories';
 
-function selectParentIfAllChildrenAreSelected<T, K>(treeItems: TreeType<T, K>[], newSelectedItemsWithChildren, getItemId: (item: T | K) => string) {
+function selectParentIfAllChildrenAreSelected<T extends {}>(
+    treeItems: TreeViewBaseItem<T>[],
+    newSelectedItemsWithChildren,
+    getItemId: (item: T) => string,
+) {
+    if (!newSelectedItemsWithChildren?.length) return [];
+
     const updatedArray = cloneDeep(newSelectedItemsWithChildren);
 
     treeItems.forEach((item) => {
@@ -34,7 +40,7 @@ export const formatTemplates = (
     categories: IMongoCategory[],
     templates: IMongoEntityTemplatePopulated[],
     getItemId: (item: IMongoCategory | IMongoEntityTemplatePopulated) => string,
-): TreeType<IMongoCategory, IMongoEntityTemplatePopulated>[] => {
+): TreeViewBaseItem<any>[] => {
     const templatesByCategory: Record<string, IMongoEntityTemplatePopulated[]> = {};
 
     templates.forEach((template) => {
@@ -57,7 +63,7 @@ export const formatTemplates = (
     });
 };
 
-export const flattenTree = <T, K = T>(treeItems: TreeType<T, K>[], getItemId: (item: T) => string, revertedTemplates: any[] = []): any[] => {
+export const flattenTree = <T extends {}>(treeItems: TreeViewBaseItem<T>[], getItemId: (item: T) => string, revertedTemplates: any[] = []): any[] => {
     treeItems.forEach((categoryWithTemplates) => {
         const { children, ...rest } = categoryWithTemplates;
 
@@ -71,17 +77,10 @@ export const flattenTree = <T, K = T>(treeItems: TreeType<T, K>[], getItemId: (i
     return revertedTemplates;
 };
 
-export const useTreeUtils = <T, K>(
-    getItemId: (item: T | K) => string,
-    parentInfersChildren?: boolean,
-    preSelectedItemsIds: string[] = [],
-    treeItems: TreeType<T, K>[] = [],
-) => {
-    const [selectedItemsIds, setSelectedItemsIds] = useState<string[]>(
-        parentInfersChildren ? selectParentIfAllChildrenAreSelected(treeItems, preSelectedItemsIds, getItemId) : preSelectedItemsIds,
-    );
+export const useTreeUtils = <T extends {}>(getItemId: (item: T) => string, parentInfersChildren?: boolean, treeItems: TreeViewBaseItem<T>[] = []) => {
+    const [selectedItemsIds, setSelectedItemsIds] = useState<string[]>([]);
 
-    function getParentNode(items: TreeType<T, K>[], id: string): TreeType<T, K> | undefined {
+    function getParentNode(items: TreeViewBaseItem<T>[], id: string): TreeViewBaseItem<T> | undefined {
         for (const item of items) {
             if (item.children) {
                 if (item.children.some((child) => getItemId(child) === id)) {
@@ -100,7 +99,7 @@ export const useTreeUtils = <T, K>(
         return undefined;
     }
 
-    function getAllParentIds(items: TreeType<T, K>[], id: string) {
+    function getAllParentIds(items: TreeViewBaseItem<T>[], id: string) {
         const parentIds: string[] = [];
         let parent = getParentNode(items, id);
         while (parent) {
@@ -110,7 +109,7 @@ export const useTreeUtils = <T, K>(
         return parentIds;
     }
 
-    function getSelectedIdsAndChildrenIds(items: TreeType<T, K>[], selectedIds: string[]) {
+    function getSelectedIdsAndChildrenIds(items: TreeViewBaseItem<T>[], selectedIds: string[]) {
         const selectedIdIncludingChildrenIds = new Set([...selectedIds]);
 
         for (const item of items) {
@@ -183,5 +182,5 @@ export const useTreeUtils = <T, K>(
         return leaves;
     };
 
-    return { handleSelectedItemsChange, selectedItemsIds, selectParentIfAllChildrenAreSelected, setSelectedItemsIds, getSelectedLeafIds };
+    return { handleSelectedItemsChange, selectedItemsIds, setSelectedItemsIds, selectParentIfAllChildrenAreSelected, getSelectedLeafIds };
 };

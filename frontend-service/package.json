@@ -44,7 +44,7 @@
     "@emotion/react": "^11.7.1",
     "@emotion/styled": "^11.6.0",
     "@monaco-editor/react": "^4.6.0",
-    "@mui/icons-material": "^5.16.9",
+    "@mui/icons-material": "^5.16.13",
     "@mui/lab": "^5.0.0-alpha.70",
     "@mui/material": "^5.16.9",
     "@mui/styles": "^5.2.3",

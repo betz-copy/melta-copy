@@ -77,7 +77,7 @@ const IFramesPageHeadline: React.FC<{
                         options={allIFramesAllowed ?? ([] as IMongoIFrame[])}
                         selectedOptions={[] as IMongoIFrame[]}
                         setSelectedOptions={() => {}}
-                        getOptionId={({ _id }) => _id}
+                        getOptionId={(option: IMongoIFrame) => option._id}
                         getOptionLabel={({ name }) => name}
                         toTopBar
                         onDragEnd={handleOnDragEnd}

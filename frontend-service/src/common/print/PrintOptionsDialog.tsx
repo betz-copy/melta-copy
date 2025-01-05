@@ -224,9 +224,11 @@ const PrintOptionsDialog: React.FC<{
                         {entityConnections && allRelevantConnections.length > 0 && (
                             <SelectCheckbox
                                 title={i18next.t('entityPage.print.chooseRelationship')}
-                                options={entityConnections.connectionsTemplates.filter((connection) =>
-                                    allRelevantConnections.some((key) => key === connection.relationshipTemplate._id),
-                                )}
+                                options={
+                                    entityConnections.connectionsTemplates.filter((connection) =>
+                                        allRelevantConnections.some((key) => key === connection.relationshipTemplate._id),
+                                    ) as IConnectionTemplateOfExpandedEntity[]
+                                }
                                 isDraggableDisabled
                                 selectedOptions={entityConnections.selectedConnections}
                                 setSelectedOptions={entityConnections.setSelectedConnections}

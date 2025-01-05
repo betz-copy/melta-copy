@@ -3,6 +3,7 @@ import i18next from 'i18next';
 import React, { Dispatch } from 'react';
 import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { SelectCheckbox } from './SelectCheckBox';
+import { formatTemplates } from '../utils/hooks/useTreeUtils';
 
 const TemplatesSelectCheckbox: React.FC<{
     title: string;
@@ -17,7 +18,7 @@ const TemplatesSelectCheckbox: React.FC<{
 }> = ({ title, templates, selectedTemplates, setSelectedTemplates, categories, isDraggableDisabled, setTemplates, size, toTopBar }) => {
     return (
         <SelectCheckbox
-            categories={categories}
+            treeFunc={categories?.length ? (formatTemplates as any) : undefined}
             title={title}
             img={title === i18next.t('entityTemplatesCheckboxLabel') ? <FilterList /> : undefined}
             options={templates}

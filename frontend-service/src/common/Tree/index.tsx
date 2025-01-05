@@ -1,15 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { RichTreeViewPro } from '@mui/x-tree-view-pro';
+import { RichTreeViewPro, TreeViewBaseItem } from '@mui/x-tree-view-pro';
 import { ChevronLeft, ExpandLess } from '@mui/icons-material';
 import { Box, Divider } from '@mui/material';
-import { TreeType } from '../../interfaces/Tree';
 import { flattenTree, useTreeUtils } from '../../utils/hooks/useTreeUtils';
 import { SelectAll } from './SelectAll';
 
-interface TreeProps<T, K> {
-    treeItems: TreeType<T, K>[];
-    getItemId: (item: T | K) => string;
-    getItemLabel: (item: T | K) => string;
+interface TreeProps<T extends {}> {
+    treeItems: TreeViewBaseItem<T>[];
+    getItemId: (item: T) => string;
+    getItemLabel: (item: T) => string;
     multi: boolean;
     onSelectItems?: (itemIds: string | string[]) => any;
     isDraggable?: boolean;
@@ -17,14 +16,14 @@ interface TreeProps<T, K> {
     preSelectedItemsIds?: string[];
     preExpandedItemIds?: string[];
     selectAll?: boolean;
-    flattenedTree?: (T | K)[];
-    filteredTreeItems?: TreeType<T, K>[];
+    flattenedTree?: T[];
+    filteredTreeItems?: T[];
 
     // If true parents only represent the state of their children.
     parentInfersChildren?: boolean;
 }
 
-const Tree = <T, K>({
+const Tree = <T extends {}>({
     treeItems,
     onSelectItems,
     getItemId,
@@ -38,15 +37,17 @@ const Tree = <T, K>({
     filteredTreeItems = treeItems,
     multi = true,
     parentInfersChildren = true,
-}: TreeProps<T, K>): React.ReactElement => {
-    const { handleSelectedItemsChange, selectedItemsIds, setSelectedItemsIds, getSelectedLeafIds } = useTreeUtils(
-        getItemId,
-        parentInfersChildren,
-        preSelectedItemsIds,
-        treeItems,
-    );
+}: TreeProps<T>): React.ReactElement => {
+    const { handleSelectedItemsChange, selectedItemsIds, setSelectedItemsIds, getSelectedLeafIds, selectParentIfAllChildrenAreSelected } =
+        useTreeUtils(getItemId, parentInfersChildren, treeItems);
 
     const isFirstRender = useRef<boolean>(true);
+
+    useEffect(() => {
+        setSelectedItemsIds(
+            parentInfersChildren ? selectParentIfAllChildrenAreSelected(treeItems, preSelectedItemsIds, getItemId) : preSelectedItemsIds,
+        );
+    }, [JSON.stringify(preSelectedItemsIds)]);
 
     const [expandedItemsIds, setExpandedItemsIds] = useState<string[]>(preExpandedItemIds ?? []);
 
