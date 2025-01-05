@@ -6,6 +6,7 @@ const { config } = environment.api;
 export interface BackendConfigState {
     matomoUrl: string;
     matomoSiteId: number;
+    deleteEntitiesLimit: number;
 }
 
 const getBackendConfigRequest = async () => {

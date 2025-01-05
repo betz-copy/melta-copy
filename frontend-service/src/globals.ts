@@ -198,7 +198,6 @@ export const environment = {
         infiniteInitialRowCount: 1,
         defaultExpandedTableHeight: 650,
         paginationPageSizeSelector: [5, 10, 25, 50],
-        limitOfDeleteEntities: 1000,
     },
     activityLog: {
         infiniteScrollPageCount: 10,
@@ -221,6 +220,7 @@ export const environment = {
         failedConstraintsValidation: 'FAILED_CONSTRAINTS_VALIDATION',
         failedToDeleteField: 'FAILED_DELETE_FIELD',
         actionsCustomError: 'ACTIONS_CUSTOM_ERROR',
+        entityHasRelationships: 'ENTITY_HAS_RELATIONSHIPS',
     },
     mainFontSizes: {
         headlineTitleFontSize: '24px',

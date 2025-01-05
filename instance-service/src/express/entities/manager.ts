@@ -41,7 +41,7 @@ import { escapeNeo4jQuerySpecialChars, searchWithRelationshipsToNeoQuery } from 
 import { ActionTypes, IAction, ICreateEntityMetadata, IDuplicateEntityMetadata, IUpdateEntityMetadata } from '../bulkActions/interface';
 import BulkActionManager from '../bulkActions/manager';
 import { BadRequestError, NotFoundError, ServiceError, ValidationError } from '../error';
-import { IRelationship } from '../relationships/interfaces';
+import { IDeleteRelationshipReference, IRelationship } from '../relationships/interfaces';
 import { RelationshipManager } from '../relationships/manager';
 import { filterDependentRulesOnEntity, filterDependentRulesViaAggregation } from '../rules/getParametersOfFormula';
 import { IBrokenRule, IRuleFailure } from '../rules/interfaces';
@@ -61,7 +61,6 @@ import {
     ISearchBatchBody,
     ISearchEntitiesByTemplatesBody,
     ISearchEntitiesOfTemplateBody,
-    ISearchFilter,
     IUniqueConstraint,
     IUniqueConstraintOfTemplate,
     RunRuleReason,
@@ -876,12 +875,12 @@ export class EntityManager extends DefaultManagerNeo4j {
         return filterRes;
     }
 
-    async deleteRelationshipReferenceInTransaction(
-        relationshipReference: IRelationshipReference,
-        relatedEntityId: string,
-        originalEntityId: string,
-        transaction: Transaction,
-    ) {
+    async deleteRelationshipReferenceInTransaction({
+        originalEntityId,
+        relatedEntityId,
+        relationshipReference,
+        transaction,
+    }: IDeleteRelationshipReference) {
         const { relationshipTemplateId, relationshipTemplateDirection } = relationshipReference;
 
         const sourceEntityId = relationshipTemplateDirection === 'incoming' ? relatedEntityId : originalEntityId;
@@ -898,43 +897,93 @@ export class EntityManager extends DefaultManagerNeo4j {
         return this.relationshipManager.deleteRelationshipByIdInTransaction(relationshipToDelete.properties._id, [], transaction);
     }
 
-    async deleteRelationshipReferenceForEntity(entityToDelete: IEntity, entityTemplate: IMongoEntityTemplate, transaction: Transaction) {
-        return Promise.all(
-            Object.entries(entityTemplate.properties.properties)
-                .filter(([name, property]) => property.format === 'relationshipReference' && entityToDelete.properties[name])
-                .map(([name, property]) =>
-                    this.deleteRelationshipReferenceInTransaction(
-                        property.relationshipReference!,
-                        entityToDelete.properties[name].properties._id,
-                        entityToDelete.properties._id,
-                        transaction,
-                    ),
-                ),
-        );
-    }
+    async getEntitiesWithDirectRelationshipsToDelete(
+        deleteBody: IDeleteBody,
+        entityTemplate: IMongoEntityTemplate,
+    ): Promise<IEntityWithDirectRelationships[]> {
+        const entitiesWithDirectRelationships: IEntityWithDirectRelationships[] = [];
 
-    private async getFilteredEntitiesToDelete(entityTemplate: IMongoEntityTemplate, filter?: ISearchFilter, ids?: string[], textSearch: string = '') {
-        const { entities } = await this.searchEntitiesOfTemplate(
-            { limit: deleteEntitiesMaxLimit, skip: 0, filter, showRelationships: false, textSearch, entityIdsToExclude: ids },
-            entityTemplate,
-        );
-        return entities.map(({ entity }) => entity);
-    }
-
-    async getEntitiesToDelete(deleteBody: IDeleteBody, entityTemplate: IMongoEntityTemplate): Promise<IEntity[]> {
         if (deleteBody.selectAll) {
             const { idsToExclude, filter, textSearch = '' } = deleteBody as IDeleteBody<true>;
-            return this.getFilteredEntitiesToDelete(entityTemplate, filter, idsToExclude, textSearch);
+            const { entities } = await this.searchEntitiesOfTemplate(
+                { limit: deleteEntitiesMaxLimit, skip: 0, filter, showRelationships: true, textSearch, entityIdsToExclude: idsToExclude },
+                entityTemplate,
+            );
+            entitiesWithDirectRelationships.push(...entities);
+        } else {
+            const { idsToInclude } = deleteBody as IDeleteBody<false>;
+            const { entities } = await this.searchEntitiesOfTemplate(
+                { limit: deleteEntitiesMaxLimit, skip: 0, showRelationships: true, entityIdsToInclude: idsToInclude },
+                entityTemplate,
+            );
+
+            const filteredEntities = entities.filter(({ entity }) => idsToInclude.includes(entity.properties._id));
+            entitiesWithDirectRelationships.push(...filteredEntities);
         }
 
-        const { idsToInclude } = deleteBody as IDeleteBody<false>;
-        return this.getEntitiesByIds(idsToInclude);
+        return entitiesWithDirectRelationships;
     }
 
-    getFilesProperties(entityTemplate: IMongoEntityTemplate) {
-        return Object.keys(entityTemplate.properties.properties).reduce(
+    async getEntitiesToDeleteWIthoutRelationships(
+        entities: IEntityWithDirectRelationships[],
+        { properties: { properties: entityTemplateProperties } }: IMongoEntityTemplate,
+        transaction: Transaction,
+        deleteAllRelationships?: boolean,
+    ) {
+        const entitiesCanDelete: IEntity[] = [];
+
+        for (const { entity, relationships } of entities) {
+            if (!relationships?.length) {
+                entitiesCanDelete.push(entity);
+                continue;
+            }
+
+            let entityCanDelete = true;
+            const relationshipReferencesToDelete: Omit<IDeleteRelationshipReference, 'transaction'>[] = [];
+
+            for (const relationship of relationships) {
+                const { templateId, sourceEntityId, destinationEntityId } = relationship.relationship;
+                const { _id, isProperty, name } = await this.relationshipsTemplateManagerService.getRelationshipTemplateById(templateId);
+
+                if (isProperty) {
+                    const templateProperty = entityTemplateProperties[name];
+                    if (!templateProperty) {
+                        entityCanDelete = false;
+                        break;
+                    }
+
+                    const { relationshipReference } = templateProperty;
+                    if (!relationshipReference || relationshipReference.relationshipTemplateId !== _id) {
+                        entityCanDelete = false;
+                        break;
+                    }
+
+                    relationshipReferencesToDelete.push({
+                        relationshipReference: relationshipReference!,
+                        originalEntityId: sourceEntityId,
+                        relatedEntityId: destinationEntityId,
+                    });
+                } else if (!deleteAllRelationships) {
+                    entityCanDelete = false;
+                    break;
+                }
+            }
+
+            if (!entityCanDelete) continue;
+
+            entitiesCanDelete.push(entity);
+
+            for (const relationshipReferenceToDelete of relationshipReferencesToDelete)
+                await this.deleteRelationshipReferenceInTransaction({ ...relationshipReferenceToDelete, transaction });
+        }
+
+        return entitiesCanDelete;
+    }
+
+    getFilesProperties({ properties: { properties } }: IMongoEntityTemplate) {
+        return Object.keys(properties).reduce(
             (acc, propertyToRemove) => {
-                const { format, items } = entityTemplate.properties.properties[propertyToRemove];
+                const { format, items } = properties[propertyToRemove];
 
                 if (format === 'fileId' || items?.format === 'fileId') {
                     acc[propertyToRemove] = items?.format === 'fileId';
@@ -971,53 +1020,20 @@ export class EntityManager extends DefaultManagerNeo4j {
         );
     }
 
-    async getRelationshipReferencesToTemplate({ _id: templateId, properties: { properties } }: IMongoEntityTemplate, entitiesToDelete: IEntity[]) {
-        const entitiesCanDelete: IEntity[] = [];
-        const [sourceRelationships, destRelationships] = await Promise.all([
-            this.relationshipsTemplateManagerService.searchRelationshipTemplates({ sourceEntityIds: [templateId] }),
-            this.relationshipsTemplateManagerService.searchRelationshipTemplates({ destinationEntityIds: [templateId] }),
-        ]);
+    handleDeleteErrors(allowedEntitiesToDelete: IEntity[], deleteAllRelationships?: boolean) {
+        if (allowedEntitiesToDelete.length >= deleteEntitiesMaxLimit)
+            throw new BadRequestError(`cant delete more then ${deleteEntitiesMaxLimit} instances`);
 
-        const allRelevantRelationshipWithoutDuplicate = Array.from(
-            new Map([...sourceRelationships, ...destRelationships].map((item) => [item._id, item])).values(),
-        );
-
-        const isPropertyRelationships = allRelevantRelationshipWithoutDuplicate.filter((relationship) => relationship.isProperty);
-
-        if (!isPropertyRelationships.length) entitiesCanDelete.push(...entitiesToDelete);
-
-        for (const entity of entitiesToDelete)
-            for (const { _id: relationshipId, name } of isPropertyRelationships) {
-                if (properties[name]?.relationshipReference?.relationshipTemplateId === relationshipId) continue;
-
-                const relationshipCount = await this.relationshipManager.getRelationshipByTemplateIdAndEntityId(
-                    relationshipId,
-                    entity.properties._id,
-                );
-
-                if (relationshipCount === 0) entitiesCanDelete.push(entity);
-            }
-
-        return entitiesCanDelete;
-    }
-
-    private async getEntitiesExceptForRelationshipReference(
-        entitiesToDelete: IEntity[],
-        entityTemplate: IMongoEntityTemplate,
-        deleteAllRelationships?: boolean,
-    ): Promise<IEntity[]> {
-        if (deleteAllRelationships) {
-            const entitiesWithoutRelationshipReference = await this.getRelationshipReferencesToTemplate(entityTemplate, entitiesToDelete);
-
-            if (!entitiesWithoutRelationshipReference.length)
+        if (!allowedEntitiesToDelete.length) {
+            if (deleteAllRelationships)
                 throw new BadRequestError('Some entities have a relationshipReference field.', {
                     errorCode: config.errorCodes.entityHasRelationshipReferenceField,
                 });
-
-            return entitiesWithoutRelationshipReference;
+            else
+                throw new BadRequestError('Some entities have a relationships.', {
+                    errorCode: config.errorCodes.entityHasRelationships,
+                });
         }
-
-        return entitiesToDelete;
     }
 
     async deleteEntityInstances(deleteBody: IDeleteBody) {
@@ -1027,27 +1043,20 @@ export class EntityManager extends DefaultManagerNeo4j {
         try {
             return await this.neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
                 const entityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(templateId);
-                const entitiesToDelete = await this.getEntitiesToDelete(deleteBody, entityTemplate);
+                const entitiesToDelete = await this.getEntitiesWithDirectRelationshipsToDelete(deleteBody, entityTemplate);
 
-                const allowedEntitiesToDelete = await this.getEntitiesExceptForRelationshipReference(
+                const allowedEntitiesToDelete = await this.getEntitiesToDeleteWIthoutRelationships(
                     entitiesToDelete,
                     entityTemplate,
+                    transaction,
                     deleteAllRelationships,
                 );
 
-                if (allowedEntitiesToDelete.length >= deleteEntitiesMaxLimit)
-                    throw new BadRequestError(`cant delete more then ${deleteEntitiesMaxLimit} instances`);
-
-                await Promise.all(
-                    allowedEntitiesToDelete.map((entityToDelete) =>
-                        this.deleteRelationshipReferenceForEntity(entityToDelete, entityTemplate, transaction),
-                    ),
-                );
-
-                entityIdsToDelete = allowedEntitiesToDelete.map((entityToDelete) => entityToDelete.properties._id);
+                this.handleDeleteErrors(allowedEntitiesToDelete, deleteAllRelationships);
+                entityIdsToDelete = allowedEntitiesToDelete.map(({ properties: { _id } }) => _id);
                 await this.deleteEntityInstancesInTransaction(transaction, entityIdsToDelete, templateId, deleteAllRelationships);
 
-                return this.getFilesOfEntities(entitiesToDelete, entityTemplate);
+                return this.getFilesOfEntities(allowedEntitiesToDelete, entityTemplate);
             });
         } catch (error) {
             if (error instanceof Neo4jError && error.code === 'Neo.ClientError.Schema.ConstraintValidationFailed')
@@ -1239,12 +1248,12 @@ export class EntityManager extends DefaultManagerNeo4j {
                 if (property?.format === 'relationshipReference') {
                     if (entity.properties[updatedProperty]) {
                         const relatedEntityId = entity.properties[updatedProperty].properties._id;
-                        const deletedRelationship = await this.deleteRelationshipReferenceInTransaction(
-                            property.relationshipReference!,
+                        const deletedRelationship = await this.deleteRelationshipReferenceInTransaction({
+                            relationshipReference: property.relationshipReference!,
                             relatedEntityId,
-                            entityId,
+                            originalEntityId: entityId,
                             transaction,
-                        );
+                        });
 
                         deletedRelationships.push(deletedRelationship);
                     }

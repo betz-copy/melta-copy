@@ -77,7 +77,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
     const currentEntityTemplate = entityTemplates.get(expandedEntity?.entity.templateId);
     const templateIds = Array.from(entityTemplates.keys());
 
-    const WorkspaceAdmin = isWorkspaceAdmin(currentUser.currentWorkspacePermissions);
+    const workspaceAdmin = isWorkspaceAdmin(currentUser.currentWorkspacePermissions);
     const canWriteInstance = checkUserCategoryPermission(currentUser.currentWorkspacePermissions, entityTemplate.category, PermissionScope.write);
     const isEntityDisabled = expandedEntity.entity.properties.disabled;
 
@@ -119,7 +119,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                 selectAll: false,
                 templateId: currentEntityTemplate?._id as string,
                 idsToInclude: [entity.properties._id],
-                deleteAllRelationships: expandedEntity.connections.length > 0 && WorkspaceAdmin,
+                deleteAllRelationships: expandedEntity.connections.length > 0 && workspaceAdmin,
             } as IDeleteEntityBody<false>),
         {
             onError: (error: AxiosError) => {
@@ -349,7 +349,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                     handleClose={closeDeleteDialog}
                     body={
                         expandedEntity.connections.length > 0 &&
-                        WorkspaceAdmin &&
+                        workspaceAdmin &&
                         i18next.t('entityPage.wouldYouLikeToDeleteTheRelationshipsOfEntity')
                     }
                     onYes={() => deleteMutation()}

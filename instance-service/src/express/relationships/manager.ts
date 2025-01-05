@@ -44,14 +44,6 @@ export class RelationshipManager extends DefaultManagerNeo4j {
         return relationship;
     }
 
-    async getRelationshipByTemplateIdAndEntityId(templateId: string, entityId: string) {
-        return this.neo4jClient.readTransaction(
-            `MATCH (n {_id: '${entityId}'})-[r: \`${templateId}\`]-() 
-            RETURN count(r)`,
-            normalizeResponseCount,
-        );
-    }
-
     getRelationshipByEntitiesAndTemplate = async (sourceEntityId: string, destEntityId: string, templateId: string, transaction: Transaction) => {
         const relationship = await runInTransactionAndNormalize(
             transaction,

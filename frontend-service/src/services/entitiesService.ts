@@ -252,7 +252,7 @@ export const duplicateEntityRequest = async (entityId: string, newEntityData: En
 };
 
 export const deleteEntityRequest = async (deleteBody: IDeleteEntityBody) => {
-    const { data } = await axios.post(`${entities}/delete/bulk`, deleteBody);
+    const { data } = await axios.post<void>(`${entities}/delete/bulk`, deleteBody);
     return data;
 };
 
