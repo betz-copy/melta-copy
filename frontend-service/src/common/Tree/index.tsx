@@ -1,9 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { RichTreeViewPro, TreeViewBaseItem } from '@mui/x-tree-view-pro';
+import { RichTreeViewPro, TreeItem2, TreeItem2Props, TreeViewBaseItem } from '@mui/x-tree-view-pro';
 import { ChevronLeft, ExpandLess } from '@mui/icons-material';
-import { Box, Divider } from '@mui/material';
+import { Box, Divider, Typography } from '@mui/material';
+import { styled } from '@mui/material/styles';
 import { flattenTree, useTreeUtils } from '../../utils/hooks/useTreeUtils';
 import { SelectAll } from './SelectAll';
+import { MeltaCheckbox } from '../MeltaCheckbox';
+import { MeltaTooltip } from '../MeltaTooltip';
 
 interface TreeProps<T extends {}> {
     treeItems: TreeViewBaseItem<T>[];
@@ -22,6 +25,41 @@ interface TreeProps<T extends {}> {
     // If true parents only represent the state of their children.
     parentInfersChildren?: boolean;
 }
+
+const StyledTreeItem = styled(TreeItem2)<TreeItem2Props>(() => ({
+    '& .Mui-selected': {
+        backgroundColor: 'transparent',
+    },
+    '& .MuiTreeItem-content': {
+        padding: '0px 8px',
+    },
+    '& .MuiButtonBase-root': {
+        padding: '3px 8px',
+    },
+}));
+
+const CustomLabel = ({ children, className }) => {
+    return (
+        <div className={className}>
+            <MeltaTooltip title={children}>
+                <Typography>{children}</Typography>
+            </MeltaTooltip>
+        </div>
+    );
+};
+
+const CustomTreeItem = React.forwardRef(function CustomTreeItem(props: TreeItem2Props, ref: React.Ref<HTMLLIElement>) {
+    return (
+        <StyledTreeItem
+            {...props}
+            ref={ref}
+            slots={{
+                checkbox: MeltaCheckbox,
+                label: CustomLabel,
+            }}
+        />
+    );
+});
 
 const Tree = <T extends {}>({
     treeItems,
@@ -105,6 +143,7 @@ const Tree = <T extends {}>({
                 slots={{
                     expandIcon: ChevronLeft,
                     collapseIcon: ExpandLess,
+                    item: CustomTreeItem,
                 }}
                 experimentalFeatures={{ indentationAtItemLevel: true, itemsReordering: true }}
                 canMoveItemToNewPosition={(params) => allowDraggingBetweenParents || params.oldPosition.parentId === params.newPosition.parentId}
