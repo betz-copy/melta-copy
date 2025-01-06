@@ -74,7 +74,6 @@ const Field: React.FC<FieldProps> = ({ keyPath, value, defaultValue, updateConfi
                 };
             });
         }
-        console.log(queryClient.getQueryData<BackendConfigState>('getBackendConfig'));
 
         setIsModified(false);
     };
@@ -101,8 +100,6 @@ const Field: React.FC<FieldProps> = ({ keyPath, value, defaultValue, updateConfi
         updateWorkspaceMetadata(changes);
 
         if (isGatewayConfig(keyPath)) {
-            // await updateGatewayConfig(workspaceId, { [keys[1]]: defaultValue });
-
             queryClient.setQueryData<BackendConfigState>('getBackendConfig', (oldData) => {
                 if (!oldData) {
                     throw new Error('Backend config data is undefined');
