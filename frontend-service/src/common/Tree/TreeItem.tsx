@@ -1,4 +1,4 @@
-import { Typography } from '@mui/material';
+import { Box, Divider, Typography } from '@mui/material';
 import {
     TreeItem2Props,
     useTreeItem2,
@@ -9,6 +9,8 @@ import {
     TreeItem2DragAndDropOverlay,
     TreeItem2GroupTransition,
     TreeItem2Provider,
+    TreeViewCancellableEventHandler,
+    UseTreeItem2IconContainerSlotOwnProps,
 } from '@mui/x-tree-view-pro';
 import React from 'react';
 import { Menu } from '@mui/icons-material';
@@ -21,6 +23,22 @@ const LabelWithToolTip = ({ children, className }) => (
             <Typography>{children}</Typography>
         </MeltaTooltip>
     </div>
+);
+
+const DivideMenuItems = (
+    <Box sx={{ display: 'flex', justifyContent: 'center', my: '5px' }}>
+        <Divider style={{ width: '199px' }} />
+    </Box>
+);
+
+const draggableHandle = (
+    handleDragStart: (event: React.DragEvent) => void,
+    onDragOver?: TreeViewCancellableEventHandler<React.DragEvent<Element>>,
+    onDragEnd?: TreeViewCancellableEventHandler<React.DragEvent<Element>>,
+) => (
+    <TreeItem2IconContainer draggable onDragStart={handleDragStart} onDragOver={onDragOver} onDragEnd={onDragEnd}>
+        <Menu />
+    </TreeItem2IconContainer>
 );
 
 const TreeItem = React.forwardRef(function CustomTreeItem(props: TreeItem2Props, ref: React.Ref<HTMLLIElement>) {
@@ -61,17 +79,14 @@ const TreeItem = React.forwardRef(function CustomTreeItem(props: TreeItem2Props,
                     },
                 }}
             >
+                {itemDepth === 0 && DivideMenuItems}
                 <TreeItem2Content {...getContentProps()} style={{ backgroundColor: 'transparent' }}>
                     {(status.expandable || itemDepth !== 0) && (
                         <TreeItem2IconContainer {...getIconContainerProps()}>
                             <TreeItem2Icon status={status} />
                         </TreeItem2IconContainer>
                     )}
-                    {draggable && (
-                        <TreeItem2IconContainer draggable onDragStart={handleDragStart} onDragOver={onDragOver} onDragEnd={onDragEnd}>
-                            <Menu />
-                        </TreeItem2IconContainer>
-                    )}
+                    {draggable && draggableHandle(handleDragStart, onDragOver, onDragEnd)}
                     <MeltaCheckbox {...getCheckboxProps()} />
                     <LabelWithToolTip {...getLabelProps()} />
                     <TreeItem2DragAndDropOverlay {...getDragAndDropOverlayProps()} />

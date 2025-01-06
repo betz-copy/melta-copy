@@ -76,16 +76,11 @@ const Tree = <T extends {}>({
     return (
         <>
             {selectAll && (
-                <Box>
-                    <SelectAll
-                        allOptionIds={(flattenedTree ?? flattenTree(treeItems, getItemId)).map(getItemId)}
-                        setSelectedOptionIds={setSelectedItemsIds}
-                        selectedOptionIds={selectedItemsIds}
-                    />
-                    <Box sx={{ display: 'flex', justifyContent: 'center', my: '5px' }}>
-                        <Divider style={{ width: '199px' }} />
-                    </Box>
-                </Box>
+                <SelectAll
+                    allOptionIds={(flattenedTree ?? flattenTree(treeItems, getItemId)).map(getItemId)}
+                    setSelectedOptionIds={setSelectedItemsIds}
+                    selectedOptionIds={selectedItemsIds}
+                />
             )}
             <RichTreeViewPro
                 style={{ direction: 'rtl' }}
@@ -103,6 +98,7 @@ const Tree = <T extends {}>({
                 }}
                 expandedItems={expandedItemsIds}
                 itemsReordering={isDraggable}
+                expansionTrigger="iconContainer"
                 slots={{
                     expandIcon: ChevronLeft,
                     collapseIcon: ExpandLess,
