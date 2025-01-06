@@ -23,7 +23,7 @@ const ProcessInstancesPage: React.FC = () => {
     const [startDateInput, setStartDateInput] = useState<Date | null>(null);
     const [endDateInput, setEndDateInput] = useState<Date | null>(null);
 
-    const [statusFilter, setStatusFilter] = useState<'all' | Status | undefined>('all');
+    const [statusFilter, setStatusFilter] = useState<'all' | Status | 'archived'>('all');
     const [isWaitingForMeFilterOn, setIsWaitingForMeFilterOn] = useState<boolean>(true);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -130,7 +130,7 @@ const ProcessInstancesPage: React.FC = () => {
                                     aria-labelledby="demo-controlled-radio-buttons-group"
                                     name="controlled-radio-buttons-group"
                                     value={statusFilter}
-                                    onChange={(_e, val) => setStatusFilter(val as 'all' | Status | undefined)}
+                                    onChange={(_e, val) => setStatusFilter(val as 'all' | Status | 'archived')}
                                 >
                                     <FormControlLabel
                                         value="all"
@@ -169,7 +169,7 @@ const ProcessInstancesPage: React.FC = () => {
                                         }
                                     />
                                     <FormControlLabel
-                                        value={undefined}
+                                        value="archived"
                                         control={<Radio />}
                                         label={
                                             <Typography fontSize="14px" color="#53566E">

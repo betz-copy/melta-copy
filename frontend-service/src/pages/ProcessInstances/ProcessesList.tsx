@@ -23,7 +23,7 @@ const ProcessesList: React.FC<{
     startDateInput: Date | null;
     endDateInput: Date | null;
     templatesToShowCheckbox: IMongoProcessTemplatePopulated[]; // todo: support in backend
-    statusFilter: 'all' | Status | undefined;
+    statusFilter: 'all' | Status | 'archived';
     isWaitingForMeFilterOn: boolean;
 }> = ({ templatesToShowCheckbox, search, startDateInput, endDateInput, statusFilter, isWaitingForMeFilterOn }) => {
     const queryClient = useQueryClient();
@@ -34,9 +34,9 @@ const ProcessesList: React.FC<{
         currentUser.currentWorkspacePermissions.processes?.scope === PermissionScope.write ||
         currentUser.currentWorkspacePermissions.admin?.scope === PermissionScope.write;
 
-    const getStatusFilter = (status: Status | 'all' | undefined) => {
+    const getStatusFilter = (status: Status | 'all' | 'archived') => {
         if (status === 'all') return [Status.Approved, Status.Pending, Status.Rejected];
-        if (status !== undefined) return [status];
+        if (status !== 'archived') return [status];
         return undefined;
     };
 
@@ -53,7 +53,7 @@ const ProcessesList: React.FC<{
                 status: getStatusFilter(statusFilter),
                 skip: 0,
                 limit: 0,
-                archived: statusFilter === undefined,
+                archived: false,
                 isWaitingForMeFilterOn: true,
                 isStepStatusPendeing: true,
             }).then((processes) => setWaitingForMeProcesses(processes));
@@ -109,7 +109,7 @@ const ProcessesList: React.FC<{
                                 status: getStatusFilter(statusFilter),
                                 skip: pageParam,
                                 limit: infiniteScrollPageCount,
-                                archived: statusFilter === undefined,
+                                archived: statusFilter === 'archived',
                                 isWaitingForMeFilterOn,
                             });
                         }}
