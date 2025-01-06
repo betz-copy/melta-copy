@@ -50,7 +50,7 @@ const Tree = <T extends {}>({
 
     useEffect(() => {
         setSelectedItemsIds(parentInfersChildren ? selectedIdsWithParents : preSelectedItemsIds);
-    }, [JSON.stringify(preSelectedItemsIds)]);
+    }, [JSON.stringify(preSelectedItemsIds), JSON.stringify(selectedIdsWithParents)]);
 
     const [expandedItemsIds, setExpandedItemsIds] = useState<string[]>(preExpandedItemIds ?? []);
 
