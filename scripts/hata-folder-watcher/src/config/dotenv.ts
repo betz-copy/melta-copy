@@ -1,6 +1,0 @@
-/* istanbul ignore file */
-import * as dotenv from 'dotenv';
-
-const dotenvPath = process.env.LOAD_DEV_DOTENV ? '.env.dev' : '.env';
-
-dotenv.config({ path: dotenvPath });

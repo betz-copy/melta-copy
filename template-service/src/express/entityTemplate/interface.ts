@@ -51,7 +51,6 @@ export interface IEntityTemplate {
     iconFileId: string | null;
     actions?: string;
     documentTemplatesIds?: string[];
-    path?: string;
 }
 
 export interface IMongoEntityTemplate extends IEntityTemplate, Document<string> {

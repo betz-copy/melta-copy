@@ -597,7 +597,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         duplicateFileProperties = true,
         createAlert: boolean = true,
     ) {
-        const currentEntity = await this.service.getEntityInstanceByProperty(id);
+        const currentEntity = await this.service.getEntityInstanceById(id);
         const currentEntityTemplate = await this.entityTemplateService.getEntityTemplateById(currentEntity.templateId);
 
         const fileProperties = this.getEntityFileProperties(instanceData.properties, currentEntityTemplate);
@@ -662,54 +662,33 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         });
     }
 
-    // Update only one entity where value is in the key property.
     async updateEntityInstance(
-        value: string,
+        id: string,
         updatedInstanceData: IEntity,
         files: Express.Multer.File[],
         ignoredRules: IBrokenRule[],
         userId: string,
         createAlert: boolean = true,
-        key = '_id',
-        upsert = false,
     ) {
         const { props: uploadedFilesAndProperties, files: updatedFiles } = await this.uploadInstanceFiles(files, updatedInstanceData.properties);
-        let currentEntity: IEntity;
-
-        try {
-            currentEntity = await this.service.getEntityInstanceByProperty(value, updatedInstanceData.templateId, key);
-        } catch (e) {
-            if (upsert)
-                return this.service.createEntityInstance(
-                    {
-                        templateId: updatedInstanceData.templateId,
-                        properties: { ...uploadedFilesAndProperties },
-                    },
-                    ignoredRules,
-                    userId,
-                );
-
-            throw e;
-        }
-
+        const currentEntity = await this.service.getEntityInstanceById(id);
         const entityTemplate = await this.entityTemplateService.getEntityTemplateById(currentEntity.templateId);
 
         this.checkSerialFieldWasUpdated(entityTemplate, updatedInstanceData.properties, currentEntity);
 
         const { updatedEntity, actions } = await this.service
             .updateEntityInstance(
-                value,
+                id,
                 {
                     templateId: updatedInstanceData.templateId,
                     properties: { ...uploadedFilesAndProperties },
                 },
                 ignoredRules,
                 userId,
-                key,
             )
             .catch((err) => this.handleBrokenRulesError(err));
         await this.deleteUnusedFiles(currentEntity, updatedInstanceData, files).catch((error) =>
-            logger.error(`failed to delete files of instanceId ${value}`, { error }),
+            logger.error(`failed to delete files of instanceId ${id}`, { error }),
         );
 
         const updatedFields: Record<string, any> = {};
@@ -748,7 +727,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
                         {
                             actionType: ActionTypes.UpdateEntity,
                             actionMetadata: {
-                                entityId: value,
+                                entityId: id,
                                 before: currentEntity.properties,
                                 updatedFields,
                             },
@@ -781,7 +760,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
     }
 
     async deleteEntityInstance(id: string) {
-        const currentEntity = await this.service.getEntityInstanceByProperty(id);
+        const currentEntity = await this.service.getEntityInstanceById(id);
         const deletedInstance = await this.service.deleteEntityInstance(id);
 
         await this.ruleBreachesManager.updateManyRuleBreachRequestsStatusesByRelatedEntityId(id, RuleBreachRequestStatus.Canceled);

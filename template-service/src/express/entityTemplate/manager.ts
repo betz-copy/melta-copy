@@ -1,11 +1,10 @@
 import { ClientSession, FilterQuery } from 'mongoose';
-import { parse as parsePath } from 'node:path/posix';
 import config from '../../config';
 import { escapeRegExp } from '../../utils';
 
 import { DefaultManagerMongo } from '../../utils/mongo/manager';
 import { withTransaction } from '../../utils/mongoose';
-import { NotFoundError, PathDoesNotExistError } from '../error';
+import { NotFoundError } from '../error';
 import GlobalSearchIndexCreator from '../externalServices/globalSearchIndexCreator';
 import { IRelationshipTemplate } from '../relationshipTemplate/interface';
 import RelationshipTemplateManager from '../relationshipTemplate/manager';
@@ -253,84 +252,6 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
             .orFail(new NotFoundError('Entity Template not found'))
             .lean()
             .exec();
-    }
-
-    async updateEntityTemplatePath(id: string, path: string) {
-        return this.model
-            .findByIdAndUpdate(id, { path }, { new: true })
-            .populate('category')
-            .orFail(new NotFoundError('Entity Template not found'))
-            .lean()
-            .exec();
-    }
-
-    async getTemplateByPath(path: string) {
-        const { dir, name } = parsePath(path);
-
-        return this.model.findOne({ path: dir, name }).orFail(new PathDoesNotExistError(path)).lean().exec();
-    }
-
-    getRootTemplateByCategory(categoryId: string) {
-        return this.model.findOne({ path: '/', category: categoryId }).lean().exec();
-    }
-
-    async getSubTemplatesTree(categoryId: string) {
-        const templatesWithPath = await this.model
-            .find({ path: { $ne: null }, category: categoryId })
-            .populate<Pick<IEntityTemplatePopulated, 'category'>>('category')
-            .lean()
-            .exec();
-
-        if (!templatesWithPath?.length) return [];
-
-        templatesWithPath.sort((a, b) => {
-            if (a.path === '/' && b.path !== '/') {
-              return -1;
-            } else if (b.path === '/' && a.path !== '/') {
-              return 1;
-            } else {
-              const aSlashCount = (a.path!.match(/\//g) || []).length;
-              const bSlashCount = (b.path!.match(/\//g) || []).length;
-          
-              return aSlashCount - bSlashCount;
-            }
-          });
-
-        const rootTemplate = templatesWithPath.shift()!;
-
-        type IEntityTemplatePopulatedWithChildren = IEntityTemplatePopulated & { children: IEntityTemplatePopulatedWithChildren[] };
-
-        const result = {
-            ...rootTemplate,
-            children: [] as IEntityTemplatePopulatedWithChildren[],
-        };
-
-        templatesWithPath.forEach((child) => {
-            const { path } = child;
-
-            const levels = path!.substring(path!.indexOf(rootTemplate.displayName) + rootTemplate.displayName.length + 1).split('/');
-            const { length: levelsLength } = levels;
-            let reference = result.children;
-            levels.forEach((level, index) => {
-                const isLastLevel = levelsLength - index === 1;
-                if (isLastLevel && level === '') {
-                    reference.push({ ...child, children: [] });
-                } else {
-                    const childRef = reference.find((subChild) => subChild.displayName === level);
-                    if (!childRef) {
-                        throw new PathDoesNotExistError(level);
-                    }
-                    childRef.children ??= [];
-                    if (isLastLevel) {
-                        childRef.children.push({ ...child, children: [] });
-                    } else {
-                        reference = childRef.children;
-                    }
-                }
-            });
-        });
-
-        return result;
     }
 
     async updateEntityTemplateAction(id: string, actions: string) {

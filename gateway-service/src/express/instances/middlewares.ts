@@ -95,16 +95,13 @@ export class InstancesValidator extends DefaultController {
         await this.validateHasPermissionsToEntitiesInTemplates(req.user!, Object.keys(templates));
     }
 
-    private async validateUserPermissionForEntityInstance(req: Request, permissionScope: PermissionScope, paramValue = '_id') {
-        const instanceId = req.params[paramValue];
+    private async validateUserPermissionForEntityInstance(req: Request, permissionScope: PermissionScope) {
+        const instanceId = req.params.id;
 
-        const { templateId } = req.body.templateId
-            ? req.body
-            : await this.instancesService.getEntityInstanceByProperty(instanceId, req.query.key as string);
+        const { templateId } = await this.instancesService.getEntityInstanceById(instanceId);
         const categoryId = await this.getCategoryIdFromTemplateId(templateId);
 
         const userPermissions = await this.authorizer.getWorkspacePermissions(req.user!.id);
-
         if (
             !userPermissions.admin?.scope &&
             !Object.entries(userPermissions.instances?.categories ?? {}).some(
@@ -113,19 +110,10 @@ export class InstancesValidator extends DefaultController {
         ) {
             throw new ForbiddenError(`user not authorized, does not have ${permissionScope} permission on category ${categoryId}`);
         }
-
         (req as RequestWithPermissionsOfUserId).permissionsOfUserId = userPermissions;
     }
 
-    async validateUserPermissionForEntityInstanceByValue(req: Request) {
-        await this.validateUserPermissionForEntityInstance(req, PermissionScope.write, 'value');
-    }
-
     async validateUserCanWriteEntityInstance(req: Request) {
-        if (req.query.upsert) {
-            await this.validateUserCanCreateEntityInstance(req);
-            return;
-        }
         await this.validateUserPermissionForEntityInstance(req, PermissionScope.write);
     }
 
@@ -237,8 +225,6 @@ export class InstancesValidator extends DefaultController {
     async validateUserCanIgnoreRules(req: Request) {
         const { ignoredRules } = req.body;
         const { user } = req;
-
-        if (req.query?.upsert) return;
 
         if (!user) throw new ServiceError(undefined, 'req.user is undefined');
 

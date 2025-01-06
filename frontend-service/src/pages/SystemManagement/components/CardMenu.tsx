@@ -9,7 +9,6 @@ import {
     DoNotDisturbOffOutlined as DoNotDisturbOffOutlinedIcon,
     ContentCopy as DuplicateIcon,
     ControlPoint as AddIcon,
-    Folder as DirectoryIcon,
 } from '@mui/icons-material';
 import { MenuButton } from '../../../common/MenuButton';
 import { MeltaTooltip } from '../../../common/MeltaTooltip';
@@ -23,8 +22,7 @@ export const CardMenu: React.FC<{
     onDisableClick?: MouseEventHandler;
     onDuplicateClick?: MouseEventHandler;
     onAddActionsClick?: MouseEventHandler;
-    onAddPathClick?: MouseEventHandler;
-}> = ({ onEditClick, onDeleteClick, disabledProps, onDisableClick, onDuplicateClick, onAddActionsClick, onAddPathClick }) => {
+}> = ({ onEditClick, onDeleteClick, disabledProps, onDisableClick, onDuplicateClick, onAddActionsClick }) => {
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
     const open = Boolean(anchorEl);
 
@@ -87,17 +85,6 @@ export const CardMenu: React.FC<{
                         }}
                         text={i18next.t('actions.addActions')}
                         icon={<AddIcon color="action" />}
-                    />
-                )}
-
-                {onAddPathClick && (
-                    <MenuButton
-                        onClick={(e) => {
-                            onAddPathClick(e);
-                            handleClose(e);
-                        }}
-                        text={i18next.t('actions.addPath')}
-                        icon={<DirectoryIcon color="action" />}
                     />
                 )}
 

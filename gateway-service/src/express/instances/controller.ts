@@ -32,16 +32,7 @@ export class InstancesController extends DefaultController<InstancesManager> {
     async updateEntityInstance(req: Request, res: Response) {
         const { ignoredRules, ...instanceData } = req.body;
         res.json(
-            await this.manager.updateEntityInstance(
-                req.params.value,
-                instanceData,
-                req.files as Express.Multer.File[],
-                ignoredRules,
-                req.user!.id,
-                true,
-                req.query.key as string,
-                !!req.query.upsert,
-            ),
+            await this.manager.updateEntityInstance(req.params.id, instanceData, req.files as Express.Multer.File[], ignoredRules, req.user!.id),
         );
     }
 
@@ -95,7 +86,7 @@ export class InstancesController extends DefaultController<InstancesManager> {
         res.send(
             await this.manager.exportEntityToDocumentTemplate({
                 documentTemplateId: req.query.documentTemplateId as string,
-                entityProperties: (await this.manager.service.getEntityInstanceByProperty(req.params.entityId)).properties,
+                entityProperties: (await this.manager.service.getEntityInstanceById(req.params.entityId)).properties,
             }),
         );
     }

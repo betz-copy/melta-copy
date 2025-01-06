@@ -64,7 +64,6 @@ export interface IEntityTemplate {
     disabled: boolean;
     iconFileId: string | null;
     documentTemplatesIds?: string[];
-    path?: string;
 }
 
 export interface IEntityTemplatePopulated extends Omit<IEntityTemplate, 'category'> {
