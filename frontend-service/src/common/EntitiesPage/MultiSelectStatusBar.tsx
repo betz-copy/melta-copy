@@ -38,12 +38,12 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
         {
             onError: (error: AxiosError) => {
                 toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.entity.failedToDelete')} />);
-                api.deselectAll();
-                setConfirmDeleteDisplayNameValue('');
             },
             onSuccess: () => {
                 toast.success(i18next.t('wizard.entity.deletedEntitiesSuccess'));
                 api.refreshServerSide();
+            },
+            onSettled: () => {
                 api.deselectAll();
                 setConfirmDeleteDisplayNameValue('');
             },

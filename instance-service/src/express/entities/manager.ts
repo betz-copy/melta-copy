@@ -936,7 +936,7 @@ export class EntityManager extends DefaultManagerNeo4j {
         return entitiesWithDirectRelationships;
     }
 
-    async getEntitiesToDeleteWIthoutRelationships(
+    async getEntitiesToDeleteWithoutRelationships(
         entities: IEntityWithDirectRelationships[],
         { properties: { properties: entityTemplateProperties } }: IMongoEntityTemplate,
         transaction: Transaction,
@@ -1057,7 +1057,7 @@ export class EntityManager extends DefaultManagerNeo4j {
                 const entityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(templateId);
                 const entitiesToDelete = await this.getEntitiesWithDirectRelationshipsToDelete(deleteBody, entityTemplate);
 
-                const allowedEntitiesToDelete = await this.getEntitiesToDeleteWIthoutRelationships(
+                const allowedEntitiesToDelete = await this.getEntitiesToDeleteWithoutRelationships(
                     entitiesToDelete,
                     entityTemplate,
                     transaction,
