@@ -421,7 +421,7 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                 <Grid item container justifyContent="flex-start" flexBasis="33%">
                                     <Grid item>
                                         {isTherePrevStep && (
-                                            <Button onClick={() => onSetPrevStep()}>
+                                            <Button disabled={isStepEditMode} onClick={() => onSetPrevStep()}>
                                                 <Typography>￫ {i18next.t('wizard.processInstance.step.prevStep')}</Typography>
                                             </Button>
                                         )}
@@ -492,7 +492,7 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                 <Grid item container justifyContent="flex-end" flexBasis="33%">
                                     <Grid item>
                                         {isThereNextStep && (
-                                            <Button onClick={() => onSetNextStep()}>
+                                            <Button disabled={isStepEditMode} onClick={() => onSetNextStep()}>
                                                 <Typography>{i18next.t('wizard.processInstance.step.nextStep')} ￩</Typography>
                                             </Button>
                                         )}

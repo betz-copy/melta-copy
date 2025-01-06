@@ -98,10 +98,12 @@ const Steps: React.FC<IStepsProp> = ({
                         <Grid item>
                             <a
                                 onClick={() => {
-                                    setCurrStepInstance(processInstance.steps[0]);
-                                    setCurrStepInstanceIndex(0);
+                                    if (!isStepEditMode) {
+                                        setCurrStepInstance(processInstance.steps[0]);
+                                        setCurrStepInstanceIndex(0);
+                                    }
                                 }}
-                                style={{ cursor: 'pointer' }}
+                                style={{ cursor: !isStepEditMode ? 'pointer' : undefined }}
                             >
                                 <Typography fontSize="20px" color="#1E2775">
                                     ￫...
@@ -136,12 +138,16 @@ const Steps: React.FC<IStepsProp> = ({
                                                                         ]
                                                                     }
                                                                     setOpen={() => {
-                                                                        setCurrStepInstance(stepInstance);
-                                                                        setCurrStepInstanceIndex(
-                                                                            index +
-                                                                                getVisibleSteps(currStepInstanceIndex, processInstance.steps.length)
-                                                                                    .startStep,
-                                                                        );
+                                                                        if (!isStepEditMode) {
+                                                                            setCurrStepInstance(stepInstance);
+                                                                            setCurrStepInstanceIndex(
+                                                                                index +
+                                                                                    getVisibleSteps(
+                                                                                        currStepInstanceIndex,
+                                                                                        processInstance.steps.length,
+                                                                                    ).startStep,
+                                                                            );
+                                                                        }
                                                                     }}
                                                                     displayTitle={false}
                                                                 />
@@ -167,10 +173,12 @@ const Steps: React.FC<IStepsProp> = ({
                         <Grid item>
                             <a
                                 onClick={() => {
-                                    setCurrStepInstance(processInstance.steps[processInstance.steps.length - 1]);
-                                    setCurrStepInstanceIndex(processInstance.steps.length - 1);
+                                    if (!isStepEditMode) {
+                                        setCurrStepInstance(processInstance.steps[processInstance.steps.length - 1]);
+                                        setCurrStepInstanceIndex(processInstance.steps.length - 1);
+                                    }
                                 }}
-                                style={{ cursor: 'pointer' }}
+                                style={{ cursor: !isStepEditMode ? 'pointer' : undefined }}
                             >
                                 <Typography fontSize="20px" marginBottom="25px" color="#1E2775">
                                     ...￩
@@ -191,10 +199,10 @@ const Steps: React.FC<IStepsProp> = ({
                                 width: '40px',
                                 height: '40px',
                                 ':hover': { transform: 'scale(1.1)' },
-                                cursor: 'pointer',
+                                cursor: !isStepEditMode ? 'pointer' : undefined,
                             }}
                             onClick={(e) => {
-                                setActiveStep(0);
+                                if (!isStepEditMode) setActiveStep(0);
                             }}
                         >
                             <TocIcon sx={{ color: '#1E2775' }} />
