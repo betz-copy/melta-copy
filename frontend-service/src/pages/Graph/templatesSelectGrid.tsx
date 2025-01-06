@@ -114,6 +114,8 @@ const singleTree = (
             setSelectedTemplates((prev) => {
                 const prevIds = prev.map(getOptionId);
                 const filteredSecondOptions = secondTree.flattenedTree.filter((option) => prevIds.includes(getOptionId(option)));
+                console.log({ secondTree: secondTree.flattenedTree });
+                console.log({ first: filteredFirstOptions, second: [...filteredSecondOptions] });
                 return [...filteredFirstOptions, ...filteredSecondOptions];
             });
             onClick();
@@ -138,8 +140,14 @@ const TemplatesSelectGrid: React.FC<{
 
     const { firstSplittedTemplates, secondSplittedTemplates } = splitCategories(templates, categories);
 
-    const firstTree = getTreeOnSplittedTemplates(firstSplittedTemplates, miniFilterValue);
-    const secondTree = getTreeOnSplittedTemplates(secondSplittedTemplates, miniFilterValue);
+    let firstTree = getTreeOnSplittedTemplates(firstSplittedTemplates, miniFilterValue);
+    let secondTree = getTreeOnSplittedTemplates(secondSplittedTemplates, miniFilterValue);
+
+    if (!firstTree?.filteredTree?.length) {
+        const temp = JSON.parse(JSON.stringify(firstTree));
+        firstTree = JSON.parse(JSON.stringify(secondTree));
+        secondTree = JSON.parse(JSON.stringify(temp));
+    }
 
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const { trackEvent } = useMatomo();
