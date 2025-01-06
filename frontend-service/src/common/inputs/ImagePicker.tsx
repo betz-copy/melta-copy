@@ -6,7 +6,6 @@ import IconPicker from './IconPicker';
 import fileDetails from '../../interfaces/fileDetails';
 
 type InputSelectType = 'chooseFile' | 'chooseFromOptions';
-
 interface ImagePickerProps {
     image?: fileDetails;
     onPick: (image: fileDetails) => void;
@@ -16,7 +15,6 @@ interface ImagePickerProps {
 
 const ImagePicker: React.FC<ImagePickerProps> = ({ image, onPick, onDelete, defaultInputType }) => {
     const [inputType, setInputType] = useState(defaultInputType);
-
     const [fileInputValue, setFileInputValue] = useState<fileDetails | undefined>(image);
     const [iconPickerValue, setIconPickerValue] = useState<fileDetails>();
 
@@ -57,7 +55,6 @@ const ImagePicker: React.FC<ImagePickerProps> = ({ image, onPick, onDelete, defa
                         selectedIconName={image?.name.split('.')[0]}
                         onPick={(icon) => {
                             const detailedFile = { file: icon, name: icon.name };
-
                             setIconPickerValue(detailedFile);
                             onPick(detailedFile);
                         }}
@@ -71,7 +68,6 @@ const ImagePicker: React.FC<ImagePickerProps> = ({ image, onPick, onDelete, defa
             {inputType === 'chooseFile' && (
                 <Grid item>
                     <FileInput
-                        fileFieldName="icon"
                         onDropFile={(acceptedFile) => {
                             const detailedFile = { file: acceptedFile, name: acceptedFile.name };
                             setFileInputValue(detailedFile);

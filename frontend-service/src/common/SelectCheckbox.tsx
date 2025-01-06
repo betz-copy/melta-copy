@@ -1,5 +1,5 @@
 /* eslint-disable no-nested-ternary */
-import { Menu, Search } from '@mui/icons-material';
+import { Menu, Search, Hive as HiveIcon } from '@mui/icons-material';
 import {
     Box,
     Button,
@@ -25,6 +25,7 @@ import { IoIosArrowBack, IoIosArrowDown, IoIosArrowUp } from 'react-icons/io';
 import { MeltaTooltip } from './MeltaTooltip';
 import { MeltaCheckbox } from './MeltaCheckbox';
 import { useDarkModeStore } from '../stores/darkMode';
+import { CustomIcon } from './CustomIcon';
 
 export type MenuItemContentProps<Option = any> = {
     checked?: boolean;
@@ -38,7 +39,18 @@ export type MenuItemContentProps<Option = any> = {
     showIcon?: boolean;
 };
 
-export const MenuItemContent: React.FC<MenuItemContentProps> = ({ checked, indeterminate, label, isDraggable, group, insideGroup }) => {
+export const MenuItemContent: React.FC<MenuItemContentProps> = ({
+    checked,
+    indeterminate,
+    label,
+    isDraggable,
+    group,
+    insideGroup,
+    showIcon,
+    option,
+}) => {
+    const theme = useTheme();
+
     return (
         <>
             {!group && (
@@ -57,7 +69,15 @@ export const MenuItemContent: React.FC<MenuItemContentProps> = ({ checked, indet
                     {isDraggable && <Menu sx={{ fontSize: '1rem' }} />}
                 </Grid>
             )}
-            <MeltaCheckbox checked={checked} indeterminate={indeterminate} />
+            {showIcon ? (
+                option.iconFileId?.length > 0 ? (
+                    <CustomIcon color={theme.palette.primary.main} iconUrl={option.iconFileId!} height="15px" width="15px" />
+                ) : (
+                    <HiveIcon style={{ color: theme.palette.primary.main }} fontSize="inherit" />
+                )
+            ) : (
+                <MeltaCheckbox checked={checked} indeterminate={indeterminate} />
+            )}
 
             <ListItemText
                 primary={
@@ -108,6 +128,7 @@ export type SelectCheckboxProps<Option extends any, Group extends any = any> = P
     size?: 'small' | 'medium';
     overrideSx?: object;
     toTopBar?: boolean;
+    toUserProfile?: boolean;
     horizontalOrigin?: number;
     handleCheckboxClick?: (value: boolean) => void;
     onDragEnd?: (result: DropResult) => void;
@@ -489,7 +510,6 @@ export const ChooseAllMenuItem = <Option extends any, Group extends any>({
                 indeterminate={selectedOptionsFiltered.length < optionsFiltered.length && selectedOptionsFiltered.length > 0}
                 label={i18next.t('selectChooseAll')}
                 order={0}
-                showIcon={false}
             />
         </MenuItem>
     );
@@ -509,6 +529,7 @@ const SelectCheckbox = <Option extends any, Group extends any>({
     size = 'medium',
     overrideSx,
     toTopBar,
+    toUserProfile = false,
     horizontalOrigin = 154,
     handleCheckboxClick = () => {},
     onDragEnd,
@@ -602,7 +623,7 @@ const SelectCheckbox = <Option extends any, Group extends any>({
                     fontFamily: 'Rubik',
                     fontSize: '14px',
                     fontWeight: 400,
-                    boxShadow: '-2px 2px 6px 0px #1E277540',
+                    boxShadow: toUserProfile ? '0px 3px 10px rgba(0,0,0,0.2)' : 'none',
                     borderRadius: '8px',
                     ...(darkMode
                         ? { color: theme.palette.primary.main, '& .MuiOutlinedInput-notchedOutline': { borderColor: '#d2d3e3' } }

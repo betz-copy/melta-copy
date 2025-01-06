@@ -12,8 +12,9 @@ const {
 } = config;
 
 export const streamToBuffer = (stream: Stream) => {
+    const buffer: Uint8Array[] = [];
+
     return new Promise<Buffer>((resolve, reject) => {
-        const buffer: Uint8Array[] = [];
         stream.on('data', (dataChunk) => buffer.push(dataChunk));
         stream.on('end', () => resolve(Buffer.concat(buffer)));
         stream.on('error', reject);
@@ -86,8 +87,6 @@ export const splitTextIntoChunks = async (
     const splitText = chunk(cleanedText, llmChunkSplitterOptions);
 
     const chunksForEmbedding = getTextForEmbedding(splitText);
-
-    console.log('chunksForEmbedding', chunksForEmbedding);
 
     const chunks: IElasticDoc[] = [];
 

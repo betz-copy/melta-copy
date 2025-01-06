@@ -24,7 +24,7 @@ export interface EntitiesWizardValues {
     template?: IMongoEntityTemplatePopulated;
 }
 
-type IValidationError = { message: string; path: string; schemaPath: string; params: Partial<IEntitySingleProperty> };
+export type IValidationError = { message: string; path: string; schemaPath: string; params: Partial<IEntitySingleProperty> };
 
 export type IBrokenRuleEntity = {
     rawBrokenRules: IBrokenRule[];
@@ -37,12 +37,19 @@ export type IBrokenRuleEntity = {
     entities: { properties: Record<string, any> }[];
 };
 
+export interface IError {
+    type: ActionErrors;
+    metadata: IValidationError | IUniqueConstraint | IRequiredConstraint;
+}
+
+export interface IFailedEntity {
+    properties: Record<string, any>;
+    errors: IError[];
+}
+
 export interface ITablesResults {
     succeededEntities: ICreateEntityMetadata[];
-    failedEntities: {
-        properties: Record<string, any>;
-        errors: { type: ActionErrors; metadata: IValidationError | IUniqueConstraint | IRequiredConstraint }[];
-    }[];
+    failedEntities: IFailedEntity[];
     brokenRulesEntities?: IBrokenRuleEntity;
 }
 
@@ -91,13 +98,13 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
             return loadEntitiesRequest(template!._id, files);
         },
         {
-            onError() {
-                toast.error(i18next.t('wizard.entity.loadEntities.failedLoadEntities'));
-                setStepsData((prev) => ({ ...prev, status: StepStatus.excelUploadResult }));
-            },
             async onSuccess(data) {
                 setStepsData((prev) => ({ ...prev, status: StepStatus.excelUploadResult, data }));
                 return data;
+            },
+            onError() {
+                toast.error(i18next.t('wizard.entity.loadEntities.failedLoadEntities'));
+                setStepsData((prev) => ({ ...prev, status: StepStatus.excelUploadResult }));
             },
         },
     );
@@ -107,14 +114,14 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
             return loadEntitiesRequest(template!._id, undefined, insertBrokenEntities);
         },
         {
-            onError() {
-                toast.error(i18next.t('wizard.entity.loadEntities.failedLoadEntities'));
-                setStepsData((prev) => ({ ...prev, status: StepStatus.excelUploadResult }));
-            },
             async onSuccess(data) {
                 setCreateOrUpdateWithRuleBreachDialogState({ isOpen: false });
                 onClose();
                 return data;
+            },
+            onError() {
+                toast.error(i18next.t('wizard.entity.loadEntities.failedLoadEntities'));
+                setStepsData((prev) => ({ ...prev, status: StepStatus.excelUploadResult }));
             },
         },
     );
@@ -129,11 +136,11 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
             });
         },
         {
-            onError() {
-                toast.error(i18next.t('failedToExportTable'));
-            },
             onSuccess(data) {
                 fileDownload(data, `${template?.displayName}${excelExtension}`);
+            },
+            onError() {
+                toast.error(i18next.t('failedToExportTable'));
             },
         },
     );

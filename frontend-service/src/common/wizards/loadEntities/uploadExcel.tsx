@@ -62,7 +62,7 @@ export const UploadExcel: React.FC<{
 
     return (
         <Grid container direction="column" padding="5px">
-            <Grid marginTop="10px">
+            <Grid marginTop="5px">
                 <OpenPreview
                     fileId={{ name: `${i18next.t('entitiesTableOfTemplate.downloadOneTableTitle')}${excelExtension}` } as File}
                     onClick={() => onDownload()}
@@ -70,7 +70,7 @@ export const UploadExcel: React.FC<{
                     showText
                 />
             </Grid>
-            <Grid marginTop="20px">
+            <Grid marginTop="15px">
                 <Typography color={theme.palette.mode === 'dark' ? '#FFFFFF' : '#1E2775'} fontSize="14px" fontWeight={400}>
                     {i18next.t('wizard.entity.loadEntities.preview')}
                 </Typography>
@@ -96,6 +96,7 @@ export const UploadExcel: React.FC<{
                     }}
                     ignoreType
                     showNavigateToRowButton={false}
+                    editable={false}
                 />
             </Grid>
         </Grid>

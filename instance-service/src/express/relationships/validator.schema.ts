@@ -75,3 +75,13 @@ export const getRelationshipsByIdsRequestSchema = Joi.object({
     query: {},
     params: {},
 });
+
+export const getRelationshipsByEntitiesAndTemplate = Joi.object({
+    body: {},
+    query: {
+        sourceEntityId: Joi.string().required(),
+        destinationEntityId: Joi.string().required(),
+        templateId: Joi.string().required(),
+    },
+    params: {},
+});

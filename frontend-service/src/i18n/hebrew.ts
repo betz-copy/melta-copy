@@ -4,6 +4,9 @@ import { WorkspaceTypes } from '../interfaces/workspaces';
 import { muiDatePickersLocaleText } from '../utils/datePickers';
 
 export default {
+    myPermissions: 'ההרשאות שלי',
+    personalDetails: 'פרטים אישיים',
+    myAccount: 'החשבון שלי',
     category: 'קטגוריה',
     categories: 'קטגוריות',
     entity: 'ישות',
@@ -87,6 +90,7 @@ export default {
         expansion: 'הרחבה',
         favorites: 'מועדפים',
         addActions: 'הוספת פעולות',
+        convertToRelationShipFieldClick: 'המרה לשדה קשר',
     },
     entityPage: {
         deleteRelationshipPopoverText: 'מחק קשר',
@@ -173,6 +177,7 @@ export default {
         deleteFieldValue: 'לא ניתן למחוק ערך בשימוש',
         updateEnumField: 'לא ניתן לעדכן ערך זה',
         previewLoadingError: 'שגיאה בטעינת הקובץ',
+        emptyInputError: 'אין להכניס ערך ריק',
     },
     addRelationshipDialog: {
         title: 'הוסף קשר',
@@ -316,7 +321,7 @@ export default {
         noOptions: 'אין תוצאות',
     },
     notifications: {
-        notificationType: 'סוג התראה',
+        notificationType: 'התראות למייל',
         title: 'התראות',
         failedToGetNotifications: 'נכשל לטעון התראות',
         noNotificationsLeft: 'אין עוד התראות',
@@ -397,6 +402,21 @@ export default {
             updatedAt: 'עודכן ב',
         },
     },
+    user: {
+        fullName: 'שם מלא',
+        email: 'מייל',
+        jobTitle: 'תפקיד',
+        hierarchy: 'היררכיה',
+        addFile: 'הוסף קובץ',
+        close: 'סגירה',
+        edit: 'עריכת פרופיל',
+        save: 'שמור',
+        yes: 'כן',
+        no: 'לא',
+        areYouSure: 'בפעולה זו השינויים ימחקו',
+        succeededToUpdatePreferences: 'עודכנו העדפות משתמש בהצלחה',
+        failedToUpdateRequest: 'נכשל בעידכון העדפות המשתמש',
+    },
     entitiesCardView: {
         failedToLoadResults: 'נכשל לטעון תוצאות',
         noSearchLeft: 'אין עוד תוצאות',
@@ -419,6 +439,7 @@ export default {
         next: 'הבא',
         back: 'הקודם',
         finish: 'סיים',
+        cancel: 'ביטול',
         name: 'שם באנגלית',
         displayName: 'שם תצוגה',
         file: 'הוסף אייקון',
@@ -535,6 +556,8 @@ export default {
             failedToDelete: 'נכשל למחוק תבנית קשר',
             sourceEntity: 'תבנית ישות מקור',
             destinationEntity: 'תבנית ישות יעד',
+            convertToRelationshipFieldSuccessfully: 'קשר הומר לשדה קשר בהצלחה',
+            failedToConvertToRelationshipField: 'נכשל בהמרת קשר לשדה קשר',
         },
         processTemplate: {
             createTitle: 'יצירת תבנית תהליך',
@@ -612,8 +635,8 @@ export default {
                 required: 'ליישות חסרה שדה חובה',
                 createdSuccessfully: 'ישויות נוצרו בהצלחה',
                 tableCantLoadEntities: 'טבלה זו לא תומכת בטעינה מקבצים',
-                limitNumberFiles: 'ניתן לעלות עד 5 קבצים',
-                limitNumberEntities: 'ניתן להעלות עד 500 ישויות בקובץ',
+                limitNumberFiles: `ניתן לעלות ${environment.loadExcel.filesLimit} של קבצים`,
+                limitNumberEntities: `ניתן להעלות עד ${environment.loadExcel.entitiesLimit} ישויות בקובץ`,
                 emptyExcel: 'יש להעלות קבצים עם יישויות',
                 failedReadingFiles: 'שגיאה בקריאת קבצים',
                 filesWrongTemplate: 'חלק מקבצים אלו לא מתאימים לתבנית',
@@ -795,6 +818,8 @@ export default {
             iconSearch: 'חיפוש אייקון (חיפוש באנגלית)',
             chooseFromOptions: 'בחירה מאפשרויות',
             chooseFile: 'בחירת קובץ',
+            chooseAvatar: 'בחירת אווטר',
+            kartoffelProfile: 'תמונת חוגר',
             dragFile: 'גרור את הקובץ לכאן',
             scanFromImage: 'סריקה מתמונה',
             dragFiles: 'יש לגרור קבצים כאן',
@@ -816,6 +841,7 @@ export default {
         RULE_BLOCK: 'עבר על חוקים',
         RULE_HAS_ALERTS_OR_REQUESTS: 'לחוק קיימים התראות/בקשות. ניתן רק להשבית אותו',
         FILES_TOO_BIG: 'סך גודל הקבצים גדול מדי',
+        MORE_THEN_ONE_RELATIONSHIP_INSTANCE_EXIST: 'לחלק מהישויות קיים יותר ממופע קשר אחד',
     },
     tourText: {
         sideBar: 'סרגל הניווט הראשי של המערכת למעבר בין עולמות התוכן והעמודים השונים',

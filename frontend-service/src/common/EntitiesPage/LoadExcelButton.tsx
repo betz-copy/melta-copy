@@ -1,6 +1,6 @@
 import i18next from 'i18next';
 import React, { CSSProperties, useState } from 'react';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material';
 import { EntityWizardValues } from '../dialogs/entity';
 import { TableButton } from '../TableButton';
 import { LoadEntitiesWizard } from '../wizards/loadEntities';

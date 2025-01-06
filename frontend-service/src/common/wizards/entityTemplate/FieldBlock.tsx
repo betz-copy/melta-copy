@@ -72,7 +72,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
     supportEditEnum,
     supportUnique,
     supportArchive,
-    supportAddFieldButton,
+    supportAddFieldButton = true,
     hasActions,
     draggable = { isDraggable: false },
     initialFieldCardDataOnAdd = {
@@ -289,7 +289,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
                 body={`${i18next.t('systemManagement.warningOnDeleteField')}
                     ${selectedIndexToRemove > -1 && displayValuesRef.current[selectedIndexToRemove].title}
                     ${i18next.t('systemManagement.continueWarningOnDeleteField')} ${
-                    (initialValues as unknown as IMongoEntityTemplatePopulated).displayName
+                    (initialValues as unknown as IMongoEntityTemplatePopulated)?.displayName
                 }`}
                 onYes={onDeleteSure}
             />
