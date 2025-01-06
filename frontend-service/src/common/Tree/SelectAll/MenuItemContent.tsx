@@ -2,9 +2,9 @@
 import { ListItemText, Typography, Grid, useTheme } from '@mui/material';
 import React from 'react';
 import { Hive as HiveIcon, Menu } from '@mui/icons-material';
-import { CustomIcon } from '../CustomIcon';
-import { MeltaCheckbox } from '../MeltaCheckbox';
-import { MeltaTooltip } from '../MeltaTooltip';
+import { CustomIcon } from '../../CustomIcon';
+import { MeltaCheckbox } from '../../MeltaCheckbox';
+import { MeltaTooltip } from '../../MeltaTooltip';
 
 export type MenuItemContentProps<Option = any> = {
     checked?: boolean;
