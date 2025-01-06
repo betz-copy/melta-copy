@@ -9,7 +9,7 @@ export const filterFieldsFromPropertiesSchema = (
         ...schema,
         properties: pickBy(
             schema?.properties,
-            (value) => value.format !== 'fileId' && value.format !== 'entityReference' && value.items?.format !== 'fileId',
+            (value) => value.format !== 'fileId' && value.format !== 'entityReference' && value.items?.format !== 'fileId' && !value.archive,
         ),
         required:
             schema?.required?.filter(

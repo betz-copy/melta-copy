@@ -21,6 +21,7 @@ export interface IUniqueConstraint {
     templateId: string;
     uniqueGroupName: string;
     properties: string[];
+    values?: Record<string, any>;
 }
 
 export interface IRequiredConstraint {
@@ -28,6 +29,7 @@ export interface IRequiredConstraint {
     constraintName: string;
     templateId: string;
     property: string;
+    index?: number;
 }
 
 export type IConstraint = IRequiredConstraint | IUniqueConstraint;
@@ -85,6 +87,7 @@ export interface ISearchEntitiesOfTemplateBody {
     filter?: ISearchFilter;
     showRelationships: boolean | Array<IMongoRelationshipTemplate['_id']>;
     sort: ISearchSort;
+    entityIdsToInclude?: string[];
 }
 
 export interface ISearchEntitiesByTemplatesBody {
@@ -97,6 +100,7 @@ export interface ISearchBatchBody {
     skip: number;
     limit: number;
     textSearch?: string;
+    entityIdsToInclude?: string[];
     templates: {
         [templateId: string]: {
             filter?: ISearchFilter;

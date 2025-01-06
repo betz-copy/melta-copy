@@ -42,6 +42,11 @@ export class RuleBreachService extends DefaultExternalServiceApi {
         return data;
     }
 
+    async updateManyRuleBreachRequestsStatusesByRelatedEntityId(entityId: string, status: RuleBreachRequestStatus): Promise<IRuleBreachRequest[]> {
+        const { data } = await this.api.put<IRuleBreachRequest[]>(`/requests/many/status/${entityId}`, { status });
+        return data;
+    }
+
     async getRuleBreachRequestById(ruleBreachRequestId: string): Promise<IRuleBreachRequest> {
         const { data } = await this.api.get<IRuleBreachRequest>(`/requests/${ruleBreachRequestId}`);
         return data;

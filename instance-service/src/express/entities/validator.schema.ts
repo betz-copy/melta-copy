@@ -62,6 +62,18 @@ export const getIfValuefieldIsUsedRequestSchema = Joi.object({
 });
 
 /**
+ * POST /api/instances/entities/rules/dependant
+ */
+export const getDependentRulesRequestSchema = Joi.object({
+    body: {
+        rules: Joi.array().required(),
+        relationshipTemplateId: Joi.string().required(),
+    },
+    params: {},
+    query: {},
+});
+
+/**
  * DELETE /api/instances/entities/:id?deleteAllRelationships=true
  */
 export const deleteEntityByIdRequestSchema = Joi.object({
@@ -152,7 +164,7 @@ export const getExpandedGraphByIdRequestSchema = Joi.object({
     },
 });
 
-const seachByTemplateSchema = {
+const searchByTemplateSchema = {
     skip: Joi.number().integer().min(0).default(0),
     limit: Joi.number().integer().min(1).max(searchEntitiesMaxLimit).required(),
     textSearch: Joi.string().allow(''),
@@ -174,7 +186,8 @@ const seachByTemplateSchema = {
  */
 export const searchEntitiesOfTemplateRequestSchema = Joi.object({
     body: {
-        ...seachByTemplateSchema,
+        ...searchByTemplateSchema,
+        entityIdsToInclude: Joi.array().items(Joi.string()),
     },
     query: {},
     params: {
@@ -188,12 +201,25 @@ export const searchEntitiesOfTemplateRequestSchema = Joi.object({
 export const searchEntitiesByTemplatesSchema = Joi.object({
     body: {
         searchConfigs: Joi.object().pattern(Joi.string(), {
-            ...seachByTemplateSchema,
+            ...searchByTemplateSchema,
         }),
     },
     query: {},
     params: {},
 });
+
+const semanticSearchResult = Joi.object().pattern(
+    Joi.string(),
+    Joi.object().pattern(
+        Joi.string(),
+        Joi.array().items(
+            Joi.object({
+                minioFileId: Joi.string(),
+                text: Joi.string(),
+            }),
+        ),
+    ),
+);
 
 /*
  * POST /api/instances/entities/count
@@ -202,6 +228,7 @@ export const countEntitiesOfTemplatesRequestSchema = Joi.object({
     body: {
         templateIds: Joi.array().items(Joi.string()).required(),
         textSearch: Joi.string().allow(''),
+        semanticSearchResult,
     },
     query: {},
     params: {},
@@ -215,6 +242,7 @@ export const searchEntitiesBatchRequestSchema = Joi.object({
         skip: Joi.number().integer().min(0).default(0),
         limit: Joi.number().integer().min(1).max(searchEntitiesMaxLimit).required(),
         textSearch: Joi.string().allow(''),
+        entityIdsToInclude: Joi.array().items(Joi.string()),
         templates: Joi.object().pattern(Joi.string(), {
             filter: searchFilterSchema,
             showRelationships: Joi.alternatives(Joi.boolean(), Joi.array().items(Joi.string())).default(false),
@@ -257,11 +285,33 @@ export const updateEntityByIdRequestSchema = Joi.object({
         templateId: Joi.string().required(),
         ignoredRules: Joi.array().items(brokenRuleSchema).default([]),
         userId: Joi.string().required(),
+        convertToRelationshipField: Joi.boolean().default(false),
     },
     query: {},
     params: {
         id: Joi.string().required(),
     },
+});
+
+const relationshipsSchema = Joi.object({
+    templateId: Joi.string(),
+    properties: Joi.object(),
+    sourceEntityId: Joi.string(),
+    destinationEntityId: Joi.string(),
+});
+
+/**
+ * PATCH /api/instances/entities/convertToRelationshipField
+ */
+export const convertToRelationshipFieldRequestSchema = Joi.object({
+    body: {
+        existingRelationships: Joi.array().items(relationshipsSchema).required(),
+        addFieldToSrcEntity: Joi.boolean().required(),
+        fieldName: Joi.string().required(),
+        userId: Joi.string().required(),
+    },
+    query: {},
+    params: {},
 });
 
 export const getConstraintsOfTemplateRequestSchema = Joi.object({

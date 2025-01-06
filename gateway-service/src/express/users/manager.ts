@@ -1,6 +1,9 @@
 /* eslint-disable no-param-reassign */
+import { menash } from 'menashmq';
+import config from '../../config';
 import { Kartoffel } from '../../externalServices/kartoffel';
 import { IKartoffelUser, IKartoffelUserDigitalIdentity } from '../../externalServices/kartoffel/interface';
+import { StorageService } from '../../externalServices/storageService';
 import { UserService } from '../../externalServices/userService';
 import {
     ICompactNullablePermissions,
@@ -9,13 +12,40 @@ import {
     ISubCompactPermissions,
 } from '../../externalServices/userService/interfaces/permissions/permissions';
 import { IBaseUser, IExternalUser, IUser, IUserSearchBody } from '../../externalServices/userService/interfaces/users';
-import { objectContains } from '../../utils';
+import { isProfileFileType, objectContains } from '../../utils';
+import { removeTmpFile } from '../../utils/fs';
 import { RecursiveNullable } from '../../utils/types';
 import { DigitalIdentitySourceDoesNotExistsError, KartoffelUserMissingDataError } from './error';
+import { BadRequestError } from '../error';
 
+const {
+    storageService: { usersGlobalBucketName },
+    rabbit,
+} = config;
 export class UsersManager {
+    private static storageService = new StorageService(usersGlobalBucketName);
+
     static async getUserById(userId: string, workspaceIds?: string[]): Promise<IUser> {
         return UserService.getUserById(userId, workspaceIds);
+    }
+
+    static async getKartoffelUserProfileRequest(kartoffelId: string) {
+        return Kartoffel.getUserProfile(kartoffelId);
+    }
+
+    static async getUserProfile(userId: string) {
+        const user: IUser = await UserService.getUserById(userId);
+        const { profilePath } = user.preferences;
+
+        if (!profilePath) return null;
+
+        if (profilePath === 'kartoffelProfile') {
+            return this.getKartoffelUserProfileRequest(user.externalMetadata.kartoffelId).catch((error) => {
+                throw new BadRequestError('kartoffel profile not found', { error });
+            });
+        }
+
+        return this.storageService.downloadProfileFile(profilePath);
     }
 
     static async searchUserIds(searchBody: IUserSearchBody): Promise<string[]> {
@@ -46,7 +76,7 @@ export class UsersManager {
             return { ...existingUser, permissions: { ...existingUser.permissions, ...newPermissions } };
         }
 
-        const { _id, displayName, existingDigitalIdentitySource, ...digitalIdentity } = await this.getExternalUserDigitalIdentity(
+        const { _id, displayName, existingDigitalIdentitySource, preferences, ...digitalIdentity } = await this.getExternalUserDigitalIdentity(
             kartoffelId,
             digitalIdentitySource,
         );
@@ -57,12 +87,40 @@ export class UsersManager {
             ...(digitalIdentity as IUser),
             permissions,
             externalMetadata: { kartoffelId, digitalIdentitySource },
-            preferences: {},
+            preferences,
         });
     }
 
     static async updateUserExternalMetadata(userId: string, externalMetadata: Partial<IBaseUser['externalMetadata']>): Promise<IUser> {
         return UserService.updateUser(userId, { externalMetadata });
+    }
+
+    static async updateUserPreferencesMetadata(userId: string, preferences: Partial<IBaseUser['preferences']>, file?: Express.Multer.File) {
+        const user = await UserService.getUserById(userId);
+        const { profilePath: currentProfilePath } = user.preferences || {};
+        const updates: Partial<IBaseUser['preferences']> = { ...preferences };
+
+        const deleteCurrentProfileFile = async () => {
+            if (currentProfilePath && isProfileFileType(currentProfilePath)) {
+                await menash.send(
+                    rabbit.deleteUnusedFilesQueue,
+                    JSON.stringify({
+                        fileIds: [currentProfilePath],
+                        bucketName: config.storageService.usersGlobalBucketName,
+                    }),
+                );
+            }
+        };
+        if (file) {
+            await deleteCurrentProfileFile();
+            const newProfilePath = await this.storageService.uploadFile(file);
+            await removeTmpFile(file.path);
+            updates.profilePath = newProfilePath;
+        } else if (currentProfilePath && (!preferences.profilePath || preferences.profilePath !== currentProfilePath)) {
+            await deleteCurrentProfileFile();
+            updates.profilePath = preferences.profilePath;
+        }
+        return UserService.updateUser(userId, { preferences: updates });
     }
 
     static async syncUserPermissions(userId: string, permissions: ICompactNullablePermissions): Promise<ICompactPermissions> {
@@ -79,13 +137,10 @@ export class UsersManager {
     static async syncUser(userId: string): Promise<IUser> {
         const user = await UserService.getUserById(userId);
 
-        const { _id, displayName, permissions, existingDigitalIdentitySource, ...digitalIdentity } = await this.getExternalUserDigitalIdentity(
-            user.externalMetadata.kartoffelId,
-            user.externalMetadata.digitalIdentitySource,
-        );
+        const { _id, displayName, permissions, preferences, existingDigitalIdentitySource, ...digitalIdentity } =
+            await this.getExternalUserDigitalIdentity(user.externalMetadata.kartoffelId, user.externalMetadata.digitalIdentitySource);
 
         UsersManager.validateDigitalIdentity(user.externalMetadata.kartoffelId, digitalIdentity);
-
         if (objectContains(user, digitalIdentity)) return user;
 
         return UserService.updateUser(userId, digitalIdentity);
@@ -133,7 +188,6 @@ export class UsersManager {
         const mail = digitalIdentity.mail || kartoffelUser.mail;
 
         const kartoffelId = kartoffelUser._id || kartoffelUser.id;
-
         if (!digitalIdentity.source || !kartoffelId) throw new KartoffelUserMissingDataError(kartoffelUser._id);
 
         const existingUser = await UserService.getUserByExternalId(kartoffelId).catch(() => ({}) as IUser);
@@ -149,9 +203,13 @@ export class UsersManager {
                 kartoffelId,
                 digitalIdentitySource: digitalIdentity.source,
             },
-            preferences: {},
+            preferences: existingUser.preferences,
             permissions: existingUser.permissions || {},
             existingDigitalIdentitySource: existingUser.externalMetadata?.digitalIdentitySource,
         };
+    }
+
+    static async searchUsersByPermissions(workspaceId: string): Promise<IUser[]> {
+        return UserService.searchUsersByPermissions(workspaceId);
     }
 }

@@ -20,6 +20,7 @@ export const config = {
         accessKey: env.get('MINIO_ACCESS_KEY').default('minioadmin').asString(),
         secretKey: env.get('MINIO_SECRET_KEY').default('minioadmin').asString(),
         bucketName: env.get('MINIO_BUCKET_NAME').default('bucket').asString(),
+        usersGlobalBucketName: env.get('MINIO_USERS_BUCKET_NAME').default('users-global-bucket').asString(),
         useSSL: false,
         transportAgent: {
             timeout: env.get('TRANSPORT_AGENT_TIMEOUT').default(60000).asIntPositive(),
@@ -27,6 +28,8 @@ export const config = {
             keepAlive: env.get('TRANSPORT_AGENT_KEEP_ALIVE').default(1).asBool(),
             keepAliveMsecs: env.get('TRANSPORT_AGENT_KEEP_ALIVE_MSECS').default(1000).asIntPositive(),
         },
+        useDevBucket: env.get('USE_DEV_BUCKETS').default('false').asBool(),
+        devBucketPrefix: env.get('DEV_BUCKET_PREFIX').default('dev-').asString(),
     },
     logs: {
         format: env.get('LOGGING_DATE_FORMAT').default('YYYY-MM-DD HH:mm:ss').asString(),

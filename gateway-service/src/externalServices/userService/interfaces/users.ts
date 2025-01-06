@@ -1,3 +1,4 @@
+import { NotificationType } from '../../notificationService/interfaces';
 import { ICompactPermissions, ISubCompactPermissions } from './permissions/permissions';
 
 export interface IBaseUser {
@@ -8,6 +9,8 @@ export interface IBaseUser {
     mail: string;
     preferences: {
         darkMode?: boolean;
+        mailsNotificationsTypes?: NotificationType[];
+        profilePath?: string;
     };
     externalMetadata: {
         kartoffelId: string;
@@ -25,6 +28,8 @@ export interface IUserSearchBody {
     workspaceIds?: string[];
     limit: number;
     step?: number;
+    filterModel?: Record<string, object>;
+    sortModel?: object[];
 }
 
 export type IExternalUser = Omit<IUser, 'fullName' | 'jobTitle' | 'hierarchy' | 'mail'> &

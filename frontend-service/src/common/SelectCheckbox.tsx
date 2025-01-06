@@ -46,8 +46,8 @@ export const MenuItemContent: React.FC<MenuItemContentProps> = ({
     isDraggable,
     group,
     insideGroup,
-    option,
     showIcon,
+    option,
 }) => {
     const theme = useTheme();
 
@@ -78,6 +78,7 @@ export const MenuItemContent: React.FC<MenuItemContentProps> = ({
             ) : (
                 <MeltaCheckbox checked={checked} indeterminate={indeterminate} />
             )}
+
             <ListItemText
                 primary={
                     <MeltaTooltip title={label}>
@@ -89,7 +90,6 @@ export const MenuItemContent: React.FC<MenuItemContentProps> = ({
                                 lineHeight: '17px',
                                 letterSpacing: '0em',
                                 textAlign: 'right',
-                                color: '#101440',
                                 width: '120px',
                                 height: '17px',
                                 marginRight: '10px',
@@ -128,6 +128,7 @@ export type SelectCheckboxProps<Option extends any, Group extends any = any> = P
     size?: 'small' | 'medium';
     overrideSx?: object;
     toTopBar?: boolean;
+    toUserProfile?: boolean;
     horizontalOrigin?: number;
     handleCheckboxClick?: (value: boolean) => void;
     onDragEnd?: (result: DropResult) => void;
@@ -509,7 +510,6 @@ export const ChooseAllMenuItem = <Option extends any, Group extends any>({
                 indeterminate={selectedOptionsFiltered.length < optionsFiltered.length && selectedOptionsFiltered.length > 0}
                 label={i18next.t('selectChooseAll')}
                 order={0}
-                showIcon={false}
             />
         </MenuItem>
     );
@@ -529,6 +529,7 @@ const SelectCheckbox = <Option extends any, Group extends any>({
     size = 'medium',
     overrideSx,
     toTopBar,
+    toUserProfile = false,
     horizontalOrigin = 154,
     handleCheckboxClick = () => {},
     onDragEnd,
@@ -622,7 +623,7 @@ const SelectCheckbox = <Option extends any, Group extends any>({
                     fontFamily: 'Rubik',
                     fontSize: '14px',
                     fontWeight: 400,
-                    boxShadow: '-2px 2px 6px 0px #1E277540',
+                    boxShadow: toUserProfile ? '0px 3px 10px rgba(0,0,0,0.2)' : 'none',
                     borderRadius: '8px',
                     ...(darkMode
                         ? { color: theme.palette.primary.main, '& .MuiOutlinedInput-notchedOutline': { borderColor: '#d2d3e3' } }
@@ -638,7 +639,7 @@ const SelectCheckbox = <Option extends any, Group extends any>({
             >
                 {!isSelectDisabled && !hideSearchBar && <MiniFilter value={miniFilterValue} onChange={setMiniFilterValue} toTopBar={toTopBar} />}
                 {!isSelectDisabled && !hideChooseAll ? (
-                    <>
+                    <Box>
                         <ChooseAllMenuItem
                             options={options}
                             selectedOptionsFiltered={selectedOptionsFiltered}
@@ -648,7 +649,7 @@ const SelectCheckbox = <Option extends any, Group extends any>({
                         <Box sx={{ display: 'flex', justifyContent: 'center', my: '5px' }}>
                             <Divider style={{ width: '199px' }} />
                         </Box>
-                    </>
+                    </Box>
                 ) : (
                     <Typography color={theme.palette.primary.main} fontFamily="Rubik" fontWeight={400} marginX="16px" marginY="8px">
                         {title}

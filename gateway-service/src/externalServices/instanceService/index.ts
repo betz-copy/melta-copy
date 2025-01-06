@@ -1,9 +1,20 @@
 import config from '../../config';
+import { IMongoRule } from '../../express/templates/rules/interfaces';
 import DefaultExternalServiceApi from '../../utils/express/externalService';
 import { IAction, IBrokenRule } from '../ruleBreachService/interfaces';
+import {
+    IConstraintsOfTemplate,
+    ICountSearchResult,
+    IEntity,
+    ISearchBatchBody,
+    ISearchEntitiesOfTemplateBody,
+    ISearchResult,
+    ITemplateSearchBody,
+    IUniqueConstraintOfTemplate,
+} from './interfaces/entities';
 import { IEntitySingleProperty } from '../templates/entityTemplateService';
-import { IConstraintsOfTemplate, IEntity, ISearchEntitiesOfTemplateBody, ISearchResult, IUniqueConstraintOfTemplate } from './interfaces/entities';
 import { IRelationship } from './interfaces/relationships';
+import { ISemanticSearchResult } from '../semanticSearch/interface';
 
 const {
     instanceService: {
@@ -60,10 +71,22 @@ export class InstancesService extends DefaultExternalServiceApi {
         return data;
     }
 
-    async updateEntityInstance(id: string, entity: IEntity, ignoredRules: IBrokenRule[], userId: string) {
+    async updateEntityInstance(id: string, entity: IEntity, ignoredRules: IBrokenRule[], userId: string, convertToRelationshipField = false) {
         const { data } = await this.api.put<{ updatedEntity: IEntity; actions?: IAction[] }>(`${baseEntitiesRoute}/${id}`, {
             ...entity,
             ignoredRules,
+            userId,
+            convertToRelationshipField,
+        });
+
+        return data;
+    }
+
+    async convertToRelationshipField(existingRelationships: IRelationship[], addFieldToSrcEntity: boolean, fieldName: string, userId: string) {
+        const { data } = await this.api.patch<{}>(`${baseEntitiesRoute}/convertToRelationshipField/`, {
+            existingRelationships,
+            addFieldToSrcEntity,
+            fieldName,
             userId,
         });
 
@@ -82,8 +105,20 @@ export class InstancesService extends DefaultExternalServiceApi {
         return data;
     }
 
-    async searchEntitiesOfTemplateRequest(templateId: string, searchBody: ISearchEntitiesOfTemplateBody) {
+    async searchEntitiesOfTemplateRequest(templateId: string, searchBody: ISearchEntitiesOfTemplateBody & { entityIdsToInclude?: string[] }) {
         const { data } = await this.api.post<ISearchResult>(`${baseEntitiesRoute}${searchOfTemplateRoute}/${templateId}`, searchBody);
+
+        return data;
+    }
+
+    async searchEntitiesBatch(searchBody: ISearchBatchBody & { entityIdsToInclude?: string[] }) {
+        const { data } = await this.api.post<ISearchResult>(`${baseEntitiesRoute}/search/batch`, searchBody);
+
+        return data;
+    }
+
+    async getEntitiesCountByTemplates(searchBody: ITemplateSearchBody & { semanticSearchResult?: ISemanticSearchResult }) {
+        const { data } = await this.api.post<ICountSearchResult[]>(`${baseEntitiesRoute}/count`, searchBody);
 
         return data;
     }
@@ -114,6 +149,11 @@ export class InstancesService extends DefaultExternalServiceApi {
     async getRelationshipsCountByTemplateId(templateId: string) {
         const { data } = await this.api.get<number>(`${baseRelationshipsRoute}/count`, { params: { templateId } });
 
+        return data;
+    }
+
+    async getRelationshipsByEntitiesAndTemplate(query: { sourceEntityId: string; destinationEntityId: string; templateId: string }) {
+        const { data } = await this.api.get<IRelationship[]>(`${baseRelationshipsRoute}`, { params: query });
         return data;
     }
 
@@ -159,6 +199,14 @@ export class InstancesService extends DefaultExternalServiceApi {
             currentTemplateProperties,
         });
 
+        return data;
+    }
+
+    async getDependantRules(rules: IMongoRule[], relationshipTemplateId: string): Promise<IMongoRule[]> {
+        const { data } = await this.api.post<IMongoRule[]>(`${baseEntitiesRoute}/rules/dependant`, {
+            rules,
+            relationshipTemplateId,
+        });
         return data;
     }
 

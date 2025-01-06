@@ -1,3 +1,6 @@
+import { AdvancedFilterModel, FilterModel, SortModelItem } from '@ag-grid-community/core';
+import fileDetails from './fileDetails';
+import { NotificationType } from './notifications';
 import { ICompactPermissions, ISubCompactPermissions } from './permissions/permissions';
 
 export interface IBaseUser {
@@ -8,6 +11,8 @@ export interface IBaseUser {
     mail: string;
     preferences: {
         darkMode?: boolean;
+        mailsNotificationsTypes?: NotificationType[];
+        profilePath?: string;
     };
     externalMetadata: {
         kartoffelId: string;
@@ -19,13 +24,25 @@ export interface IUser extends IBaseUser {
     displayName: string; // custom displayName, not of kartoffel: `${fullName} - ${hierarchy}/${jobTitle}`
 }
 
+export interface IMongoUser extends IUser {
+    createdAt: Date;
+    updatedAt: Date;
+}
+
 export interface IUserSearchBody {
-    search?: string;
     permissions?: ISubCompactPermissions;
     workspaceIds?: string[];
     limit: number;
     step?: number;
+    search?: string;
+    filterModel?: AdvancedFilterModel | FilterModel | null;
+    sortModel?: SortModelItem[];
 }
+
+export type IUserPreferences = Pick<IBaseUser, 'preferences'>['preferences'] & {
+    icon?: fileDetails;
+    kartoffelProfile?: boolean;
+};
 
 export type IExternalUser = Omit<IUser, 'fullName' | 'jobTitle' | 'hierarchy' | 'mail'> &
     Partial<Pick<IUser, 'fullName' | 'jobTitle' | 'hierarchy' | 'mail'>>;

@@ -71,6 +71,26 @@ services:
     networks:
       - network
 
+  mysql:
+    image: mysql
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=matomo
+      - MYSQL_DATABASE=analytics
+      - MYSQL_USER=matomo
+      - MYSQL_PASSWORD=matomo
+
+  matomo:
+    image: matomo
+    restart: always
+    environment:
+      - MATOMO_DATABASE_HOST=mysql
+      - MATOMO_DATABASE_USERNAME=matomo
+      - MATOMO_DATABASE_PASSWORD=matomo
+      - MATOMO_DATABASE_DBNAME=analytics
+    ports:
+      - 8016:80
+
   # ELK
   elastic:
     image: elasticsearch:8.13.0
@@ -308,6 +328,23 @@ services:
     restart: always
     volumes:
       - logs:/usr/src/app/logs
+    networks:
+      - network
+
+  semantic-service:
+    ports:
+      - 8014:8000
+    restart: always
+    volumes:
+      - logs:/usr/src/app/logs
+      - ../neo4j-graph-rag/src:/app/src
+    networks:
+      - network
+
+  mock-model-api:
+    ports:
+      - 8015:8000
+    restart: always
     networks:
       - network
 
