@@ -1,0 +1,85 @@
+import { Typography } from '@mui/material';
+import {
+    TreeItem2Props,
+    useTreeItem2,
+    TreeItem2Root,
+    TreeItem2Content,
+    TreeItem2IconContainer,
+    TreeItem2Icon,
+    TreeItem2DragAndDropOverlay,
+    TreeItem2GroupTransition,
+    TreeItem2Provider,
+} from '@mui/x-tree-view-pro';
+import React from 'react';
+import { Menu } from '@mui/icons-material';
+import { MeltaCheckbox } from '../MeltaCheckbox';
+import { MeltaTooltip } from '../MeltaTooltip';
+
+const LabelWithToolTip = ({ children, className }) => (
+    <div className={className}>
+        <MeltaTooltip title={children}>
+            <Typography>{children}</Typography>
+        </MeltaTooltip>
+    </div>
+);
+
+const TreeItem = React.forwardRef(function CustomTreeItem(props: TreeItem2Props, ref: React.Ref<HTMLLIElement>) {
+    const { id, itemId, label, disabled, children, ...other } = props;
+
+    const {
+        getRootProps,
+        getContentProps,
+        getIconContainerProps,
+        getCheckboxProps,
+        getLabelProps,
+        getGroupTransitionProps,
+        getDragAndDropOverlayProps,
+        status,
+    } = useTreeItem2({ id, itemId, children, label, disabled, rootRef: ref });
+
+    const { draggable, onDragStart, onDragOver, onDragEnd, ...otherRootProps }: ReturnType<typeof getRootProps> = getRootProps(other);
+    const itemDepth = otherRootProps.style?.['--TreeView-itemDepth'];
+
+    const handleDragStart = (event: React.DragEvent) => {
+        if (!onDragStart) {
+            return;
+        }
+
+        onDragStart(event);
+        event.dataTransfer.setDragImage((event.target as HTMLElement).parentElement!, 0, 0);
+    };
+
+    return (
+        // To fix this error probably requires to upgrade to react 18.
+        // @ts-ignore
+        <TreeItem2Provider {...props} ref={ref} itemId={itemId}>
+            <TreeItem2Root
+                {...otherRootProps}
+                sx={{
+                    '& .MuiButtonBase-root': {
+                        padding: '3px 8px',
+                    },
+                }}
+            >
+                <TreeItem2Content {...getContentProps()} style={{ backgroundColor: 'transparent' }}>
+                    {(status.expandable || itemDepth !== 0) && (
+                        <TreeItem2IconContainer {...getIconContainerProps()}>
+                            <TreeItem2Icon status={status} />
+                        </TreeItem2IconContainer>
+                    )}
+                    {draggable && (
+                        <TreeItem2IconContainer draggable onDragStart={handleDragStart} onDragOver={onDragOver} onDragEnd={onDragEnd}>
+                            <Menu />
+                        </TreeItem2IconContainer>
+                    )}
+                    <MeltaCheckbox {...getCheckboxProps()} />
+                    <LabelWithToolTip {...getLabelProps()} />
+                    <TreeItem2DragAndDropOverlay {...getDragAndDropOverlayProps()} />
+                </TreeItem2Content>
+                {children && <TreeItem2GroupTransition {...getGroupTransitionProps()} />}
+            </TreeItem2Root>
+        </TreeItem2Provider>
+    );
+});
+
+export default TreeItem;
