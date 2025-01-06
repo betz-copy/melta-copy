@@ -1,9 +1,9 @@
 import config from '../../config';
 import { InstancesService } from '../../externalServices/instanceService';
 import { IFilterOfTemplate, ISearchEntitiesOfTemplateBody } from '../../externalServices/instanceService/interfaces/entities';
-import { EntityTemplateService, ISearchEntityTemplatesBody } from '../../externalServices/templates/entityTemplateService';
+import { EntityTemplateService, IEntitySingleProperty, ISearchEntityTemplatesBody } from '../../externalServices/templates/entityTemplateService';
 import DefaultManagerProxy from '../../utils/express/manager';
-import { FlowField, FlowParameter, TemplateNamesAndId } from './interfaces';
+import { FlowProperties, TemplateNamesAndId } from './interfaces';
 
 export class FlowCubeManager extends DefaultManagerProxy<null> {
     private instancesService: InstancesService;
@@ -73,30 +73,44 @@ export class FlowCubeManager extends DefaultManagerProxy<null> {
         });
     }
 
-    async getEntityTemplateById(templateId: string[]): Promise<{ Parameters: FlowParameter[]; Fields: FlowField[] }> {
+    async getEntityTemplateById(templateId: string[]): Promise<{ parameters: FlowProperties[]; fields: FlowProperties[] }> {
         const template = await this.entityTemplateService.getEntityTemplateById(templateId[0]);
         const { properties } = template;
 
-        const parameters: FlowParameter[] = Object.entries(properties.properties).map(([key, value]) => ({
+        const parametersAndFields: FlowProperties[] = Object.entries(properties.properties).map(([key, value]) => ({
             Name: key,
-            $name: value.type as string,
-            ColumnName: key,
-            isRequired: false,
-            DisplayName: value.title,
-            Description: value.title,
-            IsSingleValue: !!value.uniqueItems,
-            Options: [] as Array<any>,
-            IsContains: false,
-        }));
-
-        const fields: FlowField[] = Object.entries(properties.properties).map(([key, value]) => ({
-            $name: key,
-            Name: key,
-            DisplayName: value.title,
             Type: value.type as string,
+            DisplayName: value.title,
+            OntologyType: this.getOntologyTypeByProperty(value),
+            IsSingleValue: !!value.uniqueItems,
+            Options: value.enum ? value.enum : undefined,
         }));
 
-        return { Parameters: parameters, Fields: fields };
+        return { parameters: parametersAndFields, fields: parametersAndFields };
+    }
+
+    getOntologyTypeByProperty(property: IEntitySingleProperty) {
+        let ontologyType = 'TEXT';
+
+        switch (property.type) {
+            case 'string':
+                if (property.format === 'date' || property.format === 'date-time') {
+                    ontologyType = 'TIME';
+                } else if (property.format === 'email') {
+                    ontologyType = 'EMAIL';
+                } else {
+                    ontologyType = 'TEXT';
+                }
+                break;
+            case 'number':
+                ontologyType = 'INTEGER';
+                break;
+            default:
+                ontologyType = 'TEXT';
+                break;
+        }
+
+        return ontologyType;
     }
 
     // async getEntitiesByTemplate(templateId: string): Promise<any>
