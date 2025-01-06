@@ -17,7 +17,7 @@ const RjfsUserArrayWidget = ({ label, value, onChange, rawErrors = [], onBlur, o
             <Grid marginBottom={2}>
                 <UserAutocomplete
                     mode="external"
-                    value={undefined}
+                    value={null}
                     label={label}
                     onChange={(_e, chosenUser, reason) => {
                         if (reason !== 'selectOption' || !chosenUser) return;

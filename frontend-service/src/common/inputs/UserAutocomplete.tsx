@@ -11,7 +11,7 @@ import { MeltaTooltip } from '../MeltaTooltip';
 
 interface IUserAutocomplete<TMode = 'internal' | 'external'> {
     mode: TMode;
-    value?: IUser | undefined;
+    value: IUser | null;
     displayValue?: string;
     onChange: AutocompleteProps<IUser, undefined, undefined, undefined>['onChange'];
     onDisplayValueChange?: AutocompleteProps<IUser, undefined, undefined, undefined>['onInputChange'];
