@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { RichTreeViewPro, TreeViewBaseItem } from '@mui/x-tree-view-pro';
 import { ChevronLeft, ExpandLess } from '@mui/icons-material';
-import { Box, Divider } from '@mui/material';
 import { flattenTree, useTreeUtils } from '../../utils/hooks/useTreeUtils';
 import { SelectAll } from './SelectAll';
 import TreeItem from './TreeItem';

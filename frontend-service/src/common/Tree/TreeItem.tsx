@@ -10,7 +10,6 @@ import {
     TreeItem2GroupTransition,
     TreeItem2Provider,
     TreeViewCancellableEventHandler,
-    UseTreeItem2IconContainerSlotOwnProps,
 } from '@mui/x-tree-view-pro';
 import React from 'react';
 import { Menu } from '@mui/icons-material';
@@ -80,7 +79,12 @@ const TreeItem = React.forwardRef(function CustomTreeItem(props: TreeItem2Props,
                 }}
             >
                 {itemDepth === 0 && DivideMenuItems}
-                <TreeItem2Content {...getContentProps()} style={{ backgroundColor: 'transparent' }}>
+                <TreeItem2Content
+                    {...getContentProps()}
+                    sx={{
+                        backgroundColor: status.selected ? 'transparent' : undefined,
+                    }}
+                >
                     {(status.expandable || itemDepth !== 0) && (
                         <TreeItem2IconContainer {...getIconContainerProps()}>
                             <TreeItem2Icon status={status} />
