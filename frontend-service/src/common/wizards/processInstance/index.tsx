@@ -82,7 +82,10 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({
     const [isStepEditMode, setIsStepEditMode] = useState(false);
 
     const detailsFormikData = useProcessDetailsFormik(processInstance, processTemplatesMap, mutateAsync);
-    const [activeStep, setActiveStep] = React.useState(stepTemplate ? 1 : 0);
+
+    const [activeStep, setActiveStep] = React.useState(
+        stepTemplate ? processTemplate.steps.findIndex((step) => step._id === stepTemplate._id) + 1 : 0,
+    );
     const [contentDisplay, setContentDisplay] = React.useState<'SUMMARY' | 'REVIEWERS'>('SUMMARY');
 
     console.log({ activeStep });
