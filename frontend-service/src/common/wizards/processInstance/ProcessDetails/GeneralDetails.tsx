@@ -14,23 +14,17 @@ import { TemplateFields } from './TemplateFields';
 
 const GeneralDetails: React.FC<IDetailsStepProp> = ({
     detailsFormikData,
-    onNext,
     processInstance,
     toPrint,
     setContentDisplay = () => {},
     contentDisplay = 'SUMMARY',
 }) => {
-    const { values, touched, errors, setFieldValue, setFieldTouched, handleBlur, resetForm, submitForm, dirty } = detailsFormikData;
+    const { values, touched, errors, setFieldValue, setFieldTouched, handleBlur, resetForm } = detailsFormikData;
     const queryClient = useQueryClient();
     const processTemplatesMap = queryClient.getQueryData<IProcessTemplateMap>('getProcessTemplates')!;
     const [previousTemplate, setPreviousTemplate] = useState<IMongoProcessTemplatePopulated>();
 
-    const [isEditMode, setIsEditMode] = useState<boolean>(false);
-    const [viewMode, setViewMode] = useState<boolean>(Boolean(processInstance && !isEditMode));
-
-    console.log({ isEditMode, viewMode });
-    // const viewMode = Boolean(processInstance && !isEditMode);
-    const variant = viewMode ? 'standard' : 'outlined';
+    const variant = processInstance ? 'standard' : 'outlined';
     const templateFileProperties = values.template
         ? pickBy(
               values.template.details.properties.properties,
@@ -71,14 +65,14 @@ const GeneralDetails: React.FC<IDetailsStepProp> = ({
                 <Grid container direction="column" height="100%" justifyContent="space-between">
                     <FormikProvider value={detailsFormikData}>
                         <Grid item height="90%">
-                            <Grid item height={isEditMode ? '40%' : '20%'}>
+                            <Grid item height="20%">
                                 <GeneralDetailsFields
                                     processTemplatesMap={processTemplatesMap}
                                     setFieldValue={setFieldValue}
                                     values={values}
-                                    isEditMode={isEditMode}
+                                    isEditMode={false}
                                     processInstance={processInstance}
-                                    viewMode={viewMode}
+                                    viewMode={!!processInstance}
                                     variant={variant}
                                     touched={touched}
                                     errors={errors}
@@ -89,16 +83,12 @@ const GeneralDetails: React.FC<IDetailsStepProp> = ({
                             <Grid item>
                                 <Divider variant="fullWidth" style={{ marginTop: '25px' }} />
                             </Grid>
-                            <Grid item height={isEditMode ? '55%' : '80%'} style={{ overflowY: 'auto' }}>
+                            <Grid item height="80%" style={{ overflowY: 'auto' }}>
                                 {values.template && (
                                     <TemplateFields
                                         toPrint={toPrint}
                                         values={values}
-                                        viewMode={viewMode}
-                                        setEditMode={(val) => {
-                                            setIsEditMode(val);
-                                            setViewMode(Boolean(processInstance && !val));
-                                        }}
+                                        viewMode={!!processInstance}
                                         errors={errors}
                                         touched={touched}
                                         setFieldValue={setFieldValue}
@@ -106,111 +96,59 @@ const GeneralDetails: React.FC<IDetailsStepProp> = ({
                                         templateFileProperties={templateFileProperties}
                                         handleBlur={handleBlur}
                                         templateEntityReferenceProperties={templateEntityReferenceProperties}
-                                        onNext={onNext}
                                     />
                                 )}
                             </Grid>
                         </Grid>
                         <Grid item container height="5%">
                             <Grid item>
-                                {
-                                    // TODO - on click
-                                    values.template && viewMode && !toPrint && (
-                                        <Grid container gap="5px" width="100%" wrap="nowrap">
-                                            {/* <Grid item flexBasis="20%">
+                                {values.template && !!processInstance && !toPrint && (
+                                    <Grid container gap="5px" width="100%" wrap="nowrap">
+                                        {contentDisplay === 'SUMMARY' && (
+                                            <Grid item flexBasis="50%">
                                                 <Button
-                                                    onClick={() => {
-                                                        console.log('click edittt');
-                                                        setIsEditMode(true);
-                                                        setViewMode(false);
-                                                    }}
                                                     style={{
                                                         borderRadius: '7px',
                                                         border: 'solid 1px #1E2775',
-                                                        width: '35px',
+                                                        width: '140px',
                                                         height: '35px',
                                                         backgroundColor: '#EBEFFA',
                                                     }}
+                                                    onClick={() => setContentDisplay('REVIEWERS')}
                                                 >
-                                                    <Grid item alignSelf="center" width="35px" height="35px">
-                                                        <EditIcon sx={{ height: '100%' }} />
+                                                    <Grid container justifyContent="center" alignItems="center" gap="10px">
+                                                        <Grid item alignSelf="center" style={{ height: '100%' }}>
+                                                            <Groups2Icon sx={{ height: '100%', marginTop: '7px' }} />
+                                                        </Grid>
+                                                        <Grid item>
+                                                            <Typography fontSize="13px" fontWeight="400">
+                                                                {i18next.t('wizard.processInstance.showStepsReviewers')}
+                                                            </Typography>
+                                                        </Grid>
                                                     </Grid>
                                                 </Button>
-                                            </Grid> */}
-                                            {contentDisplay === 'SUMMARY' && (
-                                                <Grid item flexBasis="50%">
-                                                    <Button
-                                                        style={{
-                                                            borderRadius: '7px',
-                                                            border: 'solid 1px #1E2775',
-                                                            width: '140px',
-                                                            height: '35px',
-                                                            backgroundColor: '#EBEFFA',
-                                                        }}
-                                                        onClick={() => setContentDisplay('REVIEWERS')}
-                                                    >
-                                                        <Grid container justifyContent="center" alignItems="center" gap="10px">
-                                                            <Grid item alignSelf="center" style={{ height: '100%' }}>
-                                                                <Groups2Icon sx={{ height: '100%', marginTop: '7px' }} />
-                                                            </Grid>
-                                                            <Grid item>
-                                                                <Typography fontSize="13px" fontWeight="400">
-                                                                    {i18next.t('wizard.processInstance.showStepsReviewers')}
-                                                                </Typography>
-                                                            </Grid>
-                                                        </Grid>
-                                                    </Button>
-                                                </Grid>
-                                            )}
-                                            {contentDisplay === 'REVIEWERS' && (
-                                                <Grid item flexBasis="50%">
-                                                    <Button
-                                                        style={{
-                                                            borderRadius: '7px',
-                                                            border: 'solid 1px #1E2775',
-                                                            width: '140px',
-                                                            height: '35px',
-                                                            backgroundColor: '#EBEFFA',
-                                                        }}
-                                                        onClick={() => setContentDisplay('SUMMARY')}
-                                                    >
-                                                        <Typography fontSize="13px" fontWeight="400">
-                                                            {i18next.t('wizard.processInstance.nextToSummaryDetails')}
-                                                        </Typography>
-                                                    </Button>
-                                                </Grid>
-                                            )}
-                                        </Grid>
-                                    )
-                                }
-                                {/* {values.template && !viewMode && !toPrint && (
-                                    <Grid container spacing={1} marginBottom={1}>
-                                        <Grid item>
-                                            <Button
-                                                variant="outlined"
-                                                // startIcon={editStepIsLoading ? <CircularProgress sx={{ color: 'white' }} size={20} /> : <ClearIcon />}
-                                                onClick={() => {
-                                                    setIsEditMode(false);
-                                                    setViewMode(true);
-                                                    resetForm();
-                                                }}
-                                            >
-                                                {i18next.t('wizard.processInstance.cancelBth')}
-                                            </Button>
-                                        </Grid>
-                                        <Grid item>
-                                            <Button
-                                                type="submit"
-                                                variant="contained"
-                                                disabled={!dirty}
-                                                onClick={() => submitForm()}
-                                                // startIcon={editStepIsLoading ? <CircularProgress sx={{ color: 'white' }} size={20} /> : <DoneIcon />}
-                                            >
-                                                {i18next.t('wizard.processInstance.saveBth')}
-                                            </Button>
-                                        </Grid>
+                                            </Grid>
+                                        )}
+                                        {contentDisplay === 'REVIEWERS' && (
+                                            <Grid item flexBasis="50%">
+                                                <Button
+                                                    style={{
+                                                        borderRadius: '7px',
+                                                        border: 'solid 1px #1E2775',
+                                                        width: '140px',
+                                                        height: '35px',
+                                                        backgroundColor: '#EBEFFA',
+                                                    }}
+                                                    onClick={() => setContentDisplay('SUMMARY')}
+                                                >
+                                                    <Typography fontSize="13px" fontWeight="400">
+                                                        {i18next.t('wizard.processInstance.nextToSummaryDetails')}
+                                                    </Typography>
+                                                </Button>
+                                            </Grid>
+                                        )}
                                     </Grid>
-                                )} */}
+                                )}
                             </Grid>
                         </Grid>
                     </FormikProvider>

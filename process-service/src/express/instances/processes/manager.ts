@@ -236,34 +236,24 @@ class ProcessInstanceManager extends DefaultManagerMongo<IProcessInstance> {
         if (ids) query._id = { $in: ids.map((id) => new Types.ObjectId(id)) };
         if (status) query.status = { $in: status };
         if (reviewerId) {
-            // if not admin and search by waiting for me is on... - depandent on the stepStatus === pending or stepStatus !== pending
             if (isWaitingForMeFilterOn) {
-                // if stepStatus return this...
                 const waitingForMeProcesses = await searchAllowedProcessInstanceWaitForMe(this.model, query, reviewerId);
                 if (isStepStatusPendeing) {
                     query._id = { $in: waitingForMeProcesses.map((process) => new Types.ObjectId(process._id)) };
                     return searchAllowedProcessInstanceForReviewerAggregation(this.model, query, reviewerId, 0, 0);
-                    // return waitingForMeProcesses;
                 }
-                // else get the returned procs above and filter them
                 query._id = { $nin: waitingForMeProcesses.map((process) => new Types.ObjectId(process._id)) };
-                // return searchAllowedProcessInstanceForReviewerAggregation(this.model, query, reviewerId, limit, skip);
             }
-            // if not admin and search by waiting for me is off - the regular request
             return searchAllowedProcessInstanceForReviewerAggregation(this.model, query, reviewerId, limit, skip);
         }
 
-        // if admin...
         if (searchText) {
             processIds = await this.elasticSearchManager.processGlobalSearch(searchText, skip, limit);
             query._id = { $in: processIds.map((id) => new Types.ObjectId(id)) };
         }
 
-        // admin -> if search by waiting for me is on
         if (isWaitingForMeFilterOn && userId) {
-            // get all the processes with reviewerId = me and stepStatus === pending
             const waitingForMeProcesses = await searchAllowedProcessInstanceWaitForMe(this.model, query, userId);
-            // if the excludeStep wasn't sent, return the procs
             if (isStepStatusPendeing) {
                 if (query._id) {
                     query._id = {
@@ -281,10 +271,7 @@ class ProcessInstanceManager extends DefaultManagerMongo<IProcessInstance> {
                 }
 
                 return searchAllowedProcessInstanceForReviewerAggregation(this.model, query, userId, 0, 0);
-                // return waitingForMeProcesses;
             }
-            // if the excludeStep was sent, add to the query -
-            // and return the aggregation beneath
             if (query._id) {
                 query._id = {
                     $and: [
@@ -299,7 +286,6 @@ class ProcessInstanceManager extends DefaultManagerMongo<IProcessInstance> {
             }
         }
 
-        // admin -> if general search - the waiting for me checkbox is off
         const processes = await this.model
             .find(query, {}, { limit, skip, sort: { createdAt: -1 } })
             .populate(config.processFields.steps)

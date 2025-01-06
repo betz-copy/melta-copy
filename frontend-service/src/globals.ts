@@ -203,6 +203,7 @@ export const environment = {
     },
     processInstances: {
         infiniteScrollPageCount: 10,
+        stepsAmountInStepper: 5,
     },
     permission: {
         infiniteScrollPageCount: 13,

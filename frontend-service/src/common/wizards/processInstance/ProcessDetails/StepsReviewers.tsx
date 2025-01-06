@@ -38,7 +38,6 @@ const ReviewCard = ({ stepTemplate, values, setFieldValue, isEditMode, processIn
                 ref={cardRef}
                 sx={{
                     height: isEditMode || !processInstance ? '250px' : '25vh',
-                    // minHeight: '150px',
                     backgroundColor: darkMode ? '#303030' : '#f7f9fc',
                     boxShadow: 'none',
                     borderRadius: '20px',
@@ -116,8 +115,6 @@ const StepsReviewers: React.FC<IDetailsStepProp> = ({ detailsFormikData, isEditM
                 <Grid item height="90%">
                     <CardContent
                         sx={{
-                            // height: '56vh',
-                            // overflowY: 'auto',
                             height: '100%',
                             '&::-webkit-scrollbar': {
                                 width: '5px',

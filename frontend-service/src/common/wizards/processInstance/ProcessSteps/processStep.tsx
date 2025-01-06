@@ -32,11 +32,8 @@ export const CommentsDetails: FC<{ values: ProcessStepValues | IMongoStepInstanc
         return null;
     }
 
-    console.log({ valuesOfProcessStep: values });
-
     return (
         <Grid container style={{ textAlign: 'right' }} alignItems="center" flexDirection="row" flexWrap="nowrap" height="100%">
-            {/* <BlueTitle title={i18next.t('wizard.processInstance.step.comment')} component="h6" variant={toPrint ? 'h6' : 'body1'} /> */}
             <Grid item>
                 <img src="/icons/comment-icon.svg" />
             </Grid>
@@ -208,54 +205,6 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                 return (
                     <Grid container flexDirection="column" justifyContent="space-between" width="100%" height="80%">
                         <Form style={{ height: '100%' }}>
-                            {/* {hasPermissionsToEditStep && !toPrint && (
-                                <Grid container spacing={1} marginBottom={1}>
-                                    {isStepEditMode ? (
-                                        <>
-                                            <Grid item>
-                                                <Button
-                                                    variant="outlined"
-                                                    startIcon={
-                                                        editStepIsLoading ? <CircularProgress sx={{ color: 'white' }} size={20} /> : <ClearIcon />
-                                                    }
-                                                    onClick={() => {
-                                                        setIsStepEditMode(false);
-                                                        resetForm();
-                                                    }}
-                                                >
-                                                    {i18next.t('wizard.processInstance.cancelBth')}
-                                                </Button>
-                                            </Grid>
-                                            <Grid item>
-                                                <Button
-                                                    type="submit"
-                                                    variant="contained"
-                                                    disabled={!dirty || editStepIsLoading}
-                                                    startIcon={
-                                                        editStepIsLoading ? <CircularProgress sx={{ color: 'white' }} size={20} /> : <DoneIcon />
-                                                    }
-                                                >
-                                                    {i18next.t('wizard.processInstance.saveBth')}
-                                                </Button>
-                                            </Grid>
-                                        </>
-                                    ) : (
-                                        <Grid item>
-                                            <Button
-                                                variant="outlined"
-                                                startIcon={<EditIcon />}
-                                                onClick={() => {
-                                                    setFieldValue('properties', getStepValuesFromStepInstance(stepInstance, stepTemplate).properties);
-                                                    setIsStepEditMode(!isStepEditMode);
-                                                }}
-                                            >
-                                                {i18next.t('wizard.processInstance.step.editStepBth')}
-                                            </Button>
-                                        </Grid>
-                                    )}
-                                </Grid>
-                            )} */}
-
                             <Grid item container width="100%" height="90%" justifyContent="space-between">
                                 <Grid
                                     item
@@ -426,7 +375,6 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                         item
                                         container
                                         direction="column"
-                                        // xs={4.5}
                                         spacing={2}
                                         justifyContent="space-between"
                                         alignItems="center"

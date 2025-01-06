@@ -1,8 +1,7 @@
-import { Box, Divider, Grid, Step, StepConnector, stepConnectorClasses, StepIconProps, StepLabel, Stepper, styled, Typography } from '@mui/material';
+import { Box, Grid, Step, StepConnector, stepConnectorClasses, StepLabel, Stepper, styled, Typography } from '@mui/material';
 import React from 'react';
 import i18next from 'i18next';
 import ProcessStatus, { ReviewedAtProcessStatus, StatusDisplay } from './ProcessStatus';
-import StepsStatuses from './StepsStatuses';
 import { IMongoProcessInstancePopulated, Status } from '../../../../interfaces/processes/processInstance';
 import { IMongoProcessTemplatePopulated } from '../../../../interfaces/processes/processTemplate';
 import { getStepTemplateByStepInstance } from '../../../../utils/processWizard/steps';
@@ -47,7 +46,6 @@ const StepIconComponent = (
             step={stepInstance}
             stepTemplate={stepTemplate}
             setOpen={() => {
-                // TODO - set active step
                 setActiveStep(index + 1);
             }}
             displayTitle={false}
@@ -59,8 +57,6 @@ const StepIconComponent = (
 );
 
 const ProcessSummary = React.forwardRef<HTMLDivElement, ProcessSummaryProp>(({ processInstance, processTemplate, isPrinting, setActiveStep }) => {
-    console.log({ processInstance });
-    console.log('insideeee');
     return (
         <Box
             sx={{
@@ -106,31 +102,6 @@ const ProcessSummary = React.forwardRef<HTMLDivElement, ProcessSummaryProp>(({ p
                                             </Typography>
                                         </Grid>
                                         <StepLabel
-                                            // StepIconComponent={() => {
-                                            //     return (
-                                            //         <Grid container flexDirection="column" justifyContent="center" width="100%" gap="10px">
-                                            //             <StepIcon
-                                            //                 iconColor="#9398C2"
-                                            //                 step={stepInstance}
-                                            //                 stepTemplate={processTemplate.steps[index]}
-                                            //                 setOpen={() => {
-                                            //                     // TODO - set active step
-                                            //                     setActiveStep(index + 1);
-                                            //                 }}
-                                            //                 displayTitle={false}
-                                            //             />
-                                            //             <Grid item alignSelf="center" width="100%">
-                                            //                 <StatusDisplay
-                                            //                     status={stepInstance.status}
-                                            //                     displayIcon={false}
-                                            //                     text={i18next.t(
-                                            //                         `wizard.processInstance.summary.processStatuses.${stepInstance.status}`,
-                                            //                     )}
-                                            //                 />
-                                            //             </Grid>
-                                            //         </Grid>
-                                            //     );
-                                            // }}
                                             StepIconComponent={() =>
                                                 StepIconComponent(
                                                     stepInstance,
@@ -156,33 +127,10 @@ const ProcessSummary = React.forwardRef<HTMLDivElement, ProcessSummaryProp>(({ p
                                             )}
                                         </Grid>
                                     </Grid>
-                                    {/* <Grid>
-                                            {index % 5 !== 4 && (
-                                                <Grid>
-                                                    <Divider style={{ width: '100px' }} />
-                                                </Grid>
-                                            )}
-                                        </Grid> */}
-                                    {/* <Grid>
-                                            {index === 4 && (
-                                                <Divider
-                                                    style={{
-                                                        top: '50%',
-                                                        // height: '300px',
-                                                        // width: '600px',
-                                                        transform: `translateY(-50%) translateX(${index * 100}px) rotate(${
-                                                            (0 % 2 === 0 ? 1 : -1) * 30
-                                                        }deg)`,
-                                                        left: `calc(50% - ${(index + 1) * 100}px)`,
-                                                    }}
-                                                />
-                                            )}
-                                        </Grid> */}
                                 </Step>
                             ))}
                         </Stepper>
                     </Box>
-                    {/* <StepsStatuses processInstance={processInstance} processTemplate={processTemplate} isPrinting={isPrinting} /> */}
                 </Grid>
             </Grid>
         </Box>

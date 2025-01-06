@@ -1,5 +1,4 @@
 import {
-    AccessTimeFilled as AccessTimeFilledIcon,
     Cancel as CancelIcon,
     CancelOutlined as CancelOutlinedIcon,
     CheckCircle as CheckCircleIcon,
@@ -153,7 +152,6 @@ const ProcessStatus: React.FC<ProcessStatusProps> = ({ title, instance, editStat
         editStatus!.setFieldValue('status', newStatusToSet);
     };
 
-    console.log({ title, isPrinting });
     return (
         <Grid container width="fit-content" height="fit-content" alignItems="center" spacing="15px">
             {title && (
@@ -203,34 +201,11 @@ const ProcessStatus: React.FC<ProcessStatusProps> = ({ title, instance, editStat
                         />
                     </>
                 ) : (
-                    <>
-                        {/* {instance.status === Status.Approved && (
-                            <StatusDisplay
-                                text={i18next.t('wizard.processInstance.summary.processCompleted')}
-                                status={instance.status}
-                                fontSize={!editStatus ? 16 : undefined}
-                            />
-                        )}
-                        {instance.status === Status.Rejected && (
-                            <StatusDisplay
-                                text={i18next.t('wizard.processInstance.summary.processRejected')}
-                                status={instance.status}
-                                fontSize={!editStatus ? 16 : undefined}
-                            />
-                        )}
-                        {instance.status === Status.Pending && (
-                            <StatusDisplay
-                                text={i18next.t('wizard.processInstance.summary.processPending')}
-                                status={instance.status}
-                                fontSize={!editStatus ? 16 : undefined}
-                            />
-                        )} */}
-                        <StatusDisplay
-                            text={i18next.t(`wizard.processInstance.summary.processStatuses.${instance.status}`)}
-                            status={instance.status}
-                            fontSize={!editStatus ? 16 : undefined}
-                        />
-                    </>
+                    <StatusDisplay
+                        text={i18next.t(`wizard.processInstance.summary.processStatuses.${instance.status}`)}
+                        status={instance.status}
+                        fontSize={!editStatus ? 16 : undefined}
+                    />
                 )}
             </Grid>
             {/* {instance.reviewedAt && !isPrinting && title && <ReviewedAtProcessStatus instance={instance} />} */}

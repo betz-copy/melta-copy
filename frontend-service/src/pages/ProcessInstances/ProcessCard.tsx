@@ -1,4 +1,4 @@
-import React, { CSSProperties, useState } from 'react';
+import React, { useState } from 'react';
 import {
     Box,
     Card,
@@ -12,11 +12,10 @@ import {
     Stepper,
     Step,
     StepLabel,
-    Divider,
     StepConnector,
     stepConnectorClasses,
 } from '@mui/material';
-import { Edit, ScatterPlotOutlined as HiveIcon, FiberManualRecordOutlined as StatusIcon, Unarchive } from '@mui/icons-material';
+import { Edit, ScatterPlotOutlined as HiveIcon, Unarchive } from '@mui/icons-material';
 import { useMutation, useQueryClient } from 'react-query';
 import DeleteIcon from '@mui/icons-material/Delete';
 import MoreVertSharpIcon from '@mui/icons-material/MoreVertSharp';
@@ -49,10 +48,6 @@ export enum StatusColors {
     All = '#0288d1',
 }
 export enum StatusColorsNames {
-    // Pending = 'warning',
-    // Approved = 'success',
-    // Rejected = 'error',
-    // Archived = 'disabled',
     Pending = '#ff8f00',
     Approved = '#1ABC00',
     Rejected = '#d32f2f',
@@ -60,10 +55,6 @@ export enum StatusColorsNames {
 }
 
 export enum StatusFontColors {
-    // Pending = 'warning',
-    // Approved = 'success',
-    // Rejected = 'error',
-    // Archived = 'disabled',
     Pending = '#FF9900',
     Approved = '#1ABC00',
     Rejected = '#FF2E00',
@@ -71,10 +62,6 @@ export enum StatusFontColors {
 }
 
 export enum StatusBackgroundColors {
-    // Pending = 'warning',
-    // Approved = 'success',
-    // Rejected = 'error',
-    // Archived = 'disabled',
     Pending = '#FF99001A',
     Approved = '#E0F0DD',
     Rejected = '#F7CDC4',
@@ -134,9 +121,6 @@ export const StepIcon: React.FC<{
     >;
     displayTitle?: boolean;
 }> = ({ step, stepTemplate, iconColor, setOpen, displayTitle = true }) => {
-    // const color = getStatusColor(step.status);
-    // const border: CSSProperties['border'] = `2px solid ${color}`;
-
     const stageNameRef = React.useRef<any>(null);
     const [isOverflowing, setIsOverflowing] = React.useState(false);
 
@@ -171,7 +155,6 @@ export const StepIcon: React.FC<{
                     sx={{
                         borderRadius: '50%',
                         backgroundColor: '#E0E1ED',
-                        // border,
                         display: 'flex',
                         justifyContent: 'center',
                         alignItems: 'center',
@@ -221,18 +204,6 @@ const StepIconComponent = (
         </Grid>
     </Grid>
 );
-
-// const StepperConnector = styled(StepConnector)(({ theme }) => ({
-//     [`& .${stepConnectorClasses.line}`]: {
-//         height: 2,
-//         border: 0,
-//         backgroundColor: '#eaeaf0',
-//         borderRadius: 1,
-//         ...theme.applyStyles('dark', {
-//             backgroundColor: theme.palette.grey[800],
-//         }),
-//     },
-// }));
 
 const ProcessCard: React.FC<{
     processInstance: IMongoProcessInstancePopulated;
@@ -436,18 +407,7 @@ const ProcessCard: React.FC<{
                                 </Grid>
                             </Grid>
                             <Grid item justifyContent="center" spacing={4}>
-                                <Stepper
-                                    style={{ flexWrap: 'wrap' }}
-                                    // connector={
-                                    //     <Divider
-                                    //         variant="fullWidth"
-                                    //         style={{ backgroundColor: getFontColor(processInstance.status), width: '100%' }}
-                                    //     />
-
-                                    // }
-                                    connector={<StepperConnector />}
-                                    alternativeLabel
-                                >
+                                <Stepper style={{ flexWrap: 'wrap' }} connector={<StepperConnector />} alternativeLabel>
                                     {processInstance.steps.map((step, index) => {
                                         const stepTemplate = processTemplate.steps[index];
                                         return (
@@ -465,28 +425,6 @@ const ProcessCard: React.FC<{
                                                         StepIconComponent={() =>
                                                             StepIconComponent(step, stepTemplate, setOpen, step.status, step._id)
                                                         }
-                                                        // return (
-                                                        //     <Grid
-                                                        //         container
-                                                        //         flexDirection="column"
-                                                        //         justifyContent="center"
-                                                        //         width="100%"
-                                                        //         gap="10px"
-                                                        //     >
-                                                        //         <Grid item key={stepTemplate.name}>
-                                                        //             <StepIcon
-                                                        //                 step={step}
-                                                        //                 stepTemplate={stepTemplate}
-                                                        //                 iconColor={
-                                                        //                     step.status === Status.Pending
-                                                        //                         ? getStatusColor(step.status)
-                                                        //                         : '#787C9E'
-                                                        //                 }
-                                                        //                 setOpen={setOpen}
-                                                        //             />
-                                                        //         </Grid>
-                                                        //     </Grid>
-                                                        // );
                                                     />
                                                 </Grid>
                                             </Step>
@@ -518,7 +456,6 @@ const ProcessCard: React.FC<{
                 ) : (
                     <CardContent>
                         <Grid container direction="column" alignItems="center" justifyContent="center" spacing={2}>
-                            {/* Status & Process Name */}
                             <Grid item container direction="row" justifyContent="center" alignItems="center" spacing={1}>
                                 <Grid item>
                                     <Skeleton variant="circular" width={15} height={15} />

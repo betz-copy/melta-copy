@@ -76,9 +76,8 @@ const CreateOrEditProcess: React.FC<ISimpleDialogProps> = ({ open, onClose, proc
         setActiveProcessDetailsStep((prevActiveStep) => prevActiveStep - 1);
     };
 
-    const { values, touched, errors, setFieldValue, setFieldTouched, handleBlur, resetForm, initialValues } = detailsFormikData;
+    const { values, touched, errors, setFieldValue, setFieldTouched, handleBlur, resetForm } = detailsFormikData;
 
-    console.log({ values, initialValues });
     const [previousTemplate, setPreviousTemplate] = useState<IMongoProcessTemplatePopulated>();
     const variant = viewMode ? 'standard' : 'outlined';
     const templateFileProperties = values.template
@@ -190,7 +189,6 @@ const CreateOrEditProcess: React.FC<ISimpleDialogProps> = ({ open, onClose, proc
                                         toPrint={false}
                                         values={values}
                                         viewMode={viewMode}
-                                        setEditMode={() => {}}
                                         errors={errors}
                                         touched={touched}
                                         setFieldValue={setFieldValue}
@@ -198,7 +196,6 @@ const CreateOrEditProcess: React.FC<ISimpleDialogProps> = ({ open, onClose, proc
                                         templateFileProperties={templateFileProperties}
                                         handleBlur={handleBlur}
                                         templateEntityReferenceProperties={templateEntityReferenceProperties}
-                                        onNext={handleNext}
                                     />
                                 </Grid>
                                 <Grid item container height="10%" width="100%" justifyContent="flex-end">

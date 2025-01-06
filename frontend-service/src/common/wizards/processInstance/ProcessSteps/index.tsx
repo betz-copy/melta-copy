@@ -1,7 +1,7 @@
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 /* eslint-disable jsx-a11y/anchor-is-valid */
-import { Box, Divider, Grid, Step, StepLabel, Stepper, Typography, useTheme } from '@mui/material';
+import { Box, Divider, Grid, Step, StepLabel, Stepper, Typography } from '@mui/material';
 import React from 'react';
 import TocIcon from '@mui/icons-material/Toc';
 import i18next from 'i18next';
@@ -12,6 +12,7 @@ import { ProcessStep } from './processStep';
 import { IMongoProcessInstancePopulated, IReferencedEntityForProcess, Status } from '../../../../interfaces/processes/processInstance';
 import { useDarkModeStore } from '../../../../stores/darkMode';
 import { StepIcon } from '../../../../pages/ProcessInstances/ProcessCard';
+import { environment } from '../../../../globals';
 
 export interface ProcessStepValues {
     properties: object;
@@ -38,18 +39,19 @@ const getStepTemplateByStepInstance = (
     return processTemplate.steps.find((step) => stepInstance.templateId === step._id)!;
 };
 
+const { stepsAmountInStepper } = environment.processInstances;
+
 const getVisibleSteps = (currentStep: number, totalSteps: number) => {
-    const visibleSteps = 5;
-    let startStep = currentStep - Math.floor(visibleSteps / 2);
-    let endStep = currentStep + Math.floor(visibleSteps / 2) + 1;
+    let startStep = currentStep - Math.floor(stepsAmountInStepper / 2);
+    let endStep = currentStep + Math.floor(stepsAmountInStepper / 2) + 1;
 
     if (startStep < 0) {
         startStep = 0;
-        endStep = visibleSteps;
+        endStep = stepsAmountInStepper;
     }
     if (endStep > totalSteps) {
         endStep = totalSteps;
-        startStep = totalSteps - visibleSteps;
+        startStep = totalSteps - stepsAmountInStepper;
     }
 
     if (startStep < 0) {
@@ -68,7 +70,6 @@ const Steps: React.FC<IStepsProp> = ({
     defaultStepTemplate,
     setActiveStep,
 }) => {
-    // const [tabValue, setTabValue] = React.useState(defaultStepTemplate ? defaultStepTemplate._id : processTemplate.steps[0]._id);
     const [currStepInstance, setCurrStepInstance] = React.useState(
         defaultStepTemplate ? processInstance.steps.find((step) => step.templateId === defaultStepTemplate._id) : processInstance.steps[0],
     );
@@ -76,10 +77,6 @@ const Steps: React.FC<IStepsProp> = ({
     const [currStepInstanceIndex, setCurrStepInstanceIndex] = React.useState(
         defaultStepTemplate ? processInstance.steps.findIndex((step) => step.templateId === defaultStepTemplate._id) : 0,
     );
-
-    const darkMode = useDarkModeStore((state) => state.darkMode);
-    const theme = useTheme();
-    const defaultTabColor = darkMode ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)';
 
     return (
         <Grid
@@ -95,54 +92,6 @@ const Steps: React.FC<IStepsProp> = ({
                 paddingLeft: '30px',
             }}
         >
-            {/* <TabContext value={tabValue}>
-                <Grid container direction="column">
-                    <Grid item container sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                        <TabList onChange={(_event, newValue) => setTabValue(newValue)} scrollButtons="auto" variant="scrollable">
-                            {processTemplate.steps?.map(({ _id, displayName, iconFileId }) => (
-                                <Tab
-                                    icon={
-                                        iconFileId ? (
-                                            <CustomIcon
-                                                color={_id === tabValue ? theme.palette.primary.main : defaultTabColor}
-                                                iconUrl={iconFileId}
-                                                width="25px"
-                                                height="25px"
-                                                style={{ marginLeft: 5 }}
-                                            />
-                                        ) : (
-                                            <HiveIcon />
-                                        )
-                                    }
-                                    iconPosition="start"
-                                    key={_id}
-                                    label={displayName}
-                                    value={_id}
-                                    disabled={tabValue !== _id && isStepEditMode}
-                                    wrapped
-                                />
-                            ))}
-                        </TabList>
-                    </Grid>
-                    <Grid item>
-                        {processInstance.steps.map((stepInstance) => {
-                            const stepTemplate = getStepTemplateByStepInstance(stepInstance, processTemplate);
-                            return (
-                                <TabPanel key={stepInstance._id} value={stepTemplate._id}>
-                                    <ProcessStep
-                                        onStepUpdateSuccess={onStepUpdateSuccess}
-                                        processInstance={processInstance}
-                                        stepInstance={stepInstance}
-                                        stepTemplate={stepTemplate}
-                                        isStepEditMode={isStepEditMode}
-                                        setIsStepEditMode={setIsStepEditMode}
-                                    />
-                                </TabPanel>
-                            );
-                        })}
-                    </Grid>
-                </Grid>
-            </TabContext> */}
             <Grid container item width="100%" justifyContent="space-between" alignItems="center">
                 <Grid item container width="80%">
                     {getVisibleSteps(currStepInstanceIndex, processInstance.steps.length).startStep > 0 && (
@@ -175,17 +124,7 @@ const Steps: React.FC<IStepsProp> = ({
                                                     // eslint-disable-next-line react/no-unstable-nested-components
                                                     StepIconComponent={() => {
                                                         return (
-                                                            <Grid
-                                                                container
-                                                                flexDirection="column"
-                                                                justifyContent="center"
-                                                                width="100%"
-                                                                gap="10px"
-                                                                // onClick={() => {
-                                                                //     console.log('change stepppp');
-                                                                //     setCurrStepInstance(stepInstance);
-                                                                // }}
-                                                            >
+                                                            <Grid container flexDirection="column" justifyContent="center" width="100%" gap="10px">
                                                                 <StepIcon
                                                                     iconColor={currStepInstance?._id === stepInstance._id ? '#1E2775' : '#9398C2'}
                                                                     step={stepInstance}
@@ -246,7 +185,6 @@ const Steps: React.FC<IStepsProp> = ({
                             sx={{
                                 borderRadius: '50%',
                                 backgroundColor: '#E0E1ED',
-                                // border,
                                 display: 'flex',
                                 justifyContent: 'center',
                                 alignItems: 'center',
@@ -256,7 +194,6 @@ const Steps: React.FC<IStepsProp> = ({
                                 cursor: 'pointer',
                             }}
                             onClick={(e) => {
-                                // e.stopPropagation();
                                 setActiveStep(0);
                             }}
                         >
@@ -282,12 +219,10 @@ const Steps: React.FC<IStepsProp> = ({
                     isThereNextStep={currStepInstanceIndex < processInstance.steps.length - 1}
                     isTherePrevStep={currStepInstanceIndex > 0}
                     onSetNextStep={() => {
-                        console.log('nexttt');
                         setCurrStepInstance(processInstance.steps[currStepInstanceIndex + 1]);
                         setCurrStepInstanceIndex(currStepInstanceIndex + 1);
                     }}
                     onSetPrevStep={() => {
-                        console.log('prevvvv');
                         setCurrStepInstance(processInstance.steps[currStepInstanceIndex - 1]);
                         setCurrStepInstanceIndex(currStepInstanceIndex - 1);
                     }}
