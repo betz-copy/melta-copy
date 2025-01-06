@@ -1,5 +1,5 @@
 import { FilterList } from '@mui/icons-material';
-import { Box, Button, Divider, Grid, SxProps, Typography } from '@mui/material';
+import { Box, Button, Grid, SxProps, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import i18next from 'i18next';
 import React, { Dispatch, useState } from 'react';
