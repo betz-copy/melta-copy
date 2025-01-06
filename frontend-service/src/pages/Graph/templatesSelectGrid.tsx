@@ -159,26 +159,18 @@ const TemplatesSelectGrid: React.FC<{
                             {i18next.t('graph.filterTitle')}
                         </Typography>
                         <Search value={miniFilterValue} onChange={setMiniFilterValue} toTopBar={false} templatesSelectGrid />
-                        <Box sx={{ display: 'flex', justifyContent: 'center', my: '5px' }}>
-                            <Divider style={{ width: '199px' }} />
-                        </Box>
 
                         <Box style={{ maxHeight: '25rem', paddingBottom: '5px', overflowY: 'auto', overflowX: 'hidden' }}>
-                            <Box>
-                                <SelectAll
-                                    allOptionIds={[...firstSplittedTemplates, ...secondSplittedTemplates].map(getOptionId)}
-                                    setSelectedOptionIds={(ids) => {
-                                        const populated = [...firstSplittedTemplates, ...secondSplittedTemplates].filter((option) =>
-                                            ids.includes(getOptionId(option)),
-                                        );
-                                        setSelectedTemplates(populated);
-                                    }}
-                                    selectedOptionIds={selectedTemplates.map(getOptionId)}
-                                />
-                                <Box sx={{ display: 'flex', justifyContent: 'center', my: '5px' }}>
-                                    <Divider style={{ width: '199px' }} />
-                                </Box>
-                            </Box>
+                            <SelectAll
+                                allOptionIds={[...firstSplittedTemplates, ...secondSplittedTemplates].map(getOptionId)}
+                                setSelectedOptionIds={(ids) => {
+                                    const populated = [...firstSplittedTemplates, ...secondSplittedTemplates].filter((option) =>
+                                        ids.includes(getOptionId(option)),
+                                    );
+                                    setSelectedTemplates(populated);
+                                }}
+                                selectedOptionIds={selectedTemplates.map(getOptionId)}
+                            />
                             <Tree
                                 flattenedTree={firstTree.flattenedTree}
                                 preSelectedItemsIds={selectedTemplates.map(({ _id }) => _id)}

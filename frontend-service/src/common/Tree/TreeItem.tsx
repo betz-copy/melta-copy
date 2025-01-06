@@ -85,7 +85,7 @@ const TreeItem = React.forwardRef(function CustomTreeItem(props: TreeItem2Props,
                         backgroundColor: status.selected ? 'transparent' : undefined,
                     }}
                 >
-                    {(status.expandable || itemDepth !== 0) && (
+                    {(status.expandable || itemDepth !== 0 || !draggable) && (
                         <TreeItem2IconContainer {...getIconContainerProps()}>
                             <TreeItem2Icon status={status} />
                         </TreeItem2IconContainer>

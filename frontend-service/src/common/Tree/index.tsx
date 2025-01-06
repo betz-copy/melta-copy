@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { RichTreeViewPro, TreeViewBaseItem } from '@mui/x-tree-view-pro';
 import { ChevronLeft, ExpandLess } from '@mui/icons-material';
 import { flattenTree, useTreeUtils } from '../../utils/hooks/useTreeUtils';
@@ -43,16 +43,19 @@ const Tree = <T extends {}>({
 
     const isFirstRender = useRef<boolean>(true);
 
+    const selectedIdsWithParents = useMemo(
+        () => selectParentIfAllChildrenAreSelected(treeItems, preSelectedItemsIds, getItemId),
+        [getItemId, preSelectedItemsIds, selectParentIfAllChildrenAreSelected, treeItems],
+    );
+
     useEffect(() => {
-        setSelectedItemsIds(
-            parentInfersChildren ? selectParentIfAllChildrenAreSelected(treeItems, preSelectedItemsIds, getItemId) : preSelectedItemsIds,
-        );
+        setSelectedItemsIds(parentInfersChildren ? selectedIdsWithParents : preSelectedItemsIds);
     }, [JSON.stringify(preSelectedItemsIds)]);
 
     const [expandedItemsIds, setExpandedItemsIds] = useState<string[]>(preExpandedItemIds ?? []);
 
     useEffect(() => {
-        if (!onSelectItems || isFirstRender.current) {
+        if (!onSelectItems || isFirstRender.current || JSON.stringify(selectedIdsWithParents) === JSON.stringify(selectedItemsIds)) {
             isFirstRender.current = false;
             return;
         }
