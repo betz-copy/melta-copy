@@ -9,7 +9,6 @@ import {
     getTemplatesUsingRelationshipReferanceSchema,
     searchEntityTemplatesSchema,
     updateEntityTemplateActionSchema,
-    updateEntityTemplatePathSchema,
     updateEntityTemplateSchema,
     updateEntityTemplateStatusSchema,
 } from './validator.schema';
@@ -49,8 +48,5 @@ entityTemplateRouter.patch(
 );
 
 entityTemplateRouter.patch('/:templateId/status', ValidateRequest(updateEntityTemplateStatusSchema), controller.updateEntityTemplateStatus);
-entityTemplateRouter.get('/subTemplates/:categoryId', controller.getSubTemplatesTree); // TODO: add joi validation
-
-entityTemplateRouter.patch('/:templateId/path', ValidateRequest(updateEntityTemplatePathSchema), controller.updateEntityTemplatePath);
 
 export default entityTemplateRouter;

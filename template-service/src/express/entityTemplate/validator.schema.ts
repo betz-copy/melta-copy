@@ -1,5 +1,5 @@
 import Joi from 'joi';
-import { FilePathSchema, MongoIdSchema, variableNameValidation } from '../../utils/joi';
+import { MongoIdSchema, variableNameValidation } from '../../utils/joi';
 import {
     enumPropertiesColorsSchema,
     innerPropertiesSchema,
@@ -86,17 +86,6 @@ export const updateEntityTemplateSchema = Joi.object({
 export const updateEntityTemplateStatusSchema = Joi.object({
     body: {
         disabled: Joi.boolean().required(),
-    },
-    query: {},
-    params: {
-        templateId: MongoIdSchema.required(),
-    },
-});
-
-// PUT /api/entities/templates/:templateId/path
-export const updateEntityTemplatePathSchema = Joi.object({
-    body: {
-        path: FilePathSchema.required(),
     },
     query: {},
     params: {

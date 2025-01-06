@@ -49,8 +49,4 @@ export const ColorSchema = Joi.string().regex(/^#[A-Fa-f0-9]{6}$/);
 
 export const MongoIdSchema = Joi.string().regex(/^[0-9a-fA-F]{24}$/, 'valid MongoId');
 
-export const FilePathSchema = Joi.string()
-    .regex(/^\/.*[^/]$/, 'valid file path')
-    .allow('/');
-
 export default ValidateRequest;

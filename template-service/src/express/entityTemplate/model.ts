@@ -66,7 +66,6 @@ export const EntityTemplateSchema = new mongoose.Schema(
 );
 
 EntityTemplateSchema.index({ displayName: 'text' });
-EntityTemplateSchema.index({ displayName: 1, path: 1 }, { unique: true });
 
 EntityTemplateSchema.post(['find', 'findOne', 'findOneAndUpdate', 'findOneAndDelete'], (res) => {
     transformResultDocsObjectIdKeysToString(res);

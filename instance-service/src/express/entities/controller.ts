@@ -39,8 +39,8 @@ class EntityController extends DefaultController<EntityManager> {
         res.json(await this.manager.searchEntitiesBatch(req.body, entityTemplatesMap));
     }
 
-    async getEntityByProp(req: Request, res: Response) {
-        res.json(await this.manager.getEntityByProp(req.params.value, req.query.templateId as string, req.query.key as string));
+    async getEntityById(req: Request, res: Response) {
+        res.json(await this.manager.getEntityById(req.params.value));
     }
 
     async getEntitiesByIds(req: Request, res: Response) {
@@ -64,18 +64,9 @@ class EntityController extends DefaultController<EntityManager> {
         res.json(await this.manager.updateStatusById(req.params.id, req.body.disabled, req.body.ignoredRules, req.body.userId));
     }
 
-    async updateEntityByProp(req: Request, res: Response) {
+    async updateEntityById(req: Request, res: Response) {
         const entityTemplate = fetchPropertyFromRequest<IMongoEntityTemplate>(req, 'entityTemplate');
-        res.json(
-            await this.manager.updateEntityByProp(
-                req.params.value,
-                req.query.key as string,
-                req.body.properties,
-                entityTemplate,
-                req.body.ignoredRules,
-                req.body.userId,
-            ),
-        );
+        res.json(await this.manager.updateEntityById(req.params.value, req.body.properties, entityTemplate, req.body.ignoredRules, req.body.userId));
     }
 
     async updateEnumFieldValue(req: Request, res: Response) {

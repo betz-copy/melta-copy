@@ -43,7 +43,6 @@ export interface IEntityTemplate {
     disabled: boolean;
     iconFileId: string | null;
     documentTemplatesIds?: string[];
-    path?: string;
 }
 
 export interface IEntityTemplateMock extends Omit<IEntityTemplate, 'category' | 'iconFileId'> {

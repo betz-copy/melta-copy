@@ -62,12 +62,6 @@ export class UnauthorizedError extends ServiceError {
     }
 }
 
-export class PathDoesNotExistError extends ServiceError {
-    constructor(path: string) {
-        super(StatusCodes.NOT_FOUND, `No entity template found with path ${path}`);
-    }
-}
-
 const formatAxiosErrorData = (axiosErrorData: object & { message?: string; metadata?: object }) => {
     if (axiosErrorData.message?.includes('E11000')) {
         return { ...axiosErrorData, errorCode: 'DUPLICATE_ERROR' };

@@ -296,17 +296,16 @@ export class EntityManager extends DefaultManagerNeo4j {
         return { createdEntity, activityLogsToCreate: allActivityLogsToCreate };
     }
 
-    async getEntityByValueAndKeyInTransaction(id: string, transaction: Transaction, key = '_id') {
+    async getEntityByIdInTransaction(id: string, transaction: Transaction) {
         const entity = await runInTransactionAndNormalize(
             transaction,
-            `MATCH (e {${key}: '${id}'}) RETURN e`,
+            `MATCH (e {_id: '${id}'}) RETURN e`,
             normalizeReturnedEntity('singleResponse'),
         );
 
         if (!entity) {
             throw new NotFoundError(`[NEO4J] entity "${id}" not found`);
         }
-
         return entity;
     }
 
@@ -341,7 +340,7 @@ export class EntityManager extends DefaultManagerNeo4j {
     }
 
     async fixRelationshipReferenceField(relatedEntityId: string, transaction: Transaction) {
-        const relatedEntity = await this.getEntityByValueAndKeyInTransaction(relatedEntityId, transaction);
+        const relatedEntity = await this.getEntityByIdInTransaction(relatedEntityId, transaction);
         const relatedEntityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(relatedEntity.templateId);
         const relatedEntityFixProperties = addStringFieldsAndNormalizeDateValues(relatedEntity.properties, relatedEntityTemplate, true);
         return {
@@ -421,12 +420,12 @@ export class EntityManager extends DefaultManagerNeo4j {
         entitiesTemplatesByIds: Map<string, IMongoEntityTemplate>,
     ) {
         const { entityId } = metadata;
-        const entity = await this.getEntityByValueAndKeyInTransaction(entityId, transaction);
+        const entity = await this.getEntityByIdInTransaction(entityId, transaction);
         const entityTemplate = entitiesTemplatesByIds.get(entity.templateId)!;
         const bulkManager = new BulkActionManager(this.workspaceId);
 
         const fixedFields = bulkManager.fixUpdatedFields(metadata, entityTemplate, entity);
-        return this.updateEntityByValueAndKeyInnerTransaction(entityId, fixedFields.updatedFields, entityTemplate, transaction, userId);
+        return this.updateEntityByIdInnerTransaction(entityId, fixedFields.updatedFields, entityTemplate, transaction, userId);
     }
 
     async executeEntityTemplateActionOnInstanceCrud(
@@ -529,7 +528,7 @@ export class EntityManager extends DefaultManagerNeo4j {
                     updatedFields = this.getUpdatedProperties(properties, allProperties, entityTemplate);
                     before = properties;
                 } else {
-                    const currentEntity = await this.getEntityByProp(entityId);
+                    const currentEntity = await this.getEntityById(entityId);
                     const currentEntityTemplate = entitiesTemplatesByIds.get(currentEntity.templateId)!;
                     const currentNotPopulated = this.relationshipReferenceObjectToId(currentEntity, currentEntityTemplate);
 
@@ -625,7 +624,7 @@ export class EntityManager extends DefaultManagerNeo4j {
             const bulkManager = new BulkActionManager(this.workspaceId);
 
             const results = await bulkManager.runBulkOfActions(actions, ignoredRules, false, userId);
-            const createdEntity = await this.getEntityByProp(results[0].properties._id);
+            const createdEntity = await this.getEntityById(results[0].properties._id);
             const fixedActions = this.fixActions(actions, results);
 
             return { createdEntity, actions: fixedActions };
@@ -774,17 +773,11 @@ export class EntityManager extends DefaultManagerNeo4j {
         return { entities, count };
     }
 
-    async getEntityByProp(value: string, templateId?: string, key = '_id') {
-        const labelClause = templateId ? `WHERE e:\`${templateId}\`` : '';
-
-        // TODO: add support for when multiple entities return.
-        const node = await this.neo4jClient.readTransaction(
-            `MATCH (e{${key}: '${value}'}) ${labelClause} RETURN e`,
-            normalizeReturnedEntity('singleResponse'),
-        );
+    async getEntityById(id: string) {
+        const node = await this.neo4jClient.readTransaction(`MATCH (e {_id: '${id}'}) RETURN e`, normalizeReturnedEntity('singleResponse'));
 
         if (!node) {
-            throw new NotFoundError(`[NEO4J] entity "${value}" with key ${key} not found`);
+            throw new NotFoundError(`[NEO4J] entity "${id}" not found`);
         }
 
         return node;
@@ -904,7 +897,7 @@ export class EntityManager extends DefaultManagerNeo4j {
     async deleteEntityById(id: string, deleteAllRelationships: boolean) {
         return this.neo4jClient
             .performComplexTransaction('writeTransaction', async (transaction) => {
-                const entityToDelete = await this.getEntityByValueAndKeyInTransaction(id, transaction);
+                const entityToDelete = await this.getEntityByIdInTransaction(id, transaction);
                 const entityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(entityToDelete.templateId);
                 await Promise.all(
                     Object.entries(entityTemplate.properties.properties).map(async ([name, property]) => {
@@ -1202,19 +1195,17 @@ export class EntityManager extends DefaultManagerNeo4j {
         );
     }
 
-    // Update a single entity where value is equal to the key prop.
-    async updateEntityByValueAndKeyInnerTransaction(
-        value: string,
+    async updateEntityByIdInnerTransaction(
+        id: string,
         entityProperties: Record<string, any>,
         entityTemplate: IMongoEntityTemplate,
         transaction: Transaction,
         userId?: string,
-        key = '_id',
     ) {
         const activityLogUpdatedFields: IUpdatedFields[] = [];
         const activityLogsToCreate: Omit<IActivityLog, '_id'>[] = [];
 
-        const entity = await this.getEntityByValueAndKeyInTransaction(value, transaction, key);
+        const entity = await this.getEntityByIdInTransaction(id, transaction);
 
         if (entity.properties.disabled) {
             throw new ValidationError(`[NEO4J] cannot update disabled entity.`);
@@ -1237,7 +1228,7 @@ export class EntityManager extends DefaultManagerNeo4j {
 
         const updatedEntity = await runInTransactionAndNormalize(
             transaction,
-            `MATCH (e {${key}: '${value}'})
+            `MATCH (e {_id: '${id}'})
                  WITH e.createdAt AS createdAt, e.disabled AS disabled, e AS e
                  SET e = $props 
                  SET e.createdAt = createdAt
@@ -1248,7 +1239,7 @@ export class EntityManager extends DefaultManagerNeo4j {
                 props: {
                     ...addStringFieldsAndNormalizeDateValues(fixedProperties, entityTemplate),
                     updatedAt: getNeo4jDateTime(),
-                    _id: value,
+                    _id: id,
                 },
             },
         );
@@ -1292,7 +1283,7 @@ export class EntityManager extends DefaultManagerNeo4j {
         if (userId) {
             activityLogsToCreate.push({
                 action: ActionsLog.UPDATE_ENTITY,
-                entityId: value,
+                entityId: id,
                 metadata: { updatedFields: activityLogUpdatedFields },
                 timestamp: new Date(),
                 userId,
@@ -1303,7 +1294,6 @@ export class EntityManager extends DefaultManagerNeo4j {
     }
 
     relationshipReferenceObjectToId(entity: IEntity, entityTemplate: IMongoEntityTemplate) {
-        console.log({ entity, entityTemplate });
         const entityAfterManipulations = JSON.parse(JSON.stringify(entity.properties));
 
         Object.entries(entityTemplate.properties.properties).forEach(([name, value]) => {
@@ -1319,16 +1309,14 @@ export class EntityManager extends DefaultManagerNeo4j {
         return { ...entity, properties: entityAfterManipulations } as IEntity;
     }
 
-    async updateEntityByProp(
-        value: string,
-        key: string,
+    async updateEntityById(
+        id: string,
         entityProperties: Record<string, any>,
         entityTemplate: IMongoEntityTemplate,
         ignoredRules: IBrokenRule[],
         userId: string,
     ) {
-        // TODO: add support for updating multiple
-        const entity = await this.getEntityByProp(value, entityTemplate._id, key);
+        const entity = await this.getEntityById(id);
         const unPopulatedEntity = this.relationshipReferenceObjectToId(entity, entityTemplate);
 
         if (entity.properties.disabled) throw new ValidationError(`[NEO4J] cannot update disabled entity.`);
@@ -1345,7 +1333,7 @@ export class EntityManager extends DefaultManagerNeo4j {
             const bulkManager = new BulkActionManager(this.workspaceId);
 
             const results = await bulkManager.runBulkOfActions(actions, ignoredRules, false, userId);
-            const updatedEntity = await this.getEntityByProp(results[0].properties._id);
+            const updatedEntity = await this.getEntityById(results[0].properties._id);
             const fixedActions = this.fixActions(actions, results);
 
             return { updatedEntity, actions: fixedActions };
@@ -1361,13 +1349,12 @@ export class EntityManager extends DefaultManagerNeo4j {
 
                 const ruleFailuresBeforeAction = await this.runRulesDependOnEntityUpdate(transaction, entity, updatedProperties);
 
-                const { updatedEntity, activityLogsToCreate } = await this.updateEntityByValueAndKeyInnerTransaction(
-                    value,
+                const { updatedEntity, activityLogsToCreate } = await this.updateEntityByIdInnerTransaction(
+                    id,
                     entityProperties,
                     entityTemplate,
                     transaction,
                     userId,
-                    key,
                 );
 
                 const ruleFailuresAfterAction = await this.runRulesDependOnEntityUpdate(transaction, updatedEntity, updatedProperties);
