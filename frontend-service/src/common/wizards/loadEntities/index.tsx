@@ -80,6 +80,7 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
         data: { succeededEntities: [], failedEntities: [] },
     });
 
+    const [hasError, setHasError] = useState(false);
     const isBrokenRules = (stepsData.data.brokenRulesEntities?.brokenRules ?? []).length > 0;
     const [createOrUpdateWithRuleBreachDialogState, setCreateOrUpdateWithRuleBreachDialogState] = useState<ICreateOrUpdateWithRuleBreachDialogState>({
         isOpen: false,
@@ -91,6 +92,7 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
             status: StepStatus.uploadExcel,
             data: { succeededEntities: [], failedEntities: [] },
         });
+        setHasError(false);
     };
 
     const { isLoading: isLoadingExcelEntities, mutateAsync: loadEntities } = useMutation(
@@ -100,11 +102,13 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
         {
             async onSuccess(data) {
                 setStepsData((prev) => ({ ...prev, status: StepStatus.excelUploadResult, data }));
+                setHasError(false);
                 return data;
             },
             onError() {
                 toast.error(i18next.t('wizard.entity.loadEntities.failedLoadEntities'));
                 setStepsData((prev) => ({ ...prev, status: StepStatus.excelUploadResult }));
+                setHasError(true);
             },
         },
     );
@@ -146,6 +150,7 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
     );
 
     const submitFunction = async () => {
+        if (hasError) return;
         if (isBrokenRules)
             setCreateOrUpdateWithRuleBreachDialogState({
                 isOpen: true,

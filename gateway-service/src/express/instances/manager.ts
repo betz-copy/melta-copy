@@ -326,7 +326,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
             const effectiveFilesLimit = workspaceFilesLimit ?? config.loadExcel.filesLimit;
 
             if (files.length > effectiveFilesLimit) {
-                throw new BadRequestError('files limit', {});
+                throw new BadRequestError(`files limit: more than ${effectiveFilesLimit} files`, {});
             }
 
             const actions = await readExcelFile(files, template, failedEntities, workspace.metadata?.excel?.entitiesFileLimit);
