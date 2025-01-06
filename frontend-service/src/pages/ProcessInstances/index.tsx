@@ -1,4 +1,4 @@
-import { FormControl, FormControlLabel, Grid, Radio, RadioGroup, Typography } from '@mui/material';
+import { Checkbox, FormControl, FormControlLabel, Grid, Radio, RadioGroup, Typography } from '@mui/material';
 import React, { useState, useCallback } from 'react';
 import { useQueryClient } from 'react-query';
 import debounce from 'lodash/debounce';
@@ -24,6 +24,7 @@ const ProcessInstancesPage: React.FC = () => {
     const [endDateInput, setEndDateInput] = useState<Date | null>(null);
 
     const [statusFilter, setStatusFilter] = useState<'all' | Status | undefined>('all');
+    const [isWaitingForMeFilterOn, setIsWaitingForMeFilterOn] = useState<boolean>(true);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
     const onSearch = useCallback(
@@ -107,6 +108,16 @@ const ProcessInstancesPage: React.FC = () => {
                             setSelectedTemplates={setTemplatesToShowCheckbox}
                         />
                     </Grid>
+                    <Grid container item alignItems="center">
+                        <Grid item>
+                            <Checkbox checked={isWaitingForMeFilterOn} onChange={(_e, checked) => setIsWaitingForMeFilterOn(checked)} />
+                        </Grid>
+                        <Grid item>
+                            <Typography color="#101440" fontSize="14px" fontWeight="400">
+                                {i18next.t('processInstancesPage.groupByWaitingForMe')}
+                            </Typography>
+                        </Grid>
+                    </Grid>
                     <Grid item container flexDirection="column">
                         <Grid item>
                             <Typography color="#1E2775" fontSize="14px" fontWeight="500" variant="h6">
@@ -169,61 +180,6 @@ const ProcessInstancesPage: React.FC = () => {
                                 </RadioGroup>
                             </FormControl>
                         </Grid>
-                        {/* <Grid item>
-                            <IconButton sx={{ flexDirection: 'column', width: '60px' }} onClick={() => setStatusFilter('all')}>
-                                {statusFilter === 'all' ? (
-                                    <StatusIconFilled fontSize="medium" sx={{ color: `${StatusColors.All}` }} />
-                                ) : (
-                                    <StatusIcon fontSize="medium" sx={{ color: `${StatusColors.All}` }} />
-                                )}
-
-                                <Typography variant="subtitle2" fontSize="10px">
-                                    {i18next.t('processInstancesPage.allProcesses')}
-                                </Typography>
-                            </IconButton>
-                            <IconButton sx={{ flexDirection: 'column', width: '60px' }} onClick={() => setStatusFilter(Status.Pending)}>
-                                {statusFilter === Status.Pending ? (
-                                    <StatusIconFilled fontSize="medium" sx={{ color: `${StatusColors.Pending}` }} />
-                                ) : (
-                                    <StatusIcon fontSize="medium" sx={{ color: `${StatusColors.Pending}` }} />
-                                )}
-
-                                <Typography variant="subtitle2" fontSize="10px">
-                                    {i18next.t('processInstancesPage.pendingProcesses')}
-                                </Typography>
-                            </IconButton>
-                            <IconButton sx={{ flexDirection: 'column', width: '60px' }} onClick={() => setStatusFilter(Status.Approved)}>
-                                {statusFilter === Status.Approved ? (
-                                    <StatusIconFilled fontSize="medium" sx={{ color: `${StatusColors.Approved}` }} />
-                                ) : (
-                                    <StatusIcon fontSize="medium" sx={{ color: `${StatusColors.Approved}` }} />
-                                )}
-                                <Typography variant="subtitle2" fontSize="10px">
-                                    {i18next.t('processInstancesPage.approvedProcesses')}
-                                </Typography>
-                            </IconButton>
-                            <IconButton sx={{ flexDirection: 'column', width: '60px' }} onClick={() => setStatusFilter(Status.Rejected)}>
-                                {statusFilter === Status.Rejected ? (
-                                    <StatusIconFilled fontSize="medium" sx={{ color: `${StatusColors.Rejected}` }} />
-                                ) : (
-                                    <StatusIcon fontSize="medium" sx={{ color: `${StatusColors.Rejected}` }} />
-                                )}
-                                <Typography variant="subtitle2" fontSize="10px">
-                                    {i18next.t('processInstancesPage.rejectedProcesses')}
-                                </Typography>
-                            </IconButton>
-                            <IconButton sx={{ flexDirection: 'column', width: '60px' }} onClick={() => setStatusFilter(undefined)}>
-                                {!statusFilter ? (
-                                    <StatusIconFilled fontSize="medium" sx={{ color: `${StatusColors.Archived}` }} />
-                                ) : (
-                                    <StatusIcon fontSize="medium" sx={{ color: `${StatusColors.Archived}` }} />
-                                )}
-
-                                <Typography variant="subtitle2" fontSize="10px">
-                                    {i18next.t('processInstancesPage.archivedProcesses')}
-                                </Typography>
-                            </IconButton>
-                        </Grid> */}
                     </Grid>
                     <Grid item>
                         <Typography color="#1E2775" fontSize="14px" fontWeight="500" variant="h6">
@@ -247,6 +203,7 @@ const ProcessInstancesPage: React.FC = () => {
                         startDateInput={startDateInput}
                         endDateInput={endDateInput}
                         statusFilter={statusFilter}
+                        isWaitingForMeFilterOn={isWaitingForMeFilterOn}
                     />
                 </Grid>
             </Grid>

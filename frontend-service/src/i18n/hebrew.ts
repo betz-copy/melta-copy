@@ -932,6 +932,7 @@ export default {
         closedProcessesTitle: 'תהליכים סגורים',
         someStepIsApprovedAreYouSureEditProcessDetails: 'קיים שלב שכבר אושר. האם אתה בטוח רוצה לשנות את פרטי התהליך?',
         waitForMyApprove: 'תהליכים הממתינים להתייחסותי',
+        groupByWaitingForMe: 'קבץ תהליכים הממתינים לאישורי',
         stepStatus: {
             pending: 'ממתין',
             approved: 'בוצע',

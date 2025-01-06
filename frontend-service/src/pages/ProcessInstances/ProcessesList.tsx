@@ -2,11 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
 import { toast } from 'react-toastify';
-import { FiberManualRecordOutlined as StatusIcon, FiberManualRecord as StatusIconFilled } from '@mui/icons-material';
-import IconButton from '@mui/material/IconButton';
 import { useQueryClient } from 'react-query';
 import { ViewingBox } from '../SystemManagement/components/ViewingBox';
-import ProcessCard, { StatusColors } from './ProcessCard';
+import ProcessCard from './ProcessCard';
 import { searchProcessesRequest } from '../../services/processesService';
 import { environment } from '../../globals';
 import { Status, IMongoProcessInstancePopulated } from '../../interfaces/processes/processInstance';
@@ -26,7 +24,8 @@ const ProcessesList: React.FC<{
     endDateInput: Date | null;
     templatesToShowCheckbox: IMongoProcessTemplatePopulated[]; // todo: support in backend
     statusFilter: 'all' | Status | undefined;
-}> = ({ templatesToShowCheckbox, search, startDateInput, endDateInput, statusFilter }) => {
+    isWaitingForMeFilterOn: boolean;
+}> = ({ templatesToShowCheckbox, search, startDateInput, endDateInput, statusFilter, isWaitingForMeFilterOn }) => {
     const queryClient = useQueryClient();
 
     const currentUser = useUserStore((state) => state.user);
@@ -45,23 +44,25 @@ const ProcessesList: React.FC<{
     const [waitingForMeProcesses, setWaitingForMeProcesses] = useState<IMongoProcessInstancePopulated[]>([]);
 
     useEffect(() => {
-        searchProcessesRequest({
-            searchText: search,
-            templateIds: templatesToShowCheckbox.map((template) => template._id),
-            startDate: startDateInput ?? undefined,
-            endDate: endDateInput ?? undefined,
-            status: getStatusFilter(statusFilter),
-            skip: 0,
-            limit: 0,
-            archived: statusFilter === undefined,
-            isWaitingForMeFilterOn: true,
-            isStepStatusPendeing: true,
-        }).then((processes) => setWaitingForMeProcesses(processes));
-    }, []);
+        if (isWaitingForMeFilterOn) {
+            searchProcessesRequest({
+                searchText: search,
+                templateIds: templatesToShowCheckbox.map((template) => template._id),
+                startDate: startDateInput ?? undefined,
+                endDate: endDateInput ?? undefined,
+                status: getStatusFilter(statusFilter),
+                skip: 0,
+                limit: 0,
+                archived: statusFilter === undefined,
+                isWaitingForMeFilterOn: true,
+                isStepStatusPendeing: true,
+            }).then((processes) => setWaitingForMeProcesses(processes));
+        }
+    }, [isWaitingForMeFilterOn]);
 
     return (
         <Grid item container direction="column" spacing={2}>
-            {waitingForMeProcesses.length > 0 && (
+            {waitingForMeProcesses.length > 0 && isWaitingForMeFilterOn && (
                 <Grid item container style={{ backgroundColor: '#CCCFE5', borderRadius: '20px', padding: '15px' }}>
                     <Typography color="#1E2775" fontSize="16px" fontWeight="600">
                         {i18next.t('processInstancesPage.waitForMyApprove')}
@@ -90,7 +91,15 @@ const ProcessesList: React.FC<{
             <Grid item>
                 <ViewingBox minHeight="80vh">
                     <InfiniteScroll<IMongoProcessInstancePopulated>
-                        queryKey={['searchProcesses', templatesToShowCheckbox, search, startDateInput, endDateInput, statusFilter]}
+                        queryKey={[
+                            'searchProcesses',
+                            templatesToShowCheckbox,
+                            search,
+                            startDateInput,
+                            endDateInput,
+                            statusFilter,
+                            isWaitingForMeFilterOn,
+                        ]}
                         queryFunction={({ pageParam }) => {
                             return searchProcessesRequest({
                                 searchText: search,
@@ -101,7 +110,7 @@ const ProcessesList: React.FC<{
                                 skip: pageParam,
                                 limit: infiniteScrollPageCount,
                                 archived: statusFilter === undefined,
-                                isWaitingForMeFilterOn: true,
+                                isWaitingForMeFilterOn,
                             });
                         }}
                         onQueryError={(error) => {

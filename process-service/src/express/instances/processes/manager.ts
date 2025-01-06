@@ -265,7 +265,21 @@ class ProcessInstanceManager extends DefaultManagerMongo<IProcessInstance> {
             const waitingForMeProcesses = await searchAllowedProcessInstanceWaitForMe(this.model, query, userId);
             // if the excludeStep wasn't sent, return the procs
             if (isStepStatusPendeing) {
-                query._id = { $in: waitingForMeProcesses.map((process) => new Types.ObjectId(process._id)) };
+                if (query._id) {
+                    query._id = {
+                        $and: [
+                            query._id,
+                            {
+                                $in: waitingForMeProcesses.map((process) => new Types.ObjectId(process._id)),
+                            },
+                        ],
+                    };
+                } else {
+                    query._id = {
+                        $in: waitingForMeProcesses.map((process) => new Types.ObjectId(process._id)),
+                    };
+                }
+
                 return searchAllowedProcessInstanceForReviewerAggregation(this.model, query, userId, 0, 0);
                 // return waitingForMeProcesses;
             }
@@ -280,8 +294,9 @@ class ProcessInstanceManager extends DefaultManagerMongo<IProcessInstance> {
                         },
                     ],
                 };
+            } else {
+                query._id = { $nin: waitingForMeProcesses.map((waitingForMeProcess) => new Types.ObjectId(waitingForMeProcess._id)) };
             }
-            query._id = { $nin: waitingForMeProcesses.map((waitingForMeProcess) => new Types.ObjectId(waitingForMeProcess._id)) };
         }
 
         // admin -> if general search - the waiting for me checkbox is off
