@@ -24,6 +24,12 @@ const useStyles = makeStyles(() => ({
     },
 }));
 
+type ISplitTree = {
+    tree: any[];
+    flattenedTree: IMongoEntityTemplatePopulated[];
+    filteredTree: any[];
+};
+
 export const getCategoriesSelectCheckboxGroupProps = (
     categories: IMongoCategory[] | undefined,
 ): SelectCheckboxProps<IMongoEntityTemplatePopulated, IMongoCategory>['groupsProps'] => {
@@ -46,7 +52,7 @@ const getOptionId: SelectCheckboxProps<IMongoEntityTemplatePopulated | IMongoCat
 const getOptionLabel: SelectCheckboxProps<IMongoEntityTemplatePopulated | IMongoCategory, IMongoCategory>['getOptionLabel'] = ({ displayName }) =>
     displayName;
 
-const getTreeOnSplittedTemplates = (splitTempaltes: IMongoEntityTemplatePopulated[], searchValue: string) => {
+const getTreeOnSplittedTemplates = (splitTempaltes: IMongoEntityTemplatePopulated[], searchValue: string): ISplitTree => {
     const categories = splitTempaltes.map(({ category }) => category);
 
     const filteredCategories = categories?.filter((category) => splitTempaltes.some((template) => template.category._id === category._id));
@@ -87,6 +93,33 @@ const splitCategories = (templates: IMongoEntityTemplatePopulated[], categories?
 
     return { firstSplittedTemplates, secondSplittedTemplates };
 };
+
+const singleTree = (
+    firstTree: ISplitTree,
+    secondTree: ISplitTree,
+    selectedTemplates: IMongoEntityTemplatePopulated[],
+    setSelectedTemplates: React.Dispatch<React.SetStateAction<IMongoEntityTemplatePopulated[]>>,
+    onClick: () => void,
+) => (
+    <Tree
+        flattenedTree={firstTree.flattenedTree}
+        preSelectedItemsIds={selectedTemplates.map(({ _id }) => _id)}
+        getItemId={getOptionId}
+        getItemLabel={getOptionLabel}
+        multi
+        treeItems={firstTree.tree}
+        filteredTreeItems={firstTree.filteredTree}
+        onSelectItems={(ids) => {
+            const filteredFirstOptions = firstTree.flattenedTree.filter((option) => ids.includes(getOptionId(option)));
+            setSelectedTemplates((prev) => {
+                const prevIds = prev.map(getOptionId);
+                const filteredSecondOptions = secondTree.flattenedTree.filter((option) => prevIds.includes(getOptionId(option)));
+                return [...filteredFirstOptions, ...filteredSecondOptions];
+            });
+            onClick();
+        }}
+    />
+);
 
 const TemplatesSelectGrid: React.FC<{
     templates: IMongoEntityTemplatePopulated[];
@@ -171,26 +204,7 @@ const TemplatesSelectGrid: React.FC<{
                                 }}
                                 selectedOptionIds={selectedTemplates.map(getOptionId)}
                             />
-                            <Tree
-                                flattenedTree={firstTree.flattenedTree}
-                                preSelectedItemsIds={selectedTemplates.map(({ _id }) => _id)}
-                                getItemId={getOptionId}
-                                getItemLabel={getOptionLabel}
-                                multi
-                                treeItems={firstTree.tree}
-                                filteredTreeItems={firstTree.filteredTree}
-                                onSelectItems={(ids) => {
-                                    const filteredFirstOptions = firstTree.flattenedTree.filter((option) => ids.includes(getOptionId(option)));
-                                    setSelectedTemplates((prev) => {
-                                        const prevIds = prev.map(getOptionId);
-                                        const filteredSecondOptions = secondTree.flattenedTree.filter((option) =>
-                                            prevIds.includes(getOptionId(option)),
-                                        );
-                                        return [...filteredFirstOptions, ...filteredSecondOptions];
-                                    });
-                                    onClick();
-                                }}
-                            />
+                            {singleTree(firstTree, secondTree, selectedTemplates, setSelectedTemplates, onClick)}
                             <Button
                                 style={{
                                     marginRight: '17px',
@@ -218,26 +232,7 @@ const TemplatesSelectGrid: React.FC<{
                     {openFilter && showAll && (
                         <Box sx={{ zIndex: '100', position: 'absolute', width: '235px', ...floatingBoxStyle }}>
                             <div style={{ width: '100%', maxHeight: '28rem', overflowY: 'auto', paddingBottom: '4px' }}>
-                                <Tree
-                                    flattenedTree={secondTree.flattenedTree}
-                                    preSelectedItemsIds={selectedTemplates.map(({ _id }) => _id)}
-                                    getItemId={getOptionId}
-                                    getItemLabel={getOptionLabel}
-                                    multi
-                                    treeItems={secondTree.tree}
-                                    filteredTreeItems={secondTree.filteredTree}
-                                    onSelectItems={(ids) => {
-                                        const filteredFirstOptions = secondTree.flattenedTree.filter((option) => ids.includes(getOptionId(option)));
-                                        setSelectedTemplates((prev) => {
-                                            const prevIds = prev.map(getOptionId);
-                                            const filteredSecondOptions = firstTree.flattenedTree.filter((option) =>
-                                                prevIds.includes(getOptionId(option)),
-                                            );
-                                            return [...filteredFirstOptions, ...filteredSecondOptions];
-                                        });
-                                        onClick();
-                                    }}
-                                />
+                                {singleTree(secondTree, firstTree, selectedTemplates, setSelectedTemplates, onClick)}
                             </div>
                         </Box>
                     )}
