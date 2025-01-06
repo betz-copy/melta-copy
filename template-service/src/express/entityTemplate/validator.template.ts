@@ -3,7 +3,7 @@ import * as ts from 'typescript-actions';
 import DefaultController from '../../utils/express/controller';
 import { generateInterfaceWithRelationships } from '../../utils/entityTemplateActions/interfacesGenerator';
 import { BadRequestError } from '../error';
-import { IEntityTemplatePopulated, IMongoEntityTemplate } from './interface';
+import { IMongoEntityTemplate } from './interface';
 import EntityTemplateManager from './manager';
 import { addPropertyToRequest } from '../../utils/express';
 import { compileTsCode } from '../../utils/entityTemplateActions/tsCompiler';
