@@ -47,7 +47,6 @@ const config = {
         userOriginalAndSuffixFieldsMap: env
             .get('USER_ORIGINAL_AND_SUFFIX_FIELDS_MAP')
             .default([
-                { originalFieldName: '_id', suffixFieldName: '.id' },
                 { originalFieldName: 'fullName', suffixFieldName: '.fullName' },
                 { originalFieldName: 'jobTitle', suffixFieldName: '.jobTitle' },
                 { originalFieldName: 'hierarchy', suffixFieldName: '.hierarchy' },
@@ -58,7 +57,6 @@ const config = {
         usersArrayOriginalAndSuffixFieldsMap: env
             .get('USERS_ARRAY_ORIGINAL_AND_SUFFIX_FIELDS_MAP')
             .default([
-                { originalFieldName: '_id', suffixFieldName: '.ids' },
                 { originalFieldName: 'fullName', suffixFieldName: '.fullNames' },
                 { originalFieldName: 'jobTitle', suffixFieldName: '.jobTitles' },
                 { originalFieldName: 'hierarchy', suffixFieldName: '.hierarchies' },
