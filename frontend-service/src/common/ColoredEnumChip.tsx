@@ -8,13 +8,15 @@ interface ColoredEnumChipProps {
     style?: CSSProperties;
     icon?: React.ReactElement;
     searchValue?: string;
+    onDelete?: (event: any) => void;
+    deleteIcon?: React.ReactElement; // must be a ReactElement, not null
 }
 
-export const ColoredEnumChip: React.FC<ColoredEnumChipProps> = ({ label, color, style, icon, searchValue }) => {
-    const shouldHighlight = searchValue && label.toString().includes(searchValue);
+export const ColoredEnumChip: React.FC<ColoredEnumChipProps> = ({ label, color, style, icon, searchValue, onDelete, deleteIcon }) => {
+    const shouldHighlight = Boolean(searchValue && label.toString().includes(searchValue));
     const textColor = color === 'default' ? '#000' : color;
-    let backgroundColor;
 
+    let backgroundColor: string;
     if (color !== 'default' && color) {
         backgroundColor = colorWithOpacity(color, shouldHighlight ? 0.25 : 0.1);
     } else {
@@ -26,6 +28,8 @@ export const ColoredEnumChip: React.FC<ColoredEnumChipProps> = ({ label, color, 
             icon={icon}
             label={label}
             variant="outlined"
+            onDelete={onDelete}
+            deleteIcon={deleteIcon}
             sx={{
                 height: '25px',
                 borderRadius: '6px',
