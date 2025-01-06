@@ -136,6 +136,7 @@ const config = {
         getByIdRoute: env.get('KARTOFFEL_FIND_USER_BY_ID_ROUTE').default('').asString(),
         searchRoute: env.get('KARTOFFEL_SEARCH_ROUTE').default('/search').asString(),
         fieldToSearch: env.get('KARTOFFEL_FIELDS_TO_SEARCH').default('fullName,uniqueId,personalNumber,identityCard').asString(),
+        requestTimeout: env.get('KARTOFFEL_REQUEST_TIMEOUT').default(10000).asIntPositive(),
     },
     errorCodes: {
         categoryHasTemplates: 'CATEGORY_HAS_TEMPLATES',
