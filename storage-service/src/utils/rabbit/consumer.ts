@@ -11,10 +11,12 @@ class DeleteFilesConsumer {
     async createDeleteFilesQueueReq(msg: ConsumerMessage) {
         try {
             const contentAsString = msg.getContent() as string;
-            const filesIds: string[] = JSON.parse(contentAsString);
 
-            const filesManager = new FilesManager(msg.properties.headers[workspaceIdHeaderName]);
-            await filesManager.deleteFiles(filesIds);
+            const allObj = JSON.parse(contentAsString);
+            const { fileIds, bucketName } = allObj;
+            const filesManager = new FilesManager(bucketName ?? msg.properties.headers[workspaceIdHeaderName]);
+            await filesManager.deleteFiles(fileIds);
+
             msg.ack();
         } catch (err: any) {
             msg.nack(false);
