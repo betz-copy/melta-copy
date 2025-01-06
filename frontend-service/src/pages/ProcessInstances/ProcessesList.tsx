@@ -50,7 +50,6 @@ const ProcessesList: React.FC<{
                 templateIds: templatesToShowCheckbox.map((template) => template._id),
                 startDate: startDateInput ?? undefined,
                 endDate: endDateInput ?? undefined,
-                status: getStatusFilter(statusFilter),
                 skip: 0,
                 limit: 0,
                 archived: false,
@@ -58,7 +57,7 @@ const ProcessesList: React.FC<{
                 isStepStatusPendeing: true,
             }).then((processes) => setWaitingForMeProcesses(processes));
         }
-    }, [isWaitingForMeFilterOn]);
+    }, [isWaitingForMeFilterOn, search, templatesToShowCheckbox, startDateInput, endDateInput]);
 
     return (
         <Grid item container direction="column" spacing={2}>

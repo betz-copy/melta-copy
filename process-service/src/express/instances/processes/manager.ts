@@ -257,12 +257,8 @@ class ProcessInstanceManager extends DefaultManagerMongo<IProcessInstance> {
             if (isStepStatusPendeing) {
                 if (query._id) {
                     query._id = {
-                        $and: [
-                            query._id,
-                            {
-                                $in: waitingForMeProcesses.map((process) => new Types.ObjectId(process._id)),
-                            },
-                        ],
+                        ...query._id,
+                        $in: waitingForMeProcesses.map((process) => new Types.ObjectId(process._id)),
                     };
                 } else {
                     query._id = {
@@ -274,12 +270,8 @@ class ProcessInstanceManager extends DefaultManagerMongo<IProcessInstance> {
             }
             if (query._id) {
                 query._id = {
-                    $and: [
-                        query._id,
-                        {
-                            $nin: waitingForMeProcesses.map((waitingForMeProcess) => new Types.ObjectId(waitingForMeProcess._id)),
-                        },
-                    ],
+                    ...query._id,
+                    $nin: waitingForMeProcesses.map((waitingForMeProcess) => new Types.ObjectId(waitingForMeProcess._id)),
                 };
             } else {
                 query._id = { $nin: waitingForMeProcesses.map((waitingForMeProcess) => new Types.ObjectId(waitingForMeProcess._id)) };
