@@ -3,28 +3,13 @@ export interface TemplateNamesAndId {
     Name: string;
 }
 
-export interface FlowParameter {
-    $name: string;
-    Name: string;
-    ColumnName: string;
-    isRequired: boolean;
-    DisplayName: string;
-    Description: string;
-    IsSingleValue: boolean;
-    Options: Array<any>;
-    IsContains: boolean;
-}
-
-export interface Attribute {
-    $name: string;
-    Name: string;
-    Value?: string;
-}
-
-export interface FlowField {
-    $name: string;
+export interface FlowProperties {
     Name: string;
     DisplayName: string;
     Type: string;
-    Attributes?: Attribute[];
+    OntologyType: string;
+    isRequired?: boolean;
+    Description?: string;
+    IsSingleValue?: boolean;
+    Options?: Array<any>;
 }
