@@ -9,6 +9,7 @@ import FileIcon from './FileIcon';
 import { PreviewDialog } from './PreviewDialog';
 import { HighlightText } from '../../utils/HighlightText';
 import { MeltaTooltip } from '../MeltaTooltip';
+import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
 
 const OpenPreviewContent: React.FC<{
     fileName: string;
@@ -62,7 +63,7 @@ const OpenPreview: React.FC<{
     download?: boolean;
     onClick?: () => Promise<void>;
     searchValue?: string;
-    entityIdsToInclude?: any[];
+    entityIdsToInclude?: ISemanticSearchResult[string][string];
 }> = ({ fileId, img, showText = true, download, onClick, searchValue, entityIdsToInclude }) => {
     const fileName = typeof fileId === 'string' ? getFileName(fileId) : fileId.name;
     const [open, setOpen] = useState(false);
@@ -76,9 +77,11 @@ const OpenPreview: React.FC<{
         const isFileNameSearched = searchValue && fileName.toLowerCase().includes(searchValue);
         return (
             !isFileNameSearched &&
-            entityIdsToInclude?.map((entityData) => entityData.minioFileId).includes(typeof fileId === 'string' ? fileId : fileId.name)
+            entityIdsToInclude?.map((entityIdToInclude) => entityIdToInclude.minioFileId).includes(typeof fileId === 'string' ? fileId : fileId.name)
         );
     }, [entityIdsToInclude, fileId, fileName, searchValue]);
+
+    const matchSentence = entityIdsToInclude?.find((entityIdToInclude) => entityIdToInclude.minioFileId === fileId)?.text;
 
     if (download) {
         const content = (
@@ -100,17 +103,28 @@ const OpenPreview: React.FC<{
         );
     }
     return (
-        <Grid>
-            <OpenPreviewContent
-                fileName={fileName}
-                onClick={handleButtonClick}
-                img={img}
-                showText={showText}
-                searchValue={searchValue}
-                highlightAll={highlightAll}
-            />
-            {open && <PreviewDialog fileId={fileId} setOpen={setOpen} open={open} fileName={fileName} contentType={contentType} />}
-        </Grid>
+        <MeltaTooltip
+            title={matchSentence}
+            placement="right"
+            sx={{
+                overflow: 'hidden',
+                whiteSpace: 'nowrap',
+                textOverflow: 'ellipsis',
+            }}
+            disableHoverListener={open}
+        >
+            <Grid>
+                <OpenPreviewContent
+                    fileName={fileName}
+                    onClick={handleButtonClick}
+                    img={img}
+                    showText={showText}
+                    searchValue={searchValue}
+                    highlightAll={highlightAll}
+                />
+                {open && <PreviewDialog fileId={fileId} setOpen={setOpen} open={open} fileName={fileName} contentType={contentType} />}
+            </Grid>
+        </MeltaTooltip>
     );
 };
 

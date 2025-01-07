@@ -508,26 +508,15 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
     }
 
     async getEntitiesCountByTemplates(shouldSemanticSearch: boolean, searchBody: ITemplateSearchBody): Promise<ICountSearchResult[] | undefined> {
-        const mockData: ISemanticSearchResult = {
-            '677aa2da2cb6ed4c55c7c529': {
-                'a00ab71f-703e-4885-8a6b-713b88ce4549': [
-                    {
-                        minioFileId: '5645b7e8449c485f8326881f21c6bcbademo.docx',
-                        text: 'text',
-                    },
-                ],
-            },
-        };
-
         return this.service.getEntitiesCountByTemplates({
             ...searchBody,
             semanticSearchResult:
-                searchBody.textSearch && !shouldSemanticSearch
+                searchBody.textSearch && shouldSemanticSearch
                     ? await this.semanticSearchSearch.search({
                           textSearch: searchBody.textSearch,
                           templates: searchBody.templateIds,
                       })
-                    : mockData,
+                    : undefined,
         });
     }
 

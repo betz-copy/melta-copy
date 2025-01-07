@@ -26,6 +26,7 @@ import { ActionErrors } from '../../interfaces/ruleBreaches/actionMetadata';
 import RelationshipRefCellEditor from './RelationshipRefCellEditor';
 import { convertToPlainText } from '../HtmlTagsStringValue';
 import { IError, IFailedEntity, IValidationError } from '../../common/wizards/loadEntities';
+import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
 
 const hasErrors = (data: any): data is IFailedEntity => {
     return data && Array.isArray(data.errors) && data.errors.every((error) => 'type' in error && 'metadata' in error);
@@ -208,7 +209,7 @@ export const fileColDef = <Data extends any = EntityData>(
     hardcodedWidth: number | undefined,
     hideColumn = false,
     searchValue: string | undefined = undefined,
-    entityIdsToInclude: string[] | undefined = undefined,
+    entityIdsToInclude: ISemanticSearchResult[string][string] | undefined = undefined,
 ): ColDef => {
     return {
         field,
@@ -418,7 +419,7 @@ export const enumFilesColDef = <Data extends any = EntityData>(
     rowHeight: number,
     hideColumn = false,
     searchValue: string | undefined = undefined,
-    entityIdsToInclude: string[] | undefined = undefined,
+    entityIdsToInclude: ISemanticSearchResult[string][string] | undefined = undefined,
 ): ColDef => {
     const filterParams: ISetFilterParams<Data, string | undefined> = {
         suppressMiniFilter: true,

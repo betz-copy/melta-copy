@@ -48,8 +48,6 @@ export class SemanticManager {
     private async indexFile({ minioFileId, templateId, entityId }: Omit<IIndexFilesRequest, 'minioFileIds'> & { minioFileId: string }) {
         const content = await this.minioClient.readFile(minioFileId);
 
-        console.log('content', content);
-        
         if (!content) {
             logger.error(`Content is None for minioFileId: ${minioFileId}`);
             return;
