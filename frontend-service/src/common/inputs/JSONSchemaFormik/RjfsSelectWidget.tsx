@@ -90,6 +90,7 @@ export default function RjfsSelectWidget(props: WidgetProps) {
             disabled={disabled}
             readOnly={readonly}
             multiple={multiple}
+            disableCloseOnSelect={multiple}
             value={selectedValue}
             options={items}
             getOptionLabel={(option) => option.label}
