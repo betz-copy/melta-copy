@@ -31,7 +31,7 @@ function processValue(schema: any, value: any) {
     return value;
 }
 
-export const RjfsSelectWidget = ({
+const RjfsSelectWidget = ({
     schema,
     uiSchema,
     id,
@@ -49,15 +49,13 @@ export const RjfsSelectWidget = ({
     color,
     ...textFieldProps
 }: WidgetProps) => {
-    const { enumOptions } = getUiOptions(uiSchema) as {
-        enumOptions?: Array<{
+    const { enumOptions: items } = getUiOptions(uiSchema) as {
+        enumOptions: Array<{
             label: string;
             value: string;
-            color?: string | 'default';
+            color?: string;
         }>;
     };
-
-    const items = enumOptions || [];
 
     let selectedValue: (typeof items)[number] | (typeof items)[number][] | null;
     if (multiple) {
@@ -103,11 +101,15 @@ export const RjfsSelectWidget = ({
                     onChange(val ? processValue(schema, val) : undefined);
                 }
             }}
-            renderOption={(props, option) => (
-                <li {...props} key={option.value}>
-                    <ColoredEnumChip label={option.label} color={option.color} />
-                </li>
-            )}
+            renderOption={(props, option) =>
+                option.color ? (
+                    <li {...props} key={option.value}>
+                        <ColoredEnumChip label={option.label} color={option.color || 'default'} />
+                    </li>
+                ) : (
+                    <span {...props}>{option.label}</span>
+                )
+            }
             renderTags={(tagValue, getTagProps) =>
                 tagValue.map((option, index) => {
                     const { key, onDelete, ...restTagProps } = getTagProps({ index });
@@ -115,7 +117,7 @@ export const RjfsSelectWidget = ({
                         <ColoredEnumChip
                             key={key}
                             label={option.label}
-                            color={option.color}
+                            color={option.color || 'default'}
                             onDelete={onDelete}
                             deleteIcon={<CloseIcon />}
                             {...restTagProps}
@@ -141,8 +143,8 @@ export const RjfsSelectWidget = ({
                         shrink: readonly || undefined,
                     }}
                     inputProps={{
+                        required: multiple ? required && value.length === 0 : required,
                         ...params.inputProps,
-                        required: multiple && Array.isArray(selectedValue) ? selectedValue.length === 0 : required,
                     }}
                     color={color as TextFieldProps['color']}
                 />
