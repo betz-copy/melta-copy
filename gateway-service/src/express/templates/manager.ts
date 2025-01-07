@@ -741,7 +741,6 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
             Object.entries(currTemplate.properties.properties).forEach(([key, value]) => {
                 const newValue = updatedTemplateData.properties.properties[key];
-                console.log({ value, newValue, key });
 
                 if ((!newValue || newValue?.isNewPropNameEqualDeletedPropName) && !currTemplate.actions) removedProperties.push(key);
                 else {

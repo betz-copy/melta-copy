@@ -1508,12 +1508,6 @@ export class EntityManager extends DefaultManagerNeo4j {
                 });
 
                 await Promise.all(updatePromises);
-
-                // const activityLogsPromises = activityLogsToCreate.map((activityLogToCreate) =>
-                //     this.activityLogProducer.createActivityLog(activityLogToCreate),
-                // );
-
-                // await Promise.all(activityLogsPromises);
             });
         } catch (err) {
             this.throwServiceErrorIfFailedConstraintsValidation(err);
@@ -1690,7 +1684,6 @@ export class EntityManager extends DefaultManagerNeo4j {
         await Promise.all([...createUniqueConstraintsPromises, ...deleteConstraintsPromises]);
     }
 
-    // [fileHeb].map((key)=> currentEntity.${key} =[currentEntity.${key}])
     async updateConstraintsOfTemplate(
         template: IMongoEntityTemplate,
         requiredConstraints: string[],
