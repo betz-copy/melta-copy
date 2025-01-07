@@ -6,6 +6,7 @@ import {
 } from '../../externalServices/notificationService/interfaces/populated';
 import { IMongoProcessInstanceWithSteps } from '../../externalServices/processService/interfaces/processInstance';
 import { IMongoStepTemplate } from '../../externalServices/processService/interfaces/stepTemplate';
+import { IUser } from '../../externalServices/userService/interfaces/users';
 
 export interface IProcessReviewerUpdateMailNotificationMetadataPopulated {
     process: IMongoProcessInstanceWithSteps;
@@ -24,7 +25,7 @@ export type IMailNotificationMetadataPopulated =
     | IProcessStatusUpdateMailNotificationMetadataPopulated;
 
 export interface IMailNotification {
-    viewers: string[];
+    viewers: IUser[];
     type: NotificationType;
     populatedMetaData: IMailNotificationMetadataPopulated;
 }

@@ -10,6 +10,18 @@ export class UsersController {
         res.json(await UsersManager.getUserById(req.params.userId));
     }
 
+    static async getKartoffelUserProfile(req: Request, res: Response) {
+        const stream = await UsersManager.getKartoffelUserProfileRequest(req.params.kartoffelId);
+        res.setHeader('Content-Type', 'image/*');
+        stream.pipe(res);
+    }
+
+    static async getUserProfile(req: Request, res: Response) {
+        const stream = await UsersManager.getUserProfile(req.params.userId);
+        res.setHeader('Content-Type', 'image/*');
+        stream.pipe(res);
+    }
+
     static async searchUserIds(req: Request, res: Response) {
         res.json(await UsersManager.searchUserIds(req.body));
     }
@@ -22,6 +34,10 @@ export class UsersController {
         const { kartoffelId, digitalIdentitySource, permissions } = req.body;
 
         res.json(await UsersManager.createUser(kartoffelId, digitalIdentitySource, permissions));
+    }
+
+    static async updateUserPreferencesMetadata(req: Request, res: Response) {
+        res.json(await UsersManager.updateUserPreferencesMetadata(req.params.userId, req.body, req.file));
     }
 
     static async updateUserExternalMetadata(req: Request, res: Response) {

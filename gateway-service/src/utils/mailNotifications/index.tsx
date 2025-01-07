@@ -2,7 +2,8 @@ import React from 'react';
 import { renderToString } from 'react-dom/server';
 import config from '../../config';
 import { IRule } from '../../express/templates/rules/interfaces';
-import { UsersManager } from '../../express/users/manager';
+import { IWorkspace } from '../../express/workspaces/interface';
+import { WorkspaceService } from '../../express/workspaces/service';
 import { IEntity } from '../../externalServices/instanceService/interfaces/entities';
 import { IDeleteProcessNotificationMetadata, NotificationType } from '../../externalServices/notificationService/interfaces';
 import {
@@ -25,6 +26,7 @@ import {
 } from '../../externalServices/ruleBreachService/interfaces/populated';
 import { EntityTemplateService, IMongoEntityTemplatePopulated } from '../../externalServices/templates/entityTemplateService';
 import { RelationshipsTemplateService } from '../../externalServices/templates/relationshipsTemplateService';
+import { IUser } from '../../externalServices/userService/interfaces/users';
 import { hebrew } from './hebrew';
 import {
     IMailNotification,
@@ -45,12 +47,18 @@ export class MailManager {
 
     private relationshipsTemplateService: RelationshipsTemplateService;
 
-    constructor(workspaceId: string) {
+    constructor(private workspaceId: string) {
         this.entityTemplateService = new EntityTemplateService(workspaceId);
         this.relationshipsTemplateService = new RelationshipsTemplateService(workspaceId);
     }
 
-    private newProcessMail({ process }: INewProcessNotificationMetadataPopulated) {
+    private async meltaBaseUrlByWorkspace() {
+        const workspace: IWorkspace = await WorkspaceService.getById(this.workspaceId);
+
+        return `${meltaBaseUrl}${workspace.path}/${workspace.name}${workspace.type}`;
+    }
+
+    private async newProcessMail({ process }: INewProcessNotificationMetadataPopulated) {
         return (
             <html>
                 <body dir="rtl">
@@ -185,7 +193,7 @@ export class MailManager {
     private EntityLink({ entity, entityTemplate }: { entity: IEntity | string | null; entityTemplate: IMongoEntityTemplatePopulated | null }) {
         return (
             <a
-                href={`${meltaBaseUrl}/entity/${entity && typeof entity !== 'string' ? entity.properties._id : 'unknownEntity'}`}
+                href={`${this.meltaBaseUrlByWorkspace()}/entity/${entity && typeof entity !== 'string' ? entity.properties._id : 'unknownEntity'}`}
                 target="_blank"
                 style={{ color: '#225AA7', fontWeight: 'bold' }}
             >
@@ -213,30 +221,36 @@ export class MailManager {
         const relationshipTemplate = await this.relationshipsTemplateService.getRelationshipTemplateById(relationshipTemplateId);
         const sourceEntityTemplate = await this.entityTemplateService.getEntityTemplateById(relationshipTemplate.sourceEntityId);
         const destinationEntityTemplate = await this.entityTemplateService.getEntityTemplateById(relationshipTemplate.destinationEntityId);
+
         return (
             <>
                 {actionType === ActionTypes.CreateRelationship ? hebrew.ruleBreach.relationshipCreation : hebrew.ruleBreach.relationshipDeletion}
                 <strong> {relationshipTemplate.displayName} </strong>
                 {hebrew.ruleBreach.fromEntity} <this.EntityLink entity={sourceEntity} entityTemplate={sourceEntityTemplate!} />
-                {hebrew.ruleBreach.toEntity} <this.EntityLink entity={destinationEntity} entityTemplate={destinationEntityTemplate!} />
+                {hebrew.ruleBreach.toEntity}
+                <this.EntityLink entity={destinationEntity} entityTemplate={destinationEntityTemplate!} />
             </>
         );
     }
 
     private async getUpdateEntityActionInfo({ entity }: IUpdateEntityMetadataPopulated) {
         const entityTemplate = await this.entityTemplateService.getEntityTemplateById(entity!.templateId);
+
         return (
             <p>
-                {hebrew.updateEntityActionInfo.updatingEntity} <this.EntityLink entity={entity} entityTemplate={entityTemplate!} />
+                {hebrew.updateEntityActionInfo.updatingEntity}
+                <this.EntityLink entity={entity} entityTemplate={entityTemplate!} />
             </p>
         );
     }
 
     private async getUpdateEntityStatusActionInfo({ entity, disabled }: IUpdateEntityStatusMetadataPopulated) {
         const entityTemplate = await this.entityTemplateService.getEntityTemplateById(entity!.templateId);
+
         return (
             <p>
-                {hebrew.updateEntityActionInfo.updatingEntityStatus} <this.EntityLink entity={entity} entityTemplate={entityTemplate!} />
+                {hebrew.updateEntityActionInfo.updatingEntityStatus}
+                <this.EntityLink entity={entity} entityTemplate={entityTemplate!} />
                 <strong>
                     {disabled ? hebrew.ruleBreach.updateEntityStatusActionInfo.toDisabled : hebrew.ruleBreach.updateEntityStatusActionInfo.toActive}
                 </strong>
@@ -300,7 +314,7 @@ export class MailManager {
                     <br />
                     <p>
                         {hebrew.ruleBreach.moreDetails}
-                        <a href={`${meltaBaseUrl}/rule-management/alert/${ruleBreachAlert._id}`} target="_blank">
+                        <a href={`${this.meltaBaseUrlByWorkspace()}/rule-management/alert/${ruleBreachAlert._id}`} target="_blank">
                             {hebrew.ruleBreach.clickHere}
                         </a>
                     </p>
@@ -326,7 +340,7 @@ export class MailManager {
                     <br />
                     <p>
                         {hebrew.ruleBreach.moreDetails}
-                        <a href={`${meltaBaseUrl}/rule-management/request/${ruleBreachRequest._id}`} target="_blank">
+                        <a href={`${this.meltaBaseUrlByWorkspace()}/rule-management/request/${ruleBreachRequest._id}`} target="_blank">
                             {hebrew.ruleBreach.clickHere}
                         </a>
                     </p>
@@ -356,7 +370,7 @@ export class MailManager {
                     <br />
                     <p>
                         {hebrew.ruleBreach.moreDetails}
-                        <a href={`${meltaBaseUrl}/rule-management/request/${ruleBreachRequest._id}`} target="_blank">
+                        <a href={`${this.meltaBaseUrlByWorkspace()}/rule-management/request/${ruleBreachRequest._id}`} target="_blank">
                             {hebrew.ruleBreach.clickHere}
                         </a>
                     </p>
@@ -372,12 +386,13 @@ export class MailManager {
                 <body dir="rtl">
                     <p>{hebrew.dateAboutToExpireNotification.dateAboutToExpireHeadline}</p>
                     <p>
-                        {hebrew.dateAboutToExpireNotification.propertyValue}{' '}
+                        {hebrew.dateAboutToExpireNotification.propertyValue}
                         <strong>
                             {new Date(datePropertyValue).toLocaleDateString('he-IL')}({entityTemplate?.properties.properties[propertyName].title})
                         </strong>
                         {hebrew.dateAboutToExpireNotification.entityTemplateName}
-                        <this.EntityLink entity={entity} entityTemplate={entityTemplate!} /> {hebrew.dateAboutToExpireNotification.aboutToExpire}
+                        <this.EntityLink entity={entity} entityTemplate={entityTemplate!} />
+                        {hebrew.dateAboutToExpireNotification.aboutToExpire}
                     </p>
                 </body>
             </html>
@@ -409,12 +424,8 @@ export class MailManager {
         }
     }
 
-    async createMail({ viewers: viewersId, type, populatedMetaData }: IMailNotification) {
-        const viewersMailPromises = viewersId.map(async (viewerId: string) => {
-            const viewer = await UsersManager.getUserById(viewerId);
-            return viewer.mail;
-        });
-        const viewersMail = await Promise.all(viewersMailPromises);
+    async createMail({ viewers, type, populatedMetaData }: IMailNotification) {
+        const viewersMail = viewers.map((viewer: IUser) => viewer.mail);
         const title = mailTitle[type];
 
         const html = renderToString(await this.getMailHtml(type, populatedMetaData));

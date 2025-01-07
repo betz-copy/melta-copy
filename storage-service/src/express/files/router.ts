@@ -23,7 +23,7 @@ filesRouter.delete('/:path', ValidateRequest(defaultSchema), filesController.del
 filesRouter.post('/duplicate/:path', ValidateRequest(defaultSchema), filesController.duplicateFile);
 filesRouter.post('/duplicate-bulk', ValidateRequest(bulkFilesRequestSchema), filesController.duplicateFiles);
 
-filesRouter.post('/bulk', MinioMulter.uploadToMinio, ValidateRequest(uploadFilesRequestSchema), filesController.uploadFiles);
-filesRouter.post('/', MinioMulter.uploadBulkToMinio, ValidateRequest(uploadFileRequestSchema), filesController.uploadFile);
+filesRouter.post('/bulk', MinioMulter.uploadBulkToMinio, ValidateRequest(uploadFilesRequestSchema), filesController.uploadFiles);
+filesRouter.post('/', MinioMulter.uploadToMinio, ValidateRequest(uploadFileRequestSchema), filesController.uploadFile);
 
 export { filesRouter };
