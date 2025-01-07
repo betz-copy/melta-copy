@@ -88,9 +88,8 @@ class EntityController extends DefaultController<EntityManager> {
         res.json(await this.manager.updateEnumFieldValue(req.params.id, newValue, oldValue, field));
     }
 
-    async updateSingleFiledToMultiField(req: Request, res: Response) {
-        const entityTemplate = fetchPropertyFromRequest<IMongoEntityTemplate>(req, 'entityTemplate');
-        res.json(await this.manager.updateSingleFiledToMultiField(entityTemplate, req.body.singleFileToMultiFiles));
+    async convertFieldsToPlural(req: Request, res: Response) {
+        res.json(await this.manager.convertFieldsToPlural(req.params.id, req.body.propertiesKeysToPluralize));
     }
 
     async getIsFieldUsed(req: Request, res: Response) {

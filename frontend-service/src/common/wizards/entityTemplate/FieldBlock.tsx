@@ -181,8 +181,6 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
     const onChange = (index: number, event: React.ChangeEvent<HTMLInputElement>) => {
         const inputName = event.target.name.split('.')[1]; // the input name is in the format `properties[index].field`
         const inputValue = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
-        console.log({ inputName, inputValue, index });
-
         setFieldDisplayValue(index, inputName as keyof Values, inputValue);
     };
     const onChangeWrapper = (index: number) => (event: React.ChangeEvent<HTMLInputElement>) => onChange(index, event);

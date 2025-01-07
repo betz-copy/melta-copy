@@ -313,8 +313,6 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
 
     attachmentProperties.forEach(({ id, name, title, required, type, deleted }) => {
         if (!deleted) {
-            console.log({ type });
-
             if (type === 'multipleFiles') {
                 schema.properties[name] = {
                     title,

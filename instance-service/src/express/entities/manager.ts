@@ -1404,7 +1404,6 @@ export class EntityManager extends DefaultManagerNeo4j {
                         entityId,
                         {
                             ...entityProperties,
-
                             [fieldName]: addFieldToSrcEntity ? relationship.destinationEntityId : relationship.sourceEntityId,
                         },
                         entityTemplate,
@@ -1487,10 +1486,38 @@ export class EntityManager extends DefaultManagerNeo4j {
             });
     }
 
-    async updateSingleFiledToMultiField(entityTemplate: IMongoEntityTemplate, singleFileToMultiFiles: string[]) {
-        console.log({ entityTemplate, singleFileToMultiFiles });
+    async convertFieldsToPlural(templateId: string, propertiesKeysToPluralize: string[]) {
+        try {
+            const entityTemplate: IMongoEntityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(templateId);
 
-        // return null;
+            await this.neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
+                const allEntitiesOfTemplate = await runInTransactionAndNormalize(
+                    transaction,
+                    `MATCH (e: \`${templateId}\`) RETURN e`,
+                    normalizeReturnedEntity('multipleResponses'),
+                );
+
+                const updatePromises = allEntitiesOfTemplate.map(async (entity) => {
+                    const updatedProperties = { ...entity.properties };
+
+                    propertiesKeysToPluralize.forEach((key) => {
+                        if (key in updatedProperties) updatedProperties[key] = [updatedProperties[key]];
+                    });
+
+                    await this.updateEntityByIdInnerTransaction(entity.properties._id, updatedProperties, entityTemplate, transaction);
+                });
+
+                await Promise.all(updatePromises);
+
+                // const activityLogsPromises = activityLogsToCreate.map((activityLogToCreate) =>
+                //     this.activityLogProducer.createActivityLog(activityLogToCreate),
+                // );
+
+                // await Promise.all(activityLogsPromises);
+            });
+        } catch (err) {
+            this.throwServiceErrorIfFailedConstraintsValidation(err);
+        }
     }
 
     private getConstraintFromName(constraintName: string): IConstraint {
@@ -1663,6 +1690,7 @@ export class EntityManager extends DefaultManagerNeo4j {
         await Promise.all([...createUniqueConstraintsPromises, ...deleteConstraintsPromises]);
     }
 
+    // [fileHeb].map((key)=> currentEntity.${key} =[currentEntity.${key}])
     async updateConstraintsOfTemplate(
         template: IMongoEntityTemplate,
         requiredConstraints: string[],

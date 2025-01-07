@@ -47,11 +47,11 @@ export const updateEnumFieldRequestSchema = Joi.object({
 });
 
 /**
- * PUT /api/instances/entities/update-single-field-to-multi-field/:id
+ * PUT /api/instances/entities/convert-fields-to-plural/:id
  */
-export const updateSingleFieldToMultiFieldRequestSchema = Joi.object({
+export const convertFieldsToPluralRequestSchema = Joi.object({
     body: Joi.object({
-        singleFileToMultiFiles: Joi.array().items(Joi.string()).required(),
+        propertiesKeysToPluralize: Joi.array().items(Joi.string()).required(),
     }),
     query: {},
     params: {

@@ -177,9 +177,8 @@ export class InstancesService extends DefaultExternalServiceApi {
         return data;
     }
 
-    async updateSingleFieldToMultiField(templateId: string, propertiesToConvert: { singleFileToMultiFiles: string[] }) {
-        console.log({ templateId, propertiesToConvert });
-        const { data } = await this.api.put<any>(`${baseConstraintsRoute}/update-single-field-to-multi-field/${templateId}`, propertiesToConvert);
+    async convertFieldsToPlural(templateId: string, propertiesKeysToPluralize: string[]) {
+        const { data } = await this.api.put(`${baseEntitiesRoute}/convert-fields-to-plural/${templateId}`, { propertiesKeysToPluralize });
 
         return data;
     }

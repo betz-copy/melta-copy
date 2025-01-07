@@ -712,14 +712,10 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         updatedTemplateData: Omit<IEntityTemplateWithConstraints, 'disabled'> & { file?: string },
         { file, files }: { file?: [Express.Multer.File]; files?: Express.Multer.File[] },
     ): Promise<IMongoEntityTemplateWithConstraintsPopulated> {
-        console.dir({ updatedTemplateData }, { depth: null });
-
         await this.entityTemplateService.getCategoryById(updatedTemplateData.category);
 
         const { count } = await this.instancesService.searchEntitiesOfTemplateRequest(id, { limit: 1 });
         const currTemplate = await this.entityTemplateService.getEntityTemplateById(id);
-
-        console.log({ currTemplate });
 
         const populatedTemplates = await this.getAndPopulateAllTemplatesConstraints([currTemplate]);
         const [populatedCurrTemplate] = populatedTemplates;
@@ -738,11 +734,10 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
         const removedProperties: string[] = [];
         const archiveProperties: string[] = [];
-        const singleFileToMultiFiles: string[] = [];
+        const propertiesKeysToPluralize: string[] = [];
 
         if (count > 0) {
             if (updatedTemplateData.name !== currTemplate.name) throw new BadRequestError('can not change template name');
-            console.log('helooo');
 
             Object.entries(currTemplate.properties.properties).forEach(([key, value]) => {
                 const newValue = updatedTemplateData.properties.properties[key];
@@ -750,27 +745,29 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
                 if ((!newValue || newValue?.isNewPropNameEqualDeletedPropName) && !currTemplate.actions) removedProperties.push(key);
                 else {
-                    const isConvertSingleFileToMultiFiles = value.format === 'fileId' && newValue.items?.format === 'fileId';
+                    const isSingularToPlural =
+                        (value.format === 'fileId' && newValue.items?.format === 'fileId') || (value.enum && newValue.items?.enum);
+
                     if (value.serialCurrent !== undefined) updatedTemplateData.properties.properties[key].serialCurrent = value.serialCurrent;
 
-                    if (value.type !== newValue.type && value.format !== 'fileId') throw new BadRequestError('can not change property type');
+                    if (value.type !== newValue.type && !isSingularToPlural) throw new BadRequestError('can not change property type');
                     if (
                         !(
                             (value.format === 'text-area' && !newValue.format && newValue.type === 'string') ||
                             (!value.format && value.type === 'string' && newValue.format === 'text-area') ||
                             value.format === newValue.format ||
-                            isConvertSingleFileToMultiFiles
+                            isSingularToPlural
                         )
                     )
                         throw new BadRequestError('can not change property format');
-                    if (value.enum && !value.enum?.every((val) => newValue.enum?.includes(val)))
+                    if (value.enum && newValue.enum && !value.enum?.every((val) => newValue.enum?.includes(val)))
                         throw new BadRequestError('can not remove options from enum');
+
                     if (value.serialStarter !== newValue.serialStarter) throw new BadRequestError('can not change property serial starter');
                     if (value.relationshipReference && !_isEqual(value.relationshipReference, newValue.relationshipReference))
                         throw new BadRequestError('can not change relationship reference fields');
-
                     if (!value.archive && newValue.archive && !currTemplate.actions) archiveProperties.push(key);
-                    if (isConvertSingleFileToMultiFiles) singleFileToMultiFiles.push(key);
+                    if (isSingularToPlural) propertiesKeysToPluralize.push(key);
                 }
             });
         }
@@ -803,9 +800,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
         await this.deletePropertyOfEntityTemplate(id, count, removedProperties, currTemplate);
 
-        await this.instancesService.updateSingleFieldToMultiField(id, {
-            singleFileToMultiFiles,
-        });
+        if (propertiesKeysToPluralize.length > 0) await this.instancesService.convertFieldsToPlural(id, propertiesKeysToPluralize);
 
         await this.instancesService.updateConstraintsOfTemplate(id, {
             uniqueConstraints,
