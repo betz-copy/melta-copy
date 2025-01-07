@@ -31,26 +31,24 @@ function processValue(schema: any, value: any) {
     return value;
 }
 
-export default function RjfsSelectWidget(props: WidgetProps) {
-    const {
-        schema,
-        uiSchema,
-        id,
-        label,
-        required,
-        disabled,
-        readonly,
-        value,
-        multiple,
-        autofocus,
-        onChange,
-        onBlur,
-        onFocus,
-        rawErrors = [],
-        color,
-        ...textFieldProps
-    } = props;
-
+export const RjfsSelectWidget = ({
+    schema,
+    uiSchema,
+    id,
+    label,
+    required,
+    disabled,
+    readonly,
+    value,
+    multiple,
+    autofocus,
+    onChange,
+    onBlur,
+    onFocus,
+    rawErrors = [],
+    color,
+    ...textFieldProps
+}: WidgetProps) => {
     const { enumOptions } = getUiOptions(uiSchema) as {
         enumOptions?: Array<{
             label: string;
@@ -151,4 +149,6 @@ export default function RjfsSelectWidget(props: WidgetProps) {
             )}
         />
     );
-}
+};
+
+export default RjfsSelectWidget;
