@@ -57,6 +57,7 @@ interface EntityCardProps {
     refetchQuery?: () => void;
     searchedText?: string;
     minioFileId?: string;
+    matchedSentence?: string;
 }
 
 const EntityCard: React.FC<EntityCardProps> = ({
@@ -71,6 +72,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
     refetchQuery,
     searchedText,
     minioFileId,
+    matchedSentence,
 }) => {
     const [open, setOpen] = useState<boolean>(expandCard);
     const [externalErrors, setExternalErrors] = useState({ files: false, unique: {}, action: '' });
@@ -360,7 +362,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                     }}
                                 >
                                     <Grid item xs={9}>
-                                        <MeltaTooltip title={fileName || ''}>
+                                        <MeltaTooltip title={matchedSentence || ''}>
                                             <Typography
                                                 sx={{
                                                     marginLeft: '7px',

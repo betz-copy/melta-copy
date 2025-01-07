@@ -70,7 +70,7 @@ export const formatEntitiesBulkSearch = (searchResults: ISearchResult, query: st
             minioFileIds: semanticResult.map(({ minioFileId, text }) => {
                 pushToTextsForReranking(textsForReranking, text, entityId);
 
-                return minioFileId;
+                return { minioFileId, text };
             }),
         };
     });
@@ -109,13 +109,13 @@ export const createTextsFromEntitiesWithFiles = (
 
 /**
  * Order formattedEntities by the rerankByDocs array (which contains the texts in the order they should be)
- * @param formattedEntities entities with minioFileIds
+ * @param formattedEntities entities with minioFileIds like {minioFileIds: [{minioFileId: string, text: string}]}
  * @param rerankByDocs from semantic service ({ text: string, index: number })
  * @param textsForReranking object containing each text with its corresponding entityIds
  * @returns sorted formattedEntities
  */
 export const sortEntities = (
-    formattedEntities: (IEntityWithDirectRelationships & { minioFileIds?: string[] })[],
+    formattedEntities: (IEntityWithDirectRelationships & { minioFileIds?: ISemanticSearchResult[string][string] })[],
     rerankByDocs: IRerankResult[],
     textsForReranking: Record<string, string[]>,
 ) =>

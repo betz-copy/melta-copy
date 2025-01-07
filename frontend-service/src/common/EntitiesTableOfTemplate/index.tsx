@@ -53,6 +53,7 @@ import { ActionTypes, IAction, IActionPopulated } from '../../interfaces/ruleBre
 import ActionOnEntityWithRuleBreachDialog from '../../pages/Entity/components/ActionOnEntityWithRuleBreachDialog';
 import { ErrorToast } from '../ErrorToast';
 import { AreYouSureDialog } from '../dialogs/AreYouSureDialog';
+import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
 
 const { errorCodes } = environment;
 const { rowCount, defaultExpandedRowCount } = environment.agGrid;
@@ -153,7 +154,7 @@ export const getRowModelProps = <Data extends any = EntityData>(
 const LoadingCellRenderer = () => <CircularProgress size={20} sx={{ marginLeft: 1 }} />;
 
 export type EntitiesTableOfTemplateProps<Data> = {
-    template: IMongoEntityTemplatePopulated & { entitiesWithFiles?: string[] };
+    template: IMongoEntityTemplatePopulated & { entitiesWithFiles?: ISemanticSearchResult[string] };
     entities?: Data[];
     onRowSelected?: (data: Data) => void;
     showNavigateToRowButton: boolean;

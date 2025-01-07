@@ -11,6 +11,7 @@ import { getEntitiesWithDirectConnections } from '../../services/entitiesService
 import { InfiniteScroll } from '../InfiniteScroll';
 import { useSearchParams } from '../../utils/hooks/useSearchParams';
 import { convertToBool } from '../../utils/convertStringToBool';
+import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
 
 const { infiniteScrollPageCount } = environment.entitiesCardsView;
 
@@ -49,7 +50,7 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
             </Grid>
             <Grid item>
                 <Grid container>
-                    <InfiniteScroll<IEntityWithDirectConnections & { minioFileIds?: string[] }>
+                    <InfiniteScroll<IEntityWithDirectConnections & { minioFileIds?: ISemanticSearchResult[string][string] }>
                         queryKey={['searchEntities', templateIds, searchInput, urlSemanticSearch]}
                         queryFunction={async ({ pageParam: startRow = 0 }) => {
                             if (startRow === 0) {
@@ -88,7 +89,8 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
                             const entityTemplate = entityTemplates?.get(entity.templateId)!;
                             return (
                                 <EntityCard
-                                    minioFileId={minioFileIds?.[0]} // Navigate to the first found file
+                                    minioFileId={minioFileIds?.[0].minioFileId} // Navigate to the first found file
+                                    matchedSentence={minioFileIds?.[0].text}
                                     entity={entity}
                                     entityTemplate={entityTemplate}
                                     expandCard={openCardsMap.has(entity.properties._id)}
