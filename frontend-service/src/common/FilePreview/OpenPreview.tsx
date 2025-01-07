@@ -62,7 +62,7 @@ const OpenPreview: React.FC<{
     download?: boolean;
     onClick?: () => Promise<void>;
     searchValue?: string;
-    entityIdsToInclude?: string[];
+    entityIdsToInclude?: any[];
 }> = ({ fileId, img, showText = true, download, onClick, searchValue, entityIdsToInclude }) => {
     const fileName = typeof fileId === 'string' ? getFileName(fileId) : fileId.name;
     const [open, setOpen] = useState(false);
@@ -74,7 +74,10 @@ const OpenPreview: React.FC<{
 
     const highlightAll = useMemo(() => {
         const isFileNameSearched = searchValue && fileName.toLowerCase().includes(searchValue);
-        return !isFileNameSearched && entityIdsToInclude?.includes(typeof fileId === 'string' ? fileId : fileId.name);
+        return (
+            !isFileNameSearched &&
+            entityIdsToInclude?.map((entityData) => entityData.minioFileId).includes(typeof fileId === 'string' ? fileId : fileId.name)
+        );
     }, [entityIdsToInclude, fileId, fileName, searchValue]);
 
     if (download) {
