@@ -22,14 +22,11 @@ export const busboyMiddleware = (req: Request, _res: Response, next: NextFunctio
         fs.mkdirSync(uploadDir);
     }
 
-    console.log('1111111111111111');
-
     busboy.on('field', (fieldname: string, val: string) => {
         fields[fieldname] = val;
     });
 
     busboy.on('file', (fieldname: string, file: Readable, { encoding, filename, mimeType }) => {
-        console.log('2222222222222');
         const filePath = path.join(uploadDir, filename);
 
         let fileSize = 0;

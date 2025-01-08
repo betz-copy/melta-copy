@@ -36,7 +36,6 @@ import { PermissionScope, PermissionType } from '../../../externalServices/userS
 import { filteredMap } from '../../../utils';
 import { Authorizer } from '../../../utils/authorizer';
 import DefaultManagerProxy from '../../../utils/express/manager';
-import { removeTmpFile } from '../../../utils/fs';
 import { IProcessReviewerUpdateMailNotificationMetadataPopulated } from '../../../utils/mailNotifications/interfaces';
 import { RabbitManager } from '../../../utils/rabbit';
 import { ServiceError } from '../../error';
@@ -168,11 +167,6 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
             return populatedProcess;
         }
         const { props: processDetails, files: filesToUpload } = await this.instancesManager.uploadInstanceFiles(files, processData.details);
-        await Promise.all(
-            files.map((file) => {
-                return removeTmpFile(file.path);
-            }),
-        );
 
         const process = await this.service.createProcessInstance({ ...processData, details: processDetails }).catch(async (error) => {
             await this.storageService.deleteFiles(Object.values(filesToUpload).flat(1) as string[]).catch(() => {
@@ -231,12 +225,6 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
         if (props) {
             await this.removeUnusedFileIds(processTemplate.details.properties, currProcessInstance.details, updatedProcessInstance.details);
         }
-
-        await Promise.all(
-            files.map((file) => {
-                return removeTmpFile(file.path);
-            }),
-        );
 
         const updatedProcess = await this.service.updateProcessInstance(processId, updatedProcessInstance).catch(async (error) => {
             await this.storageService.deleteFiles(Object.values(filesToUpload).flat(1) as string[]).catch(() => {

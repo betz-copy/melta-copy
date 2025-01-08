@@ -3,6 +3,7 @@ import Busboy from 'busboy';
 import fs from 'fs';
 import path from 'path';
 import { Readable } from 'stream';
+import ReadableStreamClone from 'readable-stream-clone';
 import { UploadedFile } from './interface';
 // import config from '../../config';
 
@@ -31,6 +32,7 @@ export const busboyMiddleware = (req: Request, _res: Response, next: NextFunctio
 
     busboy.on('file', (fieldname: string, file: Readable, { encoding, filename, mimeType }) => {
         const filePath = path.join(uploadDir, filename);
+        const copiedFileId = new ReadableStreamClone(file);
 
         let fileSize = 0;
 
@@ -43,7 +45,7 @@ export const busboyMiddleware = (req: Request, _res: Response, next: NextFunctio
                 originalname: filename,
                 encoding,
                 mimetype: mimeType,
-                stream: file,
+                stream: copiedFileId,
                 size: fileSize,
             };
             files.push(fileData);

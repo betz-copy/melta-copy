@@ -17,7 +17,6 @@ import { PermissionScope } from '../../../externalServices/userService/interface
 import { Authorizer } from '../../../utils/authorizer';
 import { UploadedFile } from '../../../utils/busboy/interface';
 import DefaultManagerProxy from '../../../utils/express/manager';
-import { removeTmpFile } from '../../../utils/fs';
 import { ServiceError } from '../../error';
 import { UsersManager } from '../../users/manager';
 import ProcessesInstancesManager from '../processInstances/manager';
@@ -82,11 +81,6 @@ export class ProcessTemplatesManager extends DefaultManagerProxy<ProcessService>
             iconFilesProperties.forEach(([stepIndex, iconFileId]) => {
                 if (updatedSteps[stepIndex]) updatedSteps[stepIndex] = { ...updatedSteps[stepIndex], iconFileId };
             });
-            await Promise.all(
-                icons.map((iconFile) => {
-                    return removeTmpFile(iconFile.path);
-                }),
-            );
         }
         return updatedSteps;
     }

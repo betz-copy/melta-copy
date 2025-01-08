@@ -4,7 +4,6 @@ import config from '../../config';
 import { ISearchIFramesBody } from '../../externalServices/iFramesService';
 import { StorageService } from '../../externalServices/storageService';
 import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
-import { removeTmpFile } from '../../utils/fs';
 import { DefaultManagerMongo } from '../../utils/mongo/manager';
 import { ServiceError } from '../error';
 import { IFrame, IFrameDocument } from './interface';
@@ -59,7 +58,6 @@ export class IFrameManager extends DefaultManagerMongo<IFrameDocument> {
         let newIFrame: IFrame;
         if (file) {
             const newFileId = await this.storageService.uploadFile(file);
-            await removeTmpFile(file.path);
             newIFrame = { ...iFrameData, iconFileId: newFileId };
         } else newIFrame = { ...iFrameData, iconFileId: null };
 
@@ -93,7 +91,6 @@ export class IFrameManager extends DefaultManagerMongo<IFrameDocument> {
             }
 
             const newFileId = await this.storageService.uploadFile(file);
-            await removeTmpFile(file.path);
 
             updatedIFrame = await this.update(iFrameId, { ...updatedData, iconFileId: newFileId });
         } else if (iconFileId && !updatedData.iconFileId) {

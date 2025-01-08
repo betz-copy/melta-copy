@@ -30,7 +30,6 @@ import { PermissionType } from '../../externalServices/userService/interfaces/pe
 import { trycatch } from '../../utils';
 import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
 import DefaultManagerProxy from '../../utils/express/manager';
-import { removeTmpFile } from '../../utils/fs';
 import { BadRequestError, NotFoundError, ServiceError } from '../error';
 import ProcessTemplatesManager from '../processes/processTemplates/manager';
 import { UsersManager } from '../users/manager';
@@ -283,7 +282,6 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
     async createCategory(categoryData: Omit<ICategory, 'iconFileId'>, file?: UploadedFile) {
         if (file) {
             const newFileId = await this.storageService.uploadFile(file);
-            await removeTmpFile(file.path);
             return this.entityTemplateService.createCategory({ ...categoryData, iconFileId: newFileId });
         }
 
@@ -321,7 +319,6 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             }
 
             const newFileId = await this.storageService.uploadFile(file);
-            await removeTmpFile(file.path);
 
             return this.entityTemplateService.updateCategory(id, { ...updatedData, iconFileId: newFileId });
         }
@@ -402,7 +399,6 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
         if (file) {
             iconFileId = await this.storageService.uploadFile(file[0]);
-            await removeTmpFile(file[0].path);
         } else iconFileId = null;
 
         const { uniqueConstraints, properties, ...restOfTemplateData } = templateData;
@@ -682,7 +678,6 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         if (file) {
             if (currTemplate.iconFileId) await this.storageService.deleteFile(currTemplate.iconFileId);
             iconFileId = await this.storageService.uploadFile(file[0]);
-            await removeTmpFile(file[0].path);
         } else if (currTemplate.iconFileId && !updatedTemplateData.iconFileId) {
             await this.storageService.deleteFile(currTemplate.iconFileId);
             iconFileId = null;
