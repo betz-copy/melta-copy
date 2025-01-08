@@ -8,8 +8,8 @@ import { IMongoCategory } from '../../interfaces/categories';
 
 const initialSelectParentIfAllChildrenAreSelected = <T extends {}>(
     treeItems: TreeViewBaseItem<T>[],
-    selectedItemsIds: string[],
     getItemId: (item: T) => string,
+    selectedItemsIds?: string[],
 ): string[] => {
     if (!selectedItemsIds?.length) return [];
 
@@ -92,6 +92,7 @@ export const useTreeUtils = <T extends {}>(getItemId: (item: T) => string, paren
                 }
                 // Recursively call the function for the children of the current item
                 const parentNode = getParentNode(item.children, id);
+
                 if (parentNode) {
                     return parentNode;
                 }

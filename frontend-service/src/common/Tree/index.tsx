@@ -45,12 +45,12 @@ const Tree = <T extends {}>({
     const isFirstRender = useRef<boolean>(true);
 
     const selectedIdsWithParents = useMemo(
-        () => selectParentIfAllChildrenAreSelected(treeItems, preSelectedItemsIds, getItemId),
+        () => selectParentIfAllChildrenAreSelected(treeItems, getItemId, preSelectedItemsIds),
         [getItemId, preSelectedItemsIds, selectParentIfAllChildrenAreSelected, treeItems],
     );
 
     useEffect(() => {
-        setSelectedItemsIds(parentInfersChildren ? selectedIdsWithParents : preSelectedItemsIds);
+        setSelectedItemsIds(parentInfersChildren ? selectedIdsWithParents : preSelectedItemsIds ?? []);
     }, [JSON.stringify(preSelectedItemsIds), JSON.stringify(selectedIdsWithParents)]);
 
     const [expandedItemsIds, setExpandedItemsIds] = useState<string[]>(preExpandedItemIds ?? []);

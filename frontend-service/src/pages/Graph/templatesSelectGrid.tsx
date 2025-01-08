@@ -114,8 +114,6 @@ const singleTree = (
             setSelectedTemplates((prev) => {
                 const prevIds = prev.map(getOptionId);
                 const filteredSecondOptions = secondTree.flattenedTree.filter((option) => prevIds.includes(getOptionId(option)));
-                console.log({ secondTree: secondTree.flattenedTree });
-                console.log({ first: filteredFirstOptions, second: [...filteredSecondOptions] });
                 return [...filteredFirstOptions, ...filteredSecondOptions];
             });
             onClick();
