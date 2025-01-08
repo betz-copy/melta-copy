@@ -150,7 +150,7 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
     );
 
     const submitFunction = async () => {
-        if (hasError) return;
+        if (hasError) onClose();
         if (isBrokenRules)
             setCreateOrUpdateWithRuleBreachDialogState({
                 isOpen: true,

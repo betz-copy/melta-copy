@@ -59,7 +59,7 @@ const ConfigurationManagement: React.FC = () => {
     }, [configs, updatedConfigs, searchText]);
 
     return (
-        <Grid container spacing={3} sx={{ marginTop: '20px' }}>
+        <Grid container>
             <Grid item xs={12} sm={6} md={4}>
                 <SearchInput onChange={setSearchText} borderRadius="7px" placeholder={i18next.t('globalSearch.searchConfig')} />
             </Grid>

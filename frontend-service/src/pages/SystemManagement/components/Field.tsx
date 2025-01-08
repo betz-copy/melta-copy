@@ -41,9 +41,8 @@ const Field: React.FC<FieldProps> = ({ keyPath, value, defaultValue, updateConfi
         return path === 'excel.entitiesFileLimit' || path === 'excel.filesLimit';
     };
 
-    const handleUpdate = async () => {
-        if (!isValidInput(inputValue)) return;
-        updateConfig(keyPath, inputValue);
+    const updateConfigValue = async (val: string | number | boolean) => {
+        updateConfig(keyPath, val);
 
         const changes: Partial<IMetadata> = {};
         const keys = keyPath.split('.');
@@ -51,10 +50,10 @@ const Field: React.FC<FieldProps> = ({ keyPath, value, defaultValue, updateConfi
         if (keys.length > 1) {
             const parentKey = keys[0];
             const parentObject = deepClone(workspaceMetadata[parentKey] || {});
-            setNestedValue(parentObject, keys.slice(1).join('.'), inputValue);
+            setNestedValue(parentObject, keys.slice(1).join('.'), val);
             changes[parentKey] = parentObject;
         } else {
-            changes[keyPath] = inputValue;
+            changes[keyPath] = val;
         }
 
         await updateMetadata(workspaceId, changes);
@@ -69,53 +68,26 @@ const Field: React.FC<FieldProps> = ({ keyPath, value, defaultValue, updateConfi
                     ...oldData,
                     excel: {
                         ...oldData.excel,
-                        [keys[1]]: inputValue,
+                        [keys[1]]: val,
                     },
                 };
             });
         }
 
         setIsModified(false);
+    };
+
+    const handleUpdate = async () => {
+        if (!isValidInput(inputValue)) return;
+        updateConfigValue(inputValue);
     };
 
     const handleReset = async () => {
         if (defaultValue === undefined) return;
-
         setInputValue(defaultValue);
-        updateConfig(keyPath, defaultValue);
-
-        const changes: any = {};
-        const keys = keyPath.split('.');
-
-        if (keys.length > 1) {
-            const parentKey = keys[0];
-            const parentObject = deepClone(workspaceMetadata[parentKey] || {});
-            setNestedValue(parentObject, keys.slice(1).join('.'), defaultValue);
-            changes[parentKey] = parentObject;
-        } else {
-            changes[keyPath] = defaultValue;
-        }
-
-        await updateMetadata(workspaceId, changes);
-        updateWorkspaceMetadata(changes);
-
-        if (isGatewayConfig(keyPath)) {
-            queryClient.setQueryData<BackendConfigState>('getBackendConfig', (oldData) => {
-                if (!oldData) {
-                    throw new Error('Backend config data is undefined');
-                }
-                return {
-                    ...oldData,
-                    excel: {
-                        ...oldData.excel,
-                        [keys[1]]: defaultValue,
-                    },
-                };
-            });
-        }
-
-        setIsModified(false);
+        updateConfigValue(defaultValue);
     };
+
     const handleInputChange = (newValue: string | number | boolean) => {
         setInputValue(newValue);
         setIsModified(isValidInput(newValue) && newValue !== value);
