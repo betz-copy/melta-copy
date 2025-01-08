@@ -334,31 +334,22 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
         const succeededEntities: IEntity[] = [];
         const allBrokenRulesEntities: IBrokenRuleEntity[] = [];
+        const results: IEntity[] = [];
 
-        if (Object.keys(serialStarters).length > 0) {
-            for (const entity of entities!) {
-                try {
-                    const serialNumbers = generateSerialNumbers(succeededEntities.length);
-                    const result = await this.createEntityInstance(entity, [], insertBrokenEntities?.ignoredRules || [], userId, serialNumbers);
-                    succeededEntities.push(result);
-                } catch (error) {
-                    this.handleLoadEntitiesErrors(error, failedEntities, entity, allBrokenRulesEntities);
-                }
+        const handleLoadEntities = async (entity: IEntity) => {
+            try {
+                const serialNumbers = generateSerialNumbers(succeededEntities.length);
+                const result = await this.createEntityInstance(entity, [], insertBrokenEntities?.ignoredRules || [], userId, serialNumbers);
+                results.push(result);
+            } catch (error) {
+                this.handleLoadEntitiesErrors(error, failedEntities, entity, allBrokenRulesEntities);
             }
-        } else {
-            await Promise.all(
-                entities!.map(async (entity) => {
-                    try {
-                        const result = await this.createEntityInstance(entity, [], insertBrokenEntities?.ignoredRules || [], userId);
-                        succeededEntities.push(result);
-                        return result;
-                    } catch (error) {
-                        this.handleLoadEntitiesErrors(error, failedEntities, entity, allBrokenRulesEntities);
-                        return null;
-                    }
-                }),
-            );
-        }
+        };
+
+        if (Object.keys(serialStarters).length > 0) for (const entity of entities!) handleLoadEntities(entity);
+        else await Promise.all(entities!.map(async (entity) => handleLoadEntities(entity)));
+
+        succeededEntities.push(...results);
 
         const brokenRulesEntities = await updateIdOfBrokenRules(allBrokenRulesEntities);
         if (serialStarters) await this.updateTemplateCurrentNumbers(template, serialStarters, succeededEntities.length);
