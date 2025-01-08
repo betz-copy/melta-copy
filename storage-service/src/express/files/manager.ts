@@ -1,5 +1,6 @@
 import { menash } from 'menashmq';
 import { Stream } from 'stream';
+import { v4 as uuid } from 'uuid';
 import { config } from '../../config';
 import { getFileExtension, isFileDocument } from '../../utils/fileHelper';
 import { ServiceError } from '../error';
@@ -15,15 +16,22 @@ const {
 
 export class FilesManager extends DefaultManagerMinio {
     async uploadFile(file?: UploadedFile) {
-        const uploadedFile = await this.minioClient.uploadFileStream(file?.stream!, file?.originalname!, file?.size!, {});
+        const nameWithId = `${uuid()}${file?.originalname!}`;
+        const fileWithId = { ...file, originalname: nameWithId, path: nameWithId };
+        await this.minioClient.uploadFileStream(fileWithId?.stream!, fileWithId.originalname, fileWithId?.size!, {});
 
-        return uploadedFile;
+        return fileWithId;
     }
 
     async uploadFiles(files?: UploadedFile[]) {
         if (!files) return undefined;
 
-        await Promise.allSettled(files?.map((file) => this.minioClient.uploadFileStream(file?.stream!, file?.originalname!, file?.size!, {})));
+        const filesWithIds = files?.map((file) => {
+            const nameWithId = `${uuid()}${file?.originalname!}`;
+            return { ...file, originalname: nameWithId, path: nameWithId };
+        });
+
+        await Promise.allSettled(filesWithIds.map((file) => this.minioClient.uploadFileStream(file?.stream!, file.originalname, file?.size!, {})));
 
         const documentFiles = files?.filter((file) => isFileDocument(file.originalname));
         if (documentFiles?.length)
@@ -32,7 +40,8 @@ export class FilesManager extends DefaultManagerMinio {
                 documentFiles.map((file) => file.originalname),
                 { headers: { [workspaceIdHeaderName]: this.workspaceId } },
             );
-        return files;
+
+        return filesWithIds;
     }
 
     async downloadFile(path: string) {
