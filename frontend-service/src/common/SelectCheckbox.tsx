@@ -136,6 +136,7 @@ export type SelectCheckboxProps<Option extends any, Group extends any = any> = P
     size?: 'small' | 'medium';
     overrideSx?: object;
     toTopBar?: boolean;
+    toUserProfile?: boolean;
     horizontalOrigin?: number;
     handleCheckboxClick?: (value: boolean) => void;
     onDragEnd?: (result: DropResult) => void;
@@ -540,6 +541,7 @@ const SelectCheckbox = <Option extends any, Group extends any>({
     size = 'medium',
     overrideSx,
     toTopBar,
+    toUserProfile = false,
     horizontalOrigin = 154,
     handleCheckboxClick = () => {},
     onDragEnd,
@@ -620,7 +622,7 @@ const SelectCheckbox = <Option extends any, Group extends any>({
                     fontFamily: 'Rubik',
                     fontSize: '14px',
                     fontWeight: 400,
-                    boxShadow: '-2px 2px 6px 0px #1E277540',
+                    boxShadow: toUserProfile ? '0px 3px 10px rgba(0,0,0,0.2)' : 'none',
                     borderRadius: '8px',
                     ...(darkMode
                         ? { color: theme.palette.primary.main, '& .MuiOutlinedInput-notchedOutline': { borderColor: '#d2d3e3' } }
