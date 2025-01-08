@@ -138,14 +138,8 @@ const TemplatesSelectGrid: React.FC<{
 
     const { firstSplittedTemplates, secondSplittedTemplates } = splitCategories(templates, categories);
 
-    let firstTree = getTreeOnSplittedTemplates(firstSplittedTemplates, miniFilterValue);
-    let secondTree = getTreeOnSplittedTemplates(secondSplittedTemplates, miniFilterValue);
-
-    if (!firstTree?.filteredTree?.length) {
-        const temp = JSON.parse(JSON.stringify(firstTree));
-        firstTree = JSON.parse(JSON.stringify(secondTree));
-        secondTree = JSON.parse(JSON.stringify(temp));
-    }
+    const firstTree = getTreeOnSplittedTemplates(firstSplittedTemplates, miniFilterValue);
+    const secondTree = getTreeOnSplittedTemplates(secondSplittedTemplates, miniFilterValue);
 
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const { trackEvent } = useMatomo();
@@ -210,7 +204,9 @@ const TemplatesSelectGrid: React.FC<{
                                 }}
                                 selectedOptionIds={selectedTemplates.map(getOptionId)}
                             />
-                            {singleTree(firstTree, secondTree, selectedTemplates, setSelectedTemplates, onClick)}
+                            {firstTree?.filteredTree?.length
+                                ? singleTree(firstTree, secondTree, selectedTemplates, setSelectedTemplates, onClick)
+                                : singleTree(secondTree, firstTree, selectedTemplates, setSelectedTemplates, onClick)}
                             <Button
                                 style={{
                                     marginRight: '17px',
@@ -238,7 +234,9 @@ const TemplatesSelectGrid: React.FC<{
                     {openFilter && showAll && (
                         <Box sx={{ zIndex: '100', position: 'absolute', width: '235px', ...floatingBoxStyle }}>
                             <Box style={{ width: '100%', maxHeight: '28rem', overflowY: 'auto', paddingBottom: '4px' }}>
-                                {singleTree(secondTree, firstTree, selectedTemplates, setSelectedTemplates, onClick)}
+                                {firstTree?.filteredTree?.length
+                                    ? singleTree(secondTree, secondTree, selectedTemplates, setSelectedTemplates, onClick)
+                                    : singleTree(firstTree, secondTree, selectedTemplates, setSelectedTemplates, onClick)}
                             </Box>
                         </Box>
                     )}
