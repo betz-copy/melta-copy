@@ -245,7 +245,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
     handleLoadEntitiesErrors = (error: any, failedEntities: IFailedEntity[], entity: IEntity, allBrokenRulesEntities: IBrokenRuleEntity[]) => {
         if (error instanceof AxiosError) {
-            if (!error.response) throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, 'something went wrong :(', error);
+            if (!error.response) throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, 'no error.response in axiosError', error);
 
             const { data } = error.response;
 
@@ -335,7 +335,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         const succeededEntities: IEntity[] = [];
         const allBrokenRulesEntities: IBrokenRuleEntity[] = [];
 
-        if (Object.entries(serialStarters).length > 0) {
+        if (Object.keys(serialStarters).length > 0) {
             for (const entity of entities!) {
                 try {
                     const serialNumbers = generateSerialNumbers(succeededEntities.length);

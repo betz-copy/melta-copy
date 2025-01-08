@@ -333,11 +333,15 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                     gridApi.openToolPanel('columns');
                 }
             },
-            getDisplayColumns: () =>
-                gridRef.current?.api
-                    .getAllDisplayedColumns()
-                    .map((column) => column.getColId())
-                    .filter((colId) => colId !== '0' && colId !== '1') || [],
+            getDisplayColumns: () => {
+                const validKeys = Object.keys(template.properties.properties);
+                return (
+                    gridRef.current?.api
+                        .getAllDisplayedColumns()
+                        .map((column) => column.getColId())
+                        .filter((colId) => validKeys.includes(colId)) || []
+                );
+            },
         }));
 
         const columnDefProps: IGetColumnDefsOptions<Data> = {

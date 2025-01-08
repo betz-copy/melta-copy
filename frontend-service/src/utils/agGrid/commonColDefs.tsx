@@ -66,14 +66,16 @@ const errorColDef = <Data extends any = EntityData>(
         case ActionErrors.unique:
             message = i18next.t('wizard.entity.someEntityAlreadyHasTheSameField');
             break;
-        case ActionErrors.validation:
+        case ActionErrors.validation: {
+            const metadata = error.metadata as IValidationError;
             if (value.patternCustomErrorMessage) message = value.patternCustomErrorMessage;
-            else if ((error.metadata as IValidationError).message.includes('must')) {
-                const allowedValues = (error.metadata as IValidationError).params.allowedValues?.join(', ');
+            else if (metadata.message.includes('must')) {
+                const allowedValues = metadata.params.allowedValues?.join(', ');
                 const typeDescription = i18next.t(`propertyTypes.${value.format ?? value.type}`);
                 message = `${i18next.t('wizard.entity.loadEntities.notValid')} ${allowedValues || typeDescription}`;
-            } else message = (error.metadata as IValidationError).message;
+            } else message = metadata.message;
             break;
+        }
         default:
             break;
     }
