@@ -1097,13 +1097,10 @@ export class EntityManager extends DefaultManagerNeo4j {
     private getUpdatedProperties(oldEntity: Record<string, any>, newEntity: Record<string, any>, entityTemplate: IMongoEntityTemplate) {
         const updatedPropertiesNames = this.getKeysOfUpdatedProperties(oldEntity, newEntity, entityTemplate);
 
-        const updatedProperties = updatedPropertiesNames.reduce(
-            (acc, property) => {
-                acc[property] = newEntity[property];
-                return acc;
-            },
-            {} as Record<string, any>,
-        );
+        const updatedProperties = updatedPropertiesNames.reduce((acc, property) => {
+            acc[property] = newEntity[property];
+            return acc;
+        }, {} as Record<string, any>);
 
         return this.removeBasicProperties(updatedProperties);
     }
@@ -1594,11 +1591,19 @@ export class EntityManager extends DefaultManagerNeo4j {
         );
 
         const createRequiredConstraintsPromises = requiredConstraintsToCreate.map(async (constraint) => {
+            let queryAccordingToFieldType = constraint.property;
+            const constraintProp = template.properties.properties[constraint.property];
+
+            if (constraintProp.format === 'relationshipReference') {
+                queryAccordingToFieldType = `${constraint.property}.properties._id_reference`;
+            } else if (constraintProp.format === 'user') {
+                queryAccordingToFieldType = `${constraint.property}.id_userField`;
+            } else if (constraintProp.items?.format === 'user') {
+                queryAccordingToFieldType = `${constraint.property}.ids_usersFields`;
+            }
             await transaction
                 .run(
-                    `CREATE CONSTRAINT \`${constraint.constraintName}\` FOR (n:\`${templateId}\`) REQUIRE (n.\`${constraint.property}${
-                        template.properties.properties[constraint.property].format === 'relationshipReference' ? '.properties._id_reference' : ''
-                    }\`) IS NOT NULL`,
+                    `CREATE CONSTRAINT \`${constraint.constraintName}\` FOR (n:\`${templateId}\`) REQUIRE (n.\`${queryAccordingToFieldType}\`) IS NOT NULL`,
                 )
                 .catch((err) => this.throwServiceErrorIfFailedToCreateConstraint(err, constraint));
         });
@@ -1642,7 +1647,17 @@ export class EntityManager extends DefaultManagerNeo4j {
 
         const createUniqueConstraintsPromises = uniqueConstraintsToCreate.map(async (constraint) => {
             const propsPart = constraint.properties.map((prop) => {
-                return `n.${prop}${template.properties.properties[prop].format === 'relationshipReference' ? '.properties._id_reference' : ''}`;
+                if (template.properties.properties[prop].format === 'relationshipReference') {
+                    return `n.${prop}.properties._id_reference`;
+                } // TODO - also create on required
+                if (template.properties.properties[prop].format === 'user') {
+                    return `n.${prop}.id_userField`;
+                }
+                if (template.properties.properties[prop].items?.format === 'user') {
+                    return `n.${prop}.ids_usersFields`;
+                }
+
+                return `n.${prop}`;
             });
 
             await transaction
@@ -1757,12 +1772,35 @@ export class EntityManager extends DefaultManagerNeo4j {
         propertiesToRemove.push(`${property}.templateId${config.neo4j.relationshipReferencePropertySuffix}`);
     }
 
+    getUserProperties(userProperty: string) {
+        return config.neo4j.userOriginalAndSuffixFieldsMap.map(
+            (userField) => `${userProperty}${userField.suffixFieldName}${config.neo4j.userFieldPropertySuffix}`,
+        );
+    }
+
+    getUsersArrayProperties(userProperty: string) {
+        return config.neo4j.usersArrayOriginalAndSuffixFieldsMap.map(
+            (userField) => `${userProperty}${userField.suffixFieldName}${config.neo4j.usersFieldsPropertySuffix}`,
+        );
+    }
+
     async deletePropertiesOfTemplate(templateId: string, properties: string[], currentTemplateProperties: Record<string, IEntitySingleProperty>) {
         const propertiesToRemove: string[] = [];
         const relationshipTemplatesToRemove: string[] = [];
 
         for (const property of properties) {
             const propertyTemplate = currentTemplateProperties[property];
+
+            if (propertyTemplate.format === 'user') {
+                propertiesToRemove.push(...this.getUserProperties(property));
+                continue;
+            }
+
+            if (propertyTemplate.items?.format === 'user') {
+                propertiesToRemove.push(...this.getUsersArrayProperties(property));
+                continue;
+            }
+
             const { type, format, items } = propertyTemplate;
             propertiesToRemove.push(property);
 

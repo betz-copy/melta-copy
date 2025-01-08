@@ -810,6 +810,8 @@ export default {
         'text-area': 'טקסט ארוך',
         fileId: 'קובץ יחיד',
         multipleFiles: 'קבצים מרובים',
+        user: 'משתמש',
+        users: 'משתמשים',
     },
     input: {
         imagePicker: {

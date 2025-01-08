@@ -79,7 +79,7 @@ export const deletePermissionsFromMetadata = async (
     return data;
 };
 
-export const getUserProfileRequest = async (user: IUser) => {
+export const getUserProfileRequest = async (user: Partial<IUser>) => {
     const { data } = await axios.get(`${users}/user-profile/${user._id}`, { responseType: 'blob' });
     return URL.createObjectURL(data);
 };
