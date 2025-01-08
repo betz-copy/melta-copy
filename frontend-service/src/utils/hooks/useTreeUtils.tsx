@@ -139,8 +139,12 @@ export const useTreeUtils = <T extends {}>(getItemId: (item: T) => string, paren
     };
 
     const handleSelectedItemsChange = (newIds: string[], multi: boolean): string[] => {
-        if (!multi || !parentInfersChildren) {
+        if (!multi) {
             return [newIds?.[0]];
+        }
+
+        if (!parentInfersChildren) {
+            return newIds;
         }
 
         const isDeselectingNode = selectedItemsIds.length > newIds.length;
