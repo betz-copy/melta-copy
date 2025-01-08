@@ -1,7 +1,7 @@
 /* eslint-disable no-nested-ternary */
 import { Box, FormControl, Select, useTheme } from '@mui/material';
 import lodashUniqby from 'lodash.uniqby';
-import React, { Dispatch, Key, PropsWithChildren, ReactElement, SetStateAction, useState } from 'react';
+import React, { Dispatch, Key, PropsWithChildren, ReactElement, SetStateAction, useCallback, useMemo, useState } from 'react';
 import { DropResult } from 'react-beautiful-dnd';
 import { IoIosArrowDown, IoIosArrowUp } from 'react-icons/io';
 import { TreeViewBaseItem } from '@mui/x-tree-view-pro';
@@ -96,11 +96,35 @@ const SelectCheckbox = <Option extends {}, Group extends any = Option>({
     dynamicWidth,
     groupsProps = { useGroups: false },
     treeFunc,
+    onDragEnd,
+    setOptions,
 }: SelectCheckboxProps<Option, Group>) => {
     const [miniFilterValue, setMiniFilterValue] = useState('');
     const [isOpen, setIsOpen] = useState(false);
 
     const darkMode = useDarkModeStore((state) => state.darkMode);
+
+    const onDragEndDefault = useCallback(
+        (result: DropResult) => {
+            const { destination, source } = result;
+            if (!destination) return;
+
+            const newOptionsOrder = Array.from(options);
+            const [movedOption] = newOptionsOrder.splice(source.index, 1);
+            newOptionsOrder.splice(destination.index, 0, movedOption);
+
+            if (setOptions) {
+                setOptions(newOptionsOrder);
+            }
+
+            setSelectedOptions((prevSelectOptions) => {
+                return newOptionsOrder.filter((option) =>
+                    prevSelectOptions.some((selectedOption) => getOptionId(selectedOption) === getOptionId(option)),
+                );
+            });
+        },
+        [getOptionId, options, setOptions, setSelectedOptions],
+    );
 
     const selectedOptionIds = selectedOptions.map(getOptionId);
 
@@ -199,6 +223,26 @@ const SelectCheckbox = <Option extends {}, Group extends any = Option>({
                 {!isSelectDisabled && !hideSearchBar && <Search value={miniFilterValue} onChange={setMiniFilterValue} toTopBar={toTopBar} />}
 
                 <Tree
+                    onDragEnd={({ itemId, newPosition, oldPosition }) => {
+                        const transformedDrag: DropResult = {
+                            draggableId: itemId,
+                            type: 'DEFAULT',
+                            source: {
+                                index: oldPosition.index,
+                                droppableId: oldPosition.parentId!,
+                            },
+                            destination: {
+                                index: newPosition.index,
+                                droppableId: newPosition.parentId!,
+                            },
+                            reason: 'DROP',
+                            combine: undefined,
+                            mode: 'FLUID',
+                        };
+
+                        if (onDragEnd) return onDragEnd(transformedDrag);
+                        return onDragEndDefault(transformedDrag);
+                    }}
                     isSelectDisabled={isSelectDisabled}
                     selectAll={!hideChooseAll}
                     flattenedTree={[...(groupsProps.useGroups ? (groupsProps.groups as any[]) : []), ...options]}

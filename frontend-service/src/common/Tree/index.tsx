@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { RichTreeViewPro, TreeViewBaseItem } from '@mui/x-tree-view-pro';
 import { ChevronLeft, ExpandLess } from '@mui/icons-material';
+import { TreeViewItemReorderPosition } from '@mui/x-tree-view-pro/internals/plugins/useTreeViewItemsReordering';
 import { flattenTree, useTreeUtils } from '../../utils/hooks/useTreeUtils';
 import { SelectAll } from './SelectAll';
 import TreeItem from './TreeItem';
@@ -19,6 +20,7 @@ interface TreeProps<T extends {}> {
     flattenedTree?: T[];
     filteredTreeItems?: T[];
     isSelectDisabled?: boolean;
+    onDragEnd?: (params: { itemId: string; oldPosition: TreeViewItemReorderPosition; newPosition: TreeViewItemReorderPosition }) => void;
     // If true parents only represent the state of their children.
     parentInfersChildren?: boolean;
 }
@@ -38,6 +40,7 @@ const Tree = <T extends {}>({
     isSelectDisabled,
     multi = true,
     parentInfersChildren = true,
+    onDragEnd,
 }: TreeProps<T>): React.ReactElement => {
     const { handleSelectedItemsChange, selectedItemsIds, setSelectedItemsIds, getSelectedLeafIds, selectParentIfAllChildrenAreSelected } =
         useTreeUtils(getItemId, parentInfersChildren, treeItems);
@@ -110,6 +113,7 @@ const Tree = <T extends {}>({
                 }}
                 experimentalFeatures={{ indentationAtItemLevel: true, itemsReordering: true }}
                 canMoveItemToNewPosition={(params) => allowDraggingBetweenParents || params.oldPosition.parentId === params.newPosition.parentId}
+                onItemPositionChange={onDragEnd}
             />
         </>
     );
