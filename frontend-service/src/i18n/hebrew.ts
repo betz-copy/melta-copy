@@ -4,6 +4,9 @@ import { WorkspaceTypes } from '../interfaces/workspaces';
 import { muiDatePickersLocaleText } from '../utils/datePickers';
 
 export default {
+    myPermissions: 'ההרשאות שלי',
+    personalDetails: 'פרטים אישיים',
+    myAccount: 'החשבון שלי',
     category: 'קטגוריה',
     categories: 'קטגוריות',
     entity: 'ישות',
@@ -320,7 +323,7 @@ export default {
         noOptions: 'אין תוצאות',
     },
     notifications: {
-        notificationType: 'סוג התראה',
+        notificationType: 'התראות למייל',
         title: 'התראות',
         failedToGetNotifications: 'נכשל לטעון התראות',
         noNotificationsLeft: 'אין עוד התראות',
@@ -400,6 +403,21 @@ export default {
             permissionType: 'סוג הרשאה',
             updatedAt: 'עודכן ב',
         },
+    },
+    user: {
+        fullName: 'שם מלא',
+        email: 'מייל',
+        jobTitle: 'תפקיד',
+        hierarchy: 'היררכיה',
+        addFile: 'הוסף קובץ',
+        close: 'סגירה',
+        edit: 'עריכת פרופיל',
+        save: 'שמור',
+        yes: 'כן',
+        no: 'לא',
+        areYouSure: 'בפעולה זו השינויים ימחקו',
+        succeededToUpdatePreferences: 'עודכנו העדפות משתמש בהצלחה',
+        failedToUpdateRequest: 'נכשל בעידכון העדפות המשתמש',
     },
     entitiesCardView: {
         failedToLoadResults: 'נכשל לטעון תוצאות',
@@ -801,6 +819,8 @@ export default {
             iconSearch: 'חיפוש אייקון (חיפוש באנגלית)',
             chooseFromOptions: 'בחירה מאפשרויות',
             chooseFile: 'בחירת קובץ',
+            chooseAvatar: 'בחירת אווטר',
+            kartoffelProfile: 'תמונת חוגר',
             dragFile: 'גרור את הקובץ לכאן',
             scanFromImage: 'סריקה מתמונה',
             dragFiles: 'יש לגרור קבצים כאן',

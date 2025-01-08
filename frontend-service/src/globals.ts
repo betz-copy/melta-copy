@@ -67,6 +67,9 @@ export const environment = {
         heightPaddingMultiplier: 0.3,
         widthPaddingMultiplier: 0.6,
     },
+    users: {
+        kartoffelProfile: 'kartoffelProfile',
+    },
     ganttSettings: {
         infiniteScrollPageCount: 10,
         isSidebarOpenLocalStorageKey: 'isGanttSidebarOpen',
@@ -112,6 +115,7 @@ export const environment = {
     notifications: {
         updateInterval: 1000 * 60 * 10,
         infiniteScrollPageCount: 10,
+        color: '#FF006B',
         groups: {
             requests: [NotificationType.ruleBreachRequest],
             general: [
@@ -241,6 +245,8 @@ export const environment = {
         units: { km: 'km', squaredKm: 'km²' },
         polygon: { polygon: 'POLYGON', polygonPrefix: 'POLYGON((', polygonSuffix: '))' },
     },
+    profileIconsCount: 19,
+    avatarIconPath: '/icons/profileAvatar/',
     fileExtensions: {
         image: ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'webp', 'ico', 'psd', 'raw', 'heif', 'indd', 'ai', 'eps'],
         imageToManipulate: ['png', 'jpg', 'jpeg', 'svg'] as string[],
