@@ -17,14 +17,15 @@ import { LoadingFilesInput } from './LoadingFilesInput';
 
 interface FileInputProps {
     file: Partial<File> | { name: string } | undefined;
+    fileName?: string;
     onDeleteFile: MouseEventHandler;
     onDropFile: (acceptedFile: File) => void;
     inputText: string;
     acceptedFilesTypes?: Accept;
-    fileFieldName?: string;
     errorText?: string;
     setErrorText?: React.Dispatch<React.SetStateAction<string | undefined>>;
     disableCamera?: boolean;
+    disablePreview?: boolean;
     isLoading?: boolean;
     comment?: string;
     scanFromImage?: boolean;
@@ -37,8 +38,9 @@ const FileInput: React.FC<FileInputProps> = ({
     inputText,
     acceptedFilesTypes,
     errorText,
-    setErrorText,
     disableCamera = false,
+    disablePreview = false,
+    setErrorText,
     isLoading,
     comment,
     scanFromImage,
@@ -173,7 +175,7 @@ const FileInput: React.FC<FileInputProps> = ({
                                 </Grid>
                                 <Grid item container xs={1} justifyContent="flex-end">
                                     <Grid container item justifyContent="flex-end" alignItems="center" wrap="nowrap">
-                                        {!isFileFromInput && (
+                                        {!isFileFromInput && !disablePreview && (
                                             <OpenPreview fileId={file.name!} img={<Visibility fontSize="small" />} showText={false} />
                                         )}
 
