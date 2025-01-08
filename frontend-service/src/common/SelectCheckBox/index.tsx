@@ -1,7 +1,7 @@
 /* eslint-disable no-nested-ternary */
 import { Box, FormControl, Select, useTheme } from '@mui/material';
 import lodashUniqby from 'lodash.uniqby';
-import React, { Dispatch, Key, PropsWithChildren, ReactElement, SetStateAction, useCallback, useMemo, useState } from 'react';
+import React, { Dispatch, Key, PropsWithChildren, ReactElement, SetStateAction, useCallback, useState } from 'react';
 import { DropResult } from 'react-beautiful-dnd';
 import { IoIosArrowDown, IoIosArrowUp } from 'react-icons/io';
 import { TreeViewBaseItem } from '@mui/x-tree-view-pro';
@@ -129,15 +129,18 @@ const SelectCheckbox = <Option extends {}, Group extends any = Option>({
     const selectedOptionIds = selectedOptions.map(getOptionId);
 
     const theme = useTheme();
-    const { optionsFiltered: templatesFiltered, groupsFiltered } = getOptionsAndGroupsMiniFiltered(
-        miniFilterValue,
-        options,
-        getOptionId,
-        getOptionLabel,
-        groupsProps,
+
+    const templatesFilteredCallback = useCallback(
+        () => getOptionsAndGroupsMiniFiltered(miniFilterValue, options, getOptionId, getOptionLabel, groupsProps),
+        [getOptionId, getOptionLabel, groupsProps, miniFilterValue, options],
     );
 
-    const filteredTree = groupsFiltered && treeFunc ? treeFunc(groupsFiltered, templatesFiltered, getOptionId) : templatesFiltered;
+    const { optionsFiltered: templatesFiltered, groupsFiltered } = templatesFilteredCallback();
+
+    const filteredTree = useCallback(
+        () => (groupsFiltered && treeFunc ? treeFunc(groupsFiltered, templatesFiltered, getOptionId) : templatesFiltered),
+        [getOptionId, groupsFiltered, templatesFiltered, treeFunc],
+    );
 
     // eslint-disable-next-line no-nested-ternary
     const borderRadiusStyle = overrideSx ? (isOpen ? '12px 12px 12px 0' : '12px') : isOpen ? '7px 7px 0 0' : '7px';
@@ -249,7 +252,7 @@ const SelectCheckbox = <Option extends {}, Group extends any = Option>({
                     preSelectedItemsIds={selectedOptionIds}
                     getItemId={getOptionId}
                     getItemLabel={getOptionLabel}
-                    filteredTreeItems={filteredTree}
+                    filteredTreeItems={filteredTree()}
                     multi
                     treeItems={groupsProps.useGroups && treeFunc ? treeFunc(groupsProps.groups, options, getOptionId) : options}
                     isDraggable={!isDraggableDisabled}
