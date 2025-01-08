@@ -11,7 +11,4 @@ export default defineConfig({
             port: 3001,
         },
     },
-    optimizeDeps: {
-        exclude: ['problematic-module'], // Add the module causing the issue here
-    },
 });
