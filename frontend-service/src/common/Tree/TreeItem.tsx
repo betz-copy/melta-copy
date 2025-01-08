@@ -1,3 +1,6 @@
+// Most code is copied from
+// https://mui.com/x/react-tree-view/rich-tree-view/ordering/
+
 import { Box, Divider, Typography } from '@mui/material';
 import {
     TreeItem2Props,
@@ -17,11 +20,11 @@ import { MeltaCheckbox } from '../MeltaCheckbox';
 import { MeltaTooltip } from '../MeltaTooltip';
 
 const LabelWithToolTip = ({ children, className }) => (
-    <div className={className}>
+    <Box className={className}>
         <MeltaTooltip title={children}>
             <Typography>{children}</Typography>
         </MeltaTooltip>
-    </div>
+    </Box>
 );
 
 const DivideMenuItems = (

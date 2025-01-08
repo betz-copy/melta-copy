@@ -406,13 +406,6 @@ const updateEntityTemplateStatusRequest = async (entityTemplateId: string, disab
     return data;
 };
 
-const updateEntityTemplatePathRequest = async (entityTemplateId: string, newPath?: string) => {
-    const { data } = await axios.patch<IMongoEntityTemplatePopulated>(`${entityTemplates}/${entityTemplateId}/path`, {
-        path: newPath,
-    });
-    return data;
-};
-
 const updateEntityTemplateRequest = async (entityTemplateId: string, updatedEntityTemplate: IEntityTemplate | EntityTemplateWizardValues) => {
     const formData = new FormData();
     const entityTemplate: IEntityTemplate =
@@ -501,5 +494,4 @@ export {
     updateEnumFieldRequest,
     deleteEnumFieldRequest,
     updateActionToEntity,
-    updateEntityTemplatePathRequest,
 };

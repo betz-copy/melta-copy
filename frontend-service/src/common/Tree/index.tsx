@@ -19,7 +19,6 @@ interface TreeProps<T extends {}> {
     flattenedTree?: T[];
     filteredTreeItems?: T[];
     isSelectDisabled?: boolean;
-
     // If true parents only represent the state of their children.
     parentInfersChildren?: boolean;
 }

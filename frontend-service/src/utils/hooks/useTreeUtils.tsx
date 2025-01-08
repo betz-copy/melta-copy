@@ -2,39 +2,42 @@
 // https://johnnyreilly.com/mui-react-tree-view-check-children-uncheck-parents
 
 import { useState } from 'react';
-import { cloneDeep } from 'lodash';
 import { TreeViewBaseItem } from '@mui/x-tree-view-pro';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IMongoCategory } from '../../interfaces/categories';
 
-function selectParentIfAllChildrenAreSelected<T extends {}>(
+const initialSelectParentIfAllChildrenAreSelected = <T extends {}>(
     treeItems: TreeViewBaseItem<T>[],
-    newSelectedItemsWithChildren,
+    selectedItemsIds: string[],
     getItemId: (item: T) => string,
-) {
-    if (!newSelectedItemsWithChildren?.length) return [];
+): string[] => {
+    if (!selectedItemsIds?.length) return [];
 
-    const updatedArray = cloneDeep(newSelectedItemsWithChildren);
+    // Create a Set for faster lookups and add existing selected items
+    const updatedSet = new Set(selectedItemsIds);
 
-    treeItems.forEach((item) => {
+    const markParentIfAllChildrenSelected = (item: TreeViewBaseItem<T>) => {
         if (item?.children) {
-            selectParentIfAllChildrenAreSelected(item.children, updatedArray, getItemId);
+            // Recursively process child items first
+            item.children.forEach((child) => markParentIfAllChildrenSelected(child));
 
-            const allChildrenSelected = item.children.every((child) => updatedArray.includes(getItemId(child)));
-            if (allChildrenSelected) {
-                updatedArray.push(getItemId(item));
-            } else {
-                const parentIndex = updatedArray.findIndex((id) => id === getItemId(item));
+            const allChildrenSelected = item.children.every((child) => updatedSet.has(getItemId(child)));
+            const itemId = getItemId(item);
 
-                if (parentIndex > -1) {
-                    updatedArray.splice(parentIndex, 1);
-                }
+            if (allChildrenSelected && !updatedSet.has(itemId)) {
+                updatedSet.add(itemId);
+            } else if (!allChildrenSelected) {
+                updatedSet.delete(itemId);
             }
         }
-    });
+    };
 
-    return updatedArray;
-}
+    // Process the tree items
+    treeItems.forEach(markParentIfAllChildrenSelected);
+
+    // Convert the Set back to an array before returning
+    return Array.from(updatedSet);
+};
 
 export const formatTemplates = (
     categories: IMongoCategory[],
@@ -80,7 +83,7 @@ export const flattenTree = <T extends {}>(treeItems: TreeViewBaseItem<T>[], getI
 export const useTreeUtils = <T extends {}>(getItemId: (item: T) => string, parentInfersChildren?: boolean, treeItems: TreeViewBaseItem<T>[] = []) => {
     const [selectedItemsIds, setSelectedItemsIds] = useState<string[]>([]);
 
-    function getParentNode(items: TreeViewBaseItem<T>[], id: string): TreeViewBaseItem<T> | undefined {
+    const getParentNode = (items: TreeViewBaseItem<T>[], id: string): TreeViewBaseItem<T> | undefined => {
         for (const item of items) {
             if (item.children) {
                 if (item.children.some((child) => getItemId(child) === id)) {
@@ -97,19 +100,20 @@ export const useTreeUtils = <T extends {}>(getItemId: (item: T) => string, paren
 
         // No parent found
         return undefined;
-    }
+    };
 
-    function getAllParentIds(items: TreeViewBaseItem<T>[], id: string) {
+    const getAllParentIds = (items: TreeViewBaseItem<T>[], id: string) => {
         const parentIds: string[] = [];
         let parent = getParentNode(items, id);
+
         while (parent) {
             parentIds.push(getItemId(parent));
             parent = getParentNode(items, getItemId(parent));
         }
         return parentIds;
-    }
+    };
 
-    function getSelectedIdsAndChildrenIds(items: TreeViewBaseItem<T>[], selectedIds: string[]) {
+    const getSelectedIdsAndChildrenIds = (items: TreeViewBaseItem<T>[], selectedIds: string[]) => {
         const selectedIdIncludingChildrenIds = new Set([...selectedIds]);
 
         for (const item of items) {
@@ -131,14 +135,15 @@ export const useTreeUtils = <T extends {}>(getItemId: (item: T) => string, paren
         }
 
         return [...Array.from(selectedIdIncludingChildrenIds)];
-    }
+    };
 
-    function handleSelectedItemsChange(newIds: string[], multi: boolean): string[] {
+    const handleSelectedItemsChange = (newIds: string[], multi: boolean): string[] => {
         if (!multi || !parentInfersChildren) {
             return [newIds?.[0]];
         }
 
         const isDeselectingNode = selectedItemsIds.length > newIds.length;
+
         if (isDeselectingNode) {
             const removed = selectedItemsIds.filter((id) => !newIds.includes(id))[0];
 
@@ -154,9 +159,11 @@ export const useTreeUtils = <T extends {}>(getItemId: (item: T) => string, paren
         const added = newIds.filter((id) => !selectedItemsIds.includes(id))[0];
         const idsToSet = getSelectedIdsAndChildrenIds(treeItems, newIds);
         let parent = getParentNode(treeItems, added);
+
         while (parent) {
             const childIds = parent.children?.map((node) => getItemId(node)) ?? [];
             const allChildrenSelected = childIds.every((id) => idsToSet.includes(id));
+
             if (allChildrenSelected) {
                 idsToSet.push(getItemId(parent));
                 parent = getParentNode(treeItems, getItemId(parent));
@@ -165,7 +172,7 @@ export const useTreeUtils = <T extends {}>(getItemId: (item: T) => string, paren
             }
         }
         return idsToSet;
-    }
+    };
 
     const getSelectedLeafIds = (currentTreeItems = treeItems, leaves: string[] = []): string[] => {
         currentTreeItems.forEach((item) => {
@@ -182,5 +189,11 @@ export const useTreeUtils = <T extends {}>(getItemId: (item: T) => string, paren
         return leaves;
     };
 
-    return { handleSelectedItemsChange, selectedItemsIds, setSelectedItemsIds, selectParentIfAllChildrenAreSelected, getSelectedLeafIds };
+    return {
+        handleSelectedItemsChange,
+        selectedItemsIds,
+        setSelectedItemsIds,
+        selectParentIfAllChildrenAreSelected: initialSelectParentIfAllChildrenAreSelected,
+        getSelectedLeafIds,
+    };
 };

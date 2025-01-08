@@ -71,13 +71,13 @@ const IFramesPageHeadline: React.FC<{
                     />
                 </Grid>
                 <Grid item>
-                    <SelectCheckbox
+                    <SelectCheckbox<IMongoIFrame>
                         title={i18next.t('iFrames.arrangementIFrames')}
                         img={<FilterList fontSize="small" />}
-                        options={allIFramesAllowed ?? ([] as IMongoIFrame[])}
-                        selectedOptions={[] as IMongoIFrame[]}
+                        options={allIFramesAllowed ?? []}
+                        selectedOptions={[]}
                         setSelectedOptions={() => {}}
-                        getOptionId={(option: IMongoIFrame) => option._id}
+                        getOptionId={(option) => option._id}
                         getOptionLabel={({ name }) => name}
                         toTopBar
                         onDragEnd={handleOnDragEnd}

@@ -11,8 +11,8 @@ export const SelectAll = ({
 }: {
     allOptionIds: string[];
     selectedOptionIds: string[];
-    setSelectedOptionIds: any;
-    onClick?: any;
+    setSelectedOptionIds: (ids: string[]) => void;
+    onClick?: () => void;
 }) => {
     return (
         <MenuItem
