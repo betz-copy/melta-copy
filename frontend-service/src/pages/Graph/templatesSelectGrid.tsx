@@ -11,7 +11,7 @@ import { IMongoCategory } from '../../interfaces/categories';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { useDarkModeStore } from '../../stores/darkMode';
 import Tree from '../../common/Tree';
-import { formatTemplates } from '../../utils/hooks/useTreeUtils';
+import { groupTemplatesByCategory } from '../../utils/hooks/useTreeUtils';
 import { Search } from '../../common/SelectCheckBox/Search';
 import { SelectAll } from '../../common/Tree/SelectAll';
 
@@ -71,8 +71,8 @@ const getTreeOnSplittedTemplates = (splitTempaltes: IMongoEntityTemplatePopulate
         groupsProps,
     );
 
-    const tree = formatTemplates(categories, splitTempaltes, getOptionId);
-    const filteredTree = categoriesFiltered ? formatTemplates(categoriesFiltered, templatesFiltered, getOptionId) : templatesFiltered;
+    const tree = groupTemplatesByCategory(categories, splitTempaltes, getOptionId);
+    const filteredTree = categoriesFiltered ? groupTemplatesByCategory(categoriesFiltered, templatesFiltered, getOptionId) : templatesFiltered;
 
     return { tree, flattenedTree: splitTempaltes, filteredTree };
 };

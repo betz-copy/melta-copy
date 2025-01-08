@@ -39,7 +39,7 @@ const initialSelectParentIfAllChildrenAreSelected = <T extends {}>(
     return Array.from(updatedSet);
 };
 
-export const formatTemplates = (
+export const groupTemplatesByCategory = (
     categories: IMongoCategory[],
     templates: IMongoEntityTemplatePopulated[],
     getItemId: (item: IMongoCategory | IMongoEntityTemplatePopulated) => string,
