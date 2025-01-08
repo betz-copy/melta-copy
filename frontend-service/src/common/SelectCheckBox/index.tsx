@@ -199,6 +199,7 @@ const SelectCheckbox = <Option extends {}, Group extends any = Option>({
                 {!isSelectDisabled && !hideSearchBar && <Search value={miniFilterValue} onChange={setMiniFilterValue} toTopBar={toTopBar} />}
 
                 <Tree
+                    isSelectDisabled={isSelectDisabled}
                     selectAll={!hideChooseAll}
                     flattenedTree={[...(groupsProps.useGroups ? (groupsProps.groups as any[]) : []), ...options]}
                     preSelectedItemsIds={selectedOptionIds}

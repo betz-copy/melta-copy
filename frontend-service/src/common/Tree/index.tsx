@@ -18,6 +18,7 @@ interface TreeProps<T extends {}> {
     selectAll?: boolean;
     flattenedTree?: T[];
     filteredTreeItems?: T[];
+    isSelectDisabled?: boolean;
 
     // If true parents only represent the state of their children.
     parentInfersChildren?: boolean;
@@ -35,6 +36,7 @@ const Tree = <T extends {}>({
     selectAll,
     flattenedTree,
     filteredTreeItems = treeItems,
+    isSelectDisabled,
     multi = true,
     parentInfersChildren = true,
 }: TreeProps<T>): React.ReactElement => {
@@ -88,6 +90,7 @@ const Tree = <T extends {}>({
                 style={{ direction: 'rtl' }}
                 checkboxSelection
                 multiSelect
+                isItemDisabled={() => !!isSelectDisabled}
                 items={filteredTreeItems}
                 getItemId={getItemId}
                 getItemLabel={getItemLabel}
