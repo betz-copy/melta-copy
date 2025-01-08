@@ -226,6 +226,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
             editable,
         );
     });
+
     columnDefs.push(
         booleanColDef(
             'disabled',
