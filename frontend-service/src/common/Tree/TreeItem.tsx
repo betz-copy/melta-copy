@@ -22,12 +22,12 @@ import { MeltaTooltip } from '../MeltaTooltip';
 const LabelWithToolTip = ({ children, className }) => (
     <Box className={className}>
         <MeltaTooltip title={children}>
-            <Typography>{children}</Typography>
+            <Typography sx={{ fontSize: '14px' }}>{children}</Typography>
         </MeltaTooltip>
     </Box>
 );
 
-const DivideMenuItems = (
+export const DivideMenuItems = (
     <Box sx={{ display: 'flex', justifyContent: 'center', my: '5px' }}>
         <Divider style={{ width: '199px' }} />
     </Box>
@@ -38,7 +38,17 @@ const draggableHandle = (
     onDragOver?: TreeViewCancellableEventHandler<React.DragEvent<Element>>,
     onDragEnd?: TreeViewCancellableEventHandler<React.DragEvent<Element>>,
 ) => (
-    <TreeItem2IconContainer draggable onDragStart={handleDragStart} onDragOver={onDragOver} onDragEnd={onDragEnd}>
+    <TreeItem2IconContainer
+        sx={{
+            '& .MuiSvgIcon-root': {
+                fontSize: '1rem',
+            },
+        }}
+        draggable
+        onDragStart={handleDragStart}
+        onDragOver={onDragOver}
+        onDragEnd={onDragEnd}
+    >
         <Menu />
     </TreeItem2IconContainer>
 );
@@ -77,11 +87,10 @@ const TreeItem = React.forwardRef(function CustomTreeItem(props: TreeItem2Props,
                 {...otherRootProps}
                 sx={{
                     '& .MuiButtonBase-root': {
-                        padding: '3px 8px',
+                        padding: '0px 8px',
                     },
                 }}
             >
-                {itemDepth === 0 && DivideMenuItems}
                 <TreeItem2Content
                     {...getContentProps()}
                     sx={{
@@ -94,11 +103,12 @@ const TreeItem = React.forwardRef(function CustomTreeItem(props: TreeItem2Props,
                         </TreeItem2IconContainer>
                     )}
                     {draggable && draggableHandle(handleDragStart, onDragOver, onDragEnd)}
-                    <MeltaCheckbox {...getCheckboxProps()} />
+                    <MeltaCheckbox {...getCheckboxProps()} sxChecked={{ width: '18px', height: '18px' }} />
                     <LabelWithToolTip {...getLabelProps()} />
                     <TreeItem2DragAndDropOverlay {...getDragAndDropOverlayProps()} />
                 </TreeItem2Content>
                 {children && <TreeItem2GroupTransition {...getGroupTransitionProps()} />}
+                {itemDepth === 0 && status.expandable && DivideMenuItems}
             </TreeItem2Root>
         </TreeItem2Provider>
     );

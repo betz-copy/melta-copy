@@ -2,9 +2,10 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { RichTreeViewPro, TreeViewBaseItem } from '@mui/x-tree-view-pro';
 import { ChevronLeft, ExpandLess } from '@mui/icons-material';
 import { TreeViewItemReorderPosition } from '@mui/x-tree-view-pro/internals/plugins/useTreeViewItemsReordering';
+import { Box, Divider } from '@mui/material';
 import { flattenTree, useTreeUtils } from '../../utils/hooks/useTreeUtils';
 import { SelectAll } from './SelectAll';
-import TreeItem from './TreeItem';
+import TreeItem, { DivideMenuItems } from './TreeItem';
 
 interface TreeProps<T extends {}> {
     treeItems: TreeViewBaseItem<T>[];
@@ -82,11 +83,16 @@ const Tree = <T extends {}>({
     return (
         <>
             {selectAll && (
-                <SelectAll
-                    allOptionIds={(flattenedTree ?? flattenTree(treeItems, getItemId)).map(getItemId)}
-                    setSelectedOptionIds={setSelectedItemsIds}
-                    selectedOptionIds={selectedItemsIds}
-                />
+                <>
+                    <SelectAll
+                        allOptionIds={(flattenedTree ?? flattenTree(treeItems, getItemId)).map(getItemId)}
+                        setSelectedOptionIds={setSelectedItemsIds}
+                        selectedOptionIds={selectedItemsIds}
+                    />
+                    <Box sx={{ display: 'flex', justifyContent: 'center', my: '5px' }}>
+                        <Divider style={{ width: '199px' }} />
+                    </Box>
+                </>
             )}
             <RichTreeViewPro
                 style={{ direction: 'rtl' }}
