@@ -1,7 +1,7 @@
 /* eslint-disable no-nested-ternary */
 import { Box, FormControl, Select, useTheme } from '@mui/material';
 import lodashUniqby from 'lodash.uniqby';
-import React, { Dispatch, Key, PropsWithChildren, ReactElement, SetStateAction, useCallback, useMemo, useState } from 'react';
+import React, { Dispatch, Key, PropsWithChildren, ReactElement, SetStateAction, useCallback, useState } from 'react';
 import { DropResult } from 'react-beautiful-dnd';
 import { IoIosArrowDown, IoIosArrowUp } from 'react-icons/io';
 import { TreeViewBaseItem } from '@mui/x-tree-view-pro';
@@ -22,8 +22,8 @@ export type SelectCheckboxProps<Option extends {}, Group extends any = Option> =
     options: Option[];
     selectedOptions: Option[];
     setSelectedOptions: Dispatch<SetStateAction<Option[]>>;
-    getOptionId: (option: Option) => string;
-    getOptionLabel: (option: Option) => string;
+    getOptionId: (item: Option | Group) => string;
+    getOptionLabel: (item: Option | Group) => string;
     groupsProps?: { useGroups: false } | ({ useGroups: true } & SelectCheckboxGroupProps<Option, Group>);
     isDraggableDisabled?: boolean;
     setOptions?: Dispatch<SetStateAction<(Option | Group)[]>>;
@@ -38,7 +38,7 @@ export type SelectCheckboxProps<Option extends {}, Group extends any = Option> =
     hideChooseAll?: boolean;
     dynamicWidth?: number;
     showIcon?: boolean;
-    treeFunc?: (groups: Group[], options: Option[], getItemId: SelectCheckboxProps<Option, Group>['getOptionId']) => TreeViewBaseItem<Option>[];
+    treeFunc?: (groups: Group[], options: Option[], getItemId: (item: Group | Option) => string) => TreeViewBaseItem<Option>[];
 }>;
 
 export const getOptionsAndGroupsMiniFiltered = <Option extends {}, Group extends any = Option>(

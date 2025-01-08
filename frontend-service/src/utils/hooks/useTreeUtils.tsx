@@ -43,7 +43,7 @@ export const formatTemplates = (
     categories: IMongoCategory[],
     templates: IMongoEntityTemplatePopulated[],
     getItemId: (item: IMongoCategory | IMongoEntityTemplatePopulated) => string,
-): TreeViewBaseItem<any>[] => {
+): TreeViewBaseItem<IMongoCategory | IMongoEntityTemplatePopulated>[] => {
     const templatesByCategory: Record<string, IMongoEntityTemplatePopulated[]> = {};
 
     templates.forEach((template) => {

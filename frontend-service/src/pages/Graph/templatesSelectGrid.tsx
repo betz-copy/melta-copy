@@ -5,6 +5,7 @@ import i18next from 'i18next';
 import React, { Dispatch, useState } from 'react';
 import { IoIosArrowBack, IoIosArrowDown } from 'react-icons/io';
 import { useMatomo } from '@datapunt/matomo-tracker-react';
+import { TreeViewBaseItem } from '@mui/x-tree-view-pro';
 import { getOptionsAndGroupsMiniFiltered, SelectCheckboxGroupProps, SelectCheckboxProps } from '../../common/SelectCheckBox';
 import { IMongoCategory } from '../../interfaces/categories';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
@@ -25,9 +26,9 @@ const useStyles = makeStyles(() => ({
 }));
 
 type ISplitTree = {
-    tree: any[];
-    flattenedTree: IMongoEntityTemplatePopulated[];
-    filteredTree: any[];
+    tree: TreeViewBaseItem<IMongoEntityTemplatePopulated | IMongoCategory>[];
+    flattenedTree: (IMongoEntityTemplatePopulated | IMongoCategory)[];
+    filteredTree: (IMongoEntityTemplatePopulated | IMongoCategory)[];
 };
 
 export const getCategoriesSelectCheckboxGroupProps = (
@@ -98,7 +99,7 @@ const singleTree = (
     firstTree: ISplitTree,
     secondTree: ISplitTree,
     selectedTemplates: IMongoEntityTemplatePopulated[],
-    setSelectedTemplates: React.Dispatch<React.SetStateAction<IMongoEntityTemplatePopulated[]>>,
+    setSelectedTemplates: React.Dispatch<React.SetStateAction<(IMongoEntityTemplatePopulated | IMongoCategory)[]>>,
     onClick: () => void,
 ) => (
     <Tree
@@ -124,7 +125,7 @@ const singleTree = (
 const TemplatesSelectGrid: React.FC<{
     templates: IMongoEntityTemplatePopulated[];
     selectedTemplates: IMongoEntityTemplatePopulated[];
-    setSelectedTemplates: React.Dispatch<React.SetStateAction<IMongoEntityTemplatePopulated[]>>;
+    setSelectedTemplates: React.Dispatch<React.SetStateAction<(IMongoEntityTemplatePopulated | IMongoCategory)[]>>;
     categories?: IMongoCategory[];
     setTemplates?: Dispatch<React.SetStateAction<IMongoEntityTemplatePopulated[]>>;
     setOpenFilter: React.Dispatch<React.SetStateAction<boolean>>;
