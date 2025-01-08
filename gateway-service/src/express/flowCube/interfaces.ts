@@ -3,7 +3,7 @@ export interface TemplateNamesAndId {
     Name: string;
 }
 
-export interface FlowProperties {
+export interface FlowParameters {
     Name: string;
     DisplayName: string;
     Type: string;
@@ -12,4 +12,11 @@ export interface FlowProperties {
     Description?: string;
     IsSingleValue?: boolean;
     Options?: Array<any>;
+}
+
+export interface FlowFields {
+    Name: string;
+    DisplayName: string;
+    Type: string;
+    OntologyType: string;
 }

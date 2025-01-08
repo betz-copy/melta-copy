@@ -3,7 +3,7 @@ import { InstancesService } from '../../externalServices/instanceService';
 import { IFilterOfTemplate, ISearchEntitiesOfTemplateBody } from '../../externalServices/instanceService/interfaces/entities';
 import { EntityTemplateService, IEntitySingleProperty, ISearchEntityTemplatesBody } from '../../externalServices/templates/entityTemplateService';
 import DefaultManagerProxy from '../../utils/express/manager';
-import { FlowProperties, TemplateNamesAndId } from './interfaces';
+import { FlowFields, FlowParameters, TemplateNamesAndId } from './interfaces';
 
 export class FlowCubeManager extends DefaultManagerProxy<null> {
     private instancesService: InstancesService;
@@ -73,20 +73,27 @@ export class FlowCubeManager extends DefaultManagerProxy<null> {
         });
     }
 
-    async getEntityTemplateById(templateId: string[]): Promise<{ parameters: FlowProperties[]; fields: FlowProperties[] }> {
+    async getEntityTemplateById(templateId: string[]): Promise<{ parameters: FlowParameters[]; fields: FlowFields[] }> {
         const template = await this.entityTemplateService.getEntityTemplateById(templateId[0]);
         const { properties } = template;
 
-        const parametersAndFields: FlowProperties[] = Object.entries(properties.properties).map(([key, value]) => ({
+        const parameters: FlowParameters[] = Object.entries(properties.properties).map(([key, value]) => ({
             Name: key,
             Type: value.type as string,
             DisplayName: value.title,
             OntologyType: this.getOntologyTypeByProperty(value),
-            IsSingleValue: !!value.uniqueItems,
+            IsSingleValue: value.uniqueItems ? value.uniqueItems : undefined,
             Options: value.enum ? value.enum : undefined,
         }));
 
-        return { parameters: parametersAndFields, fields: parametersAndFields };
+        const fields: FlowFields[] = Object.entries(properties.properties).map(([key, value]) => ({
+            Name: key,
+            Type: value.type as string,
+            DisplayName: value.title,
+            OntologyType: this.getOntologyTypeByProperty(value),
+        }));
+
+        return { parameters, fields };
     }
 
     getOntologyTypeByProperty(property: IEntitySingleProperty) {
