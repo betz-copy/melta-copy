@@ -589,6 +589,13 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                             gridApi.setSideBarVisible(isSideBarOpen);
                         }}
                         onGridReady={(params) => {
+                            params.api.sizeColumnsToFit();
+                            if (!savedColumnWidths) {
+                                params.api.autoSizeAllColumns();
+                            } else {
+                                const keys = Object.keys(template.properties.properties).filter((key) => !JSON.parse(savedColumnWidths)[key]);
+                                params.api.autoSizeColumns(keys);
+                            }
                             const savedSortModel = localStorage.getItem(`sortModel-${saveStorageProps.pageType}-${template._id}`);
                             if (savedSortModel) {
                                 const sortModel: IServerSideGetRowsRequest['sortModel'] = JSON.parse(savedSortModel);
