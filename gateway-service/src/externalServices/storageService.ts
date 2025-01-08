@@ -2,7 +2,6 @@ import FormData from 'form-data';
 import config from '../config';
 import DefaultExternalServiceApi from '../utils/express/externalService';
 import { UploadedFile } from '../utils/busboy/interface';
-import fsCreateReadStream from '../utils/fs';
 
 const {
     service: { docxHeaders },
@@ -17,7 +16,6 @@ export class StorageService extends DefaultExternalServiceApi {
     async uploadFile(file: UploadedFile) {
         const formData = new FormData();
         formData.append('file', file.stream, file.originalname);
-        console.log({ file });
 
         const { data } = await this.api.post<{ path: string }>(uploadFileRoute, formData, {
             headers: formData.getHeaders(),
@@ -28,9 +26,7 @@ export class StorageService extends DefaultExternalServiceApi {
 
     async uploadFiles(files: UploadedFile[]) {
         const formData = new FormData();
-
-        const fileStreamsPromises = files.map((file) => fsCreateReadStream(file.path));
-        const fileStreams = await Promise.all(fileStreamsPromises);
+        const fileStreams = await Promise.all(files.map((file) => file.stream));
 
         fileStreams.forEach((fileStream, index) => {
             formData.append('files', fileStream, files[index].originalname);

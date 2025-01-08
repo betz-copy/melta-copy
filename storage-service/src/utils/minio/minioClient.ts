@@ -24,7 +24,6 @@ export class MinIOClient {
         try {
             return func();
         } catch (err: any) {
-            console.dir({ err }, { depth: null });
             // Check if the error is caused by non-existing bucket
             if (err.code !== 'NoSuchBucket') throw err;
 
@@ -91,8 +90,6 @@ export class MinIOClient {
     }
 
     uploadFileStream(fileStream: string | Readable | Buffer, destinationFilePath: string, size: number, metaData = {}) {
-        console.log('in mimio client', { fileStream, destinationFilePath, size, metaData }, this.bucketName);
-
         return this.wrapDBNotExistsError(() => this.minioClient.putObject(this.bucketName, destinationFilePath, fileStream, size, metaData));
     }
 }

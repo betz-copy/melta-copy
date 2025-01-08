@@ -95,7 +95,10 @@ const readExcelFile = async (files: UploadedFile[], template: IMongoEntityTempla
     await Promise.all(
         files.map(async (file) => {
             const workbook = new Excel.Workbook();
-            await workbook.xlsx.readFile(file.path);
+
+            if (!file?.stream) return;
+
+            await workbook.xlsx.read(file.stream);
             const worksheet = workbook.worksheets[0];
             if (!worksheet) throw new BadRequestError(`Can't read excel`);
 

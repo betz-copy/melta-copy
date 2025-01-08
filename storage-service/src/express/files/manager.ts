@@ -14,16 +14,22 @@ const {
 } = config;
 
 export class FilesManager extends DefaultManagerMinio {
-    uploadFile(file?: UploadedFile) {
-        return file;
+    async uploadFile(file?: UploadedFile) {
+        const uploadedFile = await this.minioClient.uploadFileStream(file?.stream!, file?.originalname!, file?.size!, {});
+
+        return uploadedFile;
     }
 
     async uploadFiles(files?: UploadedFile[]) {
-        const documentFiles = files?.filter((file) => isFileDocument(file.path));
+        if (!files) return undefined;
+
+        await Promise.allSettled(files?.map((file) => this.minioClient.uploadFileStream(file?.stream!, file?.originalname!, file?.size!, {})));
+
+        const documentFiles = files?.filter((file) => isFileDocument(file.originalname));
         if (documentFiles?.length)
             await menash.send(
                 rabbit.previewQueue,
-                documentFiles.map((file) => file.path),
+                documentFiles.map((file) => file.originalname),
                 { headers: { [workspaceIdHeaderName]: this.workspaceId } },
             );
         return files;

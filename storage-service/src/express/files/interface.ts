@@ -6,7 +6,6 @@ export interface UploadedFile {
     encoding: string;
     mimetype: string;
     size: number;
-    path: string;
     stream: string | Readable | Buffer;
     destination?: string;
     buffer?: Buffer;

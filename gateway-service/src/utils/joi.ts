@@ -67,7 +67,7 @@ export const fileSchema = Joi.object({
     encoding: Joi.string().required(),
     mimetype: Joi.string().required(),
     size: Joi.number().min(1).required(),
-    path: Joi.string().required(),
+    path: Joi.string(),
 }).unknown(true);
 
 export const iconFileSchema = fileSchema.keys({

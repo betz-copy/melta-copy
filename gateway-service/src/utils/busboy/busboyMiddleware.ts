@@ -1,7 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
 import Busboy from 'busboy';
-import fs from 'fs';
-import path from 'path';
 import { Readable } from 'stream';
 import ReadableStreamClone from 'readable-stream-clone';
 import { UploadedFile } from './interface';
@@ -20,19 +18,8 @@ export const busboyMiddleware = (req: Request, _res: Response, next: NextFunctio
     const fields: Record<string, unknown> = {};
     const files: UploadedFile[] = [];
 
-    const uploadDir = path.join(__dirname, 'uploads');
-
-    if (!fs.existsSync(uploadDir)) {
-        fs.mkdirSync(uploadDir);
-    }
-
-    busboy.on('field', (fieldname: string, val: string) => {
-        fields[fieldname] = val;
-    });
-
     busboy.on('file', (fieldname: string, file: Readable, { encoding, filename, mimeType }) => {
-        const filePath = path.join(uploadDir, filename);
-        const copiedFileId = new ReadableStreamClone(file);
+        const copiedFileStream = new ReadableStreamClone(file);
 
         let fileSize = 0;
 
@@ -40,16 +27,19 @@ export const busboyMiddleware = (req: Request, _res: Response, next: NextFunctio
             fileSize += data.length;
         }).on('close', () => {
             const fileData: UploadedFile = {
-                path: filePath,
                 fieldname,
                 originalname: filename,
                 encoding,
                 mimetype: mimeType,
-                stream: copiedFileId,
+                stream: copiedFileStream,
                 size: fileSize,
             };
             files.push(fileData);
         });
+    });
+
+    busboy.on('field', (fieldname: string, val: string) => {
+        fields[fieldname] = val;
     });
 
     busboy.on('finish', () => {
