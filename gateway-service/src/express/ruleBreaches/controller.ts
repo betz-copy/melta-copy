@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
 import RuleBreachesManager from './manager';
 import DefaultController from '../../utils/express/controller';
-import { UploadedFile } from '../../utils/busboy/interface';
 
 class RuleBreachesController extends DefaultController<RuleBreachesManager> {
     constructor(workspaceId: string) {
@@ -9,7 +8,7 @@ class RuleBreachesController extends DefaultController<RuleBreachesManager> {
     }
 
     async createRuleBreachRequest(req: Request, res: Response) {
-        res.json(await this.manager.createRuleBreachRequest(req.body, req.user!.id, req.files as unknown as UploadedFile[]));
+        res.json(await this.manager.createRuleBreachRequest(req.body, req.user!.id, req.files));
     }
 
     async getManyRuleBreachRequests(req: Request, res: Response) {

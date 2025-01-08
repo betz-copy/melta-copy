@@ -12,7 +12,7 @@ export class InstancesController extends DefaultController<InstancesManager> {
 
     async createEntityInstance(req: Request, res: Response) {
         const { ignoredRules, ...instanceData } = req.body;
-        res.json(await this.manager.createEntityInstance(instanceData, req.files as unknown as UploadedFile[], ignoredRules, req.user!.id));
+        res.json(await this.manager.createEntityInstance(instanceData, req.files!, ignoredRules, req.user!.id));
     }
 
     async exportEntities(req: Request, res: Response) {
@@ -25,17 +25,12 @@ export class InstancesController extends DefaultController<InstancesManager> {
     }
 
     async loadEntities(req: Request, res: Response) {
-        res.json(
-            await this.manager.loadEntities(req.body.templateId, req.user!.id, req.files as unknown as UploadedFile[], req.body.insertBrokenEntities),
-        );
+        res.json(await this.manager.loadEntities(req.body.templateId, req.user!.id, req.files, req.body.insertBrokenEntities));
     }
 
     async updateEntityInstance(req: Request, res: Response) {
-        console.log('**************');
         const { ignoredRules, ...instanceData } = req.body;
-        res.json(
-            await this.manager.updateEntityInstance(req.params.id, instanceData, req.files as unknown as UploadedFile[], ignoredRules, req.user!.id),
-        );
+        res.json(await this.manager.updateEntityInstance(req.params.id, instanceData, req.files!, ignoredRules, req.user!.id));
     }
 
     async searchEntitiesBatch(req: Request, res: Response) {

@@ -2,7 +2,6 @@ import { Request, Response } from 'express';
 import InstancesManager from './manager';
 import { ShragaUser } from '../../../utils/express/passport';
 import DefaultController from '../../../utils/express/controller';
-import { UploadedFile } from '../../../utils/busboy/interface';
 
 class ProcessInstancesController extends DefaultController<InstancesManager> {
     constructor(workspaceId: string) {
@@ -16,12 +15,12 @@ class ProcessInstancesController extends DefaultController<InstancesManager> {
 
     async createProcessInstance(req: Request, res: Response) {
         const { id: userId } = req.user as ShragaUser;
-        res.json(await this.manager.createProcessInstance(req.body, req.files as unknown as UploadedFile[], userId));
+        res.json(await this.manager.createProcessInstance(req.body, req.files!, userId));
     }
 
     async updateProcessInstance(req: Request, res: Response) {
         const { id: userId } = req.user as ShragaUser;
-        res.json(await this.manager.updateProcessInstance(req.params.id, req.body, req.files as unknown as UploadedFile[], userId));
+        res.json(await this.manager.updateProcessInstance(req.params.id, req.body, req.files!, userId));
     }
 
     async archiveProcess(req: Request, res: Response) {

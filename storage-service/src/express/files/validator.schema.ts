@@ -1,4 +1,4 @@
-import * as Joi from 'joi';
+import Joi from 'joi';
 
 export const defaultSchema = Joi.object({
     query: {
@@ -12,7 +12,7 @@ export const defaultSchema = Joi.object({
 
 // POST /api/files
 export const uploadFileRequestSchema = Joi.object({
-    file: Joi.array(),
+    file: Joi.array().required(),
     query: {},
     params: {},
 });

@@ -1,160 +1,73 @@
-// /* eslint-disable consistent-return */
-// import { NextFunction, Request, Response } from 'express';
-// import * as Busboy from 'busboy';
-// import { Readable } from 'stream';
-// import { config } from '../../config';
-// import { BadRequestError } from '../../express/error';
-// import { generatePath } from '../generatePath';
-// import DefaultManagerMinio from './manager';
-// import { UploadedFile } from '../../express/files/interface';
+import { Request, Response, NextFunction } from 'express';
+import Busboy from 'busboy';
+import fs from 'fs';
+import path from 'path';
+import { Readable } from 'stream';
+import { UploadedFile } from '../../express/files/interface';
+// import config from '../../config';
 
-// export class MinioStorage extends DefaultManagerMinio {
-//     async uploadStreamToMinio(file: UploadedFile) {
-//         const path = generatePath(file.originalname);
+// const {
+//     service: { uploadsFolderPath },
+// } = config;
 
-//         console.log('Uploading to MinIO:', { file });
+export const busboyMiddleware = (req: Request, _res: Response, next: NextFunction): void => {
+    console.log({ headers: req.headers });
+    const busboy = Busboy({ headers: req.headers });
+    const fields: Record<string, unknown> = {};
+    const files: UploadedFile[] = [];
 
-//         await this.minioClient.uploadFileStream(file.stream, path, file.size, {
-//             'content-type': file.mimetype,
-//         });
+    const uploadDir = path.join(__dirname, 'uploads');
 
-//         return { ...(await this.minioClient.statFile(path)), path };
-//     }
-// }
+    if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir);
+    }
 
-// export class MinioBusboy {
-//     private static async wrapStorage(req: Request): Promise<MinioStorage | null> {
-//         const workspaceId = req.headers[config.service.workspaceIdHeaderName];
-//         if (typeof workspaceId !== 'string') return null;
+    console.log('1111111111111111');
 
-//         const storage = new MinioStorage(workspaceId);
+    busboy.on('field', (fieldname: string, val: string) => {
+        fields[fieldname] = val;
+    });
 
-//         if (!(await storage.minioClient.bucketExists())) {
-//             await storage.minioClient.makeBucket();
-//         }
+    busboy.on('file', (fieldname: string, file: Readable, { encoding, filename, mimeType }) => {
+        console.log('2222222222222');
+        const filePath = path.join(uploadDir, filename);
 
-//         return storage;
-//     }
+        let fileSize = 0;
 
-//     static async uploadToMinio(req: Request, _res: Response, next: NextFunction) {
-//         try {
-//             const storage = await MinioBusboy.wrapStorage(req);
-//             if (!storage) {
-//                 return next(new BadRequestError('Invalid workspace ID in headers'));
-//             }
+        file.on('data', (data) => {
+            fileSize += data.length;
+        }).on('close', () => {
+            const fileData: UploadedFile = {
+                path: filePath,
+                fieldname,
+                originalname: filename,
+                encoding,
+                mimetype: mimeType,
+                stream: file,
+                size: fileSize,
+            };
+            files.push(fileData);
+        });
+    });
 
-//             const busboy = Busboy({ headers: req.headers });
-//             let fileStat: any;
+    busboy.on('finish', () => {
+        req.body = fields;
 
-//             busboy.on('file', (fieldname, file, filename, encoding, mimetype) => {
-//                 let size = 0;
-//                 const chunks: Buffer[] = [];
+        if (files?.length > 1) req.files = files;
+        else {
+            req.files = files;
+            req.file = files?.[0];
+        }
 
-//                 file.on('data', (data) => {
-//                     size += data.length;
-//                     chunks.push(data);
-//                 });
+        next();
+    });
 
-//                 file.on('end', async () => {
-//                     try {
-//                         const fileBuffer = Buffer.concat(chunks);
+    busboy.on('error', (err: Error) => {
+        console.log('error', err);
+        next(err);
+    });
 
-//                         const uploadedFile: UploadedFile = {
-//                             fieldname,
-//                             originalname: filename,
-//                             encoding,
-//                             mimetype,
-//                             path: generatePath(filename),
-//                             size,
-//                             stream: Readable.from(fileBuffer),
-//                         };
+    req.pipe(busboy);
 
-//                         fileStat = await storage.uploadStreamToMinio(uploadedFile);
-//                     } catch (error) {
-//                         next(error);
-//                     }
-//                 });
-//             });
-
-//             busboy.on('finish', () => {
-//                 req.body[config.busboy.fileKeyName] = fileStat;
-//                 next();
-//             });
-
-//             busboy.on('error', (error) => {
-//                 next(error);
-//             });
-
-//             req.pipe(busboy);
-//         } catch (error) {
-//             next(error);
-//         }
-//     }
-
-//     static async uploadBulkToMinio(req: Request, _res: Response, next: NextFunction) {
-//         try {
-//             const storage = await MinioBusboy.wrapStorage(req);
-//             if (!storage) {
-//                 return next(new BadRequestError('Invalid workspace ID in headers'));
-//             }
-
-//             const busboy = Busboy({ headers: req.headers });
-//             const uploadedFiles: UploadedFile[] = [];
-//             const uploadPromises: Promise<void>[] = [];
-
-//             busboy.on('file', (fieldname, file, { encoding, filename, mimeType: mimetype }) => {
-//                 let size = 0;
-//                 const chunks: Buffer[] = [];
-
-//                 file.on('data', (data) => {
-//                     size += data.length;
-//                     chunks.push(data);
-//                 });
-
-//                 file.on('end', () => {
-//                     const fileBuffer = Buffer.concat(chunks);
-
-//                     const uploadedFile: UploadedFile = {
-//                         fieldname,
-//                         originalname: filename,
-//                         encoding,
-//                         mimetype,
-//                         path: generatePath(filename),
-//                         size,
-//                         stream: Readable.from(fileBuffer),
-//                     };
-
-//                     const uploadPromise = storage
-//                         .uploadStreamToMinio(uploadedFile)
-//                         .then((stat) => {
-//                             uploadedFiles.push({ ...uploadedFile, path: stat.path });
-//                         })
-//                         .catch(next);
-//                     console.log('uploadedFilesss', uploadedFiles);
-
-//                     uploadPromises.push(uploadPromise);
-//                 });
-//             });
-
-//             busboy.on('finish', async () => {
-//                 console.log({ uploadedFiles });
-
-//                 try {
-//                     await Promise.all(uploadPromises);
-//                     req.body[config.busboy.filesKeyName] = uploadedFiles;
-//                     next();
-//                 } catch (error) {
-//                     next(error);
-//                 }
-//             });
-
-//             busboy.on('error', (error) => {
-//                 next(error);
-//             });
-
-//             req.pipe(busboy);
-//         } catch (error) {
-//             next(error);
-//         }
-//     }
-// }
+    return undefined;
+};
