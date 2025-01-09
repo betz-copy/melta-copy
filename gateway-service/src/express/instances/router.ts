@@ -10,7 +10,7 @@ import { InstancesValidator } from './middlewares';
 import {
     createEntityInstanceSchema,
     createRelationshipSchema,
-    deleteEntityInstanceSchema,
+    deleteEntityInstancesSchema,
     deleteRelationshipSchema,
     exportEntitiesSchema,
     exportEntityToDocumentSchema,
@@ -122,11 +122,11 @@ InstancesRouter.post(
     InstancesValidatorMiddleware.validateUserCanWriteEntityInstance,
     InstancesControllerMiddleware.duplicateEntityInstance,
 );
-InstancesRouter.delete(
-    '/entities/:id',
-    ValidateRequest(deleteEntityInstanceSchema),
-    InstancesValidatorMiddleware.validateUserCanWriteEntityInstance,
-    InstancesControllerMiddleware.deleteEntityInstance,
+InstancesRouter.post(
+    '/entities/delete/bulk',
+    ValidateRequest(deleteEntityInstancesSchema),
+    InstancesValidatorMiddleware.validateUserCanDeleteEntityInstances,
+    InstancesControllerMiddleware.deleteEntityInstances,
 );
 InstancesRouter.patch(
     '/entities/:id/status',

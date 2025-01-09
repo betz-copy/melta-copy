@@ -7,6 +7,7 @@ export interface BackendConfigState {
     matomoUrl: string;
     matomoSiteId: number;
     mapLayers: Record<string, string>;
+    deleteEntitiesLimit: number;
 }
 
 const getBackendConfigRequest = async () => {

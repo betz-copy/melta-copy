@@ -40,6 +40,9 @@ const config = {
             })
             .required()
             .asJsonObject(),
+        agGridLimit: {
+            deleteLimit: env.get('DELETE_ENTITIES_MAX_LIMIT').default(1000).asIntPositive(),
+        },
     },
 
     authentication: {

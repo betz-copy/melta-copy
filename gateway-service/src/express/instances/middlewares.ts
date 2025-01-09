@@ -95,10 +95,7 @@ export class InstancesValidator extends DefaultController {
         await this.validateHasPermissionsToEntitiesInTemplates(req.user!, Object.keys(templates));
     }
 
-    private async validateUserPermissionForEntityInstance(req: Request, permissionScope: PermissionScope) {
-        const instanceId = req.params.id;
-
-        const { templateId } = await this.instancesService.getEntityInstanceById(instanceId);
+    private async validateUserPermissionForEntityInstance(req: Request, templateId: string, permissionScope: PermissionScope) {
         const categoryId = await this.getCategoryIdFromTemplateId(templateId);
 
         const userPermissions = await this.authorizer.getWorkspacePermissions(req.user!.id);
@@ -116,7 +113,16 @@ export class InstancesValidator extends DefaultController {
     }
 
     async validateUserCanWriteEntityInstance(req: Request) {
-        await this.validateUserPermissionForEntityInstance(req, PermissionScope.write);
+        const { id } = req.params;
+        const { templateId } = await this.instancesService.getEntityInstanceById(id);
+
+        await this.validateUserPermissionForEntityInstance(req, templateId, PermissionScope.write);
+    }
+
+    async validateUserCanDeleteEntityInstances(req: Request) {
+        const { templateId } = req.body;
+
+        await this.validateUserPermissionForEntityInstance(req, templateId, PermissionScope.write);
     }
 
     private async getCategoriesIdsByEntitiesAndTemplatesIds(entitiesIds: string[], templateIdsFromReq: string[]) {
@@ -153,7 +159,10 @@ export class InstancesValidator extends DefaultController {
     }
 
     async validateUserCanReadEntityInstance(req: Request) {
-        await this.validateUserPermissionForEntityInstance(req, PermissionScope.read);
+        const { id } = req.params;
+        const { templateId } = await this.instancesService.getEntityInstanceById(id);
+
+        await this.validateUserPermissionForEntityInstance(req, templateId, PermissionScope.read);
     }
 
     async validateUserCanGetExpandedEntity(req: Request) {

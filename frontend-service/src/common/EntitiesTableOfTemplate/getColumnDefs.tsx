@@ -20,6 +20,8 @@ import {
     regexColDef,
     relatedTemplateColDef,
     stringColDef,
+    userArrayColDef,
+    userColDef,
 } from '../../utils/agGrid/commonColDefs';
 import IconButtonWithPopover from '../IconButtonWithPopover';
 import { ImageWithDisable } from '../ImageWithDisable';
@@ -198,16 +200,21 @@ export const getColumnDefs = <Data extends any = EntityData>({
                 searchValue,
                 editable,
             );
-        if (propertyTemplate.items) {
-            return enumFilesColDef(
+        if (propertyTemplate.items?.format === 'fileId') {
+            return enumFilesColDef(property, valueGetter, { title: propertyTemplate.title }, defaultColumnWidths[property], rowHeight);
+        }
+        if (propertyTemplate.format === 'user') {
+            return userColDef(property, valueGetter, { title: propertyTemplate.title }, [], defaultColumnWidths[property], hideColumn);
+        }
+        if (propertyTemplate.items?.format === 'user') {
+            return userArrayColDef(
                 property,
                 valueGetter,
                 { title: propertyTemplate.title },
+                [],
                 defaultColumnWidths[property],
                 rowHeight,
-                false,
-                searchValue,
-                Object.values(template.entitiesWithFiles ?? {}).flat(),
+                hideColumn,
             );
         }
         return stringColDef(
@@ -222,6 +229,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
             editable,
         );
     });
+
     columnDefs.push(
         booleanColDef(
             'disabled',

@@ -14,7 +14,7 @@ const generateFromString = ({ format, relationshipReference, enum: typeEnum }: I
 };
 
 const generateFromArray = ({ items }: IEntitySingleProperty) => {
-    if (items?.format === 'fileId') return 'string[]';
+    if (items?.format === 'fileId' || items?.format === 'user') return 'string[]';
 
     const arrayOptions = items?.enum?.map((option) => `\`${option}\``).join(' | ');
 

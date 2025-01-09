@@ -21,6 +21,7 @@ apiRouter.use('/config', (_req, res) =>
         matomoUrl: config.frontendConfig.matotmo.baseUrl,
         matomoSiteId: config.frontendConfig.matotmo.siteId,
         mapLayers: config.frontendConfig.mapLayers,
+        deleteEntitiesLimit: config.frontendConfig.agGridLimit.deleteLimit,
     }),
 );
 

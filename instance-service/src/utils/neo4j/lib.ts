@@ -26,12 +26,25 @@ export const formatDate = (date: string) => {
 const normalizeFields = (properties: Record<string, any>): Record<string, any> => {
     const props = {};
 
+    const usersArrayKeys: Set<string> = new Set<string>();
+    const userKeys: Set<string> = new Set<string>();
+
     Object.entries(properties).forEach(([key, value]) => {
         if (
             key.endsWith(config.neo4j.stringPropertySuffix) ||
             key.endsWith(config.neo4j.booleanPropertySuffix) ||
             key.endsWith(config.neo4j.filePropertySuffix)
         ) {
+            return;
+        }
+
+        if (key.includes('.') && key.endsWith(`${config.neo4j.usersFieldsPropertySuffix}`)) {
+            usersArrayKeys.add(key.split('.')[0]);
+            return;
+        }
+
+        if (key.includes('.') && key.endsWith(`${config.neo4j.userFieldPropertySuffix}`)) {
+            userKeys.add(key.split('.')[0]);
             return;
         }
 
@@ -62,6 +75,40 @@ const normalizeFields = (properties: Record<string, any>): Record<string, any> =
         props[key] = value;
     });
 
+    if (usersArrayKeys.size) {
+        usersArrayKeys.forEach((userKey) => {
+            props[userKey] = properties[
+                `${userKey}${config.neo4j.usersArrayOriginalAndSuffixFieldsMap[0].suffixFieldName}${config.neo4j.usersFieldsPropertySuffix}`
+            ].map((_id, index) => {
+                const objToReturn: any = {};
+
+                config.neo4j.usersArrayOriginalAndSuffixFieldsMap.forEach((userField) => {
+                    objToReturn[userField.originalFieldName] =
+                        properties[`${userKey}${userField.suffixFieldName}${config.neo4j.usersFieldsPropertySuffix}`][index];
+                });
+
+                return JSON.stringify({
+                    ...objToReturn,
+                });
+            });
+        });
+    }
+
+    if (userKeys.size) {
+        userKeys.forEach((userKey) => {
+            const objToReturn: any = {};
+
+            config.neo4j.userOriginalAndSuffixFieldsMap.forEach((userField) => {
+                objToReturn[userField.originalFieldName] =
+                    properties[`${userKey}${userField.suffixFieldName}${config.neo4j.userFieldPropertySuffix}`];
+            });
+
+            props[userKey] = JSON.stringify({
+                ...objToReturn,
+            });
+        });
+    }
+
     return props;
 };
 
@@ -69,10 +116,10 @@ type ResponseType = 'singleResponse' | 'singleResponseNotNullable' | 'multipleRe
 type Response<ResType extends ResponseType, Data> = ResType extends 'singleResponse'
     ? Data | null
     : ResType extends 'singleResponseNotNullable'
-      ? Data
-      : ResType extends 'multipleResponses'
-        ? Data[]
-        : never;
+    ? Data
+    : ResType extends 'multipleResponses'
+    ? Data[]
+    : never;
 
 const nodeToEntity = (node: Node): IEntity => {
     const entity = {

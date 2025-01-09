@@ -74,30 +74,6 @@ export const getDependentRulesRequestSchema = Joi.object({
 });
 
 /**
- * DELETE /api/instances/entities/:id?deleteAllRelationships=true
- */
-export const deleteEntityByIdRequestSchema = Joi.object({
-    query: {
-        deleteAllRelationships: Joi.boolean().default(false),
-    },
-    body: {},
-    params: {
-        id: Joi.string().required(),
-    },
-});
-
-/**
- * DELETE /api/instances/entities?templateId
- */
-export const deleteEntitiesByTemplateIdRequestSchema = Joi.object({
-    query: {
-        templateId: Joi.string().required(),
-    },
-    body: {},
-    params: {},
-});
-
-/**
  * POST /api/instances/entities
  */
 export const createEntityRequestSchema = Joi.object({
@@ -220,6 +196,44 @@ const semanticSearchResult = Joi.object().pattern(
         ),
     ),
 );
+
+// /**
+//  * POST /api/instances/entities/delete/bulk
+//  */
+const baseDeleteSchema = Joi.object({
+    selectAll: Joi.boolean().required(),
+    templateId: Joi.string().required(),
+    deleteAllRelationships: Joi.boolean(),
+});
+
+const selectAllSchema = baseDeleteSchema.keys({
+    selectAll: Joi.valid(true).required(),
+    idsToExclude: Joi.array().items(Joi.string()),
+    filter: searchFilterSchema,
+    textSearch: Joi.string().allow(''),
+});
+
+const specificIdsSchema = baseDeleteSchema.keys({
+    selectAll: Joi.valid(false).required(),
+    idsToInclude: Joi.array().items(Joi.string()).min(1).required(),
+});
+
+export const deleteEntitiesByIdsRequestSchema = Joi.object({
+    body: Joi.alternatives(selectAllSchema, specificIdsSchema).required(),
+    query: {},
+    params: {},
+});
+
+/**
+ * DELETE /api/instances/entities?templateId
+ */
+export const deleteEntitiesByTemplateIdRequestSchema = Joi.object({
+    query: {
+        templateId: Joi.string().required(),
+    },
+    body: {},
+    params: {},
+});
 
 /*
  * POST /api/instances/entities/count

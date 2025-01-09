@@ -175,4 +175,22 @@ export interface IGraphFilterBodyBatch {
     [key: string]: IGraphFilterBody;
 }
 
+export interface IDeleteEntityBodyBase {
+    selectAll: boolean;
+    templateId: string;
+    deleteAllRelationships?: boolean;
+}
+
+export type IDeleteEntityBody<T extends boolean = boolean> = IDeleteEntityBodyBase & {
+    selectAll: T;
+} & (T extends true
+        ? {
+              idsToExclude?: string[];
+              filter?: ISearchEntitiesOfTemplateBody['filter'];
+              textSearch?: string;
+          }
+        : {
+              idsToInclude: string[];
+          });
+
 export type EntityData = IEntity | IFailedEntity;
