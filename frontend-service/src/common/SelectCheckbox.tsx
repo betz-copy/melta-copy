@@ -1,5 +1,5 @@
 /* eslint-disable no-nested-ternary */
-import { Menu, Search, Hive as HiveIcon } from '@mui/icons-material';
+import { Menu, Search, Hive as HiveIcon, ExpandMore, FilterList } from '@mui/icons-material';
 import {
     Box,
     Button,
@@ -19,9 +19,9 @@ import {
 import i18next from 'i18next';
 import lodashGroupBy from 'lodash.groupby';
 import lodashUniqby from 'lodash.uniqby';
-import React, { Dispatch, Fragment, Key, PropsWithChildren, ReactElement, SetStateAction, useState } from 'react';
+import React, { Dispatch, Fragment, Key, PropsWithChildren, SetStateAction, useState } from 'react';
 import { DragDropContext, Draggable, Droppable, DropResult } from 'react-beautiful-dnd';
-import { IoIosArrowBack, IoIosArrowDown, IoIosArrowUp } from 'react-icons/io';
+import { IoIosArrowBack, IoIosArrowDown } from 'react-icons/io';
 import { MeltaTooltip } from './MeltaTooltip';
 import { MeltaCheckbox } from './MeltaCheckbox';
 import { useDarkModeStore } from '../stores/darkMode';
@@ -76,7 +76,15 @@ export const MenuItemContent: React.FC<MenuItemContentProps> = ({
                     <HiveIcon style={{ color: theme.palette.primary.main }} fontSize="inherit" />
                 )
             ) : (
-                <MeltaCheckbox checked={checked} indeterminate={indeterminate} />
+                <MeltaCheckbox
+                    checked={checked}
+                    indeterminate={indeterminate}
+                    sx={{
+                        '&:hover': {
+                            backgroundColor: 'transparent',
+                        },
+                    }}
+                />
             )}
 
             <ListItemText
@@ -116,7 +124,7 @@ export type SelectCheckboxGroupProps<Option extends any, Group extends any> = {
 
 export type SelectCheckboxProps<Option extends any, Group extends any = any> = PropsWithChildren<{
     title: string;
-    img?: ReactElement;
+    filterIcon?: boolean;
     options: Option[];
     selectedOptions: Option[];
     setSelectedOptions: Dispatch<SetStateAction<Option[]>>;
@@ -515,9 +523,13 @@ export const ChooseAllMenuItem = <Option extends any, Group extends any>({
     );
 };
 
+const CustomExpandMore = ({ filterIcon, ...rest }) => {
+    return <Box sx={{ gap: '10px', marginRight: '14px' }}>{filterIcon ? <FilterList {...rest} /> : <ExpandMore {...rest} />}</Box>;
+};
+
 const SelectCheckbox = <Option extends any, Group extends any>({
     title,
-    img,
+    filterIcon,
     options,
     selectedOptions,
     setSelectedOptions,
@@ -555,8 +567,6 @@ const SelectCheckbox = <Option extends any, Group extends any>({
             return isSelectedOptionInOptionsFiltered;
         });
 
-    // eslint-disable-next-line no-nested-ternary
-
     const borderRadiusStyle = overrideSx ? (isOpen ? '12px 12px 12px 0' : '12px') : isOpen ? '7px 7px 0 0' : '7px';
     const [openMap, setOpenMap] = useState<{ [groupId: string]: boolean }>({});
     return (
@@ -586,7 +596,6 @@ const SelectCheckbox = <Option extends any, Group extends any>({
                                 bgcolor: toTopBar ? '#EBEFFA' : '#FFFFFF',
                                 borderRadius: '5px',
                             },
-                            '::-webkit-scrollbar-thumb': { background: toTopBar ? '' : '#EBEFFA' },
                         },
                     },
                     transformOrigin: {
@@ -594,17 +603,7 @@ const SelectCheckbox = <Option extends any, Group extends any>({
                         horizontal: overrideSx ? 'center' : horizontalOrigin,
                     },
                 }}
-                // eslint-disable-next-line react/no-unstable-nested-components
-                IconComponent={() => (
-                    <Box display="flex" alignContent="center" alignItems="center" sx={{ gap: '10px', marginRight: '14px' }}>
-                        {img ||
-                            (isOpen ? (
-                                <IoIosArrowUp style={{ color: theme.palette.primary.main, height: '16px', width: '16px' }} />
-                            ) : (
-                                <IoIosArrowDown style={{ color: theme.palette.primary.main, height: '16px', width: '16px' }} />
-                            ))}
-                    </Box>
-                )}
+                IconComponent={(params) => CustomExpandMore({ filterIcon, ...params })}
                 size={size}
                 onOpen={() => {
                     setMiniFilterValue('');
@@ -635,6 +634,10 @@ const SelectCheckbox = <Option extends any, Group extends any>({
                     maxWidth: !overrideSx ? (toTopBar ? '130px' : '131px') : undefined,
                     maxHeight: toTopBar ? '35px' : '34px',
                     padding: toTopBar ? '6.99px, 13.98px' : '0px, 8px',
+                    '& .MuiSvgIcon-root': {
+                        color: filterIcon ? (darkMode ? '#9398C2' : '#1E2775') : '',
+                        transform: filterIcon ? 'none' : '',
+                    },
                 }}
             >
                 {!isSelectDisabled && !hideSearchBar && <MiniFilter value={miniFilterValue} onChange={setMiniFilterValue} toTopBar={toTopBar} />}

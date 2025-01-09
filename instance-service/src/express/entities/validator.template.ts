@@ -329,7 +329,7 @@ export class EntityValidator extends DefaultController {
 
         this.validateShowRelationships(showRelationships, templateId, relationshipTemplatesMap, 'showRelationships');
 
-        sort.forEach(({ field }, sortIndex) => {
+        sort?.forEach(({ field }, sortIndex) => {
             const fieldTemplate = entityTemplateForValidation.properties.properties[field];
             if (!fieldTemplate) {
                 throw new ValidationError(`sort.${sortIndex}.field "${field}" must exist in template of search`);
@@ -359,7 +359,7 @@ export class EntityValidator extends DefaultController {
 
             this.validateShowRelationships(showRelationships, templateId, relationshipTemplatesMap, `searchConfigs.${templateId}.showRelationships`);
 
-            sort.forEach(({ field }, sortIndex) => {
+            sort?.forEach(({ field }, sortIndex) => {
                 const fieldTemplate = entityTemplatesForValidationMap.get(templateId)!.properties.properties[field];
                 if (!fieldTemplate) {
                     throw new ValidationError(`sort.${sortIndex}.field "${field}" must exist in template of search`);

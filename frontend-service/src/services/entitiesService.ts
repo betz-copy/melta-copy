@@ -11,6 +11,7 @@ import {
     IExportEntitiesBody,
     IGraphFilterBodyBatch,
     ISearchEntitiesByTemplatesBody,
+    IDeleteEntityBody,
     ICountSearchResult,
 } from '../interfaces/entities';
 import { EntityWizardValues } from '../common/dialogs/entity';
@@ -249,8 +250,8 @@ export const duplicateEntityRequest = async (entityId: string, newEntityData: En
     return data;
 };
 
-export const deleteEntityRequest = async (entityId: string) => {
-    const { data } = await axios.delete(`${entities}/${entityId}`);
+export const deleteEntityRequest = async (deleteBody: IDeleteEntityBody) => {
+    const { data } = await axios.post<void>(`${entities}/delete/bulk`, deleteBody);
     return data;
 };
 

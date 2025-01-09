@@ -10,6 +10,7 @@ export interface BackendConfigState {
         entitiesFileLimit: number;
         filesLimit: number;
     };
+    deleteEntitiesLimit: number;
 }
 
 export const getBackendConfigRequest = async () => {

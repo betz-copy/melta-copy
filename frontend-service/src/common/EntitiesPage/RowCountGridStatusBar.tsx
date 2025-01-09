@@ -1,41 +1,53 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
+import { IServerSideSelectionState, IStatusPanelParams } from '@ag-grid-community/core';
 
-interface IStatusPanelParams {
-    api: any;
-}
+export const RowCountGridStatusBar: React.FC<IStatusPanelParams> = ({ api }) => {
+    const [count, setCount] = useState(0);
+    const [selectedCount, setSelectedCount] = useState(0);
 
-const RowCountGridStatusBar: React.FC<IStatusPanelParams> = ({ api }) => {
-    const [count, setCount] = useState<number>(0);
     const isMounted = useRef<boolean>(false);
+
+    const updateRowCount = useCallback(() => {
+        if (isMounted.current) setCount(api.getDisplayedRowCount());
+    }, [api]);
+
+    const updateSelectedRowCount = useCallback(() => {
+        const { selectAll, toggledNodes } = api.getServerSideSelectionState() as IServerSideSelectionState;
+
+        if (selectAll) {
+            const toggledNodesCount = toggledNodes.length;
+            setSelectedCount(count - toggledNodesCount);
+        } else setSelectedCount(api.getSelectedRows().length);
+    }, [api, count]);
 
     useEffect(() => {
         isMounted.current = true;
 
-        const updateCount = () => {
-            if (isMounted.current) {
-                const rowCount = api.getDisplayedRowCount();
-                setCount(rowCount);
-            }
-        };
+        updateRowCount();
+        updateSelectedRowCount();
 
-        updateCount();
-        api.addEventListener('modelUpdated', updateCount);
+        api.addEventListener('modelUpdated', updateRowCount);
+        api.addEventListener('selectionChanged', updateSelectedRowCount);
 
         return () => {
             isMounted.current = false;
-            api.removeEventListener('modelUpdated', updateCount);
+            api.removeEventListener('modelUpdated', updateRowCount);
+            api.removeEventListener('selectionChanged', updateSelectedRowCount);
         };
-    }, [api]);
+    }, [api, updateRowCount, updateSelectedRowCount]);
 
     return (
         <Grid container alignItems="center" sx={{ height: '45px' }}>
-            <Typography fontSize="15px" color="rgba(0,0,0,0.54)">
-                {`${i18next.t('entitiesTableOfTemplate.totalLines')} ${count}`}
+            {selectedCount > 0 && (
+                <Typography fontSize="15px" sx={{ opacity: 0.5, mr: 2 }}>
+                    {`${i18next.t('entitiesTableOfTemplate.selectedLines')} : ${selectedCount}`}
+                </Typography>
+            )}
+            <Typography fontSize="15px" sx={{ opacity: 0.5 }}>
+                {`${i18next.t('entitiesTableOfTemplate.totalLines')} : ${count}`}
             </Typography>
         </Grid>
     );
 };
-
-export { RowCountGridStatusBar };

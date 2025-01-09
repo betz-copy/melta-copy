@@ -84,6 +84,7 @@ const config = {
     },
     errorCodes: {
         entityHasRelationships: 'ENTITY_HAS_RELATIONSHIPS',
+        entityHasRelationshipReferenceField: 'ENTITY_HAS_RELATIONSHIPS_REFERENCE',
         relationshipAlreadyExists: 'RELATIONSHIP_ALREADY_EXISTS',
         ruleBlock: 'RULE_BLOCK',
         failedToCreateConstraints: 'FAILED_TO_CREATE_CONSTRAINTS',
@@ -102,6 +103,7 @@ const config = {
     fileIdLength: env.get('FILE_ID_LENGTH').default(32).asIntPositive(),
     cypherRulesResultValueVariableNameSuffix: env.get('CYPHER_RULES_RESULT_VALUE_VARIABLE_NAME_SUFFIX').default('value').asString(),
     cypherRulesResultCausesVariableNameSuffix: env.get('CYPHER_RULES_RESULT_CAUSES_VARIABLE_NAME_SUFFIX').default('instancesCauses').asString(),
+    deleteEntitiesMaxLimit: env.get('DELETE_ENTITIES_MAX_LIMIT').default(1000).asIntPositive(),
     logs: {
         format: env.get('LOGGING_DATE_FORMAT').default('YYYY-MM-DD HH:mm:ss').asString(),
         enableFile: env.get('ENABLE_FILE_LOGGING').default('false').asBool(),
