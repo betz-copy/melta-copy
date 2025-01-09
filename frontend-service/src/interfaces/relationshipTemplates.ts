@@ -1,3 +1,4 @@
+import { IRelationshipReference } from '../common/wizards/entityTemplate/commonInterfaces';
 import { IMongoEntityTemplatePopulated } from './entityTemplates';
 
 export interface IRelationshipTemplate {
@@ -6,6 +7,12 @@ export interface IRelationshipTemplate {
     sourceEntityId: string;
     destinationEntityId: string;
     isProperty?: boolean;
+}
+
+export interface IConvertToRelationshipField {
+    fieldName: string;
+    displayFieldName: string;
+    relationshipReference: IRelationshipReference;
 }
 
 export interface IMongoRelationshipTemplate extends IRelationshipTemplate {

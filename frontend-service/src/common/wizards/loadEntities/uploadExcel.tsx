@@ -32,22 +32,32 @@ export const UploadExcel: React.FC<{
 
     if (stepsData.status === StepStatus.uploadExcel)
         return (
-            <InstanceFileInput
-                {...formikProps}
-                fileFieldName="file"
-                fieldTemplateTitle=""
-                comment={i18next.t('wizard.entity.loadEntities.onlyExcelFiles')}
-                value={values.files}
-                setFieldValue={setFieldValue}
-                required={false}
-                acceptedFilesTypes={acceptedFilesTypes}
-                setFieldTouched={setFieldTouched}
-                error={errorText || formikProps.errors.files}
-                setErrorText={setErrorText}
-                onDrop={async (files) => {
-                    await readFile(files as File[], template, setStepsData);
-                }}
-            />
+            <>
+                <Grid marginTop="10px" marginLeft="20px">
+                    <Typography fontSize="13px" color="#9398C2">
+                        - {i18next.t('wizard.entity.loadEntities.limitNumberEntities')}
+                    </Typography>
+                    <Typography fontSize="13px" color="#9398C2" marginTop="5px">
+                        - {i18next.t('wizard.entity.loadEntities.limitNumberFiles')}
+                    </Typography>
+                </Grid>
+                <InstanceFileInput
+                    {...formikProps}
+                    fileFieldName="file"
+                    fieldTemplateTitle=""
+                    comment={i18next.t('wizard.entity.loadEntities.onlyExcelFiles')}
+                    value={values.files}
+                    setFieldValue={setFieldValue}
+                    required={false}
+                    acceptedFilesTypes={acceptedFilesTypes}
+                    setFieldTouched={setFieldTouched}
+                    error={errorText || formikProps.errors.files}
+                    setErrorText={setErrorText}
+                    onDrop={async (files) => {
+                        await readFile(files as File[], template, setStepsData);
+                    }}
+                />
+            </>
         );
 
     if (stepsData.status === StepStatus.excelUploadResult)

@@ -67,6 +67,9 @@ export const environment = {
         heightPaddingMultiplier: 0.3,
         widthPaddingMultiplier: 0.6,
     },
+    users: {
+        kartoffelProfile: 'kartoffelProfile',
+    },
     ganttSettings: {
         infiniteScrollPageCount: 10,
         isSidebarOpenLocalStorageKey: 'isGanttSidebarOpen',
@@ -112,6 +115,7 @@ export const environment = {
     notifications: {
         updateInterval: 1000 * 60 * 10,
         infiniteScrollPageCount: 10,
+        color: '#FF006B',
         groups: {
             requests: [NotificationType.ruleBreachRequest],
             general: [
@@ -220,6 +224,7 @@ export const environment = {
         failedConstraintsValidation: 'FAILED_CONSTRAINTS_VALIDATION',
         failedToDeleteField: 'FAILED_DELETE_FIELD',
         actionsCustomError: 'ACTIONS_CUSTOM_ERROR',
+        entityHasRelationships: 'ENTITY_HAS_RELATIONSHIPS',
     },
     mainFontSizes: {
         headlineTitleFontSize: '24px',
@@ -235,6 +240,8 @@ export const environment = {
     },
     loadExcel: { excelExtension: '.xlsx', acceptedFilesTypes: { 'excel/xlsx': ['.xlsx', '.xls'] }, filesLimit: 5, entitiesLimit: 500 },
     draftAutoSaveDebounce: 250,
+    profileIconsCount: 19,
+    avatarIconPath: '/icons/profileAvatar/',
     fileExtensions: {
         image: ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'webp', 'ico', 'psd', 'raw', 'heif', 'indd', 'ai', 'eps'],
         imageToManipulate: ['png', 'jpg', 'jpeg', 'svg'] as string[],

@@ -1,6 +1,7 @@
 import Excel from 'exceljs';
 import { StatusCodes } from 'http-status-codes';
 import { AxiosError } from 'axios';
+import fs from 'fs';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../externalServices/templates/entityTemplateService';
 import { excelConfig } from './excelConfig';
 import { BadRequestError, ServiceError } from '../../express/error';
@@ -14,7 +15,7 @@ import {
     ICreateEntityMetadata,
     IFailedEntity,
 } from '../../externalServices/ruleBreachService/interfaces';
-import { IValidationErrorData } from '../../externalServices/instanceService/interfaces/entities';
+import { IEntity, IValidationErrorData } from '../../externalServices/instanceService/interfaces/entities';
 import {
     IBrokenRulePopulated,
     ICreateEntityMetadataPopulated,
@@ -85,9 +86,9 @@ const handleFailedEntities = (rowData: Record<string, any>, failedProperties: IF
     };
     failedEntities.push(failedEntity);
 };
-const readExcelFile = async (files: UploadedFile[], template: IMongoEntityTemplatePopulated, failedEntities: IFailedEntity[]) => {
-    const allActions: IAction[] = [];
 
+const readExcelFile = async (files: UploadedFile[], template: IMongoEntityTemplatePopulated, failedEntities: IFailedEntity[]) => {
+    const entities: IEntity[] = [];
     const columns = Object.fromEntries(
         Object.entries(template.properties.properties).filter(([_propertyKey, propertyTemplate]) => isIncludedColumn(propertyTemplate)),
     );
@@ -108,6 +109,7 @@ const readExcelFile = async (files: UploadedFile[], template: IMongoEntityTempla
                 if (rowIndex === 1) return; // skip header row
                 const failedProperties: IFailedProperties = [];
                 const rowData: Record<string, any> = {};
+
                 Object.entries(columns).forEach(([key, value], columnIndex) => {
                     const cellValue = row.getCell(columnIndex + 1).value;
                     try {
@@ -121,18 +123,14 @@ const readExcelFile = async (files: UploadedFile[], template: IMongoEntityTempla
                 });
 
                 if (failedProperties.length > 0) handleFailedEntities(rowData, failedProperties, failedEntities);
-                else
-                    allActions.push({
-                        actionType: ActionTypes.CreateEntity,
-                        actionMetadata: { templateId: template._id, properties: rowData },
-                    });
+                else entities.push({ templateId: template._id, properties: rowData });
             });
 
-            if (allActions.length > entitiesFileLimit) throw new BadRequestError(`file limit: more than ${entitiesFileLimit} entities`, file);
+            if (entities.length > entitiesFileLimit) throw new BadRequestError(`file limit: more than ${entitiesFileLimit} entities`, file);
         }),
     );
 
-    return allActions;
+    return entities;
 };
 
 const getValidationErrorEntities = (error: AxiosError, failedEntities: IFailedEntity[]) => {

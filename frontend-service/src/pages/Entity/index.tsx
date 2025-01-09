@@ -216,7 +216,6 @@ const ConnectionsTable: React.FC<{
                             popoverText: isEditButtonsDisabled
                                 ? disabledButtonText
                                 : i18next.t(`ruleManagement.${relationshipTemplate.isProperty ? 'cant-' : ''}create-relationship`),
-                            disabled: isEditButtonsDisabled || relationshipTemplate.isProperty,
                             iconButtonProps: {
                                 onClick: () => {
                                     const [defaultSourceEntity, defaultDestinationEntity] = isExpandedEntityRelationshipSource
@@ -235,6 +234,7 @@ const ConnectionsTable: React.FC<{
                         }}
                         icon={<AddCircle fontSize="small" sx={{ opacity: isEditButtonsDisabled ? 0.3 : 1 }} />}
                         text={i18next.t('entitiesTableOfTemplate.addRelationshipTitle')}
+                        disableButton={isEditButtonsDisabled || relationshipTemplate.isProperty}
                     />
                 </Grid>
             </Grid>

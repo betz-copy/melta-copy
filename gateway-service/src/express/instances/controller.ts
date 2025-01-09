@@ -4,6 +4,7 @@ import { Request, Response } from 'express';
 import { InstancesManager } from './manager';
 import DefaultController from '../../utils/express/controller';
 import { UploadedFile } from '../../utils/busboy/interface';
+import { IDeleteBody } from '../../externalServices/instanceService/interfaces/entities';
 
 export class InstancesController extends DefaultController<InstancesManager> {
     constructor(workspaceId: string) {
@@ -60,8 +61,10 @@ export class InstancesController extends DefaultController<InstancesManager> {
         );
     }
 
-    async deleteEntityInstance(req: Request, res: Response) {
-        res.json(await this.manager.deleteEntityInstance(req.params.id));
+    async deleteEntityInstances(req: Request, res: Response) {
+        const body = req.body as IDeleteBody;
+
+        res.json(await this.manager.deleteEntityInstances(body));
     }
 
     async createRelationshipInstance(req: Request, res: Response) {

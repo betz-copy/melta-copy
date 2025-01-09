@@ -1,5 +1,5 @@
 import config from '../../config';
-import { IRule } from '../../express/templates/rules/interfaces';
+import { IMongoRule, IRule } from '../../express/templates/rules/interfaces';
 import { TemplatesManagerService } from '.';
 import { ISearchBody } from './entityTemplateService';
 import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
@@ -17,6 +17,12 @@ export interface IRelationshipTemplate {
     sourceEntityId: string;
     destinationEntityId: string;
     isProperty: boolean;
+}
+
+export interface IMongoRelationshipTemplate extends IRelationshipTemplate {
+    _id: string;
+    createdAt: string;
+    updatedAt: string;
 }
 
 export interface ISearchRelationshipTemplatesBody extends ISearchBody {
@@ -38,6 +44,15 @@ export interface RequestWithSearchRuleTemplateBody extends RequestWithPermission
     searchBody: ISearchRulesBody;
 }
 
+export interface IConvertRelationshipToRelationshipField {
+    fieldName: string;
+    displayFieldName: string;
+    relatedTemplateField: string;
+    relationshipTemplateDirection: 'outgoing' | 'incoming';
+    sourceEntityId: string;
+    destinationEntityId: string;
+}
+
 export class RelationshipsTemplateService extends TemplatesManagerService {
     async searchRelationshipTemplates(searchBody: ISearchRelationshipTemplatesBody = {}) {
         const { data } = await this.api.post<IRelationshipTemplate[]>(`${baseRelationshipsRoute}/search`, searchBody);
@@ -45,7 +60,7 @@ export class RelationshipsTemplateService extends TemplatesManagerService {
     }
 
     async getRelationshipTemplateById(id: string) {
-        const { data } = await this.api.get<IRelationshipTemplate>(`${baseRelationshipsRoute}/${id}`);
+        const { data } = await this.api.get<IMongoRelationshipTemplate>(`${baseRelationshipsRoute}/${id}`);
 
         return data;
     }
@@ -75,7 +90,7 @@ export class RelationshipsTemplateService extends TemplatesManagerService {
     }
 
     async searchRules(searchBody: ISearchRulesBody) {
-        const { data } = await this.api.post<IRule[]>(`${baseRulesRoute}/search`, searchBody);
+        const { data } = await this.api.post<IMongoRule[]>(`${baseRulesRoute}/search`, searchBody);
 
         return data;
     }
