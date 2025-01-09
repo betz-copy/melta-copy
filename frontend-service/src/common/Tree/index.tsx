@@ -5,7 +5,7 @@ import { TreeViewItemReorderPosition } from '@mui/x-tree-view-pro/internals/plug
 import { Box, Divider } from '@mui/material';
 import { flattenTree, useTreeUtils } from '../../utils/hooks/useTreeUtils';
 import { SelectAll } from './SelectAll';
-import TreeItem, { DivideMenuItems } from './TreeItem';
+import TreeItem from './TreeItem';
 
 interface TreeProps<T extends {}> {
     treeItems: TreeViewBaseItem<T>[];

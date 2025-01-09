@@ -53,10 +53,10 @@ const getOptionId: SelectCheckboxProps<IMongoEntityTemplatePopulated | IMongoCat
 const getOptionLabel: SelectCheckboxProps<IMongoEntityTemplatePopulated | IMongoCategory, IMongoCategory>['getOptionLabel'] = ({ displayName }) =>
     displayName;
 
-const getTreeOnSplittedTemplates = (splitTempaltes: IMongoEntityTemplatePopulated[], searchValue: string): ISplitTree => {
-    const categories = splitTempaltes.map(({ category }) => category);
+const getTreeOnSplittedTemplates = (splitTemplates: IMongoEntityTemplatePopulated[], searchValue: string): ISplitTree => {
+    const categories = splitTemplates.map(({ category }) => category);
 
-    const filteredCategories = categories?.filter((category) => splitTempaltes.some((template) => template.category._id === category._id));
+    const filteredCategories = categories?.filter((category) => splitTemplates.some((template) => template.category._id === category._id));
 
     const groupsProps = getCategoriesSelectCheckboxGroupProps(filteredCategories) as { useGroups: true } & SelectCheckboxGroupProps<
         IMongoEntityTemplatePopulated,
@@ -65,16 +65,16 @@ const getTreeOnSplittedTemplates = (splitTempaltes: IMongoEntityTemplatePopulate
 
     const { optionsFiltered: templatesFiltered, groupsFiltered: categoriesFiltered } = getOptionsAndGroupsMiniFiltered(
         searchValue,
-        splitTempaltes,
+        splitTemplates,
         getOptionId,
         getOptionLabel,
         groupsProps,
     );
 
-    const tree = groupTemplatesByCategory(categories, splitTempaltes, getOptionId);
+    const tree = groupTemplatesByCategory(categories, splitTemplates, getOptionId);
     const filteredTree = categoriesFiltered ? groupTemplatesByCategory(categoriesFiltered, templatesFiltered, getOptionId) : templatesFiltered;
 
-    return { tree, flattenedTree: splitTempaltes, filteredTree };
+    return { tree, flattenedTree: splitTemplates, filteredTree };
 };
 
 const splitCategories = (templates: IMongoEntityTemplatePopulated[], categories?: IMongoCategory[], splitIndex = 3) => {
@@ -196,12 +196,12 @@ const TemplatesSelectGrid: React.FC<{
 
                         <Box style={{ maxHeight: '25rem', paddingBottom: '5px', overflowY: 'auto', overflowX: 'hidden' }}>
                             <SelectAll
-                                allOptionIds={[...firstSplittedTemplates, ...secondSplittedTemplates].map(getOptionId)}
+                                allOptionIds={templates.map(getOptionId)}
                                 setSelectedOptionIds={(ids) => {
-                                    const populated = [...firstSplittedTemplates, ...secondSplittedTemplates].filter((option) =>
-                                        ids.includes(getOptionId(option)),
-                                    );
+                                    const populated = templates.filter((option) => ids.includes(getOptionId(option)));
                                     setSelectedTemplates(populated);
+
+                                    onClick();
                                 }}
                                 selectedOptionIds={selectedTemplates.map(getOptionId)}
                             />
