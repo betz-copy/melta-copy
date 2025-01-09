@@ -22,6 +22,7 @@ import {
     updateEntityStatusByIdRequestSchema,
     updateEnumFieldRequestSchema,
     deletePropertiesOfTemplateRequestSchema,
+    chartSchema,
 } from './validator.schema';
 import { EntityValidator } from './validator.template';
 
@@ -73,7 +74,7 @@ entityRouter.post(
     entityValidatorController.validateFilterBatchBody,
     entityController.getExpandedGraphById,
 );
-entityRouter.post('/chart/:templateId', entityController.getChartOfTemplate);
+entityRouter.post('/chart/:templateId', ValidateRequest(chartSchema), entityController.getChartOfTemplate);
 entityRouter.post('/', ValidateRequest(createEntityRequestSchema), entityValidatorController.validateEntityRequest, entityController.createEntity);
 entityRouter.get('/:id', ValidateRequest(getEntityByIdRequestSchema), entityController.getEntityById);
 entityRouter.post('/ids', ValidateRequest(getEntitiesByIdsRequestSchema), entityController.getEntitiesByIds);

@@ -25,7 +25,7 @@ const TemplateTablesViewResults = forwardRef<
         searchInput: string;
         pageSize?: number;
         pageType: string;
-        setUpdatedEntities: React.Dispatch<React.SetStateAction<IEntity[]>>;
+        setUpdatedEntities?: React.Dispatch<React.SetStateAction<IEntity[]>>;
     }
 >(({ templates, searchInput, pageType, setUpdatedEntities }, ref) => {
     const templateTablesRefs = useRef<Record<string, TemplateTableRef>>({});

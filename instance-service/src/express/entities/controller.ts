@@ -88,7 +88,7 @@ class EntityController extends DefaultController<EntityManager> {
     }
 
     async getChartOfTemplate(req: Request, res: Response) {
-        res.json(await this.manager.getChart(req.body.xAxis, req.body.yAxis, req.params.templateId));
+        res.json(await this.manager.getChart(req.body.xAxis, req.body.yAxis, req.params.templateId, req.body.filter));
     }
 
     async updateConstraintsOfTemplate(req: Request, res: Response) {

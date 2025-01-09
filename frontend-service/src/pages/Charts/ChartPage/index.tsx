@@ -1,17 +1,17 @@
 import { Grid, useTheme } from '@mui/material';
 import { Form, Formik } from 'formik';
 import i18next from 'i18next';
-import React, { CSSProperties, useState } from 'react';
+import React, { CSSProperties, useRef, useState } from 'react';
 import { useQueryClient } from 'react-query';
 import { useParams } from 'wouter';
 import * as Yup from 'yup';
-import EntitiesTableOfTemplate from '../../../common/EntitiesTableOfTemplate';
-import { TopBar } from '../../../common/TopBar';
+import EntitiesTableOfTemplate, { EntitiesTableOfTemplateRef } from '../../../common/EntitiesTableOfTemplate';
 import { environment } from '../../../globals';
 import { IAxisField, IBasicChart, IChartType, IPermission } from '../../../interfaces/charts';
+import { IEntity } from '../../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { ChartSideBar } from './ChartSideBar';
 import { ChartGenerator } from '../chartGenerator.tsx';
+import { ChartSideBar } from './ChartSideBar';
 import { ChartTopBar } from './TopBar';
 
 export const chartValidationSchema = Yup.object({
@@ -49,6 +49,7 @@ const { defaultRowHeight, defaultFontSize } = environment.agGrid;
 const ChartPage: React.FC = () => {
     const { templateId } = useParams();
     const theme = useTheme();
+    const entitiesTableRef = useRef<EntitiesTableOfTemplateRef<IEntity>>(null);
     const bgColor: CSSProperties['backgroundColor'] = theme.palette.mode === 'dark' ? '#131313' : '#fcfeff';
 
     const queryClient = useQueryClient();
@@ -79,10 +80,16 @@ const ChartPage: React.FC = () => {
                                     height: '68%',
                                 }}
                             >
-                                <ChartGenerator formikValues={formik.values} template={template} />
+                                <ChartGenerator
+                                    formikValues={formik.values}
+                                    template={template}
+                                    entityTemplate={template}
+                                    entitiesTableRef={entitiesTableRef}
+                                />
                             </Grid>
                             <Grid sx={{ borderTop: `1px solid ${theme.palette.mode === 'dark' ? '#444' : '#dddddd'}` }}>
                                 <EntitiesTableOfTemplate
+                                    ref={entitiesTableRef}
                                     template={template}
                                     getRowId={(currentEntity) => currentEntity.properties._id}
                                     getEntityPropertiesData={(currentEntity) => currentEntity.properties}

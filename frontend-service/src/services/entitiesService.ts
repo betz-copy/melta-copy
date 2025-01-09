@@ -12,6 +12,7 @@ import {
     IGraphFilterBodyBatch,
     ISearchEntitiesByTemplatesBody,
     ICountSearchResult,
+    ISearchFilter,
 } from '../interfaces/entities';
 import { EntityWizardValues } from '../common/dialogs/entity';
 import { IBrokenRule, IRuleBreach } from '../interfaces/ruleBreaches/ruleBreach';
@@ -287,8 +288,13 @@ export const exportEntityToDocumentRequest = async (documentTemplateId: string, 
     return data;
 };
 
-export const getChartOfTemplate = async (xAxis: IAxisField, yAxis: IAxisField | undefined, templateId: string) => {
-    const { data } = await axios.post<{ x: any; y: any }[]>(`${entities}/chart/${templateId}`, { xAxis, yAxis });
+export const getChartOfTemplate = async (
+    xAxis: IAxisField,
+    yAxis: IAxisField | undefined,
+    templateId: string,
+    filter?: ISearchFilter<Record<string, any>>,
+) => {
+    const { data } = await axios.post<{ x: any; y: any }[]>(`${entities}/chart/${templateId}`, { xAxis, yAxis, filter });
 
     return data;
 };

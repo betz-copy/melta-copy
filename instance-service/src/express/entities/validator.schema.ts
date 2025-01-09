@@ -169,6 +169,18 @@ const searchByTemplateSchema = {
         .default([]),
 };
 
+export const chartSchema = Joi.object({
+    body: {
+        xAxis: Joi.any(),
+        yAxis: Joi.any(),
+        filter: searchFilterSchema,
+    },
+    query: {},
+    params: {
+        templateId: Joi.string().required(),
+    },
+});
+
 /*
  * POST /api/instances/entities/search/template/:templateId
  */

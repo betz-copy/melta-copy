@@ -28,8 +28,8 @@ export interface IAggregation {
 export type IAxisField = IAggregation | string;
 
 export interface IAxis {
-    field: IAxisField;
     title: string;
+    field: IAxisField;
 }
 
 export enum IPermission {

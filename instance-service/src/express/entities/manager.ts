@@ -30,7 +30,7 @@ import {
     runInTransactionAndNormalize,
 } from '../../utils/neo4j/lib';
 import DefaultManagerNeo4j from '../../utils/neo4j/manager';
-import { escapeNeo4jQuerySpecialChars, searchWithRelationshipsToNeoQuery } from '../../utils/neo4j/searchBodyToNeoQuery';
+import { escapeNeo4jQuerySpecialChars, searchWithRelationshipsToNeoQuery, templatesFilterToNeoQuery } from '../../utils/neo4j/searchBodyToNeoQuery';
 import { NotFoundError, ServiceError, ValidationError } from '../error';
 import { IRelationship } from '../relationships/interfaces';
 import { RelationshipManager } from '../relationships/manager';
@@ -56,6 +56,7 @@ import {
     RunRuleReason,
     IAxisField,
     IAggregation,
+    ISearchFilter,
 } from './interface';
 import { addStringFieldsAndNormalizeDateValues } from './validator.template';
 import { ActionTypes, IAction, ICreateEntityMetadata, IDuplicateEntityMetadata, IUpdateEntityMetadata } from '../bulkActions/interface';
@@ -1735,14 +1736,16 @@ export class EntityManager extends DefaultManagerNeo4j {
         return axis;
     }
 
-    buildAggregationQuery(xAxis: IAxisField, yAxis: IAxisField | undefined, templateId: string): string {
+    buildAggregationQuery(xAxis: IAxisField, yAxis: IAxisField | undefined, filterQuery?: string) {
         const xAgg = this.getAggregation(xAxis);
         const yAgg = yAxis ? this.getAggregation(yAxis) : undefined;
 
         const xAggregation = this.generateAggregation(xAgg, 'x');
         const yAggregation = yAgg ? this.generateAggregation(yAgg, 'y') : null;
 
-        let query = `MATCH (n: \`${templateId}\`)`;
+        let query = `MATCH (node)
+                    WHERE ${filterQuery}
+                    `;
 
         if (yAggregation)
             query += `
@@ -1764,22 +1767,29 @@ export class EntityManager extends DefaultManagerNeo4j {
             case 'countAll':
                 return `COUNT(${byField}) AS ${alias}`;
             case 'countDistinct':
-                return `COUNT(DISTINCT n.${byField}) AS ${alias}`;
+                return `COUNT(DISTINCT node.${byField}) AS ${alias}`;
             case 'sum':
-                return `SUM(n.${byField}) AS ${alias}`;
+                return `SUM(node.${byField}) AS ${alias}`;
             case 'average':
-                return `AVG(n.${byField}) AS ${alias}`;
+                return `AVG(node.${byField}) AS ${alias}`;
             case 'maximum':
-                return `MAX(n.${byField}) AS ${alias}`;
+                return `MAX(node.${byField}) AS ${alias}`;
             case 'minimum':
-                return `MIN(n.${byField}) AS ${alias}`;
+                return `MIN(node.${byField}) AS ${alias}`;
             default:
-                return `n.${byField} AS ${alias}`;
+                return `node.${byField} AS ${alias}`;
         }
     }
 
-    async getChart(xAxis: IAxisField, yAxis: IAxisField | undefined, templateId: string) {
-        const query = this.buildAggregationQuery(xAxis, yAxis, templateId);
-        return this.neo4jClient.readTransaction(query, normalizeChartResponse);
+    async getChart(xAxis: IAxisField, yAxis: IAxisField | undefined, templateId: string, filter: ISearchFilter) {
+        const entityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(templateId);
+        const entityTemplatesMap = new Map([[templateId, entityTemplate]]);
+        const templatesFilter = { [templateId]: { filter, showRelationships: false } };
+
+        const { cypherQuery: filterQuery, parameters } = templatesFilterToNeoQuery(templatesFilter, entityTemplatesMap);
+
+        const query = this.buildAggregationQuery(xAxis, yAxis, filterQuery);
+
+        return this.neo4jClient.readTransaction(query, normalizeChartResponse, parameters);
     }
 }

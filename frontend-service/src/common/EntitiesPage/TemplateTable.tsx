@@ -51,7 +51,7 @@ const TemplateTable = forwardRef<
         template: IMongoEntityTemplatePopulated;
         quickFilterText: string;
         page: string;
-        setUpdatedEntities: React.Dispatch<React.SetStateAction<IEntity[]>>;
+        setUpdatedEntities?: React.Dispatch<React.SetStateAction<IEntity[]>>;
     }
 >(({ template, quickFilterText, page, setUpdatedEntities }, ref) => {
     const [_, navigate] = useLocation();
@@ -387,7 +387,7 @@ const TemplateTable = forwardRef<
                     onSuccessUpdate={(entity) => {
                         if (editDialog.isEditMode) {
                             entitiesTableRef.current?.updateRowDataClientSide(entity);
-                            setUpdatedEntities(
+                            setUpdatedEntities?.(
                                 Object.values(entity.properties).filter(
                                     (property): property is IEntity => typeof property === 'object' && 'templateId' in property,
                                 ),
