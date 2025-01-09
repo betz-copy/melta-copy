@@ -23,6 +23,30 @@ const config = {
         booleanHeNoValue: env.get('BOOLEAN_HE_NO_VALUE').default('לא').asString(),
         filePropertySuffix: env.get('FILE_PROPERTY_SUFFIX').default('_tofilename').asString(),
         relationshipReferencePropertySuffix: env.get('RELATIONSHIP_REFERENCE_PROPERTY_SUFFIX').default('_reference').asString(),
+        usersFieldsPropertySuffix: env.get('USERS_FIELDS_PROPERTY_SUFFIX').default('_usersFields').asString(),
+        userFieldPropertySuffix: env.get('USER_FIELD_PROPERTY_SUFFIX').default('_userField').asString(),
+        userOriginalAndSuffixFieldsMap: env
+            .get('USER_ORIGINAL_AND_SUFFIX_FIELDS_MAP')
+            .default([
+                { originalFieldName: '_id', suffixFieldName: '.id' },
+                { originalFieldName: 'fullName', suffixFieldName: '.fullName' },
+                { originalFieldName: 'jobTitle', suffixFieldName: '.jobTitle' },
+                { originalFieldName: 'hierarchy', suffixFieldName: '.hierarchy' },
+                { originalFieldName: 'mail', suffixFieldName: '.mail' },
+            ])
+            .required()
+            .asJsonArray() as Array<{ originalFieldName: string; suffixFieldName: string }>,
+        usersArrayOriginalAndSuffixFieldsMap: env
+            .get('USERS_ARRAY_ORIGINAL_AND_SUFFIX_FIELDS_MAP')
+            .default([
+                { originalFieldName: '_id', suffixFieldName: '.ids' },
+                { originalFieldName: 'fullName', suffixFieldName: '.fullNames' },
+                { originalFieldName: 'jobTitle', suffixFieldName: '.jobTitles' },
+                { originalFieldName: 'hierarchy', suffixFieldName: '.hierarchies' },
+                { originalFieldName: 'mail', suffixFieldName: '.mails' },
+            ])
+            .required()
+            .asJsonArray() as Array<{ originalFieldName: string; suffixFieldName: string }>,
         mockUserId: env.get('NEO4J_MOCK_USER_ID').default('mock-user-id').asString(),
         // taken from lucene 8.2.0 syntax (for neo4j 4.0.6):
         // https://lucene.apache.org/core/8_2_0/queryparser/org/apache/lucene/queryparser/classic/package-summary.html#Escaping_Special_Characters
@@ -60,6 +84,7 @@ const config = {
     },
     errorCodes: {
         entityHasRelationships: 'ENTITY_HAS_RELATIONSHIPS',
+        entityHasRelationshipReferenceField: 'ENTITY_HAS_RELATIONSHIPS_REFERENCE',
         relationshipAlreadyExists: 'RELATIONSHIP_ALREADY_EXISTS',
         ruleBlock: 'RULE_BLOCK',
         failedToCreateConstraints: 'FAILED_TO_CREATE_CONSTRAINTS',
@@ -78,6 +103,7 @@ const config = {
     fileIdLength: env.get('FILE_ID_LENGTH').default(32).asIntPositive(),
     cypherRulesResultValueVariableNameSuffix: env.get('CYPHER_RULES_RESULT_VALUE_VARIABLE_NAME_SUFFIX').default('value').asString(),
     cypherRulesResultCausesVariableNameSuffix: env.get('CYPHER_RULES_RESULT_CAUSES_VARIABLE_NAME_SUFFIX').default('instancesCauses').asString(),
+    deleteEntitiesMaxLimit: env.get('DELETE_ENTITIES_MAX_LIMIT').default(1000).asIntPositive(),
     logs: {
         format: env.get('LOGGING_DATE_FORMAT').default('YYYY-MM-DD HH:mm:ss').asString(),
         enableFile: env.get('ENABLE_FILE_LOGGING').default('false').asBool(),

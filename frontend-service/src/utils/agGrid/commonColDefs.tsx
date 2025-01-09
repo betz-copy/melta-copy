@@ -9,7 +9,8 @@ import {
 } from '@ag-grid-community/core';
 import i18next from 'i18next';
 import React from 'react';
-import { Box, Tooltip, tooltipClasses } from '@mui/material';
+import Chip from '@mui/material/Chip';
+import { Box, Tooltip, tooltipClasses, Grid } from '@mui/material';
 import { PriorityHigh } from '@mui/icons-material';
 import OpenPreview from '../../common/FilePreview/OpenPreview';
 import RelationshipReferenceView from '../../common/RelationshipReferenceView';
@@ -19,6 +20,9 @@ import { getFileName } from '../getFileName';
 import { agGridLocaleText } from './agGridLocaleText';
 import OverflowWrapper from './OverflowWrapper';
 import { Value } from './Value';
+import { IUser } from '../../interfaces/users';
+import { MeltaTooltip } from '../../common/MeltaTooltip';
+import UserAvatar from '../../common/UserAvatar';
 import { IEntitySingleProperty } from '../../interfaces/entityTemplates';
 import SelectCellEditor from './SelectCellEditor';
 import DateTimeCellEditor from './DateTimeCellEditor';
@@ -414,6 +418,93 @@ export const enumArrayColDef = <Data extends any = EntityData>(
             values,
             multiple: true,
         },
+    };
+};
+export const userColDef = <Data extends any = IUser>(
+    field: string,
+    valueGetter: ValueGetterFunc<Data>,
+    value: { title: string },
+    values: Array<string>,
+    hardcodedWidth: number | undefined,
+    hideColumn = false,
+): ColDef => {
+    const filterParams: ISetFilterParams<Data, string | undefined> = {
+        suppressMiniFilter: true,
+        values: [...values, undefined],
+    };
+
+    return {
+        field,
+        headerName: value.title,
+        valueGetter,
+
+        cellRenderer: (props: ICellRendererParams<Data, any | undefined>) => {
+            if (!props.value) return '';
+            return (
+                <Grid container gap={1}>
+                    <MeltaTooltip title={`${JSON.parse(props.value).fullName} - ${JSON.parse(props.value).hierarchy}`}>
+                        <Grid item>
+                            <Chip
+                                avatar={<UserAvatar user={JSON.parse(props.value)} size={25} bgColor="1E2775" />}
+                                label={JSON.parse(props.value).fullName}
+                            />
+                        </Grid>
+                    </MeltaTooltip>
+                </Grid>
+            );
+        },
+
+        filter: 'agSetColumnFilter',
+        filterParams,
+        width: hardcodedWidth,
+        flex: hardcodedWidth ? 0 : 1,
+        hide: hideColumn,
+    };
+};
+
+export const userArrayColDef = <Data extends any = IEntity>(
+    field: string,
+    valueGetter: ValueGetterFunc<Data>,
+    value: { title: string },
+    values: Array<string>,
+    hardcodedWidth: number | undefined,
+    rowHeight: number,
+    hideColumn = false,
+): ColDef => {
+    const filterParams: ISetFilterParams<Data, string | undefined> = {
+        suppressMiniFilter: true,
+        values: [...values, undefined],
+    };
+
+    return {
+        field,
+        headerName: value.title,
+        valueGetter,
+
+        cellRenderer: (props: ICellRendererParams<Data, any[] | undefined>) => {
+            if (!props.value) return '';
+            return (
+                <OverflowWrapper
+                    items={props.value.map((val) => JSON.parse(val))}
+                    getItemKey={(item) => item._id}
+                    renderItem={(item) => (
+                        <MeltaTooltip title={`${item.fullName} - ${item.hierarchy}`} key={item._id}>
+                            <Grid item>
+                                <Chip avatar={<UserAvatar user={item} size={25} bgColor="1E2775" />} label={item.fullName} />
+                            </Grid>
+                        </MeltaTooltip>
+                    )}
+                    propertyToDisplayInTooltip="fullName"
+                    containerStyle={{ height: `${rowHeight}px` }}
+                />
+            );
+        },
+
+        filter: 'agSetColumnFilter',
+        filterParams,
+        width: hardcodedWidth,
+        flex: hardcodedWidth ? 0 : 1,
+        hide: hideColumn,
     };
 };
 

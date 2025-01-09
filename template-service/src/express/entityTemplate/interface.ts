@@ -4,7 +4,7 @@ import { IMongoCategory } from '../category/interface';
 export interface IEntitySingleProperty {
     title: string;
     type: 'string' | 'number' | 'boolean' | 'array';
-    format?: 'date' | 'date-time' | 'email' | 'fileId' | 'text-area' | 'relationshipReference';
+    format?: 'date' | 'date-time' | 'email' | 'fileId' | 'text-area' | 'relationshipReference' | 'user';
     enum?: string[];
     readOnly?: true;
     pattern?: string;
@@ -23,7 +23,7 @@ export interface IEntitySingleProperty {
     items?: {
         type: 'string';
         enum?: string[];
-        format?: 'fileId';
+        format?: 'fileId' | 'user';
     };
     minItems?: 1;
     uniqueItems?: true;
