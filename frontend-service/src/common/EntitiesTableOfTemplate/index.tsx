@@ -315,6 +315,148 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             },
         );
 
+        const getSortModel = () => {
+            const colState = gridRef.current!.api.getColumnState();
+            return sortBy(
+                colState.filter((s) => Boolean(s.sort)),
+                (c) => c.sortIndex,
+            ).map((s) => ({ colId: s.colId, sort: s.sort! }))!;
+        };
+
+        useImperativeHandle(ref, () => ({
+            getExcelData() {
+                return gridRef.current?.api.getSheetDataForExcel({ sheetName: template.displayName });
+            },
+            resetFilter() {
+                gridRef.current?.api.setFilterModel(defaultFilterModel);
+            },
+            refreshServerSide() {
+                gridRef.current?.api.refreshServerSide({ purge: true });
+            },
+            updateRowDataClientSide(data: Data) {
+                gridRef.current?.api.forEachNode((rowNode) => {
+                    if (rowNode.data && getRowId(data) === getRowId(rowNode.data)) {
+                        rowNode.updateData(data);
+                    }
+                });
+            },
+            isFiltered() {
+                const filters = gridRef.current?.api.getFilterModel();
+                return !filters || !isEqual(filters, defaultFilterModel);
+            },
+            getFilterModel() {
+                return gridRef.current!.api.getFilterModel();
+            },
+            getSortModel() {
+                return getSortModel();
+            },
+            scrollIntoView() {
+                tableRef.current?.scrollIntoView({ behavior: 'smooth' });
+            },
+            showSideBar() {
+                const gridApi = gridRef.current?.api;
+                if (!gridApi) return;
+                const isSideBarOpen = gridApi.isToolPanelShowing();
+                gridApi.setSideBarVisible(!isSideBarOpen);
+                if (isSideBarOpen) {
+                    gridApi.closeToolPanel();
+                } else {
+                    gridApi.openToolPanel('columns');
+                }
+            },
+            getDisplayColumns: () => {
+                const validKeys = Object.keys(template.properties.properties);
+                return (
+                    gridRef.current?.api
+                        .getAllDisplayedColumns()
+                        .map((column) => column.getColId())
+                        .filter((colId) => validKeys.includes(colId)) || []
+                );
+            },
+        }));
+
+        const columnDefProps: IGetColumnDefsOptions<Data> = {
+            template,
+            getEntityPropertiesData,
+            getRowId,
+            onNavigateToRow: showNavigateToRowButton ? (data) => navigate(`/entity/${getEntityPropertiesData(data)._id}`) : undefined,
+            deleteRowButtonProps,
+            menuRowButtonProps,
+            hideNonPreview,
+            editRowButtonProps,
+            hasPermissionToCategory,
+            defaultVisibleColumns,
+            defaultColumnsOrder,
+            defaultColumnWidths,
+            rowHeight,
+            ignoreType,
+            navigate,
+            setSelectedRow,
+            setOpenDeleteDialog,
+            updateEntityStatus,
+            searchValue: quickFilterText,
+            disableEditCell: !editable || editRowButtonProps?.disabledButton,
+        };
+        const columnDefs = useDeepCompareMemo(() => getColumnDefs(columnDefProps), [columnDefProps]);
+
+        const datasourceOnFail = (err: unknown) => {
+            toast.error(i18next.t('entitiesTableOfTemplate.failedToLoadData'));
+            console.error('Failed to load data from datasource. Error:', err);
+        };
+
+        const gridStyles = {
+            '.ag-center-cols-viewport': {
+                minHeight: `${rowHeight * (hasInstances === false ? 2 : pageRowCount)}px !important`,
+            },
+            '.ag-paging-panel': {
+                height: '45px',
+            },
+            '.ag-cell-inline-editing': {
+                height: `${rowHeight}px`,
+            },
+            '.ag-cell-inline-editing input': {
+                border: 'none !important',
+            },
+        };
+
+        const handleColumnVisible = (params: ColumnVisibleEvent<Data>) => {
+            if (!saveStorageProps.shouldSaveVisibleColumns) return;
+            if (params?.column?.getColId() && params.column.getColId() === 'disabled') {
+                const { disabled, ...rest } = params.api.getFilterModel();
+                const filterModel = params.column.isVisible() ? params.api.getFilterModel() : { ...rest, ...defaultFilterModel };
+                params.api.setFilterModel(filterModel);
+            }
+            const columnState = params.api.getColumnState();
+            const updatedVisibleColumns = columnState.reduce<Record<string, boolean>>((acc, col) => {
+                acc[col.colId] = !col.hide;
+                return acc;
+            }, {});
+            localStorage.setItem(`visibleColumns-${saveStorageProps.pageType}-${template._id}`, JSON.stringify(updatedVisibleColumns));
+        };
+
+        const handleColumnMoved = (params: ColumnMovedEvent<Data>) => {
+            if (!saveStorageProps.shouldSaveColumnOrder) return;
+            const columnState = params.api.getColumnState();
+            const newColumnsOrder = columnState.reduce<Record<string, { order: number }>>((acc, column, index) => {
+                acc[column.colId] = { order: index };
+                return acc;
+            }, {});
+            localStorage.setItem(`columnsOrder-${saveStorageProps.pageType}-${template._id}`, JSON.stringify(newColumnsOrder));
+        };
+
+        const handleSortChanged = () => {
+            if (!saveStorageProps.shouldSaveSorting) return;
+            const sortModel = getSortModel();
+            localStorage.setItem(`sortModel-${saveStorageProps.pageType}-${template._id}`, JSON.stringify(sortModel));
+        };
+
+        const handleBodyScroll = debounce((params: BodyScrollEvent<Data>) => {
+            if (!saveStorageProps.shouldSaveScrollPosition) return;
+            if (params.api.getVerticalPixelRange().top >= 0 && rowModelType === 'infinite') {
+                sessionStorage.setItem(`scrollPosition-${template._id}`, JSON.stringify(params.api.getVerticalPixelRange().top));
+            }
+        }, 500);
+
         const { isLoading: isUpdateLoading, mutateAsync: updateMutation } = useMutation(
             ({ newEntityData, ignoredRules }: { newEntityData: EntityWizardValues; ignoredRules?: IRuleBreach['brokenRules'] }) =>
                 updateEntityRequestForMultiple(newEntityData.properties._id, newEntityData, ignoredRules),
@@ -378,14 +520,6 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             },
         );
 
-        const getSortModel = () => {
-            const colState = gridRef.current!.api.getColumnState();
-            return sortBy(
-                colState.filter((s) => Boolean(s.sort)),
-                (c) => c.sortIndex,
-            ).map((s) => ({ colId: s.colId, sort: s.sort! }))!;
-        };
-
         useImperativeHandle(ref, () => ({
             getExcelData() {
                 return gridRef.current?.api.getSheetDataForExcel({ sheetName: template.displayName });
@@ -427,80 +561,10 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             getDisplayColumns: () => gridRef.current?.api.getAllDisplayedColumns().map((column) => column.getColId()) || [],
         }));
 
-        const columnDefProps: IGetColumnDefsOptions<Data> = {
-            template,
-            getEntityPropertiesData,
-            getRowId,
-            onNavigateToRow: showNavigateToRowButton ? (data) => navigate(`/entity/${getEntityPropertiesData(data)._id}`) : undefined,
-            deleteRowButtonProps,
-            menuRowButtonProps,
-            hideNonPreview,
-            editRowButtonProps,
-            hasPermissionToCategory,
-            defaultVisibleColumns,
-            defaultColumnsOrder,
-            defaultColumnWidths,
-            rowHeight,
-            ignoreType,
-            navigate,
-            setSelectedRow,
-            setOpenDeleteDialog,
-            updateEntityStatus,
-            searchValue: quickFilterText,
-            disableEditCell: !editable || editRowButtonProps?.disabledButton,
-        };
-
-        const columnDefs = useDeepCompareMemo(() => getColumnDefs(columnDefProps), [columnDefProps]);
-
-        const datasourceOnFail = (err: unknown) => {
-            toast.error(i18next.t('entitiesTableOfTemplate.failedToLoadData'));
-            console.error('Failed to load data from datasource. Error:', err);
-        };
-
         const rowModelProps = useMemo(
             () => getRowModelProps(rowModelType, template, rowData, pageRowCount, quickFilterText, datasourceOnFail, hasInstances),
             [rowModelType, template, rowData, pageRowCount, quickFilterText, hasInstances],
         );
-
-        const gridStyles = {
-            '.ag-center-cols-viewport': {
-                minHeight: `${rowHeight * (hasInstances === false ? 2 : pageRowCount)}px !important`,
-            },
-            '.ag-paging-panel': {
-                height: '45px',
-            },
-            '.ag-cell-inline-editing': {
-                height: `${rowHeight}px`,
-            },
-            '.ag-cell-inline-editing input': {
-                border: 'none !important',
-            },
-        };
-
-        const handleColumnVisible = (params: ColumnVisibleEvent<Data>) => {
-            if (!saveStorageProps.shouldSaveVisibleColumns) return;
-            if (params?.column?.getColId() && params.column.getColId() === 'disabled') {
-                const { disabled, ...rest } = params.api.getFilterModel();
-                const filterModel = params.column.isVisible() ? params.api.getFilterModel() : { ...rest, ...defaultFilterModel };
-                params.api.setFilterModel(filterModel);
-            }
-            const columnState = params.api.getColumnState();
-            const updatedVisibleColumns = columnState.reduce<Record<string, boolean>>((acc, col) => {
-                acc[col.colId] = !col.hide;
-                return acc;
-            }, {});
-            localStorage.setItem(`visibleColumns-${saveStorageProps.pageType}-${template._id}`, JSON.stringify(updatedVisibleColumns));
-        };
-
-        const handleColumnMoved = (params: ColumnMovedEvent<Data>) => {
-            if (!saveStorageProps.shouldSaveColumnOrder) return;
-            const columnState = params.api.getColumnState();
-            const newColumnsOrder = columnState.reduce<Record<string, { order: number }>>((acc, column, index) => {
-                acc[column.colId] = { order: index };
-                return acc;
-            }, {});
-            localStorage.setItem(`columnsOrder-${saveStorageProps.pageType}-${template._id}`, JSON.stringify(newColumnsOrder));
-        };
 
         const handleColumnResized = (params: ColumnResizedEvent<Data>) => {
             if (params.finished && params.column && ['autosizeColumns', 'uiColumnDragged', 'uiColumnResized'].includes(params.source)) {
@@ -516,12 +580,6 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             }
         };
 
-        const handleSortChanged = () => {
-            if (!saveStorageProps.shouldSaveSorting) return;
-            const sortModel = getSortModel();
-            localStorage.setItem(`sortModel-${saveStorageProps.pageType}-${template._id}`, JSON.stringify(sortModel));
-        };
-
         const handlePaginationChanged = (params: PaginationChangedEvent<Data>) => {
             const { api, newPage } = params;
 
@@ -531,12 +589,6 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                 sessionStorage.setItem(`currentPage-${saveStorageProps.pageType}-${template._id}`, JSON.stringify(currentPage));
             }
         };
-
-        const handleBodyScroll = debounce((params: BodyScrollEvent<Data>) => {
-            if (!saveStorageProps.shouldSaveScrollPosition) return;
-            if (params.api.getVerticalPixelRange().top >= 0 && rowModelType === 'infinite')
-                sessionStorage.setItem(`scrollPosition-${template._id}`, JSON.stringify(params.api.getVerticalPixelRange().top));
-        }, 500);
 
         const statusPanels = useMemo(() => {
             const panels: StatusPanelDef[] = [{ statusPanel: RowCountGridStatusBar, align: 'right' }];

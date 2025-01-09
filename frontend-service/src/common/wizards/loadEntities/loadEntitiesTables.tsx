@@ -17,7 +17,7 @@ export const LoadEntitiesTables: React.FC<{
     const isFailedEntities = tablesData.failedEntities.length > 0;
     const isBrokenRulesEntities = (tablesData.brokenRulesEntities?.entities?.length ?? 0) > 0;
 
-    if (isLoadingTables) return <CircularProgress />;
+    if (isLoadingTables) return <CircularProgress style={{ marginTop: '10px', margin: 'auto' }} />;
 
     return (
         <Grid container direction="column" padding="5px" paddingY="15px">

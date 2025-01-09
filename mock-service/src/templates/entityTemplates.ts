@@ -10,8 +10,9 @@ const {
 export interface IEntitySingleProperty {
     title: string;
     type: 'string' | 'number' | 'boolean' | 'array';
-    format?: 'date' | 'date-time' | 'email' | 'fileId' | 'text-area' | 'location';
+    format?: 'date' | 'date-time' | 'email' | 'fileId' | 'text-area' | 'relationshipReference' | 'location' | 'user';
     enum?: string[];
+    readOnly?: true;
     items?: {
         type: 'string';
         enum?: string[];
@@ -24,6 +25,14 @@ export interface IEntitySingleProperty {
     dateNotification?: number;
     isDailyAlert?: boolean;
     calculateTime?: boolean;
+    serialStarter?: number;
+    serialCurrent?: number;
+    relationshipReference?: {
+        relationshipTemplateId?: string;
+        relationshipTemplateDirection: 'outgoing' | 'incoming';
+        relatedTemplateId: string;
+        relatedTemplateField: string;
+    };
 }
 
 export interface IProperties {
