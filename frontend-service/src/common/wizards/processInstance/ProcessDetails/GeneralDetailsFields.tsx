@@ -1,9 +1,11 @@
+/* eslint-disable no-nested-ternary */
 import { Autocomplete, Grid, TextField } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { BlueTitle } from '../../../BlueTitle';
+import { useDarkModeStore } from '../../../../stores/darkMode';
 
 export const GeneralDetailsFields = ({
     processTemplatesMap,
@@ -18,6 +20,8 @@ export const GeneralDetailsFields = ({
     handleBlur,
     setFieldTouched,
 }) => {
+    const darkMode = useDarkModeStore((state) => state.darkMode);
+
     return (
         <Grid item>
             {!viewMode && (
@@ -47,7 +51,7 @@ export const GeneralDetailsFields = ({
                                 sx={{
                                     '& .MuiInputBase-root': {
                                         borderRadius: '10px',
-                                        backgroundColor: viewMode ? 'transparent' : 'white',
+                                        backgroundColor: viewMode ? 'transparent' : darkMode ? '#4949499e' : 'white',
                                     },
                                     '& fieldset': {
                                         borderColor: '#CCCFE5',
@@ -87,7 +91,7 @@ export const GeneralDetailsFields = ({
                             sx={{
                                 '& .MuiInputBase-root': {
                                     borderRadius: '10px',
-                                    backgroundColor: viewMode ? 'transparent' : 'white',
+                                    backgroundColor: viewMode ? 'transparent' : darkMode ? '#4949499e' : 'white',
                                 },
                                 '& fieldset': {
                                     borderColor: '#CCCFE5',
@@ -131,7 +135,7 @@ export const GeneralDetailsFields = ({
                                     sx={{
                                         '& .MuiInputBase-root': {
                                             borderRadius: '10px',
-                                            backgroundColor: viewMode ? 'transparent' : 'white',
+                                            backgroundColor: viewMode ? 'transparent' : darkMode ? '#4949499e' : 'white',
                                         },
                                         '& fieldset': {
                                             borderColor: '#CCCFE5',
@@ -173,7 +177,7 @@ export const GeneralDetailsFields = ({
                                     sx={{
                                         '& .MuiInputBase-root': {
                                             borderRadius: '10px',
-                                            backgroundColor: viewMode ? 'transparent' : 'white',
+                                            backgroundColor: viewMode ? 'transparent' : darkMode ? '#4949499e' : 'white',
                                         },
                                         '& fieldset': {
                                             borderColor: '#CCCFE5',

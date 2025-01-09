@@ -1,4 +1,4 @@
-import { Checkbox, FormControl, FormControlLabel, Grid, Radio, RadioGroup, Typography } from '@mui/material';
+import { Checkbox, FormControl, FormControlLabel, Grid, IconButton, Paper, Radio, RadioGroup, Typography } from '@mui/material';
 import React, { useState, useCallback } from 'react';
 import { useQueryClient } from 'react-query';
 import debounce from 'lodash/debounce';
@@ -11,6 +11,7 @@ import ProcessTemplatesSelectCheckbox from './ProcessTemplatesCheckbox';
 import { GlobalSearchBar } from '../../common/EntitiesPage/Headline';
 import DateRange from '../../common/inputs/DateRange';
 import { Status } from '../../interfaces/processes/processInstance';
+import { BlueTitle } from '../../common/BlueTitle';
 
 const ProcessInstancesPage: React.FC = () => {
     const queryClient = useQueryClient();
@@ -56,145 +57,183 @@ const ProcessInstancesPage: React.FC = () => {
                 searchInput={searchInput}
             />
             <Grid item container justifyContent="space-evenly">
-                <Grid
-                    item
-                    container
-                    flexDirection="column"
-                    width="13%"
-                    minWidth="250px"
-                    height="800px"
-                    alignItems="center"
-                    rowGap={3}
-                    style={{ backgroundColor: 'white', borderRadius: '15px', padding: '10px' }}
+                <Paper
+                    style={{
+                        borderRadius: '15px',
+                        padding: '10px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        width: '13%',
+                        minWidth: '250px',
+                        height: '800px',
+                        alignItems: 'center',
+                    }}
                 >
-                    <Grid container item alignItems="center" justifyContent="space-between" alignContent="center">
-                        <Grid container item alignItems="center" width="100px">
-                            <FilterListIcon sx={{ color: '#1E2775' }} />
-                            <Typography fontSize="16px" fontWeight="600" marginLeft="10px" color="#1E2775" variant="h6">
-                                {i18next.t('processInstancesPage.filter')}
-                            </Typography>
-                        </Grid>
-                        <Grid item alignContent="center">
-                            <Typography
+                    <Grid item container flexDirection="column" rowGap={3}>
+                        <Grid container item alignItems="center" justifyContent="space-between" alignContent="center">
+                            <Grid container item alignItems="center" width="100px">
+                                <IconButton disabled>
+                                    <FilterListIcon />
+                                </IconButton>
+                                <BlueTitle
+                                    component="h4"
+                                    variant="h6"
+                                    style={{ fontSize: '16px', fontWeight: '600', marginLeft: '10px' }}
+                                    title={i18next.t('processInstancesPage.filter')}
+                                />
+                            </Grid>
+                            <Grid
+                                item
+                                alignContent="center"
                                 onClick={() => {
                                     onSetStartDate(null);
                                     onSetEndDate(null);
                                     onSearch('');
                                 }}
-                                textAlign="center"
-                                alignContent="center"
-                                fontSize="12px"
-                                color="#4752B6"
-                                sx={{ textDecoration: 'underline', cursor: 'pointer' }}
                             >
-                                {i18next.t('processInstancesPage.cleanFilter')}
-                            </Typography>
+                                <BlueTitle
+                                    component="h4"
+                                    variant="h6"
+                                    style={{
+                                        textAlign: 'center',
+                                        alignContent: 'center',
+                                        fontSize: '12px',
+                                        textDecoration: 'underline',
+                                        cursor: 'pointer',
+                                    }}
+                                    title={i18next.t('processInstancesPage.cleanFilter')}
+                                />
+                            </Grid>
                         </Grid>
-                    </Grid>
-                    <Grid item sx={{ borderRadius: '7px', width: 'fit-content', boxShadow: '3' }}>
-                        <GlobalSearchBar
-                            inputValue={searchInput}
-                            setInputValue={onSearch}
-                            onSearch={onSearch}
-                            borderRadius="7px"
-                            placeholder={i18next.t('globalSearch.searchInPage')}
-                            toTopBar={false}
-                        />
-                    </Grid>
-                    <Grid item>
-                        <ProcessTemplatesSelectCheckbox
-                            templates={processTemplates}
-                            selectedTemplates={templatesToShowCheckbox}
-                            setSelectedTemplates={setTemplatesToShowCheckbox}
-                        />
-                    </Grid>
-                    <Grid container item alignItems="center">
+                        <Grid item sx={{ borderRadius: '7px', width: 'fit-content', boxShadow: '3' }}>
+                            <GlobalSearchBar
+                                inputValue={searchInput}
+                                setInputValue={onSearch}
+                                onSearch={onSearch}
+                                borderRadius="7px"
+                                placeholder={i18next.t('globalSearch.searchInPage')}
+                                toTopBar={false}
+                            />
+                        </Grid>
+                        <Grid item sx={{ borderRadius: '7px', width: 'fit-content', boxShadow: '3' }}>
+                            <ProcessTemplatesSelectCheckbox
+                                templates={processTemplates}
+                                selectedTemplates={templatesToShowCheckbox}
+                                setSelectedTemplates={setTemplatesToShowCheckbox}
+                            />
+                        </Grid>
+                        <Grid container item alignItems="center">
+                            <Grid item>
+                                <Checkbox checked={isWaitingForMeFilterOn} onChange={(_e, checked) => setIsWaitingForMeFilterOn(checked)} />
+                            </Grid>
+                            <Grid item>
+                                <BlueTitle
+                                    style={{ fontSize: '14px', fontWeight: '400' }}
+                                    component="h4"
+                                    variant="h6"
+                                    title={i18next.t('processInstancesPage.groupByWaitingForMe')}
+                                />
+                            </Grid>
+                        </Grid>
+                        <Grid item container flexDirection="column">
+                            <Grid item>
+                                <BlueTitle
+                                    style={{ fontSize: '15px', fontWeight: '500' }}
+                                    component="h4"
+                                    variant="h6"
+                                    title={i18next.t('wizard.processInstance.summary.processStatus')}
+                                />
+                            </Grid>
+                            <Grid item>
+                                <FormControl>
+                                    <RadioGroup
+                                        aria-labelledby="demo-controlled-radio-buttons-group"
+                                        name="controlled-radio-buttons-group"
+                                        value={statusFilter}
+                                        onChange={(_e, val) => setStatusFilter(val as 'all' | Status | 'archived')}
+                                    >
+                                        <FormControlLabel
+                                            value="all"
+                                            control={<Radio />}
+                                            label={
+                                                <BlueTitle
+                                                    style={{ fontSize: '14px', fontWeight: 400 }}
+                                                    component="h4"
+                                                    variant="h6"
+                                                    title={i18next.t('processInstancesPage.allProcesses')}
+                                                />
+                                            }
+                                        />
+                                        <FormControlLabel
+                                            value={Status.Pending}
+                                            control={<Radio />}
+                                            label={
+                                                <BlueTitle
+                                                    style={{ fontSize: '14px', fontWeight: 400 }}
+                                                    component="h4"
+                                                    variant="h6"
+                                                    title={i18next.t('processInstancesPage.pendingProcesses')}
+                                                />
+                                            }
+                                        />
+                                        <FormControlLabel
+                                            value={Status.Approved}
+                                            control={<Radio />}
+                                            label={
+                                                <BlueTitle
+                                                    style={{ fontSize: '14px', fontWeight: 400 }}
+                                                    component="h4"
+                                                    variant="h6"
+                                                    title={i18next.t('processInstancesPage.approvedProcesses')}
+                                                />
+                                            }
+                                        />
+                                        <FormControlLabel
+                                            value={Status.Rejected}
+                                            control={<Radio />}
+                                            label={
+                                                <BlueTitle
+                                                    style={{ fontSize: '14px', fontWeight: 400 }}
+                                                    component="h4"
+                                                    variant="h6"
+                                                    title={i18next.t('processInstancesPage.rejectedProcesses')}
+                                                />
+                                            }
+                                        />
+                                        <FormControlLabel
+                                            value="archived"
+                                            control={<Radio />}
+                                            label={
+                                                <BlueTitle
+                                                    style={{ fontSize: '14px', fontWeight: 400 }}
+                                                    component="h4"
+                                                    variant="h6"
+                                                    title={i18next.t('processInstancesPage.archivedProcesses')}
+                                                />
+                                            }
+                                        />
+                                    </RadioGroup>
+                                </FormControl>
+                            </Grid>
+                        </Grid>
                         <Grid item>
-                            <Checkbox checked={isWaitingForMeFilterOn} onChange={(_e, checked) => setIsWaitingForMeFilterOn(checked)} />
-                        </Grid>
-                        <Grid item>
-                            <Typography color="#101440" fontSize="14px" fontWeight="400">
-                                {i18next.t('processInstancesPage.groupByWaitingForMe')}
-                            </Typography>
-                        </Grid>
-                    </Grid>
-                    <Grid item container flexDirection="column">
-                        <Grid item>
-                            <Typography color="#1E2775" fontSize="14px" fontWeight="500" variant="h6">
-                                {i18next.t('wizard.processInstance.summary.processStatus')}
-                            </Typography>
-                        </Grid>
-                        <Grid item>
-                            <FormControl>
-                                <RadioGroup
-                                    aria-labelledby="demo-controlled-radio-buttons-group"
-                                    name="controlled-radio-buttons-group"
-                                    value={statusFilter}
-                                    onChange={(_e, val) => setStatusFilter(val as 'all' | Status | 'archived')}
-                                >
-                                    <FormControlLabel
-                                        value="all"
-                                        control={<Radio />}
-                                        label={
-                                            <Typography fontSize="14px" color="#53566E">
-                                                {i18next.t('processInstancesPage.allProcesses')}
-                                            </Typography>
-                                        }
-                                    />
-                                    <FormControlLabel
-                                        value={Status.Pending}
-                                        control={<Radio />}
-                                        label={
-                                            <Typography fontSize="14px" color="#53566E">
-                                                {i18next.t('processInstancesPage.pendingProcesses')}
-                                            </Typography>
-                                        }
-                                    />
-                                    <FormControlLabel
-                                        value={Status.Approved}
-                                        control={<Radio />}
-                                        label={
-                                            <Typography fontSize="14px" color="#53566E">
-                                                {i18next.t('processInstancesPage.approvedProcesses')}
-                                            </Typography>
-                                        }
-                                    />
-                                    <FormControlLabel
-                                        value={Status.Rejected}
-                                        control={<Radio />}
-                                        label={
-                                            <Typography fontSize="14px" color="#53566E">
-                                                {i18next.t('processInstancesPage.rejectedProcesses')}
-                                            </Typography>
-                                        }
-                                    />
-                                    <FormControlLabel
-                                        value="archived"
-                                        control={<Radio />}
-                                        label={
-                                            <Typography fontSize="14px" color="#53566E">
-                                                {i18next.t('processInstancesPage.archivedProcesses')}
-                                            </Typography>
-                                        }
-                                    />
-                                </RadioGroup>
-                            </FormControl>
+                            <BlueTitle
+                                component="h4"
+                                variant="h6"
+                                style={{ fontSize: '14px', fontWeight: '500' }}
+                                title={i18next.t('processInstancesPage.dateFilter')}
+                            />
+                            <DateRange
+                                onStartDateChange={onSetStartDate}
+                                onEndDateChange={onSetEndDate}
+                                startDateInput={startDateInput}
+                                endDateInput={endDateInput}
+                                directionIsRow
+                            />
                         </Grid>
                     </Grid>
-                    <Grid item>
-                        <Typography color="#1E2775" fontSize="14px" fontWeight="500" variant="h6">
-                            {i18next.t('processInstancesPage.dateFilter')}
-                        </Typography>
-                        <DateRange
-                            onStartDateChange={onSetStartDate}
-                            onEndDateChange={onSetEndDate}
-                            startDateInput={startDateInput}
-                            endDateInput={endDateInput}
-                            directionIsRow
-                        />
-                    </Grid>
-                </Grid>
-                <Grid item container width="80%" direction="column" marginBottom="2.5rem" marginTop="15px">
+                </Paper>
+                <Grid item container width="80%" direction="column" marginBottom="2.5rem">
                     <ProcessesList
                         search={searchInput}
                         onSetStartDate={onSetStartDate}

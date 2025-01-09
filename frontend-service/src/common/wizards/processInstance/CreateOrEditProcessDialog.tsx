@@ -15,6 +15,7 @@ import { TemplateFields } from './ProcessDetails/TemplateFields';
 import { setInitialStepsObject } from '../../../utils/processWizard/steps';
 import StepsReviewers from './ProcessDetails/StepsReviewers';
 import { IMongoProcessInstancePopulated } from '../../../interfaces/processes/processInstance';
+import { useDarkModeStore } from '../../../stores/darkMode';
 
 interface ISimpleDialogProps {
     open: boolean;
@@ -35,6 +36,8 @@ const steps = [
 ];
 
 const CreateOrEditProcess: React.FC<ISimpleDialogProps> = ({ open, onClose, processInstance, viewMode = false, isEditMode = false, mutateAsync }) => {
+    const darkMode = useDarkModeStore((state) => state.darkMode);
+
     const queryClient = useQueryClient();
     const processTemplatesMap = queryClient.getQueryData<IProcessTemplateMap>('getProcessTemplates')!;
 
@@ -139,7 +142,7 @@ const CreateOrEditProcess: React.FC<ISimpleDialogProps> = ({ open, onClose, proc
                         flexBasis="20%"
                         padding={3}
                         style={{
-                            backgroundColor: '#F0F2F7',
+                            backgroundColor: darkMode ? '#171717' : '#F0F2F7',
                             borderBottomLeftRadius: '20px',
                             borderTopLeftRadius: '20px',
                             boxShadow: '10px 10px 15px 10px #888888',

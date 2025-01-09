@@ -13,6 +13,7 @@ import { IMongoProcessInstancePopulated, IReferencedEntityForProcess, Status } f
 import { useDarkModeStore } from '../../../../stores/darkMode';
 import { StepIcon } from '../../../../pages/ProcessInstances/ProcessCard';
 import { environment } from '../../../../globals';
+import { BlueTitle } from '../../../BlueTitle';
 
 export interface ProcessStepValues {
     properties: object;
@@ -78,6 +79,8 @@ const Steps: React.FC<IStepsProp> = ({
         defaultStepTemplate ? processInstance.steps.findIndex((step) => step.templateId === defaultStepTemplate._id) : 0,
     );
 
+    const darkMode = useDarkModeStore((state) => state.darkMode);
+
     return (
         <Grid
             container
@@ -105,7 +108,7 @@ const Steps: React.FC<IStepsProp> = ({
                                 }}
                                 style={{ cursor: !isStepEditMode ? 'pointer' : undefined }}
                             >
-                                <Typography fontSize="20px" color="#1E2775">
+                                <Typography fontSize="20px" color={darkMode ? '#9398c2' : '#1E2775'}>
                                     ￫...
                                 </Typography>
                             </a>
@@ -151,8 +154,16 @@ const Steps: React.FC<IStepsProp> = ({
                                                                     }}
                                                                     displayTitle={false}
                                                                 />
+
                                                                 <Typography
-                                                                    color={currStepInstance?._id === stepInstance._id ? '#1E2775' : '#9398C2'}
+                                                                    color={
+                                                                        // eslint-disable-next-line no-nested-ternary
+                                                                        currStepInstance?._id === stepInstance._id
+                                                                            ? darkMode
+                                                                                ? '#b7bef7'
+                                                                                : '#1E2775'
+                                                                            : '#9398C2'
+                                                                    }
                                                                     fontSize={currStepInstance?._id === stepInstance._id ? '14px' : '12px'}
                                                                     fontWeight={currStepInstance?._id === stepInstance._id ? '600' : '400'}
                                                                     textAlign="center"
@@ -180,7 +191,7 @@ const Steps: React.FC<IStepsProp> = ({
                                 }}
                                 style={{ cursor: !isStepEditMode ? 'pointer' : undefined }}
                             >
-                                <Typography fontSize="20px" marginBottom="25px" color="#1E2775">
+                                <Typography fontSize="20px" marginBottom="25px" color={darkMode ? '#9398c2' : '#1E2775'}>
                                     ...￩
                                 </Typography>
                             </a>
@@ -209,9 +220,12 @@ const Steps: React.FC<IStepsProp> = ({
                         </Box>
                     </Grid>
                     <Grid item>
-                        <Typography color="#1E2775" fontSize="12px" fontWeight="500" textAlign="center">
-                            {i18next.t('wizard.processInstance.nextToSummaryDetails')}￩{/* ⬅⇦⇽￩ */}
-                        </Typography>
+                        <BlueTitle
+                            style={{ fontSize: '12px', fontWeight: '500', textAlign: 'center' }}
+                            title={`${i18next.t('wizard.processInstance.nextToSummaryDetails')}￩`}
+                            component="h4"
+                            variant="h6"
+                        />
                     </Grid>
                 </Grid>
             </Grid>

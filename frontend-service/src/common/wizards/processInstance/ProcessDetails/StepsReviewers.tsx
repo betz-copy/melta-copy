@@ -13,6 +13,7 @@ import { getStepInstanceByStepTemplateId } from '../../../../utils/processWizard
 import { MeltaTooltip } from '../../../MeltaTooltip';
 import { useDarkModeStore } from '../../../../stores/darkMode';
 import { IUser } from '../../../../interfaces/users';
+import { BlueTitle } from '../../../BlueTitle';
 
 const ReviewCard = ({ stepTemplate, values, setFieldValue, isEditMode, processInstance }) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
@@ -38,7 +39,7 @@ const ReviewCard = ({ stepTemplate, values, setFieldValue, isEditMode, processIn
                 ref={cardRef}
                 sx={{
                     height: isEditMode || !processInstance ? '250px' : '25vh',
-                    backgroundColor: darkMode ? '#303030' : '#f7f9fc',
+                    backgroundColor: darkMode ? '#3f3f3f6b' : '#f7f9fc',
                     boxShadow: 'none',
                     borderRadius: '20px',
                 }}
@@ -46,26 +47,26 @@ const ReviewCard = ({ stepTemplate, values, setFieldValue, isEditMode, processIn
                 <CardHeader
                     avatar={
                         stepTemplate.iconFileId ? (
-                            <CustomIcon iconUrl={stepTemplate.iconFileId} width="30px" height="30px" color="#1E2775" />
+                            <CustomIcon iconUrl={stepTemplate.iconFileId} width="30px" height="30px" color={darkMode ? '#9398c2' : '#1E2775'} />
                         ) : (
                             <HiveIcon fontSize="large" />
                         )
                     }
                     title={
                         <MeltaTooltip title={stepTemplate.displayName} arrow>
-                            <Typography
+                            <BlueTitle
+                                component="h6"
+                                variant="h4"
                                 style={{
                                     whiteSpace: 'nowrap',
                                     overflow: 'hidden',
                                     textOverflow: 'ellipsis',
                                     maxWidth: cardWidth ? `${cardWidth - 75}px` : '200px',
                                     fontSize: '16px',
-                                    color: '#1E2775',
                                     fontWeight: '600',
                                 }}
-                            >
-                                {stepTemplate.displayName}
-                            </Typography>
+                                title={stepTemplate.displayName}
+                            />
                         </MeltaTooltip>
                     }
                 />

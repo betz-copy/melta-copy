@@ -10,6 +10,7 @@ import { IMongoStepInstancePopulated } from '../../../../interfaces/processes/st
 import { IMongoStepTemplatePopulated } from '../../../../interfaces/processes/stepTemplate';
 import { CommentsDetails } from '../ProcessSteps/processStep';
 import { MeltaTooltip } from '../../../MeltaTooltip';
+import { BlueTitle } from '../../../BlueTitle';
 
 export interface ProcessSummaryProp {
     processInstance: IMongoProcessInstancePopulated;
@@ -95,11 +96,14 @@ const ProcessSummary = React.forwardRef<HTMLDivElement, ProcessSummaryProp>(({ p
                                         gap="10px"
                                     >
                                         <Grid item width="100%" alignSelf="center">
-                                            <Typography color="#1E2775" fontSize="12px" fontWeight="500" textAlign="center">
-                                                {`${i18next.t('wizard.processTemplate.level')} ${index + 1}: ${
+                                            <BlueTitle
+                                                style={{ fontSize: '12px', fontWeight: '500', textAlign: 'center' }}
+                                                component="h4"
+                                                variant="h6"
+                                                title={`${i18next.t('wizard.processTemplate.level')} ${index + 1}: ${
                                                     getStepTemplateByStepInstance(stepInstance, processTemplate).displayName
                                                 }`}
-                                            </Typography>
+                                            />
                                         </Grid>
                                         <StepLabel
                                             StepIconComponent={() =>

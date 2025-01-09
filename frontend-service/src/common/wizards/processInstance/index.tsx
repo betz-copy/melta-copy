@@ -18,6 +18,7 @@ import { IMongoStepTemplatePopulated } from '../../../interfaces/processes/stepT
 import { AreYouSureDialog } from '../../dialogs/AreYouSureDialog';
 import GeneralDetails from './ProcessDetails/GeneralDetails';
 import StepsReviewers from './ProcessDetails/StepsReviewers';
+import { useDarkModeStore } from '../../../stores/darkMode';
 
 interface IProcessInstanceWizard {
     open: boolean;
@@ -69,6 +70,8 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({
 }) => {
     const queryClient = useQueryClient();
     const processTemplatesMap = queryClient.getQueryData<IProcessTemplateMap>('getProcessTemplates')!;
+
+    const darkMode = useDarkModeStore((state) => state.darkMode);
 
     const [isStepEditMode, setIsStepEditMode] = useState(false);
 
@@ -141,7 +144,7 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({
                         minWidth="280px"
                         padding={3}
                         style={{
-                            backgroundColor: '#F0F2F7',
+                            backgroundColor: darkMode ? '#171717' : '#F0F2F7',
                             borderBottomLeftRadius: '20px',
                             borderTopLeftRadius: '20px',
                             boxShadow: '10px 10px 15px 10px #888888',

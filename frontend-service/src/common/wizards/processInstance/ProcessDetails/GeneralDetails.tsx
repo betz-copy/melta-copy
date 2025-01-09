@@ -107,37 +107,29 @@ const GeneralDetails: React.FC<IDetailsStepProp> = ({
                                         {contentDisplay === 'SUMMARY' && (
                                             <Grid item flexBasis="50%">
                                                 <Button
+                                                    variant="outlined"
                                                     style={{
                                                         borderRadius: '7px',
-                                                        border: 'solid 1px #1E2775',
-                                                        width: '140px',
+                                                        width: '150px',
                                                         height: '35px',
-                                                        backgroundColor: '#EBEFFA',
                                                     }}
                                                     onClick={() => setContentDisplay('REVIEWERS')}
+                                                    startIcon={<Groups2Icon sx={{ height: '100%' }} />}
                                                 >
-                                                    <Grid container justifyContent="center" alignItems="center" gap="10px">
-                                                        <Grid item alignSelf="center" style={{ height: '100%' }}>
-                                                            <Groups2Icon sx={{ height: '100%', marginTop: '7px' }} />
-                                                        </Grid>
-                                                        <Grid item>
-                                                            <Typography fontSize="13px" fontWeight="400">
-                                                                {i18next.t('wizard.processInstance.showStepsReviewers')}
-                                                            </Typography>
-                                                        </Grid>
-                                                    </Grid>
+                                                    <Typography fontSize="13px" fontWeight="400">
+                                                        {i18next.t('wizard.processInstance.showStepsReviewers')}
+                                                    </Typography>
                                                 </Button>
                                             </Grid>
                                         )}
                                         {contentDisplay === 'REVIEWERS' && (
                                             <Grid item flexBasis="50%">
                                                 <Button
+                                                    variant="outlined"
                                                     style={{
                                                         borderRadius: '7px',
-                                                        border: 'solid 1px #1E2775',
-                                                        width: '140px',
+                                                        width: '150px',
                                                         height: '35px',
-                                                        backgroundColor: '#EBEFFA',
                                                     }}
                                                     onClick={() => setContentDisplay('SUMMARY')}
                                                 >

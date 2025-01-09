@@ -3,6 +3,7 @@ import i18next from 'i18next';
 import React from 'react';
 import { IUser } from '../../../../interfaces/users';
 import UserAutocomplete from '../../../inputs/UserAutocomplete';
+import { useDarkModeStore } from '../../../../stores/darkMode';
 
 interface ReviewerSelectorProps {
     forcedReviewers?: IUser[];
@@ -14,6 +15,7 @@ interface ReviewerSelectorProps {
 
 export const ReviewerSelector: React.FC<ReviewerSelectorProps> = ({ forcedReviewers = [], reviewers, onAdd, onRemove, isViewMode = false }) => {
     const [displayValue, setDisplayValue] = React.useState('');
+    const darkMode = useDarkModeStore((state) => state.darkMode);
 
     const combinedReviewers = [...forcedReviewers, ...reviewers];
 
@@ -54,15 +56,19 @@ export const ReviewerSelector: React.FC<ReviewerSelectorProps> = ({ forcedReview
             >
                 {forcedReviewers?.map((reviewer) => (
                     <Grid item key={reviewer._id}>
-                        <Chip label={reviewer.fullName} sx={{ backgroundColor: '#c5c6d4' }} disabled />
+                        <Chip label={reviewer.fullName} sx={{ backgroundColor: darkMode ? '#818181' : '#c5c6d4' }} disabled />
                     </Grid>
                 ))}
                 {reviewers?.map((reviewer) => (
                     <Grid item key={reviewer._id}>
                         {isViewMode ? (
-                            <Chip label={reviewer.fullName} sx={{ backgroundColor: '#E0E1ED' }} />
+                            <Chip label={reviewer.fullName} sx={{ backgroundColor: darkMode ? '#818181' : '#E0E1ED' }} />
                         ) : (
-                            <Chip label={reviewer.fullName} sx={{ backgroundColor: '#E0E1ED' }} onDelete={() => onRemove(reviewer, reviewers)} />
+                            <Chip
+                                label={reviewer.fullName}
+                                sx={{ backgroundColor: darkMode ? '#818181' : '#E0E1ED' }}
+                                onDelete={() => onRemove(reviewer, reviewers)}
+                            />
                         )}
                     </Grid>
                 ))}

@@ -13,6 +13,8 @@ import { InfiniteScroll } from '../../common/InfiniteScroll';
 import './ProcessesList.css';
 import { useUserStore } from '../../stores/user';
 import { PermissionScope } from '../../interfaces/permissions';
+import { useDarkModeStore } from '../../stores/darkMode';
+import { BlueTitle } from '../../common/BlueTitle';
 
 const { infiniteScrollPageCount } = environment.processInstances;
 
@@ -29,6 +31,8 @@ const ProcessesList: React.FC<{
     const queryClient = useQueryClient();
 
     const currentUser = useUserStore((state) => state.user);
+
+    const darkMode = useDarkModeStore((state) => state.darkMode);
 
     const hasPermissionsToEditDetails =
         currentUser.currentWorkspacePermissions.processes?.scope === PermissionScope.write ||
@@ -62,29 +66,43 @@ const ProcessesList: React.FC<{
     return (
         <Grid item container direction="column" spacing={2}>
             {waitingForMeProcesses.length > 0 && isWaitingForMeFilterOn && (
-                <Grid item container style={{ backgroundColor: '#CCCFE5', borderRadius: '20px', padding: '15px' }}>
-                    <Typography color="#1E2775" fontSize="16px" fontWeight="600">
-                        {i18next.t('processInstancesPage.waitForMyApprove')}
-                    </Typography>
-                    <ViewingBox minHeight="80vh">
-                        {waitingForMeProcesses.map((process) => (
-                            <Grid item key={process._id}>
-                                <ProcessCard
-                                    processInstance={process}
-                                    onChangedProcessDialogClose={(processId: string | null) => {
-                                        if (processId) {
-                                            setLoadingProcesses((prev) => ({ ...prev, [processId]: true }));
-                                            queryClient
-                                                .invalidateQueries(['searchProcesses'])
-                                                .finally(() => setLoadingProcesses((prev) => ({ ...prev, [processId]: false })));
-                                        } else queryClient.resetQueries({ queryKey: ['searchProcesses'] });
-                                    }}
-                                    isLoading={loadingProcesses[process._id] || false}
-                                    isEditMode={hasPermissionsToEditDetails}
-                                />
-                            </Grid>
-                        ))}
-                    </ViewingBox>
+                <Grid
+                    item
+                    container
+                    flexDirection="column"
+                    marginTop="15px"
+                    style={{ backgroundColor: darkMode ? '#434343' : '#CCCFE5', borderRadius: '20px', padding: '15px' }}
+                    rowGap={3}
+                >
+                    <Grid item>
+                        <BlueTitle
+                            component="h4"
+                            variant="h6"
+                            style={{ fontSize: '16px', fontWeight: '600' }}
+                            title={i18next.t('processInstancesPage.waitForMyApprove')}
+                        />
+                    </Grid>
+                    <Grid item>
+                        <ViewingBox minHeight="80vh">
+                            {waitingForMeProcesses.map((process) => (
+                                <Grid item key={process._id}>
+                                    <ProcessCard
+                                        processInstance={process}
+                                        onChangedProcessDialogClose={(processId: string | null) => {
+                                            if (processId) {
+                                                setLoadingProcesses((prev) => ({ ...prev, [processId]: true }));
+                                                queryClient
+                                                    .invalidateQueries(['searchProcesses'])
+                                                    .finally(() => setLoadingProcesses((prev) => ({ ...prev, [processId]: false })));
+                                            } else queryClient.resetQueries({ queryKey: ['searchProcesses'] });
+                                        }}
+                                        isLoading={loadingProcesses[process._id] || false}
+                                        isEditMode={hasPermissionsToEditDetails}
+                                    />
+                                </Grid>
+                            ))}
+                        </ViewingBox>
+                    </Grid>
                 </Grid>
             )}
             <Grid item>

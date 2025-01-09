@@ -26,6 +26,7 @@ import { ajvValidate, JSONSchemaFormik } from '../../../inputs/JSONSchemaFormik'
 import { EntityReference } from '../EntityReference';
 import ProcessStatus, { ReviewedAtProcessStatus } from '../ProcessSummaryStep/ProcessStatus';
 import { getStepValuesFromStepInstance } from './stepsFormik';
+import { useDarkModeStore } from '../../../../stores/darkMode';
 
 export const CommentsDetails: FC<{ values: ProcessStepValues | IMongoStepInstancePopulated; toPrint?: boolean }> = ({ values, toPrint }) => {
     if (!values.comments) {
@@ -133,6 +134,7 @@ export const ProcessStep: FC<ProcessStepProps> = ({
     onSetNextStep = () => {},
 }) => {
     const currentUser = useUserStore((state) => state.user);
+    const darkMode = useDarkModeStore((state) => state.darkMode);
 
     const hasPermissionsToEditStep =
         (currentUser.currentWorkspacePermissions.processes?.scope === PermissionScope.write ||
@@ -378,7 +380,13 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                         spacing={2}
                                         justifyContent="space-between"
                                         alignItems="center"
-                                        style={{ backgroundColor: '#F2F4FA', borderRadius: '20px', padding: '10px', width: '305px', height: '290px' }}
+                                        style={{
+                                            backgroundColor: darkMode ? 'rgb(26 26 26 / 35%)' : '#F2F4FA',
+                                            borderRadius: '20px',
+                                            padding: '10px',
+                                            width: '305px',
+                                            height: '290px',
+                                        }}
                                     >
                                         <Grid item>
                                             <ProcessStatus
