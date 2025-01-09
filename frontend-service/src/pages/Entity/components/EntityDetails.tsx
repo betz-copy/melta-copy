@@ -37,7 +37,7 @@ import { EntityDates } from './EntityDates';
 import { EntityDisableCheckbox } from './EntityDisableCheckbox';
 import TooltipMenuButton from './TooltipMenuButton';
 import UpdateStatusWithRuleBreachDialog from './UpdateStatusWithRuleBreachDialog';
-import EntityWithLocationFields from '../../Map/EntityWithLocationFields';
+import EntityWithLocationFields from '../../Map/LocationPreview';
 
 const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; expandedEntity: IEntityExpanded }> = ({
     entityTemplate,

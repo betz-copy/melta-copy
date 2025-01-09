@@ -154,7 +154,7 @@ const SearchAutoComplete = ({ selectedTemplates, handleEntityClick }: props) => 
                 return (
                     <li {...props} ref={props['data-option-index'] === searchResults.length - 1 ? lastElementRef : null}>
                         <Grid container direction="row" alignItems="center">
-                            <Grid item container direction="column" spacing={1} onClick={() => handleEntityClick(option)}>
+                            <Grid item container direction="column" onClick={() => handleEntityClick(option)}>
                                 <Grid item container alignSelf="center" direction="row" spacing={1}>
                                     <Grid item>
                                         <MeltaTooltip

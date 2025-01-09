@@ -17,7 +17,7 @@ type Props = {
     styles?: React.CSSProperties;
 };
 
-const EntityWithLocationFields = ({ styles, entity, entityTemplate }: Props) => {
+const LocationPreview = ({ styles, entity, entityTemplate }: Props) => {
     const { bounds, polygons, propertyDefinitions, markers } = useEntityWithLocationFields({ entityTemplate, entity });
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
@@ -64,4 +64,4 @@ const EntityWithLocationFields = ({ styles, entity, entityTemplate }: Props) => 
     );
 };
 
-export default EntityWithLocationFields;
+export default LocationPreview;
