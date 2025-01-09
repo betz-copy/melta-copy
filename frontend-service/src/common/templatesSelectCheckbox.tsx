@@ -1,4 +1,3 @@
-import { FilterList } from '@mui/icons-material';
 import i18next from 'i18next';
 import React, { Dispatch } from 'react';
 import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
@@ -21,7 +20,7 @@ const TemplatesSelectCheckbox: React.FC<{
         <SelectCheckbox<IMongoEntityTemplatePopulated, IMongoCategory>
             treeFunc={categories?.length ? (groupTemplatesByCategory as any) : undefined}
             title={title}
-            img={title === i18next.t('entityTemplatesCheckboxLabel') ? <FilterList /> : undefined}
+            filterIcon={title === i18next.t('entityTemplatesCheckboxLabel')}
             options={templates}
             selectedOptions={selectedTemplates}
             setSelectedOptions={setSelectedTemplates}

@@ -1,10 +1,10 @@
 /* eslint-disable no-nested-ternary */
 import { Box, FormControl, Select, useTheme } from '@mui/material';
 import lodashUniqby from 'lodash.uniqby';
-import React, { Dispatch, Key, PropsWithChildren, ReactElement, SetStateAction, useCallback, useState } from 'react';
+import React, { Dispatch, Key, PropsWithChildren, SetStateAction, useCallback, useState } from 'react';
 import { DropResult } from 'react-beautiful-dnd';
-import { IoIosArrowDown, IoIosArrowUp } from 'react-icons/io';
 import { TreeViewBaseItem } from '@mui/x-tree-view-pro';
+import { ExpandMore, FilterList } from '@mui/icons-material';
 import { useDarkModeStore } from '../../stores/darkMode';
 import Tree from '../Tree';
 import { Search } from './Search';
@@ -18,7 +18,7 @@ export type SelectCheckboxGroupProps<Option extends {}, Group extends any = Opti
 
 export type SelectCheckboxProps<Option extends {}, Group extends any = Option> = PropsWithChildren<{
     title: string;
-    img?: ReactElement;
+    filterIcon?: boolean;
     options: Option[];
     selectedOptions: Option[];
     setSelectedOptions: Dispatch<SetStateAction<Option[]>>;
@@ -30,6 +30,7 @@ export type SelectCheckboxProps<Option extends {}, Group extends any = Option> =
     size?: 'small' | 'medium';
     overrideSx?: object;
     toTopBar?: boolean;
+    toUserProfile?: boolean;
     horizontalOrigin?: number;
     handleCheckboxClick?: (value: boolean) => void;
     onDragEnd?: (result: DropResult) => void;
@@ -76,9 +77,13 @@ export const getOptionsAndGroupsMiniFiltered = <Option extends {}, Group extends
     return { optionsFiltered, groupsFiltered };
 };
 
+const CustomExpandMore = ({ filterIcon, ...rest }) => {
+    return <Box sx={{ gap: '10px', marginRight: '14px' }}>{filterIcon ? <FilterList {...rest} /> : <ExpandMore {...rest} />}</Box>;
+};
+
 const SelectCheckbox = <Option extends {}, Group extends any = Option>({
     title,
-    img,
+    filterIcon,
     options,
     selectedOptions,
     setSelectedOptions,
@@ -88,6 +93,7 @@ const SelectCheckbox = <Option extends {}, Group extends any = Option>({
     size = 'medium',
     overrideSx,
     toTopBar,
+    toUserProfile = false,
     horizontalOrigin = 154,
     handleCheckboxClick = () => {},
     isSelectDisabled = false,
@@ -186,16 +192,7 @@ const SelectCheckbox = <Option extends {}, Group extends any = Option>({
                     },
                 }}
                 // eslint-disable-next-line react/no-unstable-nested-components
-                IconComponent={() => (
-                    <Box display="flex" alignContent="center" alignItems="center" sx={{ gap: '10px', marginRight: '14px' }}>
-                        {img ||
-                            (isOpen ? (
-                                <IoIosArrowUp style={{ color: theme.palette.primary.main, height: '16px', width: '16px' }} />
-                            ) : (
-                                <IoIosArrowDown style={{ color: theme.palette.primary.main, height: '16px', width: '16px' }} />
-                            ))}
-                    </Box>
-                )}
+                IconComponent={(params) => CustomExpandMore({ filterIcon, ...params })}
                 size={size}
                 onOpen={() => {
                     setMiniFilterValue('');
@@ -214,7 +211,7 @@ const SelectCheckbox = <Option extends {}, Group extends any = Option>({
                     fontFamily: 'Rubik',
                     fontSize: '14px',
                     fontWeight: 400,
-                    boxShadow: '-2px 2px 6px 0px #1E277540',
+                    boxShadow: toUserProfile ? '0px 3px 10px rgba(0,0,0,0.2)' : 'none',
                     borderRadius: '8px',
                     ...(darkMode
                         ? { color: theme.palette.primary.main, '& .MuiOutlinedInput-notchedOutline': { borderColor: '#d2d3e3' } }
@@ -226,6 +223,10 @@ const SelectCheckbox = <Option extends {}, Group extends any = Option>({
                     maxWidth: !overrideSx ? (toTopBar ? '130px' : '131px') : undefined,
                     maxHeight: toTopBar ? '35px' : '34px',
                     padding: toTopBar ? '6.99px, 13.98px' : '0px, 8px',
+                    '& .MuiSvgIcon-root': {
+                        color: filterIcon ? (darkMode ? '#9398C2' : '#1E2775') : '',
+                        transform: filterIcon ? 'none' : '',
+                    },
                 }}
             >
                 {!isSelectDisabled && !hideSearchBar && <Search value={miniFilterValue} onChange={setMiniFilterValue} toTopBar={toTopBar} />}

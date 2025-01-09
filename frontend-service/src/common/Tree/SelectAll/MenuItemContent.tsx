@@ -55,7 +55,16 @@ export const MenuItemContent: React.FC<MenuItemContentProps> = ({
                     <HiveIcon style={{ color: theme.palette.primary.main }} fontSize="inherit" />
                 )
             ) : (
-                <MeltaCheckbox checked={checked} indeterminate={indeterminate} sxChecked={{ width: '18px', height: '18px' }} />
+                <MeltaCheckbox
+                    checked={checked}
+                    indeterminate={indeterminate}
+                    sxChecked={{ width: '18px', height: '18px' }}
+                    sx={{
+                        '&:hover': {
+                            backgroundColor: 'transparent',
+                        },
+                    }}
+                />
             )}
 
             <ListItemText

@@ -1,4 +1,6 @@
 import { AdvancedFilterModel, FilterModel, SortModelItem } from '@ag-grid-community/core';
+import fileDetails from './fileDetails';
+import { NotificationType } from './notifications';
 import { ICompactPermissions, ISubCompactPermissions } from './permissions/permissions';
 
 export interface IBaseUser {
@@ -9,6 +11,8 @@ export interface IBaseUser {
     mail: string;
     preferences: {
         darkMode?: boolean;
+        mailsNotificationsTypes?: NotificationType[];
+        profilePath?: string;
     };
     externalMetadata: {
         kartoffelId: string;
@@ -34,6 +38,11 @@ export interface IUserSearchBody {
     filterModel?: AdvancedFilterModel | FilterModel | null;
     sortModel?: SortModelItem[];
 }
+
+export type IUserPreferences = Pick<IBaseUser, 'preferences'>['preferences'] & {
+    icon?: fileDetails;
+    kartoffelProfile?: boolean;
+};
 
 export type IExternalUser = Omit<IUser, 'fullName' | 'jobTitle' | 'hierarchy' | 'mail'> &
     Partial<Pick<IUser, 'fullName' | 'jobTitle' | 'hierarchy' | 'mail'>>;

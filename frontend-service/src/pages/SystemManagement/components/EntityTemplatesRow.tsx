@@ -17,7 +17,7 @@ import { SelectCheckbox } from '../../../common/SelectCheckBox';
 import { EntityTemplateWizard } from '../../../common/wizards/entityTemplate';
 import { environment } from '../../../globals';
 import { ICategoryMap, IMongoCategory } from '../../../interfaces/categories';
-import { IEntityTemplate, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IEntitySingleProperty, IEntityTemplate, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
 import { updateCategoryRequest } from '../../../services/templates/categoriesService';
 import {
@@ -119,6 +119,8 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
         }
     };
 
+    const isFile = (value: IEntitySingleProperty) => value.format === 'fileId' || value.items?.format === 'fileId';
+
     return (
         <ViewingCard
             width={250}
@@ -218,7 +220,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                         </Grid>
                     </Grid>
                     {Object.entries(entityTemplate.properties.properties)
-                        .filter(([, value]) => value.format !== 'fileId')
+                        .filter(([, value]) => !isFile(value))
                         .map(([key, value]) => (
                             <Grid key={key} item container gap="5px" flexWrap="nowrap">
                                 <Grid item flexBasis="4%" color={theme.palette.primary.main}>
@@ -250,8 +252,8 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                         </Grid>
                     </Grid>
                     {Object.entries(entityTemplate.properties.properties)
-                        .filter(([, value]) => value.format === 'fileId')
-                        .map(([key]) => (
+                        .filter(([, value]) => isFile(value))
+                        .map(([key, value]) => (
                             <Grid key={key} item container gap="5px">
                                 <Grid item flexBasis="4%" color={theme.palette.primary.main}>
                                     <Typography>-</Typography>
@@ -271,8 +273,8 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                         </Typography>
                                     </MeltaTooltip>
                                 </Grid>
-                                <Grid item color={theme.palette.primary.main} fontWeight="400">
-                                    {entityTemplate.properties.required.includes(key) ? i18next.t('validation.required') : ''}
+                                <Grid item color={theme.palette.primary.main} fontWeight="400" sx={{ opacity: 0.75 }}>
+                                    {i18next.t(`propertyTypes.${value.format === 'fileId' ? value.format : 'multipleFiles'}`)}
                                 </Grid>
                             </Grid>
                         ))}

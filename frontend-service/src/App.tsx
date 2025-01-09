@@ -17,6 +17,7 @@ import { BackendConfigState, getBackendConfigRequest } from './services/backendC
 import { getMyUserRequest } from './services/userService';
 import { getById, getWorkspaceHierarchyIds } from './services/workspacesService';
 import { useUserStore } from './stores/user';
+import { useDarkModeStore } from './stores/darkMode';
 import { useWorkspaceStore } from './stores/workspace';
 import { getWorkspacePermissions } from './utils/permissions';
 import { useMatomoInstance } from './matomo';
@@ -43,6 +44,7 @@ const App: React.FC = () => {
     const currentUser = useUserStore((state) => state.user);
     const setUser = useUserStore((state) => state.setUser);
 
+    const setDarkMode = useDarkModeStore((state) => state.setDarkMode);
     const workspaceStore = useWorkspaceStore((state) => state.workspace);
 
     const { isError: isErrorBackendConfig } = useQuery<BackendConfigState>('getBackendConfig', getBackendConfigRequest, {
@@ -92,6 +94,7 @@ const App: React.FC = () => {
                 const isAdminRoot = (await Promise.all(adminWorkspaceIds.map((id) => getById(id)))).some((workspace) => workspace.path === '/');
                 user.isRoot = isAdminRoot;
                 setUser({ ...user, ...userFromDb });
+                setDarkMode(userFromDb.preferences?.darkMode || false);
 
                 if (workspaceIds.length === 1) {
                     const workspace = await getById(workspaceIds[0]);

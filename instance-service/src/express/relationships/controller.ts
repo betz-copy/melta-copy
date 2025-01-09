@@ -30,6 +30,17 @@ class RelationshipController extends DefaultController<RelationshipManager> {
         res.json(await this.manager.getRelationshipsCountByTemplateId(req.query.templateId as unknown as string));
     }
 
+    async getRelationshipsByEntitiesAndTemplate(req: Request, res: Response) {
+        const { sourceEntityId, destinationEntityId, templateId } = req.query;
+        res.json(
+            await this.manager.getRelationshipsByEntitiesAndTemplate(
+                sourceEntityId as unknown as string,
+                destinationEntityId as unknown as string,
+                templateId as unknown as string,
+            ),
+        );
+    }
+
     async getRelationshipsByIds(req: Request, res: Response) {
         res.json(await this.manager.getRelationshipsByIds(req.body.ids));
     }

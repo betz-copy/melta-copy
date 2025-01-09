@@ -28,3 +28,13 @@ export interface CommonFormInputProperties {
     groupName?: string;
     archive?: boolean;
 }
+
+export interface ConvertToRelationshipFieldFormInputProperties {
+    fieldName: string;
+    displayFieldName: string;
+    relationshipReference: {
+        relationshipTemplateDirection: 'outgoing' | 'incoming';
+        relatedTemplateId: string;
+        relatedTemplateField: string;
+    };
+}
