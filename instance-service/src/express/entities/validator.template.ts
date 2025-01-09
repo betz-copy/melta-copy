@@ -515,6 +515,8 @@ export const addStringFieldsAndNormalizeSpecialStringValues = (
         if (type === 'string' && format === 'location') {
             normalizedEntity[key] = getNeo4jLocation(propertyValue);
             normalizedEntity[`${key}${neo4j.stringPropertySuffix}`] = propertyValue;
+
+            return;
         }
 
         normalizedEntity[key] = propertyValue;
