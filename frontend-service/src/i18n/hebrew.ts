@@ -432,7 +432,7 @@ export default {
         searchRules: 'חיפוש חוקים...',
         searchRelations: 'חיפוש קשרים...',
         searchProcesses: 'חיפוש תהליכים...',
-        searchConfig: 'חיפוש קונפיג...',
+        searchConfig: 'חיפוש קונפיגורציות...',
         searchInPage: 'חיפוש בעמוד',
         turnOnSemanticSearch: 'חיפוש חכם בתוכן הקבצים כבוי',
         turnOffSemanticSearch: 'חיפוש חכם בתוכן הקבצים דלוק',
@@ -1266,7 +1266,7 @@ export default {
         },
         excel: {
             entitiesFileLimit: 'הגבלת מספר ישויות שניתן להעלות בקובץ',
-            filesLimit: 'הגבלת מספר קבצים שניתן להעלות',
+            filesLimit: 'הגבלת מספר קבצים שניתן להעלות בטעינת יישויות',
         },
     },
 };

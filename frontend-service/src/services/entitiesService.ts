@@ -48,7 +48,6 @@ export const loadEntitiesRequest = async (
             })),
             ignoredRules,
         };
-
         formData.append('insertBrokenEntities', JSON.stringify(insertBrokenEntitiesObject));
     }
 
