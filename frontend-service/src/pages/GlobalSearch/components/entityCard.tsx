@@ -362,14 +362,26 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                     }}
                                 >
                                     <Grid item xs={9}>
-                                        <MeltaTooltip title={matchedSentence || ''}>
+                                        <MeltaTooltip
+                                            title={
+                                                <Typography
+                                                    sx={{
+                                                        maxHeight: '250px',
+                                                        overflow: 'hidden',
+                                                        textOverflow: 'ellipsis',
+                                                        display: '-webkit-box',
+                                                        WebkitLineClamp: 10,
+                                                        WebkitBoxOrient: 'vertical',
+                                                    }}
+                                                >
+                                                    {matchedSentence || ''}
+                                                </Typography>
+                                            }
+                                        >
                                             <Typography
                                                 sx={{
                                                     marginLeft: '7px',
                                                     fontSize: '0.8rem',
-                                                    textOverflow: 'ellipsis',
-                                                    overflow: 'hidden',
-                                                    whiteSpace: 'nowrap',
                                                     maxWidth: '100%',
                                                     color: 'white',
                                                 }}

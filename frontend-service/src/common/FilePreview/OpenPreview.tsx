@@ -104,13 +104,21 @@ const OpenPreview: React.FC<{
     }
     return (
         <MeltaTooltip
-            title={matchSentence}
+            title={
+                <Typography
+                    sx={{
+                        maxHeight: '250px',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        display: '-webkit-box',
+                        WebkitLineClamp: 10,
+                        WebkitBoxOrient: 'vertical',
+                    }}
+                >
+                    {matchSentence}
+                </Typography>
+            }
             placement="right"
-            sx={{
-                overflow: 'hidden',
-                whiteSpace: 'nowrap',
-                textOverflow: 'ellipsis',
-            }}
             disableHoverListener={open}
         >
             <Grid>
