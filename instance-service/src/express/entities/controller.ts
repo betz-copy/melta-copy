@@ -3,6 +3,7 @@ import { IMongoEntityTemplate } from '../../externalServices/templates/interface
 import { fetchPropertyFromRequest, RequestWithQuery } from '../../utils/express';
 import DefaultController from '../../utils/express/controller';
 import { EntityManager } from './manager';
+import { IDeleteBody } from './interface';
 
 class EntityController extends DefaultController<EntityManager> {
     constructor(workspaceId: string) {
@@ -52,8 +53,10 @@ class EntityController extends DefaultController<EntityManager> {
         res.json(await this.manager.getExpandedGraphById(req.params.id, req.body, entityTemplatesMap, req.body.userId));
     }
 
-    async deleteEntityById(req: Request, res: Response) {
-        res.json(await this.manager.deleteEntityById(req.params.id, req.query.deleteAllRelationships as unknown as boolean));
+    async deleteEntityInstances(req: Request, res: Response) {
+        const deleteBody = req.body as IDeleteBody;
+
+        res.json(await this.manager.deleteEntityInstances(deleteBody));
     }
 
     async deleteEntitiesByTemplateId(req: Request, res: Response) {

@@ -86,8 +86,9 @@ export interface ISearchEntitiesOfTemplateBody {
     textSearch?: string;
     filter?: ISearchFilter;
     showRelationships: boolean | Array<IMongoRelationshipTemplate['_id']>;
-    sort: ISearchSort;
+    sort?: ISearchSort;
     entityIdsToInclude?: string[];
+    entityIdsToExclude?: string[];
 }
 
 export interface ISearchEntitiesByTemplatesBody {
@@ -101,6 +102,7 @@ export interface ISearchBatchBody {
     limit: number;
     textSearch?: string;
     entityIdsToInclude?: string[];
+    entityIdsToExclude?: string[];
     templates: {
         [templateId: string]: {
             filter?: ISearchFilter;
@@ -161,3 +163,21 @@ export interface IExecutionOutput {
     entityId: string;
     properties: Record<string, any>;
 }
+
+export interface IDeleteBodyBase {
+    selectAll: boolean;
+    templateId: string;
+    deleteAllRelationships?: boolean;
+}
+
+export type IDeleteBody<T extends boolean = boolean> = IDeleteBodyBase & {
+    selectAll: T;
+} & (T extends true
+        ? {
+              idsToExclude?: string[];
+              filter?: ISearchEntitiesOfTemplateBody['filter'];
+              textSearch?: string;
+          }
+        : {
+              idsToInclude: string[];
+          });

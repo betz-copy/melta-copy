@@ -8,7 +8,7 @@ import { getNameInitials } from '../utils/userProfile';
 import { getUserProfileRequest } from '../services/userService';
 
 interface UserAvatarProps {
-    user: IUser;
+    user: Partial<IUser>;
     size?: number;
     bgColor?: string;
     isDefaultProfile?: boolean;
@@ -22,8 +22,8 @@ const UserAvatar: React.FC<UserAvatarProps> = ({ user, size = 48, bgColor, userP
     // eslint-disable-next-line no-nested-ternary
     const fontColor = !bgColor ? '#1E2775' : darkMode ? 'black' : 'white';
 
-    const { data: profile, isError } = useQuery(['userProfile', user.preferences.profilePath], async () => {
-        return user.preferences.profilePath ? getUserProfileRequest(user) : '';
+    const { data: profile, isError } = useQuery(['userProfile', user?.preferences?.profilePath], async () => {
+        return user?.preferences?.profilePath ? getUserProfileRequest(user) : '';
     });
 
     return (
