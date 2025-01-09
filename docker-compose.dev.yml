@@ -216,6 +216,10 @@ services:
       - logs:/usr/src/app/logs
     networks:
       - network
+    # deploy:
+    #   resources:
+    #     limits:
+    #       memory: 100m
 
   user-service:
     ports:

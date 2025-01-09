@@ -11,20 +11,21 @@ import { UploadedFile } from '../../express/files/interface';
 // } = config;
 
 export const busboyMiddleware = (req: Request, _res: Response, next: NextFunction): void => {
-    const busboy = Busboy({ headers: req.headers });
+    const busboy = Busboy({ headers: req.headers, defCharset: 'utf8' });
     const fields: Record<string, unknown> = {};
     const files: UploadedFile[] = [];
 
     busboy.on('file', (fieldname: string, file: Readable, { encoding, filename, mimeType }) => {
         let fileSize = 0;
         const copiedFileStream = new ReadableStreamClone(file);
+        const validFileName = Buffer.from(filename, 'binary').toString('utf8');
 
         file.on('data', (data) => {
             fileSize += data.length;
         }).on('close', () => {
             const fileData: UploadedFile = {
                 fieldname,
-                originalname: filename,
+                originalname: validFileName,
                 encoding,
                 mimetype: mimeType,
                 stream: copiedFileStream,

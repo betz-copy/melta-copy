@@ -14,12 +14,13 @@ export const busboyMiddleware = (req: Request, _res: Response, next: NextFunctio
         return next();
     }
 
-    const busboy = Busboy({ headers: req.headers });
+    const busboy = Busboy({ headers: req.headers, defCharset: 'utf8' });
     const fields: Record<string, unknown> = {};
     const files: UploadedFile[] = [];
 
     busboy.on('file', (fieldname: string, file: Readable, { encoding, filename, mimeType }) => {
         const copiedFileStream = new ReadableStreamClone(file);
+        const validFileName = Buffer.from(filename, 'binary').toString('utf8');
 
         let fileSize = 0;
 
@@ -28,7 +29,7 @@ export const busboyMiddleware = (req: Request, _res: Response, next: NextFunctio
         }).on('close', () => {
             const fileData: UploadedFile = {
                 fieldname,
-                originalname: filename,
+                originalname: validFileName,
                 encoding,
                 mimetype: mimeType,
                 stream: copiedFileStream,
