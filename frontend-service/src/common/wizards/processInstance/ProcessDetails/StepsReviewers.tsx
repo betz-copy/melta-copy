@@ -53,21 +53,19 @@ const ReviewCard = ({ stepTemplate, values, setFieldValue, isEditMode, processIn
                         )
                     }
                     title={
-                        <MeltaTooltip title={stepTemplate.displayName} arrow>
-                            <BlueTitle
-                                component="h6"
-                                variant="h4"
-                                style={{
-                                    whiteSpace: 'nowrap',
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis',
-                                    maxWidth: cardWidth ? `${cardWidth - 75}px` : '200px',
-                                    fontSize: '16px',
-                                    fontWeight: '600',
-                                }}
-                                title={stepTemplate.displayName}
-                            />
-                        </MeltaTooltip>
+                        <BlueTitle
+                            component="h6"
+                            variant="h4"
+                            style={{
+                                whiteSpace: 'nowrap',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                maxWidth: cardWidth ? `${cardWidth - 75}px` : '200px',
+                                fontSize: '16px',
+                                fontWeight: '600',
+                            }}
+                            title={stepTemplate.displayName}
+                        />
                     }
                 />
                 <CardContent onClick={(e) => e.stopPropagation()}>

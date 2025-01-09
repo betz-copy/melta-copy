@@ -232,7 +232,10 @@ const Steps: React.FC<IStepsProp> = ({
             <Divider variant="middle" sx={{ width: '100%' }} />
             {currStepInstance && (
                 <ProcessStep
-                    onStepUpdateSuccess={onStepUpdateSuccess}
+                    onStepUpdateSuccess={(stepInstance: IMongoStepInstancePopulated) => {
+                        setCurrStepInstance(stepInstance);
+                        onStepUpdateSuccess(stepInstance);
+                    }}
                     processInstance={processInstance}
                     stepInstance={currStepInstance}
                     stepTemplate={getStepTemplateByStepInstance(currStepInstance, processTemplate)}

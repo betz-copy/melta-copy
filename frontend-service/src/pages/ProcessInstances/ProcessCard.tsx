@@ -294,7 +294,7 @@ const ProcessCard: React.FC<{
         [`& .${stepConnectorClasses.line}`]: {
             height: 2,
             border: 0,
-            backgroundColor: getFontColor(processInstance.status),
+            backgroundColor: getFontColor(currProcessInstance.status),
             borderRadius: 1,
             ...theme.applyStyles('dark', {
                 backgroundColor: theme.palette.grey[800],
@@ -315,13 +315,13 @@ const ProcessCard: React.FC<{
                                         style={{
                                             height: '20px',
                                             width: '3px',
-                                            backgroundColor: statusColorName(processInstance.status, processInstance.archived),
+                                            backgroundColor: statusColorName(currProcessInstance.status, currProcessInstance.archived),
                                             borderRadius: '20px',
                                         }}
                                     />
                                     <Grid item sx={{ paddingLeft: '5px' }}>
                                         <Typography component="h6" variant="h6" noWrap>
-                                            {processInstance.name}
+                                            {currProcessInstance.name}
                                         </Typography>
                                     </Grid>
                                 </Grid>
@@ -353,23 +353,25 @@ const ProcessCard: React.FC<{
                                                 <MenuButton
                                                     onClick={async (e: React.MouseEvent<HTMLLIElement, MouseEvent>) => {
                                                         e.stopPropagation();
-                                                        await archiveProcessMutate(processInstance);
-                                                        onChangedProcessDialogClose(processInstance._id);
+                                                        await archiveProcessMutate(currProcessInstance);
+                                                        onChangedProcessDialogClose(currProcessInstance._id);
                                                         handleCloseMenu(e);
                                                     }}
-                                                    text={processInstance.archived ? i18next.t('actions.unArchived') : i18next.t('actions.archived')}
+                                                    text={
+                                                        currProcessInstance.archived ? i18next.t('actions.unArchived') : i18next.t('actions.archived')
+                                                    }
                                                     icon={
                                                         // eslint-disable-next-line no-nested-ternary
                                                         isLodingArchiveProcess ? (
                                                             <CircularProgress size={20} />
-                                                        ) : processInstance.archived ? (
+                                                        ) : currProcessInstance.archived ? (
                                                             <Unarchive color="action" />
                                                         ) : (
                                                             <ArchiveIcon color="action" />
                                                         )
                                                     }
                                                 />
-                                                {!processInstance.archived && (
+                                                {!currProcessInstance.archived && (
                                                     <Print
                                                         processInstance={currProcessInstance}
                                                         processTemplate={processTemplatesMap.get(currProcessInstance.templateId)!}
@@ -394,11 +396,11 @@ const ProcessCard: React.FC<{
                                 </Grid>
                                 <Grid item>
                                     <Typography fontSize="14px" style={{ color: '#787C9E' }} noWrap>
-                                        {`${new Date(processInstance.startDate).toLocaleDateString('he-IL', {
+                                        {`${new Date(currProcessInstance.startDate).toLocaleDateString('he-IL', {
                                             year: '2-digit',
                                             month: '2-digit',
                                             day: '2-digit',
-                                        })} - ${new Date(processInstance.endDate).toLocaleDateString('he-IL', {
+                                        })} - ${new Date(currProcessInstance.endDate).toLocaleDateString('he-IL', {
                                             year: '2-digit',
                                             month: '2-digit',
                                             day: '2-digit',
@@ -408,7 +410,7 @@ const ProcessCard: React.FC<{
                             </Grid>
                             <Grid item justifyContent="center" spacing={4}>
                                 <Stepper style={{ flexWrap: 'wrap' }} connector={<StepperConnector />} alternativeLabel>
-                                    {processInstance.steps.map((step, index) => {
+                                    {currProcessInstance.steps.map((step, index) => {
                                         const stepTemplate = processTemplate.steps[index];
                                         return (
                                             <Step style={{ display: 'flex', alignItems: 'center' }} key={step._id}>
@@ -466,7 +468,7 @@ const ProcessCard: React.FC<{
                             </Grid>
 
                             <Grid item container flexWrap="nowrap" justifyContent="center" spacing={4} paddingTop={1} paddingBottom={1}>
-                                {processInstance.steps.map(({ _id }) => (
+                                {currProcessInstance.steps.map(({ _id }) => (
                                     <Grid container item key={_id} alignItems="center" direction="column" spacing={1}>
                                         <Grid item>
                                             <Skeleton variant="circular" width={60} height={60} />
@@ -486,7 +488,7 @@ const ProcessCard: React.FC<{
                 open={deleteDialogState}
                 handleClose={() => setDeleteDialogState(false)}
                 onYes={async () => {
-                    await deleteProcessMutate(processInstance._id);
+                    await deleteProcessMutate(currProcessInstance._id);
                     onChangedProcessDialogClose(null);
                     setDeleteDialogState(false);
                 }}
@@ -512,7 +514,7 @@ const ProcessCard: React.FC<{
                 <CreateOrEditProcess
                     open={isEditModeProcess}
                     onClose={() => setIsEditMode(false)}
-                    processInstance={processInstance}
+                    processInstance={currProcessInstance}
                     mutateAsync={mutateAsync}
                     isEditMode
                 />
