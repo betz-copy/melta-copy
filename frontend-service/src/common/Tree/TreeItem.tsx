@@ -71,9 +71,7 @@ const TreeItem = React.forwardRef(function CustomTreeItem(props: TreeItem2Props,
     const itemDepth = otherRootProps.style?.['--TreeView-itemDepth'];
 
     const handleDragStart = (event: React.DragEvent) => {
-        if (!onDragStart) {
-            return;
-        }
+        if (!onDragStart) return;
 
         onDragStart(event);
         event.dataTransfer.setDragImage((event.target as HTMLElement).parentElement!, 0, 0);

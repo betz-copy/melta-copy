@@ -236,7 +236,7 @@ const TemplatesSelectGrid: React.FC<{
                         <Box sx={{ zIndex: '100', position: 'absolute', width: '235px', ...floatingBoxStyle }}>
                             <Box style={{ width: '100%', maxHeight: '28rem', overflowY: 'auto', paddingBottom: '4px' }}>
                                 {firstTree?.filteredTree?.length
-                                    ? singleTree(secondTree, secondTree, selectedTemplates, setSelectedTemplates, onClick)
+                                    ? singleTree(secondTree, firstTree, selectedTemplates, setSelectedTemplates, onClick)
                                     : singleTree(firstTree, secondTree, selectedTemplates, setSelectedTemplates, onClick)}
                             </Box>
                         </Box>
