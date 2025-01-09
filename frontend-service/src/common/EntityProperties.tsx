@@ -91,7 +91,7 @@ interface IEntityPropertiesProps {
     dividerTitle?: string;
 }
 
-const getPropertyColor = (
+export const getPropertyColor = (
     propertyKey: string,
     propertiesToHighlight: string[] | undefined,
     highlightColor: Property.Color | undefined,

@@ -7,6 +7,10 @@ import 'leaflet-draw/dist/leaflet.draw.css';
 import { EditControl } from 'react-leaflet-draw';
 import { bindPopupForMarker, bindPopupForPolygon, jerusalemCoordinates, latLngToString, stringToCoordinates, UpdateMapBounds } from '../../utils/map';
 import { BaseLayers } from './mapPage';
+import { createSquareAroundPoint } from '../../utils/hooks/useLocation';
+import { environment } from '../../globals';
+
+const { squareLength } = environment.map;
 
 type Props = {
     defaultLocation?: string;
@@ -42,9 +46,20 @@ const LocationField = ({ defaultLocation, styles, updateValue }: Props) => {
     };
 
     const handleLayerDelete = (e: L.DrawEvents.Deleted) => {
-        e.layers.eachLayer((layer) => layer.remove());
-        setMarkerPosition(null);
-        setPolygonPosition(null);
+        e.layers.eachLayer((layer) => {
+            let latlng;
+            if (layer instanceof L.Marker) latlng = layer.getLatLng();
+            else if (layer instanceof L.Polygon) {
+                const bounds = layer.getBounds();
+                latlng = [bounds.getCenter().lat, bounds.getCenter().lng];
+            }
+
+            if (markerPosition && latlng.lat === markerPosition.lat && latlng.lng === markerPosition.lng) setMarkerPosition(null);
+            if (polygonPosition && polygonPosition.some((pos) => pos.lat === latlng[0] && pos.lng === latlng[1])) setPolygonPosition(null);
+
+            layer.remove();
+        });
+        updateValue('');
     };
 
     const handleLayerEdit = (e: L.DrawEvents.Edited) => {
@@ -62,11 +77,11 @@ const LocationField = ({ defaultLocation, styles, updateValue }: Props) => {
     };
 
     const bounds = useMemo(() => {
-        if (polygonPosition) {
-            return L.latLngBounds(polygonPosition);
-        }
+        if (polygonPosition) return L.latLngBounds(polygonPosition);
+        if (markerPosition) return L.latLngBounds(createSquareAroundPoint(markerPosition as L.LatLngExpression, squareLength));
+
         return null;
-    }, [polygonPosition]);
+    }, [polygonPosition, markerPosition]);
 
     return (
         <MapContainer

@@ -3,10 +3,9 @@
 import React, { useState } from 'react';
 import { getDisplayLabel, WidgetProps } from '@rjsf/utils';
 import validator from '@rjsf/validator-ajv8';
-import { Dialog, InputAdornment, TextField } from '@mui/material';
+import { Box, Dialog, InputAdornment, TextField } from '@mui/material';
 import MapIcon from '@mui/icons-material/Map';
-import { convertToPlainText, containsHTMLTags } from '../../../utils/HtmlTagsStringValue';
-import { getFixedNumber, getTextDirection } from '../../../utils/stringValues';
+import { getTextDirection } from '../../../utils/stringValues';
 import LocationField from '../../../pages/Map/LocationField';
 import { environment } from '../../../globals';
 
@@ -32,9 +31,9 @@ export const validateLocation = (value: string) => {
         return false;
     }
 
-    if (Number.isNaN(longitude) || Number.isNaN(latitude)) return false;
-    return true;
+    return !Number.isNaN(longitude) && !Number.isNaN(latitude);
 };
+
 const RjsfLocationWidget = ({
     id,
     placeholder,
@@ -59,36 +58,29 @@ const RjsfLocationWidget = ({
     ...textFieldProps
 }: WidgetProps) => {
     const [error, setError] = useState(false);
-    const _onChange = ({ target: { value: newValue } }: React.ChangeEvent<HTMLInputElement>) => {
-        const parsedValue = (type || schema.type) === 'number' && newValue !== '' ? Number(newValue) : newValue;
-        setError(validateLocation(parsedValue.toString()));
-        onChange(newValue === '' ? options.emptyValue : parsedValue);
-    };
-    const _onBlur = ({ target: { value: newValue } }: React.FocusEvent<HTMLInputElement>) => onBlur(id, newValue);
-    const _onFocus = ({ target: { value: newValue } }: React.FocusEvent<HTMLInputElement>) => onFocus(id, newValue);
-    const variant = readonly && !schema.readOnly ? 'standard' : 'outlined';
-    const { rootSchema } = registry;
-    const displayLabel = getDisplayLabel(validator, schema, uiSchema, rootSchema);
+    const [mapOpen, setMapOpen] = useState(false);
+    const [newLocationValue, setNewLocationValue] = useState<string>(value);
+
+    const displayLabel = getDisplayLabel(validator, schema, uiSchema, registry.rootSchema);
     const inputType = (type || schema.type) === 'string' ? 'text' : `${type || schema.type}`;
 
-    const isTextArea = containsHTMLTags(value);
-    let finalValue;
+    const _onChange = ({ target: { value: newValue } }: React.ChangeEvent<HTMLInputElement>) => {
+        setError(validateLocation(newValue));
+        onChange(newValue === '' ? options.emptyValue : newValue);
+    };
 
-    if (options.hardCodedValue) finalValue = options.hardCodedValue;
-    else if (isTextArea) finalValue = convertToPlainText(value);
-    else if (schema.type === 'number' && value) finalValue = getFixedNumber(Number(value));
-    else finalValue = value ?? '';
+    const _onBlur = ({ target: { value: newValue } }: React.FocusEvent<HTMLInputElement>) => onBlur(id, newValue);
+    const _onFocus = ({ target: { value: newValue } }: React.FocusEvent<HTMLInputElement>) => onFocus(id, newValue);
 
-    const [mapOpen, setMapOpen] = useState(false);
-    const [newValue, setNewValue] = useState<string>(finalValue);
+    const variant = readonly && !schema.readOnly ? 'standard' : 'outlined';
 
     const handleCloseDialog = () => {
-        onChange(newValue);
+        onChange(newLocationValue);
         setMapOpen(false);
     };
 
     return (
-        <>
+        <Box>
             <TextField
                 {...textFieldProps}
                 color="primary"
@@ -115,7 +107,7 @@ const RjsfLocationWidget = ({
                     ),
                 }}
                 type={(options.inputType ?? inputType) as string}
-                value={finalValue}
+                value={newLocationValue}
                 error={error || rawErrors.length > 0}
                 onChange={_onChange}
                 onBlur={_onBlur}
@@ -129,11 +121,11 @@ const RjsfLocationWidget = ({
             <Dialog open={mapOpen} onClose={handleCloseDialog}>
                 <LocationField
                     styles={{ height: '800px', width: '600px' }}
-                    defaultLocation={finalValue}
-                    updateValue={(newVal: string) => setNewValue(newVal)}
+                    defaultLocation={newLocationValue}
+                    updateValue={(newVal: string) => setNewLocationValue(newVal)}
                 />
             </Dialog>
-        </>
+        </Box>
     );
 };
 

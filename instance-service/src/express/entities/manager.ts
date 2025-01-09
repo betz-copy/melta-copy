@@ -788,7 +788,7 @@ export class EntityManager extends DefaultManagerNeo4j {
         return { entities, count };
     }
 
-    buildBaseQuery() {
+    private buildBaseQuery() {
         return `
             WITH $templates AS templates
             UNWIND keys(templates) AS templateId
@@ -798,7 +798,7 @@ export class EntityManager extends DefaultManagerNeo4j {
         `;
     }
 
-    buildCircleQuery() {
+    private buildCircleQuery() {
         let query = this.buildBaseQuery();
 
         query += `
@@ -830,6 +830,7 @@ export class EntityManager extends DefaultManagerNeo4j {
 
             RETURN n, matchingFields
         `;
+
         return query;
     }
 

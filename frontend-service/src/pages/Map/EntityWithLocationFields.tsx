@@ -3,7 +3,7 @@ import { MapContainer, Marker, Polygon, LayersControl, LayerGroup } from 'react-
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-draw/dist/leaflet.draw.css';
 import { CRS } from 'leaflet';
-import EntityPopup from './EntityPopup';
+import EntityLocationPopup from './EntityLocationPopup';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { jerusalemCoordinates, UpdateMapBounds } from '../../utils/map';
 import { IEntity } from '../../interfaces/entities';
@@ -44,7 +44,7 @@ const EntityWithLocationFields = ({ styles, entity, entityTemplate }: Props) => 
                     <LayerGroup>
                         {polygons.map(({ key, position }) => (
                             <Polygon key={key} positions={position}>
-                                <EntityPopup header={propertyDefinitions[key].title} value={entity.properties[key]} darkMode={darkMode} />
+                                <EntityLocationPopup header={propertyDefinitions[key].title} value={entity.properties[key]} darkMode={darkMode} />
                             </Polygon>
                         ))}
                     </LayerGroup>
@@ -54,7 +54,7 @@ const EntityWithLocationFields = ({ styles, entity, entityTemplate }: Props) => 
                     <LayerGroup>
                         {markers.map(({ key, position }) => (
                             <Marker key={key} position={position}>
-                                <EntityPopup header={propertyDefinitions[key].title} value={entity.properties[key]} darkMode={darkMode} />
+                                <EntityLocationPopup header={propertyDefinitions[key].title} value={entity.properties[key]} darkMode={darkMode} />
                             </Marker>
                         ))}
                     </LayerGroup>

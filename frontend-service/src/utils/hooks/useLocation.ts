@@ -12,7 +12,7 @@ type entityWithLocationsProps = {
     entityTemplate?: IMongoEntityTemplatePopulated;
 };
 
-const createSquareAroundPoint = (center: L.LatLngExpression, sideLength: number): L.LatLngExpression[] => {
+export const createSquareAroundPoint = (center: L.LatLngExpression, sideLength: number): L.LatLngExpression[] => {
     // eslint-disable-next-line no-nested-ternary
     const [centerLat, centerLng] = center instanceof L.LatLng ? [center.lat, center.lng] : Array.isArray(center) ? center : [center.lat, center.lng];
 

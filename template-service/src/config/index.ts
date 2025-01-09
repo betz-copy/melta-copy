@@ -31,10 +31,10 @@ const config = {
         updateSearchIndexQueueName: env.get('UPDATE_SEARCH_INDEX_QUEUE_NAME').default('search-queue').asString(),
     },
     ajvCustomFormats: {
-        fileIdFieldRegex: env.get('FILE_ID_FIELD_REGEX').default(/.*/).asRegExp(),
-        textAreaFieldRegex: env.get('TEXT_AREA_FIELD_REGEX').default(/.*/).asRegExp(),
-        relationshipReferenceFieldRegex: env.get('RELATIONSHIP_REFERENCE_FIELD_REGEX').default(/.*/).asRegExp(),
-        locationFieldRegex: env.get('LOCATION_FIELD_REGEX').default(/.*/).asRegExp(),
+        fileIdFieldRegex: env.get('FILE_ID_FIELD_REGEX').default('.*').asRegExp(),
+        textAreaFieldRegex: env.get('TEXT_AREA_FIELD_REGEX').default('.*').asRegExp(),
+        relationshipReferenceFieldRegex: env.get('RELATIONSHIP_REFERENCE_FIELD_REGEX').default('.*').asRegExp(),
+        locationFieldRegex: env.get('LOCATION_FIELD_REGEX').default('.*').asRegExp(),
     },
     logs: {
         format: env.get('LOGGING_DATE_FORMAT').default('YYYY-MM-DD HH:mm:ss').asString(),

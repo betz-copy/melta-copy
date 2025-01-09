@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Autocomplete, Grid, TextField, Typography, useTheme } from '@mui/material';
@@ -10,8 +11,8 @@ import { getEntitiesWithDirectConnections } from '../../../services/entitiesServ
 import { IEntity } from '../../../interfaces/entities';
 import { MeltaTooltip } from '../../../common/MeltaTooltip';
 import { EntityPropertiesInternal } from '../../../common/EntityProperties';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { getTopNFieldsWithValues } from '../../../utils/entities';
+import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { useDarkModeStore } from '../../../stores/darkMode';
 
 type props = {
     selectedTemplates: IMongoEntityTemplatePopulated[];
@@ -20,6 +21,7 @@ type props = {
 
 const SearchAutoComplete = ({ selectedTemplates, handleEntityClick }: props) => {
     const theme = useTheme();
+    const darkMode = useDarkModeStore((state) => state.darkMode);
 
     const [inputValue, setInputValue] = useState('');
     const [searchResults, setSearchResults] = useState<IEntity[]>([]);
@@ -135,7 +137,19 @@ const SearchAutoComplete = ({ selectedTemplates, handleEntityClick }: props) => 
                 // TODO add template name below every item and take care of template not wxist
                 if (!template) return null;
 
-                const displayOptionValues = getTopNFieldsWithValues(option, template, 3);
+                const locationTemplateProperties = Object.entries(template.properties.properties)
+                    .filter(([_key, value]) => value.format === 'location')
+                    .reduce((acc, [key, value]) => {
+                        acc[key] = value;
+                        return acc;
+                    }, {} as { [x: string]: IEntitySingleProperty });
+
+                const locationProperties = Object.entries(option.properties)
+                    .filter(([key, _value]) => key in locationTemplateProperties)
+                    .reduce((acc, [key, value]) => {
+                        acc[key] = value;
+                        return acc;
+                    }, {} as { [x: string]: any });
 
                 return (
                     <li {...props} ref={props['data-option-index'] === searchResults.length - 1 ? lastElementRef : null}>
@@ -164,12 +178,37 @@ const SearchAutoComplete = ({ selectedTemplates, handleEntityClick }: props) => 
                                         <Typography fontWeight={600}>{template.displayName}</Typography>
                                     </Grid>
                                 </Grid>
-                                <Grid item container direction="row" spacing={1}>
-                                    {displayOptionValues.map((displayOptionValue) => (
-                                        <Grid item key={displayOptionValue} overflow="hidden" wrap="nowrap" xs={12 / displayOptionValues.length}>
-                                            <MeltaTooltip placement="right" title={displayOptionValue}>
-                                                <Typography color={theme.palette.text.primary} maxHeight={50} textOverflow="ellipsis">
-                                                    {displayOptionValue}
+                                <Grid item container direction="column" spacing={1}>
+                                    {Object.entries(locationProperties).map(([key, value]) => (
+                                        <Grid key={key} container item alignItems="center" justifyContent="space-between" paddingX="10px">
+                                            <Typography
+                                                style={{
+                                                    textOverflow: 'ellipsis',
+                                                    whiteSpace: 'nowrap',
+                                                    overflow: 'hidden',
+                                                    textAlign: 'right',
+                                                    flex: '1',
+                                                    marginRight: '8px',
+                                                }}
+                                                fontSize="14px"
+                                                color="#9398C2"
+                                            >
+                                                {locationTemplateProperties[key].title}:
+                                            </Typography>
+                                            <MeltaTooltip placement="bottom" title={value}>
+                                                <Typography
+                                                    style={{
+                                                        textOverflow: 'ellipsis',
+                                                        whiteSpace: 'nowrap',
+                                                        overflow: 'hidden',
+                                                        textAlign: 'left',
+                                                        flex: '2',
+                                                        maxWidth: '100%',
+                                                    }}
+                                                    fontSize="14px"
+                                                    color={darkMode ? '#dcdde2' : '#53566E'}
+                                                >
+                                                    {value}
                                                 </Typography>
                                             </MeltaTooltip>
                                         </Grid>

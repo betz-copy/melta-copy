@@ -47,8 +47,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
     const [_, navigate] = useLocation();
     const [isEditMode, setIsEditMode] = useState(false);
     const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
-    const [mapPopupOpen, setMapPopupOpen] = useState(false);
-
+    const [mapDialogOpen, setMapDialogOpen] = useState(false);
     const queryClient = useQueryClient();
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
     const [displayArchiveProperties, setDisplayArchiveProperties] = useState(false);
@@ -163,9 +162,9 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                         <Grid item>
                             <Grid container flexDirection="row" flexWrap="nowrap" justifyContent="flex-end" alignItems="center">
                                 {includeLocationProperty && (
-                                    <Grid onClick={() => setMapPopupOpen(true)}>
+                                    <Grid onClick={() => setMapDialogOpen(true)}>
                                         <IconButtonWithPopover popoverText={i18next.t('map')}>
-                                            <MapIcon sx={{ color: darkMode ? '#787c9e' : '#787c9e' }} />
+                                            <MapIcon sx={{ color: '#787c9e' }} />
                                         </IconButtonWithPopover>
                                     </Grid>
                                 )}
@@ -200,7 +199,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                                     </IconButtonWithPopover>
                                 </Grid>
                                 <IconButton onClick={handleClick}>
-                                    <MoreVertOutlined sx={{ color: darkMode ? '#787c9e' : '#787c9e' }} />
+                                    <MoreVertOutlined sx={{ color: '#787c9e' }} />
                                 </IconButton>
                                 <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
                                     <Grid>
@@ -376,8 +375,8 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                     }
                 />
             )}
-            {mapPopupOpen && (
-                <Dialog open={mapPopupOpen} onClose={() => setMapPopupOpen(false)}>
+            {mapDialogOpen && (
+                <Dialog open={mapDialogOpen} onClose={() => setMapDialogOpen(false)}>
                     <EntityWithLocationFields entity={entity} entityTemplate={entityTemplate} styles={{ height: '800px', width: '600px' }} />
                 </Dialog>
             )}

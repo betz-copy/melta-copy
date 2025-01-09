@@ -56,10 +56,7 @@ export const stringToCoordinates = (strCoords: string): CoordinatesResult => {
 
 export const latLngToString = (latLng: LatLng | LatLng[], includePolygon = true) => {
     if (!Array.isArray(latLng)) {
-        return latLng
-            .toString()
-            .replace(/^LatLng\(|\)$/g, '')
-            .trim();
+        return `${latLng.lat}, ${latLng.lng}`;
     }
 
     const matchedPoints = latLng.toString().match(/LatLng\(([^)]+)\)/g);
