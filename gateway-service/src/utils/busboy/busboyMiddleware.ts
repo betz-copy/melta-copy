@@ -47,10 +47,7 @@ export const busboyMiddleware = (req: Request, _res: Response, next: NextFunctio
         req.body = fields;
 
         if (files?.length > 1) req.files = files;
-        else {
-            req.files = files;
-            req.file = files?.[0];
-        }
+        else req.file = files?.[0];
 
         next();
     });

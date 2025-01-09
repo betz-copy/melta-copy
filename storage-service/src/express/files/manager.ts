@@ -14,9 +14,17 @@ const {
     service: { workspaceIdHeaderName },
 } = config;
 
+const generate32CharUUID = () => uuid().substring(0, document.uuidLength);
+
 export class FilesManager extends DefaultManagerMinio {
+    async makeBuckets() {
+        const bucketExists = await this.minioClient.bucketExists();
+        if (!bucketExists) await this.minioClient.makeBucket();
+    }
+
     async uploadFile(file?: UploadedFile) {
-        const nameWithId = `${uuid()}${file?.originalname!}`;
+        await this.makeBuckets();
+        const nameWithId = `${generate32CharUUID()}${file?.originalname!}`;
         const fileWithId = { ...file, originalname: nameWithId, path: nameWithId };
         await this.minioClient.uploadFileStream(fileWithId?.stream!, fileWithId.originalname, fileWithId?.size!, {});
 
@@ -24,10 +32,14 @@ export class FilesManager extends DefaultManagerMinio {
     }
 
     async uploadFiles(files?: UploadedFile[]) {
-        if (!files) return undefined;
+        // TODO: throw error?
+        if (!files) throw new Error('No files to upload');
+
+        await this.makeBuckets();
 
         const filesWithIds = files?.map((file) => {
-            const nameWithId = `${uuid()}${file?.originalname!}`;
+            const nameWithId = `${generate32CharUUID()}${file?.originalname!}`;
+
             return { ...file, originalname: nameWithId, path: nameWithId };
         });
 

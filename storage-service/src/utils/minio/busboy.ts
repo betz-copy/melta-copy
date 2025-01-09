@@ -4,12 +4,6 @@ import { Readable } from 'stream';
 import ReadableStreamClone from 'readable-stream-clone';
 import { UploadedFile } from '../../express/files/interface';
 
-// import config from '../../config';
-
-// const {
-//     service: { uploadsFolderPath },
-// } = config;
-
 export const busboyMiddleware = (req: Request, _res: Response, next: NextFunction): void => {
     const busboy = Busboy({ headers: req.headers, defCharset: 'utf8' });
     const fields: Record<string, unknown> = {};
@@ -43,10 +37,7 @@ export const busboyMiddleware = (req: Request, _res: Response, next: NextFunctio
         req.body = fields;
 
         if (files?.length > 1) req.files = files;
-        else {
-            req.files = files;
-            req.file = files?.[0];
-        }
+        else req.file = files?.[0];
 
         next();
     });

@@ -12,7 +12,7 @@ export const defaultSchema = Joi.object({
 
 // POST /api/files
 export const uploadFileRequestSchema = Joi.object({
-    file: Joi.any().required(),
+    file: Joi.any(),
     query: {},
     params: {},
 });
