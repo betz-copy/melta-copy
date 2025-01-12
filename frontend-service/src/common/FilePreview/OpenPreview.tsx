@@ -63,8 +63,8 @@ const OpenPreview: React.FC<{
     download?: boolean;
     onClick?: () => Promise<void>;
     searchValue?: string;
-    entityIdsToInclude?: ISemanticSearchResult[string][string];
-}> = ({ fileId, img, showText = true, download, onClick, searchValue, entityIdsToInclude }) => {
+    entityFileIdsWithTexts?: ISemanticSearchResult[string][string];
+}> = ({ fileId, img, showText = true, download, onClick, searchValue, entityFileIdsWithTexts }) => {
     const fileName = typeof fileId === 'string' ? getFileName(fileId) : fileId.name;
     const [open, setOpen] = useState(false);
     const contentType = getPreviewContentType(fileName);
@@ -77,11 +77,13 @@ const OpenPreview: React.FC<{
         const isFileNameSearched = searchValue && fileName.toLowerCase().includes(searchValue);
         return (
             !isFileNameSearched &&
-            entityIdsToInclude?.map((entityIdToInclude) => entityIdToInclude.minioFileId).includes(typeof fileId === 'string' ? fileId : fileId.name)
+            entityFileIdsWithTexts
+                ?.map((entityIdToInclude) => entityIdToInclude.minioFileId)
+                .includes(typeof fileId === 'string' ? fileId : fileId.name)
         );
-    }, [entityIdsToInclude, fileId, fileName, searchValue]);
+    }, [entityFileIdsWithTexts, fileId, fileName, searchValue]);
 
-    const matchSentence = entityIdsToInclude?.find((entityIdToInclude) => entityIdToInclude.minioFileId === fileId)?.text;
+    const matchSentence = entityFileIdsWithTexts?.find((entityIdToInclude) => entityIdToInclude.minioFileId === fileId)?.text;
 
     if (download) {
         const content = (

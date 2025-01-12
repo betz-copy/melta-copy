@@ -118,7 +118,7 @@ export interface ISearchBatchBody {
 
 export interface ISearchResult {
     count: number;
-    entities: (IEntityWithDirectConnections & { minioFileIds?: ISemanticSearchResult[string][string] })[];
+    entities: (IEntityWithDirectConnections & { minioFileIdsWithTexts?: ISemanticSearchResult[string][string] })[];
 }
 
 export interface ISearchResultByTemplates {

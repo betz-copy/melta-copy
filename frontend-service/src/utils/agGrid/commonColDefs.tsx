@@ -213,7 +213,7 @@ export const fileColDef = <Data extends any = EntityData>(
     hardcodedWidth: number | undefined,
     hideColumn = false,
     searchValue: string | undefined = undefined,
-    entityIdsToInclude: ISemanticSearchResult[string][string] | undefined = undefined,
+    entityFileIdsWithTexts: ISemanticSearchResult[string][string] | undefined = undefined,
 ): ColDef => {
     return {
         field,
@@ -221,7 +221,7 @@ export const fileColDef = <Data extends any = EntityData>(
         valueGetter,
         cellRenderer: (props: ICellRendererParams<Data, string | undefined>) =>
             props.value?.toString() ? (
-                <OpenPreview fileId={props.value?.toString()} searchValue={searchValue} entityIdsToInclude={entityIdsToInclude} />
+                <OpenPreview fileId={props.value?.toString()} searchValue={searchValue} entityFileIdsWithTexts={entityFileIdsWithTexts} />
             ) : null,
         filter: 'agTextColumnFilter',
         width: hardcodedWidth,
@@ -510,7 +510,7 @@ export const enumFilesColDef = <Data extends any = EntityData>(
     rowHeight: number,
     hideColumn = false,
     searchValue: string | undefined = undefined,
-    entityIdsToInclude: ISemanticSearchResult[string][string] | undefined = undefined,
+    entityFileIdsWithTexts: ISemanticSearchResult[string][string] | undefined = undefined,
 ): ColDef => {
     const filterParams: ISetFilterParams<Data, string | undefined> = {
         suppressMiniFilter: true,
@@ -530,7 +530,7 @@ export const enumFilesColDef = <Data extends any = EntityData>(
                         searchValue={searchValue}
                         items={enumArray}
                         getItemKey={(item) => item}
-                        renderItem={(item) => <OpenPreview fileId={item} entityIdsToInclude={entityIdsToInclude} searchValue={searchValue} />}
+                        renderItem={(item) => <OpenPreview fileId={item} entityFileIdsWithTexts={entityFileIdsWithTexts} searchValue={searchValue} />}
                         containerStyle={{ height: `${rowHeight}px` }}
                         files={items}
                     />
