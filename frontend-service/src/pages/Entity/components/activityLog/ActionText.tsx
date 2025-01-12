@@ -11,6 +11,7 @@ import { IRelationshipTemplateMap } from '../../../../interfaces/relationshipTem
 import { IActivityLog } from '../../../../services/activityLogService';
 import { containsHTMLTags, getFirstLine, getNumLines } from '../../../../utils/HtmlTagsStringValue';
 import { getFilesName } from '../../../../utils/getFileName';
+import { IProcessDetails } from '../../../../interfaces/processes/processTemplate';
 
 const StyledTypography = styled(Typography)(({ theme }) => ({
     fontFamily: 'Rubik',
@@ -20,12 +21,13 @@ const StyledTypography = styled(Typography)(({ theme }) => ({
 })) as typeof Typography;
 
 const EmptyMetadataActionText: React.FC<{
-    action: 'CREATE_ENTITY' | 'DISABLE_ENTITY' | 'ACTIVATE_ENTITY' | 'VIEW_ENTITY';
+    action: 'CREATE_ENTITY' | 'DISABLE_ENTITY' | 'ACTIVATE_ENTITY' | 'VIEW_ENTITY' | 'CREATE_PROCESS';
 }> = ({ action }) => {
     const logTexts = {
         ACTIVATE_ENTITY: i18next.t('entityPage.activityLog.activateEntity'),
         DISABLE_ENTITY: i18next.t('entityPage.activityLog.disableEntity'),
         CREATE_ENTITY: i18next.t('entityPage.activityLog.createEntity'),
+        CREATE_PROCESS: i18next.t('entityPage.activityLog.createProcess'),
     };
 
     return (
@@ -131,7 +133,7 @@ const popperProps = {
     ],
 };
 
-const UpdateTextValue: React.FC<{ value: any; old: boolean; fieldName: string; entityTemplate: IMongoEntityTemplatePopulated }> = ({
+const UpdateTextValue: React.FC<{ value: any; old: boolean; fieldName: string; entityTemplate: IMongoEntityTemplatePopulated | IProcessDetails }> = ({
     value,
     old,
     fieldName,
@@ -205,7 +207,7 @@ const UpdateTextValue: React.FC<{ value: any; old: boolean; fieldName: string; e
 
 const UpdateEntityMetadataActionText: React.FC<{
     actionMetadata: { updatedFields: [{ fieldName: string; oldValue: any; newValue: any }] };
-    entityTemplate: IMongoEntityTemplatePopulated;
+    entityTemplate: IMongoEntityTemplatePopulated | IProcessDetails;
 }> = ({ actionMetadata, entityTemplate }) => {
     const theme = useTheme();
     return (
@@ -219,7 +221,7 @@ const UpdateEntityMetadataActionText: React.FC<{
             {actionMetadata.updatedFields.map((field) => {
                 const { oldValue, newValue, fieldName } = field;
 
-                const deleted = entityTemplate.properties.properties[fieldName];
+                const deleted = entityTemplate?.properties.properties[fieldName] || '';
                 const isDeleted = deleted === undefined;
 
                 return (
@@ -247,17 +249,17 @@ const UpdateEntityMetadataActionText: React.FC<{
 
 const ActionText: React.FC<{
     log: IActivityLog;
-    entityTemplate: IMongoEntityTemplatePopulated;
+    entityTemplate: IMongoEntityTemplatePopulated | IProcessDetails;
 }> = ({ log: { metadata, action }, entityTemplate }) => {
     if (action === 'CREATE_RELATIONSHIP' || action === 'DELETE_RELATIONSHIP')
         return (
             <RelationshipMetadataActionText
-                entityTemplate={entityTemplate}
+                entityTemplate={entityTemplate as IMongoEntityTemplatePopulated}
                 action={action}
                 actionMetadata={metadata as { relationshipId: string; relationshipTemplateId: string; entityId: string }}
             />
         );
-    if (action === 'UPDATE_ENTITY')
+    if (action === 'UPDATE_ENTITY' || action === 'UPDATE_PROCESS')
         return (
             <UpdateEntityMetadataActionText
                 entityTemplate={entityTemplate}
@@ -266,7 +268,12 @@ const ActionText: React.FC<{
         );
 
     if (action === 'DUPLICATE_ENTITY')
-        return <DuplicateEntityMetadataActionText entityTemplate={entityTemplate} actionMetadata={metadata as { entityIdDuplicatedFrom: string }} />;
+        return (
+            <DuplicateEntityMetadataActionText
+                entityTemplate={entityTemplate as IMongoEntityTemplatePopulated}
+                actionMetadata={metadata as { entityIdDuplicatedFrom: string }}
+            />
+        );
 
     return <EmptyMetadataActionText action={action} />;
 };

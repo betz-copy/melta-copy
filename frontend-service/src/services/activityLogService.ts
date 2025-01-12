@@ -11,7 +11,7 @@ interface IBaseActivityLog {
 }
 
 interface IEmptyMetadata extends IBaseActivityLog {
-    action: 'CREATE_ENTITY' | 'DISABLE_ENTITY' | 'ACTIVATE_ENTITY' | 'VIEW_ENTITY';
+    action: 'CREATE_ENTITY' | 'DISABLE_ENTITY' | 'ACTIVATE_ENTITY' | 'VIEW_ENTITY' | 'CREATE_PROCESS';
     metadata: {};
 }
 
@@ -26,7 +26,7 @@ interface IDuplicateEntityMetadata extends IBaseActivityLog {
 }
 
 interface IUpdateEntityMetadata extends IBaseActivityLog {
-    action: 'UPDATE_ENTITY';
+    action: 'UPDATE_ENTITY' | 'UPDATE_PROCESS';
     metadata: { updatedFields: [{ fieldName: string; oldValue: any; newValue: any }] };
 }
 

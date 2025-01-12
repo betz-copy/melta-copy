@@ -22,6 +22,7 @@ export const createInstanceRequestSchema = Joi.object({
         startDate: Joi.date().required(),
         endDate: Joi.date().required(),
         steps: updateAndCreateStepsSchema.required(),
+        userId: Joi.string(),
     },
     query: {},
     params: {},
@@ -35,6 +36,7 @@ export const updateInstanceByIdRequestSchema = Joi.object({
         endDate: Joi.date(),
         name: Joi.string(),
         steps: updateAndCreateStepsSchema,
+        userId: Joi.string(),
     },
     query: {},
     params: {

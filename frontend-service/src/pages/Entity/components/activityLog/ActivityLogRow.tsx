@@ -9,8 +9,12 @@ import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemp
 import { getShortDate } from '../../../../utils/date';
 import UserAvatar from '../../../../common/UserAvatar';
 import { useDarkModeStore } from '../../../../stores/darkMode';
+import { IProcessDetails } from '../../../../interfaces/processes/processTemplate';
 
-const ActivityLogRow: React.FC<{ log: IActivityLog; entityTemplate: IMongoEntityTemplatePopulated }> = ({ log, entityTemplate }) => {
+const ActivityLogRow: React.FC<{ log: IActivityLog; entityTemplate: IMongoEntityTemplatePopulated | IProcessDetails }> = ({
+    log,
+    entityTemplate,
+}) => {
     const { data: user, isLoading } = useQuery(['getUserById', log.userId], () => getUserByIdRequest(log.userId));
 
     const darkMode = useDarkModeStore((state) => state.darkMode);

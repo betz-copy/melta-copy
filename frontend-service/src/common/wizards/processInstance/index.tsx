@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { Dialog, DialogContent, Grid, IconButton } from '@mui/material';
+import { Button, Dialog, DialogContent, Grid, IconButton } from '@mui/material';
 import i18next from 'i18next';
 import { makeStyles } from '@mui/styles';
 import { UseMutateAsyncFunction, useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { AxiosError } from 'axios';
 import CloseIcon from '@mui/icons-material/Close';
+import { History } from '@mui/icons-material';
 import { BlueTitle } from '../../BlueTitle';
 import { ProcessDetailsValues } from './ProcessDetails';
 import { IMongoProcessInstancePopulated } from '../../../interfaces/processes/processInstance';
@@ -19,6 +20,8 @@ import { AreYouSureDialog } from '../../dialogs/AreYouSureDialog';
 import GeneralDetails from './ProcessDetails/GeneralDetails';
 import StepsReviewers from './ProcessDetails/StepsReviewers';
 import { useDarkModeStore } from '../../../stores/darkMode';
+import { ActivitiesContent } from '../../../pages/Entity/components/activityLog/ActivitiesContent';
+import { MeltaTooltip } from '../../MeltaTooltip';
 
 interface IProcessInstanceWizard {
     open: boolean;
@@ -106,6 +109,8 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({
         },
     );
 
+    const [openActivityPopper, setOpenActivityPopper] = React.useState(false);
+
     return (
         <Dialog
             keepMounted={false}
@@ -186,12 +191,50 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({
                     </Grid>
                     <Grid container item flexBasis="75%" flexDirection="column" padding="15px">
                         {activeStep === 0 && contentDisplay === 'SUMMARY' && (
-                            <ProcessSummary
-                                isPrinting={false}
-                                processInstance={currProcessInstance}
-                                processTemplate={processTemplatesMap.get(currProcessInstance.templateId)!}
-                                setActiveStep={setActiveStep}
-                            />
+                            <Grid container flexDirection="column" width="100%" height="100%">
+                                <Grid item alignSelf="flex-end" height="50px">
+                                    <MeltaTooltip
+                                        title={
+                                            openActivityPopper
+                                                ? i18next.t('wizard.processInstance.backTo')
+                                                : i18next.t('entityPage.activityLog.header')
+                                        }
+                                    >
+                                        <Button
+                                            variant="contained"
+                                            startIcon={<History />}
+                                            onClick={() => setOpenActivityPopper((previousOpen) => !previousOpen)}
+                                            sx={{ marginLeft: '1rem', width: '100px', alignSelf: 'flex-end' }}
+                                        >
+                                            {openActivityPopper
+                                                ? i18next.t('wizard.processInstance.backTo')
+                                                : i18next.t('entityPage.activityLog.header')}
+                                        </Button>
+                                    </MeltaTooltip>
+                                </Grid>
+                                {openActivityPopper && (
+                                    <Grid
+                                        item
+                                        container
+                                        direction="column"
+                                        wrap="nowrap"
+                                        overflow="none"
+                                        height="75vh"
+                                        style={{ overflowY: 'auto' }}
+                                        padding="20px"
+                                    >
+                                        <ActivitiesContent activityEntityId={processInstance._id} entityTemplate={processTemplate.details} />
+                                    </Grid>
+                                )}
+                                {!openActivityPopper && (
+                                    <ProcessSummary
+                                        isPrinting={false}
+                                        processInstance={currProcessInstance}
+                                        processTemplate={processTemplatesMap.get(currProcessInstance.templateId)!}
+                                        setActiveStep={setActiveStep}
+                                    />
+                                )}
+                            </Grid>
                         )}
                         {activeStep !== 0 && contentDisplay === 'SUMMARY' && (
                             <ProcessStepsStep

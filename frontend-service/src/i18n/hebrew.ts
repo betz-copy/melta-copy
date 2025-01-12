@@ -126,6 +126,7 @@ export default {
             deleteRelationship: 'מחק קשר מסוג',
             createRelationship: 'יצר קשר מסוג ',
             createEntity: 'יצר את הישות',
+            createProcess: 'יצר את התהליך',
             disableEntity: 'השבית את הישות',
             activateEntity: 'הפעיל את הישות',
             duplicateEntityFrom: 'שכפל את הישות מ',

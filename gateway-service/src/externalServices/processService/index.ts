@@ -78,13 +78,13 @@ export class ProcessService extends DefaultExternalServiceApi {
         return process;
     }
 
-    async createProcessInstance(processData: IProcessInstance) {
-        const { data } = await this.api.post<IMongoProcessInstanceWithSteps>(`${instancesBaseRoute}`, processData);
+    async createProcessInstance(processData: IProcessInstance, userId: string) {
+        const { data } = await this.api.post<IMongoProcessInstanceWithSteps>(`${instancesBaseRoute}`, { ...processData, userId });
         return data;
     }
 
-    async updateProcessInstance(id: string, processData: IProcessInstance) {
-        const { data } = await this.api.put<IMongoProcessInstanceWithSteps>(`${instancesBaseRoute}/${id}`, processData);
+    async updateProcessInstance(id: string, processData: IProcessInstance, userId: string) {
+        const { data } = await this.api.put<IMongoProcessInstanceWithSteps>(`${instancesBaseRoute}/${id}`, { ...processData, userId });
         return data;
     }
 

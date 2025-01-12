@@ -157,7 +157,7 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
         const processTemplate = await this.service.getProcessTemplateById(processData.templateId);
         this.checkEntityReferenceFields(processData.details, processTemplate.details.properties);
         if (!files.length) {
-            const process = await this.service.createProcessInstance(processData);
+            const process = await this.service.createProcessInstance(processData, userId);
             const populatedProcess = await this.getPopulatedProcess(process, userId);
 
             await Promise.allSettled([
@@ -173,7 +173,7 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
             }),
         );
 
-        const process = await this.service.createProcessInstance({ ...processData, details: processDetails }).catch(async (error) => {
+        const process = await this.service.createProcessInstance({ ...processData, details: processDetails }, userId).catch(async (error) => {
             await this.storageService.deleteFiles(Object.values(filesToUpload).flat(1) as string[]).catch(() => {
                 throw new ServiceError(undefined, `failed to delete process unused files`, {
                     error,
@@ -211,7 +211,7 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
 
         if (processData.details) this.checkEntityReferenceFields(processData.details, processTemplate.details.properties);
         if (!files.length) {
-            const updatedProcess = await this.service.updateProcessInstance(processId, processData);
+            const updatedProcess = await this.service.updateProcessInstance(processId, processData, userId);
             const updatedPopulatedProcess = await this.getPopulatedProcess(updatedProcess, userId);
 
             await Promise.allSettled([
@@ -237,7 +237,7 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
             }),
         );
 
-        const updatedProcess = await this.service.updateProcessInstance(processId, updatedProcessInstance).catch(async (error) => {
+        const updatedProcess = await this.service.updateProcessInstance(processId, updatedProcessInstance, userId).catch(async (error) => {
             await this.storageService.deleteFiles(Object.values(filesToUpload).flat(1) as string[]).catch(() => {
                 throw new ServiceError(undefined, `failed to delete process unused files`, { error });
             });

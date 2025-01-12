@@ -12,6 +12,8 @@ const activityLogSchema = Joi.object({
             'CREATE_RELATIONSHIP',
             'UPDATE_ENTITY',
             'CREATE_ENTITY',
+            'CREATE_PROCESS',
+            'UPDATE_PROCESS',
             'DUPLICATE_ENTITY',
             'DISABLE_ENTITY',
             'ACTIVATE_ENTITY',
@@ -36,6 +38,21 @@ const activityLogSchema = Joi.object({
             },
             {
                 is: Joi.valid('UPDATE_ENTITY'),
+                then: Joi.object({
+                    updatedFields: Joi.array()
+                        .items(
+                            Joi.object({
+                                fieldName: Joi.string().required(),
+                                oldValue: Joi.any().required(),
+                                newValue: Joi.any().required(),
+                            }),
+                        )
+                        .required()
+                        .min(1),
+                }).required(),
+            },
+            {
+                is: Joi.valid('UPDATE_PROCESS'),
                 then: Joi.object({
                     updatedFields: Joi.array()
                         .items(

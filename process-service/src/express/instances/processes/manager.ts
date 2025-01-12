@@ -29,6 +29,8 @@ import {
     UpdateProcessReqBody,
 } from './interface';
 import { ProcessInstanceSchema } from './model';
+import { ActivityLogProducer } from '../../../externalServices/activityLog/producer';
+import { ActionsLog } from '../../../externalServices/activityLog/interface';
 
 type ProcessInstanceType<T extends boolean> = T extends true ? IMongoProcessInstancePopulated : IMongoProcessInstance;
 
@@ -39,11 +41,14 @@ class ProcessInstanceManager extends DefaultManagerMongo<IProcessInstance> {
 
     private elasticSearchManager: ElasticSearchManager;
 
+    private activityLogProducer: ActivityLogProducer;
+
     constructor(workspaceId: string) {
         super(workspaceId, config.mongo.processInstancesCollectionName, ProcessInstanceSchema);
         this.processTemplateManager = new ProcessTemplateManager(workspaceId);
         this.stepInstanceManager = new StepInstanceManager(workspaceId);
         this.elasticSearchManager = new ElasticSearchManager(workspaceId);
+        this.activityLogProducer = new ActivityLogProducer(workspaceId);
     }
 
     private static validateInstanceProperties(instanceProperties: InstanceProperties, templateProperties: IProcessDetails['properties']) {
@@ -120,7 +125,7 @@ class ProcessInstanceManager extends DefaultManagerMongo<IProcessInstance> {
         return result;
     }
 
-    async createProcess(process: CreateProcessReqBody): Promise<IMongoProcessInstancePopulated> {
+    async createProcess(process: CreateProcessReqBody, userId: string): Promise<IMongoProcessInstancePopulated> {
         const initialSteps = Object.entries(process.steps).map(([templateId, reviewers]) => ({
             templateId,
             reviewers,
@@ -142,6 +147,14 @@ class ProcessInstanceManager extends DefaultManagerMongo<IProcessInstance> {
         const populatedProcess: IMongoProcessInstancePopulated = await this.getProcessById(processId);
         await this.elasticSearchManager.createDocumentOnElastic(populatedProcess);
 
+        await this.activityLogProducer.createActivityLog({
+            action: ActionsLog.CREATE_PROCESS,
+            entityId: populatedProcess._id,
+            timestamp: new Date(),
+            metadata: {},
+            userId,
+        });
+
         return populatedProcess;
     }
 
@@ -157,8 +170,10 @@ class ProcessInstanceManager extends DefaultManagerMongo<IProcessInstance> {
         return { ...deletedProcess, steps: processSteps };
     }
 
-    async updateProcess(id: string, updatedData: UpdateProcessReqBody) {
+    async updateProcess(id: string, updatedData: UpdateProcessReqBody, userId) {
         const currProcess = await this.getProcessById(id, false);
+        const currProcessTemplate = await this.processTemplateManager.getProcessTemplateById(currProcess.templateId);
+
         if (currProcess.archived) throw new ServiceError(undefined, 'Can`t edit an archived process');
 
         if (!updatedData.steps) {
@@ -193,6 +208,28 @@ class ProcessInstanceManager extends DefaultManagerMongo<IProcessInstance> {
         });
 
         await this.elasticSearchManager.updateDocumentOnElastic(updatedProcess);
+
+        const activityLogUpdatedFields = currProcessTemplate.details.properties.properties
+            ? Object.keys(currProcessTemplate.details.properties.properties)
+                  .filter((key) => {
+                      return updatedData.details?.[key] !== currProcess.details[key]; // compare between newValue to oldValue
+                  })
+                  .map((key) => {
+                      return {
+                          fieldName: key,
+                          oldValue: currProcess.details[key] || '',
+                          newValue: updatedData.details?.[key] || '',
+                      };
+                  })
+            : [];
+
+        await this.activityLogProducer.createActivityLog({
+            action: ActionsLog.UPDATE_PROCESS,
+            entityId: updatedProcess._id,
+            timestamp: new Date(),
+            metadata: { updatedFields: activityLogUpdatedFields },
+            userId,
+        });
 
         return updatedProcess;
     }
@@ -248,7 +285,8 @@ class ProcessInstanceManager extends DefaultManagerMongo<IProcessInstance> {
         }
 
         if (searchText) {
-            processIds = await this.elasticSearchManager.processGlobalSearch(searchText, skip, limit);
+            const count = await this.model.find({}).countDocuments();
+            processIds = await this.elasticSearchManager.processGlobalSearch(searchText, count);
             query._id = { $in: processIds.map((id) => new Types.ObjectId(id)) };
         }
 
