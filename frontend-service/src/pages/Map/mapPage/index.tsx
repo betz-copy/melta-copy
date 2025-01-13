@@ -3,7 +3,7 @@ import { MapContainer, TileLayer, LayersControl, FeatureGroup } from 'react-leaf
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-draw/dist/leaflet.draw.css';
 import L, { CRS } from 'leaflet';
-import { Box, Grid } from '@mui/material';
+import { Box } from '@mui/material';
 import { useQueryClient } from 'react-query';
 import i18next from 'i18next';
 import { jerusalemCoordinates } from '../../../utils/map';
@@ -20,16 +20,22 @@ export const BaseLayers: React.FC = () => {
 
     if (!config) return <>{i18next.t('location.noLayers')}</>;
 
-    const { mapLayers } = config;
+    const { mapLayers, textLayers } = config;
 
     return (
-        <Grid>
+        <>
             {Object.entries(mapLayers).map(([name, url], index) => (
                 <LayersControl.BaseLayer checked={index === 0} name={name} key={name}>
                     <TileLayer url={url} />
                 </LayersControl.BaseLayer>
             ))}
-        </Grid>
+
+            {Object.entries(textLayers).map(([name, url]) => (
+                <LayersControl.Overlay checked name={`${name}`} key={`${name}`}>
+                    <TileLayer url={url} />
+                </LayersControl.Overlay>
+            ))}
+        </>
     );
 };
 

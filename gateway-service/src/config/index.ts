@@ -35,11 +35,22 @@ const config = {
             .get('FRONTEND_CONFIG_MAP_LAYERS')
             .default({
                 OpenStreetMap: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                'Esri World Imagery': 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+                'Satellite (Esri)': 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
                 OpenTopoMap: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
             })
             .required()
             .asJsonObject(),
+
+        textLayers: env
+            .get('FRONTEND_CONFIG_TEXT_LAYERS')
+            .default({
+                'Labels (OSM Hot)': 'https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png',
+                'Hillshading (Wikimedia)': 'https://tiles.wmflabs.org/hillshading/{z}/{x}/{y}.png',
+                'Boundaries (OpenMapTiles)': 'https://{s}.tile.opentiles.org/admin/{z}/{x}/{y}.png',
+            })
+            .required()
+            .asJsonObject(),
+
         agGridLimit: {
             deleteLimit: env.get('DELETE_ENTITIES_MAX_LIMIT').default(1000).asIntPositive(),
         },
