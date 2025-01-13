@@ -59,6 +59,12 @@ const MapPage = () => {
         searchedEntityGroupRef.current?.eachLayer((layer) => layer.remove());
     };
 
+    const config = queryClient.getQueryData<BackendConfigState>('getBackendConfig');
+
+    if (!config) return <>{i18next.t('location.noCrsTypes')}</>;
+
+    const { crsType } = config;
+
     return (
         <Box position="relative" width="100%" height="100vh">
             <MapContainer
@@ -70,7 +76,7 @@ const MapPage = () => {
                     [90, 180],
                 ]}
                 maxBoundsViscosity={1}
-                crs={CRS.EPSG3857}
+                crs={CRS[crsType]}
             >
                 <LayersControl position="topright">
                     <BaseLayers />

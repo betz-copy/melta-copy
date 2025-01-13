@@ -9,6 +9,7 @@ export interface BackendConfigState {
     mapLayers: Record<string, string>;
     textLayers: Record<string, string>;
     deleteEntitiesLimit: number;
+    crsType: string;
 }
 
 const getBackendConfigRequest = async () => {

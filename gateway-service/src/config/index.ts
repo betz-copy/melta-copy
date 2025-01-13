@@ -50,6 +50,8 @@ const config = {
             })
             .required()
             .asJsonObject(),
+        
+        crsType: env.get('CRS_TYPE').default('EPSG3857').asString(),
 
         agGridLimit: {
             deleteLimit: env.get('DELETE_ENTITIES_MAX_LIMIT').default(1000).asIntPositive(),
