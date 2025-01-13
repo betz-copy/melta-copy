@@ -3,7 +3,7 @@ import { TextField, Grid, RadioGroup, Radio, FormControl, FormControlLabel, Form
 import * as Yup from 'yup';
 import i18next from 'i18next';
 import { useQueryClient } from 'react-query';
-import { IEntityTemplateMap } from '@microservices/shared';
+import { IEntityTemplateMap } from '@microservices/shared-interfaces';
 import { StepComponentProps } from '../index';
 import { RuleWizardValues } from '.';
 

@@ -3,7 +3,7 @@ import { toast } from 'react-toastify';
 import i18next from 'i18next';
 import { useMutation, useQueryClient } from 'react-query';
 import { AxiosError } from 'axios';
-import { IMongoEntityTemplateWithConstraintsPopulated, IRelationshipTemplateMap } from '@microservices/shared';
+import { IMongoEntityTemplateWithConstraintsPopulated, IRelationshipTemplateMap } from '@microservices/shared-interfaces';
 import { StepsType, Wizard, WizardBaseType } from '../index';
 import { CreateRelationshipTemplateName, createRelationshipTemplateNameSchema } from './CreateRelationshipTemplate';
 import {

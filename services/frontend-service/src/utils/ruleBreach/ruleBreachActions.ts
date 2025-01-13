@@ -15,7 +15,7 @@ import {
     IUpdateEntityMetadataPopulated,
     IMongoEntityTemplateWithConstraintsPopulated,
     IMongoRelationshipTemplatePopulated,
-} from '@microservices/shared';
+} from '@microservices/shared-interfaces';
 import { environment } from '../../globals';
 
 export const getActionsByFailureOnEntity = (

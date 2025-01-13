@@ -15,7 +15,7 @@ import {
     IMongoEntityTemplateWithConstraintsPopulated,
     IEntityTemplateWithConstraints,
     IEntityTemplateWithConstraintsMap,
-} from '@microservices/shared';
+} from '@microservices/shared-interfaces';
 import { CustomIcon } from '../../../common/CustomIcon';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import { EntityTemplateColor } from '../../../common/EntityTemplateColor';

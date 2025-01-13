@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, ListItem, ListItemIcon, ListItemText } from '@mui/material';
-import { IMongoRule, IBrokenRulePopulated } from '@microservices/shared';
+import { IMongoRule, IBrokenRulePopulated } from '@microservices/shared-interfaces';
 import { RuleIcon } from './RuleIcon';
 import { MeltaTooltip } from '../../MeltaTooltip';
 

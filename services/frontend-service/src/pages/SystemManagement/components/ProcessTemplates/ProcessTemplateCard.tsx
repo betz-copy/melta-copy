@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Divider, Grid, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
-import { IMongoProcessTemplateReviewerPopulated } from '@microservices/shared';
+import { IMongoProcessTemplateReviewerPopulated } from '@microservices/shared-interfaces';
 import { ViewingCard } from '../Card';
 import { CardMenu } from '../CardMenu';
 import { CustomIcon } from '../../../../common/CustomIcon';

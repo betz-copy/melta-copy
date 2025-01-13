@@ -1,7 +1,7 @@
 import React from 'react';
 import { Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
-import { IProcessReviewerUpdateNotificationMetadataPopulated } from '@microservices/shared';
+import { IProcessReviewerUpdateNotificationMetadataPopulated } from '@microservices/shared-interfaces';
 import { ProcessName } from '../ProcessName';
 import { StepName } from '../StepName';
 

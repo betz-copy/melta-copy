@@ -3,7 +3,7 @@ import { Grid } from '@mui/material';
 import { FieldArray, FormikProps } from 'formik';
 import { useQueryClient } from 'react-query';
 import i18next from 'i18next';
-import { IEntityTemplateMap, IRelationshipTemplateMap, IGantt, IGanttItem } from '@microservices/shared';
+import { IEntityTemplateMap, IRelationshipTemplateMap, IGantt, IGanttItem } from '@microservices/shared-interfaces';
 import { FormikAutoComplete } from '../../../../common/inputs/FormikAutoComplete';
 import { getGanttItemEditDetails, getRelationshipString } from '../../../../utils/gantts';
 import { EditConnectedEntityTemplates } from './EditConnectedEntityTemplates.tsx';

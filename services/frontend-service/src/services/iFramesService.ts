@@ -1,4 +1,4 @@
-import { IMongoIFrame, ISearchIFramesBody } from '@microservices/shared';
+import { IMongoIFrame, ISearchIFramesBody } from '@microservices/shared-interfaces';
 import axios from '../axios';
 import { IFrameWizardValues } from '../common/wizards/iFrame';
 import { environment } from '../globals';

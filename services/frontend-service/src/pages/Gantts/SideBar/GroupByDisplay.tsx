@@ -4,7 +4,7 @@ import { FormikProps } from 'formik';
 import { useQueryClient } from 'react-query';
 import i18next from 'i18next';
 import lodashIsEqual from 'lodash.isequal';
-import { IEntityTemplateWithConstraintsMap, IGantt, IGanttGroupBy } from '@microservices/shared';
+import { IEntityTemplateWithConstraintsMap, IGantt, IGanttGroupBy } from '@microservices/shared-interfaces';
 import { FormikAutoComplete } from '../../../common/inputs/FormikAutoComplete';
 import { RemoveFromArrayButton } from '../GanttItemDisplay/GanttItemEdit/RemoveFromArrayButton';
 import { filteredMap } from '../../../utils/filteredMap';

@@ -1,6 +1,6 @@
 import React from 'react';
 import Avatar from '@mui/material/Avatar';
-import { IUser } from '@microservices/shared';
+import { IUser } from '@microservices/shared-interfaces';
 import { useDarkModeStore } from '../stores/darkMode';
 
 interface UserAvatarProps {

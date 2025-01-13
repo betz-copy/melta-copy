@@ -23,7 +23,7 @@ import { toast } from 'react-toastify';
 import { useLocation } from 'wouter';
 import '../../css/resizeTable.css';
 import '../../css/table.css';
-import { IRelationship, IEntity, IEntityExpanded, IMongoEntityTemplatePopulated, IAgGridRequest } from '@microservices/shared';
+import { IRelationship, IEntity, IEntityExpanded, IMongoEntityTemplatePopulated, IAgGridRequest } from '@microservices/shared-interfaces';
 import { environment } from '../../globals';
 import { searchEntitiesOfTemplateRequest } from '../../services/entitiesService';
 import { useDarkModeStore } from '../../stores/darkMode';

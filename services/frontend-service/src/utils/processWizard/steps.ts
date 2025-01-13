@@ -5,7 +5,7 @@ import {
     IMongoProcessTemplateReviewerPopulated,
     IMongoProcessInstanceReviewerPopulated,
     StepsObjectPopulated,
-} from '@microservices/shared';
+} from '@microservices/shared-interfaces';
 
 export const setInitialStepsObject = (steps: IMongoStepTemplatePopulated[]): Record<string, []> => {
     return steps.reduce((acc, obj) => {

@@ -5,7 +5,7 @@ import React, { lazy, Suspense, useEffect, useState } from 'react';
 import { useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { Route, Switch, useLocation, useRoute } from 'wouter';
-import { IEntityTemplateMap } from '@microservices/shared';
+import { IEntityTemplateMap } from '@microservices/shared-interfaces';
 import { SideBar } from '../../common/sideBar';
 import { TopBar } from '../../common/TopBar';
 import { MainBox } from '../../Main.styled';

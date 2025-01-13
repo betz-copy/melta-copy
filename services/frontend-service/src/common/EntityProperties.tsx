@@ -4,7 +4,7 @@ import type { Property } from 'csstype';
 import i18next from 'i18next';
 import React, { CSSProperties } from 'react';
 import { pdfjs } from 'react-pdf';
-import { IEntity, IEntitySingleProperty, IMongoEntityTemplatePopulated } from '@microservices/shared';
+import { IEntity, IEntitySingleProperty, IMongoEntityTemplatePopulated } from '@microservices/shared-interfaces';
 import { environment } from '../globals';
 import { useDarkModeStore } from '../stores/darkMode';
 import { CalculateDateDifference } from '../utils/agGrid/CalculateDateDifference';

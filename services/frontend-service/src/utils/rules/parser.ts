@@ -10,7 +10,7 @@ import {
     IConstant,
     IPropertyOfVariable,
     IVariable,
-} from '@microservices/shared';
+} from '@microservices/shared-interfaces';
 import { FunctionObject, ValueType } from './interfaces';
 
 export class RuleParser {

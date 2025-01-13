@@ -10,7 +10,7 @@ import {
     IRuleBreachRequestNotificationMetadataPopulated,
     IRuleBreachResponseNotificationMetadataPopulated,
     NotificationType,
-} from '@microservices/shared';
+} from '@microservices/shared-interfaces';
 
 export const isDeleteProcessNotification = (
     notification: Partial<INotificationPopulated>,

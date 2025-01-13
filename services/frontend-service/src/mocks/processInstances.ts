@@ -8,7 +8,7 @@ import {
     IMongoProcessInstanceReviewerPopulated,
     Status,
     IMongoProcessTemplateReviewerPopulated,
-} from '@microservices/shared';
+} from '@microservices/shared-interfaces';
 import { generateMongoId, generateUser } from './permissions';
 import { processTemplates } from './templates/processTemplates';
 

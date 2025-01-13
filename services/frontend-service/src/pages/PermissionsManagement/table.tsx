@@ -6,7 +6,7 @@ import i18next from 'i18next';
 import React, { ForwardedRef, forwardRef, useImperativeHandle, useMemo, useRef } from 'react';
 import ScrollContainer from 'react-indiana-drag-scroll';
 import { toast } from 'react-toastify';
-import { IWorkspace, IUser, IMongoCategory, ICompact, IInstancesPermission, PermissionScope } from '@microservices/shared';
+import { IWorkspace, IUser, IMongoCategory, ICompact, IInstancesPermission, PermissionScope } from '@microservices/shared-interfaces';
 import { environment } from '../../globals';
 import { searchUsersRequest } from '../../services/userService';
 import { useDarkModeStore } from '../../stores/darkMode';

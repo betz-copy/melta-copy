@@ -4,7 +4,7 @@ import {
     IMongoCategory,
     IMongoRule,
     IMongoProcessTemplateReviewerPopulated,
-} from '@microservices/shared';
+} from '@microservices/shared-interfaces';
 import { environment } from '../../globals';
 import axios from '../../axios';
 

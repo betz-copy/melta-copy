@@ -1,7 +1,7 @@
 import { ChevronLeft, ExpandMore } from '@mui/icons-material';
 import { Button, Grid, Typography, useTheme } from '@mui/material';
 import React, { useState } from 'react';
-import { IMongoStepTemplatePopulated } from '@microservices/shared';
+import { IMongoStepTemplatePopulated } from '@microservices/shared-interfaces';
 import { CustomIcon } from '../../../../common/CustomIcon';
 import { MeltaTooltip } from '../../../../common/MeltaTooltip';
 import { ProcessProperties } from './ProcessProperties';

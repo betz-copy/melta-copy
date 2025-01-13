@@ -2,7 +2,7 @@ import { ChevronLeft, ExpandMore } from '@mui/icons-material';
 import { Button, Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
 import React, { useState } from 'react';
-import { IUser } from '@microservices/shared';
+import { IUser } from '@microservices/shared-interfaces';
 import { environment } from '../../../../globals';
 
 interface StepReviewersProps {

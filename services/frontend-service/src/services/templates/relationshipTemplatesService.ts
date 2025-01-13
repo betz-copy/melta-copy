@@ -4,7 +4,7 @@ import {
     ISearchRelationshipTemplatesBody,
     IEntityTemplateMap,
     IMongoEntityTemplateWithConstraintsPopulated,
-} from '@microservices/shared';
+} from '@microservices/shared-interfaces';
 import axios from '../../axios';
 import { RelationshipTemplateWizardValues, defaultInitialValues } from '../../common/wizards/relationshipTemplate';
 import { environment } from '../../globals';

@@ -4,7 +4,7 @@ import { useQueryClient } from 'react-query';
 import { AppRegistration as DefaultEntityTemplateIcon } from '@mui/icons-material';
 import { Link } from 'wouter';
 import i18next from 'i18next';
-import { IEntity, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '@microservices/shared';
+import { IEntity, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '@microservices/shared-interfaces';
 import { MeltaTooltip } from './MeltaTooltip';
 import { EntityPropertiesInternal } from './EntityProperties';
 import { CustomIcon } from './CustomIcon';

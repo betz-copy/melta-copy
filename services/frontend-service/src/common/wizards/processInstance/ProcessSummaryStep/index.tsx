@@ -1,7 +1,7 @@
 import { Box, Grid } from '@mui/material';
 import React from 'react';
 import i18next from 'i18next';
-import { IMongoProcessInstanceReviewerPopulated, IMongoProcessTemplateReviewerPopulated } from '@microservices/shared';
+import { IMongoProcessInstanceReviewerPopulated, IMongoProcessTemplateReviewerPopulated } from '@microservices/shared-interfaces';
 import ProcessStatus from './ProcessStatus';
 import StepsStatuses from './StepsStatuses';
 

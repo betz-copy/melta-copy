@@ -12,7 +12,7 @@ import {
     IDeleteRelationshipMetadata,
     IDeleteRelationshipMetadataPopulated,
     IBrokenRule,
-} from '@microservices/shared';
+} from '@microservices/shared-interfaces';
 import { AreYouSureDialog } from '../../common/dialogs/AreYouSureDialog';
 import ExecWithRuleBreachDialog from '../../common/dialogs/execWithRuleBreachDialog';
 import { deleteRelationshipRequest } from '../../services/relationshipsService';

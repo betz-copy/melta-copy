@@ -5,7 +5,7 @@ import { toast } from 'react-toastify';
 import { AxiosError } from 'axios';
 import CloseIcon from '@mui/icons-material/Close';
 import i18next from 'i18next';
-import { IProcessTemplateMap } from '@microservices/shared';
+import { IProcessTemplateMap } from '@microservices/shared-interfaces';
 import ProcessDetails, { ProcessDetailsValues } from './ProcessDetails';
 import { useProcessDetailsFormik } from './ProcessDetails/detailsFormik';
 import { createProcessRequest } from '../../../services/processesService';

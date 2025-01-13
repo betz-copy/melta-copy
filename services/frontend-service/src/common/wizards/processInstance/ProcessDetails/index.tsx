@@ -8,7 +8,7 @@ import {
     IMongoProcessInstanceReviewerPopulated,
     IReferencedEntityForProcess,
     StepsObjectPopulated,
-} from '@microservices/shared';
+} from '@microservices/shared-interfaces';
 import GeneralDetails from './GeneralDetails';
 import StepsReviewers from './StepsReviewers';
 import { getAllFieldsTouched } from '../../../../utils/processWizard/formik';

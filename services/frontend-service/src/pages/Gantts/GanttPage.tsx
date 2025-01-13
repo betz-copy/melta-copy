@@ -6,7 +6,7 @@ import React, { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { useLocation, useParams } from 'wouter';
-import { IGantt } from '@microservices/shared';
+import { IGantt } from '@microservices/shared-interfaces';
 import { ErrorToast } from '../../common/ErrorToast';
 import { environment } from '../../globals';
 import { deleteGantt, getGanttById, updateGantt } from '../../services/ganttsService';

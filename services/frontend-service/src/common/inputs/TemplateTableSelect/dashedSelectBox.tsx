@@ -1,7 +1,7 @@
 import React from 'react';
 import { Grid } from '@mui/material';
 import i18next from 'i18next';
-import { IEntity, IMongoEntityTemplateWithConstraintsPopulated, PermissionScope } from '@microservices/shared';
+import { IEntity, IMongoEntityTemplateWithConstraintsPopulated, PermissionScope } from '@microservices/shared-interfaces';
 import { AddEntityButton } from '../../EntitiesPage/AddEntityButton';
 import { AddIconWithText } from '../../AddIconWithText';
 import IconButtonWithPopover from '../../IconButtonWithPopover';

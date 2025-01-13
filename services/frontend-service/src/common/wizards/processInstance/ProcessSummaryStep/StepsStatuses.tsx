@@ -12,7 +12,7 @@ import {
     Status,
     IMongoStepInstancePopulated,
     IMongoProcessTemplateReviewerPopulated,
-} from '@microservices/shared';
+} from '@microservices/shared-interfaces';
 import { BlueTitle } from '../../../BlueTitle';
 import { getStepTemplateByStepInstance } from '../../../../utils/processWizard/steps';
 import { getLongDate } from '../../../../utils/date';

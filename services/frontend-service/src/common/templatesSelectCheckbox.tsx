@@ -1,7 +1,7 @@
 import { FilterList } from '@mui/icons-material';
 import i18next from 'i18next';
 import React, { Dispatch } from 'react';
-import { IMongoEntityTemplateWithConstraintsPopulated, IMongoCategory } from '@microservices/shared';
+import { IMongoEntityTemplateWithConstraintsPopulated, IMongoCategory } from '@microservices/shared-interfaces';
 import { SelectCheckbox, SelectCheckboxProps } from './SelectCheckbox';
 
 const getCategoriesSelectCheckboxGroupProps = (

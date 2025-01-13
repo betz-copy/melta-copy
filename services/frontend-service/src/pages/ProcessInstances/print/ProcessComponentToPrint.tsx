@@ -8,7 +8,7 @@ import {
     IMongoStepTemplatePopulated,
     IProcessTemplateMap,
     IMongoProcessInstanceReviewerPopulated,
-} from '@microservices/shared';
+} from '@microservices/shared-interfaces';
 import GeneralDetails from '../../../common/wizards/processInstance/ProcessDetails/GeneralDetails';
 import { EntityDates } from '../../Entity/components/EntityDates';
 import { CommentsDetails, ProcessStep } from '../../../common/wizards/processInstance/ProcessSteps/processStep';

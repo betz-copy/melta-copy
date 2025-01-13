@@ -10,7 +10,7 @@ import {
     ActionTypes,
     ICreateRelationshipMetadata,
     ICreateRelationshipMetadataPopulated,
-} from '@microservices/shared';
+} from '@microservices/shared-interfaces';
 import { createRuleBreachRequestRequest } from '../../../services/ruleBreachesService';
 import { ErrorToast } from '../../ErrorToast';
 import ExecWithRuleBreachDialog from '../execWithRuleBreachDialog';

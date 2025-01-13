@@ -2,7 +2,7 @@ import React from 'react';
 import { Typography, Grid, Skeleton } from '@mui/material';
 import { useQuery } from 'react-query';
 import randomColor from 'randomcolor';
-import { IMongoEntityTemplatePopulated, IMongoActivityLog } from '@microservices/shared';
+import { IMongoEntityTemplatePopulated, IMongoActivityLog } from '@microservices/shared-interfaces';
 import { getUserByIdRequest } from '../../../../services/userService';
 import ActionText from './ActionText';
 import { getShortDate } from '../../../../utils/date';

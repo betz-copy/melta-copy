@@ -8,7 +8,7 @@ import i18next from 'i18next';
 import pickBy from 'lodash.pickby';
 import React, { useEffect, useState } from 'react';
 import { useQueryClient } from 'react-query';
-import { IMongoProcessTemplateReviewerPopulated, IProcessSingleProperty, IProcessTemplateMap } from '@microservices/shared';
+import { IMongoProcessTemplateReviewerPopulated, IProcessSingleProperty, IProcessTemplateMap } from '@microservices/shared-interfaces';
 import { IDetailsStepProp, ProcessDetailsValues } from '.';
 import { pickProcessFieldsPropertiesSchema } from '../../../../utils/pickFieldsPropertiesSchema';
 import { setInitialStepsObject } from '../../../../utils/processWizard/steps';

@@ -2,7 +2,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, IconButton } from '@mui/material';
 import { Clear as ClearIcon, AppRegistration as AppRegistrationIcon } from '@mui/icons-material';
 import { useQueryClient } from 'react-query';
-import { IEntity, IEntityTemplateMap } from '@microservices/shared';
+import { IEntity, IEntityTemplateMap } from '@microservices/shared-interfaces';
 import { EntityPropertiesInternal } from '../../EntityProperties';
 import { CustomIcon } from '../../CustomIcon';
 import { useDarkModeStore } from '../../../stores/darkMode';

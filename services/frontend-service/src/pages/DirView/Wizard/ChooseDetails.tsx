@@ -3,7 +3,7 @@ import i18next from 'i18next';
 import React from 'react';
 import { useLocation } from 'wouter';
 import * as Yup from 'yup';
-import { WorkspaceTypes } from '@microservices/shared';
+import { WorkspaceTypes } from '@microservices/shared-interfaces';
 import { FormikAutoComplete } from '../../../common/inputs/FormikAutoComplete';
 import { StepComponentProps } from '../../../common/wizards/index';
 import { workspaceNameValidation } from '../../../utils/validation';

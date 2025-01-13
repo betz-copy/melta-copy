@@ -1,7 +1,7 @@
 import { FilterList } from '@mui/icons-material';
 import i18next from 'i18next';
 import React from 'react';
-import { IMongoProcessTemplateReviewerPopulated } from '@microservices/shared';
+import { IMongoProcessTemplateReviewerPopulated } from '@microservices/shared-interfaces';
 import { SelectCheckbox } from '../../common/SelectCheckbox';
 
 const ProcessTemplatesSelectCheckbox: React.FC<{

@@ -9,7 +9,7 @@ import { Grid, IconButton, SvgIconProps, Typography } from '@mui/material';
 import { FormikProps } from 'formik';
 import i18next from 'i18next';
 import React from 'react';
-import { IMongoStepInstancePopulated, IMongoProcessInstanceReviewerPopulated, Status } from '@microservices/shared';
+import { IMongoStepInstancePopulated, IMongoProcessInstanceReviewerPopulated, Status } from '@microservices/shared-interfaces';
 import { StatusColorsNames } from '../../../../pages/ProcessInstances/ProcessCard';
 import { useUserStore } from '../../../../stores/user';
 import { getLongDate } from '../../../../utils/date';

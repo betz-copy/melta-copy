@@ -12,7 +12,7 @@ import {
 } from '@mui/icons-material';
 import i18next from 'i18next';
 import { FormikProps } from 'formik';
-import { PermissionScope, IGantt } from '@microservices/shared';
+import { PermissionScope, IGantt } from '@microservices/shared-interfaces';
 import { Swap } from '../../common/Swap';
 import { BlueTitle } from '../../common/BlueTitle';
 import { TopBarGrid } from '../../common/TopBar';

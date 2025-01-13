@@ -4,7 +4,7 @@ import i18next from 'i18next';
 import { useMutation, useQueryClient } from 'react-query';
 import { AxiosError } from 'axios';
 import { v4 as uuid } from 'uuid';
-import { IUser, IMongoProcessTemplateReviewerPopulated, IProcessTemplateMap } from '@microservices/shared';
+import { IUser, IMongoProcessTemplateReviewerPopulated, IProcessTemplateMap } from '@microservices/shared-interfaces';
 import { StepsType, Wizard, WizardBaseType } from '../index';
 import { ErrorToast } from '../../ErrorToast';
 import { addDetailsFieldsSchema, AddDetailsFields } from './AddDetailsFields';

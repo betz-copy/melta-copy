@@ -4,7 +4,7 @@ import React from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { useLocation } from 'wouter';
-import { IWorkspace, WorkspaceTypes } from '@microservices/shared';
+import { IWorkspace, WorkspaceTypes } from '@microservices/shared-interfaces';
 import { ErrorToast } from '../../../common/ErrorToast';
 import { StepsType, Wizard, WizardBaseType } from '../../../common/wizards/index';
 import fileDetails from '../../../interfaces/fileDetails';

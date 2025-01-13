@@ -3,7 +3,7 @@ import { Button, ThemeProvider } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
 import { useReactToPrint } from 'react-to-print';
-import { IEntityExpanded, IMongoCategory, IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared';
+import { IEntityExpanded, IMongoCategory, IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared-interfaces';
 import { IConnectionTemplateOfExpandedEntity } from '../..';
 import { MeltaTooltip } from '../../../../common/MeltaTooltip';
 import { PrintOptionsDialog } from '../../../../common/print/PrintOptionsDialog';

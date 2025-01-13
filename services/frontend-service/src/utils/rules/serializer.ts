@@ -20,7 +20,7 @@ import {
     IVariable,
     isConstant,
     isPropertyOfVariable,
-} from '@microservices/shared';
+} from '@microservices/shared-interfaces';
 import { FunctionObject, ValueType } from './interfaces';
 
 export class RuleSerializer {

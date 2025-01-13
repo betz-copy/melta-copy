@@ -6,7 +6,7 @@ import {
     IMongoEntityTemplatePopulated,
     IMongoEntityTemplateWithConstraintsPopulated,
     ISearchEntityTemplatesBody,
-} from '@microservices/shared';
+} from '@microservices/shared-interfaces';
 import axios from '../../axios';
 import { EntityTemplateFormInputProperties, EntityTemplateWizardValues } from '../../common/wizards/entityTemplate';
 import { environment } from '../../globals';

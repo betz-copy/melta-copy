@@ -6,7 +6,7 @@ import { DropResult } from 'react-beautiful-dnd';
 import FilterAltOffIcon from '@mui/icons-material/FilterAltOff';
 import AddIcon from '@mui/icons-material/Add';
 import { FilterList } from '@mui/icons-material';
-import { IMongoIFrame } from '@microservices/shared';
+import { IMongoIFrame } from '@microservices/shared-interfaces';
 import { TopBarGrid } from '../../common/TopBar';
 import { BlueTitle } from '../../common/BlueTitle';
 import { environment } from '../../globals';

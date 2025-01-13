@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
-import { IRuleBreachResponseNotificationMetadataPopulated, NotificationType, RuleBreachRequestStatus } from '@microservices/shared';
+import { IRuleBreachResponseNotificationMetadataPopulated, NotificationType, RuleBreachRequestStatus } from '@microservices/shared-interfaces';
 import RuleBreachInfo from '../../../ruleBreanchInfo/RuleBreachInfo';
 import { environment } from '../../../../globals';
 import { NotificationColor } from '../../../notificationColor';

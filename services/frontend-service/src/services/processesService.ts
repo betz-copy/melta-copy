@@ -6,7 +6,7 @@ import {
     IMongoProcessInstanceReviewerPopulated,
     IReferencedEntityForProcess,
     IProcessInstanceSearchProperties,
-} from '@microservices/shared';
+} from '@microservices/shared-interfaces';
 import axios from '../axios';
 import { ProcessDetailsValues } from '../common/wizards/processInstance/ProcessDetails';
 import { environment } from '../globals';

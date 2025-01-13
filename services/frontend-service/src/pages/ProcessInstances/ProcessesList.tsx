@@ -5,7 +5,12 @@ import { toast } from 'react-toastify';
 import { FiberManualRecordOutlined as StatusIcon, FiberManualRecord as StatusIconFilled } from '@mui/icons-material';
 import IconButton from '@mui/material/IconButton';
 import { useQueryClient } from 'react-query';
-import { Status, IMongoProcessInstanceReviewerPopulated, PermissionScope, IMongoProcessTemplateReviewerPopulated } from '@microservices/shared';
+import {
+    Status,
+    IMongoProcessInstanceReviewerPopulated,
+    PermissionScope,
+    IMongoProcessTemplateReviewerPopulated,
+} from '@microservices/shared-interfaces';
 import { ViewingBox } from '../SystemManagement/components/ViewingBox';
 import ProcessCard, { StatusColors } from './ProcessCard';
 import { searchProcessesRequest } from '../../services/processesService';

@@ -43,7 +43,7 @@
     "@emotion/cache": "^11.7.1",
     "@emotion/react": "^11.7.1",
     "@emotion/styled": "^11.6.0",
-    "@microservices/shared": "^1.0.0",
+    "@microservices/shared-interfaces": "^1.0.0",
     "@monaco-editor/react": "^4.6.0",
     "@mui/icons-material": "^5.10.2",
     "@mui/lab": "^5.0.0-alpha.70",

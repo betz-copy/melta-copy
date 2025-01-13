@@ -11,7 +11,7 @@ import {
     IExportEntitiesBody,
     IGraphFilterBodyBatch,
     IRuleBreach,
-} from '@microservices/shared';
+} from '@microservices/shared-interfaces';
 import axios from '../axios';
 import { environment } from '../globals';
 import { EntityWizardValues } from '../common/dialogs/entity';

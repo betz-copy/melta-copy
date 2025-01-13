@@ -1,7 +1,7 @@
 import React from 'react';
 import { Grid, List } from '@mui/material';
 import { useQueryClient } from 'react-query';
-import { IRuleMap, IRuleBreachPopulated, IActionPopulated } from '@microservices/shared';
+import { IRuleMap, IRuleBreachPopulated, IActionPopulated } from '@microservices/shared-interfaces';
 import { BrokenRuleCompact } from './BrokenRuleCompact';
 import { BrokenRuleFull } from './BrokenRuleFull';
 import { useDarkModeStore } from '../../../stores/darkMode';

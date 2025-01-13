@@ -1,7 +1,7 @@
 /* eslint-disable no-param-reassign */
 import { ForceGraphMethods as ForceGraphMethods3D, NodeObject } from 'react-force-graph-3d';
 import * as THREE from 'three';
-import { IMongoEntityTemplatePopulated } from '@microservices/shared';
+import { IMongoEntityTemplatePopulated } from '@microservices/shared-interfaces';
 import { drawLabel, drawNodeIcon, getIconSize, getLabelDimensions, updateNodeLabelIcons } from '.';
 
 import { environment } from '../../globals';

@@ -21,7 +21,7 @@ import {
     IRuleBreach,
     IRuleBreachPopulated,
     PermissionScope,
-} from '@microservices/shared';
+} from '@microservices/shared-interfaces';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import { ExportFormats } from '../../../common/dialogs/entity/ExportFormats';
 import { EntityProperties } from '../../../common/EntityProperties';

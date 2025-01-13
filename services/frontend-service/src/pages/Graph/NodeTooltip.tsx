@@ -2,7 +2,7 @@ import React from 'react';
 import i18next from 'i18next';
 import { Divider, Grid } from '@mui/material';
 import { NodeObject } from 'react-force-graph-2d';
-import { IMongoEntityTemplatePopulated } from '@microservices/shared';
+import { IMongoEntityTemplatePopulated } from '@microservices/shared-interfaces';
 import { LocalStorage } from '../../utils/localStorage';
 import { EntityPropertiesInternal } from '../../common/EntityProperties';
 import { NodeLabelIconsDescription } from './NodeLabelIconsDescription';

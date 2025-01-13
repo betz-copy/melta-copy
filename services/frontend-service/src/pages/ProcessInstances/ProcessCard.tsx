@@ -15,7 +15,7 @@ import {
     Status,
     IMongoStepInstancePopulated,
     IProcessTemplateMap,
-} from '@microservices/shared';
+} from '@microservices/shared-interfaces';
 import { CustomIcon } from '../../common/CustomIcon';
 import ProcessInstanceWizard from '../../common/wizards/processInstance';
 import { archiveProcessRequest, deleteProcessRequest, updateProcessRequest } from '../../services/processesService';

@@ -5,7 +5,7 @@ import i18next from 'i18next';
 import React, { useState } from 'react';
 import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
-import { INotificationPopulated, NotificationType } from '@microservices/shared';
+import { INotificationPopulated, NotificationType } from '@microservices/shared-interfaces';
 import {
     isArchiveProcessNotification,
     isDateAboutToExpireNotification,

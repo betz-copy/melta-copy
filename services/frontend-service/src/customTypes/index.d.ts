@@ -3,7 +3,7 @@
 import ForceGraph2D from 'react-force-graph-2d';
 import ReactQueryBuilder from '@react-awesome-query-builder/mui';
 import { Object3D } from 'three';
-import { IEntity } from '@microservices/shared';
+import { IEntity } from '@microservices/shared-interfaces';
 import { ILabelIcon } from '../utils/graph/helperTypes';
 
 declare module '@react-awesome-query-builder/mui' {

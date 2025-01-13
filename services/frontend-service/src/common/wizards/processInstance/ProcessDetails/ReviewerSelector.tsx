@@ -1,7 +1,7 @@
 import { Chip, Grid } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
-import { IUser } from '@microservices/shared';
+import { IUser } from '@microservices/shared-interfaces';
 import UserAutocomplete from '../../../inputs/UserAutocomplete';
 
 interface ReviewerSelectorProps {

@@ -18,7 +18,7 @@ import {
     IAction,
     IActionPopulated,
     IMongoEntityTemplateWithConstraintsPopulated,
-} from '@microservices/shared';
+} from '@microservices/shared-interfaces';
 import { updateEntityRequestForMultiple } from '../../../services/entitiesService';
 import { EntityWizardValues } from '../../../common/dialogs/entity';
 import { JSONSchemaFormik, ajvValidate } from '../../../common/inputs/JSONSchemaFormik';

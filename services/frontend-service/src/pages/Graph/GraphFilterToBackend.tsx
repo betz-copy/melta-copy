@@ -1,4 +1,10 @@
-import { IFilterOfField, IGraphFilterBody, IGraphFilterBodyBatch, IMongoEntityTemplatePopulated, ISearchFilter } from '@microservices/shared';
+import {
+    IFilterOfField,
+    IGraphFilterBody,
+    IGraphFilterBodyBatch,
+    IMongoEntityTemplatePopulated,
+    ISearchFilter,
+} from '@microservices/shared-interfaces';
 import { getDayEnd, getDayStart } from '../../utils/date';
 import { getFormattedDateAccordingToField } from '../../utils/gantts';
 

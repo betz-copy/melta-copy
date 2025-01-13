@@ -9,7 +9,7 @@ import {
     IEntityTemplateMap,
     IEntityTemplatePopulated,
     IRelationshipTemplateMap,
-} from '@microservices/shared';
+} from '@microservices/shared-interfaces';
 import { StepsType, Wizard, WizardBaseType } from '../index';
 import { ChooseCategory, chooseCategorySchema } from './ChooseCategory';
 import { CreateTemplateName, createTemplateNameSchema } from './CreateTemplateName';

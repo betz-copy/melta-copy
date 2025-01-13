@@ -1,5 +1,5 @@
 import omitBy from 'lodash.omitby';
-import { IMongoEntityTemplateWithConstraintsPopulated, IProcessDetails } from '@microservices/shared';
+import { IMongoEntityTemplateWithConstraintsPopulated, IProcessDetails } from '@microservices/shared-interfaces';
 
 export const filterFieldsFromPropertiesSchema = <
     T extends IMongoEntityTemplateWithConstraintsPopulated['properties'] | (IProcessDetails['properties'] & { hide: string[] }),

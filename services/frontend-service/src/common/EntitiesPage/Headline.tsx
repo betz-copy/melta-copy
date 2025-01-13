@@ -8,7 +8,7 @@ import i18next from 'i18next';
 import React, { Dispatch, SetStateAction, useCallback, useEffect, useRef, useState } from 'react';
 import { debounce } from 'lodash';
 import AutoAwesomeOutlinedIcon from '@mui/icons-material/AutoAwesomeOutlined';
-import { IEntity, IMongoCategory, IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared';
+import { IEntity, IMongoCategory, IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared-interfaces';
 import SearchInput from '../inputs/SearchInput';
 import { AddEntityButton } from './AddEntityButton';
 import TemplatesSelectCheckbox from '../templatesSelectCheckbox';

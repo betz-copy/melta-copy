@@ -12,7 +12,7 @@ import {
     IRuleBreachAlertPopulated,
     IRuleBreachRequestPopulated,
     RuleBreachRequestStatus,
-} from '@microservices/shared';
+} from '@microservices/shared-interfaces';
 import IconButtonWithPopover from '../../common/IconButtonWithPopover';
 import '../../css/table.css';
 import { environment } from '../../globals';

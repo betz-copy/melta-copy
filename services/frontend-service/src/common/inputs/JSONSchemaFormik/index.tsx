@@ -9,7 +9,7 @@ import mapValues from 'lodash.mapvalues';
 import pickBy from 'lodash.pickby';
 import validator from '@rjsf/validator-ajv8';
 import { ErrorSchema, UiSchema } from '@rjsf/utils';
-import { IMongoEntityTemplatePopulated } from '@microservices/shared';
+import { IMongoEntityTemplatePopulated } from '@microservices/shared-interfaces';
 import { RjfsDateWidget, RjfsDateTimeWidget } from './RjfsDatesWidgets';
 import RjfsSelectWidget from './RjfsSelectWidget';
 import RjsfTextWidget from './RjsfStringWidget';

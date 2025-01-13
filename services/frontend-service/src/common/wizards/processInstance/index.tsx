@@ -19,7 +19,7 @@ import {
     IMongoProcessTemplateReviewerPopulated,
     IProcessTemplateMap,
     PermissionScope,
-} from '@microservices/shared';
+} from '@microservices/shared-interfaces';
 import { ProcessSideStepper } from './ProcessSideStepper';
 import { BlueTitle } from '../../BlueTitle';
 import ProcessDetails, { ProcessDetailsValues } from './ProcessDetails';

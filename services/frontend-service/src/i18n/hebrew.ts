@@ -1,4 +1,4 @@
-import { WorkspaceTypes, ActionTypes } from '@microservices/shared';
+import { WorkspaceTypes, ActionTypes } from '@microservices/shared-interfaces';
 import { environment } from '../globals';
 import { muiDatePickersLocaleText } from '../utils/datePickers';
 

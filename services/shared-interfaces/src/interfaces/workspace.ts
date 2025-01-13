@@ -1,4 +1,4 @@
-import { HexColor } from '../utils/types';
+import { HexColor } from '../types';
 
 export enum Colors {
     primary = 'primary',

@@ -1,6 +1,6 @@
 import MockAdapter from 'axios-mock-adapter';
 import { StatusCodes } from 'http-status-codes';
-import { IMongoProcessTemplateReviewerPopulated } from '@microservices/shared';
+import { IMongoProcessTemplateReviewerPopulated } from '@microservices/shared-interfaces';
 import { generateProcessTemplatePopulated } from './generateProcessTemplate';
 
 const removeDuplicates = (arr: IMongoProcessTemplateReviewerPopulated[]) => {

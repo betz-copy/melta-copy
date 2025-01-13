@@ -1,5 +1,5 @@
 import { FormikErrors, FormikTouched } from 'formik';
-import { IUser } from '@microservices/shared';
+import { IUser } from '@microservices/shared-interfaces';
 import { ProcessTemplateWizardValues } from '.';
 import fileDetails from '../../../interfaces/fileDetails';
 

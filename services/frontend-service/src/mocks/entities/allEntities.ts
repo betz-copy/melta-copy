@@ -1,4 +1,4 @@
-import { IEntity } from '@microservices/shared';
+import { IEntity } from '@microservices/shared-interfaces';
 
 export const allEntities: IEntity[] = [
     {

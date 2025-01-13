@@ -2,7 +2,7 @@ import { Typography } from '@mui/material';
 import i18next from 'i18next';
 import React, { useMemo } from 'react';
 import { useQueryClient } from 'react-query';
-import { IMongoStepInstancePopulated, IProcessTemplateMap } from '@microservices/shared';
+import { IMongoStepInstancePopulated, IProcessTemplateMap } from '@microservices/shared-interfaces';
 import { getStepName } from '../../../../utils/processes';
 import { MeltaTooltip } from '../../../MeltaTooltip';
 

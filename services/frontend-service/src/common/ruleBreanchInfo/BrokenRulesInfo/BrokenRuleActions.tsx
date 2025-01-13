@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import i18next from 'i18next';
 import { ExpandLess as ExpandLessIcon, ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
 import { Collapse, Grid, Typography } from '@mui/material';
-import { IActionPopulated } from '@microservices/shared';
+import { IActionPopulated } from '@microservices/shared-interfaces';
 import { ActionInfo } from '../ActionInfo';
 
 export const BrokenRuleActions: React.FC<{

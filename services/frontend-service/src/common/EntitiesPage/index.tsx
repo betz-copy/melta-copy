@@ -6,7 +6,7 @@ import mapValues from 'lodash.mapvalues';
 import { useMutation, useQueryClient } from 'react-query';
 import fileDownload from 'js-file-download';
 import { toast } from 'react-toastify';
-import { IEntity, IExportEntitiesBody, IMongoEntityTemplateWithConstraintsPopulated, IMongoCategory } from '@microservices/shared';
+import { IEntity, IExportEntitiesBody, IMongoEntityTemplateWithConstraintsPopulated, IMongoCategory } from '@microservices/shared-interfaces';
 import { EntitiesPageHeadline } from './Headline';
 import TemplateTablesView, { TemplateTablesViewRef } from './TemplateTablesView';
 import { exportEntitiesRequest } from '../../services/entitiesService';

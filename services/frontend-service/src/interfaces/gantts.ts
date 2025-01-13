@@ -1,4 +1,4 @@
-import { IMongoRelationshipTemplate, IMongoEntityTemplatePopulated } from '@microservices/shared';
+import { IMongoRelationshipTemplate, IMongoEntityTemplatePopulated } from '@microservices/shared-interfaces';
 import { IScheduleComponentData } from './syncfusion';
 
 export interface IConnectedEntityTemplateDetails {

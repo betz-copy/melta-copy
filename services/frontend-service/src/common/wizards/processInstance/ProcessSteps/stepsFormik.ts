@@ -1,5 +1,10 @@
 import pickBy from 'lodash.pickby';
-import { IMongoStepInstancePopulated, IMongoStepTemplatePopulated, IReferencedEntityForProcess, InstanceProperties } from '@microservices/shared';
+import {
+    IMongoStepInstancePopulated,
+    IMongoStepTemplatePopulated,
+    IReferencedEntityForProcess,
+    InstanceProperties,
+} from '@microservices/shared-interfaces';
 import { ProcessStepValues } from './index';
 
 const splitStepProperties = (stepInstance: IMongoStepInstancePopulated, stepTemplate: IMongoStepTemplatePopulated) => {

@@ -4,7 +4,7 @@ import i18next from 'i18next';
 import { toast } from 'react-toastify';
 import { AddCircle as AddCircleIcon } from '@mui/icons-material';
 import { useQueryClient } from 'react-query';
-import { PermissionScope, IMongoGantt } from '@microservices/shared';
+import { PermissionScope, IMongoGantt } from '@microservices/shared-interfaces';
 import { ViewingBox } from '../SystemManagement/components/ViewingBox';
 import { InfiniteScroll } from '../../common/InfiniteScroll';
 import { GanttsCard } from './Card';

@@ -6,7 +6,7 @@ import i18next from 'i18next';
 import React, { useMemo, useRef, useState } from 'react';
 import { useLocation } from 'wouter';
 import { toast } from 'react-toastify';
-import { IEntity, IMongoEntityTemplateWithConstraintsPopulated, PermissionScope } from '@microservices/shared';
+import { IEntity, IMongoEntityTemplateWithConstraintsPopulated, PermissionScope } from '@microservices/shared-interfaces';
 import { BlueTitle } from '../../../common/BlueTitle';
 import { CustomIcon } from '../../../common/CustomIcon';
 import { CreateOrEditEntityDetails, ICreateOrUpdateWithRuleBreachDialogState } from '../../../common/dialogs/entity/CreateOrEditEntityDialog';

@@ -10,7 +10,7 @@ import {
     IAgGridSetFilter,
     IAgGridSort,
     IAgGridTextFilter,
-} from '@microservices/shared';
+} from '@microservices/shared-interfaces';
 import { environment } from '../../globals';
 import { getDayStart, getDayEnd } from '../date';
 import { addDefaultFieldsToTemplate } from '../templates';

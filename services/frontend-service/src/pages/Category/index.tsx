@@ -2,7 +2,7 @@ import _debounce from 'lodash.debounce';
 import React, { useEffect } from 'react';
 import { useQueryClient } from 'react-query';
 import { useParams } from 'wouter';
-import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated, ICategoryMap } from '@microservices/shared';
+import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated, ICategoryMap } from '@microservices/shared-interfaces';
 import EntitiesPage from '../../common/EntitiesPage';
 import { useLocalStorage } from '../../utils/hooks/useLocalStorage';
 

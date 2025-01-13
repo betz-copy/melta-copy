@@ -20,7 +20,7 @@ import {
     IUpdateEntityMetadata,
     IUpdateEntityMetadataPopulated,
     IBrokenRule,
-} from '@microservices/shared';
+} from '@microservices/shared-interfaces';
 import ExecWithRuleBreachDialog from '../../../common/dialogs/execWithRuleBreachDialog';
 import { ErrorToast } from '../../../common/ErrorToast';
 import { EntityWizardValues } from '../../../common/dialogs/entity';

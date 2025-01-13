@@ -7,7 +7,7 @@ import {
     IPermission,
     ISubCompactPermissions,
     RecursiveNullable,
-} from '@microservices/shared';
+} from '@microservices/shared-interfaces';
 import axios from '../axios';
 import { environment } from '../globals';
 

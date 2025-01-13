@@ -14,7 +14,7 @@ import {
     IRuleBreachAlertPopulated,
     IRuleBreachRequestPopulated,
     RuleBreachRequestStatus,
-} from '@microservices/shared';
+} from '@microservices/shared-interfaces';
 import { generateMongoId, generateUser } from './permissions';
 
 const chance = new Chance();

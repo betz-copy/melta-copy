@@ -2,7 +2,7 @@
 import { Chance } from 'chance';
 import MockAdapter from 'axios-mock-adapter';
 import { StatusCodes } from 'http-status-codes';
-import { INotificationPopulated, NotificationType } from '@microservices/shared';
+import { INotificationPopulated, NotificationType } from '@microservices/shared-interfaces';
 import { generateMongoId } from './permissions';
 import { generateRuleBreachAlert, generateRuleBreachRequest } from './ruleBreaches';
 

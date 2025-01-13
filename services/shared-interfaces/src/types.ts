@@ -1,5 +1,3 @@
-import { Request, Response, NextFunction } from 'express';
-
 export type HexColor = `#${string}`;
 
 export type DeepPartial<T> = { [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P] };
@@ -11,5 +9,3 @@ export type RecursiveNullable<T> = { [P in keyof T]: RecursiveNullable<T[P]> | n
 
 // eslint-disable-next-line no-undef
 export type Awaited<T> = T extends PromiseLike<infer U> ? U : T;
-
-export type MiddlewareFunction = (req: Request, res: Response, next?: NextFunction) => Promise<void>;

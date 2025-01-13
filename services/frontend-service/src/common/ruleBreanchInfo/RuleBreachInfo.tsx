@@ -1,7 +1,7 @@
 import React from 'react';
 import { Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
-import { IUser, IRuleBreachPopulated, IActionPopulated } from '@microservices/shared';
+import { IUser, IRuleBreachPopulated, IActionPopulated } from '@microservices/shared-interfaces';
 import { ActionInfo } from './ActionInfo';
 import { BrokenRulesInfo } from './BrokenRulesInfo';
 

@@ -11,7 +11,7 @@ import React, { useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import Iframe from 'react-iframe';
-import { IMongoIFrame } from '@microservices/shared';
+import { IMongoIFrame } from '@microservices/shared-interfaces';
 import { CustomIcon } from '../../common/CustomIcon';
 import { ErrorToast } from '../../common/ErrorToast';
 import { MeltaTooltip } from '../../common/MeltaTooltip';

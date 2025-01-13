@@ -1,4 +1,4 @@
-import { IMongoActivityLog } from '@microservices/shared';
+import { IMongoActivityLog } from '@microservices/shared-interfaces';
 import axios from '../axios';
 import { environment } from '../globals';
 

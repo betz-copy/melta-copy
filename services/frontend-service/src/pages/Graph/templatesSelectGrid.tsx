@@ -4,7 +4,7 @@ import { makeStyles } from '@mui/styles';
 import i18next from 'i18next';
 import React, { Dispatch, useState } from 'react';
 import { IoIosArrowBack, IoIosArrowDown } from 'react-icons/io';
-import { IMongoEntityTemplatePopulated, IMongoCategory } from '@microservices/shared';
+import { IMongoEntityTemplatePopulated, IMongoCategory } from '@microservices/shared-interfaces';
 import {
     ChooseAllMenuItem,
     getOptionsAndGroupsMiniFiltered,

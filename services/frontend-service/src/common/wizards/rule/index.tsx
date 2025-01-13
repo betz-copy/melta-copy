@@ -6,7 +6,7 @@ import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import { Utils as QbUtils, ImmutableTree } from '@react-awesome-query-builder/mui';
 
-import { IRule, IRuleMap } from '@microservices/shared';
+import { IRule, IRuleMap } from '@microservices/shared-interfaces';
 import { StepsType, Wizard, WizardBaseType } from '../index';
 import { CreateRule, createRuleSchema } from './CreateRule';
 import { ErrorToast } from '../../ErrorToast';

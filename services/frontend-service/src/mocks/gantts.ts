@@ -2,7 +2,7 @@
 import { Chance } from 'chance';
 import MockAdapter from 'axios-mock-adapter';
 import { StatusCodes } from 'http-status-codes';
-import { IMongoEntityTemplatePopulated, IMongoGantt, IGanttItem } from '@microservices/shared';
+import { IMongoEntityTemplatePopulated, IMongoGantt, IGanttItem } from '@microservices/shared-interfaces';
 import { generateMongoId } from './permissions';
 import { entityTemplates } from './templates/entityTemplates';
 import { pickOneIf, pickRandomSet, pickSetIf, popRandom } from './utils';

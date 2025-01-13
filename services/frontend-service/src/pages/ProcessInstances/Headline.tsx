@@ -3,7 +3,7 @@ import { Grid, IconButton, Typography, useTheme } from '@mui/material';
 import { Add as AddIcon } from '@mui/icons-material';
 import i18next from 'i18next';
 import FilterAltOffIcon from '@mui/icons-material/FilterAltOff';
-import { IMongoProcessTemplateReviewerPopulated, PermissionScope } from '@microservices/shared';
+import { IMongoProcessTemplateReviewerPopulated, PermissionScope } from '@microservices/shared-interfaces';
 import { TopBarGrid } from '../../common/TopBar';
 import { BlueTitle } from '../../common/BlueTitle';
 import { GlobalSearchBar } from '../../common/EntitiesPage/Headline';

@@ -2,7 +2,7 @@ import React, { CSSProperties, Fragment, useMemo } from 'react';
 import { useQueryClient } from 'react-query';
 import { Grid, Typography } from '@mui/material';
 import { ImportExport as RelatedIcon } from '@mui/icons-material';
-import { IEntityTemplateMap, IRelationshipTemplateMap } from '@microservices/shared';
+import { IEntityTemplateMap, IRelationshipTemplateMap } from '@microservices/shared-interfaces';
 import { IScheduleComponentData } from '../../../interfaces/syncfusion';
 import { getConnectedEntityTemplatesDetails } from '../../../utils/gantts';
 import { FieldsDisplay } from './FieldsDisplay';

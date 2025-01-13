@@ -13,7 +13,7 @@ import {
     IMongoGantt,
     IGanttGroupBy,
     IGanttItem,
-} from '@microservices/shared';
+} from '@microservices/shared-interfaces';
 import { IConnectedEntityTemplateDetails, IGanttHeatmapBox } from '../interfaces/gantts';
 import { IScheduleComponentData, IScheduleComponentResourceData } from '../interfaces/syncfusion';
 import { getEntityTemplateColor } from './colors';

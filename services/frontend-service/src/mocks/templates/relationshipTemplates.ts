@@ -1,6 +1,6 @@
 import MockAdapter from 'axios-mock-adapter';
 import { StatusCodes } from 'http-status-codes';
-import { IMongoRelationshipTemplate } from '@microservices/shared';
+import { IMongoRelationshipTemplate } from '@microservices/shared-interfaces';
 
 const relationshipTemplates: IMongoRelationshipTemplate[] = [
     {

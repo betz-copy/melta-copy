@@ -13,7 +13,7 @@ import {
     IMongoStepInstancePopulated,
     IMongoStepTemplatePopulated,
     PermissionScope,
-} from '@microservices/shared';
+} from '@microservices/shared-interfaces';
 import { ProcessStepValues } from '.';
 import { updateStepRequest } from '../../../../services/processesService';
 import { useUserStore } from '../../../../stores/user';

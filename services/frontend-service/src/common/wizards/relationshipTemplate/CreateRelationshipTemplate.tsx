@@ -3,7 +3,7 @@ import { TextField, Box, Autocomplete } from '@mui/material';
 import * as Yup from 'yup';
 import i18next from 'i18next';
 import { useQuery, useQueryClient } from 'react-query';
-import { IEntityTemplateMap } from '@microservices/shared';
+import { IEntityTemplateMap } from '@microservices/shared-interfaces';
 import { RelationshipTemplateWizardValues } from './index';
 import { StepComponentProps } from '../index';
 import { variableNameValidation } from '../../../utils/validation';

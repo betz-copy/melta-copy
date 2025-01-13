@@ -3,7 +3,7 @@ import React from 'react';
 import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
 
-import { IUser } from '@microservices/shared';
+import { IUser } from '@microservices/shared-interfaces';
 import { AreYouSureDialog } from '../../common/dialogs/AreYouSureDialog';
 import { syncUserPermissionsRequest } from '../../services/userService';
 import { useWorkspaceStore } from '../../stores/workspace';

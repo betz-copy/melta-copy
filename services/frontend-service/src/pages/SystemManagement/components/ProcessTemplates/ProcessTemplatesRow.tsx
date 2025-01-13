@@ -4,7 +4,7 @@ import i18next from 'i18next';
 import React, { useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import { IMongoProcessTemplateReviewerPopulated, IProcessTemplateMap } from '@microservices/shared';
+import { IMongoProcessTemplateReviewerPopulated, IProcessTemplateMap } from '@microservices/shared-interfaces';
 import { AreYouSureDialog } from '../../../../common/dialogs/AreYouSureDialog';
 import { ErrorToast } from '../../../../common/ErrorToast';
 import SearchInput from '../../../../common/inputs/SearchInput';

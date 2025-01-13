@@ -9,7 +9,7 @@ import {
     IEntityTemplatePopulated,
     IMongoRelationshipTemplate,
     IRelationshipTemplateMap,
-} from '@microservices/shared';
+} from '@microservices/shared-interfaces';
 import { environment } from '../../globals';
 import { apiUrlToImageSource } from '../../services/storageService';
 import { drawText, getRectangleDimensionsByString, traceRectangle } from '../canvas';

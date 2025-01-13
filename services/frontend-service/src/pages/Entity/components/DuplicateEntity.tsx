@@ -20,7 +20,7 @@ import {
     IActionPopulated,
     IBrokenRule,
     IMongoEntityTemplateWithConstraintsPopulated,
-} from '@microservices/shared';
+} from '@microservices/shared-interfaces';
 import { BlueTitle } from '../../../common/BlueTitle';
 import { EntityWizardValues } from '../../../common/dialogs/entity';
 import { InstanceFileInput } from '../../../common/inputs/InstanceFilesInput/InstanceFileInput';

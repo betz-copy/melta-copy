@@ -1,4 +1,4 @@
-import { IMongoCategory } from '@microservices/shared';
+import { IMongoCategory } from '@microservices/shared-interfaces';
 import axios from '../../axios';
 import { CategoryWizardValues } from '../../common/wizards/category';
 import { environment } from '../../globals';

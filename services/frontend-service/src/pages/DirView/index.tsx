@@ -2,7 +2,7 @@ import { Box, Grid } from '@mui/material';
 import i18next from 'i18next';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useQueries } from 'react-query';
-import { IWorkspace } from '@microservices/shared';
+import { IWorkspace } from '@microservices/shared-interfaces';
 import { environment } from '../../globals';
 import { MainBox } from '../../Main.styled';
 import { getDir, getFile } from '../../services/workspacesService';

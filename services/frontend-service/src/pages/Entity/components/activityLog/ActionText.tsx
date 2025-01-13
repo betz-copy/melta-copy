@@ -4,7 +4,7 @@ import i18next from 'i18next';
 import React from 'react';
 import { useQueryClient } from 'react-query';
 import { useLocation } from 'wouter';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated, IRelationshipTemplateMap, IMongoActivityLog } from '@microservices/shared';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated, IRelationshipTemplateMap, IMongoActivityLog } from '@microservices/shared-interfaces';
 import { MeltaTooltip } from '../../../../common/MeltaTooltip';
 import RelationshipReferenceView from '../../../../common/RelationshipReferenceView';
 import { containsHTMLTags, getFirstLine, getNumLines } from '../../../../utils/HtmlTagsStringValue';

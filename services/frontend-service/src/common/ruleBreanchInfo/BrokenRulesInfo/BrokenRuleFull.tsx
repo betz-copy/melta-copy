@@ -5,7 +5,7 @@ import { useQueryClient } from 'react-query';
 import i18next from 'i18next';
 import { ExpandLess as ExpandLessIcon, ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
 import isEqual from 'lodash.isequal';
-import { IEntityTemplateMap, IRelationshipTemplateMap, IMongoRule, IBrokenRulePopulated, IActionPopulated } from '@microservices/shared';
+import { IEntityTemplateMap, IRelationshipTemplateMap, IMongoRule, IBrokenRulePopulated, IActionPopulated } from '@microservices/shared-interfaces';
 import { RuleIcon } from './RuleIcon';
 import { MeltaTooltip } from '../../MeltaTooltip';
 import { EntityInfo } from '../InstanceInfo/EntityInfo';

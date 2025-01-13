@@ -20,7 +20,7 @@ import { FormikProps } from 'formik';
 import i18next from 'i18next';
 import React, { useMemo, useState } from 'react';
 import { useQueryClient } from 'react-query';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated, IReferencedEntityForProcess, PermissionScope } from '@microservices/shared';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated, IReferencedEntityForProcess, PermissionScope } from '@microservices/shared-interfaces';
 import EntityCard from '../../../pages/GlobalSearch/components/entityCard';
 import { useUserStore } from '../../../stores/user';
 import TemplateTableSelect from '../../inputs/TemplateTableSelect';

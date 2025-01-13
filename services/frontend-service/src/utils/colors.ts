@@ -1,5 +1,5 @@
 import randomColor from 'randomcolor';
-import { IEntityTemplatePopulated, IMongoRelationshipTemplate } from '@microservices/shared';
+import { IEntityTemplatePopulated, IMongoRelationshipTemplate } from '@microservices/shared-interfaces';
 
 export const getEntityTemplateColor = (entityTemplate: IEntityTemplatePopulated) => {
     return randomColor({ hue: entityTemplate.category.color, seed: entityTemplate.name, luminosity: 'bright' });

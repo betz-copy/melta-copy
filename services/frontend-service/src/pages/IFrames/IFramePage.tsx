@@ -3,7 +3,7 @@ import React from 'react';
 import Iframe from 'react-iframe';
 import { useQuery } from 'react-query';
 import { useLocation, useParams } from 'wouter';
-import { IMongoIFrame } from '@microservices/shared';
+import { IMongoIFrame } from '@microservices/shared-interfaces';
 import { getIFrameById } from '../../services/iFramesService';
 import IFrameHeadline from './Headline';
 

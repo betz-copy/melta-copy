@@ -1,7 +1,7 @@
 import { Card, CardContent, CheckboxProps, Divider, FormControlLabel, Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
-import { PermissionScope } from '@microservices/shared';
+import { PermissionScope } from '@microservices/shared-interfaces';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { MeltaCheckbox } from '../MeltaCheckbox';
 import PermissionViewIcon from './PermissionViewIcon';

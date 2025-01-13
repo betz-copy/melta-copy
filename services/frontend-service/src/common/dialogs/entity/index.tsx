@@ -1,4 +1,4 @@
-import { IMongoCategory, IMongoEntityTemplateWithConstraintsPopulated, IProperties } from '@microservices/shared';
+import { IMongoCategory, IMongoEntityTemplateWithConstraintsPopulated, IProperties } from '@microservices/shared-interfaces';
 
 export const emptyEntityTemplate: IMongoEntityTemplateWithConstraintsPopulated = {
     _id: '',

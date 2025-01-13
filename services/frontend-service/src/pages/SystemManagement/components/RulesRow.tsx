@@ -5,7 +5,7 @@ import i18next from 'i18next';
 import React, { useState } from 'react';
 import { UseMutateAsyncFunction, useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import { IEntityTemplateMap, IMongoRule, IRuleMap } from '@microservices/shared';
+import { IEntityTemplateMap, IMongoRule, IRuleMap } from '@microservices/shared-interfaces';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import { ErrorToast } from '../../../common/ErrorToast';
 import { InfiniteScroll } from '../../../common/InfiniteScroll';

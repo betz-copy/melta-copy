@@ -13,7 +13,7 @@ import {
     ICategoryMap,
     IEntityTemplateWithConstraintsMap,
     IMongoEntityTemplateWithConstraintsPopulated,
-} from '@microservices/shared';
+} from '@microservices/shared-interfaces';
 import { CustomIcon } from '../../../common/CustomIcon';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import { ErrorToast } from '../../../common/ErrorToast';

@@ -1,4 +1,4 @@
-import { IWorkspace } from '@microservices/shared';
+import { IWorkspace } from '@microservices/shared-interfaces';
 import axios from '../axios';
 import { environment } from '../globals';
 import { WorkspaceWizardValues } from '../pages/DirView/Wizard';

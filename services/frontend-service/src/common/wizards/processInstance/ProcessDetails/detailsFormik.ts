@@ -7,7 +7,7 @@ import {
     IProcessDetails,
     IProcessTemplateMap,
     IMongoProcessInstanceReviewerPopulated,
-} from '@microservices/shared';
+} from '@microservices/shared-interfaces';
 import { ProcessDetailsValues } from '.';
 import { getStepsObjectPopulated } from '../../../../utils/processWizard/steps';
 import { splitSpacialProperties } from '../../../../utils/processWizard/formik';

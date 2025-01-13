@@ -3,7 +3,7 @@ import { editor } from 'monaco-editor';
 import { Monaco } from '@monaco-editor/react';
 import { Box, Typography } from '@mui/material';
 import i18next from 'i18next';
-import { IMongoEntityTemplatePopulated } from '@microservices/shared';
+import { IMongoEntityTemplatePopulated } from '@microservices/shared-interfaces';
 import { CodeEditor } from '../../../../common/inputs/CodeEditor';
 
 interface ActionManagementProps {

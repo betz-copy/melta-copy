@@ -7,7 +7,7 @@ import {
     IMongoRelationshipTemplatePopulated,
     IRelationshipTemplateMap,
     IVariable,
-} from '@microservices/shared';
+} from '@microservices/shared-interfaces';
 import {
     addDefaultFieldsToTemplate,
     getOppositeEntityTemplate,

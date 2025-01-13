@@ -15,7 +15,7 @@ import {
     IRuleBreachPopulated,
     ICreateRelationshipMetadataPopulated,
     PermissionScope,
-} from '@microservices/shared';
+} from '@microservices/shared-interfaces';
 import RelationshipTemplateAutocomplete from '../../inputs/RelationshipTemplateAutocomplete';
 import TemplateTableSelect from '../../inputs/TemplateTableSelect';
 import StrechableArrowRight from './strechableArrowRight';

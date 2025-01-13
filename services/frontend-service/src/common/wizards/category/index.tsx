@@ -4,7 +4,7 @@ import { toast } from 'react-toastify';
 import i18next from 'i18next';
 import { useMutation, useQueryClient } from 'react-query';
 import { AxiosError } from 'axios';
-import { ICategory, ICategoryMap } from '@microservices/shared';
+import { ICategory, ICategoryMap } from '@microservices/shared-interfaces';
 import { StepsType, Wizard, WizardBaseType } from '../index';
 import { CreateCategoryName, createCategoryNameSchema } from './CreateCategoryName';
 import { createCategoryRequest, updateCategoryRequest } from '../../../services/templates/categoriesService';

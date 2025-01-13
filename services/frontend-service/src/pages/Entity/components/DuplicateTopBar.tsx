@@ -1,6 +1,6 @@
 import { Box, Typography, useTheme } from '@mui/material';
 import React from 'react';
-import { IMongoEntityTemplatePopulated } from '@microservices/shared';
+import { IMongoEntityTemplatePopulated } from '@microservices/shared-interfaces';
 import { useDarkModeStore } from '../../../stores/darkMode';
 
 const DuplicateTopBar: React.FC<{

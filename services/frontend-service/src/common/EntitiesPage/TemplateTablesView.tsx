@@ -5,7 +5,7 @@ import { useQuery } from 'react-query';
 import { useTour } from '@reactour/tour';
 import i18next from 'i18next';
 import { toast } from 'react-toastify';
-import { IEntity, IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared';
+import { IEntity, IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared-interfaces';
 import { TemplateTable, TemplateTableRef } from './TemplateTable';
 import { getCountByTemplateIdsRequest } from '../../services/entitiesService';
 import { environment } from '../../globals';

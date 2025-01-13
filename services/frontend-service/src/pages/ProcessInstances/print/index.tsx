@@ -5,7 +5,7 @@ import { IconButton, ThemeProvider } from '@mui/material';
 import { Print as PrintIcon } from '@mui/icons-material';
 import { AxiosError } from 'axios';
 import { UseMutateAsyncFunction } from 'react-query';
-import { IMongoProcessTemplateReviewerPopulated, IMongoProcessInstanceReviewerPopulated } from '@microservices/shared';
+import { IMongoProcessTemplateReviewerPopulated, IMongoProcessInstanceReviewerPopulated } from '@microservices/shared-interfaces';
 import { ComponentToPrint } from './ComponentToPrint';
 import { MeltaTooltip } from '../../../common/MeltaTooltip';
 import { ProcessDetailsValues } from '../../../common/wizards/processInstance/ProcessDetails';

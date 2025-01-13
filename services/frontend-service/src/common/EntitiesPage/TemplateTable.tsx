@@ -12,7 +12,7 @@ import fileDownload from 'js-file-download';
 import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
-import { IEntity, IMongoEntityTemplateWithConstraintsPopulated, PermissionScope } from '@microservices/shared';
+import { IEntity, IMongoEntityTemplateWithConstraintsPopulated, PermissionScope } from '@microservices/shared-interfaces';
 import { environment } from '../../globals';
 import { exportEntitiesRequest } from '../../services/entitiesService';
 import { useDraftIdStore, useDraftsStore } from '../../stores/drafts';

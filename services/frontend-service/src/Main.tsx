@@ -5,7 +5,7 @@ import React from 'react';
 import { prefixer } from 'stylis';
 import rtlPlugin from 'stylis-plugin-rtl';
 import { Route, Switch } from 'wouter';
-import { WorkspaceTypes } from '@microservices/shared';
+import { WorkspaceTypes } from '@microservices/shared-interfaces';
 import DirView from './pages/DirView';
 import { MeltaRoutes } from './pages/MeltaRoutes';
 

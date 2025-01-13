@@ -5,7 +5,7 @@ import { toast } from 'react-toastify';
 import _debounce from 'lodash.debounce';
 import i18next from 'i18next';
 import { InfoOutlined } from '@mui/icons-material';
-import { IEntity, IMongoEntityTemplatePopulated } from '@microservices/shared';
+import { IEntity, IMongoEntityTemplatePopulated } from '@microservices/shared-interfaces';
 import { MeltaTooltip } from '../MeltaTooltip';
 import { searchEntitiesOfTemplateRequest } from '../../services/entitiesService';
 import { EntityPropertiesInternal } from '../EntityProperties';

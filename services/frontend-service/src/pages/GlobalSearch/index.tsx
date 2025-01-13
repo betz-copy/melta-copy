@@ -1,7 +1,7 @@
 import i18next from 'i18next';
 import React, { useState } from 'react';
 import { useQueryClient } from 'react-query';
-import { ICategoryMap, IEntityTemplateWithConstraintsMap } from '@microservices/shared';
+import { ICategoryMap, IEntityTemplateWithConstraintsMap } from '@microservices/shared-interfaces';
 import EntitiesPage from '../../common/EntitiesPage';
 import { useUserStore } from '../../stores/user';
 import { useSearchParams } from '../../utils/hooks/useSearchParams';

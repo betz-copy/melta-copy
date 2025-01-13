@@ -4,7 +4,7 @@ import i18next from 'i18next';
 import { UseMutateAsyncFunction } from 'react-query';
 import { AxiosError } from 'axios';
 import { toast } from 'react-toastify';
-import { IMongoProcessInstanceReviewerPopulated, IMongoProcessTemplateReviewerPopulated } from '@microservices/shared';
+import { IMongoProcessInstanceReviewerPopulated, IMongoProcessTemplateReviewerPopulated } from '@microservices/shared-interfaces';
 import { BlueTitle } from '../../../common/BlueTitle';
 import { IFile } from '../../../interfaces/preview';
 import ProcessStatus, { ReviewedAtProcessStatus } from '../../../common/wizards/processInstance/ProcessSummaryStep/ProcessStatus';

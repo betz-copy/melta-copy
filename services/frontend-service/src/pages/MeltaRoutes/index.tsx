@@ -3,7 +3,7 @@ import i18next from 'i18next';
 import React, { useEffect, useMemo } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import { IEntityTemplateMap, IRelationshipTemplateMap, ICategoryMap, IRuleMap, IProcessTemplateMap } from '@microservices/shared';
+import { IEntityTemplateMap, IRelationshipTemplateMap, ICategoryMap, IRuleMap, IProcessTemplateMap } from '@microservices/shared-interfaces';
 import { LoadingAnimation } from '../../common/LoadingAnimation';
 import { getAllTemplates, GetAllTemplatesType } from '../../services/templates/getAllTemplates';
 import { getFile } from '../../services/workspacesService';

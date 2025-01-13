@@ -27,7 +27,7 @@ import {
     RuleBreachRequestStatus,
     PermissionScope,
     IBrokenRulePopulated,
-} from '@microservices/shared';
+} from '@microservices/shared-interfaces';
 import { approveRuleBreachRequestRequest, cancelRuleBreachRequestRequest, denyRuleBreachRequestRequest } from '../../services/ruleBreachesService';
 import { environment } from '../../globals';
 import { useDarkModeStore } from '../../stores/darkMode';

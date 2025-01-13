@@ -5,7 +5,7 @@ import i18next from 'i18next';
 import React, { useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import { ICategoryMap, IMongoCategory } from '@microservices/shared';
+import { ICategoryMap, IMongoCategory } from '@microservices/shared-interfaces';
 import { CustomIcon } from '../../../common/CustomIcon';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import { EntityTemplateColor } from '../../../common/EntityTemplateColor';

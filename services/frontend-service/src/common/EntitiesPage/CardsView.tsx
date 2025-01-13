@@ -3,7 +3,7 @@ import i18next from 'i18next';
 import React, { forwardRef, useImperativeHandle, useState } from 'react';
 import { useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import { IEntityWithDirectRelationships, IEntityTemplateWithConstraintsMap } from '@microservices/shared';
+import { IEntityWithDirectRelationships, IEntityTemplateWithConstraintsMap } from '@microservices/shared-interfaces';
 import { environment } from '../../globals';
 import EntityCard from '../../pages/GlobalSearch/components/entityCard';
 import { getEntitiesWithDirectConnections } from '../../services/entitiesService';

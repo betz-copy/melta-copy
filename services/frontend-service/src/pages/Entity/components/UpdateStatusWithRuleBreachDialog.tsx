@@ -11,7 +11,7 @@ import {
     ActionTypes,
     IUpdateEntityStatusMetadata,
     IUpdateEntityStatusMetadataPopulated,
-} from '@microservices/shared';
+} from '@microservices/shared-interfaces';
 import ExecWithRuleBreachDialog from '../../../common/dialogs/execWithRuleBreachDialog';
 import { ErrorToast } from '../../../common/ErrorToast';
 import { createRuleBreachRequestRequest } from '../../../services/ruleBreachesService';

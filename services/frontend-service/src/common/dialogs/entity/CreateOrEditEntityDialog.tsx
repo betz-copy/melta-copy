@@ -22,7 +22,7 @@ import {
     ActionTypes,
     IAction,
     IActionPopulated,
-} from '@microservices/shared';
+} from '@microservices/shared-interfaces';
 import { createEntityRequest, updateEntityRequestForMultiple } from '../../../services/entitiesService';
 import { EntityWizardValues } from '.';
 import { environment } from '../../../globals';

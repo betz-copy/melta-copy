@@ -4,7 +4,7 @@ import React, { isValidElement } from 'react';
 import { useQuery } from 'react-query';
 import { Redirect, useLocation, useParams } from 'wouter';
 import { StatusCodes } from 'http-status-codes';
-import { IEntityTemplateMap, PermissionScope, ISubCompactPermissions } from '@microservices/shared';
+import { IEntityTemplateMap, PermissionScope, ISubCompactPermissions } from '@microservices/shared-interfaces';
 import { getExpandedEntityByIdRequest } from '../services/entitiesService';
 
 export const protectedRoute = (children: React.ReactNode, isAllowed: boolean) => {

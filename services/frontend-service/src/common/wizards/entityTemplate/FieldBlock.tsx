@@ -6,7 +6,7 @@ import { FieldArray, FormikErrors, FormikHelpers, FormikTouched } from 'formik';
 import i18next from 'i18next';
 import { DragHandle as DragHandleIcon, ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
 import _debounce from 'lodash.debounce';
-import { IUniqueConstraintOfTemplate, IMongoEntityTemplatePopulated } from '@microservices/shared';
+import { IUniqueConstraintOfTemplate, IMongoEntityTemplatePopulated } from '@microservices/shared-interfaces';
 import { FieldEditCardProps, MemoFieldEditCard } from './FieldEditCard';
 import { MemoAttachmentEditCard } from './AttachmentEditCard';
 import { StepComponentHelpers } from '..';

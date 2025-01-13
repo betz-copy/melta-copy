@@ -20,7 +20,7 @@ import {
     IDuplicateEntityMetadataPopulated,
     IUpdateEntityMetadataPopulated,
     IUpdateEntityStatusMetadataPopulated,
-} from '@microservices/shared';
+} from '@microservices/shared-interfaces';
 import { populateRelationshipTemplate } from '../../utils/templates';
 import { UpdatedFieldsDiff } from './UpdatedFieldsDiff';
 import { EntityLink } from '../EntityLink';

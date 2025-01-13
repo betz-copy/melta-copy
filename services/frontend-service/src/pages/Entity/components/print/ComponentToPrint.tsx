@@ -3,7 +3,7 @@ import { Box, Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
 import { useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import { IEntityExpanded, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '@microservices/shared';
+import { IEntityExpanded, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '@microservices/shared-interfaces';
 import { BlueTitle } from '../../../../common/BlueTitle';
 import { EntityComponentToPrint } from './EntityComponentToPrint';
 import { IConnectionTemplateOfExpandedEntity } from '../..';

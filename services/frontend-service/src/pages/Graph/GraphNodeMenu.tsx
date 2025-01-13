@@ -5,7 +5,7 @@ import React from 'react';
 import { GraphData, NodeObject } from 'react-force-graph-2d';
 import { useQuery } from 'react-query';
 import { useLocation } from 'wouter';
-import { IEntityExpanded, IGraphFilterBodyBatch, IMongoEntityTemplatePopulated } from '@microservices/shared';
+import { IEntityExpanded, IGraphFilterBodyBatch, IMongoEntityTemplatePopulated } from '@microservices/shared-interfaces';
 import { getExpandedEntityByIdRequest } from '../../services/entitiesService';
 import { highlightNode } from '../../utils/graph';
 import { useSearchParams } from '../../utils/hooks/useSearchParams';

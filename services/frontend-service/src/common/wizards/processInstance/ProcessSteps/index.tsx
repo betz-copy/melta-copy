@@ -9,7 +9,7 @@ import {
     IMongoProcessInstanceReviewerPopulated,
     IReferencedEntityForProcess,
     Status,
-} from '@microservices/shared';
+} from '@microservices/shared-interfaces';
 import { ProcessStep } from './processStep';
 import { CustomIcon } from '../../../CustomIcon';
 import { useDarkModeStore } from '../../../../stores/darkMode';

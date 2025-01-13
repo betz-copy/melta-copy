@@ -19,7 +19,7 @@ import {
     IMongoEntityTemplatePopulated,
     IRelationshipTemplateMap,
     ICategoryMap,
-} from '@microservices/shared';
+} from '@microservices/shared-interfaces';
 import { environment } from '../../globals';
 import { getExpandedEntityByIdRequest } from '../../services/entitiesService';
 import { useDarkModeStore } from '../../stores/darkMode';

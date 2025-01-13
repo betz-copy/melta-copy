@@ -2,7 +2,7 @@ import { Folder } from '@mui/icons-material';
 import { Box, Card, Typography } from '@mui/material';
 import React, { useMemo } from 'react';
 import { Link } from 'wouter';
-import { IWorkspace, WorkspaceTypes } from '@microservices/shared';
+import { IWorkspace, WorkspaceTypes } from '@microservices/shared-interfaces';
 import { CustomIcon } from '../../../common/CustomIcon';
 import { MeltaIcon } from '../../../common/MeltaIcon';
 import { MeltaTooltip } from '../../../common/MeltaTooltip';

@@ -15,7 +15,7 @@ import {
 } from '@react-awesome-query-builder/mui';
 import i18next from 'i18next';
 import { ThemeProvider } from '@mui/material';
-import { IRelationshipTemplateMap, IEntityTemplateMap } from '@microservices/shared';
+import { IRelationshipTemplateMap, IEntityTemplateMap } from '@microservices/shared-interfaces';
 import { StepComponentProps, StepsType } from '../index';
 import { getFieldsConfigOfRule } from '../../../utils/rules/fields';
 import { RuleWizardValues } from '.';

@@ -1,6 +1,6 @@
 import MockAdapter from 'axios-mock-adapter';
 import { StatusCodes } from 'http-status-codes';
-import { IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared-interfaces';
 
 const entityTemplates: IMongoEntityTemplateWithConstraintsPopulated[] = [
     {

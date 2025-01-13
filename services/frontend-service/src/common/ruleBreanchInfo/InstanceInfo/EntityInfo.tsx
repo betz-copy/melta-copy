@@ -2,7 +2,7 @@ import { AppRegistration as AppRegistrationIcon, ExpandLess as ExpandLessIcon, E
 import { Collapse, Divider, Grid, Paper, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import React, { useState } from 'react';
-import { IEntity, IEntityTemplatePopulated } from '@microservices/shared';
+import { IEntity, IEntityTemplatePopulated } from '@microservices/shared-interfaces';
 import { environment } from '../../../globals';
 import { getEntityTemplateColor } from '../../../utils/colors';
 import { CustomIcon } from '../../CustomIcon';

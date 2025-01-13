@@ -22,7 +22,7 @@ import i18next from 'i18next';
 import { toast } from 'react-toastify';
 import flatten from 'lodash.flatten';
 import { CircularProgress, Grid } from '@mui/material';
-import { IEntityTemplateMap, IMongoGantt } from '@microservices/shared';
+import { IEntityTemplateMap, IMongoGantt } from '@microservices/shared-interfaces';
 import { getEntitiesWithDirectConnections } from '../../services/entitiesService';
 import {
     getEntitiesSearchBody,

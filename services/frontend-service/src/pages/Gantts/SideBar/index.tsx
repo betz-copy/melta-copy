@@ -3,7 +3,7 @@ import { Box, Button, Grid } from '@mui/material';
 import { Add as AddIcon } from '@mui/icons-material';
 import i18next from 'i18next';
 import { FieldArray, FormikProps } from 'formik';
-import { IGantt, IGanttItem } from '@microservices/shared';
+import { IGantt, IGanttItem } from '@microservices/shared-interfaces';
 import { Swap } from '../../../common/Swap';
 import { CompactDrawer } from '../../../common/CompactDrawer';
 import { GanttItemsDisplay } from './GanttItemsDisplay';

@@ -12,7 +12,7 @@ import {
     IMongoProcessTemplateReviewerPopulated,
     IProcessSingleProperty,
     IMongoEntityTemplateWithConstraintsPopulated,
-} from '@microservices/shared';
+} from '@microservices/shared-interfaces';
 import { SelectCheckbox } from '../SelectCheckbox';
 import { IConnectionTemplateOfExpandedEntity } from '../../pages/Entity';
 import { MeltaCheckbox } from '../MeltaCheckbox';

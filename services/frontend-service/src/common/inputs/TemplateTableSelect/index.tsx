@@ -1,6 +1,6 @@
 import { Box, FormControl, FormHelperText, FormLabel } from '@mui/material';
 import React, { useEffect, useState } from 'react';
-import { IEntity, IMongoEntityTemplateWithConstraintsPopulated, PermissionScope } from '@microservices/shared';
+import { IEntity, IMongoEntityTemplateWithConstraintsPopulated, PermissionScope } from '@microservices/shared-interfaces';
 import DashedSelectBox from './dashedSelectBox';
 import DeletableEntityViewerCard from './deletableEntityViewerCard';
 import EntitiesTableOfTemplateWithQuickFilter from './EntitiesTableOfTemplateWithQuickFilter';

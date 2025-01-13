@@ -2,7 +2,7 @@ import { Box, Divider, Typography } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
 import * as Yup from 'yup';
-import { Colors } from '@microservices/shared';
+import { Colors } from '@microservices/shared-interfaces';
 import { ColorPicker } from '../../../common/inputs/ColorPicker';
 import { StepComponentProps } from '../../../common/wizards/index';
 import { WorkspaceWizardValues } from './index';

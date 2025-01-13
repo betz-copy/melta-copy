@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Collapse, Divider, Grid, Paper, Typography, useTheme } from '@mui/material';
 import { ExpandLess as ExpandLessIcon, ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
 import { useQueryClient } from 'react-query';
-import { IMongoRelationshipTemplatePopulated, IEntityTemplateMap } from '@microservices/shared';
+import { IMongoRelationshipTemplatePopulated, IEntityTemplateMap } from '@microservices/shared-interfaces';
 import { environment } from '../../../globals';
 import { RelationshipTitle } from '../../RelationshipTitle';
 import { EntityPropertiesInternal } from '../../EntityProperties';

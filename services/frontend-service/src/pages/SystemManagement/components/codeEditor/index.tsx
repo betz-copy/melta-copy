@@ -8,7 +8,7 @@ import * as ts from 'typescript-actions';
 import { useMutation, useQueryClient } from 'react-query';
 import { AxiosError } from 'axios';
 import { toast } from 'react-toastify';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated, IMongoCategory } from '@microservices/shared';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated, IMongoCategory } from '@microservices/shared-interfaces';
 import { ErrorToast } from '../../../../common/ErrorToast';
 import { ActionManagement } from './actionsManagement';
 import { updateActionToEntity } from '../../../../services/templates/enitityTemplatesService';

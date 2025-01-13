@@ -3,7 +3,7 @@ import { Chance } from 'chance';
 import faker from '@faker-js/faker';
 import MockAdapter from 'axios-mock-adapter';
 import { StatusCodes } from 'http-status-codes';
-import { IUser } from '@microservices/shared';
+import { IUser } from '@microservices/shared-interfaces';
 import { categories } from './templates/categories';
 
 const chance = new Chance();

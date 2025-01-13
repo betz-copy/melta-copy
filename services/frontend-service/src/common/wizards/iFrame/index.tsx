@@ -3,7 +3,7 @@ import { toast } from 'react-toastify';
 import i18next from 'i18next';
 import { useMutation, useQueryClient } from 'react-query';
 import { AxiosError } from 'axios';
-import { IFrame, IMongoIFrame } from '@microservices/shared';
+import { IFrame, IMongoIFrame } from '@microservices/shared-interfaces';
 import { StepsType, Wizard, WizardBaseType } from '../index';
 import fileDetails from '../../../interfaces/fileDetails';
 import { ErrorToast } from '../../ErrorToast';

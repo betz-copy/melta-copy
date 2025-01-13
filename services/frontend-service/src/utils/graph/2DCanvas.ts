@@ -1,6 +1,6 @@
 /* eslint-disable no-param-reassign */
 import { ForceGraphMethods, LinkObject, NodeObject } from 'react-force-graph-2d';
-import { IMongoEntityTemplatePopulated } from '@microservices/shared';
+import { IMongoEntityTemplatePopulated } from '@microservices/shared-interfaces';
 import { getLineAngle } from '../canvas';
 import { PartialRequired } from '../typeHelpers';
 import { environment } from '../../globals';

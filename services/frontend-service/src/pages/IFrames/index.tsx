@@ -4,7 +4,7 @@ import { useQueryClient } from 'react-query';
 import { Grid } from '@mui/material';
 import { toast } from 'react-toastify';
 import i18next from 'i18next';
-import { IMongoIFrame } from '@microservices/shared';
+import { IMongoIFrame } from '@microservices/shared-interfaces';
 import { iFrameObjectToIFrameForm, searchIFrames } from '../../services/iFramesService';
 import IFramesPageHeadline from './IFramesHeadline';
 import { IFrameWizard } from '../../common/wizards/iFrame';

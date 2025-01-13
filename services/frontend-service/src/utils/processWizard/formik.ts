@@ -1,6 +1,6 @@
 import { get } from 'lodash';
 import pickBy from 'lodash.pickby';
-import { IMongoProcessTemplateReviewerPopulated, IMongoProcessInstanceReviewerPopulated, InstanceProperties } from '@microservices/shared';
+import { IMongoProcessTemplateReviewerPopulated, IMongoProcessInstanceReviewerPopulated, InstanceProperties } from '@microservices/shared-interfaces';
 import { ProcessDetailsValues } from '../../common/wizards/processInstance/ProcessDetails';
 
 export const getAllFieldsTouched = (values: ProcessDetailsValues) => {

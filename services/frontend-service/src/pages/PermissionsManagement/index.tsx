@@ -4,7 +4,7 @@ import i18next from 'i18next';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useQueryClient } from 'react-query';
 import _debounce from 'lodash.debounce';
-import { IUser, ICategoryMap } from '@microservices/shared';
+import { IUser, ICategoryMap } from '@microservices/shared-interfaces';
 import PermissionsOfUserDialog from '../../common/permissionsOfUserDialog';
 import '../../css/pages.css';
 import DeletePermissionsOfUserDialog from './deleteDialog';

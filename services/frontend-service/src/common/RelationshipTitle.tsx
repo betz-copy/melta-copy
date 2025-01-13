@@ -1,7 +1,7 @@
 import { Grid, Typography, useTheme } from '@mui/material';
 import React, { CSSProperties } from 'react';
 import '../css/realtionshipTitle.css';
-import { IMongoEntityTemplatePopulated, IMongoRelationshipTemplatePopulated } from '@microservices/shared';
+import { IMongoEntityTemplatePopulated, IMongoRelationshipTemplatePopulated } from '@microservices/shared-interfaces';
 import { environment } from '../globals';
 import { useDarkModeStore } from '../stores/darkMode';
 import { getEntityTemplateColor } from '../utils/colors';

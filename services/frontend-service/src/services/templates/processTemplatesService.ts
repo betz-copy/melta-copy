@@ -6,7 +6,7 @@ import {
     IProcessDetails,
     IProcessSingleProperty,
     ISearchProcessTemplatesBody,
-} from '@microservices/shared';
+} from '@microservices/shared-interfaces';
 import axios from '../../axios';
 import { environment } from '../../globals';
 import fileDetails from '../../interfaces/fileDetails';

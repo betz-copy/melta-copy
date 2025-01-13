@@ -16,7 +16,7 @@ import {
     PermissionScope,
     ISubCompactPermissions,
     IEntityTemplateWithConstraintsMap,
-} from '@microservices/shared';
+} from '@microservices/shared-interfaces';
 import { BlueTitle } from '../../common/BlueTitle';
 import { CustomIcon } from '../../common/CustomIcon';
 import CreateRelationshipDialog from '../../common/dialogs/createRelationshipDialog';

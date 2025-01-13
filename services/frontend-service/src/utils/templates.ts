@@ -3,7 +3,7 @@ import {
     IMongoEntityTemplatePopulated,
     IMongoRelationshipTemplate,
     IMongoRelationshipTemplatePopulated,
-} from '@microservices/shared';
+} from '@microservices/shared-interfaces';
 
 export const templatesCompareFunc = (templateA: IMongoEntityTemplatePopulated, templateB: IMongoEntityTemplatePopulated) => {
     if (templateA.category._id !== templateB.category._id) {

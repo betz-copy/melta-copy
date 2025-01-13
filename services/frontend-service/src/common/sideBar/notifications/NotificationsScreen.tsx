@@ -5,7 +5,7 @@ import i18next from 'i18next';
 import React, { CSSProperties, useState } from 'react';
 import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
-import { INotificationGroupCountDetails, INotificationPopulated, NotificationType } from '@microservices/shared';
+import { INotificationGroupCountDetails, INotificationPopulated, NotificationType } from '@microservices/shared-interfaces';
 import { environment } from '../../../globals';
 import { getMyNotificationsRequest, manyNotificationSeenRequest } from '../../../services/notificationService';
 import { useDarkModeStore } from '../../../stores/darkMode';

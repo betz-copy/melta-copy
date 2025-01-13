@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { Grid } from '@mui/material';
 import { useQueryClient } from 'react-query';
 import { FormikProps } from 'formik';
-import { IEntityTemplateMap, IRelationshipTemplateMap, IGantt, IGanttItem } from '@microservices/shared';
+import { IEntityTemplateMap, IRelationshipTemplateMap, IGantt, IGanttItem } from '@microservices/shared-interfaces';
 import { getConnectedEntityTemplatesDetails } from '../../../utils/gantts';
 import { EntityTemplateDisplay } from './EntityTemplateDisplay';
 import { environment } from '../../../globals';

@@ -3,7 +3,7 @@ import i18next from 'i18next';
 import React, { useEffect, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { useLocation, useParams } from 'wouter';
-import { BreachType, IRuleBreachAlertPopulated, IRuleBreachRequestPopulated } from '@microservices/shared';
+import { BreachType, IRuleBreachAlertPopulated, IRuleBreachRequestPopulated } from '@microservices/shared-interfaces';
 import { BlueTitle } from '../../common/BlueTitle';
 import '../../css/pages.css';
 import { environment } from '../../globals';

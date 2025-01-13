@@ -1,4 +1,4 @@
-import { IMongoProcessTemplateReviewerPopulated, IProcessSingleProperty, IMongoStepTemplatePopulated } from '@microservices/shared';
+import { IMongoProcessTemplateReviewerPopulated, IProcessSingleProperty, IMongoStepTemplatePopulated } from '@microservices/shared-interfaces';
 import { generateMongoId, generateUser } from '../permissions';
 
 const generateRandomString = (length: number) => {

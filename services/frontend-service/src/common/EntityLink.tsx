@@ -2,7 +2,7 @@ import { Box, Grid, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import React, { CSSProperties } from 'react';
 import { Link } from 'wouter';
-import { IEntity, IMongoEntityTemplatePopulated } from '@microservices/shared';
+import { IEntity, IMongoEntityTemplatePopulated } from '@microservices/shared-interfaces';
 import { useDarkModeStore } from '../stores/darkMode';
 import { EntityPropertiesInternal } from './EntityProperties';
 import { MeltaTooltip } from './MeltaTooltip';

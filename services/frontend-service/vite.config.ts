@@ -14,6 +14,6 @@ export default defineConfig({
     },
 
     optimizeDeps: {
-        include: ['@microservices/shared'],
+        include: ['@microservices/shared-interfaces'],
     },
 });

@@ -35,7 +35,7 @@ import isEqual from 'lodash.isequal';
 import EditIcon from '@mui/icons-material/Edit';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import { IUniqueConstraintOfTemplate, IEntityTemplateMap, PermissionScope } from '@microservices/shared';
+import { IUniqueConstraintOfTemplate, IEntityTemplateMap, PermissionScope } from '@microservices/shared-interfaces';
 import { dateNotificationTypes, validPropertyTypes } from './AddFields';
 import { CommonFormInputProperties, IRelationshipReference } from './commonInterfaces';
 import { MinimizedColorPicker } from '../../inputs/MinimizedColorPicker';

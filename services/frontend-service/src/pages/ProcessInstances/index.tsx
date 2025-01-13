@@ -2,7 +2,7 @@ import { Grid } from '@mui/material';
 import React, { useState, useCallback } from 'react';
 import { useQueryClient } from 'react-query';
 import debounce from 'lodash/debounce';
-import { IMongoProcessTemplateReviewerPopulated, IProcessTemplateMap } from '@microservices/shared';
+import { IMongoProcessTemplateReviewerPopulated, IProcessTemplateMap } from '@microservices/shared-interfaces';
 import ProcessInstancesHeadline from './Headline';
 import ProcessesList from './ProcessesList';
 

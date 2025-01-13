@@ -1,7 +1,7 @@
 import React from 'react';
 import { Divider, Grid } from '@mui/material';
 import { FormikProps } from 'formik';
-import { IGantt } from '@microservices/shared';
+import { IGantt } from '@microservices/shared-interfaces';
 import { GanttItemDisplay } from '../GanttItemDisplay';
 import { GroupByDisplay } from './GroupByDisplay';
 

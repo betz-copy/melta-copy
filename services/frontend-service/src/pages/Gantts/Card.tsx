@@ -1,7 +1,7 @@
 import { Card, CardHeader } from '@mui/material';
 import React from 'react';
 import { useLocation } from 'wouter';
-import { IMongoGantt } from '@microservices/shared';
+import { IMongoGantt } from '@microservices/shared-interfaces';
 import { environment } from '../../globals';
 
 interface IGanttCardProps {

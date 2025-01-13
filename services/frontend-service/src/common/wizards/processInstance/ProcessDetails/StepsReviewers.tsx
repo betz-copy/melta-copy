@@ -5,7 +5,7 @@ import { ScatterPlotOutlined as HiveIcon } from '@mui/icons-material';
 import i18next from 'i18next';
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
-import { IUser, IMongoStepTemplatePopulated } from '@microservices/shared';
+import { IUser, IMongoStepTemplatePopulated } from '@microservices/shared-interfaces';
 import { IDetailsStepProp } from '.';
 import { ReviewerSelector } from './ReviewerSelector';
 import { CustomIcon } from '../../../CustomIcon';
