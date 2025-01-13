@@ -3,7 +3,12 @@ import { createWorkspacesController, translateWorkspaceParameter, wrapMiddleware
 import ValidateRequest from '../../utils/joi';
 import { InstancesValidator } from '../instances/middlewares';
 import FlowCubeController from './controller';
-import { searchTemplatesNameAndIdInWorkspaceSchema, getEntityTemplateByIdSchema, searchFlowCubeRequestSchema } from './validator.schema';
+import {
+    searchTemplatesNameAndIdInWorkspaceSchema,
+    getEntityTemplateByIdSchema,
+    searchFlowCubeRequestSchema,
+    searchEntitiesByTemplateSchema,
+} from './validator.schema';
 
 const FlowCubeRouter: Router = Router();
 const FlowCubeControllerMiddleware = createWorkspacesController(FlowCubeController);
@@ -30,6 +35,13 @@ FlowCubeRouter.post(
     ValidateRequest(getEntityTemplateByIdSchema),
     wrapMiddleware(translateWorkspaceParameter),
     FlowCubeControllerMiddleware.getEntityTemplateById,
+);
+
+FlowCubeRouter.post(
+    '/:workspaceId/templates/search/entities',
+    ValidateRequest(searchEntitiesByTemplateSchema),
+    wrapMiddleware(translateWorkspaceParameter),
+    FlowCubeControllerMiddleware.searchEntitiesByTemplate,
 );
 
 export default FlowCubeRouter;

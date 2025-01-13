@@ -82,8 +82,8 @@ export class FlowCubeManager extends DefaultManagerProxy<null> {
             Type: value.type as string,
             DisplayName: value.title,
             OntologyType: this.getOntologyTypeByProperty(value),
-            IsSingleValue: value.uniqueItems ? value.uniqueItems : undefined,
-            Options: value.enum ? value.enum : undefined,
+            IsSingleValue: value.uniqueItems ? String(value.uniqueItems) : undefined,
+            Options: value.enum ? this.convertArrayToFlowOptions(value.enum) : undefined,
         }));
 
         const fields: FlowFields[] = Object.entries(properties.properties).map(([key, value]) => ({
@@ -120,5 +120,15 @@ export class FlowCubeManager extends DefaultManagerProxy<null> {
         return ontologyType;
     }
 
-    // async getEntitiesByTemplate(templateId: string): Promise<any>
+    convertArrayToFlowOptions(arr: string[]) {
+        return arr.map((item) => ({
+            Name: item,
+            Value: item,
+        }));
+    }
+
+    async searchEntitiesByTemplate(flowParameters: any) {
+        const { TemplateType } = flowParameters;
+        return this.searchFlowCube(TemplateType, flowParameters);
+    }
 }
