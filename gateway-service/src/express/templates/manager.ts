@@ -633,18 +633,15 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
     ) {
         if (!removedProperties.length) return;
 
-        const removedFilesProperties = removedProperties.reduce(
-            (acc, propertyToRemove) => {
-                const { format, items } = currentTemplate.properties.properties[propertyToRemove];
+        const removedFilesProperties = removedProperties.reduce((acc, propertyToRemove) => {
+            const { format, items } = currentTemplate.properties.properties[propertyToRemove];
 
-                if (format === 'fileId' || items?.format === 'fileId') {
-                    acc[propertyToRemove] = items?.format === 'fileId';
-                }
+            if (format === 'fileId' || items?.format === 'fileId') {
+                acc[propertyToRemove] = items?.format === 'fileId';
+            }
 
-                return acc;
-            },
-            {} as Record<string, boolean>,
-        );
+            return acc;
+        }, {} as Record<string, boolean>);
 
         if (Object.keys(removedFilesProperties).length) {
             await this.deleteFilesOfDeletedProperty(id, removedFilesProperties, count);

@@ -1,33 +1,20 @@
-import React, { useRef } from 'react';
-import { editor } from 'monaco-editor';
 import { Monaco } from '@monaco-editor/react';
 import { Box, Typography } from '@mui/material';
 import i18next from 'i18next';
-import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
+import { editor } from 'monaco-editor';
+import React, { useRef } from 'react';
 import { CodeEditor } from '../../../../common/inputs/CodeEditor';
 
 interface ActionManagementProps {
-    entityTemplate: IMongoEntityTemplatePopulated | null;
     onChange: (value: string | undefined, event: editor.IModelContentChangedEvent) => void;
     setEditorContent: React.Dispatch<React.SetStateAction<string>>;
-    defaultCode: string;
+    defaultValue: string;
     onValidate?: (markers: editor.IMarker[]) => void;
     forbidden?: boolean;
     value?: string;
-    crudActions: string[];
 }
 
-const ActionManagement: React.FC<ActionManagementProps> = ({
-    entityTemplate,
-    onChange,
-    onValidate,
-    defaultCode,
-    forbidden = false,
-    value,
-    setEditorContent,
-    crudActions,
-}) => {
-    const entityName = entityTemplate?.name;
+const ActionManagement: React.FC<ActionManagementProps> = ({ onChange, onValidate, defaultValue, forbidden = false, value, setEditorContent }) => {
     const monacoRef = useRef<editor.IStandaloneCodeEditor | null>(null);
 
     const handleEditorDidMount = (editorDefs: editor.IStandaloneCodeEditor, monaco: Monaco) => {
@@ -46,13 +33,9 @@ const ActionManagement: React.FC<ActionManagementProps> = ({
             }
         }
         `;
+
         monaco.languages.typescript.typescriptDefaults.addExtraLib(customErrorLib, 'ts:custom-error-lib.d.ts');
     };
-
-    const createBasicFunctions = (functionNames: string[], name: string) =>
-        functionNames.flatMap((fnName) => [`function ${fnName}(${name}:${name}): void {`, '', '}', '']).join('\n');
-
-    const defaultValue = [defaultCode, '', createBasicFunctions(crudActions, entityName!)].join('\n');
 
     return (
         <Box>
