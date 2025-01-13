@@ -8,9 +8,9 @@ export interface FlowParameters {
     DisplayName: string;
     Type: string;
     OntologyType: string;
-    isRequired?: boolean;
+    isRequired?: string;
     Description?: string;
-    IsSingleValue?: boolean;
+    IsSingleValue?: string;
     Options?: Array<any>;
 }
 

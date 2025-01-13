@@ -25,3 +25,11 @@ export const getEntityTemplateByIdSchema = Joi.object({
         workspaceId: Joi.string().required(),
     },
 });
+
+export const searchEntitiesByTemplateSchema = Joi.object({
+    body: Joi.object().pattern(Joi.string(), Joi.any()),
+    query: {},
+    params: {
+        workspaceId: Joi.string().required(),
+    },
+});
