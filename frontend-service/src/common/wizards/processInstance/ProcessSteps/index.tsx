@@ -2,10 +2,12 @@
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import { Box, Button, Divider, Grid, Step, StepLabel, Stepper, Typography } from '@mui/material';
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import TocIcon from '@mui/icons-material/Toc';
 import i18next from 'i18next';
 import { History } from '@mui/icons-material';
+import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
+import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import { IMongoProcessTemplatePopulated } from '../../../../interfaces/processes/processTemplate';
 import { IMongoStepTemplatePopulated } from '../../../../interfaces/processes/stepTemplate';
 import { IMongoStepInstancePopulated } from '../../../../interfaces/processes/stepInstance';
@@ -13,10 +15,10 @@ import { ProcessStep } from './processStep';
 import { IMongoProcessInstancePopulated, IReferencedEntityForProcess, Status } from '../../../../interfaces/processes/processInstance';
 import { useDarkModeStore } from '../../../../stores/darkMode';
 import { StepIcon } from '../../../../pages/ProcessInstances/ProcessCard';
-import { environment } from '../../../../globals';
 import { BlueTitle } from '../../../BlueTitle';
 import { MeltaTooltip } from '../../../MeltaTooltip';
 import { ActivitiesContent } from '../../../../pages/Entity/components/activityLog/ActivitiesContent';
+import './processStep.css';
 
 export interface ProcessStepValues {
     properties: object;
@@ -43,28 +45,6 @@ const getStepTemplateByStepInstance = (
     return processTemplate.steps.find((step) => stepInstance.templateId === step._id)!;
 };
 
-const { stepsAmountInStepper } = environment.processInstances;
-
-const getVisibleSteps = (currentStep: number, totalSteps: number) => {
-    let startStep = currentStep - Math.floor(stepsAmountInStepper / 2);
-    let endStep = currentStep + Math.floor(stepsAmountInStepper / 2) + 1;
-
-    if (startStep < 0) {
-        startStep = 0;
-        endStep = stepsAmountInStepper;
-    }
-    if (endStep > totalSteps) {
-        endStep = totalSteps;
-        startStep = totalSteps - stepsAmountInStepper;
-    }
-
-    if (startStep < 0) {
-        startStep = 0;
-    }
-
-    return { startStep, endStep };
-};
-
 const Steps: React.FC<IStepsProp> = ({
     processTemplate,
     processInstance,
@@ -83,8 +63,48 @@ const Steps: React.FC<IStepsProp> = ({
     );
 
     const [openActivityPopper, setOpenActivityPopper] = React.useState(false);
+    const [scrollPosition, setScrollPosition] = React.useState(0);
+    const [scrollLeftDisabled, setScrollLeftDisabled] = React.useState(false);
+    const [scrollRightDisabled, setScrollRightDisabled] = React.useState(false);
 
     const darkMode = useDarkModeStore((state) => state.darkMode);
+
+    const containerRef = useRef<HTMLDivElement | null>(null);
+
+    const updateScrollButtons = () => {
+        if (containerRef.current) {
+            const maxScrollLeft = containerRef.current.scrollWidth - containerRef.current.clientWidth || 0;
+            setScrollLeftDisabled(-1 * containerRef.current.scrollLeft >= maxScrollLeft);
+            setScrollRightDisabled(containerRef.current.scrollLeft === 0);
+        }
+    };
+
+    const handleScroll = (scrollAmount: number) => {
+        if (containerRef.current) {
+            const newScrollPosition = scrollPosition + scrollAmount;
+            const maxScrollLeft = containerRef.current.scrollWidth - containerRef.current.clientWidth;
+
+            if (newScrollPosition < 0 && newScrollPosition > maxScrollLeft * -1) setScrollPosition(newScrollPosition);
+
+            containerRef.current.scrollLeft = newScrollPosition;
+
+            updateScrollButtons();
+        }
+    };
+
+    useEffect(() => {
+        if (containerRef.current) {
+            containerRef.current.addEventListener('scroll', updateScrollButtons);
+            updateScrollButtons();
+        }
+        return () => {
+            if (containerRef.current) {
+                containerRef.current.removeEventListener('scroll', updateScrollButtons);
+            }
+        };
+    }, []);
+
+    const stepperWidth = 480;
 
     return (
         <Grid
@@ -102,106 +122,89 @@ const Steps: React.FC<IStepsProp> = ({
         >
             <Grid container item width="100%" justifyContent="space-between" alignItems="center" flexWrap="nowrap">
                 <Grid item container width="70%">
-                    {getVisibleSteps(currStepInstanceIndex, processInstance.steps.length).startStep > 0 && (
-                        <Grid item>
+                    <Grid item width="30px">
+                        {!scrollRightDisabled && (
                             <a
                                 onClick={() => {
-                                    if (!isStepEditMode) {
-                                        setCurrStepInstance(processInstance.steps[0]);
-                                        setCurrStepInstanceIndex(0);
-                                    }
+                                    handleScroll(stepperWidth / 2);
                                 }}
                                 style={{ cursor: !isStepEditMode ? 'pointer' : undefined }}
                             >
-                                <Typography fontSize="20px" color={darkMode ? '#9398c2' : '#1E2775'}>
-                                    ￫...
-                                </Typography>
+                                <ArrowForwardIosIcon sx={{ color: darkMode ? '#9398c2' : '#1E2775', marginTop: '10px' }} />
                             </a>
-                        </Grid>
-                    )}
-                    <Grid item flexBasis="70%">
-                        <Stepper style={{ display: 'flex', flexWrap: 'wrap' }} alternativeLabel>
-                            {processInstance.steps
-                                .slice(
-                                    getVisibleSteps(currStepInstanceIndex, processInstance.steps.length).startStep,
-                                    getVisibleSteps(currStepInstanceIndex, processInstance.steps.length).endStep,
-                                )
-                                .map((stepInstance, index) => (
-                                    <Step style={{ minWidth: '75px' }} key={stepInstance._id} active>
-                                        <Grid>
-                                            <Grid container flexDirection="column" justifyContent="center" width="100%" alignSelf="center" gap="10px">
-                                                <StepLabel
-                                                    // eslint-disable-next-line react/no-unstable-nested-components
-                                                    StepIconComponent={() => {
-                                                        return (
-                                                            <Grid container flexDirection="column" justifyContent="center" width="100%" gap="10px">
-                                                                <StepIcon
-                                                                    iconColor={currStepInstance?._id === stepInstance._id ? '#1E2775' : '#9398C2'}
-                                                                    step={stepInstance}
-                                                                    stepTemplate={
-                                                                        processTemplate.steps[
-                                                                            index +
-                                                                                getVisibleSteps(currStepInstanceIndex, processInstance.steps.length)
-                                                                                    .startStep
-                                                                        ]
+                        )}
+                    </Grid>
+                    <Grid
+                        item
+                        ref={containerRef}
+                        className="scrollable-container"
+                        style={{
+                            width: `${stepperWidth}px`,
+                            height: '90px',
+                            overflowX: 'scroll',
+                            scrollBehavior: 'smooth',
+                        }}
+                    >
+                        <Stepper style={{ display: 'flex', alignItems: 'center' }} alternativeLabel>
+                            {processInstance.steps.map((stepInstance, index) => (
+                                <Step style={{ minWidth: '75px' }} key={stepInstance._id} active>
+                                    <Grid>
+                                        <Grid container flexDirection="column" justifyContent="center" width="100%" alignSelf="center" gap="10px">
+                                            <StepLabel
+                                                // eslint-disable-next-line react/no-unstable-nested-components
+                                                StepIconComponent={() => {
+                                                    return (
+                                                        <Grid container flexDirection="column" justifyContent="center" width="100%" gap="10px">
+                                                            <StepIcon
+                                                                iconColor={currStepInstance?._id === stepInstance._id ? '#1E2775' : '#9398C2'}
+                                                                step={stepInstance}
+                                                                stepTemplate={processTemplate.steps[index]}
+                                                                setOpen={() => {
+                                                                    if (!isStepEditMode) {
+                                                                        setCurrStepInstance(stepInstance);
+                                                                        setCurrStepInstanceIndex(index);
                                                                     }
-                                                                    setOpen={() => {
-                                                                        if (!isStepEditMode) {
-                                                                            setCurrStepInstance(stepInstance);
-                                                                            setCurrStepInstanceIndex(
-                                                                                index +
-                                                                                    getVisibleSteps(
-                                                                                        currStepInstanceIndex,
-                                                                                        processInstance.steps.length,
-                                                                                    ).startStep,
-                                                                            );
-                                                                        }
-                                                                    }}
-                                                                    displayTitle={false}
-                                                                />
+                                                                }}
+                                                                displayTitle={false}
+                                                            />
 
-                                                                <Typography
-                                                                    color={
-                                                                        // eslint-disable-next-line no-nested-ternary
-                                                                        currStepInstance?._id === stepInstance._id
-                                                                            ? darkMode
-                                                                                ? '#b7bef7'
-                                                                                : '#1E2775'
-                                                                            : '#9398C2'
-                                                                    }
-                                                                    fontSize={currStepInstance?._id === stepInstance._id ? '14px' : '12px'}
-                                                                    fontWeight={currStepInstance?._id === stepInstance._id ? '600' : '400'}
-                                                                    textAlign="center"
-                                                                >
-                                                                    {getStepTemplateByStepInstance(stepInstance, processTemplate).displayName}
-                                                                </Typography>
-                                                            </Grid>
-                                                        );
-                                                    }}
-                                                />
-                                            </Grid>
+                                                            <Typography
+                                                                color={
+                                                                    // eslint-disable-next-line no-nested-ternary
+                                                                    currStepInstance?._id === stepInstance._id
+                                                                        ? darkMode
+                                                                            ? '#b7bef7'
+                                                                            : '#1E2775'
+                                                                        : '#9398C2'
+                                                                }
+                                                                fontSize={currStepInstance?._id === stepInstance._id ? '14px' : '12px'}
+                                                                fontWeight={currStepInstance?._id === stepInstance._id ? '600' : '400'}
+                                                                textAlign="center"
+                                                            >
+                                                                {getStepTemplateByStepInstance(stepInstance, processTemplate).displayName}
+                                                            </Typography>
+                                                        </Grid>
+                                                    );
+                                                }}
+                                            />
                                         </Grid>
-                                    </Step>
-                                ))}
+                                    </Grid>
+                                </Step>
+                            ))}
                         </Stepper>
                     </Grid>
-                    {getVisibleSteps(currStepInstanceIndex, processInstance.steps.length).endStep < processInstance.steps.length && (
-                        <Grid item>
+                    <Grid item width="30px">
+                        {!scrollLeftDisabled && (
                             <a
                                 onClick={() => {
-                                    if (!isStepEditMode) {
-                                        setCurrStepInstance(processInstance.steps[processInstance.steps.length - 1]);
-                                        setCurrStepInstanceIndex(processInstance.steps.length - 1);
-                                    }
+                                    handleScroll((-1 * stepperWidth) / 2);
                                 }}
                                 style={{ cursor: !isStepEditMode ? 'pointer' : undefined }}
                             >
-                                <Typography fontSize="20px" marginBottom="25px" color={darkMode ? '#9398c2' : '#1E2775'}>
-                                    ...￩
-                                </Typography>
+                                <ArrowBackIosIcon sx={{ color: darkMode ? '#9398c2' : '#1E2775', marginTop: '10px' }} />
                             </a>
-                        </Grid>
-                    )}
+                        )}
+                    </Grid>
                 </Grid>
                 <Grid item alignSelf="center" width="120px">
                     <MeltaTooltip
