@@ -13,6 +13,7 @@ import App from './App';
 import { TourWrapper } from './TourWrapper';
 import { darkTheme, lightTheme } from './theme';
 import { useDarkModeStore } from './stores/darkMode';
+import MuiXLicense from './common/MuiLicense';
 
 if (import.meta.hot) {
     import.meta.hot.on('vite:beforeUpdate', () => console.clear());
@@ -53,6 +54,7 @@ const Index: React.FC = () => {
                 />
             </ThemeProvider>
             <ReactQueryDevtools />
+            <MuiXLicense />
         </QueryClientProvider>
     );
 };

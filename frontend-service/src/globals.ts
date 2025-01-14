@@ -63,6 +63,9 @@ export const environment = {
         BatchSize: 50,
         limit3DConnections: 100,
     },
+    mui: {
+        activationKey: '8c5d3fd6a4390125cf8590dea55dbb05Tz1HdXksRT0yMDAwMDAwMDAwMDAwLFM9cHJlbWl1bSxMTT1zdWJzY3JpcHRpb24sS1Y9Mg==',
+    },
     canvasSettings: {
         heightPaddingMultiplier: 0.3,
         widthPaddingMultiplier: 0.6,
