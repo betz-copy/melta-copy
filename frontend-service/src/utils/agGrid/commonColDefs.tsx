@@ -387,6 +387,7 @@ export const enumColDef = <Data extends any = EntityData>(
         cellEditorParams: {
             values,
             multiple: false,
+            colorsOptions: enumColorOptions,
         },
     };
 };
@@ -442,6 +443,7 @@ export const enumArrayColDef = <Data extends any = EntityData>(
         cellEditorParams: {
             values,
             multiple: true,
+            colorsOptions: enumColorOptions,
         },
     };
 };
