@@ -3,10 +3,9 @@ import { MapContainer, Marker, Polygon, LayersControl, LayerGroup } from 'react-
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-draw/dist/leaflet.draw.css';
 import { CRS } from 'leaflet';
+import { IMongoEntityTemplatePopulated } from '@microservices/shared-interfaces';
 import EntityLocationPopup from './EntityLocationPopup';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { jerusalemCoordinates, UpdateMapBounds } from '../../utils/map';
-import { IEntity } from '../../interfaces/entities';
 import { useEntityWithLocationFields } from '../../utils/hooks/useLocation';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { BaseLayers } from './mapPage';

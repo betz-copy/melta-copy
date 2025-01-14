@@ -168,6 +168,7 @@ export interface ISearchEntitiesByLocationBody {
     textSearch?: string;
     templates: ISearchEntitiesByLocationTemplatesBody;
     circle: Circle;
+    polygon?: Polygon;
 }
 
 export interface ISearchResult {
@@ -180,6 +181,7 @@ export interface IFilterDatesRange {
     dateNotificationValue: number;
     isDateTime: boolean;
     isDailyAlert: boolean;
+    isDatePastAlert: boolean;
 }
 
 export interface ITemplateSearchBody {

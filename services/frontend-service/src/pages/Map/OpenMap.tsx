@@ -1,11 +1,10 @@
 import { Dialog, Grid, IconButton, Typography } from '@mui/material';
 import React, { useState } from 'react';
 import { LocationOn } from '@mui/icons-material';
+import { IEntity, IMongoEntityTemplatePopulated } from '@microservices/shared-interfaces';
 import { environment } from '../../globals';
 import { HighlightText } from '../../utils/HighlightText';
 import EntityWithLocationFields from './LocationPreview';
-import { IEntity } from '../../interfaces/entities';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 
 const OpenMap: React.FC<{
     field: string;

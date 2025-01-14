@@ -43,3 +43,4 @@ export { Status, ProcessPropertyFormats, ProcessStatus } from './interfaces/proc
 export { FileTypes } from './interfaces/semanticSearch';
 
 export * from './types';
+export { SplitBy } from './types';
