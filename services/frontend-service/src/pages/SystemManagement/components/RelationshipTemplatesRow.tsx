@@ -24,16 +24,20 @@ import TemplatesSelectCheckbox from '../../../common/templatesSelectCheckbox';
 import { RelationshipTemplateWizard } from '../../../common/wizards/relationshipTemplate';
 import { environment } from '../../../globals';
 import {
+    convertToRelationshipFieldRequest,
     deleteRelationshipTemplateRequest,
     relationshipTemplateObjectToRelationshipTemplateForm,
 } from '../../../services/templates/relationshipTemplatesService';
 import { filterRelationships } from '../../../utils/relationshipTemplateManagement';
+import { getRelationshipInstancesCountByTemplateIdRequest } from '../../../services/entitiesService';
 import { populateRelationshipTemplate } from '../../../utils/templates';
 import { Box } from './Box';
 import { ViewingCard } from './Card';
 import { CardMenu } from './CardMenu';
 import { CreateButton } from './CreateButton';
 import { FilterButton } from './FilterButton';
+import { ConvertToRelationship } from '../../../common/wizards/relationshipTemplate/convertRelationshipToRelationshipField';
+import { IRelationshipReference } from '../../../common/wizards/entityTemplate/commonInterfaces';
 
 const { infiniteScrollPageCount } = environment.processInstances;
 
@@ -51,15 +55,36 @@ interface RelationshipTemplateCardProps {
             relationshipTemplateId: string | null;
         }>
     >;
+    setConvertToRelationshipFieldDialogState: React.Dispatch<
+        React.SetStateAction<{
+            isDialogOpen: boolean;
+            relationshipTemplate: IMongoRelationshipTemplate | null;
+        }>
+    >;
 }
 
 const RelationshipTemplateCard: React.FC<RelationshipTemplateCardProps> = ({
     relationshipTemplate,
     setRelationshipTemplateWizardDialogState,
     setDeleteRelationshipTemplateDialogState,
+    setConvertToRelationshipFieldDialogState,
 }) => {
     const [isHoverOnCard, setIsHoverOnCard] = useState(false);
+    const [isDeleteButtonDisabled, setIsDeleteButtonDisabled] = useState(false);
+
     const { isProperty } = relationshipTemplate;
+
+    const checkRelationshipTemplateHasRelationships = async () => {
+        const relationshipsCountByTemplates = await getRelationshipInstancesCountByTemplateIdRequest(relationshipTemplate._id);
+        setIsDeleteButtonDisabled(relationshipsCountByTemplates > 0);
+    };
+
+    const handleHover = (isHover: boolean) => {
+        setIsHoverOnCard(isHover);
+        if (isHover) {
+            checkRelationshipTemplateHasRelationships();
+        }
+    };
 
     return (
         <ViewingCard
@@ -97,17 +122,29 @@ const RelationshipTemplateCard: React.FC<RelationshipTemplateCardProps> = ({
                                         relationshipTemplateId: relationshipTemplate._id,
                                     });
                                 }}
+                                onConvertToRelationShipFieldClick={() => {
+                                    const { sourceEntity, destinationEntity, ...restOfRelationshipTemplate } = relationshipTemplate;
+                                    setConvertToRelationshipFieldDialogState({
+                                        isDialogOpen: true,
+                                        relationshipTemplate: {
+                                            sourceEntityId: sourceEntity._id,
+                                            destinationEntityId: destinationEntity._id,
+                                            ...restOfRelationshipTemplate,
+                                        },
+                                    });
+                                }}
                                 disabledProps={{
-                                    isDisabled: false,
-                                    canEdit: relationshipTemplate.sourceEntity.disabled || relationshipTemplate.destinationEntity.disabled,
-                                    tooltipTitle: i18next.t('systemManagement.disabledEntityTemplate'),
+                                    isDeleteDisabled: isDeleteButtonDisabled,
+                                    tooltipTitle: isDeleteButtonDisabled ? i18next.t('systemManagement.cannotDeleteWithRelationship') : '',
+                                    isEditDisabled: relationshipTemplate.sourceEntity.disabled || relationshipTemplate.destinationEntity.disabled,
+                                    editTooltipTitle: i18next.t('systemManagement.cannotEditEntityDisabled'),
                                 }}
                             />
                         )}
                     </Grid>
                 </Grid>
             }
-            onHover={(isHover: boolean) => setIsHoverOnCard(isHover)}
+            onHover={handleHover}
         />
     );
 };
@@ -160,6 +197,14 @@ const RelationshipTemplatesRow: React.FC = () => {
         relationshipTemplateId: null,
     });
 
+    const [convertToRelationshipFieldDialogState, setConvertToRelationshipFieldDialogState] = useState<{
+        isDialogOpen: boolean;
+        relationshipTemplate: IMongoRelationshipTemplate | null;
+    }>({
+        isDialogOpen: false,
+        relationshipTemplate: null,
+    });
+
     const [relationshipTemplateWizardDialogState, setRelationshipTemplateWizardDialogState] = useState<{
         isWizardOpen: boolean;
         relationshipTemplate: IMongoRelationshipTemplate | null;
@@ -183,6 +228,47 @@ const RelationshipTemplatesRow: React.FC = () => {
         },
     });
 
+    const { isLoading: convertToRelationshipFieldLoading, mutateAsync: convertRelationshipToRelationShipFieldRequest } = useMutation(
+        ({
+            id,
+            fieldName,
+            displayFieldName,
+            relationshipReference,
+        }: {
+            id: string;
+            fieldName: string;
+            displayFieldName: string;
+            relationshipReference: IRelationshipReference;
+        }) =>
+            convertToRelationshipFieldRequest(id, {
+                fieldName,
+                displayFieldName,
+                relationshipReference,
+            }),
+        {
+            onSuccess: ({ updatedRelationShipTemplate, updatedEntityTemplate }, { id }) => {
+                queryClient.setQueryData<IRelationshipTemplateMap>('getRelationshipTemplates', (relationshipTemplateMap) =>
+                    relationshipTemplateMap!.set(id, updatedRelationShipTemplate),
+                );
+
+                queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) =>
+                    entityTemplateMap!.set(updatedEntityTemplate._id, updatedEntityTemplate),
+                );
+                queryClient.invalidateQueries();
+
+                toast.success(i18next.t('wizard.relationshipTemplate.convertToRelationshipFieldSuccessfully'));
+            },
+            onError: (error: AxiosError) => {
+                toast.error(
+                    <ErrorToast
+                        axiosError={error}
+                        defaultErrorMessage={i18next.t('wizard.relationshipTemplate.failedToConvertToRelationshipField')}
+                    />,
+                );
+            },
+        },
+    );
+
     const getRelationshipGroupedByEntitiesTemplate = (
         relationships: IMongoRelationshipTemplatePopulated[],
     ): { entityTemplate: IMongoEntityTemplatePopulated; relationships: IMongoRelationshipTemplatePopulated[] }[] => {
@@ -196,7 +282,9 @@ const RelationshipTemplatesRow: React.FC = () => {
                 return relation.destinationEntity._id === entityTemplate._id;
             });
 
-            relationsGroupedByEntities.push({ entityTemplate, relationships: relatedRelations });
+            if (relatedRelations.length > 0) {
+                relationsGroupedByEntities.push({ entityTemplate, relationships: relatedRelations });
+            }
         });
 
         return relationsGroupedByEntities;
@@ -295,7 +383,9 @@ const RelationshipTemplatesRow: React.FC = () => {
                                 sourceEntityTemplatesToShow,
                                 searchText,
                             }),
-                        ).splice(pageParam, infiniteScrollPageCount);
+                        )
+                            .filter((group) => group.relationships.length > 0)
+                            .splice(pageParam, infiniteScrollPageCount);
                     }}
                     onQueryError={(error) => {
                         // eslint-disable-next-line no-console
@@ -374,6 +464,7 @@ const RelationshipTemplatesRow: React.FC = () => {
                                     relationshipTemplate={relationshipTemplate}
                                     setDeleteRelationshipTemplateDialogState={setDeleteRelationshipTemplateDialogState}
                                     setRelationshipTemplateWizardDialogState={setRelationshipTemplateWizardDialogState}
+                                    setConvertToRelationshipFieldDialogState={setConvertToRelationshipFieldDialogState}
                                 />
                             ))}
                         </Box>
@@ -395,6 +486,20 @@ const RelationshipTemplatesRow: React.FC = () => {
                 handleClose={() => setDeleteRelationshipTemplateDialogState({ isDialogOpen: false, relationshipTemplateId: null })}
                 onYes={() => mutateAsync(deleteRelationshipTemplateDialogState.relationshipTemplateId!)}
                 isLoading={isLoading}
+            />
+            <ConvertToRelationship
+                open={convertToRelationshipFieldDialogState.isDialogOpen}
+                handleClose={() => setConvertToRelationshipFieldDialogState({ isDialogOpen: false, relationshipTemplate: null })}
+                onYes={({ fieldName, displayFieldName, relationshipReference }) =>
+                    convertRelationshipToRelationShipFieldRequest({
+                        id: convertToRelationshipFieldDialogState.relationshipTemplate?._id!,
+                        fieldName,
+                        displayFieldName,
+                        relationshipReference,
+                    })
+                }
+                isLoading={convertToRelationshipFieldLoading}
+                relationshipTemplate={convertToRelationshipFieldDialogState.relationshipTemplate}
             />
         </Grid>
     );

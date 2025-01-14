@@ -1,9 +1,9 @@
-import { ISearchBatchBody, ISearchSort, ISemanticSearchResult, logger } from '@microservices/shared';
+import { IRerankRequest, IRerankResult,ISearchBatchBody, ISearchSort, ISemanticSearchResult, logger } from '@microservices/shared';
 import config from '../../config';
 import DefaultExternalServiceApi from '../../utils/express/externalService';
 
 const {
-    semanticSearchService: { url, searchRoute },
+    semanticSearchService: { url, searchRoute, requestTimeout, baseRoute, rerankRoute },
 } = config;
 
 export type ISemanticSearchBatchBody = Omit<ISearchBatchBody, 'templates' | 'sort' | 'skip' | 'limit'> & {
@@ -15,7 +15,7 @@ export type ISemanticSearchBatchBody = Omit<ISearchBatchBody, 'templates' | 'sor
 
 export class SemanticSearchService extends DefaultExternalServiceApi {
     constructor(workspaceId: string) {
-        super(workspaceId, { baseURL: url });
+        super(workspaceId, { baseURL: `${url}${baseRoute}`, timeout: requestTimeout });
     }
 
     async search(searchBody: ISemanticSearchBatchBody) {
@@ -25,6 +25,16 @@ export class SemanticSearchService extends DefaultExternalServiceApi {
         } catch (error) {
             logger.error("Error in SemanticSearchService's search", { error });
             return {};
+        }
+    }
+
+    async rerank(rerankBody: IRerankRequest) {
+        try {
+            const { data } = await this.api.post<IRerankResult[]>(rerankRoute, rerankBody);
+            return data;
+        } catch (error) {
+            logger.error('Rerank error: ', { error });
+            return [];
         }
     }
 }

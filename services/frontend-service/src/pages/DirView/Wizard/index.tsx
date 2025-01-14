@@ -6,7 +6,7 @@ import { toast } from 'react-toastify';
 import { useLocation } from 'wouter';
 import { IWorkspace, WorkspaceTypes } from '@microservices/shared-interfaces';
 import { ErrorToast } from '../../../common/ErrorToast';
-import { StepsType, Wizard, WizardBaseType } from '../../../common/wizards/index';
+import { StepType, Wizard, WizardBaseType } from '../../../common/wizards/index';
 import fileDetails from '../../../interfaces/fileDetails';
 import { createOne, updateOne } from '../../../services/workspacesService';
 import { getFileName } from '../../../utils/getFileName';
@@ -19,7 +19,7 @@ export interface WorkspaceWizardValues extends Omit<IWorkspace, '_id' | 'path' |
     logo?: fileDetails;
 }
 
-const steps: StepsType<WorkspaceWizardValues> = [
+const steps: StepType<WorkspaceWizardValues>[] = [
     {
         label: i18next.t('wizard.workspace.chooseDetails'),
         component: (props, { isEditMode }) => <ChooseDetails {...props} isEditMode={isEditMode} />,

@@ -5,6 +5,8 @@ import {
     Download,
     Expand,
     TableRowsOutlined,
+    LibraryAddCheckOutlined as SelectMultipleIcon,
+    Upload,
 } from '@mui/icons-material';
 import { Box, CircularProgress, Dialog, Grid, useTheme } from '@mui/material';
 import i18next from 'i18next';
@@ -13,6 +15,7 @@ import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useRef,
 import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
 import { IEntity, IMongoEntityTemplateWithConstraintsPopulated, PermissionScope } from '@microservices/shared-interfaces';
+import { useMatomo } from '@datapunt/matomo-tracker-react';
 import { environment } from '../../globals';
 import { exportEntitiesRequest } from '../../services/entitiesService';
 import { useDraftIdStore, useDraftsStore } from '../../stores/drafts';
@@ -30,8 +33,12 @@ import { TableButton } from '../TableButton';
 import { AddEntityButton } from './AddEntityButton';
 import { DraftCard } from './DraftCard';
 import { ResetFilterButton } from './ResetFilterButton';
+import { LoadExcelButton } from './LoadExcelButton';
 
-const { defaultRowHeight, defaultFontSize, defaultExpandedTableHeight } = environment.agGrid;
+const {
+    agGrid: { defaultRowHeight, defaultFontSize, defaultExpandedTableHeight },
+    loadExcel: { excelExtension },
+} = environment;
 
 export type TemplateTableRef = EntitiesTableOfTemplateRef<IEntity>;
 
@@ -47,11 +54,36 @@ const TemplateTable = forwardRef<
     const currentUser = useUserStore((state) => state.user);
 
     const theme = useTheme();
+    const drafts = useDraftsStore((state) => state.drafts);
+
+    const setDraftId = useDraftIdStore((state) => state.setDraftId);
+    const { trackEvent } = useMatomo();
 
     const entitiesTableRef = useRef<EntitiesTableOfTemplateRef<IEntity>>(null);
 
     const [isExpand, setIsExpand] = useState(() => sessionStorage.getItem(`isExpand-${template._id}`) === 'true');
+    const [multipleSelect, setMultipleSelect] = useState(false);
+    const [isFiltered, setIsFiltered] = useState(false);
+    const initializedExternalErrors = { files: false, unique: {}, action: '' };
+    const [externalErrors, setExternalErrors] = useState(initializedExternalErrors);
+    const [createOrUpdateWithRuleBreachDialogState, setCreateOrUpdateWithRuleBreachDialogState] = useState<ICreateOrUpdateWithRuleBreachDialogState>({
+        isOpen: false,
+    });
+    const [editDialog, setEditDialog] = useState<{
+        isOpen: boolean;
+        isEditMode: boolean;
+        entity?: IEntity;
+        wizardValues?: EntityWizardValues;
+    }>({
+        isOpen: false,
+        isEditMode: true,
+    });
+
     useImperativeHandle(ref, () => entitiesTableRef.current!);
+
+    useEffect(() => {
+        sessionStorage.setItem(`isExpand-${template._id}`, isExpand.toString());
+    }, [isExpand, template._id]);
 
     const handleExpandClick = useCallback(() => {
         setIsExpand((prevExpand) => {
@@ -62,12 +94,14 @@ const TemplateTable = forwardRef<
             sessionStorage.setItem(`resizeHeight-${template._id}`, JSON.stringify(defaultExpandedTableHeight));
             return newExpandState;
         });
-    }, [template._id, page]);
+
+        if (multipleSelect) setMultipleSelect(false);
+    }, [template._id, page, multipleSelect]);
 
     const { isLoading: isExportingTableToExcelFile, mutateAsync: exportTemplateToExcel } = useMutation(
         async () => {
             return exportEntitiesRequest({
-                fileName: `${template.displayName}.xlsx`,
+                fileName: `${template.displayName}${excelExtension}`,
                 textSearch: quickFilterText,
                 templates: {
                     [template._id]: {
@@ -83,36 +117,39 @@ const TemplateTable = forwardRef<
                 toast.error(i18next.t('failedToExportTable'));
             },
             onSuccess(data) {
-                fileDownload(data, `${template.displayName}.xlsx`);
+                fileDownload(data, `${template.displayName}${excelExtension}`);
             },
         },
     );
 
-    const [isFiltered, setIsFiltered] = useState(false);
-    const initializedExternalErrors = { files: false, unique: {}, action: '' };
-    const [externalErrors, setExternalErrors] = useState(initializedExternalErrors);
-    const [editDialog, setEditDialog] = useState<{
-        isOpen: boolean;
-        isEditMode: boolean;
-        entity?: IEntity;
-        wizardValues?: EntityWizardValues;
-    }>({
-        isOpen: false,
-        isEditMode: true,
-    });
-    const [createOrUpdateWithRuleBreachDialogState, setCreateOrUpdateWithRuleBreachDialogState] = useState<ICreateOrUpdateWithRuleBreachDialogState>({
-        isOpen: false,
-    });
     const entityTemplateColor = getEntityTemplateColor(template);
 
     const userHasWritePermissions = checkUserCategoryPermission(currentUser.currentWorkspacePermissions, template.category, PermissionScope.write);
 
-    const drafts = useDraftsStore((state) => state.drafts);
-
-    const setDraftId = useDraftIdStore((state) => state.setDraftId);
     useEffect(() => {
         sessionStorage.setItem(`isExpand-${template._id}`, isExpand.toString());
     }, [isExpand, template._id]);
+
+    const handleDownloadClick = () => {
+        exportTemplateToExcel();
+
+        trackEvent({
+            category: 'template-action',
+            action: 'download template click',
+            name: template.displayName,
+        });
+    };
+
+    const checkIfLoadEntityIsDisabled = () => {
+        const { properties } = template.properties;
+        const requiredProperties = new Set(template.properties.required);
+
+        return Object.entries(properties).some(([key, property]) => {
+            return (property.format === 'fileId' || property.format === 'relationshipReference') && requiredProperties.has(key);
+        });
+    };
+
+    const isLoadExcelDisabled = !userHasWritePermissions || checkIfLoadEntityIsDisabled();
 
     return (
         <Grid container minWidth="fit-content">
@@ -151,7 +188,16 @@ const TemplateTable = forwardRef<
                     <TableButton
                         iconButtonWithPopoverProps={{
                             popoverText: i18next.t('entitiesTableOfTemplate.columns'),
-                            iconButtonProps: { onClick: () => entitiesTableRef.current?.showSideBar() },
+                            iconButtonProps: {
+                                onClick: () => {
+                                    entitiesTableRef.current?.showSideBar();
+
+                                    trackEvent({
+                                        category: 'template-action',
+                                        action: 'show sidebar click',
+                                    });
+                                },
+                            },
                         }}
                         icon={<TableRowsOutlined fontSize="small" />}
                         text={i18next.t('entitiesTableOfTemplate.columns')}
@@ -161,7 +207,14 @@ const TemplateTable = forwardRef<
                         iconButtonWithPopoverProps={{
                             popoverText: isExpand ? i18next.t('entitiesTableOfTemplate.expandLess') : i18next.t('entitiesTableOfTemplate.expandMore'),
                             iconButtonProps: {
-                                onClick: handleExpandClick,
+                                onClick: () => {
+                                    handleExpandClick();
+
+                                    trackEvent({
+                                        category: 'template-action',
+                                        action: isExpand ? 'off' : 'on',
+                                    });
+                                },
                             },
                         }}
                         icon={isExpand ? <CloseFullscreenRounded fontSize="small" /> : <Expand fontSize="small" />}
@@ -173,14 +226,55 @@ const TemplateTable = forwardRef<
                     <TableButton
                         iconButtonWithPopoverProps={{
                             popoverText: i18next.t('entitiesTableOfTemplate.downloadOneTable'),
-                            iconButtonProps: { onClick: () => exportTemplateToExcel() },
+                            iconButtonProps: {
+                                onClick: () => {
+                                    handleDownloadClick();
+                                },
+                            },
                         }}
                         icon={isExportingTableToExcelFile ? <CircularProgress size="24px" /> : <Download fontSize="small" />}
                         text={isExportingTableToExcelFile ? '' : i18next.t('entitiesTableOfTemplate.downloadOneTableTitle')}
                     />
+
+                    <TableButton
+                        iconButtonWithPopoverProps={{
+                            popoverText: i18next.t('entitiesTableOfTemplate.multipleSelect'),
+                            iconButtonProps: {
+                                onClick: () => {
+                                    setMultipleSelect(!multipleSelect);
+                                    if (!(isExpand && !multipleSelect)) setIsExpand(!isExpand);
+                                },
+                            },
+                        }}
+                        icon={<SelectMultipleIcon fontSize="small" />}
+                        text={i18next.t('entitiesTableOfTemplate.multipleSelect')}
+                        disableButton={!userHasWritePermissions}
+                    />
                 </Grid>
 
                 <Grid container item flexGrow={1} width={0} justifyContent="flex-end" alignItems="center">
+                    <LoadExcelButton
+                        disabled={isLoadExcelDisabled}
+                        initialValues={{ template, properties: { disabled: false }, attachmentsProperties: {} }}
+                        style={{
+                            display: 'flex',
+                            gap: '0.25rem',
+                            borderRadius: '5px',
+                            fontSize: '0.75rem',
+                            color: theme.palette.primary.main,
+                        }}
+                        onSuccessCreate={() => entitiesTableRef.current?.refreshServerSide()}
+                        popoverText={isLoadExcelDisabled ? i18next.t('wizard.entity.loadEntities.tableCantLoadEntities') : undefined}
+                    >
+                        <Upload
+                            fontSize="small"
+                            sx={{
+                                opacity: isLoadExcelDisabled ? 0.3 : 1,
+                                pointerEvents: isLoadExcelDisabled ? 'none' : 'auto',
+                            }}
+                        />
+                        {i18next.t('entitiesTableOfTemplate.loadEntitiesTitle')}
+                    </LoadExcelButton>
                     <AddEntityButton
                         initialStep={1}
                         disabled={!userHasWritePermissions}
@@ -192,7 +286,14 @@ const TemplateTable = forwardRef<
                             fontSize: '0.75rem',
                             color: theme.palette.primary.main,
                         }}
-                        onSuccessCreate={() => entitiesTableRef.current?.refreshServerSide()}
+                        onSuccessCreate={() => {
+                            entitiesTableRef.current?.refreshServerSide();
+
+                            trackEvent({
+                                category: 'template-action',
+                                action: 'add entity click',
+                            });
+                        }}
                         setUpdatedEntities={setUpdatedEntities}
                     >
                         <AddCircle fontSize="small" sx={{ opacity: !userHasWritePermissions ? 0.3 : 1 }} />
@@ -250,6 +351,7 @@ const TemplateTable = forwardRef<
                     quickFilterText={quickFilterText}
                     rowHeight={defaultRowHeight}
                     fontSize={`${defaultFontSize}px`}
+                    multipleSelect={multipleSelect}
                     saveStorageProps={{
                         shouldSaveFilter: true,
                         shouldSaveWidth: true,
@@ -280,6 +382,8 @@ const TemplateTable = forwardRef<
                     onFilter={() => {
                         setIsFiltered(entitiesTableRef.current?.isFiltered() ?? false);
                     }}
+                    menuRowButtonProps={userHasWritePermissions}
+                    refetch={() => entitiesTableRef.current?.refreshServerSide()}
                 />
             </Box>
 

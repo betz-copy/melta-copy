@@ -17,7 +17,7 @@ class EntityTemplateController extends DefaultController<IMongoEntityTemplate, E
     }
 
     async getTemplatesUsingRelationshipReferance(req: Request, res: Response) {
-        res.json(await this.manager.getTemplatesUsingRelationshipReferance(req.params.relatedTemplateId));
+        res.json(await this.manager.getTemplatesUsingRelationshipReference(req.params.relatedTemplateId));
     }
 
     async createEntityTemplate(req: Request, res: Response) {
@@ -32,12 +32,18 @@ class EntityTemplateController extends DefaultController<IMongoEntityTemplate, E
 
     async updateEntityTemplate(req: Request, res: Response) {
         const { templateId: id } = req.params;
-        res.json(await this.manager.updateEntityTemplate(id, req.body));
+        const { allowToDeleteRelationshipFields, ...restBody } = req.body;
+        res.json(await this.manager.updateEntityTemplate(id, restBody, allowToDeleteRelationshipFields));
     }
 
     async updateEntityTemplateStatus(req: Request, res: Response) {
         const { templateId: id } = req.params;
         res.json(await this.manager.updateEntityTemplateStatus(id, req.body.disabled));
+    }
+
+    async convertToRelationshipField(req: Request, res: Response) {
+        const { templateId, relationshipTemplateId } = req.params;
+        res.json(await this.manager.convertToRelationshipField(templateId, relationshipTemplateId, req.body));
     }
 
     async updateEntityTemplateAction(req: Request, res: Response) {

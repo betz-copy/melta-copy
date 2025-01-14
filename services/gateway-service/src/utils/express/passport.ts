@@ -64,7 +64,7 @@ export const initPassport = () => {
             },
         ),
     );
-
+ 
     passport.use(
         new ShragaStrategy({ shragaURL, callbackURL, useEnrichId }, (user: ShragaUser, next: any) => {
             next(null, user);

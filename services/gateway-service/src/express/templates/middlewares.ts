@@ -73,9 +73,7 @@ class TemplatesValidator extends DefaultController {
     async validateUserCanUpdateOrDeleteRelationshipTemplate(req: Request) {
         const relationshipTemplate = await this.relationshipsTemplateService.getRelationshipTemplateById(req.params.id);
         const relatedCategories = await this.getRelatedCategoriesFromRelationshipTemplate(relationshipTemplate);
-
         const userPermissions = await this.authorizer.getWorkspacePermissions(req.user!.id);
-
         if (
             !userPermissions.admin?.scope &&
             !Object.entries(userPermissions.instances?.categories ?? {}).some(

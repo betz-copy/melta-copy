@@ -6,12 +6,14 @@ import {
     IMongoEntityTemplate,
     IMongoRelationshipTemplate,
     ActionTypes,
+    ActionErrors,
     ICreateEntityMetadata,
     ICreateRelationshipMetadata,
     IDuplicateEntityMetadata,
     IUpdateEntityMetadata,
     IAction,
     IBrokenRule,
+    IRequiredConstraint,
     IEntity,
     IRelationship,
     IMongoActivityLog,
@@ -25,6 +27,7 @@ import EntityManager from '../entities/manager';
 import RelationshipManager from '../relationships/manager';
 import { throwIfActionCausedRuleFailures } from '../rules/throwIfActionCausedRuleFailures';
 import config from '../../config';
+import { BadRequestError } from '../error';
 
 const { brokenRulesFakeEntityIdPrefix } = config;
 
@@ -78,9 +81,8 @@ export class BulkActionManager extends DefaultManagerNeo4j {
         const { updatedFields } = actionMetadata;
 
         const newEntityProperties = { ...entity.properties, ...updatedFields };
-
-        // updatedFields specifies fields to remove w/ nulls. but shouldn't be in the IEntity properties
         const newEntityPropertiesWithoutNulls = pickBy(newEntityProperties, (property) => property !== null) as IEntity['properties'];
+
         const entityAfterManipulations = JSON.parse(JSON.stringify(newEntityPropertiesWithoutNulls));
 
         Object.entries(entityTemplate.properties.properties).forEach(([name, value]) => {
@@ -417,6 +419,36 @@ export class BulkActionManager extends DefaultManagerNeo4j {
         return { relationshipTemplateIds, entityTemplateIds };
     }
 
+    async throwRequiredErrors(actions: IAction[]) {
+        const constraints = await this.entityManager.getAllConstraints();
+
+        actions.forEach((action, index) => {
+            if (action.actionType === ActionTypes.CreateEntity) {
+                const { templateId, properties } = action.actionMetadata as ICreateEntityMetadata;
+                const templateConstraint = constraints.find((constraint) => constraint.templateId === templateId);
+
+                if (templateConstraint) {
+                    const missingProperty = templateConstraint.requiredConstraints.find(
+                        (requiredProperty) => !Object.keys(properties).includes(requiredProperty),
+                    );
+
+                    if (missingProperty) {
+                        const requiredConstraint: Omit<IRequiredConstraint, 'constraintName'> = {
+                            type: ActionErrors.required,
+                            templateId,
+                            property: missingProperty,
+                            index,
+                        };
+                        throw new BadRequestError('instance is missing required property', {
+                            errorCode: config.errorCodes.failedConstraintsValidation,
+                            constraint: requiredConstraint,
+                        });
+                    }
+                }
+            }
+        });
+    }
+
     async runBulkOfActions(actions: IAction[], ignoredRules: IBrokenRule[], dryRun: boolean, userId: string) {
         return this.neo4jClient
             .performComplexTransaction(
@@ -434,6 +466,8 @@ export class BulkActionManager extends DefaultManagerNeo4j {
                     const relationshipsTemplatesByIds = new Map(
                         relationshipTemplates.map((relationshipTemplate) => [relationshipTemplate._id, relationshipTemplate]),
                     );
+
+                    this.throwRequiredErrors(actions);
 
                     // collecting all the entitiesIds and their rules for preparation to search their related rules
                     const { entitiesIdsRulesReasonsMapBeforeRunActions, entitiesTemplatesIdsOfRules } = await this.getEntitiesIdsRulesReasonsBefore(

@@ -51,8 +51,15 @@ const ProcessTemplatesRow: React.FC = () => {
                 queryClient.invalidateQueries(['searchProcessTemplates', searchText]);
                 toast.success(i18next.t('wizard.processTemplate.deletedSuccessfully'));
             },
-            onError: (error: AxiosError<{ metadata: { errorCode: string } }>) => {
-                toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.processTemplate.failedToDelete')} />);
+            onError: (error: AxiosError) => {
+                toast.error(
+                    <ErrorToast
+                        axiosError={error}
+                        defaultErrorMessage={`${i18next.t('wizard.processTemplate.failedToDelete')} ${i18next.t(
+                            'wizard.processTemplate.hasInstances',
+                        )}`}
+                    />,
+                );
             },
         },
     );

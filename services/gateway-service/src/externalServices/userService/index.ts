@@ -69,6 +69,11 @@ class UserService {
         const { data } = await this.userService.patch<void>(`${permissionsRoute}/metadata`, { query, metadata });
         return data;
     }
+
+    static async searchUsersByPermissions(workspaceId: string) {
+        const { data } = await this.userService.get<IUser[]>(`${usersRoute}/search/${workspaceId}`);
+        return data;
+    }
 }
 
 export default UserService;

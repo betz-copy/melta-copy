@@ -9,6 +9,7 @@ import {
 import TemplatesManagerService from '.';
 import config from '../../config';
 import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
+import { IMongoRelationshipTemplate } from './relationshipsTemplateService';
 
 const {
     templateService: {
@@ -71,8 +72,24 @@ class EntityTemplateService extends TemplatesManagerService {
         return data;
     }
 
-    async updateEntityTemplate(entityTemplateId: string, updatedEntityTemplate: Omit<IEntityTemplate, 'disabled'>) {
-        const { data } = await this.api.put<IMongoEntityTemplatePopulated>(`${baseEntitiesRoute}/${entityTemplateId}`, updatedEntityTemplate);
+    async updateEntityTemplate(
+        entityTemplateId: string,
+        updatedEntityTemplate: Omit<IEntityTemplate, 'disabled'>,
+        allowToDeleteRelationshipFields: boolean = true,
+    ) {
+        const { data } = await this.api.put<IMongoEntityTemplatePopulated>(`${baseEntitiesRoute}/${entityTemplateId}`, {
+            ...updatedEntityTemplate,
+            allowToDeleteRelationshipFields,
+        });
+
+        return data;
+    }
+
+    async convertToRelationshipField(entityTemplateId: string, relationshipTemplateId: string, updatedData: Omit<IEntityTemplate, 'disabled'>) {
+        const { data } = await this.api.put<{
+            updatedRelationShipTemplate: IMongoRelationshipTemplate;
+            updatedEntityTemplate: IMongoEntityTemplatePopulated;
+        }>(`${baseEntitiesRoute}/convertToRelationshipField/${entityTemplateId}/${relationshipTemplateId}`, updatedData);
 
         return data;
     }

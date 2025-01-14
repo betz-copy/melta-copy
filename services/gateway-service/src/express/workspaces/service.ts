@@ -35,7 +35,7 @@ class WorkspaceService {
     }
 
     static async createOne(workspace: Omit<IWorkspace, '_id'>) {
-        const { data } = await this.api.post<IWorkspace>('/', workspace);
+        const { data } = await this.api.post<IWorkspace & { createdAt: Date; updatedAt: Date }>('/', workspace);
         return data;
     }
 

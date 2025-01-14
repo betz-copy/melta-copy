@@ -6,9 +6,13 @@ import React, { useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { ICategoryMap, IMongoCategory } from '@microservices/shared-interfaces';
+import { ViewingCard } from './Card';
 import { CustomIcon } from '../../../common/CustomIcon';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import { EntityTemplateColor } from '../../../common/EntityTemplateColor';
+import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
+import { useUserStore } from '../../../stores/user';
+import { PermissionScope } from '../../../interfaces/permissions';
 import { ErrorToast } from '../../../common/ErrorToast';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
 import { MeltaTooltip } from '../../../common/MeltaTooltip';
@@ -16,7 +20,6 @@ import { CategoryWizard } from '../../../common/wizards/category';
 import { environment } from '../../../globals';
 import { categoryObjectToCategoryForm, deleteCategoryRequest } from '../../../services/templates/categoriesService';
 import { Box } from './Box';
-import { ViewingCard } from './Card';
 import { CardMenu } from './CardMenu';
 import { CreateButton } from './CreateButton';
 
@@ -38,7 +41,30 @@ interface CategoryCardProps {
 
 const CategoryCard: React.FC<CategoryCardProps> = ({ category, setDeleteCategoryDialogState, setCategoryWizardDialogState }) => {
     const [isHoverOnCard, setIsHoverOnCard] = useState(false);
+    const [isDeleteButtonDisabled, setIsDeleteButtonDisabled] = useState(false);
+
     const theme = useTheme();
+    const queryClient = useQueryClient();
+
+    const templates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates');
+
+    const currentUser = useUserStore((state) => state.user);
+
+    const canEdit =
+        currentUser.currentWorkspacePermissions.templates?.scope === PermissionScope.write ||
+        currentUser.currentWorkspacePermissions.admin?.scope === PermissionScope.write;
+
+    const checkCategoryHasTemplates = (categoryId: string) => {
+        const hasTemplates = Array.from(templates!.values()).some((template) => template.category._id === categoryId);
+        setIsDeleteButtonDisabled(hasTemplates);
+    };
+
+    const handleHover = (isHover: boolean) => {
+        setIsHoverOnCard(isHover);
+        if (isHover) {
+            checkCategoryHasTemplates(category._id);
+        }
+    };
 
     return (
         <ViewingCard
@@ -80,19 +106,23 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, setDeleteCategory
                             <CardMenu
                                 onEditClick={() => setCategoryWizardDialogState({ isWizardOpen: true, category })}
                                 onDeleteClick={() => setDeleteCategoryDialogState({ isDialogOpen: true, categoryId: category._id })}
+                                disabledProps={{
+                                    isDeleteDisabled: isDeleteButtonDisabled,
+                                    isEditDisabled: !canEdit,
+                                    tooltipTitle: isDeleteButtonDisabled ? i18next.t('wizard.entity.deleteDisabledDueToTemplates') : '',
+                                }}
                             />
                         )}
                     </Grid>
                 </Grid>
             }
-            onHover={(isHover: boolean) => setIsHoverOnCard(isHover)}
+            onHover={handleHover}
         />
     );
 };
 
 const CategoriesRow: React.FC = () => {
     const queryClient = useQueryClient();
-
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
 
     const [deleteCategoryDialogState, setDeleteCategoryDialogState] = useState<{
@@ -127,7 +157,6 @@ const CategoriesRow: React.FC = () => {
     });
 
     const [isHoverOnBox, setIsHoverOnBox] = useState(false);
-
     const theme = useTheme();
 
     return (

@@ -9,6 +9,7 @@ import React, { Dispatch, SetStateAction, useCallback, useEffect, useRef, useSta
 import { debounce } from 'lodash';
 import AutoAwesomeOutlinedIcon from '@mui/icons-material/AutoAwesomeOutlined';
 import { IEntity, IMongoCategory, IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared-interfaces';
+import { useMatomo } from '@datapunt/matomo-tracker-react';
 import SearchInput from '../inputs/SearchInput';
 import { AddEntityButton } from './AddEntityButton';
 import TemplatesSelectCheckbox from '../templatesSelectCheckbox';
@@ -49,6 +50,7 @@ export const GlobalSearchBar: React.FC<{
 }) => {
     const valueForSearchButtonRef = useRef(inputValue ?? '');
     const theme = useTheme();
+    const { trackEvent } = useMatomo();
 
     const [semanticSearch, setSemanticSearch] = useLocalStorage<boolean>('semanticSearch', true);
     const [urlSearchParams, setUrlSearchParams] = useSearchParams();
@@ -65,6 +67,10 @@ export const GlobalSearchBar: React.FC<{
                 if (gridApi) {
                     gridApi.setGridOption('quickFilterText', value);
                 }
+                trackEvent({
+                    category: 'search',
+                    action: semanticSearch ? 'on' : 'off',
+                });
             }
         }, 300),
         [onSearch, gridApi, valueForSearchButtonRef.current],
@@ -76,7 +82,7 @@ export const GlobalSearchBar: React.FC<{
 
         if (realValue !== semanticSearch) setSemanticSearch(realValue);
         if (realValue !== boolUrl) setUrlSearchParams({ ...Object.fromEntries(urlSearchParams.entries()), semanticSearch: realValue.toString() });
-    }, [boolUrl, semanticSearch, JSON.stringify(urlSearchParams), urlSemanticSearch, showAiButton]);
+    }, [boolUrl, semanticSearch, urlSemanticSearch, showAiButton, setSemanticSearch, setUrlSearchParams, urlSearchParams]);
 
     // eslint-disable-next-line consistent-return
     useEffect(() => {
@@ -101,6 +107,7 @@ export const GlobalSearchBar: React.FC<{
                             semanticSearch: (!convertToBool(urlSemanticSearch!)).toString(),
                         })
                     }
+                    sx={{ padding: 0, paddingLeft: 0.5 }}
                 >
                     {boolUrl ? <AutoAwesome color="primary" /> : <AutoAwesomeOutlinedIcon />}
                 </IconButton>
@@ -181,6 +188,7 @@ const EntitiesPageHeadline: React.FC<{
 }) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const theme = useTheme();
+    const { trackEvent } = useMatomo();
 
     const onSuccessCreate = (entity: IEntity) => {
         const handleTemplatesTablesView = () => {
@@ -193,6 +201,10 @@ const EntitiesPageHeadline: React.FC<{
                     onAddEntity(entity.templateId);
                 }
             }
+            trackEvent({
+                category: 'top-bar-action',
+                action: 'add entity',
+            });
         };
 
         if (viewModeProps.viewMode === 'templates-tables-view') {
@@ -201,6 +213,22 @@ const EntitiesPageHeadline: React.FC<{
             onAddEntity(entity.properties._id);
         }
     };
+
+    const handleToggleChange = useCallback(
+        (_e: React.MouseEvent<HTMLElement>, newValue: 'cards-view' | 'templates-tables-view') => {
+            if (newValue !== null) {
+                viewModeProps.setViewMode(newValue);
+                if (newValue === 'cards-view') {
+                    trackEvent({
+                        category: 'view-mode',
+                        action: 'cards view',
+                    });
+                }
+            }
+        },
+        [viewModeProps, trackEvent],
+    );
+
     return (
         <Grid
             container
@@ -252,11 +280,7 @@ const EntitiesPageHeadline: React.FC<{
                     <Grid item>
                         <ToggleButtonGroup
                             value={viewModeProps.viewMode}
-                            onChange={(_e, newValue) => {
-                                if (newValue !== null) {
-                                    viewModeProps.setViewMode(newValue);
-                                }
-                            }}
+                            onChange={handleToggleChange}
                             exclusive
                             color="primary"
                             size="small"
@@ -278,7 +302,13 @@ const EntitiesPageHeadline: React.FC<{
                         <Grid item>
                             <IconButton
                                 style={{ background: theme.palette.primary.main, borderRadius: '7px', width: '135px', height: '35px' }}
-                                onClick={excelExportProps.onExcelExport}
+                                onClick={() => {
+                                    excelExportProps.onExcelExport();
+                                    trackEvent({
+                                        category: 'top-bar-action',
+                                        action: 'download templates',
+                                    });
+                                }}
                                 disabled={excelExportProps.isLoadingExcel}
                             >
                                 {excelExportProps.isLoadingExcel ? (

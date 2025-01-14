@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/rules-of-hooks */
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Grid, IconButton, Typography } from '@mui/material';
 import i18next from 'i18next';
 import { CloseOutlined, Done, ContentCopy } from '@mui/icons-material';
@@ -13,9 +13,10 @@ import { ErrorToast } from '../../../../common/ErrorToast';
 import { ActionManagement } from './actionsManagement';
 import { updateActionToEntity } from '../../../../services/templates/enitityTemplatesService';
 import IconButtonWithPopover from '../../../../common/IconButtonWithPopover';
-import { generateInterfaceWithRelationships } from '../../../../utils/interfaceGenerator';
+import { generateInterfaceWithRelationships } from '../../../../utils/templateActions/interfaceGenerator';
 import { environment } from '../../../../globals';
 import { AreYouSureDialog } from '../../../../common/dialogs/AreYouSureDialog';
+import { generateBasicFunctions } from '../../../../utils/templateActions/generateFunctions';
 
 const {
     systemManagement: {
@@ -39,6 +40,7 @@ const CodeEditorDialog: React.FC<{
     const [editorValue, setEditorValue] = useState('');
     const [closeActionDialog, setCloseActionDialog] = useState(false);
 
+    const hasActions = !!entityTemplate.actions;
     const defaultCode = [
         '/// To throw a custom error in your code, use the following syntax:',
         '// throw new CustomError("Your error message")',
@@ -49,6 +51,13 @@ const CodeEditorDialog: React.FC<{
         '  // updates entity in data base',
         '}',
     ].join('\n');
+
+    const defaultValue = [defaultCode, '', generateBasicFunctions(['onCreateEntity', 'onUpdateEntity'], entityTemplate.name!)].join('\n');
+
+    const isEditorChanged = useMemo(
+        () => (hasActions ? editorValue !== `${defaultCode}\n${entityTemplate.actions}\n` : editorValue !== defaultValue),
+        [editorValue, hasActions, defaultCode, defaultValue, entityTemplate.actions],
+    );
 
     const { mutateAsync, isLoading } = useMutation(
         () => {
@@ -100,9 +109,7 @@ const CodeEditorDialog: React.FC<{
         setValidationErrors(hasErrorMarkers);
     };
 
-    const saveAction = async () => {
-        await mutateAsync();
-    };
+    const saveAction = () => mutateAsync();
 
     return (
         <Box>
@@ -127,7 +134,8 @@ const CodeEditorDialog: React.FC<{
                     <IconButton
                         aria-label="close"
                         onClick={() => {
-                            setCloseActionDialog(true);
+                            if (isEditorChanged) setCloseActionDialog(true);
+                            else handleClose();
                         }}
                         sx={{ position: 'absolute', right: 12, top: 12 }}
                     >
@@ -136,14 +144,12 @@ const CodeEditorDialog: React.FC<{
                 </DialogTitle>
                 <DialogContent>
                     <ActionManagement
-                        entityTemplate={entityTemplate}
                         onChange={onChange}
                         onValidate={onValidate}
                         forbidden={isImportUsing}
                         value={entityTemplate.actions ? `${defaultCode}\n${entityTemplate.actions}\n` : undefined}
                         setEditorContent={setEditorValue}
-                        defaultCode={defaultCode}
-                        crudActions={['onCreateEntity', 'onUpdateEntity']}
+                        defaultValue={defaultValue}
                     />
                 </DialogContent>
                 <DialogActions sx={{ padding: '16px' }}>
@@ -151,7 +157,7 @@ const CodeEditorDialog: React.FC<{
                         <Button
                             type="submit"
                             variant="contained"
-                            disabled={isLoading || validationErrors || isImportUsing}
+                            disabled={isLoading || validationErrors || isImportUsing || !isEditorChanged}
                             sx={{ borderRadius: '10px' }}
                             onClick={saveAction}
                         >

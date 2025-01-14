@@ -1,10 +1,11 @@
-import { logger } from '@microservices/shared';
+import { logger, IRerankRequest } from '@microservices/shared';
 import config from '../../config';
-import ModelApiService from '../../externalServices/modelApi';
 import ElasticClient from '../../utils/elastic';
 import { splitTextIntoChunks } from '../../utils/fs';
 import MinIOClient from '../../utils/minio/minioClient';
 import { IIndexFilesRequest, ISearchRequest } from './interface';
+import { ModelEmbeddingApiService } from '../../externalServices/model/embedding';
+import { ModelRerankingApiService } from '../../externalServices/model/reranking';
 
 const {
     consts: { fileIdLength },
@@ -27,9 +28,13 @@ export class SemanticManager {
     }
 
     public async search(searchBody: ISearchRequest) {
-        const embeddedQuery = await ModelApiService.embed([searchBody.textSearch]);
+        const embeddedQuery = await ModelEmbeddingApiService.embed([searchBody.textSearch]);
 
         return this.elasticClient.hybridSearch(searchBody.textSearch, embeddedQuery[0], searchBody.limit, searchBody.skip, searchBody.templates);
+    }
+
+    public async rerank(searchBody: IRerankRequest) {
+        return ModelRerankingApiService.rerank(searchBody);
     }
 
     public createIndex() {

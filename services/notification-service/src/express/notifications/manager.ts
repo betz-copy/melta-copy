@@ -2,12 +2,13 @@ import { FilterQuery } from 'mongoose';
 import {
     DefaultManagerMongo,
     IBasicNotificationQuery,
+    IDateAboutToExpireMetadata,
     INotification,
     INotificationCountGroups,
     INotificationGroupCountDetails,
 } from '@microservices/shared';
 import config from '../../config';
-import transaction from '../../utils/mongo';
+import { transaction, UPDATE_CREATED_AT } from '../../utils/mongo';
 import { NotificationDoesNotExistError } from '../error';
 import NotificationsSchema from './model';
 
@@ -18,10 +19,13 @@ export class NotificationsManager extends DefaultManagerMongo<INotification> {
 
     public async getNotifications(limit: number, step: number, query: IBasicNotificationQuery): Promise<INotification[]> {
         if (query.types && query.types.length > 0)
-            return this.model
-                .find(this.handleQuery(query), {}, { limit, skip: step * limit })
-                .sort({ createdAt: -1 })
-                .lean();
+            return this.model.aggregate([
+                { $match: this.handleQuery(query) },
+                { $skip: step * limit },
+                { $limit: limit },
+                ...UPDATE_CREATED_AT,
+                { $sort: { createdAt: -1 } },
+            ]);
         return [];
     }
 
@@ -48,11 +52,33 @@ export class NotificationsManager extends DefaultManagerMongo<INotification> {
     }
 
     public async getNotificationById(notificationId: string): Promise<INotification> {
-        return this.model.findById(notificationId).orFail(new NotificationDoesNotExistError(notificationId)).lean();
+        const notification = (await this.model.aggregate([{ $match: { _id: notificationId } }, ...UPDATE_CREATED_AT]))[0];
+
+        if (!notification) throw new NotificationDoesNotExistError(notificationId);
+        return notification;
     }
 
     public async createNotification(notificationData: Omit<INotification, 'createdAt'>): Promise<INotification> {
-        return this.model.create({ ...notificationData });
+        // To avoid spam of dateAboutToExpire notifications, update the current notification document.
+        if (notificationData.type === 'dateAboutToExpire') {
+            return this.model.findOneAndUpdate(
+                {
+                    $and: [
+                        {
+                            // datePropertyValue only exists on IDateAboutToExpireMetadata.
+                            'metadata.datePropertyValue': (notificationData?.metadata as IDateAboutToExpireMetadata)?.datePropertyValue,
+                            type: notificationData.type,
+                            'metadata.entityId': (notificationData?.metadata as IDateAboutToExpireMetadata)?.entityId,
+                        },
+                    ],
+                },
+                // NotificationDate is being used instead of createdAt because we are updating the existing document.
+                { ...notificationData, notificationDate: new Date() },
+                { new: true, upsert: true },
+            );
+        }
+
+        return this.model.create({ ...notificationData, notificationDate: new Date() });
     }
 
     public async notificationSeen(notificationId: string, viewerId: string): Promise<INotification> {

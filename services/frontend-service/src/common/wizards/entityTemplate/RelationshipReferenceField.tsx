@@ -3,19 +3,32 @@ import React from 'react';
 import { FormikErrors, FormikTouched } from 'formik';
 import { useQueryClient } from 'react-query';
 import i18next from 'i18next';
-import { IEntityTemplateWithConstraintsMap } from '@microservices/shared-interfaces';
-import { CommonFormInputProperties, IRelationshipReference } from './commonInterfaces';
+import { IMongoEntityTemplatePopulated, IEntityTemplateWithConstraintsMap } from '@microservices/shared-interfaces';
+import { ConvertToRelationshipFieldFormInputProperties, CommonFormInputProperties, IRelationshipReference } from './commonInterfaces';
 
 export interface FieldEditCardProps {
-    value: CommonFormInputProperties;
+    value: CommonFormInputProperties | ConvertToRelationshipFieldFormInputProperties;
     index: number;
-    touched?: FormikTouched<CommonFormInputProperties>;
-    errors?: FormikErrors<CommonFormInputProperties>;
+    touched?: FormikTouched<CommonFormInputProperties | ConvertToRelationshipFieldFormInputProperties>;
+    errors?: FormikErrors<CommonFormInputProperties | ConvertToRelationshipFieldFormInputProperties>;
     setFieldValue: (field: keyof CommonFormInputProperties, value: any) => void;
     isDisabled?: boolean;
+    convertToRelationshipField?: {
+        options: IMongoEntityTemplatePopulated[];
+        originSourceEntityId: string;
+        setRelatedTemplateId: (id: string) => void;
+    };
 }
 
-const RelationshipReferenceField: React.FC<FieldEditCardProps> = ({ value, index, touched, errors, setFieldValue, isDisabled }) => {
+const RelationshipReferenceField: React.FC<FieldEditCardProps> = ({
+    value,
+    index,
+    touched,
+    errors,
+    setFieldValue,
+    isDisabled,
+    convertToRelationshipField,
+}) => {
     const queryClient = useQueryClient();
 
     const relatedTemplateId = `properties[${index}].relationshipReference.relatedTemplateId`;
@@ -42,7 +55,7 @@ const RelationshipReferenceField: React.FC<FieldEditCardProps> = ({ value, index
               }
             : null;
 
-    const activeEntityTemplatesFiltered = Array.from(entityTemplates.values());
+    const activeEntityTemplatesFiltered = convertToRelationshipField?.options ?? Array.from(entityTemplates.values());
 
     return (
         <Grid item container justifyContent="space-between" flexWrap="nowrap">
@@ -50,17 +63,19 @@ const RelationshipReferenceField: React.FC<FieldEditCardProps> = ({ value, index
                 id={relatedTemplateId}
                 options={activeEntityTemplatesFiltered}
                 onChange={(_e, relatedTemplateIdValue) => {
+                    const isOriginSrcEntity = relatedTemplateIdValue?._id === convertToRelationshipField?.originSourceEntityId;
                     const newValue = {
-                        ...value.relationshipReference,
+                        relatedTemplateField: '',
                         relatedTemplateId: relatedTemplateIdValue?._id || '',
-                        relationshipTemplateDirection: 'outgoing',
+                        relationshipTemplateDirection: isOriginSrcEntity ? 'incoming' : 'outgoing',
                     };
+                    convertToRelationshipField?.setRelatedTemplateId(relatedTemplateIdValue?._id || '');
                     setFieldValue('relationshipReference', newValue);
                 }}
                 sx={{ marginRight: '5px' }}
                 value={selectedTemplate}
                 disabled={isDisabled}
-                getOptionLabel={(option) => option.displayName}
+                getOptionLabel={(option) => option?.displayName ?? ''}
                 renderInput={(params) => (
                     <TextField
                         {...params}
@@ -70,7 +85,7 @@ const RelationshipReferenceField: React.FC<FieldEditCardProps> = ({ value, index
                         sx={{
                             '& .MuiInputBase-root': {
                                 borderRadius: '10px',
-                                width: 300,
+                                width: convertToRelationshipField ? 220 : 300,
                             },
                         }}
                         helperText={touchedRelationshipReference && errorRelationshipReference?.relatedTemplateId}
@@ -80,30 +95,41 @@ const RelationshipReferenceField: React.FC<FieldEditCardProps> = ({ value, index
                     />
                 )}
             />
-            {selectedTemplate && (
-                <TextField
-                    select
-                    label={i18next.t('validation.relatedDirection')}
-                    id={relationshipTemplateDirection}
-                    name={relationshipTemplateDirection}
-                    value={value.relationshipReference?.relationshipTemplateDirection}
-                    onChange={(e) => {
-                        const newValue = { ...value.relationshipReference, relationshipTemplateDirection: e.target.value };
-                        setFieldValue('relationshipReference', newValue);
-                    }}
-                    error={touchedRelationshipReference && Boolean(errorRelationshipReference?.relationshipTemplateDirection)}
-                    helperText={errorRelationshipReference?.relationshipTemplateDirection}
-                    sx={{ marginRight: '5px' }}
-                    disabled={isDisabled}
-                    fullWidth
-                >
-                    {['outgoing', 'incoming'].map((relatedFrom) => (
-                        <MenuItem key={relatedFrom} value={relatedFrom}>
-                            {i18next.t(`validation.${relatedFrom}`)}
-                        </MenuItem>
-                    ))}
-                </TextField>
-            )}
+            {selectedTemplate &&
+                (convertToRelationshipField ? (
+                    <TextField
+                        id="relationshipTemplateDirection"
+                        name="relationshipTemplateDirection"
+                        label={i18next.t('validation.relatedDirection')}
+                        value={i18next.t(`validation.${value.relationshipReference?.relationshipTemplateDirection}`)}
+                        sx={{ marginRight: '8px', borderRadius: '10px', width: 100 }}
+                        InputProps={{ readOnly: true }}
+                        disabled
+                    />
+                ) : (
+                    <TextField
+                        select
+                        label={i18next.t('validation.relatedDirection')}
+                        id={relationshipTemplateDirection}
+                        name={relationshipTemplateDirection}
+                        value={value.relationshipReference?.relationshipTemplateDirection}
+                        onChange={(e) => {
+                            const newValue = { ...value.relationshipReference, relationshipTemplateDirection: e.target.value };
+                            setFieldValue('relationshipReference', newValue);
+                        }}
+                        error={touchedRelationshipReference && Boolean(errorRelationshipReference?.relationshipTemplateDirection)}
+                        helperText={errorRelationshipReference?.relationshipTemplateDirection}
+                        sx={{ marginRight: '5px' }}
+                        disabled={isDisabled}
+                        fullWidth
+                    >
+                        {['outgoing', 'incoming'].map((relatedFrom) => (
+                            <MenuItem key={relatedFrom} value={relatedFrom}>
+                                {i18next.t(`validation.${relatedFrom}`)}
+                            </MenuItem>
+                        ))}
+                    </TextField>
+                ))}
             {selectedTemplate && (
                 <Autocomplete
                     id={relatedTemplateField}
@@ -129,7 +155,7 @@ const RelationshipReferenceField: React.FC<FieldEditCardProps> = ({ value, index
                             sx={{
                                 '& .MuiInputBase-root': {
                                     borderRadius: '10px',
-                                    width: 300,
+                                    width: convertToRelationshipField ? 240 : 300,
                                 },
                             }}
                             helperText={

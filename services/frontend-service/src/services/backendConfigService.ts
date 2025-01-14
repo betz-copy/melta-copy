@@ -4,8 +4,9 @@ import { environment } from '../globals';
 const { config } = environment.api;
 
 export interface BackendConfigState {
-    contactByMailLink: string;
-    contactByChatLink: string;
+    matomoUrl: string;
+    matomoSiteId: number;
+    deleteEntitiesLimit: number;
 }
 
 const getBackendConfigRequest = async () => {

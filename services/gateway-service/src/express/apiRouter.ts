@@ -18,8 +18,9 @@ const apiRouter = Router();
 
 apiRouter.use('/config', (_req, res) =>
     res.json({
-        contactByMailLink: 'mailAdr@gmail.com',
-        contactByChatLink: 'http://chat.com',
+        matomoUrl: config.frontendConfig.matotmo.baseUrl,
+        matomoSiteId: config.frontendConfig.matotmo.siteId,
+        deleteEntitiesLimit: config.frontendConfig.agGridLimit.deleteLimit,
     }),
 );
 

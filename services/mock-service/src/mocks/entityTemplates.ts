@@ -457,6 +457,92 @@ const entityTemplates: IEntityTemplateMock[] = [
         propertiesPreview: ['company', 'weight'],
         disabled: false,
     },
+    {
+        name: 'allProperties',
+        displayName: 'כל השדות',
+        category: {
+            name: 'things',
+        },
+        properties: {
+            type: 'object',
+            properties: {
+                text: {
+                    title: 'טקסט',
+                    type: 'string',
+                },
+                number: {
+                    title: 'מספר',
+                    type: 'number',
+                },
+                boolean: {
+                    title: 'בוליאני',
+                    type: 'boolean',
+                },
+                date: {
+                    title: 'תאריך',
+                    type: 'string',
+                    format: 'date',
+                },
+                dateTime: {
+                    title: 'תאריך ושעה',
+                    type: 'string',
+                    format: 'date-time',
+                },
+                mail: {
+                    title: 'כתובת מייל',
+                    type: 'string',
+                    format: 'email',
+                },
+                multiEnum: {
+                    title: 'רשימה מרובה',
+                    type: 'array',
+                    items: {
+                        type: 'string',
+                        enum: ['א', 'ב', 'ג', 'ד', 'ה', 'ו'],
+                    },
+                    minItems: 1,
+                    uniqueItems: true,
+                },
+                enum: {
+                    title: 'רשימה',
+                    type: 'string',
+                    enum: ['אא', 'בב', 'גג', 'דד'],
+                },
+                serialNumber: {
+                    title: 'מספר סידורי',
+                    type: 'number',
+                    serialStarter: 0,
+                    serialCurrent: 0,
+                },
+                regex: {
+                    title: 'תבנית',
+                    type: 'string',
+                    pattern: '^0[2-9]\\d-\\d{4}-\\d{3}$',
+                    patternCustomErrorMessage: 'יש להזין בפורמט מס טלפון בלבד (050-1234-123)',
+                },
+                file: {
+                    title: 'קובץ יחיד',
+                    type: 'string',
+                    format: 'fileId',
+                },
+                files: {
+                    title: 'קבצים מרובים',
+                    type: 'array',
+                    items: {
+                        type: 'string',
+                        format: 'fileId',
+                    },
+                    minItems: 1,
+                },
+            },
+            hide: [],
+        },
+        propertiesOrder: ['text', 'number', 'boolean', 'date', 'dateTime', 'mail', 'multiEnum', 'enum', 'serialNumber', 'regex', 'file', 'files'],
+        propertiesTypeOrder: ['properties', 'attachmentProperties'],
+        propertiesPreview: [],
+        disabled: false,
+        documentTemplatesIds: [],
+    },
 ];
 
 export default entityTemplates;

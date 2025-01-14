@@ -3,6 +3,7 @@ import { Field, FormikProps } from 'formik';
 import i18next from 'i18next';
 import React from 'react';
 import { Accept } from 'react-dropzone';
+import { File } from 'react-pdf/dist/cjs/shared/types';
 import { ProcessDetailsValues } from '../../wizards/processInstance/ProcessDetails';
 import { ProcessStepValues } from '../../wizards/processInstance/ProcessSteps';
 import FilesInput from '../FilesInput';
@@ -17,6 +18,7 @@ interface InstanceFileInputProps {
     required: boolean;
     value: File[] | undefined;
     error: string | undefined;
+    setErrorText?: React.Dispatch<React.SetStateAction<string | undefined>>;
     setFieldTouched: FormikProps<ProcessFormikProps>['setFieldTouched'];
     setExternalErrors?: React.Dispatch<
         React.SetStateAction<{
@@ -25,6 +27,9 @@ interface InstanceFileInputProps {
             action: string;
         }>
     >;
+    onDrop?: (files: File[]) => Promise<void>;
+    isLoading?: boolean;
+    comment?: string;
 }
 
 export const InstanceFileInput: React.FC<InstanceFileInputProps> = ({
@@ -35,8 +40,12 @@ export const InstanceFileInput: React.FC<InstanceFileInputProps> = ({
     required,
     value,
     error,
+    setErrorText,
     setFieldTouched,
     setExternalErrors,
+    onDrop,
+    isLoading,
+    comment,
 }) => {
     return (
         <Box
@@ -62,6 +71,7 @@ export const InstanceFileInput: React.FC<InstanceFileInputProps> = ({
                     setFieldValue(fileFieldName, updatedFiles);
                     setFieldTouched(fileFieldName, true, false);
                     setExternalErrors?.((prev) => ({ ...prev, files: false }));
+                    onDrop?.(acceptedFiles);
                 }}
                 onDeleteFile={(fileIndex: number, event: React.MouseEvent<HTMLButtonElement>) => {
                     event.stopPropagation();
@@ -73,6 +83,9 @@ export const InstanceFileInput: React.FC<InstanceFileInputProps> = ({
                 }}
                 errorText={error}
                 acceptedFilesTypes={acceptedFilesTypes}
+                isLoading={isLoading}
+                setErrorText={setErrorText}
+                comment={comment}
                 multiple
             />
         </Box>

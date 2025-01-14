@@ -1,4 +1,3 @@
-import _debounce from 'lodash.debounce';
 import React, { useEffect } from 'react';
 import { useQueryClient } from 'react-query';
 import { useParams } from 'wouter';
@@ -7,7 +6,7 @@ import EntitiesPage from '../../common/EntitiesPage';
 import { useLocalStorage } from '../../utils/hooks/useLocalStorage';
 
 const Category: React.FC = () => {
-    const { categoryId } = useParams();
+    const { categoryId } = useParams<{ categoryId: string }>();
     const queryClient = useQueryClient();
 
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;

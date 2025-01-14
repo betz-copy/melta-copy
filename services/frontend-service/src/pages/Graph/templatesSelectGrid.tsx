@@ -5,6 +5,7 @@ import i18next from 'i18next';
 import React, { Dispatch, useState } from 'react';
 import { IoIosArrowBack, IoIosArrowDown } from 'react-icons/io';
 import { IMongoEntityTemplatePopulated, IMongoCategory } from '@microservices/shared-interfaces';
+import { useMatomo } from '@datapunt/matomo-tracker-react';
 import {
     ChooseAllMenuItem,
     getOptionsAndGroupsMiniFiltered,
@@ -85,6 +86,7 @@ const TemplatesSelectGrid: React.FC<{
     const [openMap, setOpenMap] = useState<{ [groupId: string]: boolean }>({});
 
     const darkMode = useDarkModeStore((state) => state.darkMode);
+    const { trackEvent } = useMatomo();
 
     const floatingBoxStyle: SxProps = {
         backgroundColor: darkMode ? '#121212' : '#fff',
@@ -100,6 +102,11 @@ const TemplatesSelectGrid: React.FC<{
                         className={classes.button}
                         onClick={() => {
                             setOpenFilter(!openFilter);
+
+                            trackEvent({
+                                category: 'filter-graph',
+                                action: 'click',
+                            });
                         }}
                         style={{
                             width: openFilter ? '235px' : '120px',

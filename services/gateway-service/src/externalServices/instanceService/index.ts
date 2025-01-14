@@ -1,9 +1,11 @@
 import {
+    IMongoRule,
     IEntitySingleProperty,
     IAction,
     IBrokenRule,
     IConstraintsOfTemplate,
     ICountSearchResult,
+    IDeleteBody,
     IEntity,
     ISearchBatchBody,
     ISearchEntitiesOfTemplateBody,
@@ -71,10 +73,22 @@ class InstancesService extends DefaultExternalServiceApi {
         return data;
     }
 
-    async updateEntityInstance(id: string, entity: IEntity, ignoredRules: IBrokenRule[], userId: string) {
+    async updateEntityInstance(id: string, entity: IEntity, ignoredRules: IBrokenRule[], userId: string, convertToRelationshipField = false) {
         const { data } = await this.api.put<{ updatedEntity: IEntity; actions?: IAction[] }>(`${baseEntitiesRoute}/${id}`, {
             ...entity,
             ignoredRules,
+            userId,
+            convertToRelationshipField,
+        });
+
+        return data;
+    }
+
+    async convertToRelationshipField(existingRelationships: IRelationship[], addFieldToSrcEntity: boolean, fieldName: string, userId: string) {
+        const { data } = await this.api.patch<{}>(`${baseEntitiesRoute}/convertToRelationshipField/`, {
+            existingRelationships,
+            addFieldToSrcEntity,
+            fieldName,
             userId,
         });
 
@@ -87,8 +101,8 @@ class InstancesService extends DefaultExternalServiceApi {
         return data;
     }
 
-    async deleteEntityInstance(id: string) {
-        const { data } = await this.api.delete<string>(`${baseEntitiesRoute}/${id}`);
+    async deleteEntityInstances(deleteBody: IDeleteBody) {
+        const { data } = await this.api.post<string[]>(`${baseEntitiesRoute}/delete/bulk`, deleteBody);
 
         return data;
     }
@@ -140,6 +154,11 @@ class InstancesService extends DefaultExternalServiceApi {
         return data;
     }
 
+    async getRelationshipsByEntitiesAndTemplate(query: { sourceEntityId: string; destinationEntityId: string; templateId: string }) {
+        const { data } = await this.api.get<IRelationship[]>(`${baseRelationshipsRoute}`, { params: query });
+        return data;
+    }
+
     async getRelationshipsByIds(relationshipIds: string[]) {
         const { data } = await this.api.post<IRelationship[]>(`${baseRelationshipsRoute}/ids`, {
             ids: relationshipIds,
@@ -182,6 +201,14 @@ class InstancesService extends DefaultExternalServiceApi {
             currentTemplateProperties,
         });
 
+        return data;
+    }
+
+    async getDependantRules(rules: IMongoRule[], relationshipTemplateId: string): Promise<IMongoRule[]> {
+        const { data } = await this.api.post<IMongoRule[]>(`${baseEntitiesRoute}/rules/dependant`, {
+            rules,
+            relationshipTemplateId,
+        });
         return data;
     }
 

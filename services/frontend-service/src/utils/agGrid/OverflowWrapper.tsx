@@ -10,10 +10,21 @@ interface IOverflowWrapperProps<T> {
     renderItem: (item: T) => React.JSX.Element;
     files?: T[];
     containerStyle?: React.CSSProperties;
+    propertyToDisplayInTooltip?: string;
+    minVisibleItems?: number;
     searchValue?: string;
 }
 
-const OverflowWrapper = <T,>({ items, renderItem, getItemKey, containerStyle, files, searchValue }: IOverflowWrapperProps<T>) => {
+const OverflowWrapper = <T,>({
+    items,
+    renderItem,
+    getItemKey,
+    containerStyle,
+    files,
+    propertyToDisplayInTooltip,
+    minVisibleItems = 0,
+    searchValue,
+}: IOverflowWrapperProps<T>) => {
     const [visibleItems, setVisibleItems] = useState(items);
     const containerRef = useRef(null);
     const itemRefs = useRef<React.RefObject<HTMLDivElement>[]>([]);
@@ -61,6 +72,12 @@ const OverflowWrapper = <T,>({ items, renderItem, getItemKey, containerStyle, fi
     if (files && files.length > 0) {
         overflowItems = items.length > visibleItems.length ? files.slice(visibleItems.length) : [];
     }
+
+    if (visibleItems.length < minVisibleItems) {
+        const itemsAmountToAdd = minVisibleItems - visibleItems.length;
+        visibleItems.push(...overflowItems.slice(0, itemsAmountToAdd));
+        overflowItems = overflowItems.slice(itemsAmountToAdd);
+    }
     return (
         <Grid ref={containerRef} container wrap="wrap" alignItems="center" justifyItems="center" gap={`${itemsGap}px`} style={containerStyle}>
             {visibleItems.map((item, index) => (
@@ -78,7 +95,10 @@ const OverflowWrapper = <T,>({ items, renderItem, getItemKey, containerStyle, fi
                                 key={`${getItemKey(item)}/${index}`}
                                 style={{ margin: '5px' }}
                             >
-                                <HighlightText text={item as string} searchedText={searchValue} />
+                                <HighlightText
+                                    text={propertyToDisplayInTooltip ? item[propertyToDisplayInTooltip] : (item as string)}
+                                    searchedText={searchValue}
+                                />
                             </Typography>
                         ))}
                         arrow

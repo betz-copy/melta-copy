@@ -62,9 +62,12 @@ class WorkspaceManager extends DefaultManagerProxy {
     }
 
     async createOne(workspace: Omit<IWorkspace, '_id'>, files: Express.Multer.File[]) {
+        const { _id, createdAt, updatedAt, ...createdWorkspace } = await WorkspaceService.createOne(workspace);
+
+        this.storageService = new StorageService(_id);
         const fileProperties = await this.uploadFilesWrapper(files);
 
-        return WorkspaceService.createOne({ ...workspace, ...fileProperties });
+        return this.updateOne(_id, { ...createdWorkspace, ...fileProperties }, []);
     }
 
     private async deleteFilesWrapper(id: string, deleteFunc: () => Promise<any>) {

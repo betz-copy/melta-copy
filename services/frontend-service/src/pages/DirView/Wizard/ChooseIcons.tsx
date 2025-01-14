@@ -9,7 +9,6 @@ export const ChooseIcons: React.FC<StepComponentProps<WorkspaceWizardValues>> = 
     <Grid container direction="column" spacing={4} paddingBottom="3rem">
         <Grid item>
             <FileInput
-                fileFieldName="icon"
                 onDropFile={(acceptedFile) => setFieldValue('icon', { file: acceptedFile, name: acceptedFile.name })}
                 onDeleteFile={() => setFieldValue('icon', undefined)}
                 file={values.icon?.file}
@@ -21,7 +20,6 @@ export const ChooseIcons: React.FC<StepComponentProps<WorkspaceWizardValues>> = 
 
         <Grid item>
             <FileInput
-                fileFieldName="logo"
                 onDropFile={(acceptedFile) => setFieldValue('logo', { file: acceptedFile, name: acceptedFile.name })}
                 onDeleteFile={() => setFieldValue('logo', undefined)}
                 file={values.logo?.file}

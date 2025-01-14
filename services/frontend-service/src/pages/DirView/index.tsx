@@ -8,13 +8,13 @@ import { MainBox } from '../../Main.styled';
 import { getDir, getFile } from '../../services/workspacesService';
 import { useUserStore } from '../../stores/user';
 import { useWorkspaceStore } from '../../stores/workspace';
-import { getWorkspacePermissions } from '../../utils/permissions';
 import ErrorPage from '../ErrorPage';
 import { PermissionsDialog } from './PermissionsDialog';
 import { Topbar } from './Topbar';
 import { Waves } from './Waves';
 import { workspaceObjectToWorkspaceForm, WorkspaceWizard } from './Wizard';
 import { Workspace } from './Workspace';
+import { handleWorkspace } from '../../utils/permissions';
 
 const DirView: React.FC<{ params: { '*': string } }> = ({ params }) => {
     const setWorkspace = useWorkspaceStore((state) => state.setWorkspace);
@@ -34,22 +34,10 @@ const DirView: React.FC<{ params: { '*': string } }> = ({ params }) => {
         { queryKey: ['workspace', location], queryFn: () => getFile(location) },
     ]);
 
-    useEffect(() => {
-        const handleWorkspace = async () => {
-            if (!currentWorkspace) return;
-
-            setWorkspace(currentWorkspace);
-            document.title = environment.defaultTitle;
-
-            const workspacePermissions = await getWorkspacePermissions(currentWorkspace._id, currentUser.permissions);
-            if (workspacePermissions) currentUser.permissions[currentWorkspace._id] = workspacePermissions;
-
-            if (currentUser.currentWorkspacePermissions !== currentUser.permissions[currentWorkspace._id])
-                setUser({ ...currentUser, currentWorkspacePermissions: currentUser.permissions[currentWorkspace._id] });
-        };
-
-        handleWorkspace();
-    }, [currentWorkspace, setWorkspace, currentUser, setUser]);
+    useEffect(
+        () => handleWorkspace(environment.defaultTitle, setWorkspace, currentWorkspace),
+        [currentWorkspace, setWorkspace, currentUser, setUser],
+    );
 
     if (isError) return <ErrorPage errorText={i18next.t('workspaces.requestedWorkspaceDoesntExist')} />;
 

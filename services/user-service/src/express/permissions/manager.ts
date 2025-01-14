@@ -103,6 +103,25 @@ class PermissionsManager {
 
         return PermissionsModel.find(query).lean().exec();
     }
+
+    static async getPermissionsByWorkspaceId(workspaceId: string, pagination?: { step: number; limit: number }): Promise<IPermission[]> {
+        return PermissionsModel.find({ workspaceId }, pagination ? { limit: pagination.limit, skip: pagination.step } : {});
+    }
+
+    static async getPermissionsByWorkspaceIdWithCount(
+        workspaceId: string,
+        limit: number,
+        step: number,
+    ): Promise<{ permissions: IPermission[]; count: number }> {
+        const [permissions, count] = await Promise.all([
+            PermissionsModel.find({ workspaceId }, { limit, skip: step * limit })
+                .lean()
+                .exec(),
+            PermissionsModel.countDocuments({ workspaceId }),
+        ]);
+
+        return { permissions, count };
+    }
 }
 
 export default PermissionsManager;

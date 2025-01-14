@@ -20,6 +20,7 @@ const config = {
         accessKey: env.get('MINIO_ACCESS_KEY').default('minioadmin').asString(),
         secretKey: env.get('MINIO_SECRET_KEY').default('minioadmin').asString(),
         bucketName: env.get('MINIO_BUCKET_NAME').default('bucket').asString(),
+        usersGlobalBucketName: env.get('MINIO_USERS_BUCKET_NAME').default('users-global-bucket').asString(),
         useSSL: false,
         transportAgent: {
             timeout: env.get('TRANSPORT_AGENT_TIMEOUT').default(60000).asIntPositive(),

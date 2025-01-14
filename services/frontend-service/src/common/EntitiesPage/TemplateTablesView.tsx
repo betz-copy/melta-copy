@@ -6,11 +6,13 @@ import { useTour } from '@reactour/tour';
 import i18next from 'i18next';
 import { toast } from 'react-toastify';
 import { IEntity, IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared-interfaces';
+import { _debounce } from '@ag-grid-community/core';
 import { TemplateTable, TemplateTableRef } from './TemplateTable';
 import { getCountByTemplateIdsRequest } from '../../services/entitiesService';
 import { environment } from '../../globals';
 
 const { tablesPerLoadingChunkSize } = environment.ganttSettings;
+
 type TemplateTablesViewResultsRef = {
     templateTablesRefs: Record<string, TemplateTableRef>;
 };
@@ -26,8 +28,11 @@ const TemplateTablesViewResults = forwardRef<
     }
 >(({ templates, searchInput, pageType, setUpdatedEntities }, ref) => {
     const templateTablesRefs = useRef<Record<string, TemplateTableRef>>({});
-    const [visibleTemplatesCount, setVisibleTemplatesCount] = useState<number>(tablesPerLoadingChunkSize);
-    const loaderRef = useRef(null);
+    const [visibleTemplatesCount, setVisibleTemplatesCount] = useState<number>(() => {
+        const savedCount = sessionStorage.getItem('visibleTemplatesCount');
+        return savedCount ? parseInt(savedCount, 10) : tablesPerLoadingChunkSize;
+    });
+    const loaderRef = useRef<HTMLDivElement | null>(null);
 
     useImperativeHandle(ref, () => ({
         templateTablesRefs: templateTablesRefs.current,
@@ -52,6 +57,10 @@ const TemplateTablesViewResults = forwardRef<
             }
         };
     }, []);
+
+    useEffect(() => {
+        sessionStorage.setItem('visibleTemplatesCount', visibleTemplatesCount.toString());
+    }, [visibleTemplatesCount]);
 
     return (
         <Grid container direction="column" spacing={1}>
@@ -94,7 +103,7 @@ const filterEmptyTemplateTablesOnGlobalSearchRequest = async (
 
     return templates.flatMap((template) => {
         const entityCount = entitiesCountByTemplates.find((countByTemplate) => countByTemplate.templateId === template._id);
-        return entityCount?.count ? { ...template, entityIdsToInclude: entityCount.entityIdsToInclude } : [];
+        return entityCount?.count ? { ...template, entitiesWithFiles: entityCount.entitiesWithFiles, texts: entityCount.texts } : [];
     });
 };
 

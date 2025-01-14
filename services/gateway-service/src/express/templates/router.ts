@@ -9,6 +9,7 @@ import ValidateRequest from '../../utils/joi';
 import TemplatesController from './controller';
 import TemplatesValidator from './middlewares';
 import {
+    convertToRelationshipFieldRequestSchema,
     createCategorySchema,
     createEntityTemplateSchema,
     createRelationshipTemplateSchema,
@@ -178,6 +179,13 @@ templatesRouter.post(
     ValidateRequest(searchTemplatesRequestSchema),
     AuthorizerControllerMiddleware.userHasSomePermissions,
     templatesControllerMiddleware.searchRelationshipTemplates,
+);
+
+templatesRouter.put(
+    '/relationships/convertToRelationshipField/:id',
+    ValidateRequest(convertToRelationshipFieldRequestSchema),
+    AuthorizerControllerMiddleware.userCanWriteTemplates,
+    templatesControllerMiddleware.convertToRelationshipField,
 );
 
 // rules (templates)

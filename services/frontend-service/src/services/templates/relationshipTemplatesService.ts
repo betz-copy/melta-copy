@@ -2,8 +2,10 @@ import {
     IMongoRelationshipTemplate,
     IRelationshipTemplate,
     ISearchRelationshipTemplatesBody,
+    IConvertToRelationshipField,
     IEntityTemplateMap,
     IMongoEntityTemplateWithConstraintsPopulated,
+    IMongoEntityTemplatePopulated,
 } from '@microservices/shared-interfaces';
 import axios from '../../axios';
 import { RelationshipTemplateWizardValues, defaultInitialValues } from '../../common/wizards/relationshipTemplate';
@@ -52,6 +54,14 @@ const updateRelationshipTemplateRequest = async (relationshipTemplateId: string,
     return data;
 };
 
+const convertToRelationshipFieldRequest = async (relationshipTemplateId: string, updatedData: IConvertToRelationshipField) => {
+    const { data } = await axios.put<{
+        updatedRelationShipTemplate: IMongoRelationshipTemplate;
+        updatedEntityTemplate: IMongoEntityTemplatePopulated;
+    }>(`${relationshipTemplates}/convertToRelationshipField/${relationshipTemplateId}`, updatedData);
+    return data;
+};
+
 const deleteRelationshipTemplateRequest = async (relationshipTemplateId: string) => {
     const { data } = await axios.delete<IMongoRelationshipTemplate>(`${relationshipTemplates}/${relationshipTemplateId}`);
     return data;
@@ -70,6 +80,7 @@ const getAllRelationshipTemplatesRequest = async () => {
 export {
     createRelationshipTemplateRequest,
     updateRelationshipTemplateRequest,
+    convertToRelationshipFieldRequest,
     deleteRelationshipTemplateRequest,
     relationshipTemplateObjectToRelationshipTemplateForm,
     relationshipTemplateFormToRelationshipTemplateObject,

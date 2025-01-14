@@ -16,7 +16,7 @@ import {
 import i18next from 'i18next';
 import { ThemeProvider } from '@mui/material';
 import { IRelationshipTemplateMap, IEntityTemplateMap } from '@microservices/shared-interfaces';
-import { StepComponentProps, StepsType } from '../index';
+import { StepComponentProps, StepType } from '../index';
 import { getFieldsConfigOfRule } from '../../../utils/rules/fields';
 import { RuleWizardValues } from '.';
 import '@react-awesome-query-builder/mui/css/styles.css';
@@ -29,7 +29,7 @@ import { lightTheme } from '../../../theme';
 
 const { MuiTextWidget } = MuiWidgets;
 
-export const formulaValidation: StepsType<RuleWizardValues>[number]['validate'] = (values) => {
+export const formulaValidation: StepType<RuleWizardValues>[][number]['validate'] = (values) => {
     try {
         RuleParser.jsonTreeToFormula(Utils.getTree(values.formula) as JsonItem);
     } catch (err) {
@@ -77,6 +77,8 @@ const CreateFormula: React.FC<StepComponentProps<RuleWizardValues>> = ({ values,
     const config = useMemo((): Config => {
         const fieldsConfig = getFieldsConfigOfRule(entityTemplateId, entityTemplates, relationshipTemplates, formula);
 
+        console.log({ fieldsConfig, MuiConfig });
+        // TODO - here - disable user format field ??
         return {
             ...MuiConfig,
             types: {

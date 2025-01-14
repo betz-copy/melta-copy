@@ -6,7 +6,7 @@ import {
     countEntitiesOfTemplatesRequestSchema,
     createEntityRequestSchema,
     deleteEntitiesByTemplateIdRequestSchema,
-    deleteEntityByIdRequestSchema,
+    deleteEntitiesByIdsRequestSchema,
     enumerateNewSerialNumberFieldsRequestSchema,
     getAllConstraintsRequestSchema,
     getConstraintsOfTemplateRequestSchema,
@@ -22,6 +22,8 @@ import {
     updateEntityStatusByIdRequestSchema,
     updateEnumFieldRequestSchema,
     deletePropertiesOfTemplateRequestSchema,
+    getDependentRulesRequestSchema,
+    convertToRelationshipFieldRequestSchema,
 } from './validator.schema';
 import { EntityValidator } from './validator.template';
 
@@ -67,6 +69,8 @@ entityRouter.post(
 entityRouter.put('/update-enum-field/:id', ValidateRequest(updateEnumFieldRequestSchema), entityController.updateEnumFieldValue);
 entityRouter.get('/get-is-field-used/:id', ValidateRequest(getIfValuefieldIsUsedRequestSchema), entityController.getIsFieldUsed);
 
+entityRouter.post('/rules/dependant', ValidateRequest(getDependentRulesRequestSchema), entityController.getDependentRules);
+
 entityRouter.post(
     '/expanded/:id',
     ValidateRequest(getExpandedGraphByIdRequestSchema),
@@ -77,13 +81,18 @@ entityRouter.post(
 entityRouter.post('/', ValidateRequest(createEntityRequestSchema), entityValidatorController.validateEntityRequest, entityController.createEntity);
 entityRouter.get('/:id', ValidateRequest(getEntityByIdRequestSchema), entityController.getEntityById);
 entityRouter.post('/ids', ValidateRequest(getEntitiesByIdsRequestSchema), entityController.getEntitiesByIds);
-entityRouter.delete('/:id', ValidateRequest(deleteEntityByIdRequestSchema), entityController.deleteEntityById);
 entityRouter.delete('/', ValidateRequest(deleteEntitiesByTemplateIdRequestSchema), entityController.deleteEntitiesByTemplateId);
+entityRouter.post('/delete/bulk', ValidateRequest(deleteEntitiesByIdsRequestSchema), entityController.deleteEntityInstances);
 entityRouter.put(
     '/:id',
     ValidateRequest(updateEntityByIdRequestSchema),
     entityValidatorController.validateEntityRequest,
     entityController.updateEntityById,
+);
+entityRouter.patch(
+    '/convertToRelationshipField',
+    ValidateRequest(convertToRelationshipFieldRequestSchema),
+    entityController.convertToRelationshipField,
 );
 entityRouter.patch('/:id/status', ValidateRequest(updateEntityStatusByIdRequestSchema), entityController.updateStatusById);
 entityRouter.patch(

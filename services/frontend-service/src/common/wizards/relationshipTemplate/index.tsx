@@ -4,7 +4,7 @@ import i18next from 'i18next';
 import { useMutation, useQueryClient } from 'react-query';
 import { AxiosError } from 'axios';
 import { IMongoEntityTemplateWithConstraintsPopulated, IRelationshipTemplateMap } from '@microservices/shared-interfaces';
-import { StepsType, Wizard, WizardBaseType } from '../index';
+import { StepType, Wizard, WizardBaseType } from '../index';
 import { CreateRelationshipTemplateName, createRelationshipTemplateNameSchema } from './CreateRelationshipTemplate';
 import {
     createRelationshipTemplateRequest,
@@ -63,7 +63,7 @@ export const defaultInitialValues: RelationshipTemplateWizardValues = {
     },
 };
 
-const steps: StepsType<RelationshipTemplateWizardValues> = [
+const steps: StepType<RelationshipTemplateWizardValues>[] = [
     {
         label: i18next.t('wizard.relationshipTemplate.title'),
         component: (props, { isEditMode }) => <CreateRelationshipTemplateName {...props} isEditMode={isEditMode} />,
@@ -83,8 +83,9 @@ const RelationshipTemplateWizard: React.FC<WizardBaseType<RelationshipTemplateWi
         (relationshipTemplateForm: RelationshipTemplateWizardValues) => {
             const { _id, createdAt: _createdAt, updatedAt: _updatedAt, ...restOfRelationshipTemplateForm } = relationshipTemplateForm;
             const relationshipTemplateBody = relationshipTemplateFormToRelationshipTemplateObject(restOfRelationshipTemplateForm);
+            const { isProperty, ...updatedRelationshipTemplate } = relationshipTemplateBody;
             if (isEditMode) {
-                return updateRelationshipTemplateRequest(_id!, relationshipTemplateBody);
+                return updateRelationshipTemplateRequest(_id!, updatedRelationshipTemplate);
             }
             return createRelationshipTemplateRequest(relationshipTemplateBody);
         },
@@ -119,7 +120,7 @@ const RelationshipTemplateWizard: React.FC<WizardBaseType<RelationshipTemplateWi
             initialValues={initialValues}
             initialStep={initialStep}
             isEditMode={isEditMode}
-            title={i18next.t('wizard.relationshipTemplate.title')}
+            title={isEditMode ? i18next.t('wizard.relationshipTemplate.updateTitle') : i18next.t('wizard.relationshipTemplate.createTitle')}
             steps={steps}
             isLoading={isLoading}
             submitFunction={mutateAsync}

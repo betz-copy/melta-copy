@@ -24,16 +24,13 @@ class MinIOClient {
         try {
             return func();
         } catch (err: any) {
-            // Check if the error is caused by non-existing bucket
-            if (err.code !== 'NoSuchBucket') throw err;
-
-            // Create the bucket if it doesn't exist
             if (!(await this.bucketExists())) {
-                await this.makeBucket();
+                await this.makeBucket().catch((error) => {
+                    throw error;
+                });
                 logger.info(`Bucket with name "${this.bucketName}" created successfully`);
             }
 
-            // Retry
             return func();
         }
     }

@@ -41,6 +41,17 @@ class RelationshipManager extends DefaultManagerNeo4j {
         return relationship;
     }
 
+    async getRelationshipsByEntitiesAndTemplate(sourceEntityId: string, destEntityId: string, templateId: string) {
+        const relationships = await this.neo4jClient.readTransaction(
+            `MATCH (s: \`${sourceEntityId}\`)-[r: \`${templateId}\`]-(d: \`${destEntityId}\`) RETURN r, s, d`,
+            normalizeReturnedRelationship('multipleResponses'),
+        );
+
+        if (!relationships) throw new NotFoundError(`[NEO4J] relationship not found by provided entities and template`);
+
+        return relationships;
+    }
+
     getRelationshipByEntitiesAndTemplate = async (sourceEntityId: string, destEntityId: string, templateId: string, transaction: Transaction) => {
         const relationship = await runInTransactionAndNormalize(
             transaction,

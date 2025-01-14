@@ -1,5 +1,5 @@
 /* eslint-disable no-nested-ternary */
-import { Menu, Search } from '@mui/icons-material';
+import { Menu, Search, Hive as HiveIcon, ExpandMore, FilterList } from '@mui/icons-material';
 import {
     Box,
     Button,
@@ -19,12 +19,13 @@ import {
 import i18next from 'i18next';
 import lodashGroupBy from 'lodash.groupby';
 import lodashUniqby from 'lodash.uniqby';
-import React, { Dispatch, Fragment, Key, PropsWithChildren, ReactElement, SetStateAction, useState } from 'react';
+import React, { Dispatch, Fragment, Key, PropsWithChildren, SetStateAction, useState } from 'react';
 import { DragDropContext, Draggable, Droppable, DropResult } from 'react-beautiful-dnd';
-import { IoIosArrowBack, IoIosArrowDown, IoIosArrowUp } from 'react-icons/io';
+import { IoIosArrowBack, IoIosArrowDown } from 'react-icons/io';
 import { MeltaTooltip } from './MeltaTooltip';
 import { MeltaCheckbox } from './MeltaCheckbox';
 import { useDarkModeStore } from '../stores/darkMode';
+import { CustomIcon } from './CustomIcon';
 
 export type MenuItemContentProps<Option = any> = {
     checked?: boolean;
@@ -38,7 +39,18 @@ export type MenuItemContentProps<Option = any> = {
     showIcon?: boolean;
 };
 
-export const MenuItemContent: React.FC<MenuItemContentProps> = ({ checked, indeterminate, label, isDraggable, group, insideGroup }) => {
+export const MenuItemContent: React.FC<MenuItemContentProps> = ({
+    checked,
+    indeterminate,
+    label,
+    isDraggable,
+    group,
+    insideGroup,
+    showIcon,
+    option,
+}) => {
+    const theme = useTheme();
+
     return (
         <>
             {!group && (
@@ -57,7 +69,23 @@ export const MenuItemContent: React.FC<MenuItemContentProps> = ({ checked, indet
                     {isDraggable && <Menu sx={{ fontSize: '1rem' }} />}
                 </Grid>
             )}
-            <MeltaCheckbox checked={checked} indeterminate={indeterminate} />
+            {showIcon ? (
+                option.iconFileId?.length > 0 ? (
+                    <CustomIcon color={theme.palette.primary.main} iconUrl={option.iconFileId!} height="15px" width="15px" />
+                ) : (
+                    <HiveIcon style={{ color: theme.palette.primary.main }} fontSize="inherit" />
+                )
+            ) : (
+                <MeltaCheckbox
+                    checked={checked}
+                    indeterminate={indeterminate}
+                    sx={{
+                        '&:hover': {
+                            backgroundColor: 'transparent',
+                        },
+                    }}
+                />
+            )}
 
             <ListItemText
                 primary={
@@ -96,7 +124,7 @@ export type SelectCheckboxGroupProps<Option, Group> = {
 
 export type SelectCheckboxProps<Option, Group = any> = PropsWithChildren<{
     title: string;
-    img?: ReactElement;
+    filterIcon?: boolean;
     options: Option[];
     selectedOptions: Option[];
     setSelectedOptions: Dispatch<SetStateAction<Option[]>>;
@@ -108,6 +136,7 @@ export type SelectCheckboxProps<Option, Group = any> = PropsWithChildren<{
     size?: 'small' | 'medium';
     overrideSx?: object;
     toTopBar?: boolean;
+    toUserProfile?: boolean;
     horizontalOrigin?: number;
     handleCheckboxClick?: (value: boolean) => void;
     onDragEnd?: (result: DropResult) => void;
@@ -489,15 +518,18 @@ export const ChooseAllMenuItem = <Option, Group>({
                 indeterminate={selectedOptionsFiltered.length < optionsFiltered.length && selectedOptionsFiltered.length > 0}
                 label={i18next.t('selectChooseAll')}
                 order={0}
-                showIcon={false}
             />
         </MenuItem>
     );
 };
 
+const CustomExpandMore = ({ filterIcon, ...rest }) => {
+    return <Box sx={{ gap: '10px', marginRight: '14px' }}>{filterIcon ? <FilterList {...rest} /> : <ExpandMore {...rest} />}</Box>;
+};
+
 const SelectCheckbox = <Option, Group>({
     title,
-    img,
+    filterIcon,
     options,
     selectedOptions,
     setSelectedOptions,
@@ -509,6 +541,7 @@ const SelectCheckbox = <Option, Group>({
     size = 'medium',
     overrideSx,
     toTopBar,
+    toUserProfile = false,
     horizontalOrigin = 154,
     handleCheckboxClick = () => {},
     onDragEnd,
@@ -533,8 +566,6 @@ const SelectCheckbox = <Option, Group>({
             const isSelectedOptionInOptionsFiltered = optionsFiltered.some((option) => getOptionId(option) === getOptionId(selectedOption));
             return isSelectedOptionInOptionsFiltered;
         });
-
-    // eslint-disable-next-line no-nested-ternary
 
     const borderRadiusStyle = overrideSx ? (isOpen ? '12px 12px 12px 0' : '12px') : isOpen ? '7px 7px 0 0' : '7px';
     const [openMap, setOpenMap] = useState<{ [groupId: string]: boolean }>({});
@@ -565,7 +596,6 @@ const SelectCheckbox = <Option, Group>({
                                 bgcolor: toTopBar ? '#EBEFFA' : '#FFFFFF',
                                 borderRadius: '5px',
                             },
-                            '::-webkit-scrollbar-thumb': { background: toTopBar ? '' : '#EBEFFA' },
                         },
                     },
                     transformOrigin: {
@@ -573,17 +603,7 @@ const SelectCheckbox = <Option, Group>({
                         horizontal: overrideSx ? 'center' : horizontalOrigin,
                     },
                 }}
-                // eslint-disable-next-line react/no-unstable-nested-components
-                IconComponent={() => (
-                    <Box display="flex" alignContent="center" alignItems="center" sx={{ gap: '10px', marginRight: '14px' }}>
-                        {img ||
-                            (isOpen ? (
-                                <IoIosArrowUp style={{ color: theme.palette.primary.main, height: '16px', width: '16px' }} />
-                            ) : (
-                                <IoIosArrowDown style={{ color: theme.palette.primary.main, height: '16px', width: '16px' }} />
-                            ))}
-                    </Box>
-                )}
+                IconComponent={(params) => CustomExpandMore({ filterIcon, ...params })}
                 size={size}
                 onOpen={() => {
                     setMiniFilterValue('');
@@ -602,7 +622,7 @@ const SelectCheckbox = <Option, Group>({
                     fontFamily: 'Rubik',
                     fontSize: '14px',
                     fontWeight: 400,
-                    boxShadow: '-2px 2px 6px 0px #1E277540',
+                    boxShadow: toUserProfile ? '0px 3px 10px rgba(0,0,0,0.2)' : 'none',
                     borderRadius: '8px',
                     ...(darkMode
                         ? { color: theme.palette.primary.main, '& .MuiOutlinedInput-notchedOutline': { borderColor: '#d2d3e3' } }
@@ -614,6 +634,10 @@ const SelectCheckbox = <Option, Group>({
                     maxWidth: !overrideSx ? (toTopBar ? '130px' : '131px') : undefined,
                     maxHeight: toTopBar ? '35px' : '34px',
                     padding: toTopBar ? '6.99px, 13.98px' : '0px, 8px',
+                    '& .MuiSvgIcon-root': {
+                        color: filterIcon ? (darkMode ? '#9398C2' : '#1E2775') : '',
+                        transform: filterIcon ? 'none' : '',
+                    },
                 }}
             >
                 {!isSelectDisabled && !hideSearchBar && <MiniFilter value={miniFilterValue} onChange={setMiniFilterValue} toTopBar={toTopBar} />}

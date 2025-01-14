@@ -90,7 +90,9 @@ export const Workspace: React.FC<IWorkspaceProps> = ({
                         ...(isMovedWorkspace ? { opacity: 0.5, backgroundColor: 'rgba(0, 0, 0, 0.1)' } : {}),
                     }}
                     className="card"
-                    onClick={() => setWorkspace(minimalWorkspace)}
+                    onClick={() => {
+                        setWorkspace(minimalWorkspace);
+                    }}
                 >
                     {workspaceIcon}
 

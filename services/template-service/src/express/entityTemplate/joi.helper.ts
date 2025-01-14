@@ -9,6 +9,13 @@ const { notifications } = config;
 
 const ajv = new Ajv();
 ajv.addFormat('fileId', /.*/);
+ajv.addFormat('user', {
+    type: 'string',
+    validate: (user) => {
+        const userObj = JSON.parse(user);
+        return userObj._id && userObj.fullName && userObj.jobTitle && userObj.hierarchy && userObj.mail;
+    },
+});
 ajv.addFormat('text-area', /.*/);
 ajv.addFormat('relationshipReference', /.*/);
 addFormats(ajv);
@@ -29,10 +36,12 @@ ajv.addKeyword({
     keyword: 'serialCurrent',
     type: 'number',
 });
+ajv.addKeyword({ keyword: 'user', type: 'string' });
 ajv.addKeyword({ keyword: 'calculateTime', type: 'boolean' });
 ajv.addKeyword({ keyword: 'isDailyAlert', type: 'boolean' });
+ajv.addKeyword({ keyword: 'archive', type: 'boolean' });
 
-const stringFormats = ['date', 'date-time', 'email', 'fileId', 'text-area', 'relationshipReference'];
+const stringFormats = ['date', 'date-time', 'email', 'fileId', 'text-area', 'relationshipReference', 'user'];
 const allowedJSONSchemaTypes = ['string', 'number', 'boolean', 'array'];
 
 const propertiesArraySchema = Joi.array()
@@ -49,11 +58,12 @@ const propertiesArraySchema = Joi.array()
                 .when('enum', { is: Joi.exist(), then: Joi.forbidden() }),
             enum: Joi.array().items(Joi.string()).when('type', { not: 'string', then: Joi.forbidden() }),
             readOnly: Joi.valid(true),
+            archive: Joi.boolean().optional(),
             pattern: Joi.string().when('type', { not: 'string', then: Joi.forbidden() }),
             patternCustomErrorMessage: Joi.string().when('pattern', { is: Joi.exist(), then: Joi.required(), otherwise: Joi.forbidden() }),
             items: Joi.object({
                 type: Joi.string().valid('string').required(),
-                format: Joi.string().valid('fileId'),
+                format: Joi.string().valid('fileId', 'user'),
                 enum: Joi.when('format', {
                     is: 'fileId',
                     then: Joi.forbidden(), // If format is fileId, enum is not allowed

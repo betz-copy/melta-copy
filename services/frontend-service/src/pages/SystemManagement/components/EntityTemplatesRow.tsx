@@ -1,9 +1,8 @@
-/* eslint-disable jsx-a11y/no-static-element-interactions */
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { AppRegistration as AppRegistrationIcon, Edit } from '@mui/icons-material';
 import { Grid, IconButton, Skeleton, Typography, useTheme } from '@mui/material';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd';
 import { UseMutateAsyncFunction, useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
@@ -12,6 +11,8 @@ import {
     IRelationshipTemplateMap,
     ICategoryMap,
     IMongoCategory,
+    IMongoEntityTemplatePopulated,
+    IEntitySingleProperty,
     IMongoEntityTemplateWithConstraintsPopulated,
     IEntityTemplateWithConstraints,
     IEntityTemplateWithConstraintsMap,
@@ -36,6 +37,7 @@ import {
 import { getAllRelationshipTemplatesRequest } from '../../../services/templates/relationshipTemplatesService';
 import { getEntityTemplateColor } from '../../../utils/colors';
 import { getFileName } from '../../../utils/getFileName';
+import { getCountByTemplateIdsRequest } from '../../../services/entitiesService';
 import { mapTemplates, templatesCompareFunc } from '../../../utils/templates';
 import { Box } from './Box';
 import { ViewingCard } from './Card';
@@ -113,6 +115,28 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
     const [isHoverOnCard, setIsHoverOnCard] = useState(false);
     const theme = useTheme();
     const { properties, propertiesOrder, propertiesPreview, propertiesTypeOrder, uniqueConstraints } = entityTemplate;
+    const [isDeleteButtonDisabled, setIsDeleteButtonDisabled] = useState(false);
+
+    const checkEntityTemplateHasEntities = async (templates: IMongoEntityTemplatePopulated[]) => {
+        const templateIds = templates.map(({ _id }) => _id);
+        const entitiesCountByTemplates = await getCountByTemplateIdsRequest(templateIds);
+        const countByTemplateIdMap = new Map(entitiesCountByTemplates.map(({ templateId, count }) => [templateId, count]));
+        const templatesHaveEntities = templates.some(({ _id }) => {
+            const count = countByTemplateIdMap.get(_id) || 0;
+            return count > 0;
+        });
+
+        setIsDeleteButtonDisabled(templatesHaveEntities);
+    };
+
+    const handleHover = (isHover: boolean) => {
+        setIsHoverOnCard(isHover);
+        if (isHover) {
+            checkEntityTemplateHasEntities([entityTemplate]);
+        }
+    };
+
+    const isFile = (value: IEntitySingleProperty) => value.format === 'fileId' || value.items?.format === 'fileId';
 
     return (
         <ViewingCard
@@ -182,9 +206,15 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                     updateEntityTemplateStatusAsync({ entityTemplateId: entityTemplate._id, disabled: !entityTemplate.disabled })
                                 }
                                 disabledProps={{
+                                    isDeleteDisabled: isDeleteButtonDisabled,
                                     isDisabled: entityTemplate.disabled,
-                                    canEdit: entityTemplate.disabled,
-                                    tooltipTitle: i18next.t('systemManagement.disabledEntityTemplate'),
+                                    isEditDisabled: entityTemplate.disabled,
+                                    // eslint-disable-next-line no-nested-ternary
+                                    tooltipTitle: entityTemplate.disabled
+                                        ? i18next.t('systemManagement.disabledEntityTemplate')
+                                        : isDeleteButtonDisabled
+                                        ? i18next.t('systemManagement.cannotDeleteWithEntities')
+                                        : '',
                                 }}
                             />
                         )}
@@ -207,7 +237,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                         </Grid>
                     </Grid>
                     {Object.entries(entityTemplate.properties.properties)
-                        .filter(([, value]) => value.format !== 'fileId')
+                        .filter(([, value]) => !isFile(value))
                         .map(([key, value]) => (
                             <Grid key={key} item container gap="5px" flexWrap="nowrap">
                                 <Grid item flexBasis="4%" color={theme.palette.primary.main}>
@@ -239,8 +269,8 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                         </Grid>
                     </Grid>
                     {Object.entries(entityTemplate.properties.properties)
-                        .filter(([, value]) => value.format === 'fileId')
-                        .map(([key]) => (
+                        .filter(([, value]) => isFile(value))
+                        .map(([key, value]) => (
                             <Grid key={key} item container gap="5px">
                                 <Grid item flexBasis="4%" color={theme.palette.primary.main}>
                                     <Typography>-</Typography>
@@ -260,8 +290,8 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                         </Typography>
                                     </MeltaTooltip>
                                 </Grid>
-                                <Grid item color={theme.palette.primary.main} fontWeight="400">
-                                    {entityTemplate.properties.required.includes(key) ? i18next.t('validation.required') : ''}
+                                <Grid item color={theme.palette.primary.main} fontWeight="400" sx={{ opacity: 0.75 }}>
+                                    {i18next.t(`propertyTypes.${value.format === 'fileId' ? value.format : 'multipleFiles'}`)}
                                 </Grid>
                             </Grid>
                         ))}
@@ -296,7 +326,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                     ))}
                 </Grid>
             }
-            onHover={(isHover: boolean) => setIsHoverOnCard(isHover)}
+            onHover={handleHover}
         />
     );
 };

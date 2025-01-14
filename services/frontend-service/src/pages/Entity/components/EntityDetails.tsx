@@ -2,9 +2,12 @@ import {
     AccountTreeOutlined as GraphIcon,
     ContentCopy as DuplicateIcon,
     Delete as DeleteIcon,
-    DoDisturbAlt,
+    DoNotDisturbOnOutlined as DoNotDisturbOnOutlinedIcon,
+    DoNotDisturbOffOutlined as DoNotDisturbOffOutlinedIcon,
     Edit as EditIcon,
     MoreVertOutlined,
+    Unarchive,
+    Archive,
 } from '@mui/icons-material';
 import { Card, CardContent, Grid, IconButton, Menu } from '@mui/material';
 import { AxiosError } from 'axios';
@@ -14,6 +17,7 @@ import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { useLocation } from 'wouter';
 import {
+    IDeleteEntityBody,
     IEntity,
     IEntityExpanded,
     IEntityTemplateMap,
@@ -32,7 +36,7 @@ import { MenuButton } from '../../../common/MenuButton';
 import { deleteEntityRequest, updateEntityStatusRequest } from '../../../services/entitiesService';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { useUserStore } from '../../../stores/user';
-import { checkUserCategoryPermission } from '../../../utils/permissions/instancePermissions';
+import { checkUserCategoryPermission, isWorkspaceAdmin } from '../../../utils/permissions/instancePermissions';
 import { EditEntityDetails } from './EditEntityDetails';
 import { EntityDates } from './EntityDates';
 import { EntityDisableCheckbox } from './EntityDisableCheckbox';
@@ -49,6 +53,14 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplateWithConstrai
     const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
     const queryClient = useQueryClient();
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+    const [displayArchiveProperties, setDisplayArchiveProperties] = useState(false);
+
+    const [updateStatusWithRuleBreachDialogState, setUpdateStatusWithRuleBreachDialogState] = useState<{
+        isOpen: boolean;
+        brokenRules?: IRuleBreachPopulated['brokenRules'];
+        rawBrokenRules?: IRuleBreach['brokenRules'];
+        disabledStatus?: boolean;
+    }>({ isOpen: false });
 
     const currentUser = useUserStore((state) => state.user);
     const darkMode = useDarkModeStore((state) => state.darkMode);
@@ -70,12 +82,11 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplateWithConstrai
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const currentEntityTemplate = entityTemplates.get(expandedEntity?.entity.templateId);
     const templateIds = Array.from(entityTemplates.keys());
-    const [updateStatusWithRuleBreachDialogState, setUpdateStatusWithRuleBreachDialogState] = useState<{
-        isOpen: boolean;
-        brokenRules?: IRuleBreachPopulated['brokenRules'];
-        rawBrokenRules?: IRuleBreach['brokenRules'];
-        disabledStatus?: boolean;
-    }>({ isOpen: false });
+
+    const workspaceAdmin = isWorkspaceAdmin(currentUser.currentWorkspacePermissions);
+    const canWriteInstance = checkUserCategoryPermission(currentUser.currentWorkspacePermissions, entityTemplate.category, PermissionScope.write);
+    const isEntityDisabled = expandedEntity.entity.properties.disabled;
+
     const { isLoading: isUpdateStatusLoading, mutateAsync: updateEntityStatus } = useMutation(
         ({ currEntity, disabled, ignoredRules }: { currEntity: IEntity; disabled: boolean; ignoredRules?: IRuleBreach['brokenRules'] }) =>
             updateEntityStatusRequest(currEntity.properties._id, disabled, JSON.stringify(ignoredRules)),
@@ -113,17 +124,26 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplateWithConstrai
         },
     );
 
-    const { isLoading: isDeleteLoading, mutateAsync: deleteMutation } = useMutation(() => deleteEntityRequest(entity.properties._id), {
-        onError: (error: AxiosError<{ metadata: { errorCode: string } }>) => {
-            closeDeleteDialog();
-            toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.entity.failedToDelete')} />);
+    const { isLoading: isDeleteLoading, mutateAsync: deleteMutation } = useMutation(
+        () =>
+            deleteEntityRequest({
+                selectAll: false,
+                templateId: currentEntityTemplate?._id as string,
+                idsToInclude: [entity.properties._id],
+                deleteAllRelationships: expandedEntity.connections.length > 0 && workspaceAdmin,
+            } as IDeleteEntityBody<false>),
+        {
+            onError: (error: AxiosError) => {
+                closeDeleteDialog();
+                toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.entity.failedToDelete')} />);
+            },
+            onSuccess: () => {
+                toast.success(i18next.t('wizard.entity.deletedSuccessfully'));
+                closeDeleteDialog();
+                navigate(`/category/${currentEntityTemplate?.category._id}`);
+            },
         },
-        onSuccess: () => {
-            toast.success(i18next.t('wizard.entity.deletedSuccessfully'));
-            closeDeleteDialog();
-            navigate(`/category/${currentEntityTemplate?.category._id}`);
-        },
-    });
+    );
 
     if (isEditMode) {
         return (
@@ -144,8 +164,6 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplateWithConstrai
         );
     }
 
-    const canWriteInstance = checkUserCategoryPermission(currentUser.currentWorkspacePermissions, entityTemplate.category, PermissionScope.write);
-    const isEntityDisabled = expandedEntity.entity.properties.disabled;
     return (
         <>
             <Card
@@ -259,8 +277,15 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplateWithConstrai
                                             handleClose();
                                         }}
                                         disabled={!canWriteInstance}
-                                        icon={DoDisturbAlt}
+                                        icon={isEntityDisabled ? DoNotDisturbOffOutlinedIcon : DoNotDisturbOnOutlinedIcon}
                                         text={isEntityDisabled ? i18next.t('actions.activate') : i18next.t('actions.disable')}
+                                    />
+                                    <TooltipMenuButton
+                                        tooltipTitle={i18next.t('permissions.dontHaveWritePermissionsToCategory')}
+                                        onClick={() => setDisplayArchiveProperties(!displayArchiveProperties)}
+                                        disabled={!canWriteInstance}
+                                        icon={displayArchiveProperties ? Archive : Unarchive}
+                                        text={displayArchiveProperties ? i18next.t('entityPage.hideArchive') : i18next.t('entityPage.displayArchive')}
                                     />
                                 </Menu>
                             </Grid>
@@ -283,6 +308,26 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplateWithConstrai
                                     textWrap
                                     mode="normal"
                                 />
+                                {displayArchiveProperties && (
+                                    <EntityProperties
+                                        entityTemplate={entityTemplate}
+                                        properties={entity.properties}
+                                        style={{
+                                            flexDirection: 'row',
+                                            flexWrap: 'wrap',
+                                            rowGap: '20px',
+                                            columnGap: '20px',
+                                            alignItems: 'center',
+                                            width: '100%',
+                                        }}
+                                        innerStyle={{ width: '32%' }}
+                                        textWrap
+                                        mode="normal"
+                                        displayArchiveProperties
+                                        showDivider
+                                        dividerTitle={i18next.t('entityPage.archiveTitle')}
+                                    />
+                                )}
                             </Grid>
 
                             <Grid item>
@@ -313,6 +358,11 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplateWithConstrai
                 <AreYouSureDialog
                     open={openDeleteDialog}
                     handleClose={closeDeleteDialog}
+                    body={
+                        expandedEntity.connections.length > 0 &&
+                        workspaceAdmin &&
+                        i18next.t('entityPage.wouldYouLikeToDeleteTheRelationshipsOfEntity')
+                    }
                     onYes={() => deleteMutation()}
                     isLoading={isDeleteLoading}
                 />

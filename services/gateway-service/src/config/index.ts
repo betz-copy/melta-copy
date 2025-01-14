@@ -25,6 +25,17 @@ const config = {
         url: env.get('MONGO_URL').required().asString(),
         iFramesCollectionName: env.get('MONGO_IFRAMES_COLLECTION_NAME').required().asString(),
     },
+
+    frontendConfig: {
+        matotmo: {
+            baseUrl: env.get('FRONTEND_CONFIG_MATOMO_BASE_URL').default('http://localhost:8016').required().asString(),
+            siteId: env.get('FRONTEND_CONFIG_MATOMO_SITE_ID').default(1).required().asInt(),
+        },
+        agGridLimit: {
+            deleteLimit: env.get('DELETE_ENTITIES_MAX_LIMIT').default(1000).asIntPositive(),
+        },
+    },
+
     authentication: {
         isRequired: env.get('IS_AUTHENTICATION_REQUIRED').default('true').asBool(),
         mockAuthenticatedUserId: env.get('MOCK_AUTHENTICATED_USER_ID').default('5e5688324203fc40043591aa').asString(), // niky adidas
@@ -71,10 +82,14 @@ const config = {
         duplicateFilesRoute: env.get('STORAGE_SERVICE_DUPLICATE_FILES_ROUTE').default('api/files/duplicate-bulk').asString(),
         fileIdLength: env.get('STORAGE_SERVICE_FILE_ID_LENGTH').default(32).asIntPositive(),
         requestTimeout: env.get('STORAGE_SERVICE_SERVICE_REQUEST_TIMEOUT').default(10000).asIntPositive(),
+        usersGlobalBucketName: env.get('MINIO_USERS_BUCKET_NAME').default('users-global-bucket').asString(),
     },
     semanticSearchService: {
+        requestTimeout: env.get('SEMANTIC_SEARCH_SERVICE_REQUEST_TIMEOUT').default(20000).asIntPositive(),
         url: env.get('SEMANTIC_SEARCH_SERVICE').required().asString(),
-        searchRoute: env.get('SEMANTIC_SEARCH_SERVICE_SEARCH_ROUTE').default('/api/semantic/search').asString(),
+        baseRoute: env.get('SEMANTIC_SEARCH_SERVICE_BASE_ROUTE').default('/api/semantic').asString(),
+        searchRoute: env.get('SEMANTIC_SEARCH_SERVICE_SEARCH_ROUTE').default('/search').asString(),
+        rerankRoute: env.get('SEMANTIC_SEARCH_SERVICE_RERANK_ROUTE').default('/rerank').asString(),
     },
     instanceService: {
         url: env.get('INSTANCE_SERVICE_URL').required().asString(),
@@ -94,6 +109,10 @@ const config = {
         permissionsRoute: env.get('USER_SERVICE_BASE_ROUTE').default('/api/permissions').asString(),
         checkAuthorizationRoute: env.get('PERMISSION_SERVICE_CHECK_AUTHERIZATION_ROUTE').default('authorization').asString(),
         requestTimeout: env.get('PERMISSION_SERVICE_REQUEST_TIMEOUT').default(100000).asIntPositive(),
+        profilePathPattern: env
+            .get('PROFILE_PATH_PATTERN')
+            .default('^(kartoffelProfile|[0-9a-f]{8}[0-9a-f]{4}[0-9a-f]{4}[0-9a-f]{4}[0-9a-f]{12}.*)$')
+            .asRegExp(),
     },
     activityLogService: {
         url: env.get('ACTIVITY_LOG_SERVICE_URL').required().asString(),
@@ -141,6 +160,7 @@ const config = {
         requestTimeout: env.get('KARTOFFEL_REQUEST_TIMEOUT').default(10000).asIntPositive(),
         searchRoute: env.get('KARTOFFEL_SEARCH_ROUTE').default('/search').asString(),
         fieldToSearch: env.get('KARTOFFEL_FIELDS_TO_SEARCH').default('fullName,uniqueId,personalNumber,identityCard').asString(),
+        profilePath: env.get('KARTOFFEL_PROFILE_PATH').default('pictures/profile').asString(),
     },
     errorCodes: {
         categoryHasTemplates: 'CATEGORY_HAS_TEMPLATES',
@@ -152,6 +172,9 @@ const config = {
         ruleBlock: 'RULE_BLOCK',
         ruleHasAlertsOrRequests: 'RULE_HAS_ALERTS_OR_REQUESTS',
         failedToDeleteField: 'FAILED_DELETE_FIELD',
+        moreThenOneRelationshipInstanceExist: 'MORE_THEN_ONE_RELATIONSHIP_INSTANCE_EXIST',
+        failedConstraintsValidation: 'FAILED_CONSTRAINTS_VALIDATION',
+        templateValidationError: 'TemplateValidationError',
     },
     rabbit: {
         url: env.get('RABBIT_URL').required().asUrlString(),
@@ -195,6 +218,14 @@ const config = {
     excel: {
         multipleFilesName: env.get('MULTIPLE_FILES_NAME').default('attachmentZip').asString(),
         columnWidth: env.get('COLUMN_WIDTH').default(20).asIntPositive(),
+    },
+    loadExcel: {
+        maxValidationRow: env.get('MAX_VALIDATION_ROW').default(100).asIntPositive(),
+        minValidationRow: env.get('MIN_VALIDATION_ROW').default(2).asIntPositive(),
+        entitiesFileLimit: env.get('ENTITIES_FILE_LIMIT').default(500).asIntPositive(),
+        filesLimit: env.get('FILES_LIMIT').default(5).asIntPositive(),
+        invalidDate: env.get('INVALID_DATE').default('Invalid Date').asString(),
+        invalidTime: env.get('INVALID_TIME').default('Invalid time value').asString(),
     },
 };
 

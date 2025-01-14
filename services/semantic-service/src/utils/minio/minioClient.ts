@@ -1,10 +1,14 @@
-import * as http from 'http';
+import http from 'http';
 import { Client } from 'minio';
 import pdf from 'pdf-parse';
-import * as mammoth from 'mammoth';
 import { logger } from '@microservices/shared';
 import config from '../../config';
 import { streamToBuffer } from '../fs';
+import mammoth from 'mammoth';
+import readExcelData from '../textExtractors/excel';
+import { extractPptxText } from '../textExtractors/pptx';
+import { FileTypes } from '../types';
+import extractTextFromDoc from '../textExtractors/doc';
 
 const { url: endPoint, port, accessKey, secretKey, useSSL, transportAgent } = config.minio;
 
@@ -52,20 +56,37 @@ class MinIOClient {
         return this.wrapDBNotExistsError(() => this.minioClient.getObject(this.bucketName, filePath));
     }
 
-    async readFile(filePath: string) {
+    async readFile(filePath: string): Promise<string | undefined> {
         const fileStream = await this.downloadFileStream(filePath);
-        const buffer = await streamToBuffer(fileStream);
         const fileExtension = filePath.split('.').pop();
+
         switch (fileExtension) {
-            case 'pdf':
+            case FileTypes.PDF: {
+                const buffer = await streamToBuffer(fileStream);
                 return (await pdf(buffer)).text;
-            case 'txt':
+            }
+            case FileTypes.TXT: {
+                const buffer = await streamToBuffer(fileStream);
                 return buffer.toString();
-            case 'doc':
-            case 'docx':
+            }
+            case FileTypes.DOCX: {
+                const buffer = await streamToBuffer(fileStream);
                 return (await mammoth.extractRawText({ buffer })).value;
+            }
+            case FileTypes.DOC: {
+                const buffer = await streamToBuffer(fileStream);
+                return extractTextFromDoc(buffer);
+            }
+            case FileTypes.XLSX:
+            case FileTypes.CSV: {
+                return readExcelData(fileStream, fileExtension);
+            }
+            case FileTypes.PPTX: {
+                const buffer = await streamToBuffer(fileStream);
+                return extractPptxText(buffer);
+            }
             default:
-                return buffer.toString();
+                return undefined;
         }
     }
 }

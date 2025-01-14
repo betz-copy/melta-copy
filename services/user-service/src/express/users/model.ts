@@ -24,9 +24,20 @@ const UserSchema = new mongoose.Schema(
             required: true,
             index: true,
         },
+        profile: {
+            type: String,
+        },
         preferences: {
             darkMode: {
                 type: Boolean,
+                default: false,
+            },
+            mailsNotificationsTypes: {
+                type: [String],
+                default: [],
+            },
+            profilePath: {
+                type: String,
             },
         },
         externalMetadata: {

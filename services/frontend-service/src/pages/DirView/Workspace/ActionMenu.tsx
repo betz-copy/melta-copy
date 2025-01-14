@@ -42,6 +42,12 @@ export const ActionMenu: React.FC<IActionMenuProps> = ({ workspace, openEditWiza
         },
     );
 
+    const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+        event.stopPropagation();
+        setAnchorEl(event.currentTarget);
+        event.preventDefault();
+    };
+
     const handleClose = () => setAnchorEl(null);
 
     const menuItems = isMovedWorkspace
@@ -90,10 +96,9 @@ export const ActionMenu: React.FC<IActionMenuProps> = ({ workspace, openEditWiza
             className="actionMenu"
             onClick={(e) => e.preventDefault()}
         >
-            <IconButton onClick={(e) => setAnchorEl(e.currentTarget)}>
+            <IconButton onClick={handleClick}>
                 <MoreVert />
             </IconButton>
-
             <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
                 {menuItems}
             </Menu>

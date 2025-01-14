@@ -1,4 +1,4 @@
-import { Dialog } from '@mui/material';
+import { Dialog, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import React, { CSSProperties, useState } from 'react';
 import { toast } from 'react-toastify';
@@ -7,6 +7,7 @@ import { emptyEntityTemplate, EntityWizardValues } from '../dialogs/entity';
 import { CreateOrEditEntityDetails, ICreateOrUpdateWithRuleBreachDialogState } from '../dialogs/entity/CreateOrEditEntityDialog';
 import { useDraftIdStore } from '../../stores/drafts';
 import { TableButton } from '../TableButton';
+import { useDarkModeStore } from '../../stores/darkMode';
 
 const AddEntityButton: React.FC<{
     style?: CSSProperties;
@@ -33,19 +34,24 @@ const AddEntityButton: React.FC<{
 
     const setDraftId = useDraftIdStore((state) => state.setDraftId);
 
+    const darkMode = useDarkModeStore((state) => state.darkMode);
+    const theme = useTheme();
+    const disabledColor = darkMode ? 'rgba(255, 255, 255, 0.26)' : 'rgba(0, 0, 0, 0.26)';
+
     return (
         <>
             <TableButton
                 iconButtonWithPopoverProps={{
                     iconButtonProps: {
                         onClick: () => {
+                            if (disabled) return;
                             setAddEntityWizardState({ isOpen: true, initialStep, initialValues });
                             setExternalErrors({ files: false, unique: {}, action: '' });
                             setCreateOrUpdateWithRuleBreachDialogState({ isOpen: false });
                             toast.dismiss();
                             setDraftId('');
                         },
-                        style,
+                        style: { ...style, color: disabled ? disabledColor : theme.palette.primary.main },
                     },
                     popoverText:
                         popoverText ??
