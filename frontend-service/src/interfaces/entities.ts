@@ -137,7 +137,7 @@ export interface ISearchEntitiesByLocationBody {
 
 export interface ISearchResult {
     count: number;
-    entities: (IEntityWithDirectConnections & { minioFileIds?: string[] })[];
+    entities: (IEntityWithDirectConnections & { minioFileIdsWithTexts?: ISemanticSearchResult[string][string] })[];
 }
 
 export interface ISearchResultByTemplates {

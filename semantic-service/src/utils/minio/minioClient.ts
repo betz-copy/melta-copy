@@ -5,9 +5,10 @@ import mammoth from 'mammoth';
 import config from '../../config';
 import { streamToBuffer } from '../fs';
 import logger from '../logger/logsLogger';
-import readExcelData from '../excel';
-import { extractPptxText } from '../pptx';
+import readExcelData from '../textExtractors/excel';
+import { extractPptxText } from '../textExtractors/pptx';
 import { FileTypes } from '../types';
+import extractTextFromDoc from '../textExtractors/doc';
 
 const { url: endPoint, port, accessKey, secretKey, useSSL, transportAgent } = config.minio;
 
@@ -68,10 +69,13 @@ export class MinIOClient {
                 const buffer = await streamToBuffer(fileStream);
                 return buffer.toString();
             }
-            case FileTypes.DOC:
             case FileTypes.DOCX: {
                 const buffer = await streamToBuffer(fileStream);
                 return (await mammoth.extractRawText({ buffer })).value;
+            }
+            case FileTypes.DOC: {
+                const buffer = await streamToBuffer(fileStream);
+                return extractTextFromDoc(buffer);
             }
             case FileTypes.XLSX:
             case FileTypes.CSV: {
