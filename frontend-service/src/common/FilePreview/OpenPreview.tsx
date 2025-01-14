@@ -104,7 +104,7 @@ const OpenPreview: React.FC<{
             </Link>
         );
     }
-    return (
+    return matchSentence ? (
         <MeltaTooltip
             title={
                 <Typography
@@ -135,6 +135,18 @@ const OpenPreview: React.FC<{
                 {open && <PreviewDialog fileId={fileId} setOpen={setOpen} open={open} fileName={fileName} contentType={contentType} />}
             </Grid>
         </MeltaTooltip>
+    ) : (
+        <Grid>
+            <OpenPreviewContent
+                fileName={fileName}
+                onClick={handleButtonClick}
+                img={img}
+                showText={showText}
+                searchValue={searchValue}
+                highlightAll={highlightAll}
+            />
+            {open && <PreviewDialog fileId={fileId} setOpen={setOpen} open={open} fileName={fileName} contentType={contentType} />}
+        </Grid>
     );
 };
 

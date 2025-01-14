@@ -362,22 +362,35 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                     }}
                                 >
                                     <Grid item xs={9}>
-                                        <MeltaTooltip
-                                            title={
+                                        {matchedSentence ? (
+                                            <MeltaTooltip
+                                                title={
+                                                    <Typography
+                                                        sx={{
+                                                            maxHeight: '250px',
+                                                            overflow: 'hidden',
+                                                            textOverflow: 'ellipsis',
+                                                            display: '-webkit-box',
+                                                            WebkitLineClamp: 10,
+                                                            WebkitBoxOrient: 'vertical',
+                                                        }}
+                                                    >
+                                                        {matchedSentence || ''}
+                                                    </Typography>
+                                                }
+                                            >
                                                 <Typography
                                                     sx={{
-                                                        maxHeight: '250px',
-                                                        overflow: 'hidden',
-                                                        textOverflow: 'ellipsis',
-                                                        display: '-webkit-box',
-                                                        WebkitLineClamp: 10,
-                                                        WebkitBoxOrient: 'vertical',
+                                                        marginLeft: '7px',
+                                                        fontSize: '0.8rem',
+                                                        maxWidth: '100%',
+                                                        color: 'white',
                                                     }}
                                                 >
-                                                    {matchedSentence || ''}
+                                                    <HighlightText text={fileName || ''} searchedText={minioFileId ? fileName : searchedText} />
                                                 </Typography>
-                                            }
-                                        >
+                                            </MeltaTooltip>
+                                        ) : (
                                             <Typography
                                                 sx={{
                                                     marginLeft: '7px',
@@ -388,7 +401,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                             >
                                                 <HighlightText text={fileName || ''} searchedText={minioFileId ? fileName : searchedText} />
                                             </Typography>
-                                        </MeltaTooltip>
+                                        )}
                                     </Grid>
                                     <Grid item xs={3} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
                                         {files[previewImageIndex] && (
