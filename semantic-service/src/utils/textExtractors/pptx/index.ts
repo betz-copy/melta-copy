@@ -1,6 +1,6 @@
 import JSZip from 'jszip';
 import { extractTextByTags, findDiagramFiles, normalizeDiagramPath, readXmlFromZip, RelsObject, XMLObject } from './helperFunctions';
-import config from '../../config';
+import config from '../../../config';
 
 const { slidesSplitter, slidesPathRegex, extractingTextTags, extractingDiagramTags } = config.minio.pptx;
 

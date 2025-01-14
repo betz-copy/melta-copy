@@ -13,7 +13,7 @@ import { updateUserPreferencesMetadataRequest } from '../../../services/userServ
 import { ErrorToast } from '../../ErrorToast';
 import { UserProfile } from './userProfile';
 import { UserDetails } from './userDetails';
-import { SelectCheckbox } from '../../SelectCheckbox';
+import { SelectCheckbox } from '../../SelectCheckBox';
 import { DayNightSwitch } from '../../inputs/DayNightSwitch';
 
 const { notificationsMoreData } = environment.notifications;

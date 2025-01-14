@@ -309,7 +309,6 @@ export class EntityManager extends DefaultManagerNeo4j {
         if (!entity) {
             throw new NotFoundError(`[NEO4J] entity "${id}" not found`);
         }
-
         return entity;
     }
 
@@ -1616,14 +1615,14 @@ export class EntityManager extends DefaultManagerNeo4j {
 
     async updateRelationshipReferencesEnumField(
         templateId: string,
-        ogirinalEntities: IEntity[],
+        originalEntities: IEntity[],
         newValue: string,
         oldValue: string,
         field: any,
         transaction: Transaction,
     ) {
         let updateRelatedEntitiesQuery;
-        const originalChangedEntityIds = ogirinalEntities.map((node) => node.properties._id);
+        const originalChangedEntityIds = originalEntities.map((node) => node.properties._id);
         const entitiesNeedToUpdate = await this.getRelatedEntitiesOfEntity(templateId, originalChangedEntityIds, transaction);
 
         await Promise.all(

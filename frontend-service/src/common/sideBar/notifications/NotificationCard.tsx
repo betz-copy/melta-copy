@@ -64,11 +64,10 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({ notification
         >
             <CardContent sx={{ '&:last-child': { padding: '15px' } }}>
                 <Grid container direction="column">
-                    {!isDateAboutToExpireNotification(notification) && (
-                        <Grid item container justifyContent="flex-end" wrap="nowrap">
-                            <Typography sx={{ fontSize: '11px', fontWeight: '350px' }}>{getShortDate(notification.createdAt)}</Typography>
-                        </Grid>
-                    )}
+                    <Grid item container justifyContent="flex-end" wrap="nowrap">
+                        <Typography sx={{ fontSize: '11px', fontWeight: '350px' }}>{getShortDate(notification.createdAt)}</Typography>
+                    </Grid>
+
                     <Grid item sx={{ padding: '10px' }}>
                         {isRuleBreachAlertNotification(notification) && <RuleBreachAlertNotification notificationMetadata={notification.metadata} />}
                         {isRuleBreachRequestNotification(notification) && (
@@ -91,13 +90,6 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({ notification
                         {isArchiveProcessNotification(notification) && <ArchiveProcessNotification notificationMetadata={notification.metadata} />}
                     </Grid>
                     <Grid container wrap="nowrap" margin="-5px">
-                        {isDateAboutToExpireNotification(notification) && (
-                            <Grid item container alignItems="center" marginLeft="5.5%">
-                                <Typography sx={{ fontSize: '11px', fontWeight: '350px', color: '#5A6173' }}>
-                                    {getShortDate(notification.createdAt)}
-                                </Typography>
-                            </Grid>
-                        )}
                         <Grid
                             item
                             container

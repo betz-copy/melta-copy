@@ -881,35 +881,57 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                             'dateNotification' in value &&
                                             (value.dateNotification !== undefined ? (
                                                 <Grid container direction="row">
-                                                    <IconButton
-                                                        onClick={() => setFieldValue('dateNotification', undefined)}
-                                                        sx={{ borderRadius: 10 }}
-                                                        disabled={value.deleted}
-                                                    >
-                                                        <NotificationsActiveIcon />
-                                                    </IconButton>
-                                                    <ToggleButtonGroup
-                                                        exclusive
-                                                        id={isDailyAlert}
-                                                        color="primary"
-                                                        size="small"
-                                                        sx={{ height: '35px', marginLeft: '10px' }}
-                                                        value={value.isDailyAlert ?? true}
-                                                        onChange={(_event: React.MouseEvent<HTMLElement>, newIsDailyAlert: boolean) => {
-                                                            setFieldValue('isDailyAlert', newIsDailyAlert);
-                                                        }}
-                                                    >
-                                                        <ToggleButton value>
-                                                            <MeltaTooltip title={i18next.t('wizard.entityTemplate.dailyAlert')}>
-                                                                <DailyAlertIcon />
-                                                            </MeltaTooltip>
-                                                        </ToggleButton>
-                                                        <ToggleButton value={false}>
-                                                            <MeltaTooltip title={TooltipTitleWithLinesSpace('wizard.entityTemplate.customAlert')}>
-                                                                <CustomAlertIcon />
-                                                            </MeltaTooltip>
-                                                        </ToggleButton>
-                                                    </ToggleButtonGroup>
+                                                    <Grid container item direction="row">
+                                                        <IconButton
+                                                            onClick={() => setFieldValue('dateNotification', undefined)}
+                                                            sx={{ borderRadius: 10 }}
+                                                            disabled={value.deleted}
+                                                        >
+                                                            <NotificationsActiveIcon />
+                                                        </IconButton>
+                                                        <ToggleButtonGroup
+                                                            exclusive
+                                                            id={isDailyAlert}
+                                                            color="primary"
+                                                            size="small"
+                                                            sx={{ height: '35px', marginLeft: '10px' }}
+                                                            value={value.isDailyAlert ?? true}
+                                                            onChange={(_event: React.MouseEvent<HTMLElement>, newIsDailyAlert: boolean) => {
+                                                                setFieldValue('isDailyAlert', newIsDailyAlert);
+                                                            }}
+                                                        >
+                                                            <ToggleButton value>
+                                                                <MeltaTooltip title={i18next.t('wizard.entityTemplate.dailyAlert')}>
+                                                                    <DailyAlertIcon />
+                                                                </MeltaTooltip>
+                                                            </ToggleButton>
+                                                            <ToggleButton value={false}>
+                                                                <MeltaTooltip title={TooltipTitleWithLinesSpace('wizard.entityTemplate.customAlert')}>
+                                                                    <CustomAlertIcon />
+                                                                </MeltaTooltip>
+                                                            </ToggleButton>
+                                                        </ToggleButtonGroup>
+                                                        <FormControlLabel
+                                                            control={
+                                                                <MeltaCheckbox
+                                                                    checked={value.isDatePastAlert ?? true}
+                                                                    onChange={(_e, checked) => {
+                                                                        setValues?.((prevValue) => ({
+                                                                            ...prevValue,
+                                                                            isDatePastAlert: checked,
+                                                                        }));
+                                                                    }}
+                                                                />
+                                                            }
+                                                            style={{
+                                                                display: 'flex',
+                                                                justifyContent: 'center',
+                                                                marginRight: 'auto',
+                                                                marginLeft: 10,
+                                                            }}
+                                                            label={i18next.t('wizard.entityTemplate.datePastNotification')}
+                                                        />
+                                                    </Grid>
                                                     <TextField
                                                         select
                                                         label={i18next.t('wizard.entityTemplate.dateNotification')}
