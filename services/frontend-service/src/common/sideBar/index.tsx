@@ -7,6 +7,7 @@ import {
     ManageAccounts as ManageAccountsIcon,
     Add as PlusIcon,
     Widgets as WidgetsIcon,
+    Map,
 } from '@mui/icons-material';
 import { Box, Button, Grid, IconButton, Slide, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
@@ -391,6 +392,16 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                             fontSize="large"
                             sx={{ color: activeButton === 'iFrames' ? '#545eb9' : 'white', ...environment.iconSize }}
                         />
+                    </NavButton>
+
+                    <NavButton
+                        to="/map"
+                        text="עמוד מפה"
+                        isDrawerOpen={isDrawerOpen}
+                        onChangeToActive={(isActive) => handleChangeActiveButton(isActive, 'map')}
+                        isActiveButton={activeButton === 'map'}
+                    >
+                        <Map fontSize="large" sx={{ color: activeButton === 'map' ? '#545eb9' : 'white', ...environment.iconSize }} />
                     </NavButton>
 
                     <NavButton

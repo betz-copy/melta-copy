@@ -46,17 +46,19 @@ const getFilteredInstances = async (
     });
     const today = new Date();
 
-    const dateNotificationFilterQuery = propertiesWithDateNotifications.map((prop) => {
+    const dateNotificationFilterQuery = propertiesWithDateNotifications.map((propertyWithNotification) => {
+        const { dateNotificationValue, isDateTime, isDatePastAlert, propertyName } = propertyWithNotification;
+
         const notificationDate = new Date();
-        notificationDate.setDate(today.getDate() + prop.dateNotificationValue);
-        const startDate = prop.isDateTime ? today.toISOString() : today.toISOString().split('T')[0];
-        const endDate = prop.isDateTime
+        notificationDate.setDate(today.getDate() + dateNotificationValue);
+        const startDate = isDateTime ? today.toISOString() : today.toISOString().split('T')[0];
+        const endDate = isDateTime
             ? new Date(notificationDate.setUTCHours(23, 59, 59, 999)).toISOString()
             : notificationDate.toISOString().split('T')[0];
 
         return {
-            [prop.propertyName]: {
-                $gte: startDate,
+            [propertyName]: {
+                ...(!isDatePastAlert && { $gte: startDate }),
                 $lte: endDate,
             },
         };
@@ -113,26 +115,26 @@ const sendNotificationsForEntityTemplate = async (
             dateNotificationValue: property.dateNotification!,
             isDateTime: property.format === 'date-time',
             isDailyAlert: property.isDailyAlert!,
+            isDatePastAlert: property.isDatePastAlert!,
         }));
 
     if (propertiesWithDateNotifications.length > 0) {
         const instances = await getFilteredInstances(instancesService, entityTemplate._id, propertiesWithDateNotifications);
 
         await Promise.all(
-            propertiesWithDateNotifications.map(async ({ propertyName, dateNotificationValue, isDailyAlert }) => {
+            propertiesWithDateNotifications.map(async ({ propertyName, dateNotificationValue, isDailyAlert, isDatePastAlert }) => {
                 instances.map(async ({ entity }) => {
-                    const datePropertyValueDateFormat = new Date(entity.properties[propertyName]);
                     const datePropertyValue = new Date(entity.properties[propertyName]);
-
-                    if (datePropertyValueDateFormat.setHours(0, 0, 0, 0) < today.setHours(0, 0, 0, 0)) return;
-
                     const notificationDate = new Date(entity.properties[propertyName]);
                     notificationDate.setDate(datePropertyValue.getDate() - dateNotificationValue);
 
-                    if (
-                        (isDailyAlert && notificationDate.getTime() <= today.getTime()) ||
-                        (!isDailyAlert && checkNotificationDateInCustomAlert(datePropertyValue, dateNotificationValue))
-                    ) {
+                    const isPastAlert = isDatePastAlert && datePropertyValue.getTime() < today.getTime();
+                    const isFutureDate = datePropertyValue.getTime() >= new Date().setHours(0, 0, 0, 0);
+                    const isDailyAlertActive = isDailyAlert && notificationDate.getTime() <= today.getTime();
+                    const isCustomAlertActive = !isDailyAlert && checkNotificationDateInCustomAlert(datePropertyValue, dateNotificationValue);
+                    const isActiveAlert = isDailyAlertActive || isCustomAlertActive;
+
+                    if (!entity.properties.disabled && (isPastAlert || (isFutureDate && isActiveAlert))) {
                         await rabbitManager.createNotification<IDateAboutToExpireNotificationMetadata>(
                             userIdsWithPermission,
                             NotificationType.dateAboutToExpire,

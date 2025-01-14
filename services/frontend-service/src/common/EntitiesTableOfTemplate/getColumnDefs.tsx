@@ -14,6 +14,7 @@ import {
     enumColDef,
     enumFilesColDef,
     fileColDef,
+    locationColDef,
     numberColDef,
     regexColDef,
     relatedTemplateColDef,
@@ -142,6 +143,8 @@ export const getColumnDefs = <Data = EntityData,>({
                 searchValue,
                 Object.values(template.entitiesWithFiles ?? {}).flat(),
             );
+        if (format === 'location')
+            return locationColDef(property, valueGetter, propertyTemplate, template, defaultColumnWidths[property], hideColumn, searchValue);
         if (format === 'relationshipReference')
             return relatedTemplateColDef(
                 property,

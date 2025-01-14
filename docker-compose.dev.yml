@@ -249,6 +249,10 @@ services:
     networks:
       - network
 
+  # frontend-service:
+  #   networks:
+  #     - network
+
   nginx:
     ports:
       - 80:80

@@ -5,6 +5,7 @@ import { IRelationship, IMongoEntityTemplate, IMongoRelationshipTemplate } from 
 import config from './config';
 import { trycatch } from './utils';
 import createAxiosInstance from './utils/axios';
+import { generateRandomLocation, generateRandomPolygon } from './utils/map';
 
 const limit = pLimit(config.requestLimit);
 
@@ -29,6 +30,11 @@ export const createInstances = async (
     const axiosInstance = createAxiosInstance(workspaceId);
 
     JSONSchemaFaker.format('fileId', (_value) => fileId);
+
+    JSONSchemaFaker.format('location', (_value) => {
+        const selectedFunction = chance.pickone([generateRandomLocation, generateRandomPolygon]);
+        return selectedFunction();
+    });
 
     const promises = entityTemplates
         .map((entityTemplate) => {

@@ -91,6 +91,12 @@ const config = {
         failedConstraintsValidation: 'FAILED_CONSTRAINTS_VALIDATION',
         actionsCustomError: 'ACTIONS_CUSTOM_ERROR',
     },
+    ajvCustomFormats: {
+        fileIdFieldRegex: env.get('FILE_ID_FIELD_REGEX').default('.*').asRegExp(),
+        textAreaFieldRegex: env.get('TEXT_AREA_FIELD_REGEX').default('.*').asRegExp(),
+        relationshipReferenceFieldRegex: env.get('RELATIONSHIP_REFERENCE_FIELD_REGEX').default('.*').asRegExp(),
+        locationFieldRegex: env.get('LOCATION_FIELD_REGEX').default('.*').asRegExp(),
+    },
     brokenRulesFakeEntityIdPrefix: env.get('BROKEN_RULES_FAKE_ENTITY_ID_PREFIX').default('$').asString(),
     createdEntityIdInBrokenRules: env.get('CREATED_ENTITY_ID_IN_BROKEN_RULES').default('created-entity-id').asString(),
     createdRelationshipIdInBrokenRules: env.get('CREATED_RELATIONSHIP_ID_IN_BROKEN_RULES').default('created-relationship-id').asString(),
@@ -126,6 +132,11 @@ const config = {
             maxFiles: env.get('ROTATE_FILE_LOG_MAX_FILES').default('14d').asString(),
             dirname: env.get('ROTATE_FILE_LOG_DIRNAME').default('./logs').asString(),
         },
+    },
+    map: {
+        polygonPrefix: env.get('POLYGON_PREFIX').default('POLYGON((').asString(),
+        polygonSuffix: env.get('POLYGON_SUFFIX').default('))').asString(),
+        srid: env.get('SRID').default(4326).asInt(),
     },
 };
 

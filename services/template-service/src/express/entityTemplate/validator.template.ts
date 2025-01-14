@@ -14,9 +14,7 @@ class EntityTemplateValidator extends DefaultController<IMongoEntityTemplate, En
     getAllRelationshipReferencesEntityTemplates = async (templateId: string) => {
         const entityTemplates = await this.manager.getTemplates({ limit: 0, skip: 0 });
         const templatesMap = new Map(entityTemplates.map((template) => [template._id, template]));
-
         const baseTemplate = templatesMap.get(templateId)!;
-
         const entityPropertiesQueue = [baseTemplate.properties.properties];
         const relationshipReferenceIdsMap = new Map([[templateId, baseTemplate]]);
 

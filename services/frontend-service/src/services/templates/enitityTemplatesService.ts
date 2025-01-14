@@ -16,7 +16,7 @@ import { CommonFormInputProperties } from '../../common/wizards/entityTemplate/c
 
 const { entityTemplates } = environment.api;
 export const basePropertyTypes = ['string', 'number', 'boolean'];
-export const stringFormats = ['date', 'date-time', 'email', 'fileId', 'text-area', 'relationshipReference', 'user'];
+export const stringFormats = ['date', 'date-time', 'email', 'fileId', 'text-area', 'relationshipReference', 'location', 'user'];
 export const arrayTypes = ['multipleFiles', 'enumArray', 'users'];
 
 const entityTemplateObjectToEntityTemplateForm = (
@@ -47,6 +47,8 @@ const entityTemplateObjectToEntityTemplateForm = (
         // else if (value.items?.format === 'user') type = 'users'; // TODO
         else if (value.enum) type = 'enum';
         else if (value.pattern) type = 'pattern';
+        else if (value.format && value.format === 'text-area') type = 'text-area';
+        else if (value.format && value.format === 'location') type = 'location';
         else if (value.items?.enum) type = 'enumArray';
         else if (value.items?.format === 'fileId') type = 'multipleFiles';
         else if (value.items?.format === 'user') type = 'users';
@@ -70,6 +72,7 @@ const entityTemplateObjectToEntityTemplateForm = (
             patternCustomErrorMessage: value.patternCustomErrorMessage || '',
             dateNotification: value.dateNotification,
             isDailyAlert: value.isDailyAlert ?? undefined,
+            isDatePastAlert: value.isDatePastAlert ?? undefined,
             serialStarter: value.serialStarter,
             relationshipReference: value.relationshipReference || undefined,
             archive: value.archive || undefined,
@@ -143,6 +146,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
             patternCustomErrorMessage,
             dateNotification,
             isDailyAlert,
+            isDatePastAlert,
             calculateTime,
             serialStarter,
             hide,
@@ -196,6 +200,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                     dateNotification: dateNotification as number | undefined,
                     calculateTime: calculateTime ?? undefined,
                     isDailyAlert: isDailyAlert ?? (dateNotification !== undefined ? true : undefined),
+                    isDatePastAlert: isDatePastAlert ?? (dateNotification !== undefined ? true : undefined),
                     serialStarter: type === 'serialNumber' ? serialStarter : undefined,
                     serialCurrent: type === 'serialNumber' ? serialStarter : undefined,
                     relationshipReference: relationshipReference
@@ -249,6 +254,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
             patternCustomErrorMessage,
             dateNotification,
             isDailyAlert,
+            isDatePastAlert,
             calculateTime,
             serialStarter,
             hide,
@@ -290,6 +296,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                     dateNotification: dateNotification as number | undefined,
                     calculateTime: calculateTime ?? undefined,
                     isDailyAlert: isDailyAlert ?? (dateNotification !== undefined ? true : undefined),
+                    isDatePastAlert: isDatePastAlert ?? (dateNotification !== undefined ? true : undefined),
                     serialStarter: type === 'serialNumber' ? serialStarter : undefined,
                     serialCurrent: type === 'serialNumber' ? serialStarter : undefined,
                     relationshipReference: relationshipReference

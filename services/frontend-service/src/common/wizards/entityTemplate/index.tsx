@@ -44,6 +44,7 @@ export interface EntityTemplateFormInputProperties {
     optionColors: Record<string, string>;
     dateNotification: number | null | undefined;
     isDailyAlert: boolean | null | undefined;
+    isDatePastAlert: boolean | null | undefined;
     calculateTime: boolean | null | undefined;
     serialStarter: number | undefined;
     deleted?: boolean | undefined;

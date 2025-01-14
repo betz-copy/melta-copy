@@ -14,6 +14,7 @@ import {
     IUniqueConstraintOfTemplate,
     IRelationship,
     ISemanticSearchResult,
+    ISearchEntitiesByLocationBody,
 } from '@microservices/shared';
 import config from '../../config';
 import DefaultExternalServiceApi from '../../utils/express/externalService';
@@ -27,6 +28,7 @@ const {
         baseConstraintsRoute,
         requestTimeout,
         searchOfTemplateRoute,
+        searchEntitiesByLocationRoute,
     },
 } = config;
 
@@ -109,6 +111,15 @@ class InstancesService extends DefaultExternalServiceApi {
 
     async searchEntitiesOfTemplateRequest(templateId: string, searchBody: ISearchEntitiesOfTemplateBody & { entityIdsToInclude?: string[] }) {
         const { data } = await this.api.post<ISearchResult>(`${baseEntitiesRoute}${searchOfTemplateRoute}/${templateId}`, searchBody);
+
+        return data;
+    }
+
+    async searchEntitiesByLocationRequest(searchBody: ISearchEntitiesByLocationBody) {
+        const { data } = await this.api.post<{ node: IEntity; matchingFields: string[] }[]>(
+            `${baseEntitiesRoute}${searchEntitiesByLocationRoute}`,
+            searchBody,
+        );
 
         return data;
     }

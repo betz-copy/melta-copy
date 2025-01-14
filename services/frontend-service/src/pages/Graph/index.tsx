@@ -19,6 +19,7 @@ import {
     IMongoEntityTemplatePopulated,
     IRelationshipTemplateMap,
     ICategoryMap,
+    IMongoCategory,
 } from '@microservices/shared-interfaces';
 import { environment } from '../../globals';
 import { getExpandedEntityByIdRequest } from '../../services/entitiesService';
@@ -380,7 +381,9 @@ const Graph: React.FC = () => {
                     <TemplatesSelectGrid
                         templates={Array.from(entityTemplates.values())}
                         selectedTemplates={filteredEntityTemplates}
-                        setSelectedTemplates={setFilteredEntityTemplates}
+                        setSelectedTemplates={
+                            setFilteredEntityTemplates as React.Dispatch<React.SetStateAction<(IMongoEntityTemplatePopulated | IMongoCategory)[]>>
+                        }
                         categories={Array.from(categories.values())}
                         setOpenFilter={setOpenFilter}
                         openFilter={openFilter}

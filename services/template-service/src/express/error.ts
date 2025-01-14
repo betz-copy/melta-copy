@@ -61,6 +61,7 @@ export class UnauthorizedError extends ServiceError {
         this.metadata = metadata;
     }
 }
+
 const formatAxiosErrorData = (axiosErrorData: object & { message?: string; metadata?: object }) => {
     if (axiosErrorData.message?.includes('E11000')) {
         return { ...axiosErrorData, errorCode: 'DUPLICATE_ERROR' };

@@ -1,7 +1,7 @@
 import { promises as fsp } from 'fs';
 import { promisify } from 'util';
 import { Request, Response } from 'express';
-import { IDeleteEntityBody } from '@microservices/shared';
+import { IDeleteEntityBody, ISearchEntitiesByLocationBody } from '@microservices/shared';
 import InstancesManager from './manager';
 import DefaultController from '../../utils/express/controller';
 
@@ -35,6 +35,10 @@ class InstancesController extends DefaultController<InstancesManager> {
         res.json(
             await this.manager.updateEntityInstance(req.params.id, instanceData, req.files as Express.Multer.File[], ignoredRules, req.user!.id),
         );
+    }
+
+    async searchEntitiesByLocation(req: Request, res: Response) {
+        res.json(await this.manager.searchEntitiesByLocation(req.body as ISearchEntitiesByLocationBody));
     }
 
     async searchEntitiesBatch(req: Request, res: Response) {

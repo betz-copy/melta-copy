@@ -95,7 +95,6 @@ class InstancesValidator extends DefaultController {
         const categoryId = await this.getCategoryIdFromTemplateId(templateId);
 
         const userPermissions = await this.authorizer.getWorkspacePermissions(req.user!.id);
-
         if (
             !userPermissions.admin?.scope &&
             !Object.entries(userPermissions.instances?.categories ?? {}).some(
@@ -104,7 +103,6 @@ class InstancesValidator extends DefaultController {
         ) {
             throw new ForbiddenError(`user not authorized, does not have ${permissionScope} permission on category ${categoryId}`);
         }
-
         (req as RequestWithPermissionsOfUserId).permissionsOfUserId = userPermissions;
     }
 

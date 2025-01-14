@@ -38,6 +38,10 @@ class EntityController extends DefaultController<EntityManager> {
         res.json(await this.manager.searchEntitiesBatch(req.body, entityTemplatesMap));
     }
 
+    async searchEntitiesByLocation(req: Request, res: Response) {
+        res.json(await this.manager.searchEntitiesByLocation(req.body));
+    }
+
     async getEntityById(req: Request, res: Response) {
         res.json(await this.manager.getEntityById(req.params.id));
     }

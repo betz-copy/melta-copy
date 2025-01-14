@@ -29,6 +29,7 @@ export default {
     copyUrl: 'העתק קישור',
     successfullyCopied: 'הקישור הועתק בהצלחה',
     soon: 'בקרוב...',
+    map: 'מפה',
     general: 'כללי',
     agGridTimes: {
         hours: 'שעות',
@@ -317,6 +318,7 @@ export default {
         loading: 'טוען...',
         noOptions: 'אין תוצאות',
         noPreviewFields: 'אין שדות לתצוגה מקדימה',
+        failedToSearchEntities: 'נכשל בחיפוש ישויות',
     },
     userAutocomplete: {
         label: 'משתמש',
@@ -532,6 +534,7 @@ export default {
             },
             dateNotification: 'התראה לפני סיום',
             dailyAlert: 'התראה יומית',
+            datePastNotification: 'התראה על תאריך שעבר',
             customAlert:
                 'התראה יורדת \nתתבצע התראה בתאריך שנבחר ובכל התאריכים הבאים \nלדוגמא נבחר התראה שבוע לפני אז תתבצע התראה שבוע יומיים ויום לפני',
             serialStarter: 'מספר סידורי התחלתי',
@@ -817,6 +820,7 @@ export default {
         'text-area': 'טקסט ארוך',
         fileId: 'קובץ יחיד',
         multipleFiles: 'קבצים מרובים',
+        location: 'מיקום',
         user: 'משתמש',
         users: 'משתמשים',
     },
@@ -930,6 +934,10 @@ export default {
         propertyValue: 'התאריך',
         entityTemplateName: 'בישות',
         aboutToExpire: 'מתקרב',
+        payAttention: 'שים לב,',
+        past: 'עבר',
+        datePast: 'תאריך עבר',
+        dateAboutToExpire: 'תאריך מתקרב',
     },
     processStatusUpdateNotification: {
         statusUpdate: ' עדכון סטטוס',
@@ -1248,5 +1256,12 @@ export default {
         fileName: 'שם הקובץ',
         takePicture: 'צלם תמונה',
         blackAndWhite: 'שחור לבן',
+    },
+    location: {
+        noLayers: 'לא נמצאו שכבות',
+        noCrsTypes: 'לא נמצאו סוגי CRS',
+        entityWithoutLocation: 'ליישות אין ערך שדה מיקום',
+        clear: 'ניקוי תוצאות',
+        radiusMaxLimit: `חיפוש מוגבל עד ${environment.map.maxRadius / 1000} ק"מ`,
     },
 };

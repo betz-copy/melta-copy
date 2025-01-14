@@ -1,7 +1,7 @@
 import i18next from 'i18next';
 import React from 'react';
 import { IMongoProcessTemplateReviewerPopulated } from '@microservices/shared-interfaces';
-import { SelectCheckbox } from '../../common/SelectCheckbox';
+import { SelectCheckbox } from '../../common/SelectCheckBox';
 
 const ProcessTemplatesSelectCheckbox: React.FC<{
     templates: IMongoProcessTemplateReviewerPopulated[];

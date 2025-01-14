@@ -19,6 +19,7 @@ import {
     IEntitySingleProperty,
     IRequiredConstraint,
     ISemanticSearchResult,
+    IMongoEntityTemplatePopulated,
     IUniqueConstraint,
     IUser,
 } from '@microservices/shared-interfaces';
@@ -29,6 +30,7 @@ import { getFileName } from '../getFileName';
 import { agGridLocaleText } from './agGridLocaleText';
 import OverflowWrapper from './OverflowWrapper';
 import { Value } from './Value';
+import OpenMap from '../../pages/Map/OpenMap';
 import { MeltaTooltip } from '../../common/MeltaTooltip';
 import UserAvatar from '../../common/UserAvatar';
 import SelectCellEditor from './SelectCellEditor';
@@ -231,7 +233,30 @@ export const fileColDef = <Data = EntityData,>(
         width: hardcodedWidth,
         flex: hardcodedWidth ? 0 : 1,
         hide: hideColumn,
-        editable: false,
+    };
+};
+
+export const locationColDef = <Data = EntityData,>(
+    field: string,
+    valueGetter: ValueGetterFunc<Data>,
+    value: Partial<IEntitySingleProperty>,
+    template: IMongoEntityTemplatePopulated,
+    hardcodedWidth: number | undefined,
+    hideColumn = false,
+    searchValue: string | undefined = undefined,
+): ColDef => {
+    return {
+        field,
+        headerName: value.title,
+        valueGetter,
+        cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => {
+            if (!props.value) return null;
+            return <OpenMap field={value.title!} entity={props.data as IEntity} entityTemplate={template} searchValue={searchValue} />;
+        },
+        filter: 'agTextColumnFilter',
+        width: hardcodedWidth,
+        flex: hardcodedWidth ? 0 : 1,
+        hide: hideColumn,
     };
 };
 
@@ -547,7 +572,6 @@ export const enumFilesColDef = <Data = EntityData,>(
         width: hardcodedWidth,
         flex: hardcodedWidth ? 0 : 1,
         hide: hideColumn,
-        editable: false,
     };
 };
 
