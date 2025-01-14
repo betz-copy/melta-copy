@@ -408,7 +408,7 @@ const ProcessCard: React.FC<{
                                     </Typography>
                                 </Grid>
                             </Grid>
-                            <Grid item justifyContent="center" spacing={4}>
+                            <Grid item justifyContent="center">
                                 <Stepper style={{ flexWrap: 'wrap' }} connector={<StepperConnector />} alternativeLabel>
                                     {currProcessInstance.steps.map((step, index) => {
                                         const stepTemplate = processTemplate.steps[index];
