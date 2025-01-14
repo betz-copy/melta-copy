@@ -3,7 +3,7 @@ import lodashUniqby from 'lodash.uniqby';
 import { IMongoEntityTemplatePopulated, IRule, PermissionScope, IAction, IRelationship, ForbiddenError, ServiceError } from '@microservices/shared';
 import InstancesService from '../../externalServices/instanceService';
 import EntityTemplateService from '../../externalServices/templates/entityTemplateService';
-import { RelationshipsTemplateService } from '../../externalServices/templates/relationshipsTemplateService';
+import RelationshipsTemplateService from '../../externalServices/templates/relationshipsTemplateService';
 import { Authorizer, RequestWithPermissionsOfUserId } from '../../utils/authorizer';
 import { getWorkspaceId } from '../../utils/express';
 import DefaultController from '../../utils/express/controller';

@@ -1,10 +1,10 @@
 import { Grid, IconButton } from '@mui/material';
 import React, { useState } from 'react';
 import i18next from 'i18next';
+import { IUser } from '@microservices/shared-interfaces';
 import UserAvatar from '../../UserAvatar';
 import { UserProfilePicker } from '../../inputs/userProfilePicker';
 import { defaultInputType, isProfileFile } from '../../../utils/userProfile';
-import { IUser } from '../../../interfaces/users';
 import { MeltaTooltip } from '../../MeltaTooltip';
 
 const UserProfile: React.FC<{

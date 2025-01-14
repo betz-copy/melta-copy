@@ -3,10 +3,10 @@ import i18next from 'i18next';
 import React, { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
+import { IUser, IMongoUser, PermissionScope } from '@microservices/shared-interfaces';
 import { BlueTitle } from '../../common/BlueTitle';
 import UserAutocomplete from '../../common/inputs/UserAutocomplete';
-import { PermissionScope } from '../../interfaces/permissions';
-import { IMongoUser, IUser } from '../../interfaces/users';
+
 import { createUserRequest, searchUsersByPermissions } from '../../services/userService';
 import { useWorkspaceStore } from '../../stores/workspace';
 import { PermissionsDialogCard } from './permissionsDialogCard';

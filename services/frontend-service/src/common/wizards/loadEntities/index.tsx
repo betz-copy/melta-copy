@@ -9,7 +9,6 @@ import {
     IBrokenRule,
     IBrokenRulePopulated,
     IEntitySingleProperty,
-    IMongoEntityTemplatePopulated,
     ActionErrors,
     ActionTypes,
     IAction,
@@ -17,6 +16,7 @@ import {
     ICreateEntityMetadata,
     IRequiredConstraint,
     IUniqueConstraint,
+    IMongoEntityTemplateWithConstraintsPopulated,
 } from '@microservices/shared-interfaces';
 import { StepType, Wizard, WizardBaseType } from '..';
 import OpenPreview from '../../FilePreview/OpenPreview';
@@ -30,7 +30,7 @@ import { environment } from '../../../globals';
 
 export interface EntitiesWizardValues {
     files?: File[];
-    template?: IMongoEntityTemplatePopulated;
+    template?: IMongoEntityTemplateWithConstraintsPopulated;
 }
 
 export type IValidationError = {

@@ -62,6 +62,8 @@ const defaultEntityTemplatePopulated: IMongoEntityTemplateWithConstraintsPopulat
         _id: '',
         color: '',
         iconFileId: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
     },
     disabled: false,
     properties: {
@@ -213,8 +215,8 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                     tooltipTitle: entityTemplate.disabled
                                         ? i18next.t('systemManagement.disabledEntityTemplate')
                                         : isDeleteButtonDisabled
-                                        ? i18next.t('systemManagement.cannotDeleteWithEntities')
-                                        : '',
+                                          ? i18next.t('systemManagement.cannotDeleteWithEntities')
+                                          : '',
                                 }}
                             />
                         )}

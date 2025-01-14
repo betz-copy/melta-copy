@@ -3,7 +3,7 @@ import { Grid } from '@mui/material';
 import i18next from 'i18next';
 import React, { memo } from 'react';
 import { Link } from 'wouter';
-import { IEntity, EntityData, IMongoEntityTemplatePopulated } from '@microservices/shared-interfaces';
+import { IEntity, EntityData, IMongoEntityTemplatePopulated, IRuleBreach, ISemanticSearchResult } from '@microservices/shared-interfaces';
 import { AxiosError } from 'axios';
 import { UseMutateAsyncFunction } from 'react-query';
 import { IButtonPopoverProps } from '.';
@@ -24,8 +24,6 @@ import {
 import IconButtonWithPopover from '../IconButtonWithPopover';
 import { ImageWithDisable } from '../ImageWithDisable';
 import { CardMenu } from '../../pages/SystemManagement/components/CardMenu';
-import { IRuleBreach } from '../../interfaces/ruleBreaches/ruleBreach';
-import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
 
 export interface IGetColumnDefsOptions<Data> {
     template: IMongoEntityTemplatePopulated & { entitiesWithFiles?: ISemanticSearchResult[string] };
@@ -55,7 +53,7 @@ export interface IGetColumnDefsOptions<Data> {
     disableEditCell?: boolean;
 }
 
-export const getColumnDefs = <Data = EntityData>({
+export const getColumnDefs = <Data = EntityData,>({
     template,
     getRowId,
     getEntityPropertiesData,

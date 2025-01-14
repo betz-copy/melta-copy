@@ -5,41 +5,43 @@ import {
     ISetFilterParams,
     ValueFormatterParams,
     ValueGetterFunc,
+    ValueGetterParams,
 } from '@ag-grid-community/core';
 import i18next from 'i18next';
 import React from 'react';
 import Chip from '@mui/material/Chip';
 import { Box, Tooltip, tooltipClasses, Grid } from '@mui/material';
 import { PriorityHigh } from '@mui/icons-material';
+import {
+    ActionErrors,
+    EntityData,
+    IEntity,
+    IEntitySingleProperty,
+    IRequiredConstraint,
+    ISemanticSearchResult,
+    IUniqueConstraint,
+    IUser,
+} from '@microservices/shared-interfaces';
 import OpenPreview from '../../common/FilePreview/OpenPreview';
 import RelationshipReferenceView from '../../common/RelationshipReferenceView';
-import { EntityData, IEntity, IRequiredConstraint, IUniqueConstraint } from '@microservices/shared-interfaces';
 import { getDateWithoutTime, getLongDate } from '../date';
 import { getFileName } from '../getFileName';
 import { agGridLocaleText } from './agGridLocaleText';
 import OverflowWrapper from './OverflowWrapper';
 import { Value } from './Value';
-import { IUser } from '../../interfaces/users';
 import { MeltaTooltip } from '../../common/MeltaTooltip';
 import UserAvatar from '../../common/UserAvatar';
-import { IEntitySingleProperty } from '../../interfaces/entityTemplates';
 import SelectCellEditor from './SelectCellEditor';
 import DateTimeCellEditor from './DateTimeCellEditor';
-import { ActionErrors } from '../../interfaces/ruleBreaches/actionMetadata';
 import RelationshipRefCellEditor from './RelationshipRefCellEditor';
 import { convertToPlainText } from '../HtmlTagsStringValue';
 import { IError, IFailedEntity, IValidationError } from '../../common/wizards/loadEntities';
-import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
 
 const hasErrors = (data: any): data is IFailedEntity => {
     return data && Array.isArray(data.errors) && data.errors.every((error) => 'type' in error && 'metadata' in error);
 };
 
-const isPropertyInvalid = <Data = EntityData>(
-    props: ICellRendererParams<Data, any | undefined>,
-    property: string,
-    ignoreType = false,
-) => {
+const isPropertyInvalid = <Data = EntityData,>(props: ICellRendererParams<Data, any | undefined>, property: string, ignoreType = false) => {
     if (!ignoreType || !hasErrors(props.data)) return undefined;
 
     return props.data.errors.find((error) => {
@@ -57,11 +59,7 @@ const isPropertyInvalid = <Data = EntityData>(
     });
 };
 
-const errorColDef = <Data = EntityData>(
-    props: ICellRendererParams<Data, any | undefined>,
-    error: IError,
-    value: Partial<IEntitySingleProperty>,
-) => {
+const errorColDef = <Data = EntityData,>(props: ICellRendererParams<Data, any | undefined>, error: IError, value: Partial<IEntitySingleProperty>) => {
     let message = '';
     switch (error.type) {
         case ActionErrors.required:
@@ -114,7 +112,7 @@ const errorColDef = <Data = EntityData>(
     );
 };
 
-export const numberColDef = <Data = EntityData>(
+export const numberColDef = <Data = EntityData,>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
     value: Partial<IEntitySingleProperty>,
@@ -420,7 +418,7 @@ export const enumArrayColDef = <Data = EntityData,>(
         },
     };
 };
-export const userColDef = <Data extends any = IUser>(
+export const userColDef = <Data = IUser,>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
     value: { title: string },
@@ -462,7 +460,7 @@ export const userColDef = <Data extends any = IUser>(
     };
 };
 
-export const userArrayColDef = <Data extends any = IEntity>(
+export const userArrayColDef = <Data = IEntity,>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
     value: { title: string },
@@ -631,7 +629,7 @@ interface TranslatedEnumColDefOptions<Data> {
     searchValue?: string;
 }
 
-export const translatedEnumColDef = <Data = EntityData>({
+export const translatedEnumColDef = <Data = EntityData,>({
     field,
     valueGetter,
     title,

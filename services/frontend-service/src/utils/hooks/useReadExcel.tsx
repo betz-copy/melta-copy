@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import * as XLSX from 'xlsx';
 import { toast } from 'react-toastify';
 import i18next from 'i18next';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IMongoEntityTemplatePopulated } from '@microservices/shared-interfaces';
 import { ISteps, StepStatus } from '../../common/wizards/loadEntities';
 
 const convertFileDataToRowData = (gridData: any[][], headers: string[], template: IMongoEntityTemplatePopulated) => {

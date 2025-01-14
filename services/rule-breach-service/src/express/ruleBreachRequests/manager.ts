@@ -21,7 +21,7 @@ export default class RuleBreachRequestsManager extends DefaultManagerMongo<IRule
     public async searchRuleBreachRequests(agGridRequest: IAgGridRequest) {
         const { startRow, endRow, sortModel, filterModel } = agGridRequest;
 
-        const sort = translateAgGridSortModel(sortModel);
+        const sort = translateAgGridSortModel(sortModel || []);
         const query = translateAgGridFilterModel(filterModel);
 
         const [rows, lastRowIndex] = await Promise.all([

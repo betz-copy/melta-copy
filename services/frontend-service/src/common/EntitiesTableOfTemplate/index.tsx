@@ -28,12 +28,32 @@ import { toast } from 'react-toastify';
 import { useLocation } from 'wouter';
 import '../../css/resizeTable.css';
 import '../../css/table.css';
-import { IBrokenRule, IRuleBreach, IRuleBreachPopulated, ActionTypes, IAction, IActionPopulated, IRelationship, EntityData, IDeleteEntityBody, IUniqueConstraint, IEntity, IEntityExpanded, IMongoEntityTemplatePopulated, IAgGridRequest } from '@microservices/shared-interfaces';
+import {
+    IBrokenRule,
+    IRuleBreach,
+    IRuleBreachPopulated,
+    ActionTypes,
+    IAction,
+    IActionPopulated,
+    IRelationship,
+    EntityData,
+    IDeleteEntityBody,
+    IUniqueConstraint,
+    IEntity,
+    IEntityExpanded,
+    IMongoEntityTemplatePopulated,
+    IAgGridRequest,
+    ISemanticSearchResult,
+    IConstraint,
+    IMongoEntityTemplateWithConstraintsPopulated,
+} from '@microservices/shared-interfaces';
 import { environment } from '../../globals';
-import { deleteEntityRequest,
+import {
+    deleteEntityRequest,
     searchEntitiesOfTemplateRequest,
     updateEntityRequestForMultiple,
-    updateEntityStatusRequest, } from '../../services/entitiesService';
+    updateEntityStatusRequest,
+} from '../../services/entitiesService';
 import ActionOnEntityWithRuleBreachDialog from '../../pages/Entity/components/ActionOnEntityWithRuleBreachDialog';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { agGridLocaleText } from '../../utils/agGrid/agGridLocaleText';
@@ -48,7 +68,6 @@ import { MultiSelectStatusBar } from '../EntitiesPage/MultiSelectStatusBar';
 import { ResizeBox } from '../EntitiesPage/ResizeBox';
 import { RowCountGridStatusBar } from '../EntitiesPage/RowCountGridStatusBar';
 import { ErrorToast } from '../ErrorToast';
-import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
 import { getColumnDefs, IGetColumnDefsOptions } from './getColumnDefs';
 
 const { errorCodes } = environment;
@@ -72,7 +91,7 @@ export interface IButtonProps<Data> {
     disabledButton: boolean;
 }
 
-export const getDatasource = <Data = EntityData>(
+export const getDatasource = <Data = EntityData,>(
     template: IMongoEntityTemplatePopulated,
     quickFilterText?: string,
     onFail?: (err: unknown) => void,
@@ -117,7 +136,7 @@ export type IConnection = {
     destinationEntity: IEntity;
 };
 
-export const getRowModelProps = <Data = EntityData>(
+export const getRowModelProps = <Data = EntityData,>(
     rowModelType: 'serverSide' | 'clientSide' | 'infinite',
     template: IMongoEntityTemplatePopulated,
     rowData: Data[] | undefined,
@@ -150,7 +169,7 @@ export const getRowModelProps = <Data = EntityData>(
 const LoadingCellRenderer = () => <CircularProgress size={20} sx={{ marginLeft: 1 }} />;
 
 export type EntitiesTableOfTemplateProps<Data> = {
-    template: IMongoEntityTemplatePopulated & { entitiesWithFiles?: ISemanticSearchResult[string] };
+    template: IMongoEntityTemplateWithConstraintsPopulated & { entitiesWithFiles?: ISemanticSearchResult[string] };
     entities?: Data[];
     onRowSelected?: (data: Data) => void;
     showNavigateToRowButton: boolean;
@@ -272,7 +291,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                     deleteAllRelationships: false,
                 } as IDeleteEntityBody<false>),
             {
-                onError: (error: AxiosError) => {
+                onError: (error: AxiosError<{ metadata: { errorCode: string } }>) => {
                     toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.entity.failedToDelete')} />);
                 },
                 onSuccess: () => {
@@ -416,7 +435,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         const handleColumnVisible = (params: ColumnVisibleEvent<Data>) => {
             if (!saveStorageProps.shouldSaveVisibleColumns) return;
             if (params?.column?.getColId() && params.column.getColId() === 'disabled') {
-                const { disabled, ...rest } = params.api.getFilterModel();
+                const { disabled: _disabled, ...rest } = params.api.getFilterModel();
                 const filterModel = params.column.isVisible() ? params.api.getFilterModel() : { ...rest, ...defaultFilterModel };
                 params.api.setFilterModel(filterModel);
             }
@@ -460,7 +479,20 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                     gridRef.current?.api.refreshServerSide();
                     setUpdateWithRuleBreachDialogState({ isOpen: false });
                 },
-                onError: (err: AxiosError, { newEntityData: newEntityDate }) => {
+                onError: (
+                    err: AxiosError<{
+                        metadata: {
+                            errorCode: string;
+                            constraint: IConstraint;
+                            message: string;
+                            brokenRules: IRuleBreachPopulated['brokenRules'];
+                            rawBrokenRules: IBrokenRule[];
+                            actions: IActionPopulated[];
+                            rawActions: IAction[];
+                        };
+                    }>,
+                    { newEntityData: newEntityDate },
+                ) => {
                     const errorMetadata = err.response?.data?.metadata;
 
                     switch (errorMetadata?.errorCode) {

@@ -2,6 +2,7 @@ import { Grid, IconButton, Link, Typography } from '@mui/material';
 import React, { ReactNode, useMemo, useState } from 'react';
 import { AutoAwesome } from '@mui/icons-material';
 import i18next from 'i18next';
+import { ISemanticSearchResult } from '@microservices/shared-interfaces';
 import { environment } from '../../globals';
 import { getFileName } from '../../utils/getFileName';
 import { getFileExtension, getFileNameWithoutExtension, getPreviewContentType } from '../../utils/getFileType';
@@ -9,7 +10,6 @@ import FileIcon from './FileIcon';
 import { PreviewDialog } from './PreviewDialog';
 import { HighlightText } from '../../utils/HighlightText';
 import { MeltaTooltip } from '../MeltaTooltip';
-import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
 
 const OpenPreviewContent: React.FC<{
     fileName: string;

@@ -1,5 +1,4 @@
-import { ActionTypes, IAction, ICreateEntityMetadata, IUpdateEntityMetadata } from '../interfaces/ruleBreaches/actionMetadata';
-import { IBrokenRule } from '../interfaces/ruleBreaches/ruleBreach';
+import { IBrokenRule, IAction, ActionTypes, ICreateEntityMetadata, IUpdateEntityMetadata } from '@microservices/shared-interfaces';
 
 export const groupBrokenRulesByEntity = (brokenRules: IBrokenRule[]): IBrokenRule[][] => {
     const entityMap = new Map<string, IBrokenRule[]>();

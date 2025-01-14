@@ -13,6 +13,7 @@ import {
     ICategoryMap,
     IEntityTemplateWithConstraintsMap,
     IMongoEntityTemplateWithConstraintsPopulated,
+    IEntityTemplateMap,
 } from '@microservices/shared-interfaces';
 import { CustomIcon } from '../../../common/CustomIcon';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
@@ -258,7 +259,7 @@ const RelationshipTemplatesRow: React.FC = () => {
 
                 toast.success(i18next.t('wizard.relationshipTemplate.convertToRelationshipFieldSuccessfully'));
             },
-            onError: (error: AxiosError) => {
+            onError: (error: AxiosError<{ metadata: { errorCode: string } }>) => {
                 toast.error(
                     <ErrorToast
                         axiosError={error}
@@ -492,7 +493,7 @@ const RelationshipTemplatesRow: React.FC = () => {
                 handleClose={() => setConvertToRelationshipFieldDialogState({ isDialogOpen: false, relationshipTemplate: null })}
                 onYes={({ fieldName, displayFieldName, relationshipReference }) =>
                     convertRelationshipToRelationShipFieldRequest({
-                        id: convertToRelationshipFieldDialogState.relationshipTemplate?._id!,
+                        id: convertToRelationshipFieldDialogState.relationshipTemplate!._id,
                         fieldName,
                         displayFieldName,
                         relationshipReference,

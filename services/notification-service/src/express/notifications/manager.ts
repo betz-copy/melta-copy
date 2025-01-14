@@ -2,7 +2,7 @@ import { FilterQuery } from 'mongoose';
 import {
     DefaultManagerMongo,
     IBasicNotificationQuery,
-    IDateAboutToExpireMetadata,
+    IDateAboutToExpireNotificationMetadata,
     INotification,
     INotificationCountGroups,
     INotificationGroupCountDetails,
@@ -66,9 +66,9 @@ export class NotificationsManager extends DefaultManagerMongo<INotification> {
                     $and: [
                         {
                             // datePropertyValue only exists on IDateAboutToExpireMetadata.
-                            'metadata.datePropertyValue': (notificationData?.metadata as IDateAboutToExpireMetadata)?.datePropertyValue,
+                            'metadata.datePropertyValue': (notificationData?.metadata as IDateAboutToExpireNotificationMetadata)?.datePropertyValue,
                             type: notificationData.type,
-                            'metadata.entityId': (notificationData?.metadata as IDateAboutToExpireMetadata)?.entityId,
+                            'metadata.entityId': (notificationData?.metadata as IDateAboutToExpireNotificationMetadata)?.entityId,
                         },
                     ],
                 },

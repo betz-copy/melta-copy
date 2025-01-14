@@ -3,7 +3,7 @@ import { FormikProps } from 'formik';
 import i18next from 'i18next';
 import { Grid, Typography, useTheme } from '@mui/material';
 import { v4 as uuid } from 'uuid';
-import { IMongoEntityTemplatePopulated } from '@microservices/shared-interfaces';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared-interfaces';
 import { EntitiesWizardValues, ISteps, StepStatus } from '.';
 import OpenPreview from '../../FilePreview/OpenPreview';
 import { environment } from '../../../globals';
@@ -18,7 +18,7 @@ const {
 
 export const UploadExcel: React.FC<{
     formikProps: FormikProps<EntitiesWizardValues>;
-    template: IMongoEntityTemplatePopulated;
+    template: IMongoEntityTemplateWithConstraintsPopulated;
     stepsData: ISteps;
     setStepsData: React.Dispatch<React.SetStateAction<ISteps>>;
     onDownload: () => Promise<any>;

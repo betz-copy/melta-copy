@@ -33,7 +33,6 @@ import {
     IUpdatedFields,
     ActionsLog,
     IDeleteEntityBody,
-    IActivityLog,
     IEntityTemplate,
     IMongoActivityLog,
     ISemanticSearchResult,
@@ -921,14 +920,14 @@ class EntityManager extends DefaultManagerNeo4j {
         if (deleteBody.selectAll) {
             const { idsToExclude, filter, textSearch = '' } = deleteBody as IDeleteEntityBody<true>;
             const { entities } = await this.searchEntitiesOfTemplate(
-                { limit: deleteEntitiesMaxLimit, skip: 0, filter, showRelationships: true, textSearch, entityIdsToExclude: idsToExclude },
+                { sort: [], limit: deleteEntitiesMaxLimit, skip: 0, filter, showRelationships: true, textSearch, entityIdsToExclude: idsToExclude },
                 entityTemplate,
             );
             entitiesWithDirectRelationships.push(...entities);
         } else {
             const { idsToInclude } = deleteBody as IDeleteEntityBody<false>;
             const { entities } = await this.searchEntitiesOfTemplate(
-                { limit: deleteEntitiesMaxLimit, skip: 0, showRelationships: true, entityIdsToInclude: idsToInclude },
+                { sort: [], limit: deleteEntitiesMaxLimit, skip: 0, showRelationships: true, entityIdsToInclude: idsToInclude },
                 entityTemplate,
             );
 

@@ -2,8 +2,8 @@ import { Avatar, Box, Grid, ToggleButton, ToggleButtonGroup } from '@mui/materia
 import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
 import PaymentIcon from '@mui/icons-material/Payment';
+import { IUser } from '@microservices/shared-interfaces';
 import fileDetails from '../../interfaces/fileDetails';
-import { IUser } from '../../interfaces/users';
 import FileInput from './ImageFileInput';
 import { getNameInitials } from '../../utils/userProfile';
 import { allProfileAvatars } from '../../utils/icons';

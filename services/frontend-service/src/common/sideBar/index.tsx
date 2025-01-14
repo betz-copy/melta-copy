@@ -35,6 +35,7 @@ import { NotificationsScreen } from './notifications/NotificationsScreen';
 import { ProfileButton } from './ProfileButton';
 import { Drawer, DrawerDivider } from './SideBar.styled';
 import { CloseDrawerButton, OpenDrawerButton } from './ToggleDrawerButtons';
+import { searchIFrames } from '../../services/iFramesService';
 
 interface SideBarProps {
     toggleDrawer: () => any;

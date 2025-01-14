@@ -3,7 +3,7 @@ import React from 'react';
 import { Download, ExpandMore } from '@mui/icons-material';
 import i18next from 'i18next';
 import { v4 as uuid } from 'uuid';
-import { IEntity, IMongoEntityTemplatePopulated } from '@microservices/shared-interfaces';
+import { IEntity, IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared-interfaces';
 import EntitiesTableOfTemplate from '../../EntitiesTableOfTemplate';
 import { environment } from '../../../globals';
 import { TableButton } from '../../TableButton';
@@ -13,7 +13,7 @@ const { defaultRowHeight, defaultFontSize } = environment.agGrid;
 
 export const EntitiesTable: React.FC<{
     rowData?: IEntity[] | IFailedEntity[];
-    template: IMongoEntityTemplatePopulated;
+    template: IMongoEntityTemplateWithConstraintsPopulated;
     defaultExpanded: boolean;
     icon: React.JSX.Element;
     title: string;

@@ -1,7 +1,7 @@
+import { IUser } from '@microservices/shared-interfaces';
 import { Divider, Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
-import { IUser } from '../../../interfaces/users';
 
 const UserDetails: React.FC<{ existingUser: IUser; editProfile: boolean }> = ({ existingUser, editProfile }) => {
     const userDetailsMap: { [key: string]: string | boolean | undefined } = {

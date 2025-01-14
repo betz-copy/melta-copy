@@ -133,7 +133,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplateWithConstrai
                 deleteAllRelationships: expandedEntity.connections.length > 0 && workspaceAdmin,
             } as IDeleteEntityBody<false>),
         {
-            onError: (error: AxiosError) => {
+            onError: (error: AxiosError<{ metadata: { errorCode: string } }>) => {
                 closeDeleteDialog();
                 toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.entity.failedToDelete')} />);
             },

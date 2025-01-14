@@ -51,7 +51,7 @@ const ProcessTemplatesRow: React.FC = () => {
                 queryClient.invalidateQueries(['searchProcessTemplates', searchText]);
                 toast.success(i18next.t('wizard.processTemplate.deletedSuccessfully'));
             },
-            onError: (error: AxiosError) => {
+            onError: (error: AxiosError<{ metadata: { errorCode: string } }>) => {
                 toast.error(
                     <ErrorToast
                         axiosError={error}

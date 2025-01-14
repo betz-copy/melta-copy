@@ -4,10 +4,14 @@ import { Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import i18next from 'i18next';
 import { useQueryClient } from 'react-query';
+import {
+    IEntitySingleProperty,
+    IEntityTemplateMap,
+    IMongoEntityTemplatePopulated,
+    IMongoRelationshipTemplate,
+} from '@microservices/shared-interfaces';
 import { variableNameValidation } from '../../../utils/validation';
 import { BlueTitle } from '../../BlueTitle';
-import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { IMongoRelationshipTemplate } from '../../../interfaces/relationshipTemplates';
 import { IRelationshipReference } from '../entityTemplate/commonInterfaces';
 import RelationshipReferenceField from '../entityTemplate/RelationshipReferenceField';
 
@@ -23,8 +27,8 @@ const ConvertToRelationship: React.FC<IConvertToRelationship> = ({ open, handleC
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
 
-    const destEntity: IMongoEntityTemplatePopulated = entityTemplates.get(relationshipTemplate?.destinationEntityId!)!;
-    const srcEntity: IMongoEntityTemplatePopulated = entityTemplates.get(relationshipTemplate?.sourceEntityId!)!;
+    const destEntity: IMongoEntityTemplatePopulated = entityTemplates.get(relationshipTemplate!.destinationEntityId)!;
+    const srcEntity: IMongoEntityTemplatePopulated = entityTemplates.get(relationshipTemplate!.sourceEntityId)!;
     const [relatedTemplateId, setRelatedTemplateId] = useState<string>('');
     const newSourceEntity = relatedTemplateId === destEntity?._id ? srcEntity : destEntity;
     const fieldNamesExisting = newSourceEntity?.propertiesOrder;
@@ -137,7 +141,7 @@ const ConvertToRelationship: React.FC<IConvertToRelationship> = ({ open, handleC
                                                 isDisabled={false}
                                                 convertToRelationshipField={{
                                                     options: [srcEntity, destEntity],
-                                                    originSourceEntityId: srcEntity?._id!,
+                                                    originSourceEntityId: srcEntity._id!,
                                                     setRelatedTemplateId,
                                                 }}
                                             />

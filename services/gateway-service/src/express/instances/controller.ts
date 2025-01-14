@@ -1,9 +1,9 @@
 import { promises as fsp } from 'fs';
 import { promisify } from 'util';
 import { Request, Response } from 'express';
+import { IDeleteEntityBody } from '@microservices/shared';
 import InstancesManager from './manager';
 import DefaultController from '../../utils/express/controller';
-import { IDeleteEntityBody } from '../../externalServices/instanceService/interfaces/entities';
 
 class InstancesController extends DefaultController<InstancesManager> {
     constructor(workspaceId: string) {

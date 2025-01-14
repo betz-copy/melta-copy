@@ -5,8 +5,8 @@ import isEqual from 'lodash/isEqual';
 import React, { useEffect, useState } from 'react';
 import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
+import { IUser } from '@microservices/shared-interfaces';
 import { environment } from '../../../globals';
-import { IUser } from '../../../interfaces/users';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { useUserStore } from '../../../stores/user';
 import { updateUserPreferencesMetadataRequest } from '../../../services/userService';
@@ -69,7 +69,7 @@ const MyAccount: React.FC<{
                 handleClose();
             },
 
-            onError: (err: AxiosError) => {
+            onError: (err: AxiosError<{ metadata: { errorCode: string } }>) => {
                 console.log('failed to update user`s preferences request. error:', err);
                 toast.error(<ErrorToast axiosError={err} defaultErrorMessage={i18next.t('user.failedToUpdateRequest')} />);
             },

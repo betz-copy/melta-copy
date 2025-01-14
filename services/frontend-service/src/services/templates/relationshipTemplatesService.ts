@@ -49,7 +49,10 @@ const createRelationshipTemplateRequest = async (newRelationshipTemplate: IRelat
     return data;
 };
 
-const updateRelationshipTemplateRequest = async (relationshipTemplateId: string, newRelationshipTemplate: IRelationshipTemplate) => {
+const updateRelationshipTemplateRequest = async (
+    relationshipTemplateId: string,
+    newRelationshipTemplate: Omit<IRelationshipTemplate, 'isProperty'>,
+) => {
     const { data } = await axios.put<IMongoRelationshipTemplate>(`${relationshipTemplates}/${relationshipTemplateId}`, newRelationshipTemplate);
     return data;
 };

@@ -2,7 +2,6 @@ import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from './entityTe
 import { IRelationship } from './relationship';
 import { IMongoRelationshipTemplate } from './relationshipTemplate';
 import { IBrokenRule, IBrokenRulePopulated, IActionPopulated, IAction, ActionErrors, IFailedEntity } from './ruleBreach';
-import { ISemanticSearchResult } from './semanticSearch';
 
 export interface IEntity {
     templateId: string;
@@ -116,6 +115,7 @@ export interface ICountSearchResult {
     count: number;
     templateId: string;
     entitiesWithFiles: Record<string, string[]>; // { entityId: minioFileIds:[] }
+    texts?: string[];
 }
 export interface ISearchEntitiesOfTemplateBody {
     skip: number;
@@ -125,6 +125,8 @@ export interface ISearchEntitiesOfTemplateBody {
     showRelationships: boolean | Array<IMongoRelationshipTemplate['_id']>;
     sort: ISearchSort;
     entitiesWithFiles?: ICountSearchResult['entitiesWithFiles'];
+    entityIdsToInclude?: string[];
+    entityIdsToExclude?: string[];
 }
 
 export interface ISearchEntitiesByTemplatesBody {
@@ -138,6 +140,7 @@ export interface ISearchBatchBody {
     limit: number;
     textSearch?: string;
     entityIdsToInclude?: string[];
+    entityIdsToExclude?: string[];
     templates: {
         [templateId: string]: {
             filter?: ISearchFilter;
@@ -150,7 +153,7 @@ export interface ISearchBatchBody {
 
 export interface ISearchResult {
     count: number;
-    entities: (IEntityWithDirectConnections & { minioFileIdsWithTexts?: ISemanticSearchResult[string][string] })[];
+    entities: IEntityWithDirectRelationships[];
 }
 
 export interface IFilterDatesRange {

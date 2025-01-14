@@ -3,14 +3,13 @@ import i18next from 'i18next';
 import React, { forwardRef, useImperativeHandle, useState } from 'react';
 import { useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import {  IEntityTemplateWithConstraintsMap } from '@microservices/shared-interfaces';
+import { IEntityTemplateWithConstraintsMap, IEntityWithDirectConnections, ISemanticSearchResult } from '@microservices/shared-interfaces';
 import { environment } from '../../globals';
 import EntityCard from '../../pages/GlobalSearch/components/entityCard';
 import { getEntitiesWithDirectConnections } from '../../services/entitiesService';
 import { InfiniteScroll } from '../InfiniteScroll';
 import { useSearchParams } from '../../utils/hooks/useSearchParams';
 import { convertToBool } from '../../utils/convertStringToBool';
-import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
 
 const { infiniteScrollPageCount } = environment.entitiesCardsView;
 
@@ -86,7 +85,7 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
                     >
                         {({ entity, minioFileIdsWithTexts }) => {
                             const entityTemplates = queryClient.getQueryData<IEntityTemplateWithConstraintsMap>('getEntityTemplates');
-                            const entityTemplate = entityTemplates?.get(entity.templateId)!;
+                            const entityTemplate = entityTemplates!.get(entity.templateId)!;
                             return (
                                 <EntityCard
                                     minioFileId={minioFileIdsWithTexts?.[0].minioFileId} // Navigate to the first found file

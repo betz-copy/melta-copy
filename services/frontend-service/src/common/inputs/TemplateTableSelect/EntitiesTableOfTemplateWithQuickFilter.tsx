@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { Box, Grid } from '@mui/material';
 import _debounce from 'lodash.debounce';
-import { IEntity, IMongoEntityTemplatePopulated } from '@microservices/shared-interfaces';
+import { IEntity, IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared-interfaces';
 import EntitiesTableOfTemplate from '../../EntitiesTableOfTemplate';
 import SearchInput from '../SearchInput';
 
 const EntitiesTableOfTemplateWithQuickFilter: React.FC<{
-    entityTemplate: IMongoEntityTemplatePopulated;
+    entityTemplate: IMongoEntityTemplateWithConstraintsPopulated;
     onRowSelected: (entity: IEntity) => void;
     hideNonPreview?: boolean;
 }> = ({ entityTemplate, onRowSelected, hideNonPreview }) => {

@@ -1,6 +1,5 @@
 import React from 'react';
 import { renderToString } from 'react-dom/server';
-import  WorkspaceService  from '../../express/workspaces/service';
 import {
     IMongoEntityTemplatePopulated,
     IRule,
@@ -19,6 +18,7 @@ import {
     IRuleBreachRequestNotificationMetadataPopulated,
     IRuleBreachResponseNotificationMetadataPopulated,
 } from '@microservices/shared';
+import WorkspaceService from '../../express/workspaces/service';
 import config from '../../config';
 import {
     ICreateRelationshipMetadataPopulated,
@@ -29,7 +29,7 @@ import {
     IUpdateEntityStatusMetadataPopulated,
 } from '../../externalServices/ruleBreachService/interfaces/populated';
 import EntityTemplateService from '../../externalServices/templates/entityTemplateService';
-import { RelationshipsTemplateService } from '../../externalServices/templates/relationshipsTemplateService';
+import RelationshipsTemplateService from '../../externalServices/templates/relationshipsTemplateService';
 import hebrew from './hebrew';
 import {
     IMailNotification,

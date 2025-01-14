@@ -21,7 +21,6 @@ const {
     fileIdLength,
 } = config;
 
-
 export default class Manager extends DefaultManagerNeo4j {
     private templateManagerService: TemplateManagerService;
 

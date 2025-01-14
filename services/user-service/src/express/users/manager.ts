@@ -1,6 +1,6 @@
 /* eslint-disable no-param-reassign */
 import { FilterQuery } from 'mongoose';
-import { ISubCompactPermissions, IAgGridRequest, IBaseUser, IUser } from '@microservices/shared';
+import { ISubCompactPermissions, IBaseUser, IUser, IUserAgGridRequest } from '@microservices/shared';
 import UsersModel from './model';
 import PermissionsManager from '../permissions/manager';
 import { typedObjectEntries } from '../../utils';
@@ -74,7 +74,7 @@ class UsersManager {
         return users.map(({ _id }) => _id);
     }
 
-    static async searchUsers(request: IAgGridRequest): Promise<{ users: IUser[]; count: number }> {
+    static async searchUsers(request: IUserAgGridRequest): Promise<{ users: IUser[]; count: number }> {
         const { limit, step, workspaceIds, permissions, filterModel, sortModel, search } = request;
 
         const sort = sortModel ? translateAgGridSortModel(sortModel) : {};

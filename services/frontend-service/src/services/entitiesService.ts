@@ -13,13 +13,13 @@ import {
     IGraphFilterBodyBatch,
     IRuleBreach,
     IBrokenRule,
+    ICreateEntityMetadata,
 } from '@microservices/shared-interfaces';
 import axios from '../axios';
 import { environment } from '../globals';
 import { EntityWizardValues } from '../common/dialogs/entity';
 import { filterModelToFilterOfGraph } from '../pages/Graph/GraphFilterToBackend';
 import { ITablesResults } from '../common/wizards/loadEntities';
-import { ICreateEntityMetadata } from '../interfaces/ruleBreaches/actionMetadata';
 
 const { entities, relationships } = environment.api;
 

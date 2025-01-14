@@ -36,7 +36,7 @@ export const defaultInitialValues: RelationshipTemplateWizardValues = {
             required: [],
             hide: [],
         },
-        category: { _id: '', displayName: '', name: '', color: '', iconFileId: null },
+        category: { _id: '', displayName: '', name: '', color: '', iconFileId: null, createdAt: new Date(), updatedAt: new Date() },
         propertiesOrder: [],
         propertiesTypeOrder: ['properties', 'attachmentProperties'],
         propertiesPreview: [],
@@ -51,7 +51,7 @@ export const defaultInitialValues: RelationshipTemplateWizardValues = {
         displayName: '',
         name: '',
         properties: { type: 'object', properties: {}, required: [], hide: [] },
-        category: { _id: '', displayName: '', name: '', color: '', iconFileId: null },
+        category: { _id: '', displayName: '', name: '', color: '', iconFileId: null, createdAt: new Date(), updatedAt: new Date() },
         propertiesOrder: [],
         propertiesTypeOrder: ['properties', 'attachmentProperties'],
         propertiesPreview: [],
@@ -83,7 +83,7 @@ const RelationshipTemplateWizard: React.FC<WizardBaseType<RelationshipTemplateWi
         (relationshipTemplateForm: RelationshipTemplateWizardValues) => {
             const { _id, createdAt: _createdAt, updatedAt: _updatedAt, ...restOfRelationshipTemplateForm } = relationshipTemplateForm;
             const relationshipTemplateBody = relationshipTemplateFormToRelationshipTemplateObject(restOfRelationshipTemplateForm);
-            const { isProperty, ...updatedRelationshipTemplate } = relationshipTemplateBody;
+            const { isProperty: _isProperty, ...updatedRelationshipTemplate } = relationshipTemplateBody;
             if (isEditMode) {
                 return updateRelationshipTemplateRequest(_id!, updatedRelationshipTemplate);
             }

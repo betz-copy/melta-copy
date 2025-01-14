@@ -2,13 +2,13 @@ import { CircularProgress, Grid } from '@mui/material';
 import React from 'react';
 import { Check, Close, Gavel } from '@mui/icons-material';
 import i18next from 'i18next';
-import { IMongoEntityTemplatePopulated, IEntity } from '@microservices/shared-interfaces';
+import { IMongoEntityTemplateWithConstraintsPopulated, IEntity } from '@microservices/shared-interfaces';
 import { ITablesResults } from '.';
 import { EntitiesTable } from './EntitiesTable';
 
 export const LoadEntitiesTables: React.FC<{
     tablesData: ITablesResults;
-    template: IMongoEntityTemplatePopulated;
+    template: IMongoEntityTemplateWithConstraintsPopulated;
     onDownload: (brokenRulesEntities?: boolean) => Promise<any>;
     isLoadingDownload: boolean;
     isLoadingTables: boolean;

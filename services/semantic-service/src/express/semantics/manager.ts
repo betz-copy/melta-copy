@@ -4,8 +4,8 @@ import ElasticClient from '../../utils/elastic';
 import { splitTextIntoChunks } from '../../utils/fs';
 import MinIOClient from '../../utils/minio/minioClient';
 import { IIndexFilesRequest, ISearchRequest } from './interface';
-import { ModelEmbeddingApiService } from '../../externalServices/model/embedding';
-import { ModelRerankingApiService } from '../../externalServices/model/reranking';
+import ModelEmbeddingApiService from '../../externalServices/model/embedding';
+import ModelRerankingApiService from '../../externalServices/model/reranking';
 
 const {
     consts: { fileIdLength },

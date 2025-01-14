@@ -59,14 +59,21 @@ export interface IAgGridSort {
     sort: 'asc' | 'desc';
 }
 
-export interface IAgGridRequest {
+export interface IUserAgGridRequest {
     search?: string;
     permissions: ISubCompactPermissions | undefined;
     workspaceIds: string[] | undefined;
     limit: number;
     step: number;
-    filterModel?: Record<string, IAgGridFilterModel>;
+    filterModel: Record<string, IAgGridFilterModel>;
     sortModel?: IAgGridSort[];
+}
+export interface IAgGridRequest {
+    startRow: number;
+    endRow: number;
+    filterModel: Record<string, IAgGridFilterModel>;
+    quickFilter?: string;
+    sortModel: IAgGridSort[];
 }
 
 export type FilterQuery =

@@ -14,6 +14,8 @@ const entityTemplates: IMongoEntityTemplateWithConstraintsPopulated[] = [
             displayName: 'טיולים',
             color: '#B3E5FC',
             iconFileId: null,
+            createdAt: new Date(),
+            updatedAt: new Date(),
         },
         properties: {
             type: 'object',
@@ -69,6 +71,8 @@ const entityTemplates: IMongoEntityTemplateWithConstraintsPopulated[] = [
             displayName: 'אנשים',
             color: '#B80000',
             iconFileId: null,
+            createdAt: new Date(),
+            updatedAt: new Date(),
         },
         properties: {
             type: 'object',
@@ -117,6 +121,8 @@ const entityTemplates: IMongoEntityTemplateWithConstraintsPopulated[] = [
             displayName: 'אנשים',
             color: '#B80000',
             iconFileId: null,
+            createdAt: new Date(),
+            updatedAt: new Date(),
         },
         properties: {
             type: 'object',
@@ -164,6 +170,8 @@ const entityTemplates: IMongoEntityTemplateWithConstraintsPopulated[] = [
             displayName: 'טיסות',
             color: '#E65100',
             iconFileId: null,
+            createdAt: new Date(),
+            updatedAt: new Date(),
         },
         properties: {
             type: 'object',
@@ -218,6 +226,8 @@ const entityTemplates: IMongoEntityTemplateWithConstraintsPopulated[] = [
             displayName: 'טיסות',
             color: '#E65100',
             iconFileId: null,
+            createdAt: new Date(),
+            updatedAt: new Date(),
         },
         properties: {
             type: 'object',
@@ -257,6 +267,8 @@ const entityTemplates: IMongoEntityTemplateWithConstraintsPopulated[] = [
             displayName: 'מלונות',
             color: '#FCDC00',
             iconFileId: null,
+            createdAt: new Date(),
+            updatedAt: new Date(),
         },
         properties: {
             type: 'object',
@@ -306,6 +318,8 @@ const entityTemplates: IMongoEntityTemplateWithConstraintsPopulated[] = [
             displayName: 'מלונות',
             color: '#FCDC00',
             iconFileId: null,
+            createdAt: new Date(),
+            updatedAt: new Date(),
         },
         properties: {
             type: 'object',
@@ -351,6 +365,8 @@ const entityTemplates: IMongoEntityTemplateWithConstraintsPopulated[] = [
             displayName: 'כסף',
             color: '#F78DA7',
             iconFileId: null,
+            createdAt: new Date(),
+            updatedAt: new Date(),
         },
         properties: {
             type: 'object',
@@ -396,6 +412,8 @@ const entityTemplates: IMongoEntityTemplateWithConstraintsPopulated[] = [
             displayName: 'כסף',
             color: '#F78DA7',
             iconFileId: null,
+            createdAt: new Date(),
+            updatedAt: new Date(),
         },
         properties: {
             type: 'object',
@@ -431,6 +449,8 @@ const entityTemplates: IMongoEntityTemplateWithConstraintsPopulated[] = [
             displayName: 'תקשורת',
             color: '#0D47A1',
             iconFileId: null,
+            createdAt: new Date(),
+            updatedAt: new Date(),
         },
         properties: {
             type: 'object',
@@ -470,6 +490,8 @@ const entityTemplates: IMongoEntityTemplateWithConstraintsPopulated[] = [
             displayName: 'תקשורת',
             color: '#0D47A1',
             iconFileId: null,
+            createdAt: new Date(),
+            updatedAt: new Date(),
         },
         properties: {
             type: 'object',
@@ -505,6 +527,8 @@ const entityTemplates: IMongoEntityTemplateWithConstraintsPopulated[] = [
             displayName: 'דברים',
             color: '#7B1FA2',
             iconFileId: null,
+            createdAt: new Date(),
+            updatedAt: new Date(),
         },
         properties: {
             type: 'object',

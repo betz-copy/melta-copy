@@ -76,7 +76,7 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
         name: '',
         displayName: '',
         icon: undefined,
-        category: { displayName: '', name: '', _id: '', color: '', iconFileId: '' },
+        category: { displayName: '', name: '', _id: '', color: '', iconFileId: '', createdAt: new Date(), updatedAt: new Date() },
         disabled: false,
         properties: [],
         archiveProperties: [],

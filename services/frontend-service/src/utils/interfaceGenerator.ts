@@ -1,9 +1,5 @@
 import { QueryClient } from 'react-query';
-<<<<<<<< HEAD:services/frontend-service/src/utils/interfaceGenerator.ts
 import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '@microservices/shared-interfaces';
-========
-import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
->>>>>>>> 7c20881549e8b7d5a88019432cedb4c23cb567b1:services/frontend-service/src/utils/templateActions/interfaceGenerator.ts
 
 const generateFromString = ({ format, relationshipReference, enum: typeEnum }: IEntitySingleProperty, queryClient: QueryClient) => {
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;

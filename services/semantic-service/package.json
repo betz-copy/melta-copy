@@ -15,8 +15,9 @@
     "clean": "rimraf dist"
   },
   "dependencies": {
-    "@microservices/shared": "^1.0.0",
     "@elastic/elasticsearch": "^8.15.1",
+    "@microservices/shared": "^1.0.0",
+    "exceljs": "^4.4.0",
     "llm-chunk": "^0.0.1",
     "mammoth": "^1.8.0",
     "menashmq": "^0.1.6",
@@ -24,6 +25,7 @@
     "mongoose": "^8.5.3",
     "pdf-parse": "^1.1.1",
     "supertest": "^7.0.0",
+    "textract": "^2.5.0",
     "uuid": "^10.0.0"
   },
   "devDependencies": {
@@ -31,6 +33,7 @@
     "@types/express": "^4.17.21",
     "@types/jest": "^29.5.12",
     "@types/pdf-parse": "^1.1.4",
+    "@types/textract": "^2.4.5",
     "@types/uuid": "^10.0.0",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-plugin-import": "^2.29.1",
