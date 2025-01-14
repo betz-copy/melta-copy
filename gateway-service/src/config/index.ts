@@ -24,6 +24,7 @@ const config = {
     mongo: {
         url: env.get('MONGO_URL').required().asString(),
         iFramesCollectionName: env.get('MONGO_IFRAMES_COLLECTION_NAME').required().asString(),
+        chartCollectionName: env.get('MONGO_CHARTS_COLLECTION_NAME').required().asString(),
     },
 
     frontendConfig: {
