@@ -149,7 +149,7 @@ export const environment = {
             ],
             general: [
                 {
-                    color: undefined,
+                    color: '#cc5083',
                     type: NotificationType.dateAboutToExpire,
                     displayName: () => i18next.t('notifications.displayNames.dateAboutToExpire'),
                 },
