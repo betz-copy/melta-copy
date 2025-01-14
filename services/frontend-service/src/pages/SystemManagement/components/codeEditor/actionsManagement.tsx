@@ -1,7 +1,6 @@
 import { Monaco } from '@monaco-editor/react';
 import { Box, Typography } from '@mui/material';
 import i18next from 'i18next';
-import { IMongoEntityTemplatePopulated } from '@microservices/shared-interfaces';
 import { editor } from 'monaco-editor';
 import React, { useRef } from 'react';
 import { CodeEditor } from '../../../../common/inputs/CodeEditor';

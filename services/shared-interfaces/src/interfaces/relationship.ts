@@ -1,4 +1,6 @@
+import { Transaction } from 'neo4j-driver';
 import { IEntity } from './entity';
+import { IRelationshipReference } from './entityTemplate';
 
 /* eslint-disable no-shadow */
 export interface IRelationship {
@@ -6,6 +8,13 @@ export interface IRelationship {
     properties: Record<string, any>;
     sourceEntityId: string;
     destinationEntityId: string;
+}
+
+export interface IDeleteRelationshipReference {
+    relationshipReference: IRelationshipReference;
+    relatedEntityId: string;
+    originalEntityId: string;
+    transaction: Transaction;
 }
 
 export interface IRelationshipPopulated {

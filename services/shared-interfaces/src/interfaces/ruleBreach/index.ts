@@ -1,5 +1,7 @@
+import { IRequiredConstraint, IUniqueConstraint, IValidationError } from "../entity";
 import { IUser } from "../user";
-import { IRuleBreach, IRuleBreachPopulated } from "./ruleBreach";
+import { ActionErrors, ActionTypes, IActionMetadataPopulated } from "./actionMetadata";
+import { IAction, IBrokenRule, IBrokenRulePopulated, IRuleBreach, IRuleBreachPopulated } from "./ruleBreach";
 
 // Rule Breach Alerts
 export interface IRuleBreachAlert extends IRuleBreach {}
@@ -25,6 +27,24 @@ export interface IRuleBreachRequestPopulated extends IRuleBreachPopulated {
   reviewedAt?: Date;
   status: RuleBreachRequestStatus;
 }
+
+export type IFailedEntity = {
+  properties: Record<string, any>;
+  errors: { type: ActionErrors; metadata: IValidationError | IUniqueConstraint | IRequiredConstraint }[];
+};
+
+export type IActionPopulated = {
+  actionType: ActionTypes;
+  actionMetadata: IActionMetadataPopulated;
+};
+
+export type IBrokenRuleEntity = {
+  rawBrokenRules: IBrokenRule[];
+  brokenRules: IBrokenRulePopulated[];
+  actions: IActionPopulated[];
+  rawActions: IAction[];
+  entities: { properties: Record<string, any> }[];
+};
 
 export * from "./agGrid";
 export * from "./ruleBreach";

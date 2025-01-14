@@ -36,7 +36,7 @@ import ProcessService from '../../externalServices/processService';
 import RuleBreachService from '../../externalServices/ruleBreachService';
 import StorageService from '../../externalServices/storageService';
 import EntityTemplateService from '../../externalServices/templates/entityTemplateService';
-import { RelationshipsTemplateService } from '../../externalServices/templates/relationshipsTemplateService';
+import RelationshipsTemplateService from '../../externalServices/templates/relationshipsTemplateService';
 import { trycatch } from '../../utils';
 import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
 import DefaultManagerProxy from '../../utils/express/manager';
@@ -634,15 +634,18 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
     ) {
         if (!removedProperties.length) return;
 
-        const removedFilesProperties = removedProperties.reduce((acc, propertyToRemove) => {
-            const { format, items } = currentTemplate.properties.properties[propertyToRemove];
+        const removedFilesProperties = removedProperties.reduce(
+            (acc, propertyToRemove) => {
+                const { format, items } = currentTemplate.properties.properties[propertyToRemove];
 
-            if (format === 'fileId' || items?.format === 'fileId') {
-                acc[propertyToRemove] = items?.format === 'fileId';
-            }
+                if (format === 'fileId' || items?.format === 'fileId') {
+                    acc[propertyToRemove] = items?.format === 'fileId';
+                }
 
-            return acc;
-        }, {} as Record<string, boolean>);
+                return acc;
+            },
+            {} as Record<string, boolean>,
+        );
 
         if (Object.keys(removedFilesProperties).length) {
             await this.deleteFilesOfDeletedProperty(id, removedFilesProperties, count);
@@ -907,7 +910,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
     async handleConversionRollback(
         entityTemplateId: string,
         currentRelationshipTemplate: IMongoRelationshipTemplate,
-        rollBackTemplateWithoutProperties: Omit<IEntityTemplatePopulated, 'disabled'>,
+        rollBackTemplateWithoutProperties: Omit<IEntityTemplatePopulated, 'disabled' | '_id'>,
     ) {
         try {
             const { createdAt, updatedAt, _id, ...restRelationshipTemplate } = currentRelationshipTemplate;
@@ -1109,9 +1112,10 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             relationshipReference.relatedTemplateField,
         );
 
-        const restOfEntityTemplate: Omit<IEntityTemplatePopulated, 'disabled'> = this.removeBasicFields(
+        const restOfEntityTemplate: Omit<IEntityTemplatePopulated, 'disabled' | '_id'> = this.removeBasicFields(
             await this.entityTemplateService.getEntityTemplateById(entityIdToUpdate),
         );
+
         const entityTemplateToUpdate: Omit<IEntityTemplate, 'disabled'> = {
             ...restOfEntityTemplate,
             category: restOfEntityTemplate.category._id,

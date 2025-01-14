@@ -1,6 +1,5 @@
 /* eslint-disable no-param-reassign */
 import { menash } from 'menashmq';
-import config from '../../config';
 import {
     IBaseUser,
     IExternalUser,
@@ -11,7 +10,9 @@ import {
     ICompactPermissions,
     IPermission,
     ISubCompactPermissions,
+    BadRequestError,
 } from '@microservices/shared';
+import config from '../../config';
 import Kartoffel from '../../externalServices/kartoffel';
 import { IKartoffelUser, IKartoffelUserDigitalIdentity } from '../../externalServices/kartoffel/interface';
 import StorageService from '../../externalServices/storageService';
@@ -19,7 +20,6 @@ import UserService from '../../externalServices/userService';
 import { isProfileFileType, objectContains } from '../../utils';
 import { removeTmpFile } from '../../utils/fs';
 import { DigitalIdentitySourceDoesNotExistsError, KartoffelUserMissingDataError } from './error';
-import { BadRequestError } from '../error';
 
 const {
     storageService: { usersGlobalBucketName },
@@ -151,7 +151,6 @@ class UsersManager {
             existingDigitalIdentitySource: _existingDigitalIdentitySource,
             preferences,
             ...digitalIdentity
-
         } = await this.getExternalUserDigitalIdentity(user.externalMetadata.kartoffelId, user.externalMetadata.digitalIdentitySource);
 
         UsersManager.validateDigitalIdentity(user.externalMetadata.kartoffelId, digitalIdentity);

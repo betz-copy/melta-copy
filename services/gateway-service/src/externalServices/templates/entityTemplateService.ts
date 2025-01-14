@@ -5,11 +5,11 @@ import {
     IMongoEntityTemplate,
     IMongoEntityTemplatePopulated,
     ISearchEntityTemplatesBody,
+    IMongoRelationshipTemplate,
 } from '@microservices/shared';
 import TemplatesManagerService from '.';
 import config from '../../config';
 import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
-import { IMongoRelationshipTemplate } from './relationshipsTemplateService';
 
 const {
     templateService: {

@@ -1,5 +1,6 @@
 import {
   IMongoEntityTemplateWithConstraintsPopulated,
+  IRelationshipReference,
   ISearchBody,
 } from "./entityTemplate";
 
@@ -9,6 +10,12 @@ export interface IRelationshipTemplate {
   sourceEntityId: string;
   destinationEntityId: string;
   isProperty: boolean;
+}
+
+export interface IConvertToRelationshipField {
+  fieldName: string;
+  displayFieldName: string;
+  relationshipReference: IRelationshipReference;
 }
 
 export interface IMongoRelationshipTemplate extends IRelationshipTemplate {

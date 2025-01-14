@@ -5,7 +5,7 @@ import {
     IBrokenRule,
     IConstraintsOfTemplate,
     ICountSearchResult,
-    IDeleteBody,
+    IDeleteEntityBody,
     IEntity,
     ISearchBatchBody,
     ISearchEntitiesOfTemplateBody,
@@ -85,7 +85,7 @@ class InstancesService extends DefaultExternalServiceApi {
     }
 
     async convertToRelationshipField(existingRelationships: IRelationship[], addFieldToSrcEntity: boolean, fieldName: string, userId: string) {
-        const { data } = await this.api.patch<{}>(`${baseEntitiesRoute}/convertToRelationshipField/`, {
+        const { data } = await this.api.patch<object>(`${baseEntitiesRoute}/convertToRelationshipField/`, {
             existingRelationships,
             addFieldToSrcEntity,
             fieldName,
@@ -101,7 +101,7 @@ class InstancesService extends DefaultExternalServiceApi {
         return data;
     }
 
-    async deleteEntityInstances(deleteBody: IDeleteBody) {
+    async deleteEntityInstances(deleteBody: IDeleteEntityBody) {
         const { data } = await this.api.post<string[]>(`${baseEntitiesRoute}/delete/bulk`, deleteBody);
 
         return data;

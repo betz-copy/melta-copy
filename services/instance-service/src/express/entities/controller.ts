@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { IDeleteBody, RequestWithQuery, IMongoEntityTemplate, fetchPropertyFromRequest } from '@microservices/shared';
+import { IDeleteEntityBody, RequestWithQuery, IMongoEntityTemplate, fetchPropertyFromRequest } from '@microservices/shared';
 import DefaultController from '../../utils/express/controller';
 import EntityManager from './manager';
 
@@ -52,7 +52,7 @@ class EntityController extends DefaultController<EntityManager> {
     }
 
     async deleteEntityInstances(req: Request, res: Response) {
-        const deleteBody = req.body as IDeleteBody;
+        const deleteBody = req.body as IDeleteEntityBody;
 
         res.json(await this.manager.deleteEntityInstances(deleteBody));
     }

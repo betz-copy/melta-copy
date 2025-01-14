@@ -9,3 +9,8 @@ export type RecursiveNullable<T> = { [P in keyof T]: RecursiveNullable<T[P]> | n
 
 // eslint-disable-next-line no-undef
 export type Awaited<T> = T extends PromiseLike<infer U> ? U : T;
+
+export default interface fileDetails {
+    file: Partial<File>;
+    name: string;
+}

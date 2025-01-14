@@ -2,20 +2,24 @@ import Excel from 'exceljs';
 import { StatusCodes } from 'http-status-codes';
 import { AxiosError } from 'axios';
 import fs from 'fs';
-import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../externalServices/templates/entityTemplateService';
-import { excelConfig } from './excelConfig';
-import { BadRequestError, ServiceError } from '../../express/error';
 import {
-    ActionErrors,
-    ActionTypes,
-    IAction,
-    IActionPopulated,
-    IBrokenRule,
-    IBrokenRuleEntity,
-    ICreateEntityMetadata,
+    IEntitySingleProperty,
     IFailedEntity,
-} from '../../externalServices/ruleBreachService/interfaces';
-import { IEntity, IValidationErrorData } from '../../externalServices/instanceService/interfaces/entities';
+    ActionErrors,
+    IMongoEntityTemplatePopulated,
+    IEntity,
+    BadRequestError,
+    ServiceError,
+    IValidationErrorData,
+    IBrokenRule,
+    IAction,
+    ActionTypes,
+    ICreateEntityMetadata,
+    IActionPopulated,
+    IBrokenRuleEntity,
+} from '@microservices/shared';
+import excelConfig from './excelConfig';
+
 import {
     IBrokenRulePopulated,
     ICreateEntityMetadataPopulated,

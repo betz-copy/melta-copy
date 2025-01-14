@@ -1,19 +1,11 @@
 /* eslint-disable no-param-reassign */
 import Excel from 'exceljs';
 import { v4 as uuidv4 } from 'uuid';
-<<<<<<<< HEAD:services/gateway-service/src/utils/excel/excelFunctions.ts
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated, IEntity } from '@microservices/shared';
 import config from '../../config/index';
 import excelConfig from './excelConfig';
 import hexToARGB from './colors';
-========
-import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../externalServices/templates/entityTemplateService';
-import { IEntity } from '../../externalServices/instanceService/interfaces/entities';
-import config from '../../config/index';
-import { excelConfig } from './excelConfig';
-import { hexToARGB } from './colors';
 import { isIncludedColumn } from './getFunctions';
->>>>>>>> 7c20881549e8b7d5a88019432cedb4c23cb567b1:services/gateway-service/src/utils/excel/createFunctions.ts
 
 interface IExcelStyle {
     columnHeader: {

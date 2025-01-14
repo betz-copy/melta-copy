@@ -22,7 +22,7 @@ import {
     IBrokenRule,
     IBrokenRulesError,
     ICountSearchResult,
-    IDeleteBody,
+    IDeleteEntityBody,
     IEntity,
     ISearchBatchBody,
     ISearchEntitiesOfTemplateBody,
@@ -36,7 +36,7 @@ import {
     IExportEntitiesBody,
     ISemanticSearchResult,
     BadRequestError,
-    ServiceError
+    ServiceError,
 } from '@microservices/shared';
 import config from '../../config';
 import InstancesService from '../../externalServices/instanceService';
@@ -752,7 +752,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         return fileIdsToRemove;
     }
 
-    async deleteEntityInstances(deleteBody: IDeleteBody) {
+    async deleteEntityInstances(deleteBody: IDeleteEntityBody) {
         const filesOfDeletedInstances = await this.service.deleteEntityInstances(deleteBody);
 
         const { err: error } = await trycatch(() => this.deleteAllEntitiesFiles(filesOfDeletedInstances));

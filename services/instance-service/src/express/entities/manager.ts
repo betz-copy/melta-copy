@@ -32,7 +32,7 @@ import {
     IDeleteRelationshipReference,
     IUpdatedFields,
     ActionsLog,
-    IDeleteBody,
+    IDeleteEntityBody,
     IActivityLog,
     IEntityTemplate,
     IMongoActivityLog,
@@ -69,7 +69,6 @@ import { addStringFieldsAndNormalizeDateValues } from './validator.template';
 import { executeActionCodeAndGetEntitiesToUpdate } from '../../utils/actions/executeScript';
 import BulkActionManager from '../bulkActions/manager';
 import isBodyFunctionHasContent from '../../utils/actions/isBodyFunctionHasContent';
-
 
 const { brokenRulesFakeEntityIdPrefix, deleteEntitiesMaxLimit } = config;
 
@@ -393,7 +392,6 @@ class EntityManager extends DefaultManagerNeo4j {
     async getAllRelationshipReferencesEntityTemplates(templateId: string) {
         const entityTemplates = await this.entityTemplateManagerService.searchEntityTemplates({ limit: 0, skip: 0 });
         const templatesMap = new Map(entityTemplates.map((template) => [template._id, template]));
-
 
         const baseTemplate = templatesMap.get(templateId)!;
 
@@ -915,20 +913,20 @@ class EntityManager extends DefaultManagerNeo4j {
     }
 
     async getEntitiesWithDirectRelationshipsToDelete(
-        deleteBody: IDeleteBody,
+        deleteBody: IDeleteEntityBody,
         entityTemplate: IMongoEntityTemplate,
     ): Promise<IEntityWithDirectRelationships[]> {
         const entitiesWithDirectRelationships: IEntityWithDirectRelationships[] = [];
 
         if (deleteBody.selectAll) {
-            const { idsToExclude, filter, textSearch = '' } = deleteBody as IDeleteBody<true>;
+            const { idsToExclude, filter, textSearch = '' } = deleteBody as IDeleteEntityBody<true>;
             const { entities } = await this.searchEntitiesOfTemplate(
                 { limit: deleteEntitiesMaxLimit, skip: 0, filter, showRelationships: true, textSearch, entityIdsToExclude: idsToExclude },
                 entityTemplate,
             );
             entitiesWithDirectRelationships.push(...entities);
         } else {
-            const { idsToInclude } = deleteBody as IDeleteBody<false>;
+            const { idsToInclude } = deleteBody as IDeleteEntityBody<false>;
             const { entities } = await this.searchEntitiesOfTemplate(
                 { limit: deleteEntitiesMaxLimit, skip: 0, showRelationships: true, entityIdsToInclude: idsToInclude },
                 entityTemplate,
@@ -1053,7 +1051,7 @@ class EntityManager extends DefaultManagerNeo4j {
         }
     }
 
-    async deleteEntityInstances(deleteBody: IDeleteBody) {
+    async deleteEntityInstances(deleteBody: IDeleteEntityBody) {
         let entityIdsToDelete: string[] = [];
         const { deleteAllRelationships, templateId } = deleteBody;
 
@@ -1234,10 +1232,13 @@ class EntityManager extends DefaultManagerNeo4j {
     private getUpdatedProperties(oldEntity: Record<string, any>, newEntity: Record<string, any>, entityTemplate: IMongoEntityTemplate) {
         const updatedPropertiesNames = this.getKeysOfUpdatedProperties(oldEntity, newEntity, entityTemplate);
 
-        const updatedProperties = updatedPropertiesNames.reduce((acc, property) => {
-            acc[property] = newEntity[property];
-            return acc;
-        }, {} as Record<string, any>);
+        const updatedProperties = updatedPropertiesNames.reduce(
+            (acc, property) => {
+                acc[property] = newEntity[property];
+                return acc;
+            },
+            {} as Record<string, any>,
+        );
 
         return this.removeBasicProperties(updatedProperties);
     }

@@ -72,6 +72,7 @@ export interface INotification<T = INotificationMetadata> {
     metadata: T;
     createdAt: Date;
     _id: string;
+    notificationDate?: Date;
 }
 
 export type INotificationCountGroups = Record<string, NotificationType[]>;

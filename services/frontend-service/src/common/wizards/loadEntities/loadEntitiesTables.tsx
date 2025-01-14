@@ -2,10 +2,9 @@ import { CircularProgress, Grid } from '@mui/material';
 import React from 'react';
 import { Check, Close, Gavel } from '@mui/icons-material';
 import i18next from 'i18next';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IMongoEntityTemplatePopulated, IEntity } from '@microservices/shared-interfaces';
 import { ITablesResults } from '.';
 import { EntitiesTable } from './EntitiesTable';
-import { IEntity } from '../../../interfaces/entities';
 
 export const LoadEntitiesTables: React.FC<{
     tablesData: ITablesResults;

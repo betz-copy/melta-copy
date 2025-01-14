@@ -19,6 +19,7 @@ export * from './interfaces/semanticSearch';
 // Exporting all enums and functions so frontend can use them too
 export {
     ActionTypes,
+    ActionErrors,
     RuleBreachRequestStatus,
     basicFilterOperationTypes,
     numberFilterOperationTypes,
@@ -39,5 +40,6 @@ export { NotificationType } from './interfaces/notification';
 export { WorkspaceTypes, Colors } from './interfaces/workspace';
 export { PermissionScope, PermissionType, InstancesSubclassesPermissions } from './interfaces/permission';
 export { Status, ProcessPropertyFormats, ProcessStatus } from './interfaces/process';
+export { FileTypes } from './interfaces/semanticSearch';
 
 export * from './types';

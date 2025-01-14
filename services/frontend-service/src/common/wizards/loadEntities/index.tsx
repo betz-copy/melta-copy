@@ -5,18 +5,27 @@ import { toast } from 'react-toastify';
 import fileDownload from 'js-file-download';
 import { useMutation } from 'react-query';
 import { Grid } from '@mui/material';
+import {
+    IBrokenRule,
+    IBrokenRulePopulated,
+    IEntitySingleProperty,
+    IMongoEntityTemplatePopulated,
+    ActionErrors,
+    ActionTypes,
+    IAction,
+    IActionMetadataPopulated,
+    ICreateEntityMetadata,
+    IRequiredConstraint,
+    IUniqueConstraint,
+} from '@microservices/shared-interfaces';
 import { StepType, Wizard, WizardBaseType } from '..';
 import OpenPreview from '../../FilePreview/OpenPreview';
 import { exportEntitiesRequest, loadEntitiesRequest } from '../../../services/entitiesService';
 import { attachmentPropertiesBaseSchema } from '../entityTemplate/AddFields';
 import { LoadEntitiesTables } from './loadEntitiesTables';
-import { IBrokenRule, IBrokenRulePopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
-import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { UploadExcel } from './uploadExcel';
 import ActionOnEntityWithRuleBreachDialog from '../../../pages/Entity/components/ActionOnEntityWithRuleBreachDialog';
-import { ActionErrors, ActionTypes, IAction, IActionMetadataPopulated, ICreateEntityMetadata } from '../../../interfaces/ruleBreaches/actionMetadata';
 import { ICreateOrUpdateWithRuleBreachDialogState } from '../../dialogs/entity/CreateOrEditEntityDialog';
-import { IRequiredConstraint, IUniqueConstraint } from '../../../interfaces/entities';
 import { environment } from '../../../globals';
 
 export interface EntitiesWizardValues {

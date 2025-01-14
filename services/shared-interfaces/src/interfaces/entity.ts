@@ -1,159 +1,210 @@
-import { IMongoEntityTemplatePopulated } from "./entityTemplate";
-import { IRelationship } from "./relationship";
-import { IMongoRelationshipTemplate } from "./relationshipTemplate";
+import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from './entityTemplate';
+import { IRelationship } from './relationship';
+import { IMongoRelationshipTemplate } from './relationshipTemplate';
+import { IBrokenRule, IBrokenRulePopulated, IActionPopulated, IAction, ActionErrors, IFailedEntity } from './ruleBreach';
+import { ISemanticSearchResult } from './semanticSearch';
 
 export interface IEntity {
-  templateId: string;
-  properties: Record<string, any>;
+    templateId: string;
+    properties: Record<string, any>;
 }
 
 export interface IEntityExpanded {
-  entity: IEntity;
-  connections: {
-    relationship: Pick<IRelationship, "templateId" | "properties">;
-    sourceEntity: IEntity;
-    destinationEntity: IEntity;
-  }[];
+    entity: IEntity;
+    connections: {
+        relationship: Pick<IRelationship, 'templateId' | 'properties'>;
+        sourceEntity: IEntity;
+        destinationEntity: IEntity;
+    }[];
+}
+
+export interface IBrokenRulesError {
+    metadata: {
+        errorCode: 'RULE_BLOCK';
+        rawBrokenRules: IBrokenRule[];
+        brokenRules: IBrokenRulePopulated[];
+        actions: IActionPopulated[];
+        rawActions: IAction[];
+    };
 }
 
 export interface IUniqueConstraint {
-  type: "UNIQUE";
-  constraintName: string;
-  templateId: string;
-  uniqueGroupName: string;
-  properties: string[];
+    type: 'UNIQUE';
+    constraintName: string;
+    templateId: string;
+    uniqueGroupName: string;
+    properties: string[];
+    values?: Record<string, any>;
 }
 
 export interface IRequiredConstraint {
-  type: "REQUIRED";
-  constraintName: string;
-  templateId: string;
-  property: string;
+    type: 'REQUIRED';
+    constraintName: string;
+    templateId: string;
+    property: string;
+    index?: number;
+}
+
+export type IValidationError = { message: string; path: string; schemaPath: string; params: Partial<IEntitySingleProperty> };
+
+export interface IValidationErrorData {
+    type: string;
+    message: string;
+    metadata: {
+        properties: Record<string, any>;
+        errors: { type: ActionErrors.validation; metadata: IValidationError }[];
+    };
 }
 
 export type IConstraint = IRequiredConstraint | IUniqueConstraint;
 
 export interface IUniqueConstraintOfTemplate {
-  groupName: string;
-  properties: string[];
+    groupName: string;
+    properties: string[];
 }
 
 export interface IConstraintsOfTemplate {
-  templateId: string;
-  requiredConstraints: string[];
-  uniqueConstraints: IUniqueConstraintOfTemplate[];
+    templateId: string;
+    requiredConstraints: string[];
+    uniqueConstraints: IUniqueConstraintOfTemplate[];
+}
+
+export interface IEntityWithDirectConnections {
+    entity: IEntity;
+    relationships?: {
+        relationship: Pick<IRelationship, 'templateId' | 'properties'>;
+        otherEntity: IEntity;
+    }[];
 }
 
 export interface IEntityWithDirectRelationships {
-  entity: IEntity;
-  relationships?: Array<{
-    relationship: IRelationship;
-    otherEntity: IEntity;
-  }>;
+    entity: IEntity;
+    relationships?: Array<{
+        relationship: IRelationship;
+        otherEntity: IEntity;
+    }>;
 }
 
 export interface IFilterOfField {
-  $eq?: boolean | string | number | null;
-  $ne?: boolean | string | number | null;
-  $eqi?: string; // case insensitive $eq
-  $rgx?: string; // Java Regular Expression (not javascript)
-  $gt?: boolean | string | number;
-  $gte?: boolean | string | number;
-  $lt?: boolean | string | number;
-  $lte?: boolean | string | number;
-  $in?: Array<boolean | string | number | null>;
-  $not?: IFilterOfField;
+    $eq?: boolean | string | number | null;
+    $ne?: boolean | string | number | null;
+    $eqi?: string; // case insensitive $eq
+    $rgx?: string; // Java Regular Expression (not javascript)
+    $gt?: boolean | string | number;
+    $gte?: boolean | string | number;
+    $lt?: boolean | string | number;
+    $lte?: boolean | string | number;
+    $in?: Array<boolean | string | number | null>;
+    $not?: IFilterOfField;
 }
 
-export type IFilterOfTemplate<
-  T extends Record<string, any> = Record<string, any>
-> = {
-  [field in keyof T]?: IFilterOfField;
+export type IFilterOfTemplate<T extends Record<string, any> = Record<string, any>> = {
+    [field in keyof T]?: IFilterOfField;
 };
 
-export type ISearchFilter<T extends Record<string, any> = Record<string, any>> =
-  {
+export type ISearchFilter<T extends Record<string, any> = Record<string, any>> = {
     $and?: IFilterOfTemplate<T> | IFilterOfTemplate<T>[];
     $or?: IFilterOfTemplate<T>[];
-  };
+};
 
-export type ISearchSort<T extends Record<string, any> = Record<string, any>> =
-  Array<{
+export type ISearchSort<T extends Record<string, any> = Record<string, any>> = Array<{
     field: keyof T;
-    sort: "asc" | "desc";
-  }>;
+    sort: 'asc' | 'desc';
+}>;
 
+export interface ICountSearchResult {
+    count: number;
+    templateId: string;
+    entitiesWithFiles: Record<string, string[]>; // { entityId: minioFileIds:[] }
+}
 export interface ISearchEntitiesOfTemplateBody {
-  skip: number;
-  limit: number;
-  textSearch?: string;
-  filter?: ISearchFilter;
-  showRelationships: boolean | Array<IMongoRelationshipTemplate["_id"]>;
-  sort: ISearchSort;
-  entityIdsToInclude?: string[];
+    skip: number;
+    limit: number;
+    textSearch?: string;
+    filter?: ISearchFilter;
+    showRelationships: boolean | Array<IMongoRelationshipTemplate['_id']>;
+    sort: ISearchSort;
+    entitiesWithFiles?: ICountSearchResult['entitiesWithFiles'];
 }
 
 export interface ISearchEntitiesByTemplatesBody {
-  searchConfigs: {
-    [templateId: string]: ISearchEntitiesOfTemplateBody;
-  };
+    searchConfigs: {
+        [templateId: string]: ISearchEntitiesOfTemplateBody;
+    };
 }
 
 export interface ISearchBatchBody {
-  skip: number;
-  limit: number;
-  textSearch?: string;
-  entityIdsToInclude?: string[];
-  templates: {
-    [templateId: string]: {
-      filter?: ISearchFilter;
-      showRelationships: boolean | Array<IMongoRelationshipTemplate["_id"]>;
+    skip: number;
+    limit: number;
+    textSearch?: string;
+    entityIdsToInclude?: string[];
+    templates: {
+        [templateId: string]: {
+            filter?: ISearchFilter;
+            showRelationships: boolean | Array<IMongoRelationshipTemplate['_id']>;
+        };
     };
-  };
-  sort: ISearchSort;
+    sort: ISearchSort;
+    shouldSemanticSearch?: boolean;
 }
 
 export interface ISearchResult {
-  count: number;
-  entities: IEntityWithDirectRelationships[];
+    count: number;
+    entities: (IEntityWithDirectConnections & { minioFileIdsWithTexts?: ISemanticSearchResult[string][string] })[];
 }
 
 export interface IFilterDatesRange {
-  propertyName: string;
-  dateNotificationValue: number;
-  isDateTime: boolean;
-  isDailyAlert: boolean;
-}
-
-export interface ICountSearchResult {
-  count: number;
-  templateId: string;
-  entityIdsToInclude: Record<string, string[]>; // { entityId: minioFileIds:[] }
+    propertyName: string;
+    dateNotificationValue: number;
+    isDateTime: boolean;
+    isDailyAlert: boolean;
 }
 
 export interface ITemplateSearchBody {
-  textSearch?: string;
-  templateIds: string[];
+    textSearch?: string;
+    templateIds: string[];
 }
 
 export interface IExportEntitiesBody {
-  fileName: string;
-  textSearch?: string;
-  templates: {
-    [templateId: string]: {
-      filter?: ISearchFilter;
-      sort?: ISearchSort;
-      displayColumns: string[];
+    fileName: string;
+    textSearch?: string;
+    templates: {
+        [templateId: string]: {
+            filter?: ISearchFilter;
+            sort?: ISearchSort;
+            displayColumns?: string[];
+            headersOnly?: boolean;
+            insertEntities?: Record<string, any>[];
+        };
     };
-  };
 }
 
 export interface IGraphFilterBody {
-  selectedTemplate: IMongoEntityTemplatePopulated;
-  selectedProperty?: string;
-  filterField?: any;
+    selectedTemplate: IMongoEntityTemplatePopulated;
+    selectedProperty?: string;
+    filterField?: any;
 }
 
 export interface IGraphFilterBodyBatch {
-  [key: string]: IGraphFilterBody;
+    [key: string]: IGraphFilterBody;
 }
+
+export interface IDeleteEntityBodyBase {
+    selectAll: boolean;
+    templateId: string;
+    deleteAllRelationships?: boolean;
+}
+
+export type IDeleteEntityBody<T extends boolean = boolean> = IDeleteEntityBodyBase & {
+    selectAll: T;
+} & (T extends true
+        ? {
+              idsToExclude?: string[];
+              filter?: ISearchEntitiesOfTemplateBody['filter'];
+              textSearch?: string;
+          }
+        : {
+              idsToInclude: string[];
+          });
+
+export type EntityData = IEntity | IFailedEntity;

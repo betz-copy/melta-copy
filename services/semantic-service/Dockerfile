@@ -1,4 +1,5 @@
 FROM node:22-alpine AS builder
+RUN apk add --no-cache antiword
 WORKDIR /usr/src/app
 
 COPY package*.json ./
@@ -15,6 +16,7 @@ RUN npm run build -w @microservices/shared
 RUN npm run build -w semantic-service
 
 FROM node:22-alpine
+RUN apk add --no-cache antiword
 WORKDIR /usr/src/app
 
 COPY --from=builder /usr/src/app/package*.json ./

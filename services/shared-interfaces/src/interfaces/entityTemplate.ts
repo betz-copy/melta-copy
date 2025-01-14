@@ -32,10 +32,11 @@ export interface IEntitySingleProperty {
   items?: {
     type: "string";
     enum?: string[];
-    format?: "fileId";
+    format?: "fileId" | "user";
   };
   minItems?: 1;
   uniqueItems?: true;
+  archive?: boolean;
 }
 
 export interface IProperties {
@@ -52,7 +53,7 @@ export interface IEntityTemplate {
   category: string;
   properties: IProperties;
   propertiesOrder: string[];
-  propertiesTypeOrder: ("properties" | "attachmentProperties")[];
+  propertiesTypeOrder: ("properties" | "attachmentProperties" | 'archiveProperties')[];
   propertiesPreview: string[];
   enumPropertiesColors?: IEnumPropertiesColors;
   disabled: boolean;
