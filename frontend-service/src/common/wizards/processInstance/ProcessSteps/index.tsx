@@ -1,10 +1,11 @@
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 /* eslint-disable jsx-a11y/anchor-is-valid */
-import { Box, Divider, Grid, Step, StepLabel, Stepper, Typography } from '@mui/material';
+import { Box, Button, Divider, Grid, Step, StepLabel, Stepper, Typography } from '@mui/material';
 import React from 'react';
 import TocIcon from '@mui/icons-material/Toc';
 import i18next from 'i18next';
+import { History } from '@mui/icons-material';
 import { IMongoProcessTemplatePopulated } from '../../../../interfaces/processes/processTemplate';
 import { IMongoStepTemplatePopulated } from '../../../../interfaces/processes/stepTemplate';
 import { IMongoStepInstancePopulated } from '../../../../interfaces/processes/stepInstance';
@@ -14,6 +15,8 @@ import { useDarkModeStore } from '../../../../stores/darkMode';
 import { StepIcon } from '../../../../pages/ProcessInstances/ProcessCard';
 import { environment } from '../../../../globals';
 import { BlueTitle } from '../../../BlueTitle';
+import { MeltaTooltip } from '../../../MeltaTooltip';
+import { ActivitiesContent } from '../../../../pages/Entity/components/activityLog/ActivitiesContent';
 
 export interface ProcessStepValues {
     properties: object;
@@ -79,6 +82,8 @@ const Steps: React.FC<IStepsProp> = ({
         defaultStepTemplate ? processInstance.steps.findIndex((step) => step.templateId === defaultStepTemplate._id) : 0,
     );
 
+    const [openActivityPopper, setOpenActivityPopper] = React.useState(false);
+
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
     return (
@@ -95,8 +100,8 @@ const Steps: React.FC<IStepsProp> = ({
                 paddingLeft: '30px',
             }}
         >
-            <Grid container item width="100%" justifyContent="space-between" alignItems="center">
-                <Grid item container width="80%">
+            <Grid container item width="100%" justifyContent="space-between" alignItems="center" flexWrap="nowrap">
+                <Grid item container width="70%">
                     {getVisibleSteps(currStepInstanceIndex, processInstance.steps.length).startStep > 0 && (
                         <Grid item>
                             <a
@@ -198,6 +203,20 @@ const Steps: React.FC<IStepsProp> = ({
                         </Grid>
                     )}
                 </Grid>
+                <Grid item alignSelf="center" width="120px">
+                    <MeltaTooltip
+                        title={openActivityPopper ? i18next.t('wizard.processInstance.backTo') : i18next.t('entityPage.activityLog.header')}
+                    >
+                        <Button
+                            variant="contained"
+                            startIcon={<History />}
+                            onClick={() => setOpenActivityPopper((previousOpen) => !previousOpen)}
+                            sx={{ marginLeft: '1rem', width: '100px', alignSelf: 'flex-end' }}
+                        >
+                            {openActivityPopper ? i18next.t('wizard.processInstance.backTo') : i18next.t('entityPage.activityLog.header')}
+                        </Button>
+                    </MeltaTooltip>
+                </Grid>
                 <Grid item container flexDirection="column" width="120px" alignItems="center" gap="10px">
                     <Grid item>
                         <Box
@@ -230,7 +249,7 @@ const Steps: React.FC<IStepsProp> = ({
                 </Grid>
             </Grid>
             <Divider variant="middle" sx={{ width: '100%' }} />
-            {currStepInstance && (
+            {currStepInstance && !openActivityPopper && (
                 <ProcessStep
                     onStepUpdateSuccess={(stepInstance: IMongoStepInstancePopulated) => {
                         setCurrStepInstance(stepInstance);
@@ -252,6 +271,14 @@ const Steps: React.FC<IStepsProp> = ({
                         setCurrStepInstanceIndex(currStepInstanceIndex - 1);
                     }}
                 />
+            )}
+            {currStepInstance && openActivityPopper && (
+                <Grid item container direction="column" wrap="nowrap" overflow="none" height="65vh" style={{ overflowY: 'auto' }} padding="20px">
+                    <ActivitiesContent
+                        activityEntityId={currStepInstance._id}
+                        entityTemplate={getStepTemplateByStepInstance(currStepInstance, processTemplate)}
+                    />
+                </Grid>
             )}
         </Grid>
     );

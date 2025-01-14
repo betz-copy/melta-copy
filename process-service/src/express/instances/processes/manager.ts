@@ -170,7 +170,7 @@ class ProcessInstanceManager extends DefaultManagerMongo<IProcessInstance> {
         return { ...deletedProcess, steps: processSteps };
     }
 
-    async updateProcess(id: string, updatedData: UpdateProcessReqBody, userId) {
+    async updateProcess(id: string, updatedData: UpdateProcessReqBody, userId: string) {
         const currProcess = await this.getProcessById(id, false);
         const currProcessTemplate = await this.processTemplateManager.getProcessTemplateById(currProcess.templateId);
 

@@ -395,14 +395,13 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                                 editStatus={{ setFieldValue, isEditMode: isStepEditMode, values }}
                                             />
                                         </Grid>
-
                                         <Grid item width={250} height="100px">
                                             {isStepEditMode ? (
                                                 <TextField
                                                     label={i18next.t('wizard.processInstance.step.comment')}
                                                     multiline
                                                     rows={4}
-                                                    value={stepInstance.comments}
+                                                    value={values.comments}
                                                     onChange={(e) => {
                                                         setFieldValue('comments', e.target.value);
                                                     }}

@@ -116,8 +116,8 @@ export class ProcessService extends DefaultExternalServiceApi {
         return data;
     }
 
-    async updateStepInstance(id: string, updatedStep: UpdateStepReqBody) {
-        const { data } = await this.api.patch<IMongoStepInstance>(`${instancesBaseRoute}/steps/${id}`, updatedStep);
+    async updateStepInstance(id: string, updatedStep: UpdateStepReqBody, userId: string) {
+        const { data } = await this.api.patch<IMongoStepInstance>(`${instancesBaseRoute}/steps/${id}`, { ...updatedStep, userId });
         return data;
     }
 }

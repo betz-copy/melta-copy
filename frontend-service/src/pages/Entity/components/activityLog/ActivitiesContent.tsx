@@ -9,12 +9,13 @@ import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemp
 import { getActivityLogRequest, IActivityLog } from '../../../../services/activityLogService';
 import ActivityLogRow from './ActivityLogRow';
 import { IProcessDetails } from '../../../../interfaces/processes/processTemplate';
+import { IMongoStepTemplatePopulated } from '../../../../interfaces/processes/stepTemplate';
 
 const { infiniteScrollPageCount } = environment.activityLog;
 
 const ActivitiesContent: React.FC<{
     expandedEntity?: IEntityExpanded;
-    entityTemplate: IMongoEntityTemplatePopulated | IProcessDetails;
+    entityTemplate: IMongoEntityTemplatePopulated | IProcessDetails | IMongoStepTemplatePopulated;
     activityEntityId?: string;
 }> = ({ expandedEntity, entityTemplate, activityEntityId }) => {
     const entityId = expandedEntity?.entity.properties._id || activityEntityId || '';
@@ -33,6 +34,7 @@ const ActivitiesContent: React.FC<{
                     'DUPLICATE_ENTITY',
                     'DISABLE_ENTITY',
                     'ACTIVATE_ENTITY',
+                    'UPDATE_PROCESS_STEP',
                 ])
             }
             onQueryError={(error) => {

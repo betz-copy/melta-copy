@@ -10,11 +10,12 @@ import { getShortDate } from '../../../../utils/date';
 import UserAvatar from '../../../../common/UserAvatar';
 import { useDarkModeStore } from '../../../../stores/darkMode';
 import { IProcessDetails } from '../../../../interfaces/processes/processTemplate';
+import { IMongoStepTemplatePopulated } from '../../../../interfaces/processes/stepTemplate';
 
-const ActivityLogRow: React.FC<{ log: IActivityLog; entityTemplate: IMongoEntityTemplatePopulated | IProcessDetails }> = ({
-    log,
-    entityTemplate,
-}) => {
+const ActivityLogRow: React.FC<{
+    log: IActivityLog;
+    entityTemplate: IMongoEntityTemplatePopulated | IProcessDetails | IMongoStepTemplatePopulated;
+}> = ({ log, entityTemplate }) => {
     const { data: user, isLoading } = useQuery(['getUserById', log.userId], () => getUserByIdRequest(log.userId));
 
     const darkMode = useDarkModeStore((state) => state.darkMode);

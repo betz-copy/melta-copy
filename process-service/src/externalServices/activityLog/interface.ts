@@ -1,3 +1,5 @@
+import { Status } from '../../express/instances/processes/interface';
+
 export interface IUpdatedFields {
     fieldName: string;
     oldValue: any;
@@ -18,6 +20,7 @@ export enum ActionsLog {
     VIEW_ENTITY = 'VIEW_ENTITY',
     CREATE_PROCESS = 'CREATE_PROCESS',
     UPDATE_PROCESS = 'UPDATE_PROCESS',
+    UPDATE_PROCESS_STEP = 'UPDATE_PROCESS_STEP',
     DELETE_RELATIONSHIP = 'DELETE_RELATIONSHIP',
     CREATE_RELATIONSHIP = 'CREATE_RELATIONSHIP',
     DUPLICATE_ENTITY = 'DUPLICATE_ENTITY',
@@ -44,4 +47,9 @@ interface IUpdateEntityMetadata extends IBaseActivityLog {
     metadata: { updatedFields: IUpdatedFields[] };
 }
 
-export type IActivityLog = IEmptyMetadata | IRelationshipMetadata | IDuplicateEntityMetadata | IUpdateEntityMetadata;
+export interface IUpdateProcessStepMetadata extends IBaseActivityLog {
+    action: ActionsLog.UPDATE_PROCESS_STEP;
+    metadata: { updatedFields?: IUpdatedFields[]; comments?: string; status?: Status };
+}
+
+export type IActivityLog = IEmptyMetadata | IRelationshipMetadata | IDuplicateEntityMetadata | IUpdateEntityMetadata | IUpdateProcessStepMetadata;

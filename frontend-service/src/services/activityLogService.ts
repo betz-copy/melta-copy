@@ -1,5 +1,6 @@
 import axios from '../axios';
 import { environment } from '../globals';
+import { Status } from '../interfaces/processes/processInstance';
 
 const { activityLog } = environment.api;
 
@@ -30,7 +31,12 @@ interface IUpdateEntityMetadata extends IBaseActivityLog {
     metadata: { updatedFields: [{ fieldName: string; oldValue: any; newValue: any }] };
 }
 
-export type IActivityLog = IEmptyMetadata | IRelationshipMetadata | IDuplicateEntityMetadata | IUpdateEntityMetadata;
+export interface IUpdateProcessStepMetadata extends IBaseActivityLog {
+    action: 'UPDATE_PROCESS_STEP';
+    metadata: { updatedFields?: [{ fieldName: string; oldValue: any; newValue: any }]; comments?: string; status?: Status };
+}
+
+export type IActivityLog = IEmptyMetadata | IRelationshipMetadata | IDuplicateEntityMetadata | IUpdateEntityMetadata | IUpdateProcessStepMetadata;
 
 const getActivityLogRequest = async (entityId: string, limit: number, skip: number, actions?: string[]) => {
     const { data } = await axios.get<IActivityLog[]>(`${activityLog}/${entityId}`, { params: { limit, skip, actions } });

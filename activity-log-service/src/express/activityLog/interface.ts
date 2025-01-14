@@ -24,6 +24,11 @@ interface IUpdateEntityMetadata extends IBaseActivityLog {
     metadata: { updatedFields: [{ fieldName: string; oldValue: any; newValue: any }] };
 }
 
+interface IUpdateProcessStepMetadata extends IBaseActivityLog {
+    action: 'UPDATE_PROCESS_STEP';
+    metadata: { updatedFields?: [{ fieldName: string; oldValue: any; newValue: any }]; comments?: string; status?: string };
+}
+
 export enum Action {
     'DELETE_RELATIONSHIP',
     'CREATE_RELATIONSHIP',
@@ -31,9 +36,10 @@ export enum Action {
     'CREATE_ENTITY',
     'CREATE_PROCESS',
     'UPDATE_PROCESS',
+    'UPDATE_PROCESS_STEP',
     'DISABLE_ENTITY',
     'ACTIVATE_ENTITY',
     'VIEW_ENTITY',
 }
 
-export type IActivityLog = IEmptyMetadata | IRelationshipMetadata | IDuplicateEntityMetadata | IUpdateEntityMetadata;
+export type IActivityLog = IEmptyMetadata | IRelationshipMetadata | IDuplicateEntityMetadata | IUpdateEntityMetadata | IUpdateProcessStepMetadata;

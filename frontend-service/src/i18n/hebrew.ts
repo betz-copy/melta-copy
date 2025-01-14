@@ -132,6 +132,8 @@ export default {
             duplicateEntityFrom: 'שכפל את הישות מ',
             updateField: 'עדכן את השדה:',
             updateFields: 'עדכן את השדות הבאים:',
+            updatedStatus: 'עדכן את הסטטוס ל:',
+            updatedComment: 'עדכן את ההערות ל:',
             emptyField: 'שדה ריק',
             header: 'היסטוריה',
             loading: 'טוען היסטוריה',
