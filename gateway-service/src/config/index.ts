@@ -31,6 +31,9 @@ const config = {
             baseUrl: env.get('FRONTEND_CONFIG_MATOMO_BASE_URL').default('http://localhost:8016').required().asString(),
             siteId: env.get('FRONTEND_CONFIG_MATOMO_SITE_ID').default(1).required().asInt(),
         },
+        agGridLimit: {
+            deleteLimit: env.get('DELETE_ENTITIES_MAX_LIMIT').default(1000).asIntPositive(),
+        },
     },
 
     authentication: {

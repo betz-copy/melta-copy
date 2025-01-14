@@ -78,6 +78,8 @@ const CreateFormula: React.FC<StepComponentProps<RuleWizardValues>> = ({ values,
     const config = useMemo((): Config => {
         const fieldsConfig = getFieldsConfigOfRule(entityTemplateId, entityTemplates, relationshipTemplates, formula);
 
+        console.log({ fieldsConfig, MuiConfig });
+        // TODO - here - disable user format field ??
         return {
             ...MuiConfig,
             types: {

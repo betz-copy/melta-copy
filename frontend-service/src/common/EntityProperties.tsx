@@ -1,5 +1,5 @@
 import { Visibility as VisibilityIcon, VisibilityOff as VisibilityOffIcon } from '@mui/icons-material';
-import { Box, Divider, Grid, IconButton, Typography } from '@mui/material';
+import { Box, Chip, Divider, Grid, IconButton, Typography } from '@mui/material';
 import type { Property } from 'csstype';
 import i18next from 'i18next';
 import React, { CSSProperties } from 'react';
@@ -17,6 +17,8 @@ import RelationshipReferenceView from './RelationshipReferenceView';
 import { getFixedNumber, getTextDirection } from '../utils/stringValues';
 import { HighlightText } from '../utils/HighlightText';
 import { BlueTitle } from './BlueTitle';
+import UserAvatar from './UserAvatar';
+import OverflowWrapper from '../utils/agGrid/OverflowWrapper';
 
 const { maxNumOfCharactersNotInFullWidth } = environment.entitiesProperties;
 
@@ -53,11 +55,43 @@ export const formatToString = (value: any, property: IEntitySingleProperty, opti
                 />
             );
         }
+        if (format === 'user') {
+            return (
+                <Grid container gap={1}>
+                    <MeltaTooltip title={JSON.parse(value).fullName}>
+                        <Grid item>
+                            <Chip avatar={<UserAvatar user={JSON.parse(value)} size={25} bgColor="1E2775" />} label={JSON.parse(value).fullName} />
+                        </Grid>
+                    </MeltaTooltip>
+                </Grid>
+            );
+        }
     }
     if (keyEnumColors?.[value] && valueType === 'string') return pureString ? value : <ColoredEnumChip label={value} color={keyEnumColors[value]} />;
     if (valueType === 'array') {
         if (property.items?.format === 'fileId') {
             return value.map((val: string) => <OpenPreview fileId={val} key={val} />);
+        }
+        if (property.items?.format === 'user') {
+            return (
+                <Grid container item>
+                    <OverflowWrapper
+                        items={value.map((val) => JSON.parse(val))}
+                        getItemKey={(item: any) => item._id}
+                        renderItem={(item) => (
+                            <Grid item>
+                                <MeltaTooltip title={`${item.fullName} - ${item.hierarchy}`} key={item._id}>
+                                    <Grid item>
+                                        <Chip avatar={<UserAvatar user={item} size={25} bgColor="1E2775" />} label={item.fullName} />
+                                    </Grid>
+                                </MeltaTooltip>
+                            </Grid>
+                        )}
+                        propertyToDisplayInTooltip="fullName"
+                        minVisibleItems={1}
+                    />
+                </Grid>
+            );
         }
         return pureString
             ? value.join(', ')
@@ -191,7 +225,8 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                         // todo: make getTextDirection handle all possible value and reuse everywhere
                         propertySchema.format !== 'text-area' &&
                         propertySchema.format !== 'fileId' &&
-                        propertySchema.format !== 'relationshipReference'
+                        propertySchema.format !== 'relationshipReference' &&
+                        propertySchema.format !== 'user'
                             ? getTextDirection(propertyValue, {
                                   type: propertySchema.type,
                                   serialCurrent: propertySchema.serialCurrent,

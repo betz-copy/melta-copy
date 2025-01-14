@@ -63,6 +63,9 @@ export const environment = {
         BatchSize: 50,
         limit3DConnections: 100,
     },
+    mui: {
+        activationKey: '8c5d3fd6a4390125cf8590dea55dbb05Tz1HdXksRT0yMDAwMDAwMDAwMDAwLFM9cHJlbWl1bSxMTT1zdWJzY3JpcHRpb24sS1Y9Mg==',
+    },
     canvasSettings: {
         heightPaddingMultiplier: 0.3,
         widthPaddingMultiplier: 0.6,
@@ -149,7 +152,7 @@ export const environment = {
             ],
             general: [
                 {
-                    color: undefined,
+                    color: '#cc5083',
                     type: NotificationType.dateAboutToExpire,
                     displayName: () => i18next.t('notifications.displayNames.dateAboutToExpire'),
                 },
@@ -225,6 +228,7 @@ export const environment = {
         failedConstraintsValidation: 'FAILED_CONSTRAINTS_VALIDATION',
         failedToDeleteField: 'FAILED_DELETE_FIELD',
         actionsCustomError: 'ACTIONS_CUSTOM_ERROR',
+        entityHasRelationships: 'ENTITY_HAS_RELATIONSHIPS',
     },
     mainFontSizes: {
         headlineTitleFontSize: '24px',

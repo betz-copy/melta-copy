@@ -33,6 +33,13 @@ const { neo4j } = config;
 const ajv = new Ajv();
 
 ajv.addFormat('fileId', /.*/);
+ajv.addFormat('user', {
+    type: 'string',
+    validate: (user) => {
+        const userObj = JSON.parse(user);
+        return userObj._id && userObj.fullName && userObj.jobTitle && userObj.hierarchy && userObj.mail;
+    },
+});
 ajv.addFormat('text-area', /.*/);
 ajv.addFormat('relationshipReference', /.*/);
 addFormats(ajv);
@@ -43,11 +50,13 @@ ajv.addKeyword({
 });
 ajv.addKeyword({ keyword: 'calculateTime', type: 'boolean' });
 ajv.addKeyword({ keyword: 'isDailyAlert', type: 'boolean' });
+ajv.addKeyword({ keyword: 'isDatePastAlert', type: 'boolean' });
 ajv.addKeyword({ keyword: 'archive', type: 'boolean' });
 ajv.addKeyword({
     keyword: 'serialStarter',
     type: 'number',
 });
+ajv.addKeyword({ keyword: 'user', type: 'string' });
 ajv.addKeyword({
     keyword: 'relationshipReference',
     type: 'string',
@@ -321,7 +330,7 @@ export class EntityValidator extends DefaultController {
 
         this.validateShowRelationships(showRelationships, templateId, relationshipTemplatesMap, 'showRelationships');
 
-        sort.forEach(({ field }, sortIndex) => {
+        sort?.forEach(({ field }, sortIndex) => {
             const fieldTemplate = entityTemplateForValidation.properties.properties[field];
             if (!fieldTemplate) {
                 throw new ValidationError(`sort.${sortIndex}.field "${field}" must exist in template of search`);
@@ -351,7 +360,7 @@ export class EntityValidator extends DefaultController {
 
             this.validateShowRelationships(showRelationships, templateId, relationshipTemplatesMap, `searchConfigs.${templateId}.showRelationships`);
 
-            sort.forEach(({ field }, sortIndex) => {
+            sort?.forEach(({ field }, sortIndex) => {
                 const fieldTemplate = entityTemplatesForValidationMap.get(templateId)!.properties.properties[field];
                 if (!fieldTemplate) {
                     throw new ValidationError(`sort.${sortIndex}.field "${field}" must exist in template of search`);
@@ -440,7 +449,25 @@ export const addStringFieldsAndNormalizeDateValues = (
         }
 
         const propertyValue = entityProperties[key];
-        const { type, format } = value;
+        const { type, format, items } = value;
+        if (format === 'user') {
+            config.neo4j.userOriginalAndSuffixFieldsMap.forEach((userField) => {
+                normalizedEntity[`${key}${userField.suffixFieldName}${config.neo4j.userFieldPropertySuffix}`] =
+                    JSON.parse(propertyValue)[userField.originalFieldName];
+            });
+            return;
+        }
+
+        if (type === 'array' && items?.format === 'user') {
+            config.neo4j.usersArrayOriginalAndSuffixFieldsMap.forEach((userField) => {
+                normalizedEntity[`${key}${userField.suffixFieldName}${config.neo4j.usersFieldsPropertySuffix}`] = propertyValue.map(
+                    (user) => JSON.parse(user)[userField.originalFieldName],
+                );
+            });
+
+            return;
+        }
+
         // For Neo4j fulltext search (supports only string properties)
         if (type !== 'string') {
             normalizedEntity[`${key}${neo4j.stringPropertySuffix}`] = String(propertyValue);

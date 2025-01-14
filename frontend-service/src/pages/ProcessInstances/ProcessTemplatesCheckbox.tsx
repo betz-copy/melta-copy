@@ -1,7 +1,6 @@
-import { FilterList } from '@mui/icons-material';
 import i18next from 'i18next';
 import React from 'react';
-import { SelectCheckbox } from '../../common/SelectCheckbox';
+import { SelectCheckbox } from '../../common/SelectCheckBox';
 import { IMongoProcessTemplatePopulated } from '../../interfaces/processes/processTemplate';
 
 const ProcessTemplatesSelectCheckbox: React.FC<{
@@ -12,7 +11,7 @@ const ProcessTemplatesSelectCheckbox: React.FC<{
     return (
         <SelectCheckbox
             title={i18next.t('entityTemplatesCheckboxLabel')}
-            img={<FilterList />}
+            filterIcon
             options={templates}
             selectedOptions={selectedTemplates}
             setSelectedOptions={setSelectedTemplates}
