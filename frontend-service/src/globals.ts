@@ -243,6 +243,12 @@ export const environment = {
     },
     loadExcel: { excelExtension: '.xlsx', acceptedFilesTypes: { 'excel/xlsx': ['.xlsx', '.xls'] }, filesLimit: 5, entitiesLimit: 500 },
     draftAutoSaveDebounce: 250,
+    map: {
+        maxRadius: 30000,
+        squareLength: 10,
+        units: { km: 'km', squaredKm: 'km²' },
+        polygon: { polygon: 'POLYGON', polygonPrefix: 'POLYGON((', polygonSuffix: '))' },
+    },
     profileIconsCount: 19,
     avatarIconPath: '/icons/profileAvatar/',
     fileExtensions: {

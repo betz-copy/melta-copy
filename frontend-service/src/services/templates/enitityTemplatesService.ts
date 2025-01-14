@@ -15,7 +15,7 @@ import { CommonFormInputProperties } from '../../common/wizards/entityTemplate/c
 
 const { entityTemplates } = environment.api;
 export const basePropertyTypes = ['string', 'number', 'boolean'];
-export const stringFormats = ['date', 'date-time', 'email', 'fileId', 'text-area', 'relationshipReference', 'user'];
+export const stringFormats = ['date', 'date-time', 'email', 'fileId', 'text-area', 'relationshipReference', 'location', 'user'];
 export const arrayTypes = ['multipleFiles', 'enumArray', 'users'];
 
 const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTemplatePopulated | null): EntityTemplateWizardValues | undefined => {
@@ -44,6 +44,8 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
         // else if (value.items?.format === 'user') type = 'users'; // TODO
         else if (value.enum) type = 'enum';
         else if (value.pattern) type = 'pattern';
+        else if (value.format && value.format === 'text-area') type = 'text-area';
+        else if (value.format && value.format === 'location') type = 'location';
         else if (value.items?.enum) type = 'enumArray';
         else if (value.items?.format === 'fileId') type = 'multipleFiles';
         else if (value.items?.format === 'user') type = 'users';

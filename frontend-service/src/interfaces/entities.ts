@@ -116,6 +116,25 @@ export interface ISearchBatchBody {
     shouldSemanticSearch?: boolean;
 }
 
+type Coordinate = [number, number];
+export interface Circle {
+    coordinate: Coordinate; // [latitude, longitude]
+    radius: number; // Positive number
+}
+
+export type Polygon = Coordinate[];
+export interface ISearchEntitiesByLocationTemplatesBody {
+    [templateId: string]: {
+        filter?: ISearchFilter;
+        locationFields?: string[];
+    };
+}
+export interface ISearchEntitiesByLocationBody {
+    textSearch?: string;
+    templates: ISearchEntitiesByLocationTemplatesBody;
+    circle: Circle;
+}
+
 export interface ISearchResult {
     count: number;
     entities: (IEntityWithDirectConnections & { minioFileIdsWithTexts?: ISemanticSearchResult[string][string] })[];

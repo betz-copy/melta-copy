@@ -30,6 +30,7 @@ export default {
     copyUrl: 'העתק קישור',
     successfullyCopied: 'הקישור הועתק בהצלחה',
     soon: 'בקרוב...',
+    map: 'מפה',
     general: 'כללי',
     agGridTimes: {
         hours: 'שעות',
@@ -318,6 +319,7 @@ export default {
         loading: 'טוען...',
         noOptions: 'אין תוצאות',
         noPreviewFields: 'אין שדות לתצוגה מקדימה',
+        failedToSearchEntities: 'נכשל בחיפוש ישויות',
     },
     userAutocomplete: {
         label: 'משתמש',
@@ -819,6 +821,7 @@ export default {
         'text-area': 'טקסט ארוך',
         fileId: 'קובץ יחיד',
         multipleFiles: 'קבצים מרובים',
+        location: 'מיקום',
         user: 'משתמש',
         users: 'משתמשים',
     },
@@ -1254,5 +1257,12 @@ export default {
         fileName: 'שם הקובץ',
         takePicture: 'צלם תמונה',
         blackAndWhite: 'שחור לבן',
+    },
+    location: {
+        noLayers: 'לא נמצאו שכבות',
+        noCrsTypes: 'לא נמצאו סוגי CRS',
+        entityWithoutLocation: 'ליישות אין ערך שדה מיקום',
+        clear: 'ניקוי תוצאות',
+        radiusMaxLimit: `חיפוש מוגבל עד ${environment.map.maxRadius / 1000} ק"מ`,
     },
 };

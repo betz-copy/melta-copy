@@ -16,6 +16,7 @@ import RjsfTextWidget from './RjsfStringWidget';
 import RjfsTextAreaWidget from './RjfsTextAreaWidget';
 import './form.css';
 import RjfsTemplateReferenceWidget from './RjfsTemplateReferenceWidget';
+import RjsfLocationWidget, { validateLocation } from './RjsfLocationWidget';
 import RjfsUserWidget from './RjfsUserWidget';
 import RjfsUserArrayWidget from './RjfsUserArrayWidget';
 
@@ -52,6 +53,7 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
     });
     ajv.addKeyword({ keyword: 'user', type: 'string' });
     ajv.addFormat('text-area', /.*/);
+    ajv.addFormat('location', (value: string) => validateLocation(value));
     addFormats(ajv);
     ajv.addVocabulary(['patternCustomErrorMessage', 'hide']);
     ajv.addKeyword({
@@ -193,6 +195,10 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                     return {
                         'ui:widget': 'TemplateReferenceWidget',
                     };
+                if (propertySchema.format === 'location')
+                    return {
+                        'ui:widget': 'LocationWidget',
+                    };
                 return {};
             })}
             onChange={({ formData }) => {
@@ -226,6 +232,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                 EmailWidget: RjsfTextWidget,
                 TextAreaWidget: RjfsTextAreaWidget,
                 TemplateReferenceWidget: RjfsTemplateReferenceWidget,
+                LocationWidget: RjsfLocationWidget,
                 UserWidget: RjfsUserWidget,
                 UserArrayWidget: RjfsUserArrayWidget,
             }}

@@ -20,10 +20,11 @@ import { getFileName } from '../getFileName';
 import { agGridLocaleText } from './agGridLocaleText';
 import OverflowWrapper from './OverflowWrapper';
 import { Value } from './Value';
+import OpenMap from '../../pages/Map/OpenMap';
+import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IUser } from '../../interfaces/users';
 import { MeltaTooltip } from '../../common/MeltaTooltip';
 import UserAvatar from '../../common/UserAvatar';
-import { IEntitySingleProperty } from '../../interfaces/entityTemplates';
 import SelectCellEditor from './SelectCellEditor';
 import DateTimeCellEditor from './DateTimeCellEditor';
 import { ActionErrors } from '../../interfaces/ruleBreaches/actionMetadata';
@@ -234,7 +235,30 @@ export const fileColDef = <Data extends any = EntityData>(
         width: hardcodedWidth,
         flex: hardcodedWidth ? 0 : 1,
         hide: hideColumn,
-        editable: false,
+    };
+};
+
+export const locationColDef = <Data extends any = EntityData>(
+    field: string,
+    valueGetter: ValueGetterFunc<Data>,
+    value: Partial<IEntitySingleProperty>,
+    template: IMongoEntityTemplatePopulated,
+    hardcodedWidth: number | undefined,
+    hideColumn = false,
+    searchValue: string | undefined = undefined,
+): ColDef => {
+    return {
+        field,
+        headerName: value.title,
+        valueGetter,
+        cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => {
+            if (!props.value) return null;
+            return <OpenMap field={value.title!} entity={props.data as IEntity} entityTemplate={template} searchValue={searchValue} />;
+        },
+        filter: 'agTextColumnFilter',
+        width: hardcodedWidth,
+        flex: hardcodedWidth ? 0 : 1,
+        hide: hideColumn,
     };
 };
 
@@ -550,7 +574,6 @@ export const enumFilesColDef = <Data extends any = EntityData>(
         width: hardcodedWidth,
         flex: hardcodedWidth ? 0 : 1,
         hide: hideColumn,
-        editable: false,
     };
 };
 
