@@ -19,14 +19,17 @@ import {
     regexColDef,
     relatedTemplateColDef,
     stringColDef,
+    userArrayColDef,
+    userColDef,
 } from '../../utils/agGrid/commonColDefs';
 import IconButtonWithPopover from '../IconButtonWithPopover';
 import { ImageWithDisable } from '../ImageWithDisable';
 import { CardMenu } from '../../pages/SystemManagement/components/CardMenu';
 import { IRuleBreach } from '../../interfaces/ruleBreaches/ruleBreach';
+import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
 
 export interface IGetColumnDefsOptions<Data extends any> {
-    template: IMongoEntityTemplatePopulated & { entitiesWithFiles?: string[] };
+    template: IMongoEntityTemplatePopulated & { entitiesWithFiles?: ISemanticSearchResult[string] };
     getRowId: (data: Data) => string;
     getEntityPropertiesData: (data: Data) => Partial<IEntity['properties']>;
     onNavigateToRow?: (entity: Data) => void;
@@ -195,16 +198,21 @@ export const getColumnDefs = <Data extends any = EntityData>({
                 searchValue,
                 editable,
             );
-        if (propertyTemplate.items) {
-            return enumFilesColDef(
+        if (propertyTemplate.items?.format === 'fileId') {
+            return enumFilesColDef(property, valueGetter, { title: propertyTemplate.title }, defaultColumnWidths[property], rowHeight);
+        }
+        if (propertyTemplate.format === 'user') {
+            return userColDef(property, valueGetter, { title: propertyTemplate.title }, [], defaultColumnWidths[property], hideColumn);
+        }
+        if (propertyTemplate.items?.format === 'user') {
+            return userArrayColDef(
                 property,
                 valueGetter,
                 { title: propertyTemplate.title },
+                [],
                 defaultColumnWidths[property],
                 rowHeight,
-                false,
-                searchValue,
-                Object.values(template.entitiesWithFiles ?? {}).flat(),
+                hideColumn,
             );
         }
         return stringColDef(
@@ -219,6 +227,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
             editable,
         );
     });
+
     columnDefs.push(
         booleanColDef(
             'disabled',

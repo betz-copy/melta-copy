@@ -67,7 +67,7 @@ export const lightTheme = createTheme({
                 fontFamily: 'Rubik',
                 '::-webkit-scrollbar': { background: 'transparent', width: 6, height: 6 },
                 '::-webkit-scrollbar-thumb': { background: '#787C9E', borderRadius: 20 },
-                '::-webkit-scrollbar-track': { background: 'lightgray', borderRadius: 20 },
+                '::-webkit-scrollbar-track': { background: 'lightgrey', borderRadius: 20 },
 
                 '.ag-theme-material': {
                     '--ag-material-primary-color': `${colors.main.light} !important`,

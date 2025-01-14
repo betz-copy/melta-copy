@@ -127,6 +127,7 @@ const CreateOrEditEntityDetails: React.FC<{
         if (entityToUpdate) {
             return convertIEntityToEntityWizardValues(entityToUpdate, entityTemplate, initialTemplateFileKeys);
         }
+        if (initialCurrValues) return initialCurrValues;
         return {
             properties: {
                 disabled: false,
@@ -401,7 +402,9 @@ const CreateOrEditEntityDetails: React.FC<{
                     <JSONSchemaFormik
                         schema={schema}
                         values={values}
-                        setValues={(propertiesValues) => setFieldValue('properties', propertiesValues)}
+                        setValues={(propertiesValues) => {
+                            return setFieldValue('properties', propertiesValues);
+                        }}
                         errors={errors.properties ?? {}}
                         uniqueErrors={{ ...externalErrors.unique }}
                         touched={touched.properties ?? {}}

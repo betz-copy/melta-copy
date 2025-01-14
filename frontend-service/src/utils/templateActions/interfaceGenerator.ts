@@ -1,5 +1,5 @@
 import { QueryClient } from 'react-query';
-import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
+import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 
 const generateFromString = ({ format, relationshipReference, enum: typeEnum }: IEntitySingleProperty, queryClient: QueryClient) => {
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
@@ -14,7 +14,7 @@ const generateFromString = ({ format, relationshipReference, enum: typeEnum }: I
 };
 
 const generateFromArray = ({ items }: IEntitySingleProperty) => {
-    if (items?.format === 'fileId') return 'string[]';
+    if (items?.format === 'fileId' || items?.format === 'user') return 'string[]';
 
     const arrayOptions = items?.enum?.map((option) => `\`${option}\``).join(' | ');
 
