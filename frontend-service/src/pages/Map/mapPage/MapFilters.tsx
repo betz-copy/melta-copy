@@ -1,6 +1,4 @@
-/* eslint-disable no-nested-ternary */
-/* eslint-disable react-hooks/exhaustive-deps */
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import i18next from 'i18next';
 import { Grid } from '@mui/material';
 import { Delete } from '@mui/icons-material';
@@ -10,6 +8,7 @@ import SearchAutoComplete from './SearchAutoComplete';
 import { IEntity } from '../../../interfaces/entities';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
 import { useDarkModeStore } from '../../../stores/darkMode';
+import { IMongoCategory } from '../../../interfaces/categories';
 
 type props = {
     selectedTemplates: IMongoEntityTemplatePopulated[];
@@ -30,6 +29,10 @@ const MapFilters = ({ selectedTemplates, setSelectedTemplates, moveToEntityLocat
         setSelectedTemplates(templatesWithLocationField);
     }, []);
 
+    const categories: IMongoCategory[] = useMemo(() => {
+        return [...new Map(templatesWithLocationField.map((template) => [template.category._id, template.category])).values()];
+    }, [templatesWithLocationField]);
+
     return (
         <Grid item zIndex={1000} position="absolute" top={10} left={270} container wrap="nowrap" gap="15px">
             <Grid item>
@@ -40,6 +43,7 @@ const MapFilters = ({ selectedTemplates, setSelectedTemplates, moveToEntityLocat
                     setSelectedTemplates={setSelectedTemplates}
                     isDraggableDisabled
                     size="small"
+                    categories={categories}
                 />
             </Grid>
             <Grid item>
