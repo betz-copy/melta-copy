@@ -57,6 +57,7 @@ interface EntityCardProps {
     refetchQuery?: () => void;
     searchedText?: string;
     minioFileId?: string;
+    matchedSentence?: string;
 }
 
 const EntityCard: React.FC<EntityCardProps> = ({
@@ -71,6 +72,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
     refetchQuery,
     searchedText,
     minioFileId,
+    matchedSentence,
 }) => {
     const [open, setOpen] = useState<boolean>(expandCard);
     const [externalErrors, setExternalErrors] = useState({ files: false, unique: {}, action: '' });
@@ -360,14 +362,26 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                     }}
                                 >
                                     <Grid item xs={9}>
-                                        <MeltaTooltip title={fileName || ''}>
+                                        <MeltaTooltip
+                                            title={
+                                                <Typography
+                                                    sx={{
+                                                        maxHeight: '250px',
+                                                        overflow: 'hidden',
+                                                        textOverflow: 'ellipsis',
+                                                        display: '-webkit-box',
+                                                        WebkitLineClamp: 10,
+                                                        WebkitBoxOrient: 'vertical',
+                                                    }}
+                                                >
+                                                    {matchedSentence || ''}
+                                                </Typography>
+                                            }
+                                        >
                                             <Typography
                                                 sx={{
                                                     marginLeft: '7px',
                                                     fontSize: '0.8rem',
-                                                    textOverflow: 'ellipsis',
-                                                    overflow: 'hidden',
-                                                    whiteSpace: 'nowrap',
                                                     maxWidth: '100%',
                                                     color: 'white',
                                                 }}

@@ -9,7 +9,8 @@ import {
 } from '@ag-grid-community/core';
 import i18next from 'i18next';
 import React from 'react';
-import { Box, Tooltip, tooltipClasses } from '@mui/material';
+import Chip from '@mui/material/Chip';
+import { Box, Tooltip, tooltipClasses, Grid } from '@mui/material';
 import { PriorityHigh } from '@mui/icons-material';
 import OpenPreview from '../../common/FilePreview/OpenPreview';
 import RelationshipReferenceView from '../../common/RelationshipReferenceView';
@@ -19,13 +20,18 @@ import { getFileName } from '../getFileName';
 import { agGridLocaleText } from './agGridLocaleText';
 import OverflowWrapper from './OverflowWrapper';
 import { Value } from './Value';
-import { IEntitySingleProperty } from '../../interfaces/entityTemplates';
+import OpenMap from '../../pages/Map/OpenMap';
+import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IUser } from '../../interfaces/users';
+import { MeltaTooltip } from '../../common/MeltaTooltip';
+import UserAvatar from '../../common/UserAvatar';
 import SelectCellEditor from './SelectCellEditor';
 import DateTimeCellEditor from './DateTimeCellEditor';
 import { ActionErrors } from '../../interfaces/ruleBreaches/actionMetadata';
 import RelationshipRefCellEditor from './RelationshipRefCellEditor';
 import { convertToPlainText } from '../HtmlTagsStringValue';
 import { IError, IFailedEntity, IValidationError } from '../../common/wizards/loadEntities';
+import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
 
 const hasErrors = (data: any): data is IFailedEntity => {
     return data && Array.isArray(data.errors) && data.errors.every((error) => 'type' in error && 'metadata' in error);
@@ -45,7 +51,7 @@ const isPropertyInvalid = <Data extends any = EntityData>(
             case ActionErrors.unique:
                 return (error.metadata as IUniqueConstraint).properties.some((errorProperty) => errorProperty === property);
             case ActionErrors.validation:
-                return (error.metadata as IValidationError).path.slice(1) === property;
+                return (error.metadata as IValidationError).path.slice(1).includes(property);
             default:
                 break;
         }
@@ -53,7 +59,11 @@ const isPropertyInvalid = <Data extends any = EntityData>(
     });
 };
 
-const errorColDef = <Data extends any = EntityData>(props: ICellRendererParams<Data, any | undefined>, error: IError) => {
+const errorColDef = <Data extends any = EntityData>(
+    props: ICellRendererParams<Data, any | undefined>,
+    error: IError,
+    value: Partial<IEntitySingleProperty>,
+) => {
     let message = '';
     switch (error.type) {
         case ActionErrors.required:
@@ -62,20 +72,23 @@ const errorColDef = <Data extends any = EntityData>(props: ICellRendererParams<D
         case ActionErrors.unique:
             message = i18next.t('wizard.entity.someEntityAlreadyHasTheSameField');
             break;
-        case ActionErrors.validation:
-            message = (error.metadata as IValidationError).message.includes('must be')
-                ? `${i18next.t('wizard.entity.loadEntities.notValid')} ${i18next.t(
-                      `propertyTypes.${(error.metadata as IValidationError).params.format ?? (error.metadata as IValidationError).params.type}`,
-                  )}`
-                : (error.metadata as IValidationError).message;
+        case ActionErrors.validation: {
+            const metadata = error.metadata as IValidationError;
+            if (value.patternCustomErrorMessage) message = value.patternCustomErrorMessage;
+            else if (metadata.message.includes('must')) {
+                const allowedValues = metadata.params.allowedValues?.join(', ');
+                const typeDescription = i18next.t(`propertyTypes.${value.format ?? value.type}`);
+                message = `${i18next.t('wizard.entity.loadEntities.notValid')} ${allowedValues || typeDescription}`;
+            } else message = metadata.message;
             break;
+        }
         default:
             break;
     }
 
     return (
         <Box display="flex" justifyContent="center" alignItems="center" gap={1} width="100%">
-            <Value hideValue={false} value={props.value ?? i18next.t('validation.required')} color="#A40000" />
+            <Value hideValue={false} value={props.value.toString() ?? i18next.t('validation.required')} color="#A40000" />
             <Tooltip
                 title={message}
                 placement="top"
@@ -121,7 +134,7 @@ export const numberColDef = <Data extends any = EntityData>(
         filter: 'agNumberColumnFilter',
         cellRenderer: (props: ICellRendererParams<Data, number | undefined>) => {
             const error = isPropertyInvalid(props, field, ignoreType);
-            if (error) return errorColDef(props, error);
+            if (error) return errorColDef(props, error, value);
             return <Value hideValue={hideValue} value={props.value?.toString() ?? ''} isNumberField={!ignoreType} searchValue={searchValue} />;
         },
         width: hardcodedWidth,
@@ -153,7 +166,7 @@ export const regexColDef = <Data extends any = EntityData>(
         headerName: value.title,
         cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => {
             const error = isPropertyInvalid(props, field, ignoreType);
-            if (error) return errorColDef(props, error);
+            if (error) return errorColDef(props, error, value);
             return <Value hideValue={hideValue} value={props.value ?? ''} searchValue={searchValue} />;
         },
         valueGetter,
@@ -183,7 +196,7 @@ export const stringColDef = <Data extends any = EntityData>(
         headerName: value.title,
         cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => {
             const error = isPropertyInvalid(props, field, ignoreType);
-            if (error) return errorColDef(props, error);
+            if (error) return errorColDef(props, error, value);
             return <Value hideValue={hideValue} value={props.value?.toString() ?? ''} searchValue={searchValue} />;
         },
         valueGetter,
@@ -208,7 +221,7 @@ export const fileColDef = <Data extends any = EntityData>(
     hardcodedWidth: number | undefined,
     hideColumn = false,
     searchValue: string | undefined = undefined,
-    entityIdsToInclude: string[] | undefined = undefined,
+    entityFileIdsWithTexts: ISemanticSearchResult[string][string] | undefined = undefined,
 ): ColDef => {
     return {
         field,
@@ -216,13 +229,36 @@ export const fileColDef = <Data extends any = EntityData>(
         valueGetter,
         cellRenderer: (props: ICellRendererParams<Data, string | undefined>) =>
             props.value?.toString() ? (
-                <OpenPreview fileId={props.value?.toString()} searchValue={searchValue} entityIdsToInclude={entityIdsToInclude} />
+                <OpenPreview fileId={props.value?.toString()} searchValue={searchValue} entityFileIdsWithTexts={entityFileIdsWithTexts} />
             ) : null,
         filter: 'agTextColumnFilter',
         width: hardcodedWidth,
         flex: hardcodedWidth ? 0 : 1,
         hide: hideColumn,
-        editable: false,
+    };
+};
+
+export const locationColDef = <Data extends any = EntityData>(
+    field: string,
+    valueGetter: ValueGetterFunc<Data>,
+    value: Partial<IEntitySingleProperty>,
+    template: IMongoEntityTemplatePopulated,
+    hardcodedWidth: number | undefined,
+    hideColumn = false,
+    searchValue: string | undefined = undefined,
+): ColDef => {
+    return {
+        field,
+        headerName: value.title,
+        valueGetter,
+        cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => {
+            if (!props.value) return null;
+            return <OpenMap field={value.title!} entity={props.data as IEntity} entityTemplate={template} searchValue={searchValue} />;
+        },
+        filter: 'agTextColumnFilter',
+        width: hardcodedWidth,
+        flex: hardcodedWidth ? 0 : 1,
+        hide: hideColumn,
     };
 };
 
@@ -294,7 +330,7 @@ export const booleanColDef = <Data extends any = EntityData>(
         valueGetter,
         cellRenderer: (props: ICellRendererParams<Data, boolean | undefined>) => {
             const error = isPropertyInvalid(props, field, ignoreType);
-            if (error) return errorColDef(props, error);
+            if (error) return errorColDef(props, error, value);
             return <Value hideValue={hideValue} value={formatValue(props.value)} searchValue={searchValue} />;
         },
         filter: 'agSetColumnFilter',
@@ -331,7 +367,7 @@ export const enumColDef = <Data extends any = EntityData>(
         valueGetter,
         cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => {
             const error = isPropertyInvalid(props, field, ignoreType);
-            if (error) return errorColDef(props, error);
+            if (error) return errorColDef(props, error, value);
             return (
                 <Value
                     searchValue={searchValue}
@@ -381,7 +417,7 @@ export const enumArrayColDef = <Data extends any = EntityData>(
         cellRenderer: (props: ICellRendererParams<Data, string[] | undefined>) => {
             if (!props.value) return '';
             const error = isPropertyInvalid(props, field, ignoreType);
-            if (error) return errorColDef(props, error);
+            if (error) return errorColDef(props, error, value);
             if (ignoreType) return typeof props.value === 'string' ? props.value : props.value.join(', ');
 
             return (
@@ -409,6 +445,93 @@ export const enumArrayColDef = <Data extends any = EntityData>(
         },
     };
 };
+export const userColDef = <Data extends any = IUser>(
+    field: string,
+    valueGetter: ValueGetterFunc<Data>,
+    value: { title: string },
+    values: Array<string>,
+    hardcodedWidth: number | undefined,
+    hideColumn = false,
+): ColDef => {
+    const filterParams: ISetFilterParams<Data, string | undefined> = {
+        suppressMiniFilter: true,
+        values: [...values, undefined],
+    };
+
+    return {
+        field,
+        headerName: value.title,
+        valueGetter,
+
+        cellRenderer: (props: ICellRendererParams<Data, any | undefined>) => {
+            if (!props.value) return '';
+            return (
+                <Grid container gap={1}>
+                    <MeltaTooltip title={`${JSON.parse(props.value).fullName} - ${JSON.parse(props.value).hierarchy}`}>
+                        <Grid item>
+                            <Chip
+                                avatar={<UserAvatar user={JSON.parse(props.value)} size={25} bgColor="1E2775" />}
+                                label={JSON.parse(props.value).fullName}
+                            />
+                        </Grid>
+                    </MeltaTooltip>
+                </Grid>
+            );
+        },
+
+        filter: 'agSetColumnFilter',
+        filterParams,
+        width: hardcodedWidth,
+        flex: hardcodedWidth ? 0 : 1,
+        hide: hideColumn,
+    };
+};
+
+export const userArrayColDef = <Data extends any = IEntity>(
+    field: string,
+    valueGetter: ValueGetterFunc<Data>,
+    value: { title: string },
+    values: Array<string>,
+    hardcodedWidth: number | undefined,
+    rowHeight: number,
+    hideColumn = false,
+): ColDef => {
+    const filterParams: ISetFilterParams<Data, string | undefined> = {
+        suppressMiniFilter: true,
+        values: [...values, undefined],
+    };
+
+    return {
+        field,
+        headerName: value.title,
+        valueGetter,
+
+        cellRenderer: (props: ICellRendererParams<Data, any[] | undefined>) => {
+            if (!props.value) return '';
+            return (
+                <OverflowWrapper
+                    items={props.value.map((val) => JSON.parse(val))}
+                    getItemKey={(item) => item._id}
+                    renderItem={(item) => (
+                        <MeltaTooltip title={`${item.fullName} - ${item.hierarchy}`} key={item._id}>
+                            <Grid item>
+                                <Chip avatar={<UserAvatar user={item} size={25} bgColor="1E2775" />} label={item.fullName} />
+                            </Grid>
+                        </MeltaTooltip>
+                    )}
+                    propertyToDisplayInTooltip="fullName"
+                    containerStyle={{ height: `${rowHeight}px` }}
+                />
+            );
+        },
+
+        filter: 'agSetColumnFilter',
+        filterParams,
+        width: hardcodedWidth,
+        flex: hardcodedWidth ? 0 : 1,
+        hide: hideColumn,
+    };
+};
 
 export const enumFilesColDef = <Data extends any = EntityData>(
     field: string,
@@ -418,7 +541,7 @@ export const enumFilesColDef = <Data extends any = EntityData>(
     rowHeight: number,
     hideColumn = false,
     searchValue: string | undefined = undefined,
-    entityIdsToInclude: string[] | undefined = undefined,
+    entityFileIdsWithTexts: ISemanticSearchResult[string][string] | undefined = undefined,
 ): ColDef => {
     const filterParams: ISetFilterParams<Data, string | undefined> = {
         suppressMiniFilter: true,
@@ -438,7 +561,7 @@ export const enumFilesColDef = <Data extends any = EntityData>(
                         searchValue={searchValue}
                         items={enumArray}
                         getItemKey={(item) => item}
-                        renderItem={(item) => <OpenPreview fileId={item} entityIdsToInclude={entityIdsToInclude} searchValue={searchValue} />}
+                        renderItem={(item) => <OpenPreview fileId={item} entityFileIdsWithTexts={entityFileIdsWithTexts} searchValue={searchValue} />}
                         containerStyle={{ height: `${rowHeight}px` }}
                         files={items}
                     />
@@ -451,7 +574,6 @@ export const enumFilesColDef = <Data extends any = EntityData>(
         width: hardcodedWidth,
         flex: hardcodedWidth ? 0 : 1,
         hide: hideColumn,
-        editable: false,
     };
 };
 
@@ -500,7 +622,7 @@ export const dateColDef = <Data extends any = EntityData>(
         valueGetter,
         cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => {
             const error = isPropertyInvalid(props, field, ignoreType);
-            if (error) return errorColDef(props, error);
+            if (error) return errorColDef(props, error, value);
             return (
                 <Value
                     searchValue={searchValue}

@@ -10,14 +10,15 @@ const AreYouSureDialog: React.FC<{
     isLoading?: boolean;
     onYes: MouseEventHandler;
     onNo?: MouseEventHandler;
-}> = ({ open, handleClose, title = i18next.t('areYouSureDialog.title'), body, isLoading = false, onYes, onNo }) => {
+    disableYesButton?: boolean;
+}> = ({ open, handleClose, title = i18next.t('areYouSureDialog.title'), body, isLoading = false, onYes, onNo, disableYesButton }) => {
     return (
         <Dialog open={open} onClose={handleClose}>
             <DialogTitle>{title}</DialogTitle>
             {body && <DialogContent>{body}</DialogContent>}
             <DialogActions>
                 <Button onClick={onNo ?? handleClose}>{i18next.t('areYouSureDialog.no')}</Button>
-                <Button onClick={onYes} disabled={isLoading}>
+                <Button onClick={onYes} disabled={isLoading || disableYesButton}>
                     {i18next.t('areYouSureDialog.yes')}
                     {isLoading && <CircularProgress size={20} />}
                 </Button>

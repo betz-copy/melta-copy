@@ -31,6 +31,31 @@ const config = {
             baseUrl: env.get('FRONTEND_CONFIG_MATOMO_BASE_URL').default('http://localhost:8016').required().asString(),
             siteId: env.get('FRONTEND_CONFIG_MATOMO_SITE_ID').default(1).required().asInt(),
         },
+        mapLayers: env
+            .get('FRONTEND_CONFIG_MAP_LAYERS')
+            .default({
+                OpenStreetMap: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                'Satellite (Esri)': 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+                OpenTopoMap: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
+            })
+            .required()
+            .asJsonObject(),
+
+        textLayers: env
+            .get('FRONTEND_CONFIG_TEXT_LAYERS')
+            .default({
+                'Labels (OSM Hot)': 'https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png',
+                'Hillshading (Wikimedia)': 'https://tiles.wmflabs.org/hillshading/{z}/{x}/{y}.png',
+                'Boundaries (OpenMapTiles)': 'https://{s}.tile.opentiles.org/admin/{z}/{x}/{y}.png',
+            })
+            .required()
+            .asJsonObject(),
+        
+        crsType: env.get('CRS_TYPE').default('EPSG3857').asString(),
+
+        agGridLimit: {
+            deleteLimit: env.get('DELETE_ENTITIES_MAX_LIMIT').default(1000).asIntPositive(),
+        },
     },
 
     authentication: {
@@ -96,6 +121,7 @@ const config = {
         baseBulkActionsRoute: env.get('INSTANCE_SERVICE_BASE_BULK_ACTIONS_ROUTE').default('/api/instances/bulk-actions').asString(),
         baseConstraintsRoute: env.get('INSTANCE_SERVICE_BASE_CONSTRAINTS_ROUTE').default('/api/instances/entities/constraints').asString(),
         searchOfTemplateRoute: env.get('INSTANCE_SERVICE_SEARCH_OF_TEMPLATE_ROUTE').default('/search/template').asString(),
+        searchEntitiesByLocationRoute: env.get('INSTANCE_SERVICE_SEARCH_ENTITIES_BY_LOCATION_ROUTE').default('/search/location').asString(),
         requestTimeout: env.get('INSTANCE_SERVICE_REQUEST_TIMEOUT').default(10000).asIntPositive(),
         searchEntitiesFlowMaxLimit: env.get('SEARCH_ENTITIES_FLOW_MAX_LIMIT').default(10000).asIntPositive(),
         searchEntitiesMaxLimit: env.get('SEARCH_ENTITIES_MAX_LIMIT').default(10000).asIntPositive(),
