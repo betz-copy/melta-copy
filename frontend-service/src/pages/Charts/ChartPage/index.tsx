@@ -1,48 +1,22 @@
 import { Grid, useTheme } from '@mui/material';
+import { AxiosError } from 'axios';
 import { Form, Formik } from 'formik';
 import i18next from 'i18next';
 import React, { CSSProperties, useRef, useState } from 'react';
-import { useQueryClient } from 'react-query';
-import { useParams } from 'wouter';
-import * as Yup from 'yup';
+import { useMutation, useQueryClient } from 'react-query';
+import { toast } from 'react-toastify';
+import { useLocation, useParams } from 'wouter';
 import EntitiesTableOfTemplate, { EntitiesTableOfTemplateRef } from '../../../common/EntitiesTableOfTemplate';
+import { ErrorToast } from '../../../common/ErrorToast';
 import { environment } from '../../../globals';
-import { IAxisField, IBasicChart, IChartType, IPermission } from '../../../interfaces/charts';
+import { IBasicChart } from '../../../interfaces/charts';
 import { IEntity } from '../../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { createChart, deleteChart } from '../../../services/chartsService';
+import { chartValidationSchema, initialValues } from '../../../utils/charts/getChartAxes';
 import { ChartGenerator } from '../chartGenerator.tsx';
 import { ChartSideBar } from './ChartSideBar';
 import { ChartTopBar } from './TopBar';
-
-export const chartValidationSchema = Yup.object({
-    name: Yup.string().min(2, i18next.t('validation.variableName')).required(i18next.t('validation.required')),
-    description: Yup.string().min(2, i18next.t('validation.variableName')),
-    type: Yup.mixed<IChartType>().oneOf(Object.values(IChartType)).required(i18next.t('validation.required')),
-    xAxis: Yup.object({
-        field: Yup.mixed<IAxisField>().required(i18next.t('validation.required')),
-        title: Yup.string().min(2, i18next.t('validation.variableName')),
-    }).required(i18next.t('validation.required')),
-    yAxis: Yup.object({
-        field: Yup.mixed<IAxisField>().required(i18next.t('validation.required')),
-        title: Yup.string().min(2, i18next.t('validation.variableName')),
-    }).required(i18next.t('validation.required')),
-    permission: Yup.mixed<IPermission>().oneOf(Object.values(IPermission)).required(i18next.t('validation.required')),
-});
-
-const initialValues: IBasicChart = {
-    name: '',
-    description: '',
-    xAxis: {
-        title: '',
-        field: '',
-    },
-    yAxis: {
-        title: '',
-        field: '',
-    },
-    type: IChartType.Line,
-    permission: IPermission.Private,
-};
 
 const { defaultRowHeight, defaultFontSize } = environment.agGrid;
 
@@ -56,30 +30,50 @@ const ChartPage: React.FC = () => {
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const template = entityTemplates.get(templateId as string) as IMongoEntityTemplatePopulated;
 
+    const [_, navigate] = useLocation();
+
     const [edit, setEdit] = useState(true);
+
+    const { mutateAsync: createChartMutateAsync, isLoading } = useMutation(
+        (newChart: IBasicChart) => createChart({ ...newChart, templateId } as IBasicChart),
+        {
+            onSuccess: () => {
+                toast.success(i18next.t('gantts.actions.createdSuccessfully'));
+            },
+            onError: (error: AxiosError) => {
+                toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('gantts.actions.failedToCreate')} />);
+            },
+        },
+    );
+
+    const { mutateAsync: deleteChartMutateAsync, isLoading: isDeleteChartLoading } = useMutation((id: string) => deleteChart(id), {
+        onSuccess: () => {
+            navigate(`/charts/${templateId}`);
+            toast.success(i18next.t('gantts.actions.deletedSuccessfully'));
+        },
+        onError: (error: AxiosError) => {
+            toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('gantts.actions.failedToDelete')} />);
+        },
+    });
 
     return (
         <Formik<IBasicChart>
             initialValues={initialValues}
-            onSubmit={(values) => console.log('bye', { values })}
+            onSubmit={async (values, formikHelpers) => {
+                console.log('bye', { values });
+                createChartMutateAsync(values);
+                formikHelpers.setSubmitting(false);
+            }}
             onReset={() => setEdit(false)}
             validationSchema={chartValidationSchema}
             enableReinitialize
         >
             {(formik) => (
                 <Form>
-                    {/* <TopBar title={i18next.t('charts.chart')} /> */}
-                    <ChartTopBar edit={edit} onEdit={() => setEdit(true)} isLoading={false} />
-                    <Grid container style={{ height: '100%' }} spacing={4}>
-                        <Grid item xs={9}>
-                            <Grid
-                                sx={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    height: '68%',
-                                }}
-                            >
+                    <ChartTopBar edit={edit} onEdit={() => setEdit(true)} isLoading={false} onDelete={() => deleteChartMutateAsync(chart._id)} />
+                    <Grid container flexWrap="nowrap" height="94.7vh" width="100%" justifyContent="space-evenly">
+                        <Grid item container flexDirection="column" justifyContent="space-evenly" flexWrap="nowrap" height="100%">
+                            <Grid item container width="100%" height="70%" alignItems="center" justifyContent="center">
                                 <ChartGenerator
                                     formikValues={formik.values}
                                     template={template}
@@ -87,7 +81,7 @@ const ChartPage: React.FC = () => {
                                     entitiesTableRef={entitiesTableRef}
                                 />
                             </Grid>
-                            <Grid sx={{ borderTop: `1px solid ${theme.palette.mode === 'dark' ? '#444' : '#dddddd'}` }}>
+                            <Grid item width="100%" sx={{ borderTop: `1px solid ${theme.palette.mode === 'dark' ? '#444' : '#dddddd'}` }}>
                                 <EntitiesTableOfTemplate
                                     ref={entitiesTableRef}
                                     template={template}
@@ -112,8 +106,8 @@ const ChartPage: React.FC = () => {
                         </Grid>
                         <Grid
                             item
-                            xs={3}
-                            height="95vh"
+                            width="400px"
+                            height="100%"
                             sx={{
                                 borderLeft: `1px solid ${theme.palette.mode === 'dark' ? '#444' : '#dddddd'}`,
                                 background: bgColor,

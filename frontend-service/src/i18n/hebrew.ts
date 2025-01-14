@@ -1083,6 +1083,10 @@ export default {
         dividedBy: 'חלוקה לפי שדה',
         sumBy: 'סכום עפ"י',
         AccumulateAccordingTo: 'צבור לפי',
+        lineChart: 'קווי',
+        pieChart: 'עוגה',
+        barChart: 'עמודות',
+        numberChart: 'מספרי',
     },
     workspaces: {
         goBack: 'חזור',

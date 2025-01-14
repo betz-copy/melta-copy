@@ -2,19 +2,19 @@ import { Grid, TextField, Typography } from '@mui/material';
 import { FormikProps, getIn } from 'formik';
 import i18next from 'i18next';
 import React from 'react';
-import { FormikAutoComplete } from '../../../common/inputs/FormikAutoComplete';
-import { IAggregation, IBasicChart, isAggregation, OptionsType } from '../../../interfaces/charts';
+import { IAggregation, IAggregationType, IBasicChart, isAggregation, OptionsType } from '../../../interfaces/charts';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { filteredMap } from '../../../utils/filteredMap';
+import { FormikAutoComplete } from '../../../common/inputs/FormikAutoComplete';
 
 interface AxisInputProps {
     formik: FormikProps<IBasicChart>;
-    formikField: 'xAxis' | 'yAxis';
+    formikField: string;
     formikValues: IBasicChart;
     label: string;
     entityTemplate: IMongoEntityTemplatePopulated;
-    showTitle: boolean;
     optionsType: OptionsType;
+    titleFormikField?: string;
     byFieldOptionsType?: OptionsType;
 }
 
@@ -22,33 +22,35 @@ const AxisInput: React.FC<AxisInputProps> = ({
     formik,
     entityTemplate,
     formikField,
+    titleFormikField,
     formikValues,
     label,
-    showTitle,
     optionsType,
     byFieldOptionsType,
 }) => {
-    const error = getIn(formik.touched, `${formikField}.title`) && getIn(formik.errors, `${formikField}.title`);
+    const fieldValue = getIn(formikValues, formikField);
+    const titleValue = titleFormikField ? getIn(formikValues, titleFormikField) : undefined;
+    const titleError = titleFormikField && getIn(formik.touched, titleFormikField) && getIn(formik.errors, titleFormikField);
 
     const entityTemplateFields = entityTemplate && Object.keys(entityTemplate.properties.properties);
-    const entityTemplateDNumberFields = filteredMap(Object.entries(entityTemplate.properties.properties), ([property, value]) => ({
+    const entityTemplateNumberFields = filteredMap(Object.entries(entityTemplate.properties.properties), ([property, value]) => ({
         include: value.type === 'number' && !value.serialStarter,
         value: property,
     }));
 
-    const aggregationOptions: IAggregation['type'][] = ['countAll', 'countDistinct', 'average', 'sum', 'maximum', 'minimum'];
+    const aggregationOptions: IAggregation['type'][] = Object.values(IAggregationType);
 
     const typeOptions: Record<OptionsType, string[]> = {
         [OptionsType.Aggregation]: aggregationOptions,
         [OptionsType.AllProperties]: entityTemplateFields,
-        [OptionsType.NumberProperties]: entityTemplateDNumberFields,
+        [OptionsType.NumberProperties]: entityTemplateNumberFields,
         [OptionsType.AggregationAndAllProperties]: [...entityTemplateFields, ...aggregationOptions],
-        [OptionsType.AggregationAndNumberProperties]: [...entityTemplateDNumberFields, ...aggregationOptions],
+        [OptionsType.AggregationAndNumberProperties]: [...entityTemplateNumberFields, ...aggregationOptions],
     };
 
     return (
         <Grid container direction="column" spacing={2}>
-            {showTitle && (
+            {titleFormikField && (
                 <>
                     <Grid item>
                         <Typography variant="subtitle2">{label}</Typography>
@@ -56,44 +58,44 @@ const AxisInput: React.FC<AxisInputProps> = ({
                     <Grid item>
                         <TextField
                             label={`${i18next.t('charts.title')}`}
-                            name={`${formikField}.title`}
-                            onChange={(e) => formik.setFieldValue(`${formikField}.title`, e.target.value)}
-                            value={formikValues[formikField]?.title || ''}
+                            name={titleFormikField}
+                            onChange={(e) => formik.setFieldValue(titleFormikField, e.target.value)}
+                            value={titleValue || ''}
                             onBlur={formik.handleBlur}
-                            error={Boolean(error)}
-                            helperText={error}
+                            error={Boolean(titleError)}
+                            helperText={titleError}
                             fullWidth
                             margin="normal"
-                            sx={{ width: '400px' }}
+                            sx={{ width: '90%' }}
                         />
                     </Grid>
                 </>
             )}
-            <Grid item sx={{ marginTop: showTitle ? undefined : 2 }}>
+            <Grid item sx={{ marginTop: titleFormikField ? undefined : 2 }}>
                 <FormikAutoComplete
                     formik={formik}
-                    formikField={isAggregation(formikValues[formikField]?.field) ? `${formikField}.field.type` : `${formikField}.field`}
+                    formikField={isAggregation(fieldValue) ? `${formikField}.type` : `${formikField}`}
                     options={typeOptions[optionsType]}
                     label={label}
                     multiple={false}
                     onChange={(newValue) => {
                         if (newValue && typeof newValue === 'string' && aggregationOptions.includes(newValue as IAggregation['type']))
-                            formik.setFieldValue(`${formikField}.field`, { type: newValue, byField: '' } as IAggregation);
-                        else formik.setFieldValue(`${formikField}.field`, newValue as string);
+                            formik.setFieldValue(`${formikField}`, { type: newValue, byField: '' } as IAggregation);
+                        else formik.setFieldValue(`${formikField}`, newValue as string);
                     }}
-                    style={{ width: '400px' }}
+                    style={{ width: '90%' }}
                 />
             </Grid>
-            {isAggregation(formikValues[formikField]?.field) && formikValues[formikField]?.field.type !== 'countAll' && (
+            {isAggregation(fieldValue) && fieldValue?.type !== 'countAll' && (
                 <Grid item>
                     <FormikAutoComplete
                         formik={formik}
-                        formikField={`${formikField}.field.byField`}
+                        formikField={`${formikField}.byField`}
                         options={byFieldOptionsType ? typeOptions[byFieldOptionsType] : []}
                         label={`${i18next.t('charts.byField')}`}
                         multiple={false}
                         style={{
-                            width: '250px',
+                            width: '90%',
                         }}
                     />
                 </Grid>

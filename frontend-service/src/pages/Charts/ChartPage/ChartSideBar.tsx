@@ -13,8 +13,8 @@ const ChartSideBar: React.FC<{
     entityTemplate: IMongoEntityTemplatePopulated;
 }> = ({ formik, entityTemplate }) => {
     return (
-        <Grid container direction="column">
-            <Grid item>
+        <Grid container direction="column" padding="20px">
+            <Grid item paddingTop="10px">
                 <Typography variant="h6">{i18next.t('charts.visualDefinition')}</Typography>
             </Grid>
 
@@ -33,7 +33,7 @@ const ChartSideBar: React.FC<{
                             error={formik.touched.name && Boolean(formik.errors.name)}
                             helperText={formik.touched.name && formik.errors.name}
                             variant="outlined"
-                            sx={{ width: '400px' }}
+                            sx={{ width: '90%' }}
                         />
                     </Grid>
                     <Grid item>
@@ -50,7 +50,7 @@ const ChartSideBar: React.FC<{
                             helperText={formik.touched.description && formik.errors.description}
                             variant="outlined"
                             rows={4}
-                            sx={{ width: '400px' }}
+                            sx={{ width: '90%' }}
                         />
                     </Grid>
                 </Grid>

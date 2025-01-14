@@ -23,8 +23,7 @@ export const NumberChartGenerator: React.FC<{
         <Box
             sx={{
                 bgcolor: darkMode ? '#131313' : '#fcfeff',
-                width: '100%',
-                maxWidth: 540,
+                minWidth: '500px',
                 height: 400,
                 borderRadius: 1.5,
                 p: 2,
@@ -34,7 +33,7 @@ export const NumberChartGenerator: React.FC<{
             }}
         >
             {name && (
-                <Typography variant="h6" color={theme.palette.primary.main} sx={{ textAlign: 'center', mb: 1 }}>
+                <Typography variant="h5" fontWeight="450" color={theme.palette.primary.main} sx={{ textAlign: 'center', mb: 1 }}>
                     {name}
                 </Typography>
             )}
@@ -45,7 +44,12 @@ export const NumberChartGenerator: React.FC<{
                 </Typography>
             )}
 
-            <Typography fontSize="100px" color={theme.palette.primary.main} sx={{ textAlign: 'center', marginTop: 4 }}>
+            <Typography
+                fontSize="120px"
+                fontWeight="500"
+                color={theme.palette.primary.main}
+                sx={{ textAlign: 'center', marginTop: 6, direction: 'rtl' }}
+            >
                 {data[0].x}
             </Typography>
         </Box>

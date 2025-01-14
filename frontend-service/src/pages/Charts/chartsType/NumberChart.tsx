@@ -12,12 +12,11 @@ const NumberChart: React.FC<{
 }> = ({ formik, formikValues, entityTemplate }) => {
     return (
         <AxisInput
-            formikField="xAxis"
+            formikField="metaData.accumulator"
             formik={formik}
             entityTemplate={entityTemplate}
             formikValues={formikValues}
             label={`${i18next.t('charts.AccumulateAccordingTo')}`}
-            showTitle={false}
             optionsType={OptionsType.Aggregation}
             byFieldOptionsType={OptionsType.AllProperties}
         />

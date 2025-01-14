@@ -3,6 +3,7 @@ import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
 import React from 'react';
 import { HighchartType, IBasicChart, IChartType } from '../../../interfaces/charts';
+import { getChartAxes } from '../../../utils/charts/getChartAxes';
 
 interface HighchartGeneratorProps {
     data: { x: any; y: any }[] | undefined;
@@ -13,7 +14,9 @@ interface HighchartGeneratorProps {
 }
 
 const HiighchartGenerator: React.FC<HighchartGeneratorProps> = ({ data, isLoading, formikValues, isQueryEnabled, type }) => {
-    const { name, description, xAxis, yAxis } = formikValues;
+    const { name, description, metaData } = formikValues;
+
+    const { xAxis, yAxis } = getChartAxes(type, metaData);
 
     const theme = useTheme();
 

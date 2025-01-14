@@ -5,6 +5,7 @@ import i18next from 'i18next';
 import React, { useMemo } from 'react';
 import { IBasicChart, IChartType } from '../../../interfaces/charts';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { initializeChartMetaData } from '../../../utils/charts/getChartAxes';
 import { BarOrLineChart } from '../chartsType/BarOrLineChart';
 import { NumberChart } from '../chartsType/NumberChart';
 import { PieChart } from '../chartsType/PieChart';
@@ -24,27 +25,18 @@ const charts: Record<IChartType, React.FC<ChartProps>> = {
 };
 
 const chartTypeButtons = [
-    { icon: NumberChartIcon, type: IChartType.Number, label: i18next.t('charts.lineChartSettings') },
-    { icon: BarChartIcon, type: IChartType.Bar, label: i18next.t('charts.barChartSettings') },
-    { icon: PieChartIcon, type: IChartType.Pie, label: i18next.t('charts.pieChartSettings') },
-    { icon: ShowChartIcon, type: IChartType.Line, label: i18next.t('charts.lineChartSettings') },
+    { icon: NumberChartIcon, type: IChartType.Number, label: i18next.t('charts.numberChart') },
+    { icon: BarChartIcon, type: IChartType.Bar, label: i18next.t('charts.barChart') },
+    { icon: PieChartIcon, type: IChartType.Pie, label: i18next.t('charts.pieChart') },
+    { icon: ShowChartIcon, type: IChartType.Line, label: i18next.t('charts.lineChart') },
 ];
 
 const ChartTypesEdit: React.FC<ChartProps> = ({ formik, formikValues, entityTemplate }) => {
     const SelectedChartType = useMemo(() => charts[formikValues.type], [formikValues.type]);
 
-    const handleButtonClick = (buttonId: string) => {
+    const handleButtonClick = (buttonId: IChartType) => {
         formik.setFieldValue('type', buttonId);
-
-        formik.setFieldValue('xAxis', {
-            title: '',
-            field: '',
-        });
-
-        formik.setFieldValue('yAxis', {
-            title: '',
-            field: '',
-        });
+        formik.setFieldValue('metaData', initializeChartMetaData(buttonId));
     };
 
     return (

@@ -1,12 +1,13 @@
 import { useTheme } from '@mui/material';
 import React from 'react';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
+import { IChartType } from '../../../interfaces/charts';
 
 const ChartTypeButton: React.FC<{
     icon: React.ElementType;
-    buttonId: string;
+    buttonId: IChartType;
     selectedButton: string | null;
-    handleClick: (buttonId: string) => void;
+    handleClick: (buttonId: IChartType) => void;
     popoverText: string;
 }> = ({ icon: Icon, buttonId, selectedButton, handleClick, popoverText }) => {
     const theme = useTheme();

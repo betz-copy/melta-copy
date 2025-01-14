@@ -1,10 +1,13 @@
+import { FilterModel } from '@ag-grid-community/core';
+
 export interface IBasicChart {
     name: string;
     description: string;
     type: IChartType;
-    xAxis: IAxis;
-    yAxis: IAxis;
+    metaData: IChartTypeMetaData;
     permission: IPermission;
+    filter?: FilterModel;
+    templateId?: string;
 }
 
 export interface IChart extends IBasicChart {
@@ -20,8 +23,17 @@ export enum IChartType {
     Number = 'number',
 }
 
+export enum IAggregationType {
+    CountAll = 'countAll',
+    CountDistinct = 'countDistinct',
+    Average = 'average',
+    Sum = 'sum',
+    Maximum = 'maximum',
+    Minimum = 'minimum',
+}
+
 export interface IAggregation {
-    type: 'countAll' | 'countDistinct' | 'average' | 'sum' | 'maximum' | 'minimum';
+    type: IAggregationType;
     byField?: string;
 }
 
@@ -31,6 +43,22 @@ export interface IAxis {
     title: string;
     field: IAxisField;
 }
+
+export interface IBarOrLineMetaData {
+    xAxis: IAxis;
+    yAxis: IAxis;
+}
+
+export interface IPieMetaData {
+    dividedByField: string;
+    aggregationType: IAggregation;
+}
+
+export interface INUmberMetaData {
+    accumulator: IAggregation;
+}
+
+export type IChartTypeMetaData = IBarOrLineMetaData | IPieMetaData | INUmberMetaData;
 
 export enum IPermission {
     Protected = 'protected',

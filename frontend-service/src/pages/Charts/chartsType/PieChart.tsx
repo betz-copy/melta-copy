@@ -12,26 +12,24 @@ const PieChart: React.FC<{ formik: FormikProps<IBasicChart>; formikValues: IBasi
     entityTemplate,
 }) => {
     return (
-        <Grid container spacing={2}>
+        <Grid container direction="column" spacing={2}>
             <Grid item>
                 <AxisInput
-                    formikField="xAxis"
+                    formikField="metaData.dividedByField"
                     formik={formik}
                     entityTemplate={entityTemplate}
                     formikValues={formikValues}
                     label={`${i18next.t('charts.dividedBy')}`}
-                    showTitle={false}
                     optionsType={OptionsType.AllProperties}
                 />
             </Grid>
             <Grid item>
                 <AxisInput
-                    formikField="yAxis"
+                    formikField="metaData.aggregationType"
                     formik={formik}
                     entityTemplate={entityTemplate}
                     formikValues={formikValues}
                     label={`${i18next.t('charts.sumBy')}`}
-                    showTitle={false}
                     optionsType={OptionsType.Aggregation}
                     byFieldOptionsType={OptionsType.NumberProperties}
                 />

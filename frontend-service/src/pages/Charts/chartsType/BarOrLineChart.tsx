@@ -15,24 +15,24 @@ const BarOrLineChart: React.FC<{
         <Grid container direction="column" spacing={2}>
             <Grid item>
                 <AxisInput
-                    formikField="xAxis"
+                    formikField="metaData.xAxis.field"
+                    titleFormikField="metaData.xAxis.title"
                     formik={formik}
                     entityTemplate={entityTemplate}
                     formikValues={formikValues}
                     label={`${i18next.t('charts.axis')} x`}
-                    showTitle
                     optionsType={OptionsType.AggregationAndAllProperties}
                     byFieldOptionsType={OptionsType.NumberProperties}
                 />
             </Grid>
             <Grid item>
                 <AxisInput
-                    formikField="yAxis"
+                    formikField="metaData.yAxis.field"
+                    titleFormikField="metaData.yAxis.title"
                     formik={formik}
                     entityTemplate={entityTemplate}
                     formikValues={formikValues}
                     label={`${i18next.t('charts.axis')} y`}
-                    showTitle
                     optionsType={OptionsType.AggregationAndNumberProperties}
                     byFieldOptionsType={OptionsType.NumberProperties}
                 />
