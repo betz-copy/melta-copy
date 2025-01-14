@@ -3,6 +3,8 @@ import { MapContainer, Marker, Polygon, LayersControl, LayerGroup } from 'react-
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-draw/dist/leaflet.draw.css';
 import { CRS } from 'leaflet';
+import { useQueryClient } from 'react-query';
+import i18next from 'i18next';
 import EntityLocationPopup from './EntityLocationPopup';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { jerusalemCoordinates, UpdateMapBounds } from '../../utils/map';
@@ -10,6 +12,7 @@ import { IEntity } from '../../interfaces/entities';
 import { useEntityWithLocationFields } from '../../utils/hooks/useLocation';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { BaseLayers } from './mapPage';
+import { BackendConfigState } from '../../services/backendConfigService';
 
 type Props = {
     entity: IEntity;
@@ -18,8 +21,13 @@ type Props = {
 };
 
 const LocationPreview = ({ styles, entity, entityTemplate }: Props) => {
+    const queryClient = useQueryClient();
     const { bounds, polygons, propertyDefinitions, markers } = useEntityWithLocationFields({ entityTemplate, entity });
     const darkMode = useDarkModeStore((state) => state.darkMode);
+
+    const config = queryClient.getQueryData<BackendConfigState>('getBackendConfig');
+    if (!config) return <>{i18next.t('location.noCrsTypes')}</>;
+    const { crsType } = config;
 
     return (
         <MapContainer
@@ -32,7 +40,7 @@ const LocationPreview = ({ styles, entity, entityTemplate }: Props) => {
                 [-90, -180],
                 [90, 180],
             ]}
-            crs={CRS.EPSG3857}
+            crs={CRS[crsType]}
         >
             {(polygons.length > 0 || markers.length > 0) && <UpdateMapBounds bounds={bounds} />}
 
