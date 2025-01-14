@@ -20,8 +20,11 @@ export class FlowCubeManager extends DefaultManagerProxy<null> {
     async convertFlowToNeoSearch(templateId: string, flowSearchBody: Record<string, any>) {
         const filterAnd: IFilterOfTemplate<any>[] = [];
         const template = await this.entityTemplateService.getEntityTemplateById(templateId);
-
         Object.entries(flowSearchBody).forEach(([field, filterValue]) => {
+            if (Array.isArray(filterValue) && filterValue.length === 0) {
+                return;
+            }
+
             if (template.properties.properties[field]) {
                 if (Array.isArray(filterValue)) {
                     filterAnd.push({ [field]: { $in: filterValue } });
