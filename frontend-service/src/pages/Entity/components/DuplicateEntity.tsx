@@ -9,6 +9,7 @@ import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
 import { useLocation } from 'wouter';
 import { StatusCodes } from 'http-status-codes';
+import { template } from 'lodash';
 import { BlueTitle } from '../../../common/BlueTitle';
 import { EntityWizardValues } from '../../../common/dialogs/entity';
 import { InstanceFileInput } from '../../../common/inputs/InstanceFilesInput/InstanceFileInput';
@@ -125,7 +126,7 @@ const DuplicateEntity: React.FC<{}> = () => {
 
     return (
         <Formik
-            initialValues={{ properties: fieldProperties, attachmentsProperties: fileProperties }}
+            initialValues={{ properties: fieldProperties, attachmentsProperties: fileProperties, template: entityTemplate }}
             onSubmit={async (values, formikHelpers) => {
                 formikHelpers.setTouched({});
                 duplicateMutation({ newEntityDate: { ...values, template: entityTemplate } });
