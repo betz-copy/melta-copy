@@ -34,19 +34,16 @@ const ChartPage: React.FC = () => {
 
     const [edit, setEdit] = useState(true);
 
-    const { mutateAsync: createChartMutateAsync, isLoading } = useMutation(
-        (newChart: IBasicChart) => createChart({ ...newChart, templateId } as IBasicChart),
-        {
-            onSuccess: () => {
-                toast.success(i18next.t('charts.actions.createdSuccessfully'));
-            },
-            onError: (error: AxiosError) => {
-                toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('charts.actions.failedToCreate')} />);
-            },
+    const { mutateAsync: createChartMutateAsync } = useMutation((newChart: IBasicChart) => createChart({ ...newChart, templateId } as IBasicChart), {
+        onSuccess: () => {
+            toast.success(i18next.t('charts.actions.createdSuccessfully'));
         },
-    );
+        onError: (error: AxiosError) => {
+            toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('charts.actions.failedToCreate')} />);
+        },
+    });
 
-    const { mutateAsync: deleteChartMutateAsync, isLoading: isDeleteChartLoading } = useMutation((id: string) => deleteChart(id), {
+    const { mutateAsync: deleteChartMutateAsync } = useMutation((id: string) => deleteChart(id), {
         onSuccess: () => {
             navigate(`/charts/${templateId}`);
             toast.success(i18next.t('charts.actions.deletedSuccessfully'));
@@ -70,7 +67,7 @@ const ChartPage: React.FC = () => {
         >
             {(formik) => (
                 <Form>
-                    <ChartTopBar edit={edit} onEdit={() => setEdit(true)} isLoading={false} onDelete={() => deleteChartMutateAsync(chart._id)} />
+                    <ChartTopBar edit={edit} onEdit={() => setEdit(true)} isLoading={false} onDelete={() => deleteChartMutateAsync('')} />
                     <Grid container flexWrap="nowrap" height="94.7vh" width="100%" justifyContent="space-evenly">
                         <Grid item container flexDirection="column" justifyContent="space-evenly" flexWrap="nowrap" height="100%">
                             <Grid item container width="100%" height="70%" alignItems="center" justifyContent="center">

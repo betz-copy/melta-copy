@@ -3,12 +3,11 @@ import { Box, CircularProgress, Grid, IconButton } from '@mui/material';
 import i18next from 'i18next';
 import React, { useState } from 'react';
 import { BlueTitle } from '../../../common/BlueTitle';
+import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import { MeltaTooltip } from '../../../common/MeltaTooltip';
 import { Swap } from '../../../common/Swap';
 import { TopBarGrid } from '../../../common/TopBar';
 import { environment } from '../../../globals';
-import { useDarkModeStore } from '../../../stores/darkMode';
-import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 
 interface IChartTopBar {
     edit: boolean;
@@ -18,7 +17,6 @@ interface IChartTopBar {
 }
 
 const ChartTopBar: React.FC<IChartTopBar> = ({ edit, onEdit, onDelete, isLoading }) => {
-    const darkMode = useDarkModeStore((state) => state.darkMode);
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
     return (

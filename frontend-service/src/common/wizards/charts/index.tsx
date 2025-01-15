@@ -1,7 +1,7 @@
 import i18next from 'i18next';
 import React from 'react';
 import { useLocation } from 'wouter';
-import { StepsType, Wizard, WizardBaseType } from '..';
+import { StepType, Wizard, WizardBaseType } from '..';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { CreateChartDetails, CreateChartDetailsSchema } from './CreateChartDetails';
 
@@ -31,7 +31,7 @@ const defaultInitialValues: chartWizardValues = {
     },
 };
 
-const steps: StepsType<chartWizardValues> = [
+const steps: StepType<chartWizardValues>[] = [
     {
         label: i18next.t('wizard.iFrame.editDetails'),
         component: (props) => <CreateChartDetails {...props} />,
