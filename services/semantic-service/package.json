@@ -18,6 +18,7 @@
     "@elastic/elasticsearch": "^8.15.1",
     "@microservices/shared": "^1.0.0",
     "exceljs": "^4.4.0",
+    "jszip": "^3.10.1",
     "llm-chunk": "^0.0.1",
     "mammoth": "^1.8.0",
     "menashmq": "^0.1.6",
@@ -26,7 +27,8 @@
     "pdf-parse": "^1.1.1",
     "supertest": "^7.0.0",
     "textract": "^2.5.0",
-    "uuid": "^10.0.0"
+    "uuid": "^10.0.0",
+    "xml2js": "^0.6.2"
   },
   "devDependencies": {
     "@types/body-parser": "^1.19.5",
@@ -35,6 +37,7 @@
     "@types/pdf-parse": "^1.1.4",
     "@types/textract": "^2.4.5",
     "@types/uuid": "^10.0.0",
+    "@types/xml2js": "^0.4.14",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-plugin-import": "^2.29.1",
     "eslint-plugin-prettier": "^5.2.1",

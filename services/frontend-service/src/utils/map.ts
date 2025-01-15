@@ -2,8 +2,7 @@ import { GeometryUtil, LatLng, LatLngExpression } from 'leaflet';
 import * as L from 'leaflet';
 import { useMap } from 'react-leaflet';
 import { useEffect } from 'react';
-import { IEntity } from '../interfaces/entities';
-import { IEntityTemplatePopulated } from '../interfaces/entityTemplates';
+import { IEntity, IEntityTemplatePopulated } from '@microservices/shared-interfaces';
 import { environment } from '../globals';
 
 const {

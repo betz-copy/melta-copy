@@ -1,12 +1,11 @@
 import { v4 as uuidv4 } from 'uuid';
 import neo4j, { QueryResult, Node as Neo4jNode, Relationship as Neo4jRelationship, Transaction } from 'neo4j-driver';
 import { fromZonedTime, toZonedTime } from 'date-fns-tz';
-import { IEntity, IEntityExpanded, IEntityWithDirectRelationships, IRelationship } from '@microservices/shared';
+import { IEntity, IEntityExpanded, IEntityWithDirectRelationships, IRelationship, SplitBy } from '@microservices/shared';
 import config from '../../config';
 import EntityManager from '../../express/entities/manager';
 import { IFormulaCauses } from '../../express/rules/interfaces/formulaWithCauses';
 import { ValidationError } from '../../express/error';
-import { SplitBy } from '../types';
 
 const { polygonPrefix, polygonSuffix, srid } = config.map;
 
@@ -115,10 +114,10 @@ type ResponseType = 'singleResponse' | 'singleResponseNotNullable' | 'multipleRe
 type Response<ResType extends ResponseType, Data> = ResType extends 'singleResponse'
     ? Data | null
     : ResType extends 'singleResponseNotNullable'
-    ? Data
-    : ResType extends 'multipleResponses'
-    ? Data[]
-    : never;
+      ? Data
+      : ResType extends 'multipleResponses'
+        ? Data[]
+        : never;
 
 const nodeToEntity = (node: Node): IEntity => {
     const entity = {

@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import L from 'leaflet';
+import { IEntity, IMongoEntityTemplatePopulated, IEntitySingleProperty } from '@microservices/shared-interfaces';
 import { parsePolygon, stringToCoordinates } from '../map';
-import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { IEntity } from '../../interfaces/entities';
 import { environment } from '../../globals';
 
 const { squareLength } = environment.map;

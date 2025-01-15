@@ -17,6 +17,7 @@ import {
     ICreateEntityMetadata,
     IActionPopulated,
     IBrokenRuleEntity,
+    logger,
 } from '@microservices/shared';
 import excelConfig from './excelConfig';
 
@@ -119,7 +120,7 @@ const readExcelFile = async (files: Express.Multer.File[], template: IMongoEntit
                         if (formatCellValue === invalidDate) failedProperties.push({ key, value, cellValue, dateOrTime: 'date' });
                         else rowData[key] = formatCellValue;
                     } catch (error: any) {
-                        console.error("there's an error in the entity", { error });
+                        logger.error("there's an error in the entity", { error });
                         if (error.message.includes(invalidTime)) failedProperties.push({ key, value, cellValue, dateOrTime: 'date-time' });
                     }
                 });

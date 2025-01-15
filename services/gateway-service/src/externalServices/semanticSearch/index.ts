@@ -1,4 +1,4 @@
-import { IRerankRequest, IRerankResult,ISearchBatchBody, ISearchSort, ISemanticSearchResult, logger } from '@microservices/shared';
+import { IRerankRequest, IRerankResult, ISearchBatchBody, ISearchSort, ISemanticSearchResult, logger } from '@microservices/shared';
 import config from '../../config';
 import DefaultExternalServiceApi from '../../utils/express/externalService';
 

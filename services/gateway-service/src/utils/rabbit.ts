@@ -4,7 +4,7 @@ import config from '../config';
 // eslint-disable-next-line import/extensions
 import MailManager from './mailNotifications';
 import { IMailNotificationMetadataPopulated } from './mailNotifications/interfaces';
-import UsersManager  from '../express/users/manager';
+import UsersManager from '../express/users/manager';
 
 const {
     rabbit,

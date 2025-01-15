@@ -2,19 +2,22 @@ import React, { useEffect, useMemo } from 'react';
 import i18next from 'i18next';
 import { Grid } from '@mui/material';
 import { Delete } from '@mui/icons-material';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import {
+    IMongoEntityTemplateWithConstraintsPopulated,
+    IEntity,
+    IEntityTemplateWithConstraintsMap,
+    IMongoCategory,
+} from '@microservices/shared-interfaces';
 import TemplatesSelectCheckbox from '../../../common/templatesSelectCheckbox';
 import SearchAutoComplete from './SearchAutoComplete';
-import { IEntity } from '../../../interfaces/entities';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
 import { useDarkModeStore } from '../../../stores/darkMode';
-import { IMongoCategory } from '../../../interfaces/categories';
 
 type props = {
-    selectedTemplates: IMongoEntityTemplatePopulated[];
-    setSelectedTemplates: React.Dispatch<React.SetStateAction<IMongoEntityTemplatePopulated[]>>;
+    selectedTemplates: IMongoEntityTemplateWithConstraintsPopulated[];
+    setSelectedTemplates: React.Dispatch<React.SetStateAction<IMongoEntityTemplateWithConstraintsPopulated[]>>;
     moveToEntityLocations: (entity: IEntity) => void;
-    entityTemplateMap: IEntityTemplateMap;
+    entityTemplateMap: IEntityTemplateWithConstraintsMap;
     onClear: () => void;
 };
 

@@ -149,7 +149,7 @@ class UsersManager {
             displayName: _displayName,
             permissions: _permissions,
             existingDigitalIdentitySource: _existingDigitalIdentitySource,
-            preferences,
+            preferences: _preferences,
             ...digitalIdentity
         } = await this.getExternalUserDigitalIdentity(user.externalMetadata.kartoffelId, user.externalMetadata.digitalIdentitySource);
 

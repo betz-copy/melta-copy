@@ -913,7 +913,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         rollBackTemplateWithoutProperties: Omit<IEntityTemplatePopulated, 'disabled' | '_id'>,
     ) {
         try {
-            const { createdAt, updatedAt, _id, ...restRelationshipTemplate } = currentRelationshipTemplate;
+            const { createdAt: _createdAt, updatedAt: _updatedAt, _id, ...restRelationshipTemplate } = currentRelationshipTemplate;
             await this.relationshipTemplateService.updateRelationshipTemplate(_id, restRelationshipTemplate);
 
             await this.entityTemplateService.updateEntityTemplate(

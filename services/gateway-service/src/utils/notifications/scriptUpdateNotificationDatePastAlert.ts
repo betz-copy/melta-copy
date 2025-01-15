@@ -1,10 +1,10 @@
-import { ServiceError } from '../../express/error';
-import { WorkspaceTypes } from '../../express/workspaces/interface';
-import { WorkspaceManager } from '../../express/workspaces/manager';
-import { EntityTemplateService, IEntityTemplate, IMongoEntityTemplatePopulated } from '../../externalServices/templates/entityTemplateService';
-import logger from '../logger/logsLogger';
+import { IMongoEntityTemplatePopulated, IEntityTemplate, ServiceError, WorkspaceTypes } from '@microservices/shared';
+import { logger } from 'elastic-apm-node';
+import WorkspaceManager from '../../express/workspaces/manager';
+import EntityTemplateService from '../../externalServices/templates/entityTemplateService';
 
 const updatePastAlertDateNotification = async (entityTemplateService: EntityTemplateService, entityTemplate: IMongoEntityTemplatePopulated) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { _id, createdAt, updatedAt, disabled, ...restProperties } = entityTemplate;
     let updatedProperties = '';
 

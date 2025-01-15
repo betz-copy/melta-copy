@@ -3,7 +3,7 @@ import { MapContainer, Marker, Polygon, LayersControl, LayerGroup } from 'react-
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-draw/dist/leaflet.draw.css';
 import { CRS } from 'leaflet';
-import { IMongoEntityTemplatePopulated } from '@microservices/shared-interfaces';
+import { IEntity, IMongoEntityTemplatePopulated } from '@microservices/shared-interfaces';
 import EntityLocationPopup from './EntityLocationPopup';
 import { jerusalemCoordinates, UpdateMapBounds } from '../../utils/map';
 import { useEntityWithLocationFields } from '../../utils/hooks/useLocation';

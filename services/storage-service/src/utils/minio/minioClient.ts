@@ -28,7 +28,7 @@ class MinIOClient {
                 await this.makeBucket().catch((error) => {
                     throw error;
                 });
-                logger.info(`Bucket with name "${this.bucketName}" created successfully`);
+                logger.info(`Bucket with name "${this.bucketName}" created successfully`, { error: err });
             }
 
             return func();

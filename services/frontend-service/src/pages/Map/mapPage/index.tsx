@@ -6,12 +6,11 @@ import L, { CRS } from 'leaflet';
 import { Box } from '@mui/material';
 import { useQueryClient } from 'react-query';
 import i18next from 'i18next';
+import { IEntity, IMongoEntityTemplateWithConstraintsPopulated, IEntityTemplateWithConstraintsMap } from '@microservices/shared-interfaces';
 import { jerusalemCoordinates } from '../../../utils/map';
-import { IEntity } from '../../../interfaces/entities';
 import MapPageEntityDialog from './MapPageEntityDialog';
 import { EditableMapControl } from './MapControl';
 import MapFilters from './MapFilters';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { BackendConfigState } from '../../../services/backendConfigService';
 
 export const BaseLayers: React.FC = () => {
@@ -41,14 +40,14 @@ export const BaseLayers: React.FC = () => {
 
 const MapPage = () => {
     const queryClient = useQueryClient();
-    const entityTemplateMap = queryClient.getQueryData<IEntityTemplateMap>(['getEntityTemplates']);
+    const entityTemplateMap = queryClient.getQueryData<IEntityTemplateWithConstraintsMap>(['getEntityTemplates']);
 
     const featureGroupRef = useRef<L.FeatureGroup | null>(null);
     const searchResultGroupRef = useRef<L.FeatureGroup | null>(null);
     const searchedEntityGroupRef = useRef<L.FeatureGroup | null>(null);
 
     const [selectedEntity, setSelectedEntity] = useState<{ node: IEntity; matchingField: string } | null>(null);
-    const [selectedTemplates, setSelectedTemplates] = useState<IMongoEntityTemplatePopulated[]>([]);
+    const [selectedTemplates, setSelectedTemplates] = useState<IMongoEntityTemplateWithConstraintsPopulated[]>([]);
 
     const [searchedEntity, setSearchedEntity] = useState<IEntity>();
 
