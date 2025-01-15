@@ -10,14 +10,7 @@ import {
     IRuleBreachRequestNotificationMetadata,
     IRuleBreachResponseNotificationMetadata,
     NotificationType,
-    INotificationMetadataPopulated,
 } from '@microservices/shared';
-
-export interface IMailNotification {
-    viewers: string[];
-    type: NotificationType;
-    populatedMetaData: INotificationMetadataPopulated;
-}
 
 export const isRuleBreachAlertNotification = (
     notification: Partial<INotification>,

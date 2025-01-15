@@ -1,7 +1,7 @@
 import { IEntity } from '../entity';
 import { IRelationshipPopulated } from '../relationship';
 import { IUser } from '../user';
-import { IActionMetadata, ActionTypes, IActionPopulated } from './actionMetadata';
+import { IActionMetadata, ActionTypes, IActionMetadataPopulated } from './actionMetadata';
 
 export interface ICauseInstance {
     // same format of IVariable in Formula interfaces, but with instance ids
@@ -59,12 +59,13 @@ export interface IBrokenRulePopulated extends Omit<IBrokenRule, 'failures'> {
     }>;
 }
 
-export interface IRuleBreachPopulated {
-    _id: string;
+export interface IRuleBreachPopulated extends Omit<IRuleBreach, 'originUserId' | 'brokenRules' | 'actions'> {
     originUser: IUser;
     brokenRules: IBrokenRulePopulated[];
-    actions: IActionPopulated[];
-    createdAt: Date;
+    actions: {
+        actionType: ActionTypes;
+        actionMetadata: IActionMetadataPopulated;
+    }[];
 }
 
 export type BreachType = 'alert' | 'request';

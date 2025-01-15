@@ -17,17 +17,15 @@ import {
     IRuleBreachAlertNotificationMetadataPopulated,
     IRuleBreachRequestNotificationMetadataPopulated,
     IRuleBreachResponseNotificationMetadataPopulated,
-} from '@microservices/shared';
-import WorkspaceService from '../../express/workspaces/service';
-import config from '../../config';
-import {
     ICreateRelationshipMetadataPopulated,
     IDeleteRelationshipMetadataPopulated,
     IRuleBreachAlertPopulated,
     IRuleBreachRequestPopulated,
     IUpdateEntityMetadataPopulated,
     IUpdateEntityStatusMetadataPopulated,
-} from '../../externalServices/ruleBreachService/interfaces/populated';
+} from '@microservices/shared';
+import WorkspaceService from '../../express/workspaces/service';
+import config from '../../config';
 import EntityTemplateService from '../../externalServices/templates/entityTemplateService';
 import RelationshipsTemplateService from '../../externalServices/templates/relationshipsTemplateService';
 import hebrew from './hebrew';

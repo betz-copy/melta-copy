@@ -1,8 +1,7 @@
 import { ConsumerMessage } from 'menashmq';
 import { StatusCodes } from 'http-status-codes';
-import { logger, ServiceError } from '@microservices/shared';
+import { IndexingAction, logger, ServiceError, IUpdateIndexRequest } from '@microservices/shared';
 import { basicValidateRequest } from '../utils/joi';
-import { Action, IUpdateIndexRequest } from './interfaces';
 import Manager from './manager';
 import { requestSchema } from './validator.schema';
 import config from '../config';
@@ -19,19 +18,19 @@ const updateIndexConsumeFunction = async (msg: ConsumerMessage) => {
 
     try {
         switch (action) {
-            case Action.upsertGlobalIndex: {
+            case IndexingAction.upsertGlobalIndex: {
                 logger.info('Upserting global search index...');
                 await manager.upsertGlobalSearchIndex();
                 break;
             }
 
-            case Action.upsertTemplateIndex: {
+            case IndexingAction.upsertTemplateIndex: {
                 logger.info(`Upserting search index of template "${templateId}"...`);
                 await manager.upsertChangedTemplateSearchIndex(templateId!);
                 break;
             }
 
-            case Action.deleteTemplateIndex: {
+            case IndexingAction.deleteTemplateIndex: {
                 logger.info(`Deleting search index of template "${templateId}"...`);
                 await manager.deleteTemplateSearchIndex(templateId!);
                 break;

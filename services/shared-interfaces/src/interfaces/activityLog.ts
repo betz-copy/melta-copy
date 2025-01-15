@@ -27,7 +27,7 @@ export interface IMongoBaseActivityLog extends IBaseActivityLog {
 
 interface IEmptyMetadata extends IBaseActivityLog {
     action: 'CREATE_ENTITY' | 'DISABLE_ENTITY' | 'ACTIVATE_ENTITY' | 'VIEW_ENTITY';
-    metadata: {};
+    metadata: object;
 }
 
 interface IRelationshipMetadata extends IBaseActivityLog {
@@ -65,7 +65,7 @@ export type IActivityLog = IEmptyMetadata | IRelationshipMetadata | IDuplicateEn
 
 interface IMongoEmptyMetadata extends IMongoBaseActivityLog {
     action: ActionsLog.CREATE_ENTITY | ActionsLog.DISABLE_ENTITY | ActionsLog.ACTIVATE_ENTITY | ActionsLog.VIEW_ENTITY;
-    metadata: {};
+    metadata: object;
 }
 
 interface IMongoRelationshipMetadata extends IMongoBaseActivityLog {

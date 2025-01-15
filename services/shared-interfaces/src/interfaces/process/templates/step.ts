@@ -1,20 +1,19 @@
-import { IUser } from "../../user";
-import { IProcessDetails } from "./process";
+import { IUser } from '../../user';
+import { IProcessDetails } from './process';
 
 export interface IStepTemplate extends IProcessDetails {
-  name: string;
-  displayName: string;
-  reviewers: string[];
-  iconFileId: string | null;
+    name: string;
+    displayName: string;
+    reviewers: string[];
+    iconFileId: string | null;
 }
 
 export interface IMongoStepTemplate extends IStepTemplate {
-  _id: string;
-  createdAt: Date;
-  updatedAt: Date;
+    _id: string;
+    createdAt: Date;
+    updatedAt: Date;
 }
 
-export interface IMongoStepTemplatePopulated
-  extends Omit<IMongoStepTemplate, "reviewers"> {
-  reviewers: IUser[];
+export interface IMongoStepTemplatePopulated extends Omit<IMongoStepTemplate, 'reviewers'> {
+    reviewers: IUser[];
 }

@@ -1,13 +1,5 @@
 import { Date as Neo4jDate, DateTime as Neo4jDateTime } from 'neo4j-driver';
-import { ICauseInstance, IEntity, IRelationship } from '@microservices/shared';
-
-export interface ICauseInstancePopulated {
-    entity: IEntity;
-    aggregatedRelationship?: {
-        relationship: IRelationship;
-        otherEntity: IEntity;
-    };
-}
+import { ICauseInstance } from '@microservices/shared';
 
 export interface ICause {
     instance: ICauseInstance;

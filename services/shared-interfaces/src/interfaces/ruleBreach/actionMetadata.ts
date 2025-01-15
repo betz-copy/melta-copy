@@ -1,103 +1,96 @@
-import { IEntity } from "../entity";
+/* eslint-disable @typescript-eslint/no-empty-object-type */
+import { IEntity } from '../entity';
 
 export interface ICreateRelationshipMetadata {
-  relationshipTemplateId: string;
-  sourceEntityId: string;
-  destinationEntityId: string;
+    relationshipTemplateId: string;
+    sourceEntityId: string;
+    destinationEntityId: string;
 }
 
 export interface IDeleteRelationshipMetadata {
-  relationshipId: string;
-  relationshipTemplateId: string;
-  sourceEntityId: string;
-  destinationEntityId: string;
+    relationshipId: string;
+    relationshipTemplateId: string;
+    sourceEntityId: string;
+    destinationEntityId: string;
 }
 
 export interface ICreateEntityMetadata {
-  templateId: string;
-  properties: Record<string, any>;
+    templateId: string;
+    properties: Record<string, any>;
 }
 
 export interface IDuplicateEntityMetadata {
-  templateId: string;
-  properties: Record<string, any>;
-  entityIdToDuplicate: string;
+    templateId: string;
+    properties: Record<string, any>;
+    entityIdToDuplicate: string;
 }
 
 export interface IUpdateEntityMetadata {
-  entityId: string;
-  before?: Record<string, any>;
-  updatedFields: Record<string, any>;
+    entityId: string;
+    before?: Record<string, any>;
+    updatedFields: Record<string, any>;
 }
 
 export interface IUpdateEntityStatusMetadata {
-  entityId: string;
-  disabled: boolean;
+    entityId: string;
+    disabled: boolean;
 }
 
-export interface ICreateRelationshipMetadataPopulated {
-  relationshipTemplateId: string;
-  sourceEntity: IEntity | string | null;
-  destinationEntity: IEntity | string | null;
+export interface ICreateRelationshipMetadataPopulated extends Omit<ICreateRelationshipMetadata, 'sourceEntityId' | 'destinationEntityId'> {
+    sourceEntity: IEntity | string | null;
+    destinationEntity: IEntity | string | null;
 }
 
-export interface IDeleteRelationshipMetadataPopulated {
-  relationshipId: string;
-  relationshipTemplateId: string;
-  sourceEntity: IEntity | string | null;
-  destinationEntity: IEntity | string | null;
+export interface IDeleteRelationshipMetadataPopulated extends Omit<IDeleteRelationshipMetadata, 'sourceEntityId' | 'destinationEntityId'> {
+    sourceEntity: IEntity | string | null;
+    destinationEntity: IEntity | string | null;
 }
 
 export interface ICreateEntityMetadataPopulated extends ICreateEntityMetadata {}
 
-export interface IDuplicateEntityMetadataPopulated
-  extends ICreateEntityMetadata {
-  entityToDuplicate: IEntity | null;
+export interface IDuplicateEntityMetadataPopulated extends ICreateEntityMetadata {
+    entityToDuplicate: IEntity | string | null;
 }
 
-export interface IUpdateEntityStatusMetadataPopulated {
-  entity: IEntity | null;
-  disabled: boolean;
+export interface IUpdateEntityStatusMetadataPopulated extends Omit<IUpdateEntityStatusMetadata, 'entityId'> {
+    entity: IEntity | null;
 }
-export interface IUpdateEntityMetadataPopulated {
-  entity: IEntity | null;
-  before?: Record<string, any>;
-  updatedFields: Record<string, any>;
+export interface IUpdateEntityMetadataPopulated extends Omit<IUpdateEntityMetadata, 'entityId'> {
+    entity: IEntity | null;
 }
 
 export type IActionMetadata =
-  | ICreateRelationshipMetadata
-  | IDeleteRelationshipMetadata
-  | ICreateEntityMetadata
-  | IDuplicateEntityMetadata
-  | IUpdateEntityMetadata
-  | IUpdateEntityStatusMetadata;
+    | ICreateRelationshipMetadata
+    | IDeleteRelationshipMetadata
+    | ICreateEntityMetadata
+    | IDuplicateEntityMetadata
+    | IUpdateEntityMetadata
+    | IUpdateEntityStatusMetadata;
 
 export type IActionMetadataPopulated =
-  | ICreateRelationshipMetadataPopulated
-  | IDeleteRelationshipMetadataPopulated
-  | ICreateEntityMetadataPopulated
-  | IDuplicateEntityMetadataPopulated
-  | IUpdateEntityMetadataPopulated
-  | IUpdateEntityStatusMetadataPopulated;
+    | ICreateRelationshipMetadataPopulated
+    | IDeleteRelationshipMetadataPopulated
+    | ICreateEntityMetadataPopulated
+    | IDuplicateEntityMetadataPopulated
+    | IUpdateEntityMetadataPopulated
+    | IUpdateEntityStatusMetadataPopulated;
 
 export enum ActionTypes {
-  CreateRelationship = "create-relationship",
-  DeleteRelationship = "delete-relationship",
-  CreateEntity = "create-entity",
-  DuplicateEntity = "duplicate-entity",
-  UpdateEntity = "update-entity",
-  UpdateStatus = "update-status",
+    CreateRelationship = 'create-relationship',
+    DeleteRelationship = 'delete-relationship',
+    CreateEntity = 'create-entity',
+    DuplicateEntity = 'duplicate-entity',
+    UpdateEntity = 'update-entity',
+    UpdateStatus = 'update-status',
 }
 
 export interface IActionPopulated {
-  actionType: ActionTypes;
-  actionMetadata: IActionMetadataPopulated;
+    actionType: ActionTypes;
+    actionMetadata: IActionMetadataPopulated;
 }
 
 export enum ActionErrors {
-  validation = 'VALIDATION',
-  unique = 'UNIQUE',
-  required = 'REQUIRED',
+    validation = 'VALIDATION',
+    unique = 'UNIQUE',
+    required = 'REQUIRED',
 }
-

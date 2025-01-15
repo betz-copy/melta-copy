@@ -1,9 +1,9 @@
-export enum Action {
+export enum IndexingAction {
     upsertGlobalIndex = 'upsertGlobalIndex',
     upsertTemplateIndex = 'upsertTemplateIndex',
     deleteTemplateIndex = 'deleteTemplateIndex',
 }
 export interface IUpdateIndexRequest {
-    action: Action;
+    action: IndexingAction;
     templateId?: string;
 }

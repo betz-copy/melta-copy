@@ -15,6 +15,7 @@ export * from './interfaces/iframe';
 export * from './interfaces/gantt';
 export * from './interfaces/ruleBreach/agGrid';
 export * from './interfaces/semanticSearch';
+export * from './interfaces/globalSearch';
 
 // Exporting all enums and functions so frontend can use them too
 export {
@@ -41,6 +42,7 @@ export { WorkspaceTypes, Colors } from './interfaces/workspace';
 export { PermissionScope, PermissionType, InstancesSubclassesPermissions } from './interfaces/permission';
 export { Status, ProcessPropertyFormats, ProcessStatus } from './interfaces/process';
 export { FileTypes } from './interfaces/semanticSearch';
+export { IndexingAction } from './interfaces/globalSearch';
 
 export * from './types';
 export { SplitBy } from './types';

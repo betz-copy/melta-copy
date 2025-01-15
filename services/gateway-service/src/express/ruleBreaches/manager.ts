@@ -32,14 +32,6 @@ import {
     IRuleBreachResponseNotificationMetadataPopulated,
     BadRequestError,
     ForbiddenError,
-} from '@microservices/shared';
-import { trycatch } from '../../utils';
-import InstancesManager from '../instances/manager';
-
-import config from '../../config';
-import InstancesService from '../../externalServices/instanceService';
-import RuleBreachService from '../../externalServices/ruleBreachService';
-import {
     IActionMetadataPopulated,
     IBrokenRulePopulated,
     ICauseInstancePopulated,
@@ -55,7 +47,13 @@ import {
     IRuleBreachRequestPopulated,
     IUpdateEntityMetadataPopulated,
     IUpdateEntityStatusMetadataPopulated,
-} from '../../externalServices/ruleBreachService/interfaces/populated';
+} from '@microservices/shared';
+import { trycatch } from '../../utils';
+import InstancesManager from '../instances/manager';
+
+import config from '../../config';
+import InstancesService from '../../externalServices/instanceService';
+import RuleBreachService from '../../externalServices/ruleBreachService';
 import StorageService from '../../externalServices/storageService';
 import EntityTemplateService from '../../externalServices/templates/entityTemplateService';
 import { IAgGridResult } from '../../utils/agGrid/interface';

@@ -18,14 +18,12 @@ import {
     IActionPopulated,
     IBrokenRuleEntity,
     logger,
-} from '@microservices/shared';
-import excelConfig from './excelConfig';
-
-import {
     IBrokenRulePopulated,
     ICreateEntityMetadataPopulated,
     IUpdateEntityMetadataPopulated,
-} from '../../externalServices/ruleBreachService/interfaces/populated';
+} from '@microservices/shared';
+import excelConfig from './excelConfig';
+
 import config from '../../config';
 
 const { entitiesFileLimit, invalidDate, invalidTime } = config.loadExcel;

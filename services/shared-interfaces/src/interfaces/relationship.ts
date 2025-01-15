@@ -17,9 +17,7 @@ export interface IDeleteRelationshipReference {
     transaction: Transaction;
 }
 
-export interface IRelationshipPopulated {
-    templateId: string;
-    properties: Record<string, any>;
+export interface IRelationshipPopulated extends Omit<IRelationship, 'sourceEntityId' | 'destinationEntityId'> {
     sourceEntity: IEntity;
     destinationEntity: IEntity;
 }

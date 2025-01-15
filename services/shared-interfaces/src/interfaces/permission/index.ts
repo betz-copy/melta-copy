@@ -16,7 +16,7 @@ export const PermissionTypeOptions = Object.values(PermissionType);
 
 export type IDefaultPermissionDetails = { scope?: PermissionScope };
 export type IPermissionMetadata<H extends readonly string[] = [], D extends Object = IDefaultPermissionDetails> = D &
-    ([...H] extends [H[0], ...infer R extends string[]] ? Record<H[0], Record<string, IPermissionMetadata<R, D>>> : {});
+    ([...H] extends [H[0], ...infer R extends string[]] ? Record<H[0], Record<string, IPermissionMetadata<R, D>>> : object);
 
 export interface IBasePermission<
     T extends PermissionType = PermissionType,

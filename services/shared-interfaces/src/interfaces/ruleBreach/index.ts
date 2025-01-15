@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-empty-object-type */
 import { IRequiredConstraint, IUniqueConstraint, IValidationError } from '../entity';
 import { IUser } from '../user';
 import { ActionErrors, ActionTypes, IActionMetadataPopulated } from './actionMetadata';
