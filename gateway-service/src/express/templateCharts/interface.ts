@@ -1,5 +1,5 @@
 export enum IChartType {
-    Bar = 'bar',
+    Column = 'column',
     Line = 'line',
     Pie = 'pie',
     Number = 'number',
@@ -26,7 +26,7 @@ export interface IAxis {
     title: string;
 }
 
-export interface IBarOrLineMetaData {
+export interface IColumnOrLineMetaData {
     xAxis: IAxis;
     yAxis: IAxis;
 }
@@ -40,7 +40,7 @@ export interface INUmberMetaData {
     accumulator: IAxisField;
 }
 
-export type IChartTypeMetaData = IBarOrLineMetaData | IPieMetaData | INUmberMetaData;
+export type IChartTypeMetaData = IColumnOrLineMetaData | IPieMetaData | INUmberMetaData;
 
 export enum IPermission {
     Protected = 'protected',

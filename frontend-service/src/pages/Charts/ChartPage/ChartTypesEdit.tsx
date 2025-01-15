@@ -6,10 +6,10 @@ import React, { useMemo } from 'react';
 import { IBasicChart, IChartType } from '../../../interfaces/charts';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { initializeChartMetaData } from '../../../utils/charts/getChartAxes';
-import { BarOrLineChart } from '../chartsType/BarOrLineChart';
 import { NumberChart } from '../chartsType/NumberChart';
 import { PieChart } from '../chartsType/PieChart';
 import { ChartTypeButton } from './ChartTypeButton';
+import { ColumnOrLineChart } from '../chartsType/ColumnOrLineChart';
 
 interface ChartProps {
     formik: FormikProps<IBasicChart>;
@@ -19,14 +19,14 @@ interface ChartProps {
 
 const charts: Record<IChartType, React.FC<ChartProps>> = {
     [IChartType.Number]: NumberChart,
-    [IChartType.Bar]: BarOrLineChart,
+    [IChartType.Column]: ColumnOrLineChart,
     [IChartType.Pie]: PieChart,
-    [IChartType.Line]: BarOrLineChart,
+    [IChartType.Line]: ColumnOrLineChart,
 };
 
 const chartTypeButtons = [
     { icon: NumberChartIcon, type: IChartType.Number, label: i18next.t('charts.numberChart') },
-    { icon: BarChartIcon, type: IChartType.Bar, label: i18next.t('charts.barChart') },
+    { icon: BarChartIcon, type: IChartType.Column, label: i18next.t('charts.barChart') },
     { icon: PieChartIcon, type: IChartType.Pie, label: i18next.t('charts.pieChart') },
     { icon: ShowChartIcon, type: IChartType.Line, label: i18next.t('charts.lineChart') },
 ];

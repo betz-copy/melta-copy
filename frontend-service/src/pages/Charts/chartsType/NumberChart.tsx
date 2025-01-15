@@ -18,7 +18,6 @@ const NumberChart: React.FC<{
             formikValues={formikValues}
             label={`${i18next.t('charts.AccumulateAccordingTo')}`}
             optionsType={OptionsType.Aggregation}
-            byFieldOptionsType={OptionsType.AllProperties}
         />
     );
 };

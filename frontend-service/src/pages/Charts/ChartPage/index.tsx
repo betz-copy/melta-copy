@@ -38,10 +38,10 @@ const ChartPage: React.FC = () => {
         (newChart: IBasicChart) => createChart({ ...newChart, templateId } as IBasicChart),
         {
             onSuccess: () => {
-                toast.success(i18next.t('gantts.actions.createdSuccessfully'));
+                toast.success(i18next.t('charts.actions.createdSuccessfully'));
             },
             onError: (error: AxiosError) => {
-                toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('gantts.actions.failedToCreate')} />);
+                toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('charts.actions.failedToCreate')} />);
             },
         },
     );
@@ -49,10 +49,10 @@ const ChartPage: React.FC = () => {
     const { mutateAsync: deleteChartMutateAsync, isLoading: isDeleteChartLoading } = useMutation((id: string) => deleteChart(id), {
         onSuccess: () => {
             navigate(`/charts/${templateId}`);
-            toast.success(i18next.t('gantts.actions.deletedSuccessfully'));
+            toast.success(i18next.t('charts.actions.deletedSuccessfully'));
         },
         onError: (error: AxiosError) => {
-            toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('gantts.actions.failedToDelete')} />);
+            toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('charts.actions.failedToDelete')} />);
         },
     });
 

@@ -2,14 +2,14 @@ import { FilterModel } from '@ag-grid-community/core';
 import React, { useEffect, useRef, useState } from 'react';
 import { useQuery } from 'react-query';
 import { EntitiesTableOfTemplateRef } from '../../../common/EntitiesTableOfTemplate';
-import { IAxis, IAxisField, IBasicChart, IChartType, isAggregation } from '../../../interfaces/charts';
+import { IAxisField, IBasicChart, IChartType } from '../../../interfaces/charts';
 import { IEntity } from '../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { getChartOfTemplate } from '../../../services/entitiesService';
 import { filterModelToFilterOfTemplate } from '../../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
+import { getChartAxes } from '../../../utils/charts/getChartAxes';
 import { NumberChartGenerator } from './NumberChartGenerator';
 import { HiighchartGenerator } from './highChartgenerator';
-import { getChartAxes } from '../../../utils/charts/getChartAxes';
 
 interface IChartGenerator {
     formikValues: IBasicChart;

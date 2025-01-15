@@ -31,7 +31,6 @@ const PieChart: React.FC<{ formik: FormikProps<IBasicChart>; formikValues: IBasi
                     formikValues={formikValues}
                     label={`${i18next.t('charts.sumBy')}`}
                     optionsType={OptionsType.Aggregation}
-                    byFieldOptionsType={OptionsType.NumberProperties}
                 />
             </Grid>
         </Grid>

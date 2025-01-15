@@ -3,7 +3,7 @@ import * as Yup from 'yup';
 import {
     IAggregationType,
     IAxisField,
-    IBarOrLineMetaData,
+    IColumnOrLineMetaData,
     IBasicChart,
     IChartType,
     IChartTypeMetaData,
@@ -17,9 +17,9 @@ export const getChartAxes = (type: IChartType, metaData: IChartTypeMetaData) => 
     let yAxis;
 
     switch (type) {
-        case IChartType.Bar:
+        case IChartType.Column:
         case IChartType.Line: {
-            const chartMetaData = metaData as IBarOrLineMetaData;
+            const chartMetaData = metaData as IColumnOrLineMetaData;
             xAxis = chartMetaData.xAxis.field;
             yAxis = chartMetaData.yAxis.field;
             break;
@@ -44,14 +44,14 @@ export const getChartAxes = (type: IChartType, metaData: IChartTypeMetaData) => 
 
 export const initializeChartMetaData = (type: IChartType): IChartTypeMetaData => {
     const chartMetadataMap: Record<IChartType, IChartTypeMetaData> = {
-        [IChartType.Bar]: {
+        [IChartType.Column]: {
             xAxis: { field: '', title: '' },
             yAxis: { field: '', title: '' },
-        } as IBarOrLineMetaData,
+        } as IColumnOrLineMetaData,
         [IChartType.Line]: {
             xAxis: { field: '', title: '' },
             yAxis: { field: '', title: '' },
-        } as IBarOrLineMetaData,
+        } as IColumnOrLineMetaData,
         [IChartType.Pie]: {
             dividedByField: '',
             aggregationType: { type: 'countAll' },
@@ -75,7 +75,7 @@ export const initialValues: IBasicChart = {
     metaData: {
         xAxis: { field: '', title: '' },
         yAxis: { field: '', title: '' },
-    } as IBarOrLineMetaData,
+    } as IColumnOrLineMetaData,
     permission: IPermission.Private,
 };
 
@@ -116,7 +116,7 @@ export const chartValidationSchema = Yup.object({
     /// cleaner code
     metaData: Yup.mixed<IChartTypeMetaData>()
         .when('type', {
-            is: IChartType.Bar,
+            is: IChartType.Column,
             then: IBarOrLineMetaDataSchema.required('MetaData is required for Bar chart'),
             otherwise: Yup.mixed<IChartTypeMetaData>().when('type', {
                 is: IChartType.Line,

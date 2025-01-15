@@ -25,7 +25,7 @@ export const NumberChartGenerator: React.FC<{
                 bgcolor: darkMode ? '#131313' : '#fcfeff',
                 minWidth: '500px',
                 height: 400,
-                borderRadius: 1.5,
+                borderRadius: '5%',
                 p: 2,
                 boxShadow: darkMode ? '0.5px #444' : '4px #0000000D',
                 overflow: 'hidden',

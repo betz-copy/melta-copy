@@ -6,7 +6,7 @@ import { IBasicChart, OptionsType } from '../../../interfaces/charts';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { AxisInput } from '../ChartPage/AggregationInput';
 
-const BarOrLineChart: React.FC<{
+const ColumnOrLineChart: React.FC<{
     formik: FormikProps<IBasicChart>;
     formikValues: IBasicChart;
     entityTemplate: IMongoEntityTemplatePopulated;
@@ -22,7 +22,6 @@ const BarOrLineChart: React.FC<{
                     formikValues={formikValues}
                     label={`${i18next.t('charts.axis')} x`}
                     optionsType={OptionsType.AggregationAndAllProperties}
-                    byFieldOptionsType={OptionsType.NumberProperties}
                 />
             </Grid>
             <Grid item>
@@ -34,11 +33,10 @@ const BarOrLineChart: React.FC<{
                     formikValues={formikValues}
                     label={`${i18next.t('charts.axis')} y`}
                     optionsType={OptionsType.AggregationAndNumberProperties}
-                    byFieldOptionsType={OptionsType.NumberProperties}
                 />
             </Grid>
         </Grid>
     );
 };
 
-export { BarOrLineChart };
+export { ColumnOrLineChart };
