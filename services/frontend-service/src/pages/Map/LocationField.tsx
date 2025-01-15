@@ -6,10 +6,13 @@ import 'leaflet-draw';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-draw/dist/leaflet.draw.css';
 import { EditControl } from 'react-leaflet-draw';
+import { useQueryClient } from 'react-query';
+import i18next from 'i18next';
 import { bindPopupForMarker, bindPopupForPolygon, jerusalemCoordinates, latLngToString, stringToCoordinates, UpdateMapBounds } from '../../utils/map';
 import { BaseLayers } from './mapPage';
 import { createSquareAroundPoint } from '../../utils/hooks/useLocation';
 import { environment } from '../../globals';
+import { BackendConfigState } from '../../services/backendConfigService';
 
 const { squareLength } = environment.map;
 
@@ -22,6 +25,7 @@ type Props = {
 const LocationField = ({ defaultLocation, styles, updateValue }: Props) => {
     const [markerPosition, setMarkerPosition] = useState<LatLng | null>(null);
     const [polygonPosition, setPolygonPosition] = useState<LatLng[] | null>(null);
+    const queryClient = useQueryClient();
 
     useEffect(() => {
         const initialCoordinates = defaultLocation ? stringToCoordinates(defaultLocation) : null;
@@ -84,6 +88,10 @@ const LocationField = ({ defaultLocation, styles, updateValue }: Props) => {
         return null;
     }, [polygonPosition, markerPosition]);
 
+    const config = queryClient.getQueryData<BackendConfigState>('getBackendConfig');
+    if (!config) return <>{i18next.t('location.noCrsTypes')}</>;
+    const { crsType } = config;
+
     return (
         <MapContainer
             style={{ width: '100%', height: '100vh', ...styles }}
@@ -95,7 +103,7 @@ const LocationField = ({ defaultLocation, styles, updateValue }: Props) => {
                 [-90, -180],
                 [90, 180],
             ]}
-            crs={CRS.EPSG3857}
+            crs={CRS[crsType]}
         >
             <UpdateMapBounds bounds={bounds} />
 
