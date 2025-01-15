@@ -104,17 +104,9 @@ const ProcessSummary = React.forwardRef<HTMLDivElement, ProcessSummaryProp>(({ p
                                                 }`}
                                             />
                                         </Grid>
-                                        <StepLabel
-                                            StepIconComponent={() =>
-                                                StepIconComponent(
-                                                    stepInstance,
-                                                    processTemplate.steps[index],
-                                                    setActiveStep,
-                                                    index,
-                                                    stepInstance.status,
-                                                )
-                                            }
-                                        />
+                                        <Grid item>
+                                            {StepIconComponent(stepInstance, processTemplate.steps[index], setActiveStep, index, stepInstance.status)}
+                                        </Grid>
                                         <Grid item container position="absolute" top="165px" alignItems="center" justifyContent="center">
                                             <Grid item>
                                                 <ReviewedAtProcessStatus instance={stepInstance} />

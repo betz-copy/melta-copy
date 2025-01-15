@@ -427,12 +427,7 @@ const ProcessCard: React.FC<{
                                                     alignSelf="center"
                                                     gap="10px"
                                                 >
-                                                    <StepLabel
-                                                        // eslint-disable-next-line react/no-unstable-nested-components
-                                                        StepIconComponent={() =>
-                                                            StepIconComponent(step, stepTemplate, setOpen, step.status, step._id)
-                                                        }
-                                                    />
+                                                    <Grid item>{StepIconComponent(step, stepTemplate, setOpen, step.status, step._id)}</Grid>
                                                 </Grid>
                                             </Step>
                                         );

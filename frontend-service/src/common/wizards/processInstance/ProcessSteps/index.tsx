@@ -172,43 +172,32 @@ const Steps: React.FC<IStepsProp> = ({
                                 <Step style={{ minWidth: '100px' }} key={stepInstance._id} active>
                                     <Grid>
                                         <Grid container flexDirection="column" justifyContent="center" width="100%" alignSelf="center" gap="10px">
-                                            <StepLabel
-                                                // eslint-disable-next-line react/no-unstable-nested-components
-                                                StepIconComponent={() => {
-                                                    return (
-                                                        <Grid container flexDirection="column" justifyContent="center" width="100%" gap="10px">
-                                                            <StepIcon
-                                                                iconColor={currStepInstance?._id === stepInstance._id ? '#1E2775' : '#9398C2'}
-                                                                step={stepInstance}
-                                                                stepTemplate={processTemplate.steps[index]}
-                                                                setOpen={() => {
-                                                                    if (!isStepEditMode) {
-                                                                        setCurrStepInstance(stepInstance);
-                                                                        setCurrStepInstanceIndex(index);
-                                                                    }
-                                                                }}
-                                                                displayTitle={false}
-                                                            />
+                                            <Grid container flexDirection="column" justifyContent="center" width="100%" gap="10px">
+                                                <StepIcon
+                                                    iconColor={currStepInstance?._id === stepInstance._id ? '#1E2775' : '#9398C2'}
+                                                    step={stepInstance}
+                                                    stepTemplate={processTemplate.steps[index]}
+                                                    setOpen={() => {
+                                                        if (!isStepEditMode) {
+                                                            setCurrStepInstance(stepInstance);
+                                                            setCurrStepInstanceIndex(index);
+                                                        }
+                                                    }}
+                                                    displayTitle={false}
+                                                />
 
-                                                            <Typography
-                                                                color={
-                                                                    // eslint-disable-next-line no-nested-ternary
-                                                                    currStepInstance?._id === stepInstance._id
-                                                                        ? darkMode
-                                                                            ? '#b7bef7'
-                                                                            : '#1E2775'
-                                                                        : '#9398C2'
-                                                                }
-                                                                fontSize={currStepInstance?._id === stepInstance._id ? '14px' : '12px'}
-                                                                fontWeight={currStepInstance?._id === stepInstance._id ? '600' : '400'}
-                                                                textAlign="center"
-                                                            >
-                                                                {getStepTemplateByStepInstance(stepInstance, processTemplate).displayName}
-                                                            </Typography>
-                                                        </Grid>
-                                                    );
-                                                }}
-                                            />
+                                                <Typography
+                                                    color={
+                                                        // eslint-disable-next-line no-nested-ternary
+                                                        currStepInstance?._id === stepInstance._id ? (darkMode ? '#b7bef7' : '#1E2775') : '#9398C2'
+                                                    }
+                                                    fontSize={currStepInstance?._id === stepInstance._id ? '14px' : '12px'}
+                                                    fontWeight={currStepInstance?._id === stepInstance._id ? '600' : '400'}
+                                                    textAlign="center"
+                                                >
+                                                    {getStepTemplateByStepInstance(stepInstance, processTemplate).displayName}
+                                                </Typography>
+                                            </Grid>
                                         </Grid>
                                     </Grid>
                                 </Step>
