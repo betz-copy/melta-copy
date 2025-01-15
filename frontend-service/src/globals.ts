@@ -63,9 +63,15 @@ export const environment = {
         BatchSize: 50,
         limit3DConnections: 100,
     },
+    mui: {
+        activationKey: '8c5d3fd6a4390125cf8590dea55dbb05Tz1HdXksRT0yMDAwMDAwMDAwMDAwLFM9cHJlbWl1bSxMTT1zdWJzY3JpcHRpb24sS1Y9Mg==',
+    },
     canvasSettings: {
         heightPaddingMultiplier: 0.3,
         widthPaddingMultiplier: 0.6,
+    },
+    users: {
+        kartoffelProfile: 'kartoffelProfile',
     },
     ganttSettings: {
         infiniteScrollPageCount: 10,
@@ -112,6 +118,7 @@ export const environment = {
     notifications: {
         updateInterval: 1000 * 60 * 10,
         infiniteScrollPageCount: 10,
+        color: '#FF006B',
         groups: {
             requests: [NotificationType.ruleBreachRequest],
             general: [
@@ -220,6 +227,7 @@ export const environment = {
         failedConstraintsValidation: 'FAILED_CONSTRAINTS_VALIDATION',
         failedToDeleteField: 'FAILED_DELETE_FIELD',
         actionsCustomError: 'ACTIONS_CUSTOM_ERROR',
+        entityHasRelationships: 'ENTITY_HAS_RELATIONSHIPS',
     },
     mainFontSizes: {
         headlineTitleFontSize: '24px',
@@ -235,6 +243,14 @@ export const environment = {
     },
     loadExcel: { excelExtension: '.xlsx', acceptedFilesTypes: { 'excel/xlsx': ['.xlsx', '.xls'] }, filesLimit: 5, entitiesLimit: 500 },
     draftAutoSaveDebounce: 250,
+    map: {
+        maxRadius: 30000,
+        squareLength: 10,
+        units: { km: 'km', squaredKm: 'km²' },
+        polygon: { polygon: 'POLYGON', polygonPrefix: 'POLYGON((', polygonSuffix: '))' },
+    },
+    profileIconsCount: 19,
+    avatarIconPath: '/icons/profileAvatar/',
     fileExtensions: {
         image: ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'webp', 'ico', 'psd', 'raw', 'heif', 'indd', 'ai', 'eps'],
         imageToManipulate: ['png', 'jpg', 'jpeg', 'svg'] as string[],

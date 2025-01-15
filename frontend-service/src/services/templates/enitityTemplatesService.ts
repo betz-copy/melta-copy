@@ -1,3 +1,4 @@
+/* eslint-disable no-nested-ternary */
 import { v4 as uuid } from 'uuid';
 import axios from '../../axios';
 import { EntityTemplateFormInputProperties, EntityTemplateWizardValues } from '../../common/wizards/entityTemplate';
@@ -14,8 +15,8 @@ import { CommonFormInputProperties } from '../../common/wizards/entityTemplate/c
 
 const { entityTemplates } = environment.api;
 export const basePropertyTypes = ['string', 'number', 'boolean'];
-export const stringFormats = ['date', 'date-time', 'email', 'fileId', 'text-area', 'relationshipReference'];
-export const arrayTypes = ['multipleFiles', 'enumArray'];
+export const stringFormats = ['date', 'date-time', 'email', 'fileId', 'text-area', 'relationshipReference', 'location', 'user'];
+export const arrayTypes = ['multipleFiles', 'enumArray', 'users'];
 
 const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTemplatePopulated | null): EntityTemplateWizardValues | undefined => {
     if (!entityTemplate) return undefined;
@@ -40,10 +41,14 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
 
         let type = value.format || value.type;
         if (value.serialStarter !== undefined) type = 'serialNumber';
+        // else if (value.items?.format === 'user') type = 'users'; // TODO
         else if (value.enum) type = 'enum';
         else if (value.pattern) type = 'pattern';
+        else if (value.format && value.format === 'text-area') type = 'text-area';
+        else if (value.format && value.format === 'location') type = 'location';
         else if (value.items?.enum) type = 'enumArray';
         else if (value.items?.format === 'fileId') type = 'multipleFiles';
+        else if (value.items?.format === 'user') type = 'users';
         else if (value.items?.format === 'text-area') type = 'text-area';
 
         const property: EntityTemplateFormInputProperties = {
@@ -161,6 +166,9 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                     case 'enumArray':
                         propertyType = 'array';
                         break;
+                    case 'users':
+                        propertyType = 'array';
+                        break;
                     default:
                         propertyType = 'string';
                 }
@@ -168,13 +176,22 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                 schema.properties[name] = {
                     title,
                     type: propertyType,
-                    format: stringFormats.includes(type) ? type : undefined,
+                    format: (stringFormats.includes(type) ? type : undefined) as
+                        | 'date'
+                        | 'date-time'
+                        | 'email'
+                        | 'fileId'
+                        | 'text-area'
+                        | 'relationshipReference'
+                        | 'user'
+                        | undefined,
                     enum: type === 'enum' ? options : undefined,
-                    items: type === 'enumArray' ? { type: 'string', enum: options } : undefined,
-                    minItems: type === 'enumArray' ? 1 : undefined,
+                    items:
+                        type === 'enumArray' ? { type: 'string', enum: options } : type === 'users' ? { type: 'string', format: 'user' } : undefined,
+                    minItems: type === 'enumArray' || type === 'users' ? 1 : undefined,
                     readOnly,
                     archive,
-                    uniqueItems: type === 'enumArray' ? true : undefined,
+                    uniqueItems: type === 'enumArray' || type === 'users' ? true : undefined,
                     pattern: type === 'pattern' ? pattern : undefined,
                     patternCustomErrorMessage: type === 'pattern' ? patternCustomErrorMessage : undefined,
                     dateNotification: dateNotification as number | undefined,
@@ -270,7 +287,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                     minItems: type === 'enumArray' ? 1 : undefined,
                     readOnly,
                     archive,
-                    uniqueItems: type === 'enumArray' ? true : undefined,
+                    uniqueItems: type === 'enumArray' || type === 'users' ? true : undefined,
                     pattern: type === 'pattern' ? pattern : undefined,
                     patternCustomErrorMessage: type === 'pattern' ? patternCustomErrorMessage : undefined,
                     dateNotification: dateNotification as number | undefined,

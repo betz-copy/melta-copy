@@ -116,9 +116,28 @@ export interface ISearchBatchBody {
     shouldSemanticSearch?: boolean;
 }
 
+type Coordinate = [number, number];
+export interface Circle {
+    coordinate: Coordinate; // [latitude, longitude]
+    radius: number; // Positive number
+}
+
+export type Polygon = Coordinate[];
+export interface ISearchEntitiesByLocationTemplatesBody {
+    [templateId: string]: {
+        filter?: ISearchFilter;
+        locationFields?: string[];
+    };
+}
+export interface ISearchEntitiesByLocationBody {
+    textSearch?: string;
+    templates: ISearchEntitiesByLocationTemplatesBody;
+    circle: Circle;
+}
+
 export interface ISearchResult {
     count: number;
-    entities: (IEntityWithDirectConnections & { minioFileIds?: string[] })[];
+    entities: (IEntityWithDirectConnections & { minioFileIdsWithTexts?: ISemanticSearchResult[string][string] })[];
 }
 
 export interface ISearchResultByTemplates {
@@ -155,5 +174,23 @@ export interface IGraphFilterBody {
 export interface IGraphFilterBodyBatch {
     [key: string]: IGraphFilterBody;
 }
+
+export interface IDeleteEntityBodyBase {
+    selectAll: boolean;
+    templateId: string;
+    deleteAllRelationships?: boolean;
+}
+
+export type IDeleteEntityBody<T extends boolean = boolean> = IDeleteEntityBodyBase & {
+    selectAll: T;
+} & (T extends true
+        ? {
+              idsToExclude?: string[];
+              filter?: ISearchEntitiesOfTemplateBody['filter'];
+              textSearch?: string;
+          }
+        : {
+              idsToInclude: string[];
+          });
 
 export type EntityData = IEntity | IFailedEntity;

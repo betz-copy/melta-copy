@@ -1,12 +1,12 @@
 import { Request } from 'express';
 import * as ts from 'typescript-actions';
-import DefaultController from '../../utils/express/controller';
 import { generateInterfaceWithRelationships } from '../../utils/entityTemplateActions/interfacesGenerator';
+import { compileTsCode } from '../../utils/entityTemplateActions/tsCompiler';
+import { addPropertyToRequest } from '../../utils/express';
+import DefaultController from '../../utils/express/controller';
 import { BadRequestError } from '../error';
 import { IMongoEntityTemplate } from './interface';
 import EntityTemplateManager from './manager';
-import { addPropertyToRequest } from '../../utils/express';
-import { compileTsCode } from '../../utils/entityTemplateActions/tsCompiler';
 
 export class EntityTemplateValidator extends DefaultController<IMongoEntityTemplate, EntityTemplateManager> {
     constructor(workspaceId: string) {
@@ -16,7 +16,6 @@ export class EntityTemplateValidator extends DefaultController<IMongoEntityTempl
     getAllRelationshipReferencesEntityTemplates = async (templateId: string) => {
         const entityTemplates = await this.manager.getTemplates({ limit: 0, skip: 0 });
         const templatesMap = new Map(entityTemplates.map((template) => [template._id, template]));
-
         const baseTemplate = templatesMap.get(templateId)!;
         const entityPropertiesQueue = [baseTemplate.properties.properties];
         const relationshipReferenceIdsMap = new Map([[templateId, baseTemplate]]);
@@ -76,7 +75,6 @@ export class EntityTemplateValidator extends DefaultController<IMongoEntityTempl
         const sourceFile = ts.createSourceFile(filename, code, ts.ScriptTarget.ES5);
         compileTsCode(filename, sourceFile);
         // todo: ensure that the code doesn't use in global variables
-
         const entityTemplatesByIds = await this.getAllRelationshipReferencesEntityTemplates(templateId);
 
         addPropertyToRequest(req, 'actions', this.cleanActionCode(actions, entityTemplatesByIds));

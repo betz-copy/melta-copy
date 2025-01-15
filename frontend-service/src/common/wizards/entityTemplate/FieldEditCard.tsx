@@ -90,6 +90,7 @@ export interface FieldEditCardProps {
     setUniqueConstraints?: (uniqueConstraints: SetStateAction<IUniqueConstraintOfTemplate[]>) => void;
     supportEditEnum?: boolean;
     supportUnique?: boolean;
+    supportLocation?: boolean;
     supportArchive?: boolean;
     hasActions?: boolean;
 }
@@ -118,6 +119,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     supportRelationshipReference,
     supportEditEnum,
     supportUnique,
+    supportLocation,
     supportArchive,
     hasActions,
 }) => {
@@ -605,6 +607,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                     if (validPropertyType === 'serialNumber') {
                                                         if (!supportSerialNumberType) return false;
                                                     }
+                                                    if (validPropertyType === 'location') return supportLocation;
                                                     if (validPropertyType === 'text-area') return false;
                                                     if (validPropertyType === 'enumArray') return supportArrayFields;
                                                     if (validPropertyType === 'relationshipReference') return supportRelationshipReference;

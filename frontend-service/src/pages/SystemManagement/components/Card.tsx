@@ -32,7 +32,6 @@ export const ViewingCard: React.FC<{
                     style={{ padding: '10px' }}
                     onClick={(event) => {
                         event.preventDefault();
-
                         event.stopPropagation();
                         setOpen(!!expendedCard);
                     }}
