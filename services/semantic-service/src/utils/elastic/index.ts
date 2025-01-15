@@ -168,7 +168,8 @@ class ElasticClient {
         try {
             const response = await ElasticClient.client!.search<IElasticDoc, IGroupByUniquePropAggregate>(searchBody);
             return this.formatElasticResponse(response);
-        } catch (e) {
+        } catch (error) {
+            logger.error('Error searching in ElasticSearch:', { error });
             return undefined;
         }
     }
