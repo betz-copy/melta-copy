@@ -8,7 +8,7 @@ export default class ProcessTemplatesController extends DefaultController<Proces
     }
 
     async createProcessTemplate(req: Request, res: Response) {
-        res.json(await this.manager.createProcessTemplate(req.body, req.files!));
+        res.json(await this.manager.createProcessTemplate(req.body, req.files || []));
     }
 
     async getTemplateById(req: Request, res: Response) {
@@ -16,7 +16,7 @@ export default class ProcessTemplatesController extends DefaultController<Proces
     }
 
     async updateProcessTemplate(req: Request, res: Response) {
-        res.json(await this.manager.updateProcessTemplate(req.params.id, req.body, req.files!, req.user!.id));
+        res.json(await this.manager.updateProcessTemplate(req.params.id, req.body, req.files || [], req.user!.id));
     }
 
     async deleteProcessTemplate(req: Request, res: Response) {

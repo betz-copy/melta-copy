@@ -15,12 +15,12 @@ class ProcessInstancesController extends DefaultController<InstancesManager> {
 
     async createProcessInstance(req: Request, res: Response) {
         const { id: userId } = req.user as ShragaUser;
-        res.json(await this.manager.createProcessInstance(req.body, req.files!, userId));
+        res.json(await this.manager.createProcessInstance(req.body, req.files || [], userId));
     }
 
     async updateProcessInstance(req: Request, res: Response) {
         const { id: userId } = req.user as ShragaUser;
-        res.json(await this.manager.updateProcessInstance(req.params.id, req.body, req.files!, userId));
+        res.json(await this.manager.updateProcessInstance(req.params.id, req.body, req.files || [], userId));
     }
 
     async archiveProcess(req: Request, res: Response) {

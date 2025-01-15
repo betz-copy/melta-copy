@@ -43,7 +43,6 @@ export const busboyMiddleware = (req: Request, _res: Response, next: NextFunctio
     });
 
     busboy.on('error', (err: Error) => {
-        console.log('error', err);
         next(err);
     });
 

@@ -3,8 +3,12 @@ import { promisify } from 'util';
 import { Request, Response } from 'express';
 import { InstancesManager } from './manager';
 import DefaultController from '../../utils/express/controller';
+<<<<<<< Updated upstream
 import { UploadedFile } from '../../utils/busboy/interface';
+import { IDeleteBody, ISearchEntitiesByLocationBody } from '../../externalServices/instanceService/interfaces/entities';
+=======
 import { IDeleteBody } from '../../externalServices/instanceService/interfaces/entities';
+>>>>>>> Stashed changes
 
 export class InstancesController extends DefaultController<InstancesManager> {
     constructor(workspaceId: string) {
@@ -13,7 +17,7 @@ export class InstancesController extends DefaultController<InstancesManager> {
 
     async createEntityInstance(req: Request, res: Response) {
         const { ignoredRules, ...instanceData } = req.body;
-        res.json(await this.manager.createEntityInstance(instanceData, req.files!, ignoredRules, req.user!.id));
+        res.json(await this.manager.createEntityInstance(instanceData, req.files || [], ignoredRules, req.user!.id));
     }
 
     async exportEntities(req: Request, res: Response) {
@@ -26,12 +30,19 @@ export class InstancesController extends DefaultController<InstancesManager> {
     }
 
     async loadEntities(req: Request, res: Response) {
-        res.json(await this.manager.loadEntities(req.body.templateId, req.user!.id, req.files, req.body.insertBrokenEntities));
+        res.json(await this.manager.loadEntities(req.body.templateId, req.user!.id, req.files || [], req.body.insertBrokenEntities));
     }
 
     async updateEntityInstance(req: Request, res: Response) {
         const { ignoredRules, ...instanceData } = req.body;
-        res.json(await this.manager.updateEntityInstance(req.params.id, instanceData, req.files!, ignoredRules, req.user!.id));
+        res.json(await this.manager.updateEntityInstance(req.params.id, instanceData, req.files || [], ignoredRules, req.user!.id));
+<<<<<<< Updated upstream
+    }
+
+    async searchEntitiesByLocation(req: Request, res: Response) {
+        res.json(await this.manager.searchEntitiesByLocation(req.body as ISearchEntitiesByLocationBody));
+=======
+>>>>>>> Stashed changes
     }
 
     async searchEntitiesBatch(req: Request, res: Response) {
@@ -50,15 +61,7 @@ export class InstancesController extends DefaultController<InstancesManager> {
 
     async duplicateEntityInstance(req: Request, res: Response) {
         const { ignoredRules, ...instanceData } = req.body;
-        res.json(
-            await this.manager.duplicateEntityInstance(
-                req.params.id,
-                instanceData,
-                req.files as unknown as UploadedFile[],
-                ignoredRules,
-                req.user!.id,
-            ),
-        );
+        res.json(await this.manager.duplicateEntityInstance(req.params.id, instanceData, req.files || [], ignoredRules, req.user!.id));
     }
 
     async deleteEntityInstances(req: Request, res: Response) {

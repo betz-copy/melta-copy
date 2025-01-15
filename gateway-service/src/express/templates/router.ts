@@ -115,6 +115,7 @@ templatesRouter.patch(
     ValidateRequest(updateEntityTemplateStatusSchema),
     templatesControllerMiddleware.updateEntityTemplateStatus,
 );
+
 templatesRouter.delete(
     '/entities/:id',
     ValidateRequest(deleteEntityTemplateSchema),

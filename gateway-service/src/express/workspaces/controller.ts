@@ -28,11 +28,11 @@ export class WorkspaceController extends DefaultController<WorkspaceManager> {
     }
 
     async createOne(req: Request, res: Response) {
-        res.json(await this.manager.createOne(req.body, req.files!));
+        res.json(await this.manager.createOne(req.body, req.files || []));
     }
 
     async updateOne(req: Request, res: Response) {
-        res.json(await this.manager.updateOne(req.params.id, req.body, req.files!));
+        res.json(await this.manager.updateOne(req.params.id, req.body, req.files || []));
     }
 
     async deleteOne(req: Request, res: Response) {

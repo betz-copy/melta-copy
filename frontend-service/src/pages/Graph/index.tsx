@@ -13,7 +13,7 @@ import { useQuery, useQueryClient } from 'react-query';
 import { useParams } from 'wouter';
 import { toast } from 'react-toastify';
 import { environment } from '../../globals';
-import { ICategoryMap } from '../../interfaces/categories';
+import { ICategoryMap, IMongoCategory } from '../../interfaces/categories';
 import { IEntityExpanded, IGraphFilterBodyBatch } from '../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
@@ -376,7 +376,9 @@ const Graph: React.FC = () => {
                     <TemplatesSelectGrid
                         templates={Array.from(entityTemplates.values())}
                         selectedTemplates={filteredEntityTemplates}
-                        setSelectedTemplates={setFilteredEntityTemplates}
+                        setSelectedTemplates={
+                            setFilteredEntityTemplates as React.Dispatch<React.SetStateAction<(IMongoEntityTemplatePopulated | IMongoCategory)[]>>
+                        }
                         categories={Array.from(categories.values())}
                         setOpenFilter={setOpenFilter}
                         openFilter={openFilter}

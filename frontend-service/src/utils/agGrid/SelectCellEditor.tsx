@@ -1,15 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import { FormControl, TextField, Autocomplete, InputAdornment, Select, MenuItem, ListItemText, SelectChangeEvent } from '@mui/material';
+import { FormControl, TextField, Autocomplete, InputAdornment, Select, MenuItem, ListItemText, SelectChangeEvent, Box } from '@mui/material';
 import { MeltaCheckbox } from '../../common/MeltaCheckbox';
+import { ColoredEnumChip } from '../../common/ColoredEnumChip';
 
 interface SelectCellEditorProps {
     values: string[];
     value?: string | string[];
     onValueChange: (newValue: string | string[] | null) => void;
     multiple?: boolean;
+    colorsOptions?: Record<string, string>;
 }
 
-const SelectCellEditor: React.FC<SelectCellEditorProps> = ({ values, value, onValueChange, multiple = false }) => {
+const SelectCellEditor: React.FC<SelectCellEditorProps> = ({ values, value, onValueChange, multiple = false, colorsOptions }) => {
     const [selectedValues, setSelectedValues] = useState<string | string[] | undefined>(value);
 
     useEffect(() => {
@@ -32,22 +34,34 @@ const SelectCellEditor: React.FC<SelectCellEditorProps> = ({ values, value, onVa
     return (
         <FormControl fullWidth>
             {multiple ? (
+                /** MULTIPLE SELECTION MODE (via <Select>) * */
                 <Select
                     multiple
                     value={selectedValues}
                     onChange={handleChange}
-                    renderValue={(selected) => (selected as string[]).join(', ')}
+                    // Render colored chips when displaying selected items
+                    renderValue={(selected) => (
+                        <Box>
+                            {(selected as string[]).map((val) => (
+                                <ColoredEnumChip key={val} label={val} color={colorsOptions?.[val] || 'default'} />
+                            ))}
+                        </Box>
+                    )}
                     style={{ width: '100%', height: '100%' }}
                 >
                     {values.map((option) => (
                         <MenuItem key={option} value={option} style={{ height: '40px' }}>
-                            <MeltaCheckbox checked={selectedValues!.indexOf(option) > -1} />
-                            <ListItemText primary={option} />
+                            <MeltaCheckbox checked={(selectedValues as string[]).indexOf(option) > -1} />
+                            {colorsOptions ? (
+                                <ColoredEnumChip label={option} color={colorsOptions[option] || 'default'} />
+                            ) : (
+                                <ListItemText primary={option} />
+                            )}
                         </MenuItem>
                     ))}
                 </Select>
             ) : (
-                <Autocomplete<string | string[], boolean>
+                <Autocomplete<string, boolean>
                     multiple={multiple}
                     value={selectedValues}
                     onChange={(_, newValue) => handleAutocompleteChange(newValue as string | string[] | null)}
@@ -62,6 +76,15 @@ const SelectCellEditor: React.FC<SelectCellEditorProps> = ({ values, value, onVa
                             }}
                         />
                     )}
+                    renderOption={(props, option) =>
+                        colorsOptions ? (
+                            <li {...props} key={option}>
+                                <ColoredEnumChip label={option} color={colorsOptions[option] || 'default'} />
+                            </li>
+                        ) : (
+                            <span {...props}>{option}</span>
+                        )
+                    }
                     options={values.map((option) => option).sort()}
                     getOptionDisabled={(option) => (multiple ? Boolean(value?.includes(option as string)) : false)}
                 />

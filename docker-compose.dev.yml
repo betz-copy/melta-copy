@@ -216,10 +216,6 @@ services:
       - logs:/usr/src/app/logs
     networks:
       - network
-    # deploy:
-    #   resources:
-    #     limits:
-    #       memory: 100m
 
   user-service:
     ports:
@@ -247,6 +243,10 @@ services:
       - logs:/usr/src/app/logs
     networks:
       - network
+
+  # frontend-service:
+  #   networks:
+  #     - network
 
   nginx:
     ports:

@@ -5,7 +5,7 @@ import { IEntityTemplate, IEnumPropertiesColors, IProperties } from './interface
 import config from '../../config';
 import { ColorSchema, variableNameValidation } from '../../utils/joi';
 
-const { notifications } = config;
+const { notifications, ajvCustomFormats } = config;
 
 const ajv = new Ajv();
 ajv.addFormat('fileId', /.*/);
@@ -18,6 +18,7 @@ ajv.addFormat('user', {
 });
 ajv.addFormat('text-area', /.*/);
 ajv.addFormat('relationshipReference', /.*/);
+ajv.addFormat('location', ajvCustomFormats.locationFieldRegex);
 addFormats(ajv);
 ajv.addVocabulary(['patternCustomErrorMessage', 'hide']);
 ajv.addKeyword({
@@ -39,9 +40,10 @@ ajv.addKeyword({
 ajv.addKeyword({ keyword: 'user', type: 'string' });
 ajv.addKeyword({ keyword: 'calculateTime', type: 'boolean' });
 ajv.addKeyword({ keyword: 'isDailyAlert', type: 'boolean' });
+ajv.addKeyword({ keyword: 'isDatePastAlert', type: 'boolean' });
 ajv.addKeyword({ keyword: 'archive', type: 'boolean' });
 
-const stringFormats = ['date', 'date-time', 'email', 'fileId', 'text-area', 'relationshipReference', 'user'];
+const stringFormats = ['date', 'date-time', 'email', 'fileId', 'text-area', 'relationshipReference', 'location', 'user'];
 const allowedJSONSchemaTypes = ['string', 'number', 'boolean', 'array'];
 
 const propertiesArraySchema = Joi.array()
@@ -89,6 +91,9 @@ const propertiesArraySchema = Joi.array()
                 .when('format', { not: Joi.valid('date', 'date-time'), then: Joi.forbidden() })
                 .when('type', { not: 'string', then: Joi.forbidden() }),
             isDailyAlert: Joi.boolean()
+                .when('format', { not: Joi.valid('date', 'date-time'), then: Joi.forbidden() })
+                .when('type', { not: 'string', then: Joi.forbidden() }),
+            isDatePastAlert: Joi.boolean()
                 .when('format', { not: Joi.valid('date', 'date-time'), then: Joi.forbidden() })
                 .when('type', { not: 'string', then: Joi.forbidden() }),
             relationshipReference: Joi.object({

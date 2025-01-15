@@ -526,7 +526,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
         return this.discardRuleBreachRequest(ruleBreachRequest, user, RuleBreachRequestStatus.Canceled);
     }
 
-    private async uploadRuleBreachFiles(ruleBreach: Omit<IRuleBreachAlert, '_id' | 'createdAt' | 'originUserId'>, files: UploadedFile[]) {
+    private async uploadRuleBreachFiles(ruleBreach: Omit<IRuleBreachAlert, '_id' | 'createdAt' | 'originUserId'>, files: UploadedFile[] = []) {
         if (!files.length) return;
 
         const instancesManager = new InstancesManager(this.workspaceId);

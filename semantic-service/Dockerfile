@@ -1,4 +1,5 @@
 FROM node:22-alpine AS build
+RUN apk add --no-cache antiword
 WORKDIR /usr/src/app
 
 COPY package*.json ./
@@ -11,6 +12,7 @@ RUN npm run build
 
 
 FROM node:22-alpine
+RUN apk add --no-cache antiword
 WORKDIR /usr/src/app
 
 COPY package*.json ./

@@ -17,6 +17,7 @@ import { removeTmpFile } from '../../utils/fs';
 import { RecursiveNullable } from '../../utils/types';
 import { DigitalIdentitySourceDoesNotExistsError, KartoffelUserMissingDataError } from './error';
 import { BadRequestError } from '../error';
+import { UploadedFile } from '../../utils/busboy/interface';
 
 const {
     storageService: { usersGlobalBucketName },
@@ -95,7 +96,7 @@ export class UsersManager {
         return UserService.updateUser(userId, { externalMetadata });
     }
 
-    static async updateUserPreferencesMetadata(userId: string, preferences: Partial<IBaseUser['preferences']>, file?: Express.Multer.File) {
+    static async updateUserPreferencesMetadata(userId: string, preferences: Partial<IBaseUser['preferences']>, file?: UploadedFile) {
         const user = await UserService.getUserById(userId);
         const { profilePath: currentProfilePath } = user.preferences || {};
         const updates: Partial<IBaseUser['preferences']> = { ...preferences };
@@ -114,7 +115,7 @@ export class UsersManager {
         if (file) {
             await deleteCurrentProfileFile();
             const newProfilePath = await this.storageService.uploadFile(file);
-            await removeTmpFile(file.path);
+            await removeTmpFile(file.originalname);
             updates.profilePath = newProfilePath;
         } else if (currentProfilePath && (!preferences.profilePath || preferences.profilePath !== currentProfilePath)) {
             await deleteCurrentProfileFile();

@@ -254,7 +254,7 @@ const EntitiesPageHeadline: React.FC<{
                                     templates={entityTemplateSelectCheckboxProps.templates}
                                     selectedTemplates={entityTemplateSelectCheckboxProps.templatesToShow}
                                     setSelectedTemplates={entityTemplateSelectCheckboxProps.setTemplatesToShow}
-                                    categories={entityTemplateSelectCheckboxProps.categories}
+                                    categories={entityTemplateSelectCheckboxProps.categories ?? []}
                                     isDraggableDisabled={entityTemplateSelectCheckboxProps.isDraggableDisabled}
                                     setTemplates={entityTemplateSelectCheckboxProps.setTemplates}
                                     size="small"
