@@ -14,6 +14,7 @@ export interface IEntitySingleProperty {
     patternCustomErrorMessage?: string;
     dateNotification?: number;
     isDailyAlert?: boolean;
+    isDatePastAlert?: boolean;
     calculateTime?: boolean;
     serialStarter?: number;
     serialCurrent?: number;
@@ -21,7 +22,7 @@ export interface IEntitySingleProperty {
     items?: {
         type: 'string';
         enum?: string[];
-        format?: 'fileId';
+        format?: 'fileId' | 'user';
     };
     minItems?: 1;
     uniqueItems?: true;

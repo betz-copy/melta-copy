@@ -2,11 +2,8 @@ import React, { useState } from 'react';
 import * as XLSX from 'xlsx';
 import { toast } from 'react-toastify';
 import i18next from 'i18next';
-import { environment } from '../../globals';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { ISteps, StepStatus } from '../../common/wizards/loadEntities';
-
-const { entitiesLimit, filesLimit } = environment.loadExcel;
 
 const convertFileDataToRowData = (gridData: any[][], headers: string[], template: IMongoEntityTemplatePopulated) => {
     return gridData
@@ -23,25 +20,21 @@ const convertFileDataToRowData = (gridData: any[][], headers: string[], template
 
             return isEmptyRow ? null : { properties: rowObject };
         })
-        .filter((rowObject) => rowObject !== null);
+        .filter((rowObject): rowObject is { properties: Record<string, any> } => rowObject !== null);
 };
 
-const importDataToGrid = (fileData: any[][], template: IMongoEntityTemplatePopulated): { properties: Record<string, any> }[] | null => {
-    if (fileData.length === 0) return null;
+const importDataToGrid = (fileData: any[][], template: IMongoEntityTemplatePopulated): { properties: Record<string, any> }[] => {
+    if (fileData.length === 0) return [];
 
     const headers = fileData[0] as string[];
     const newRows = convertFileDataToRowData(fileData.slice(1), headers, template);
-    return newRows || null;
+    return newRows;
 };
 
 const createFileObject = (files?: File[]): Record<string, File> | undefined => {
     const validFiles = files?.filter((file): file is File => file !== null);
 
-    if (!validFiles?.length || validFiles?.length > filesLimit) {
-        toast.error('wizard.entity.loadEntities.limitNumberFiles');
-        return undefined;
-    }
-    return validFiles.reduce<Record<string, File>>((acc, file) => {
+    return validFiles?.reduce<Record<string, File>>((acc, file) => {
         return { ...acc, [file.name]: file };
     }, {});
 };
@@ -79,12 +72,8 @@ export const useReadExcel = () => {
                         const fileData: any[][] = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
 
                         const newEntities = importDataToGrid(fileData, template);
-                        if ((newEntities?.length || 0) > entitiesLimit) {
-                            reject(new Error(file.name));
-                        } else {
-                            newEntities?.forEach((newEntity) => entities.push(newEntity));
-                            resolve();
-                        }
+                        newEntities?.forEach((newEntity) => entities.push(newEntity));
+                        resolve();
                     } catch (err) {
                         reject(err);
                     }
@@ -105,8 +94,9 @@ export const useReadExcel = () => {
             setStepsData((prev) => ({ ...prev, status: StepStatus.previewExcelRows, files: fileObject }));
         } catch (error) {
             if ((error as Error).message === 'Invalid File Type') toast.error(i18next.t('wizard.entity.loadEntities.wrongFileType'));
-            else if (files.some((file) => file.name === (error as Error).message))
-                toast.error(`${i18next.t('wizard.entity.loadEntities.limitNumberEntities')} ${(error as Error).message}`);
+            else if ((error as Error).message === 'files limit') toast.error(i18next.t('wizard.entity.loadEntities.limitNumberFiles'));
+            else if ((error as Error).message === 'file limit')
+                toast.error(`${i18next.t('wizard.entity.loadEntities.limitNumberEntities')} ${(error as any).metadata}`);
             else if ((error as Error).message.includes('wrong template')) toast.error(i18next.t('wizard.entity.loadEntities.filesWrongTemplate'));
             else toast.error(i18next.t('wizard.entity.loadEntities.failedReadingFiles'));
         }

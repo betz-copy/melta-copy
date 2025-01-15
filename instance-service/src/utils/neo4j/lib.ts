@@ -6,7 +6,10 @@ import { IRelationship } from '../../express/relationships/interfaces';
 import config from '../../config';
 import { EntityManager } from '../../express/entities/manager';
 import { IFormulaCauses } from '../../express/rules/interfaces/formulaWithCauses';
-import { ISemanticSearchResult } from '../../externalServices/semanticSearch/interface';
+import { ValidationError } from '../../express/error';
+import { SplitBy } from '../types';
+
+const { polygonPrefix, polygonSuffix, srid } = config.map;
 
 type Node = Neo4jNode<number>;
 type Relationship = Neo4jRelationship<number>;
@@ -23,12 +26,25 @@ export const formatDate = (date: string) => {
 const normalizeFields = (properties: Record<string, any>): Record<string, any> => {
     const props = {};
 
+    const usersArrayKeys: Set<string> = new Set<string>();
+    const userKeys: Set<string> = new Set<string>();
+
     Object.entries(properties).forEach(([key, value]) => {
         if (
             key.endsWith(config.neo4j.stringPropertySuffix) ||
             key.endsWith(config.neo4j.booleanPropertySuffix) ||
             key.endsWith(config.neo4j.filePropertySuffix)
         ) {
+            return;
+        }
+
+        if (key.includes('.') && key.endsWith(`${config.neo4j.usersFieldsPropertySuffix}`)) {
+            usersArrayKeys.add(key.split('.')[0]);
+            return;
+        }
+
+        if (key.includes('.') && key.endsWith(`${config.neo4j.userFieldPropertySuffix}`)) {
+            userKeys.add(key.split('.')[0]);
             return;
         }
 
@@ -44,8 +60,54 @@ const normalizeFields = (properties: Record<string, any>): Record<string, any> =
             return;
         }
 
+        if (value instanceof neo4j.types.Point) {
+            props[key] = `${value.x}, ${value.y}`;
+
+            return;
+        }
+        if (Array.isArray(value) && value.every((item) => item instanceof neo4j.types.Point)) {
+            const points = value.map((point) => `${point.x} ${point.y}`);
+            props[key] = `${polygonPrefix}${points.join(',')}${polygonSuffix}`;
+
+            return;
+        }
+
         props[key] = value;
     });
+
+    if (usersArrayKeys.size) {
+        usersArrayKeys.forEach((userKey) => {
+            props[userKey] = properties[
+                `${userKey}${config.neo4j.usersArrayOriginalAndSuffixFieldsMap[0].suffixFieldName}${config.neo4j.usersFieldsPropertySuffix}`
+            ].map((_id, index) => {
+                const objToReturn: any = {};
+
+                config.neo4j.usersArrayOriginalAndSuffixFieldsMap.forEach((userField) => {
+                    objToReturn[userField.originalFieldName] =
+                        properties[`${userKey}${userField.suffixFieldName}${config.neo4j.usersFieldsPropertySuffix}`][index];
+                });
+
+                return JSON.stringify({
+                    ...objToReturn,
+                });
+            });
+        });
+    }
+
+    if (userKeys.size) {
+        userKeys.forEach((userKey) => {
+            const objToReturn: any = {};
+
+            config.neo4j.userOriginalAndSuffixFieldsMap.forEach((userField) => {
+                objToReturn[userField.originalFieldName] =
+                    properties[`${userKey}${userField.suffixFieldName}${config.neo4j.userFieldPropertySuffix}`];
+            });
+
+            props[userKey] = JSON.stringify({
+                ...objToReturn,
+            });
+        });
+    }
 
     return props;
 };
@@ -80,6 +142,13 @@ export const normalizeReturnedEntity =
         return entities as Response<T, IEntity>;
     };
 
+export const normalizeSearchByLocationResponse = (result: QueryResult): Array<{ node: IEntity; matchingFields: string[] }> => {
+    return result.records.map((record) => ({
+        node: nodeToEntity(record.get(0) as Node),
+        matchingFields: record.get(1) as string[],
+    }));
+};
+
 export const normalizeResponseCount = (result: QueryResult): number => {
     return result.records[0].get(0);
 };
@@ -91,31 +160,12 @@ export const normalizeChartResponse = (result: QueryResult) =>
         return { x, y };
     });
 
-const formatEntitiesWithFiles = (entitiesWithFiles: ISemanticSearchResult[string]): Record<string, string[]> =>
-    Object.entries(entitiesWithFiles).reduce((acc, [entityId, entityData]) => {
-        entityData.forEach(({ minioFileId }) => {
-            if (!acc[entityId]) acc[entityId] = [];
-            acc[entityId].push(minioFileId);
-        });
-        return acc;
-    }, {});
-
-export const normalizeResponseTemplatesCount = (
-    result: QueryResult,
-): { templateId: string; count: number; entitiesWithFiles?: Record<string, string[]> }[] => {
-    // entitiesWithFiles: { entityId: minioFileId[] }
-    return result.records.map((record) => {
-        const formattedObject: { templateId: string; count: number; entitiesWithFiles?: Record<string, string[]> } = {
-            templateId: record.get('templateId'),
-            count: +record.get('count'),
-        };
-
-        if (record.has('entitiesWithFiles') && record.get('entitiesWithFiles')) {
-            formattedObject.entitiesWithFiles = formatEntitiesWithFiles(record.get('entitiesWithFiles') as ISemanticSearchResult[string]);
-        }
-
-        return formattedObject;
-    });
+export const normalizeResponseTemplatesCount = (result: QueryResult): { templateId: string; count: number }[] => {
+    return result.records.map((record) => ({
+        templateId: record.get('templateId'),
+        count: +record.get('count'),
+        entitiesWithFiles: (record.has('entitiesWithFiles') && record.get('entitiesWithFiles')) ?? undefined,
+    }));
 };
 
 export const normalizeRuleResult = (result: QueryResult) => {
@@ -291,4 +341,25 @@ export const generateDefaultProperties = () => {
         updatedAt: timestamp,
         disabled: false,
     };
+};
+
+const getLocationPoint = (pointString: string, splitBy: SplitBy) => {
+    const [longitude, latitude] = pointString.split(splitBy).map(Number);
+    if (Number.isNaN(longitude) || Number.isNaN(latitude)) {
+        throw new ValidationError('Invalid format. Expected format: "number, number".');
+    }
+
+    return new neo4j.types.Point(srid, longitude, latitude);
+};
+
+export const getNeo4jLocation = (locationString: string) => {
+    if (!locationString.startsWith('POLYGON')) return getLocationPoint(locationString, SplitBy.comma);
+
+    if (!locationString.startsWith(polygonPrefix) || !locationString.endsWith(polygonSuffix)) {
+        throw new ValidationError('Invalid format. Expected polygon format: POLYGON((number number, number number, ...))');
+    }
+
+    const coordsStr = locationString.slice(polygonPrefix.length, -polygonSuffix.length);
+
+    return coordsStr.split(SplitBy.comma).map((stringedLocation: string) => getLocationPoint(stringedLocation, SplitBy.space));
 };

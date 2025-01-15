@@ -38,6 +38,7 @@ const Unavailable = lazy(() => import('../Unavailable'));
 const ErrorPage = lazy(() => import('../ErrorPage'));
 const Entity = lazy(() => import('../Entity'));
 const Graph = lazy(() => import('../Graph'));
+const Map = lazy(() => import('../Map/mapPage'));
 const Duplicate = lazy(() => import('../Entity/components/DuplicateEntity'));
 
 const FluidSimulation = lazy(() => import('../MeltaPlus/FluidSimulation'));
@@ -172,6 +173,10 @@ export const MeltaRoutesInner: React.FC = () => {
                             <Route path="/rule-management/:breachType?/:ruleBreachId?">
                                 <TopBar title={title} />
                                 <RuleManagement setTitle={setTitle} />
+                            </Route>
+
+                            <Route path="/map">
+                                <Map />
                             </Route>
 
                             <Route path="/charts/:templateId/chart">

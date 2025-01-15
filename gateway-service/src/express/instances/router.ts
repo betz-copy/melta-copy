@@ -10,7 +10,7 @@ import { InstancesValidator } from './middlewares';
 import {
     createEntityInstanceSchema,
     createRelationshipSchema,
-    deleteEntityInstanceSchema,
+    deleteEntityInstancesSchema,
     deleteRelationshipSchema,
     exportEntitiesSchema,
     exportEntityToDocumentSchema,
@@ -18,6 +18,7 @@ import {
     searchEntitiesBatchRequestSchema,
     getEntitiesCountByTemplates,
     searchEntitiesByTemplatesSchema,
+    searchEntitiesByLocationRequestSchema,
     updateEntityInstanceSchema,
     updateEntityStatusSchema,
     loadEntitiesSchema,
@@ -46,10 +47,18 @@ InstancesRouter.post(
     InstancesValidatorMiddleware.validateUserCanSearchEntitiesBatch,
     InstancesControllerMiddleware.searchEntitiesBatch,
 );
+
+InstancesRouter.post(
+    '/entities/search/location',
+    ValidateRequest(searchEntitiesByLocationRequestSchema),
+    InstancesValidatorMiddleware.validateUserCanSearchEntitiesBatch,
+    InstancesControllerMiddleware.searchEntitiesByLocation,
+);
+
 InstancesRouter.post(
     '/entities/search/template/:templateId',
     InstancesValidatorMiddleware.validateUserCanSearchEntitiesOfTemplate,
-    InstanceManagerProxy,
+    InstancesControllerMiddleware.searchEntitiesOfTemplate,
 );
 InstancesRouter.post('/entities/chart/:templateId', InstanceManagerProxy);
 
@@ -114,11 +123,11 @@ InstancesRouter.post(
     InstancesValidatorMiddleware.validateUserCanWriteEntityInstance,
     InstancesControllerMiddleware.duplicateEntityInstance,
 );
-InstancesRouter.delete(
-    '/entities/:id',
-    ValidateRequest(deleteEntityInstanceSchema),
-    InstancesValidatorMiddleware.validateUserCanWriteEntityInstance,
-    InstancesControllerMiddleware.deleteEntityInstance,
+InstancesRouter.post(
+    '/entities/delete/bulk',
+    ValidateRequest(deleteEntityInstancesSchema),
+    InstancesValidatorMiddleware.validateUserCanDeleteEntityInstances,
+    InstancesControllerMiddleware.deleteEntityInstances,
 );
 InstancesRouter.patch(
     '/entities/:id/status',

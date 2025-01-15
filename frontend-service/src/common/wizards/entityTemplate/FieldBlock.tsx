@@ -43,6 +43,7 @@ interface FieldBlockProps<PropertiesType extends string, Values extends Record<P
     supportRelationshipReference: boolean;
     supportEditEnum?: boolean;
     supportUnique?: boolean;
+    supportLocation?: boolean;
     supportArchive?: boolean;
     supportAddFieldButton?: boolean;
     hasActions?: boolean;
@@ -71,8 +72,9 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
     supportRelationshipReference,
     supportEditEnum,
     supportUnique,
+    supportLocation,
     supportArchive,
-    supportAddFieldButton,
+    supportAddFieldButton = true,
     hasActions,
     draggable = { isDraggable: false },
     initialFieldCardDataOnAdd = {
@@ -235,6 +237,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
                                                 supportEditEnum,
                                                 supportRelationshipReference,
                                                 supportUnique,
+                                                supportLocation,
                                                 supportArchive,
                                                 hasActions,
                                             };
@@ -289,7 +292,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
                 body={`${i18next.t('systemManagement.warningOnDeleteField')}
                     ${selectedIndexToRemove > -1 && displayValuesRef.current[selectedIndexToRemove].title}
                     ${i18next.t('systemManagement.continueWarningOnDeleteField')} ${
-                    (initialValues as unknown as IMongoEntityTemplatePopulated).displayName
+                    (initialValues as unknown as IMongoEntityTemplatePopulated)?.displayName
                 }`}
                 onYes={onDeleteSure}
             />

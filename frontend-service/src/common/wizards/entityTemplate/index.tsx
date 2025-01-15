@@ -40,6 +40,7 @@ export interface EntityTemplateFormInputProperties {
     optionColors: Record<string, string>;
     dateNotification: number | null | undefined;
     isDailyAlert: boolean | null | undefined;
+    isDatePastAlert: boolean | null | undefined;
     calculateTime: boolean | null | undefined;
     serialStarter: number | undefined;
     deleted?: boolean | undefined;
@@ -86,8 +87,9 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
     const queryClient = useQueryClient();
 
     const currentTemplateId = isEditMode ? (initialValues as EntityTemplateWizardValues & { _id: string })._id : undefined;
+    const templates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates') || new Map();
 
-    const createTemplateNameSchema = useCreateOrEditTemplateNameSchema(currentTemplateId);
+    const createTemplateNameSchema = useCreateOrEditTemplateNameSchema(templates, currentTemplateId);
 
     const { isLoading, mutateAsync } = useMutation(
         (entityTemplate: EntityTemplateWizardValues) =>

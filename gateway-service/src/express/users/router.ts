@@ -1,12 +1,14 @@
 import { Router } from 'express';
+import multer from 'multer';
 import { createProxyMiddleware } from 'http-proxy-middleware';
-import { wrapController } from '../../utils/express';
+import { wrapController, wrapMulter } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
 import { UsersController } from './controller';
 import config from '../../config';
 import {
     createUserRequestSchema,
     deletePermissionsFromMetadataRequestSchema,
+    getUserProfileRequestSchema,
     getMyUserRequestSchema,
     getUserByIdRequestSchema,
     searchExternalUsersRequestSchema,
@@ -14,8 +16,14 @@ import {
     searchUsersRequestSchema,
     syncUserPermissionsRequestSchema,
     updateUserExternalMetadataRequestSchema,
+    updateUserPreferencesMetadataRequestSchema,
+    getKartoffelUserProfileRequestSchema,
 } from './validator.schema';
 import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
+
+const {
+    service: { uploadsFolderPath },
+} = config;
 
 const { userService } = config;
 
@@ -33,7 +41,16 @@ usersRouter.get('/external', ValidateRequest(searchExternalUsersRequestSchema), 
 
 usersRouter.get('/:userId', ValidateRequest(getUserByIdRequestSchema), wrapController(UsersController.getUserById));
 
+usersRouter.get(
+    '/kartoffelUserProfile/:kartoffelId',
+    ValidateRequest(getKartoffelUserProfileRequestSchema),
+    wrapController(UsersController.getKartoffelUserProfile),
+);
+
+usersRouter.get('/user-profile/:userId', ValidateRequest(getUserProfileRequestSchema), wrapController(UsersController.getUserProfile));
+
 usersRouter.post('/search-ids', ValidateRequest(searchUsersRequestSchema), wrapController(UsersController.searchUserIds));
+
 usersRouter.post('/search', ValidateRequest(searchUsersRequestSchema), wrapController(UsersController.searchUsers));
 
 usersRouter.post(
@@ -41,6 +58,13 @@ usersRouter.post(
     AuthorizerControllerMiddleware.userCanWritePermissions,
     ValidateRequest(createUserRequestSchema),
     wrapController(UsersController.createUser),
+);
+
+usersRouter.patch(
+    '/:userId/preferences',
+    wrapMulter(multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).single('file')),
+    ValidateRequest(updateUserPreferencesMetadataRequestSchema),
+    wrapController(UsersController.updateUserPreferencesMetadata),
 );
 
 usersRouter.patch(

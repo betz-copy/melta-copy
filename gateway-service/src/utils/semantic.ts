@@ -67,10 +67,10 @@ export const formatEntitiesBulkSearch = (searchResults: ISearchResult, query: st
 
         return {
             ...entity,
-            minioFileIds: semanticResult.map(({ minioFileId, text }) => {
+            minioFileIdsWithTexts: semanticResult.map(({ minioFileId, text }) => {
                 pushToTextsForReranking(textsForReranking, text, entityId);
 
-                return minioFileId;
+                return { minioFileId, text };
             }),
         };
     });
@@ -79,14 +79,43 @@ export const formatEntitiesBulkSearch = (searchResults: ISearchResult, query: st
 };
 
 /**
+ * Create an object with text as key, and entityIds as value.
+ * @param searchResults search results from instance service (neo4j)
+ * @param entitiesWithFiles search results from semantic service on specific template
+ * @param query what the user searched for
+ * @returns Record<string, string[]>, example: { text1: entityIds1[], text2: entityIds2[], ... }
+ */
+export const createTextsFromEntitiesWithFiles = (
+    searchResults: ISearchResult,
+    entitiesWithFiles: ISemanticSearchResult[string],
+    query: string,
+): Record<string, string[]> =>
+    searchResults.entities.reduce((acc, entity) => {
+        const {
+            properties: { _id: entityId },
+        } = entity.entity;
+
+        if (!entitiesWithFiles[entityId]) {
+            const text = searchEntityPropertiesForQuery(entity.entity.properties, query);
+            pushToTextsForReranking(acc, text ?? query, entityId);
+        } else {
+            entitiesWithFiles[entityId].forEach(({ text }) => {
+                pushToTextsForReranking(acc, text, entityId);
+            });
+        }
+
+        return acc;
+    }, {});
+
+/**
  * Order formattedEntities by the rerankByDocs array (which contains the texts in the order they should be)
- * @param formattedEntities entities with minioFileIds
+ * @param formattedEntities entities with minioFileIdsWithTexts like {minioFileIdsWithTexts: [{minioFileId: string, text: string}]}
  * @param rerankByDocs from semantic service ({ text: string, index: number })
  * @param textsForReranking object containing each text with its corresponding entityIds
  * @returns sorted formattedEntities
  */
 export const sortEntities = (
-    formattedEntities: (IEntityWithDirectRelationships & { minioFileIds?: string[] })[],
+    formattedEntities: (IEntityWithDirectRelationships & { minioFileIdsWithTexts?: ISemanticSearchResult[string][string] })[],
     rerankByDocs: IRerankResult[],
     textsForReranking: Record<string, string[]>,
 ) =>

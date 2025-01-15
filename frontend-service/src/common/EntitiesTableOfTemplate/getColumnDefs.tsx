@@ -6,7 +6,7 @@ import { Link } from 'wouter';
 import { AxiosError } from 'axios';
 import { UseMutateAsyncFunction } from 'react-query';
 import { IButtonPopoverProps } from '.';
-import { IEntity } from '../../interfaces/entities';
+import { EntityData, IEntity } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import {
     booleanColDef,
@@ -15,19 +15,24 @@ import {
     enumColDef,
     enumFilesColDef,
     fileColDef,
+    locationColDef,
     numberColDef,
     regexColDef,
     relatedTemplateColDef,
     stringColDef,
+    userArrayColDef,
+    userColDef,
 } from '../../utils/agGrid/commonColDefs';
 import IconButtonWithPopover from '../IconButtonWithPopover';
 import { ImageWithDisable } from '../ImageWithDisable';
 import { CardMenu } from '../../pages/SystemManagement/components/CardMenu';
 import { IRuleBreach } from '../../interfaces/ruleBreaches/ruleBreach';
+import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
 
 export interface IGetColumnDefsOptions<Data extends any> {
-    template: IMongoEntityTemplatePopulated & { entitiesWithFiles?: string[] };
-    getEntityPropertiesData: (data: Data) => IEntity['properties'];
+    template: IMongoEntityTemplatePopulated & { entitiesWithFiles?: ISemanticSearchResult[string] };
+    getRowId: (data: Data) => string;
+    getEntityPropertiesData: (data: Data) => Partial<IEntity['properties']>;
     onNavigateToRow?: (entity: Data) => void;
     deleteRowButtonProps?: IButtonPopoverProps<Data>;
     menuRowButtonProps?: boolean;
@@ -52,8 +57,9 @@ export interface IGetColumnDefsOptions<Data extends any> {
     disableEditCell?: boolean;
 }
 
-export const getColumnDefs = <Data extends any = IEntity>({
+export const getColumnDefs = <Data extends any = EntityData>({
     template,
+    getRowId,
     getEntityPropertiesData,
     onNavigateToRow,
     hideNonPreview = false,
@@ -75,6 +81,7 @@ export const getColumnDefs = <Data extends any = IEntity>({
 }: IGetColumnDefsOptions<Data>): ColDef[] => {
     const columnDefs = template.propertiesOrder.map((property) => {
         const propertyTemplate = { ...template.properties.properties[property] };
+        const hiddenProperties = template.properties.hide;
         const { type, format, calculateTime, archive } = propertyTemplate;
 
         const hideField = template.properties.hide.includes(property);
@@ -89,7 +96,9 @@ export const getColumnDefs = <Data extends any = IEntity>({
 
         if (propertyTemplate.archive) propertyTemplate.title = `${propertyTemplate.title} ${i18next.t('entitiesTableOfTemplate.archiveTitle')}`;
 
-        const editable = (data: any) => !disableEditCell && !propertyTemplate.readOnly && data && !getEntityPropertiesData(data).disabled;
+        const editable = (data: any) =>
+            !disableEditCell && !propertyTemplate.readOnly && data && !getEntityPropertiesData(data).disabled && !hiddenProperties.includes(property);
+
         if (type === 'number')
             return numberColDef(
                 property,
@@ -137,6 +146,8 @@ export const getColumnDefs = <Data extends any = IEntity>({
                 searchValue,
                 Object.values(template.entitiesWithFiles ?? {}).flat(),
             );
+        if (format === 'location')
+            return locationColDef(property, valueGetter, propertyTemplate, template, defaultColumnWidths[property], hideColumn, searchValue);
         if (format === 'relationshipReference')
             return relatedTemplateColDef(
                 property,
@@ -190,16 +201,21 @@ export const getColumnDefs = <Data extends any = IEntity>({
                 searchValue,
                 editable,
             );
-        if (propertyTemplate.items) {
-            return enumFilesColDef(
+        if (propertyTemplate.items?.format === 'fileId') {
+            return enumFilesColDef(property, valueGetter, { title: propertyTemplate.title }, defaultColumnWidths[property], rowHeight);
+        }
+        if (propertyTemplate.format === 'user') {
+            return userColDef(property, valueGetter, { title: propertyTemplate.title }, [], defaultColumnWidths[property], hideColumn);
+        }
+        if (propertyTemplate.items?.format === 'user') {
+            return userArrayColDef(
                 property,
                 valueGetter,
                 { title: propertyTemplate.title },
+                [],
                 defaultColumnWidths[property],
                 rowHeight,
-                false,
-                searchValue,
-                Object.values(template.entitiesWithFiles ?? {}).flat(),
+                hideColumn,
             );
         }
         return stringColDef(
@@ -214,6 +230,7 @@ export const getColumnDefs = <Data extends any = IEntity>({
             editable,
         );
     });
+
     columnDefs.push(
         booleanColDef(
             'disabled',
@@ -340,7 +357,7 @@ export const getColumnDefs = <Data extends any = IEntity>({
                         {onNavigateToRow && (
                             <Grid item>
                                 <Link
-                                    href={`/entity/${getEntityPropertiesData(data)._id}/graph`}
+                                    href={`/entity/${getRowId(data)}/graph`}
                                     onClick={(e) => {
                                         if (disabledEntity) e.preventDefault();
                                     }}
@@ -364,12 +381,12 @@ export const getColumnDefs = <Data extends any = IEntity>({
                             <Grid item>
                                 <CardMenu
                                     onDuplicateClick={() => {
-                                        navigate(`/entity/${getEntityPropertiesData(data)._id}/duplicate`, {
+                                        navigate(`/entity/${getRowId(data)}/duplicate`, {
                                             state: { entityTemplate: template, expandedEntity: { entity: data } },
                                         });
                                     }}
                                     onDeleteClick={() => {
-                                        setSelectedRow(getEntityPropertiesData(data)._id);
+                                        setSelectedRow(getRowId(data));
                                         setOpenDeleteDialog(true);
                                     }}
                                     onDisableClick={() => {

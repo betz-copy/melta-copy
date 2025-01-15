@@ -11,6 +11,8 @@ import {
     IExportEntitiesBody,
     IGraphFilterBodyBatch,
     ISearchEntitiesByTemplatesBody,
+    ISearchEntitiesByLocationBody,
+    IDeleteEntityBody,
     ICountSearchResult,
     ISearchFilter,
 } from '../interfaces/entities';
@@ -252,8 +254,8 @@ export const duplicateEntityRequest = async (entityId: string, newEntityData: En
     return data;
 };
 
-export const deleteEntityRequest = async (entityId: string) => {
-    const { data } = await axios.delete(`${entities}/${entityId}`);
+export const deleteEntityRequest = async (deleteBody: IDeleteEntityBody) => {
+    const { data } = await axios.post<void>(`${entities}/delete/bulk`, deleteBody);
     return data;
 };
 
@@ -280,6 +282,11 @@ export const getEntityById = async (entityId: string) => {
 
 export const getEntitiesWithDirectConnections = async (searchBody: ISearchBatchBody) => {
     const { data } = await axios.post<ISearchResult>(`${entities}/search/batch`, searchBody);
+    return data;
+};
+
+export const getEntitiesByLocation = async (searchBody: ISearchEntitiesByLocationBody) => {
+    const { data } = await axios.post<{ node: IEntity; matchingFields: string[] }[]>(`${entities}/search/location`, searchBody);
     return data;
 };
 
