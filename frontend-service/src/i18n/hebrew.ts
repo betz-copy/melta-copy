@@ -251,6 +251,7 @@ export default {
         gantts: 'טבלאות',
         fluidSimulation: '???',
         charts: 'תרשימים',
+        map: 'עמוד מפה',
     },
     systemManagement: {
         newCategory: 'קטגוריה חדשה',
