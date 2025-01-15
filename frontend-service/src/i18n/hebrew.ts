@@ -1087,6 +1087,20 @@ export default {
         pieChart: 'עוגה',
         barChart: 'עמודות',
         numberChart: 'מספרי',
+        actions: {
+            createdSuccessfully: 'תרשים נוצר בהצלחה',
+            failedToCreate: 'נכשל ביצירת תרשים',
+            deletedSuccessfully: 'תרשים נמחק בהצלחה',
+            failedToDelete: 'מחיקת תרשים נכשלה',
+        },
+        aggregationTypes: {
+            countAll: 'כמות רשומות',
+            countDistinct: 'כמות רשומות ללא כפולים',
+            average: 'ממוצע',
+            sum: 'סכום',
+            maximum: 'מינימום',
+            minimum: 'מקסימום',
+        },
     },
     workspaces: {
         goBack: 'חזור',

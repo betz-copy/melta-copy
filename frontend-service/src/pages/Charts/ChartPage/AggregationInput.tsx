@@ -15,19 +15,9 @@ interface AxisInputProps {
     entityTemplate: IMongoEntityTemplatePopulated;
     optionsType: OptionsType;
     titleFormikField?: string;
-    byFieldOptionsType?: OptionsType;
 }
 
-const AxisInput: React.FC<AxisInputProps> = ({
-    formik,
-    entityTemplate,
-    formikField,
-    titleFormikField,
-    formikValues,
-    label,
-    optionsType,
-    byFieldOptionsType,
-}) => {
+const AxisInput: React.FC<AxisInputProps> = ({ formik, entityTemplate, formikField, titleFormikField, formikValues, label, optionsType }) => {
     const fieldValue = getIn(formikValues, formikField);
     const titleValue = titleFormikField ? getIn(formikValues, titleFormikField) : undefined;
     const titleError = titleFormikField && getIn(formik.touched, titleFormikField) && getIn(formik.errors, titleFormikField);
@@ -47,6 +37,11 @@ const AxisInput: React.FC<AxisInputProps> = ({
         [OptionsType.AggregationAndAllProperties]: [...entityTemplateFields, ...aggregationOptions],
         [OptionsType.AggregationAndNumberProperties]: [...entityTemplateNumberFields, ...aggregationOptions],
     };
+
+    const getOptionLabel = (option: string) =>
+        Object.values(IAggregationType).includes(option as IAggregationType)
+            ? i18next.t(`charts.aggregationTypes.${option}`)
+            : entityTemplate?.properties.properties[option]?.title || '';
 
     return (
         <Grid container direction="column" spacing={2}>
@@ -77,22 +72,28 @@ const AxisInput: React.FC<AxisInputProps> = ({
                     formikField={isAggregation(fieldValue) ? `${formikField}.type` : `${formikField}`}
                     options={typeOptions[optionsType]}
                     label={label}
+                    getOptionLabel={(option) => getOptionLabel(option)}
                     multiple={false}
                     onChange={(newValue) => {
                         if (newValue && typeof newValue === 'string' && aggregationOptions.includes(newValue as IAggregation['type']))
                             formik.setFieldValue(`${formikField}`, { type: newValue, byField: '' } as IAggregation);
-                        else formik.setFieldValue(`${formikField}`, newValue as string);
+                        else formik.setFieldValue(`${formikField}`, (newValue as string) ?? '');
                     }}
                     style={{ width: '90%' }}
                 />
             </Grid>
-            {isAggregation(fieldValue) && fieldValue?.type !== 'countAll' && (
+            {isAggregation(fieldValue) && fieldValue?.type !== IAggregationType.CountAll && (
                 <Grid item>
                     <FormikAutoComplete
                         formik={formik}
                         formikField={`${formikField}.byField`}
-                        options={byFieldOptionsType ? typeOptions[byFieldOptionsType] : []}
+                        options={
+                            fieldValue?.type === IAggregationType.CountDistinct
+                                ? typeOptions[OptionsType.AllProperties]
+                                : typeOptions[OptionsType.NumberProperties]
+                        }
                         label={`${i18next.t('charts.byField')}`}
+                        getOptionLabel={(option) => getOptionLabel(option)}
                         multiple={false}
                         style={{
                             width: '90%',
