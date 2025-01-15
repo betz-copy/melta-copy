@@ -89,13 +89,13 @@ export class FlowCubeManager extends DefaultManagerProxy<null> {
                 Name: 'createdAt',
                 Type: 'DateTime',
                 DisplayName: 'תאריך יצירה',
-                OntologyType: 'DateTime',
+                OntologyType: 'TIME',
             },
             {
                 Name: 'updatedAt',
                 Type: 'DateTime',
                 DisplayName: 'תאריך עדכון',
-                OntologyType: 'DateTime',
+                OntologyType: 'TIME',
             },
         ];
 
