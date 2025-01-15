@@ -80,21 +80,46 @@ export class FlowCubeManager extends DefaultManagerProxy<null> {
         const template = await this.entityTemplateService.getEntityTemplateById(templateId[0]);
         const { properties } = template;
 
-        const parameters: FlowParameters[] = Object.entries(properties.properties).map(([key, value]) => ({
-            Name: key,
-            Type: this.convertTypeToFlowType(value),
-            DisplayName: value.title,
-            OntologyType: this.getOntologyTypeByProperty(value),
-            IsSingleValue: value.uniqueItems ? String(value.uniqueItems) : undefined,
-            Options: value.enum ? this.convertArrayToFlowOptions(value.enum) : undefined,
-        }));
+        const filteredProperties = Object.entries(properties.properties).filter(
+            ([_key, value]) => value.format !== 'fileId' && value.format !== 'relationshipReference',
+        );
 
-        const fields: FlowFields[] = Object.entries(properties.properties).map(([key, value]) => ({
-            Name: key,
-            Type: this.convertTypeToFlowType(value),
-            DisplayName: value.title,
-            OntologyType: this.getOntologyTypeByProperty(value),
-        }));
+        const additionalFields = [
+            {
+                Name: 'createdAt',
+                Type: 'DateTime',
+                DisplayName: 'תאריך יצירה',
+                OntologyType: 'DateTime',
+            },
+            {
+                Name: 'updatedAt',
+                Type: 'DateTime',
+                DisplayName: 'תאריך עדכון',
+                OntologyType: 'DateTime',
+            },
+        ];
+
+        const parameters: FlowParameters[] = [
+            ...filteredProperties.map(([key, value]) => ({
+                Name: key,
+                Type: this.convertTypeToFlowType(value),
+                DisplayName: value.title,
+                OntologyType: this.getOntologyTypeByProperty(value),
+                IsSingleValue: value.uniqueItems ? String(value.uniqueItems) : undefined,
+                Options: value.enum ? this.convertArrayToFlowOptions(value.enum) : undefined,
+            })),
+            ...additionalFields,
+        ];
+
+        const fields: FlowFields[] = [
+            ...filteredProperties.map(([key, value]) => ({
+                Name: key,
+                Type: this.convertTypeToFlowType(value),
+                DisplayName: value.title,
+                OntologyType: this.getOntologyTypeByProperty(value),
+            })),
+            ...additionalFields,
+        ];
 
         return { parameters, fields };
     }
