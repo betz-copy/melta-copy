@@ -35,24 +35,26 @@ const StepNumberTypography = styled(Typography)<{ type: 'currentStep' | 'finishe
     }),
 );
 
-const StepNameTypography = styled(Typography)<{ type: 'currentStep' | 'finishedStep' | 'futureStep'; direction: 'row' | 'column' }>(
-    ({ type, theme, direction }) => {
-        let color;
+const StepNameTypography = styled(Typography)<{ type: 'currentStep' | 'finishedStep' | 'futureStep'; direction: 'row' | 'column' }>(({
+    type,
+    theme,
+    direction,
+}) => {
+    let color;
 
-        if (theme.palette.mode === 'dark') {
-            color = type === 'finishedStep' ? '#8f919b' : 'white';
-        } else {
-            // eslint-disable-next-line no-nested-ternary
-            color = type === 'finishedStep' ? '#a1a5b7' : direction === 'row' ? '#3f4254' : '#1E2775';
-        }
+    if (theme.palette.mode === 'dark') {
+        color = type === 'finishedStep' ? '#8f919b' : 'white';
+    } else {
+        // eslint-disable-next-line no-nested-ternary
+        color = type === 'finishedStep' ? '#a1a5b7' : direction === 'row' ? '#3f4254' : '#1E2775';
+    }
 
-        return {
-            fontWeight: direction === 'row' ? 500 : 400,
-            fontSize: direction === 'row' ? '1.25rem' : '14px',
-            color,
-        };
-    },
-);
+    return {
+        fontWeight: direction === 'row' ? 500 : 400,
+        fontSize: direction === 'row' ? '1.25rem' : '14px',
+        color,
+    };
+});
 
 const StepDescriptionTypography = styled(Typography)<{ type: 'currentStep' | 'finishedStep' | 'futureStep' }>(({ type }) => {
     const color = type === 'finishedStep' ? '#787C9E' : '#787C9E';

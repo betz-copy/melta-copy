@@ -10,7 +10,7 @@ export const filterFieldsFromPropertiesSchema = <
     return {
         properties: omitBy(
             properties,
-            (value) => value.format === 'fileId' || value.format === 'entityReference' || value.items?.format === 'fileId' && !value.archive,
+            (value) => value.format === 'fileId' || value.format === 'entityReference' || (value.items?.format === 'fileId' && !value.archive),
         ),
         required:
             required?.filter(

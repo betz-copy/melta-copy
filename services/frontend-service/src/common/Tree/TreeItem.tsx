@@ -79,6 +79,7 @@ const TreeItem = React.forwardRef(function CustomTreeItem(props: TreeItem2Props,
 
     return (
         // To fix this error probably requires to upgrade to react 18.
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         <TreeItem2Provider {...props} ref={ref} itemId={itemId}>
             <TreeItem2Root

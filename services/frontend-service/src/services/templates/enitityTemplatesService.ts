@@ -89,7 +89,7 @@ const entityTemplateObjectToEntityTemplateForm = (
 
     if (archiveProperties.length !== 0 && !propertiesTypeOrder.includes('archiveProperties')) propertiesTypeOrder.push('archiveProperties');
 
-    const documentTemplates = documentTemplatesIds?.map((documentTemplateId) => ({ name: documentTemplateId } as File));
+    const documentTemplates = documentTemplatesIds?.map((documentTemplateId) => ({ name: documentTemplateId }) as File);
 
     if (iconFileId) {
         const file: Partial<File> = { name: iconFileId };
@@ -118,7 +118,14 @@ const entityTemplateObjectToEntityTemplateForm = (
 
 export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode: boolean): IEntityTemplateWithConstraints => {
     // change to support file types
-    const { properties, attachmentProperties, archiveProperties, propertiesTypeOrder, documentTemplatesIds, ...restOfProperties } = values;
+    const {
+        properties,
+        attachmentProperties,
+        archiveProperties,
+        propertiesTypeOrder,
+        documentTemplatesIds: _documentTemplatesIds,
+        ...restOfProperties
+    } = values;
     const serialsUniqueConstraints: string[][] = [];
     const propertiesOrder: string[] = [];
     const attachmentPropertiesOrder: string[] = [];
