@@ -17,7 +17,7 @@ export interface IBaseUser {
     externalMetadata: {
         kartoffelId: string;
         digitalIdentitySource: string;
-    };    
+    };
 }
 export interface IUser extends IBaseUser {
     permissions: ICompactPermissions;
