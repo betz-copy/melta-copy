@@ -201,7 +201,7 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({
                                         }
                                     >
                                         <Button
-                                            variant="contained"
+                                            variant="outlined"
                                             startIcon={<History />}
                                             onClick={() => setOpenActivityPopper((previousOpen) => !previousOpen)}
                                             sx={{ marginLeft: '1rem', width: '100px', alignSelf: 'flex-end' }}

@@ -266,7 +266,7 @@ const Steps: React.FC<IStepsProp> = ({
                             title={openActivityPopper ? i18next.t('wizard.processInstance.backTo') : i18next.t('entityPage.activityLog.stepHeader')}
                         >
                             <Button
-                                variant="contained"
+                                variant="outlined"
                                 startIcon={<History />}
                                 onClick={() => setOpenActivityPopper((previousOpen) => !previousOpen)}
                                 sx={{ marginLeft: '1rem', width: '100px', alignSelf: 'flex-end' }}
