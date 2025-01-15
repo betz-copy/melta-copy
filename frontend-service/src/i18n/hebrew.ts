@@ -142,6 +142,8 @@ export default {
             updatedComment: 'עדכן את ההערות ל:',
             emptyField: 'שדה ריק',
             header: 'היסטוריה',
+            processHeader: 'היסטוריית תהליך',
+            stepHeader: 'היסטוריית שלב',
             loading: 'טוען היסטוריה',
             noSearchLeft: 'אין עוד היסטוריה לישות',
             from: 'מ:',

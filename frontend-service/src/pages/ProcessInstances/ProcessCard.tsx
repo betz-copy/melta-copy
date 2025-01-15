@@ -174,8 +174,12 @@ export const StepIcon: React.FC<{
                         <HiveIcon sx={{ color: iconColor }} width="25px" height="25px" />
                     )}
                 </Box>
-                {step.status === Status.Approved && <img src="/icons/check-icon.svg" style={{ marginRight: '35px' }} />}
-                {step.status === Status.Rejected && <img src="/icons/uncheck-icon.svg" style={{ marginRight: '35px' }} />}
+                {step.status === Status.Approved && (
+                    <img src="/icons/check-icon.svg" style={{ marginRight: '35px', marginTop: '35px', position: 'absolute' }} />
+                )}
+                {step.status === Status.Rejected && (
+                    <img src="/icons/uncheck-icon.svg" style={{ marginRight: '35px', marginTop: '35px', position: 'absolute' }} />
+                )}
                 {displayTitle && (
                     <Typography ref={stageNameRef} noWrap sx={{ maxWidth: '8em', textOverflow: 'ellipsis' }} variant="caption">
                         {stepTemplate.displayName}
@@ -292,6 +296,7 @@ const ProcessCard: React.FC<{
 
     const StepperConnector = styled(StepConnector)(({ theme }) => ({
         [`& .${stepConnectorClasses.line}`]: {
+            marginTop: 7,
             height: 2,
             border: 0,
             backgroundColor: getFontColor(currProcessInstance.status),
@@ -435,11 +440,7 @@ const ProcessCard: React.FC<{
                                 </Stepper>
                             </Grid>
                             <Grid item container justifyContent="space-between">
-                                <Grid item>
-                                    <Typography fontSize="14px" style={{ color: '#787C9E' }} noWrap>
-                                        {`${i18next.t('processInstancesPage.createdBy')}: ---`}
-                                    </Typography>
-                                </Grid>
+                                <Grid item />
                                 <Grid item>
                                     <Typography fontSize="14px" style={{ color: '#787C9E' }} noWrap>
                                         {`${i18next.t('processInstancesPage.createdAt')}: ${new Date(processInstance.createdAt).toLocaleDateString(

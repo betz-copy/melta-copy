@@ -24,9 +24,8 @@ const StepperConnector = styled(StepConnector)(({ theme }) => ({
         top: 80,
     },
     [`& .${stepConnectorClasses.line}`]: {
-        height: 2,
-        border: 0,
-        backgroundColor: '#eaeaf0',
+        marginTop: 15,
+        border: '1px dashed #eaeaf0',
         borderRadius: 1,
         ...theme.applyStyles('dark', {
             backgroundColor: theme.palette.grey[800],

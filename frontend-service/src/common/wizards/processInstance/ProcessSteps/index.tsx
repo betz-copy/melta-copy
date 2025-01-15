@@ -1,7 +1,7 @@
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 /* eslint-disable jsx-a11y/anchor-is-valid */
-import { Box, Button, Divider, Grid, Step, StepLabel, Stepper, Typography } from '@mui/material';
+import { Box, Button, Divider, Grid, Step, StepConnector, stepConnectorClasses, StepLabel, Stepper, styled, Typography } from '@mui/material';
 import React, { useEffect, useRef } from 'react';
 import TocIcon from '@mui/icons-material/Toc';
 import i18next from 'i18next';
@@ -44,6 +44,12 @@ const getStepTemplateByStepInstance = (
 ): IMongoStepTemplatePopulated => {
     return processTemplate.steps.find((step) => stepInstance.templateId === step._id)!;
 };
+
+const StepperConnector = styled(StepConnector)(() => ({
+    [`& .${stepConnectorClasses.line}`]: {
+        marginTop: 7,
+    },
+}));
 
 const Steps: React.FC<IStepsProp> = ({
     processTemplate,
@@ -105,7 +111,7 @@ const Steps: React.FC<IStepsProp> = ({
         };
     }, []);
 
-    const stepperWidth = 488;
+    const stepperWidth = 640;
     const stepsAmount = 6.5;
 
     const setScrollByStepIndex = (index: number) => {
@@ -134,7 +140,7 @@ const Steps: React.FC<IStepsProp> = ({
             }}
         >
             <Grid container item width="100%" justifyContent="space-between" alignItems="center" flexWrap="nowrap">
-                <Grid item container width="70%">
+                <Grid item container width="70%" minWidth="680px">
                     <Grid item width="20px">
                         {!scrollRightDisabled && (
                             <a
@@ -159,10 +165,11 @@ const Steps: React.FC<IStepsProp> = ({
                             overflowX: 'auto',
                             scrollBehavior: 'smooth',
                         }}
+                        paddingTop="5px"
                     >
-                        <Stepper style={{ display: 'flex', alignItems: 'center' }} alternativeLabel>
+                        <Stepper style={{ display: 'flex', alignItems: 'center' }} connector={<StepperConnector />} alternativeLabel>
                             {processInstance.steps.map((stepInstance, index) => (
-                                <Step style={{ minWidth: '75px' }} key={stepInstance._id} active>
+                                <Step style={{ minWidth: '100px' }} key={stepInstance._id} active>
                                     <Grid>
                                         <Grid container flexDirection="column" justifyContent="center" width="100%" alignSelf="center" gap="10px">
                                             <StepLabel
@@ -223,48 +230,50 @@ const Steps: React.FC<IStepsProp> = ({
                         )}
                     </Grid>
                 </Grid>
-                <Grid item alignSelf="center" width="120px">
-                    <MeltaTooltip
-                        title={openActivityPopper ? i18next.t('wizard.processInstance.backTo') : i18next.t('entityPage.activityLog.header')}
-                    >
-                        <Button
-                            variant="contained"
-                            startIcon={<History />}
-                            onClick={() => setOpenActivityPopper((previousOpen) => !previousOpen)}
-                            sx={{ marginLeft: '1rem', width: '100px', alignSelf: 'flex-end' }}
-                        >
-                            {openActivityPopper ? i18next.t('wizard.processInstance.backTo') : i18next.t('entityPage.activityLog.header')}
-                        </Button>
-                    </MeltaTooltip>
-                </Grid>
-                <Grid item container flexDirection="column" width="120px" alignItems="center" gap="10px">
-                    <Grid item>
-                        <Box
-                            sx={{
-                                borderRadius: '50%',
-                                backgroundColor: '#E0E1ED',
-                                display: 'flex',
-                                justifyContent: 'center',
-                                alignItems: 'center',
-                                width: '40px',
-                                height: '40px',
-                                ':hover': { transform: 'scale(1.1)' },
-                                cursor: !isStepEditMode ? 'pointer' : undefined,
-                            }}
-                            onClick={(e) => {
-                                if (!isStepEditMode) setActiveStep(0);
-                            }}
-                        >
-                            <TocIcon sx={{ color: '#1E2775' }} />
-                        </Box>
+                <Grid item container justifyContent="flex-end" alignItems="flex-start">
+                    <Grid item container flexDirection="column" width="120px" alignItems="center" gap="10px">
+                        <Grid item>
+                            <Box
+                                sx={{
+                                    borderRadius: '50%',
+                                    backgroundColor: '#E0E1ED',
+                                    display: 'flex',
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                    width: '40px',
+                                    height: '40px',
+                                    ':hover': { transform: !isStepEditMode ? 'scale(1.1)' : undefined },
+                                    cursor: !isStepEditMode ? 'pointer' : undefined,
+                                }}
+                                onClick={(_e) => {
+                                    if (!isStepEditMode) setActiveStep(0);
+                                }}
+                            >
+                                <TocIcon sx={{ color: '#1E2775' }} />
+                            </Box>
+                        </Grid>
+                        <Grid item>
+                            <BlueTitle
+                                style={{ fontSize: '12px', fontWeight: '500', textAlign: 'center' }}
+                                title={`${i18next.t('wizard.processInstance.nextToSummaryDetails')}`}
+                                component="h4"
+                                variant="h6"
+                            />
+                        </Grid>
                     </Grid>
-                    <Grid item>
-                        <BlueTitle
-                            style={{ fontSize: '12px', fontWeight: '500', textAlign: 'center' }}
-                            title={`${i18next.t('wizard.processInstance.nextToSummaryDetails')}￩`}
-                            component="h4"
-                            variant="h6"
-                        />
+                    <Grid item alignSelf="flex-start" width="120px" marginTop="2px">
+                        <MeltaTooltip
+                            title={openActivityPopper ? i18next.t('wizard.processInstance.backTo') : i18next.t('entityPage.activityLog.stepHeader')}
+                        >
+                            <Button
+                                variant="contained"
+                                startIcon={<History />}
+                                onClick={() => setOpenActivityPopper((previousOpen) => !previousOpen)}
+                                sx={{ marginLeft: '1rem', width: '100px', alignSelf: 'flex-end' }}
+                            >
+                                {openActivityPopper ? i18next.t('wizard.processInstance.backTo') : i18next.t('entityPage.activityLog.header')}
+                            </Button>
+                        </MeltaTooltip>
                     </Grid>
                 </Grid>
             </Grid>

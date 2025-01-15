@@ -388,35 +388,37 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                             height: '290px',
                                         }}
                                     >
-                                        <Grid item>
-                                            <ProcessStatus
-                                                title={i18next.t('wizard.processInstance.step.stepStatus')}
-                                                instance={stepInstance}
-                                                editStatus={{ setFieldValue, isEditMode: isStepEditMode, values }}
-                                            />
-                                        </Grid>
-                                        <Grid item width={250} height="100px">
-                                            {isStepEditMode ? (
-                                                <TextField
-                                                    label={i18next.t('wizard.processInstance.step.comment')}
-                                                    multiline
-                                                    rows={4}
-                                                    value={values.comments}
-                                                    onChange={(e) => {
-                                                        setFieldValue('comments', e.target.value);
-                                                    }}
-                                                    style={{ width: '100%', fontSize: '12px' }}
-                                                    InputProps={{
-                                                        style: {
-                                                            whiteSpace: 'pre-line',
-                                                            overflowWrap: 'break-word',
-                                                            fontSize: '12px',
-                                                        },
-                                                    }}
+                                        <Grid item container flexDirection="column" gap="20px">
+                                            <Grid item>
+                                                <ProcessStatus
+                                                    title={i18next.t('wizard.processInstance.step.stepStatus')}
+                                                    instance={stepInstance}
+                                                    editStatus={{ setFieldValue, isEditMode: isStepEditMode, values }}
                                                 />
-                                            ) : (
-                                                <CommentsDetails values={stepInstance} toPrint={toPrint} />
-                                            )}
+                                            </Grid>
+                                            <Grid item width={250} height="fit-content" maxHeight="100px">
+                                                {isStepEditMode ? (
+                                                    <TextField
+                                                        label={i18next.t('wizard.processInstance.step.comment')}
+                                                        multiline
+                                                        rows={4}
+                                                        value={values.comments}
+                                                        onChange={(e) => {
+                                                            setFieldValue('comments', e.target.value);
+                                                        }}
+                                                        style={{ width: '100%', fontSize: '12px' }}
+                                                        InputProps={{
+                                                            style: {
+                                                                whiteSpace: 'pre-line',
+                                                                overflowWrap: 'break-word',
+                                                                fontSize: '12px',
+                                                            },
+                                                        }}
+                                                    />
+                                                ) : (
+                                                    <CommentsDetails values={stepInstance} toPrint={toPrint} />
+                                                )}
+                                            </Grid>
                                         </Grid>
                                         <Grid item>
                                             <ReviewedAtProcessStatus instance={stepInstance} isPrinting={false} />

@@ -191,13 +191,13 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({
                     </Grid>
                     <Grid container item flexBasis="75%" flexDirection="column" padding="15px">
                         {activeStep === 0 && contentDisplay === 'SUMMARY' && (
-                            <Grid container flexDirection="column" width="100%" height="100%">
+                            <Grid container flexDirection="column" width="100%" height="100%" flexWrap="nowrap">
                                 <Grid item alignSelf="flex-end" height="50px">
                                     <MeltaTooltip
                                         title={
                                             openActivityPopper
                                                 ? i18next.t('wizard.processInstance.backTo')
-                                                : i18next.t('entityPage.activityLog.header')
+                                                : i18next.t('entityPage.activityLog.processHeader')
                                         }
                                     >
                                         <Button
