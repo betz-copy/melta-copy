@@ -5,14 +5,13 @@ import { Grid, IconButton, Typography, useTheme } from '@mui/material';
 import { DropResult } from 'react-beautiful-dnd';
 import FilterAltOffIcon from '@mui/icons-material/FilterAltOff';
 import AddIcon from '@mui/icons-material/Add';
-import { FilterList } from '@mui/icons-material';
 import { TopBarGrid } from '../../common/TopBar';
 import { BlueTitle } from '../../common/BlueTitle';
 import { environment } from '../../globals';
 import { GlobalSearchBar } from '../../common/EntitiesPage/Headline';
 import { LocalStorage } from '../../utils/localStorage';
 import { IMongoIFrame } from '../../interfaces/iFrames';
-import { SelectCheckbox } from '../../common/SelectCheckbox';
+import { SelectCheckbox } from '../../common/SelectCheckBox';
 import { useUserStore } from '../../stores/user';
 import { MeltaTooltip } from '../../common/MeltaTooltip';
 import IconButtonWithPopover from '../../common/IconButtonWithPopover';
@@ -71,13 +70,13 @@ const IFramesPageHeadline: React.FC<{
                     />
                 </Grid>
                 <Grid item>
-                    <SelectCheckbox
+                    <SelectCheckbox<IMongoIFrame>
                         title={i18next.t('iFrames.arrangementIFrames')}
-                        img={<FilterList fontSize="small" />}
+                        filterIcon
                         options={allIFramesAllowed ?? []}
                         selectedOptions={[]}
                         setSelectedOptions={() => {}}
-                        getOptionId={({ _id }) => _id}
+                        getOptionId={(option) => option._id}
                         getOptionLabel={({ name }) => name}
                         toTopBar
                         onDragEnd={handleOnDragEnd}

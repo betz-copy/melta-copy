@@ -31,6 +31,31 @@ const config = {
             baseUrl: env.get('FRONTEND_CONFIG_MATOMO_BASE_URL').default('http://localhost:8016').required().asString(),
             siteId: env.get('FRONTEND_CONFIG_MATOMO_SITE_ID').default(1).required().asInt(),
         },
+        mapLayers: env
+            .get('FRONTEND_CONFIG_MAP_LAYERS')
+            .default({
+                OpenStreetMap: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                'Satellite (Esri)': 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+                OpenTopoMap: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
+            })
+            .required()
+            .asJsonObject(),
+
+        textLayers: env
+            .get('FRONTEND_CONFIG_TEXT_LAYERS')
+            .default({
+                'Labels (OSM Hot)': 'https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png',
+                'Hillshading (Wikimedia)': 'https://tiles.wmflabs.org/hillshading/{z}/{x}/{y}.png',
+                'Boundaries (OpenMapTiles)': 'https://{s}.tile.opentiles.org/admin/{z}/{x}/{y}.png',
+            })
+            .required()
+            .asJsonObject(),
+        
+        crsType: env.get('CRS_TYPE').default('EPSG3857').asString(),
+
+        agGridLimit: {
+            deleteLimit: env.get('DELETE_ENTITIES_MAX_LIMIT').default(1000).asIntPositive(),
+        },
     },
 
     authentication: {
@@ -79,6 +104,7 @@ const config = {
         duplicateFilesRoute: env.get('STORAGE_SERVICE_DUPLICATE_FILES_ROUTE').default('api/files/duplicate-bulk').asString(),
         fileIdLength: env.get('STORAGE_SERVICE_FILE_ID_LENGTH').default(32).asIntPositive(),
         requestTimeout: env.get('STORAGE_SERVICE_SERVICE_REQUEST_TIMEOUT').default(10000).asIntPositive(),
+        usersGlobalBucketName: env.get('MINIO_USERS_BUCKET_NAME').default('users-global-bucket').asString(),
     },
     semanticSearchService: {
         requestTimeout: env.get('SEMANTIC_SEARCH_SERVICE_REQUEST_TIMEOUT').default(20000).asIntPositive(),
@@ -95,6 +121,7 @@ const config = {
         baseBulkActionsRoute: env.get('INSTANCE_SERVICE_BASE_BULK_ACTIONS_ROUTE').default('/api/instances/bulk-actions').asString(),
         baseConstraintsRoute: env.get('INSTANCE_SERVICE_BASE_CONSTRAINTS_ROUTE').default('/api/instances/entities/constraints').asString(),
         searchOfTemplateRoute: env.get('INSTANCE_SERVICE_SEARCH_OF_TEMPLATE_ROUTE').default('/search/template').asString(),
+        searchEntitiesByLocationRoute: env.get('INSTANCE_SERVICE_SEARCH_ENTITIES_BY_LOCATION_ROUTE').default('/search/location').asString(),
         requestTimeout: env.get('INSTANCE_SERVICE_REQUEST_TIMEOUT').default(10000).asIntPositive(),
         searchEntitiesFlowMaxLimit: env.get('SEARCH_ENTITIES_FLOW_MAX_LIMIT').default(10000).asIntPositive(),
         searchEntitiesMaxLimit: env.get('SEARCH_ENTITIES_MAX_LIMIT').default(10000).asIntPositive(),
@@ -105,6 +132,10 @@ const config = {
         permissionsRoute: env.get('USER_SERVICE_BASE_ROUTE').default('/api/permissions').asString(),
         checkAuthorizationRoute: env.get('PERMISSION_SERVICE_CHECK_AUTHERIZATION_ROUTE').default('authorization').asString(),
         requestTimeout: env.get('PERMISSION_SERVICE_REQUEST_TIMEOUT').default(100000).asIntPositive(),
+        profilePathPattern: env
+            .get('PROFILE_PATH_PATTERN')
+            .default('^(kartoffelProfile|[0-9a-f]{8}[0-9a-f]{4}[0-9a-f]{4}[0-9a-f]{4}[0-9a-f]{12}.*)$')
+            .asRegExp(),
     },
     activityLogService: {
         url: env.get('ACTIVITY_LOG_SERVICE_URL').required().asString(),
@@ -152,6 +183,7 @@ const config = {
         requestTimeout: env.get('KARTOFFEL_REQUEST_TIMEOUT').default(10000).asIntPositive(),
         searchRoute: env.get('KARTOFFEL_SEARCH_ROUTE').default('/search').asString(),
         fieldToSearch: env.get('KARTOFFEL_FIELDS_TO_SEARCH').default('fullName,uniqueId,personalNumber,identityCard').asString(),
+        profilePath: env.get('KARTOFFEL_PROFILE_PATH').default('pictures/profile').asString(),
     },
     errorCodes: {
         categoryHasTemplates: 'CATEGORY_HAS_TEMPLATES',
@@ -163,6 +195,7 @@ const config = {
         ruleBlock: 'RULE_BLOCK',
         ruleHasAlertsOrRequests: 'RULE_HAS_ALERTS_OR_REQUESTS',
         failedToDeleteField: 'FAILED_DELETE_FIELD',
+        moreThenOneRelationshipInstanceExist: 'MORE_THEN_ONE_RELATIONSHIP_INSTANCE_EXIST',
         failedConstraintsValidation: 'FAILED_CONSTRAINTS_VALIDATION',
         templateValidationError: 'TemplateValidationError',
     },

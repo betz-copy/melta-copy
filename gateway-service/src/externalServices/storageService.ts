@@ -4,8 +4,17 @@ import DefaultExternalServiceApi from '../utils/express/externalService';
 import fsCreateReadStream from '../utils/fs';
 
 const {
-    service: { docxHeaders },
-    storageService: { url, uploadFileRoute, uploadFilesRoute, downloadFileRoute, deleteFileRoute, deleteFilesRoute, duplicateFilesRoute },
+    service: { docxHeaders, workspaceIdHeaderName },
+    storageService: {
+        url,
+        uploadFileRoute,
+        uploadFilesRoute,
+        downloadFileRoute,
+        deleteFileRoute,
+        deleteFilesRoute,
+        duplicateFilesRoute,
+        usersGlobalBucketName,
+    },
 } = config;
 
 export class StorageService extends DefaultExternalServiceApi {
@@ -40,6 +49,16 @@ export class StorageService extends DefaultExternalServiceApi {
         });
 
         return data.map(({ path }) => path);
+    }
+
+    async downloadProfileFile(path: string) {
+        const { data } = await this.api.get(`${downloadFileRoute}/${encodeURIComponent(path)}`, {
+            responseType: 'stream',
+            headers: {
+                [workspaceIdHeaderName]: usersGlobalBucketName,
+            },
+        });
+        return data;
     }
 
     async downloadFile(path: string) {
