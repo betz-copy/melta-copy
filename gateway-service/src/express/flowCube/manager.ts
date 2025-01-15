@@ -82,7 +82,7 @@ export class FlowCubeManager extends DefaultManagerProxy<null> {
 
         const parameters: FlowParameters[] = Object.entries(properties.properties).map(([key, value]) => ({
             Name: key,
-            Type: value.type as string,
+            Type: this.convertTypeToFlowType(value),
             DisplayName: value.title,
             OntologyType: this.getOntologyTypeByProperty(value),
             IsSingleValue: value.uniqueItems ? String(value.uniqueItems) : undefined,
@@ -91,12 +91,39 @@ export class FlowCubeManager extends DefaultManagerProxy<null> {
 
         const fields: FlowFields[] = Object.entries(properties.properties).map(([key, value]) => ({
             Name: key,
-            Type: value.type as string,
+            Type: this.convertTypeToFlowType(value),
             DisplayName: value.title,
             OntologyType: this.getOntologyTypeByProperty(value),
         }));
 
         return { parameters, fields };
+    }
+
+    convertTypeToFlowType(property: IEntitySingleProperty): string {
+        let flowType = 'String';
+
+        switch (property.type) {
+            case 'string':
+                if (property.format === 'date' || property.format === 'date-time') {
+                    flowType = 'DateTime';
+                } else if (property.format === 'fileId') {
+                    flowType = 'File';
+                } else {
+                    flowType = 'String';
+                }
+                break;
+            case 'number':
+                flowType = 'Double';
+                break;
+            case 'boolean':
+                flowType = 'Boolean';
+                break;
+            default:
+                flowType = 'String';
+                break;
+        }
+
+        return flowType;
     }
 
     getOntologyTypeByProperty(property: IEntitySingleProperty) {
@@ -111,12 +138,15 @@ export class FlowCubeManager extends DefaultManagerProxy<null> {
                 } else {
                     ontologyType = 'TEXT';
                 }
+
                 break;
             case 'number':
                 ontologyType = 'INTEGER';
+
                 break;
             default:
                 ontologyType = 'TEXT';
+
                 break;
         }
 
