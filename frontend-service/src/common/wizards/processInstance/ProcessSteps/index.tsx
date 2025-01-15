@@ -74,6 +74,7 @@ const Steps: React.FC<IStepsProp> = ({
     const updateScrollButtons = () => {
         if (containerRef.current) {
             const maxScrollLeft = containerRef.current.scrollWidth - containerRef.current.clientWidth || 0;
+            setScrollPosition(containerRef.current.scrollLeft);
             setScrollLeftDisabled(-1 * containerRef.current.scrollLeft >= maxScrollLeft);
             setScrollRightDisabled(containerRef.current.scrollLeft === 0);
         }
@@ -104,7 +105,19 @@ const Steps: React.FC<IStepsProp> = ({
         };
     }, []);
 
-    const stepperWidth = 480;
+    const stepperWidth = 488;
+    const stepsAmount = 6.5;
+
+    const setScrollByStepIndex = (index: number) => {
+        const middleIndex = index - stepsAmount / 2;
+        const indexToScroll = middleIndex < 0 ? 0 : middleIndex;
+
+        handleScroll((-indexToScroll / stepsAmount) * stepperWidth - scrollPosition);
+    };
+
+    useEffect(() => {
+        setScrollByStepIndex(currStepInstanceIndex);
+    }, [currStepInstanceIndex]);
 
     return (
         <Grid
@@ -122,7 +135,7 @@ const Steps: React.FC<IStepsProp> = ({
         >
             <Grid container item width="100%" justifyContent="space-between" alignItems="center" flexWrap="nowrap">
                 <Grid item container width="70%">
-                    <Grid item width="30px">
+                    <Grid item width="20px">
                         {!scrollRightDisabled && (
                             <a
                                 onClick={() => {
@@ -130,7 +143,9 @@ const Steps: React.FC<IStepsProp> = ({
                                 }}
                                 style={{ cursor: !isStepEditMode ? 'pointer' : undefined }}
                             >
-                                <ArrowForwardIosIcon sx={{ color: darkMode ? '#9398c2' : '#1E2775', marginTop: '10px' }} />
+                                <ArrowForwardIosIcon
+                                    sx={{ color: darkMode ? '#9398c2' : '#1E2775', marginTop: '10px', width: '18px', height: '25px' }}
+                                />
                             </a>
                         )}
                     </Grid>
@@ -141,7 +156,7 @@ const Steps: React.FC<IStepsProp> = ({
                         style={{
                             width: `${stepperWidth}px`,
                             height: '90px',
-                            overflowX: 'scroll',
+                            overflowX: 'auto',
                             scrollBehavior: 'smooth',
                         }}
                     >
@@ -193,7 +208,7 @@ const Steps: React.FC<IStepsProp> = ({
                             ))}
                         </Stepper>
                     </Grid>
-                    <Grid item width="30px">
+                    <Grid item width="20px">
                         {!scrollLeftDisabled && (
                             <a
                                 onClick={() => {
@@ -201,7 +216,9 @@ const Steps: React.FC<IStepsProp> = ({
                                 }}
                                 style={{ cursor: !isStepEditMode ? 'pointer' : undefined }}
                             >
-                                <ArrowBackIosIcon sx={{ color: darkMode ? '#9398c2' : '#1E2775', marginTop: '10px' }} />
+                                <ArrowBackIosIcon
+                                    sx={{ color: darkMode ? '#9398c2' : '#1E2775', marginTop: '10px', width: '18px', height: '25px' }}
+                                />
                             </a>
                         )}
                     </Grid>
