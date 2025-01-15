@@ -383,7 +383,7 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                         style={{
                                             backgroundColor: darkMode ? 'rgb(26 26 26 / 35%)' : '#F2F4FA',
                                             borderRadius: '20px',
-                                            padding: '10px',
+                                            padding: '5px',
                                             width: '305px',
                                             height: '290px',
                                         }}
