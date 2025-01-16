@@ -1,7 +1,6 @@
 import Excel from 'exceljs';
 import { StatusCodes } from 'http-status-codes';
 import { AxiosError } from 'axios';
-import fs from 'fs';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../externalServices/templates/entityTemplateService';
 import { excelConfig } from './excelConfig';
 import { BadRequestError, ServiceError } from '../../express/error';

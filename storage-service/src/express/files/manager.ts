@@ -1,10 +1,9 @@
 import { menash } from 'menashmq';
 import { Stream } from 'stream';
-import { v4 as uuid } from 'uuid';
 import { config } from '../../config';
 import { getFileExtension, isFileDocument } from '../../utils/fileHelper';
 import { ServiceError } from '../error';
-import { generatePath } from '../../utils/generatePath';
+import { generate32CharUUID, generatePath } from '../../utils/generatePath';
 import DefaultManagerMinio from '../../utils/minio/manager';
 import { UploadedFile } from './interface';
 
@@ -14,8 +13,6 @@ const {
     service: { workspaceIdHeaderName },
 } = config;
 
-const generate32CharUUID = () => uuid().substring(0, document.uuidLength);
-
 export class FilesManager extends DefaultManagerMinio {
     async makeBuckets() {
         const bucketExists = await this.minioClient.bucketExists();
@@ -24,7 +21,7 @@ export class FilesManager extends DefaultManagerMinio {
 
     async uploadFile(file?: UploadedFile) {
         await this.makeBuckets();
-        const nameWithId = `${generate32CharUUID()}${file?.originalname!}`;
+        const nameWithId = `${generate32CharUUID()}${file?.originalname}`;
         const fileWithId = { ...file, originalname: nameWithId, path: nameWithId };
         await this.minioClient.uploadFileStream(fileWithId?.stream!, fileWithId.originalname, fileWithId?.size!, {});
 
@@ -32,18 +29,15 @@ export class FilesManager extends DefaultManagerMinio {
     }
 
     async uploadFiles(files?: UploadedFile[]) {
-        // TODO: throw error?
         if (!files) throw new Error('No files to upload');
 
-        await this.makeBuckets();
+        await this.minioClient.ensureBucket();
 
-        const filesWithIds = files?.map((file) => {
-            const nameWithId = `${generate32CharUUID()}${file?.originalname!}`;
-
+        const filesWithIds = files.map((file) => {
+            const nameWithId = this.buildNameWithId(file);
             return { ...file, originalname: nameWithId, path: nameWithId };
         });
-
-        await Promise.allSettled(filesWithIds.map((file) => this.minioClient.uploadFileStream(file?.stream!, file.originalname, file?.size!, {})));
+        await Promise.allSettled(filesWithIds.map((file) => this.minioClient.uploadFileStream(file.stream!, file.originalname!, file.size!, {})));
 
         const documentFiles = files?.filter((file) => isFileDocument(file.originalname));
         if (documentFiles?.length)
@@ -91,7 +85,7 @@ export class FilesManager extends DefaultManagerMinio {
         return result;
     }
 
-    deleteFiles(filePaths: string[]) {
+    async deleteFiles(filePaths: string[]) {
         const removalPromises = filePaths.map(async (filePath) => {
             const extension = getFileExtension(filePath);
             if (document.documentType.includes(extension)) {
@@ -118,6 +112,10 @@ export class FilesManager extends DefaultManagerMinio {
             }),
         );
         return Promise.all(fileStreams.map((fileStream) => this.streamToBuffer(fileStream)));
+    }
+
+    private buildNameWithId(file?: UploadedFile): string {
+        return `${generate32CharUUID()}${file?.originalname!}`;
     }
 
     private async streamToBuffer(stream: Stream): Promise<Buffer> {

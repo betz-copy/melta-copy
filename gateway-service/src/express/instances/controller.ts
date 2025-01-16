@@ -3,12 +3,7 @@ import { promisify } from 'util';
 import { Request, Response } from 'express';
 import { InstancesManager } from './manager';
 import DefaultController from '../../utils/express/controller';
-<<<<<<< Updated upstream
-import { UploadedFile } from '../../utils/busboy/interface';
 import { IDeleteBody, ISearchEntitiesByLocationBody } from '../../externalServices/instanceService/interfaces/entities';
-=======
-import { IDeleteBody } from '../../externalServices/instanceService/interfaces/entities';
->>>>>>> Stashed changes
 
 export class InstancesController extends DefaultController<InstancesManager> {
     constructor(workspaceId: string) {
@@ -36,13 +31,10 @@ export class InstancesController extends DefaultController<InstancesManager> {
     async updateEntityInstance(req: Request, res: Response) {
         const { ignoredRules, ...instanceData } = req.body;
         res.json(await this.manager.updateEntityInstance(req.params.id, instanceData, req.files || [], ignoredRules, req.user!.id));
-<<<<<<< Updated upstream
     }
 
     async searchEntitiesByLocation(req: Request, res: Response) {
         res.json(await this.manager.searchEntitiesByLocation(req.body as ISearchEntitiesByLocationBody));
-=======
->>>>>>> Stashed changes
     }
 
     async searchEntitiesBatch(req: Request, res: Response) {

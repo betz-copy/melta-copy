@@ -5,6 +5,9 @@ import ReadableStreamClone from 'readable-stream-clone';
 import { UploadedFile } from '../../express/files/interface';
 
 export const busboyMiddleware = (req: Request, _res: Response, next: NextFunction): void => {
+    if (!req.is('multipart/form-data')) {
+        return next();
+    }
     const busboy = Busboy({ headers: req.headers, defCharset: 'utf8' });
     const fields: Record<string, unknown> = {};
     const files: UploadedFile[] = [];

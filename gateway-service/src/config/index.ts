@@ -50,7 +50,7 @@ const config = {
             })
             .required()
             .asJsonObject(),
-        
+
         crsType: env.get('CRS_TYPE').default('EPSG3857').asString(),
 
         agGridLimit: {
