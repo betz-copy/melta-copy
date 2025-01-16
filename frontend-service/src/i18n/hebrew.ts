@@ -870,6 +870,7 @@ export default {
         forTour: 'לסיור במערכת',
         pressHere: 'לחץ כאן',
     },
+    meltaUpdates: { title: 'מה חדש במלתעות?🦈', gotIt: 'הבנתי' },
     ruleBreachInfo: {
         relActionInfo: {
             [ActionTypes.CreateRelationship]: 'יצירת',

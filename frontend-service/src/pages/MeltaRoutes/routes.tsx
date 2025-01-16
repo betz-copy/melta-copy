@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { Box, Button, debounce, useScrollTrigger } from '@mui/material';
 import { useTour } from '@reactour/tour';
 import i18next from 'i18next';
@@ -21,6 +22,8 @@ import {
     SystemManagementProtectedRoute,
 } from '../../utils/ProtectedRoutes';
 import { environment } from '../../globals';
+import { MeltaUpdates } from '../../MeltaUpdates';
+import { BackendConfigState } from '../../services/backendConfigService';
 
 const GlobalSearch = lazy(() => import('../GlobalSearch'));
 const Category = lazy(() => import('../Category'));
@@ -44,6 +47,7 @@ const FluidSimulation = lazy(() => import('../MeltaPlus/FluidSimulation'));
 export const MeltaRoutesInner: React.FC = () => {
     const [title, setTitle] = useState('');
     const [open, setOpen] = useState(false);
+    const [openMeltaUpdates, setOpenMeltaUpdates] = useState(false);
 
     const [location, navigate] = useLocation();
     const [entityMatch, entityParams] = useRoute('/entity/:entityId');
@@ -55,6 +59,7 @@ export const MeltaRoutesInner: React.FC = () => {
 
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+    const config = queryClient.getQueryData<BackendConfigState>('getBackendConfig');
 
     const meltaPlus = useMeltaPlusStore((state) => state.meltaPlus);
 
@@ -128,7 +133,18 @@ export const MeltaRoutesInner: React.FC = () => {
                 { autoClose: false, onClose: () => LocalStorage.set('didTour', true) },
             );
         }
-    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    }, []);
+
+    useEffect(() => {
+        const meltaUpdatesShown = LocalStorage.get<string>(environment.meltaUpdatesShown);
+
+        if (config?.meltaUpdates && meltaUpdatesShown !== JSON.stringify(config.meltaUpdates)) setOpenMeltaUpdates(true);
+    }, []);
+
+    const handleClose = () => {
+        setOpenMeltaUpdates(false);
+        LocalStorage.set(environment.meltaUpdatesShown, JSON.stringify(config?.meltaUpdates));
+    };
 
     useEffect(() => {
         if (entityMatch && entityParams) {
@@ -243,6 +259,7 @@ export const MeltaRoutesInner: React.FC = () => {
                     <ScrollToTop fadeInTrigger={trigger} />
                 </Box>
             </MainBox>
+            {config?.meltaUpdates && <MeltaUpdates open={openMeltaUpdates} handleClose={handleClose} meltaUpdates={config?.meltaUpdates} />}
         </>
     );
 };
