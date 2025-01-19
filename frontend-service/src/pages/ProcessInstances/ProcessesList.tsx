@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { Grid, Typography } from '@mui/material';
+import { Grid } from '@mui/material';
 import i18next from 'i18next';
 import { toast } from 'react-toastify';
 import { useQueryClient } from 'react-query';
 import { ViewingBox } from '../SystemManagement/components/ViewingBox';
 import ProcessCard from './ProcessCard';
 import { searchProcessesRequest } from '../../services/processesService';
-import { environment } from '../../globals';
 import { Status, IMongoProcessInstancePopulated } from '../../interfaces/processes/processInstance';
 import { IMongoProcessTemplatePopulated } from '../../interfaces/processes/processTemplate';
 import { InfiniteScroll } from '../../common/InfiniteScroll';
@@ -15,6 +14,7 @@ import { useUserStore } from '../../stores/user';
 import { PermissionScope } from '../../interfaces/permissions';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { BlueTitle } from '../../common/BlueTitle';
+import { environment } from '../../globals';
 
 const { infiniteScrollPageCount } = environment.processInstances;
 

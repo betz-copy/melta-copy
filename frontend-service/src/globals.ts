@@ -38,7 +38,7 @@ export const environment = {
             '7-8': 6,
             '9-10': 8,
         },
-        maximumNodeSize: 7,
+        maxNodeSize: 7,
         nodeSizeMultiplier: 4,
         nodeIconSizeMultiplier: 0.7,
         nodeHoverSizeMultiplier: 1.2,
@@ -97,12 +97,21 @@ export const environment = {
             heatmapModeKey: 'heatmapMode',
         },
     },
-    entitiesCardsView: {
-        infiniteScrollPageCount: 12,
-    },
     entitiesProperties: {
         maxNumOfCharactersNotInFullWidth: 700,
         numOfFixedDigits: 18,
+    },
+    entitiesCardsView: {
+        infiniteScrollPageCount: 12,
+    },
+    permission: {
+        infiniteScrollPageCount: 13,
+    },
+    activityLog: {
+        infiniteScrollPageCount: 10,
+    },
+    processInstances: {
+        infiniteScrollPageCount: 10,
     },
     iFrames: {
         iFrameDimensionKey: 'iFrameDimension_',
@@ -194,34 +203,13 @@ export const environment = {
             ],
         },
     },
-    agGrid: {
-        rowCount: 5,
-        defaultExpandedRowCount: 13,
-        defaultRowHeight: 50,
-        defaultFontSize: 14,
-        cacheBlockSize: 5,
-        maxBlocksInCache: 50,
-        maxConcurrentDatasourceRequests: 1,
-        infiniteInitialRowCount: 1,
-        defaultExpandedTableHeight: 650,
-        paginationPageSizeSelector: [5, 10, 25, 50],
-    },
-    activityLog: {
-        infiniteScrollPageCount: 10,
-    },
-    processInstances: {
-        infiniteScrollPageCount: 10,
-        stepsAmountInStepper: 5,
-    },
-    permission: {
-        infiniteScrollPageCount: 13,
-    },
     accessTokenName: 'rabaz-access-token',
     brokenRulesFakeEntityIdPrefix: '$',
     minimumSupportedChromeVersion: 85,
     fileIdLength: 32,
     maxDateTimestamp: 8640000000000000,
     attemptInterval: 100,
+    unit: 'px',
     errorCodes: {
         ruleBlock: 'RULE_BLOCK',
         failedToCreateConstraints: 'FAILED_TO_CREATE_CONSTRAINTS',
@@ -230,20 +218,21 @@ export const environment = {
         actionsCustomError: 'ACTIONS_CUSTOM_ERROR',
         entityHasRelationships: 'ENTITY_HAS_RELATIONSHIPS',
     },
-    mainFontSizes: {
-        headlineTitleFontSize: '24px',
-        headlineSubTitleFontSize: '14px',
+
+    loadExcel: { excelExtension: '.xlsx', acceptedFilesTypes: { 'excel/xlsx': ['.xlsx', '.xls'] } },
+    agGrid: {
+        cacheBlockSize: 5,
+        maxConcurrentDatasourceRequests: 1,
+        paginationPageSizeSelector: [5, 10, 25, 50],
     },
-    smallPreviewHeight: {
-        number: '150',
-        unit: 'px',
-    },
-    iconSize: {
-        width: '24px',
-        height: '24px',
-    },
-    loadExcel: { excelExtension: '.xlsx', acceptedFilesTypes: { 'excel/xlsx': ['.xlsx', '.xls'] }, filesLimit: 5, entitiesLimit: 500 },
+
     draftAutoSaveDebounce: 250,
+    map: {
+        maxRadius: 30000,
+        squareLength: 10,
+        units: { km: 'km', squaredKm: 'km²' },
+        polygon: { polygon: 'POLYGON', polygonPrefix: 'POLYGON((', polygonSuffix: '))' },
+    },
     profileIconsCount: 19,
     avatarIconPath: '/icons/profileAvatar/',
     fileExtensions: {
@@ -1276,10 +1265,6 @@ export const environment = {
             'prw',
         ],
     },
-    // matomo: {
-    //     urlBase: 'matomo.yesodot.services.idf',
-    //     siteId: 24,
-    // },
     systemManagement: {
         actions: {
             unusedPropertyErrorCodeTs: '6133',

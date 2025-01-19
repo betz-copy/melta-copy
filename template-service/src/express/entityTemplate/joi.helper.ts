@@ -5,7 +5,7 @@ import { IEntityTemplate, IEnumPropertiesColors, IProperties } from './interface
 import config from '../../config';
 import { ColorSchema, variableNameValidation } from '../../utils/joi';
 
-const { notifications } = config;
+const { notifications, ajvCustomFormats } = config;
 
 const ajv = new Ajv();
 ajv.addFormat('fileId', /.*/);
@@ -18,6 +18,7 @@ ajv.addFormat('user', {
 });
 ajv.addFormat('text-area', /.*/);
 ajv.addFormat('relationshipReference', /.*/);
+ajv.addFormat('location', ajvCustomFormats.locationFieldRegex);
 addFormats(ajv);
 ajv.addVocabulary(['patternCustomErrorMessage', 'hide']);
 ajv.addKeyword({
@@ -42,7 +43,7 @@ ajv.addKeyword({ keyword: 'isDailyAlert', type: 'boolean' });
 ajv.addKeyword({ keyword: 'isDatePastAlert', type: 'boolean' });
 ajv.addKeyword({ keyword: 'archive', type: 'boolean' });
 
-const stringFormats = ['date', 'date-time', 'email', 'fileId', 'text-area', 'relationshipReference', 'user'];
+const stringFormats = ['date', 'date-time', 'email', 'fileId', 'text-area', 'relationshipReference', 'location', 'user'];
 const allowedJSONSchemaTypes = ['string', 'number', 'boolean', 'array'];
 
 const propertiesArraySchema = Joi.array()

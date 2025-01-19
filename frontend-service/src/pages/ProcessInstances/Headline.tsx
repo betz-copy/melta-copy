@@ -7,9 +7,9 @@ import { BlueTitle } from '../../common/BlueTitle';
 import { AddProcessButton } from './AddProcessButton';
 import { IMongoProcessTemplatePopulated } from '../../interfaces/processes/processTemplate';
 import './ProcessesList.css';
-import { environment } from '../../globals';
 import { useUserStore } from '../../stores/user';
 import { PermissionScope } from '../../interfaces/permissions';
+import { useWorkspaceStore } from '../../stores/workspace';
 
 const ProcessInstancesHeadline: React.FC<{
     onSearch: (value: string) => void;
@@ -24,6 +24,8 @@ const ProcessInstancesHeadline: React.FC<{
     endDateInput: Date | null;
     searchInput: string;
 }> = () => {
+    const workspace = useWorkspaceStore((state) => state.workspace);
+
     const theme = useTheme();
 
     const currentUser = useUserStore((state) => state.user);
@@ -37,7 +39,7 @@ const ProcessInstancesHeadline: React.FC<{
                             title={i18next.t('pages.processInstances')}
                             component="h4"
                             variant="h4"
-                            style={{ fontSize: environment.mainFontSizes.headlineTitleFontSize }}
+                            style={{ fontSize: workspace.metadata.mainFontSizes.headlineTitleFontSize }}
                         />
                     </Grid>
                 </Grid>

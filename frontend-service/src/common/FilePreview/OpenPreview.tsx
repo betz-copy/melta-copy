@@ -9,6 +9,7 @@ import FileIcon from './FileIcon';
 import { PreviewDialog } from './PreviewDialog';
 import { HighlightText } from '../../utils/HighlightText';
 import { MeltaTooltip } from '../MeltaTooltip';
+import { useWorkspaceStore } from '../../stores/workspace';
 import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
 
 const OpenPreviewContent: React.FC<{
@@ -20,6 +21,7 @@ const OpenPreviewContent: React.FC<{
     highlightAll?: boolean;
 }> = ({ fileName, onClick, img, showText, searchValue, highlightAll }) => {
     const text = useMemo(() => getFileNameWithoutExtension(fileName), [fileName]);
+    const workspace = useWorkspaceStore((state) => state.workspace);
 
     return (
         <Grid style={{ overflow: 'hidden', whiteSpace: 'nowrap', maxWidth: '100%' }}>
@@ -35,7 +37,7 @@ const OpenPreviewContent: React.FC<{
                     <Typography
                         sx={{
                             marginRight: '5px',
-                            fontSize: environment.mainFontSizes.headlineSubTitleFontSize,
+                            fontSize: workspace.metadata.agGrid.defaultFontSize,
                             textOverflow: 'ellipsis',
                             overflow: 'hidden',
                             whiteSpace: 'nowrap',
@@ -104,7 +106,7 @@ const OpenPreview: React.FC<{
             </Link>
         );
     }
-    return (
+    return matchSentence ? (
         <MeltaTooltip
             title={
                 <Typography
@@ -135,6 +137,18 @@ const OpenPreview: React.FC<{
                 {open && <PreviewDialog fileId={fileId} setOpen={setOpen} open={open} fileName={fileName} contentType={contentType} />}
             </Grid>
         </MeltaTooltip>
+    ) : (
+        <Grid>
+            <OpenPreviewContent
+                fileName={fileName}
+                onClick={handleButtonClick}
+                img={img}
+                showText={showText}
+                searchValue={searchValue}
+                highlightAll={highlightAll}
+            />
+            {open && <PreviewDialog fileId={fileId} setOpen={setOpen} open={open} fileName={fileName} contentType={contentType} />}
+        </Grid>
     );
 };
 

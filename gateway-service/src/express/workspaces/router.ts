@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import multer from 'multer';
+import { createProxyMiddleware, fixRequestBody } from 'http-proxy-middleware';
 import config from '../../config';
 import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
 import { createWorkspacesController, wrapController } from '../../utils/express';
@@ -12,12 +13,22 @@ import {
     getFileSchema,
     getWorkspaceHierarchyIdsSchema,
     getWorkspaceIds,
+    updateMetadataSchema,
     updateOneSchema,
 } from './validator.schema';
 
 const controller = createWorkspacesController(WorkspaceController);
 
 export const workspaceRouter: Router = Router();
+
+const workspaceProxy = createProxyMiddleware({
+    target: `${config.workspaceService.url}${config.workspaceService.baseRoute}`,
+    changeOrigin: true,
+    on: {
+        proxyReq: fixRequestBody,
+    },
+    proxyTimeout: config.workspaceService.requestTimeout,
+});
 
 workspaceRouter.post(
     '/ids',
@@ -53,3 +64,5 @@ workspaceRouter.put(
     AuthorizerControllerMiddleware.userCanWriteWorkspaces,
     controller.updateOne,
 );
+
+workspaceRouter.patch('/:id/metadata', ValidateRequest(updateMetadataSchema), workspaceProxy);

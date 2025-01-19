@@ -1,11 +1,6 @@
 import { ConsumerMessage } from 'menashmq';
 import { ServiceError } from '../../express/error';
 import { FilesManager } from '../../express/files/manager';
-import { config } from '../../config';
-
-const {
-    service: { workspaceIdHeaderName },
-} = config;
 
 class DeleteFilesConsumer {
     async createDeleteFilesQueueReq(msg: ConsumerMessage) {
@@ -14,7 +9,7 @@ class DeleteFilesConsumer {
 
             const allObj = JSON.parse(contentAsString);
             const { fileIds, bucketName } = allObj;
-            const filesManager = new FilesManager(bucketName ?? msg.properties.headers[workspaceIdHeaderName]);
+            const filesManager = new FilesManager(bucketName);
             await filesManager.deleteFiles(fileIds);
 
             msg.ack();

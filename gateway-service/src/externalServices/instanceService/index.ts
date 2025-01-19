@@ -12,6 +12,7 @@ import {
     ISearchResult,
     ITemplateSearchBody,
     IUniqueConstraintOfTemplate,
+    ISearchEntitiesByLocationBody,
 } from './interfaces/entities';
 import { IEntitySingleProperty } from '../templates/entityTemplateService';
 import { IRelationship } from './interfaces/relationships';
@@ -26,6 +27,7 @@ const {
         baseConstraintsRoute,
         requestTimeout,
         searchOfTemplateRoute,
+        searchEntitiesByLocationRoute,
     },
 } = config;
 
@@ -108,6 +110,15 @@ export class InstancesService extends DefaultExternalServiceApi {
 
     async searchEntitiesOfTemplateRequest(templateId: string, searchBody: ISearchEntitiesOfTemplateBody & { entityIdsToInclude?: string[] }) {
         const { data } = await this.api.post<ISearchResult>(`${baseEntitiesRoute}${searchOfTemplateRoute}/${templateId}`, searchBody);
+
+        return data;
+    }
+
+    async searchEntitiesByLocationRequest(searchBody: ISearchEntitiesByLocationBody) {
+        const { data } = await this.api.post<{ node: IEntity; matchingFields: string[] }[]>(
+            `${baseEntitiesRoute}${searchEntitiesByLocationRoute}`,
+            searchBody,
+        );
 
         return data;
     }

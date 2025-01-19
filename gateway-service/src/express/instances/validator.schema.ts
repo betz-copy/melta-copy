@@ -124,6 +124,25 @@ export const searchEntitiesBatchRequestSchema = Joi.object({
     params: {},
 });
 
+// POST /api/instances/search/location
+export const searchEntitiesByLocationRequestSchema = Joi.object({
+    body: Joi.object({
+        textSearch: Joi.string().allow(''),
+        templates: Joi.object().pattern(
+            Joi.string(),
+            Joi.object({
+                filter: Joi.any(),
+            }),
+        ),
+        circle: Joi.object({
+            coordinate: Joi.array().items(Joi.number()).length(2).required(),
+            radius: Joi.number().positive().required(),
+        }),
+        polygon: Joi.array().items(Joi.array().items(Joi.number()).length(2)),
+    }).xor('circle', 'polygon'),
+    query: Joi.object(),
+    params: Joi.object(),
+});
 /*
  * POST /api/instances/entities/count
  */
@@ -197,11 +216,12 @@ export const deleteRelationshipSchema = Joi.object({
 export const loadEntitiesSchema = Joi.object({
     body: {
         file: excelTemplateSchema,
-        insertBrokenEntities: {
+        insertBrokenEntities: ExtendedJoi.stringToObject({
             entitiesToCreate: Joi.array().items({ templateId: Joi.string(), properties: Joi.object() }).default([]),
             ignoredRules: Joi.array().items(brokenRuleSchema).default([]),
-        },
+        }),
         templateId: Joi.string().required(),
     },
     query: {},
+    params: {},
 });
