@@ -87,7 +87,7 @@ const handleFailedEntities = (rowData: Record<string, any>, failedProperties: IF
 };
 
 const readExcelFile = async (
-    files: any[],
+    files: Express.Multer.File[],
     template: IMongoEntityTemplatePopulated,
     failedEntities: IFailedEntity[],
     entitiesFileLimit = config.loadExcel.entitiesFileLimit,

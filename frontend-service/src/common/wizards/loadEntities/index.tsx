@@ -89,7 +89,6 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
     const workspace = useWorkspaceStore((state) => state.workspace);
     const { filesLimit } = workspace.metadata.excel;
 
-    const [hasError, setHasError] = useState(false);
     const isBrokenRules = (stepsData.data.brokenRulesEntities?.brokenRules ?? []).length > 0;
     const [createOrUpdateWithRuleBreachDialogState, setCreateOrUpdateWithRuleBreachDialogState] = useState<ICreateOrUpdateWithRuleBreachDialogState>({
         isOpen: false,
@@ -101,7 +100,6 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
             status: StepStatus.uploadExcel,
             data: { succeededEntities: [], failedEntities: [] },
         });
-        setHasError(false);
     };
 
     const { isLoading: isLoadingExcelEntities, mutateAsync: loadEntities } = useMutation(
@@ -111,7 +109,6 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
         {
             async onSuccess(data) {
                 setStepsData((prev) => ({ ...prev, status: StepStatus.excelUploadResult, data }));
-                setHasError(false);
                 return data;
             },
             onError() {
@@ -124,7 +121,6 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
                           )}`,
                 );
                 onClose();
-                setHasError(true);
             },
         },
     );
@@ -167,8 +163,6 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
     );
 
     const submitFunction = async () => {
-        // TODO: add error handling
-        if (hasError) console.log('have error');
         if (isBrokenRules)
             setCreateOrUpdateWithRuleBreachDialogState({
                 isOpen: true,
