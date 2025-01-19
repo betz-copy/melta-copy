@@ -1,7 +1,7 @@
 import { ColDef, ValueGetterFunc } from '@ag-grid-community/core';
 import { Grid } from '@mui/material';
 import i18next from 'i18next';
-import React, { memo } from 'react';
+import React, { memo, useEffect } from 'react';
 import { Link } from 'wouter';
 import { AxiosError } from 'axios';
 import { UseMutateAsyncFunction } from 'react-query';
@@ -75,10 +75,14 @@ export const getColumnDefs = <Data extends any = EntityData>({
     searchValue,
     disableEditCell,
 }: IGetColumnDefsOptions<Data>): ColDef[] => {
+    const notVisibleColumnsAmount = Object.values(defaultVisibleColumns).filter((value) => value === false).length;
+    const targetOrder = Object.keys(defaultColumnsOrder).length - notVisibleColumnsAmount - 2;
+
     const columnDefs = template.propertiesOrder.map((property) => {
         const propertyTemplate = { ...template.properties.properties[property] };
         const hiddenProperties = template.properties.hide;
         const { type, format, calculateTime, archive } = propertyTemplate;
+        const isLastColumn = defaultColumnsOrder[property]?.order === targetOrder;
 
         const hideField = template.properties.hide.includes(property);
 
@@ -101,6 +105,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
                 valueGetter,
                 propertyTemplate,
                 defaultColumnWidths[property],
+                isLastColumn,
                 hideColumn,
                 hideField,
                 ignoreType,
@@ -113,6 +118,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
                 valueGetter,
                 propertyTemplate,
                 defaultColumnWidths[property],
+                isLastColumn,
                 hideColumn,
                 hideField,
                 ignoreType,
@@ -124,6 +130,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
                 property,
                 valueGetter,
                 propertyTemplate,
+                isLastColumn,
                 defaultColumnWidths[property],
                 hideColumn,
                 hideField,
@@ -138,6 +145,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
                 valueGetter,
                 propertyTemplate,
                 defaultColumnWidths[property],
+                isLastColumn,
                 hideColumn,
                 searchValue,
                 Object.values(template.entitiesWithFiles ?? {}).flat(),
@@ -150,6 +158,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
                 defaultColumnWidths[property],
                 propertyTemplate.relationshipReference!.relatedTemplateId,
                 propertyTemplate.relationshipReference!.relatedTemplateField,
+                isLastColumn,
                 hideColumn,
                 searchValue,
                 editable,
@@ -161,6 +170,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
                 propertyTemplate,
                 propertyTemplate.enum,
                 defaultColumnWidths[property],
+                isLastColumn,
                 template.enumPropertiesColors?.[property],
                 hideColumn,
                 hideField,
@@ -174,6 +184,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
                 valueGetter,
                 propertyTemplate,
                 defaultColumnWidths[property],
+                isLastColumn,
                 hideColumn,
                 hideField,
                 ignoreType,
@@ -188,6 +199,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
                 propertyTemplate.items.enum,
                 defaultColumnWidths[property],
                 rowHeight,
+                isLastColumn,
                 template.enumPropertiesColors?.[property],
                 hideColumn,
                 hideField,
@@ -202,6 +214,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
                 { title: propertyTemplate.title },
                 defaultColumnWidths[property],
                 rowHeight,
+                isLastColumn,
                 false,
                 searchValue,
                 Object.values(template.entitiesWithFiles ?? {}).flat(),
@@ -212,6 +225,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
             valueGetter,
             propertyTemplate,
             defaultColumnWidths[property],
+            isLastColumn,
             hideColumn,
             hideField,
             ignoreType,
@@ -227,6 +241,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
                 title: i18next.t('entitiesTableOfTemplate.disabledHeaderName'),
             },
             defaultColumnWidths.disabled,
+            defaultColumnsOrder.disable?.order === targetOrder,
             defaultVisibleColumns.disabled !== undefined ? !defaultVisibleColumns.disabled : true,
         ),
     );
@@ -239,6 +254,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
                 title: i18next.t('entityPage.createdAt'),
                 format: 'date-time',
             },
+            defaultColumnsOrder.createdAt?.order === targetOrder,
             defaultColumnWidths.createdAt,
             defaultVisibleColumns.createdAt !== undefined ? !defaultVisibleColumns.createdAt : true,
         ),
@@ -252,6 +268,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
                 title: i18next.t('entityPage.updatedAt'),
                 format: 'date-time',
             },
+            defaultColumnsOrder.updatedAt?.order === targetOrder,
             defaultColumnWidths.updatedAt,
             defaultVisibleColumns.updatedAt !== undefined ? !defaultVisibleColumns.updatedAt : true,
         ),

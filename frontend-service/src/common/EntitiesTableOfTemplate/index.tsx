@@ -1,13 +1,15 @@
 /* eslint-disable no-case-declarations */
 /* eslint-disable no-param-reassign */
-import React, { ForwardedRef, forwardRef, useImperativeHandle, useMemo, useRef, useState } from 'react';
+import React, { ForwardedRef, forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import {
     BodyScrollEvent,
     CellEditingStoppedEvent,
     ColumnMovedEvent,
     ColumnResizedEvent,
     ColumnVisibleEvent,
+    FirstDataRenderedEvent,
     GridApi,
+    GridReadyEvent,
     IServerSideDatasource,
     IServerSideGetRowsParams,
     IServerSideGetRowsRequest,
@@ -26,6 +28,7 @@ import '../../css/table.css';
 import { useMutation } from 'react-query';
 import { AxiosError } from 'axios';
 
+import { keys } from 'lodash';
 import { environment } from '../../globals';
 import { EntityData, IEntity, IEntityExpanded, IUniqueConstraint } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
@@ -234,13 +237,13 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
     ) => {
         const darkMode = useDarkModeStore((state) => state.darkMode);
         const savedVisibleColumns = localStorage.getItem(`visibleColumns-${saveStorageProps.pageType}-${template._id}`);
-        const defaultVisibleColumns = savedVisibleColumns ? JSON.parse(savedVisibleColumns) : {};
+        const [defaultVisibleColumns, setDefaultVisibleColumns] = useState(savedVisibleColumns ? JSON.parse(savedVisibleColumns) : {});
 
         const savedColumnsOrder = localStorage.getItem(`columnsOrder-${saveStorageProps.pageType}-${template._id}`);
-        const defaultColumnsOrder = savedColumnsOrder ? JSON.parse(savedColumnsOrder) : {};
+        const [defaultColumnsOrder, setDefaultColumnsOrder] = useState(savedColumnsOrder ? JSON.parse(savedColumnsOrder) : {});
 
         const savedColumnWidths = localStorage.getItem(`columnWidths-${saveStorageProps.pageType}-${template._id}`);
-        const defaultColumnWidths = savedColumnWidths ? JSON.parse(savedColumnWidths) : {};
+        const defaultColumnWidths: Record<string, number> = savedColumnWidths ? JSON.parse(savedColumnWidths) : {};
 
         const [_, navigate] = useLocation();
 
@@ -249,6 +252,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             setOpenDeleteDialog(false);
         };
         const [selectedRow, setSelectedRow] = useState('');
+
         const { isLoading: isDeleteLoading, mutateAsync: deleteMutation } = useMutation((id: string) => deleteEntityRequest(id), {
             onError: (error: AxiosError) => {
                 toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.entity.failedToDelete')} />);
@@ -385,6 +389,69 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             },
         };
 
+        const autoSizeAll = (params: GridReadyEvent<Data, any>) => {
+            const { api } = params;
+
+            const columnsKeys = Object.keys(template.properties.properties).filter((key) => !defaultColumnWidths[key]);
+
+            if (columnsKeys.length === 0) return;
+
+            api.sizeColumnsToFit();
+            api.autoSizeColumns(defaultColumnWidths.length > 0 ? columnsKeys : Object.keys(template.properties.properties));
+            console.log({ columnsKeys });
+
+            const columnStates = api.getColumnState().filter((col) => columnsKeys.includes(col.colId));
+            const usedWidth = Object.values(defaultColumnWidths).reduce((sum, width) => sum + width, 0);
+            console.log({ defaultColumnWidths });
+
+            const gridElement = document.querySelector('.ag-root');
+            if (!gridElement) {
+                console.error('Grid container element not found');
+                return;
+            }
+            const totalGridWidth = gridElement.clientWidth;
+            const x = columnStates.reduce((sum, col) => sum + col.width!, 0);
+            console.log({ usedWidth, x });
+            const remainingWidth = totalGridWidth - usedWidth - x - 200;
+            console.log({ columnStates });
+
+            const columnWidths: Record<string, number> = columnStates.reduce((acc, col, index) => {
+                const newWidth = index === columnStates.length - 1 ? col.width! + Math.max(remainingWidth, 0) : col.width;
+                console.log({ newWidth });
+
+                acc[col.colId] = newWidth;
+                return acc;
+            }, {});
+
+            api.setColumnWidths(
+                Object.entries(columnWidths).map(([key, newWidth]) => {
+                    console.log({ key, newWidth });
+
+                    return { key, newWidth };
+                }),
+            );
+
+            // api.refreshCells();
+
+            if (Object.keys(columnWidths).length > 0) {
+                const updatedWidths = { ...defaultColumnWidths, ...columnWidths };
+                console.log({ columnWidths, updatedWidths });
+                localStorage.setItem(`columnWidths-${saveStorageProps.pageType}-${template._id}`, JSON.stringify(updatedWidths));
+            }
+        };
+
+        const updateVisibleColumns = (params: ColumnVisibleEvent<Data> | GridReadyEvent<Data, any>) => {
+            const columnState = params.api.getColumnState();
+
+            const updatedVisibleColumns = columnState.reduce<Record<string, boolean>>((acc, col) => {
+                acc[col.colId] = !col.hide;
+                return acc;
+            }, {});
+
+            localStorage.setItem(`visibleColumns-${saveStorageProps.pageType}-${template._id}`, JSON.stringify(updatedVisibleColumns));
+            setDefaultVisibleColumns(updatedVisibleColumns);
+        };
+
         const handleColumnVisible = (params: ColumnVisibleEvent<Data>) => {
             if (!saveStorageProps.shouldSaveVisibleColumns) return;
             if (params?.column?.getColId() && params.column.getColId() === 'disabled') {
@@ -392,15 +459,10 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                 const filterModel = params.column.isVisible() ? params.api.getFilterModel() : { ...rest, ...defaultFilterModel };
                 params.api.setFilterModel(filterModel);
             }
-            const columnState = params.api.getColumnState();
-            const updatedVisibleColumns = columnState.reduce<Record<string, boolean>>((acc, col) => {
-                acc[col.colId] = !col.hide;
-                return acc;
-            }, {});
-            localStorage.setItem(`visibleColumns-${saveStorageProps.pageType}-${template._id}`, JSON.stringify(updatedVisibleColumns));
+            updateVisibleColumns(params);
         };
 
-        const handleColumnMoved = (params: ColumnMovedEvent<Data>) => {
+        const handleColumnsOrder = (params: ColumnMovedEvent<Data> | GridReadyEvent<Data, any>) => {
             if (!saveStorageProps.shouldSaveColumnOrder) return;
             const columnState = params.api.getColumnState();
             const newColumnsOrder = columnState.reduce<Record<string, { order: number }>>((acc, column, index) => {
@@ -408,6 +470,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                 return acc;
             }, {});
             localStorage.setItem(`columnsOrder-${saveStorageProps.pageType}-${template._id}`, JSON.stringify(newColumnsOrder));
+            setDefaultColumnsOrder(newColumnsOrder);
         };
 
         const handleColumnResized = (params: ColumnResizedEvent<Data>) => {
@@ -555,7 +618,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                             agDateInput: DateFilterComponent,
                         }}
                         onColumnVisible={handleColumnVisible}
-                        onColumnMoved={handleColumnMoved}
+                        onColumnMoved={handleColumnsOrder}
                         onColumnResized={handleColumnResized}
                         onPaginationChanged={handlePaginationChanged}
                         onBodyScroll={rowModelType === 'infinite' ? handleBodyScroll : undefined}
@@ -589,13 +652,12 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                             gridApi.setSideBarVisible(isSideBarOpen);
                         }}
                         onGridReady={(params) => {
-                            params.api.sizeColumnsToFit();
-                            if (!savedColumnWidths) {
-                                params.api.autoSizeAllColumns();
-                            } else {
-                                const keys = Object.keys(template.properties.properties).filter((key) => !JSON.parse(savedColumnWidths)[key]);
-                                params.api.autoSizeColumns(keys);
-                            }
+                            console.log('djkb');
+
+                            autoSizeAll(params);
+                            updateVisibleColumns(params);
+                            handleColumnsOrder(params);
+
                             const savedSortModel = localStorage.getItem(`sortModel-${saveStorageProps.pageType}-${template._id}`);
                             if (savedSortModel) {
                                 const sortModel: IServerSideGetRowsRequest['sortModel'] = JSON.parse(savedSortModel);
@@ -650,6 +712,8 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                             minWidth: 120,
                             resizable: true,
                             lockPinned: true,
+                            flex: 1,
+                            initialFlex: 1,
                             initialWidth: 250,
                         }}
                         sideBar={{
@@ -718,15 +782,17 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                             if (currEditingCell && currEditingCell.value !== params.value) params.api.stopEditing();
                         }}
                     />
-                    <AreYouSureDialog
-                        open={openDeleteDialog && selectedRow !== ''}
-                        handleClose={closeDeleteDialog}
-                        onYes={() => {
-                            deleteMutation(selectedRow);
-                        }}
-                        isLoading={isDeleteLoading}
-                    />
                 </Box>
+
+                <AreYouSureDialog
+                    open={openDeleteDialog && selectedRow !== ''}
+                    handleClose={closeDeleteDialog}
+                    onYes={() => {
+                        deleteMutation(selectedRow);
+                    }}
+                    isLoading={isDeleteLoading}
+                />
+
                 {updateWithRuleBreachDialogState.isOpen && (
                     <ActionOnEntityWithRuleBreachDialog
                         isLoadingActionOnEntity={isUpdateLoading}
