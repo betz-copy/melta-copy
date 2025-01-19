@@ -18,7 +18,6 @@ import { ActionErrors, ActionTypes, IAction, IActionMetadataPopulated, ICreateEn
 import { ICreateOrUpdateWithRuleBreachDialogState } from '../../dialogs/entity/CreateOrEditEntityDialog';
 import { IRequiredConstraint, IUniqueConstraint } from '../../../interfaces/entities';
 import { environment } from '../../../globals';
-import { useWorkspaceStore } from '../../../stores/workspace';
 
 export interface EntitiesWizardValues {
     files?: File[];
@@ -85,9 +84,6 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
         status: StepStatus.uploadExcel,
         data: { succeededEntities: [], failedEntities: [] },
     });
-
-    const workspace = useWorkspaceStore((state) => state.workspace);
-    const { filesLimit } = workspace.metadata.excel;
 
     const isBrokenRules = (stepsData.data.brokenRulesEntities?.brokenRules ?? []).length > 0;
     const [createOrUpdateWithRuleBreachDialogState, setCreateOrUpdateWithRuleBreachDialogState] = useState<ICreateOrUpdateWithRuleBreachDialogState>({

@@ -396,7 +396,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                         onChangeToActive={(isActive) => handleChangeActiveButton(isActive, 'map')}
                         isActiveButton={activeButton === 'map'}
                     >
-                        <Map fontSize="large" sx={{ color: activeButton === 'map' ? '#545eb9' : 'white', ...environment.iconSize }} />
+                        <Map fontSize="large" sx={{ color: activeButton === 'map' ? '#545eb9' : 'white', ...iconSize }} />
                     </NavButton>
 
                     <NavButton

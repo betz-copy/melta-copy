@@ -1,7 +1,6 @@
 import { Dialog, Grid, IconButton, Typography } from '@mui/material';
 import React, { useState } from 'react';
 import { LocationOn } from '@mui/icons-material';
-import { environment } from '../../globals';
 import { HighlightText } from '../../utils/HighlightText';
 import EntityWithLocationFields from './LocationPreview';
 import { IEntity } from '../../interfaces/entities';
