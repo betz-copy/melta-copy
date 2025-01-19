@@ -17,6 +17,7 @@ import { environment } from '../../../globals';
 import { useUserStore } from '../../../stores/user';
 
 export const CardMenu: React.FC<{
+    onOptionsIconClose?: () => void;
     onEditClick?: MouseEventHandler;
     onDeleteClick?: MouseEventHandler;
     disabledProps?: { isDisabled?: boolean; isEditDisabled: boolean; isDeleteDisabled?: boolean; tooltipTitle: string; editTooltipTitle?: string };
@@ -24,7 +25,18 @@ export const CardMenu: React.FC<{
     onDuplicateClick?: MouseEventHandler;
     onAddActionsClick?: MouseEventHandler;
     onConvertToRelationShipFieldClick?: MouseEventHandler;
-}> = ({ onEditClick, onDeleteClick, disabledProps, onDisableClick, onDuplicateClick, onAddActionsClick, onConvertToRelationShipFieldClick }) => {
+    onOptionsIconClick?: () => Promise<void>;
+}> = ({
+    onOptionsIconClose,
+    onEditClick,
+    onDeleteClick,
+    disabledProps,
+    onDisableClick,
+    onDuplicateClick,
+    onAddActionsClick,
+    onConvertToRelationShipFieldClick,
+    onOptionsIconClick,
+}) => {
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
     const open = Boolean(anchorEl);
 
@@ -33,11 +45,14 @@ export const CardMenu: React.FC<{
     const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
         event.stopPropagation();
         setAnchorEl(event.currentTarget);
+
+        if (onOptionsIconClick) onOptionsIconClick();
     };
 
     const handleClose = (event) => {
         event.stopPropagation();
         setAnchorEl(null);
+        if (onOptionsIconClose) onOptionsIconClose();
     };
 
     const editTooltipTitle = useMemo(() => {

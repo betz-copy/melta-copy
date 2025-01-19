@@ -112,13 +112,6 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
         setIsDeleteButtonDisabled(templatesHaveEntities);
     };
 
-    const handleHover = (isHover: boolean) => {
-        setIsHoverOnCard(isHover);
-        if (isHover) {
-            checkEntityTemplateHasEntities([entityTemplate]);
-        }
-    };
-
     const isFile = (value: IEntitySingleProperty) => value.format === 'fileId' || value.items?.format === 'fileId';
 
     return (
@@ -167,8 +160,13 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                     <Grid item container flexBasis="10%">
                         {isHoverOnCard && (
                             <CardMenu
+                                onOptionsIconClose={() => setIsHoverOnCard(false)}
+                                onOptionsIconClick={async () => {
+                                    await checkEntityTemplateHasEntities([entityTemplate]);
+                                }}
                                 onEditClick={() => {
                                     setEntityTemplateWizardDialogState({ isWizardOpen: true, entityTemplate });
+                                    setIsHoverOnCard(false);
                                 }}
                                 onDuplicateClick={() => {
                                     setEntityTemplateWizardDialogState({
@@ -182,12 +180,14 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                             uniqueConstraints,
                                         },
                                     });
+                                    setIsHoverOnCard(false);
                                 }}
                                 onDeleteClick={() => setDeleteEntityTemplateDialogState({ isDialogOpen: true, entityTemplateId: entityTemplate._id })}
                                 onAddActionsClick={() => setAddActionsDialogState({ isWizardOpen: true, entityTemplate })}
-                                onDisableClick={() =>
-                                    updateEntityTemplateStatusAsync({ entityTemplateId: entityTemplate._id, disabled: !entityTemplate.disabled })
-                                }
+                                onDisableClick={() => {
+                                    updateEntityTemplateStatusAsync({ entityTemplateId: entityTemplate._id, disabled: !entityTemplate.disabled });
+                                    setIsHoverOnCard(false);
+                                }}
                                 disabledProps={{
                                     isDeleteDisabled: isDeleteButtonDisabled,
                                     isDisabled: entityTemplate.disabled,
@@ -309,7 +309,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                     ))}
                 </Grid>
             }
-            onHover={handleHover}
+            onHover={(isHover) => setIsHoverOnCard(isHover)}
         />
     );
 };
