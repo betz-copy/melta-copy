@@ -12,7 +12,7 @@ export class InstancesController extends DefaultController<InstancesManager> {
 
     async createEntityInstance(req: Request, res: Response) {
         const { ignoredRules, ...instanceData } = req.body;
-        res.json(await this.manager.createEntityInstance(instanceData, req.files || [], ignoredRules, req.user!.id));
+        res.json(await this.manager.createEntityInstance(instanceData, req.files || (req.file ? [req.file] : []), ignoredRules, req.user!.id));
     }
 
     async exportEntities(req: Request, res: Response) {
@@ -25,12 +25,27 @@ export class InstancesController extends DefaultController<InstancesManager> {
     }
 
     async loadEntities(req: Request, res: Response) {
-        res.json(await this.manager.loadEntities(req.body.templateId, req.user!.id, req.files || [], req.body.insertBrokenEntities));
+        res.json(
+            await this.manager.loadEntities(
+                req.body.templateId,
+                req.user!.id,
+                req.files || (req.file ? [req.file] : []),
+                req.body.insertBrokenEntities,
+            ),
+        );
     }
 
     async updateEntityInstance(req: Request, res: Response) {
         const { ignoredRules, ...instanceData } = req.body;
-        res.json(await this.manager.updateEntityInstance(req.params.id, instanceData, req.files || [], ignoredRules, req.user!.id));
+        res.json(
+            await this.manager.updateEntityInstance(
+                req.params.id,
+                instanceData,
+                req.files || (req.file ? [req.file] : []),
+                ignoredRules,
+                req.user!.id,
+            ),
+        );
     }
 
     async searchEntitiesByLocation(req: Request, res: Response) {
@@ -53,7 +68,15 @@ export class InstancesController extends DefaultController<InstancesManager> {
 
     async duplicateEntityInstance(req: Request, res: Response) {
         const { ignoredRules, ...instanceData } = req.body;
-        res.json(await this.manager.duplicateEntityInstance(req.params.id, instanceData, req.files || [], ignoredRules, req.user!.id));
+        res.json(
+            await this.manager.duplicateEntityInstance(
+                req.params.id,
+                instanceData,
+                req.files || (req.file ? [req.file] : []),
+                ignoredRules,
+                req.user!.id,
+            ),
+        );
     }
 
     async deleteEntityInstances(req: Request, res: Response) {
