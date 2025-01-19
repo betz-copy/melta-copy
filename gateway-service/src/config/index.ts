@@ -55,7 +55,11 @@ const config = {
         agGridLimit: {
             deleteLimit: env.get('DELETE_ENTITIES_MAX_LIMIT').default(1000).asIntPositive(),
         },
-        meltaUpdates: env.get('FRONTEND_CONFIG_MELTA_UPDATES').default({ אאא1: 'ב1בבב', גג1ג: 'דד11דד' }).asJsonObject(),
+        meltaUpdates: env
+            .get('FRONTEND_CONFIG_MELTA_UPDATES')
+            .default({ אאא: 'בבב', גגג: 'דדד', a: 'b', c: 'd', e: 'f', g: 'h', i: 'j', k: 'f' })
+            .asJsonObject(),
+        meltaUpdatesDescription: env.get('FRONTEND_CONFIG_MELTA_UPDATES_DESCRIPTION').default('תיאור').asString(),
     },
 
     authentication: {

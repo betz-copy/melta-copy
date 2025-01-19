@@ -259,7 +259,14 @@ export const MeltaRoutesInner: React.FC = () => {
                     <ScrollToTop fadeInTrigger={trigger} />
                 </Box>
             </MainBox>
-            {config?.meltaUpdates && <MeltaUpdates open={openMeltaUpdates} handleClose={handleClose} meltaUpdates={config?.meltaUpdates} />}
+            {config?.meltaUpdates && (
+                <MeltaUpdates
+                    open={openMeltaUpdates}
+                    handleClose={handleClose}
+                    meltaUpdates={config?.meltaUpdates}
+                    titleDescription={config?.meltaUpdatesDescription}
+                />
+            )}
         </>
     );
 };

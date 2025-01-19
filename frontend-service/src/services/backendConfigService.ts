@@ -11,6 +11,7 @@ export interface BackendConfigState {
     deleteEntitiesLimit: number;
     crsType: string;
     meltaUpdates: Record<string, string>;
+    meltaUpdatesDescription: string;
 }
 
 const getBackendConfigRequest = async () => {
