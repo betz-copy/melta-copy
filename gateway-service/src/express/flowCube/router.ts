@@ -24,6 +24,12 @@ FlowCubeRouter.post(
 );
 
 FlowCubeRouter.post(
+    '/:workspaceId/categories/search',
+    wrapMiddleware(translateWorkspaceParameter),
+    FlowCubeControllerMiddleware.searchCategoryInWorkspace,
+);
+
+FlowCubeRouter.post(
     '/:workspaceId/templates/search',
     ValidateRequest(searchTemplatesNameAndIdInWorkspaceSchema),
     wrapMiddleware(translateWorkspaceParameter),
