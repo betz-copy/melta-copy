@@ -23,7 +23,7 @@ import {
 } from '../../externalServices/ruleBreachService/interfaces/populated';
 import config from '../../config';
 
-const { entitiesFileLimit, invalidDate, invalidTime } = config.loadExcel;
+const { invalidDate, invalidTime } = config.loadExcel;
 
 const formatExcel = (value: Excel.CellValue | string, propertyTemplate: IEntitySingleProperty) => {
     const { type, format } = propertyTemplate;
@@ -87,7 +87,12 @@ const handleFailedEntities = (rowData: Record<string, any>, failedProperties: IF
     failedEntities.push(failedEntity);
 };
 
-const readExcelFile = async (files: Express.Multer.File[], template: IMongoEntityTemplatePopulated, failedEntities: IFailedEntity[]) => {
+const readExcelFile = async (
+    files: Express.Multer.File[],
+    template: IMongoEntityTemplatePopulated,
+    failedEntities: IFailedEntity[],
+    entitiesFileLimit = config.loadExcel.entitiesFileLimit,
+) => {
     const entities: IEntity[] = [];
     const columns = Object.fromEntries(
         Object.entries(template.properties.properties).filter(([_propertyKey, propertyTemplate]) => isIncludedColumn(propertyTemplate)),

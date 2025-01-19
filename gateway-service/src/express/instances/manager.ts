@@ -58,7 +58,6 @@ import { ISemanticSearchResult } from '../../externalServices/semanticSearch/int
 import { getValidationErrorEntities, readExcelFile, updateIdOfBrokenRules } from '../../utils/excel/getFunctions';
 
 const { errorCodes, rabbit, ruleBreachService } = config;
-const { filesLimit } = config.loadExcel;
 
 export class InstancesManager extends DefaultManagerProxy<InstancesService> {
     private entityTemplateService: EntityTemplateService;
@@ -325,8 +324,16 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         const failedEntities: IFailedEntity[] = [];
 
         if (files && !entities) {
-            if (files?.length > filesLimit) throw new BadRequestError('files limit', {});
-            const actions = await readExcelFile(files, template, failedEntities);
+            const workspace = await WorkspaceService.getById(this.workspaceId);
+            const workspaceFilesLimit = workspace.metadata?.excel?.filesLimit;
+
+            const effectiveFilesLimit = workspaceFilesLimit ?? config.loadExcel.filesLimit;
+
+            if (files.length > effectiveFilesLimit) {
+                throw new BadRequestError(`files limit: more than ${effectiveFilesLimit} files`, {});
+            }
+
+            const actions = await readExcelFile(files, template, failedEntities, workspace.metadata?.excel?.entitiesFileLimit);
             entities = actions;
         }
         const serialStarters = this.getSerialStarters(template);

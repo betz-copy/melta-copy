@@ -6,11 +6,11 @@ import { toast } from 'react-toastify';
 import { InfiniteScroll } from '../../../../common/InfiniteScroll';
 import { MeltaTooltip } from '../../../../common/MeltaTooltip';
 import PopperSidebar from '../../../../common/PopperSidebar';
-import { environment } from '../../../../globals';
 import { IEntityExpanded } from '../../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { getActivityLogRequest, IActivityLog } from '../../../../services/activityLogService';
 import ActivityLogRow from './ActivityLogRow';
+import { environment } from '../../../../globals';
 
 const { infiniteScrollPageCount } = environment.activityLog;
 

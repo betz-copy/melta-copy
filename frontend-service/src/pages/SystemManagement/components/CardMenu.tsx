@@ -13,8 +13,8 @@ import {
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
 import { MenuButton } from '../../../common/MenuButton';
 import { MeltaTooltip } from '../../../common/MeltaTooltip';
-import { environment } from '../../../globals';
 import { useUserStore } from '../../../stores/user';
+import { useWorkspaceStore } from '../../../stores/workspace';
 
 export const CardMenu: React.FC<{
     onOptionsIconClose?: () => void;
@@ -39,7 +39,8 @@ export const CardMenu: React.FC<{
 }) => {
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
     const open = Boolean(anchorEl);
-
+    const workspace = useWorkspaceStore((state) => state.workspace);
+    const { iconSize } = workspace.metadata;
     const currentUser = useUserStore((state) => state.user);
 
     const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -63,7 +64,7 @@ export const CardMenu: React.FC<{
 
     return (
         <>
-            <IconButton onClick={handleClick} style={{ ...environment.iconSize }}>
+            <IconButton onClick={handleClick} style={{ ...iconSize }}>
                 <OptionsIcon />
             </IconButton>
             <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>

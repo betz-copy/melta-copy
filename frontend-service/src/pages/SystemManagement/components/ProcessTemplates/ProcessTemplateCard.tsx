@@ -6,9 +6,9 @@ import { IMongoProcessTemplatePopulated } from '../../../../interfaces/processes
 import { CardMenu } from '../CardMenu';
 import { CustomIcon } from '../../../../common/CustomIcon';
 import { MeltaTooltip } from '../../../../common/MeltaTooltip';
-import { environment } from '../../../../globals';
 import { ProcessProperties } from './ProcessProperties';
 import { ProcessStep } from './ProcessStep';
+import { useWorkspaceStore } from '../../../../stores/workspace';
 
 interface ProcessTemplateCardProps {
     processTemplate: IMongoProcessTemplatePopulated;
@@ -31,6 +31,8 @@ export const ProcessTemplateCard: React.FC<ProcessTemplateCardProps> = ({
     setProcessTemplateWizardDialogState,
     setDeleteProcessTemplateDialogState,
 }) => {
+    const workspace = useWorkspaceStore((state) => state.workspace);
+
     const theme = useTheme();
     const [isHoverOnCard, setIsHoverOnCard] = useState(false);
 
@@ -53,7 +55,7 @@ export const ProcessTemplateCard: React.FC<ProcessTemplateCardProps> = ({
                             <MeltaTooltip title={processTemplate.displayName}>
                                 <Typography
                                     style={{
-                                        fontSize: environment.mainFontSizes.headlineSubTitleFontSize,
+                                        fontSize: workspace.metadata.mainFontSizes.headlineSubTitleFontSize,
                                         color: theme.palette.primary.main,
                                         fontWeight: '400',
                                         textOverflow: 'ellipsis',
