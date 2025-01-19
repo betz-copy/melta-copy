@@ -29,7 +29,7 @@ const importDataToGrid = (fileData: any[][], template: IMongoEntityTemplatePopul
 
     const headers = fileData[0] as string[];
     const newRows = convertFileDataToRowData(fileData.slice(1), headers, template);
-    return newRows || [];
+    return (newRows || []).filter((row): row is { properties: Record<string, any> } => row !== null);
 };
 
 const createFileObject = (filesLimit: number, files?: File[]): Record<string, File> | undefined => {
