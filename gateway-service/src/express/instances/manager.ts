@@ -12,6 +12,7 @@ import { StatusCodes } from 'http-status-codes';
 import config from '../../config';
 import { InstancesService } from '../../externalServices/instanceService';
 import {
+    ISearchEntitiesByLocationBody,
     IBrokenRulesError,
     ICountSearchResult,
     IDeleteBody,
@@ -474,7 +475,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         }
 
         await this.rabbitManager.deleteFiles(currentEntity.templateId, currentEntity.properties._id, fileIdsToDelete);
-        await menash.send(rabbit.deleteUnusedFilesQueue, JSON.stringify(fileIdsToDelete));
+        await menash.send(rabbit.deleteUnusedFilesQueue, JSON.stringify({ fileIds: fileIdsToDelete, bucketName: this.workspaceId }));
 
         return fileIdsToDelete;
     }
@@ -755,7 +756,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
     private async deleteAllEntitiesFiles(fileIdsToRemove: string[]) {
         if (!fileIdsToRemove.length) return [];
 
-        await menash.send(rabbit.deleteUnusedFilesQueue, JSON.stringify(fileIdsToRemove));
+        await menash.send(rabbit.deleteUnusedFilesQueue, JSON.stringify({ fileIds: fileIdsToRemove, bucketName: this.workspaceId }));
 
         return fileIdsToRemove;
     }
@@ -937,5 +938,25 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         );
 
         return this.service.runBulkOfActions(newActionsGroups, dryRun, userId, ignoredRules);
+    }
+
+    async searchEntitiesByLocation(reqBody: ISearchEntitiesByLocationBody) {
+        const entityTemplates = await this.entityTemplateService.searchEntityTemplates({ ids: Object.keys(reqBody.templates) });
+
+        const locationFieldsMap = entityTemplates.reduce((acc, entityTemplate) => {
+            const { _id, properties } = entityTemplate;
+
+            const locationKeys = Object.entries(properties.properties)
+                .filter(([, value]) => value.format === 'location')
+                .map(([key]) => key);
+
+            if (locationKeys.length > 0) {
+                acc[_id] = { filter: reqBody.templates[_id].filter, locationFields: locationKeys };
+            }
+
+            return acc;
+        }, {});
+
+        return this.service.searchEntitiesByLocationRequest({ ...reqBody, templates: locationFieldsMap } as ISearchEntitiesByLocationBody);
     }
 }

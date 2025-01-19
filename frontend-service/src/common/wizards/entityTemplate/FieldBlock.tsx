@@ -43,6 +43,7 @@ interface FieldBlockProps<PropertiesType extends string, Values extends Record<P
     supportRelationshipReference: boolean;
     supportEditEnum?: boolean;
     supportUnique?: boolean;
+    supportLocation?: boolean;
     supportArchive?: boolean;
     supportAddFieldButton?: boolean;
     hasActions?: boolean;
@@ -71,6 +72,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
     supportRelationshipReference,
     supportEditEnum,
     supportUnique,
+    supportLocation,
     supportArchive,
     supportAddFieldButton = true,
     hasActions,
@@ -235,6 +237,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
                                                 supportEditEnum,
                                                 supportRelationshipReference,
                                                 supportUnique,
+                                                supportLocation,
                                                 supportArchive,
                                                 hasActions,
                                             };

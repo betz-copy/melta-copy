@@ -13,7 +13,7 @@ import IconButtonWithPopover from '../../IconButtonWithPopover';
 import { InfiniteScroll } from '../../InfiniteScroll';
 import DateRange from '../../inputs/DateRange';
 import PopperSidebar from '../../PopperSidebar';
-import { SelectCheckbox } from '../../SelectCheckbox';
+import { SelectCheckbox } from '../../SelectCheckBox';
 import { NotificationCard } from './NotificationCard';
 import { NotificationCount } from './NotificationCount';
 

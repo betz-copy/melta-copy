@@ -15,6 +15,7 @@ import {
     enumColDef,
     enumFilesColDef,
     fileColDef,
+    locationColDef,
     numberColDef,
     regexColDef,
     relatedTemplateColDef,
@@ -26,9 +27,10 @@ import IconButtonWithPopover from '../IconButtonWithPopover';
 import { ImageWithDisable } from '../ImageWithDisable';
 import { CardMenu } from '../../pages/SystemManagement/components/CardMenu';
 import { IRuleBreach } from '../../interfaces/ruleBreaches/ruleBreach';
+import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
 
 export interface IGetColumnDefsOptions<Data extends any> {
-    template: IMongoEntityTemplatePopulated & { entitiesWithFiles?: string[] };
+    template: IMongoEntityTemplatePopulated & { entitiesWithFiles?: ISemanticSearchResult[string] };
     getRowId: (data: Data) => string;
     getEntityPropertiesData: (data: Data) => Partial<IEntity['properties']>;
     onNavigateToRow?: (entity: Data) => void;
@@ -144,6 +146,8 @@ export const getColumnDefs = <Data extends any = EntityData>({
                 searchValue,
                 Object.values(template.entitiesWithFiles ?? {}).flat(),
             );
+        if (format === 'location')
+            return locationColDef(property, valueGetter, propertyTemplate, template, defaultColumnWidths[property], hideColumn, searchValue);
         if (format === 'relationshipReference')
             return relatedTemplateColDef(
                 property,

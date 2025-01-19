@@ -14,7 +14,7 @@ import { addDefaultFieldsToTemplate } from '../../utils/addDefaultsFieldsToEntit
 import { addPropertyToRequest } from '../../utils/express';
 import DefaultController from '../../utils/express/controller';
 import { trycatch } from '../../utils/lib';
-import { getNeo4jDate, getNeo4jDateTime } from '../../utils/neo4j/lib';
+import { getNeo4jDate, getNeo4jDateTime, getNeo4jLocation } from '../../utils/neo4j/lib';
 import { ValidationError } from '../error';
 import {
     IFilterOfField,
@@ -28,11 +28,11 @@ import {
 } from './interface';
 import { ActionErrors } from '../bulkActions/interface';
 
-const { neo4j } = config;
+const { neo4j, ajvCustomFormats } = config;
 
 const ajv = new Ajv();
 
-ajv.addFormat('fileId', /.*/);
+ajv.addFormat('fileId', ajvCustomFormats.fileIdFieldRegex);
 ajv.addFormat('user', {
     type: 'string',
     validate: (user) => {
@@ -40,8 +40,10 @@ ajv.addFormat('user', {
         return userObj._id && userObj.fullName && userObj.jobTitle && userObj.hierarchy && userObj.mail;
     },
 });
-ajv.addFormat('text-area', /.*/);
-ajv.addFormat('relationshipReference', /.*/);
+ajv.addFormat('text-area', ajvCustomFormats.textAreaFieldRegex);
+ajv.addFormat('relationshipReference', ajvCustomFormats.relationshipReferenceFieldRegex);
+ajv.addFormat('location', ajvCustomFormats.locationFieldRegex);
+
 addFormats(ajv);
 ajv.addVocabulary(['patternCustomErrorMessage', 'hide']);
 ajv.addKeyword({
@@ -50,6 +52,7 @@ ajv.addKeyword({
 });
 ajv.addKeyword({ keyword: 'calculateTime', type: 'boolean' });
 ajv.addKeyword({ keyword: 'isDailyAlert', type: 'boolean' });
+ajv.addKeyword({ keyword: 'isDatePastAlert', type: 'boolean' });
 ajv.addKeyword({ keyword: 'archive', type: 'boolean' });
 ajv.addKeyword({
     keyword: 'serialStarter',
@@ -430,7 +433,7 @@ const getFileName = (fileId: string): string => {
     return fileId.slice(config.fileIdLength);
 };
 
-export const addStringFieldsAndNormalizeDateValues = (
+export const addStringFieldsAndNormalizeSpecialStringValues = (
     entityProperties: Record<string, any>,
     entityTemplate: IMongoEntityTemplate,
     recursiveRelationshipReference = false,
@@ -507,6 +510,12 @@ export const addStringFieldsAndNormalizeDateValues = (
                     normalizedEntity[`${key}.properties.${innerKey}${neo4j.relationshipReferencePropertySuffix}`] = innerProperty;
                 });
             }
+
+            return;
+        }
+        if (type === 'string' && format === 'location') {
+            normalizedEntity[key] = getNeo4jLocation(propertyValue);
+            normalizedEntity[`${key}${neo4j.stringPropertySuffix}`] = propertyValue;
 
             return;
         }

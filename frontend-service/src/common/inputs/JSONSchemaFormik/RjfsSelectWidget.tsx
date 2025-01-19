@@ -1,21 +1,16 @@
 /* eslint-disable no-underscore-dangle */
 import React from 'react';
-import { WidgetProps, asNumber, guessType } from '@rjsf/utils';
+import { WidgetProps, asNumber, getUiOptions, guessType } from '@rjsf/utils';
 import { Autocomplete, TextField, TextFieldProps } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 import './form.css';
+import { ColoredEnumChip } from '../../ColoredEnumChip';
 
 const nums = new Set(['number', 'integer']);
 
-/**
- * This is a silly limitation in the DOM where option change event values are
- * always retrieved as strings.
- */
-const processValue = (schema: any, value: any) => {
-    // "enum" is a reserved word, so only "type" and "items" can be destructured
+function processValue(schema: any, value: any) {
     const { type, items } = schema;
-    if (value === null) {
-        return undefined;
-    }
+    if (value === null) return undefined;
     if (type === 'array' && items && nums.has(items.type)) {
         return value.map(asNumber);
     }
@@ -25,9 +20,6 @@ const processValue = (schema: any, value: any) => {
     if (type === 'number') {
         return asNumber(value);
     }
-
-    // If type is undefined, but an enum is present, try and infer the type from
-    // the enum values
     if (schema.enum) {
         if (schema.enum.every((x: any) => guessType(x) === 'number')) {
             return asNumber(value);
@@ -36,16 +28,13 @@ const processValue = (schema: any, value: any) => {
             return value === 'true';
         }
     }
-
     return value;
-};
+}
 
-// copied from @rjs/material-ui SelectWidget (added empty option)
-// https://github.com/rjsf-team/react-jsonschema-form/blob/v4.0.1/packages/material-ui/src/SelectWidget/SelectWidget.tsx
 const RjfsSelectWidget = ({
     schema,
+    uiSchema,
     id,
-    options,
     label,
     required,
     disabled,
@@ -60,31 +49,85 @@ const RjfsSelectWidget = ({
     color,
     ...textFieldProps
 }: WidgetProps) => {
-    const { enumOptions } = options;
+    const { enumOptions: items } = getUiOptions(uiSchema) as {
+        enumOptions: Array<{
+            label: string;
+            value: string;
+            color?: string;
+        }>;
+    };
 
-    const _onBlur = ({ target: { value: newValue } }: React.FocusEvent<HTMLInputElement>) => onBlur(id, processValue(schema, newValue));
-    const _onFocus = ({ target: { value: newValue } }: React.FocusEvent<HTMLInputElement>) => onFocus(id, processValue(schema, newValue));
+    let selectedValue: (typeof items)[number] | (typeof items)[number][] | null;
+    if (multiple) {
+        if (Array.isArray(value)) {
+            selectedValue = items.filter((opt) => value.includes(opt.value));
+        } else {
+            selectedValue = [];
+        }
+    } else {
+        selectedValue = items.find((opt) => opt.value === value) || null;
+    }
+
+    const _onBlur = (event: React.FocusEvent<HTMLInputElement>) => {
+        const newValue = processValue(schema, event.target.value);
+        onBlur(id, newValue);
+    };
+
+    const _onFocus = (event: React.FocusEvent<HTMLInputElement>) => {
+        const newValue = processValue(schema, event.target.value);
+        onFocus(id, newValue);
+    };
+
     const variant = readonly && !schema.readOnly ? 'standard' : 'outlined';
 
     return (
-        <Autocomplete<string | string[], boolean>
+        <Autocomplete<(typeof items)[number], boolean>
             id={id}
             disabled={disabled}
             readOnly={readonly}
             multiple={multiple}
-            // eslint-disable-next-line no-nested-ternary
-            value={typeof value === 'undefined' ? null : value}
-            isOptionEqualToValue={(option, val) => option === val}
-            onChange={(event, newValue) => {
-                if (multiple) {
-                    const processedValue = (newValue as string[]).map((option) => processValue(schema, option));
-                    onChange(newValue!.length !== 0 ? processedValue : undefined);
-                } else {
-                    const processedValue = processValue(schema, newValue);
-                    onChange(processedValue);
-                }
+            disableCloseOnSelect={multiple}
+            value={selectedValue}
+            options={items}
+            getOptionLabel={(option) => option.label}
+            isOptionEqualToValue={(option, val) => option.value === val.value}
+            onChange={(event, newVal) => {
                 event.preventDefault();
+                if (multiple) {
+                    const mapped = (newVal as (typeof items)[number][]).map((opt) => processValue(schema, opt.value));
+                    onChange(mapped.length ? mapped : undefined);
+                } else {
+                    const val = (newVal as (typeof items)[number] | null)?.value;
+                    onChange(val ? processValue(schema, val) : undefined);
+                }
             }}
+            renderOption={(props, option) =>
+                option.color ? (
+                    <li {...props} key={option.value}>
+                        <ColoredEnumChip label={option.label} color={option.color || 'default'} />
+                    </li>
+                ) : (
+                    <span {...props}>{option.label}</span>
+                )
+            }
+            renderTags={(tagValue, getTagProps) =>
+                tagValue.map((option, index) => {
+                    const { key, onDelete, ...restTagProps } = getTagProps({ index });
+                    return (
+                        <ColoredEnumChip
+                            key={key}
+                            label={option.label}
+                            color={option.color || 'default'}
+                            onDelete={onDelete}
+                            deleteIcon={<CloseIcon />}
+                            {...restTagProps}
+                            style={{
+                                margin: '0 4px 4px 0',
+                            }}
+                        />
+                    );
+                })
+            }
             renderInput={(params) => (
                 <TextField
                     {...textFieldProps}
@@ -94,27 +137,18 @@ const RjfsSelectWidget = ({
                     onBlur={_onBlur}
                     onFocus={_onFocus}
                     variant={variant}
+                    error={rawErrors.length > 0}
+                    label={label || schema.title}
                     InputLabelProps={{
                         shrink: readonly || undefined,
                     }}
                     inputProps={{
-                        ...params.inputProps,
                         required: multiple ? required && value.length === 0 : required,
-                        style: {
-                            ...params.inputProps,
-                            textOverflow: 'ellipsis',
-                        },
+                        ...params.inputProps,
                     }}
-                    error={rawErrors.length > 0}
                     color={color as TextFieldProps['color']}
-                    label={label || schema.title}
                 />
             )}
-            renderOption={(props, option) => {
-                return <span {...props}>{option}</span>;
-            }}
-            options={enumOptions!.map((o) => o.value).sort()}
-            getOptionDisabled={(option) => (multiple ? Boolean(value?.includes(option)) : false)}
         />
     );
 };

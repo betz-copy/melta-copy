@@ -11,6 +11,7 @@ import {
     IExportEntitiesBody,
     IGraphFilterBodyBatch,
     ISearchEntitiesByTemplatesBody,
+    ISearchEntitiesByLocationBody,
     IDeleteEntityBody,
     ICountSearchResult,
 } from '../interfaces/entities';
@@ -279,6 +280,11 @@ export const getEntityById = async (entityId: string) => {
 
 export const getEntitiesWithDirectConnections = async (searchBody: ISearchBatchBody) => {
     const { data } = await axios.post<ISearchResult>(`${entities}/search/batch`, searchBody);
+    return data;
+};
+
+export const getEntitiesByLocation = async (searchBody: ISearchEntitiesByLocationBody) => {
+    const { data } = await axios.post<{ node: IEntity; matchingFields: string[] }[]>(`${entities}/search/location`, searchBody);
     return data;
 };
 
