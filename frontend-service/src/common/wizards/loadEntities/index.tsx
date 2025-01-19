@@ -104,7 +104,7 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
         },
         {
             async onSuccess(data) {
-                setStepsData((prev) => ({ ...prev, data }));
+                setStepsData((prev) => ({ ...prev, status: StepStatus.excelUploadResult, data }));
                 return data;
             },
             onError() {
@@ -126,6 +126,8 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
             },
             onError() {
                 toast.error(i18next.t('wizard.entity.loadEntities.failedLoadEntities'));
+                // onClose();
+                // setStepsData((prev) => ({ ...prev, status: StepStatus.excelUploadResult }));
             },
             onMutate() {
                 onClose();

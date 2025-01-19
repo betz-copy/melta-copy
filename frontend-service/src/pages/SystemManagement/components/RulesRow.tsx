@@ -17,6 +17,7 @@ import { deleteRuleRequest, ruleObjectToRuleForm, updateDisabledRuleRequest } fr
 import { ViewingCard } from './Card';
 import { CardMenu } from './CardMenu';
 import { CreateButton } from './CreateButton';
+import { useWorkspaceStore } from '../../../stores/workspace';
 
 const { infiniteScrollPageCount } = environment.entitiesCardsView;
 
@@ -37,6 +38,8 @@ export const RuleCard: React.FC<{
     >;
     updateDisabledMutateAsync: UseMutateAsyncFunction<IMongoRule, unknown, IMongoRule, unknown>;
 }> = ({ rule, entityTemplates, setRuleWizardDialogState, setDeleteRuleWizardState, updateDisabledMutateAsync }) => {
+    const workspace = useWorkspaceStore((state) => state.workspace);
+
     const theme = useTheme();
     const [isHoverOnCard, setIsHoverOnCard] = useState(false);
 
@@ -55,7 +58,10 @@ export const RuleCard: React.FC<{
                                 )}
                                 <Typography
                                     display="inline-block"
-                                    sx={{ fontSize: environment.mainFontSizes.headlineSubTitleFontSize, color: theme.palette.primary.main }}
+                                    sx={{
+                                        fontSize: workspace.metadata.mainFontSizes.headlineSubTitleFontSize,
+                                        color: theme.palette.primary.main,
+                                    }}
                                 >
                                     {rule.name}
                                 </Typography>
@@ -64,6 +70,7 @@ export const RuleCard: React.FC<{
                         <Grid item flexBasis="5%">
                             {isHoverOnCard && (
                                 <CardMenu
+                                    onOptionsIconClose={() => setIsHoverOnCard(false)}
                                     onEditClick={() => {
                                         setRuleWizardDialogState({
                                             isWizardOpen: true,
