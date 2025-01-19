@@ -20,16 +20,18 @@ import { getFileName } from '../getFileName';
 import { agGridLocaleText } from './agGridLocaleText';
 import OverflowWrapper from './OverflowWrapper';
 import { Value } from './Value';
+import OpenMap from '../../pages/Map/OpenMap';
+import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IUser } from '../../interfaces/users';
 import { MeltaTooltip } from '../../common/MeltaTooltip';
 import UserAvatar from '../../common/UserAvatar';
-import { IEntitySingleProperty } from '../../interfaces/entityTemplates';
 import SelectCellEditor from './SelectCellEditor';
 import DateTimeCellEditor from './DateTimeCellEditor';
 import { ActionErrors } from '../../interfaces/ruleBreaches/actionMetadata';
 import RelationshipRefCellEditor from './RelationshipRefCellEditor';
 import { convertToPlainText } from '../HtmlTagsStringValue';
 import { IError, IFailedEntity, IValidationError } from '../../common/wizards/loadEntities';
+import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
 
 const hasErrors = (data: any): data is IFailedEntity => {
     return data && Array.isArray(data.errors) && data.errors.every((error) => 'type' in error && 'metadata' in error);
@@ -219,7 +221,7 @@ export const fileColDef = <Data extends any = EntityData>(
     hardcodedWidth: number | undefined,
     hideColumn = false,
     searchValue: string | undefined = undefined,
-    entityIdsToInclude: string[] | undefined = undefined,
+    entityFileIdsWithTexts: ISemanticSearchResult[string][string] | undefined = undefined,
 ): ColDef => {
     return {
         field,
@@ -227,13 +229,36 @@ export const fileColDef = <Data extends any = EntityData>(
         valueGetter,
         cellRenderer: (props: ICellRendererParams<Data, string | undefined>) =>
             props.value?.toString() ? (
-                <OpenPreview fileId={props.value?.toString()} searchValue={searchValue} entityIdsToInclude={entityIdsToInclude} />
+                <OpenPreview fileId={props.value?.toString()} searchValue={searchValue} entityFileIdsWithTexts={entityFileIdsWithTexts} />
             ) : null,
         filter: 'agTextColumnFilter',
         width: hardcodedWidth,
         flex: hardcodedWidth ? 0 : 1,
         hide: hideColumn,
-        editable: false,
+    };
+};
+
+export const locationColDef = <Data extends any = EntityData>(
+    field: string,
+    valueGetter: ValueGetterFunc<Data>,
+    value: Partial<IEntitySingleProperty>,
+    template: IMongoEntityTemplatePopulated,
+    hardcodedWidth: number | undefined,
+    hideColumn = false,
+    searchValue: string | undefined = undefined,
+): ColDef => {
+    return {
+        field,
+        headerName: value.title,
+        valueGetter,
+        cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => {
+            if (!props.value) return null;
+            return <OpenMap field={value.title!} entity={props.data as IEntity} entityTemplate={template} searchValue={searchValue} />;
+        },
+        filter: 'agTextColumnFilter',
+        width: hardcodedWidth,
+        flex: hardcodedWidth ? 0 : 1,
+        hide: hideColumn,
     };
 };
 
@@ -362,6 +387,7 @@ export const enumColDef = <Data extends any = EntityData>(
         cellEditorParams: {
             values,
             multiple: false,
+            colorsOptions: enumColorOptions,
         },
     };
 };
@@ -417,6 +443,7 @@ export const enumArrayColDef = <Data extends any = EntityData>(
         cellEditorParams: {
             values,
             multiple: true,
+            colorsOptions: enumColorOptions,
         },
     };
 };
@@ -516,7 +543,7 @@ export const enumFilesColDef = <Data extends any = EntityData>(
     rowHeight: number,
     hideColumn = false,
     searchValue: string | undefined = undefined,
-    entityIdsToInclude: string[] | undefined = undefined,
+    entityFileIdsWithTexts: ISemanticSearchResult[string][string] | undefined = undefined,
 ): ColDef => {
     const filterParams: ISetFilterParams<Data, string | undefined> = {
         suppressMiniFilter: true,
@@ -536,7 +563,7 @@ export const enumFilesColDef = <Data extends any = EntityData>(
                         searchValue={searchValue}
                         items={enumArray}
                         getItemKey={(item) => item}
-                        renderItem={(item) => <OpenPreview fileId={item} entityIdsToInclude={entityIdsToInclude} searchValue={searchValue} />}
+                        renderItem={(item) => <OpenPreview fileId={item} entityFileIdsWithTexts={entityFileIdsWithTexts} searchValue={searchValue} />}
                         containerStyle={{ height: `${rowHeight}px` }}
                         files={items}
                     />
@@ -549,7 +576,6 @@ export const enumFilesColDef = <Data extends any = EntityData>(
         width: hardcodedWidth,
         flex: hardcodedWidth ? 0 : 1,
         hide: hideColumn,
-        editable: false,
     };
 };
 

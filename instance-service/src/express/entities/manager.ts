@@ -33,6 +33,7 @@ import {
     normalizeResponseTemplatesCount,
     normalizeReturnedEntity,
     normalizeReturnedRelAndEntities,
+    normalizeSearchByLocationResponse,
     normalizeSearchWithRelationships,
     runInTransactionAndNormalize,
 } from '../../utils/neo4j/lib';
@@ -64,8 +65,9 @@ import {
     IUniqueConstraint,
     IUniqueConstraintOfTemplate,
     RunRuleReason,
+    ISearchEntitiesByLocationBody,
 } from './interface';
-import { addStringFieldsAndNormalizeDateValues } from './validator.template';
+import { addStringFieldsAndNormalizeSpecialStringValues } from './validator.template';
 
 const { brokenRulesFakeEntityIdPrefix, deleteEntitiesMaxLimit } = config;
 
@@ -263,7 +265,7 @@ export class EntityManager extends DefaultManagerNeo4j {
             {
                 properties: {
                     ...generateDefaultProperties(),
-                    ...addStringFieldsAndNormalizeDateValues(fixedProperties, entityTemplate),
+                    ...addStringFieldsAndNormalizeSpecialStringValues(fixedProperties, entityTemplate),
                 },
             },
         );
@@ -307,7 +309,6 @@ export class EntityManager extends DefaultManagerNeo4j {
         if (!entity) {
             throw new NotFoundError(`[NEO4J] entity "${id}" not found`);
         }
-
         return entity;
     }
 
@@ -344,7 +345,7 @@ export class EntityManager extends DefaultManagerNeo4j {
     async fixRelationshipReferenceField(relatedEntityId: string, transaction: Transaction) {
         const relatedEntity = await this.getEntityByIdInTransaction(relatedEntityId, transaction);
         const relatedEntityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(relatedEntity.templateId);
-        const relatedEntityFixProperties = addStringFieldsAndNormalizeDateValues(relatedEntity.properties, relatedEntityTemplate, true);
+        const relatedEntityFixProperties = addStringFieldsAndNormalizeSpecialStringValues(relatedEntity.properties, relatedEntityTemplate, true);
         return {
             fixedField: {
                 ...relatedEntityFixProperties,
@@ -788,6 +789,66 @@ export class EntityManager extends DefaultManagerNeo4j {
         return { entities, count };
     }
 
+    private buildBaseQuery() {
+        return `
+            WITH $templates AS templates
+            UNWIND keys(templates) AS templateId
+            WITH templateId, templates[templateId] AS templateData
+            MATCH (n)
+            WHERE labels(n) = [templateId]
+        `;
+    }
+
+    private buildCircleQuery() {
+        let query = this.buildBaseQuery();
+
+        query += `
+            AND templateData.circle IS NOT NULL
+
+            WITH n, templateData,
+            point({
+                latitude: templateData.circle.coordinate[0],
+                longitude: templateData.circle.coordinate[1]
+            }) AS circle_center
+
+            // Filter location fields within the circle
+            WITH n, templateData, circle_center,
+            [ field IN templateData.locationFields
+            WHERE n[field] IS NOT NULL AND (
+                // Check if n[field] is a list (polygon)
+                (n[field][0] IS NOT NULL AND
+                ANY(pointItem IN n[field] WHERE point.distance(pointItem, circle_center) <= templateData.circle.radius)
+                ) OR
+                // Else, n[field] is a single point
+                (n[field] IS NOT NULL AND
+                point.distance(n[field], circle_center) <= templateData.circle.radius
+                )
+            )
+            | field ] AS matchingFields
+
+            WITH n, matchingFields
+            WHERE size(matchingFields) > 0
+
+            RETURN n, matchingFields
+        `;
+
+        return query;
+    }
+
+    async searchEntitiesByLocation(requestBody: ISearchEntitiesByLocationBody) {
+        const { circle, polygon, templates } = requestBody;
+
+        let query: string | null = null;
+
+        if (circle) query = this.buildCircleQuery();
+
+        if (!query) throw new Error('Payload must include either circle or polygon.');
+
+        const updatedTemplates = Object.fromEntries(Object.entries(templates).map(([key, value]) => [key, { ...value, circle, polygon }]));
+
+        return this.neo4jClient.readTransaction(query, (result) => normalizeSearchByLocationResponse(result), { templates: updatedTemplates });
+    }
+
     async getEntityById(id: string) {
         const node = await this.neo4jClient.readTransaction(`MATCH (e {_id: '${id}'}) RETURN e`, normalizeReturnedEntity('singleResponse'));
 
@@ -1229,10 +1290,13 @@ export class EntityManager extends DefaultManagerNeo4j {
     private getUpdatedProperties(oldEntity: Record<string, any>, newEntity: Record<string, any>, entityTemplate: IMongoEntityTemplate) {
         const updatedPropertiesNames = this.getKeysOfUpdatedProperties(oldEntity, newEntity, entityTemplate);
 
-        const updatedProperties = updatedPropertiesNames.reduce((acc, property) => {
-            acc[property] = newEntity[property];
-            return acc;
-        }, {} as Record<string, any>);
+        const updatedProperties = updatedPropertiesNames.reduce(
+            (acc, property) => {
+                acc[property] = newEntity[property];
+                return acc;
+            },
+            {} as Record<string, any>,
+        );
 
         return this.removeBasicProperties(updatedProperties);
     }
@@ -1383,7 +1447,7 @@ export class EntityManager extends DefaultManagerNeo4j {
             normalizeReturnedEntity('singleResponseNotNullable'),
             {
                 props: {
-                    ...addStringFieldsAndNormalizeDateValues(fixedProperties, entityTemplate),
+                    ...addStringFieldsAndNormalizeSpecialStringValues(fixedProperties, entityTemplate),
                     updatedAt: getNeo4jDateTime(),
                     _id: id,
                 },
@@ -1551,14 +1615,14 @@ export class EntityManager extends DefaultManagerNeo4j {
 
     async updateRelationshipReferencesEnumField(
         templateId: string,
-        ogirinalEntities: IEntity[],
+        originalEntities: IEntity[],
         newValue: string,
         oldValue: string,
         field: any,
         transaction: Transaction,
     ) {
         let updateRelatedEntitiesQuery;
-        const originalChangedEntityIds = ogirinalEntities.map((node) => node.properties._id);
+        const originalChangedEntityIds = originalEntities.map((node) => node.properties._id);
         const entitiesNeedToUpdate = await this.getRelatedEntitiesOfEntity(templateId, originalChangedEntityIds, transaction);
 
         await Promise.all(

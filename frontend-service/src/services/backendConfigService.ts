@@ -10,7 +10,10 @@ export interface BackendConfigState {
         entitiesFileLimit: number;
         filesLimit: number;
     };
+    mapLayers: Record<string, string>;
+    textLayers: Record<string, string>;
     deleteEntitiesLimit: number;
+    crsType: string;
 }
 
 export const getBackendConfigRequest = async () => {

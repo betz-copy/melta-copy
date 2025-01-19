@@ -18,6 +18,7 @@ import {
     searchEntitiesBatchRequestSchema,
     getEntitiesCountByTemplates,
     searchEntitiesByTemplatesSchema,
+    searchEntitiesByLocationRequestSchema,
     updateEntityInstanceSchema,
     updateEntityStatusSchema,
     loadEntitiesSchema,
@@ -45,6 +46,13 @@ InstancesRouter.post(
     ValidateRequest(searchEntitiesBatchRequestSchema),
     InstancesValidatorMiddleware.validateUserCanSearchEntitiesBatch,
     InstancesControllerMiddleware.searchEntitiesBatch,
+);
+
+InstancesRouter.post(
+    '/entities/search/location',
+    ValidateRequest(searchEntitiesByLocationRequestSchema),
+    InstancesValidatorMiddleware.validateUserCanSearchEntitiesBatch,
+    InstancesControllerMiddleware.searchEntitiesByLocation,
 );
 
 InstancesRouter.post(

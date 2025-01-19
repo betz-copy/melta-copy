@@ -11,6 +11,7 @@ import { getEntitiesWithDirectConnections } from '../../services/entitiesService
 import { InfiniteScroll } from '../InfiniteScroll';
 import { useSearchParams } from '../../utils/hooks/useSearchParams';
 import { convertToBool } from '../../utils/convertStringToBool';
+import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
 
 const { infiniteScrollPageCount } = environment.entitiesCardsView;
 
@@ -48,7 +49,7 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
             </Grid>
             <Grid item>
                 <Grid container>
-                    <InfiniteScroll<IEntityWithDirectConnections & { minioFileIds?: string[] }>
+                    <InfiniteScroll<IEntityWithDirectConnections & { minioFileIdsWithTexts?: ISemanticSearchResult[string][string] }>
                         queryKey={['searchEntities', templateIds, searchInput, urlSemanticSearch]}
                         queryFunction={async ({ pageParam: startRow = 0 }) => {
                             if (startRow === 0) {
@@ -82,12 +83,13 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
                         openIds={openCardsMap}
                         useContainer={false}
                     >
-                        {({ entity, minioFileIds }) => {
+                        {({ entity, minioFileIdsWithTexts }) => {
                             const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates');
                             const entityTemplate = entityTemplates?.get(entity.templateId)!;
                             return (
                                 <EntityCard
-                                    minioFileId={minioFileIds?.[0]} // Navigate to the first found file
+                                    minioFileId={minioFileIdsWithTexts?.[0].minioFileId} // Navigate to the first found file
+                                    matchedSentence={minioFileIdsWithTexts?.[0].text}
                                     entity={entity}
                                     entityTemplate={entityTemplate}
                                     expandCard={openCardsMap.has(entity.properties._id)}

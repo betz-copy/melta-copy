@@ -11,7 +11,7 @@ import { environment } from '../../globals';
 import { GlobalSearchBar } from '../../common/EntitiesPage/Headline';
 import { LocalStorage } from '../../utils/localStorage';
 import { IMongoIFrame } from '../../interfaces/iFrames';
-import { SelectCheckbox } from '../../common/SelectCheckbox';
+import { SelectCheckbox } from '../../common/SelectCheckBox';
 import { useUserStore } from '../../stores/user';
 import { MeltaTooltip } from '../../common/MeltaTooltip';
 import IconButtonWithPopover from '../../common/IconButtonWithPopover';
@@ -68,13 +68,13 @@ const IFramesPageHeadline: React.FC<{
                     <BlueTitle title={i18next.t('pages.iFrames')} component="h4" variant="h4" style={{ fontSize: headlineTitleFontSize }} />
                 </Grid>
                 <Grid item>
-                    <SelectCheckbox
+                    <SelectCheckbox<IMongoIFrame>
                         title={i18next.t('iFrames.arrangementIFrames')}
                         filterIcon
                         options={allIFramesAllowed ?? []}
                         selectedOptions={[]}
                         setSelectedOptions={() => {}}
-                        getOptionId={({ _id }) => _id}
+                        getOptionId={(option) => option._id}
                         getOptionLabel={({ name }) => name}
                         toTopBar
                         onDragEnd={handleOnDragEnd}

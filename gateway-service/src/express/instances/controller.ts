@@ -3,7 +3,7 @@ import { promisify } from 'util';
 import { Request, Response } from 'express';
 import { InstancesManager } from './manager';
 import DefaultController from '../../utils/express/controller';
-import { IDeleteBody } from '../../externalServices/instanceService/interfaces/entities';
+import { ISearchEntitiesByLocationBody, IDeleteBody } from '../../externalServices/instanceService/interfaces/entities';
 
 export class InstancesController extends DefaultController<InstancesManager> {
     constructor(workspaceId: string) {
@@ -35,6 +35,10 @@ export class InstancesController extends DefaultController<InstancesManager> {
         res.json(
             await this.manager.updateEntityInstance(req.params.id, instanceData, req.files as Express.Multer.File[], ignoredRules, req.user!.id),
         );
+    }
+
+    async searchEntitiesByLocation(req: Request, res: Response) {
+        res.json(await this.manager.searchEntitiesByLocation(req.body as ISearchEntitiesByLocationBody));
     }
 
     async searchEntitiesBatch(req: Request, res: Response) {

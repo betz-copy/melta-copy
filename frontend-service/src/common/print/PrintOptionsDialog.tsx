@@ -2,7 +2,7 @@ import React from 'react';
 import { Dialog, DialogTitle, DialogContent, Grid, Button, FormControlLabel, DialogActions, IconButton, CircularProgress } from '@mui/material';
 import { PrintOutlined, CloseOutlined } from '@mui/icons-material';
 import i18next from 'i18next';
-import { SelectCheckbox } from '../SelectCheckbox';
+import { SelectCheckbox } from '../SelectCheckBox';
 import { IMongoRelationshipTemplatePopulated } from '../../interfaces/relationshipTemplates';
 import { IMongoCategory } from '../../interfaces/categories';
 import { IConnectionTemplateOfExpandedEntity } from '../../pages/Entity';

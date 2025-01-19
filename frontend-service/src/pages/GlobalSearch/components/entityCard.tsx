@@ -57,6 +57,7 @@ interface EntityCardProps {
     refetchQuery?: () => void;
     searchedText?: string;
     minioFileId?: string;
+    matchedSentence?: string;
 }
 
 const EntityCard: React.FC<EntityCardProps> = ({
@@ -71,6 +72,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
     refetchQuery,
     searchedText,
     minioFileId,
+    matchedSentence,
 }) => {
     const workspace = useWorkspaceStore((state) => state.workspace);
 
@@ -364,21 +366,46 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                     }}
                                 >
                                     <Grid item xs={9}>
-                                        <MeltaTooltip title={fileName || ''}>
+                                        {matchedSentence ? (
+                                            <MeltaTooltip
+                                                title={
+                                                    <Typography
+                                                        sx={{
+                                                            maxHeight: '250px',
+                                                            overflow: 'hidden',
+                                                            textOverflow: 'ellipsis',
+                                                            display: '-webkit-box',
+                                                            WebkitLineClamp: 10,
+                                                            WebkitBoxOrient: 'vertical',
+                                                        }}
+                                                    >
+                                                        {matchedSentence || ''}
+                                                    </Typography>
+                                                }
+                                            >
+                                                <Typography
+                                                    sx={{
+                                                        marginLeft: '7px',
+                                                        fontSize: '0.8rem',
+                                                        maxWidth: '100%',
+                                                        color: 'white',
+                                                    }}
+                                                >
+                                                    <HighlightText text={fileName || ''} searchedText={minioFileId ? fileName : searchedText} />
+                                                </Typography>
+                                            </MeltaTooltip>
+                                        ) : (
                                             <Typography
                                                 sx={{
                                                     marginLeft: '7px',
                                                     fontSize: '0.8rem',
-                                                    textOverflow: 'ellipsis',
-                                                    overflow: 'hidden',
-                                                    whiteSpace: 'nowrap',
                                                     maxWidth: '100%',
                                                     color: 'white',
                                                 }}
                                             >
                                                 <HighlightText text={fileName || ''} searchedText={minioFileId ? fileName : searchedText} />
                                             </Typography>
-                                        </MeltaTooltip>
+                                        )}
                                     </Grid>
                                     <Grid item xs={3} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
                                         {files[previewImageIndex] && (
