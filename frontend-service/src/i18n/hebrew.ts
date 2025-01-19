@@ -638,6 +638,8 @@ export default {
                 brokenRulesEntities: 'חריגות חוקה',
                 brokenRulesEntitiesDescription: 'ניתן יהיה לצפות בחריגות ולהגיש בקשה בשלב הבא',
                 failedLoadEntities: 'טעינת קבצים נכשלה',
+                limitExcelFiles: 'קיימת הגבלה על מספר קבצים שניתן להעלות',
+                limitEntitiesAmount: 'קיימת הגבלה על מספר יישויות שניתן להעלות בקובץ',
                 entitiesStatus: 'סטטוס יישויות',
                 preview: 'תצוגה מקדימה',
                 loadEntities: 'טעינת יישויות',
