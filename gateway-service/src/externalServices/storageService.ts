@@ -35,10 +35,9 @@ export class StorageService extends DefaultExternalServiceApi {
 
     async uploadFiles(files: UploadedFile[]) {
         const formData = new FormData();
-        const fileStreams = await Promise.all(files.map((file) => file.stream));
 
-        fileStreams.forEach((fileStream, index) => {
-            formData.append('files', fileStream, files[index].originalname);
+        files.forEach((file) => {
+            formData.append('files', file.stream, file.originalname);
         });
 
         const { data } = await this.api.post<{ path: string }[]>(uploadFilesRoute, formData, {
