@@ -59,7 +59,6 @@ export const createEntityTemplateSchema = Joi.object({
     },
     query: {},
     params: {},
-    // files: Joi.array().items(fileSchema),
     files: { file: Joi.array().items(iconFileSchema).length(1), files: Joi.array().items(fileSchema) },
 });
 
