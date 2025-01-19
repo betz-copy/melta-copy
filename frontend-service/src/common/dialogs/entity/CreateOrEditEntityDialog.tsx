@@ -188,22 +188,26 @@ const CreateOrEditEntityDetails: React.FC<{
         }
     };
 
+    const [_, navigate] = useLocation();
+    const workspace = useWorkspaceStore((state) => state.workspace);
+    const { shouldNavigateToEntityPage } = workspace.metadata;
     const { isLoading: isUpdateLoading, mutateAsync: updateMutation } = useMutation(
         ({ newEntityData, ignoredRules }: { newEntityData: EntityWizardValues; ignoredRules?: IRuleBreach['brokenRules'] }) =>
             updateEntityRequestForMultiple(entityToUpdate!.properties._id, newEntityData, ignoredRules),
         {
             onSuccess: (data) => {
                 if (onSuccessUpdate) onSuccessUpdate(data);
+                if (Object.values(externalErrors.unique).length === 0 || !externalErrors.files || externalErrors.action.length === 0) {
+                    if (shouldNavigateToEntityPage === true) {
+                        navigate(`/entity/${data.properties._id}`);
+                    }
+                }
             },
             onError: (err: AxiosError, { newEntityData }) => {
                 handleMutationError(err, entityTemplate, newEntityData);
             },
         },
     );
-
-    const [_, navigate] = useLocation();
-    const workspace = useWorkspaceStore((state) => state.workspace);
-    const { shouldNavigateToEntityPage } = workspace.metadata;
 
     const { isLoading: isCreateLoading, mutateAsync: createMutation } = useMutation(
         ({ newEntityData, ignoredRules }: { newEntityData: EntityWizardValues; ignoredRules?: IRuleBreach['brokenRules'] }) =>
