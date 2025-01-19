@@ -169,6 +169,7 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                 setIsStepEditMode(false);
                 resetForm({ values: getStepValuesFromStepInstance(result, stepTemplate) });
             }}
+            enableReinitialize
             validate={(values) => {
                 const nonAttachmentsSchema = pickProcessFieldsPropertiesSchema({
                     properties: stepTemplate.properties,
@@ -416,7 +417,7 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                                         }}
                                                     />
                                                 ) : (
-                                                    <CommentsDetails values={stepInstance} toPrint={toPrint} />
+                                                    <CommentsDetails values={values} toPrint={toPrint} />
                                                 )}
                                             </Grid>
                                         </Grid>
