@@ -71,6 +71,7 @@ export const ProcessTemplateCard: React.FC<ProcessTemplateCardProps> = ({
                         <Grid item container flexBasis="10%">
                             {isHoverOnCard && (
                                 <CardMenu
+                                    onOptionsIconClose={() => setIsHoverOnCard(false)}
                                     onEditClick={() => {
                                         setProcessTemplateWizardDialogState({ isWizardOpen: true, processTemplate });
                                     }}

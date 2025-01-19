@@ -70,6 +70,7 @@ export const RuleCard: React.FC<{
                         <Grid item flexBasis="5%">
                             {isHoverOnCard && (
                                 <CardMenu
+                                    onOptionsIconClose={() => setIsHoverOnCard(false)}
                                     onEditClick={() => {
                                         setRuleWizardDialogState({
                                             isWizardOpen: true,

@@ -76,11 +76,7 @@ const RelationshipTemplateCard: React.FC<RelationshipTemplateCardProps> = ({
 
     const handleHover = (isHover: boolean) => {
         setIsHoverOnCard(isHover);
-        if (isHover) {
-            checkRelationshipTemplateHasRelationships();
-        }
     };
-
     return (
         <ViewingCard
             title={
@@ -100,6 +96,10 @@ const RelationshipTemplateCard: React.FC<RelationshipTemplateCardProps> = ({
                     <Grid item container flexBasis="10%" width="25px">
                         {isHoverOnCard && !isProperty && (
                             <CardMenu
+                                onOptionsIconClick={async () => {
+                                    await checkRelationshipTemplateHasRelationships();
+                                }}
+                                onOptionsIconClose={() => setIsHoverOnCard(false)}
                                 onEditClick={() => {
                                     const { sourceEntity, destinationEntity, ...restOfRelationshipTemplate } = relationshipTemplate;
                                     setRelationshipTemplateWizardDialogState({

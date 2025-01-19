@@ -106,6 +106,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, setDeleteCategory
                     <Grid item container flexBasis="10%">
                         {isHoverOnCard && (
                             <CardMenu
+                                onOptionsIconClose={() => setIsHoverOnCard(false)}
                                 onEditClick={() => setCategoryWizardDialogState({ isWizardOpen: true, category })}
                                 onDeleteClick={() => setDeleteCategoryDialogState({ isDialogOpen: true, categoryId: category._id })}
                                 disabledProps={{
