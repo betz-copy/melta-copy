@@ -431,7 +431,6 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                 }),
             );
 
-            // api.refreshCells();
 
             if (Object.keys(columnWidths).length > 0) {
                 const updatedWidths = { ...defaultColumnWidths, ...columnWidths };
