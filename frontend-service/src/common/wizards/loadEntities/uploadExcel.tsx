@@ -93,6 +93,7 @@ export const UploadExcel: React.FC<{
                         shouldSaveColumnOrder: false,
                         shouldSavePagination: false,
                         shouldSaveScrollPosition: false,
+                        pageType: 'uploadExcel',
                     }}
                     ignoreType
                     showNavigateToRowButton={false}

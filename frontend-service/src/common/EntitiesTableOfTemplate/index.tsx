@@ -7,6 +7,7 @@ import {
     ColumnMovedEvent,
     ColumnResizedEvent,
     ColumnVisibleEvent,
+    FirstDataRenderedEvent,
     GridApi,
     GridReadyEvent,
     IServerSideDatasource,
@@ -387,56 +388,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             },
         };
 
-        const autoSizeAll = (params: GridReadyEvent<Data, any>) => {
-            const { api } = params;
-
-            const columnsKeys = Object.keys(template.properties.properties).filter((key) => !defaultColumnWidths[key]);
-
-            if (columnsKeys.length === 0) return;
-
-            api.sizeColumnsToFit();
-            api.autoSizeColumns(defaultColumnWidths.length > 0 ? columnsKeys : Object.keys(template.properties.properties));
-            console.log({ columnsKeys });
-
-            const columnStates = api.getColumnState().filter((col) => columnsKeys.includes(col.colId));
-            const usedWidth = Object.values(defaultColumnWidths).reduce((sum, width) => sum + width, 0);
-            console.log({ defaultColumnWidths });
-
-            const gridElement = document.querySelector('.ag-root');
-            if (!gridElement) {
-                console.error('Grid container element not found');
-                return;
-            }
-            const totalGridWidth = gridElement.clientWidth;
-            const x = columnStates.reduce((sum, col) => sum + col.width!, 0);
-            console.log({ usedWidth, x });
-            const remainingWidth = totalGridWidth - usedWidth - x - 200;
-            console.log({ columnStates });
-
-            const columnWidths: Record<string, number> = columnStates.reduce((acc, col, index) => {
-                const newWidth = index === columnStates.length - 1 ? col.width! + Math.max(remainingWidth, 0) : col.width;
-                console.log({ newWidth });
-
-                acc[col.colId] = newWidth;
-                return acc;
-            }, {});
-
-            api.setColumnWidths(
-                Object.entries(columnWidths).map(([key, newWidth]) => {
-                    console.log({ key, newWidth });
-
-                    return { key, newWidth };
-                }),
-            );
-
-            if (Object.keys(columnWidths).length > 0) {
-                const updatedWidths = { ...defaultColumnWidths, ...columnWidths };
-                console.log({ columnWidths, updatedWidths });
-                localStorage.setItem(`columnWidths-${saveStorageProps.pageType}-${template._id}`, JSON.stringify(updatedWidths));
-            }
-        };
-
-        const updateVisibleColumns = (params: ColumnVisibleEvent<Data> | GridReadyEvent<Data, any>) => {
+        const updateVisibleColumns = (params: ColumnVisibleEvent<Data> | GridReadyEvent<Data, any> | FirstDataRenderedEvent<Data, any>) => {
             const columnState = params.api.getColumnState();
 
             const updatedVisibleColumns = columnState.reduce<Record<string, boolean>>((acc, col) => {
@@ -446,6 +398,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
 
             localStorage.setItem(`visibleColumns-${saveStorageProps.pageType}-${template._id}`, JSON.stringify(updatedVisibleColumns));
             setDefaultVisibleColumns(updatedVisibleColumns);
+            return updatedVisibleColumns;
         };
 
         const handleColumnVisible = (params: ColumnVisibleEvent<Data>) => {
@@ -458,13 +411,17 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             updateVisibleColumns(params);
         };
 
-        const handleColumnsOrder = (params: ColumnMovedEvent<Data> | GridReadyEvent<Data, any>) => {
+        const handleColumnsOrder = (params: ColumnMovedEvent<Data> | GridReadyEvent<Data, any> | FirstDataRenderedEvent<Data, any>) => {
             if (!saveStorageProps.shouldSaveColumnOrder) return;
             const columnState = params.api.getColumnState();
+            console.log({ columnState });
+
             const newColumnsOrder = columnState.reduce<Record<string, { order: number }>>((acc, column, index) => {
                 acc[column.colId] = { order: index };
                 return acc;
             }, {});
+            console.log({ newColumnsOrder });
+
             localStorage.setItem(`columnsOrder-${saveStorageProps.pageType}-${template._id}`, JSON.stringify(newColumnsOrder));
             setDefaultColumnsOrder(newColumnsOrder);
         };
@@ -494,6 +451,52 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             if (params.api && params.newPage) {
                 const currentPage = params.api.paginationGetCurrentPage();
                 sessionStorage.setItem(`currentPage-${saveStorageProps.pageType}-${template._id}`, JSON.stringify(currentPage));
+            }
+        };
+
+        const autoSizeAll = (params: GridReadyEvent<Data, any>, visibleKeys: string[]) => {
+            const { api } = params;
+
+            const columnsKeys = visibleKeys.filter((key) => !defaultColumnWidths[key] && key !== `actions-${template._id}`);
+
+            if (columnsKeys.length === 0) return;
+
+            console.log('inside', { columnsKeys });
+
+            api.sizeColumnsToFit();
+            api.autoSizeColumns(defaultColumnWidths.length > 0 ? columnsKeys : Object.keys(template.properties.properties));
+
+            const columnStates = api.getColumnState().filter((col) => columnsKeys.includes(col.colId));
+            const usedWidth = Object.values(defaultColumnWidths).reduce((sum, width) => sum + width, 0);
+
+            const totalGridWidth = tableRef.current?.offsetWidth;
+            if (!totalGridWidth) {
+                console.error('bbbbbbbbbbbbbbbb');
+                return;
+            }
+            const widthConsumed = columnStates.reduce((sum, col) => sum + col.width!, 0);
+            const remainingWidth = totalGridWidth - usedWidth - widthConsumed - 200; // (defaultVisibleColumns[`actions-${template._id}`] ? 200 : 0);
+            console.log({ templateId: template._id }, defaultColumnWidths[`actions-${template._id}`]);
+
+            const columnWidths: Record<string, number> = columnStates.reduce(
+                (acc, col, index) => {
+                    const newWidth = index === columnStates.length - 1 ? col.width! + Math.max(remainingWidth, 0) : col.width!;
+                    acc[col.colId] = newWidth;
+                    return acc;
+                },
+                { [`actions-${template._id}`]: 200 },
+            );
+            console.log({ totalGridWidth, remainingWidth, columnWidths });
+
+            api.setColumnWidths(
+                Object.entries(columnWidths).map(([key, newWidth]) => {
+                    return { key, newWidth };
+                }),
+            );
+
+            if (Object.keys(columnWidths).length > 0) {
+                const updatedWidths = { ...defaultColumnWidths, ...columnWidths };
+                localStorage.setItem(`columnWidths-${saveStorageProps.pageType}-${template._id}`, JSON.stringify(updatedWidths));
             }
         };
 
@@ -648,11 +651,14 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                             gridApi.setSideBarVisible(isSideBarOpen);
                         }}
                         onGridReady={(params) => {
-                            console.log('djkb');
+                            const visibleColumns = updateVisibleColumns(params);
+                            const visibleKeys = Object.keys(visibleColumns).filter((key) => visibleColumns[key] === true);
 
-                            autoSizeAll(params);
-                            updateVisibleColumns(params);
-                            handleColumnsOrder(params);
+                            if (Object.keys(defaultColumnsOrder).length === 0) {
+                                handleColumnsOrder(params);
+                            }
+                            autoSizeAll(params, visibleKeys);
+                            console.log({ defaultColumnWidths });
 
                             const savedSortModel = localStorage.getItem(`sortModel-${saveStorageProps.pageType}-${template._id}`);
                             if (savedSortModel) {
@@ -708,8 +714,6 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                             minWidth: 120,
                             resizable: true,
                             lockPinned: true,
-                            flex: 1,
-                            initialFlex: 1,
                             initialWidth: 250,
                         }}
                         sideBar={{

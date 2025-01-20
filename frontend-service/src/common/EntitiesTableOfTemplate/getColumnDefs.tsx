@@ -76,6 +76,8 @@ export const getColumnDefs = <Data extends any = EntityData>({
     disableEditCell,
 }: IGetColumnDefsOptions<Data>): ColDef[] => {
     const notVisibleColumnsAmount = Object.values(defaultVisibleColumns).filter((value) => value === false).length;
+    console.log({ defaultColumnsOrder, defaultVisibleColumns });
+
     const targetOrder = Object.keys(defaultColumnsOrder).length - notVisibleColumnsAmount - 2;
 
     const columnDefs = template.propertiesOrder.map((property) => {
@@ -83,6 +85,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
         const hiddenProperties = template.properties.hide;
         const { type, format, calculateTime, archive } = propertyTemplate;
         const isLastColumn = defaultColumnsOrder[property]?.order === targetOrder;
+        console.log({ property }, isLastColumn, defaultColumnWidths[property]);
 
         const hideField = template.properties.hide.includes(property);
 
@@ -288,6 +291,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
 
     if (onNavigateToRow || deleteRowButtonProps || editRowButtonProps || menuRowButtonProps) {
         columnDefs.push({
+            field: `actions-${template._id}`,
             headerName: i18next.t('entitiesTableOfTemplate.actionsHeaderName'),
             pinned: 'left',
             menuTabs: [],

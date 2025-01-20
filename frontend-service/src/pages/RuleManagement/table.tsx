@@ -101,11 +101,17 @@ const getColumnDefs = (
             Object.values(actionTypeTranslations),
             400,
             environment.agGrid.defaultRowHeight,
+            false,
         ),
-        dateColDef<IRuleBreachPopulated>('createdAt', ({ data }) => data?.createdAt, {
-            title: i18next.t('ruleManagement.createdAt'),
-            format: 'date-time',
-        }),
+        dateColDef<IRuleBreachPopulated>(
+            'createdAt',
+            ({ data }) => data?.createdAt,
+            {
+                title: i18next.t('ruleManagement.createdAt'),
+                format: 'date-time',
+            },
+            true,
+        ),
     ];
 
     const requestColDef: ColDef<IRuleBreachRequestPopulated>[] = [
