@@ -3,8 +3,9 @@ import { Stream } from 'stream';
 import { config } from '../../config';
 import { getFileExtension, isFileDocument } from '../../utils/fileHelper';
 import { ServiceError } from '../error';
-import { generatePath } from '../../utils/generatePath';
+import { generate32CharUUID, generatePath } from '../../utils/generatePath';
 import DefaultManagerMinio from '../../utils/minio/manager';
+import { UploadedFile } from './interface';
 
 const {
     rabbit,
@@ -13,19 +14,40 @@ const {
 } = config;
 
 export class FilesManager extends DefaultManagerMinio {
-    uploadFile(file?: Express.Multer.File) {
-        return file;
+    async makeBuckets() {
+        const bucketExists = await this.minioClient.bucketExists();
+        if (!bucketExists) await this.minioClient.makeBucket();
     }
 
-    async uploadFiles(files?: Express.Multer.File[]) {
-        const documentFiles = files?.filter((file) => isFileDocument(file.path));
+    async uploadFile(file?: UploadedFile) {
+        await this.makeBuckets();
+        const nameWithId = `${generate32CharUUID()}${file?.originalname}`;
+        const fileWithId = { ...file, originalname: nameWithId, path: nameWithId };
+        await this.minioClient.uploadFileStream(fileWithId.stream!, fileWithId.originalname, fileWithId?.size!, {});
+
+        return fileWithId;
+    }
+
+    async uploadFiles(files?: UploadedFile[]) {
+        if (!files) throw new Error('No files to upload');
+
+        await this.minioClient.ensureBucket();
+
+        const filesWithIds = files.map((file) => {
+            const nameWithId = this.buildNameWithId(file);
+            return { ...file, originalname: nameWithId, path: nameWithId };
+        });
+        await Promise.allSettled(filesWithIds.map((file) => this.minioClient.uploadFileStream(file.stream!, file.originalname!, file.size!, {})));
+
+        const documentFiles = files?.filter((file) => isFileDocument(file.originalname));
         if (documentFiles?.length)
             await menash.send(
                 rabbit.previewQueue,
-                documentFiles.map((file) => file.path),
+                documentFiles.map((file) => file.originalname),
                 { headers: { [workspaceIdHeaderName]: this.workspaceId } },
             );
-        return files;
+
+        return filesWithIds;
     }
 
     async downloadFile(path: string) {
@@ -63,7 +85,7 @@ export class FilesManager extends DefaultManagerMinio {
         return result;
     }
 
-    deleteFiles(filePaths: string[]) {
+    async deleteFiles(filePaths: string[]) {
         const removalPromises = filePaths.map(async (filePath) => {
             const extension = getFileExtension(filePath);
             if (document.documentType.includes(extension)) {
@@ -90,6 +112,10 @@ export class FilesManager extends DefaultManagerMinio {
             }),
         );
         return Promise.all(fileStreams.map((fileStream) => this.streamToBuffer(fileStream)));
+    }
+
+    private buildNameWithId(file?: UploadedFile): string {
+        return `${generate32CharUUID()}${file?.originalname!}`;
     }
 
     private async streamToBuffer(stream: Stream): Promise<Buffer> {

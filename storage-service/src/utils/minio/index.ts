@@ -1,2 +1,2 @@
-export * from './multer';
+export * from './busboy';
 export * from './minioClient';

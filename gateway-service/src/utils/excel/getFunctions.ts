@@ -1,7 +1,6 @@
 import Excel from 'exceljs';
 import { StatusCodes } from 'http-status-codes';
 import { AxiosError } from 'axios';
-import fs from 'fs';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../externalServices/templates/entityTemplateService';
 import { excelConfig } from './excelConfig';
 import { BadRequestError, ServiceError } from '../../express/error';
@@ -22,6 +21,7 @@ import {
     IUpdateEntityMetadataPopulated,
 } from '../../externalServices/ruleBreachService/interfaces/populated';
 import config from '../../config';
+import { UploadedFile } from '../busboy/interface';
 
 const { invalidDate, invalidTime } = config.loadExcel;
 
@@ -88,7 +88,7 @@ const handleFailedEntities = (rowData: Record<string, any>, failedProperties: IF
 };
 
 const readExcelFile = async (
-    files: Express.Multer.File[],
+    files: UploadedFile[],
     template: IMongoEntityTemplatePopulated,
     failedEntities: IFailedEntity[],
     entitiesFileLimit = config.loadExcel.entitiesFileLimit,
@@ -100,9 +100,11 @@ const readExcelFile = async (
 
     await Promise.all(
         files.map(async (file) => {
-            const stream = fs.createReadStream(file.path);
             const workbook = new Excel.Workbook();
-            await workbook.xlsx.read(stream);
+
+            if (!file?.stream) return;
+
+            await workbook.xlsx.read(file.stream);
             const worksheet = workbook.worksheets[0];
             if (!worksheet) throw new BadRequestError(`Can't read excel`);
 
