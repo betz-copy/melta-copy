@@ -15,9 +15,9 @@ import { ProcessTemplateCard } from './ProcessTemplateCard';
 import { InfiniteScroll } from '../../../../common/InfiniteScroll';
 import { environment } from '../../../../globals';
 
-const { infiniteScrollPageCount } = environment.processInstances;
-
 const ProcessTemplatesRow: React.FC = () => {
+    const { infiniteScrollPageCount } = environment.processInstances;
+
     const [searchText, setSearchText] = useState('');
     const [deleteProcessTemplateDialogState, setDeleteProcessTemplateDialogState] = useState<{
         isDialogOpen: boolean;

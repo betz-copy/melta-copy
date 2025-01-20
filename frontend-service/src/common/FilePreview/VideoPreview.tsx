@@ -1,15 +1,13 @@
 /* eslint-disable jsx-a11y/media-has-caption */
-import React, { CSSProperties } from 'react';
+import React from 'react';
 
 interface IVideoPreview {
     data: string;
-    maxHeight: CSSProperties['maxHeight'];
-    maxWidth: CSSProperties['maxWidth'];
 }
 
-export const VideoPreview: React.FC<IVideoPreview> = ({ data, maxHeight, maxWidth }) => {
+export const VideoPreview: React.FC<IVideoPreview> = ({ data }) => {
     return (
-        <div style={{ maxHeight, maxWidth }}>
+        <div>
             <video
                 controls
                 style={{
@@ -17,7 +15,6 @@ export const VideoPreview: React.FC<IVideoPreview> = ({ data, maxHeight, maxWidt
                     right: 0,
                     bottom: 0,
                     width: '100%',
-                    height: maxHeight,
                     backgroundSize: 'cover',
                     overflow: 'hidden',
                 }}

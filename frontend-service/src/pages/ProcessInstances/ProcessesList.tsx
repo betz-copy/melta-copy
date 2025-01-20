@@ -8,13 +8,13 @@ import { useQueryClient } from 'react-query';
 import { ViewingBox } from '../SystemManagement/components/ViewingBox';
 import ProcessCard, { StatusColors } from './ProcessCard';
 import { searchProcessesRequest } from '../../services/processesService';
-import { environment } from '../../globals';
 import { Status, IMongoProcessInstancePopulated } from '../../interfaces/processes/processInstance';
 import { IMongoProcessTemplatePopulated } from '../../interfaces/processes/processTemplate';
 import { InfiniteScroll } from '../../common/InfiniteScroll';
 import './ProcessesList.css';
 import { useUserStore } from '../../stores/user';
 import { PermissionScope } from '../../interfaces/permissions';
+import { environment } from '../../globals';
 
 const { infiniteScrollPageCount } = environment.processInstances;
 
