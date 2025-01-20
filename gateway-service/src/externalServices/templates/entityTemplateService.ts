@@ -112,8 +112,14 @@ export interface RequestWithSearchEntityTemplateBody extends RequestWithPermissi
 
 export class EntityTemplateService extends TemplatesManagerService {
     // categories
-    async getAllCategories() {
-        const { data } = await this.api.get<IMongoCategory[]>(baseCategoriesRoute);
+    async getAllCategories(searchInput?: string) {
+        const params: Record<string, string> = {};
+
+        if (searchInput) {
+            params.search = searchInput;
+        }
+
+        const { data } = await this.api.get<IMongoCategory[]>(baseCategoriesRoute, { params });
 
         return data;
     }

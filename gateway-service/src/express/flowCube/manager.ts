@@ -63,19 +63,27 @@ export class FlowCubeManager extends DefaultManagerProxy<null> {
         return convertToFlow;
     }
 
-    async searchCategoryInWorkspace(): Promise<TemplateNamesAndId[]> {
-        const categories = await this.entityTemplateService.getAllCategories();
+    async searchCategory(body: any): Promise<TemplateNamesAndId[]> {
+        let searchInput = '';
+
+        if (body?.Parameters?.Value) {
+            searchInput = body?.Parameters?.Value;
+        }
+
+        const categories = await this.entityTemplateService.getAllCategories(searchInput);
 
         return categories.map(({ _id, displayName }) => {
             return { Value: _id, Name: displayName };
         });
     }
 
-    async searchTemplatesNameAndIdInWorkspace(body: any): Promise<TemplateNamesAndId[]> {
+    async searchTemplates(body: any): Promise<TemplateNamesAndId[]> {
         let searchEntityTemplatesBody = {};
+
         if (body?.Parameters?.Template) {
             searchEntityTemplatesBody = { search: body.Parameters.Template };
         }
+
         if (body?.Parameters?.Category) {
             searchEntityTemplatesBody = { categoryIds: [body?.Parameters?.Category] };
         }
