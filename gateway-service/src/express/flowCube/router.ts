@@ -4,10 +4,11 @@ import ValidateRequest from '../../utils/joi';
 import { InstancesValidator } from '../instances/middlewares';
 import FlowCubeController from './controller';
 import {
-    searchTemplatesNameAndIdInWorkspaceSchema,
     getEntityTemplateByIdSchema,
     searchFlowCubeRequestSchema,
     searchEntitiesByTemplateSchema,
+    searchCategoryInWorkspaceSchema,
+    searchTemplatesSchema,
 } from './validator.schema';
 
 const FlowCubeRouter: Router = Router();
@@ -25,15 +26,16 @@ FlowCubeRouter.post(
 
 FlowCubeRouter.post(
     '/:workspaceId/categories/search',
+    ValidateRequest(searchCategoryInWorkspaceSchema),
     wrapMiddleware(translateWorkspaceParameter),
-    FlowCubeControllerMiddleware.searchCategoryInWorkspace,
+    FlowCubeControllerMiddleware.searchCategory,
 );
 
 FlowCubeRouter.post(
     '/:workspaceId/templates/search',
-    ValidateRequest(searchTemplatesNameAndIdInWorkspaceSchema),
+    ValidateRequest(searchTemplatesSchema),
     wrapMiddleware(translateWorkspaceParameter),
-    FlowCubeControllerMiddleware.searchTemplatesNameAndIdInWorkspace,
+    FlowCubeControllerMiddleware.searchTemplates,
 );
 
 FlowCubeRouter.post(
