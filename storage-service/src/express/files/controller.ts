@@ -51,7 +51,7 @@ export default class FilesController extends DefaultController<FilesManager> {
     }
 
     async uploadFile(req: express.Request, res: express.Response) {
-        res.json(this.manager.uploadFile(req.file));
+        res.json(await this.manager.uploadFile(req.file));
     }
 
     async uploadFiles(req: express.Request, res: express.Response) {

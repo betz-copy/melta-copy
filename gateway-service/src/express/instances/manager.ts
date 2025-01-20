@@ -91,9 +91,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
             return { props, files: {} };
         }
 
-        console.log('files', files);
         const fileIds = await this.storageService.uploadFiles(files);
-        console.log('fileIds', fileIds);
         const filePropertiesEntries = files.map((file, index) => {
             return [file.fieldname, fileIds[index]];
         });

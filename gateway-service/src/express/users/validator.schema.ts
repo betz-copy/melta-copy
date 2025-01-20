@@ -144,7 +144,7 @@ export const searchExternalUsersRequestSchema = joi.object({
     params: {},
 });
 
-//GET /api/users/search/:workspaceId
+// GET /api/users/search/:workspaceId
 export const searchUsersByPermissionsSchema = joi.object({
     query: {},
     body: {},
