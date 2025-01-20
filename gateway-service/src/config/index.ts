@@ -50,15 +50,13 @@ const config = {
             })
             .required()
             .asJsonObject(),
+
         crsType: env.get('CRS_TYPE').default('EPSG3857').asString(),
 
         agGridLimit: {
             deleteLimit: env.get('DELETE_ENTITIES_MAX_LIMIT').default(1000).asIntPositive(),
         },
-        meltaUpdates: env
-            .get('FRONTEND_CONFIG_MELTA_UPDATES')
-            .default({ אאא: 'בבב', גגג: 'דדד', a: 'b', c: 'd', e: 'f', g: 'h', i: 'j', k: 'f' })
-            .asJsonObject(),
+        meltaUpdates: env.get('FRONTEND_CONFIG_MELTA_UPDATES').default({ אא: 'בב', גג: 'דד' }).asJsonObject(),
         meltaUpdatesDescription: env.get('FRONTEND_CONFIG_MELTA_UPDATES_DESCRIPTION').default('תיאור').asString(),
     },
 
