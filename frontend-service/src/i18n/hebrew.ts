@@ -870,7 +870,7 @@ export default {
         forTour: 'לסיור במערכת',
         pressHere: 'לחץ כאן',
     },
-    meltaUpdates: { title: 'התחדשנו בשבילכם!', confirmation: 'אישור', renewed: 'התחדשנו' },
+    meltaUpdates: { title: 'התחדשנו בשבילכם!', confirmation: 'אישור', renewed: 'התחדשנו', btn: 'מה חדש?' },
     ruleBreachInfo: {
         relActionInfo: {
             [ActionTypes.CreateRelationship]: 'יצירת',
