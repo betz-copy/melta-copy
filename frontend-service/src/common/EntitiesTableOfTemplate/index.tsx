@@ -1,13 +1,12 @@
 /* eslint-disable no-case-declarations */
 /* eslint-disable no-param-reassign */
-import React, { ForwardedRef, forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
+import React, { ForwardedRef, forwardRef, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import {
     BodyScrollEvent,
     CellEditingStoppedEvent,
     ColumnMovedEvent,
     ColumnResizedEvent,
     ColumnVisibleEvent,
-    FirstDataRenderedEvent,
     GridApi,
     GridReadyEvent,
     IServerSideDatasource,
@@ -28,7 +27,6 @@ import '../../css/table.css';
 import { useMutation } from 'react-query';
 import { AxiosError } from 'axios';
 
-import { keys } from 'lodash';
 import { environment } from '../../globals';
 import { EntityData, IEntity, IEntityExpanded, IUniqueConstraint } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
@@ -430,7 +428,6 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                     return { key, newWidth };
                 }),
             );
-
 
             if (Object.keys(columnWidths).length > 0) {
                 const updatedWidths = { ...defaultColumnWidths, ...columnWidths };
