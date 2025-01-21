@@ -53,12 +53,12 @@ import { IExportEntitiesBody } from './interfaces';
 import { RabbitManager } from '../../utils/rabbit';
 import { SemanticSearchService } from '../../externalServices/semanticSearch';
 import { WorkspaceService } from '../workspaces/service';
+import { UploadedFile } from '../../utils/busboy/interface';
 import { createTextsFromEntitiesWithFiles, formatEntitiesBulkSearch, sortEntities } from '../../utils/semantic';
 import { ISemanticSearchResult } from '../../externalServices/semanticSearch/interface';
 import { getValidationErrorEntities, readExcelFile, updateIdOfBrokenRules } from '../../utils/excel/getFunctions';
 
 const { errorCodes, rabbit, ruleBreachService } = config;
-const { filesLimit } = config.loadExcel;
 
 export class InstancesManager extends DefaultManagerProxy<InstancesService> {
     private entityTemplateService: EntityTemplateService;
@@ -84,7 +84,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
     }
 
     async uploadInstanceFiles<TProps = Record<string, any>>(
-        files: Express.Multer.File[],
+        files: UploadedFile[],
         props: TProps = {} as TProps,
     ): Promise<{ props: TProps; files: Record<string, any> }> {
         if (files.length === 0) {
@@ -316,7 +316,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
     async loadEntities(
         templateId: string,
         userId: string,
-        files?: Express.Multer.File[],
+        files?: UploadedFile[],
         insertBrokenEntities?: { entitiesToCreate: IEntity[]; ignoredRules: IBrokenRule[] },
     ) {
         let entities = insertBrokenEntities?.entitiesToCreate;
@@ -325,8 +325,16 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         const failedEntities: IFailedEntity[] = [];
 
         if (files && !entities) {
-            if (files?.length > filesLimit) throw new BadRequestError('files limit', {});
-            const actions = await readExcelFile(files, template, failedEntities);
+            const workspace = await WorkspaceService.getById(this.workspaceId);
+            const workspaceFilesLimit = workspace.metadata?.excel?.filesLimit;
+
+            const effectiveFilesLimit = workspaceFilesLimit ?? config.loadExcel.filesLimit;
+
+            if (files.length > effectiveFilesLimit) {
+                throw new BadRequestError(`files limit: more than ${effectiveFilesLimit} files`, {});
+            }
+
+            const actions = await readExcelFile(files, template, failedEntities, workspace.metadata?.excel?.entitiesFileLimit);
             entities = actions;
         }
         const serialStarters = this.getSerialStarters(template);
@@ -403,7 +411,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         return updatedProperties;
     }
 
-    async handlePreparationsBeforeCreateEntity(instanceData: IEntity, files: Express.Multer.File[], serialNumbers?: Record<string, number>) {
+    async handlePreparationsBeforeCreateEntity(instanceData: IEntity, files: UploadedFile[], serialNumbers?: Record<string, number>) {
         const { props: propertiesWithFiles, files: upserstedFiles } = await this.uploadInstanceFiles(files, instanceData.properties);
 
         const entityTemplate = await this.entityTemplateService.getEntityTemplateById(instanceData.templateId);
@@ -418,7 +426,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
     async createEntityInstance(
         instanceData: IEntity,
-        files: Express.Multer.File[],
+        files: UploadedFile[],
         ignoredRules: IBrokenRule[],
         userId: string,
         serialNumbers?: Record<string, number>,
@@ -453,7 +461,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         return createdEntity;
     }
 
-    private async deleteUnusedFiles(currentEntity: IEntity, instanceData: IEntity, files: Express.Multer.File[]) {
+    private async deleteUnusedFiles(currentEntity: IEntity, instanceData: IEntity, files: UploadedFile[]) {
         const entityTemplate = await this.entityTemplateService.getEntityTemplateById(currentEntity.templateId);
         const newFilesKeys = files.map((file) => file.fieldname);
 
@@ -601,7 +609,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
     async duplicateEntityInstance(
         id: string,
         instanceData: IEntity,
-        files: Express.Multer.File[],
+        files: UploadedFile[],
         ignoredRules: IBrokenRule[],
         userId: string,
         duplicateFileProperties = true,
@@ -675,7 +683,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
     async updateEntityInstance(
         id: string,
         updatedInstanceData: IEntity,
-        files: Express.Multer.File[],
+        files: UploadedFile[],
         ignoredRules: IBrokenRule[],
         userId: string,
         createAlert: boolean = true,

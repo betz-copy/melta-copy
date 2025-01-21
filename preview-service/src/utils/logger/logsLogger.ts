@@ -42,7 +42,7 @@ const customFormat: IWinstonFormat = format.combine(
             level,
             message: typeof message === 'object' ? { ...message } : message,
             extra,
-            ...metadata,
+            ...(metadata as any),
         };
 
         return JSON.stringify(printData, jsonReplacer);
