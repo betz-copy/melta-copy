@@ -26,3 +26,7 @@ export const CategorySchema = new mongoose.Schema(
 );
 
 CategorySchema.index({ displayName: 'text' });
+
+const Category = mongoose.model('categories', CategorySchema);
+
+export default Category;
