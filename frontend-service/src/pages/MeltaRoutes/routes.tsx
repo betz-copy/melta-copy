@@ -22,6 +22,7 @@ import {
 } from '../../utils/ProtectedRoutes';
 import { useWorkspaceStore } from '../../stores/workspace';
 import { environment } from '../../globals';
+import CesiumMap from '../Map/mapPage/Cesium';
 
 const GlobalSearch = lazy(() => import('../GlobalSearch'));
 const Category = lazy(() => import('../Category'));
@@ -177,7 +178,7 @@ export const MeltaRoutesInner: React.FC = () => {
                             </Route>
 
                             <Route path="/map">
-                                <Map />
+                                <CesiumMap />
                             </Route>
 
                             <Route path="/gantts">

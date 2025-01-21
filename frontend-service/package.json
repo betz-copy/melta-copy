@@ -69,6 +69,7 @@
     "axios-mock-adapter": "^1.19.0",
     "bignumber.js": "^9.1.2",
     "bowser": "^2.11.0",
+    "cesium": "^1.125.0",
     "constrained-editor-plugin": "^1.3.0",
     "d3-force": "^3.0.0",
     "date-fns": "^2.30.0",
