@@ -87,7 +87,7 @@ const TreeItem = React.forwardRef(function CustomTreeItem(props: TreeItem2Props 
     const theme = useTheme();
 
     const checkBoxProps = getCheckboxProps();
-    const item = publicAPI.getItem(itemId);
+    const item = (publicAPI as any).getItem(itemId);
 
     const { draggable, onDragStart, onDragOver, onDragEnd, ...otherRootProps }: ReturnType<typeof getRootProps> = getRootProps(other);
     const itemDepth = otherRootProps.style?.['--TreeView-itemDepth'];
