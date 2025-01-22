@@ -14,9 +14,10 @@ import {
     ISearchEntitiesByLocationBody,
     IDeleteEntityBody,
     ICountSearchResult,
+    IEntityWithIgnoredRules,
 } from '../interfaces/entities';
 import { EntityWizardValues } from '../common/dialogs/entity';
-import { IBrokenRule, IRuleBreach } from '../interfaces/ruleBreaches/ruleBreach';
+import { IRuleBreach } from '../interfaces/ruleBreaches/ruleBreach';
 import { filterModelToFilterOfGraph } from '../pages/Graph/GraphFilterToBackend';
 import { ITablesResults } from '../common/wizards/loadEntities';
 
@@ -30,11 +31,7 @@ export const exportEntitiesRequest = async (body: IExportEntitiesBody) => {
 export const loadEntitiesRequest = async (
     templateId: string,
     files?: Record<string, File>,
-    insertBrokenEntities?: {
-        ignoredRules: IBrokenRule[];
-        templateId: string;
-        properties: Record<string, any>;
-    }[],
+    insertBrokenEntities?: IEntityWithIgnoredRules[],
 ): Promise<ITablesResults> => {
     const formData = new FormData();
     if (files)

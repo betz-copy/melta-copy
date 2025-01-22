@@ -16,7 +16,7 @@ import { UploadExcel } from './uploadExcel';
 import ActionOnEntityWithRuleBreachDialog from '../../../pages/Entity/components/ActionOnEntityWithRuleBreachDialog';
 import { ActionErrors, ActionTypes, IAction, IActionMetadataPopulated, ICreateEntityMetadata } from '../../../interfaces/ruleBreaches/actionMetadata';
 import { ICreateOrUpdateWithRuleBreachDialogState } from '../../dialogs/entity/CreateOrEditEntityDialog';
-import { IRequiredConstraint, IUniqueConstraint } from '../../../interfaces/entities';
+import { IEntityWithIgnoredRules, IRequiredConstraint, IUniqueConstraint } from '../../../interfaces/entities';
 import { environment } from '../../../globals';
 import { groupBrokenRulesByEntity } from '../../../utils/loadEntities';
 
@@ -116,13 +116,7 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
     );
 
     const { isLoading: isLoadingRules, mutateAsync: loadRules } = useMutation(
-        async (
-            insertBrokenEntities: {
-                ignoredRules: IBrokenRule[];
-                templateId: string;
-                properties: Record<string, any>;
-            }[],
-        ) => {
+        async (insertBrokenEntities: IEntityWithIgnoredRules[]) => {
             return loadEntitiesRequest(template!._id, undefined, insertBrokenEntities);
         },
         {
@@ -298,7 +292,7 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
                             })) || [];
 
                         const groupedRawBrokenRules = groupBrokenRulesByEntity(stepsData.data.brokenRulesEntities?.rawBrokenRules || []);
-                        const insertBrokenEntities = brokenRulesEntities.map((brokenEntity, index) => ({
+                        const insertBrokenEntities: IEntityWithIgnoredRules[] = brokenRulesEntities.map((brokenEntity, index) => ({
                             ...brokenEntity,
                             ignoredRules: groupedRawBrokenRules[index],
                         }));

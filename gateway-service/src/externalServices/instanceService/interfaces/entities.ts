@@ -1,7 +1,7 @@
 import { IRelationship } from './relationships';
 import { IRelationshipTemplate } from '../../templates/relationshipsTemplateService';
 import { IEntitySingleProperty } from '../../templates/entityTemplateService';
-import { ActionErrors, IAction, IActionPopulated, IBrokenRule } from '../../ruleBreachService/interfaces';
+import { ActionErrors, IAction, IActionPopulated, IBrokenRule, ICreateEntityMetadata } from '../../ruleBreachService/interfaces';
 import { IBrokenRulePopulated } from '../../ruleBreachService/interfaces/populated';
 
 export interface IEntity {
@@ -167,7 +167,7 @@ export interface IDeleteBodyBase {
     deleteAllRelationships?: boolean;
 }
 
-export interface IEntityWithIgnoredRules extends IEntity {
+export interface IEntityWithIgnoredRules extends ICreateEntityMetadata {
     ignoredRules: IBrokenRule[];
 }
 
