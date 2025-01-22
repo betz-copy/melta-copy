@@ -167,6 +167,10 @@ export interface IDeleteBodyBase {
     deleteAllRelationships?: boolean;
 }
 
+export interface IEntityWithIgnoredRules extends IEntity {
+    ignoredRules: IBrokenRule[];
+}
+
 export type IDeleteBody<T extends boolean = boolean> = IDeleteBodyBase & {
     selectAll: T;
 } & (T extends true

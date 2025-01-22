@@ -44,6 +44,7 @@ export const groupBrokenRulesByEntity = (brokenRules: IBrokenRule[]): IBrokenRul
 
 export const groupActionsByEntityId = (actions: IAction[]): IAction[][] => {
     const entityMap = new Map<string, IAction[]>();
+    const newEntityId = '$0._id';
 
     for (const action of actions) {
         let entityId: string | undefined;
@@ -66,7 +67,7 @@ export const groupActionsByEntityId = (actions: IAction[]): IAction[][] => {
                         ...action.actionMetadata,
                         properties: {
                             ...(action.actionMetadata as ICreateEntityMetadata).properties,
-                            _id: '$0._id',
+                            _id: newEntityId,
                         },
                     },
                 };
@@ -76,7 +77,7 @@ export const groupActionsByEntityId = (actions: IAction[]): IAction[][] => {
                     ...action,
                     actionMetadata: {
                         ...action.actionMetadata,
-                        entityId: '$0._id',
+                        entityId: newEntityId,
                     },
                 };
 
