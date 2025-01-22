@@ -25,6 +25,10 @@ const metadataSchema = Joi.object({
         entitiesFileLimit: Joi.number(),
         filesLimit: Joi.number(),
     }).optional(),
+    searchLimits: Joi.object({
+        table: Joi.number(),
+        bulk: Joi.number(),
+    }).optional(),
 }).optional();
 
 const workspaceSchema = Joi.object({

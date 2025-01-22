@@ -32,6 +32,10 @@ export interface IMetadata {
         entitiesFileLimit: number;
         filesLimit: number;
     };
+    searchLimits: {
+        table: number;
+        bulk: number;
+    };
 }
 
 export interface IWorkspace {
