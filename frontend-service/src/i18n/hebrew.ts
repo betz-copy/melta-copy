@@ -1285,12 +1285,14 @@ export default {
             entitiesFileLimit: 'הגבלת מספר ישויות שניתן להעלות בקובץ',
             filesLimit: 'הגבלת מספר קבצים שניתן להעלות בטעינת יישויות',
         },
-        location: {
-            noLayers: 'לא נמצאו שכבות',
-            noCrsTypes: 'לא נמצאו סוגי CRS',
-            entityWithoutLocation: 'ליישות אין ערך שדה מיקום',
-            clear: 'ניקוי תוצאות',
-            radiusMaxLimit: `חיפוש מוגבל עד ${environment.map.maxRadius / 1000} ק"מ`,
-        },
+    },
+    location: {
+        polygon: 'פוליגון',
+        coordinate: 'נקודת ציון',
+        noLayers: 'לא נמצאו שכבות',
+        noCrsTypes: 'לא נמצאו סוגי CRS',
+        entityWithoutLocation: 'ליישות אין ערך שדה מיקום',
+        clear: 'ניקוי תוצאות',
+        radiusMaxLimit: `חיפוש מוגבל עד ${environment.map.maxRadius / 1000} ק"מ`,
     },
 };
