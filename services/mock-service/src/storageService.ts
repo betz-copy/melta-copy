@@ -17,14 +17,14 @@ export const uploadFile = async (workspaceId: string) => {
         await fs.promises.writeFile(filePath, fileData);
 
         const formData = new FormData();
-        formData.append('file', fs.createReadStream(filePath));
+        formData.append('files', fs.createReadStream(filePath));
 
         const { data } = await axiosInstance.post(url + uploadFileRoute, formData, {
             headers: formData.getHeaders(),
         });
 
         await fs.promises.unlink(filePath);
-        return data.path;
+        return data.map(({ path: resultPath }) => resultPath)[0];
     } catch (error) {
         // eslint-disable-next-line no-console
         console.error('Error in mockFileService:', error);
