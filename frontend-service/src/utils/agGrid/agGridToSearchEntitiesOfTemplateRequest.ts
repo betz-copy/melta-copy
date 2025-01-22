@@ -1,5 +1,5 @@
 import { environment } from '../../globals';
-import { ICountSearchResult, IFilterOfTemplate, ISearchEntitiesOfTemplateBody } from '../../interfaces/entities';
+import { ICountSearchResult, IFilterOfTemplate, ISearchEntitiesOfTemplateBody, ISearchFilter } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { getDayStart, getDayEnd } from '../date';
 import { addDefaultFieldsToTemplate } from '../templates';
@@ -224,4 +224,122 @@ export const agGridToSearchEntitiesOfTemplateRequest = (
         sort: sortModelToSortOfSearchRequest(sortModel),
         entitiesWithFiles: entityTemplate.entitiesWithFiles,
     };
+};
+
+
+export const filterOfTemplateToFilterModel = (filterOfTemplate: ISearchFilter, entityTemplate: IMongoEntityTemplatePopulated): IAGGridFilterModel => {
+    console.log('hiiiiiiiii');
+
+    const filterModel: IAGGridFilterModel = {};
+
+    const processFilter = (filter: IFilterOfTemplate<any>) => {
+        Object.keys(filter).forEach((field) => {
+            const fieldFilter = filter[field];
+            if (!fieldFilter) return; // Skip undefined or null filters
+
+            const fieldTemplate = entityTemplate.properties.properties[field];
+
+            if ('$in' in fieldFilter && fieldFilter.$in) {
+                // Set filter
+                filterModel[field] = {
+                    filterType: 'set',
+                    values: fieldFilter.$in,
+                } as IAGGridSetFilter;
+            } else if ('$eq' in fieldFilter || '$ne' in fieldFilter) {
+                // Text or number filter (equals or not equal)
+                const isTextField = fieldTemplate.format === 'string';
+                const value = fieldFilter.$eq ?? fieldFilter.$ne;
+                if (value !== undefined) {
+                    filterModel[field] = {
+                        filterType: isTextField ? 'text' : 'number',
+                        type: fieldFilter.$eq !== undefined ? 'equals' : 'notEqual',
+                        filter: value,
+                    };
+                }
+            } else if ('$lt' in fieldFilter || '$lte' in fieldFilter || '$gt' in fieldFilter || '$gte' in fieldFilter) {
+                // Number or date range filter
+                const isDateField = fieldTemplate.format === 'date' || fieldTemplate.format === 'datetime';
+                const typeMapping: Record<string, string> = {
+                    $lt: 'lessThan',
+                    $lte: 'lessThanOrEqual',
+                    $gt: 'greaterThan',
+                    $gte: 'greaterThanOrEqual',
+                };
+
+                Object.entries(typeMapping).forEach(([key, type]) => {
+                    if (key in fieldFilter && fieldFilter[key as keyof typeof fieldFilter] !== undefined) {
+                        filterModel[field] = {
+                            filterType: isDateField ? 'date' : 'number',
+                            type,
+                            filter: fieldFilter[key as keyof typeof fieldFilter],
+                        } as IAGGidNumberFilter | IAGGridDateFilter;
+                    }
+                });
+            } else if ('$rgx' in fieldFilter && fieldFilter.$rgx) {
+                // Text filter with regex
+                const regexString = fieldFilter.$rgx;
+                if (regexString.startsWith('.*') && regexString.endsWith('.*')) {
+                    filterModel[field] = {
+                        filterType: 'text',
+                        type: 'contains',
+                        filter: regexString.slice(2, -2),
+                    };
+                } else if (regexString.startsWith('.*')) {
+                    filterModel[field] = {
+                        filterType: 'text',
+                        type: 'endsWith',
+                        filter: regexString.slice(2),
+                    };
+                } else if (regexString.endsWith('.*')) {
+                    filterModel[field] = {
+                        filterType: 'text',
+                        type: 'startsWith',
+                        filter: regexString.slice(0, -2),
+                    };
+                } else {
+                    filterModel[field] = {
+                        filterType: 'text',
+                        type: 'equals',
+                        filter: regexString,
+                    };
+                }
+            } else if ('$not' in fieldFilter && fieldFilter.$not?.$rgx) {
+                // Text filter with notContains
+                const regexString = fieldFilter.$not.$rgx;
+                if (regexString) {
+                    filterModel[field] = {
+                        filterType: 'text',
+                        type: 'notContains',
+                        filter: regexString.slice(2, -2),
+                    };
+                }
+            } else if ('$eq' in fieldFilter && fieldFilter.$eq === null) {
+                // Blank filter
+                filterModel[field] = {
+                    filterType: 'text',
+                    type: 'blank',
+                };
+            } else if ('$ne' in fieldFilter && fieldFilter.$ne === null) {
+                // Not blank filter
+                filterModel[field] = {
+                    filterType: 'text',
+                    type: 'notBlank',
+                };
+            }
+        });
+    };
+
+    // Handle `$and` and `$or` recursively
+    if (filterOfTemplate.$and) {
+        const andFilters = Array.isArray(filterOfTemplate.$and) ? filterOfTemplate.$and : [filterOfTemplate.$and];
+        andFilters.forEach((andFilter) => processFilter(andFilter));
+    }
+
+    if (filterOfTemplate.$or) {
+        filterOfTemplate.$or.forEach((orFilter) => processFilter(orFilter));
+    }
+
+    console.log({ inFunccccccccc: filterModel });
+
+    return filterModel;
 };
