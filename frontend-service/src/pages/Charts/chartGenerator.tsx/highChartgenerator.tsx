@@ -1,20 +1,33 @@
 import { Box, useTheme } from '@mui/material';
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
-import React from 'react';
-import { HighchartType, IBasicChart, IChartType } from '../../../interfaces/charts';
+import React, { useEffect, useRef } from 'react';
+import { HighchartType, IChartType, IChartTypeMetaData } from '../../../interfaces/charts';
 import { getChartAxes } from '../../../utils/charts/getChartAxes';
 
 interface HighchartGeneratorProps {
     data: { x: any; y: any }[] | undefined;
     isLoading: boolean;
-    formikValues: IBasicChart;
+    name: string;
+    description: string;
+    metaData: IChartTypeMetaData;
     isQueryEnabled: boolean;
     type: HighchartType;
+    enableRsize?: boolean;
 }
 
-const HiighchartGenerator: React.FC<HighchartGeneratorProps> = ({ data, isLoading, formikValues, isQueryEnabled, type }) => {
-    const { name, description, metaData } = formikValues;
+const HiighchartGenerator: React.FC<HighchartGeneratorProps> = ({
+    data,
+    isLoading,
+    isQueryEnabled,
+    type,
+    name,
+    description,
+    metaData,
+    enableRsize = false,
+}) => {
+    const containerRef = useRef<HTMLDivElement>(null);
+    const chartRef = useRef<HighchartsReact.RefObject>(null);
 
     const { xAxis, yAxis } = getChartAxes(type, metaData);
 
@@ -26,6 +39,31 @@ const HiighchartGenerator: React.FC<HighchartGeneratorProps> = ({ data, isLoadin
         name: item.x,
         y: item.y,
     }));
+
+    // TODO: refactor and eslint errors
+    const resizeChart = () => {
+        if (chartRef.current && containerRef.current) {
+            const newHeight = enableRsize ? containerRef.current.offsetHeight : undefined;
+            chartRef.current.chart.setSize(undefined, newHeight);
+        }
+    };
+
+    useEffect(() => {
+        const handleResize = () => resizeChart();
+
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+    useEffect(() => {
+        const observer = new ResizeObserver(() => resizeChart());
+
+        if (containerRef.current) observer.observe(containerRef.current);
+
+        return () => {
+            if (containerRef.current) observer.unobserve(containerRef.current);
+        };
+    }, []);
 
     const chartOptions: Highcharts.Options = {
         chart: {
@@ -56,7 +94,7 @@ const HiighchartGenerator: React.FC<HighchartGeneratorProps> = ({ data, isLoadin
                 text: xAxis.title,
             },
 
-            categories: data?.map((point) => point.x),
+            categories: data?.map((point) => point.x ?? '-'),
         },
 
         yAxis: {
@@ -93,7 +131,13 @@ const HiighchartGenerator: React.FC<HighchartGeneratorProps> = ({ data, isLoadin
                 cursor: 'pointer',
                 dataLabels: {
                     enabled: true,
-                    format: '{point.name}: {point.percentage:.1f}%',
+                    formatter() {
+                        const point = this as Highcharts.Point;
+
+                        const pointName = point.name ?? '-';
+                        const percentage = point.percentage != null ? `${point.percentage.toFixed(1)}%` : '-';
+                        return `${pointName}: ${percentage}`;
+                    },
                 },
             },
         },
@@ -109,14 +153,15 @@ const HiighchartGenerator: React.FC<HighchartGeneratorProps> = ({ data, isLoadin
 
     return (
         <Box
+            ref={containerRef}
             style={{
-                width: '90%',
+                width: '100%%',
                 height: '100%',
                 margin: '0 auto',
                 alignContent: 'center',
             }}
         >
-            {isQueryEnabled && !isLoading && <HighchartsReact highcharts={Highcharts} options={chartOptions} />}
+            {isQueryEnabled && !isLoading && <HighchartsReact highcharts={Highcharts} options={chartOptions} ref={chartRef} />}
         </Box>
     );
 };

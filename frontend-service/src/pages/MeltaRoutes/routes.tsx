@@ -179,7 +179,7 @@ export const MeltaRoutesInner: React.FC = () => {
                                 <Map />
                             </Route>
 
-                            <Route path="/charts/:templateId/chart">
+                            <Route path="/charts/:templateId/:chartId?/chart">
                                 <ChartPage />
                             </Route>
 

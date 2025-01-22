@@ -8,6 +8,7 @@ export interface IBasicChart {
     permission: IPermission;
     filter?: FilterModel;
     templateId?: string;
+    createdBy?: string;
 }
 
 export interface IChart extends IBasicChart {
@@ -81,3 +82,9 @@ export enum OptionsType {
 export type HighchartType = Exclude<IChartType, IChartType.Number>;
 
 export const isAggregation = (field: IAxisField): field is IAggregation => typeof field !== 'string';
+
+type GeneratorChart = { x: any; y: any }[];
+
+export interface ChartsAndGenerator extends IChart {
+    chart: GeneratorChart;
+}

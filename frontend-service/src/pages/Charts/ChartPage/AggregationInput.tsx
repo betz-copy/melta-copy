@@ -14,10 +14,20 @@ interface AxisInputProps {
     label: string;
     entityTemplate: IMongoEntityTemplatePopulated;
     optionsType: OptionsType;
+    readonly?: boolean;
     titleFormikField?: string;
 }
 
-const AxisInput: React.FC<AxisInputProps> = ({ formik, entityTemplate, formikField, titleFormikField, formikValues, label, optionsType }) => {
+const AxisInput: React.FC<AxisInputProps> = ({
+    formik,
+    entityTemplate,
+    formikField,
+    titleFormikField,
+    formikValues,
+    label,
+    optionsType,
+    readonly,
+}) => {
     const fieldValue = getIn(formikValues, formikField);
     const titleValue = titleFormikField ? getIn(formikValues, titleFormikField) : undefined;
     const titleError = titleFormikField && getIn(formik.touched, titleFormikField) && getIn(formik.errors, titleFormikField);
@@ -62,6 +72,13 @@ const AxisInput: React.FC<AxisInputProps> = ({ formik, entityTemplate, formikFie
                             fullWidth
                             margin="normal"
                             sx={{ width: '90%' }}
+                            variant={readonly ? 'standard' : 'outlined'}
+                            inputProps={{
+                                readOnly: readonly,
+                                style: {
+                                    textOverflow: 'ellipsis',
+                                },
+                            }}
                         />
                     </Grid>
                 </>
@@ -80,6 +97,7 @@ const AxisInput: React.FC<AxisInputProps> = ({ formik, entityTemplate, formikFie
                         else formik.setFieldValue(`${formikField}`, (newValue as string) ?? '');
                     }}
                     style={{ width: '90%' }}
+                    readonly={readonly}
                 />
             </Grid>
             {isAggregation(fieldValue) && fieldValue?.type !== IAggregationType.CountAll && (
@@ -98,6 +116,7 @@ const AxisInput: React.FC<AxisInputProps> = ({ formik, entityTemplate, formikFie
                         style={{
                             width: '90%',
                         }}
+                        readonly={readonly}
                     />
                 </Grid>
             )}

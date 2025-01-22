@@ -11,7 +11,9 @@ import { ChartTypesEdit } from './ChartTypesEdit';
 const ChartSideBar: React.FC<{
     formik: FormikProps<IBasicChart>;
     entityTemplate: IMongoEntityTemplatePopulated;
-}> = ({ formik, entityTemplate }) => {
+    edit: boolean;
+    readonly: boolean;
+}> = ({ formik, entityTemplate, edit, readonly }) => {
     return (
         <Grid container direction="column" padding="20px">
             <Grid item paddingTop="10px">
@@ -32,8 +34,14 @@ const ChartSideBar: React.FC<{
                             onBlur={formik.handleBlur}
                             error={formik.touched.name && Boolean(formik.errors.name)}
                             helperText={formik.touched.name && formik.errors.name}
-                            variant="outlined"
+                            variant={readonly ? 'standard' : 'outlined'}
                             sx={{ width: '90%' }}
+                            inputProps={{
+                                readOnly: readonly,
+                                style: {
+                                    textOverflow: 'ellipsis',
+                                },
+                            }}
                         />
                     </Grid>
                     <Grid item>
@@ -48,16 +56,22 @@ const ChartSideBar: React.FC<{
                             onBlur={formik.handleBlur}
                             error={formik.touched.description && Boolean(formik.errors.description)}
                             helperText={formik.touched.description && formik.errors.description}
-                            variant="outlined"
-                            rows={4}
+                            variant={readonly ? 'standard' : 'outlined'}
+                            rows={formik.values.description || !readonly ? 4 : 1}
                             sx={{ width: '90%' }}
+                            inputProps={{
+                                readOnly: readonly,
+                                style: {
+                                    textOverflow: 'ellipsis',
+                                },
+                            }}
                         />
                     </Grid>
                 </Grid>
             </Grid>
 
             <Grid item>
-                <ChartTypesEdit formik={formik} formikValues={formik.values} entityTemplate={entityTemplate} />
+                <ChartTypesEdit formik={formik} formikValues={formik.values} entityTemplate={entityTemplate} disabled={readonly} />
             </Grid>
 
             <Grid container direction="column" marginTop={2} spacing={2}>
@@ -70,11 +84,12 @@ const ChartSideBar: React.FC<{
                         id="permissions"
                         color="primary"
                         size="small"
-                        sx={{ height: '35px', color: 'red' }}
+                        sx={{ height: '35px' }}
                         value={formik.values.permission}
                         onChange={(_event: React.MouseEvent<HTMLElement>, permission: IPermission) => {
                             formik.setFieldValue('permission', permission);
                         }}
+                        disabled={readonly}
                     >
                         <ToggleButton value={IPermission.Private}>
                             <MeltaTooltip title={i18next.t('charts.personal')}>

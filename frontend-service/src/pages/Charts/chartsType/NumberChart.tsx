@@ -9,7 +9,8 @@ const NumberChart: React.FC<{
     formik: FormikProps<IBasicChart>;
     formikValues: IBasicChart;
     entityTemplate: IMongoEntityTemplatePopulated;
-}> = ({ formik, formikValues, entityTemplate }) => {
+    disabled: boolean;
+}> = ({ formik, formikValues, entityTemplate, disabled }) => {
     return (
         <AxisInput
             formikField="metaData.accumulator"
@@ -18,6 +19,7 @@ const NumberChart: React.FC<{
             formikValues={formikValues}
             label={`${i18next.t('charts.AccumulateAccordingTo')}`}
             optionsType={OptionsType.Aggregation}
+            readonly={disabled}
         />
     );
 };

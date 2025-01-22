@@ -15,6 +15,7 @@ interface IFormikAutoCompleteProps<T> {
     getOptionDisabled?: (option: T) => boolean;
     onChange?: (value: T | T[] | null) => void;
     style?: CSSProperties;
+    readonly?: boolean;
 }
 
 export const FormikAutoComplete = <T,>({
@@ -30,6 +31,7 @@ export const FormikAutoComplete = <T,>({
     getOptionDisabled,
     onChange,
     style,
+    readonly = false,
 }: IFormikAutoCompleteProps<T>) => {
     const error = getIn(touched, formikField) && getIn(errors, formikField);
 
@@ -45,8 +47,18 @@ export const FormikAutoComplete = <T,>({
             multiple={multiple}
             filterSelectedOptions={hideSelectedOptions}
             disableClearable={disableClear}
+            readOnly={readonly}
             renderInput={(params) => (
-                <TextField {...params} id={formikField} name={formikField} error={Boolean(error)} helperText={error} label={label} sx={style} />
+                <TextField
+                    {...params}
+                    id={formikField}
+                    name={formikField}
+                    error={Boolean(error)}
+                    helperText={error}
+                    label={label}
+                    sx={style}
+                    variant={readonly ? 'standard' : 'outlined'}
+                />
             )}
             renderTags={(tags, getTagProps) =>
                 tags.map((option, index) => (

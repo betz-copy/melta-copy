@@ -1,11 +1,21 @@
 import axios from '../axios';
 import { environment } from '../globals';
-import { IBasicChart, IChart } from '../interfaces/charts';
+import { ChartsAndGenerator, IBasicChart, IChart } from '../interfaces/charts';
 
 const { charts } = environment.api;
 
 export const createChart = async (newChart: IBasicChart) => {
     const { data } = await axios.post<IChart>(charts, newChart);
+    return data;
+};
+
+export const getChartById = async (chartId: string) => {
+    const { data } = await axios.get<IChart>(`${charts}/${chartId}`);
+    return data;
+};
+
+export const getChartByTemplateId = async (templateId: string) => {
+    const { data } = await axios.get<ChartsAndGenerator[]>(`${charts}/by-template/${templateId}`);
     return data;
 };
 

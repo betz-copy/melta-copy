@@ -10,7 +10,8 @@ const ColumnOrLineChart: React.FC<{
     formik: FormikProps<IBasicChart>;
     formikValues: IBasicChart;
     entityTemplate: IMongoEntityTemplatePopulated;
-}> = ({ formik, formikValues, entityTemplate }) => {
+    disabled: boolean;
+}> = ({ formik, formikValues, entityTemplate, disabled }) => {
     return (
         <Grid container direction="column" spacing={2}>
             <Grid item>
@@ -22,6 +23,7 @@ const ColumnOrLineChart: React.FC<{
                     formikValues={formikValues}
                     label={`${i18next.t('charts.axis')} x`}
                     optionsType={OptionsType.AggregationAndAllProperties}
+                    readonly={disabled}
                 />
             </Grid>
             <Grid item>
@@ -33,6 +35,7 @@ const ColumnOrLineChart: React.FC<{
                     formikValues={formikValues}
                     label={`${i18next.t('charts.axis')} y`}
                     optionsType={OptionsType.AggregationAndNumberProperties}
+                    readonly={disabled}
                 />
             </Grid>
         </Grid>

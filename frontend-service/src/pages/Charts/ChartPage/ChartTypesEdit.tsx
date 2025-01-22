@@ -15,6 +15,7 @@ interface ChartProps {
     formik: FormikProps<IBasicChart>;
     formikValues: IBasicChart;
     entityTemplate: IMongoEntityTemplatePopulated;
+    disabled: boolean;
 }
 
 const charts: Record<IChartType, React.FC<ChartProps>> = {
@@ -31,7 +32,7 @@ const chartTypeButtons = [
     { icon: ShowChartIcon, type: IChartType.Line, label: i18next.t('charts.lineChart') },
 ];
 
-const ChartTypesEdit: React.FC<ChartProps> = ({ formik, formikValues, entityTemplate }) => {
+const ChartTypesEdit: React.FC<ChartProps> = ({ formik, formikValues, entityTemplate, disabled }) => {
     const SelectedChartType = useMemo(() => charts[formikValues.type], [formikValues.type]);
 
     const handleButtonClick = (buttonId: IChartType) => {
@@ -53,13 +54,16 @@ const ChartTypesEdit: React.FC<ChartProps> = ({ formik, formikValues, entityTemp
                             selectedButton={formikValues.type}
                             handleClick={handleButtonClick}
                             popoverText={label}
+                            disabled={disabled}
                         />
                     ))}
                 </Grid>
             </Grid>
 
             <Grid item>
-                <Box>{formikValues.type && <SelectedChartType formik={formik} formikValues={formikValues} entityTemplate={entityTemplate} />}</Box>
+                {formikValues.type && (
+                    <SelectedChartType formik={formik} formikValues={formikValues} entityTemplate={entityTemplate} disabled={disabled} />
+                )}
             </Grid>
         </Grid>
     );

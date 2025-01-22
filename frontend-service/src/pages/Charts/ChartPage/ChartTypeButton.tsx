@@ -9,7 +9,8 @@ const ChartTypeButton: React.FC<{
     selectedButton: string | null;
     handleClick: (buttonId: IChartType) => void;
     popoverText: string;
-}> = ({ icon: Icon, buttonId, selectedButton, handleClick, popoverText }) => {
+    disabled: boolean;
+}> = ({ icon: Icon, buttonId, selectedButton, handleClick, popoverText, disabled }) => {
     const theme = useTheme();
 
     return (
@@ -24,6 +25,7 @@ const ChartTypeButton: React.FC<{
                 borderRadius: '5px',
             }}
             popoverText={popoverText}
+            disabled={disabled}
         >
             <Icon fontSize="large" />
         </IconButtonWithPopover>

@@ -1,5 +1,5 @@
 import { FilterModel } from '@ag-grid-community/core';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, forwardRef, useRef, useState } from 'react';
 import { useQuery } from 'react-query';
 import { EntitiesTableOfTemplateRef } from '../../../common/EntitiesTableOfTemplate';
 import { IAxisField, IBasicChart, IChartType } from '../../../interfaces/charts';
@@ -15,10 +15,9 @@ interface IChartGenerator {
     formikValues: IBasicChart;
     template: IMongoEntityTemplatePopulated;
     entityTemplate: IMongoEntityTemplatePopulated;
-    entitiesTableRef: React.RefObject<EntitiesTableOfTemplateRef<IEntity>>;
 }
 
-const ChartGenerator: React.FC<IChartGenerator> = ({ formikValues, template, entityTemplate, entitiesTableRef }) => {
+const ChartGenerator = forwardRef<EntitiesTableOfTemplateRef<IEntity>, IChartGenerator>(({ template, formikValues, entityTemplate }, ref) => {
     const { type, metaData } = formikValues;
     const [filterModel, setFilterMOdel] = useState<FilterModel | null>(null);
     const filterModelRef = useRef<FilterModel | null>(null);
@@ -37,7 +36,7 @@ const ChartGenerator: React.FC<IChartGenerator> = ({ formikValues, template, ent
         ['chart', template._id, xAxis, yAxis, filterModel],
         () => {
             const yAxisField = type === IChartType.Number ? undefined : yAxis;
-            const currentFilter = entitiesTableRef.current?.getFilterModel();
+            const currentFilter = ref.current?.getFilterModel();
             const filter = currentFilter ? filterModelToFilterOfTemplate(currentFilter, entityTemplate) : {};
 
             return getChartOfTemplate(xAxis, yAxisField, template._id, filter);
@@ -48,9 +47,9 @@ const ChartGenerator: React.FC<IChartGenerator> = ({ formikValues, template, ent
     );
 
     useEffect(() => {
-        if (isQueryEnabled && entitiesTableRef.current) {
+        if (isQueryEnabled && ref.current) {
             const checkFilterChanges = () => {
-                const newFilterModel = entitiesTableRef.current!.getFilterModel();
+                const newFilterModel = ref.current!.getFilterModel();
 
                 if (JSON.stringify(newFilterModel) !== JSON.stringify(filterModelRef.current)) {
                     filterModelRef.current = newFilterModel;
@@ -66,12 +65,22 @@ const ChartGenerator: React.FC<IChartGenerator> = ({ formikValues, template, ent
         }
 
         return undefined;
-    }, [isQueryEnabled, entitiesTableRef]);
+    }, [isQueryEnabled, ref]);
 
     if (!data) return <img src="/icons/notFoundChart.svg" />;
 
-    if (type === IChartType.Number) return <NumberChartGenerator data={data} formikValues={formikValues} />;
-    return <HiighchartGenerator data={data} isLoading={isLoading} isQueryEnabled={isQueryEnabled} formikValues={formikValues} type={type} />;
-};
+    if (type === IChartType.Number) return <NumberChartGenerator data={data} name={formikValues.name} description={formikValues.description} />;
+    return (
+        <HiighchartGenerator
+            data={data}
+            isLoading={isLoading}
+            isQueryEnabled={isQueryEnabled}
+            name={formikValues.name}
+            description={formikValues.description}
+            metaData={formikValues.metaData}
+            type={type}
+        />
+    );
+});
 
 export { ChartGenerator };
