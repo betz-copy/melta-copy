@@ -3,7 +3,7 @@ import { createController } from '@microservices/shared';
 import { ValidateRequest } from '../../utils/joi';
 import FilesController, { workspaceIdInHeader } from './controller';
 import { bulkFilesRequestSchema, defaultSchema, uploadFileRequestSchema, uploadFilesRequestSchema, workspaceSchema } from './validator.schema';
-import { busboyMiddleware } from '../../utils/minio/busboy';
+import busboyMiddleware from '../../utils/minio/busboy';
 
 const filesRouter: Router = Router();
 

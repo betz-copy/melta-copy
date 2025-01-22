@@ -5,7 +5,7 @@ import { Readable } from 'stream';
 import ReadableStreamClone from 'readable-stream-clone';
 import { UploadedFile } from './interface';
 
-export const busboyMiddleware = (req: Request, _res: Response, next: NextFunction): void => {
+const busboyMiddleware = (req: Request, _res: Response, next: NextFunction): void => {
     if (!req.is('multipart/form-data')) {
         return next();
     }
@@ -57,3 +57,5 @@ export const busboyMiddleware = (req: Request, _res: Response, next: NextFunctio
         next(err);
     }
 };
+
+export default busboyMiddleware;

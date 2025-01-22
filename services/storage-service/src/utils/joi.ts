@@ -9,6 +9,20 @@ const defaultValidationOptions: Joi.ValidationOptions = {
     convert: true,
 };
 
+export const fileSchema = Joi.object({
+    fieldname: Joi.string().required(),
+    originalname: Joi.string().required(),
+    encoding: Joi.string().required(),
+    mimetype: Joi.string().required(),
+    size: Joi.number().min(1).required(),
+}).unknown(true);
+
+export const iconFileSchema = fileSchema.keys({
+    originalname: Joi.string()
+        .regex(/\.(svg|png|jpeg|jpg)$/i)
+        .required(),
+});
+
 const normalizeRequest = (req: any, value: any) => {
     req.originalBody = req.body;
     req.body = value.body;

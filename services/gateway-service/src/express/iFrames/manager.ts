@@ -1,6 +1,6 @@
 import { FilterQuery, Types } from 'mongoose';
 import { StatusCodes } from 'http-status-codes';
-import { ISearchIFramesBody,  IFrame, IMongoIFrame, DefaultManagerMongo, ServiceError } from '@microservices/shared';
+import { ISearchIFramesBody, IFrame, IMongoIFrame, DefaultManagerMongo, ServiceError } from '@microservices/shared';
 import config from '../../config';
 import StorageService from '../../externalServices/storageService';
 import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';

@@ -12,7 +12,7 @@ import {
 } from './validator.schema';
 import ValidateRequest from '../../../utils/joi';
 import { AuthorizerControllerMiddleware } from '../../../utils/authorizer';
-import { busboyMiddleware } from '../../../utils/busboy/busboyMiddleware';
+import busboyMiddleware from '../../../utils/busboy/busboyMiddleware';
 
 const InstancesRouter: Router = Router();
 

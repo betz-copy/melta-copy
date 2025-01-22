@@ -5,7 +5,7 @@ import ValidateRequest from '../../utils/joi';
 import IFramesValidator from './middlewares';
 import { createIFrameSchema, deleteIFrameSchema, getIFrameByIdSchema, searchIFramesSchema, updateIFrameSchema } from './validator.schema';
 import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
-import { busboyMiddleware } from '../../utils/busboy/busboyMiddleware';
+import busboyMiddleware from '../../utils/busboy/busboyMiddleware';
 
 export const iFramesRouter: Router = Router();
 const IFramesControllerMiddleware = createController(IFramesController);

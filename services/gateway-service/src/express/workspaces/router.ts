@@ -16,7 +16,7 @@ import {
     updateMetadataSchema,
     updateOneSchema,
 } from './validator.schema';
-import { busboyMiddleware } from '../../utils/busboy/busboyMiddleware';
+import busboyMiddleware from '../../utils/busboy/busboyMiddleware';
 
 const controller = createController(WorkspaceController);
 

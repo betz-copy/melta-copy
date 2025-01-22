@@ -14,7 +14,7 @@ import {
     searchRuleBreachAlertsRequestSchema,
     searchRuleBreachRequestsRequestSchema,
 } from './validator.schema';
-import { busboyMiddleware } from '../../utils/busboy/busboyMiddleware';
+import busboyMiddleware from '../../utils/busboy/busboyMiddleware';
 
 const RulesBreachesRouter: Router = Router();
 

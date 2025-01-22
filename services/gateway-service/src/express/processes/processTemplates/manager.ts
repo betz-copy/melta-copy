@@ -4,12 +4,12 @@ import {
     IStepTemplate,
     IMongoProcessTemplateReviewerPopulated,
     IMongoProcessTemplatePopulated,
-    IProcessTemplatePopulated,
     ISearchProcessTemplatesBody,
     IMongoProcessInstancePopulated,
     IProcessInstanceSearchProperties,
     Status,
     ServiceError,
+    IProcessTemplatePopulated,
 } from '@microservices/shared';
 import config from '../../../config';
 import ProcessService from '../../../externalServices/processService';
@@ -84,15 +84,13 @@ export class ProcessTemplatesManager extends DefaultManagerProxy<ProcessService>
         return updatedSteps;
     }
 
-    // OLD - async createProcessTemplate(templateData: IProcessTemplatePopulated, icons: Express.Multer.File[]) {
-    async createProcessTemplate(templateData: IProcessTemplateWithSteps, icons: UploadedFile[]) {
+    async createProcessTemplate(templateData: IProcessTemplatePopulated, icons: UploadedFile[]) {
         const updatedSteps = await this.handleIcons(icons, templateData.steps);
         const processTemplate = await this.service.createProcessTemplate({ ...templateData, steps: updatedSteps });
         return this.getTemplateWithPopulatedStepReviewers(processTemplate);
     }
 
-    // OLD - async updateProcessTemplate(templateId: string, templateData: IProcessTemplatePopulated, icons: Express.Multer.File[], userId: string) {
-    async updateProcessTemplate(templateId: string, templateData: IProcessTemplateWithSteps, icons: UploadedFile[], userId: string) {
+    async updateProcessTemplate(templateId: string, templateData: IProcessTemplatePopulated, icons: UploadedFile[], userId: string) {
         const currProcessTemplate = await this.getProcessTemplate(templateId, userId);
 
         const updatedSteps = await this.handleIcons(icons, templateData.steps);

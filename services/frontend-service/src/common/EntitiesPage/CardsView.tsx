@@ -3,7 +3,7 @@ import i18next from 'i18next';
 import React, { forwardRef, useImperativeHandle, useState } from 'react';
 import { useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import { IEntityTemplateWithConstraintsMap, IEntityTemplateMap, IEntityWithDirectConnections, ISemanticSearchResult } from '@microservices/shared-interfaces';
+import { IEntityTemplateWithConstraintsMap, IEntityWithDirectConnections, ISemanticSearchResult } from '@microservices/shared-interfaces';
 import EntityCard from '../../pages/GlobalSearch/components/entityCard';
 import { getEntitiesWithDirectConnections } from '../../services/entitiesService';
 import { InfiniteScroll } from '../InfiniteScroll';

@@ -1,8 +1,8 @@
+import { Readable } from 'stream';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from './entityTemplate';
 import { IRelationship } from './relationship';
 import { IMongoRelationshipTemplate } from './relationshipTemplate';
 import { IBrokenRule, IBrokenRulePopulated, IActionPopulated, IAction, ActionErrors, IFailedEntity } from './ruleBreach';
-import { Readable } from 'stream';
 
 export interface IEntity {
     templateId: string;
