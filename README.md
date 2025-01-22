@@ -4,9 +4,9 @@ This is a documentation on how to run the Melta project locally, save Docker ima
 
 ## Prerequisites
 
-- Node.js (v14 or higher)
-- npm (v6 or higher)
-- Docker (if you want to run the project using Docker)
+-   Node.js (v14 or higher)
+-   npm (v6 or higher)
+-   Docker (if you want to run the project using Docker)
 
 ## Running the Project Locally
 
@@ -23,9 +23,12 @@ git clone https://github.com/melta-team/melta.git
 ```bash
 cd melta
 ```
+
 3. Add gitlab access token to the project:
-   1. Go to [Gitlab Personal access tokens](https://gitlab.com/-/user_settings/personal_access_tokens) And create new token.
-   2. Add the token to npm_token_secret.txt file:
+
+    1. Go to [Gitlab Personal access tokens](https://gitlab.com/-/user_settings/personal_access_tokens) And create new token.
+    2. Add the token to npm_token_secret.txt file:
+
     ```bash
     echo <your_access_token> > npm_token_secret.txt
     ```
@@ -37,27 +40,22 @@ cd melta
 ```
 
 5. Run frontend service:
-   1. Install global npm packges:
+    1. Install global npm packges:
     ```bash
-    npm install --workspaces=false
+    npm install
     ```
-   2. Install shared npm packges:
+    2. Build shared interfaces service:
     ```bash
-    npm install -w services/shared
+    npm run build -w services/shared-interfaces
     ```
-   3. Build shared service:
+    3. Build shared service:
     ```bash
     npm run build -w services/shared
     ```
-   4. Install frontend npm packges:
-    ```bash
-    npm install -w services/frontend-service
-    ```
-   5. Run frontend service:
+    4. Run frontend service:
     ```bash
     npm run start-ui
     ```
-
 
 This command will start the frontend service using Docker. You can access the application at `http://localhost`.
 
