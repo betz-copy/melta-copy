@@ -76,7 +76,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
     disableEditCell,
 }: IGetColumnDefsOptions<Data>): ColDef[] => {
     const notVisibleColumnsAmount = Object.values(defaultVisibleColumns).filter((value) => value === false).length;
-    console.log({ defaultColumnsOrder, defaultVisibleColumns });
+    console.log('getColumnsDef ', { defaultColumnWidths });
 
     const targetOrder = Object.keys(defaultColumnsOrder).length - notVisibleColumnsAmount - 2;
 
