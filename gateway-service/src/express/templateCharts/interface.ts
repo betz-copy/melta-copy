@@ -19,7 +19,7 @@ interface IAggregation {
     byField?: string;
 }
 
-type IAxisField = IAggregation | string;
+export type IAxisField = IAggregation | string;
 
 export interface IAxis {
     field: IAxisField;
@@ -56,10 +56,15 @@ export interface IChart {
     filter: any;
     createdBy: string;
     permission: IPermission;
-    color: string;
-    tooltipFields: string[];
+    color?: string;
 }
 
 export interface IChartDocument extends IChart {
     _id: string;
+}
+
+type GeneratorChart = { x: any; y: any }[];
+
+export interface ChartsAndGenerator extends IChartDocument {
+    chart: GeneratorChart;
 }

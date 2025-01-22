@@ -13,10 +13,12 @@ import {
     ITemplateSearchBody,
     IUniqueConstraintOfTemplate,
     ISearchEntitiesByLocationBody,
+    ISearchFilter,
 } from './interfaces/entities';
 import { IEntitySingleProperty } from '../templates/entityTemplateService';
 import { IRelationship } from './interfaces/relationships';
 import { ISemanticSearchResult } from '../semanticSearch/interface';
+import { IAxisField } from '../../express/templateCharts/interface';
 
 const {
     instanceService: {
@@ -134,6 +136,17 @@ export class InstancesService extends DefaultExternalServiceApi {
 
         return data;
     }
+
+    getChartOfTemplate = async (
+        xAxis: IAxisField,
+        yAxis: IAxisField | undefined,
+        templateId: string,
+        filter?: ISearchFilter<Record<string, any>>,
+    ) => {
+        const { data } = await this.api.post<{ x: any; y: any }[]>(`${baseEntitiesRoute}/chart/${templateId}`, { xAxis, yAxis, filter });
+
+        return data;
+    };
 
     // relationships instances
     async getRelationshipInstanceById(id: string) {

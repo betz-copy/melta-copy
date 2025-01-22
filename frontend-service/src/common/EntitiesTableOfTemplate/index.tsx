@@ -6,6 +6,7 @@ import {
     ColumnMovedEvent,
     ColumnResizedEvent,
     ColumnVisibleEvent,
+    FilterModel,
     GridApi,
     IServerSideDatasource,
     IServerSideGetRowsParams,
@@ -21,7 +22,7 @@ import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import isEqual from 'lodash.isequal';
 import sortBy from 'lodash.sortby';
-import React, { ForwardedRef, forwardRef, useImperativeHandle, useMemo, useRef, useState } from 'react';
+import React, { ForwardedRef, forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
 import { useLocation } from 'wouter';
@@ -193,6 +194,7 @@ export type EntitiesTableOfTemplateProps<Data> = {
     paginationPageSizeSelector?: boolean | number[];
     withoutResizeBox?: boolean;
     editable?: boolean;
+    initialFilter?: FilterModel;
 };
 
 export type EntitiesTableOfTemplateRef<Data> = {
@@ -236,6 +238,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             paginationPageSizeSelector = environment.agGrid.paginationPageSizeSelector as unknown as number[],
             withoutResizeBox,
             editable = true,
+            initialFilter,
         }: EntitiesTableOfTemplateProps<Data>,
         ref: ForwardedRef<EntitiesTableOfTemplateRef<Data>>,
     ) => {
@@ -248,7 +251,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
 
         const minHeightTable = rowHeight * pageRowCount + rowHeight * 2;
-        const [gridHeight, setGridHeight] = useState<number>(rowHeight * defaultExpandedRowCount);
+        const [gridHeight, setGridHeight] = useState<number>(() => (withoutResizeBox ? rowHeight * 7 : rowHeight * defaultExpandedRowCount));
 
         const [selectedRow, setSelectedRow] = useState('');
         const [currEntity, setCurrEntity] = useState<IEntity>();
@@ -270,6 +273,11 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         const defaultColumnsOrder = savedColumnsOrder ? JSON.parse(savedColumnsOrder) : {};
 
         const savedColumnWidths = localStorage.getItem(`columnWidths-${saveStorageProps.pageType}-${template._id}`);
+
+        useEffect(() => {
+            if (initialFilter) gridRef.current?.api.setFilterModel(initialFilter);
+        }, [initialFilter]);
+
         const defaultColumnWidths = savedColumnWidths ? JSON.parse(savedColumnWidths) : {};
 
         const { isLoading: isDeleteLoading, mutateAsync: deleteMutation } = useMutation(
@@ -763,7 +771,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                             hiddenByDefault: true,
                             position: 'left',
                         }}
-                        statusBar={rowModelType === 'infinite' ? { statusPanels } : undefined}
+                        statusBar={rowModelType === 'infinite' && !withoutResizeBox ? { statusPanels } : undefined}
                         localeText={agGridLocaleText}
                         paginationPageSizeSelector={paginationPageSizeSelector}
                         onCellEditingStopped={(params: CellEditingStoppedEvent) => {

@@ -12,7 +12,7 @@ export class ChartController extends DefaultController<ChartManager> {
     }
 
     async getChartsByTemplateId(req: Request, res: Response) {
-        res.json(await this.manager.getChartsByTemplateId(req.params.templateId));
+        res.json(await this.manager.getChartsOfTemplateId(req.params.templateId));
     }
 
     async createChart(req: Request, res: Response) {

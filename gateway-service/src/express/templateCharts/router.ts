@@ -1,17 +1,52 @@
 import { Router } from 'express';
 import { ChartController } from './controller';
 import { createWorkspacesController } from '../../utils/express';
+import { ChartsValidator } from './middlewares';
+import ValidateRequest from '../../utils/joi';
+import {
+    createChartRequestSchema,
+    deleteChartRequestSchema,
+    getChartByIdRequestSchema,
+    getChartByTemplateIdRequestSchema,
+    updateChartRequestSchema,
+} from './validator.schema';
 
 export const ChartsRouter: Router = Router();
 
 const ChartsControllerMiddleware = createWorkspacesController(ChartController);
+const ChartsValidatorMiddleware = createWorkspacesController(ChartsValidator, true);
 
-ChartsRouter.get('/:chartId', ChartsControllerMiddleware.getChartById);
+ChartsRouter.get(
+    '/:chartId',
+    ValidateRequest(getChartByIdRequestSchema),
+    ChartsValidatorMiddleware.validateUserCanGetChartById,
+    ChartsControllerMiddleware.getChartById,
+);
 
-ChartsRouter.get('/by-template/:templateId', ChartsControllerMiddleware.getChartsByTemplateId);
+ChartsRouter.get(
+    '/by-template/:templateId',
+    ValidateRequest(getChartByTemplateIdRequestSchema),
+    ChartsValidatorMiddleware.validateUserCanGetChartsByTemplate,
+    ChartsControllerMiddleware.getChartsByTemplateId,
+);
 
-ChartsRouter.delete('', ChartsControllerMiddleware.deleteChart);
+ChartsRouter.delete(
+    '/:chartId',
+    ValidateRequest(deleteChartRequestSchema),
+    ChartsValidatorMiddleware.validateUserCanDeleteChart,
+    ChartsControllerMiddleware.deleteChart,
+);
 
-ChartsRouter.put('/:chartId', ChartsControllerMiddleware.updateChart);
+ChartsRouter.put(
+    '/:chartId',
+    ValidateRequest(updateChartRequestSchema),
+    ChartsValidatorMiddleware.validateUserCanUpdateChart,
+    ChartsControllerMiddleware.updateChart,
+);
 
-ChartsRouter.post('/', ChartsControllerMiddleware.createChart);
+ChartsRouter.post(
+    '/',
+    ValidateRequest(createChartRequestSchema),
+    ChartsValidatorMiddleware.validateUserCanCreateChart,
+    ChartsControllerMiddleware.createChart,
+);
