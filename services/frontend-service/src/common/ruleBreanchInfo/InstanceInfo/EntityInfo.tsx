@@ -3,11 +3,11 @@ import { Collapse, Divider, Grid, Paper, Typography, useTheme } from '@mui/mater
 import i18next from 'i18next';
 import React, { useState } from 'react';
 import { IEntity, IEntityTemplatePopulated } from '@microservices/shared-interfaces';
-import { environment } from '../../../globals';
 import { getEntityTemplateColor } from '../../../utils/colors';
 import { CustomIcon } from '../../CustomIcon';
 import { EntityPropertiesInternal } from '../../EntityProperties';
 import { EntityTemplateColor } from '../../EntityTemplateColor';
+import { useWorkspaceStore } from '../../../stores/workspace';
 
 interface EntityInfoProps {
     entity: IEntity | null;
@@ -19,7 +19,8 @@ export const EntityInfo: React.FC<EntityInfoProps> = ({ entity, entityTemplate, 
     const [open, setOpen] = useState(false);
 
     const theme = useTheme();
-
+    const workspace = useWorkspaceStore((state) => state.workspace);
+    const { headlineSubTitleFontSize } = workspace.metadata.mainFontSizes;
     if (!entity) return <Grid />;
 
     const entityTemplateColor = entityTemplate ? getEntityTemplateColor(entityTemplate) : '';
@@ -32,14 +33,14 @@ export const EntityInfo: React.FC<EntityInfoProps> = ({ entity, entityTemplate, 
                     {entityTemplate.iconFileId ? (
                         <CustomIcon iconUrl={entityTemplate.iconFileId} height="24px" width="24px" />
                     ) : (
-                        <AppRegistrationIcon style={{ ...environment.iconSize }} fontSize="small" />
+                        <AppRegistrationIcon style={{ ...workspace.metadata.iconSize }} fontSize="small" />
                     )}
                 </Grid>
             )}
             <Grid item>
                 <Typography
                     style={{
-                        fontSize: environment.mainFontSizes.headlineSubTitleFontSize,
+                        fontSize: headlineSubTitleFontSize,
                         color: theme.palette.primary.main,
                         fontWeight: 'bold',
                         textOverflow: 'ellipsis',

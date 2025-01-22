@@ -1,7 +1,7 @@
 import { ConsumerMessage } from 'menashmq';
 import { logger } from '@microservices/shared';
 import { basicValidateRequest } from '../utils/joi';
-import { semanticIndexFilesSchema } from '../utils/joi/schemas/semantic';
+import { semanticDeleteFilesSchema, semanticIndexFilesSchema } from '../utils/joi/schemas/semantic';
 import config from '../config';
 import { SemanticManager } from '../express/semantics/manager';
 import { IIndexFilesRequest } from '../express/semantics/interface';
@@ -32,7 +32,7 @@ class SemanticConsumer {
     static async deleteFiles(msg: ConsumerMessage) {
         try {
             const msgContent = msg.getContent();
-            const value = basicValidateRequest(semanticIndexFilesSchema, msgContent);
+            const value = basicValidateRequest(semanticDeleteFilesSchema, msgContent);
 
             const manager = new SemanticManager(msg.properties.headers[workspaceIdHeaderName]);
 

@@ -1,5 +1,5 @@
 /* eslint-disable no-nested-ternary */
-import { Box, FormControl, Select, useTheme } from '@mui/material';
+import { Box, FormControl, Select, Typography, useTheme } from '@mui/material';
 import lodashUniqby from 'lodash.uniqby';
 import React, { Dispatch, Key, PropsWithChildren, SetStateAction, useCallback, useState } from 'react';
 import { DropResult } from 'react-beautiful-dnd';
@@ -104,6 +104,7 @@ const SelectCheckbox = <Option extends object, Group = Option>({
     treeFunc,
     onDragEnd,
     setOptions,
+    showIcon,
 }: SelectCheckboxProps<Option, Group>) => {
     const [miniFilterValue, setMiniFilterValue] = useState('');
     const [isOpen, setIsOpen] = useState(false);
@@ -230,6 +231,11 @@ const SelectCheckbox = <Option extends object, Group = Option>({
                 }}
             >
                 {!isSelectDisabled && !hideSearchBar && <Search value={miniFilterValue} onChange={setMiniFilterValue} toTopBar={toTopBar} />}
+                {isSelectDisabled && hideChooseAll ? (
+                    <Typography color={theme.palette.primary.main} fontFamily="Rubik" fontWeight={400} marginX="16px" marginY="8px">
+                        {title}
+                    </Typography>
+                ) : undefined}
 
                 <Tree
                     onDragEnd={({ itemId, newPosition, oldPosition }) => {
@@ -266,6 +272,7 @@ const SelectCheckbox = <Option extends object, Group = Option>({
                         const filteredOptions = options.filter((option) => ids.includes(getOptionId(option)));
                         setSelectedOptions(filteredOptions);
                     }}
+                    showIcon={showIcon}
                 />
             </Select>
         </FormControl>

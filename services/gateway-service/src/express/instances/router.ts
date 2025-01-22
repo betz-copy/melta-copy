@@ -1,9 +1,7 @@
 import { Router } from 'express';
 import { createProxyMiddleware, fixRequestBody } from 'http-proxy-middleware';
-import multer from 'multer';
 import { createController } from '@microservices/shared';
 import config from '../../config';
-import { wrapMulter } from '../../utils/express';
 import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
 import ValidateRequest from '../../utils/joi';
 import InstancesController from './controller';
@@ -24,6 +22,7 @@ import {
     updateEntityStatusSchema,
     loadEntitiesSchema,
 } from './validator.schema';
+import { busboyMiddleware } from '../../utils/busboy/busboyMiddleware';
 
 const { instanceService } = config;
 
@@ -85,7 +84,7 @@ InstancesRouter.post(
 
 InstancesRouter.post(
     '/entities/loadEntities',
-    wrapMulter(multer({ dest: config.service.uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).any()),
+    busboyMiddleware,
     InstancesValidatorMiddleware.validateUserCanCreateEntityInstance,
     ValidateRequest(loadEntitiesSchema),
     InstancesControllerMiddleware.loadEntities,
@@ -103,14 +102,14 @@ InstancesRouter.post(
 
 InstancesRouter.post(
     '/entities',
-    wrapMulter(multer({ dest: config.service.uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).any()),
+    busboyMiddleware,
     ValidateRequest(createEntityInstanceSchema),
     InstancesValidatorMiddleware.validateUserCanCreateEntityInstance,
     InstancesControllerMiddleware.createEntityInstance,
 );
 InstancesRouter.put(
     '/entities/:id',
-    wrapMulter(multer({ dest: config.service.uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).any()),
+    busboyMiddleware,
     ValidateRequest(updateEntityInstanceSchema),
     InstancesValidatorMiddleware.validateUserCanWriteEntityInstance,
     InstancesValidatorMiddleware.validateUserCanIgnoreRules,
@@ -118,7 +117,7 @@ InstancesRouter.put(
 );
 InstancesRouter.post(
     '/entities/:id/duplicate',
-    wrapMulter(multer({ dest: config.service.uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).any()),
+    busboyMiddleware,
     ValidateRequest(updateEntityInstanceSchema),
     InstancesValidatorMiddleware.validateUserCanWriteEntityInstance,
     InstancesControllerMiddleware.duplicateEntityInstance,

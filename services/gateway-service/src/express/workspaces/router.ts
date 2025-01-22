@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import multer from 'multer';
 import { createController } from '@microservices/shared';
+import { createProxyMiddleware, fixRequestBody } from 'http-proxy-middleware';
 import config from '../../config';
 import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
 import { wrapController } from '../../utils/express';
@@ -13,12 +13,23 @@ import {
     getFileSchema,
     getWorkspaceHierarchyIdsSchema,
     getWorkspaceIds,
+    updateMetadataSchema,
     updateOneSchema,
 } from './validator.schema';
+import { busboyMiddleware } from '../../utils/busboy/busboyMiddleware';
 
 const controller = createController(WorkspaceController);
 
 const workspaceRouter: Router = Router();
+
+const workspaceProxy = createProxyMiddleware({
+    target: `${config.workspaceService.url}${config.workspaceService.baseRoute}`,
+    changeOrigin: true,
+    on: {
+        proxyReq: fixRequestBody,
+    },
+    proxyTimeout: config.workspaceService.requestTimeout,
+});
 
 workspaceRouter.post(
     '/ids',
@@ -41,7 +52,7 @@ workspaceRouter.get('/:id', ValidateRequest(getByIdSchema), wrapController(Works
 
 workspaceRouter.post(
     '/',
-    multer({ dest: config.service.uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).any(),
+    busboyMiddleware,
     ValidateRequest(createOneSchema),
     AuthorizerControllerMiddleware.userCanWriteWorkspaces,
     controller.createOne,
@@ -49,10 +60,11 @@ workspaceRouter.post(
 
 workspaceRouter.put(
     '/:id',
-    multer({ dest: config.service.uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).any(),
+    busboyMiddleware,
     ValidateRequest(updateOneSchema),
     AuthorizerControllerMiddleware.userCanWriteWorkspaces,
     controller.updateOne,
 );
+workspaceRouter.patch('/:id/metadata', ValidateRequest(updateMetadataSchema), workspaceProxy);
 
 export default workspaceRouter;

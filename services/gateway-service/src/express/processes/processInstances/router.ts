@@ -1,8 +1,5 @@
 import { Router } from 'express';
-import multer from 'multer';
 import { createController } from '@microservices/shared';
-import config from '../../../config';
-import { wrapMulter } from '../../../utils/express';
 
 import InstancesController from './controller';
 import {
@@ -15,6 +12,7 @@ import {
 } from './validator.schema';
 import ValidateRequest from '../../../utils/joi';
 import { AuthorizerControllerMiddleware } from '../../../utils/authorizer';
+import { busboyMiddleware } from '../../../utils/busboy/busboyMiddleware';
 
 const InstancesRouter: Router = Router();
 
@@ -23,7 +21,7 @@ const InstancesControllerMiddleware = createController(InstancesController);
 InstancesRouter.get('/:id', ValidateRequest(getProcessInstanceSchema), InstancesControllerMiddleware.getProcessInstance);
 InstancesRouter.post(
     '/',
-    wrapMulter(multer({ dest: config.service.uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).any()),
+    busboyMiddleware,
     ValidateRequest(createProcessInstanceSchema),
     AuthorizerControllerMiddleware.userCanWriteProcesses,
     InstancesControllerMiddleware.createProcessInstance,
@@ -31,7 +29,7 @@ InstancesRouter.post(
 InstancesRouter.post('/search', ValidateRequest(searchProcessInstancesSchema), InstancesControllerMiddleware.searchProcessInstances);
 InstancesRouter.put(
     '/:id',
-    wrapMulter(multer({ dest: config.service.uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).any()),
+    busboyMiddleware,
     ValidateRequest(updateProcessInstanceSchema),
     AuthorizerControllerMiddleware.userCanWriteProcesses,
     InstancesControllerMiddleware.updateProcessInstance,

@@ -1,11 +1,11 @@
 import { FilterQuery, Types } from 'mongoose';
 import { StatusCodes } from 'http-status-codes';
-import { ISearchIFramesBody, IFrame, IMongoIFrame, DefaultManagerMongo, ServiceError } from '@microservices/shared';
+import { ISearchIFramesBody,  IFrame, IMongoIFrame, DefaultManagerMongo, ServiceError } from '@microservices/shared';
 import config from '../../config';
 import StorageService from '../../externalServices/storageService';
 import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
-import { removeTmpFile } from '../../utils/fs';
 import IFrameSchema from './model';
+import { UploadedFile } from '../../utils/busboy/interface';
 
 export class IFrameManager extends DefaultManagerMongo<IMongoIFrame> {
     private storageService: StorageService;
@@ -51,11 +51,10 @@ export class IFrameManager extends DefaultManagerMongo<IMongoIFrame> {
         return this.model.findById(iFrameId).orFail(new ServiceError(StatusCodes.NOT_FOUND, 'IFrame not found')).lean().exec();
     }
 
-    async createIFrame(iFrameData: Omit<IFrame, 'iconFileId'>, file?: Express.Multer.File) {
+    async createIFrame(iFrameData: Omit<IFrame, 'iconFileId'>, file?: UploadedFile) {
         let newIFrame: IFrame;
         if (file) {
             const newFileId = await this.storageService.uploadFile(file);
-            await removeTmpFile(file.path);
             newIFrame = { ...iFrameData, iconFileId: newFileId };
         } else newIFrame = { ...iFrameData, iconFileId: null };
 
@@ -79,7 +78,7 @@ export class IFrameManager extends DefaultManagerMongo<IMongoIFrame> {
             .exec();
     }
 
-    async updateIFrame(iFrameId: string, updatedData: Partial<IFrame> & { file?: string }, file?: Express.Multer.File) {
+    async updateIFrame(iFrameId: string, updatedData: Partial<IFrame> & { file?: string }, file?: UploadedFile) {
         const { iconFileId } = await this.getIFrameById(iFrameId);
         let updatedIFrame: IFrame;
 
@@ -89,7 +88,6 @@ export class IFrameManager extends DefaultManagerMongo<IMongoIFrame> {
             }
 
             const newFileId = await this.storageService.uploadFile(file);
-            await removeTmpFile(file.path);
 
             updatedIFrame = await this.update(iFrameId, { ...updatedData, iconFileId: newFileId });
         } else if (iconFileId && !updatedData.iconFileId) {

@@ -1,6 +1,7 @@
 /* eslint-disable prettier/prettier */
-/* eslint-disable no-case-declarations */
 /* eslint-disable no-param-reassign */
+/* eslint-disable no-case-declarations */
+import React, { ForwardedRef, forwardRef, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import {
     BodyScrollEvent,
     CellEditingStoppedEvent,
@@ -22,7 +23,6 @@ import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import isEqual from 'lodash.isequal';
 import sortBy from 'lodash.sortby';
-import React, { ForwardedRef, forwardRef, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
 import { useLocation } from 'wouter';
@@ -68,10 +68,10 @@ import { MultiSelectStatusBar } from '../EntitiesPage/MultiSelectStatusBar';
 import { ResizeBox } from '../EntitiesPage/ResizeBox';
 import { RowCountGridStatusBar } from '../EntitiesPage/RowCountGridStatusBar';
 import { ErrorToast } from '../ErrorToast';
+import { useWorkspaceStore } from '../../stores/workspace';
 import { getColumnDefs, IGetColumnDefsOptions } from './getColumnDefs';
 
 const { errorCodes } = environment;
-const { rowCount, defaultExpandedRowCount } = environment.agGrid;
 
 export const defaultFilterModel = {
     disabled: {
@@ -93,6 +93,7 @@ export interface IButtonProps<Data> {
 
 export const getDatasource = <Data = EntityData,>(
     template: IMongoEntityTemplatePopulated,
+    tableCount: number,
     quickFilterText?: string,
     onFail?: (err: unknown) => void,
     rowData?: IConnection[],
@@ -112,7 +113,11 @@ export const getDatasource = <Data = EntityData,>(
             const { result: data, err } = await trycatch(() =>
                 searchEntitiesOfTemplateRequest(
                     template._id,
-                    agGridToSearchEntitiesOfTemplateRequest({ ...agGridRequest, quickFilter: quickFilterText } as IAgGridRequest, template),
+                    agGridToSearchEntitiesOfTemplateRequest(
+                        { ...agGridRequest, quickFilter: quickFilterText } as IAgGridRequest,
+                        template,
+                        tableCount,
+                    ),
                 ),
             );
 
@@ -141,6 +146,7 @@ export const getRowModelProps = <Data = EntityData,>(
     template: IMongoEntityTemplatePopulated,
     rowData: Data[] | undefined,
     paginationPageSize: number,
+    tableCount: number,
     quickFilterText?: string,
     datasourceOnFail?: (err: unknown) => void,
     hasInstances?: boolean,
@@ -158,7 +164,7 @@ export const getRowModelProps = <Data = EntityData,>(
 
     return {
         rowModelType: 'serverSide',
-        serverSideDatasource: getDatasource<IConnection>(template, quickFilterText, datasourceOnFail, rowData as IConnection[]),
+        serverSideDatasource: getDatasource<IConnection>(template, tableCount, quickFilterText, datasourceOnFail, rowData as IConnection[]),
         cacheBlockSize: rowModelType === 'serverSide' ? cacheBlockSize : undefined,
         pagination: rowModelType === 'serverSide',
         paginationPageSize,
@@ -234,7 +240,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             rowData,
             quickFilterText,
             rowHeight,
-            pageRowCount = rowCount,
+            pageRowCount,
             fontSize,
             hideNonPreview,
             saveStorageProps,
@@ -251,6 +257,11 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
     ) => {
         const [_, navigate] = useLocation();
         const darkMode = useDarkModeStore((state) => state.darkMode);
+        const workspace = useWorkspaceStore((state) => state.workspace);
+        const { rowCount, defaultExpandedRowCount } = workspace.metadata.agGrid;
+        const { table } = workspace.metadata.searchLimits;
+
+        if (!pageRowCount) pageRowCount = rowCount;
 
         const gridRef = useRef<AgGridReact<Data>>(null);
         const tableRef = useRef<HTMLDivElement>(null);
@@ -588,7 +599,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         }));
 
         const rowModelProps = useMemo(
-            () => getRowModelProps(rowModelType, template, rowData, pageRowCount, quickFilterText, datasourceOnFail, hasInstances),
+            () => getRowModelProps(rowModelType, template, rowData, pageRowCount!, table, quickFilterText, datasourceOnFail, hasInstances),
             [rowModelType, template, rowData, pageRowCount, quickFilterText, hasInstances],
         );
 

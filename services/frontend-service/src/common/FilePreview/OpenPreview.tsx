@@ -10,6 +10,7 @@ import FileIcon from './FileIcon';
 import { PreviewDialog } from './PreviewDialog';
 import { HighlightText } from '../../utils/HighlightText';
 import { MeltaTooltip } from '../MeltaTooltip';
+import { useWorkspaceStore } from '../../stores/workspace';
 
 const OpenPreviewContent: React.FC<{
     fileName: string;
@@ -20,6 +21,7 @@ const OpenPreviewContent: React.FC<{
     highlightAll?: boolean;
 }> = ({ fileName, onClick, img, showText, searchValue, highlightAll }) => {
     const text = useMemo(() => getFileNameWithoutExtension(fileName), [fileName]);
+    const workspace = useWorkspaceStore((state) => state.workspace);
 
     return (
         <Grid style={{ overflow: 'hidden', whiteSpace: 'nowrap', maxWidth: '100%' }}>
@@ -35,7 +37,7 @@ const OpenPreviewContent: React.FC<{
                     <Typography
                         sx={{
                             marginRight: '5px',
-                            fontSize: environment.mainFontSizes.headlineSubTitleFontSize,
+                            fontSize: workspace.metadata.agGrid.defaultFontSize,
                             textOverflow: 'ellipsis',
                             overflow: 'hidden',
                             whiteSpace: 'nowrap',

@@ -6,7 +6,7 @@ import { IEntity, IMongoEntityTemplatePopulated } from '@microservices/shared-in
 import { useDarkModeStore } from '../stores/darkMode';
 import { EntityPropertiesInternal } from './EntityProperties';
 import { MeltaTooltip } from './MeltaTooltip';
-import { environment } from '../globals';
+import { useWorkspaceStore } from '../stores/workspace';
 
 interface EntityLinkProps {
     entity: IEntity | null;
@@ -28,6 +28,8 @@ export const EntityLink: React.FC<EntityLinkProps> = ({
     tooltipHeader,
 }) => {
     const theme = useTheme();
+    const workspace = useWorkspaceStore((state) => state.workspace);
+    const { headlineSubTitleFontSize } = workspace.metadata.mainFontSizes;
 
     const linkText = entityTemplate ? entityTemplate.displayName : i18next.t('ruleBreachInfo.updateEntityActionInfo.unknownEntity');
     const darkMode = useDarkModeStore((state) => state.darkMode);
@@ -68,16 +70,13 @@ export const EntityLink: React.FC<EntityLinkProps> = ({
                         color: theme.palette.primary.main,
                         textDecoration: 'inherit',
                         fontWeight: 'bold',
-                        fontSize: environment.mainFontSizes.headlineSubTitleFontSize,
+                        fontSize: headlineSubTitleFontSize,
                     }}
                 >
                     {linkText}
                 </Link>
             ) : (
-                <Box
-                    component="span"
-                    sx={{ color: theme.palette.primary.main, fontWeight: 'bold', fontSize: environment.mainFontSizes.headlineSubTitleFontSize }}
-                >
+                <Box component="span" sx={{ color: theme.palette.primary.main, fontWeight: 'bold', fontSize: headlineSubTitleFontSize }}>
                     {linkText}
                 </Box>
             )}

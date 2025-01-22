@@ -62,6 +62,7 @@ import DefaultManagerProxy from '../../utils/express/manager';
 import RabbitManager from '../../utils/rabbit';
 import UsersManager from '../users/manager';
 import WorkspaceManager from '../workspaces/manager';
+import { UploadedFile } from '../../utils/busboy/interface';
 
 const { errorCodes, ruleBreachService } = config;
 
@@ -88,7 +89,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
     async createRuleBreachRequest(
         ruleBreachRequestData: Omit<IRuleBreachRequest, '_id' | 'createdAt' | 'originUserId'>,
         userId: string,
-        files: Express.Multer.File[] = [],
+        files: UploadedFile[] = [],
     ): Promise<IRuleBreachRequestPopulated> {
         await this.uploadRuleBreachFiles(ruleBreachRequestData, files);
 
@@ -128,7 +129,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
     async createRuleBreachAlert(
         ruleBreachAlertData: Omit<IRuleBreachAlert, '_id' | 'createdAt' | 'originUserId'>,
         userId: string,
-        files: Express.Multer.File[] = [],
+        files: UploadedFile[] = [],
     ): Promise<IRuleBreachAlertPopulated> {
         await this.uploadRuleBreachFiles(ruleBreachAlertData, files);
 
@@ -524,7 +525,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
         return this.discardRuleBreachRequest(ruleBreachRequest, user, RuleBreachRequestStatus.Canceled);
     }
 
-    private async uploadRuleBreachFiles(ruleBreach: Omit<IRuleBreachAlert, '_id' | 'createdAt' | 'originUserId'>, files: Express.Multer.File[]) {
+    private async uploadRuleBreachFiles(ruleBreach: Omit<IRuleBreachAlert, '_id' | 'createdAt' | 'originUserId'>, files: UploadedFile[] = []) {
         if (!files.length) return;
 
         const instancesManager = new InstancesManager(this.workspaceId);

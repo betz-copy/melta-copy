@@ -1,9 +1,6 @@
 import { Router } from 'express';
-import multer from 'multer';
 import { createController } from '@microservices/shared';
-import config from '../../config';
 import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
-import { wrapMulter } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
 import RuleBreachesController from './controller';
 import {
@@ -17,6 +14,7 @@ import {
     searchRuleBreachAlertsRequestSchema,
     searchRuleBreachRequestsRequestSchema,
 } from './validator.schema';
+import { busboyMiddleware } from '../../utils/busboy/busboyMiddleware';
 
 const RulesBreachesRouter: Router = Router();
 
@@ -24,7 +22,7 @@ const RulesBreachesControllerMiddleware = createController(RuleBreachesControlle
 
 RulesBreachesRouter.post(
     '/requests',
-    wrapMulter(multer({ dest: config.service.uploadsFolderPath }).any()),
+    busboyMiddleware,
     ValidateRequest(createRuleBreachRequestRequestSchema),
     AuthorizerControllerMiddleware.userHasSomePermissions,
     RulesBreachesControllerMiddleware.createRuleBreachRequest,

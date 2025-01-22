@@ -40,13 +40,13 @@ import RelationshipsTemplateService from '../../externalServices/templates/relat
 import { trycatch } from '../../utils';
 import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
 import DefaultManagerProxy from '../../utils/express/manager';
-import { removeTmpFile } from '../../utils/fs';
 import ProcessTemplatesManager from '../processes/processTemplates/manager';
 import UsersManager from '../users/manager';
 import { getParametersOfFormula } from './rules';
 import GanttsService from '../../externalServices/ganttsService';
 import checkPropertyInUsedFromFormula from './rules/checkIfPropertyInUsed';
 import { buildNewRelationshipField, validateNoDependentRules, validateRequiredConstraints, validateUniqueRelationships } from '../../utils/templates';
+import { UploadedFile } from '../../utils/busboy/interface';
 
 const {
     categoryHasTemplates,
@@ -281,10 +281,9 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         return this.entityTemplateService.getAllCategories();
     }
 
-    async createCategory(categoryData: Omit<ICategory, 'iconFileId'>, file?: Express.Multer.File) {
+    async createCategory(categoryData: Omit<ICategory, 'iconFileId'>, file?: UploadedFile) {
         if (file) {
             const newFileId = await this.storageService.uploadFile(file);
-            await removeTmpFile(file.path);
             return this.entityTemplateService.createCategory({ ...categoryData, iconFileId: newFileId });
         }
 
@@ -313,7 +312,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         ).catch(() => {});
     }
 
-    async updateCategory(id: string, updatedData: Partial<ICategory> & { file?: string }, file?: Express.Multer.File) {
+    async updateCategory(id: string, updatedData: Partial<ICategory> & { file?: string }, file?: UploadedFile) {
         const { iconFileId } = await this.entityTemplateService.getCategoryById(id);
 
         if (file) {
@@ -322,7 +321,6 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             }
 
             const newFileId = await this.storageService.uploadFile(file);
-            await removeTmpFile(file.path);
 
             return this.entityTemplateService.updateCategory(id, { ...updatedData, iconFileId: newFileId });
         }
@@ -396,14 +394,13 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
     async createEntityTemplate(
         templateData: Omit<IEntityTemplateWithConstraints, 'iconFileId' | 'documentTemplatesIds'>,
-        { file, files }: { file?: [Express.Multer.File]; files?: Express.Multer.File[] },
+        { file, files }: { file?: [UploadedFile]; files?: UploadedFile[] },
     ): Promise<IMongoEntityTemplateWithConstraintsPopulated> {
         await this.entityTemplateService.getCategoryById(templateData.category);
         let iconFileId: string | null;
 
         if (file) {
             iconFileId = await this.storageService.uploadFile(file[0]);
-            await removeTmpFile(file[0].path);
         } else iconFileId = null;
 
         const { uniqueConstraints, properties, ...restOfTemplateData } = templateData;
@@ -678,14 +675,13 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
     private async handleFiles(
         updatedTemplateData: Omit<IEntityTemplateWithConstraints, 'disabled'> & { file?: string },
         currTemplate: IMongoEntityTemplatePopulated,
-        { file, files }: { file?: [Express.Multer.File]; files?: Express.Multer.File[] },
+        { file, files }: { file?: [UploadedFile]; files?: UploadedFile[] },
     ) {
         let iconFileId: string | null;
 
         if (file) {
             if (currTemplate.iconFileId) await this.storageService.deleteFile(currTemplate.iconFileId);
             iconFileId = await this.storageService.uploadFile(file[0]);
-            await removeTmpFile(file[0].path);
         } else if (currTemplate.iconFileId && !updatedTemplateData.iconFileId) {
             await this.storageService.deleteFile(currTemplate.iconFileId);
             iconFileId = null;
@@ -711,7 +707,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
     async updateEntityTemplate(
         id: string,
         updatedTemplateData: Omit<IEntityTemplateWithConstraints, 'disabled'> & { file?: string },
-        { file, files }: { file?: [Express.Multer.File]; files?: Express.Multer.File[] },
+        { file, files }: { file?: [UploadedFile]; files?: UploadedFile[] },
     ): Promise<IMongoEntityTemplateWithConstraintsPopulated> {
         await this.entityTemplateService.getCategoryById(updatedTemplateData.category);
 

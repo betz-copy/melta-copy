@@ -15,7 +15,6 @@ import { agGridLocaleText } from '../../utils/agGrid/agGridLocaleText';
 import { translatedEnumColDef } from '../../utils/agGrid/commonColDefs';
 import { trycatch } from '../../utils/trycatch';
 
-const { defaultRowHeight, defaultFontSize } = environment.agGrid;
 const { infiniteScrollPageCount } = environment.permission;
 
 const scopesTranslation: Record<string, string> = i18next.t('permissions.scopes', { returnObjects: true });
@@ -227,6 +226,7 @@ const PermissionsTable = forwardRef<PermissionsTableRef<IUser>, PermissionsTable
         const darkMode = useDarkModeStore((state) => state.darkMode);
         const workspace = useWorkspaceStore((state) => state.workspace);
         const gridRef = useRef<AgGridReact<IUser>>(null);
+        const { defaultRowHeight, defaultFontSize } = workspace.metadata.agGrid;
 
         const getRowId = ({ _id }) => _id;
 

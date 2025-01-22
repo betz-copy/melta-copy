@@ -7,10 +7,10 @@ import { useLocation } from 'wouter';
 import { IEntity, IEntityTemplateMap } from '@microservices/shared-interfaces';
 import { EntityProperties } from '../../../common/EntityProperties';
 import { CustomIcon } from '../../../common/CustomIcon';
-import { environment } from '../../../globals';
 import { getEntityTemplateColor } from '../../../utils/colors';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
 import FlexBox from '../../../common/FlexBox';
+import { useWorkspaceStore } from '../../../stores/workspace';
 
 type props = {
     open: boolean;
@@ -21,6 +21,8 @@ type props = {
 const MapPageEntityDialog = ({ open, onClose, entityWithMatchingField }: props) => {
     const [_, navigate] = useLocation();
     const queryClient = useQueryClient();
+    const workspace = useWorkspaceStore((state) => state.workspace);
+    const { height, width } = workspace.metadata.iconSize;
 
     const entityTemplateMap = queryClient.getQueryData<IEntityTemplateMap>(['getEntityTemplates']);
 
@@ -32,16 +34,9 @@ const MapPageEntityDialog = ({ open, onClose, entityWithMatchingField }: props) 
             <Box display="flex" justifyContent="space-between" alignItems="center" padding="10px 20px 0px 20px">
                 <Box display="flex" gap="10px" alignItems="center">
                     {entityTemplate.iconFileId ? (
-                        <CustomIcon
-                            iconUrl={entityTemplate.iconFileId}
-                            height={environment.iconSize.height}
-                            width={environment.iconSize.width}
-                            color={entityTemplateColor}
-                        />
+                        <CustomIcon iconUrl={entityTemplate.iconFileId} height={height} width={width} color={entityTemplateColor} />
                     ) : (
-                        <DefaultEntityTemplateIcon
-                            sx={{ color: entityTemplateColor, height: environment.iconSize.height, width: environment.iconSize.width }}
-                        />
+                        <DefaultEntityTemplateIcon sx={{ color: entityTemplateColor, height, width }} />
                     )}
                     <Typography fontSize="20px" fontWeight={700}>
                         {entityTemplate.displayName} -

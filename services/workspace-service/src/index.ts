@@ -17,7 +17,14 @@ const handleRootDocument = async () => {
     }
 
     logger.info('Root document does not exist, creating...');
-    await WorkspacesModel.create({ name: '', displayName: '', path: '/', type: WorkspaceTypes.dir, colors: config.service.rootWorkspaceColors });
+    await WorkspacesModel.create({
+        name: '',
+        displayName: '',
+        path: '/',
+        type: WorkspaceTypes.dir,
+        colors: config.service.rootWorkspaceColors,
+        // metadata: {},
+    });
     logger.info('Root document created');
 };
 

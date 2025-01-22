@@ -3,13 +3,13 @@ import { Button, Divider } from '@mui/material';
 import i18next from 'i18next';
 import React, { useEffect } from 'react';
 import { toast } from 'react-toastify';
-import { IEntityExpanded, IMongoEntityTemplatePopulated, IMongoActivityLog } from '@microservices/shared-interfaces';
+import {  IEntityExpanded, IMongoEntityTemplatePopulated, IMongoActivityLog } from '@microservices/shared-interfaces';
 import { InfiniteScroll } from '../../../../common/InfiniteScroll';
 import { MeltaTooltip } from '../../../../common/MeltaTooltip';
 import PopperSidebar from '../../../../common/PopperSidebar';
-import { environment } from '../../../../globals';
 import { getActivityLogRequest } from '../../../../services/activityLogService';
 import ActivityLogRow from './ActivityLogRow';
+import { environment } from '../../../../globals';
 
 const { infiniteScrollPageCount } = environment.activityLog;
 

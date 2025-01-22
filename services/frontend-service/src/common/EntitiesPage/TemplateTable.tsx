@@ -33,10 +33,10 @@ import { TableButton } from '../TableButton';
 import { AddEntityButton } from './AddEntityButton';
 import { DraftCard } from './DraftCard';
 import { ResetFilterButton } from './ResetFilterButton';
+import { useWorkspaceStore } from '../../stores/workspace';
 import { LoadExcelButton } from './LoadExcelButton';
 
 const {
-    agGrid: { defaultRowHeight, defaultFontSize, defaultExpandedTableHeight },
     loadExcel: { excelExtension },
 } = environment;
 
@@ -51,6 +51,10 @@ const TemplateTable = forwardRef<
         setUpdatedEntities: React.Dispatch<React.SetStateAction<IEntity[]>>;
     }
 >(({ template, quickFilterText, page, setUpdatedEntities }, ref) => {
+    const workspace = useWorkspaceStore((state) => state.workspace);
+    const { defaultRowHeight, defaultFontSize, defaultExpandedTableHeight } = workspace.metadata.agGrid;
+    const { height, width } = workspace.metadata.iconSize;
+
     const currentUser = useUserStore((state) => state.user);
 
     const theme = useTheme();
@@ -150,7 +154,6 @@ const TemplateTable = forwardRef<
     };
 
     const isLoadExcelDisabled = !userHasWritePermissions || checkIfLoadEntityIsDisabled();
-
     return (
         <Grid container minWidth="fit-content">
             <Grid container justifyContent="space-between" width="fit-content" minWidth="fit-content">
@@ -160,21 +163,26 @@ const TemplateTable = forwardRef<
                     </Grid>
                     <Grid item minWidth="fit-content" sx={{ display: 'flex', justifyContent: 'center', alignContent: 'center' }}>
                         {template.iconFileId ? (
-                            <CustomIcon
-                                iconUrl={template.iconFileId}
-                                height={environment.iconSize.height}
-                                width={environment.iconSize.width}
-                                color={theme.palette.primary.main}
-                            />
+                            <CustomIcon iconUrl={template.iconFileId} height={height} width={width} color={theme.palette.primary.main} />
                         ) : (
                             <DefaultEntityTemplateIcon
-                                sx={{ color: theme.palette.primary.main, height: environment.iconSize.height, width: environment.iconSize.width }}
+                                sx={{
+                                    color: theme.palette.primary.main,
+                                    height,
+                                    width,
+                                }}
                             />
                         )}
                     </Grid>
                     <Grid item minWidth="fit-content" style={{ whiteSpace: 'nowrap', overflow: 'hidden' }}>
                         <BlueTitle
-                            style={{ minWidth: 'fit-content', whiteSpace: 'nowrap', overflow: 'hidden', fontWeight: '500', fontSize: '20px' }}
+                            style={{
+                                minWidth: 'fit-content',
+                                whiteSpace: 'nowrap',
+                                overflow: 'hidden',
+                                fontWeight: '500',
+                                fontSize: workspace.metadata.mainFontSizes.entityTemplateTitleFontSize,
+                            }}
                             title={template.displayName}
                             component="h5"
                             variant="h5"
@@ -209,7 +217,6 @@ const TemplateTable = forwardRef<
                             iconButtonProps: {
                                 onClick: () => {
                                     handleExpandClick();
-
                                     trackEvent({
                                         category: 'template-action',
                                         action: isExpand ? 'off' : 'on',

@@ -10,10 +10,10 @@ import {
 import ProcessService from '../../../externalServices/processService';
 import StorageService from '../../../externalServices/storageService';
 import DefaultManagerProxy from '../../../utils/express/manager';
-import { removeTmpFile } from '../../../utils/fs';
 import InstancesManager from '../../instances/manager';
 import UsersManager from '../../users/manager';
 import ProcessesInstancesManager from '../processInstances/manager';
+import { UploadedFile } from '../../../utils/busboy/interface';
 
 class StepsInstancesManager extends DefaultManagerProxy<ProcessService> {
     private storageService: StorageService;
@@ -63,7 +63,7 @@ class StepsInstancesManager extends DefaultManagerProxy<ProcessService> {
         processId: string,
         stepId: string,
         updatedData: Partial<Pick<IStepInstance, 'properties' | 'status' | 'comments'>>,
-        files: Express.Multer.File[],
+        files: UploadedFile[],
         userId: string,
     ) {
         const processInstancesManager = new ProcessesInstancesManager(this.workspaceId);
@@ -103,12 +103,6 @@ class StepsInstancesManager extends DefaultManagerProxy<ProcessService> {
             });
 
         if (oldProperties) await processInstancesManager.removeUnusedFileIds(stepTemplate.properties, oldProperties, { ...props });
-
-        await Promise.all(
-            files.map((file) => {
-                return removeTmpFile(file.path);
-            }),
-        );
 
         if (updatedData.status) {
             const updatedProcess = await processInstancesManager.getProcessInstance(processId, userId);

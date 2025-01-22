@@ -1,9 +1,9 @@
 import { Router } from 'express';
 import { createController } from '@microservices/shared';
 import { ValidateRequest } from '../../utils/joi';
-import { MinioMulter } from '../../utils/minio';
 import FilesController, { workspaceIdInHeader } from './controller';
 import { bulkFilesRequestSchema, defaultSchema, uploadFileRequestSchema, uploadFilesRequestSchema, workspaceSchema } from './validator.schema';
+import { busboyMiddleware } from '../../utils/minio/busboy';
 
 const filesRouter: Router = Router();
 
@@ -23,7 +23,7 @@ filesRouter.delete('/:path', ValidateRequest(defaultSchema), filesController.del
 filesRouter.post('/duplicate/:path', ValidateRequest(defaultSchema), filesController.duplicateFile);
 filesRouter.post('/duplicate-bulk', ValidateRequest(bulkFilesRequestSchema), filesController.duplicateFiles);
 
-filesRouter.post('/bulk', MinioMulter.uploadBulkToMinio, ValidateRequest(uploadFilesRequestSchema), filesController.uploadFiles);
-filesRouter.post('/', MinioMulter.uploadToMinio, ValidateRequest(uploadFileRequestSchema), filesController.uploadFile);
+filesRouter.post('/', busboyMiddleware, ValidateRequest(uploadFileRequestSchema), filesController.uploadFile);
+filesRouter.post('/bulk', busboyMiddleware, ValidateRequest(uploadFilesRequestSchema), filesController.uploadFiles);
 
 export default filesRouter;

@@ -2,11 +2,11 @@ import { Grid, Typography, useTheme } from '@mui/material';
 import React, { CSSProperties } from 'react';
 import '../css/realtionshipTitle.css';
 import { IMongoEntityTemplatePopulated, IMongoRelationshipTemplatePopulated } from '@microservices/shared-interfaces';
-import { environment } from '../globals';
 import { useDarkModeStore } from '../stores/darkMode';
 import { getEntityTemplateColor } from '../utils/colors';
 import { EntityTemplateColor } from './EntityTemplateColor';
 import { MeltaTooltip } from './MeltaTooltip';
+import { useWorkspaceStore } from '../stores/workspace';
 
 const ArrowTail: React.FC = () => {
     const theme = useTheme();
@@ -35,12 +35,14 @@ const ArrowHead: React.FC = () => {
 };
 
 const TextComponent: React.FC<{ title: string; style?: CSSProperties }> = ({ title, style }) => {
+    const workspace = useWorkspaceStore((state) => state.workspace);
+
     return (
         <MeltaTooltip title={title}>
             <Typography
                 variant="h6"
                 marginLeft="10px"
-                fontSize={environment.mainFontSizes.headlineSubTitleFontSize}
+                fontSize={workspace.metadata.mainFontSizes.headlineSubTitleFontSize}
                 noWrap
                 style={{
                     textOverflow: 'ellipsis',

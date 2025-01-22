@@ -10,9 +10,9 @@ import { environment } from '../../../globals';
 import EntitiesTableOfTemplate from '../../EntitiesTableOfTemplate';
 import { InstanceFileInput } from '../../inputs/InstanceFilesInput/InstanceFileInput';
 import { useReadExcel } from '../../../utils/hooks/useReadExcel';
+import { useWorkspaceStore } from '../../../stores/workspace';
 
 const {
-    agGrid: { defaultRowHeight, defaultFontSize },
     loadExcel: { excelExtension, acceptedFilesTypes },
 } = environment;
 
@@ -29,16 +29,19 @@ export const UploadExcel: React.FC<{
     const [errorText, setErrorText] = useState<string | undefined>();
 
     const { readFile, rowData } = useReadExcel();
+    const workspace = useWorkspaceStore((state) => state.workspace);
+    const { defaultRowHeight, defaultFontSize } = workspace.metadata.agGrid;
+    const { entitiesFileLimit, filesLimit } = workspace.metadata.excel;
 
     if (stepsData.status === StepStatus.uploadExcel)
         return (
             <>
                 <Grid marginTop="10px" marginLeft="20px">
                     <Typography fontSize="13px" color="#9398C2">
-                        - {i18next.t('wizard.entity.loadEntities.limitNumberEntities')}
+                        - {i18next.t('wizard.entity.loadEntities.limitNumberEntities') + entitiesFileLimit}
                     </Typography>
                     <Typography fontSize="13px" color="#9398C2" marginTop="5px">
-                        - {i18next.t('wizard.entity.loadEntities.limitNumberFiles')}
+                        - {i18next.t('wizard.entity.loadEntities.limitNumberFiles') + filesLimit}
                     </Typography>
                 </Grid>
                 <InstanceFileInput

@@ -23,7 +23,6 @@ import SearchInput from '../../../common/inputs/SearchInput';
 import { RelationshipTitle } from '../../../common/RelationshipTitle';
 import TemplatesSelectCheckbox from '../../../common/templatesSelectCheckbox';
 import { RelationshipTemplateWizard } from '../../../common/wizards/relationshipTemplate';
-import { environment } from '../../../globals';
 import {
     convertToRelationshipFieldRequest,
     deleteRelationshipTemplateRequest,
@@ -37,6 +36,8 @@ import { ViewingCard } from './Card';
 import { CardMenu } from './CardMenu';
 import { CreateButton } from './CreateButton';
 import { FilterButton } from './FilterButton';
+import { useWorkspaceStore } from '../../../stores/workspace';
+import { environment } from '../../../globals';
 import { ConvertToRelationship } from '../../../common/wizards/relationshipTemplate/convertRelationshipToRelationshipField';
 import { IRelationshipReference } from '../../../common/wizards/entityTemplate/commonInterfaces';
 
@@ -82,11 +83,7 @@ const RelationshipTemplateCard: React.FC<RelationshipTemplateCardProps> = ({
 
     const handleHover = (isHover: boolean) => {
         setIsHoverOnCard(isHover);
-        if (isHover) {
-            checkRelationshipTemplateHasRelationships();
-        }
     };
-
     return (
         <ViewingCard
             title={
@@ -106,6 +103,10 @@ const RelationshipTemplateCard: React.FC<RelationshipTemplateCardProps> = ({
                     <Grid item container flexBasis="10%" width="25px">
                         {isHoverOnCard && !isProperty && (
                             <CardMenu
+                                onOptionsIconClick={async () => {
+                                    await checkRelationshipTemplateHasRelationships();
+                                }}
+                                onOptionsIconClose={() => setIsHoverOnCard(false)}
                                 onEditClick={() => {
                                     const { sourceEntity, destinationEntity, ...restOfRelationshipTemplate } = relationshipTemplate;
                                     setRelationshipTemplateWizardDialogState({
@@ -162,6 +163,9 @@ const defaultRelationshipTemplate: IMongoRelationshipTemplate = {
 };
 
 const RelationshipTemplatesRow: React.FC = () => {
+    const workspace = useWorkspaceStore((state) => state.workspace);
+    const config = workspace.metadata;
+
     const queryClient = useQueryClient();
 
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
@@ -423,11 +427,11 @@ const RelationshipTemplatesRow: React.FC = () => {
                                             color={theme.palette.primary.main}
                                         />
                                     ) : (
-                                        <AppRegistrationIcon color="primary" style={{ ...environment.iconSize }} fontSize="small" />
+                                        <AppRegistrationIcon color="primary" style={config.iconSize} fontSize="small" />
                                     )}
                                     <Typography
                                         color={theme.palette.primary.main}
-                                        style={{ fontSize: environment.mainFontSizes.headlineSubTitleFontSize, fontWeight: '400' }}
+                                        style={{ fontSize: config.mainFontSizes.headlineSubTitleFontSize, fontWeight: '400' }}
                                     >
                                         {relationshipTemplateWithEntity.entityTemplate.displayName}
                                     </Typography>

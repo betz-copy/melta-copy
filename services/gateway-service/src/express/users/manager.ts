@@ -18,8 +18,8 @@ import { IKartoffelUser, IKartoffelUserDigitalIdentity } from '../../externalSer
 import StorageService from '../../externalServices/storageService';
 import UserService from '../../externalServices/userService';
 import { isProfileFileType, objectContains } from '../../utils';
-import { removeTmpFile } from '../../utils/fs';
 import { DigitalIdentitySourceDoesNotExistsError, KartoffelUserMissingDataError } from './error';
+import { UploadedFile } from '../../utils/busboy/interface';
 
 const {
     storageService: { usersGlobalBucketName },
@@ -44,8 +44,8 @@ class UsersManager {
         if (!profilePath) return null;
 
         if (profilePath === 'kartoffelProfile') {
-            return this.getKartoffelUserProfileRequest(user.externalMetadata.kartoffelId).catch((error) => {
-                throw new BadRequestError('kartoffel profile not found', { error });
+            return this.getKartoffelUserProfileRequest(user.externalMetadata.kartoffelId).catch(() => {
+                throw new BadRequestError('kartoffel profile not found');
             });
         }
 
@@ -102,7 +102,7 @@ class UsersManager {
         return UserService.updateUser(userId, { externalMetadata });
     }
 
-    static async updateUserPreferencesMetadata(userId: string, preferences: Partial<IBaseUser['preferences']>, file?: Express.Multer.File) {
+    static async updateUserPreferencesMetadata(userId: string, preferences: Partial<IBaseUser['preferences']>, file?: UploadedFile) {
         const user = await UserService.getUserById(userId);
         const { profilePath: currentProfilePath } = user.preferences || {};
         const updates: Partial<IBaseUser['preferences']> = { ...preferences };
@@ -118,10 +118,10 @@ class UsersManager {
                 );
             }
         };
+
         if (file) {
             await deleteCurrentProfileFile();
             const newProfilePath = await this.storageService.uploadFile(file);
-            await removeTmpFile(file.path);
             updates.profilePath = newProfilePath;
         } else if (currentProfilePath && (!preferences.profilePath || preferences.profilePath !== currentProfilePath)) {
             await deleteCurrentProfileFile();

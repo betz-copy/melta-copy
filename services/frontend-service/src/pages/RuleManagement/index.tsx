@@ -6,12 +6,11 @@ import { useLocation, useParams } from 'wouter';
 import { BreachType, IRuleBreachAlertPopulated, IRuleBreachRequestPopulated } from '@microservices/shared-interfaces';
 import { BlueTitle } from '../../common/BlueTitle';
 import '../../css/pages.css';
-import { environment } from '../../globals';
 import { getBreachAlertById, getBreachRequestById } from '../../services/ruleBreachesService';
 import RuleBreachDialog from './ruleBreachDialog';
 import { RuleBreachTable } from './table';
 
-const { defaultRowHeight, defaultFontSize } = environment.agGrid;
+import { useWorkspaceStore } from '../../stores/workspace';
 
 interface RuleBreachDialogContainerProps {
     breachType: string;
@@ -77,6 +76,9 @@ export const RuleBreachDialogContainer: React.FC<RuleBreachDialogContainerProps>
 };
 
 const RuleManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> }> = ({ setTitle }) => {
+    const workspace = useWorkspaceStore((state) => state.workspace);
+    const { defaultRowHeight, defaultFontSize } = workspace.metadata.agGrid;
+
     const { breachType, ruleBreachId } = useParams<{ breachType: string; ruleBreachId: string }>();
     const [_, navigate] = useLocation();
     const [ruleBreach, setRuleBreach] = useState<IRuleBreachAlertPopulated | IRuleBreachRequestPopulated | null>(null);

@@ -14,10 +14,10 @@ import {
 import { ViewingBox } from '../SystemManagement/components/ViewingBox';
 import ProcessCard, { StatusColors } from './ProcessCard';
 import { searchProcessesRequest } from '../../services/processesService';
-import { environment } from '../../globals';
 import { InfiniteScroll } from '../../common/InfiniteScroll';
 import './ProcessesList.css';
 import { useUserStore } from '../../stores/user';
+import { environment } from '../../globals';
 
 const { infiniteScrollPageCount } = environment.processInstances;
 

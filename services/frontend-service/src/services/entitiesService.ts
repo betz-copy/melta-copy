@@ -51,7 +51,6 @@ export const loadEntitiesRequest = async (
             })),
             ignoredRules,
         };
-
         formData.append('insertBrokenEntities', JSON.stringify(insertBrokenEntitiesObject));
     }
 
@@ -137,6 +136,7 @@ export const updateEntityRequestForMultiple = async (
 
     const filesToUpload: any = [];
     const unchangedFiles: any = []; /// //send single file as array to the back
+
     Object.entries(newEntityData.attachmentsProperties).forEach(([key, value]: [string, any]) => {
         if (Array.isArray(value) && value) {
             value.forEach((file, index) => {
@@ -157,7 +157,7 @@ export const updateEntityRequestForMultiple = async (
         }
     });
     filesToUpload.forEach(([key, value]) => {
-        formData.append(key, value as Blob);
+        formData.append(key, value);
     });
     unchangedFiles.forEach(([key, _value]) => {
         newEntityData.properties[key] = [];
@@ -174,6 +174,7 @@ export const updateEntityRequestForMultiple = async (
             }
         }
     });
+
     formData.append(
         'properties',
         JSON.stringify(
@@ -182,12 +183,17 @@ export const updateEntityRequestForMultiple = async (
             ),
         ),
     );
+
     formData.append('templateId', newEntityData.template._id);
 
     if (ignoredRules) {
         formData.append('ignoredRules', JSON.stringify(ignoredRules));
     }
-    const { data } = await axios.put<IEntity>(`${entities}/${entityId}`, formData);
+
+    const { data } = await axios.put<IEntity>(`${entities}/${entityId}`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+    });
+
     return data;
 };
 

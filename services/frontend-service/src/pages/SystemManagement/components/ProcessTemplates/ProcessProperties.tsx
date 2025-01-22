@@ -3,13 +3,15 @@ import { Button, Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
 import React, { useState } from 'react';
 import { IProcessSingleProperty } from '@microservices/shared-interfaces';
-import { environment } from '../../../../globals';
+import { useWorkspaceStore } from '../../../../stores/workspace';
 
 interface ProcessPropertiesProps {
     properties: Record<string, IProcessSingleProperty>;
 }
 
 export const ProcessProperties: React.FC<ProcessPropertiesProps> = ({ properties }) => {
+    const workspace = useWorkspaceStore((state) => state.workspace);
+
     const [isOpen, setIsOpen] = useState(false);
 
     return (
@@ -33,7 +35,7 @@ export const ProcessProperties: React.FC<ProcessPropertiesProps> = ({ properties
                         <Grid item container key={key} direction="row" wrap="nowrap" alignItems="center">
                             <Typography
                                 style={{
-                                    fontSize: environment.mainFontSizes.headlineSubTitleFontSize,
+                                    fontSize: workspace.metadata.mainFontSizes.headlineSubTitleFontSize,
                                     textOverflow: 'ellipsis',
                                     whiteSpace: 'nowrap',
                                     overflow: 'hidden',
@@ -44,7 +46,7 @@ export const ProcessProperties: React.FC<ProcessPropertiesProps> = ({ properties
                             </Typography>
                             <Typography
                                 style={{
-                                    fontSize: environment.mainFontSizes.headlineSubTitleFontSize,
+                                    fontSize: workspace.metadata.mainFontSizes.headlineSubTitleFontSize,
                                     textOverflow: 'ellipsis',
                                     whiteSpace: 'nowrap',
                                     overflow: 'hidden',

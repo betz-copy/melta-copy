@@ -1,21 +1,15 @@
 import { Router } from 'express';
-import multer from 'multer';
 import { createController } from '@microservices/shared';
 import IFramesController from './controller';
-import { wrapMulter } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
-import { createIFrameSchema, deleteIFrameSchema, getIFrameByIdSchema, searchIFramesSchema, updateIFrameSchema } from './validator.schema';
 import IFramesValidator from './middlewares';
-import config from '../../config';
+import { createIFrameSchema, deleteIFrameSchema, getIFrameByIdSchema, searchIFramesSchema, updateIFrameSchema } from './validator.schema';
 import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
+import { busboyMiddleware } from '../../utils/busboy/busboyMiddleware';
 
 export const iFramesRouter: Router = Router();
 const IFramesControllerMiddleware = createController(IFramesController);
 const IFramesValidatorMiddleware = createController(IFramesValidator, true);
-
-const {
-    service: { uploadsFolderPath },
-} = config;
 
 iFramesRouter.get(
     '/:iFrameId',
@@ -27,7 +21,7 @@ iFramesRouter.get(
 
 iFramesRouter.post(
     '/',
-    wrapMulter(multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).single('file')),
+    busboyMiddleware,
     ValidateRequest(createIFrameSchema),
     AuthorizerControllerMiddleware.userCanWriteTemplates,
     IFramesValidatorMiddleware.validateUserCanCreateIFrame,
@@ -36,7 +30,7 @@ iFramesRouter.post(
 
 iFramesRouter.put(
     '/:iFrameId',
-    wrapMulter(multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).single('file')),
+    busboyMiddleware,
     ValidateRequest(updateIFrameSchema),
     AuthorizerControllerMiddleware.userCanWriteTemplates,
     IFramesValidatorMiddleware.validateUserCanUpdateIFrame,

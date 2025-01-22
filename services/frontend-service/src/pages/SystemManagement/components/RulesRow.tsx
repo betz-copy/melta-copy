@@ -11,13 +11,11 @@ import { ErrorToast } from '../../../common/ErrorToast';
 import { InfiniteScroll } from '../../../common/InfiniteScroll';
 import SearchInput from '../../../common/inputs/SearchInput';
 import { RuleWizard } from '../../../common/wizards/rule';
-import { environment } from '../../../globals';
 import { deleteRuleRequest, ruleObjectToRuleForm, updateDisabledRuleRequest } from '../../../services/templates/rulesService';
 import { ViewingCard } from './Card';
 import { CardMenu } from './CardMenu';
 import { CreateButton } from './CreateButton';
-
-const { infiniteScrollPageCount } = environment.entitiesCardsView;
+import { useWorkspaceStore } from '../../../stores/workspace';
 
 export const RuleCard: React.FC<{
     rule: IMongoRule;
@@ -36,6 +34,8 @@ export const RuleCard: React.FC<{
     >;
     updateDisabledMutateAsync: UseMutateAsyncFunction<IMongoRule, unknown, IMongoRule, unknown>;
 }> = ({ rule, entityTemplates, setRuleWizardDialogState, setDeleteRuleWizardState, updateDisabledMutateAsync }) => {
+    const workspace = useWorkspaceStore((state) => state.workspace);
+    const { headlineSubTitleFontSize } = workspace.metadata.mainFontSizes;
     const theme = useTheme();
     const [isHoverOnCard, setIsHoverOnCard] = useState(false);
 
@@ -54,7 +54,10 @@ export const RuleCard: React.FC<{
                                 )}
                                 <Typography
                                     display="inline-block"
-                                    sx={{ fontSize: environment.mainFontSizes.headlineSubTitleFontSize, color: theme.palette.primary.main }}
+                                    sx={{
+                                        fontSize: headlineSubTitleFontSize,
+                                        color: theme.palette.primary.main,
+                                    }}
                                 >
                                     {rule.name}
                                 </Typography>
@@ -63,6 +66,7 @@ export const RuleCard: React.FC<{
                         <Grid item flexBasis="5%">
                             {isHoverOnCard && (
                                 <CardMenu
+                                    onOptionsIconClose={() => setIsHoverOnCard(false)}
                                     onEditClick={() => {
                                         setRuleWizardDialogState({
                                             isWizardOpen: true,
@@ -125,6 +129,9 @@ const RulesRow: React.FC = () => {
 
     const rules = queryClient.getQueryData<IRuleMap>('getRules')!;
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+
+    const workspace = useWorkspaceStore((state) => state.workspace);
+    const { bulk } = workspace.metadata.searchLimits;
 
     const [searchText, setSearchText] = useState('');
 
@@ -189,7 +196,7 @@ const RulesRow: React.FC = () => {
                     queryFunction={({ pageParam }) =>
                         Array.from(rules.values())
                             .filter(({ name }) => searchText === '' || name.includes(searchText))
-                            .splice(pageParam, infiniteScrollPageCount)
+                            .splice(pageParam, bulk)
                     }
                     onQueryError={(error) => {
                         // eslint-disable-next-line no-console
@@ -198,7 +205,7 @@ const RulesRow: React.FC = () => {
                     }}
                     getItemId={(rule) => rule._id}
                     getNextPageParam={(lastPage, allPages) => {
-                        const nextPage = allPages.length * infiniteScrollPageCount;
+                        const nextPage = allPages.length * bulk;
                         return lastPage.length ? nextPage : undefined;
                     }}
                     endText={i18next.t('noSearchLeft')}

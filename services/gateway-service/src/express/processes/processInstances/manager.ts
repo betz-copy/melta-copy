@@ -35,7 +35,6 @@ import EntityTemplateService from '../../../externalServices/templates/entityTem
 import { filteredMap } from '../../../utils';
 import { Authorizer } from '../../../utils/authorizer';
 import DefaultManagerProxy from '../../../utils/express/manager';
-import { removeTmpFile } from '../../../utils/fs';
 import { IProcessReviewerUpdateMailNotificationMetadataPopulated } from '../../../utils/mailNotifications/interfaces';
 import RabbitManager from '../../../utils/rabbit';
 import InstancesManager from '../../instances/manager';
@@ -43,6 +42,7 @@ import UsersManager from '../../users/manager';
 import WorkspaceManager from '../../workspaces/manager';
 import { EntityNotExist, NotFoundError } from '../error';
 import StepsInstancesManager from '../stepInstances/manager';
+import { UploadedFile } from '../../../utils/busboy/interface';
 
 export default class ProcessesInstancesManager extends DefaultManagerProxy<ProcessService> {
     private instancesService: InstancesService;
@@ -151,7 +151,7 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
         );
     }
 
-    async createProcessInstance(processData: IProcessInstance, files: Express.Multer.File[], userId: string) {
+    async createProcessInstance(processData: IProcessInstance, files: UploadedFile[], userId: string) {
         const processTemplate = await this.service.getProcessTemplateById(processData.templateId);
         this.checkEntityReferenceFields(processData.details, processTemplate.details.properties);
         if (!files.length) {
@@ -165,11 +165,6 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
             return populatedProcess;
         }
         const { props: processDetails, files: filesToUpload } = await this.instancesManager.uploadInstanceFiles(files, processData.details);
-        await Promise.all(
-            files.map((file) => {
-                return removeTmpFile(file.path);
-            }),
-        );
 
         const process = await this.service.createProcessInstance({ ...processData, details: processDetails }).catch(async (error) => {
             await this.storageService.deleteFiles(Object.values(filesToUpload).flat(1) as string[]).catch(() => {
@@ -203,7 +198,7 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
             });
     }
 
-    async updateProcessInstance(processId: string, processData: IProcessInstance, files: Express.Multer.File[], userId: string) {
+    async updateProcessInstance(processId: string, processData: IProcessInstance, files: UploadedFile[], userId: string) {
         const currProcessInstance = await this.getProcessInstance(processId, userId);
         const processTemplate = await this.service.getProcessTemplateById(currProcessInstance.templateId);
 
@@ -228,12 +223,6 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
         if (props) {
             await this.removeUnusedFileIds(processTemplate.details.properties, currProcessInstance.details, updatedProcessInstance.details);
         }
-
-        await Promise.all(
-            files.map((file) => {
-                return removeTmpFile(file.path);
-            }),
-        );
 
         const updatedProcess = await this.service.updateProcessInstance(processId, updatedProcessInstance).catch(async (error) => {
             await this.storageService.deleteFiles(Object.values(filesToUpload).flat(1) as string[]).catch(() => {

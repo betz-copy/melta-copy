@@ -1,7 +1,6 @@
 import { Router } from 'express';
-import multer from 'multer';
 import { createProxyMiddleware } from 'http-proxy-middleware';
-import { wrapController, wrapMulter } from '../../utils/express';
+import { wrapController } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
 import UsersController from './controller';
 import config from '../../config';
@@ -20,10 +19,7 @@ import {
     getKartoffelUserProfileRequestSchema,
 } from './validator.schema';
 import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
-
-const {
-    service: { uploadsFolderPath },
-} = config;
+import { busboyMiddleware } from '../../utils/busboy/busboyMiddleware';
 
 const { userService } = config;
 
@@ -62,7 +58,7 @@ usersRouter.post(
 
 usersRouter.patch(
     '/:userId/preferences',
-    wrapMulter(multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).single('file')),
+    busboyMiddleware,
     ValidateRequest(updateUserPreferencesMetadataRequestSchema),
     wrapController(UsersController.updateUserPreferencesMetadata),
 );

@@ -1,9 +1,6 @@
 import { Router } from 'express';
-import multer from 'multer';
 import { createController } from '@microservices/shared';
-import { wrapMulter } from '../../../utils/express';
 import ProcessTemplatesController from './controller';
-import config from '../../../config';
 import ValidateRequest from '../../../utils/joi';
 import {
     createProcessTemplateSchema,
@@ -13,10 +10,7 @@ import {
     searchProcessTemplatesSchema,
 } from './validator.schema';
 import { AuthorizerControllerMiddleware } from '../../../utils/authorizer';
-
-const {
-    service: { uploadsFolderPath },
-} = config;
+import { busboyMiddleware } from '../../../utils/busboy/busboyMiddleware';
 
 const TemplatesRouter: Router = Router();
 
@@ -30,7 +24,7 @@ TemplatesRouter.get(
 );
 TemplatesRouter.post(
     '/',
-    wrapMulter(multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).any()),
+    busboyMiddleware,
     ValidateRequest(createProcessTemplateSchema),
     AuthorizerControllerMiddleware.userCanWriteProcesses,
     TemplatesControllerMiddleware.createProcessTemplate,
@@ -44,7 +38,7 @@ TemplatesRouter.delete(
 );
 TemplatesRouter.put(
     '/:id',
-    wrapMulter(multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).any()),
+    busboyMiddleware,
     ValidateRequest(updateProcessTemplateSchema),
     AuthorizerControllerMiddleware.userCanWriteProcesses,
     TemplatesControllerMiddleware.updateProcessTemplate,

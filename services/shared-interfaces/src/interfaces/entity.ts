@@ -2,6 +2,7 @@ import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from './entityTe
 import { IRelationship } from './relationship';
 import { IMongoRelationshipTemplate } from './relationshipTemplate';
 import { IBrokenRule, IBrokenRulePopulated, IActionPopulated, IAction, ActionErrors, IFailedEntity } from './ruleBreach';
+import { Readable } from 'stream';
 
 export interface IEntity {
     templateId: string;
@@ -149,6 +150,17 @@ export interface ISearchBatchBody {
     };
     sort: ISearchSort;
     shouldSemanticSearch?: boolean;
+}
+
+export interface UploadedFile {
+    fieldname: string;
+    originalname: string;
+    encoding: string;
+    mimetype: string;
+    size: number;
+    stream: Readable;
+    destination?: string;
+    buffer?: Buffer;
 }
 
 type Coordinate = [number, number];

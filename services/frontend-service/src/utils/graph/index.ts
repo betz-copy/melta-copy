@@ -36,15 +36,15 @@ const searchNodeSizeInsideRangesDict = (connectionsCount: number, connectionsCou
 };
 
 export const getSizeOfNodeByConnections = (nodeId: string, links: LinkObject[]) => {
-    const { nodeConnectionsCountRangesToNodeSize, maximumNodeSize } = graphSettings;
+    const { nodeConnectionsCountRangesToNodeSize, maxNodeSize } = graphSettings;
 
     const connections = links.filter((curr) => curr.target === nodeId || curr.source === nodeId);
     const connectionsCount = connections.length;
 
     const selectedNodeSize = searchNodeSizeInsideRangesDict(connectionsCount, nodeConnectionsCountRangesToNodeSize);
 
-    if (selectedNodeSize > maximumNodeSize) {
-        return maximumNodeSize;
+    if (selectedNodeSize > maxNodeSize) {
+        return maxNodeSize;
     }
 
     return selectedNodeSize;

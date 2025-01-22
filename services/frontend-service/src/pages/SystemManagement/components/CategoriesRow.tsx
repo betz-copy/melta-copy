@@ -15,11 +15,11 @@ import { ErrorToast } from '../../../common/ErrorToast';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
 import { MeltaTooltip } from '../../../common/MeltaTooltip';
 import { CategoryWizard } from '../../../common/wizards/category';
-import { environment } from '../../../globals';
 import { categoryObjectToCategoryForm, deleteCategoryRequest } from '../../../services/templates/categoriesService';
 import { Box } from './Box';
 import { CardMenu } from './CardMenu';
 import { CreateButton } from './CreateButton';
+import { useWorkspaceStore } from '../../../stores/workspace';
 
 interface CategoryCardProps {
     category: IMongoCategory;
@@ -38,6 +38,8 @@ interface CategoryCardProps {
 }
 
 const CategoryCard: React.FC<CategoryCardProps> = ({ category, setDeleteCategoryDialogState, setCategoryWizardDialogState }) => {
+    const workspace = useWorkspaceStore((state) => state.workspace);
+
     const [isHoverOnCard, setIsHoverOnCard] = useState(false);
     const [isDeleteButtonDisabled, setIsDeleteButtonDisabled] = useState(false);
 
@@ -85,7 +87,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, setDeleteCategory
                             <MeltaTooltip title={category.displayName}>
                                 <Typography
                                     style={{
-                                        fontSize: environment.mainFontSizes.headlineSubTitleFontSize,
+                                        fontSize: workspace.metadata.mainFontSizes.headlineSubTitleFontSize,
                                         color: theme.palette.primary.main,
                                         fontWeight: '400',
                                         textOverflow: 'ellipsis',
@@ -102,6 +104,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, setDeleteCategory
                     <Grid item container flexBasis="10%">
                         {isHoverOnCard && (
                             <CardMenu
+                                onOptionsIconClose={() => setIsHoverOnCard(false)}
                                 onEditClick={() => setCategoryWizardDialogState({ isWizardOpen: true, category })}
                                 onDeleteClick={() => setDeleteCategoryDialogState({ isDialogOpen: true, categoryId: category._id })}
                                 disabledProps={{
@@ -120,6 +123,9 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, setDeleteCategory
 };
 
 const CategoriesRow: React.FC = () => {
+    const workspace = useWorkspaceStore((state) => state.workspace);
+    const { headlineSubTitleFontSize } = workspace.metadata.mainFontSizes;
+
     const queryClient = useQueryClient();
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
 
@@ -162,7 +168,13 @@ const CategoriesRow: React.FC = () => {
             <Box
                 header={
                     <Grid item container justifyContent="space-between" alignItems="center" height="40px">
-                        <Typography style={{ fontSize: environment.mainFontSizes.headlineSubTitleFontSize, fontWeight: '400', color: '#9398C2' }}>
+                        <Typography
+                            style={{
+                                fontSize: headlineSubTitleFontSize,
+                                fontWeight: '400',
+                                color: '#9398C2',
+                            }}
+                        >
                             {i18next.t('general')}
                         </Typography>
                         {isHoverOnBox && (

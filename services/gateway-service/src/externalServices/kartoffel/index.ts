@@ -1,6 +1,7 @@
 import axios from 'axios';
 import config from '../../config';
 import { IKartoffelUser } from './interface';
+import { BadRequestError } from '../../express/error';
 
 const {
     kartoffel: { url, baseEntitiesRoute, searchRoute, fieldToSearch, getByIdRoute, requestTimeout, profilePath },
@@ -31,8 +32,14 @@ class Kartoffel {
 
     static getUserProfile = async (kartoffelId: string) => {
         const { identityCard, personalNumber } = await this.getUserById(kartoffelId);
-        const { data } = await axios.get(`${url}${baseEntitiesRoute}/${personalNumber ?? identityCard}/${profilePath}`, { responseType: 'stream' });
-        return data;
+        try {
+            const { data } = await axios.get(`${url}${baseEntitiesRoute}/${personalNumber ?? identityCard}/${profilePath}`, {
+                responseType: 'stream',
+            });
+            return data;
+        } catch (error) {
+            throw new BadRequestError('Kartoffel profile not found');
+        }
     };
 }
 

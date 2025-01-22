@@ -43,6 +43,14 @@ class MinIOClient {
         return this.minioClient.makeBucket(this.bucketName, '');
     }
 
+    public async ensureBucket(): Promise<void> {
+        const exists = await this.bucketExists();
+        if (!exists) {
+            await this.makeBucket();
+            logger.info(`Bucket with name "${this.bucketName}" created successfully`);
+        }
+    }
+
     downloadFileStream(filePath: string) {
         return this.wrapDBNotExistsError(() => this.minioClient.getObject(this.bucketName, filePath));
     }

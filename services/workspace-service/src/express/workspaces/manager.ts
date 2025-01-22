@@ -1,6 +1,6 @@
 import { FilterQuery } from 'mongoose';
 import { parse as parsePath } from 'node:path/posix';
-import { IWorkspace, WorkspaceTypes } from '@microservices/shared';
+import { IMetadata, IWorkspace, WorkspaceTypes } from '@microservices/shared';
 import { transaction } from '../../utils/mongoose';
 import { DocumentNotFoundError, PathDoesNotExistError, PathIsNotFolderError, WorkspaceUnderRootMustBeDirError } from '../error';
 import WorkspacesModel from './model';
@@ -122,6 +122,29 @@ class WorkspacesManager {
             }
 
             return WorkspacesModel.findByIdAndDelete(id, { session }).orFail(new DocumentNotFoundError(id)).lean().exec();
+        });
+    }
+
+    static async updateMetadata(id: string, metadata: Partial<IMetadata>) {
+        return transaction(async (session) => {
+            const existingWorkspace = await WorkspacesModel.findById(id, {}, { session }).orFail(new DocumentNotFoundError(id)).lean().exec();
+
+            const updatedMetadata = {
+                ...existingWorkspace.metadata,
+                ...metadata,
+            };
+
+            return WorkspacesModel.findOneAndUpdate(
+                { _id: id },
+                {
+                    $set: {
+                        metadata: updatedMetadata,
+                    },
+                },
+                { new: true, session, lean: true },
+            )
+                .orFail(new DocumentNotFoundError(id))
+                .exec();
         });
     }
 }

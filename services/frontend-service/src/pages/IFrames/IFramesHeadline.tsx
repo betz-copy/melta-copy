@@ -15,6 +15,7 @@ import { SelectCheckbox } from '../../common/SelectCheckBox';
 import { useUserStore } from '../../stores/user';
 import { MeltaTooltip } from '../../common/MeltaTooltip';
 import IconButtonWithPopover from '../../common/IconButtonWithPopover';
+import { useWorkspaceStore } from '../../stores/workspace';
 
 const { iFramesOrderKey } = environment.iFrames;
 
@@ -29,6 +30,8 @@ const IFramesPageHeadline: React.FC<{
     const [allIFramesAllowed, setAllIFramesAllowed] = useState<IMongoIFrame[]>();
     const [inputValue, setInputValue] = useState('');
     const currentUser = useUserStore((state) => state.user);
+    const workspace = useWorkspaceStore((state) => state.workspace);
+    const { headlineTitleFontSize } = workspace.metadata.mainFontSizes;
 
     useEffect(() => {
         setAllIFramesAllowed(queryClient.getQueryData('allIFrames')!);
@@ -62,12 +65,7 @@ const IFramesPageHeadline: React.FC<{
         <TopBarGrid sx={{ height: '3.6rem' }} dir="rtl" container justifyContent="space-between" alignItems="center" wrap="nowrap">
             <Grid container spacing={3} wrap="nowrap" alignItems="center">
                 <Grid item>
-                    <BlueTitle
-                        title={i18next.t('pages.iFrames')}
-                        component="h4"
-                        variant="h4"
-                        style={{ fontSize: environment.mainFontSizes.headlineTitleFontSize }}
-                    />
+                    <BlueTitle title={i18next.t('pages.iFrames')} component="h4" variant="h4" style={{ fontSize: headlineTitleFontSize }} />
                 </Grid>
                 <Grid item>
                     <SelectCheckbox<IMongoIFrame>
@@ -82,6 +80,7 @@ const IFramesPageHeadline: React.FC<{
                         onDragEnd={handleOnDragEnd}
                         isSelectDisabled
                         showIcon
+                        hideChooseAll
                     />
                 </Grid>
 

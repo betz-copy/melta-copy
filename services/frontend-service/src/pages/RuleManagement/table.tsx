@@ -15,13 +15,13 @@ import {
 } from '@microservices/shared-interfaces';
 import IconButtonWithPopover from '../../common/IconButtonWithPopover';
 import '../../css/table.css';
-import { environment } from '../../globals';
 import { getRuleBreachAlertsRequest, getRuleBreachRequestsRequest } from '../../services/ruleBreachesService';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { agGridLocaleText } from '../../utils/agGrid/agGridLocaleText';
 import { dateColDef, enumArrayColDef, translatedEnumColDef } from '../../utils/agGrid/commonColDefs';
 import { DateFilterComponent } from '../../utils/agGrid/DateFilterComponent';
 import { trycatch } from '../../utils/trycatch';
+import { useWorkspaceStore } from '../../stores/workspace';
 
 const getDatasource = (breachType: BreachType, onFail: ((err: unknown) => void) | undefined): IServerSideDatasource => {
     return {
@@ -50,6 +50,7 @@ const getDatasource = (breachType: BreachType, onFail: ((err: unknown) => void) 
 };
 
 const getColumnDefs = (
+    defaultRowHeight: number,
     breachType: BreachType,
     onReviewBreachClick: (ruleBreach: IRuleBreachAlertPopulated | IRuleBreachRequestPopulated, breachType: BreachType) => void,
 ) => {
@@ -104,7 +105,7 @@ const getColumnDefs = (
             { title: i18next.t('ruleManagement.actionType') },
             Object.values(actionTypeTranslations),
             400,
-            environment.agGrid.defaultRowHeight,
+            defaultRowHeight,
         ),
         dateColDef<IRuleBreachPopulated>('createdAt', ({ data }) => data?.createdAt, {
             title: i18next.t('ruleManagement.createdAt'),
@@ -156,10 +157,11 @@ const RuleBreachTable = forwardRef<
         onReviewBreachClick: (ruleBreach: IRuleBreachAlertPopulated | IRuleBreachRequestPopulated, breachType: BreachType) => void;
     }
 >(({ rowHeight, pageRowCount = 5, fontSize, minColumnWidth, breachType, onReviewBreachClick }, ref) => {
+    const workspace = useWorkspaceStore((state) => state.workspace);
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
     const gridRef = useRef<AgGridReact>(null);
-    const columnDefs: ColDef[] = getColumnDefs(breachType, onReviewBreachClick);
+    const columnDefs: ColDef[] = getColumnDefs(workspace.metadata.agGrid.defaultRowHeight, breachType, onReviewBreachClick);
 
     const datasourceOnFail = (err: unknown) => {
         toast.error(i18next.t('entitiesTableOfTemplate.failedToLoadData'));

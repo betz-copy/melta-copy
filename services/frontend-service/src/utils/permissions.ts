@@ -1,5 +1,5 @@
 import { IUser } from '@microservices/shared-interfaces';
-import { WorkspaceState } from '../stores/workspace';
+import { defaultMetadata, WorkspaceState } from '../stores/workspace';
 
 export const getWorkspacePermissions = async (permissions: IUser['permissions'], hierarchyIds: string[]) => {
     const hierarchyId = hierarchyIds.find((id) => Boolean(permissions[id]));
@@ -12,7 +12,12 @@ export const getWorkspacePermissions = async (permissions: IUser['permissions'],
 
 export const handleWorkspace = (title: string, setWorkspace: WorkspaceState['setWorkspace'], workspace?: WorkspaceState['workspace']) => {
     if (!workspace) return;
-    setWorkspace(workspace);
-
+    setWorkspace({
+        ...workspace,
+        metadata: {
+            ...defaultMetadata,
+            ...(workspace.metadata || {}),
+        },
+    });
     document.title = title;
 };

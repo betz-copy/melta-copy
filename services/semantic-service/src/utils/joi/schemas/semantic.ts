@@ -6,3 +6,7 @@ export const semanticIndexFilesSchema = Joi.object({
     templateId: Joi.string().required(),
     entityId: Joi.string().required(),
 });
+
+export const semanticDeleteFilesSchema = Joi.object({
+    minioFileIds: Joi.array().items(Joi.string()).required(),
+});

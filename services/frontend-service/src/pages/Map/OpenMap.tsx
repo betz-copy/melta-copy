@@ -2,9 +2,9 @@ import { Dialog, Grid, IconButton, Typography } from '@mui/material';
 import React, { useState } from 'react';
 import { LocationOn } from '@mui/icons-material';
 import { IEntity, IMongoEntityTemplatePopulated } from '@microservices/shared-interfaces';
-import { environment } from '../../globals';
 import { HighlightText } from '../../utils/HighlightText';
 import EntityWithLocationFields from './LocationPreview';
+import { useWorkspaceStore } from '../../stores/workspace';
 
 const OpenMap: React.FC<{
     field: string;
@@ -14,7 +14,8 @@ const OpenMap: React.FC<{
     searchValue?: string;
 }> = ({ field, entity, entityTemplate, showText = true, searchValue }) => {
     const [open, setOpen] = useState(false);
-
+    const workspace = useWorkspaceStore((state) => state.workspace);
+    const { headlineSubTitleFontSize } = workspace.metadata.mainFontSizes;
     const handleButtonClick = async () => {
         setOpen(true);
     };
@@ -34,7 +35,7 @@ const OpenMap: React.FC<{
                         <Typography
                             sx={{
                                 marginRight: '5px',
-                                fontSize: environment.mainFontSizes.headlineSubTitleFontSize,
+                                fontSize: headlineSubTitleFontSize,
                                 textOverflow: 'ellipsis',
                                 overflow: 'hidden',
                                 whiteSpace: 'nowrap',

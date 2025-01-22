@@ -3,7 +3,7 @@ import * as env from 'env-var';
 import fileExtension from './documentExtension';
 
 const config = {
-    multer: {
+    busboy: {
         fileKeyName: 'file',
         filesKeyName: 'files',
     },
@@ -68,6 +68,7 @@ const config = {
         previewPrefix: env.get('DOCUMENT_PREVIEW_PREFIX').default('preview').asString(),
         previewFileType: env.get('DOCUMENT_PREVIEW_FILE_TYPE').default('.pdf').asString(),
         documentType: env.get('DOCUMENT_PREVIEW_FILE_TYPE').default(fileExtension.document).asArray(),
+        uuidLength: env.get('FILE_UUID_LENGTH').default(32).asInt(),
     },
 };
 

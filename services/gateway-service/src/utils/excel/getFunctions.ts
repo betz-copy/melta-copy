@@ -1,7 +1,6 @@
 import Excel from 'exceljs';
 import { StatusCodes } from 'http-status-codes';
 import { AxiosError } from 'axios';
-import fs from 'fs';
 import {
     IEntitySingleProperty,
     IFailedEntity,
@@ -25,8 +24,9 @@ import {
 import excelConfig from './excelConfig';
 
 import config from '../../config';
+import { UploadedFile } from '../busboy/interface';
 
-const { entitiesFileLimit, invalidDate, invalidTime } = config.loadExcel;
+const { invalidDate, invalidTime } = config.loadExcel;
 
 const formatExcel = (value: Excel.CellValue | string, propertyTemplate: IEntitySingleProperty) => {
     const { type, format } = propertyTemplate;
@@ -90,7 +90,12 @@ const handleFailedEntities = (rowData: Record<string, any>, failedProperties: IF
     failedEntities.push(failedEntity);
 };
 
-const readExcelFile = async (files: Express.Multer.File[], template: IMongoEntityTemplatePopulated, failedEntities: IFailedEntity[]) => {
+const readExcelFile = async (
+    files: UploadedFile[],
+    template: IMongoEntityTemplatePopulated,
+    failedEntities: IFailedEntity[],
+    entitiesFileLimit = config.loadExcel.entitiesFileLimit,
+) => {
     const entities: IEntity[] = [];
     const columns = Object.fromEntries(
         Object.entries(template.properties.properties).filter(([_propertyKey, propertyTemplate]) => isIncludedColumn(propertyTemplate)),
@@ -98,9 +103,11 @@ const readExcelFile = async (files: Express.Multer.File[], template: IMongoEntit
 
     await Promise.all(
         files.map(async (file) => {
-            const stream = fs.createReadStream(file.path);
             const workbook = new Excel.Workbook();
-            await workbook.xlsx.read(stream);
+
+            if (!file?.stream) return;
+
+            await workbook.xlsx.read(file.stream);
             const worksheet = workbook.worksheets[0];
             if (!worksheet) throw new BadRequestError(`Can't read excel`);
 
