@@ -134,10 +134,15 @@ const getColumnDefs = (
             menuTabs: [],
             sortable: false,
         },
-        dateColDef<IRuleBreachRequestPopulated>('reviewedAt', ({ data }) => data?.reviewedAt, {
-            title: i18next.t('ruleManagement.reviewedAt'),
-            format: 'date-time',
-        }),
+        dateColDef<IRuleBreachRequestPopulated>(
+            'reviewedAt',
+            ({ data }) => data?.reviewedAt,
+            {
+                title: i18next.t('ruleManagement.reviewedAt'),
+                format: 'date-time',
+            },
+            true,
+        ),
     ];
 
     if (breachType === 'request') {

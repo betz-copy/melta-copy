@@ -85,7 +85,14 @@ export const getColumnDefs = <Data extends any = EntityData>({
         const hiddenProperties = template.properties.hide;
         const { type, format, calculateTime, archive } = propertyTemplate;
         const isLastColumn = defaultColumnsOrder[property]?.order === targetOrder;
-        console.log({ property }, isLastColumn, defaultColumnWidths[property]);
+        console.log(
+            { property },
+            isLastColumn,
+            { notVisibleColumnsAmount },
+            defaultColumnsOrder[property]?.order,
+            { targetOrder },
+            defaultColumnWidths[property],
+        );
 
         const hideField = template.properties.hide.includes(property);
 

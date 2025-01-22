@@ -6,6 +6,7 @@ import {
     CellEditingStoppedEvent,
     ColumnMovedEvent,
     ColumnResizedEvent,
+    ColumnState,
     ColumnVisibleEvent,
     FirstDataRenderedEvent,
     GridApi,
@@ -242,7 +243,9 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         const [defaultColumnsOrder, setDefaultColumnsOrder] = useState(savedColumnsOrder ? JSON.parse(savedColumnsOrder) : {});
 
         const savedColumnWidths = localStorage.getItem(`columnWidths-${saveStorageProps.pageType}-${template._id}`);
-        const [defaultColumnWidths, setDefaultColumnWidths] = useState(savedColumnWidths ? JSON.parse(savedColumnWidths) : {});
+        const [defaultColumnWidths, setDefaultColumnWidths] = useState<Record<string, number>>(
+            savedColumnWidths ? JSON.parse(savedColumnWidths) : {},
+        );
 
         const [_, navigate] = useLocation();
 
@@ -251,7 +254,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             setOpenDeleteDialog(false);
         };
         const [selectedRow, setSelectedRow] = useState('');
-        const [autoSizePadding, setAutoSizePadding] = React.useState<number>(0);
+        // const [autoSizePadding, setAutoSizePadding] = React.useState<number>(0);
 
         const { isLoading: isDeleteLoading, mutateAsync: deleteMutation } = useMutation((id: string) => deleteEntityRequest(id), {
             onError: (error: AxiosError) => {
@@ -461,57 +464,39 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                 sessionStorage.setItem(`currentPage-${saveStorageProps.pageType}-${template._id}`, JSON.stringify(currentPage));
             }
         };
-        // const handleRemainingWidth = (params: any) => {
-        //     const { api } = params;
 
-        //     const visibleColumns = updateVisibleColumns(params);
-        //     const visibleKeys = Object.keys(visibleColumns).filter((key) => visibleColumns[key] === true);
-        //     const columnsKeys = visibleKeys.filter((key) => !defaultColumnWidths[key] && key !== `actions-${template._id}`);
+        const calculateRemainingWidth = (columnStates: ColumnState[], hasActions: boolean): number => {
+            const usedWidth: number = Object.values(defaultColumnWidths).reduce((sum, width) => sum + width, 0);
+            const totalGridWidth: number = tableRef.current?.offsetWidth!;
+            const widthConsumed: number = columnStates.reduce((sum, col) => sum + col.width!, 0);
+            console.log({ totalGridWidth, usedWidth });
 
-        //     const columnStates = api.getColumnState().filter((col) => columnsKeys.includes(col.colId));
-
-        //     const usedWidth = Object.values(defaultColumnWidths).reduce((sum, width) => sum + width, 0);
-
-        //     const totalGridWidth = tableRef.current?.offsetWidth || 0; // Provide a fallback
-        //     if (!totalGridWidth) {
-        //         console.error('Grid width is undefined');
-        //         return 0; // Default padding
-        //     }
-
-        //     const widthConsumed = columnStates.reduce((sum, col) => sum + (col.width || 0), 0);
-
-        //     const remainingWidth = Math.max(
-        //         0,
-        //         totalGridWidth - usedWidth - widthConsumed, // Adjust padding dynamically if needed
-        //     );
-        //     console.log({ remainingWidth }, visibleKeys.length);
-
-        //     setAutoSizePadding(remainingWidth / (visibleKeys.length - 1));
-        // };
+            return totalGridWidth - usedWidth - widthConsumed - (hasActions ? 200 : 0);
+        };
 
         const autoSizeAll = (params: GridReadyEvent<Data, any> | RowDataUpdatedEvent<Data, any>, visibleKeys: string[]) => {
             const { api } = params;
 
+            const hasActions = visibleKeys.some((key) => key.startsWith('actions-'));
+
             const columnsKeys = visibleKeys.filter((key) => !defaultColumnWidths[key] && key !== `actions-${template._id}`);
 
-            if (columnsKeys.length === 0) return;
-
-            console.log('inside', { columnsKeys });
-
-            api.sizeColumnsToFit();
-            api.autoSizeColumns(defaultColumnWidths.length > 0 ? columnsKeys : Object.keys(template.properties.properties));
-
-            const columnStates = api.getColumnState().filter((col) => columnsKeys.includes(col.colId));
-
-            const usedWidth: any = Object.values(defaultColumnWidths).reduce((sum, width) => sum + width, 0);
-            const totalGridWidth = tableRef.current?.offsetWidth;
-            if (!totalGridWidth) {
-                console.error('bbbbbbbbbbbbbbbb');
+            if (columnsKeys.length === 0) {
+                console.warn(`No columns to resize for table with template ID: ${template._id}`);
                 return;
             }
-            const widthConsumed = columnStates.reduce((sum, col) => sum + col.width!, 0);
-            const remainingWidth = totalGridWidth - usedWidth - widthConsumed - 200; // (defaultVisibleColumns[`actions-${template._id}`] ? 200 : 0);
 
+            console.log('inside', { columnsKeys });
+            const before = api.getColumnState().filter((col) => columnsKeys.includes(col.colId));
+
+            api.sizeColumnsToFit();
+            // eslint-disable-next-line no-unused-expressions
+            Object.keys(defaultColumnWidths).length > 0 ? api.autoSizeColumns(columnsKeys) : api.autoSizeAllColumns(); // Object.keys(template.properties.properties));
+
+            const columnStates = api.getColumnState().filter((col) => columnsKeys.includes(col.colId));
+            console.log({ before, columnStates });
+
+            const remainingWidth = calculateRemainingWidth(columnStates, hasActions);
             const columnWidths: Record<string, number> = columnStates.reduce(
                 (acc, col, index) => {
                     const newWidth = index === columnStates.length - 1 ? col.width! + Math.max(remainingWidth, 0) : col.width!;
@@ -520,7 +505,6 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                 },
                 { [`actions-${template._id}`]: 200 },
             );
-            console.log({ totalGridWidth, remainingWidth, columnWidths });
 
             api.setColumnWidths(
                 Object.entries(columnWidths).map(([key, newWidth]) => {
@@ -532,9 +516,12 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                 const updatedWidths = { ...defaultColumnWidths, ...columnWidths };
                 localStorage.setItem(`columnWidths-${saveStorageProps.pageType}-${template._id}`, JSON.stringify(updatedWidths));
                 console.log('!!!!!!!!!!!', updatedWidths);
-
                 setDefaultColumnWidths(updatedWidths);
             }
+            // if (Object.keys(defaultColumnsOrder).length === 0) {
+            //     handleColumnsOrder(params);
+            // }
+
             console.log('finish the auto all');
         };
 
@@ -710,14 +697,16 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                         onGridReady={(params) => {
                             console.log('onGridReady!!!!!!!!!!!!!!');
                             // handleRemainingWidth(params);
-                            const visibleColumns = updateVisibleColumns(params);
-                            const visibleKeys = Object.keys(visibleColumns).filter((key) => visibleColumns[key] === true);
+                            if (saveStorageProps.pageType) {
+                                const visibleColumns = updateVisibleColumns(params);
+                                const visibleKeys = Object.keys(visibleColumns).filter((key) => visibleColumns[key] === true);
 
-                            // if (Object.keys(defaultColumnsOrder).length === 0) {
-                            //     handleColumnsOrder(params);
-                            // }
+                                // if (Object.keys(defaultColumnsOrder).length === 0) {
+                                //     handleColumnsOrder(params);
+                                // }
 
-                            autoSizeAll(params, visibleKeys);
+                                autoSizeAll(params, visibleKeys);
+                            }
 
                             const savedSortModel = localStorage.getItem(`sortModel-${saveStorageProps.pageType}-${template._id}`);
                             if (savedSortModel) {

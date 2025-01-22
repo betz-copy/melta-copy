@@ -95,7 +95,7 @@ export const EntitiesTable: React.FC<{
                         shouldSaveColumnOrder: false,
                         shouldSavePagination: false,
                         shouldSaveScrollPosition: false,
-                        pageType: `loadExcel-${title}`,
+                        // pageType: `loadExcel-${title}`,
                     }}
                     ignoreType
                     showNavigateToRowButton={false}
