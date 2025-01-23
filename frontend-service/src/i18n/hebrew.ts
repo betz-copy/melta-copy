@@ -1285,8 +1285,8 @@ export default {
         isDrawerOpen: 'תפריט צד פתוח',
         shouldNavigateToEntityPage: 'עבור לעמוד פרט בעת יצירת/עריכת ישות',
         agGrid: {
-            rowCount: 'מספר שורות בטבלה במצב סגור',
-            defaultExpandedRowCount: 'מספר שורות בטבלה במצב פתוח',
+            rowCount: 'מספר שורות להצגה בטבלה במצב סגור',
+            defaultExpandedRowCount: 'מספר שורות להצגה בטבלה במצב פתוח',
             defaultRowHeight: 'גובה שורה בטבלה',
             defaultFontSize: 'גודל גופן טקסט בטבלה',
             defaultExpandedTableHeight: 'גודל טבלה במצב פתוח',
@@ -1303,6 +1303,10 @@ export default {
         excel: {
             entitiesFileLimit: 'הגבלת מספר ישויות שניתן להעלות בקובץ',
             filesLimit: 'הגבלת מספר קבצים שניתן להעלות בטעינת יישויות',
+        },
+        searchLimits: {
+            table: 'כמות ישויות למשיכה בתצוגה טבלאית',
+            bulk: 'כמות ישויות למשיכה בתצוגת כרטיסיות',
         },
         location: {
             noLayers: 'לא נמצאו שכבות',

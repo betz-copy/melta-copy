@@ -30,6 +30,10 @@ export const defaultMetadata = {
         entitiesFileLimit: 500,
         filesLimit: 5,
     },
+    searchLimits: {
+        table: 5,
+        bulk: 5,
+    },
 } as const;
 
 export const useWorkspaceStore = create<WorkspaceState>((set) => ({

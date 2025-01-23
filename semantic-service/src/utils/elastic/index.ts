@@ -23,6 +23,7 @@ const {
         topHitsByGroupSize,
         uniqueEntityForAgg,
     },
+    minio: { useDevBucket, devBucketPrefix },
 } = config;
 
 interface IGroupByUniquePropAggregate {
@@ -40,6 +41,7 @@ class ElasticClient {
 
     constructor(workspaceId: string) {
         this.workspaceId = workspaceId;
+        this.createIndex();
     }
 
     static async initialize() {
@@ -56,8 +58,9 @@ class ElasticClient {
     }
 
     createIndex() {
+        const fixedIndexName = `${index}-${useDevBucket ? devBucketPrefix : ''}${this.workspaceId}`;
         return ElasticClient.client!.indices.create({
-            index: `${index}-${this.workspaceId}`,
+            index: fixedIndexName,
             mappings: {
                 properties: {
                     embedding: {
@@ -169,6 +172,7 @@ class ElasticClient {
             const response = await ElasticClient.client!.search<IElasticDoc, IGroupByUniquePropAggregate>(searchBody);
             return this.formatElasticResponse(response);
         } catch (e) {
+            logger.error('Error searching', e);
             return undefined;
         }
     }
