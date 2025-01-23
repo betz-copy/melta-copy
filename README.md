@@ -24,7 +24,21 @@ git clone https://github.com/melta-team/melta.git
 cd melta
 ```
 
-3. Add gitlab access token to the project:
+3. If migrating from old Melta Project, Run the following command:
+    ```bash
+        npm run migrate 
+    ```
+    it will:
+    1. remove all *-services folders that are not in shared
+    2. clean all ole node_modules
+    3. install new shared packages
+    4. build all docker images
+    5. build all shared code
+    6. stop all ui instances
+    7. run ui
+    
+if not, continue to the following steps
+4. Add gitlab access token to the project:
 
     1. Go to [Gitlab Personal access tokens](https://gitlab.com/-/user_settings/personal_access_tokens) And create new token.
     2. Add the token to npm_token_secret.txt file:
@@ -33,13 +47,14 @@ cd melta
     echo <your_access_token> > npm_token_secret.txt
     ```
 
-4. Run the project(all microservices except frontend):
+5. Run the project(all microservices except frontend):
 
 ```bash
 ./scripts/run_compose.sh
 ```
 
-5. Run frontend service:
+
+6. Run frontend service:
     1. Install global npm packges:
     ```bash
     npm install
@@ -68,24 +83,6 @@ npm run build
 ```
 
 This command will build all services using the `npm run build` script defined in each service's `package.json` file.
-
-## Cleaning the Project
-
-To clean the project and remove all built files, run:
-
-```bash
-npm run clean
-```
-
-This command will remove the `dist` folder from all services and packages.
-
-## Cleaning Node Modules
-
-To remove all `node_modules` folders from the project, run:
-
-```bash
-npm run clean:node_modules
-```
 
 ## Installing Global npm
 

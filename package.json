@@ -14,7 +14,8 @@
         "prettier": "npm run prettier --workspaces",
         "clean": "rimraf ./services/**/dist && rimraf ./packages/**/dist",
         "clean:node_modules": "rimraf ./services/**/node_modules && rimraf ./node_modules",
-        "start-ui": "npm run -w services/frontend-service start:docker"
+        "start-ui": "npm run -w services/frontend-service start:docker",
+        "migrate": "rimraf ./*-services && npm run clean && npm run clean:node_modules && npm i --workspaces=false && npm run build -w services/shared-interfaces && npm run build -w services/shared && sudo kill $(lsof -t -i:3000) && npm run start-ui"
     },
     "repository": {
         "type": "git",
