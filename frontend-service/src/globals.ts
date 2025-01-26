@@ -101,9 +101,6 @@ export const environment = {
         maxNumOfCharactersNotInFullWidth: 700,
         numOfFixedDigits: 18,
     },
-    entitiesCardsView: {
-        infiniteScrollPageCount: 12,
-    },
     permission: {
         infiniteScrollPageCount: 13,
     },
