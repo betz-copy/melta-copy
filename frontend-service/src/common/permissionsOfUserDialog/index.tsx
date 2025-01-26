@@ -10,25 +10,27 @@ import { toast } from 'react-toastify';
 import { useLocation } from 'wouter';
 import * as Yup from 'yup';
 import { ICategoryMap } from '../../interfaces/categories';
-import { PermissionScope, PermissionType } from '../../interfaces/permissions';
+import { PermissionScope } from '../../interfaces/permissions';
 import { IUser } from '../../interfaces/users';
-import { createUserRequest, deletePermissionsFromMetadata, syncUserPermissionsRequest } from '../../services/userService';
+import { createUserRequest, syncUserPermissionsRequest } from '../../services/userService';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { useUserStore } from '../../stores/user';
 import { useWorkspaceStore } from '../../stores/workspace';
 import {
-    changeGivenInstancePermission,
-    changeUserInstancePermission,
-    checkUserInstancePermission,
-    getCategoryPermissionsToSyncAndDelete,
+    getChangedCategoryPermissions,
+    checkUserCategoryPermission,
     getUserPermissionScopeOfCategory,
 } from '../../utils/permissions/instancePermissions';
-import { didPermissionsChange, userHasNoPermissions } from '../../utils/permissions/permissionOfUserDialog';
+import {
+    CategoryWithTemplates,
+    didPermissionsChange,
+    entityTemplatePermissionDialog,
+    userHasNoPermissions,
+} from '../../utils/permissions/permissionOfUserDialog';
 import UserAutocomplete from '../inputs/UserAutocomplete';
 import InstancesPermissionsCard from './instancesPermissionsCard';
 import ManagementPermissionsCard from './managementPermissionsCard';
 import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
-import { InstancesSubclassesPermissions } from '../../interfaces/permissions/permissions';
 
 const defaultEmptyUser = {
     _id: '',
@@ -65,14 +67,22 @@ const PermissionsOfUserDialog: React.FC<{
     const queryClient = useQueryClient();
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-
-    const categoryEntity = new Map(categories);
+    const dialogPermissionData: Map<string, CategoryWithTemplates> = new Map();
 
     Array.from(entityTemplates.values()).forEach((entity) => {
-        const category: any = { ...categoryEntity.get(entity.category._id) };
-        const displayEntity = { id: entity._id, name: entity.displayName };
-        category.entityTemplates = category?.entityTemplates ? [...category.entityTemplates, displayEntity] : [displayEntity];
-        categoryEntity.set(entity.category._id, category);
+        const baseCategory = categories.get(entity.category._id);
+        if (baseCategory) {
+            const category: CategoryWithTemplates = {
+                entityTemplates: dialogPermissionData.get(entity.category._id)?.entityTemplates || [],
+                ...baseCategory,
+            };
+            const displayEntity: entityTemplatePermissionDialog = {
+                id: entity._id,
+                name: entity.displayName,
+            };
+            category.entityTemplates = category?.entityTemplates ? [...category.entityTemplates, displayEntity] : [displayEntity];
+            dialogPermissionData.set(entity.category._id, category);
+        }
     });
 
     const { mutate: createUser } = useMutation(
@@ -95,25 +105,9 @@ const PermissionsOfUserDialog: React.FC<{
 
     const { mutate: syncUserPermissions } = useMutation(
         async (formUser: IUser) => {
-            const {
-                permissions: {
-                    [workspace._id]: { instances, ...permissions },
-                },
-            } = formUser;
-
-            const { categoryPermissionsToSync, categoryPermissionsToDelete } = getCategoryPermissionsToSyncAndDelete(instances);
-
-            if (Object.keys(categoryPermissionsToDelete).length) {
-                await deletePermissionsFromMetadata(
-                    { workspaceId: workspace._id, type: PermissionType.instances, userId: formUser._id },
-                    { instances: { categories: categoryPermissionsToDelete } },
-                );
-            }
-
             return syncUserPermissionsRequest(formUser._id, {
                 [workspace._id]: {
-                    ...permissions,
-                    instances: Object.keys(categoryPermissionsToSync).length ? { categories: categoryPermissionsToSync } : null,
+                    ...formUser.permissions[workspace._id],
                 },
             });
         },
@@ -165,31 +159,6 @@ const PermissionsOfUserDialog: React.FC<{
                 {(formikProps: FormikProps<IUser>) => {
                     const currentPermissions = formikProps.values.permissions[workspace._id];
                     const categoriesPermissions = currentPermissions?.instances?.categories ?? {};
-                    const entityTemplatesPermissions = currentPermissions?.instances?.entityTemplates ?? {};
-
-                    // console.log(
-                    //     // changeUserInstancePermission(InstancesSubclassesPermissions.categories, currentPermissions, '1', true, PermissionScope.read),
-                    //     { categoryEntity },
-                    //     changeGivenInstancePermission(
-                    //         categoryEntity,
-                    //         currentPermissions,
-                    //         InstancesSubclassesPermissions.entityTemplates,
-                    //         true,
-                    //         // '675581a7f9282cfbea8b3e78',
-                    //         // PermissionScope.read,
-                    //         // { id: '675581a7f9282cfbea8b3e4c', type: InstancesSubclassesPermissions.categories },
-                    //         '675581a7f9282cfbea8b3e53',
-                    //         PermissionScope.read,
-                    //         { id: '675581a7f9282cfbea8b3e50', type: InstancesSubclassesPermissions.categories },
-                    //     ),
-                    // );
-
-                    // console.log({ formikProps });
-
-                    // console.log({ categoriesPermissions });
-
-                    // console.log({ currentPermissions });
-                    // console.log(Object.keys(InstancesSubclassesPermissions).indexOf(InstancesSubclassesPermissions.entityTemplates));
 
                     const handleManagementPermissionCheck = (path: string, checked: boolean) => {
                         formikProps.setFieldValue(path, checked ? { scope: PermissionScope.write } : null);
@@ -207,12 +176,16 @@ const PermissionsOfUserDialog: React.FC<{
                                     <UserAutocomplete
                                         mode={existingUser ? 'internal' : 'external'}
                                         value={formikProps.values}
-                                        onChange={(_e, chosenUser) => formikProps.setValues(chosenUser ?? defaultEmptyUser)}
+                                        onChange={(_e, chosenUser) => {
+                                            formikProps.setValues(
+                                                chosenUser ? { ...chosenUser, permissions: defaultEmptyUser.permissions } : defaultEmptyUser,
+                                            );
+                                        }}
                                         onBlur={formikProps.handleBlur}
                                         readOnly={mode === 'view'}
                                         disabled={mode === 'edit'}
                                         isError={Boolean(formikProps.touched.fullName && formikProps.errors.fullName)}
-                                        helperText={formikProps.touched.fullName ? formikProps.errors.fullName : ''}
+                                        helperText={formikProps.touched.fullName ? formikProps.errors.fullName?.toString() : ''}
                                         isOptionDisabled={(option) => !option.fullName || !option.jobTitle || !option.hierarchy || !option.mail}
                                     />
                                 </Box>
@@ -278,11 +251,10 @@ const PermissionsOfUserDialog: React.FC<{
                                 <Box margin={1}>
                                     <InstancesPermissionsCard
                                         viewMode={mode === 'view'}
-                                        categoryEntity={categoryEntity}
                                         formikProps={formikProps}
+                                        workspaceId={workspace._id}
                                         permissionsPath={permissionsPath}
-                                        currentPermissions={currentPermissions}
-                                        categoriesCheckboxProps={Array.from(categoryEntity.values(), (currCategory) => ({
+                                        categoriesCheckboxProps={Array.from(dialogPermissionData.values(), (currCategory) => ({
                                             categoryId: currCategory._id,
                                             entityTemplates: currCategory.entityTemplates,
                                             categoryDisplayName: currCategory.displayName,
@@ -290,39 +262,47 @@ const PermissionsOfUserDialog: React.FC<{
                                             scope: getUserPermissionScopeOfCategory(categoriesPermissions, currCategory._id),
                                             permissionType: {
                                                 read: {
-                                                    checked: checkUserInstancePermission(
-                                                        InstancesSubclassesPermissions.categories,
-                                                        currentPermissions,
-                                                        currCategory._id,
-                                                        PermissionScope.read,
-                                                    ),
+                                                    checked: checkUserCategoryPermission(currentPermissions, currCategory, PermissionScope.read),
                                                     onChange:
                                                         mode === 'view'
                                                             ? () => {}
                                                             : (_e, checked: boolean) => {
-                                                                  formikProps.setFieldValue(`${permissionsPath}.instances.categories`, {
-                                                                      ...categoriesPermissions,
-                                                                      [currCategory._id]: checked ? { scope: PermissionScope.read } : null,
-                                                                      //   ...changeFunc(),
-                                                                  });
+                                                                  const newPermission = getChangedCategoryPermissions(
+                                                                      categoriesPermissions,
+                                                                      checked,
+                                                                      PermissionScope.read,
+                                                                      currCategory._id,
+                                                                  );
+
+                                                                  if (
+                                                                      !newPermission.scope &&
+                                                                      Object.keys(newPermission.entityTemplates).length === 0
+                                                                  ) {
+                                                                      delete categoriesPermissions[currCategory._id];
+                                                                  } else {
+                                                                      categoriesPermissions[currCategory._id] = newPermission;
+                                                                  }
+
+                                                                  formikProps.setFieldValue(
+                                                                      `${permissionsPath}.instances.categories`,
+                                                                      categoriesPermissions,
+                                                                  );
                                                               },
                                                 },
                                                 write: {
-                                                    checked: checkUserInstancePermission(
-                                                        InstancesSubclassesPermissions.categories,
-                                                        currentPermissions,
-                                                        currCategory._id,
-                                                        PermissionScope.write,
-                                                    ),
+                                                    checked: checkUserCategoryPermission(currentPermissions, currCategory, PermissionScope.write),
                                                     onChange:
                                                         mode === 'view'
                                                             ? () => {}
                                                             : (_e, checked: boolean) => {
                                                                   formikProps.setFieldValue(`${permissionsPath}.instances.categories`, {
                                                                       ...categoriesPermissions,
-                                                                      [currCategory._id]: {
-                                                                          scope: checked ? PermissionScope.write : PermissionScope.read,
-                                                                      },
+                                                                      [currCategory._id]: getChangedCategoryPermissions(
+                                                                          categoriesPermissions,
+                                                                          checked,
+                                                                          PermissionScope.write,
+                                                                          currCategory._id,
+                                                                      ),
                                                                   });
                                                               },
                                                 },
@@ -355,9 +335,13 @@ const PermissionsOfUserDialog: React.FC<{
                                                                                     { scope: PermissionScope.write },
                                                                                 ]),
                                                                             )
-                                                                          : {},
+                                                                          : Object.fromEntries(
+                                                                                Array.from(categories.keys()).map((categoryId) => [
+                                                                                    categoryId,
+                                                                                    { scope: PermissionScope.read },
+                                                                                ]),
+                                                                            ),
                                                                   );
-                                                                  formikProps.setFieldValue(`${permissionsPath}.instances.entityTemplates`, {});
                                                               },
                                                           },
                                                           read: {
@@ -368,36 +352,27 @@ const PermissionsOfUserDialog: React.FC<{
                                                                       )) ||
                                                                   currentPermissions?.admin?.scope === PermissionScope.write,
                                                               onChange: (_e, checked) => {
+                                                                  Array.from(categories).forEach(([categoryId]) => {
+                                                                      const newPermission = getChangedCategoryPermissions(
+                                                                          categoriesPermissions,
+                                                                          checked,
+                                                                          PermissionScope.read,
+                                                                          categoryId,
+                                                                      );
+
+                                                                      if (
+                                                                          !newPermission.scope &&
+                                                                          Object.keys(newPermission.entityTemplates).length === 0
+                                                                      ) {
+                                                                          delete categoriesPermissions[categoryId];
+                                                                      } else {
+                                                                          categoriesPermissions[categoryId] = newPermission;
+                                                                      }
+                                                                  });
                                                                   formikProps.setFieldValue(
                                                                       `${permissionsPath}.instances.categories`,
-                                                                      Object.fromEntries(
-                                                                          Array.from(categories).map(([categoryId]) => {
-                                                                              const existingScope = categoriesPermissions[categoryId]?.scope;
-
-                                                                              let newScope: PermissionScope | undefined;
-
-                                                                              if (checked) {
-                                                                                  newScope =
-                                                                                      existingScope === PermissionScope.write
-                                                                                          ? PermissionScope.write
-                                                                                          : PermissionScope.read;
-                                                                              } else {
-                                                                                  newScope =
-                                                                                      existingScope === PermissionScope.write
-                                                                                          ? PermissionScope.write
-                                                                                          : undefined;
-                                                                              }
-
-                                                                              return [
-                                                                                  categoryId,
-                                                                                  newScope
-                                                                                      ? { ...categoriesPermissions[categoryId], scope: newScope }
-                                                                                      : null,
-                                                                              ];
-                                                                          }),
-                                                                      ),
+                                                                      categoriesPermissions,
                                                                   );
-                                                                  formikProps.setFieldValue(`${permissionsPath}.instances.entityTemplates`, {});
                                                               },
                                                           },
                                                       },

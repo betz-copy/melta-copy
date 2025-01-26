@@ -1,47 +1,31 @@
-import { Collapse, Divider, Grid, IconButton, Typography, useTheme } from '@mui/material';
+import { Collapse, Grid, IconButton, Typography, useTheme } from '@mui/material';
 import React, { useState } from 'react';
 import ArrowLeftRoundedIcon from '@mui/icons-material/ArrowLeftRounded';
+import { FormikProps } from 'formik';
+import { _cloneObject } from '@ag-grid-community/core';
 import { MeltaCheckbox } from '../MeltaCheckbox';
 import PermissionViewIcon from './PermissionViewIcon';
 import { permissionTypeCheckboxProps } from './instancesPermissionsCard';
-import { changeGivenInstancePermission, checkUserInstancePermission, clearChildPermissions } from '../../utils/permissions/instancePermissions';
+import { IUser } from '../../interfaces/users';
 import { PermissionScope } from '../../interfaces/permissions';
-import { InstancesSubclassesPermissions } from '../../interfaces/permissions/permissions';
+import { getChangedTemplatePermission } from '../../utils/permissions/instancePermissions';
+import { entityTemplatePermissionDialog } from '../../utils/permissions/permissionOfUserDialog';
 
 const CategoryCheckboxPermission: React.FC<{
     categoryDisplayName: string;
     viewMode: boolean;
-    categoryEntity: any;
     permissionType: permissionTypeCheckboxProps;
     disabled: boolean;
     categoryId: string;
-    entityTemplates: any;
-    currentPermissions: any;
-    formikProps: any;
-    permissionsPath: any;
-}> = ({
-    categoryDisplayName,
-    viewMode,
-    permissionType,
-    disabled,
-    entityTemplates,
-    currentPermissions,
-    formikProps,
-    permissionsPath,
-    categoryId,
-    categoryEntity,
-}) => {
+    formikProps: FormikProps<IUser>;
+    workspaceId: string;
+    permissionsPath: string;
+    entityTemplates: entityTemplatePermissionDialog[];
+}> = ({ categoryDisplayName, viewMode, permissionType, disabled, entityTemplates, formikProps, workspaceId, categoryId, permissionsPath }) => {
     const theme = useTheme();
     const [openEntitiesList, setOpenEntitiesList] = useState(false);
-    const entityPermissions = currentPermissions?.instances?.entityTemplates ?? {};
-
-    // console.log({ currentPermissions });
-
-    // console.log({ entityPermissions });
-
-    // console.log({ permissionType });
-
-    console.log(formikProps?.values?.permissions?.['675581a76f6999455dbb3e5a']?.instances);
+    const categoriesPermission = formikProps.values?.permissions?.[workspaceId]?.instances?.categories ?? {};
+    const categoryPermissions = categoriesPermission?.[categoryId] ?? {};
 
     return (
         <Grid item container>
@@ -64,30 +48,7 @@ const CategoryCheckboxPermission: React.FC<{
                 ) : (
                     <MeltaCheckbox
                         checked={permissionType.read.checked}
-                        onChange={(event, checked) => {
-                            let newPermissions = changeGivenInstancePermission(
-                                categoryEntity,
-                                currentPermissions,
-                                InstancesSubclassesPermissions.categories,
-                                checked,
-                                categoryId,
-                                PermissionScope.read,
-                            );
-
-                            if (checked) {
-                                newPermissions = clearChildPermissions(
-                                    categoryEntity.get(categoryId).entityTemplates,
-                                    newPermissions,
-                                    InstancesSubclassesPermissions.entityTemplates,
-                                    categoryId,
-                                    PermissionScope.read,
-                                );
-                            }
-
-                            formikProps.setFieldValue(`${permissionsPath}.instances`, {
-                                ...newPermissions,
-                            });
-                        }}
+                        onChange={permissionType.read.onChange}
                         disabled={disabled || permissionType.write.checked}
                     />
                 )}
@@ -96,43 +57,14 @@ const CategoryCheckboxPermission: React.FC<{
                 {viewMode ? (
                     <PermissionViewIcon checked={permissionType.write.checked} />
                 ) : (
-                    <MeltaCheckbox
-                        checked={permissionType.write.checked}
-                        onChange={(event, checked) => {
-                            let newPermissions = changeGivenInstancePermission(
-                                categoryEntity,
-                                currentPermissions,
-                                InstancesSubclassesPermissions.categories,
-                                checked,
-                                categoryId,
-                                PermissionScope.write,
-                            );
-
-                            if (checked) {
-                                newPermissions = clearChildPermissions(
-                                    categoryEntity.get(categoryId).entityTemplates,
-                                    newPermissions,
-                                    InstancesSubclassesPermissions.entityTemplates,
-                                    categoryId,
-                                    PermissionScope.write,
-                                );
-                            }
-
-                            formikProps.setFieldValue(`${permissionsPath}.instances`, {
-                                ...newPermissions,
-                            });
-                        }}
-                        disabled={disabled}
-                    />
+                    <MeltaCheckbox checked={permissionType.write.checked} onChange={permissionType.write.onChange} disabled={disabled} />
                 )}
             </Grid>
             <Grid xs={12}>
                 <Collapse in={openEntitiesList}>
                     {entityTemplates.map((entityCheck) => {
-                        // console.log({ entityCheck });
-
                         return (
-                            <Grid container xs={12} key={entityCheck._id}>
+                            <Grid container xs={12} key={entityCheck.id}>
                                 <Grid xs={1.2} />
                                 <Grid xs={4.8} display="flex" alignItems="center">
                                     <Typography fontSize={14.5}>{entityCheck.name}</Typography>
@@ -144,43 +76,26 @@ const CategoryCheckboxPermission: React.FC<{
                                     ) : (
                                         <MeltaCheckbox
                                             checked={
-                                                permissionType.read.checked ||
-                                                checkUserInstancePermission(
-                                                    InstancesSubclassesPermissions.entityTemplates,
-                                                    currentPermissions,
-                                                    entityCheck.id,
-                                                    PermissionScope.read,
-                                                )
+                                                categoryPermissions?.entityTemplates?.[entityCheck.id]?.scope !== undefined ||
+                                                permissionType.read.checked
                                             }
-                                            onChange={(event, checked) => {
-                                                const newPermissions = changeGivenInstancePermission(
-                                                    categoryEntity,
-                                                    currentPermissions,
-                                                    InstancesSubclassesPermissions.entityTemplates,
-                                                    checked,
-                                                    entityCheck.id,
-                                                    PermissionScope.read,
-                                                    { id: categoryId, type: InstancesSubclassesPermissions.categories },
+                                            onChange={(_event, checked) => {
+                                                formikProps.setFieldValue(
+                                                    `${permissionsPath}.instances.categories`,
+                                                    getChangedTemplatePermission(
+                                                        categoriesPermission,
+                                                        checked,
+                                                        PermissionScope.read,
+                                                        categoryId,
+                                                        entityCheck.id,
+                                                        entityTemplates,
+                                                    ),
                                                 );
-
-                                                formikProps.setFieldValue(`${permissionsPath}.instances`, {
-                                                    ...newPermissions,
-                                                });
                                             }}
                                             disabled={
                                                 disabled ||
-                                                checkUserInstancePermission(
-                                                    InstancesSubclassesPermissions.entityTemplates,
-                                                    currentPermissions,
-                                                    entityCheck.id,
-                                                    PermissionScope.write,
-                                                ) ||
-                                                checkUserInstancePermission(
-                                                    InstancesSubclassesPermissions.categories,
-                                                    currentPermissions,
-                                                    categoryId,
-                                                    PermissionScope.write,
-                                                )
+                                                categoryPermissions?.entityTemplates?.[entityCheck.id]?.scope === PermissionScope.write ||
+                                                permissionType.write.checked
                                             }
                                             height="17px"
                                             width="17px"
@@ -194,28 +109,21 @@ const CategoryCheckboxPermission: React.FC<{
                                     ) : (
                                         <MeltaCheckbox
                                             checked={
-                                                permissionType.write.checked ||
-                                                checkUserInstancePermission(
-                                                    InstancesSubclassesPermissions.entityTemplates,
-                                                    currentPermissions,
-                                                    entityCheck.id,
-                                                    PermissionScope.write,
-                                                )
+                                                categoryPermissions?.entityTemplates?.[entityCheck.id]?.scope === PermissionScope.write ||
+                                                permissionType.write.checked
                                             }
-                                            onChange={(event, checked) => {
-                                                const newPermissions = changeGivenInstancePermission(
-                                                    categoryEntity,
-                                                    currentPermissions,
-                                                    InstancesSubclassesPermissions.entityTemplates,
-                                                    checked,
-                                                    entityCheck.id,
-                                                    PermissionScope.write,
-                                                    { id: categoryId, type: InstancesSubclassesPermissions.categories },
+                                            onChange={(_event, checked) => {
+                                                formikProps.setFieldValue(
+                                                    `${permissionsPath}.instances.categories`,
+                                                    getChangedTemplatePermission(
+                                                        categoriesPermission,
+                                                        checked,
+                                                        PermissionScope.write,
+                                                        categoryId,
+                                                        entityCheck.id,
+                                                        entityTemplates,
+                                                    ),
                                                 );
-
-                                                formikProps.setFieldValue(`${permissionsPath}.instances`, {
-                                                    ...newPermissions,
-                                                });
                                             }}
                                             disabled={disabled}
                                             height="17px"
