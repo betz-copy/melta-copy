@@ -197,6 +197,13 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         const worksheet = await createWorksheet(workbook, template, displayColumns, headersOnly || !!insertEntities);
         const { searchEntitiesChunkSize } = config.service;
 
+        if (headersOnly) return;
+
+        if (insertEntities) {
+            styleAWorksheet(worksheet, insertEntities, template, workspace, displayColumns);
+            return;
+        }
+
         const templateCount = await this.getEntitiesCountByTemplates(true, {
             templateIds: [template._id],
             textSearch,
