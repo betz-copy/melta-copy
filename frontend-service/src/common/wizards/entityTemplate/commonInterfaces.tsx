@@ -16,6 +16,7 @@ export interface CommonFormInputProperties {
     patternCustomErrorMessage: string;
     dateNotification?: number | null;
     isDailyAlert?: boolean | null;
+    isDatePastAlert?: boolean | null;
     calculateTime?: boolean | null;
     serialStarter?: number;
     relationshipReference?: IRelationshipReference;
@@ -26,4 +27,15 @@ export interface CommonFormInputProperties {
     readOnly?: boolean;
     uniqueCheckbox?: boolean;
     groupName?: string;
+    archive?: boolean;
+}
+
+export interface ConvertToRelationshipFieldFormInputProperties {
+    fieldName: string;
+    displayFieldName: string;
+    relationshipReference: {
+        relationshipTemplateDirection: 'outgoing' | 'incoming';
+        relatedTemplateId: string;
+        relatedTemplateField: string;
+    };
 }

@@ -12,8 +12,8 @@ import { IRuleMap } from '../../interfaces/rules';
 import { getAllTemplates, GetAllTemplatesType } from '../../services/templates/getAllTemplates';
 import { getFile } from '../../services/workspacesService';
 import { useUserStore } from '../../stores/user';
-import { useWorkspaceStore } from '../../stores/workspace';
-import { getWorkspacePermissions } from '../../utils/permissions';
+import { defaultMetadata, useWorkspaceStore } from '../../stores/workspace';
+import { handleWorkspace } from '../../utils/permissions';
 import { mapTemplates } from '../../utils/templates';
 import ErrorPage from '../ErrorPage';
 import { MeltaRoutesInner } from './routes';
@@ -25,7 +25,6 @@ interface IMeltaRoutesProps {
 export const MeltaRoutes: React.FC<IMeltaRoutesProps> = ({ path }) => {
     const setWorkspace = useWorkspaceStore((state) => state.setWorkspace);
     const currentUser = useUserStore((state) => state.user);
-    const setUser = useUserStore((state) => state.setUser);
 
     const queryClient = useQueryClient();
 
@@ -62,21 +61,13 @@ export const MeltaRoutes: React.FC<IMeltaRoutesProps> = ({ path }) => {
     });
 
     useEffect(() => {
-        const handleWorkspace = async () => {
-            if (!workspace) return;
-
-            setWorkspace(workspace);
-            document.title = workspace.displayName;
-
-            const workspacePermissions = await getWorkspacePermissions(workspace._id, currentUser.permissions);
-            if (workspacePermissions) currentUser.permissions[workspace._id] = workspacePermissions;
-
-            if (currentUser.currentWorkspacePermissions !== currentUser.permissions[workspace._id])
-                setUser({ ...currentUser, currentWorkspacePermissions: currentUser.permissions[workspace._id] });
-        };
-
-        handleWorkspace();
-    }, [workspace, setWorkspace, currentUser, setUser]);
+        if (workspace) {
+            handleWorkspace(workspace.displayName || '', setWorkspace, {
+                ...workspace,
+                metadata: { ...defaultMetadata, ...workspace.metadata },
+            });
+        }
+    }, [workspace, setWorkspace]);
 
     const isLoading = useMemo(() => isLoadingAllTemplates || isLoadingWorkspace, [isLoadingAllTemplates, isLoadingWorkspace]);
     const isError = useMemo(() => isErrorAllTemplates || isErrorWorkspace, [isErrorAllTemplates, isErrorWorkspace]);

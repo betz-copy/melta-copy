@@ -6,20 +6,17 @@ import { environment } from '../../globals';
 import { IWorkspace } from '../../interfaces/workspaces';
 import { MainBox } from '../../Main.styled';
 import { getDir, getFile } from '../../services/workspacesService';
-import { useUserStore } from '../../stores/user';
-import { useWorkspaceStore } from '../../stores/workspace';
-import { getWorkspacePermissions } from '../../utils/permissions';
+import { defaultMetadata, useWorkspaceStore } from '../../stores/workspace';
 import ErrorPage from '../ErrorPage';
 import { PermissionsDialog } from './PermissionsDialog';
 import { Topbar } from './Topbar';
 import { Waves } from './Waves';
 import { workspaceObjectToWorkspaceForm, WorkspaceWizard } from './Wizard';
 import { Workspace } from './Workspace';
+import { handleWorkspace } from '../../utils/permissions';
 
 const DirView: React.FC<{ params: { '*': string } }> = ({ params }) => {
     const setWorkspace = useWorkspaceStore((state) => state.setWorkspace);
-    const currentUser = useUserStore((state) => state.user);
-    const setUser = useUserStore((state) => state.setUser);
 
     const [wizardDialogState, setWizardDialogState] = useState<{ isWizardOpen: boolean; workspace: IWorkspace | null }>({
         isWizardOpen: false,
@@ -35,21 +32,13 @@ const DirView: React.FC<{ params: { '*': string } }> = ({ params }) => {
     ]);
 
     useEffect(() => {
-        const handleWorkspace = async () => {
-            if (!currentWorkspace) return;
-
-            setWorkspace(currentWorkspace);
-            document.title = environment.defaultTitle;
-
-            const workspacePermissions = await getWorkspacePermissions(currentWorkspace._id, currentUser.permissions);
-            if (workspacePermissions) currentUser.permissions[currentWorkspace._id] = workspacePermissions;
-
-            if (currentUser.currentWorkspacePermissions !== currentUser.permissions[currentWorkspace._id])
-                setUser({ ...currentUser, currentWorkspacePermissions: currentUser.permissions[currentWorkspace._id] });
-        };
-
-        handleWorkspace();
-    }, [currentWorkspace, setWorkspace, currentUser, setUser]);
+        if (currentWorkspace) {
+            handleWorkspace(environment.defaultTitle, setWorkspace, {
+                ...currentWorkspace,
+                metadata: { ...defaultMetadata, ...currentWorkspace.metadata },
+            });
+        }
+    }, [currentWorkspace, setWorkspace]);
 
     if (isError) return <ErrorPage errorText={i18next.t('workspaces.requestedWorkspaceDoesntExist')} />;
 

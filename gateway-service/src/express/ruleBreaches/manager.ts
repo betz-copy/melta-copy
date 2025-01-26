@@ -63,6 +63,7 @@ import DefaultManagerProxy from '../../utils/express/manager';
 import { RabbitManager } from '../../utils/rabbit';
 import { UsersManager } from '../users/manager';
 import { WorkspaceManager } from '../workspaces/manager';
+import { UploadedFile } from '../../utils/busboy/interface';
 
 const { errorCodes, ruleBreachService } = config;
 
@@ -89,7 +90,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
     async createRuleBreachRequest(
         ruleBreachRequestData: Omit<IRuleBreachRequest, '_id' | 'createdAt' | 'originUserId'>,
         userId: string,
-        files: Express.Multer.File[] = [],
+        files: UploadedFile[] = [],
     ): Promise<IRuleBreachRequestPopulated> {
         await this.uploadRuleBreachFiles(ruleBreachRequestData, files);
 
@@ -129,7 +130,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
     async createRuleBreachAlert(
         ruleBreachAlertData: Omit<IRuleBreachAlert, '_id' | 'createdAt' | 'originUserId'>,
         userId: string,
-        files: Express.Multer.File[] = [],
+        files: UploadedFile[] = [],
     ): Promise<IRuleBreachAlertPopulated> {
         await this.uploadRuleBreachFiles(ruleBreachAlertData, files);
 
@@ -368,7 +369,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
         const { templateId, properties } = action.actionMetadata;
         const instancesManager = new InstancesManager(this.workspaceId);
 
-        const entity = await instancesManager.createEntityInstance({ templateId, properties }, [], brokenRules, originUserId, false);
+        const entity = await instancesManager.createEntityInstance({ templateId, properties }, [], brokenRules, originUserId, undefined, false);
 
         await this.service.updateRuleBreachRequestActionsMetadata(_id, [
             {
@@ -525,7 +526,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
         return this.discardRuleBreachRequest(ruleBreachRequest, user, RuleBreachRequestStatus.Canceled);
     }
 
-    private async uploadRuleBreachFiles(ruleBreach: Omit<IRuleBreachAlert, '_id' | 'createdAt' | 'originUserId'>, files: Express.Multer.File[]) {
+    private async uploadRuleBreachFiles(ruleBreach: Omit<IRuleBreachAlert, '_id' | 'createdAt' | 'originUserId'>, files: UploadedFile[] = []) {
         if (!files.length) return;
 
         const instancesManager = new InstancesManager(this.workspaceId);
@@ -745,17 +746,17 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
     }
 
     public async populateBrokenRules(brokenRules: IBrokenRule[]): Promise<IBrokenRulePopulated[]> {
-        const entitiyIds = new Set<string>();
+        const entityIds = new Set<string>();
         const relationshipIds = new Set<string>();
         brokenRules.forEach(({ failures }) => {
             failures.forEach(({ entityId, causes }) => {
-                entitiyIds.add(entityId);
+                entityIds.add(entityId);
 
                 causes.forEach(({ instance }) => {
-                    entitiyIds.add(instance.entityId);
+                    entityIds.add(instance.entityId);
 
                     if (instance.aggregatedRelationship) {
-                        entitiyIds.add(instance.aggregatedRelationship.otherEntityId);
+                        entityIds.add(instance.aggregatedRelationship.otherEntityId);
                         relationshipIds.add(instance.aggregatedRelationship.relationshipId);
                     }
                 });
@@ -771,18 +772,18 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
         const relationships = await this.instancesService.getRelationshipsByIds(Array.from(relationshipIds));
 
         relationships.forEach((relationship) => {
-            entitiyIds.add(relationship.sourceEntityId);
-            entitiyIds.add(relationship.destinationEntityId);
+            entityIds.add(relationship.sourceEntityId);
+            entityIds.add(relationship.destinationEntityId);
         });
 
         // no point to do getInstanceById to unexisting entity
-        entitiyIds.forEach((str) => {
+        entityIds.forEach((str) => {
             if (str.startsWith(ruleBreachService.brokenRulesFakeEntityIdPrefix)) {
-                entitiyIds.delete(str);
+                entityIds.delete(str);
             }
         });
 
-        const entities = await this.instancesService.getEntityInstancesByIds(Array.from(entitiyIds));
+        const entities = await this.instancesService.getEntityInstancesByIds(Array.from(entityIds));
 
         const entitiesMap = new Map(entities.map((entity) => [entity.properties._id, entity]));
         const relationshipsMap = new Map(relationships.map((relationship) => [relationship.properties._id, relationship]));

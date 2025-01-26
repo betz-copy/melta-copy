@@ -28,6 +28,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
     isError: boolean;
     helperText?: string;
     size?: 'small' | 'medium';
+    style?: React.CSSProperties;
 }> = ({
     template,
     showField,
@@ -42,11 +43,12 @@ const TemplateEntitiesAutocomplete: React.FC<{
     isError,
     helperText,
     size,
+    style,
 }) => {
+    const { cacheBlockSize } = environment.agGrid;
+
     const [inputValue, setInputValue] = useState<string>(displayValue || '');
     const [allEntities, setAllEntities] = useState<IEntity[]>([]);
-
-    const { cacheBlockSize } = environment.agGrid;
 
     const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useInfiniteQuery(
         ['searchEntitiesOfTemplate', template._id, inputValue],
@@ -128,6 +130,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
             onInputChange={handleInputChange}
             disabled={disabled}
             onBlur={onBlur}
+            style={style}
             options={allEntities}
             loading={isLoading || isFetchingNextPage}
             loadingText={i18next.t('templateEntitiesAutocomplete.loading')}

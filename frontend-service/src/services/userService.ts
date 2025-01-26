@@ -1,10 +1,13 @@
 import axios from '../axios';
 import { environment } from '../globals';
+import { NotificationType } from '../interfaces/notifications';
 import { ICompactNullablePermissions, ICompactPermissions, IPermission, ISubCompactPermissions } from '../interfaces/permissions/permissions';
-import { IExternalUser, IUser, IUserSearchBody } from '../interfaces/users';
+import { IExternalUser, IMongoUser, IUser, IUserPreferences, IUserSearchBody } from '../interfaces/users';
 import { RecursiveNullable } from '../utils/types';
 
-const { users } = environment.api;
+const {
+    api: { users },
+} = environment;
 
 export const getMyUserRequest = async () => {
     const { data } = await axios.get<IUser>(`${users}/my`);
@@ -16,6 +19,11 @@ export const getUserByIdRequest = async (userId: string) => {
     return data;
 };
 
+export const getKartoffelUserProfileRequest = async (kartoffelId: string) => {
+    const { data } = await axios.get(`${users}/kartoffelUserProfile/${kartoffelId}`, { responseType: 'blob' });
+    return URL.createObjectURL(data);
+};
+
 export const searchUsersRequest = async (searchBody: IUserSearchBody) => {
     const { data } = await axios.post<{ users: IUser[]; count: number }>(`${users}/search`, searchBody);
     return data;
@@ -23,6 +31,27 @@ export const searchUsersRequest = async (searchBody: IUserSearchBody) => {
 
 export const createUserRequest = async (kartoffelId: string, digitalIdentitySource: string, permissions: ICompactPermissions) => {
     const { data } = await axios.post<IUser>(users, { kartoffelId, digitalIdentitySource, permissions });
+    return data;
+};
+
+export const updateUserPreferencesMetadataRequest = async (
+    userId: string,
+    profilePreference: IUserPreferences,
+    notificationsToShowCheckbox: NotificationType[],
+    darkMode?: boolean,
+) => {
+    const formData = new FormData();
+    if (profilePreference.icon?.file instanceof File) {
+        formData.append('file', profilePreference.icon.file);
+    } else if (profilePreference.icon) {
+        formData.append('profilePath', profilePreference.icon.file.name!);
+    } else if (profilePreference.profilePath) {
+        formData.append('profilePath', profilePreference.profilePath);
+    }
+    formData.append('mailsNotificationsTypes', JSON.stringify(notificationsToShowCheckbox));
+    if (darkMode !== undefined) formData.append('darkMode', JSON.stringify(darkMode));
+
+    const { data } = await axios.patch<IUser>(`${users}/${userId}/preferences`, formData);
     return data;
 };
 
@@ -47,5 +76,15 @@ export const deletePermissionsFromMetadata = async (
     metadata: RecursiveNullable<ISubCompactPermissions>,
 ) => {
     const { data } = await axios.patch<void>(`${users}/metadata`, { query, metadata });
+    return data;
+};
+
+export const getUserProfileRequest = async (user: Partial<IUser>) => {
+    const { data } = await axios.get(`${users}/user-profile/${user._id}`, { responseType: 'blob' });
+    return URL.createObjectURL(data);
+};
+
+export const searchUsersByPermissions = async (workspaceId: string): Promise<IMongoUser[]> => {
+    const { data } = await axios.get<IMongoUser[]>(`${users}/search/${workspaceId}`);
     return data;
 };

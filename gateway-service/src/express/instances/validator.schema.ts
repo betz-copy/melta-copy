@@ -1,5 +1,5 @@
 import Joi from 'joi';
-import { ExtendedJoi, fileSchema, MongoIdSchema } from '../../utils/joi';
+import { excelTemplateSchema, ExtendedJoi, fileSchema, MongoIdSchema } from '../../utils/joi';
 import { brokenRuleSchema } from '../ruleBreaches/validator.schema';
 import config from '../../config';
 
@@ -43,11 +43,29 @@ export const updateEntityStatusSchema = Joi.object({
     params: { id: Joi.string().required() },
 });
 
-// DELETE /api/instances/entities/:id
-export const deleteEntityInstanceSchema = Joi.object({
-    body: {},
+// POST /api/instances/entities/delete/bulk
+const baseDeleteSchema = Joi.object({
+    selectAll: Joi.boolean().required(),
+    templateId: Joi.string().required(),
+    deleteAllRelationships: Joi.boolean(),
+});
+
+const selectAllSchema = baseDeleteSchema.keys({
+    selectAll: Joi.valid(true).required(),
+    idsToExclude: Joi.array().items(Joi.string()),
+    filter: Joi.any(), // will be checked by instance-manager
+    textSearch: Joi.string().allow(''),
+});
+
+const specificIdsSchema = baseDeleteSchema.keys({
+    selectAll: Joi.valid(false).required(),
+    idsToInclude: Joi.array().items(Joi.string()).min(1).required(),
+});
+
+export const deleteEntityInstancesSchema = Joi.object({
+    body: Joi.alternatives(selectAllSchema, specificIdsSchema).required(),
     query: {},
-    params: { id: Joi.string().required() },
+    params: {},
 });
 
 // POST /api/instances/entities/export/document/:entityId
@@ -69,7 +87,9 @@ export const exportEntitiesSchema = Joi.object({
         templates: Joi.object().pattern(Joi.string(), {
             filter: Joi.any(), // will be checked by instance-manager
             sort: Joi.any(), // will be checked by instance-manager
-            displayColumns: Joi.array().items(Joi.string()).required(),
+            displayColumns: Joi.array().items(Joi.string()),
+            headersOnly: Joi.boolean(),
+            insertEntities: Joi.array().items(Joi.object().pattern(Joi.string(), Joi.any())),
         }),
     },
     query: {},
@@ -104,6 +124,25 @@ export const searchEntitiesBatchRequestSchema = Joi.object({
     params: {},
 });
 
+// POST /api/instances/search/location
+export const searchEntitiesByLocationRequestSchema = Joi.object({
+    body: Joi.object({
+        textSearch: Joi.string().allow(''),
+        templates: Joi.object().pattern(
+            Joi.string(),
+            Joi.object({
+                filter: Joi.any(),
+            }),
+        ),
+        circle: Joi.object({
+            coordinate: Joi.array().items(Joi.number()).length(2).required(),
+            radius: Joi.number().positive().required(),
+        }),
+        polygon: Joi.array().items(Joi.array().items(Joi.number()).length(2)),
+    }).xor('circle', 'polygon'),
+    query: Joi.object(),
+    params: Joi.object(),
+});
 /*
  * POST /api/instances/entities/count
  */
@@ -117,6 +156,19 @@ export const getEntitiesCountByTemplates = Joi.object({
     params: {},
 });
 
+const semanticSearchResult = Joi.object().pattern(
+    Joi.string(),
+    Joi.object().pattern(
+        Joi.string(),
+        Joi.array().items(
+            Joi.object({
+                minioFileId: Joi.string(),
+                text: Joi.string(),
+            }),
+        ),
+    ),
+);
+
 // POST /api/instances/search/templates
 export const searchEntitiesByTemplatesSchema = Joi.object({
     body: {
@@ -127,6 +179,7 @@ export const searchEntitiesByTemplatesSchema = Joi.object({
             filter: Joi.any(),
             showRelationships: Joi.alternatives(Joi.boolean(), Joi.array().items(Joi.string())).default(false),
             sort: Joi.any(),
+            entitiesWithFiles: semanticSearchResult,
         }),
     },
     query: {},
@@ -157,4 +210,18 @@ export const deleteRelationshipSchema = Joi.object({
     params: {
         id: Joi.string().required(),
     },
+});
+
+// POST /api/instances/entities/loadEntities
+export const loadEntitiesSchema = Joi.object({
+    body: {
+        file: excelTemplateSchema,
+        insertBrokenEntities: ExtendedJoi.stringToObject({
+            entitiesToCreate: Joi.array().items({ templateId: Joi.string(), properties: Joi.object() }).default([]),
+            ignoredRules: Joi.array().items(brokenRuleSchema).default([]),
+        }),
+        templateId: Joi.string().required(),
+    },
+    query: {},
+    params: {},
 });

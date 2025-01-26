@@ -24,16 +24,13 @@ export class MinIOClient {
         try {
             return func();
         } catch (err: any) {
-            // Check if the error is caused by non-existing bucket
-            if (err.code !== 'NoSuchBucket') throw err;
-
-            // Create the bucket if it doesn't exist
             if (!(await this.bucketExists())) {
-                await this.makeBucket();
+                await this.makeBucket().catch((error) => {
+                    throw error;
+                });
                 logger.info(`Bucket with name "${this.bucketName}" created successfully`);
             }
 
-            // Retry
             return func();
         }
     }
@@ -44,6 +41,14 @@ export class MinIOClient {
 
     makeBucket() {
         return this.minioClient.makeBucket(this.bucketName, '');
+    }
+
+    public async ensureBucket(): Promise<void> {
+        const exists = await this.bucketExists();
+        if (!exists) {
+            await this.makeBucket();
+            logger.info(`Bucket with name "${this.bucketName}" created successfully`);
+        }
     }
 
     downloadFileStream(filePath: string) {

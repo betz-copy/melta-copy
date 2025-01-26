@@ -1,3 +1,5 @@
+import { Readable } from 'stream';
+import { IFailedEntity } from '../common/wizards/loadEntities';
 import { IMongoEntityTemplatePopulated } from './entityTemplates';
 import { IMongoRelationshipTemplate } from './relationshipTemplates';
 import { IRelationship } from './relationships';
@@ -27,6 +29,7 @@ export interface IUniqueConstraint {
     constraintName: string;
     templateId: string;
     properties: string[];
+    values?: Record<string, any>;
 }
 
 export interface IRequiredConstraint {
@@ -91,7 +94,7 @@ export interface ISearchEntitiesOfTemplateBody {
     filter?: ISearchFilter;
     showRelationships?: boolean | Array<IMongoRelationshipTemplate['_id']>;
     sort?: ISearchSort;
-    entityIdsToInclude?: string[];
+    entitiesWithFiles?: ICountSearchResult['entitiesWithFiles'];
 }
 
 export interface ISearchEntitiesByTemplatesBody {
@@ -111,11 +114,42 @@ export interface ISearchBatchBody {
         };
     };
     sort?: ISearchSort;
+    shouldSemanticSearch?: boolean;
+}
+
+export interface UploadedFile {
+    fieldname: string;
+    originalname: string;
+    encoding: string;
+    mimetype: string;
+    size: number;
+    stream: Readable;
+    destination?: string;
+    buffer?: Buffer;
+}
+
+type Coordinate = [number, number];
+export interface Circle {
+    coordinate: Coordinate; // [latitude, longitude]
+    radius: number; // Positive number
+}
+
+export type Polygon = Coordinate[];
+export interface ISearchEntitiesByLocationTemplatesBody {
+    [templateId: string]: {
+        filter?: ISearchFilter;
+        locationFields?: string[];
+    };
+}
+export interface ISearchEntitiesByLocationBody {
+    textSearch?: string;
+    templates: ISearchEntitiesByLocationTemplatesBody;
+    circle: Circle;
 }
 
 export interface ISearchResult {
     count: number;
-    entities: (IEntityWithDirectConnections & { minioFileIds?: string[] })[];
+    entities: (IEntityWithDirectConnections & { minioFileIdsWithTexts?: ISemanticSearchResult[string][string] })[];
 }
 
 export interface ISearchResultByTemplates {
@@ -125,7 +159,8 @@ export interface ISearchResultByTemplates {
 export interface ICountSearchResult {
     templateId: string;
     count: number;
-    entityIdsToInclude?: ISemanticSearchResult[string];
+    entitiesWithFiles?: ISemanticSearchResult[string];
+    texts?: string[];
 }
 
 export interface IExportEntitiesBody {
@@ -135,7 +170,9 @@ export interface IExportEntitiesBody {
         [templateId: string]: {
             filter?: ISearchFilter;
             sort?: ISearchSort;
-            displayColumns: string[];
+            displayColumns?: string[];
+            headersOnly?: boolean;
+            insertEntities?: Record<string, any>[];
         };
     };
 }
@@ -149,3 +186,23 @@ export interface IGraphFilterBody {
 export interface IGraphFilterBodyBatch {
     [key: string]: IGraphFilterBody;
 }
+
+export interface IDeleteEntityBodyBase {
+    selectAll: boolean;
+    templateId: string;
+    deleteAllRelationships?: boolean;
+}
+
+export type IDeleteEntityBody<T extends boolean = boolean> = IDeleteEntityBodyBase & {
+    selectAll: T;
+} & (T extends true
+        ? {
+              idsToExclude?: string[];
+              filter?: ISearchEntitiesOfTemplateBody['filter'];
+              textSearch?: string;
+          }
+        : {
+              idsToInclude: string[];
+          });
+
+export type EntityData = IEntity | IFailedEntity;

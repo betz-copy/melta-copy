@@ -11,8 +11,8 @@ interface MeltaCheckboxProps {
     sxIndeterminate?: SxProps<any>;
     sxEmpty?: SxProps<any>;
     sxIcon?: CSSProperties;
-    width?: string;
-    height?: string;
+    sx?: SxProps<any>;
+    checkboxSx?: SxProps;
 }
 
 const MeltaCheckbox: React.FC<MeltaCheckboxProps> = ({
@@ -24,19 +24,20 @@ const MeltaCheckbox: React.FC<MeltaCheckboxProps> = ({
     sxIndeterminate,
     sxEmpty,
     sxIcon,
-    width,
-    height,
+    sx,
+    checkboxSx,
 }) => {
     const theme = useTheme();
 
-    const checkboxSx: SxProps = {
+    const defaultCheckboxSx: SxProps = {
         borderRadius: '4px',
-        width: width || '20px',
-        height: height || '20px',
+        width: '20px',
+        height: '20px',
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
     };
+    const mergedCheckboxSx = { ...defaultCheckboxSx, ...checkboxSx };
 
     return (
         <Checkbox
@@ -47,7 +48,7 @@ const MeltaCheckbox: React.FC<MeltaCheckboxProps> = ({
             checkedIcon={
                 <Box
                     sx={{
-                        ...checkboxSx,
+                        ...mergedCheckboxSx,
                         background: theme.palette.primary.main,
                         opacity: disabled ? 0.5 : 1,
                         ...sxChecked,
@@ -59,7 +60,7 @@ const MeltaCheckbox: React.FC<MeltaCheckboxProps> = ({
             indeterminateIcon={
                 <Box
                     sx={{
-                        ...checkboxSx,
+                        ...mergedCheckboxSx,
                         background: theme.palette.primary.main,
                         opacity: disabled ? 0.5 : 1,
                         border: 'none',
@@ -72,13 +73,17 @@ const MeltaCheckbox: React.FC<MeltaCheckboxProps> = ({
             icon={
                 <Box
                     sx={{
-                        ...checkboxSx,
+                        ...mergedCheckboxSx,
                         border: `1px solid ${theme.palette.primary.main}`,
                         ...sxEmpty,
                     }}
                 />
             }
-            sx={{ borderRadius: '4px', color: theme.palette.primary.main }}
+            sx={{
+                ...sx,
+                borderRadius: '4px',
+                color: theme.palette.primary.main,
+            }}
         />
     );
 };

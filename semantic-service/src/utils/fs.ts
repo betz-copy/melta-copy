@@ -2,16 +2,19 @@ import { Stream } from 'stream';
 import { chunk } from 'llm-chunk';
 import config from '../config';
 import { IElasticDoc } from '../express/semantics/interface';
-import { ModelApiService } from '../externalServices/modelApi';
+import { ModelEmbeddingApiService } from '../externalServices/model/embedding';
 
 const {
     model: { charsToRemove, sentenceSplitter, maxSentenceLength, llmChunkSplitterOptions },
-    modelApi: { concurrentSentenceEmbeddingLimit },
+    modelApi: {
+        embedding: { concurrentSentenceEmbeddingLimit },
+    },
 } = config;
 
 export const streamToBuffer = (stream: Stream) => {
+    const buffer: Uint8Array[] = [];
+
     return new Promise<Buffer>((resolve, reject) => {
-        const buffer: Uint8Array[] = [];
         stream.on('data', (dataChunk) => buffer.push(dataChunk));
         stream.on('end', () => resolve(Buffer.concat(buffer)));
         stream.on('error', reject);
@@ -65,7 +68,7 @@ export const splitTextIntoChunks = async (
     const cleanedText = cleanText(text);
 
     if (!maxSentenceLength) {
-        const embedding = await ModelApiService.embed([cleanedText])[0];
+        const embedding = await ModelEmbeddingApiService.embed([cleanedText])[0];
 
         return [
             {
@@ -85,14 +88,12 @@ export const splitTextIntoChunks = async (
 
     const chunksForEmbedding = getTextForEmbedding(splitText);
 
-    console.log('chunksForEmbedding', chunksForEmbedding);
-
     const chunks: IElasticDoc[] = [];
 
     await Promise.all(
         chunksForEmbedding.map(async (splittedTextChunk) => {
             const filtered = splittedTextChunk.filter((textChunk) => textChunk.length > 0);
-            const embeddings = await ModelApiService.embed(filtered);
+            const embeddings = await ModelEmbeddingApiService.embed(filtered);
 
             filtered.forEach((textChunk, index) => {
                 chunks.push({

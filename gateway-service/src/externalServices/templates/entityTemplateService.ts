@@ -1,6 +1,7 @@
 import { TemplatesManagerService } from '.';
 import config from '../../config';
 import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
+import { IMongoRelationshipTemplate } from './relationshipsTemplateService';
 
 const {
     templateService: {
@@ -30,7 +31,7 @@ export interface ISearchCategoriesBody {
 export interface IEntitySingleProperty {
     title: string;
     type: 'string' | 'number' | 'boolean' | 'array';
-    format?: 'date' | 'date-time' | 'email' | 'fileId' | 'text-area' | 'relationshipReference';
+    format?: 'date' | 'date-time' | 'email' | 'fileId' | 'text-area' | 'relationshipReference' | 'location';
     enum?: string[];
     readOnly?: true;
     items?: {
@@ -44,6 +45,7 @@ export interface IEntitySingleProperty {
     patternCustomErrorMessage?: string;
     dateNotification?: number;
     isDailyAlert?: boolean;
+    isDatePastAlert?: boolean;
     calculateTime?: boolean;
     serialStarter?: number;
     serialCurrent?: number;
@@ -54,6 +56,7 @@ export interface IEntitySingleProperty {
         relatedTemplateId: string;
         relatedTemplateField: string;
     };
+    archive?: boolean;
 }
 
 export interface IEntityTemplate {
@@ -157,8 +160,24 @@ export class EntityTemplateService extends TemplatesManagerService {
         return data;
     }
 
-    async updateEntityTemplate(entityTemplateId: string, updatedEntityTemplate: Omit<IEntityTemplate, 'disabled'>) {
-        const { data } = await this.api.put<IMongoEntityTemplatePopulated>(`${baseEntitiesRoute}/${entityTemplateId}`, updatedEntityTemplate);
+    async updateEntityTemplate(
+        entityTemplateId: string,
+        updatedEntityTemplate: Omit<IEntityTemplate, 'disabled'>,
+        allowToDeleteRelationshipFields: boolean = true,
+    ) {
+        const { data } = await this.api.put<IMongoEntityTemplatePopulated>(`${baseEntitiesRoute}/${entityTemplateId}`, {
+            ...updatedEntityTemplate,
+            allowToDeleteRelationshipFields,
+        });
+
+        return data;
+    }
+
+    async convertToRelationshipField(entityTemplateId: string, relationshipTemplateId: string, updatedData: Omit<IEntityTemplate, 'disabled'>) {
+        const { data } = await this.api.put<{
+            updatedRelationShipTemplate: IMongoRelationshipTemplate;
+            updatedEntityTemplate: IMongoEntityTemplatePopulated;
+        }>(`${baseEntitiesRoute}/convertToRelationshipField/${entityTemplateId}/${relationshipTemplateId}`, updatedData);
 
         return data;
     }

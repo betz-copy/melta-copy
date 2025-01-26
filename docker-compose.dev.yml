@@ -71,6 +71,26 @@ services:
     networks:
       - network
 
+  mysql:
+    image: mysql
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=matomo
+      - MYSQL_DATABASE=analytics
+      - MYSQL_USER=matomo
+      - MYSQL_PASSWORD=matomo
+
+  matomo:
+    image: matomo
+    restart: always
+    environment:
+      - MATOMO_DATABASE_HOST=mysql
+      - MATOMO_DATABASE_USERNAME=matomo
+      - MATOMO_DATABASE_PASSWORD=matomo
+      - MATOMO_DATABASE_DBNAME=analytics
+    ports:
+      - 8016:80
+
   # ELK
   elastic:
     image: elasticsearch:8.13.0
@@ -224,6 +244,10 @@ services:
     networks:
       - network
 
+  # frontend-service:
+  #   networks:
+  #     - network
+
   nginx:
     ports:
       - 80:80
@@ -279,14 +303,14 @@ services:
     networks:
       - network
 
-  mailer-service:
-    depends_on:
-      - redis
-    ports:
-      - 8010:8000
-    restart: always
-    networks:
-      - network
+  # mailer-service:
+  #   depends_on:
+  #     - redis
+  #   ports:
+  #     - 8010:8000
+  #   restart: always
+  #   networks:
+  #     - network
 
   preview-service:
     ports:

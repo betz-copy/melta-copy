@@ -20,6 +20,7 @@ services:
     environment:
       MINIO_ENDPOINT: ${MINIO_ENDPOINT}
       MINIO_BUCKET_NAME: ${MINIO_BUCKET_NAME}
+      MINIO_USERS_BUCKET_NAME: ${MINIO_USERS_BUCKET_NAME}
       MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
       MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
       MAX_FILE_BYTE_SIZE: ${MAX_FILE_BYTE_SIZE}
@@ -192,6 +193,8 @@ services:
       ELASTIC_APM_ACTIVE: ${ELASTIC_APM_ACTIVE}
       WORKSPACE_ID_HEADER_NAME: ${WORKSPACE_ID_HEADER_NAME}
       SEMANTIC_SEARCH_SERVICE: ${SEMANTIC_SEARCH_SERVICE}
+      FRONTEND_CONFIG_MATOMO_BASE_URL: http://localhost:8016
+      FRONTEND_CONFIG_MATOMO_SITE_ID: 1
 
   # frontend-service:
   #   build: ./frontend-service
@@ -201,16 +204,16 @@ services:
     volumes:
       - ./nginx:/etc/nginx/conf.d
 
-  mailer-service:
-    image: registry.gitlab.com/yesodot/rnd/terminal-rabaz/dropbox/microservices/mailer-service:latest
-    environment:
-      PORT: 8000
-      MAIL_HOSTS: ${MAIL_HOSTS}
-      MAIL_USER: ${MAIL_USER}
-      MAIL_PASS: ${MAIL_PASS}
-      USE_AUTH: "true"
-      RABBIT_URI: ${RABBIT_URL}
-      REDIS_CONNECTION_URI: ${REDIS_HOST}
+  # mailer-service:
+  #   image: registry.gitlab.com/yesodot/rnd/terminal-rabaz/dropbox/microservices/mailer-service:latest
+  #   environment:
+  #     PORT: 8000
+  #     MAIL_HOSTS: ${MAIL_HOSTS}
+  #     MAIL_USER: ${MAIL_USER}
+  #     MAIL_PASS: ${MAIL_PASS}
+  #     USE_AUTH: "true"
+  #     RABBIT_URI: ${RABBIT_URL}
+  #     REDIS_CONNECTION_URI: ${REDIS_HOST}
 
   cron-service:
     build: ./cron-service

@@ -73,9 +73,7 @@ const Value: React.FC<{
                 }}
                 onDoubleClick={handleDoubleClick}
             >
-                <VerifyLink>
-                    <HighlightText text={innerContent} searchedText={searchValue} />
-                </VerifyLink>
+                <HighlightText text={innerContent} searchedText={searchValue} isLink />
                 {(!hideValue || !hideField) && numLines > 1 && (
                     <IconButton onClick={handleDoubleClick} disableRipple>
                         <Typography style={{ color: '#9398C2', fontSize: '13px', lineHeight: '11.85px' }}>{i18next.t('actions.viewMore')}</Typography>

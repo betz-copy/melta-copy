@@ -11,16 +11,50 @@ import {
     IExportEntitiesBody,
     IGraphFilterBodyBatch,
     ISearchEntitiesByTemplatesBody,
+    ISearchEntitiesByLocationBody,
+    IDeleteEntityBody,
     ICountSearchResult,
 } from '../interfaces/entities';
 import { EntityWizardValues } from '../common/dialogs/entity';
-import { IRuleBreach } from '../interfaces/ruleBreaches/ruleBreach';
+import { IBrokenRule, IRuleBreach } from '../interfaces/ruleBreaches/ruleBreach';
 import { filterModelToFilterOfGraph } from '../pages/Graph/GraphFilterToBackend';
+import { ITablesResults } from '../common/wizards/loadEntities';
+import { ICreateEntityMetadata } from '../interfaces/ruleBreaches/actionMetadata';
 
 const { entities, relationships } = environment.api;
 
 export const exportEntitiesRequest = async (body: IExportEntitiesBody) => {
     const { data } = await axios.post(`${entities}/export`, body, { responseType: 'blob' });
+    return data;
+};
+
+export const loadEntitiesRequest = async (
+    templateId: string,
+    files?: Record<string, File>,
+    insertBrokenEntities?: { entitiesToCreate: ICreateEntityMetadata[]; ignoredRules: IBrokenRule[] },
+): Promise<ITablesResults> => {
+    const formData = new FormData();
+    if (files)
+        Object.entries(files).forEach(([key, value]) => {
+            formData.append(key, value as Blob);
+        });
+    formData.append('templateId', templateId);
+
+    if (insertBrokenEntities) {
+        const { entitiesToCreate = [], ignoredRules = [] } = insertBrokenEntities;
+
+        const insertBrokenEntitiesObject = {
+            entitiesToCreate: entitiesToCreate.map((entity) => ({
+                templateId: entity.templateId,
+                properties: mapValues(entity.properties, (property) => property),
+            })),
+            ignoredRules,
+        };
+        formData.append('insertBrokenEntities', JSON.stringify(insertBrokenEntitiesObject));
+    }
+
+    const { data } = await axios.post(`${entities}/loadEntities`, formData);
+
     return data;
 };
 
@@ -101,6 +135,7 @@ export const updateEntityRequestForMultiple = async (
 
     const filesToUpload: any = [];
     const unchangedFiles: any = []; /// //send single file as array to the back
+
     Object.entries(newEntityData.attachmentsProperties).forEach(([key, value]: [string, any]) => {
         if (Array.isArray(value) && value) {
             value.forEach((file, index) => {
@@ -121,7 +156,7 @@ export const updateEntityRequestForMultiple = async (
         }
     });
     filesToUpload.forEach(([key, value]) => {
-        formData.append(key, value as Blob);
+        formData.append(key, value);
     });
     unchangedFiles.forEach(([key, _value]) => {
         newEntityData.properties[key] = [];
@@ -138,6 +173,7 @@ export const updateEntityRequestForMultiple = async (
             }
         }
     });
+
     formData.append(
         'properties',
         JSON.stringify(
@@ -146,12 +182,17 @@ export const updateEntityRequestForMultiple = async (
             ),
         ),
     );
+
     formData.append('templateId', newEntityData.template._id);
 
     if (ignoredRules) {
         formData.append('ignoredRules', JSON.stringify(ignoredRules));
     }
-    const { data } = await axios.put<IEntity>(`${entities}/${entityId}`, formData);
+
+    const { data } = await axios.put<IEntity>(`${entities}/${entityId}`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+    });
+
     return data;
 };
 
@@ -217,8 +258,8 @@ export const duplicateEntityRequest = async (entityId: string, newEntityData: En
     return data;
 };
 
-export const deleteEntityRequest = async (entityId: string) => {
-    const { data } = await axios.delete(`${entities}/${entityId}`);
+export const deleteEntityRequest = async (deleteBody: IDeleteEntityBody) => {
+    const { data } = await axios.post<void>(`${entities}/delete/bulk`, deleteBody);
     return data;
 };
 
@@ -227,7 +268,7 @@ export const searchEntitiesOfTemplateRequest = async (templateId: string, search
     return data;
 };
 
-export const getCountByTemplateIdsRequest = async (templateIds: string[], textSearch: string, shouldSemanticSearch: boolean) => {
+export const getCountByTemplateIdsRequest = async (templateIds: string[], textSearch: string = '', shouldSemanticSearch: boolean = false) => {
     const { data } = await axios.post<ICountSearchResult[]>(`${entities}/count`, { templateIds, textSearch, shouldSemanticSearch });
     return data;
 };
@@ -245,6 +286,11 @@ export const getEntityById = async (entityId: string) => {
 
 export const getEntitiesWithDirectConnections = async (searchBody: ISearchBatchBody) => {
     const { data } = await axios.post<ISearchResult>(`${entities}/search/batch`, searchBody);
+    return data;
+};
+
+export const getEntitiesByLocation = async (searchBody: ISearchEntitiesByLocationBody) => {
+    const { data } = await axios.post<{ node: IEntity; matchingFields: string[] }[]>(`${entities}/search/location`, searchBody);
     return data;
 };
 

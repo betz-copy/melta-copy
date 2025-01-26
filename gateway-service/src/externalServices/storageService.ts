@@ -1,11 +1,20 @@
 import FormData from 'form-data';
 import config from '../config';
 import DefaultExternalServiceApi from '../utils/express/externalService';
-import fsCreateReadStream from '../utils/fs';
+import { UploadedFile } from '../utils/busboy/interface';
 
 const {
-    service: { docxHeaders },
-    storageService: { url, uploadFileRoute, uploadFilesRoute, downloadFileRoute, deleteFileRoute, deleteFilesRoute, duplicateFilesRoute },
+    service: { docxHeaders, workspaceIdHeaderName },
+    storageService: {
+        url,
+        uploadFileRoute,
+        uploadFilesRoute,
+        downloadFileRoute,
+        deleteFileRoute,
+        deleteFilesRoute,
+        duplicateFilesRoute,
+        usersGlobalBucketName,
+    },
 } = config;
 
 export class StorageService extends DefaultExternalServiceApi {
@@ -13,10 +22,9 @@ export class StorageService extends DefaultExternalServiceApi {
         super(workspaceId, { baseURL: url });
     }
 
-    async uploadFile(file: Express.Multer.File) {
+    async uploadFile(file: UploadedFile) {
         const formData = new FormData();
-        const fileStream = await fsCreateReadStream(file.path);
-        formData.append('file', fileStream, file.originalname);
+        formData.append('file', file.stream, file.originalname);
 
         const { data } = await this.api.post<{ path: string }>(uploadFileRoute, formData, {
             headers: formData.getHeaders(),
@@ -25,14 +33,11 @@ export class StorageService extends DefaultExternalServiceApi {
         return data.path;
     }
 
-    async uploadFiles(files: Express.Multer.File[]) {
+    async uploadFiles(files: UploadedFile[]) {
         const formData = new FormData();
 
-        const fileStreamsPromises = files.map((file) => fsCreateReadStream(file.path));
-        const fileStreams = await Promise.all(fileStreamsPromises);
-
-        fileStreams.forEach((fileStream, index) => {
-            formData.append('files', fileStream, files[index].originalname);
+        files.forEach((file) => {
+            formData.append('files', file.stream, file.originalname);
         });
 
         const { data } = await this.api.post<{ path: string }[]>(uploadFilesRoute, formData, {
@@ -40,6 +45,16 @@ export class StorageService extends DefaultExternalServiceApi {
         });
 
         return data.map(({ path }) => path);
+    }
+
+    async downloadProfileFile(path: string) {
+        const { data } = await this.api.get(`${downloadFileRoute}/${encodeURIComponent(path)}`, {
+            responseType: 'stream',
+            headers: {
+                [workspaceIdHeaderName]: usersGlobalBucketName,
+            },
+        });
+        return data;
     }
 
     async downloadFile(path: string) {

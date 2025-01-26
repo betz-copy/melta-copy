@@ -33,9 +33,20 @@ const entityTemplateToFieldsConfig = (
             type = 'date';
         } else if (value.format === 'date-time') {
             type = 'datetime';
+        } else if (value.format === 'user') {
+            type = 'user';
+            fieldEntries.push([
+                `${keyPrefix}${entityTemplate._id}${keySuffix}-${key}`,
+                {
+                    type,
+                    valueSources: [],
+                    label: `${labelPrefix}${entityTemplate.name}${variableNameSuffix}.${key}`,
+                    ...options,
+                },
+            ]);
         }
 
-        if (value.format !== 'relationshipReference') {
+        if (value.format !== 'relationshipReference' && value.format !== 'user') {
             fieldEntries.push([
                 `${keyPrefix}${entityTemplate._id}${keySuffix}-${key}`,
                 {

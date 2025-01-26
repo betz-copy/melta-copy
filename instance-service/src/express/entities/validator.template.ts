@@ -14,7 +14,7 @@ import { addDefaultFieldsToTemplate } from '../../utils/addDefaultsFieldsToEntit
 import { addPropertyToRequest } from '../../utils/express';
 import DefaultController from '../../utils/express/controller';
 import { trycatch } from '../../utils/lib';
-import { getNeo4jDate, getNeo4jDateTime } from '../../utils/neo4j/lib';
+import { getNeo4jDate, getNeo4jDateTime, getNeo4jLocation } from '../../utils/neo4j/lib';
 import { ValidationError } from '../error';
 import {
     IFilterOfField,
@@ -26,14 +26,24 @@ import {
     ISearchFilter,
     IUniqueConstraintOfTemplate,
 } from './interface';
+import { ActionErrors } from '../bulkActions/interface';
 
-const { neo4j } = config;
+const { neo4j, ajvCustomFormats } = config;
 
 const ajv = new Ajv();
 
-ajv.addFormat('fileId', /.*/);
-ajv.addFormat('text-area', /.*/);
-ajv.addFormat('relationshipReference', /.*/);
+ajv.addFormat('fileId', ajvCustomFormats.fileIdFieldRegex);
+ajv.addFormat('user', {
+    type: 'string',
+    validate: (user) => {
+        const userObj = JSON.parse(user);
+        return userObj._id && userObj.fullName && userObj.jobTitle && userObj.hierarchy && userObj.mail;
+    },
+});
+ajv.addFormat('text-area', ajvCustomFormats.textAreaFieldRegex);
+ajv.addFormat('relationshipReference', ajvCustomFormats.relationshipReferenceFieldRegex);
+ajv.addFormat('location', ajvCustomFormats.locationFieldRegex);
+
 addFormats(ajv);
 ajv.addVocabulary(['patternCustomErrorMessage', 'hide']);
 ajv.addKeyword({
@@ -42,10 +52,13 @@ ajv.addKeyword({
 });
 ajv.addKeyword({ keyword: 'calculateTime', type: 'boolean' });
 ajv.addKeyword({ keyword: 'isDailyAlert', type: 'boolean' });
+ajv.addKeyword({ keyword: 'isDatePastAlert', type: 'boolean' });
+ajv.addKeyword({ keyword: 'archive', type: 'boolean' });
 ajv.addKeyword({
     keyword: 'serialStarter',
     type: 'number',
 });
+ajv.addKeyword({ keyword: 'user', type: 'string' });
 ajv.addKeyword({
     keyword: 'relationshipReference',
     type: 'string',
@@ -86,7 +99,20 @@ export class EntityValidator extends DefaultController {
         const valid = validateFunction(properties);
 
         if (!valid) {
-            throw new ValidationError(`Entity does not match template schema: ${JSON.stringify(validateFunction.errors)}`);
+            const errors = validateFunction.errors?.map((error) => ({
+                type: ActionErrors.validation,
+                metadata: {
+                    message: error.message,
+                    path: error.instancePath,
+                    schemaPath: error.schemaPath,
+                    params: error.params,
+                },
+            }));
+
+            throw new ValidationError(`Entity does not match template schema`, {
+                properties,
+                errors: errors || [],
+            });
         }
     }
 
@@ -306,7 +332,7 @@ export class EntityValidator extends DefaultController {
 
         this.validateShowRelationships(showRelationships, templateId, relationshipTemplatesMap, 'showRelationships');
 
-        sort.forEach(({ field }, sortIndex) => {
+        sort?.forEach(({ field }, sortIndex) => {
             const fieldTemplate = entityTemplateForValidation.properties.properties[field];
             if (!fieldTemplate) {
                 throw new ValidationError(`sort.${sortIndex}.field "${field}" must exist in template of search`);
@@ -336,7 +362,7 @@ export class EntityValidator extends DefaultController {
 
             this.validateShowRelationships(showRelationships, templateId, relationshipTemplatesMap, `searchConfigs.${templateId}.showRelationships`);
 
-            sort.forEach(({ field }, sortIndex) => {
+            sort?.forEach(({ field }, sortIndex) => {
                 const fieldTemplate = entityTemplatesForValidationMap.get(templateId)!.properties.properties[field];
                 if (!fieldTemplate) {
                     throw new ValidationError(`sort.${sortIndex}.field "${field}" must exist in template of search`);
@@ -407,7 +433,7 @@ const getFileName = (fileId: string): string => {
     return fileId.slice(config.fileIdLength);
 };
 
-export const addStringFieldsAndNormalizeDateValues = (
+export const addStringFieldsAndNormalizeSpecialStringValues = (
     entityProperties: Record<string, any>,
     entityTemplate: IMongoEntityTemplate,
     recursiveRelationshipReference = false,
@@ -425,7 +451,25 @@ export const addStringFieldsAndNormalizeDateValues = (
         }
 
         const propertyValue = entityProperties[key];
-        const { type, format } = value;
+        const { type, format, items } = value;
+        if (format === 'user') {
+            config.neo4j.userOriginalAndSuffixFieldsMap.forEach((userField) => {
+                normalizedEntity[`${key}${userField.suffixFieldName}${config.neo4j.userFieldPropertySuffix}`] =
+                    JSON.parse(propertyValue)[userField.originalFieldName];
+            });
+            return;
+        }
+
+        if (type === 'array' && items?.format === 'user') {
+            config.neo4j.usersArrayOriginalAndSuffixFieldsMap.forEach((userField) => {
+                normalizedEntity[`${key}${userField.suffixFieldName}${config.neo4j.usersFieldsPropertySuffix}`] = propertyValue.map(
+                    (user) => JSON.parse(user)[userField.originalFieldName],
+                );
+            });
+
+            return;
+        }
+
         // For Neo4j fulltext search (supports only string properties)
         if (type !== 'string') {
             normalizedEntity[`${key}${neo4j.stringPropertySuffix}`] = String(propertyValue);
@@ -466,6 +510,12 @@ export const addStringFieldsAndNormalizeDateValues = (
                     normalizedEntity[`${key}.properties.${innerKey}${neo4j.relationshipReferencePropertySuffix}`] = innerProperty;
                 });
             }
+
+            return;
+        }
+        if (type === 'string' && format === 'location') {
+            normalizedEntity[key] = getNeo4jLocation(propertyValue);
+            normalizedEntity[`${key}${neo4j.stringPropertySuffix}`] = propertyValue;
 
             return;
         }

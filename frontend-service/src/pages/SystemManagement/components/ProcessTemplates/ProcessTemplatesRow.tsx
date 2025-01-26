@@ -15,9 +15,9 @@ import { ProcessTemplateCard } from './ProcessTemplateCard';
 import { InfiniteScroll } from '../../../../common/InfiniteScroll';
 import { environment } from '../../../../globals';
 
-const { infiniteScrollPageCount } = environment.processInstances;
-
 const ProcessTemplatesRow: React.FC = () => {
+    const { infiniteScrollPageCount } = environment.processInstances;
+
     const [searchText, setSearchText] = useState('');
     const [deleteProcessTemplateDialogState, setDeleteProcessTemplateDialogState] = useState<{
         isDialogOpen: boolean;
@@ -52,7 +52,14 @@ const ProcessTemplatesRow: React.FC = () => {
                 toast.success(i18next.t('wizard.processTemplate.deletedSuccessfully'));
             },
             onError: (error: AxiosError) => {
-                toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.processTemplate.failedToDelete')} />);
+                toast.error(
+                    <ErrorToast
+                        axiosError={error}
+                        defaultErrorMessage={`${i18next.t('wizard.processTemplate.failedToDelete')} ${i18next.t(
+                            'wizard.processTemplate.hasInstances',
+                        )}`}
+                    />,
+                );
             },
         },
     );

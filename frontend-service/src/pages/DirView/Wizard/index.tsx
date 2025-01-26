@@ -5,7 +5,7 @@ import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { useLocation } from 'wouter';
 import { ErrorToast } from '../../../common/ErrorToast';
-import { StepsType, Wizard, WizardBaseType } from '../../../common/wizards/index';
+import { StepType, Wizard, WizardBaseType } from '../../../common/wizards/index';
 import fileDetails from '../../../interfaces/fileDetails';
 import { IWorkspace, WorkspaceTypes } from '../../../interfaces/workspaces';
 import { createOne, updateOne } from '../../../services/workspacesService';
@@ -19,7 +19,7 @@ export interface WorkspaceWizardValues extends Omit<IWorkspace, '_id' | 'path' |
     logo?: fileDetails;
 }
 
-const steps: StepsType<WorkspaceWizardValues> = [
+const steps: StepType<WorkspaceWizardValues>[] = [
     {
         label: i18next.t('wizard.workspace.chooseDetails'),
         component: (props, { isEditMode }) => <ChooseDetails {...props} isEditMode={isEditMode} />,
@@ -51,7 +51,14 @@ export const WorkspaceWizard: React.FC<WizardBaseType<WorkspaceWizardValues>> = 
     open,
     handleClose,
     initialStep = 0,
-    initialValues = { name: '', displayName: '', type: WorkspaceTypes.dir, icon: undefined, logo: undefined, colors: { primary: '#2D3686' } },
+    initialValues = {
+        name: '',
+        displayName: '',
+        type: WorkspaceTypes.dir,
+        icon: undefined,
+        logo: undefined,
+        colors: { primary: '#2D3686' },
+    },
     isEditMode = false,
 }) => {
     const [location] = useLocation();

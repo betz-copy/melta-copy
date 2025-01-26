@@ -21,6 +21,7 @@ export interface IUniqueConstraint {
     templateId: string;
     uniqueGroupName: string;
     properties: string[];
+    values?: Record<string, any>;
 }
 
 export interface IRequiredConstraint {
@@ -28,6 +29,7 @@ export interface IRequiredConstraint {
     constraintName: string;
     templateId: string;
     property: string;
+    index?: number;
 }
 
 export type IConstraint = IRequiredConstraint | IUniqueConstraint;
@@ -84,8 +86,9 @@ export interface ISearchEntitiesOfTemplateBody {
     textSearch?: string;
     filter?: ISearchFilter;
     showRelationships: boolean | Array<IMongoRelationshipTemplate['_id']>;
-    sort: ISearchSort;
+    sort?: ISearchSort;
     entityIdsToInclude?: string[];
+    entityIdsToExclude?: string[];
 }
 
 export interface ISearchEntitiesByTemplatesBody {
@@ -99,6 +102,7 @@ export interface ISearchBatchBody {
     limit: number;
     textSearch?: string;
     entityIdsToInclude?: string[];
+    entityIdsToExclude?: string[];
     templates: {
         [templateId: string]: {
             filter?: ISearchFilter;
@@ -106,6 +110,26 @@ export interface ISearchBatchBody {
         };
     };
     sort: ISearchSort;
+}
+
+type Coordinate = [number, number];
+
+interface Circle {
+    coordinate: Coordinate; // [latitude, longitude]
+    radius: number; // Positive number
+}
+
+type Polygon = Coordinate[];
+export interface ISearchEntitiesByLocationBody {
+    textSearch?: string;
+    templates: {
+        [templateId: string]: {
+            filter?: ISearchFilter;
+            locationFields?: string[];
+        };
+    };
+    circle?: Circle;
+    polygon?: Polygon;
 }
 
 export interface IGetExpandedEntityBody {
@@ -159,3 +183,21 @@ export interface IExecutionOutput {
     entityId: string;
     properties: Record<string, any>;
 }
+
+export interface IDeleteBodyBase {
+    selectAll: boolean;
+    templateId: string;
+    deleteAllRelationships?: boolean;
+}
+
+export type IDeleteBody<T extends boolean = boolean> = IDeleteBodyBase & {
+    selectAll: T;
+} & (T extends true
+        ? {
+              idsToExclude?: string[];
+              filter?: ISearchEntitiesOfTemplateBody['filter'];
+              textSearch?: string;
+          }
+        : {
+              idsToInclude: string[];
+          });

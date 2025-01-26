@@ -69,6 +69,9 @@ const addFieldsSchema = Yup.object({
         .min(1, i18next.t('validation.oneField'))
         .test(i18next.t('validation.oneField'), i18next.t('validation.oneField'), (value) =>
             value ? value.some((obj) => !('deleted' in obj) || obj.deleted === false) : false,
+        )
+        .test(i18next.t('validation.oneField'), i18next.t('validation.oneField'), (value) =>
+            value ? value.some((obj) => !('archive' in obj) || obj.archive === false || obj.archive === undefined) : false,
         ),
     attachmentProperties: Yup.array().of(
         attachmentPropertiesBaseSchema.shape({
@@ -119,6 +122,16 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
         setFieldValue('propertiesTypeOrder', newPropertiesTypeOrder);
     };
 
+    const getTitle = (itemId: string): string => {
+        const titles: Record<string, string> = {
+            properties: i18next.t('wizard.entityTemplate.properties'),
+            attachmentProperties: i18next.t('wizard.entityTemplate.attachments'),
+            archiveProperties: i18next.t('wizard.entityTemplate.archiveProperties'),
+        };
+
+        return titles[itemId] || '';
+    };
+
     return (
         <DragDropContext onDragEnd={onDragEnd}>
             <Droppable droppableId="propertiesArea">
@@ -159,11 +172,7 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
                                             areThereAnyInstances={areThereAnyInstances}
                                             isEditMode={isEditMode}
                                             setBlock={setBlock}
-                                            title={
-                                                itemId === 'properties'
-                                                    ? i18next.t('wizard.entityTemplate.properties')
-                                                    : i18next.t('wizard.entityTemplate.attachments')
-                                            }
+                                            title={getTitle(itemId)}
                                             addPropertyButtonLabel={
                                                 itemId === 'properties'
                                                     ? i18next.t('wizard.entityTemplate.addProperty')
@@ -179,6 +188,9 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
                                             supportDeleteForExistingInstances
                                             supportEditEnum
                                             supportUnique
+                                            supportLocation
+                                            supportArchive
+                                            supportAddFieldButton={itemId === 'attachmentProperties' || itemId === 'properties'}
                                             hasActions={hasActions}
                                             draggable={{ isDraggable: true, dragHandleProps: draggableProvided.dragHandleProps }}
                                         />

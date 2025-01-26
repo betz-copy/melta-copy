@@ -4,7 +4,7 @@ import { wrapValidator } from './express';
 
 const validateProperties = (value, helpers) => {
     const properties = value;
-    const requiredFields = Object.keys(properties).filter((key) => properties[key].readOnly !== true);
+    const requiredFields = Object.keys(properties).filter((key) => properties[key].readOnly !== true || properties[key].archive !== true);
 
     for (const key of requiredFields) {
         if (properties[key].required && properties[key].readOnly) {
@@ -64,21 +64,26 @@ export const WorkspaceNameSchema = Joi.string().regex(/^[a-zA-Z0-9_-]+$/, 'valid
 export const fileSchema = Joi.object({
     fieldname: Joi.string().required(),
     originalname: Joi.string().required(),
-    size: Joi.number().min(1).required(),
     encoding: Joi.string().required(),
     mimetype: Joi.string().required(),
-    path: Joi.string().required(),
+    size: Joi.number().min(1).required(),
 }).unknown(true);
 
 export const iconFileSchema = fileSchema.keys({
     originalname: Joi.string()
-        .regex(/\.(svg|png)$/)
+        .regex(/\.(svg|png|jpeg|jpg)$/i)
         .required(),
 });
 
 export const documentTemplateSchema = fileSchema.keys({
     originalname: Joi.string()
         .regex(/\.(docx)$/)
+        .required(),
+});
+
+export const excelTemplateSchema = fileSchema.keys({
+    originalname: Joi.string()
+        .regex(/\.(xlsx|xls)$/)
         .required(),
 });
 

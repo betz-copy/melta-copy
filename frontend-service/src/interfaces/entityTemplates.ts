@@ -9,7 +9,7 @@ export interface IEntitySingleProperty {
     items?: {
         type: 'string';
         enum?: string[];
-        format?: 'fileId';
+        format?: 'fileId' | 'user';
     };
     minItems?: 1;
     readOnly?: true;
@@ -19,6 +19,7 @@ export interface IEntitySingleProperty {
     uniqueCheckbox?: boolean;
     dateNotification?: number;
     isDailyAlert?: boolean;
+    isDatePastAlert?: boolean;
     calculateTime?: boolean;
     serialStarter?: number;
     serialCurrent?: number;
@@ -29,6 +30,7 @@ export interface IEntitySingleProperty {
         relatedTemplateId: string;
         relatedTemplateField: string;
     };
+    archive?: boolean;
 }
 
 export interface IEntityTemplate {
@@ -44,7 +46,7 @@ export interface IEntityTemplate {
     disabled: boolean;
     category: IMongoCategory['_id'];
     propertiesOrder: string[];
-    propertiesTypeOrder: ('properties' | 'attachmentProperties')[];
+    propertiesTypeOrder: ('properties' | 'attachmentProperties' | 'archiveProperties')[];
     propertiesPreview: string[];
     enumPropertiesColors?: Record<string, Record<string, string>>; // { [fieldName]: { [enumOption1]: [color1], [enumOption2]: [color2] } }
     actions?: string;

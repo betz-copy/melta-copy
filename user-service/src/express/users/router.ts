@@ -5,6 +5,7 @@ import {
     createUserRequestSchema,
     getUserByExternalIdRequestSchema,
     getUserByIdRequestSchema,
+    searchUsersByPermissionsSchema,
     searchUsersRequestSchema,
     updateUserRequestSchema,
     updateUsersBulkRequestSchema,
@@ -26,4 +27,7 @@ usersRouter.post('/search', ValidateRequest(searchUsersRequestSchema), wrapContr
 usersRouter.post('/', ValidateRequest(createUserRequestSchema), wrapController(UsersController.createUser));
 
 usersRouter.patch('/:id', ValidateRequest(updateUserRequestSchema), wrapController(UsersController.updateUser));
+
 usersRouter.patch('/bulk', ValidateRequest(updateUsersBulkRequestSchema), wrapController(UsersController.updateUsersBulk));
+
+usersRouter.get('/search/:workspaceId', ValidateRequest(searchUsersByPermissionsSchema), wrapController(UsersController.searchUsersByPermissions));

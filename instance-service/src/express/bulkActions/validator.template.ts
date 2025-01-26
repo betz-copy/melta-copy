@@ -10,14 +10,21 @@ import DefaultController from '../../utils/express/controller';
 import { IEntity } from '../entities/interface';
 import { EntityManager } from '../entities/manager';
 import { ValidationError } from '../error';
-import { ActionTypes, IAction, ICreateEntityMetadata, ICreateRelationshipMetadata } from './interface';
+import { ActionErrors, ActionTypes, IAction, ICreateEntityMetadata, ICreateRelationshipMetadata } from './interface';
 import config from '../../config';
 
 const { brokenRulesFakeEntityIdPrefix } = config;
 
-const ajv = new Ajv();
+const ajv = new Ajv({ allErrors: true });
 
 ajv.addFormat('fileId', /.*/);
+ajv.addFormat('user', {
+    type: 'string',
+    validate: (user) => {
+        const userObj = JSON.parse(user);
+        return userObj._id && userObj.fullName && userObj.jobTitle && userObj.hierarchy && userObj.mail;
+    },
+});
 ajv.addFormat('text-area', /.*/);
 ajv.addFormat('relationshipReference', /.*/);
 addFormats(ajv);
@@ -28,10 +35,13 @@ ajv.addKeyword({
 });
 ajv.addKeyword({ keyword: 'calculateTime', type: 'boolean' });
 ajv.addKeyword({ keyword: 'isDailyAlert', type: 'boolean' });
+ajv.addKeyword({ keyword: 'isDatePastAlert', type: 'boolean' });
+ajv.addKeyword({ keyword: 'archive', type: 'boolean' });
 ajv.addKeyword({
     keyword: 'serialStarter',
     type: 'number',
 });
+ajv.addKeyword({ keyword: 'user', type: 'string' });
 ajv.addKeyword({
     keyword: 'relationshipReference',
     type: 'string',
@@ -70,14 +80,27 @@ export class BulkActionValidator extends DefaultController {
 
     private validateEntity(entityTemplate: IMongoEntityTemplate, metadataProperties: Record<string, any>) {
         if (!entityTemplate) {
-            throw new ValidationError(`Entity template doesnt exist`);
+            throw new ValidationError(`Entity template doesnt exist`, metadataProperties);
         }
 
         const validateFunction = ajv.compile(entityTemplate.properties);
         const valid = validateFunction(metadataProperties);
 
         if (!valid) {
-            throw new ValidationError(`Entity does not match template schema: ${JSON.stringify(validateFunction.errors)}`);
+            const errors = validateFunction.errors?.map((error) => ({
+                type: ActionErrors.validation,
+                metadata: {
+                    message: error.message,
+                    path: error.instancePath,
+                    schemaPath: error.schemaPath,
+                    params: error.params,
+                },
+            }));
+
+            throw new ValidationError(`Entity does not match template schema`, {
+                properties: metadataProperties,
+                errors: errors || [],
+            });
         }
     }
 
@@ -117,7 +140,7 @@ export class BulkActionValidator extends DefaultController {
         const entitiesTemplatesByEntitiesTemplatesIds = groupBy(entitiesTemplates, (entityTemplate) => entityTemplate._id);
 
         (actionsGroups as IAction[][]).forEach((actionsGroup) =>
-            actionsGroup.forEach((action) => {
+            actionsGroup.forEach((action, index) => {
                 if (action.actionType === ActionTypes.CreateRelationship) {
                     const metadata = action.actionMetadata as ICreateRelationshipMetadata;
 
@@ -136,7 +159,7 @@ export class BulkActionValidator extends DefaultController {
                     const metadata = action.actionMetadata as ICreateEntityMetadata;
 
                     if (!metadata.templateId.startsWith(brokenRulesFakeEntityIdPrefix)) {
-                        this.validateEntity(entitiesTemplatesByEntitiesTemplatesIds[metadata.templateId][0], metadata.properties);
+                        this.validateEntity(entitiesTemplatesByEntitiesTemplatesIds[metadata.templateId][0], { ...metadata.properties, index });
                     }
                 }
             }),

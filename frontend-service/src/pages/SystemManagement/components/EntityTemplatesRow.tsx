@@ -1,9 +1,8 @@
-/* eslint-disable jsx-a11y/no-static-element-interactions */
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { AppRegistration as AppRegistrationIcon, Edit } from '@mui/icons-material';
 import { Grid, IconButton, Skeleton, Typography, useTheme } from '@mui/material';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd';
 import { UseMutateAsyncFunction, useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
@@ -14,11 +13,10 @@ import { ErrorToast } from '../../../common/ErrorToast';
 import { InfiniteScroll } from '../../../common/InfiniteScroll';
 import SearchInput from '../../../common/inputs/SearchInput';
 import { MeltaTooltip } from '../../../common/MeltaTooltip';
-import { SelectCheckbox } from '../../../common/SelectCheckbox';
+import { SelectCheckbox } from '../../../common/SelectCheckBox';
 import { EntityTemplateWizard } from '../../../common/wizards/entityTemplate';
-import { environment } from '../../../globals';
 import { ICategoryMap, IMongoCategory } from '../../../interfaces/categories';
-import { IEntityTemplate, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IEntitySingleProperty, IEntityTemplate, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
 import { updateCategoryRequest } from '../../../services/templates/categoriesService';
 import {
@@ -30,6 +28,7 @@ import {
 import { getAllRelationshipTemplatesRequest } from '../../../services/templates/relationshipTemplatesService';
 import { getEntityTemplateColor } from '../../../utils/colors';
 import { getFileName } from '../../../utils/getFileName';
+import { getCountByTemplateIdsRequest } from '../../../services/entitiesService';
 import { mapTemplates, templatesCompareFunc } from '../../../utils/templates';
 import { Box } from './Box';
 import { ViewingCard } from './Card';
@@ -37,6 +36,8 @@ import { CardMenu } from './CardMenu';
 import { CodeEditorDialog } from './codeEditor';
 import { CreateButton } from './CreateButton';
 import { FilterButton } from './FilterButton';
+import { useWorkspaceStore } from '../../../stores/workspace';
+import { environment } from '../../../globals';
 
 const { infiniteScrollPageCount } = environment.processInstances;
 
@@ -95,9 +96,26 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
     setAddActionsDialogState,
     updateEntityTemplateStatusAsync,
 }) => {
+    const workspace = useWorkspaceStore((state) => state.workspace);
+
     const [isHoverOnCard, setIsHoverOnCard] = useState(false);
     const theme = useTheme();
     const { properties, propertiesOrder, propertiesPreview, propertiesTypeOrder, uniqueConstraints } = entityTemplate;
+    const [isDeleteButtonDisabled, setIsDeleteButtonDisabled] = useState(false);
+
+    const checkEntityTemplateHasEntities = async (templates: IMongoEntityTemplatePopulated[]) => {
+        const templateIds = templates.map(({ _id }) => _id);
+        const entitiesCountByTemplates = await getCountByTemplateIdsRequest(templateIds);
+        const countByTemplateIdMap = new Map(entitiesCountByTemplates.map(({ templateId, count }) => [templateId, count]));
+        const templatesHaveEntities = templates.some(({ _id }) => {
+            const count = countByTemplateIdMap.get(_id) || 0;
+            return count > 0;
+        });
+
+        setIsDeleteButtonDisabled(templatesHaveEntities);
+    };
+
+    const isFile = (value: IEntitySingleProperty) => value.format === 'fileId' || value.items?.format === 'fileId';
 
     return (
         <ViewingCard
@@ -121,14 +139,14 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                             {entityTemplate.iconFileId ? (
                                 <CustomIcon iconUrl={entityTemplate.iconFileId} height="24px" width="24px" />
                             ) : (
-                                <AppRegistrationIcon style={{ ...environment.iconSize }} fontSize="small" />
+                                <AppRegistrationIcon style={{ ...workspace.metadata.iconSize }} fontSize="small" />
                             )}
                         </Grid>
                         <Grid item>
                             <MeltaTooltip title={entityTemplate.displayName}>
                                 <Typography
                                     style={{
-                                        fontSize: environment.mainFontSizes.headlineSubTitleFontSize,
+                                        fontSize: workspace.metadata.mainFontSizes.headlineSubTitleFontSize,
                                         color: theme.palette.primary.main,
                                         fontWeight: '400',
                                         textOverflow: 'ellipsis',
@@ -145,8 +163,13 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                     <Grid item container flexBasis="10%">
                         {isHoverOnCard && (
                             <CardMenu
+                                onOptionsIconClose={() => setIsHoverOnCard(false)}
+                                onOptionsIconClick={async () => {
+                                    await checkEntityTemplateHasEntities([entityTemplate]);
+                                }}
                                 onEditClick={() => {
                                     setEntityTemplateWizardDialogState({ isWizardOpen: true, entityTemplate });
+                                    setIsHoverOnCard(false);
                                 }}
                                 onDuplicateClick={() => {
                                     setEntityTemplateWizardDialogState({
@@ -160,16 +183,24 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                             uniqueConstraints,
                                         },
                                     });
+                                    setIsHoverOnCard(false);
                                 }}
                                 onDeleteClick={() => setDeleteEntityTemplateDialogState({ isDialogOpen: true, entityTemplateId: entityTemplate._id })}
                                 onAddActionsClick={() => setAddActionsDialogState({ isWizardOpen: true, entityTemplate })}
-                                onDisableClick={() =>
-                                    updateEntityTemplateStatusAsync({ entityTemplateId: entityTemplate._id, disabled: !entityTemplate.disabled })
-                                }
+                                onDisableClick={() => {
+                                    updateEntityTemplateStatusAsync({ entityTemplateId: entityTemplate._id, disabled: !entityTemplate.disabled });
+                                    setIsHoverOnCard(false);
+                                }}
                                 disabledProps={{
+                                    isDeleteDisabled: isDeleteButtonDisabled,
                                     isDisabled: entityTemplate.disabled,
-                                    canEdit: entityTemplate.disabled,
-                                    tooltipTitle: i18next.t('systemManagement.disabledEntityTemplate'),
+                                    isEditDisabled: entityTemplate.disabled,
+                                    // eslint-disable-next-line no-nested-ternary
+                                    tooltipTitle: entityTemplate.disabled
+                                        ? i18next.t('systemManagement.disabledEntityTemplate')
+                                        : isDeleteButtonDisabled
+                                        ? i18next.t('systemManagement.cannotDeleteWithEntities')
+                                        : '',
                                 }}
                             />
                         )}
@@ -192,7 +223,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                         </Grid>
                     </Grid>
                     {Object.entries(entityTemplate.properties.properties)
-                        .filter(([, value]) => value.format !== 'fileId')
+                        .filter(([, value]) => !isFile(value))
                         .map(([key, value]) => (
                             <Grid key={key} item container gap="5px" flexWrap="nowrap">
                                 <Grid item flexBasis="4%" color={theme.palette.primary.main}>
@@ -224,8 +255,8 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                         </Grid>
                     </Grid>
                     {Object.entries(entityTemplate.properties.properties)
-                        .filter(([, value]) => value.format === 'fileId')
-                        .map(([key]) => (
+                        .filter(([, value]) => isFile(value))
+                        .map(([key, value]) => (
                             <Grid key={key} item container gap="5px">
                                 <Grid item flexBasis="4%" color={theme.palette.primary.main}>
                                     <Typography>-</Typography>
@@ -245,8 +276,8 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                         </Typography>
                                     </MeltaTooltip>
                                 </Grid>
-                                <Grid item color={theme.palette.primary.main} fontWeight="400">
-                                    {entityTemplate.properties.required.includes(key) ? i18next.t('validation.required') : ''}
+                                <Grid item color={theme.palette.primary.main} fontWeight="400" sx={{ opacity: 0.75 }}>
+                                    {i18next.t(`propertyTypes.${value.format === 'fileId' ? value.format : 'multipleFiles'}`)}
                                 </Grid>
                             </Grid>
                         ))}
@@ -281,7 +312,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                     ))}
                 </Grid>
             }
-            onHover={(isHover: boolean) => setIsHoverOnCard(isHover)}
+            onHover={(isHover) => setIsHoverOnCard(isHover)}
         />
     );
 };
@@ -329,6 +360,8 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
     updateEntityTemplateStatusAsync,
     loadedEntityTemplateId,
 }) => {
+    const workspace = useWorkspaceStore((state) => state.workspace);
+
     const [isHoverOnBox, setIsHoverOnBox] = useState(false);
     const [isEditableCategory, setIsEditableCategory] = useState(false);
     const containerWrapperRef = useRef<HTMLDivElement>(null);
@@ -357,7 +390,7 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                                     ref={containerWrapperRef}
                                     contentEditable={isEditableCategory}
                                     style={{
-                                        fontSize: environment.mainFontSizes.headlineSubTitleFontSize,
+                                        fontSize: workspace.metadata.mainFontSizes.headlineSubTitleFontSize,
                                         fontWeight: '400',
                                         color: isEditableCategory ? theme.palette.primary.main : '#9398C2',
                                         outline: isEditableCategory ? `1px solid ${theme.palette.primary.main}` : '',

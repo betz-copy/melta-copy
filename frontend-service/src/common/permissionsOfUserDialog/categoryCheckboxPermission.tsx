@@ -97,8 +97,7 @@ const CategoryCheckboxPermission: React.FC<{
                                                 categoryPermissions?.entityTemplates?.[entityCheck.id]?.scope === PermissionScope.write ||
                                                 permissionType.write.checked
                                             }
-                                            height="17px"
-                                            width="17px"
+                                            checkboxSx={{ width: '17px', height: '17px' }}
                                         />
                                     )}
                                 </Grid>
@@ -126,8 +125,7 @@ const CategoryCheckboxPermission: React.FC<{
                                                 );
                                             }}
                                             disabled={disabled}
-                                            height="17px"
-                                            width="17px"
+                                            checkboxSx={{ width: '17px', height: '17px' }}
                                         />
                                     )}
                                 </Grid>

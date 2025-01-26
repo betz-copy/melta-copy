@@ -45,7 +45,7 @@ export default class TemplatesController extends DefaultController<TemplatesMana
 
     // entityTemplates
     async createEntityTemplate(req: Request, res: Response) {
-        res.json(await this.manager.createEntityTemplate(req.body, req.files as Record<string, Express.Multer.File[]>));
+        res.json(await this.manager.createEntityTemplate(req.body, { files: req.files, file: req.file ? [req.file] : undefined }));
     }
 
     async deleteEntityTemplate(req: Request, res: Response) {
@@ -53,7 +53,7 @@ export default class TemplatesController extends DefaultController<TemplatesMana
     }
 
     async updateEntityTemplate(req: Request, res: Response) {
-        res.json(await this.manager.updateEntityTemplate(req.params.id, req.body, req.files as Record<string, Express.Multer.File[]>));
+        res.json(await this.manager.updateEntityTemplate(req.params.id, req.body, { files: req.files, file: req.file ? [req.file] : undefined }));
     }
 
     async updateEntityTemplateStatus(req: Request, res: Response) {
@@ -88,6 +88,10 @@ export default class TemplatesController extends DefaultController<TemplatesMana
 
     async updateRelationshipTemplate(req: Request, res: Response) {
         res.json(await this.manager.updateRelationshipTemplate(req.params.id, req.body));
+    }
+
+    async convertToRelationshipField(req: Request, res: Response) {
+        res.json(await this.manager.convertRelationshipToRelationshipField(req.params.id, req.body, req.user!.id));
     }
 
     async getAllRelationshipTemplates(_req: Request, res: Response) {
