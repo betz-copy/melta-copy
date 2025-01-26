@@ -59,7 +59,7 @@ const ProcessTemplateWizard: React.FC<WizardBaseType<ProcessTemplateWizardValues
     const queryClient = useQueryClient();
     const templates = queryClient.getQueryData<IProcessTemplateMap>('getProcessTemplates') || new Map();
 
-    const createTemplateNameSchema = useCreateOrEditTemplateNameSchema(templates);
+    const createTemplateNameSchema = useCreateOrEditTemplateNameSchema(templates, initialValues._id);
 
     const { isLoading, mutateAsync } = useMutation(
         (processTemplate: ProcessTemplateWizardValues) =>
