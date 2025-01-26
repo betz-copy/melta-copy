@@ -130,7 +130,7 @@ export interface UploadedFile {
 
 type Coordinate = [number, number];
 export interface Circle {
-    coordinate: Coordinate; // [latitude, longitude]
+    coordinate: Coordinate; // [x, y]
     radius: number; // Positive number
 }
 

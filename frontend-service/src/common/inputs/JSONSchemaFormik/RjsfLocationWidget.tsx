@@ -6,8 +6,8 @@ import validator from '@rjsf/validator-ajv8';
 import { Box, Dialog, InputAdornment, TextField } from '@mui/material';
 import MapIcon from '@mui/icons-material/Map';
 import { getTextDirection } from '../../../utils/stringValues';
-import LocationField from '../../../pages/Map/LocationField';
 import { environment } from '../../../globals';
+import LocationField from '../../../pages/Map/mapPage/Resuim/LocationField';
 
 const { polygon, polygonPrefix, polygonSuffix } = environment.map.polygon;
 
@@ -120,9 +120,7 @@ const RjsfLocationWidget = ({
 
             <Dialog open={mapOpen} onClose={handleCloseDialog}>
                 <LocationField
-                    styles={{ height: '800px', width: '600px' }}
-                    defaultLocation={newLocationValue}
-                    updateValue={(newVal: string) => setNewLocationValue(newVal)}
+                    edit={{ defaultLocation: newLocationValue, field: label, updateValue: (newVal: string) => setNewLocationValue(newVal) }}
                 />
             </Dialog>
         </Box>

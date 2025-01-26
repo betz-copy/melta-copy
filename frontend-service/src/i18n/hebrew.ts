@@ -1289,6 +1289,8 @@ export default {
     location: {
         polygon: 'פוליגון',
         coordinate: 'נקודת ציון',
+        circle: 'חיפוש בעזרת מעגל',
+        line: 'קו למדידת מרחק',
         noLayers: 'לא נמצאו שכבות',
         noCrsTypes: 'לא נמצאו סוגי CRS',
         entityWithoutLocation: 'ליישות אין ערך שדה מיקום',

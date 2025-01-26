@@ -2,6 +2,7 @@ import { GeometryUtil, LatLng, LatLngExpression } from 'leaflet';
 import * as L from 'leaflet';
 import { useMap } from 'react-leaflet';
 import { useEffect } from 'react';
+import { Cartesian3 } from 'cesium';
 import { IEntity } from '../interfaces/entities';
 import { IEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { environment } from '../globals';
@@ -13,17 +14,18 @@ const {
 
 export const jerusalemCoordinates: LatLngExpression = [31.7683, 35.2137];
 
-export const parsePolygon = (polygonStr: string): LatLng[] | undefined => {
+export const parsePolygon = (polygonStr: string): Cartesian3[] | undefined => {
     if (!polygonStr.startsWith(polygonPrefix) || !polygonStr.endsWith(polygonSuffix)) {
         return undefined;
     }
 
     const coordsStr = polygonStr.slice(polygonPrefix.length, -polygonSuffix.length);
     const coordPairs = coordsStr.split(',');
+    console.log({ coordsStr, coordPairs });
 
-    const coordinates: LatLng[] = coordPairs.map((pair) => {
-        const [latStr, lonStr] = pair.trim().split(/\s+/);
-        return L.latLng(+latStr, +lonStr);
+    const coordinates: Cartesian3[] = coordPairs.map((pair) => {
+        const [xStr, yStr] = pair.trim().split(/\s+/);
+        return { x: +xStr, y: +yStr, z: 0 };
     });
 
     return coordinates.length > 0 ? coordinates : undefined;
@@ -41,7 +43,7 @@ export const calculatePolygonArea = (latlngs: LatLng[]) => GeometryUtil.geodesic
 
 type CoordinatesResult = {
     type: 'polygon' | 'marker';
-    value: LatLngExpression | LatLng[];
+    value: Cartesian3 | Cartesian3[];
 };
 
 export const stringToCoordinates = (strCoords: string): CoordinatesResult => {
@@ -49,28 +51,17 @@ export const stringToCoordinates = (strCoords: string): CoordinatesResult => {
     if (polygon) return { type: 'polygon', value: polygon };
 
     const formatted = strCoords.split(',').map((val) => +val);
-    return { type: 'marker', value: formatted as LatLngExpression };
+    return { type: 'marker', value: { x: formatted[0], y: formatted[1], z: 0 } };
 
     // TODO: add validation to format
 };
 
-export const latLngToString = (latLng: LatLng | LatLng[], includePolygon = true) => {
-    if (!Array.isArray(latLng)) {
-        return `${latLng.lat}, ${latLng.lng}`;
+export const cartesian3ToString = (cartesian3: Cartesian3 | Cartesian3[], includePolygon = true) => {
+    if (!Array.isArray(cartesian3)) {
+        return `${cartesian3.x}, ${cartesian3.y}`;
     }
 
-    const matchedPoints = latLng.toString().match(/LatLng\(([^)]+)\)/g);
-
-    if (!matchedPoints) {
-        return includePolygon ? `${polygonPrefix}${polygonSuffix}` : '';
-    }
-
-    const points = matchedPoints.map((point) =>
-        point
-            .replace(/LatLng|\(|\)/g, '')
-            .replace(',', '')
-            .trim(),
-    );
+    const points = cartesian3.map((point) => `${point.x} ${point.y}`);
 
     return includePolygon ? `${polygonPrefix}${points.join(',')}${polygonSuffix}` : points.join(',');
 };
