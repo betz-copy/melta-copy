@@ -23,7 +23,7 @@ export class FilesManager extends DefaultManagerMinio {
         await this.makeBuckets();
         const nameWithId = `${generate32CharUUID()}${file?.originalname}`;
         const fileWithId = { ...file, originalname: nameWithId, path: nameWithId };
-        await this.minioClient.uploadFileStream(fileWithId.stream!, fileWithId.originalname, fileWithId?.size!, {});
+        await this.minioClient.uploadFileStream(fileWithId.stream!, fileWithId.originalname, fileWithId?.size!, { 'content-type': file?.mimetype });
 
         return fileWithId;
     }
@@ -37,7 +37,11 @@ export class FilesManager extends DefaultManagerMinio {
             const nameWithId = this.buildNameWithId(file);
             return { ...file, originalname: nameWithId, path: nameWithId };
         });
-        await Promise.allSettled(filesWithIds.map((file) => this.minioClient.uploadFileStream(file.stream!, file.originalname!, file.size!, {})));
+        await Promise.allSettled(
+            filesWithIds.map((file) =>
+                this.minioClient.uploadFileStream(file.stream!, file.originalname!, file.size!, { 'content-type': file.mimetype }),
+            ),
+        );
 
         const documentFiles = files?.filter((file) => isFileDocument(file.originalname));
         if (documentFiles?.length)
