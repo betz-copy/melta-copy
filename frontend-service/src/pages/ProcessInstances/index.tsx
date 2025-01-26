@@ -25,7 +25,7 @@ const ProcessInstancesPage: React.FC = () => {
     const [endDateInput, setEndDateInput] = useState<Date | null>(null);
 
     const [statusFilter, setStatusFilter] = useState<'all' | Status | 'archived'>('all');
-    const [isWaitingForMeFilterOn, setIsWaitingForMeFilterOn] = useState<boolean>(true);
+    const [isWaitingForMeFilterOn, setIsWaitingForMeFilterOn] = useState<boolean>(false);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
     const onSearch = useCallback(
@@ -89,6 +89,9 @@ const ProcessInstancesPage: React.FC = () => {
                                     onSetStartDate(null);
                                     onSetEndDate(null);
                                     onSearch('');
+                                    setIsWaitingForMeFilterOn(false);
+                                    setStatusFilter('all');
+                                    setTemplatesToShowCheckbox(processTemplates);
                                 }}
                             >
                                 <BlueTitle
@@ -178,6 +181,9 @@ const ProcessInstancesPage: React.FC = () => {
                                         />
                                         <FormControlLabel
                                             value={Status.Approved}
+                                            onChange={(_e, checked) => {
+                                                if (checked) setIsWaitingForMeFilterOn(false);
+                                            }}
                                             control={<Radio />}
                                             label={
                                                 <BlueTitle
@@ -190,6 +196,9 @@ const ProcessInstancesPage: React.FC = () => {
                                         />
                                         <FormControlLabel
                                             value={Status.Rejected}
+                                            onChange={(_e, checked) => {
+                                                if (checked) setIsWaitingForMeFilterOn(false);
+                                            }}
                                             control={<Radio />}
                                             label={
                                                 <BlueTitle
@@ -202,6 +211,9 @@ const ProcessInstancesPage: React.FC = () => {
                                         />
                                         <FormControlLabel
                                             value="archived"
+                                            onChange={(_e, checked) => {
+                                                if (checked) setIsWaitingForMeFilterOn(false);
+                                            }}
                                             control={<Radio />}
                                             label={
                                                 <BlueTitle

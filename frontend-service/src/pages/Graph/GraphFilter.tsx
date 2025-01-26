@@ -147,6 +147,7 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
                         startDateInput={startDate}
                         endDateInput={endDate}
                         directionIsRow={false}
+                        maxEndDate={new Date()}
                     />
                 </Grid>
             );

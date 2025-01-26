@@ -94,7 +94,9 @@ export const FileAttachmentsView: React.FC<FileAttachmentsProps> = ({ templateFi
                                 {title}:
                             </Typography>
                         </Grid>
-                        <Grid item>{attachments}</Grid>
+                        <Grid item maxWidth="170px">
+                            {attachments}
+                        </Grid>
                     </Grid>
                 );
             })}
