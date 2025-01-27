@@ -203,7 +203,7 @@ const formToJSONSchema = (values: ProcessTemplateWizardValues): ICreateProcessTe
             _id: step._id!,
             properties: stepSchema,
             displayName: step.displayName,
-            iconFileId: !step.icon || step.icon!.file instanceof File ? null : step.icon!.file.name!,
+            iconFileId: !step.icon || step.icon!.file instanceof File || step.icon.name === '' ? null : step.icon!.file.name!,
             name: step.name,
             propertiesOrder: stepPropertiesOrder,
             reviewers: reviewersIds,
@@ -218,7 +218,11 @@ const formToJSONSchema = (values: ProcessTemplateWizardValues): ICreateProcessTe
 };
 const createProcessTemplateRequest = async (newProcessTemplate: ProcessTemplateWizardValues) => {
     const formData = new FormData();
-    newProcessTemplate.steps.map((step, index) => formData.append(String(index), step.icon!.file as File));
+    newProcessTemplate.steps.forEach((step, index) => {
+        if (step.icon && step.icon!.file && step.icon!.file.name && step.icon!.file.name !== '') {
+            formData.append(String(index), step.icon!.file as File);
+        }
+    });
     const processTemplate = formToJSONSchema(newProcessTemplate);
 
     formData.append('displayName', processTemplate.displayName);
@@ -233,7 +237,7 @@ const createProcessTemplateRequest = async (newProcessTemplate: ProcessTemplateW
 const updateProcessTemplateRequest = async (processTemplateId: string, updatedProcessTemplate: ProcessTemplateWizardValues) => {
     const formData = new FormData();
     updatedProcessTemplate.steps.forEach((step, index) => {
-        if (step.icon && step.icon!.file instanceof File) {
+        if (step.icon && step.icon!.file && step.icon!.file.name && step.icon!.file.name !== '' && step.icon!.file instanceof File) {
             formData.append(String(index), step.icon!.file as File);
         }
     });
