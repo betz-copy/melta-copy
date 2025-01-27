@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Grid } from '@mui/material';
+import { CircularProgress, Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
 import { toast } from 'react-toastify';
 import { useQueryClient } from 'react-query';
@@ -45,10 +45,12 @@ const ProcessesList: React.FC<{
     };
 
     const [loadingProcesses, setLoadingProcesses] = useState<Record<string, boolean>>({});
+    const [loadingWaitingForMeProcesses, setLoadingWaitingForMeProcesses] = useState<boolean>(false);
     const [waitingForMeProcesses, setWaitingForMeProcesses] = useState<IMongoProcessInstancePopulated[]>([]);
 
     useEffect(() => {
         if (isWaitingForMeFilterOn) {
+            setLoadingWaitingForMeProcesses(true);
             searchProcessesRequest({
                 searchText: search,
                 templateIds: templatesToShowCheckbox.map((template) => template._id),
@@ -59,13 +61,16 @@ const ProcessesList: React.FC<{
                 archived: false,
                 isWaitingForMeFilterOn: true,
                 isStepStatusPendeing: true,
-            }).then((processes) => setWaitingForMeProcesses(processes));
+            }).then((processes) => {
+                setWaitingForMeProcesses(processes);
+                setLoadingWaitingForMeProcesses(false);
+            });
         }
     }, [isWaitingForMeFilterOn, search, templatesToShowCheckbox, startDateInput, endDateInput]);
 
     return (
         <Grid item container direction="column" spacing={2}>
-            {waitingForMeProcesses.length > 0 && isWaitingForMeFilterOn && (
+            {isWaitingForMeFilterOn && (
                 <Grid
                     item
                     container
@@ -84,23 +89,36 @@ const ProcessesList: React.FC<{
                     </Grid>
                     <Grid item>
                         <ViewingBox minHeight="80vh">
-                            {waitingForMeProcesses.map((process) => (
-                                <Grid item key={process._id}>
-                                    <ProcessCard
-                                        processInstance={process}
-                                        onChangedProcessDialogClose={(processId: string | null) => {
-                                            if (processId) {
-                                                setLoadingProcesses((prev) => ({ ...prev, [processId]: true }));
-                                                queryClient
-                                                    .invalidateQueries(['searchProcesses'])
-                                                    .finally(() => setLoadingProcesses((prev) => ({ ...prev, [processId]: false })));
-                                            } else queryClient.resetQueries({ queryKey: ['searchProcesses'] });
-                                        }}
-                                        isLoading={loadingProcesses[process._id] || false}
-                                        isEditMode={hasPermissionsToEditDetails}
-                                    />
+                            {loadingWaitingForMeProcesses && (
+                                <Grid container width="100%" justifyContent="center">
+                                    <Grid item>
+                                        <CircularProgress sx={{ alignSelf: 'center' }} size="24px" />
+                                    </Grid>
                                 </Grid>
-                            ))}
+                            )}
+                            {!loadingWaitingForMeProcesses &&
+                                waitingForMeProcesses.map((process) => (
+                                    <Grid item key={process._id}>
+                                        <ProcessCard
+                                            processInstance={process}
+                                            onChangedProcessDialogClose={(processId: string | null) => {
+                                                if (processId) {
+                                                    setLoadingProcesses((prev) => ({ ...prev, [processId]: true }));
+                                                    queryClient
+                                                        .invalidateQueries(['searchProcesses'])
+                                                        .finally(() => setLoadingProcesses((prev) => ({ ...prev, [processId]: false })));
+                                                } else queryClient.resetQueries({ queryKey: ['searchProcesses'] });
+                                            }}
+                                            isLoading={loadingProcesses[process._id] || false}
+                                            isEditMode={hasPermissionsToEditDetails}
+                                        />
+                                    </Grid>
+                                ))}
+                            {waitingForMeProcesses.length === 0 && !loadingWaitingForMeProcesses && (
+                                <Grid container width="100%" justifyContent="center">
+                                    <Typography>{i18next.t('processInstancesPage.noInstancesFound')}</Typography>
+                                </Grid>
+                            )}
                         </ViewingBox>
                     </Grid>
                 </Grid>
