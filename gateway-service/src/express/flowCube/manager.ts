@@ -100,11 +100,11 @@ export class FlowCubeManager extends DefaultManagerProxy<null> {
             searchEntityTemplatesBody as ISearchEntityTemplatesBody,
         );
 
-        return templates
-            .filter(({ category }) => category === body.CategoryType)
-            .map(({ _id, displayName }) => {
-                return { Value: _id, Name: displayName };
-            });
+        const filteredTemplates = body.CategoryType === '' ? templates : templates.filter(({ category }) => body.CategoryType === category._id);
+
+        return filteredTemplates.map(({ _id, displayName }) => {
+            return { Value: _id, Name: displayName };
+        });
     }
 
     async getEntityTemplateById(templateId: string[]): Promise<{ parameters: FlowParameters[]; fields: FlowFields[] }> {
