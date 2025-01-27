@@ -10,10 +10,14 @@ import {
     searchCategoryInWorkspaceSchema,
     searchTemplatesSchema,
 } from './validator.schema';
+import validateFlowHeaders from './flowMiddleware';
+// import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
 
 const FlowCubeRouter: Router = Router();
 const FlowCubeControllerMiddleware = createWorkspacesController(FlowCubeController);
 const InstancesValidatorMiddleware = createWorkspacesController(InstancesValidator, true);
+
+FlowCubeRouter.use(validateFlowHeaders);
 
 // entities
 FlowCubeRouter.post(
