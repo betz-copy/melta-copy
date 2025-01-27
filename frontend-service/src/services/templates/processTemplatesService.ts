@@ -49,6 +49,10 @@ const processTemplateObjectToProcessTemplateForm = (
 
         if (value.format === 'fileId') {
             detailsAttachmentProperties.push(property);
+        } else if (value.items?.format === 'fileId') {
+            property.type = 'multipleFiles';
+
+            detailsAttachmentProperties.push(property);
         } else {
             detailsPropertiesArray.push(property);
         }
