@@ -1,4 +1,4 @@
-import { Box, Grid, Step, StepConnector, stepConnectorClasses, StepLabel, Stepper, styled, Typography } from '@mui/material';
+import { Box, Grid, Step, StepConnector, stepConnectorClasses, Stepper, styled } from '@mui/material';
 import React from 'react';
 import i18next from 'i18next';
 import ProcessStatus, { ReviewedAtProcessStatus, StatusDisplay } from './ProcessStatus';
@@ -56,7 +56,7 @@ const StepIconComponent = (
     </Grid>
 );
 
-const ProcessSummary = React.forwardRef<HTMLDivElement, ProcessSummaryProp>(({ processInstance, processTemplate, isPrinting, setActiveStep }) => {
+const ProcessSummary: React.FC<ProcessSummaryProp> = ({ processInstance, processTemplate, isPrinting, setActiveStep }) => {
     return (
         <Box
             sx={{
@@ -130,6 +130,6 @@ const ProcessSummary = React.forwardRef<HTMLDivElement, ProcessSummaryProp>(({ p
             </Grid>
         </Box>
     );
-});
+};
 
 export default ProcessSummary;
