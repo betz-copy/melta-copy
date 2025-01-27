@@ -253,6 +253,10 @@ const config = {
         invalidDate: env.get('INVALID_DATE').default('Invalid Date').asString(),
         invalidTime: env.get('INVALID_TIME').default('Invalid time value').asString(),
     },
+    flowCube: {
+        flowRequestHostName: env.get('REQUEST_HOST_NAME').default('host-name').required().asString(),
+        flowSystemName: env.get('FLOW_SYSTEM_NAME').default('system-name').required().asString(),
+    },
 };
 
 export default config;
