@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
-import L from 'leaflet';
+import { Cartesian3, Math as CesiumMath } from 'cesium';
+import * as Cesium from 'cesium';
+import { useCesium } from 'resium';
 import { parsePolygon, stringToCoordinates } from '../map';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IEntity } from '../../interfaces/entities';
@@ -12,15 +14,15 @@ type entityWithLocationsProps = {
     entityTemplate?: IMongoEntityTemplatePopulated;
 };
 
-export const createSquareAroundPoint = (center: L.LatLngExpression, sideLength: number): L.LatLngExpression[] => {
-    // eslint-disable-next-line no-nested-ternary
-    const [centerLat, centerLng] = center instanceof L.LatLng ? [center.lat, center.lng] : Array.isArray(center) ? center : [center.lat, center.lng];
-
+export const createSquareAroundPoint = (center: Cartesian3, sideLength: number): Cartesian3[] => {
     const halfSide = sideLength / 2 / 111000;
-    const topLeft: L.LatLngExpression = [centerLat + halfSide, centerLng - halfSide];
-    const topRight: L.LatLngExpression = [centerLat + halfSide, centerLng + halfSide];
-    const bottomRight: L.LatLngExpression = [centerLat - halfSide, centerLng + halfSide];
-    const bottomLeft: L.LatLngExpression = [centerLat - halfSide, centerLng - halfSide];
+
+    const [centerLat, centerLng] = [center.x, center.y];
+
+    const topLeft = Cesium.Cartesian3.fromDegrees(centerLat + halfSide, centerLng - halfSide);
+    const topRight = Cesium.Cartesian3.fromDegrees(centerLat + halfSide, centerLng + halfSide);
+    const bottomRight = Cesium.Cartesian3.fromDegrees(centerLat - halfSide, centerLng + halfSide);
+    const bottomLeft = Cesium.Cartesian3.fromDegrees(centerLat - halfSide, centerLng - halfSide);
 
     return [topLeft, topRight, bottomRight, bottomLeft, topLeft];
 };
@@ -29,6 +31,8 @@ export const useEntityWithLocationFields = ({ entityTemplate, entity }: entityWi
     const [propertyDefinitions, setPropertyDefinitions] = useState<Record<string, IEntitySingleProperty>>({});
     const [properties, setProperties] = useState<Record<string, any>>({});
 
+    const { viewer } = useCesium();
+
     useEffect(() => {
         if (entityTemplate && entity) {
             setPropertyDefinitions(entityTemplate.properties.properties);
@@ -36,34 +40,42 @@ export const useEntityWithLocationFields = ({ entityTemplate, entity }: entityWi
         }
     }, [entityTemplate, entity]);
 
-    const { markers, polygons, allLatLngs } = useMemo(() => {
-        const markerList: { key: string; position: L.LatLngExpression }[] = [];
-        const polygonList: { key: string; position: L.LatLngExpression[] }[] = [];
-        const latLngList: L.LatLngExpression[] = [];
+    const { markers, polygons, allCoordinates } = useMemo(() => {
+        const markerList: { key: string; position: Cartesian3 }[] = [];
+        const polygonList: { key: string; position: Cartesian3[] }[] = [];
+        const coordinatesList: Cartesian3[] = [];
 
         Object.entries(propertyDefinitions).forEach(([key, definition]) => {
             if (definition.format === 'location' && properties[key]) {
                 const parsedPolygon = parsePolygon(properties[key]);
                 if (parsedPolygon) {
                     polygonList.push({ key, position: parsedPolygon });
-                    latLngList.push(...parsedPolygon);
+                    coordinatesList.push(...parsedPolygon);
                 } else {
                     const position = stringToCoordinates(properties[key]);
-                    markerList.push({ key, position: position.value as L.LatLngExpression });
-                    latLngList.push(...createSquareAroundPoint(position.value as L.LatLngExpression, squareLength));
+                    const markerPosition = position.value as Cartesian3;
+                    markerList.push({ key, position: markerPosition });
+                    coordinatesList.push(...createSquareAroundPoint(markerPosition, squareLength));
                 }
             }
         });
 
-        return { markers: markerList, polygons: polygonList, allLatLngs: latLngList };
+        return { markers: markerList, polygons: polygonList, allCoordinates: coordinatesList };
     }, [propertyDefinitions, properties]);
 
+    useEffect(() => {
+        if (viewer && allCoordinates.length > 0) {
+            const boundingSphere = Cesium.BoundingSphere.fromPoints(allCoordinates);
+            viewer.camera.viewBoundingSphere(boundingSphere, new Cesium.HeadingPitchRange(0, -CesiumMath.PI_OVER_TWO, 0));
+        }
+    }, [allCoordinates, viewer]);
+
     const bounds = useMemo(() => {
-        if (allLatLngs.length > 0) {
-            return L.latLngBounds(allLatLngs);
+        if (allCoordinates.length > 0) {
+            return Cesium.BoundingSphere.fromPoints(allCoordinates);
         }
         return null;
-    }, [allLatLngs]);
+    }, [allCoordinates]);
 
-    return { propertyDefinitions, allLatLngs, markers, polygons, bounds };
+    return { propertyDefinitions, allCoordinates, markers, polygons, bounds };
 };

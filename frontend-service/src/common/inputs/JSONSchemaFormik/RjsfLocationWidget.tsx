@@ -9,29 +9,30 @@ import { getTextDirection } from '../../../utils/stringValues';
 import { environment } from '../../../globals';
 import LocationField from '../../../pages/Map/mapPage/Resuim/LocationField';
 
-const { polygon, polygonPrefix, polygonSuffix } = environment.map.polygon;
+const { polygonPrefix, polygonSuffix } = environment.map.polygon;
+
+export enum SplitBy {
+    space = ' ',
+    comma = ',',
+}
+
+const validatePoint = (pointString: string, splitBy: SplitBy) => {
+    const [longitude, latitude] = pointString.split(splitBy).map(Number);
+    if (Number.isNaN(longitude) || Number.isNaN(latitude)) {
+        return false;
+    }
+    return true;
+};
 
 export const validateLocation = (value: string) => {
-    const locationString = value.trim();
+    if (!value.startsWith(polygonPrefix)) return validatePoint(value, SplitBy.comma);
 
-    const [longitude, latitude] = locationString
-        .split(',')
-        .map((v) => v.trim())
-        .map(Number);
-
-    if (locationString.startsWith(polygon)) {
-        if (locationString.startsWith(polygonPrefix) && locationString.endsWith(polygonSuffix)) {
-            const coordinates = locationString.slice(polygonPrefix.length, -polygonSuffix.length).split(',');
-            for (let i = 0; i < coordinates.length; i++) {
-                const [lng, lat] = coordinates[i].split(' ').map(Number);
-                if (Number.isNaN(lng) || Number.isNaN(lat)) return false;
-            }
-            return true;
-        }
+    if (!value.startsWith(polygonPrefix) || !value.endsWith(polygonSuffix)) {
         return false;
     }
 
-    return !Number.isNaN(longitude) && !Number.isNaN(latitude);
+    const coordsStr = value.slice(polygonPrefix.length, -polygonSuffix.length);
+    return coordsStr.split(SplitBy.comma).every((stringedLocation: string) => validatePoint(stringedLocation, SplitBy.space));
 };
 
 const RjsfLocationWidget = ({
@@ -119,9 +120,7 @@ const RjsfLocationWidget = ({
             />
 
             <Dialog open={mapOpen} onClose={handleCloseDialog}>
-                <LocationField
-                    edit={{ defaultLocation: newLocationValue, field: label, updateValue: (newVal: string) => setNewLocationValue(newVal) }}
-                />
+                <LocationField defaultLocation={newLocationValue} field={label} updateValue={(newVal: string) => setNewLocationValue(newVal)} />
             </Dialog>
         </Box>
     );

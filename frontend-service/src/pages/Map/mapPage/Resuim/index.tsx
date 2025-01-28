@@ -15,9 +15,11 @@
 // };
 
 // export default ResiumMap;
+
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Cartesian3, Color } from 'cesium';
+import { Cartesian3, Color, Ion } from 'cesium';
 import { Viewer, Entity, EllipseGraphics, PolylineGraphics, CesiumMovementEvent, PolygonGraphics, EntityDescription, PointGraphics } from 'resium';
+import * as Cesium from 'cesium';
 import { ToggleButton, ToggleButtonGroup } from '@mui/material';
 import { Circle, LinearScale } from '@mui/icons-material';
 import i18next from 'i18next';
@@ -28,13 +30,54 @@ import MapFilters from '../MapFilters';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { IEntity } from '../../../../interfaces/entities';
 import { getEntitiesByLocation } from '../../../../services/entitiesService';
-import { getEntityTemplateColor } from '../../../../utils/colors';
-import { stringToCoordinates } from '../../../../utils/map';
+import { convertToDegrees, jerusalemCoordinates, stringToCoordinates } from '../../../../utils/map';
 import { EntityProperties } from '../../../../common/EntityProperties';
+import { useDarkModeStore } from '../../../../stores/darkMode';
+import { environment } from '../../../../globals';
+
+const { maxRadius } = environment.map;
+
+// export const BaseLayers: React.FC = () => {
+//     const queryClient = useQueryClient();
+//     const config = queryClient.getQueryData<BackendConfigState>('getBackendConfig');
+
+//     if (!config) return <>{i18next.t('location.noLayers')}</>;
+
+//     const { mapLayers, textLayers } = config;
+
+//     return (
+//         <>
+//             {Object.entries(mapLayers).map(([layerName, url]) => (
+//                 <ImageryLayer
+//                     key={layerName}
+//                     imageryProvider={
+//                         new UrlTemplateImageryProvider({
+//                             url,
+//                         })
+//                     }
+//                 />
+//             ))}
+//             {Object.entries(textLayers).map(([layerName, url]) => (
+//                 <ImageryLayer
+//                     key={layerName}
+//                     imageryProvider={
+//                         new UrlTemplateImageryProvider({
+//                             url,
+//                         })
+//                     }
+//                 />
+//             ))}
+//         </>
+//     );
+// };
 
 const ResiumMap = () => {
+    Ion.defaultAccessToken =
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJjZWI5M2EyNC1lODE3LTQwYTQtYTUxZi00NDlhODAyZDM0NTMiLCJpZCI6MjcwNDM5LCJpYXQiOjE3Mzc0NDk3MzN9.WLi4Zcm4D_PMstHcM3YNMJsw1xPhiNGuJyizwg_4nbg';
+
     const queryClient = useQueryClient();
     const entityTemplateMap = queryClient.getQueryData<IEntityTemplateMap>(['getEntityTemplates']);
+    const darkMode = useDarkModeStore((state) => state.darkMode);
 
     const [drawingMode, setDrawingMode] = useState<'circle' | 'line' | null>(null);
     const [selectedTemplates, setSelectedTemplates] = useState<IMongoEntityTemplatePopulated[]>([]);
@@ -49,6 +92,28 @@ const ResiumMap = () => {
     });
     const [lineData, setLineData] = useState<Cartesian3[]>([]);
 
+    useEffect(() => {
+        if (circleData.center !== null && circleData.radius !== null) {
+            const viewer = viewerRef.current?.cesiumElement;
+
+            if (viewer) {
+                const { camera } = viewer;
+
+                const boundingSphere = new Cesium.BoundingSphere(circleData.center, circleData.radius);
+
+                camera.flyToBoundingSphere(boundingSphere, {
+                    duration: 1.5,
+                    offset: new Cesium.HeadingPitchRange(0, -Cesium.Math.toRadians(90), circleData.radius * 2.5),
+                });
+            }
+        } else if (circleData.center === null && circleData.radius === null) {
+            viewerRef.current?.cesiumElement?.camera.flyTo({
+                destination: jerusalemCoordinates,
+                duration: 1.5,
+            });
+        }
+    }, [circleData]);
+
     const handleViewerClick = (clickEvent: CesiumMovementEvent) => {
         if (drawingMode === null || !clickEvent.position) return;
 
@@ -56,7 +121,7 @@ const ResiumMap = () => {
 
         if (!viewer) return;
         const { scene } = viewer;
-        const cartesian = scene.camera.pickEllipsoid(clickEvent.position, scene.globe.ellipsoid);
+        const cartesian: Cartesian3 = scene.camera.pickEllipsoid(clickEvent.position, scene.globe.ellipsoid);
 
         if (cartesian) {
             if (drawingMode === 'circle') {
@@ -64,7 +129,7 @@ const ResiumMap = () => {
                     setCircleData((prev) => ({ ...prev, center: cartesian }));
                 } else {
                     const radius = Cartesian3.distance(circleData.center, cartesian);
-                    setCircleData({ center: circleData.center, radius });
+                    setCircleData({ center: circleData.center, radius: radius > maxRadius ? maxRadius : radius });
                 }
             } else if (drawingMode === 'line') {
                 setLineData((prev) => [...prev, cartesian]);
@@ -137,10 +202,12 @@ const ResiumMap = () => {
         // searchResultGroupRef?.current?.clearLayers();
         if (circleData.center !== null && circleData.radius !== null) {
             for (const templateId of filteredTemplatesIds) {
+                const { longitude, latitude } = convertToDegrees(circleData.center);
+
                 mutateAsync({
                     textSearch: '',
                     templates: { [templateId]: { filter: {} } },
-                    circle: { coordinate: [circleData.center.x, circleData.center.y], radius: circleData.radius },
+                    circle: { coordinate: [longitude, latitude], radius: circleData.radius },
                 });
             }
         }
@@ -173,7 +240,7 @@ const ResiumMap = () => {
                 )}
 
                 {lineData.length > 1 && (
-                    <Entity name={i18next.t('location.line')} description={lineData.toString()}>
+                    <Entity name={i18next.t('location.line')} description={`${Cartesian3.distance(lineData[0], lineData[lineData.length - 1])} km`}>
                         <PolylineGraphics positions={lineData} material={Color.RED} width={3} />
                     </Entity>
                 )}
@@ -192,7 +259,7 @@ const ResiumMap = () => {
                     exclusive
                     onChange={handleDrawType}
                     size="small"
-                    style={{ background: 'white', height: '35px' }}
+                    style={{ background: darkMode ? '#121212' : 'white', height: '35px' }}
                 >
                     <MeltaTooltip title={i18next.t('location.circle')}>
                         <ToggleButton value="circle">

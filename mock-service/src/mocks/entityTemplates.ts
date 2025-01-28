@@ -535,6 +535,11 @@ export const entityTemplates: IEntityTemplateMock[] = [
                     pattern: '^0[2-9]\\d-\\d{4}-\\d{3}$',
                     patternCustomErrorMessage: 'יש להזין בפורמט מס טלפון בלבד (050-1234-123)',
                 },
+                location: {
+                    type: 'string',
+                    title: 'מיקום',
+                    format: 'location',
+                },
                 file: {
                     title: 'קובץ יחיד',
                     type: 'string',

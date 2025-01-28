@@ -231,7 +231,7 @@ export const environment = {
         maxRadius: 30000,
         squareLength: 10,
         units: { km: 'km', squaredKm: 'km²' },
-        polygon: { polygon: 'POLYGON', polygonPrefix: 'POLYGON((', polygonSuffix: '))' },
+        polygon: { polygonPrefix: 'POLYGON((', polygonSuffix: '))' },
     },
     profileIconsCount: 19,
     avatarIconPath: '/icons/profileAvatar/',
