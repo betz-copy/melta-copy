@@ -68,19 +68,16 @@ const MyPermissions: React.FC<{
     const dialogPermissionData: Map<string, CategoryWithTemplates> = new Map();
 
     Array.from(entityTemplates.values()).forEach((entity) => {
-        const baseCategory = categories.get(entity.category._id);
-        if (baseCategory) {
-            const category: CategoryWithTemplates = {
-                entityTemplates: dialogPermissionData.get(entity.category._id)?.entityTemplates || [],
-                ...baseCategory,
-            };
-            const displayEntity: entityTemplatePermissionDialog = {
-                id: entity._id,
-                name: entity.displayName,
-            };
-            category.entityTemplates = category?.entityTemplates ? [...category.entityTemplates, displayEntity] : [displayEntity];
-            dialogPermissionData.set(entity.category._id, category);
-        }
+        const category: CategoryWithTemplates = {
+            entityTemplates: dialogPermissionData.get(entity.category._id)?.entityTemplates || [],
+            ...entity.category,
+        };
+        const displayEntity: entityTemplatePermissionDialog = {
+            id: entity._id,
+            name: entity.displayName,
+        };
+        category.entityTemplates = category?.entityTemplates ? [...category.entityTemplates, displayEntity] : [displayEntity];
+        dialogPermissionData.set(entity.category._id, category);
     });
 
     const { mutate: createUser } = useMutation(

@@ -16,6 +16,20 @@ export const checkUserCategoryPermission = (
     );
 };
 
+export const checkUserUserTemplatePermission = (
+    permissions: ISubCompactPermissions,
+    { _id: categoryId }: IMongoCategory,
+    templateId: string,
+    scope: PermissionScope,
+): boolean => {
+    return (
+        Boolean(permissions?.admin) ||
+        permissions?.instances?.categories[categoryId]?.scope === scope ||
+        permissions?.instances?.categories[categoryId]?.scope === PermissionScope.write ||
+        permissions?.instances?.categories[categoryId]?.entityTemplates?.[templateId]?.scope === PermissionScope.write
+    );
+};
+
 export const getUserPermissionScopeOfCategory = (categoriesPermissions: ICompact<IInstancesPermission>['categories'], categoryId: string) => {
     return categoriesPermissions[categoryId]?.scope ?? undefined;
 };
