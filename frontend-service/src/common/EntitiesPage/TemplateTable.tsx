@@ -24,7 +24,7 @@ import { useDraftIdStore, useDraftsStore } from '../../stores/drafts';
 import { useUserStore } from '../../stores/user';
 import { filterModelToFilterOfTemplate, sortModelToSortOfSearchRequest } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 import { getEntityTemplateColor } from '../../utils/colors';
-import { checkUserUserTemplatePermission } from '../../utils/permissions/instancePermissions';
+import { checkUserTemplatePermission } from '../../utils/permissions/instancePermissions';
 import { BlueTitle } from '../BlueTitle';
 import { CustomIcon } from '../CustomIcon';
 import { EntityWizardValues } from '../dialogs/entity';
@@ -130,7 +130,7 @@ const TemplateTable = forwardRef<
 
     const entityTemplateColor = getEntityTemplateColor(template);
 
-    const userHasWritePermissions = checkUserUserTemplatePermission(
+    const userHasWritePermissions = checkUserTemplatePermission(
         currentUser.currentWorkspacePermissions,
         template.category,
         template._id,

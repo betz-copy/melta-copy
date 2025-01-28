@@ -31,7 +31,7 @@ import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreac
 import { deleteEntityRequest, updateEntityStatusRequest } from '../../../services/entitiesService';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { useUserStore } from '../../../stores/user';
-import { checkUserCategoryPermission, isWorkspaceAdmin } from '../../../utils/permissions/instancePermissions';
+import { checkUserTemplatePermission, isWorkspaceAdmin } from '../../../utils/permissions/instancePermissions';
 import { EditEntityDetails } from './EditEntityDetails';
 import { EntityDates } from './EntityDates';
 import { EntityDisableCheckbox } from './EntityDisableCheckbox';
@@ -81,7 +81,12 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
     const templateIds = Array.from(entityTemplates.keys());
 
     const workspaceAdmin = isWorkspaceAdmin(currentUser.currentWorkspacePermissions);
-    const canWriteInstance = checkUserCategoryPermission(currentUser.currentWorkspacePermissions, entityTemplate.category, PermissionScope.write);
+    const canWriteInstance = checkUserTemplatePermission(
+        currentUser.currentWorkspacePermissions,
+        entityTemplate.category,
+        entityTemplate._id,
+        PermissionScope.write,
+    );
     const isEntityDisabled = expandedEntity.entity.properties.disabled;
     const includeLocationProperty = Object.entries(entityTemplate.properties.properties).some(
         ([field, property]) => property.format === 'location' && entity.properties[field] !== undefined,

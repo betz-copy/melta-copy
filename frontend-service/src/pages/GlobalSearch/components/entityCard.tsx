@@ -23,7 +23,7 @@ import { useUserStore } from '../../../stores/user';
 import { getEntityTemplateColor } from '../../../utils/colors';
 import { getFileName } from '../../../utils/getFileName';
 import { getFileNameWithoutExtension, getPreviewContentType } from '../../../utils/getFileType';
-import { checkUserCategoryPermission } from '../../../utils/permissions/instancePermissions';
+import { checkUserTemplatePermission } from '../../../utils/permissions/instancePermissions';
 import { EntityDates } from '../../Entity/components/EntityDates';
 import { EntityDisableCheckbox } from '../../Entity/components/EntityDisableCheckbox';
 import { EntityWizardValues } from '../../../common/dialogs/entity';
@@ -82,9 +82,10 @@ const EntityCard: React.FC<EntityCardProps> = ({
     const cardRef = useRef<HTMLDivElement>(null);
     const currentUser = useUserStore((state) => state.user);
 
-    const userHasWritePermissions = checkUserCategoryPermission(
+    const userHasWritePermissions = checkUserTemplatePermission(
         currentUser.currentWorkspacePermissions,
         entityTemplate.category,
+        entityTemplate._id,
         PermissionScope.write,
     );
 

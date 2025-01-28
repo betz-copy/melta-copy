@@ -102,7 +102,12 @@ export class InstancesValidator extends DefaultController {
         if (
             !userPermissions.admin?.scope &&
             !Object.entries(userPermissions.instances?.categories ?? {}).some(
-                ([category, { scope }]) => category === categoryId && (scope === permissionScope || scope === PermissionScope.write),
+                ([category, { scope, entityTemplates }]) =>
+                    category === categoryId &&
+                    (scope === permissionScope ||
+                        scope === PermissionScope.write ||
+                        entityTemplates?.[templateId]?.scope === permissionScope ||
+                        entityTemplates?.[templateId]?.scope === PermissionScope.write),
             )
         ) {
             throw new ForbiddenError(`user not authorized, does not have ${permissionScope} permission on category ${categoryId}`);

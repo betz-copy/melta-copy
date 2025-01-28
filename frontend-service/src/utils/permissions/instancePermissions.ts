@@ -16,7 +16,7 @@ export const checkUserCategoryPermission = (
     );
 };
 
-export const checkUserUserTemplatePermission = (
+export const checkUserTemplatePermission = (
     permissions: ISubCompactPermissions,
     { _id: categoryId }: IMongoCategory,
     templateId: string,

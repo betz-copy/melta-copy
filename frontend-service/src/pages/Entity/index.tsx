@@ -24,7 +24,7 @@ import { IRelationship } from '../../interfaces/relationships';
 import { IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
 import { getExpandedEntityByIdRequest } from '../../services/entitiesService';
 import { useUserStore } from '../../stores/user';
-import { checkUserCategoryPermission } from '../../utils/permissions/instancePermissions';
+import { checkUserTemplatePermission } from '../../utils/permissions/instancePermissions';
 import { populateRelationshipTemplate } from '../../utils/templates';
 import { EntityDetails } from './components/EntityDetails';
 import { EntityTopBar } from './components/TopBar';
@@ -34,8 +34,9 @@ import { useWorkspaceStore } from '../../stores/workspace';
 
 export const getButtonState = (
     isEntityDisabled: boolean,
-    hasWritePermissionToCurrCategory: boolean,
+    hasWritePermissionToCurrTemplate: boolean,
     categoryId: string,
+    templateId: string,
     permissions?: ISubCompactPermissions,
 ) => {
     let isEditButtonsDisabled = false;
@@ -46,13 +47,17 @@ export const getButtonState = (
     if (isEntityDisabled) {
         isEditButtonsDisabled = true;
         disabledButtonText = i18next.t('entityPage.disabledEntity');
-    } else if (!hasWritePermissionToCurrCategory) {
+    } else if (!hasWritePermissionToCurrTemplate) {
         isEditButtonsDisabled = true;
         disabledButtonText = i18next.t('permissions.dontHaveWritePermissions');
     } else if (!permissions?.admin && !permissions?.instances) {
         isEditButtonsDisabled = true;
         disabledButtonText = i18next.t('permissions.dontHavePermissionsToCategory');
-    } else if (!permissions?.admin && permissionToRelatedCategory?.scope !== PermissionScope.write) {
+    } else if (
+        !permissions?.admin &&
+        permissionToRelatedCategory?.scope !== PermissionScope.write &&
+        permissionToRelatedCategory?.entityTemplates?.[templateId]?.scope !== PermissionScope.write
+    ) {
         isEditButtonsDisabled = true;
         disabledButtonText = i18next.t('permissions.dontHaveWritePermissionsToCategory');
     } else {
@@ -378,9 +383,10 @@ const Entity: React.FC = () => {
     const isEntityDisabled = expandedEntity.entity.properties.disabled;
     const currentEntityTemplate = entityTemplates.get(expandedEntity.entity.templateId)!;
 
-    const hasWritePermissionToCurrCategory = checkUserCategoryPermission(
+    const hasWritePermissionToCurrTemplate = checkUserTemplatePermission(
         currentUser.currentWorkspacePermissions,
         currentEntityTemplate.category,
+        currentEntityTemplate._id,
         PermissionScope.write,
     );
     const populatedRelationshipTemplates = Array.from(relationshipTemplates.values(), (currRelationshipTemplate) =>
@@ -541,8 +547,9 @@ const Entity: React.FC = () => {
                                     ({ category: { _id }, connectionsTemplates: connectionsTemplatesOfCategory }, index) => {
                                         const { isEditButtonsDisabled, disabledButtonText, permissionToRelatedCategory } = getButtonState(
                                             isEntityDisabled,
-                                            hasWritePermissionToCurrCategory,
+                                            hasWritePermissionToCurrTemplate,
                                             _id,
+                                            currentEntityTemplate._id,
                                             currentUser.currentWorkspacePermissions,
                                         );
 
