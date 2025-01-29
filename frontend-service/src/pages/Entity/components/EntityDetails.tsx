@@ -1,11 +1,9 @@
 import { Card, CardContent, Dialog, Grid, IconButton, Menu } from '@mui/material';
 import {
-    AccountTreeOutlined as GraphIcon,
     ContentCopy as DuplicateIcon,
     Delete as DeleteIcon,
     DoNotDisturbOnOutlined as DoNotDisturbOnOutlinedIcon,
     DoNotDisturbOffOutlined as DoNotDisturbOffOutlinedIcon,
-    Edit as EditIcon,
     MoreVertOutlined,
     Unarchive,
     Archive,
@@ -194,7 +192,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                                         popoverText={
                                             // eslint-disable-next-line no-nested-ternary
                                             !canWriteInstance
-                                                ? i18next.t('permissions.dontHaveWritePermissionsToCategory')
+                                                ? i18next.t('permissions.dontHaveWritePermissionsToTemplate')
                                                 : isEntityDisabled
                                                 ? i18next.t('entityPage.disabledEntity')
                                                 : i18next.t('actions.edit')
@@ -219,38 +217,8 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                                     <MoreVertOutlined sx={{ color: '#787c9e' }} />
                                 </IconButton>
                                 <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
-                                    <Grid>
-                                        <MenuButton
-                                            onClick={() => {
-                                                navigate(`/entity/${entity.properties._id}/graph`);
-                                                handleClose();
-                                            }}
-                                            text={i18next.t('actions.graph')}
-                                            icon={<GraphIcon color="action" />}
-                                        />
-                                    </Grid>
-
                                     <TooltipMenuButton
-                                        tooltipTitle={
-                                            // eslint-disable-next-line no-nested-ternary
-                                            !canWriteInstance
-                                                ? i18next.t('permissions.dontHaveWritePermissionsToCategory')
-                                                : isEntityDisabled
-                                                ? i18next.t('entityPage.disabledEntity')
-                                                : ''
-                                        }
-                                        onClick={() => {
-                                            if (!canWriteInstance || isEntityDisabled) return;
-                                            setIsEditMode(true);
-                                            handleClose();
-                                        }}
-                                        disabled={!canWriteInstance || isEntityDisabled}
-                                        icon={EditIcon}
-                                        text={i18next.t('actions.edit')}
-                                    />
-
-                                    <TooltipMenuButton
-                                        tooltipTitle={!canWriteInstance ? i18next.t('permissions.dontHaveWritePermissionsToCategory') : ''}
+                                        tooltipTitle={!canWriteInstance ? i18next.t('permissions.dontHaveWritePermissionsToTemplate') : ''}
                                         onClick={() => {
                                             if (canWriteInstance && !isEntityDisabled) {
                                                 navigate(`/entity/${entity.properties._id}/duplicate`, {
@@ -265,7 +233,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                                     />
 
                                     <TooltipMenuButton
-                                        tooltipTitle={i18next.t('permissions.dontHaveWritePermissionsToCategory')}
+                                        tooltipTitle={i18next.t('permissions.dontHaveWritePermissionsToTemplate')}
                                         onClick={() => {
                                             setOpenDeleteDialog(true);
                                             handleClose();
@@ -276,7 +244,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                                     />
 
                                     <TooltipMenuButton
-                                        tooltipTitle={!canWriteInstance ? i18next.t('permissions.dontHaveWritePermissionsToCategory') : ''}
+                                        tooltipTitle={!canWriteInstance ? i18next.t('permissions.dontHaveWritePermissionsToTemplate') : ''}
                                         onClick={() => {
                                             if (canWriteInstance) {
                                                 updateEntityStatus({ currEntity: entity, disabled: !entity.properties.disabled });
@@ -288,7 +256,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                                         text={isEntityDisabled ? i18next.t('actions.activate') : i18next.t('actions.disable')}
                                     />
                                     <TooltipMenuButton
-                                        tooltipTitle={i18next.t('permissions.dontHaveWritePermissionsToCategory')}
+                                        tooltipTitle={i18next.t('permissions.dontHaveWritePermissionsToTemplate')}
                                         onClick={() => setDisplayArchiveProperties(!displayArchiveProperties)}
                                         disabled={!canWriteInstance}
                                         icon={displayArchiveProperties ? Archive : Unarchive}

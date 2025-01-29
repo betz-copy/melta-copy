@@ -375,6 +375,7 @@ export default {
         failedToLoadAllPermissions: 'נכשל לטעון את כל ההרשאות',
         dontHavePermissionsToCategory: 'אין הרשאות לקטגוריה',
         dontHaveWritePermissionsToCategory: 'אין הרשאות עריכה לקטגוריה',
+        dontHaveWritePermissionsToTemplate: 'אין הרשאות עריכה לתבנית',
         dontHavePermissionToEntityPage: 'אין לך הרשאות לגשת לעמוד פרט של ישות זו',
         dontHaveWritePermissions: 'אין לך הרשאות עריכה',
         permissionsOfUserDialog: {

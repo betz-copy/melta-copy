@@ -32,7 +32,7 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
     const workspace = useWorkspaceStore((state) => state.workspace);
     const { bulk } = workspace.metadata.searchLimits;
 
-    const refetch = () => queryClient.invalidateQueries({ queryKey: ['searchEntities', templateIds, searchInput], exact: true });
+    const refetch = () => queryClient.invalidateQueries(['searchEntities', templateIds, searchInput, urlSemanticSearch], { exact: true });
 
     useImperativeHandle(ref, () => ({ refetch }));
 

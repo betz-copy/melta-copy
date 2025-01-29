@@ -161,6 +161,17 @@ const TemplateTable = forwardRef<
     };
 
     const isLoadExcelDisabled = !userHasWritePermissions || checkIfLoadEntityIsDisabled();
+    const getLoadExcelTooltip = () => {
+        if (!userHasWritePermissions) {
+            return i18next.t('permissions.dontHaveWritePermissionsToTemplate');
+        }
+
+        if (checkIfLoadEntityIsDisabled()) {
+            return i18next.t('wizard.entity.loadEntities.tableCantLoadEntities');
+        }
+
+        return undefined;
+    };
     return (
         <Grid container minWidth="fit-content">
             <Grid container justifyContent="space-between" width="fit-content" minWidth="fit-content">
@@ -278,7 +289,7 @@ const TemplateTable = forwardRef<
                             color: theme.palette.primary.main,
                         }}
                         onSuccessCreate={() => entitiesTableRef.current?.refreshServerSide()}
-                        popoverText={isLoadExcelDisabled ? i18next.t('wizard.entity.loadEntities.tableCantLoadEntities') : undefined}
+                        popoverText={getLoadExcelTooltip()}
                     >
                         <Upload
                             fontSize="small"
@@ -389,7 +400,7 @@ const TemplateTable = forwardRef<
                             toast.dismiss();
                         },
                         popoverText: i18next.t(
-                            !userHasWritePermissions ? 'permissions.dontHaveWritePermissions' : 'entitiesTableOfTemplate.editEntity',
+                            !userHasWritePermissions ? 'permissions.dontHaveWritePermissionsToTemplate' : 'entitiesTableOfTemplate.editEntity',
                         ),
                         disabledButton: !userHasWritePermissions,
                     }}

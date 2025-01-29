@@ -55,7 +55,7 @@ const AddEntityButton: React.FC<{
                     },
                     popoverText:
                         popoverText ??
-                        (disabled ? i18next.t('permissions.dontHaveWritePermissions') : i18next.t('entitiesTableOfTemplate.addEntity')),
+                        (disabled ? i18next.t('permissions.dontHaveWritePermissionsToTemplate') : i18next.t('entitiesTableOfTemplate.addEntity')),
                     disabledToolTip,
                 }}
                 disableButton={disabled}
