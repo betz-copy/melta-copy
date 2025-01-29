@@ -81,9 +81,9 @@ const GeneralDetails: React.FC<IDetailsStepProp> = ({
                                 />
                             </Grid>
                             <Grid item>
-                                <Divider variant="fullWidth" style={{ marginTop: '25px' }} />
+                                <Divider variant="fullWidth" sx={{ marginTop: '25px' }} />
                             </Grid>
-                            <Grid item height="80%" style={{ overflowY: 'auto' }}>
+                            <Grid item height="80%" sx={{ overflowY: 'auto' }}>
                                 {values.template && (
                                     <TemplateFields
                                         toPrint={toPrint}
@@ -108,7 +108,7 @@ const GeneralDetails: React.FC<IDetailsStepProp> = ({
                                             <Grid item flexBasis="50%">
                                                 <Button
                                                     variant="outlined"
-                                                    style={{
+                                                    sx={{
                                                         borderRadius: '7px',
                                                         width: '150px',
                                                         height: '35px',
@@ -126,7 +126,7 @@ const GeneralDetails: React.FC<IDetailsStepProp> = ({
                                             <Grid item flexBasis="50%">
                                                 <Button
                                                     variant="outlined"
-                                                    style={{
+                                                    sx={{
                                                         borderRadius: '7px',
                                                         width: '150px',
                                                         height: '35px',

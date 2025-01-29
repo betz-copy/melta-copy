@@ -45,17 +45,21 @@ const CreateOrEditProcess: React.FC<ISimpleDialogProps> = ({ open, onClose, proc
 
     const [activeProcessDetailsStep, setActiveProcessDetailsStep] = React.useState(0);
 
+    const { template } = detailsFormikData.values;
+
+    const { details } = template || {};
+
     const handleNext = () => {
         const currentTouched: Record<string, any> = getAllFieldsTouched(detailsFormikData.values);
 
-        const templateFileProperties = detailsFormikData.values.template
+        const templateFileProperties = template
             ? pickBy(
-                  detailsFormikData.values.template.details.properties.properties,
+                  details?.properties.properties,
                   (value) => (value.type === 'array' && value.items?.format === 'fileId') || value.format === 'fileId',
               )
             : undefined;
-        const templateEntityReferenceProperties = detailsFormikData.values.template
-            ? pickBy(detailsFormikData.values.template.details.properties.properties, (value) => value.format === 'entityReference')
+        const templateEntityReferenceProperties = template
+            ? pickBy(details?.properties.properties, (value) => value.format === 'entityReference')
             : undefined;
 
         const detailsAttachments = {};
@@ -116,7 +120,7 @@ const CreateOrEditProcess: React.FC<ISimpleDialogProps> = ({ open, onClose, proc
     }, [values.template?._id]);
 
     return (
-        <Dialog open={open} fullWidth maxWidth="xl" PaperProps={{ style: { height: '85vh' } }}>
+        <Dialog open={open} fullWidth maxWidth="xl" PaperProps={{ sx: { height: '85vh' } }}>
             <FormikProvider value={detailsFormikData}>
                 <IconButton
                     aria-label="close"
@@ -141,7 +145,7 @@ const CreateOrEditProcess: React.FC<ISimpleDialogProps> = ({ open, onClose, proc
                         alignItems="center"
                         flexBasis="20%"
                         padding={3}
-                        style={{
+                        sx={{
                             backgroundColor: darkMode ? '#171717' : '#F0F2F7',
                             borderBottomLeftRadius: '20px',
                             borderTopLeftRadius: '20px',
