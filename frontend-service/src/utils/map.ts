@@ -1,15 +1,8 @@
-import { GeometryUtil, LatLng } from 'leaflet';
-import * as L from 'leaflet';
-import { useMap } from 'react-leaflet';
-import { useEffect } from 'react';
 import { Cartesian3, Ellipsoid, Math as CesiumMath } from 'cesium';
-import { IEntity } from '../interfaces/entities';
-import { IEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { environment } from '../globals';
 
 const {
     polygon: { polygonPrefix, polygonSuffix },
-    units: { km, squaredKm },
 } = environment.map;
 
 export const zoomNumber = 300000;
@@ -40,16 +33,6 @@ export const parsePolygon = (polygonStr: string): Cartesian3[] | undefined => {
 
     return coordinates.length > 0 ? coordinates : undefined;
 };
-
-export const calculateDistance = (latlngs: LatLng[]) => {
-    let totalDistance = 0;
-    for (let i = 1; i < latlngs.length; i++) {
-        totalDistance += latlngs[i - 1].distanceTo(latlngs[i]);
-    }
-    return totalDistance;
-};
-
-export const calculatePolygonArea = (latlngs: LatLng[]) => GeometryUtil.geodesicArea(latlngs);
 
 type CoordinatesResult = {
     type: 'polygon' | 'marker';
@@ -86,14 +69,15 @@ export const calculateCenterOfPolygon = (coordinates: Cartesian3[]): Cartesian3 
     return new Cartesian3(sumX / length, sumY / length, sumZ / length);
 };
 
-export const resolveDestination = (
-    drawingMode: 'polygon' | 'coordinate' | null,
-    polygonPosition: Cartesian3[],
-    markerPosition: Cartesian3 | null,
-): Cartesian3 => {
-    if (markerPosition !== null) return markerPosition;
-    if (polygonPosition.length > 0) if (drawingMode === null) return { ...calculateCenterOfPolygon(polygonPosition) } as Cartesian3;
-    return jerusalemCoordinates;
+export const getPolygonFarthestPoint = (polygonCenter: Cartesian3, polygon: Cartesian3[]) => {
+    let longestDistance = 0;
+
+    polygon.forEach((point) => {
+        const distance = Cartesian3.distance(polygonCenter, point);
+        if (distance > longestDistance) longestDistance = distance;
+    });
+
+    return longestDistance;
 };
 
 export const convertToDegrees = (point: Cartesian3): { longitude: number; latitude: number } => {
@@ -122,52 +106,26 @@ export const cartesian3ToString = (cartesian3: Cartesian3 | Cartesian3[], includ
     return includePolygon ? `${polygonPrefix}${points.join(',')}${polygonSuffix}` : points.join(',');
 };
 
-// ugly af find better solution
-export const bindPopupForMarker = (coordinates: LatLng) => {
-    const { lat, lng } = coordinates;
-    if (lat && lng) {
-        return `Coordinates: ${lat.toFixed(5)}, ${lng.toFixed(5)}`;
-    }
-    return `Coordinates: ${coordinates[0].toFixed(5)}, ${coordinates[1].toFixed(5)}`;
-};
+export const isValidPolygonPoint = (polygonPoints, newPoint) => {
+    if (polygonPoints.length < 2) return true;
 
-export const bindPopupForLine = (coordinates: LatLng[]) => {
-    const distanceMeters = calculateDistance(coordinates);
-    const distanceKm = distanceMeters / 1000;
-    return `Distance: ${distanceKm.toFixed(2)} ${km}`;
-};
+    const points = [...polygonPoints, newPoint];
+    const numPoints = points.length;
+    let isClockwise = false;
 
-export const bindPopupForPolygon = (coordinates: LatLng[]) => {
-    const areaMeters = calculatePolygonArea(coordinates);
-    const areaKm2 = areaMeters / 1_000_000;
-    return `Area: ${areaKm2.toFixed(2)} ${squaredKm}`;
-};
+    for (let i = 0; i < numPoints; i++) {
+        const p1 = points[i];
+        const p2 = points[(i + 1) % numPoints];
+        const p3 = points[(i + 2) % numPoints];
 
-export const bindPopupForCircle = (radius: number) => {
-    const areaMeters = Math.PI * radius * radius;
-    const areaKm2 = areaMeters / 1_000_000;
-    const radiusKm = radius / 1000;
-    return `Area: ${areaKm2.toFixed(2)} ${squaredKm}, Radius: ${radiusKm.toFixed(2)} ${km}`;
-};
+        const crossProduct = (p2.x - p1.x) * (p3.y - p1.y) - (p2.y - p1.y) * (p3.x - p1.x);
 
-export const extractLocationFieldsFromEntity = (entity: IEntity, entityTemplate: IEntityTemplatePopulated) => {
-    const locationFields = Object.entries(entityTemplate.properties.properties)
-        .filter(([, value]) => value.format === 'location')
-        .map(([key]) => key);
-
-    return Object.entries(entity.properties)
-        .filter(([key]) => locationFields.includes(key))
-        .map(([, value]) => value as string);
-};
-
-export const UpdateMapBounds = ({ bounds }: { bounds: L.LatLngBounds | null }) => {
-    const map = useMap();
-
-    useEffect(() => {
-        if (bounds?.isValid()) {
-            map.fitBounds(bounds);
+        if (i === 0) {
+            isClockwise = crossProduct > 0;
+        } else if (crossProduct > 0 !== isClockwise) {
+            return false;
         }
-    }, [bounds, map]);
+    }
 
-    return null;
+    return true;
 };

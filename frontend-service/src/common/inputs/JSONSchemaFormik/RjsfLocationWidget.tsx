@@ -1,6 +1,6 @@
 /* eslint-disable import/no-extraneous-dependencies */
 /* eslint-disable no-underscore-dangle */
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { getDisplayLabel, WidgetProps } from '@rjsf/utils';
 import validator from '@rjsf/validator-ajv8';
 import { Box, Dialog, InputAdornment, TextField } from '@mui/material';
@@ -25,6 +25,7 @@ const validatePoint = (pointString: string, splitBy: SplitBy) => {
 };
 
 export const validateLocation = (value: string) => {
+    if (value === '') return true;
     if (!value.startsWith(polygonPrefix)) return validatePoint(value, SplitBy.comma);
 
     if (!value.startsWith(polygonPrefix) || !value.endsWith(polygonSuffix)) {
@@ -66,7 +67,8 @@ const RjsfLocationWidget = ({
     const inputType = (type || schema.type) === 'string' ? 'text' : `${type || schema.type}`;
 
     const _onChange = ({ target: { value: newValue } }: React.ChangeEvent<HTMLInputElement>) => {
-        setError(validateLocation(newValue));
+        const hasError = validateLocation(newValue) === false;
+        setError(hasError);
         onChange(newValue === '' ? options.emptyValue : newValue);
     };
 
@@ -79,6 +81,10 @@ const RjsfLocationWidget = ({
         onChange(newLocationValue);
         setMapOpen(false);
     };
+
+    useEffect(() => {
+        setNewLocationValue(value);
+    }, [value]);
 
     return (
         <Box>

@@ -1,13 +1,22 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Cartesian3, Color, Ion } from 'cesium';
-import { Viewer, Entity, PolygonGraphics, PointGraphics, CesiumMovementEvent, CameraFlyTo } from 'resium';
+import { Viewer, Entity, PolygonGraphics, PointGraphics, CesiumMovementEvent, PolylineGraphics, BillboardGraphics } from 'resium';
 import { ToggleButton, ToggleButtonGroup } from '@mui/material';
-import { Delete, LocationOn, ShapeLine } from '@mui/icons-material';
+import { Delete, Place, ShapeLine } from '@mui/icons-material';
 import i18next from 'i18next';
+import * as Cesium from 'cesium';
 import { MeltaTooltip } from '../../../../common/MeltaTooltip';
 import IconButtonWithPopover from '../../../../common/IconButtonWithPopover';
 import { useDarkModeStore } from '../../../../stores/darkMode';
-import { cartesian3ToString, isCartesian3, resolveDestination, stringToCoordinates } from '../../../../utils/map';
+import {
+    calculateCenterOfPolygon,
+    cartesian3ToString,
+    getPolygonFarthestPoint,
+    isCartesian3,
+    isValidPolygonPoint,
+    jerusalemCoordinates,
+    stringToCoordinates,
+} from '../../../../utils/map';
 
 type Props = {
     defaultLocation?: string;
@@ -44,6 +53,39 @@ const LocationField = ({ defaultLocation, field, updateValue }: Props) => {
         }
     }, []);
 
+    useEffect(() => {
+        setTimeout(() => {
+            const viewer = viewerRef.current?.cesiumElement;
+            if (!viewer) return;
+            const { camera } = viewer;
+            if (markerPosition !== null) {
+                const radius = 30000;
+                const boundingSphere = new Cesium.BoundingSphere(markerPosition, radius);
+
+                camera.flyToBoundingSphere(boundingSphere, {
+                    duration: 1.5,
+                    offset: new Cesium.HeadingPitchRange(0, -Cesium.Math.toRadians(90), radius * 2.5),
+                });
+            } else if (polygonPosition.length > 0) {
+                if (drawingMode == null) {
+                    const center = calculateCenterOfPolygon(polygonPosition);
+                    const radius = getPolygonFarthestPoint(center, polygonPosition);
+                    const boundingSphere = new Cesium.BoundingSphere(center, radius);
+
+                    camera.flyToBoundingSphere(boundingSphere, {
+                        duration: 1.5,
+                        offset: new Cesium.HeadingPitchRange(0, -Cesium.Math.toRadians(90), radius * 2.5),
+                    });
+                }
+            } else {
+                camera.flyTo({
+                    destination: jerusalemCoordinates,
+                    duration: 1.5,
+                });
+            }
+        }, 1);
+    }, [markerPosition, polygonPosition]);
+
     const handleViewerClick = (clickEvent: CesiumMovementEvent) => {
         if (drawingMode === null || !clickEvent.position) return;
 
@@ -55,9 +97,11 @@ const LocationField = ({ defaultLocation, field, updateValue }: Props) => {
 
         if (cartesian) {
             if (drawingMode === 'polygon') {
-                setPolygonPosition((prev) => [...prev, cartesian]);
-                const newPolygon = [...polygonPosition, cartesian];
-                updateValue(cartesian3ToString(newPolygon));
+                if (isValidPolygonPoint(polygonPosition, cartesian)) {
+                    setPolygonPosition((prev) => [...prev, cartesian]);
+                    const newPolygon = [...polygonPosition, cartesian];
+                    updateValue(cartesian3ToString(newPolygon));
+                }
             } else if (drawingMode === 'coordinate') {
                 setMarkerPosition(cartesian);
                 setDrawingMode(null);
@@ -79,27 +123,30 @@ const LocationField = ({ defaultLocation, field, updateValue }: Props) => {
     return (
         <div style={{ position: 'relative', height: '800px', width: '600px' }}>
             <Viewer full ref={viewerRef} id="cesiumContainer" onClick={handleViewerClick}>
-                <CameraFlyTo duration={0} destination={resolveDestination(drawingMode, polygonPosition, markerPosition)} />
-                {polygonPosition.length >= 3 && (
-                    <Entity name={field} description={`${i18next.t('location.polygon')}: ${polygonPosition}`}>
-                        <PolygonGraphics hierarchy={polygonPosition} material={Color.fromAlpha(Color.BLUE, 0.5)} />
+                {polygonPosition.length > 0 && (
+                    <Entity name={field} description={cartesian3ToString(polygonPosition)}>
+                        <PolylineGraphics
+                            positions={[...polygonPosition, polygonPosition[0]]}
+                            material={Color.fromCssColorString('#11695a')}
+                            width={3}
+                        />
+                        {polygonPosition.length >= 3 && <PolygonGraphics hierarchy={polygonPosition} material={Color.fromAlpha(Color.GRAY, 0.3)} />}
+                        {polygonPosition.map((position) => (
+                            <Entity key={`${position.x}, ${position.y}`} position={position}>
+                                <PointGraphics
+                                    color={Color.BLACK}
+                                    outlineColor={Color.fromCssColorString('#11695a')}
+                                    pixelSize={10}
+                                    outlineWidth={2}
+                                />
+                            </Entity>
+                        ))}
                     </Entity>
                 )}
 
                 {markerPosition && (
-                    <Entity
-                        name={field}
-                        description={`${i18next.t('location.coordinate')}: ${cartesian3ToString(markerPosition)}`}
-                        position={markerPosition}
-                    >
-                        {/* <GeoJsonDataSource
-                            data={{
-                                type: 'Feature',
-                                properties: preview?.entity.properties,
-                                geometry: { type: 'Point', coordinates: [markerPosition.x, markerPosition.y] },
-                            }}
-                        /> */}
-                        <PointGraphics color={Color.RED} pixelSize={10} />
+                    <Entity name={field} description={cartesian3ToString(markerPosition)} position={markerPosition}>
+                        <BillboardGraphics image="/public/icons/location.svg" scale={1} verticalOrigin={Cesium.VerticalOrigin.BOTTOM} />
                     </Entity>
                 )}
             </Viewer>
@@ -113,7 +160,7 @@ const LocationField = ({ defaultLocation, field, updateValue }: Props) => {
                     >
                         <MeltaTooltip title={i18next.t('location.coordinate')}>
                             <ToggleButton value="coordinate" disabled={polygonPosition.length > 0}>
-                                <LocationOn sx={{ width: '20px', height: '20px' }} />
+                                <Place sx={{ width: '20px', height: '20px' }} />
                             </ToggleButton>
                         </MeltaTooltip>
                         <MeltaTooltip title={i18next.t('location.polygon')}>

@@ -1,7 +1,7 @@
-import React, { useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Cartesian3, Color, Ion } from 'cesium';
-import { Viewer, Entity, PolygonGraphics, PointGraphics, CameraFlyTo } from 'resium';
-import i18next from 'i18next';
+import { Viewer, Entity, PolygonGraphics, PointGraphics, PolylineGraphics, BillboardGraphics } from 'resium';
+import * as Cesium from 'cesium';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { IEntity } from '../../../../interfaces/entities';
 import { cartesian3ToString, jerusalemCoordinates } from '../../../../utils/map';
@@ -23,16 +23,46 @@ const LocationPreview = ({ entity, entityTemplate }: Props) => {
         entity,
     });
 
+    useEffect(() => {
+        setTimeout(() => {
+            const viewer = viewerRef.current?.cesiumElement;
+
+            if (!viewer) return;
+            const { camera } = viewer;
+
+            if (bounds !== null) {
+                const boundingSphere = new Cesium.BoundingSphere(bounds.center, bounds.radius);
+
+                camera.flyToBoundingSphere(boundingSphere, {
+                    duration: 1.5,
+                    offset: new Cesium.HeadingPitchRange(0, -Cesium.Math.toRadians(90), bounds.radius * 50),
+                });
+            } else {
+                camera.flyTo({
+                    destination: jerusalemCoordinates,
+                    duration: 1.5,
+                });
+            }
+        }, 1);
+    }, [bounds]);
+
     return (
         <div style={{ position: 'relative', height: '800px', width: '600px' }}>
             <Viewer full ref={viewerRef} id="cesiumContainer">
-                <CameraFlyTo duration={0} destination={bounds !== null ? ({ ...bounds?.center } as Cartesian3) : jerusalemCoordinates} />
                 {polygons.map(({ key, position: polygon }) => (
-                    <Entity key={key} name={propertyDefinitions[key].title} description={`${i18next.t('location.polygon')}: ${polygon}`}>
-                        <PolygonGraphics
-                            hierarchy={polygon.map((position) => Cartesian3.fromDegrees(position.x, position.y, position.x))}
-                            material={Color.fromAlpha(Color.BLUE, 0.5)}
-                        />
+                    <Entity key={key} name={propertyDefinitions[key].title} description={cartesian3ToString(polygon)}>
+                        <PolylineGraphics positions={[...polygon, polygon[0]]} material={Color.fromCssColorString('#11695a')} width={3} />
+                        <PolygonGraphics hierarchy={polygon} material={Color.fromAlpha(Color.GRAY, 0.3)} />
+                        {polygon.map((position) => (
+                            <Entity key={`${position.x}, ${position.y}`} position={position}>
+                                <PointGraphics
+                                    color={Color.BLACK}
+                                    outlineColor={Color.fromCssColorString('#11695a')}
+                                    pixelSize={10}
+                                    outlineWidth={2}
+                                />
+                            </Entity>
+                        ))}
                     </Entity>
                 ))}
 
@@ -40,17 +70,10 @@ const LocationPreview = ({ entity, entityTemplate }: Props) => {
                     <Entity
                         key={key}
                         name={propertyDefinitions[key].title}
-                        description={`${i18next.t('location.coordinate')}: ${cartesian3ToString(position)}`}
+                        description={cartesian3ToString(position)}
                         position={Cartesian3.fromDegrees(position.x, position.y, 0)}
                     >
-                        {/* <GeoJsonDataSource
-                            data={{
-                                type: 'Feature',
-                                properties: preview?.entity.properties,
-                                geometry: { type: 'Point', coordinates: [position.x, position.y] },
-                            }}
-                        /> */}
-                        <PointGraphics color={Color.RED} pixelSize={10} />
+                        <BillboardGraphics image="/public/icons/location.svg" scale={1} verticalOrigin={Cesium.VerticalOrigin.BOTTOM} />
                     </Entity>
                 ))}
             </Viewer>

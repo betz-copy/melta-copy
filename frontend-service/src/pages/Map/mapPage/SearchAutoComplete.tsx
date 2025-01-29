@@ -97,7 +97,24 @@ const SearchAutoComplete = ({ selectedTemplates, handleEntityClick }: props) => 
     return (
         <Autocomplete
             options={searchResults}
-            getOptionLabel={(option) => option.properties._id}
+            getOptionLabel={(option) => {
+                const template = selectedTemplates.find(({ _id }) => _id === option.templateId);
+
+                const locationTemplateProperties = Object.entries(template!.properties.properties)
+                    .filter(([_key, value]) => value.format === 'location')
+                    .reduce((acc, [key, value]) => {
+                        acc[key] = value;
+                        return acc;
+                    }, {} as { [x: string]: IEntitySingleProperty });
+                const locationProperties = Object.entries(option.properties)
+                    .filter(([key, _value]) => key in locationTemplateProperties)
+                    .reduce((acc, [key, value]) => {
+                        acc[key] = value;
+                        return acc;
+                    }, {} as { [x: string]: any });
+
+                return Object.values(locationProperties)[0];
+            }}
             loading={isLoading || isFetchingNextPage}
             loadingText={i18next.t('templateEntitiesAutocomplete.loading')}
             noOptionsText={i18next.t('templateEntitiesAutocomplete.noOptions')}

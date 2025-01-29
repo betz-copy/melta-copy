@@ -230,7 +230,6 @@ export const environment = {
     map: {
         maxRadius: 30000,
         squareLength: 10,
-        units: { km: 'km', squaredKm: 'km²' },
         polygon: { polygonPrefix: 'POLYGON((', polygonSuffix: '))' },
     },
     profileIconsCount: 19,
