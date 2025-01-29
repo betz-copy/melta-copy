@@ -9,7 +9,6 @@ import { RelationshipTemplatesRow } from './components/RelationshipTemplatesRow'
 import { RulesRow } from './components/RulesRow';
 import { ProcessTemplatesRow } from './components/ProcessTemplates/ProcessTemplatesRow';
 import '../../css/pages.css';
-import { NoPermissions } from './components/NoPermissions';
 import { useUserStore } from '../../stores/user';
 import { PermissionScope } from '../../interfaces/permissions';
 import { useSearchParams } from '../../utils/hooks/useSearchParams';
@@ -62,6 +61,10 @@ const SystemManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateAction
         });
     }, [tabValue, trackPageView]);
 
+    const defaultTabs = Object.keys(tabsComponentsMapping).filter((tabName) => {
+        return tabsPermissionsMapping[tabName];
+    });
+
     return (
         <Box
             sx={{
@@ -75,7 +78,7 @@ const SystemManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateAction
                 <Grid container direction="column">
                     <Grid item>
                         <TabList onChange={(_event, newValue) => setSearchParams({ tab: newValue })} scrollButtons="auto" variant="scrollable">
-                            {Object.keys(tabsComponentsMapping).map((tabName) => (
+                            {defaultTabs.map((tabName) => (
                                 <Tab
                                     key={tabName}
                                     label={i18next.t(tabName)}
@@ -97,7 +100,7 @@ const SystemManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateAction
                         {Object.entries(tabsComponentsMapping).map(([tabName, tabComponent]) => {
                             return (
                                 <TabPanel key={tabName} value={tabName}>
-                                    {tabsPermissionsMapping[tabName] ? tabComponent : <NoPermissions />}
+                                    {tabComponent}
                                 </TabPanel>
                             );
                         })}
