@@ -14,7 +14,7 @@ import { processTemplateUniquePropertiesDetails } from '../../../utils/validatio
 import { StepComponentProps } from '..';
 
 const addDetailsFieldsSchema = Yup.object({
-    detailsProperties: Yup.array().of(propertiesBaseSchema),
+    detailsProperties: Yup.array().of(propertiesBaseSchema).min(1, i18next.t('validation.oneField')),
     detailsAttachmentProperties: Yup.array().of(attachmentPropertiesBaseSchema),
 }).test('uniqueProperties', processTemplateUniquePropertiesDetails);
 
