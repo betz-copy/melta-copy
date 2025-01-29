@@ -2,7 +2,7 @@ import config from '../../config';
 import { InstancesService } from '../../externalServices/instanceService';
 import { IFilterOfTemplate, ISearchEntitiesOfTemplateBody } from '../../externalServices/instanceService/interfaces/entities';
 import { EntityTemplateService, IEntitySingleProperty, ISearchEntityTemplatesBody } from '../../externalServices/templates/entityTemplateService';
-import { UserService } from '../../externalServices/userService';
+import { Authorizer } from '../../utils/authorizer';
 import DefaultManagerProxy from '../../utils/express/manager';
 import TemplatesManager from '../templates/manager';
 import { FlowFields, FlowParameters, TemplateNamesAndId } from './interfaces';
@@ -14,12 +14,15 @@ export class FlowCubeManager extends DefaultManagerProxy<null> {
 
     private templatesManager: TemplatesManager;
 
+    private authorizer: Authorizer;
+
     constructor(workspaceId: string) {
         super(null);
 
         this.instancesService = new InstancesService(workspaceId);
         this.entityTemplateService = new EntityTemplateService(workspaceId);
         this.templatesManager = new TemplatesManager(workspaceId);
+        this.authorizer = new Authorizer(workspaceId);
     }
 
     async convertFlowToNeoSearch(templateId: string, flowSearchBody: Record<string, any>) {
@@ -82,7 +85,7 @@ export class FlowCubeManager extends DefaultManagerProxy<null> {
         });
     }
 
-    async searchTemplates(body: any, userId: string, workspaceId: string): Promise<TemplateNamesAndId[]> {
+    async searchTemplates(body: any, userId: string): Promise<TemplateNamesAndId[]> {
         const searchEntityTemplatesBody = {} as ISearchEntityTemplatesBody;
 
         if (body?.Value) {
@@ -93,10 +96,10 @@ export class FlowCubeManager extends DefaultManagerProxy<null> {
             searchEntityTemplatesBody.categoryIds = [body.CategoryType];
         }
 
-        const usersPermissions = await UserService.getUserPermissions(userId, [workspaceId]);
+        const usersPermissions = await this.authorizer.getWorkspacePermissions(userId);
 
         const templates = await this.templatesManager.searchEntityTemplates(
-            usersPermissions[workspaceId],
+            usersPermissions,
             searchEntityTemplatesBody as ISearchEntityTemplatesBody,
         );
 
