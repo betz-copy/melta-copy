@@ -7,7 +7,7 @@ import { Box, Dialog, InputAdornment, TextField } from '@mui/material';
 import MapIcon from '@mui/icons-material/Map';
 import { getTextDirection } from '../../../utils/stringValues';
 import { environment } from '../../../globals';
-import LocationField from '../../../pages/Map/mapPage/Resuim/LocationField';
+import LocationField from '../../../pages/Map/LocationField';
 
 const { polygonPrefix, polygonSuffix } = environment.map.polygon;
 

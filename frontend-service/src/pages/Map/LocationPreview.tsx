@@ -1,74 +1,83 @@
-import React from 'react';
-import { MapContainer, Marker, Polygon, LayersControl, LayerGroup } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
-import 'leaflet-draw/dist/leaflet.draw.css';
-import { CRS } from 'leaflet';
-import { useQueryClient } from 'react-query';
-import i18next from 'i18next';
-import EntityLocationPopup from './EntityLocationPopup';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { jerusalemCoordinates, UpdateMapBounds } from '../../utils/map';
+import React, { useEffect, useRef } from 'react';
+import { Cartesian3, Color, Ion } from 'cesium';
+import { Viewer, Entity, PolygonGraphics, PointGraphics, PolylineGraphics, BillboardGraphics } from 'resium';
+import * as Cesium from 'cesium';
 import { IEntity } from '../../interfaces/entities';
+import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { useEntityWithLocationFields } from '../../utils/hooks/useLocation';
-import { useDarkModeStore } from '../../stores/darkMode';
-import { BaseLayers } from './mapPage';
-import { BackendConfigState } from '../../services/backendConfigService';
+import { cartesian3ToString, jerusalemCoordinates } from '../../utils/map';
 
 type Props = {
     entity: IEntity;
     entityTemplate: IMongoEntityTemplatePopulated;
-    styles?: React.CSSProperties;
 };
 
-const LocationPreview = ({ styles, entity, entityTemplate }: Props) => {
-    const queryClient = useQueryClient();
-    const { bounds, polygons, propertyDefinitions, markers } = useEntityWithLocationFields({ entityTemplate, entity });
-    const darkMode = useDarkModeStore((state) => state.darkMode);
+const LocationPreview = ({ entity, entityTemplate }: Props) => {
+    Ion.defaultAccessToken =
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJjZWI5M2EyNC1lODE3LTQwYTQtYTUxZi00NDlhODAyZDM0NTMiLCJpZCI6MjcwNDM5LCJpYXQiOjE3Mzc0NDk3MzN9.WLi4Zcm4D_PMstHcM3YNMJsw1xPhiNGuJyizwg_4nbg';
 
-    const config = queryClient.getQueryData<BackendConfigState>('getBackendConfig');
-    if (!config) return <>{i18next.t('location.noCrsTypes')}</>;
-    const { crsType } = config;
+    const viewerRef = useRef<any>(null);
+
+    const { bounds, polygons, propertyDefinitions, markers } = useEntityWithLocationFields({
+        entityTemplate,
+        entity,
+    });
+
+    useEffect(() => {
+        setTimeout(() => {
+            const viewer = viewerRef.current?.cesiumElement;
+
+            if (!viewer) return;
+            const { camera } = viewer;
+
+            if (bounds !== null) {
+                const boundingSphere = new Cesium.BoundingSphere(bounds.center, bounds.radius);
+
+                camera.flyToBoundingSphere(boundingSphere, {
+                    duration: 1.5,
+                    offset: new Cesium.HeadingPitchRange(0, -Cesium.Math.toRadians(90), bounds.radius * 10),
+                });
+            } else {
+                camera.flyTo({
+                    destination: jerusalemCoordinates,
+                    duration: 1.5,
+                });
+            }
+        }, 1);
+    }, [bounds]);
 
     return (
-        <MapContainer
-            style={{ width: '100%', height: '100vh', ...styles }}
-            bounds={bounds?.isValid() ? bounds : undefined}
-            center={!bounds?.isValid() ? jerusalemCoordinates : undefined}
-            zoom={!bounds?.isValid() ? 8 : undefined}
-            maxBoundsViscosity={1}
-            maxBounds={[
-                [-90, -180],
-                [90, 180],
-            ]}
-            crs={CRS[crsType]}
-        >
-            {(polygons.length > 0 || markers.length > 0) && <UpdateMapBounds bounds={bounds} />}
-
-            <LayersControl position="topright">
-                <BaseLayers />
-
-                {/* Overlay Layers */}
-                <LayersControl.Overlay checked name="Polygons">
-                    <LayerGroup>
-                        {polygons.map(({ key, position }) => (
-                            <Polygon key={key} positions={position}>
-                                <EntityLocationPopup header={propertyDefinitions[key].title} value={entity.properties[key]} darkMode={darkMode} />
-                            </Polygon>
+        <div style={{ position: 'relative', height: '800px', width: '600px' }}>
+            <Viewer full ref={viewerRef} id="cesiumContainer">
+                {polygons.map(({ key, position: polygon }) => (
+                    <Entity key={key} name={propertyDefinitions[key].title} description={cartesian3ToString(polygon)}>
+                        <PolylineGraphics positions={[...polygon, polygon[0]]} material={Color.fromCssColorString('#11695a')} width={3} />
+                        <PolygonGraphics hierarchy={polygon} material={Color.fromAlpha(Color.GRAY, 0.3)} />
+                        {polygon.map((position) => (
+                            <Entity key={`${position.x}, ${position.y}`} position={position}>
+                                <PointGraphics
+                                    color={Color.BLACK}
+                                    outlineColor={Color.fromCssColorString('#11695a')}
+                                    pixelSize={10}
+                                    outlineWidth={2}
+                                />
+                            </Entity>
                         ))}
-                    </LayerGroup>
-                </LayersControl.Overlay>
+                    </Entity>
+                ))}
 
-                <LayersControl.Overlay checked name="Markers">
-                    <LayerGroup>
-                        {markers.map(({ key, position }) => (
-                            <Marker key={key} position={position}>
-                                <EntityLocationPopup header={propertyDefinitions[key].title} value={entity.properties[key]} darkMode={darkMode} />
-                            </Marker>
-                        ))}
-                    </LayerGroup>
-                </LayersControl.Overlay>
-            </LayersControl>
-        </MapContainer>
+                {markers.map(({ key, position }) => (
+                    <Entity
+                        key={key}
+                        name={propertyDefinitions[key].title}
+                        description={cartesian3ToString(position)}
+                        position={Cartesian3.fromDegrees(position.x, position.y, 0)}
+                    >
+                        <BillboardGraphics image="/public/icons/location.svg" scale={1} verticalOrigin={Cesium.VerticalOrigin.BOTTOM} />
+                    </Entity>
+                ))}
+            </Viewer>
+        </div>
     );
 };
 

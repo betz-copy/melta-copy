@@ -5,7 +5,7 @@ import { HighlightText } from '../../utils/HighlightText';
 import { IEntity } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { useWorkspaceStore } from '../../stores/workspace';
-import LocationPreview from './mapPage/Resuim/LocationPreview';
+import LocationPreview from './LocationPreview';
 
 const OpenMap: React.FC<{
     field: string;
