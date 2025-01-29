@@ -1,17 +1,18 @@
-import { Checkbox, FormControl, FormControlLabel, Grid, IconButton, Paper, Radio, RadioGroup, Typography } from '@mui/material';
+import { Box, Checkbox, FormControl, FormControlLabel, Grid, IconButton, Paper, Radio, RadioGroup, Typography, useTheme } from '@mui/material';
 import React, { useState, useCallback } from 'react';
 import { useQueryClient } from 'react-query';
 import debounce from 'lodash/debounce';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import i18next from 'i18next';
+import { Search } from '@mui/icons-material';
 import ProcessInstancesHeadline from './Headline';
 import ProcessesList from './ProcessesList';
 import { IMongoProcessTemplatePopulated, IProcessTemplateMap } from '../../interfaces/processes/processTemplate';
 import ProcessTemplatesSelectCheckbox from './ProcessTemplatesCheckbox';
-import { GlobalSearchBar } from '../../common/EntitiesPage/Headline';
 import DateRange from '../../common/inputs/DateRange';
 import { Status } from '../../interfaces/processes/processInstance';
 import { BlueTitle } from '../../common/BlueTitle';
+import SearchInput from '../../common/inputs/SearchInput';
 
 const ProcessInstancesPage: React.FC = () => {
     const queryClient = useQueryClient();
@@ -40,6 +41,8 @@ const ProcessInstancesPage: React.FC = () => {
     const onSetEndDate = (newEndDateInput: Date | null) => {
         setEndDateInput(newEndDateInput);
     };
+
+    const theme = useTheme();
 
     return (
         <Grid>
@@ -88,7 +91,7 @@ const ProcessInstancesPage: React.FC = () => {
                                 onClick={() => {
                                     onSetStartDate(null);
                                     onSetEndDate(null);
-                                    onSearch('');
+                                    setSearchInput('');
                                     setIsWaitingForMeFilterOn(false);
                                     setStatusFilter('all');
                                     setTemplatesToShowCheckbox(processTemplates);
@@ -109,12 +112,18 @@ const ProcessInstancesPage: React.FC = () => {
                             </Grid>
                         </Grid>
                         <Grid item sx={{ borderRadius: '7px', width: 'fit-content', boxShadow: '3' }}>
-                            <GlobalSearchBar
-                                inputValue={searchInput}
-                                setInputValue={onSearch}
-                                onSearch={onSearch}
+                            <SearchInput
+                                onChange={setSearchInput}
                                 borderRadius="7px"
-                                placeholder={i18next.t('globalSearch.searchInPage')}
+                                placeholder={i18next.t('globalSearch.searchProcesses')}
+                                value={searchInput}
+                                endAdornmentChildren={
+                                    <Box>
+                                        <IconButton style={{ color: theme.palette.primary.main }} sx={{ padding: 0 }} disableRipple>
+                                            <Search sx={{ fontSize: '1.25rem' }} />
+                                        </IconButton>
+                                    </Box>
+                                }
                                 toTopBar={false}
                             />
                         </Grid>
