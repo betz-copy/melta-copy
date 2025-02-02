@@ -76,7 +76,7 @@ const ProcessesList: React.FC<{
                     container
                     flexDirection="column"
                     marginTop="15px"
-                    style={{ backgroundColor: darkMode ? '#434343' : '#CCCFE5', borderRadius: '20px', padding: '15px' }}
+                    sx={{ backgroundColor: darkMode ? '#434343' : '#CCCFE5', borderRadius: '20px', padding: '15px' }}
                     rowGap={3}
                 >
                     <Grid item>

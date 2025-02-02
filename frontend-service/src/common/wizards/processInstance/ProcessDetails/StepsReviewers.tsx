@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import _debounce from 'lodash.debounce';
-import { Card, Grid, CardHeader, CardContent, Typography, Fab } from '@mui/material';
+import { Card, Grid, CardHeader, CardContent, Fab } from '@mui/material';
 import { ScatterPlotOutlined as HiveIcon } from '@mui/icons-material';
 import i18next from 'i18next';
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
@@ -10,7 +10,6 @@ import { IDetailsStepProp } from '.';
 import { ReviewerSelector } from './ReviewerSelector';
 import { CustomIcon } from '../../../CustomIcon';
 import { getStepInstanceByStepTemplateId } from '../../../../utils/processWizard/steps';
-import { MeltaTooltip } from '../../../MeltaTooltip';
 import { useDarkModeStore } from '../../../../stores/darkMode';
 import { IUser } from '../../../../interfaces/users';
 import { BlueTitle } from '../../../BlueTitle';

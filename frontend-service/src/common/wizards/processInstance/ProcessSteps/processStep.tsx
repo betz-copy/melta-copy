@@ -381,7 +381,7 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                         spacing={2}
                                         justifyContent="space-between"
                                         alignItems="center"
-                                        style={{
+                                        sx={{
                                             backgroundColor: darkMode ? 'rgb(26 26 26 / 35%)' : '#F2F4FA',
                                             borderRadius: '20px',
                                             padding: '5px',

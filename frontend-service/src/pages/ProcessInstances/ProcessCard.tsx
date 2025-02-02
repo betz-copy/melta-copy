@@ -11,7 +11,6 @@ import {
     Skeleton,
     Stepper,
     Step,
-    StepLabel,
     StepConnector,
     stepConnectorClasses,
 } from '@mui/material';
@@ -26,7 +25,7 @@ import { AxiosError } from 'axios';
 import { toast } from 'react-toastify';
 import { CustomIcon } from '../../common/CustomIcon';
 import { IMongoStepTemplatePopulated } from '../../interfaces/processes/stepTemplate';
-import { IMongoProcessInstancePopulated, Status } from '../../interfaces/processes/processInstance';
+import { IMongoProcessInstancePopulated, Status, StatusColors, StatusColorsNames } from '../../interfaces/processes/processInstance';
 import { IMongoStepInstancePopulated } from '../../interfaces/processes/stepInstance';
 import { IProcessTemplateMap } from '../../interfaces/processes/processTemplate';
 import ProcessInstanceWizard from '../../common/wizards/processInstance';
@@ -39,34 +38,6 @@ import { ProcessDetailsValues } from '../../common/wizards/processInstance/Proce
 import { ErrorToast } from '../../common/ErrorToast';
 import { getFontColor } from '../../common/wizards/processInstance/ProcessSummaryStep/ProcessStatus';
 import CreateOrEditProcess from '../../common/wizards/processInstance/CreateOrEditProcessDialog';
-
-export enum StatusColors {
-    Pending = '#ff8f00',
-    Approved = '#2e7d32',
-    Rejected = '#d32f2f',
-    Archived = '#B0B0B0',
-    All = '#0288d1',
-}
-export enum StatusColorsNames {
-    Pending = '#ff8f00',
-    Approved = '#1ABC00',
-    Rejected = '#d32f2f',
-    Archived = '#B0B0B0',
-}
-
-export enum StatusFontColors {
-    Pending = '#FF9900',
-    Approved = '#1ABC00',
-    Rejected = '#FF2E00',
-    Archived = '#B0B0B0',
-}
-
-export enum StatusBackgroundColors {
-    Pending = '#FF99001A',
-    Approved = '#E0F0DD',
-    Rejected = '#F7CDC4',
-    Archived = '#B0B0B0',
-}
 
 export const StyledCard = styled(Card)(({ theme }) => ({
     background: theme.palette.mode === 'light' ? '#FFFFFF 0% 0% no-repeat padding-box' : undefined,
@@ -317,7 +288,7 @@ const ProcessCard: React.FC<{
                                 <Grid container item alignItems="center">
                                     <Grid
                                         item
-                                        style={{
+                                        sx={{
                                             height: '20px',
                                             width: '3px',
                                             backgroundColor: statusColorName(currProcessInstance.status, currProcessInstance.archived),
@@ -393,14 +364,14 @@ const ProcessCard: React.FC<{
                             </Grid>
                             <Grid item container justifyContent="space-between">
                                 <Grid item>
-                                    <Typography fontSize="14px" style={{ color: '#787C9E' }} noWrap>
+                                    <Typography fontSize="14px" sx={{ color: '#787C9E' }} noWrap>
                                         {`${i18next.t('processInstancesPage.process')}: ${
                                             processTemplatesMap.get(currProcessInstance.templateId)!.displayName
                                         }`}
                                     </Typography>
                                 </Grid>
                                 <Grid item>
-                                    <Typography fontSize="14px" style={{ color: '#787C9E' }} noWrap>
+                                    <Typography fontSize="14px" sx={{ color: '#787C9E' }} noWrap>
                                         {`${new Date(currProcessInstance.startDate).toLocaleDateString('he-IL', {
                                             year: '2-digit',
                                             month: '2-digit',
@@ -414,11 +385,11 @@ const ProcessCard: React.FC<{
                                 </Grid>
                             </Grid>
                             <Grid item justifyContent="center">
-                                <Stepper style={{ flexWrap: 'wrap' }} connector={<StepperConnector />} alternativeLabel>
+                                <Stepper sx={{ flexWrap: 'wrap' }} connector={<StepperConnector />} alternativeLabel>
                                     {currProcessInstance.steps.map((step, index) => {
                                         const stepTemplate = processTemplate.steps[index];
                                         return (
-                                            <Step style={{ display: 'flex', alignItems: 'center' }} key={step._id}>
+                                            <Step sx={{ display: 'flex', alignItems: 'center' }} key={step._id}>
                                                 <Grid
                                                     container
                                                     flexDirection="column"
@@ -437,7 +408,7 @@ const ProcessCard: React.FC<{
                             <Grid item container justifyContent="space-between">
                                 <Grid item />
                                 <Grid item>
-                                    <Typography fontSize="14px" style={{ color: '#787C9E' }} noWrap>
+                                    <Typography fontSize="14px" sx={{ color: '#787C9E' }} noWrap>
                                         {`${i18next.t('processInstancesPage.createdAt')}: ${new Date(processInstance.createdAt).toLocaleDateString(
                                             'he-IL',
                                             {

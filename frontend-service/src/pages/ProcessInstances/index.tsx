@@ -44,6 +44,15 @@ const ProcessInstancesPage: React.FC = () => {
 
     const theme = useTheme();
 
+    const resetFilters = () => {
+        onSetStartDate(null);
+        onSetEndDate(null);
+        setSearchInput('');
+        setIsWaitingForMeFilterOn(false);
+        setStatusFilter('all');
+        setTemplatesToShowCheckbox(processTemplates);
+    };
+
     return (
         <Grid>
             <ProcessInstancesHeadline
@@ -85,18 +94,7 @@ const ProcessInstancesPage: React.FC = () => {
                                     title={i18next.t('processInstancesPage.filter')}
                                 />
                             </Grid>
-                            <Grid
-                                item
-                                alignContent="center"
-                                onClick={() => {
-                                    onSetStartDate(null);
-                                    onSetEndDate(null);
-                                    setSearchInput('');
-                                    setIsWaitingForMeFilterOn(false);
-                                    setStatusFilter('all');
-                                    setTemplatesToShowCheckbox(processTemplates);
-                                }}
-                            >
+                            <Grid item alignContent="center" onClick={resetFilters}>
                                 <BlueTitle
                                     component="h4"
                                     variant="h6"
@@ -164,75 +162,24 @@ const ProcessInstancesPage: React.FC = () => {
                                         value={statusFilter}
                                         onChange={(_e, val) => setStatusFilter(val as 'all' | Status | 'archived')}
                                     >
-                                        <FormControlLabel
-                                            value="all"
-                                            control={<Radio />}
-                                            label={
-                                                <BlueTitle
-                                                    style={{ fontSize: '14px', fontWeight: 400 }}
-                                                    component="h4"
-                                                    variant="h6"
-                                                    title={i18next.t('processInstancesPage.allProcesses')}
-                                                />
-                                            }
-                                        />
-                                        <FormControlLabel
-                                            value={Status.Pending}
-                                            control={<Radio />}
-                                            label={
-                                                <BlueTitle
-                                                    style={{ fontSize: '14px', fontWeight: 400 }}
-                                                    component="h4"
-                                                    variant="h6"
-                                                    title={i18next.t('processInstancesPage.pendingProcesses')}
-                                                />
-                                            }
-                                        />
-                                        <FormControlLabel
-                                            value={Status.Approved}
-                                            onChange={(_e, checked) => {
-                                                if (checked) setIsWaitingForMeFilterOn(false);
-                                            }}
-                                            control={<Radio />}
-                                            label={
-                                                <BlueTitle
-                                                    style={{ fontSize: '14px', fontWeight: 400 }}
-                                                    component="h4"
-                                                    variant="h6"
-                                                    title={i18next.t('processInstancesPage.approvedProcesses')}
-                                                />
-                                            }
-                                        />
-                                        <FormControlLabel
-                                            value={Status.Rejected}
-                                            onChange={(_e, checked) => {
-                                                if (checked) setIsWaitingForMeFilterOn(false);
-                                            }}
-                                            control={<Radio />}
-                                            label={
-                                                <BlueTitle
-                                                    style={{ fontSize: '14px', fontWeight: 400 }}
-                                                    component="h4"
-                                                    variant="h6"
-                                                    title={i18next.t('processInstancesPage.rejectedProcesses')}
-                                                />
-                                            }
-                                        />
-                                        <FormControlLabel
-                                            value="archived"
-                                            onChange={(_e, checked) => {
-                                                if (checked) setIsWaitingForMeFilterOn(false);
-                                            }}
-                                            control={<Radio />}
-                                            label={
-                                                <BlueTitle
-                                                    style={{ fontSize: '14px', fontWeight: 400 }}
-                                                    component="h4"
-                                                    variant="h6"
-                                                    title={i18next.t('processInstancesPage.archivedProcesses')}
-                                                />
-                                            }
-                                        />
+                                        {['all', Status.Pending, Status.Approved, Status.Rejected, 'archived'].map((val) => (
+                                            <FormControlLabel
+                                                key={val}
+                                                value={val}
+                                                control={<Radio />}
+                                                onChange={(_e, checked) => {
+                                                    if (checked) setIsWaitingForMeFilterOn(false);
+                                                }}
+                                                label={
+                                                    <BlueTitle
+                                                        style={{ fontSize: '14px', fontWeight: 400 }}
+                                                        component="h4"
+                                                        variant="h6"
+                                                        title={i18next.t(`processInstancesPage.${val}Processes`)}
+                                                    />
+                                                }
+                                            />
+                                        ))}
                                     </RadioGroup>
                                 </FormControl>
                             </Grid>

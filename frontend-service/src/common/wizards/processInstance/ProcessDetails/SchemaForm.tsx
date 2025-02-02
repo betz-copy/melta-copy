@@ -9,20 +9,13 @@ import { TextAreaProperty } from '../ProcessSteps/processStep';
 
 export const SchemaForm = ({ viewMode, values, errors, touched, setFieldValue, setFieldTouched, toPrint }) => {
     const schema = pickProcessFieldsPropertiesSchema(values.template.details);
-    const textAreaSchema = Object.entries(schema.properties)
+    const textAreaValues = Object.entries(schema.properties)
         .filter(([_key, property]) => property.format === 'text-area')
         .map(([key, property]) => ({
             key,
             title: property.title,
+            value: values.details[key] ? renderHTML(values.details[key]) : undefined,
         }));
-
-    const textAreaValues = textAreaSchema.flatMap((property) => {
-        if (values.details[property.key]) {
-            const value = renderHTML(values.details[property.key]);
-            return [{ ...property, value }];
-        }
-        return [{ ...property }];
-    });
 
     return (
         <Box paddingTop={0.5} paddingLeft={1}>

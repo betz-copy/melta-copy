@@ -1,7 +1,7 @@
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 /* eslint-disable jsx-a11y/anchor-is-valid */
-import { Box, Button, Divider, Grid, Step, StepConnector, stepConnectorClasses, StepLabel, Stepper, styled, Typography } from '@mui/material';
+import { Box, Button, Divider, Grid, Step, StepConnector, stepConnectorClasses, Stepper, styled, Typography } from '@mui/material';
 import React, { useEffect, useRef } from 'react';
 import TocIcon from '@mui/icons-material/Toc';
 import i18next from 'i18next';
@@ -100,13 +100,16 @@ const Steps: React.FC<IStepsProp> = ({
     };
 
     useEffect(() => {
-        if (containerRef.current) {
-            containerRef.current.addEventListener('scroll', updateScrollButtons);
+        const container = containerRef.current;
+
+        if (container) {
+            container.addEventListener('scroll', updateScrollButtons);
             updateScrollButtons();
         }
+
         return () => {
-            if (containerRef.current) {
-                containerRef.current.removeEventListener('scroll', updateScrollButtons);
+            if (container) {
+                container.removeEventListener('scroll', updateScrollButtons);
             }
         };
     }, []);
@@ -167,9 +170,9 @@ const Steps: React.FC<IStepsProp> = ({
                         }}
                         paddingTop="5px"
                     >
-                        <Stepper style={{ display: 'flex', alignItems: 'center' }} connector={<StepperConnector />} alternativeLabel>
+                        <Stepper sx={{ display: 'flex', alignItems: 'center' }} connector={<StepperConnector />} alternativeLabel>
                             {processInstance.steps.map((stepInstance, index) => (
-                                <Step style={{ minWidth: '100px' }} key={stepInstance._id} active>
+                                <Step sx={{ minWidth: '100px' }} key={stepInstance._id} active>
                                     <Grid>
                                         <Grid container flexDirection="column" justifyContent="center" width="100%" alignSelf="center" gap="10px">
                                             <Grid container flexDirection="column" justifyContent="center" width="100%" gap="10px">

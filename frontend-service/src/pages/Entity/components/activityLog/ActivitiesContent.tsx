@@ -1,4 +1,4 @@
-import { Divider, Grid } from '@mui/material';
+import { Divider } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
 import { toast } from 'react-toastify';
@@ -13,6 +13,24 @@ import { IMongoStepTemplatePopulated } from '../../../../interfaces/processes/st
 
 const { infiniteScrollPageCount } = environment.activityLog;
 
+const ACTIVITY_TYPES = [
+    'DELETE_RELATIONSHIP',
+    'CREATE_RELATIONSHIP',
+    'UPDATE_ENTITY',
+    'CREATE_ENTITY',
+    'UPDATE_PROCESS',
+    'CREATE_PROCESS',
+    'DUPLICATE_ENTITY',
+    'DISABLE_ENTITY',
+    'ACTIVATE_ENTITY',
+    'UPDATE_PROCESS_STEP',
+];
+
+const getNextPageParam = (lastPage: IActivityLog[], allPages: IActivityLog[][]) => {
+    const nextPage = allPages.length * infiniteScrollPageCount;
+    return lastPage.length ? nextPage : undefined;
+};
+
 const ActivitiesContent: React.FC<{
     expandedEntity?: IEntityExpanded;
     entityTemplate: IMongoEntityTemplatePopulated | IProcessDetails | IMongoStepTemplatePopulated;
@@ -23,29 +41,13 @@ const ActivitiesContent: React.FC<{
     return (
         <InfiniteScroll<IActivityLog>
             queryKey={['getActivityLogRequest', entityId]}
-            queryFunction={({ pageParam }) =>
-                getActivityLogRequest(entityId, infiniteScrollPageCount, pageParam, [
-                    'DELETE_RELATIONSHIP',
-                    'CREATE_RELATIONSHIP',
-                    'UPDATE_ENTITY',
-                    'CREATE_ENTITY',
-                    'UPDATE_PROCESS',
-                    'CREATE_PROCESS',
-                    'DUPLICATE_ENTITY',
-                    'DISABLE_ENTITY',
-                    'ACTIVATE_ENTITY',
-                    'UPDATE_PROCESS_STEP',
-                ])
-            }
+            queryFunction={({ pageParam }) => getActivityLogRequest(entityId, infiniteScrollPageCount, pageParam, ACTIVITY_TYPES)}
             onQueryError={(error) => {
                 // eslint-disable-next-line no-console
                 console.log('failed to get activities. error:', error);
                 toast.error(i18next.t('entityPage.activityLog.failedToGetActivities'));
             }}
-            getNextPageParam={(lastPage, allPages) => {
-                const nextPage = allPages.length * infiniteScrollPageCount;
-                return lastPage.length ? nextPage : undefined;
-            }}
+            getNextPageParam={getNextPageParam}
             endText={i18next.t('entityPage.activityLog.noSearchLeft')}
         >
             {(activityLog) => (

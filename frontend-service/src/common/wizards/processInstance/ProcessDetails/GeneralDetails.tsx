@@ -11,13 +11,14 @@ import { setInitialStepsObject } from '../../../../utils/processWizard/steps';
 import { initDetailsValues } from './detailsFormik';
 import { GeneralDetailsFields } from './GeneralDetailsFields';
 import { TemplateFields } from './TemplateFields';
+import { environment } from '../../../../globals';
 
 const GeneralDetails: React.FC<IDetailsStepProp> = ({
     detailsFormikData,
     processInstance,
     toPrint,
     setContentDisplay = () => {},
-    contentDisplay = 'SUMMARY',
+    contentDisplay = environment.processDetailsContentDisplay.summary,
 }) => {
     const { values, touched, errors, setFieldValue, setFieldTouched, handleBlur, resetForm } = detailsFormikData;
     const queryClient = useQueryClient();
@@ -104,41 +105,36 @@ const GeneralDetails: React.FC<IDetailsStepProp> = ({
                             <Grid item>
                                 {values.template && !!processInstance && !toPrint && (
                                     <Grid container gap="5px" width="100%" wrap="nowrap">
-                                        {contentDisplay === 'SUMMARY' && (
-                                            <Grid item flexBasis="50%">
-                                                <Button
-                                                    variant="outlined"
-                                                    sx={{
-                                                        borderRadius: '7px',
-                                                        width: '150px',
-                                                        height: '35px',
-                                                    }}
-                                                    onClick={() => setContentDisplay('REVIEWERS')}
-                                                    startIcon={<Groups2Icon sx={{ height: '100%' }} />}
-                                                >
-                                                    <Typography fontSize="13px" fontWeight="400">
-                                                        {i18next.t('wizard.processInstance.showStepsReviewers')}
-                                                    </Typography>
-                                                </Button>
-                                            </Grid>
-                                        )}
-                                        {contentDisplay === 'REVIEWERS' && (
-                                            <Grid item flexBasis="50%">
-                                                <Button
-                                                    variant="outlined"
-                                                    sx={{
-                                                        borderRadius: '7px',
-                                                        width: '150px',
-                                                        height: '35px',
-                                                    }}
-                                                    onClick={() => setContentDisplay('SUMMARY')}
-                                                >
-                                                    <Typography fontSize="13px" fontWeight="400">
-                                                        {i18next.t('wizard.processInstance.nextToSummaryDetails')}
-                                                    </Typography>
-                                                </Button>
-                                            </Grid>
-                                        )}
+                                        <Grid item flexBasis="50%">
+                                            <Button
+                                                variant="outlined"
+                                                sx={{
+                                                    borderRadius: '7px',
+                                                    width: '150px',
+                                                    height: '35px',
+                                                }}
+                                                onClick={() => {
+                                                    if (contentDisplay === environment.processDetailsContentDisplay.summary)
+                                                        setContentDisplay(environment.processDetailsContentDisplay.reviewers);
+                                                    else {
+                                                        setContentDisplay(environment.processDetailsContentDisplay.summary);
+                                                    }
+                                                }}
+                                                startIcon={
+                                                    contentDisplay === environment.processDetailsContentDisplay.summary && (
+                                                        <Groups2Icon sx={{ height: '100%' }} />
+                                                    )
+                                                }
+                                            >
+                                                <Typography fontSize="13px" fontWeight="400">
+                                                    {i18next.t(
+                                                        contentDisplay === environment.processDetailsContentDisplay.summary
+                                                            ? 'wizard.processInstance.showStepsReviewers'
+                                                            : 'wizard.processInstance.nextToSummaryDetails',
+                                                    )}
+                                                </Typography>
+                                            </Button>
+                                        </Grid>
                                     </Grid>
                                 )}
                             </Grid>

@@ -22,6 +22,20 @@ export const GeneralDetailsFields = ({
 }) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
+    const textFieldStyle = {
+        '& .MuiInputBase-root': {
+            borderRadius: '10px',
+            backgroundColor: viewMode ? 'transparent' : darkMode ? '#4949499e' : 'white',
+        },
+        '& fieldset': {
+            borderColor: '#CCCFE5',
+            color: '#CCCFE5',
+        },
+        '& label': {
+            color: '#9398C2',
+        },
+    };
+
     return (
         <Grid item>
             {!viewMode && (
@@ -48,19 +62,7 @@ export const GeneralDetailsFields = ({
                             <TextField
                                 {...params}
                                 size="small"
-                                sx={{
-                                    '& .MuiInputBase-root': {
-                                        borderRadius: '10px',
-                                        backgroundColor: viewMode ? 'transparent' : darkMode ? '#4949499e' : 'white',
-                                    },
-                                    '& fieldset': {
-                                        borderColor: '#CCCFE5',
-                                        color: '#CCCFE5',
-                                    },
-                                    '& label': {
-                                        color: '#9398C2',
-                                    },
-                                }}
+                                sx={textFieldStyle}
                                 fullWidth
                                 name="template"
                                 variant={variant}
@@ -88,19 +90,7 @@ export const GeneralDetailsFields = ({
                             id="name"
                             name="name"
                             size="small"
-                            sx={{
-                                '& .MuiInputBase-root': {
-                                    borderRadius: '10px',
-                                    backgroundColor: viewMode ? 'transparent' : darkMode ? '#4949499e' : 'white',
-                                },
-                                '& fieldset': {
-                                    borderColor: '#CCCFE5',
-                                    color: '#CCCFE5',
-                                },
-                                '& label': {
-                                    color: '#9398C2',
-                                },
-                            }}
+                            sx={textFieldStyle}
                             fullWidth
                             label={i18next.t('wizard.processInstance.processInstanceName')}
                             value={values.name}
@@ -132,19 +122,7 @@ export const GeneralDetailsFields = ({
                             renderInput={(params) => (
                                 <TextField
                                     size="small"
-                                    sx={{
-                                        '& .MuiInputBase-root': {
-                                            borderRadius: '10px',
-                                            backgroundColor: viewMode ? 'transparent' : darkMode ? '#4949499e' : 'white',
-                                        },
-                                        '& fieldset': {
-                                            borderColor: '#CCCFE5',
-                                            color: '#CCCFE5',
-                                        },
-                                        '& label': {
-                                            color: '#9398C2',
-                                        },
-                                    }}
+                                    sx={textFieldStyle}
                                     fullWidth
                                     variant={variant}
                                     InputLabelProps={{
@@ -174,19 +152,7 @@ export const GeneralDetailsFields = ({
                             renderInput={(params) => (
                                 <TextField
                                     size="small"
-                                    sx={{
-                                        '& .MuiInputBase-root': {
-                                            borderRadius: '10px',
-                                            backgroundColor: viewMode ? 'transparent' : darkMode ? '#4949499e' : 'white',
-                                        },
-                                        '& fieldset': {
-                                            borderColor: '#CCCFE5',
-                                            color: '#CCCFE5',
-                                        },
-                                        '& label': {
-                                            color: '#9398C2',
-                                        },
-                                    }}
+                                    sx={textFieldStyle}
                                     variant={variant}
                                     fullWidth
                                     InputLabelProps={{

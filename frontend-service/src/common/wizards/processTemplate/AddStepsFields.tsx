@@ -50,7 +50,7 @@ const addStepsFieldsSchema = Yup.object({
                 attachmentProperties: Yup.array().of(attachmentPropertiesBaseSchema),
                 reviewers: Yup.array().of(Yup.object({})).min(1, i18next.t('validation.oneField')),
                 icon: Yup.object({
-                    name: Yup.string().nullable(true),
+                    name: Yup.string().nullable(true).optional(),
                 }),
                 name: Yup.string().matches(variableNameValidation, i18next.t('validation.variableName')).required(i18next.t('validation.required')),
                 displayName: Yup.string().required(i18next.t('validation.required')),

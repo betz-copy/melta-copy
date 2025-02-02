@@ -152,7 +152,7 @@ const FileInput: React.FC<FileInputProps> = ({
                 </Grid>
 
                 <Grid item container>
-                    {file && file.name && file.name !== '' ? (
+                    {file?.name?.trim() ? (
                         <Grid item container style={inputStyle} {...getRootProps()}>
                             <input {...getInputProps()} />
                             <Grid container item flexDirection="row" alignItems="center" flexWrap="nowrap">

@@ -78,13 +78,9 @@ const ProcessSummary: React.FC<ProcessSummaryProp> = ({ processInstance, process
 
                 <Grid item xs={3} width="100%">
                     <Box sx={{ padding: 3, width: '100%', display: 'flex', flexWrap: 'wrap', alignItems: 'center' }}>
-                        <Stepper
-                            style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center' }}
-                            connector={<StepperConnector />}
-                            alternativeLabel
-                        >
+                        <Stepper sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center' }} connector={<StepperConnector />} alternativeLabel>
                             {processInstance.steps.map((stepInstance, index) => (
-                                <Step style={{ minWidth: '175px', height: '200px', display: 'flex', alignItems: 'center' }} key={stepInstance._id}>
+                                <Step sx={{ minWidth: '175px', height: '200px', display: 'flex', alignItems: 'center' }} key={stepInstance._id}>
                                     <Grid
                                         container
                                         flexDirection="column"

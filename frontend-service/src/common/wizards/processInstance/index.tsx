@@ -22,6 +22,7 @@ import StepsReviewers from './ProcessDetails/StepsReviewers';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { ActivitiesContent } from '../../../pages/Entity/components/activityLog/ActivitiesContent';
 import { MeltaTooltip } from '../../MeltaTooltip';
+import { environment } from '../../../globals';
 
 interface IProcessInstanceWizard {
     open: boolean;
@@ -83,7 +84,8 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({
     const [activeStep, setActiveStep] = React.useState(
         stepTemplate ? processTemplate.steps.findIndex((step) => step._id === stepTemplate._id) + 1 : 0,
     );
-    const [contentDisplay, setContentDisplay] = React.useState<'SUMMARY' | 'REVIEWERS'>('SUMMARY');
+
+    const [contentDisplay, setContentDisplay] = React.useState<'SUMMARY' | 'REVIEWERS'>(environment.processDetailsContentDisplay.summary);
 
     const classes = wizardContentStyles();
 
@@ -181,7 +183,7 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({
                                     onBack={() => {}}
                                     key={`${processInstance._id}//${processInstance.name}`}
                                     setContentDisplay={(val) => {
-                                        if (val === 'SUMMARY') setActiveStep(0);
+                                        if (val === environment.processDetailsContentDisplay.summary) setActiveStep(0);
                                         setContentDisplay(val);
                                     }}
                                     contentDisplay={contentDisplay}
@@ -190,7 +192,7 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({
                         </Grid>
                     </Grid>
                     <Grid container item flexBasis="75%" flexDirection="column" padding="15px">
-                        {activeStep === 0 && contentDisplay === 'SUMMARY' && (
+                        {activeStep === 0 && contentDisplay === environment.processDetailsContentDisplay.summary && (
                             <Grid container flexDirection="column" width="100%" height="100%" flexWrap="nowrap">
                                 <Grid item alignSelf="flex-end" height="50px">
                                     <MeltaTooltip
@@ -236,7 +238,7 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({
                                 )}
                             </Grid>
                         )}
-                        {activeStep !== 0 && contentDisplay === 'SUMMARY' && (
+                        {activeStep !== 0 && contentDisplay === environment.processDetailsContentDisplay.summary && (
                             <ProcessStepsStep
                                 processTemplate={processTemplate}
                                 processInstance={currProcessInstance}
@@ -258,7 +260,7 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({
                                 setActiveStep={setActiveStep}
                             />
                         )}
-                        {contentDisplay === 'REVIEWERS' && (
+                        {contentDisplay === environment.processDetailsContentDisplay.reviewers && (
                             <StepsReviewers
                                 detailsFormikData={detailsFormikData}
                                 onBack={() => {}}

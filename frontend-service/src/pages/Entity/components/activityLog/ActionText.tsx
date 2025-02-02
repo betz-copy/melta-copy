@@ -136,7 +136,7 @@ const popperProps = {
 };
 
 const UpdateTextValue: React.FC<{
-    value: any;
+    value: string;
     old: boolean;
     fieldName: string;
     entityTemplateProperties: Record<string, IEntitySingleProperty> | Record<string, IProcessSingleProperty>;
@@ -145,7 +145,7 @@ const UpdateTextValue: React.FC<{
     let innerContent: React.ReactNode = containsHtmlTags ? `"${getFirstLine(value)}${getNumLines(value) > 1 ? '...' : ''}"` : `"${value}"`;
     const entityTemplateUpdatedField = entityTemplateProperties[fieldName];
 
-    if (entityTemplateUpdatedField.format === 'relationshipReference') {
+    if (entityTemplateUpdatedField && entityTemplateUpdatedField.format === 'relationshipReference') {
         innerContent = (
             <RelationshipReferenceView
                 entity={value}
@@ -156,12 +156,16 @@ const UpdateTextValue: React.FC<{
     }
 
     const isFileIdFormat = (): boolean => {
+        if (!entityTemplateProperties[fieldName]) return false;
+
         const { type, format } = entityTemplateProperties[fieldName];
 
         return type === 'string' && format === 'fileId';
     };
 
     const isArrayOfFileIds = (): boolean => {
+        if (!entityTemplateProperties[fieldName]) return false;
+
         const { type, items } = entityTemplateProperties[fieldName];
 
         return type === 'array' && items?.type === 'string' && items.format === 'fileId';
@@ -223,7 +227,7 @@ const UpdateEntityMetadataActionText: React.FC<{
             {actionMetadata.updatedFields.map((field) => {
                 const { oldValue, newValue, fieldName } = field;
 
-                const deleted = entityTemplateProperties[fieldName] || '';
+                const deleted = entityTemplateProperties[fieldName];
                 const isDeleted = deleted === undefined;
 
                 return (
@@ -318,7 +322,6 @@ const ActionText: React.FC<{
         );
 
     if (action === 'UPDATE_PROCESS_STEP')
-        // TODO
         return (
             <UpdateStepProcessMetadataActionText
                 entityTemplate={entityTemplate as IMongoStepTemplatePopulated}

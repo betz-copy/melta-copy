@@ -8,9 +8,14 @@ import { Grid, IconButton, SvgIconProps, Typography } from '@mui/material';
 import { FormikProps } from 'formik';
 import i18next from 'i18next';
 import React from 'react';
-import { IMongoProcessInstancePopulated, Status } from '../../../../interfaces/processes/processInstance';
+import {
+    IMongoProcessInstancePopulated,
+    Status,
+    StatusBackgroundColors,
+    StatusColorsNames,
+    StatusFontColors,
+} from '../../../../interfaces/processes/processInstance';
 import { IMongoStepInstancePopulated } from '../../../../interfaces/processes/stepInstance';
-import { StatusBackgroundColors, StatusColorsNames, StatusFontColors } from '../../../../pages/ProcessInstances/ProcessCard';
 import { useUserStore } from '../../../../stores/user';
 import { getLongDate } from '../../../../utils/date';
 import { BlueTitle } from '../../../BlueTitle';
@@ -91,7 +96,6 @@ export const StatusDisplay: React.FC<StatusDisplayProps> = ({ status, text, font
         >
             {displayIcon && (
                 <Grid item alignItems="center" height="100%">
-                    {/* <Icon color={color} style={{ fontSize }} /> */}
                     <img style={{ height: '100%', width: fontSize }} src={`/icons/process-status-${status}.svg`} />
                 </Grid>
             )}
@@ -208,7 +212,6 @@ const ProcessStatus: React.FC<ProcessStatusProps> = ({ title, instance, editStat
                     />
                 )}
             </Grid>
-            {/* {instance.reviewedAt && !isPrinting && title && <ReviewedAtProcessStatus instance={instance} />} */}
         </Grid>
     );
 };
