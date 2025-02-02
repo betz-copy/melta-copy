@@ -27,7 +27,7 @@ export const parsePolygon = (polygonStr: string): Cartesian3[] | undefined => {
                 console.error(`Invalid coordinate pair: ${pair}`);
                 return null;
             }
-            return Cartesian3.fromDegrees(longitude, latitude, 0, Ellipsoid.WGS84);
+            return Cartesian3.fromDegrees(latitude, longitude);
         })
         .filter((coord): coord is Cartesian3 => coord !== null);
 
@@ -44,7 +44,7 @@ export const stringToCoordinates = (strCoords: string): CoordinatesResult => {
     if (polygon) return { type: 'polygon', value: polygon };
 
     const formatted = strCoords.split(',').map((val) => +val);
-    return { type: 'marker', value: { x: formatted[0], y: formatted[1], z: zoomNumber } as Cartesian3 };
+    return { type: 'marker', value: { x: formatted[1], y: formatted[0] } as Cartesian3 };
 
     // TODO: add validation to format
 };
@@ -96,12 +96,12 @@ export const convertToDegrees = (point: Cartesian3): { longitude: number; latitu
 export const cartesian3ToString = (cartesian3: Cartesian3 | Cartesian3[], includePolygon = true): string => {
     if (!Array.isArray(cartesian3)) {
         const { longitude, latitude } = convertToDegrees(cartesian3);
-        return `${longitude}, ${latitude}`;
+        return `${latitude}, ${longitude}`;
     }
 
     const points = cartesian3.map((point) => {
         const { longitude, latitude } = convertToDegrees(point);
-        return `${longitude} ${latitude}`;
+        return `${latitude} ${longitude}`;
     });
     return includePolygon ? `${polygonPrefix}${points.join(',')}${polygonSuffix}` : points.join(',');
 };

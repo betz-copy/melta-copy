@@ -60,6 +60,7 @@ const MapFilters = ({ selectedTemplates, setSelectedTemplates, moveToEntityLocat
                     isDraggableDisabled
                     size="small"
                     categories={categories}
+                    overrideSx={{ background: darkMode ? '#FFFFFF' : '#121212' }}
                 />
             </Grid>
             <Grid item>

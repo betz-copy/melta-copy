@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useRef, useState } from 'react';
-import { Cartesian3, Ion } from 'cesium';
+import { Cartesian3 } from 'cesium';
 import { Viewer, CesiumMovementEvent } from 'resium';
 import { ToggleButton, ToggleButtonGroup } from '@mui/material';
 import { Place, ShapeLine } from '@mui/icons-material';
@@ -23,13 +23,10 @@ import { DeleteMapDataBtn } from './mapPage/MapFilters';
 type Props = {
     defaultLocation?: string;
     field: string;
-    updateValue: (newValue: string) => void;
+    updateValue: (newValue: string | undefined) => void;
 };
 
 const LocationField = ({ defaultLocation, field, updateValue }: Props) => {
-    Ion.defaultAccessToken =
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJjZWI5M2EyNC1lODE3LTQwYTQtYTUxZi00NDlhODAyZDM0NTMiLCJpZCI6MjcwNDM5LCJpYXQiOjE3Mzc0NDk3MzN9.WLi4Zcm4D_PMstHcM3YNMJsw1xPhiNGuJyizwg_4nbg';
-
     const viewerRef = useRef<any>(null);
 
     const [drawingMode, setDrawingMode] = useState<'polygon' | 'coordinate' | null>(null);
@@ -43,14 +40,12 @@ const LocationField = ({ defaultLocation, field, updateValue }: Props) => {
         if (initialCoordinates?.type === 'marker') {
             const { value } = initialCoordinates;
             setMarkerPosition(
-                !isCartesian3(value)
-                    ? Cartesian3.fromDegrees((value as Cartesian3).x, (value as Cartesian3).y, 0)
-                    : ({ ...value, z: 0 } as Cartesian3),
+                !isCartesian3(value) ? Cartesian3.fromDegrees((value as Cartesian3).x, (value as Cartesian3).y) : ({ ...value } as Cartesian3),
             );
         }
         if (initialCoordinates?.type === 'polygon') {
             const positions = (initialCoordinates.value as Cartesian3[]).map((position) =>
-                !isCartesian3(position) ? Cartesian3.fromDegrees(position.x, position.y, position.x) : position,
+                !isCartesian3(position) ? Cartesian3.fromDegrees(position.x, position.y) : position,
             );
             setPolygonPosition(positions);
         }
@@ -117,6 +112,7 @@ const LocationField = ({ defaultLocation, field, updateValue }: Props) => {
         setPolygonPosition([]);
         setMarkerPosition(null);
         setDrawingMode(null);
+        updateValue(undefined);
     };
 
     const handleDrawType = (_event: React.MouseEvent<HTMLElement>, newShape: 'polygon' | 'coordinate' | null) => {
@@ -125,7 +121,7 @@ const LocationField = ({ defaultLocation, field, updateValue }: Props) => {
 
     return (
         <div style={{ position: 'relative', height: '800px', width: '600px' }}>
-            <Viewer full ref={viewerRef} onClick={handleViewerClick}>
+            <Viewer full ref={viewerRef} onClick={handleViewerClick} animation={false} timeline={false}>
                 {polygonPosition.length > 0 && <MeltaPolygon name={field} polygon={polygonPosition} />}
                 {markerPosition && <MeltaCoordinate name={field} position={markerPosition} />}
             </Viewer>

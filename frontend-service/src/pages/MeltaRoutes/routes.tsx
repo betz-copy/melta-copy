@@ -22,7 +22,6 @@ import {
 } from '../../utils/ProtectedRoutes';
 import { useWorkspaceStore } from '../../stores/workspace';
 import { environment } from '../../globals';
-import MapPage from '../Map/mapPage';
 
 const GlobalSearch = lazy(() => import('../GlobalSearch'));
 const Category = lazy(() => import('../Category'));
@@ -178,7 +177,7 @@ export const MeltaRoutesInner: React.FC = () => {
                             </Route>
 
                             <Route path="/map">
-                                <MapPage />
+                                <Map />
                             </Route>
 
                             <Route path="/gantts">

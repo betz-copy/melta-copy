@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Cartesian3, Color, Ion } from 'cesium';
+import { Cartesian3, Color } from 'cesium';
 import { Viewer, Entity, EllipseGraphics, PolylineGraphics, CesiumMovementEvent, PointGraphics, ImageryLayer } from 'resium';
 import * as Cesium from 'cesium';
 import { ToggleButton, ToggleButtonGroup } from '@mui/material';
@@ -58,9 +58,6 @@ export const BaseLayers: React.FC = () => {
 };
 
 const MapPage = () => {
-    Ion.defaultAccessToken =
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJjZWI5M2EyNC1lODE3LTQwYTQtYTUxZi00NDlhODAyZDM0NTMiLCJpZCI6MjcwNDM5LCJpYXQiOjE3Mzc0NDk3MzN9.WLi4Zcm4D_PMstHcM3YNMJsw1xPhiNGuJyizwg_4nbg';
-
     const queryClient = useQueryClient();
     const entityTemplateMap = queryClient.getQueryData<IEntityTemplateMap>(['getEntityTemplates']);
     const darkMode = useDarkModeStore((state) => state.darkMode);
@@ -79,6 +76,8 @@ const MapPage = () => {
     const [searchedEntity, setSearchedEntity] = useState<IEntity>();
     const [searchedEntityTemplate, setSearchedEntityTemplate] = useState<IMongoEntityTemplatePopulated>();
     const [selectedEntity, setSelectedEntity] = useState<{ node: IEntity; matchingField: string } | null>(null);
+    const [searchedPolygons, setSearchedPolygons] = useState<{ key: string; name: string; node: IEntity; position: Cartesian3[] }[]>([]);
+    const [searchedMarkers, setSearchedMarkers] = useState<{ key: string; name: string; node: IEntity; position: Cartesian3 }[]>([]);
 
     const filteredTemplatesIds = useMemo(() => selectedTemplates.map(({ _id }) => _id), [selectedTemplates]);
 
@@ -167,27 +166,21 @@ const MapPage = () => {
 
                 matchingFields.forEach((matchingField) => {
                     const { type, value } = stringToCoordinates(node.properties[matchingField]);
+                    const name = entityTemplate.properties.properties[matchingField].title;
 
                     if (type === 'polygon') {
-                        return (
-                            <MeltaPolygon
-                                name={entityTemplate.displayName}
-                                polygon={value as Cartesian3[]}
-                                onClick={() => {
-                                    setSelectedEntity({ matchingField, node });
-                                }}
-                            />
-                        );
+                        setSearchedPolygons((prev) => [
+                            ...prev,
+                            {
+                                key: matchingField,
+                                name,
+                                node,
+                                position: value as Cartesian3[],
+                            },
+                        ]);
+                        return;
                     }
-                    return (
-                        <MeltaCoordinate
-                            name={entityTemplate.displayName}
-                            position={value as Cartesian3}
-                            onClick={() => {
-                                setSelectedEntity({ matchingField, node });
-                            }}
-                        />
-                    );
+                    setSearchedMarkers((prev) => [...prev, { key: matchingField, name, node, position: value as Cartesian3 }]);
                 });
             });
         },
@@ -197,23 +190,31 @@ const MapPage = () => {
     });
 
     useEffect(() => {
-        if (circleData.center !== null && circleData.radius !== null) {
-            for (const templateId of filteredTemplatesIds) {
+        const fetchData = async () => {
+            if (circleData.center && circleData.radius) {
                 const { longitude, latitude } = convertToDegrees(circleData.center);
 
-                mutateAsync({
-                    textSearch: '',
-                    templates: { [templateId]: { filter: {} } },
-                    circle: { coordinate: [longitude, latitude], radius: circleData.radius },
-                });
+                await Promise.all(
+                    filteredTemplatesIds.map(async (templateId) =>
+                        mutateAsync({
+                            textSearch: '',
+                            templates: { [templateId]: { filter: {} } },
+                            circle: { coordinate: [longitude, latitude], radius: circleData.radius! },
+                        }),
+                    ),
+                );
             }
-        }
+        };
+
+        fetchData();
     }, [filteredTemplatesIds, circleData]);
 
-    const clearPolygon = () => {
+    const onClear = () => {
         setCircleData({ center: null, radius: null, mouseRadius: null });
         setLineData([]);
         setDrawingMode(null);
+        setSearchedMarkers([]);
+        setSearchedPolygons([]);
     };
 
     const handleDrawType = (_event: React.MouseEvent<HTMLElement>, newShape: 'circle' | 'line' | null) => {
@@ -222,7 +223,7 @@ const MapPage = () => {
 
     return (
         <div style={{ height: '100vh', width: '100%' }}>
-            <Viewer full ref={viewerRef} onClick={handleViewerClick} onMouseMove={handleMouseMove}>
+            <Viewer full ref={viewerRef} onClick={handleViewerClick} onMouseMove={handleMouseMove} animation={false} timeline={false}>
                 {circleData.center && (circleData.radius || circleData.mouseRadius) && (
                     <Entity
                         name={i18next.t('location.circle')}
@@ -272,9 +273,31 @@ const MapPage = () => {
                     <MeltaCoordinate
                         key={key}
                         name={searchedPropertyDefinitions[key].title}
-                        position={Cartesian3.fromDegrees(position.x, position.y, 0)}
+                        position={Cartesian3.fromDegrees(position.x, position.y)}
                         onClick={() => {
                             setSelectedEntity({ matchingField: key, node: searchedEntity! });
+                        }}
+                    />
+                ))}
+
+                {searchedPolygons.map(({ key, name, position: polygon, node }) => (
+                    <MeltaPolygon
+                        key={key}
+                        name={name}
+                        polygon={polygon}
+                        onClick={() => {
+                            setSelectedEntity({ matchingField: key, node });
+                        }}
+                    />
+                ))}
+
+                {searchedMarkers.map(({ key, name, position, node }) => (
+                    <MeltaCoordinate
+                        key={key}
+                        name={name}
+                        position={Cartesian3.fromDegrees(position.x, position.y)}
+                        onClick={() => {
+                            setSelectedEntity({ matchingField: key, node });
                         }}
                     />
                 ))}
@@ -286,7 +309,7 @@ const MapPage = () => {
                     setSelectedTemplates={setSelectedTemplates}
                     moveToEntityLocations={(entity: IEntity) => setSearchedEntity(entity)}
                     entityTemplateMap={entityTemplateMap!}
-                    onClear={clearPolygon}
+                    onClear={onClear}
                     darkMode={darkMode}
                 />
 

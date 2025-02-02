@@ -216,7 +216,6 @@ const SelectCheckbox = <Option extends {}, Group extends any = Option>({
                     ...(darkMode
                         ? {
                               color: theme.palette.primary.main,
-                              background: toTopBar ? '#121212' : '',
                               '& .MuiOutlinedInput-notchedOutline': { borderColor: '#d2d3e3' },
                           }
                         : {

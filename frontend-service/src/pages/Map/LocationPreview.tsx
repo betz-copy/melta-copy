@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { Cartesian3, Color, Ion } from 'cesium';
+import { Cartesian3, Color } from 'cesium';
 import { Viewer, Entity, PolygonGraphics, PointGraphics, PolylineGraphics, BillboardGraphics } from 'resium';
 import * as Cesium from 'cesium';
 import { IEntity } from '../../interfaces/entities';
@@ -21,7 +21,7 @@ export const MeltaPolygon = ({ name, polygon, onClick }: { name: string; polygon
 
 export const MeltaCoordinate = ({ name, position, onClick }: { name: string; position: Cartesian3; onClick?: () => void }) => (
     <Entity name={name} description={cartesian3ToString(position)} position={position} onClick={onClick}>
-        <BillboardGraphics image="/public/icons/location.svg" scale={1} verticalOrigin={Cesium.VerticalOrigin.BOTTOM} />
+        <BillboardGraphics image="/icons/location.svg" scale={1} verticalOrigin={Cesium.VerticalOrigin.BOTTOM} />
     </Entity>
 );
 
@@ -31,9 +31,6 @@ type Props = {
 };
 
 const LocationPreview = ({ entity, entityTemplate }: Props) => {
-    Ion.defaultAccessToken =
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJjZWI5M2EyNC1lODE3LTQwYTQtYTUxZi00NDlhODAyZDM0NTMiLCJpZCI6MjcwNDM5LCJpYXQiOjE3Mzc0NDk3MzN9.WLi4Zcm4D_PMstHcM3YNMJsw1xPhiNGuJyizwg_4nbg';
-
     const viewerRef = useRef<any>(null);
 
     const { bounds, polygons, propertyDefinitions, markers } = useEntityWithLocationFields({
@@ -66,7 +63,7 @@ const LocationPreview = ({ entity, entityTemplate }: Props) => {
 
     return (
         <div style={{ position: 'relative', height: '800px', width: '600px' }}>
-            <Viewer full ref={viewerRef}>
+            <Viewer full ref={viewerRef} animation={false} timeline={false}>
                 {polygons.map(({ key, position: polygon }) => (
                     <MeltaPolygon key={key} name={propertyDefinitions[key].title} polygon={polygon} />
                 ))}

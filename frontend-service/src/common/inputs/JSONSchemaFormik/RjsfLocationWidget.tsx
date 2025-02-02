@@ -61,7 +61,7 @@ const RjsfLocationWidget = ({
 }: WidgetProps) => {
     const [error, setError] = useState(false);
     const [mapOpen, setMapOpen] = useState(false);
-    const [newLocationValue, setNewLocationValue] = useState<string>(value);
+    const [newLocationValue, setNewLocationValue] = useState<string | undefined>(value);
 
     const displayLabel = getDisplayLabel(validator, schema, uiSchema, registry.rootSchema);
     const inputType = (type || schema.type) === 'string' ? 'text' : `${type || schema.type}`;
@@ -126,7 +126,11 @@ const RjsfLocationWidget = ({
             />
 
             <Dialog open={mapOpen} onClose={handleCloseDialog}>
-                <LocationField defaultLocation={newLocationValue} field={label} updateValue={(newVal: string) => setNewLocationValue(newVal)} />
+                <LocationField
+                    defaultLocation={newLocationValue}
+                    field={label}
+                    updateValue={(newVal: string | undefined) => setNewLocationValue(newVal)}
+                />
             </Dialog>
         </Box>
     );
