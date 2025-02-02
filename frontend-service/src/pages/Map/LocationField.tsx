@@ -1,12 +1,12 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useRef, useState } from 'react';
-import { Cartesian3, Color, Ion } from 'cesium';
-import { Viewer, Entity, PolygonGraphics, PointGraphics, CesiumMovementEvent, PolylineGraphics, BillboardGraphics } from 'resium';
+import { Cartesian3, Ion } from 'cesium';
+import { Viewer, CesiumMovementEvent } from 'resium';
 import { ToggleButton, ToggleButtonGroup } from '@mui/material';
-import { Delete, Place, ShapeLine } from '@mui/icons-material';
+import { Place, ShapeLine } from '@mui/icons-material';
 import i18next from 'i18next';
 import * as Cesium from 'cesium';
 import { MeltaTooltip } from '../../common/MeltaTooltip';
-import IconButtonWithPopover from '../../common/IconButtonWithPopover';
 import { useDarkModeStore } from '../../stores/darkMode';
 import {
     calculateCenterOfPolygon,
@@ -17,6 +17,8 @@ import {
     jerusalemCoordinates,
     stringToCoordinates,
 } from '../../utils/map';
+import { MeltaCoordinate, MeltaPolygon } from './LocationPreview';
+import { DeleteMapDataBtn } from './mapPage/MapFilters';
 
 type Props = {
     defaultLocation?: string;
@@ -28,10 +30,11 @@ const LocationField = ({ defaultLocation, field, updateValue }: Props) => {
     Ion.defaultAccessToken =
         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJjZWI5M2EyNC1lODE3LTQwYTQtYTUxZi00NDlhODAyZDM0NTMiLCJpZCI6MjcwNDM5LCJpYXQiOjE3Mzc0NDk3MzN9.WLi4Zcm4D_PMstHcM3YNMJsw1xPhiNGuJyizwg_4nbg';
 
+    const viewerRef = useRef<any>(null);
+
+    const [drawingMode, setDrawingMode] = useState<'polygon' | 'coordinate' | null>(null);
     const [polygonPosition, setPolygonPosition] = useState<Cartesian3[]>([]);
     const [markerPosition, setMarkerPosition] = useState<Cartesian3 | null>(null);
-    const [drawingMode, setDrawingMode] = useState<'polygon' | 'coordinate' | null>(null);
-    const viewerRef = useRef<any>(null);
 
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
@@ -110,7 +113,7 @@ const LocationField = ({ defaultLocation, field, updateValue }: Props) => {
         }
     };
 
-    const clearPolygon = () => {
+    const onClear = () => {
         setPolygonPosition([]);
         setMarkerPosition(null);
         setDrawingMode(null);
@@ -122,33 +125,9 @@ const LocationField = ({ defaultLocation, field, updateValue }: Props) => {
 
     return (
         <div style={{ position: 'relative', height: '800px', width: '600px' }}>
-            <Viewer full ref={viewerRef} id="cesiumContainer" onClick={handleViewerClick}>
-                {polygonPosition.length > 0 && (
-                    <Entity name={field} description={cartesian3ToString(polygonPosition)}>
-                        <PolylineGraphics
-                            positions={[...polygonPosition, polygonPosition[0]]}
-                            material={Color.fromCssColorString('#11695a')}
-                            width={3}
-                        />
-                        {polygonPosition.length >= 3 && <PolygonGraphics hierarchy={polygonPosition} material={Color.fromAlpha(Color.GRAY, 0.3)} />}
-                        {polygonPosition.map((position) => (
-                            <Entity key={`${position.x}, ${position.y}`} position={position}>
-                                <PointGraphics
-                                    color={Color.BLACK}
-                                    outlineColor={Color.fromCssColorString('#11695a')}
-                                    pixelSize={10}
-                                    outlineWidth={2}
-                                />
-                            </Entity>
-                        ))}
-                    </Entity>
-                )}
-
-                {markerPosition && (
-                    <Entity name={field} description={cartesian3ToString(markerPosition)} position={markerPosition}>
-                        <BillboardGraphics image="/public/icons/location.svg" scale={1} verticalOrigin={Cesium.VerticalOrigin.BOTTOM} />
-                    </Entity>
-                )}
+            <Viewer full ref={viewerRef} onClick={handleViewerClick}>
+                {polygonPosition.length > 0 && <MeltaPolygon name={field} polygon={polygonPosition} />}
+                {markerPosition && <MeltaCoordinate name={field} position={markerPosition} />}
             </Viewer>
             <div style={{ position: 'absolute', top: '10px', left: '10px', display: 'flex', gap: '10px' }}>
                 {polygonPosition.length === 0 && markerPosition === null && (
@@ -170,21 +149,7 @@ const LocationField = ({ defaultLocation, field, updateValue }: Props) => {
                         </MeltaTooltip>
                     </ToggleButtonGroup>
                 )}
-
-                <IconButtonWithPopover
-                    popoverText={i18next.t('location.clear')}
-                    iconButtonProps={{
-                        onClick: clearPolygon,
-                    }}
-                    style={{
-                        background: darkMode ? '#131313' : '#FFFFFF',
-                        borderRadius: '7px',
-                        height: '34px',
-                        opacity: 1,
-                    }}
-                >
-                    <Delete htmlColor={darkMode ? '#9398c2' : '#787c9e'} />
-                </IconButtonWithPopover>
+                <DeleteMapDataBtn onClick={onClear} darkMode={darkMode} />
             </div>
         </div>
     );

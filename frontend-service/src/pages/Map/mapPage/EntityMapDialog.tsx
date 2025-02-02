@@ -19,7 +19,7 @@ type props = {
     entityWithMatchingField: { node: IEntity; matchingField: string };
 };
 
-const MapPageEntityDialog = ({ open, onClose, entityWithMatchingField }: props) => {
+const EntityMapDialog = ({ open, onClose, entityWithMatchingField }: props) => {
     const [_, navigate] = useLocation();
     const queryClient = useQueryClient();
     const workspace = useWorkspaceStore((state) => state.workspace);
@@ -76,4 +76,4 @@ const MapPageEntityDialog = ({ open, onClose, entityWithMatchingField }: props) 
     );
 };
 
-export default MapPageEntityDialog;
+export default EntityMapDialog;

@@ -7,6 +7,24 @@ import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates'
 import { useEntityWithLocationFields } from '../../utils/hooks/useLocation';
 import { cartesian3ToString, jerusalemCoordinates } from '../../utils/map';
 
+export const MeltaPolygon = ({ name, polygon, onClick }: { name: string; polygon: Cartesian3[]; onClick?: () => void }) => (
+    <Entity name={name} description={cartesian3ToString(polygon)} onClick={onClick}>
+        <PolylineGraphics positions={[...polygon, polygon[0]]} material={Color.fromCssColorString('#11695a')} width={3} />
+        <PolygonGraphics hierarchy={polygon} material={Color.fromAlpha(Color.GRAY, 0.3)} />
+        {polygon.map((position) => (
+            <Entity key={`${position.x}, ${position.y}`} position={position}>
+                <PointGraphics color={Color.BLACK} outlineColor={Color.fromCssColorString('#11695a')} pixelSize={10} outlineWidth={2} />
+            </Entity>
+        ))}
+    </Entity>
+);
+
+export const MeltaCoordinate = ({ name, position, onClick }: { name: string; position: Cartesian3; onClick?: () => void }) => (
+    <Entity name={name} description={cartesian3ToString(position)} position={position} onClick={onClick}>
+        <BillboardGraphics image="/public/icons/location.svg" scale={1} verticalOrigin={Cesium.VerticalOrigin.BOTTOM} />
+    </Entity>
+);
+
 type Props = {
     entity: IEntity;
     entityTemplate: IMongoEntityTemplatePopulated;
@@ -48,33 +66,13 @@ const LocationPreview = ({ entity, entityTemplate }: Props) => {
 
     return (
         <div style={{ position: 'relative', height: '800px', width: '600px' }}>
-            <Viewer full ref={viewerRef} id="cesiumContainer">
+            <Viewer full ref={viewerRef}>
                 {polygons.map(({ key, position: polygon }) => (
-                    <Entity key={key} name={propertyDefinitions[key].title} description={cartesian3ToString(polygon)}>
-                        <PolylineGraphics positions={[...polygon, polygon[0]]} material={Color.fromCssColorString('#11695a')} width={3} />
-                        <PolygonGraphics hierarchy={polygon} material={Color.fromAlpha(Color.GRAY, 0.3)} />
-                        {polygon.map((position) => (
-                            <Entity key={`${position.x}, ${position.y}`} position={position}>
-                                <PointGraphics
-                                    color={Color.BLACK}
-                                    outlineColor={Color.fromCssColorString('#11695a')}
-                                    pixelSize={10}
-                                    outlineWidth={2}
-                                />
-                            </Entity>
-                        ))}
-                    </Entity>
+                    <MeltaPolygon key={key} name={propertyDefinitions[key].title} polygon={polygon} />
                 ))}
 
                 {markers.map(({ key, position }) => (
-                    <Entity
-                        key={key}
-                        name={propertyDefinitions[key].title}
-                        description={cartesian3ToString(position)}
-                        position={Cartesian3.fromDegrees(position.x, position.y, 0)}
-                    >
-                        <BillboardGraphics image="/public/icons/location.svg" scale={1} verticalOrigin={Cesium.VerticalOrigin.BOTTOM} />
-                    </Entity>
+                    <MeltaCoordinate key={key} name={propertyDefinitions[key].title} position={Cartesian3.fromDegrees(position.x, position.y, 0)} />
                 ))}
             </Viewer>
         </div>

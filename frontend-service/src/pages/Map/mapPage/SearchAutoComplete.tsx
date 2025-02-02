@@ -94,6 +94,35 @@ const SearchAutoComplete = ({ selectedTemplates, handleEntityClick }: props) => 
         [isLoading, loadMore],
     );
 
+    useEffect(() => {
+        if (data) {
+            setSearchResults(
+                data.pages
+                    .flatMap(({ entities }) => entities.map(({ entity }) => entity))
+                    .filter((entity) => {
+                        const template = selectedTemplates.find(({ _id }) => _id === entity.templateId);
+                        if (!template) return false;
+
+                        const locationTemplateProperties = Object.entries(template.properties.properties)
+                            .filter(([_key, value]) => value.format === 'location')
+                            .reduce((acc, [key, value]) => {
+                                acc[key] = value;
+                                return acc;
+                            }, {} as { [x: string]: IEntitySingleProperty });
+
+                        const locationProperties = Object.entries(entity.properties)
+                            .filter(([key, _value]) => key in locationTemplateProperties)
+                            .reduce((acc, [key, value]) => {
+                                acc[key] = value;
+                                return acc;
+                            }, {} as { [x: string]: any });
+
+                        return Object.values(locationProperties).some((value) => value !== undefined);
+                    }),
+            );
+        }
+    }, [data, selectedTemplates]);
+
     return (
         <Autocomplete
             options={searchResults}
