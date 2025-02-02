@@ -81,7 +81,7 @@ export interface IButtonProps<Data> {
 
 export const getDatasource = <Data extends any = EntityData>(
     template: IMongoEntityTemplatePopulated,
-    tableCount: number,
+    // tableCount: number, // comment out  waiting for Itay
     quickFilterText?: string,
     onFail?: (err: unknown) => void,
     rowData?: IConnection[],
@@ -104,7 +104,7 @@ export const getDatasource = <Data extends any = EntityData>(
                     agGridToSearchEntitiesOfTemplateRequest(
                         { ...agGridRequest, quickFilter: quickFilterText } as IAGGridRequest,
                         template,
-                        tableCount,
+                        // tableCount, // comment out  waiting for Itay
                     ),
                 ),
             );
@@ -134,7 +134,7 @@ export const getRowModelProps = <Data extends any = EntityData>(
     template: IMongoEntityTemplatePopulated,
     rowData: Data[] | undefined,
     paginationPageSize: number,
-    tableCount: number,
+    // tableCount: number,// comment out  waiting for Itay
     quickFilterText?: string,
     datasourceOnFail?: (err: unknown) => void,
     hasInstances?: boolean,
@@ -152,7 +152,7 @@ export const getRowModelProps = <Data extends any = EntityData>(
 
     return {
         rowModelType: 'serverSide',
-        serverSideDatasource: getDatasource<IConnection>(template, tableCount, quickFilterText, datasourceOnFail, rowData as IConnection[]),
+        serverSideDatasource: getDatasource<IConnection>(template, quickFilterText, datasourceOnFail, rowData as IConnection[]),
         cacheBlockSize: rowModelType === 'serverSide' ? cacheBlockSize : undefined,
         pagination: rowModelType === 'serverSide',
         paginationPageSize,
@@ -247,7 +247,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         const darkMode = useDarkModeStore((state) => state.darkMode);
         const workspace = useWorkspaceStore((state) => state.workspace);
         const { rowCount, defaultExpandedRowCount } = workspace.metadata.agGrid;
-        const { table } = workspace.metadata.searchLimits;
+        // const { table } = workspace.metadata.searchLimits;// comment out  waiting for Itay
 
         if (!pageRowCount) pageRowCount = rowCount;
 
@@ -258,6 +258,8 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
 
         const minHeightTable = rowHeight * pageRowCount + rowHeight * 2;
         const [gridHeight, setGridHeight] = useState<number>(rowHeight * defaultExpandedRowCount);
+        console.log({ defaultExpandedRowCount });
+        console.log({ gridHeight, minHeightTable });
 
         const [selectedRow, setSelectedRow] = useState('');
         const [currEntity, setCurrEntity] = useState<IEntity>();
@@ -574,7 +576,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         }));
 
         const rowModelProps = useMemo(
-            () => getRowModelProps(rowModelType, template, rowData, pageRowCount!, table, quickFilterText, datasourceOnFail, hasInstances),
+            () => getRowModelProps(rowModelType, template, rowData, pageRowCount!, quickFilterText, datasourceOnFail, hasInstances),
             [rowModelType, template, rowData, pageRowCount, quickFilterText, hasInstances],
         );
 
