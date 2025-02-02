@@ -292,28 +292,14 @@ class ProcessInstanceManager extends DefaultManagerMongo<IProcessInstance> {
 
         if (isWaitingForMeFilterOn && userId) {
             const waitingForMeProcesses = await searchAllowedProcessInstanceWaitForMe(this.model, query, userId);
+            const waitingForMeProcessIds = waitingForMeProcesses.map((process) => new Types.ObjectId(process._id));
+
             if (isStepStatusPendeing) {
-                if (query._id) {
-                    query._id = {
-                        ...query._id,
-                        $in: waitingForMeProcesses.map((process) => new Types.ObjectId(process._id)),
-                    };
-                } else {
-                    query._id = {
-                        $in: waitingForMeProcesses.map((process) => new Types.ObjectId(process._id)),
-                    };
-                }
+                query._id = query._id ? { ...query._id, $in: waitingForMeProcessIds } : { $in: waitingForMeProcessIds };
 
                 return searchAllowedProcessInstanceForReviewerAggregation(this.model, query, userId, 0, 0);
             }
-            if (query._id) {
-                query._id = {
-                    ...query._id,
-                    $nin: waitingForMeProcesses.map((waitingForMeProcess) => new Types.ObjectId(waitingForMeProcess._id)),
-                };
-            } else {
-                query._id = { $nin: waitingForMeProcesses.map((waitingForMeProcess) => new Types.ObjectId(waitingForMeProcess._id)) };
-            }
+            query._id = query._id ? { ...query._id, $nin: waitingForMeProcessIds } : { $nin: waitingForMeProcessIds };
         }
 
         const processes = await this.model

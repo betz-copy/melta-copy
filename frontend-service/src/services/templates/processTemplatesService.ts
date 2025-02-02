@@ -134,15 +134,21 @@ const addAttachmentProperties = (
     properties: Record<string, IProcessSingleProperty>,
     propertiesOrder: string[],
     attachmentProperties: ProcessTemplateFormInputProperties[],
+    detailsSchema: {
+        type: 'object';
+        properties: Record<string, IProcessSingleProperty>;
+        required: string[];
+    },
 ) => {
-    attachmentProperties.forEach(({ name, title, type, required }) => {
-        const attachmentProperty = createFileAttachmentProperty(type, required);
+    attachmentProperties.forEach(({ name, title, type, required, deleted }) => {
+            const { required: requiredFile, ...attachmentProperty } = createFileAttachmentProperty(type, required);
         // eslint-disable-next-line no-param-reassign
         properties[name] = {
             title,
             ...attachmentProperty,
         };
         propertiesOrder.push(name);
+        if (required) detailsSchema.required.push(name);
     });
 };
 
@@ -172,7 +178,7 @@ const formToJSONSchema = (values: ProcessTemplateWizardValues): ICreateProcessTe
         if (required) detailsSchema.required.push(name);
     });
 
-    addAttachmentProperties(detailsSchema.properties, detailsPropertiesOrder, detailsAttachmentProperties);
+    addAttachmentProperties(detailsSchema.properties, detailsPropertiesOrder, detailsAttachmentProperties, detailsSchema);
 
     steps.forEach((step) => {
         const stepPropertiesOrder: string[] = [];
@@ -196,7 +202,7 @@ const formToJSONSchema = (values: ProcessTemplateWizardValues): ICreateProcessTe
             if (required) stepSchema.required.push(name);
         });
 
-        addAttachmentProperties(stepSchema.properties, stepPropertiesOrder, step.attachmentProperties);
+        addAttachmentProperties(stepSchema.properties, stepPropertiesOrder, step.attachmentProperties, stepSchema);
 
         const reviewersIds: string[] = step.reviewers.map((reviewer) => reviewer._id);
         stepTemplates.push({

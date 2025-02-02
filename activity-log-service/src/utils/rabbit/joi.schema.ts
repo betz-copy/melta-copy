@@ -2,6 +2,14 @@ import * as Joi from 'joi';
 
 export const MongoIdSchema = Joi.string().regex(/^[0-9a-fA-F]{24}$/, 'valid MongoId');
 
+const updatedFieldsSchema = Joi.array().items(
+    Joi.object({
+        fieldName: Joi.string().required(),
+        oldValue: Joi.any().required(),
+        newValue: Joi.any().required(),
+    }),
+);
+
 const activityLogSchema = Joi.object({
     timestamp: Joi.date().required(),
     entityId: Joi.string().required(),
@@ -40,43 +48,19 @@ const activityLogSchema = Joi.object({
             {
                 is: Joi.valid('UPDATE_ENTITY'),
                 then: Joi.object({
-                    updatedFields: Joi.array()
-                        .items(
-                            Joi.object({
-                                fieldName: Joi.string().required(),
-                                oldValue: Joi.any().required(),
-                                newValue: Joi.any().required(),
-                            }),
-                        )
-                        .required()
-                        .min(1),
+                    updatedFields: updatedFieldsSchema.required().min(1),
                 }).required(),
             },
             {
                 is: Joi.valid('UPDATE_PROCESS'),
                 then: Joi.object({
-                    updatedFields: Joi.array()
-                        .items(
-                            Joi.object({
-                                fieldName: Joi.string().required(),
-                                oldValue: Joi.any().required(),
-                                newValue: Joi.any().required(),
-                            }),
-                        )
-                        .required()
-                        .min(1),
+                    updatedFields: updatedFieldsSchema.required().min(1),
                 }).required(),
             },
             {
                 is: Joi.valid('UPDATE_PROCESS_STEP'),
                 then: Joi.object({
-                    updatedFields: Joi.array().items(
-                        Joi.object({
-                            fieldName: Joi.string().required(),
-                            oldValue: Joi.any().required(),
-                            newValue: Joi.any().required(),
-                        }),
-                    ),
+                    updatedFields: updatedFieldsSchema,
                     status: Joi.string(),
                     comments: Joi.string(),
                 }).or('updatedFields', 'status', 'comments'),

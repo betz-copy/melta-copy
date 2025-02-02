@@ -101,17 +101,13 @@ export default class StepInstanceManager extends DefaultManagerMongo<IStepInstan
 
         if (currStepTemplate.properties.properties) {
             const updatedFieldsActivityLog = Object.keys(currStepTemplate.properties.properties)
-                .filter((key) => {
-                    return updatedStep.properties?.[key] !== currStep.properties?.[key]; // compare between newValue to oldValue
-                })
-                .map((key) => {
-                    return {
-                        fieldName: key,
-                        oldValue: currStep.properties?.[key] || '',
-                        newValue: updatedStep.properties?.[key] || '',
-                    };
-                });
-            if (updatedFieldsActivityLog.length > 0) activityLogMetadata.updatedFields = updatedFieldsActivityLog;
+                .filter((key) => updatedStep.properties?.[key] !== currStep.properties?.[key]) // compare between newValue to oldValue
+                .map((key) => ({
+                    fieldName: key,
+                    oldValue: currStep.properties?.[key] || '',
+                    newValue: updatedStep.properties?.[key] || '',
+                }));
+            if (updatedFieldsActivityLog.length) activityLogMetadata.updatedFields = updatedFieldsActivityLog;
         }
 
         if (statusReview?.status && statusReview?.status !== currStep.status) activityLogMetadata.status = statusReview?.status;

@@ -1,4 +1,4 @@
-import { Box, Checkbox, FormControl, FormControlLabel, Grid, IconButton, Paper, Radio, RadioGroup, Typography, useTheme } from '@mui/material';
+import { Box, Checkbox, FormControl, FormControlLabel, Grid, IconButton, Paper, Radio, RadioGroup, useTheme } from '@mui/material';
 import React, { useState, useCallback } from 'react';
 import { useQueryClient } from 'react-query';
 import debounce from 'lodash/debounce';
@@ -61,7 +61,7 @@ const ProcessInstancesPage: React.FC = () => {
             />
             <Grid item container justifyContent="space-evenly">
                 <Paper
-                    style={{
+                    sx={{
                         borderRadius: '15px',
                         padding: '10px',
                         display: 'flex',
@@ -119,7 +119,7 @@ const ProcessInstancesPage: React.FC = () => {
                                 value={searchInput}
                                 endAdornmentChildren={
                                     <Box>
-                                        <IconButton style={{ color: theme.palette.primary.main }} sx={{ padding: 0 }} disableRipple>
+                                        <IconButton sx={{ color: theme.palette.primary.main, padding: 0 }} disableRipple>
                                             <Search sx={{ fontSize: '1.25rem' }} />
                                         </IconButton>
                                     </Box>

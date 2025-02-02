@@ -149,7 +149,7 @@ const CreateOrEditProcess: React.FC<ISimpleDialogProps> = ({ open, onClose, proc
                             backgroundColor: darkMode ? '#171717' : '#F0F2F7',
                             borderBottomLeftRadius: '20px',
                             borderTopLeftRadius: '20px',
-                            boxShadow: '10px 10px 15px 10px #888888',
+                            boxShadow: '1px 1px 10px 1px #888888',
                         }}
                     >
                         <Grid item width="100%">

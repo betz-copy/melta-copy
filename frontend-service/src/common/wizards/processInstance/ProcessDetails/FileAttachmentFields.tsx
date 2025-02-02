@@ -1,5 +1,5 @@
 import React from 'react';
-import { FormikProps } from 'formik';
+import { FormikErrors, FormikProps } from 'formik';
 import { Box, Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
 import { ProcessStepValues } from '../ProcessSteps';
@@ -14,8 +14,8 @@ type ProcessFormikProps = ProcessStepValues | ProcessDetailsValues;
 
 type FileAttachmentsProps = {
     templateFileProperties: Record<string, IProcessSingleProperty>;
-    values: any;
-    errors?: any;
+    values: ProcessDetailsValues;
+    errors?: FormikErrors<ProcessDetailsValues>;
     setFieldValue?: (field: string, value: any) => void;
     required?: string[];
     touched: FormikProps<ProcessDetailsValues>['touched'];
@@ -43,11 +43,7 @@ const FileAttachmentsEdit: React.FC<FileAttachmentsProps> = ({
                         setFieldValue={setFieldValue}
                         required={required.includes(key)} // file error
                         value={values.detailsAttachments[key]}
-                        error={
-                            errors.detailsAttachments?.[key] && touched.detailsAttachments?.[key]
-                                ? JSON.stringify(errors.detailsAttachments?.[key])
-                                : undefined
-                        }
+                        error={errors?.detailsAttachments?.[key] && touched.detailsAttachments?.[key] ? errors.detailsAttachments?.[key] : undefined}
                         setFieldTouched={setFieldTouched}
                     />
                 ) : (
@@ -58,11 +54,7 @@ const FileAttachmentsEdit: React.FC<FileAttachmentsProps> = ({
                         setFieldValue={setFieldValue}
                         required={required.includes(key)}
                         value={values.detailsAttachments[key]}
-                        error={
-                            errors.detailsAttachments?.[key] && touched.detailsAttachments?.[key]
-                                ? JSON.stringify(errors.detailsAttachments?.[key])
-                                : undefined
-                        }
+                        error={errors?.detailsAttachments?.[key] && touched.detailsAttachments?.[key] ? errors.detailsAttachments?.[key] : undefined}
                         setFieldTouched={setFieldTouched}
                     />
                 )}
