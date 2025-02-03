@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Cartesian3, Color } from 'cesium';
-import { Viewer, Entity, EllipseGraphics, PolylineGraphics, CesiumMovementEvent, PointGraphics, ImageryLayer } from 'resium';
+import { Viewer, Entity, EllipseGraphics, PolylineGraphics, CesiumMovementEvent, PointGraphics } from 'resium';
 import * as Cesium from 'cesium';
 import { ToggleButton, ToggleButtonGroup } from '@mui/material';
 import { Circle, LinearScale } from '@mui/icons-material';
@@ -17,45 +17,11 @@ import { cartesian3ToString, convertToDegrees, jerusalemCoordinates, stringToCoo
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { environment } from '../../../globals';
 import { useEntityWithLocationFields } from '../../../utils/hooks/useLocation';
-import { BackendConfigState } from '../../../services/backendConfigService';
 import MapPageEntityDialog from './EntityMapDialog';
 import { MeltaCoordinate, MeltaPolygon } from '../LocationPreview';
+import { BaseLayers } from '../BaseLayers';
 
 const { maxRadius } = environment.map;
-
-export const BaseLayers: React.FC = () => {
-    const queryClient = useQueryClient();
-    const config = queryClient.getQueryData<BackendConfigState>('getBackendConfig');
-
-    if (!config) return <>{i18next.t('location.noLayers')}</>;
-
-    const { mapLayers, textLayers } = config;
-
-    return (
-        <>
-            {Object.entries(mapLayers).map(([layerName, url]) => (
-                <ImageryLayer
-                    key={layerName}
-                    imageryProvider={
-                        new Cesium.UrlTemplateImageryProvider({
-                            url,
-                        })
-                    }
-                />
-            ))}
-            {Object.entries(textLayers).map(([layerName, url]) => (
-                <ImageryLayer
-                    key={layerName}
-                    imageryProvider={
-                        new Cesium.UrlTemplateImageryProvider({
-                            url,
-                        })
-                    }
-                />
-            ))}
-        </>
-    );
-};
 
 const MapPage = () => {
     const queryClient = useQueryClient();
@@ -223,7 +189,15 @@ const MapPage = () => {
 
     return (
         <div style={{ height: '100vh', width: '100%' }}>
-            <Viewer full ref={viewerRef} onClick={handleViewerClick} onMouseMove={handleMouseMove} animation={false} timeline={false}>
+            <Viewer
+                full
+                ref={viewerRef}
+                onClick={handleViewerClick}
+                onMouseMove={handleMouseMove}
+                baseLayerPicker={false}
+                animation={false}
+                timeline={false}
+            >
                 {circleData.center && (circleData.radius || circleData.mouseRadius) && (
                     <Entity
                         name={i18next.t('location.circle')}
@@ -331,6 +305,8 @@ const MapPage = () => {
                         </ToggleButton>
                     </MeltaTooltip>
                 </ToggleButtonGroup>
+
+                <BaseLayers viewerRef={viewerRef} />
             </div>
             {selectedEntity && (
                 <MapPageEntityDialog open={!!selectedEntity} entityWithMatchingField={selectedEntity} onClose={() => setSelectedEntity(null)} />

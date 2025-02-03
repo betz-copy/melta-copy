@@ -6,6 +6,7 @@ import { IEntity } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { useEntityWithLocationFields } from '../../utils/hooks/useLocation';
 import { cartesian3ToString, jerusalemCoordinates } from '../../utils/map';
+import { BaseLayers } from './BaseLayers';
 
 export const MeltaPolygon = ({ name, polygon, onClick }: { name: string; polygon: Cartesian3[]; onClick?: () => void }) => (
     <Entity name={name} description={cartesian3ToString(polygon)} onClick={onClick}>
@@ -63,7 +64,7 @@ const LocationPreview = ({ entity, entityTemplate }: Props) => {
 
     return (
         <div style={{ position: 'relative', height: '800px', width: '600px' }}>
-            <Viewer full ref={viewerRef} animation={false} timeline={false}>
+            <Viewer full ref={viewerRef} baseLayerPicker={false} animation={false} timeline={false}>
                 {polygons.map(({ key, position: polygon }) => (
                     <MeltaPolygon key={key} name={propertyDefinitions[key].title} polygon={polygon} />
                 ))}
@@ -71,6 +72,10 @@ const LocationPreview = ({ entity, entityTemplate }: Props) => {
                 {markers.map(({ key, position }) => (
                     <MeltaCoordinate key={key} name={propertyDefinitions[key].title} position={Cartesian3.fromDegrees(position.x, position.y, 0)} />
                 ))}
+
+                <div style={{ position: 'absolute', top: '10px', left: '10px', display: 'flex', gap: '15px' }}>
+                    <BaseLayers viewerRef={viewerRef} />
+                </div>
             </Viewer>
         </div>
     );

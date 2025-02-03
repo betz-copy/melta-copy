@@ -19,6 +19,7 @@ import {
 } from '../../utils/map';
 import { MeltaCoordinate, MeltaPolygon } from './LocationPreview';
 import { DeleteMapDataBtn } from './mapPage/MapFilters';
+import { BaseLayers } from './BaseLayers';
 
 type Props = {
     defaultLocation?: string;
@@ -121,10 +122,11 @@ const LocationField = ({ defaultLocation, field, updateValue }: Props) => {
 
     return (
         <div style={{ position: 'relative', height: '800px', width: '600px' }}>
-            <Viewer full ref={viewerRef} onClick={handleViewerClick} animation={false} timeline={false}>
+            <Viewer full ref={viewerRef} onClick={handleViewerClick} baseLayerPicker={false} animation={false} timeline={false}>
                 {polygonPosition.length > 0 && <MeltaPolygon name={field} polygon={polygonPosition} />}
                 {markerPosition && <MeltaCoordinate name={field} position={markerPosition} />}
             </Viewer>
+
             <div style={{ position: 'absolute', top: '10px', left: '10px', display: 'flex', gap: '10px' }}>
                 {polygonPosition.length === 0 && markerPosition === null && (
                     <ToggleButtonGroup
@@ -146,6 +148,8 @@ const LocationField = ({ defaultLocation, field, updateValue }: Props) => {
                     </ToggleButtonGroup>
                 )}
                 <DeleteMapDataBtn onClick={onClear} darkMode={darkMode} />
+
+                <BaseLayers viewerRef={viewerRef} />
             </div>
         </div>
     );

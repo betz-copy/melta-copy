@@ -1291,9 +1291,13 @@ export default {
         coordinate: 'נקודת ציון',
         circle: 'חיפוש בעזרת מעגל',
         line: 'קו למדידת מרחק',
-        noLayers: 'לא נמצאו שכבות',
         noCrsTypes: 'לא נמצאו סוגי CRS',
         clear: 'ניקוי תוצאות',
         radiusMaxLimit: `חיפוש מוגבל עד ${environment.map.maxRadius / 1000} ק"מ`,
+        layers: {
+            map: 'שכבות מפה',
+            noLayers: 'לא נמצאו שכבות',
+            overlay: 'שכבות מיפוי',
+        },
     },
 };
