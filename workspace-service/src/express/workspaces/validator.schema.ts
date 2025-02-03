@@ -26,6 +26,10 @@ const metadataSchema = Joi.object({
         entitiesFileLimit: Joi.number(),
         filesLimit: Joi.number(),
     }).optional(),
+    searchLimits: Joi.object({
+        table: Joi.number().min(Joi.ref('agGrid.rowCount')),
+        bulk: Joi.number(),
+    }).optional(),
 }).optional();
 
 // Joi schema for Workspace
