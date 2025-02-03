@@ -107,6 +107,9 @@ export const environment = {
     permission: {
         infiniteScrollPageCount: 13,
     },
+    cardsView: {
+        infiniteScrollPageCount: 13,
+    },
     activityLog: {
         infiniteScrollPageCount: 10,
     },

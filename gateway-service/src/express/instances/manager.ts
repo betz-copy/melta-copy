@@ -479,7 +479,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
             return [];
         }
 
-        await this.rabbitManager.deleteFiles(currentEntity.templateId, currentEntity.properties._id, fileIdsToDelete);
+        await this.rabbitManager.deleteFiles(fileIdsToDelete);
         await menash.send(rabbit.deleteUnusedFilesQueue, JSON.stringify({ fileIds: fileIdsToDelete, bucketName: this.workspaceId }));
 
         return fileIdsToDelete;
@@ -760,8 +760,8 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
     private async deleteAllEntitiesFiles(fileIdsToRemove: string[]) {
         if (!fileIdsToRemove.length) return [];
-
         await menash.send(rabbit.deleteUnusedFilesQueue, JSON.stringify({ fileIds: fileIdsToRemove, bucketName: this.workspaceId }));
+        await this.rabbitManager.deleteFiles(fileIdsToRemove);
 
         return fileIdsToRemove;
     }
