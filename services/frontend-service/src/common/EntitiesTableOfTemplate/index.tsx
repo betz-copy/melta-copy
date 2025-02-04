@@ -1,7 +1,6 @@
 /* eslint-disable prettier/prettier */
 /* eslint-disable no-param-reassign */
 /* eslint-disable no-case-declarations */
-import React, { ForwardedRef, forwardRef, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import {
     BodyScrollEvent,
     CellEditingStoppedEvent,
@@ -18,44 +17,46 @@ import {
     StatusPanelDef,
 } from '@ag-grid-community/core';
 import { AgGridReact } from '@ag-grid-community/react';
+import {
+    ActionTypes,
+    EntityData,
+    IAction,
+    IActionPopulated,
+    IAgGridRequest,
+    IBrokenRule,
+    IConstraint,
+    IDeleteEntityBody,
+    IEntity,
+    IEntityExpanded,
+    IMongoEntityTemplatePopulated,
+    IMongoEntityTemplateWithConstraintsPopulated,
+    IRelationship,
+    IRuleBreach,
+    IRuleBreachPopulated,
+    ISemanticSearchResult,
+    IUniqueConstraint,
+} from '@microservices/shared-interfaces';
 import { Box, CircularProgress, debounce } from '@mui/material';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import isEqual from 'lodash.isequal';
 import sortBy from 'lodash.sortby';
+import React, { ForwardedRef, forwardRef, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
 import { useLocation } from 'wouter';
 import '../../css/resizeTable.css';
 import '../../css/table.css';
-import {
-    IBrokenRule,
-    IRuleBreach,
-    IRuleBreachPopulated,
-    ActionTypes,
-    IAction,
-    IActionPopulated,
-    IRelationship,
-    EntityData,
-    IDeleteEntityBody,
-    IUniqueConstraint,
-    IEntity,
-    IEntityExpanded,
-    IMongoEntityTemplatePopulated,
-    IAgGridRequest,
-    ISemanticSearchResult,
-    IConstraint,
-    IMongoEntityTemplateWithConstraintsPopulated,
-} from '@microservices/shared-interfaces';
 import { environment } from '../../globals';
+import ActionOnEntityWithRuleBreachDialog from '../../pages/Entity/components/ActionOnEntityWithRuleBreachDialog';
 import {
     deleteEntityRequest,
     searchEntitiesOfTemplateRequest,
     updateEntityRequestForMultiple,
     updateEntityStatusRequest,
 } from '../../services/entitiesService';
-import ActionOnEntityWithRuleBreachDialog from '../../pages/Entity/components/ActionOnEntityWithRuleBreachDialog';
 import { useDarkModeStore } from '../../stores/darkMode';
+import { useWorkspaceStore } from '../../stores/workspace';
 import { agGridLocaleText } from '../../utils/agGrid/agGridLocaleText';
 import { agGridToSearchEntitiesOfTemplateRequest } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 import { DateFilterComponent } from '../../utils/agGrid/DateFilterComponent';
@@ -68,7 +69,6 @@ import { MultiSelectStatusBar } from '../EntitiesPage/MultiSelectStatusBar';
 import { ResizeBox } from '../EntitiesPage/ResizeBox';
 import { RowCountGridStatusBar } from '../EntitiesPage/RowCountGridStatusBar';
 import { ErrorToast } from '../ErrorToast';
-import { useWorkspaceStore } from '../../stores/workspace';
 import { getColumnDefs, IGetColumnDefsOptions } from './getColumnDefs';
 
 const { errorCodes } = environment;
@@ -91,13 +91,13 @@ export interface IButtonProps<Data> {
     disabledButton: boolean;
 }
 
-export const getDatasource = <Data = EntityData,>(
+export function getDatasource<Data = EntityData>(
     template: IMongoEntityTemplatePopulated,
     tableCount: number,
     quickFilterText?: string,
     onFail?: (err: unknown) => void,
     rowData?: IConnection[],
-): IServerSideDatasource => {
+): IServerSideDatasource {
     return {
         async getRows(params: IServerSideGetRowsParams<Data>) {
             if (rowData) {
@@ -133,7 +133,7 @@ export const getDatasource = <Data = EntityData,>(
             });
         },
     };
-};
+}
 
 export type IConnection = {
     relationship: Pick<IRelationship, 'properties' | 'templateId'>;
@@ -141,7 +141,7 @@ export type IConnection = {
     destinationEntity: IEntity;
 };
 
-export const getRowModelProps = <Data = EntityData,>(
+export function getRowModelProps<Data = EntityData>(
     rowModelType: 'serverSide' | 'clientSide' | 'infinite',
     template: IMongoEntityTemplatePopulated,
     rowData: Data[] | undefined,
@@ -150,7 +150,7 @@ export const getRowModelProps = <Data = EntityData,>(
     quickFilterText?: string,
     datasourceOnFail?: (err: unknown) => void,
     hasInstances?: boolean,
-): React.ComponentProps<typeof AgGridReact<Data>> => {
+): React.ComponentProps<typeof AgGridReact<Data>> {
     if (rowModelType === 'clientSide') {
         return {
             rowModelType,
@@ -170,7 +170,7 @@ export const getRowModelProps = <Data = EntityData,>(
         paginationPageSize,
         maxConcurrentDatasourceRequests,
     };
-};
+}
 
 const LoadingCellRenderer = () => <CircularProgress size={20} sx={{ marginLeft: 1 }} />;
 
@@ -600,7 +600,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
 
         const rowModelProps = useMemo(
             () => getRowModelProps(rowModelType, template, rowData, pageRowCount!, table, quickFilterText, datasourceOnFail, hasInstances),
-            [rowModelType, template, rowData, pageRowCount, quickFilterText, hasInstances],
+            [rowModelType, template, rowData, pageRowCount, quickFilterText, hasInstances, table],
         );
 
         const handleColumnResized = (params: ColumnResizedEvent<Data>) => {
