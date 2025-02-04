@@ -1,5 +1,3 @@
-/* eslint-disable prettier/prettier */
-/* eslint-disable no-param-reassign */
 /* eslint-disable no-case-declarations */
 import {
     BodyScrollEvent,
@@ -261,14 +259,14 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         const { rowCount, defaultExpandedRowCount } = workspace.metadata.agGrid;
         const { table } = workspace.metadata.searchLimits;
 
-        if (!pageRowCount) pageRowCount = rowCount;
+        const effectivePageRowCount = pageRowCount || rowCount;
 
         const gridRef = useRef<AgGridReact<Data>>(null);
         const tableRef = useRef<HTMLDivElement>(null);
 
         const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
 
-        const minHeightTable = rowHeight * pageRowCount + rowHeight * 2;
+        const minHeightTable = rowHeight * effectivePageRowCount + rowHeight * 2;
         const [gridHeight, setGridHeight] = useState<number>(rowHeight * defaultExpandedRowCount);
 
         const [selectedRow, setSelectedRow] = useState('');
@@ -430,7 +428,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
 
         const gridStyles = {
             '.ag-center-cols-viewport': {
-                minHeight: `${rowHeight * (hasInstances === false ? 2 : pageRowCount)}px !important`,
+                minHeight: `${rowHeight * (hasInstances === false ? 2 : effectivePageRowCount)}px !important`,
             },
             '.ag-paging-panel': {
                 height: '45px',
@@ -452,8 +450,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             }
             const columnState = params.api.getColumnState();
             const updatedVisibleColumns = columnState.reduce<Record<string, boolean>>((acc, col) => {
-                acc[col.colId] = !col.hide;
-                return acc;
+                return { ...acc, [col.colId]: !col.hide };
             }, {});
             localStorage.setItem(`visibleColumns-${saveStorageProps.pageType}-${template._id}`, JSON.stringify(updatedVisibleColumns));
         };
@@ -462,8 +459,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             if (!saveStorageProps.shouldSaveColumnOrder) return;
             const columnState = params.api.getColumnState();
             const newColumnsOrder = columnState.reduce<Record<string, { order: number }>>((acc, column, index) => {
-                acc[column.colId] = { order: index };
-                return acc;
+                return { ...acc, [column.colId]: { order: index } };
             }, {});
             localStorage.setItem(`columnsOrder-${saveStorageProps.pageType}-${template._id}`, JSON.stringify(newColumnsOrder));
         };
@@ -599,8 +595,8 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         }));
 
         const rowModelProps = useMemo(
-            () => getRowModelProps(rowModelType, template, rowData, pageRowCount!, table, quickFilterText, datasourceOnFail, hasInstances),
-            [rowModelType, template, rowData, pageRowCount, quickFilterText, hasInstances, table],
+            () => getRowModelProps(rowModelType, template, rowData, effectivePageRowCount, table, quickFilterText, datasourceOnFail, hasInstances),
+            [rowModelType, template, rowData, effectivePageRowCount, quickFilterText, hasInstances, table],
         );
 
         const handleColumnResized = (params: ColumnResizedEvent<Data>) => {
