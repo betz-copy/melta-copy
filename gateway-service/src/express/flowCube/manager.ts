@@ -1,7 +1,13 @@
 import config from '../../config';
 import { InstancesService } from '../../externalServices/instanceService';
 import { IFilterOfTemplate, ISearchEntitiesOfTemplateBody } from '../../externalServices/instanceService/interfaces/entities';
-import { EntityTemplateService, IEntitySingleProperty, ISearchEntityTemplatesBody } from '../../externalServices/templates/entityTemplateService';
+import {
+    EntityTemplateService,
+    IEntitySingleProperty,
+    IMongoCategory,
+    ISearchEntityTemplatesBody,
+} from '../../externalServices/templates/entityTemplateService';
+import { ISubCompactPermissions } from '../../externalServices/userService/interfaces/permissions/permissions';
 import { Authorizer } from '../../utils/authorizer';
 import DefaultManagerProxy from '../../utils/express/manager';
 import TemplatesManager from '../templates/manager';
@@ -71,18 +77,30 @@ export class FlowCubeManager extends DefaultManagerProxy<null> {
         return convertToFlow;
     }
 
-    async searchCategory(body: any): Promise<TemplateNamesAndId[]> {
+    async searchCategory(body: any, userId: string): Promise<TemplateNamesAndId[]> {
         let searchInput = '';
 
         if (body?.Parameters?.Value) {
             searchInput = body?.Parameters?.Value;
         }
 
+        const usersPermissions = await this.authorizer.getWorkspacePermissions(userId);
+
         const categories = await this.entityTemplateService.getAllCategories(searchInput);
 
-        return categories.map(({ _id, displayName }) => {
+        const filteredCategories = usersPermissions.admin ? categories : this.filterCategoriesByPermissions(categories, usersPermissions);
+
+        return filteredCategories.map(({ _id, displayName }) => {
             return { Value: _id, Name: displayName };
         });
+    }
+
+    filterCategoriesByPermissions(categories: IMongoCategory[], usersPermissions: ISubCompactPermissions): IMongoCategory[] {
+        if (!usersPermissions.instances) {
+            return [] as IMongoCategory[];
+        }
+
+        return categories.filter(({ _id }) => usersPermissions.instances?.categories[_id]);
     }
 
     async searchTemplates(body: any, userId: string): Promise<TemplateNamesAndId[]> {
@@ -98,12 +116,12 @@ export class FlowCubeManager extends DefaultManagerProxy<null> {
 
         const usersPermissions = await this.authorizer.getWorkspacePermissions(userId);
 
-        const templates = await this.templatesManager.searchEntityTemplates(
-            usersPermissions,
-            searchEntityTemplatesBody as ISearchEntityTemplatesBody,
-        );
+        const templates = await this.templatesManager.searchEntityTemplates(usersPermissions, searchEntityTemplatesBody);
 
-        const filteredTemplates = body.CategoryType === '' ? templates : templates.filter(({ category }) => body.CategoryType === category._id);
+        const filteredTemplates =
+            Object.keys(body).length === 0 || body.CategoryType === ''
+                ? templates
+                : templates.filter(({ category }) => body.CategoryType === category._id);
 
         return filteredTemplates.map(({ _id, displayName }) => {
             return { Value: _id, Name: displayName };
