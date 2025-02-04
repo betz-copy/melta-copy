@@ -1,4 +1,4 @@
-export interface TemplateNamesAndId {
+export interface IFlowAutoComplete {
     Value: string;
     Name: string;
 }

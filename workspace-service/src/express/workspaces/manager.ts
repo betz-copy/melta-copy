@@ -147,4 +147,21 @@ export class WorkspacesManager {
                 .exec();
         });
     }
+
+    static async searchWorkspaces(searchQuery: { search?: string }) {
+        const { search: displayName } = searchQuery;
+        const query: FilterQuery<IWorkspace> = {};
+
+        if (displayName) {
+            query.displayName = { $regex: this.escapeRegExp(displayName) };
+        }
+
+        query.type = WorkspaceTypes.mlt;
+
+        return WorkspacesModel.find(query).sort({ name: 1 }).lean().exec();
+    }
+
+    static escapeRegExp(text: string) {
+        return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+    }
 }
