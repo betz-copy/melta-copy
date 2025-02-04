@@ -123,3 +123,7 @@ export const createWorkspacesController = <T extends InstanceType<typeof Default
 export const translateWorkspaceParameter = async (req: Request) => {
     req.headers[config.service.workspaceIdHeaderName] = req.params.workspaceId;
 };
+
+export const translateWorkspaceParameterFlow = async (req: Request) => {
+    req.headers[config.service.workspaceIdHeaderName] = req.body.workspaceId;
+};

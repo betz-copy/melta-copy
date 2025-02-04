@@ -18,6 +18,12 @@ export const searchCategoryInWorkspaceSchema = Joi.object({
     },
 });
 
+export const searchWorkspacesSchema = Joi.object({
+    body: Joi.object().pattern(Joi.string(), Joi.any()),
+    query: {},
+    params: {},
+});
+
 export const searchTemplatesSchema = Joi.object({
     body: Joi.object().pattern(Joi.string(), Joi.any()),
     query: {},

@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { createWorkspacesController, translateWorkspaceParameter, wrapMiddleware } from '../../utils/express';
+import { createWorkspacesController, translateWorkspaceParameter, translateWorkspaceParameterFlow, wrapMiddleware } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
 import { InstancesValidator } from '../instances/middlewares';
 import FlowCubeController from './controller';
@@ -9,6 +9,7 @@ import {
     searchEntitiesByTemplateSchema,
     searchCategoryInWorkspaceSchema,
     searchTemplatesSchema,
+    searchWorkspacesSchema,
 } from './validator.schema';
 import validateFlowHeaders from './flowMiddleware';
 // import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
@@ -29,9 +30,16 @@ FlowCubeRouter.post(
 );
 
 FlowCubeRouter.post(
+    '/workspaces/search',
+    ValidateRequest(searchWorkspacesSchema),
+    // wrapMiddleware(translateWorkspaceParameter),
+    FlowCubeControllerMiddleware.searchWorkspaces,
+);
+
+FlowCubeRouter.post(
     '/:workspaceId/categories/search',
     ValidateRequest(searchCategoryInWorkspaceSchema),
-    wrapMiddleware(translateWorkspaceParameter),
+    wrapMiddleware(translateWorkspaceParameterFlow),
     FlowCubeControllerMiddleware.searchCategory,
 );
 
