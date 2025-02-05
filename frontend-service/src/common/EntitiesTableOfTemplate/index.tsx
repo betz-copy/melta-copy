@@ -254,7 +254,6 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             setOpenDeleteDialog(false);
         };
         const [selectedRow, setSelectedRow] = useState('');
-        // const [autoSizePadding, setAutoSizePadding] = React.useState<number>(0);
 
         const { isLoading: isDeleteLoading, mutateAsync: deleteMutation } = useMutation((id: string) => deleteEntityRequest(id), {
             onError: (error: AxiosError) => {
@@ -422,24 +421,19 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         ) => {
             if (!saveStorageProps.shouldSaveColumnOrder) return;
             const columnState = params.api.getColumnState();
-            console.log({ columnState });
 
             const newColumnsOrder = columnState.reduce<Record<string, { order: number }>>((acc, column, index) => {
                 acc[column.colId] = { order: index };
                 return acc;
             }, {});
-            console.log({ newColumnsOrder });
 
             localStorage.setItem(`columnsOrder-${saveStorageProps.pageType}-${template._id}`, JSON.stringify(newColumnsOrder));
             setDefaultColumnsOrder(newColumnsOrder);
         };
 
         const handleColumnResized = (params: ColumnResizedEvent<Data>) => {
-            console.log('hello from resize!!', { params });
-
             if (params.finished && params.column && ['autosizeColumns', 'uiColumnDragged', 'uiColumnResized'].includes(params.source)) {
                 const currColumnWidths = localStorage.getItem(`columnWidths-${saveStorageProps.pageType}-${template._id}`);
-
                 const currColumnWidthsParsed = currColumnWidths ? JSON.parse(currColumnWidths) : {};
                 localStorage.setItem(
                     `columnWidths-${saveStorageProps.pageType}-${template._id}`,
@@ -465,12 +459,10 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             }
         };
 
-        const calculateRemainingWidth = (columnStates: ColumnState[], hasActions: boolean): number => {
-            const usedWidth: number = Object.values(defaultColumnWidths).reduce((sum, width) => sum + width, 0);
+        const calculateRemainingWidth = (columnStates: ColumnState[], hasActions: boolean, isRemovedFields: boolean): number => {
+            const usedWidth: number = isRemovedFields ? 0 : Object.values(defaultColumnWidths).reduce((sum, width) => sum + width, 0);
             const totalGridWidth: number = tableRef.current?.offsetWidth!;
             const widthConsumed: number = columnStates.reduce((sum, col) => sum + col.width!, 0);
-            console.log({ totalGridWidth, usedWidth });
-
             return totalGridWidth - usedWidth - widthConsumed - (hasActions ? 200 : 0);
         };
 
@@ -479,24 +471,35 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
 
             const hasActions = visibleKeys.some((key) => key.startsWith('actions-'));
 
-            const columnsKeys = visibleKeys.filter((key) => !defaultColumnWidths[key] && key !== `actions-${template._id}`);
+            const templateKeys = Object.keys(template.properties.properties);
+            const defaultKeys = Object.keys(defaultColumnWidths).filter((key) => !key.includes('actions-'));
+
+            if (templateKeys.length === defaultKeys.length && templateKeys.every((key, index) => key === defaultKeys[index])) return;
+
+            handleColumnsOrder(params);
+
+            const isRemovedFields = defaultKeys.some((key) => !templateKeys.includes(key));
+            let columnsKeys;
+            if (isRemovedFields) {
+                columnsKeys = visibleKeys.filter((key) => key !== `actions-${template._id}`);
+            } else columnsKeys = visibleKeys.filter((key) => !defaultColumnWidths[key] && key !== `actions-${template._id}`);
 
             if (columnsKeys.length === 0) {
                 console.warn(`No columns to resize for table with template ID: ${template._id}`);
                 return;
             }
 
-            console.log('inside', { columnsKeys });
-            const before = api.getColumnState().filter((col) => columnsKeys.includes(col.colId));
-
+            api.refreshHeader();
             api.sizeColumnsToFit();
             // eslint-disable-next-line no-unused-expressions
-            Object.keys(defaultColumnWidths).length > 0 ? api.autoSizeColumns(columnsKeys) : api.autoSizeAllColumns(); // Object.keys(template.properties.properties));
+            Object.keys(defaultColumnWidths).length > 0
+                ? api.autoSizeColumns(columnsKeys)
+                : api.autoSizeColumns(Object.keys(template.properties.properties));
 
             const columnStates = api.getColumnState().filter((col) => columnsKeys.includes(col.colId));
-            console.log({ before, columnStates });
 
-            const remainingWidth = calculateRemainingWidth(columnStates, hasActions);
+            const remainingWidth = calculateRemainingWidth(columnStates, hasActions, isRemovedFields);
+
             const columnWidths: Record<string, number> = columnStates.reduce(
                 (acc, col, index) => {
                     const newWidth = index === columnStates.length - 1 ? col.width! + Math.max(remainingWidth, 0) : col.width!;
@@ -513,16 +516,10 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             );
 
             if (Object.keys(columnWidths).length > 0) {
-                const updatedWidths = { ...defaultColumnWidths, ...columnWidths };
+                const updatedWidths = isRemovedFields ? columnWidths : { ...defaultColumnWidths, ...columnWidths };
                 localStorage.setItem(`columnWidths-${saveStorageProps.pageType}-${template._id}`, JSON.stringify(updatedWidths));
-                console.log('!!!!!!!!!!!', updatedWidths);
                 setDefaultColumnWidths(updatedWidths);
             }
-            // if (Object.keys(defaultColumnsOrder).length === 0) {
-            //     handleColumnsOrder(params);
-            // }
-
-            console.log('finish the auto all');
         };
 
         const handleBodyScroll = debounce((params: BodyScrollEvent<Data>) => {
@@ -618,7 +615,6 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                 >
                     <AgGridReact<Data>
                         ref={gridRef}
-                        // debug
                         suppressDragLeaveHidesColumns={ignoreType}
                         getRowStyle={(params): RowStyle | undefined => {
                             if (params.data && getEntityPropertiesData(params.data).disabled) {
@@ -676,11 +672,6 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                             const isSideBarOpen = gridApi.isToolPanelShowing();
                             gridApi.setSideBarVisible(isSideBarOpen);
                         }}
-                        // suppressColumnVirtualisation
-                        // autoSizeStrategy={{
-                        //     type: 'fitCellContents',
-                        // }}
-                        // autoSizePadding={40}
                         defaultColDef={{
                             filterParams: {
                                 maxNumConditions: 1,
@@ -695,16 +686,9 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                             suppressSizeToFit: true,
                         }}
                         onGridReady={(params) => {
-                            console.log('onGridReady!!!!!!!!!!!!!!');
-                            // handleRemainingWidth(params);
                             if (saveStorageProps.pageType) {
                                 const visibleColumns = updateVisibleColumns(params);
                                 const visibleKeys = Object.keys(visibleColumns).filter((key) => visibleColumns[key] === true);
-
-                                // if (Object.keys(defaultColumnsOrder).length === 0) {
-                                //     handleColumnsOrder(params);
-                                // }
-
                                 autoSizeAll(params, visibleKeys);
                             }
 
@@ -721,7 +705,6 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                             else if (rowModelType !== 'clientSide') params.api.setFilterModel(defaultFilterModel);
                         }}
                         onFirstDataRendered={(params) => {
-                            console.log('onFirstDataRendered!!!!!!!!!!!!!!');
                             const savedPage = sessionStorage.getItem(`currentPage-${saveStorageProps.pageType}-${template._id}`);
 
                             if (savedPage !== null) {

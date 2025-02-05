@@ -76,7 +76,6 @@ export const getColumnDefs = <Data extends any = EntityData>({
     disableEditCell,
 }: IGetColumnDefsOptions<Data>): ColDef[] => {
     const notVisibleColumnsAmount = Object.values(defaultVisibleColumns).filter((value) => value === false).length;
-    console.log('getColumnsDef ', { defaultColumnWidths });
 
     const targetOrder = Object.keys(defaultColumnsOrder).length - notVisibleColumnsAmount - 2;
 
@@ -85,14 +84,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
         const hiddenProperties = template.properties.hide;
         const { type, format, calculateTime, archive } = propertyTemplate;
         const isLastColumn = defaultColumnsOrder[property]?.order === targetOrder;
-        console.log(
-            { property },
-            isLastColumn,
-            { notVisibleColumnsAmount },
-            defaultColumnsOrder[property]?.order,
-            { targetOrder },
-            defaultColumnWidths[property],
-        );
+        console.log({ isLastColumn, defaultColumnsOrder });
 
         const hideField = template.properties.hide.includes(property);
 
