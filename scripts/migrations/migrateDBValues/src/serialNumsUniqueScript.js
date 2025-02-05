@@ -66,12 +66,11 @@ const SerialNumberNeoScript = async (mongoResult, session) => {
           `);
 
           if (existingUniqueConstraints.records.length === 0) {
-            console.log("create unique");
-
+            try{
             await tx.run(`
               CREATE CONSTRAINT \`${uniqueConstraintName}\` FOR (n:\`${template._id}\`)
               REQUIRE (n.${serialProperty}) IS NODE KEY
-            `);
+            `);}catch(error) {console.error(`Failed to create unique constraints in template: ${template._id} property: ${serialProperty}! some properties probably not unique, error: ${error}`)}
           }
         } else {
           await tx.run(`
