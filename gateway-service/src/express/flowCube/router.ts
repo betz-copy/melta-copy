@@ -29,36 +29,31 @@ FlowCubeRouter.post(
     FlowCubeControllerMiddleware.searchFlowCube,
 );
 
-FlowCubeRouter.post(
-    '/workspaces/search',
-    ValidateRequest(searchWorkspacesSchema),
-    // wrapMiddleware(translateWorkspaceParameter),
-    FlowCubeControllerMiddleware.searchWorkspaces,
-);
+FlowCubeRouter.post('/workspaces/search', ValidateRequest(searchWorkspacesSchema), FlowCubeControllerMiddleware.searchWorkspaces);
 
 FlowCubeRouter.post(
-    '/:workspaceId/categories/search',
+    '/categories/search',
     ValidateRequest(searchCategoryInWorkspaceSchema),
     wrapMiddleware(translateWorkspaceParameterFlow),
     FlowCubeControllerMiddleware.searchCategory,
 );
 
 FlowCubeRouter.post(
-    '/:workspaceId/templates/search',
+    '/templates/search',
     ValidateRequest(searchTemplatesSchema),
     wrapMiddleware(translateWorkspaceParameter),
     FlowCubeControllerMiddleware.searchTemplates,
 );
 
 FlowCubeRouter.post(
-    '/:workspaceId/templates/templateId',
+    '/templates/templateId',
     ValidateRequest(getEntityTemplateByIdSchema),
     wrapMiddleware(translateWorkspaceParameter),
     FlowCubeControllerMiddleware.getEntityTemplateById,
 );
 
 FlowCubeRouter.post(
-    '/:workspaceId/templates/search/entities',
+    '/templates/search/entities',
     ValidateRequest(searchEntitiesByTemplateSchema),
     wrapMiddleware(translateWorkspaceParameter),
     FlowCubeControllerMiddleware.searchEntitiesByTemplate,
