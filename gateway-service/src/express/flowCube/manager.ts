@@ -44,7 +44,7 @@ export class FlowCubeManager extends DefaultManagerProxy<null> {
 
             if (template.properties.properties[field]) {
                 if (Array.isArray(filterValue)) {
-                    filterAnd.push({ [field]: { $in: filterValue } });
+                    filterAnd.push({ [field]: { $in: filterValue.map((val) => new RegExp(this.escapeRegExp(val))) } });
                 } else {
                     filterAnd.push({ [field]: { $eq: filterValue } });
                 }
@@ -73,6 +73,10 @@ export class FlowCubeManager extends DefaultManagerProxy<null> {
         return { filter, limit: config.instanceService.searchEntitiesFlowMaxLimit };
     }
 
+    escapeRegExp(text: string) {
+        return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+    }
+
     async searchFlowCube(templateId: string, searchBody: Record<string, any>) {
         const convertedSearchBody: ISearchEntitiesOfTemplateBody = await this.convertFlowToNeoSearch(templateId, searchBody);
         const res = await this.instancesService.searchEntitiesOfTemplateRequest(templateId, convertedSearchBody);
@@ -81,32 +85,36 @@ export class FlowCubeManager extends DefaultManagerProxy<null> {
     }
 
     async searchWorkspace(body: any, userId: string) {
-        let searchBody = {} as { search: string };
+        const searchBody = {} as { search: string };
 
         if (body?.Parameters?.Value) {
-            searchBody = body?.Parameters?.Value;
+            searchBody.search = body?.Parameters?.Value;
         }
 
         const usersPermissions = await UserService.getUserPermissions(userId);
 
         const workspaces = await WorkspaceService.getWorkspaces(searchBody);
 
-        const filteredWorkspaces = usersPermissions.admin ? workspaces : this.filterWorkspacesByPermissions(workspaces, usersPermissions);
+        const filteredWorkspaces = await this.filterWorkspacesByPermissions(workspaces, usersPermissions);
 
         return filteredWorkspaces.map(({ _id, displayName }) => {
             return { Value: _id, Name: displayName };
         });
     }
 
-    filterWorkspacesByPermissions(workspaces: IWorkspace[], usersPermissions: ICompactPermissions): IWorkspace[] {
-        return workspaces.filter(({ _id }) => Object.keys(usersPermissions).includes(_id));
+    async filterWorkspacesByPermissions(workspaces: IWorkspace[], usersPermissions: ICompactPermissions): Promise<IWorkspace[]> {
+        return (
+            await Promise.all(
+                workspaces.map(async (workspace) => ({ ...workspace, hierarchyIds: await WorkspaceService.getWorkspaceHierarchyIds(workspace._id) })),
+            )
+        ).filter(({ hierarchyIds }) => hierarchyIds.some((id) => Boolean(usersPermissions[id])));
     }
 
     async searchCategory(body: any, userId: string): Promise<IFlowAutoComplete[]> {
         let searchInput = '';
 
-        if (body?.Parameters?.Value) {
-            searchInput = body?.Parameters?.Value;
+        if (body?.Value) {
+            searchInput = body?.Value;
         }
 
         const usersPermissions = await this.authorizer.getWorkspacePermissions(userId);
