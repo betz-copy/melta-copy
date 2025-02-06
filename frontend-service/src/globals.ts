@@ -202,6 +202,13 @@ export const environment = {
         infiniteInitialRowCount: 1,
         defaultExpandedTableHeight: 650,
         paginationPageSizeSelector: [5, 10, 25, 50],
+        actionsWidth: 200,
+        actionPrefix: 'actions-',
+        localStorage: {
+            visibleColumns: 'visibleColumns-',
+            columnsOrder: 'columnsOrder-',
+            columnWidths: 'columnWidths-',
+        },
     },
     activityLog: {
         infiniteScrollPageCount: 10,

@@ -75,16 +75,15 @@ export const getColumnDefs = <Data extends any = EntityData>({
     searchValue,
     disableEditCell,
 }: IGetColumnDefsOptions<Data>): ColDef[] => {
-    const notVisibleColumnsAmount = Object.values(defaultVisibleColumns).filter((value) => value === false).length;
-
-    const targetOrder = Object.keys(defaultColumnsOrder).length - notVisibleColumnsAmount - 2;
+    const invisibleColumnsAmount = Object.values(defaultVisibleColumns).filter((value) => value === false).length;
+    const lastColumnIndex = Object.keys(defaultColumnsOrder).length - invisibleColumnsAmount - 2;
 
     const columnDefs = template.propertiesOrder.map((property) => {
         const propertyTemplate = { ...template.properties.properties[property] };
         const hiddenProperties = template.properties.hide;
         const { type, format, calculateTime, archive } = propertyTemplate;
-        const isLastColumn = defaultColumnsOrder[property]?.order === targetOrder;
-        console.log({ isLastColumn, defaultColumnsOrder });
+
+        const isLastColumn = defaultColumnsOrder[property]?.order === lastColumnIndex;
 
         const hideField = template.properties.hide.includes(property);
 
@@ -243,7 +242,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
                 title: i18next.t('entitiesTableOfTemplate.disabledHeaderName'),
             },
             defaultColumnWidths.disabled,
-            defaultColumnsOrder.disable?.order === targetOrder,
+            defaultColumnsOrder.disable?.order === lastColumnIndex,
             defaultVisibleColumns.disabled !== undefined ? !defaultVisibleColumns.disabled : true,
         ),
     );
@@ -256,7 +255,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
                 title: i18next.t('entityPage.createdAt'),
                 format: 'date-time',
             },
-            defaultColumnsOrder.createdAt?.order === targetOrder,
+            defaultColumnsOrder.createdAt?.order === lastColumnIndex,
             defaultColumnWidths.createdAt,
             defaultVisibleColumns.createdAt !== undefined ? !defaultVisibleColumns.createdAt : true,
         ),
@@ -270,7 +269,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
                 title: i18next.t('entityPage.updatedAt'),
                 format: 'date-time',
             },
-            defaultColumnsOrder.updatedAt?.order === targetOrder,
+            defaultColumnsOrder.updatedAt?.order === lastColumnIndex,
             defaultColumnWidths.updatedAt,
             defaultVisibleColumns.updatedAt !== undefined ? !defaultVisibleColumns.updatedAt : true,
         ),

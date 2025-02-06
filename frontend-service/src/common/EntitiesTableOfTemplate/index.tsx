@@ -58,7 +58,8 @@ import { ErrorToast } from '../ErrorToast';
 import { AreYouSureDialog } from '../dialogs/AreYouSureDialog';
 
 const { errorCodes } = environment;
-const { rowCount, defaultExpandedRowCount } = environment.agGrid;
+const { rowCount, defaultExpandedRowCount, actionPrefix, actionsWidth } = environment.agGrid;
+const { columnWidths, columnsOrder, visibleColumns } = environment.agGrid.localStorage;
 
 export const defaultFilterModel = {
     disabled: {
@@ -236,13 +237,13 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         ref: ForwardedRef<EntitiesTableOfTemplateRef<Data>>,
     ) => {
         const darkMode = useDarkModeStore((state) => state.darkMode);
-        const savedVisibleColumns = localStorage.getItem(`visibleColumns-${saveStorageProps.pageType}-${template._id}`);
+        const savedVisibleColumns = localStorage.getItem(`${visibleColumns}${saveStorageProps.pageType}-${template._id}`);
         const [defaultVisibleColumns, setDefaultVisibleColumns] = useState(savedVisibleColumns ? JSON.parse(savedVisibleColumns) : {});
 
-        const savedColumnsOrder = localStorage.getItem(`columnsOrder-${saveStorageProps.pageType}-${template._id}`);
+        const savedColumnsOrder = localStorage.getItem(`${columnsOrder}${saveStorageProps.pageType}-${template._id}`);
         const [defaultColumnsOrder, setDefaultColumnsOrder] = useState(savedColumnsOrder ? JSON.parse(savedColumnsOrder) : {});
 
-        const savedColumnWidths = localStorage.getItem(`columnWidths-${saveStorageProps.pageType}-${template._id}`);
+        const savedColumnWidths = localStorage.getItem(`${columnWidths}${saveStorageProps.pageType}-${template._id}`);
         const [defaultColumnWidths, setDefaultColumnWidths] = useState<Record<string, number>>(
             savedColumnWidths ? JSON.parse(savedColumnWidths) : {},
         );
@@ -254,7 +255,6 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             setOpenDeleteDialog(false);
         };
         const [selectedRow, setSelectedRow] = useState('');
-
         const { isLoading: isDeleteLoading, mutateAsync: deleteMutation } = useMutation((id: string) => deleteEntityRequest(id), {
             onError: (error: AxiosError) => {
                 toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.entity.failedToDelete')} />);
@@ -391,9 +391,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             },
         };
 
-        const updateVisibleColumns = (
-            params: ColumnVisibleEvent<Data> | GridReadyEvent<Data, any> | FirstDataRenderedEvent<Data, any> | RowDataUpdatedEvent<Data, any>,
-        ) => {
+        const updateVisibleColumns = (params: ColumnVisibleEvent<Data, any> | GridReadyEvent<Data, any>) => {
             const columnState = params.api.getColumnState();
 
             const updatedVisibleColumns = columnState.reduce<Record<string, boolean>>((acc, col) => {
@@ -401,8 +399,9 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                 return acc;
             }, {});
 
-            localStorage.setItem(`visibleColumns-${saveStorageProps.pageType}-${template._id}`, JSON.stringify(updatedVisibleColumns));
+            localStorage.setItem(`${visibleColumns}${saveStorageProps.pageType}-${template._id}`, JSON.stringify(updatedVisibleColumns));
             setDefaultVisibleColumns(updatedVisibleColumns);
+
             return updatedVisibleColumns;
         };
 
@@ -413,6 +412,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                 const filterModel = params.column.isVisible() ? params.api.getFilterModel() : { ...rest, ...defaultFilterModel };
                 params.api.setFilterModel(filterModel);
             }
+
             updateVisibleColumns(params);
         };
 
@@ -421,22 +421,20 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         ) => {
             if (!saveStorageProps.shouldSaveColumnOrder) return;
             const columnState = params.api.getColumnState();
-
             const newColumnsOrder = columnState.reduce<Record<string, { order: number }>>((acc, column, index) => {
                 acc[column.colId] = { order: index };
                 return acc;
             }, {});
-
-            localStorage.setItem(`columnsOrder-${saveStorageProps.pageType}-${template._id}`, JSON.stringify(newColumnsOrder));
+            localStorage.setItem(`${columnsOrder}${saveStorageProps.pageType}-${template._id}`, JSON.stringify(newColumnsOrder));
             setDefaultColumnsOrder(newColumnsOrder);
         };
 
         const handleColumnResized = (params: ColumnResizedEvent<Data>) => {
             if (params.finished && params.column && ['autosizeColumns', 'uiColumnDragged', 'uiColumnResized'].includes(params.source)) {
-                const currColumnWidths = localStorage.getItem(`columnWidths-${saveStorageProps.pageType}-${template._id}`);
+                const currColumnWidths = localStorage.getItem(`${columnWidths}${saveStorageProps.pageType}-${template._id}`);
                 const currColumnWidthsParsed = currColumnWidths ? JSON.parse(currColumnWidths) : {};
                 localStorage.setItem(
-                    `columnWidths-${saveStorageProps.pageType}-${template._id}`,
+                    `${columnWidths}${saveStorageProps.pageType}-${template._id}`,
                     JSON.stringify({
                         ...currColumnWidthsParsed,
                         [params.column.getColId()]: params.column.getActualWidth(),
@@ -463,31 +461,24 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             const usedWidth: number = isRemovedFields ? 0 : Object.values(defaultColumnWidths).reduce((sum, width) => sum + width, 0);
             const totalGridWidth: number = tableRef.current?.offsetWidth!;
             const widthConsumed: number = columnStates.reduce((sum, col) => sum + col.width!, 0);
-            return totalGridWidth - usedWidth - widthConsumed - (hasActions ? 200 : 0);
+            return totalGridWidth - usedWidth - widthConsumed - (hasActions ? actionsWidth : 0);
         };
 
         const autoSizeAll = (params: GridReadyEvent<Data, any> | RowDataUpdatedEvent<Data, any>, visibleKeys: string[]) => {
             const { api } = params;
 
-            const hasActions = visibleKeys.some((key) => key.startsWith('actions-'));
-
+            const hasActions = visibleKeys.some((key) => key.startsWith(actionPrefix));
             const templateKeys = Object.keys(template.properties.properties);
-            const defaultKeys = Object.keys(defaultColumnWidths).filter((key) => !key.includes('actions-'));
+            const defaultKeys = Object.keys(defaultColumnWidths).filter((key) => !key.includes(actionPrefix));
+            const isRemovedFields = defaultKeys.some((key) => !templateKeys.includes(key));
 
             if (templateKeys.length === defaultKeys.length && templateKeys.every((key, index) => key === defaultKeys[index])) return;
 
             handleColumnsOrder(params);
 
-            const isRemovedFields = defaultKeys.some((key) => !templateKeys.includes(key));
-            let columnsKeys;
-            if (isRemovedFields) {
-                columnsKeys = visibleKeys.filter((key) => key !== `actions-${template._id}`);
-            } else columnsKeys = visibleKeys.filter((key) => !defaultColumnWidths[key] && key !== `actions-${template._id}`);
-
-            if (columnsKeys.length === 0) {
-                console.warn(`No columns to resize for table with template ID: ${template._id}`);
-                return;
-            }
+            const shouldIncludeKey = (key) => key !== `${actionPrefix}${template._id}` && (isRemovedFields || !defaultColumnWidths[key]);
+            const columnsKeys = visibleKeys.filter(shouldIncludeKey);
+            if (columnsKeys.length === 0) return;
 
             api.refreshHeader();
             api.sizeColumnsToFit();
@@ -500,24 +491,20 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
 
             const remainingWidth = calculateRemainingWidth(columnStates, hasActions, isRemovedFields);
 
-            const columnWidths: Record<string, number> = columnStates.reduce(
+            const columnsWidth: Record<string, number> = columnStates.reduce(
                 (acc, col, index) => {
                     const newWidth = index === columnStates.length - 1 ? col.width! + Math.max(remainingWidth, 0) : col.width!;
                     acc[col.colId] = newWidth;
                     return acc;
                 },
-                { [`actions-${template._id}`]: 200 },
+                { [`${actionPrefix}${template._id}`]: 200 },
             );
 
-            api.setColumnWidths(
-                Object.entries(columnWidths).map(([key, newWidth]) => {
-                    return { key, newWidth };
-                }),
-            );
+            api.setColumnWidths(Object.entries(columnsWidth).map(([key, newWidth]) => ({ key, newWidth })));
 
-            if (Object.keys(columnWidths).length > 0) {
-                const updatedWidths = isRemovedFields ? columnWidths : { ...defaultColumnWidths, ...columnWidths };
-                localStorage.setItem(`columnWidths-${saveStorageProps.pageType}-${template._id}`, JSON.stringify(updatedWidths));
+            if (Object.keys(columnsWidth).length > 0) {
+                const updatedWidths = isRemovedFields ? columnsWidth : { ...defaultColumnWidths, ...columnsWidth };
+                localStorage.setItem(`${columnWidths}${saveStorageProps.pageType}-${template._id}`, JSON.stringify(updatedWidths));
                 setDefaultColumnWidths(updatedWidths);
             }
         };
