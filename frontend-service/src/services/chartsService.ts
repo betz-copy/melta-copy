@@ -9,6 +9,13 @@ export const createChart = async (newChart: IBasicChart) => {
     return data;
 };
 
+export const editChart = async (chartId: string, updatedChart: IChart) => {
+    const { _id, createdAt, updatedAt, ...restChart } = updatedChart;
+
+    const { data } = await axios.put<IChart>(`${charts}/${chartId}`, restChart);
+    return data;
+};
+
 export const getChartById = async (chartId: string) => {
     const { data } = await axios.get<IChart>(`${charts}/${chartId}`);
     return data;

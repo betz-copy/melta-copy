@@ -10,16 +10,16 @@ import { useLocation, useParams } from 'wouter';
 import EntitiesTableOfTemplate, { EntitiesTableOfTemplateRef } from '../../../common/EntitiesTableOfTemplate';
 import { ErrorToast } from '../../../common/ErrorToast';
 import { environment } from '../../../globals';
-import { IBasicChart } from '../../../interfaces/charts';
+import { IBasicChart, IChart } from '../../../interfaces/charts';
 import { IEntity } from '../../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { createChart, deleteChart, getChartById } from '../../../services/chartsService';
+import { createChart, deleteChart, editChart, getChartById } from '../../../services/chartsService';
+import { useUserStore } from '../../../stores/user';
 import { filterModelToFilterOfTemplate, filterOfTemplateToFilterModel } from '../../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 import { chartValidationSchema, initialValues as defaultInitialValues } from '../../../utils/charts/getChartAxes';
 import { ChartGenerator } from '../chartGenerator.tsx';
 import { ChartSideBar } from './ChartSideBar';
 import { ChartTopBar } from './TopBar';
-import { useUserStore } from '../../../stores/user';
 
 const { defaultRowHeight, defaultFontSize } = environment.agGrid;
 
@@ -56,11 +56,31 @@ const ChartPage: React.FC = () => {
                 createdBy: currentUser._id,
             } as IBasicChart),
         {
-            onSuccess: () => {
+            onSuccess: (data) => {
                 toast.success(i18next.t('charts.actions.createdSuccessfully'));
+                navigate(`/charts/${templateId}/${data._id}/chart`);
+                setReadonly(true);
+                setEdit(true);
             },
             onError: (error: AxiosError) => {
                 toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('charts.actions.failedToCreate')} />);
+            },
+        },
+    );
+
+    const { mutateAsync: editChartMutateAsync } = useMutation(
+        (updatedChart: IChart) =>
+            editChart(chartId!, {
+                ...updatedChart,
+                filter: filterModelToFilterOfTemplate(entitiesTableRef.current?.getFilterModel() as FilterModel, template),
+            } as IChart),
+        {
+            onSuccess: () => {
+                toast.success(i18next.t('charts.actions.editedSuccessfully'));
+                setReadonly(true);
+            },
+            onError: (error: AxiosError) => {
+                toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('charts.actions.failedToEdit')} />);
             },
         },
     );
@@ -79,11 +99,9 @@ const ChartPage: React.FC = () => {
         <Formik<IBasicChart>
             initialValues={initialValues}
             onSubmit={async (values, formikHelpers) => {
-                createChartMutateAsync(values);
+                if (edit) editChartMutateAsync(values);
+                else createChartMutateAsync(values);
                 formikHelpers.setSubmitting(false);
-                setReadonly(true);
-                /// in order to call to edit action
-                setEdit(true);
             }}
             validationSchema={chartValidationSchema}
             enableReinitialize
