@@ -32,7 +32,7 @@ const initializeMongo = async () => {
     try {
         logger.info('Connecting to Mongo...');
 
-        await mongoose.connect(mongo.url);
+        await mongoose.connect(mongo.url, mongo.connectionOptions);
 
         logger.info('Mongo connection established');
     } catch (err) {
