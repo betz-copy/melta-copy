@@ -13,7 +13,7 @@ export const defaultInputType = (profilePath?: string) => {
     return 'chooseFile';
 };
 
-export const getNameInitials = (user: IUser): string => {
+export const getNameInitials = (user: Partial<IUser>): string => {
     const names = user.fullName?.split(' ') ?? [];
 
     if (names.length < 3) return names.map((name) => name.charAt(0)).join('');

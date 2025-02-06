@@ -8,7 +8,7 @@ class RuleBreachesController extends DefaultController<RuleBreachesManager> {
     }
 
     async createRuleBreachRequest(req: Request, res: Response) {
-        res.json(await this.manager.createRuleBreachRequest(req.body, req.user!.id, req.files as Express.Multer.File[]));
+        res.json(await this.manager.createRuleBreachRequest(req.body, req.user!.id, req.files));
     }
 
     async getManyRuleBreachRequests(req: Request, res: Response) {

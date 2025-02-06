@@ -6,7 +6,7 @@ import {
     countEntitiesOfTemplatesRequestSchema,
     createEntityRequestSchema,
     deleteEntitiesByTemplateIdRequestSchema,
-    deleteEntityByIdRequestSchema,
+    deleteEntitiesByIdsRequestSchema,
     enumerateNewSerialNumberFieldsRequestSchema,
     getAllConstraintsRequestSchema,
     getConstraintsOfTemplateRequestSchema,
@@ -18,10 +18,11 @@ import {
     searchEntitiesByTemplatesSchema,
     searchEntitiesOfTemplateRequestSchema,
     updateConstraintsOfTemplateRequestSchema,
-    updateEntityByIdRequestSchema,
     updateEntityStatusByIdRequestSchema,
     updateEnumFieldRequestSchema,
     deletePropertiesOfTemplateRequestSchema,
+    searchEntitiesByLocation,
+    updateEntityByIdRequestSchema,
     getDependentRulesRequestSchema,
     convertToRelationshipFieldRequestSchema,
 } from './validator.schema';
@@ -66,6 +67,8 @@ entityRouter.post(
     entityController.searchEntitiesBatch,
 );
 
+entityRouter.post('/search/location', ValidateRequest(searchEntitiesByLocation), entityController.searchEntitiesByLocation);
+
 entityRouter.put('/update-enum-field/:id', ValidateRequest(updateEnumFieldRequestSchema), entityController.updateEnumFieldValue);
 entityRouter.get('/get-is-field-used/:id', ValidateRequest(getIfValuefieldIsUsedRequestSchema), entityController.getIsFieldUsed);
 
@@ -81,8 +84,8 @@ entityRouter.post(
 entityRouter.post('/', ValidateRequest(createEntityRequestSchema), entityValidatorController.validateEntityRequest, entityController.createEntity);
 entityRouter.get('/:id', ValidateRequest(getEntityByIdRequestSchema), entityController.getEntityById);
 entityRouter.post('/ids', ValidateRequest(getEntitiesByIdsRequestSchema), entityController.getEntitiesByIds);
-entityRouter.delete('/:id', ValidateRequest(deleteEntityByIdRequestSchema), entityController.deleteEntityById);
 entityRouter.delete('/', ValidateRequest(deleteEntitiesByTemplateIdRequestSchema), entityController.deleteEntitiesByTemplateId);
+entityRouter.post('/delete/bulk', ValidateRequest(deleteEntitiesByIdsRequestSchema), entityController.deleteEntityInstances);
 entityRouter.put(
     '/:id',
     ValidateRequest(updateEntityByIdRequestSchema),

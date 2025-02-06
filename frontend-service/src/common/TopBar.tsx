@@ -1,7 +1,7 @@
 import React, { CSSProperties } from 'react';
 import { Grid, styled } from '@mui/material';
 import { BlueTitle } from './BlueTitle';
-import { environment } from '../globals';
+import { useWorkspaceStore } from '../stores/workspace';
 
 export const TopBarGrid = styled(Grid)(({ theme }) => {
     const bgColor: CSSProperties['backgroundColor'] = theme.palette.mode === 'dark' ? '#131313' : '#fcfeff';
@@ -20,10 +20,12 @@ export const TopBarGrid = styled(Grid)(({ theme }) => {
 });
 
 const TopBar: React.FC<{ title: string; boxStyle?: CSSProperties }> = ({ title, boxStyle }) => {
+    const workspace = useWorkspaceStore((state) => state.workspace);
+
     if (title.length)
         return (
             <TopBarGrid sx={boxStyle} display="flex" alignItems="center">
-                <BlueTitle title={title} component="h4" variant="h4" style={{ fontSize: environment.mainFontSizes.headlineTitleFontSize }} />
+                <BlueTitle title={title} component="h4" variant="h4" style={{ fontSize: workspace.metadata.mainFontSizes.headlineTitleFontSize }} />
             </TopBarGrid>
         );
 

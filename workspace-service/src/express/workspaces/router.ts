@@ -10,6 +10,7 @@ import {
     getFileSchema,
     getWorkspaceHierarchyIdsSchema,
     getWorkspaceIds,
+    updateMetadataSchema,
     updateOneSchema,
 } from './validator.schema';
 
@@ -34,3 +35,5 @@ workspacesRouter.post('/', ValidateRequest(createOneSchema), wrapController(Work
 workspacesRouter.delete('/:id', ValidateRequest(deleteOneSchema), wrapController(WorkspacesController.deleteOne));
 
 workspacesRouter.put('/:id', ValidateRequest(updateOneSchema), wrapController(WorkspacesController.updateOne));
+
+workspacesRouter.patch('/:id/metadata', ValidateRequest(updateMetadataSchema), wrapController(WorkspacesController.updateMetadata));

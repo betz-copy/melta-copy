@@ -24,7 +24,12 @@ export interface EntitiesWizardValues {
     template?: IMongoEntityTemplatePopulated;
 }
 
-export type IValidationError = { message: string; path: string; schemaPath: string; params: Partial<IEntitySingleProperty> };
+export type IValidationError = {
+    message: string;
+    path: string;
+    schemaPath: string;
+    params: Partial<IEntitySingleProperty> & { allowedValues?: string[] };
+};
 
 export type IBrokenRuleEntity = {
     rawBrokenRules: IBrokenRule[];
@@ -104,7 +109,7 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
             },
             onError() {
                 toast.error(i18next.t('wizard.entity.loadEntities.failedLoadEntities'));
-                setStepsData((prev) => ({ ...prev, status: StepStatus.excelUploadResult }));
+                onClose();
             },
         },
     );
@@ -116,12 +121,16 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
         {
             async onSuccess(data) {
                 setCreateOrUpdateWithRuleBreachDialogState({ isOpen: false });
-                onClose();
+                toast.success(i18next.t('wizard.entity.loadEntities.createdSuccessfully'));
                 return data;
             },
             onError() {
                 toast.error(i18next.t('wizard.entity.loadEntities.failedLoadEntities'));
-                setStepsData((prev) => ({ ...prev, status: StepStatus.excelUploadResult }));
+                // onClose();
+                // setStepsData((prev) => ({ ...prev, status: StepStatus.excelUploadResult }));
+            },
+            onMutate() {
+                onClose();
             },
         },
     );
@@ -153,7 +162,7 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
             });
         else {
             onClose();
-            toast.success(i18next.t('wizard.entity.loadEntities.createdSuccessfully'));
+            if (stepsData.data.succeededEntities.length > 0) toast.success(i18next.t('wizard.entity.loadEntities.createdSuccessfully'));
         }
     };
 
@@ -199,12 +208,20 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
                     text: i18next.t('wizard.entity.loadEntities.loadEntities'),
                     onClick: async () => {
                         if (stepsData.status === StepStatus.previewExcelRows) {
+                            setStepsData((prev) => ({ ...prev, status: StepStatus.excelUploadResult }));
                             const data = await loadEntities(stepsData.files!);
-                            if (data.failedEntities.length > 0)
+                            const hasFailedEntities = data.failedEntities.length > 0;
+                            const hasBrokenRulesEntities = !!data.brokenRulesEntities?.entities?.length;
+
+                            if (hasFailedEntities || hasBrokenRulesEntities) {
                                 await exportTemplateToExcel({
                                     fileName: `${template?.displayName}: ${i18next.t('wizard.entity.loadEntities.failedEntities')}${excelExtension}`,
-                                    insertEntities: data.failedEntities.map((entity) => entity.properties),
+                                    insertEntities: [
+                                        ...data.failedEntities.map((entity) => entity.properties),
+                                        ...(data.brokenRulesEntities?.entities?.map((entity) => entity.properties) || []),
+                                    ],
                                 });
+                            }
                         }
                     },
                 },
@@ -267,6 +284,7 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
                             status: StepStatus.uploadExcel,
                             data: { succeededEntities: [], failedEntities: [] },
                         });
+                        onClose();
                     }}
                     doActionEntity={() => {
                         const brokenRulesEntities =

@@ -3,7 +3,6 @@ import i18next from 'i18next';
 import React, { forwardRef, useImperativeHandle, useState } from 'react';
 import { useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import { environment } from '../../globals';
 import { IEntityWithDirectConnections } from '../../interfaces/entities';
 import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
 import EntityCard from '../../pages/GlobalSearch/components/entityCard';
@@ -11,8 +10,8 @@ import { getEntitiesWithDirectConnections } from '../../services/entitiesService
 import { InfiniteScroll } from '../InfiniteScroll';
 import { useSearchParams } from '../../utils/hooks/useSearchParams';
 import { convertToBool } from '../../utils/convertStringToBool';
-
-const { infiniteScrollPageCount } = environment.entitiesCardsView;
+import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
+import { useWorkspaceStore } from '../../stores/workspace';
 
 export interface CardsViewRef {
     refetch: () => void;
@@ -29,7 +28,9 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
     const queryClient = useQueryClient();
     const [urlSearchParams, _setUrlSearchParams] = useSearchParams();
     const urlSemanticSearch = urlSearchParams.get('semanticSearch');
-    console.log(urlSemanticSearch);
+
+    const workspace = useWorkspaceStore((state) => state.workspace);
+    const { bulk } = workspace.metadata.searchLimits;
 
     const refetch = () => queryClient.invalidateQueries({ queryKey: ['searchEntities', templateIds, searchInput], exact: true });
 
@@ -49,7 +50,7 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
             </Grid>
             <Grid item>
                 <Grid container>
-                    <InfiniteScroll<IEntityWithDirectConnections & { minioFileIds?: string[] }>
+                    <InfiniteScroll<IEntityWithDirectConnections & { minioFileIdsWithTexts?: ISemanticSearchResult[string][string] }>
                         queryKey={['searchEntities', templateIds, searchInput, urlSemanticSearch]}
                         queryFunction={async ({ pageParam: startRow = 0 }) => {
                             if (startRow === 0) {
@@ -58,7 +59,7 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
 
                             const searchEntitiesResult = await getEntitiesWithDirectConnections({
                                 skip: startRow,
-                                limit: infiniteScrollPageCount,
+                                limit: bulk,
                                 textSearch: searchInput,
                                 templates: Object.fromEntries(templateIds.map((templateId) => [templateId, { showRelationships: false }])),
                                 shouldSemanticSearch: convertToBool(urlSemanticSearch!),
@@ -76,19 +77,20 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
                         }}
                         getItemId={({ entity }) => entity.properties._id}
                         getNextPageParam={(lastPage, allPages) => {
-                            const nextPage = allPages.length * infiniteScrollPageCount;
+                            const nextPage = allPages.length * bulk;
                             return lastPage.length ? nextPage : undefined;
                         }}
                         endText={i18next.t('entitiesCardView.noSearchLeft')}
                         openIds={openCardsMap}
                         useContainer={false}
                     >
-                        {({ entity, minioFileIds }) => {
+                        {({ entity, minioFileIdsWithTexts }) => {
                             const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates');
                             const entityTemplate = entityTemplates?.get(entity.templateId)!;
                             return (
                                 <EntityCard
-                                    minioFileId={minioFileIds?.[0]} // Navigate to the first found file
+                                    minioFileId={minioFileIdsWithTexts?.[0].minioFileId} // Navigate to the first found file
+                                    matchedSentence={minioFileIdsWithTexts?.[0].text}
                                     entity={entity}
                                     entityTemplate={entityTemplate}
                                     expandCard={openCardsMap.has(entity.properties._id)}

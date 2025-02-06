@@ -1,5 +1,5 @@
-/* eslint-disable no-case-declarations */
 /* eslint-disable no-param-reassign */
+/* eslint-disable no-case-declarations */
 import React, { ForwardedRef, forwardRef, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import {
     BodyScrollEvent,
@@ -16,23 +16,28 @@ import {
     IServerSideGetRowsRequest,
     PaginationChangedEvent,
     RowDataUpdatedEvent,
+    RowSelectionOptions,
     RowStyle,
+    StatusPanelDef,
 } from '@ag-grid-community/core';
 import { AgGridReact } from '@ag-grid-community/react';
 import { Box, CircularProgress, debounce } from '@mui/material';
+import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import isEqual from 'lodash.isequal';
 import sortBy from 'lodash.sortby';
+import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
 import { useLocation } from 'wouter';
 import '../../css/resizeTable.css';
 import '../../css/table.css';
-import { useMutation } from 'react-query';
-import { AxiosError } from 'axios';
 import { environment } from '../../globals';
-import { EntityData, IEntity, IEntityExpanded, IUniqueConstraint } from '../../interfaces/entities';
+import { EntityData, IDeleteEntityBody, IEntity, IEntityExpanded, IUniqueConstraint } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IRelationship } from '../../interfaces/relationships';
+import { ActionTypes, IAction, IActionPopulated } from '../../interfaces/ruleBreaches/actionMetadata';
+import { IBrokenRule, IRuleBreach, IRuleBreachPopulated } from '../../interfaces/ruleBreaches/ruleBreach';
+import ActionOnEntityWithRuleBreachDialog from '../../pages/Entity/components/ActionOnEntityWithRuleBreachDialog';
 import {
     deleteEntityRequest,
     searchEntitiesOfTemplateRequest,
@@ -47,18 +52,18 @@ import { IAGGridRequest } from '../../utils/agGrid/interfaces';
 import useDeepCompareMemo from '../../utils/hooks/useDeepCompareMemo';
 import { LocalStorage } from '../../utils/localStorage';
 import { trycatch } from '../../utils/trycatch';
+import { AreYouSureDialog } from '../dialogs/AreYouSureDialog';
+import { EntityWizardValues } from '../dialogs/entity';
+import { MultiSelectStatusBar } from '../EntitiesPage/MultiSelectStatusBar';
 import { ResizeBox } from '../EntitiesPage/ResizeBox';
 import { RowCountGridStatusBar } from '../EntitiesPage/RowCountGridStatusBar';
-import { getColumnDefs, IGetColumnDefsOptions } from './getColumnDefs';
-import { IBrokenRule, IRuleBreach, IRuleBreachPopulated } from '../../interfaces/ruleBreaches/ruleBreach';
-import { EntityWizardValues } from '../dialogs/entity';
-import { ActionTypes, IAction, IActionPopulated } from '../../interfaces/ruleBreaches/actionMetadata';
-import ActionOnEntityWithRuleBreachDialog from '../../pages/Entity/components/ActionOnEntityWithRuleBreachDialog';
 import { ErrorToast } from '../ErrorToast';
-import { AreYouSureDialog } from '../dialogs/AreYouSureDialog';
+import { useWorkspaceStore } from '../../stores/workspace';
+import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
+import { getColumnDefs, IGetColumnDefsOptions } from './getColumnDefs';
 
 const { errorCodes } = environment;
-const { rowCount, defaultExpandedRowCount, actionPrefix, actionsWidth } = environment.agGrid;
+const { cacheBlockSize, maxConcurrentDatasourceRequests, actionPrefix, actionsWidth } = environment.agGrid;
 const { columnWidths, columnsOrder, visibleColumns } = environment.agGrid.localStorage;
 
 export const defaultFilterModel = {
@@ -81,6 +86,7 @@ export interface IButtonProps<Data> {
 
 export const getDatasource = <Data extends any = EntityData>(
     template: IMongoEntityTemplatePopulated,
+    tableCount: number,
     quickFilterText?: string,
     onFail?: (err: unknown) => void,
     rowData?: IConnection[],
@@ -100,7 +106,11 @@ export const getDatasource = <Data extends any = EntityData>(
             const { result: data, err } = await trycatch(() =>
                 searchEntitiesOfTemplateRequest(
                     template._id,
-                    agGridToSearchEntitiesOfTemplateRequest({ ...agGridRequest, quickFilter: quickFilterText } as IAGGridRequest, template),
+                    agGridToSearchEntitiesOfTemplateRequest(
+                        { ...agGridRequest, quickFilter: quickFilterText } as IAGGridRequest,
+                        template,
+                        tableCount,
+                    ),
                 ),
             );
 
@@ -129,6 +139,7 @@ export const getRowModelProps = <Data extends any = EntityData>(
     template: IMongoEntityTemplatePopulated,
     rowData: Data[] | undefined,
     paginationPageSize: number,
+    tableCount: number,
     quickFilterText?: string,
     datasourceOnFail?: (err: unknown) => void,
     hasInstances?: boolean,
@@ -142,11 +153,9 @@ export const getRowModelProps = <Data extends any = EntityData>(
         };
     }
 
-    const { cacheBlockSize, maxConcurrentDatasourceRequests } = environment.agGrid;
-
     return {
         rowModelType: 'serverSide',
-        serverSideDatasource: getDatasource<IConnection>(template, quickFilterText, datasourceOnFail, rowData as IConnection[]),
+        serverSideDatasource: getDatasource<IConnection>(template, tableCount, quickFilterText, datasourceOnFail, rowData as IConnection[]),
         cacheBlockSize: rowModelType === 'serverSide' ? cacheBlockSize : undefined,
         pagination: rowModelType === 'serverSide',
         paginationPageSize,
@@ -157,7 +166,7 @@ export const getRowModelProps = <Data extends any = EntityData>(
 const LoadingCellRenderer = () => <CircularProgress size={20} sx={{ marginLeft: 1 }} />;
 
 export type EntitiesTableOfTemplateProps<Data> = {
-    template: IMongoEntityTemplatePopulated & { entitiesWithFiles?: string[] };
+    template: IMongoEntityTemplatePopulated & { entitiesWithFiles?: ISemanticSearchResult[string] };
     entities?: Data[];
     onRowSelected?: (data: Data) => void;
     showNavigateToRowButton: boolean;
@@ -173,6 +182,7 @@ export type EntitiesTableOfTemplateProps<Data> = {
     rowHeight: number;
     pageRowCount?: number;
     fontSize: React.CSSProperties['fontSize'];
+    multipleSelect?: boolean;
     hideNonPreview?: boolean;
     saveStorageProps: {
         shouldSaveFilter: boolean;
@@ -221,24 +231,52 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             rowData,
             quickFilterText,
             rowHeight,
-            pageRowCount = rowCount,
+            pageRowCount,
             fontSize,
             hideNonPreview,
             saveStorageProps,
             onFilter,
             hasPermissionToCategory,
             ignoreType,
-            mainEntity,
             refetch,
             hasInstances,
+            multipleSelect,
             paginationPageSizeSelector = environment.agGrid.paginationPageSizeSelector as unknown as number[],
             editable = true,
         }: EntitiesTableOfTemplateProps<Data>,
         ref: ForwardedRef<EntitiesTableOfTemplateRef<Data>>,
     ) => {
+        const [_, navigate] = useLocation();
         const darkMode = useDarkModeStore((state) => state.darkMode);
         const savedVisibleColumns = localStorage.getItem(`${visibleColumns}${saveStorageProps.pageType}-${template._id}`);
         const [defaultVisibleColumns, setDefaultVisibleColumns] = useState(savedVisibleColumns ? JSON.parse(savedVisibleColumns) : {});
+
+        const workspace = useWorkspaceStore((state) => state.workspace);
+        const { rowCount, defaultExpandedRowCount } = workspace.metadata.agGrid;
+        const { table } = workspace.metadata.searchLimits;
+
+        if (!pageRowCount) pageRowCount = rowCount;
+
+        const gridRef = useRef<AgGridReact<Data>>(null);
+        const tableRef = useRef<HTMLDivElement>(null);
+
+        const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+
+        const minHeightTable = rowHeight * pageRowCount + rowHeight * 2;
+        const [gridHeight, setGridHeight] = useState<number>(rowHeight * defaultExpandedRowCount);
+
+        const [selectedRow, setSelectedRow] = useState('');
+        const [currEntity, setCurrEntity] = useState<IEntity>();
+        const [currEditingCell, setCurrEditingCell] = useState<any>();
+
+        const [updateWithRuleBreachDialogState, setUpdateWithRuleBreachDialogState] = useState<{
+            isOpen: boolean;
+            brokenRules?: IRuleBreachPopulated['brokenRules'];
+            rawBrokenRules?: IBrokenRule[];
+            updateEntityFormData?: EntityWizardValues;
+            actions?: IActionPopulated[];
+            rawActions?: IAction[];
+        }>({ isOpen: false });
 
         const savedColumnsOrder = localStorage.getItem(`${columnsOrder}${saveStorageProps.pageType}-${template._id}`);
         const [defaultColumnsOrder, setDefaultColumnsOrder] = useState(savedColumnsOrder ? JSON.parse(savedColumnsOrder) : {});
@@ -248,29 +286,39 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             savedColumnWidths ? JSON.parse(savedColumnWidths) : {},
         );
 
-        const [_, navigate] = useLocation();
+        const { isLoading: isDeleteLoading, mutateAsync: deleteMutation } = useMutation(
+            (id: string) =>
+                deleteEntityRequest({
+                    selectAll: false,
+                    templateId: template?._id as string,
+                    idsToInclude: [id],
+                    deleteAllRelationships: false,
+                } as IDeleteEntityBody<false>),
+            {
+                onError: (error: AxiosError) => {
+                    toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.entity.failedToDelete')} />);
+                },
+                onSuccess: () => {
+                    refetch?.();
+                    toast.success(i18next.t('wizard.entity.deletedSuccessfully'));
+                },
+                onSettled: () => {
+                    setOpenDeleteDialog(false);
+                    setSelectedRow('');
+                },
+            },
+        );
 
-        const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
-        const closeDeleteDialog = () => {
-            setOpenDeleteDialog(false);
-        };
-        const [selectedRow, setSelectedRow] = useState('');
-        const { isLoading: isDeleteLoading, mutateAsync: deleteMutation } = useMutation((id: string) => deleteEntityRequest(id), {
-            onError: (error: AxiosError) => {
-                toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.entity.failedToDelete')} />);
-            },
-            onSuccess: () => {
-                refetch?.();
-                toast.success(i18next.t('wizard.entity.deletedSuccessfully'));
-            },
-            onSettled: () => {
-                closeDeleteDialog();
-                setSelectedRow('');
-            },
-        });
         const { mutateAsync: updateEntityStatus } = useMutation(
-            ({ currEntity, disabled, ignoredRules }: { currEntity: IEntity; disabled: boolean; ignoredRules?: IRuleBreach['brokenRules'] }) =>
-                updateEntityStatusRequest(currEntity.properties._id, disabled, JSON.stringify(ignoredRules)),
+            ({
+                currEntity: currentEntity,
+                disabled,
+                ignoredRules,
+            }: {
+                currEntity: IEntity;
+                disabled: boolean;
+                ignoredRules?: IRuleBreach['brokenRules'];
+            }) => updateEntityStatusRequest(currentEntity.properties._id, disabled, JSON.stringify(ignoredRules)),
             {
                 onSuccess: (data) => {
                     if (data.properties.disabled) toast.success(i18next.t('entityPage.disabledSuccessfully'));
@@ -283,12 +331,6 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                 },
             },
         );
-
-        const gridRef = useRef<AgGridReact<Data>>(null);
-        const tableRef = useRef<HTMLDivElement>(null);
-
-        const minHeightTable = rowHeight * pageRowCount + rowHeight * 2;
-        const [gridHeight, setGridHeight] = useState<number>(rowHeight * defaultExpandedRowCount);
 
         const getSortModel = () => {
             const colState = gridRef.current!.api.getColumnState();
@@ -339,7 +381,15 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                     gridApi.openToolPanel('columns');
                 }
             },
-            getDisplayColumns: () => gridRef.current?.api.getAllDisplayedColumns().map((column) => column.getColId()) || [],
+            getDisplayColumns: () => {
+                const validKeys = Object.keys(template.properties.properties);
+                return (
+                    gridRef.current?.api
+                        .getAllDisplayedColumns()
+                        .map((column) => column.getColId())
+                        .filter((colId) => validKeys.includes(colId)) || []
+                );
+            },
         }));
 
         const columnDefProps: IGetColumnDefsOptions<Data> = {
@@ -370,11 +420,6 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             toast.error(i18next.t('entitiesTableOfTemplate.failedToLoadData'));
             console.error('Failed to load data from datasource. Error:', err);
         };
-
-        const rowModelProps = useMemo(
-            () => getRowModelProps(rowModelType, template, rowData, pageRowCount, quickFilterText, datasourceOnFail, hasInstances),
-            [rowModelType, template, rowData, pageRowCount, quickFilterText, mainEntity, hasInstances],
-        );
 
         const gridStyles = {
             '.ag-center-cols-viewport': {
@@ -516,15 +561,6 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             }
         }, 500);
 
-        const [updateWithRuleBreachDialogState, setUpdateWithRuleBreachDialogState] = useState<{
-            isOpen: boolean;
-            brokenRules?: IRuleBreachPopulated['brokenRules'];
-            rawBrokenRules?: IBrokenRule[];
-            updateEntityFormData?: EntityWizardValues;
-            actions?: IActionPopulated[];
-            rawActions?: IAction[];
-        }>({ isOpen: false });
-
         const { isLoading: isUpdateLoading, mutateAsync: updateMutation } = useMutation(
             ({ newEntityData, ignoredRules }: { newEntityData: EntityWizardValues; ignoredRules?: IRuleBreach['brokenRules'] }) =>
                 updateEntityRequestForMultiple(newEntityData.properties._id, newEntityData, ignoredRules),
@@ -587,8 +623,77 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                 },
             },
         );
-        const [currEntity, setCurrEntity] = useState<IEntity>();
-        const [currEditingCell, setCurrEditingCell] = useState<any>();
+
+        useImperativeHandle(ref, () => ({
+            getExcelData() {
+                return gridRef.current?.api.getSheetDataForExcel({ sheetName: template.displayName });
+            },
+            resetFilter() {
+                gridRef.current?.api.setFilterModel(defaultFilterModel);
+            },
+            refreshServerSide() {
+                gridRef.current?.api.refreshServerSide({ purge: true });
+            },
+            updateRowDataClientSide(data: Data) {
+                gridRef.current?.api.forEachNode((rowNode) => {
+                    if (rowNode.data && getRowId(data) === getRowId(rowNode.data)) {
+                        rowNode.updateData(data);
+                    }
+                });
+            },
+            isFiltered() {
+                const filters = gridRef.current?.api.getFilterModel();
+                return !filters || !isEqual(filters, defaultFilterModel);
+            },
+            getFilterModel() {
+                return gridRef.current!.api.getFilterModel();
+            },
+            getSortModel() {
+                return getSortModel();
+            },
+            scrollIntoView() {
+                tableRef.current?.scrollIntoView({ behavior: 'smooth' });
+            },
+            showSideBar() {
+                const gridApi = gridRef.current?.api;
+                if (!gridApi) return;
+                const isSideBarOpen = gridApi.isToolPanelShowing();
+                gridApi.setSideBarVisible(!isSideBarOpen);
+                if (isSideBarOpen) gridApi.closeToolPanel();
+                else gridApi.openToolPanel('columns');
+            },
+            getDisplayColumns: () => gridRef.current?.api.getAllDisplayedColumns().map((column) => column.getColId()) || [],
+        }));
+
+        const rowModelProps = useMemo(
+            () => getRowModelProps(rowModelType, template, rowData, pageRowCount!, table, quickFilterText, datasourceOnFail, hasInstances),
+            [rowModelType, template, rowData, pageRowCount, quickFilterText, hasInstances],
+        );
+
+        const statusPanels = useMemo(() => {
+            const panels: StatusPanelDef[] = [{ statusPanel: RowCountGridStatusBar, align: 'right' }];
+
+            if (multipleSelect)
+                panels.push({
+                    statusPanel: MultiSelectStatusBar,
+                    align: 'left',
+                    statusPanelParams: { template, quickFilterText },
+                });
+
+            return panels;
+        }, [multipleSelect, quickFilterText, template]);
+
+        const rowSelection = useMemo<RowSelectionOptions | 'single' | 'multiple' | undefined>(() => {
+            if (onRowSelected) return 'single';
+
+            if (multipleSelect)
+                return {
+                    mode: 'multiRow',
+                    enableClickSelection: false,
+                };
+
+            return undefined;
+        }, [multipleSelect, onRowSelected]);
 
         const gridContent = (
             <>
@@ -634,7 +739,8 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                         enableRtl
                         enableCellTextSelection
                         maintainColumnOrder
-                        rowSelection={onRowSelected ? 'single' : undefined}
+                        rowSelection={rowSelection}
+                        suppressAggFuncInHeader
                         onRowSelected={onRowSelected ? ({ data }) => data && onRowSelected(data) : undefined}
                         rowStyle={onRowSelected ? { cursor: 'pointer' } : undefined}
                         suppressCellFocus
@@ -740,18 +846,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                             hiddenByDefault: true,
                             position: 'left',
                         }}
-                        statusBar={
-                            rowModelType === 'infinite'
-                                ? {
-                                      statusPanels: [
-                                          {
-                                              statusPanel: RowCountGridStatusBar,
-                                              align: 'right',
-                                          },
-                                      ],
-                                  }
-                                : undefined
-                        }
+                        statusBar={rowModelType === 'infinite' ? { statusPanels } : undefined}
                         localeText={agGridLocaleText}
                         paginationPageSizeSelector={paginationPageSizeSelector}
                         onCellEditingStopped={(params: CellEditingStoppedEvent) => {
@@ -788,16 +883,15 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                             if (currEditingCell && currEditingCell.value !== params.value) params.api.stopEditing();
                         }}
                     />
+                    <AreYouSureDialog
+                        open={openDeleteDialog && selectedRow !== ''}
+                        handleClose={() => setOpenDeleteDialog(false)}
+                        onYes={() => {
+                            deleteMutation(selectedRow);
+                        }}
+                        isLoading={isDeleteLoading}
+                    />
                 </Box>
-
-                <AreYouSureDialog
-                    open={openDeleteDialog && selectedRow !== ''}
-                    handleClose={closeDeleteDialog}
-                    onYes={() => {
-                        deleteMutation(selectedRow);
-                    }}
-                    isLoading={isDeleteLoading}
-                />
 
                 {updateWithRuleBreachDialogState.isOpen && (
                     <ActionOnEntityWithRuleBreachDialog

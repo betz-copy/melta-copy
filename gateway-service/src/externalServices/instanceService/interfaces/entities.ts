@@ -126,6 +126,25 @@ export interface ISearchBatchBody {
     sort?: ISearchSort;
 }
 
+type Coordinate = [number, number];
+
+interface Circle {
+    coordinate: Coordinate; // [latitude, longitude]
+    radius: number; // Positive number
+}
+
+type Polygon = Coordinate[];
+export interface ISearchEntitiesByLocationBody {
+    textSearch?: string;
+    templates: {
+        [templateId: string]: {
+            filter?: ISearchFilter;
+            locationFields?: string[];
+        };
+    };
+    circle?: Circle;
+    polygon?: Polygon;
+}
 export interface ITemplateSearchBody {
     textSearch?: string;
     templateIds: string[];
@@ -141,3 +160,21 @@ export interface ICountSearchResult {
     templateId: string;
     entitiesWithFiles: Record<string, string[]>; // { entityId: minioFileIds:[] }
 }
+
+export interface IDeleteBodyBase {
+    selectAll: boolean;
+    templateId: string;
+    deleteAllRelationships?: boolean;
+}
+
+export type IDeleteBody<T extends boolean = boolean> = IDeleteBodyBase & {
+    selectAll: T;
+} & (T extends true
+        ? {
+              idsToExclude?: string[];
+              filter?: ISearchEntitiesOfTemplateBody['filter'];
+              textSearch?: string;
+          }
+        : {
+              idsToInclude: string[];
+          });

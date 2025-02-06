@@ -1,53 +1,42 @@
-import { FilterList } from '@mui/icons-material';
 import i18next from 'i18next';
 import React, { Dispatch } from 'react';
-import { IMongoCategory } from '../interfaces/categories';
 import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
-import { SelectCheckbox, SelectCheckboxProps } from './SelectCheckbox';
-
-const getCategoriesSelectCheckboxGroupProps = (
-    categories: IMongoCategory[] | undefined,
-): SelectCheckboxProps<IMongoEntityTemplatePopulated, IMongoCategory>['groupsProps'] => {
-    if (!categories) {
-        return {
-            useGroups: false,
-        };
-    }
-
-    return {
-        useGroups: true,
-        groups: categories,
-        getGroupId: (category) => category._id,
-        getGroupLabel: (category) => category.displayName,
-        getGroupOfOption: (entityTemplate, _categories) => entityTemplate.category,
-    };
-};
+import { SelectCheckbox } from './SelectCheckBox';
+import { groupTemplatesByCategory } from '../utils/hooks/useTreeUtils';
+import { IMongoCategory } from '../interfaces/categories';
 
 const TemplatesSelectCheckbox: React.FC<{
     title: string;
     templates: IMongoEntityTemplatePopulated[];
     selectedTemplates: IMongoEntityTemplatePopulated[];
     setSelectedTemplates: React.Dispatch<React.SetStateAction<IMongoEntityTemplatePopulated[]>>;
-    categories?: any[];
+    categories: IMongoCategory[];
     isDraggableDisabled?: boolean;
     setTemplates?: Dispatch<React.SetStateAction<IMongoEntityTemplatePopulated[]>>;
     size?: 'small' | 'medium';
     toTopBar?: boolean;
 }> = ({ title, templates, selectedTemplates, setSelectedTemplates, categories, isDraggableDisabled, setTemplates, size, toTopBar }) => {
     return (
-        <SelectCheckbox
+        <SelectCheckbox<IMongoEntityTemplatePopulated, IMongoCategory>
+            treeFunc={categories?.length ? (groupTemplatesByCategory as any) : undefined}
             title={title}
-            img={title === i18next.t('entityTemplatesCheckboxLabel') ? <FilterList /> : undefined}
+            filterIcon={title === i18next.t('entityTemplatesCheckboxLabel')}
             options={templates}
             selectedOptions={selectedTemplates}
             setSelectedOptions={setSelectedTemplates}
             getOptionId={({ _id }) => _id}
             getOptionLabel={({ displayName }) => displayName}
-            groupsProps={getCategoriesSelectCheckboxGroupProps(categories)}
             isDraggableDisabled={isDraggableDisabled}
             setOptions={setTemplates}
             size={size}
             toTopBar={toTopBar}
+            groupsProps={{
+                useGroups: true,
+                groups: categories,
+                getGroupId: ({ _id }) => _id,
+                getGroupLabel: ({ displayName }) => displayName,
+                getGroupOfOption: (entityTemplate, _categories) => entityTemplate.category,
+            }}
         />
     );
 };

@@ -12,11 +12,11 @@ import { IRuleMap } from '../../interfaces/rules';
 import { getAllTemplates, GetAllTemplatesType } from '../../services/templates/getAllTemplates';
 import { getFile } from '../../services/workspacesService';
 import { useUserStore } from '../../stores/user';
-import { useWorkspaceStore } from '../../stores/workspace';
+import { defaultMetadata, useWorkspaceStore } from '../../stores/workspace';
+import { handleWorkspace } from '../../utils/permissions';
 import { mapTemplates } from '../../utils/templates';
 import ErrorPage from '../ErrorPage';
 import { MeltaRoutesInner } from './routes';
-import { handleWorkspace } from '../../utils/permissions';
 
 interface IMeltaRoutesProps {
     path: string;
@@ -25,7 +25,6 @@ interface IMeltaRoutesProps {
 export const MeltaRoutes: React.FC<IMeltaRoutesProps> = ({ path }) => {
     const setWorkspace = useWorkspaceStore((state) => state.setWorkspace);
     const currentUser = useUserStore((state) => state.user);
-    const setUser = useUserStore((state) => state.setUser);
 
     const queryClient = useQueryClient();
 
@@ -61,7 +60,14 @@ export const MeltaRoutes: React.FC<IMeltaRoutesProps> = ({ path }) => {
         enabled: Boolean(workspace?._id),
     });
 
-    useEffect(() => handleWorkspace(workspace?.displayName ?? '', setWorkspace, workspace), [workspace, setWorkspace, currentUser, setUser]);
+    useEffect(() => {
+        if (workspace) {
+            handleWorkspace(workspace.displayName || '', setWorkspace, {
+                ...workspace,
+                metadata: { ...defaultMetadata, ...workspace.metadata },
+            });
+        }
+    }, [workspace, setWorkspace]);
 
     const isLoading = useMemo(() => isLoadingAllTemplates || isLoadingWorkspace, [isLoadingAllTemplates, isLoadingWorkspace]);
     const isError = useMemo(() => isErrorAllTemplates || isErrorWorkspace, [isErrorAllTemplates, isErrorWorkspace]);
