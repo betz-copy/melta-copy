@@ -1,5 +1,11 @@
 import { Router } from 'express';
-import { createWorkspacesController, translateWorkspaceParameter, translateWorkspaceParameterFlow, wrapMiddleware } from '../../utils/express';
+import {
+    createWorkspacesController,
+    translateWorkspaceParameter,
+    translateWorkspaceParameterFlow,
+    translateWorkspaceParameterFlowColumns,
+    wrapMiddleware,
+} from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
 import { InstancesValidator } from '../instances/middlewares';
 import FlowCubeController from './controller';
@@ -50,9 +56,9 @@ FlowCubeRouter.post(
 );
 
 FlowCubeRouter.post(
-    '/:workspaceId/templates/templateId',
+    '/templates/templateId',
     ValidateRequest(getEntityTemplateByIdSchema),
-    wrapMiddleware(translateWorkspaceParameterFlow),
+    wrapMiddleware(translateWorkspaceParameterFlowColumns),
     FlowCubeControllerMiddleware.getEntityTemplateById,
 );
 

@@ -46,7 +46,8 @@ export const searchTemplatesSchema = Joi.object({
 export const getEntityTemplateByIdSchema = Joi.object({
     body: Joi.object({
         TemplateType: Joi.array().items(Joi.string().allow('')),
-        WorkspaceId: Joi.string().required(),
+        CategoryType: Joi.array().items(Joi.string().allow('')),
+        WorkspaceId: Joi.array().items(Joi.string().allow('')),
     }),
     query: {},
     params: {},
