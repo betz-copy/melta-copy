@@ -13,7 +13,7 @@ interface HighchartGeneratorProps {
     metaData: IChartTypeMetaData;
     isQueryEnabled: boolean;
     type: HighchartType;
-    enableRsize?: boolean;
+    enableResize?: boolean;
 }
 
 const HiighchartGenerator: React.FC<HighchartGeneratorProps> = ({
@@ -24,7 +24,7 @@ const HiighchartGenerator: React.FC<HighchartGeneratorProps> = ({
     name,
     description,
     metaData,
-    enableRsize = false,
+    enableResize = false,
 }) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const chartRef = useRef<HighchartsReact.RefObject>(null);
@@ -43,7 +43,7 @@ const HiighchartGenerator: React.FC<HighchartGeneratorProps> = ({
     // TODO: refactor and eslint errors
     const resizeChart = () => {
         if (chartRef.current && containerRef.current) {
-            const newHeight = enableRsize ? containerRef.current.offsetHeight : undefined;
+            const newHeight = enableResize ? containerRef.current.offsetHeight : undefined;
             chartRef.current.chart.setSize(undefined, newHeight);
         }
     };
