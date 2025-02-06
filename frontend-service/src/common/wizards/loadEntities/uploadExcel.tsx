@@ -44,7 +44,7 @@ export const UploadExcel: React.FC<{
                     )}
 
                     <Typography fontSize="13px" color="#9398C2" marginTop="5px">
-                        - {i18next.t('wizard.entity.loadEntities.limitNumberFiles') + mode === 'edit' ? 1 : filesLimit}
+                        - {`${i18next.t('wizard.entity.loadEntities.limitNumberFiles')} ${mode === 'edit' ? 1 : filesLimit}`}
                     </Typography>
                 </Grid>
                 <InstanceFileInput

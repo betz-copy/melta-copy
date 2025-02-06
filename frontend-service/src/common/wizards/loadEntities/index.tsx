@@ -127,8 +127,6 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
             },
             onError() {
                 toast.error(i18next.t('wizard.entity.loadEntities.failedLoadEntities'));
-                // onClose();
-                // setStepsData((prev) => ({ ...prev, status: StepStatus.excelUploadResult }));
             },
             onMutate() {
                 onClose();
@@ -137,11 +135,21 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
     );
 
     const { isLoading: isExportingTableToExcelFile, mutateAsync: exportTemplateToExcel } = useMutation(
-        async ({ fileName, headersOnly, insertEntities }: { fileName: string; headersOnly?: boolean; insertEntities?: Record<string, any>[] }) => {
+        async ({
+            fileName,
+            headersOnly,
+            insertEntities,
+            edit,
+        }: {
+            fileName: string;
+            headersOnly?: boolean;
+            insertEntities?: Record<string, any>[];
+            edit?: boolean;
+        }) => {
             return exportEntitiesRequest({
                 fileName,
                 templates: {
-                    [template!._id]: { headersOnly, insertEntities, displayColumns: template?.propertiesOrder },
+                    [template!._id]: { headersOnly, insertEntities, displayColumns: template?.propertiesOrder, edit },
                 },
             });
         },
@@ -178,6 +186,7 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
                         exportTemplateToExcel({
                             fileName: `${template?.displayName}${excelExtension}`,
                             headersOnly: mode === 'create',
+                            edit: mode === 'edit',
                         })
                     }
                     download

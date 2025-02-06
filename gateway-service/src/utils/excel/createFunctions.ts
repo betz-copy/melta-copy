@@ -1,5 +1,5 @@
 /* eslint-disable no-param-reassign */
-import Excel from 'exceljs';
+import Excel, { Cell } from 'exceljs';
 import { v4 as uuidv4 } from 'uuid';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../externalServices/templates/entityTemplateService';
 import { IEntity } from '../../externalServices/instanceService/interfaces/entities';
@@ -151,6 +151,11 @@ const createWorksheet = async (
             const type = TypesToHebrew(Object.values(properties).find((propertyTemplate) => propertyTemplate.title === cell.value)!);
             cell.note = type;
         }
+        cell.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FFA7C7E7' },
+        };
     });
     return worksheet;
 };
@@ -159,26 +164,18 @@ export const getFileName = (fileId: string) => {
     return fileId.slice(config.storageService.fileIdLength);
 };
 
-const relationshipRefCell = (
-    cell: Excel.Cell,
-    [key, value]: [string, IEntitySingleProperty],
-    row: Record<string, any>,
-    workspacePath: string,
-    edit?: boolean,
-) => {
+const relationshipRefCell = (cell: Excel.Cell, [key, value]: [string, IEntitySingleProperty], row: Record<string, any>, workspacePath: string) => {
     cell.value = {
         text: row[key].properties[value.relationshipReference!.relatedTemplateField],
         hyperlink: `${config.service.meltaBaseUrl}${workspacePath}/entity/${row[key].properties._id}`,
     };
-    cell.protection = { locked: edit };
 };
 
-const filesCell = (cell: Excel.Cell, isFileArray: boolean, rowIndex: number, value: string, workspaceId: string, edit?: boolean) => {
+const filesCell = (cell: Excel.Cell, isFileArray: boolean, rowIndex: number, value: string, workspaceId: string) => {
     cell.value = {
         text: isFileArray ? `${config.excel.multipleFilesName}${rowIndex}` : getFileName(value),
         hyperlink: `${config.service.meltaBaseUrl}${config.storageService.baseRoute}/${isFileArray ? 'zip/' : ''}${encodeURIComponent(value)}/${workspaceId}`,
     };
-    cell.protection = { locked: edit };
 };
 
 const fixComplexProperties = (
@@ -187,20 +184,28 @@ const fixComplexProperties = (
     [key, value]: [string, IEntitySingleProperty],
     rowIndex: number,
     workspace: { path: string; id: string },
-    edit?: boolean,
 ) => {
     const isFileArray = value.type === 'array' && value.items?.format === 'fileId';
     const isSingleFile = value.format === 'fileId';
 
     if (value.format === 'relationshipReference') {
-        relationshipRefCell(cell, [key, value], row, workspace.path, edit);
+        relationshipRefCell(cell, [key, value], row, workspace.path);
         return true;
     }
     if (isSingleFile || isFileArray) {
-        filesCell(cell, isFileArray, rowIndex, row[key], workspace.id, edit);
+        filesCell(cell, isFileArray, rowIndex, row[key], workspace.id);
         return true;
     }
     return false;
+};
+
+const readOnlyCell = (cell: Cell, edit: boolean = true) => {
+    cell.protection = { locked: edit };
+    cell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FFD3D3D3' },
+    };
 };
 
 const styleAWorksheet = (
@@ -235,10 +240,12 @@ const styleAWorksheet = (
             if (row[key] !== undefined && value !== undefined) {
                 cell.alignment = excelStyle.cell.alignment;
                 cell.font = excelStyle.cell.font;
-                if (value.readOnly || value.identifier || value.serialStarter) cell.protection = { locked: true };
-                else cell.protection = { locked: false };
+                if (value.readOnly || value.identifier || value.serialStarter) {
+                    readOnlyCell(cell);
+                } else cell.protection = { locked: false };
 
-                const isComplex = fixComplexProperties(cell, row, [key, value], rowIndex, workspace, edit);
+                const isComplex = fixComplexProperties(cell, row, [key, value], rowIndex, workspace);
+                if (isComplex) readOnlyCell(cell, edit);
                 if (!isComplex) {
                     cell.value = row[key];
 
@@ -302,4 +309,4 @@ const styleAWorksheet = (
         });
 };
 
-export { createWorkbook, createWorksheet, styleAWorksheet, fixComplexProperties };
+export { createWorkbook, createWorksheet, styleAWorksheet };
