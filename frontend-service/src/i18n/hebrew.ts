@@ -99,6 +99,7 @@ export default {
         favorites: 'מועדפים',
         addActions: 'הוספת פעולות',
         convertToRelationShipFieldClick: 'המרה לשדה קשר',
+        navigate: 'עמוד פרט',
     },
     entityPage: {
         deleteRelationshipPopoverText: 'מחק קשר',
@@ -1136,6 +1137,8 @@ export default {
         actions: {
             createdSuccessfully: 'תרשים נוצר בהצלחה',
             failedToCreate: 'נכשל ביצירת תרשים',
+            editedSuccessfully: 'תרשים עודכן בהצלחה',
+            failedToEdit: 'נכשל בעדכון תרשים',
             deletedSuccessfully: 'תרשים נמחק בהצלחה',
             failedToDelete: 'מחיקת תרשים נכשלה',
         },

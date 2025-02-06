@@ -9,6 +9,7 @@ import {
     DoNotDisturbOffOutlined as DoNotDisturbOffOutlinedIcon,
     ContentCopy as DuplicateIcon,
     ControlPoint as AddIcon,
+    NavigateBefore as NavigateIcon,
 } from '@mui/icons-material';
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
 import { MenuButton } from '../../../common/MenuButton';
@@ -24,7 +25,17 @@ export const CardMenu: React.FC<{
     onDuplicateClick?: MouseEventHandler;
     onAddActionsClick?: MouseEventHandler;
     onConvertToRelationShipFieldClick?: MouseEventHandler;
-}> = ({ onEditClick, onDeleteClick, disabledProps, onDisableClick, onDuplicateClick, onAddActionsClick, onConvertToRelationShipFieldClick }) => {
+    onNavigate?: MouseEventHandler;
+}> = ({
+    onEditClick,
+    onDeleteClick,
+    disabledProps,
+    onDisableClick,
+    onDuplicateClick,
+    onAddActionsClick,
+    onConvertToRelationShipFieldClick,
+    onNavigate,
+}) => {
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
     const open = Boolean(anchorEl);
 
@@ -87,6 +98,17 @@ export const CardMenu: React.FC<{
                         }}
                         text={i18next.t('actions.addActions')}
                         icon={<AddIcon color="action" />}
+                    />
+                )}
+
+                {onNavigate && (
+                    <MenuButton
+                        onClick={(e) => {
+                            onNavigate(e);
+                            handleClose(e);
+                        }}
+                        text={i18next.t('actions.navigate')}
+                        icon={<NavigateIcon color="action" />}
                     />
                 )}
 
