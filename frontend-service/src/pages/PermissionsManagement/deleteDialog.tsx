@@ -22,7 +22,8 @@ const DeletePermissionsOfUserDialog: React.FC<{ isOpen: boolean; user: IUser | n
             }),
         {
             onError: (error) => {
-                console.log('failed to delete permission. error:', error);
+                // eslint-disable-next-line no-console
+                console.error('failed to delete permission. error:', error);
                 toast.error(i18next.t('permissions.failedToDeleteUser'));
             },
             onSuccess: (_data) => {

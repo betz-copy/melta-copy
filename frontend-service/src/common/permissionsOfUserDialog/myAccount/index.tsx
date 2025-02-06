@@ -44,6 +44,7 @@ const MyAccount: React.FC<{
             !isEqual(profilePreference.profilePath, existingUser.preferences.profilePath) ||
             !isEqual(updatedNotificationsTypes, existingUser.preferences.mailsNotificationsTypes);
         setIsPreferencesUpdated(hasPreferencesChanged);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [profilePreference, notificationsToShowCheckbox]);
 
     const { mutateAsync } = useMutation(
@@ -70,7 +71,8 @@ const MyAccount: React.FC<{
             },
 
             onError: (err: AxiosError) => {
-                console.log('failed to update user`s preferences request. error:', err);
+                // eslint-disable-next-line no-console
+                console.error('failed to update user`s preferences request. error:', err);
                 toast.error(<ErrorToast axiosError={err} defaultErrorMessage={i18next.t('user.failedToUpdateRequest')} />);
             },
         },

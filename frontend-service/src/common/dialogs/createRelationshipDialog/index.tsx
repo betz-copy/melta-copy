@@ -204,7 +204,8 @@ const CreateRelationshipDialog: React.FC<{
                     });
                 }
 
-                console.log('failed to create relationship. error:', err);
+                // eslint-disable-next-line no-console
+                console.error('failed to create relationship. error:', err);
                 toast.error(<ErrorToast axiosError={err} defaultErrorMessage={i18next.t('addRelationshipDialog.failedToCreateRelationship')} />);
             },
             onSuccess: (createdRelationship, { relationshipInstancePopulated: { sourceEntity, destinationEntity } }) => {

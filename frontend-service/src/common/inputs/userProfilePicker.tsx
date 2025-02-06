@@ -70,6 +70,7 @@ const UserProfilePicker: React.FC<UserProfilePickerProps> = ({
                 const kartoffelProfileImage = await getKartoffelUserProfileRequest(user.externalMetadata.kartoffelId);
                 setKartoffelUserProfile(kartoffelProfileImage);
             } catch (error) {
+                // eslint-disable-next-line no-console
                 console.error('Failed to fetch Kartoffel user profile:', error);
             }
         };

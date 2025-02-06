@@ -61,6 +61,7 @@ export const GlobalSearchBar: React.FC<{
 
     const [debouncedSearchValue, setDebouncedSearchValue] = useState(inputValue ?? '');
 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     const debouncedSearch = useCallback(
         debounce((value: string) => {
             if (value !== valueForSearchButtonRef.current) {
@@ -86,7 +87,6 @@ export const GlobalSearchBar: React.FC<{
         if (realValue !== boolUrl) setUrlSearchParams({ ...Object.fromEntries(urlSearchParams.entries()), semanticSearch: realValue.toString() });
     }, [boolUrl, semanticSearch, urlSemanticSearch, showAiButton, setSemanticSearch, setUrlSearchParams, urlSearchParams]);
 
-    // eslint-disable-next-line consistent-return
     useEffect(() => {
         if (autoSearch) {
             debouncedSearch(debouncedSearchValue);

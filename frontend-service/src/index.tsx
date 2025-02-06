@@ -16,6 +16,7 @@ import { useDarkModeStore } from './stores/darkMode';
 import MuiXLicense from './common/MuiLicense';
 
 if (import.meta.hot) {
+    // eslint-disable-next-line no-console
     import.meta.hot.on('vite:beforeUpdate', () => console.clear());
 }
 

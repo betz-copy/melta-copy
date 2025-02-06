@@ -139,7 +139,8 @@ const TemplateTablesView = forwardRef<TemplateTablesViewRef, TemplateTablesViewP
                     }
                 },
                 onError(error) {
-                    console.log('Failed to load templates counts', error);
+                    // eslint-disable-next-line no-console
+                    console.error('Failed to load templates counts', error);
                     toast.error(i18next.t('entitiesTableOfTemplate.failedToLoadData'));
                 },
             },

@@ -29,7 +29,8 @@ const CreateProcess: React.FC<ISimpleDialogProps> = ({ open, onClose }) => {
         },
         onError: (error: AxiosError) => {
             toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('processInstancesPage.failedToCreateProcess')} />);
-            console.log('Failed to create process. Error', error);
+            // eslint-disable-next-line no-console
+            console.error('Failed to create process. Error', error);
         },
     });
 

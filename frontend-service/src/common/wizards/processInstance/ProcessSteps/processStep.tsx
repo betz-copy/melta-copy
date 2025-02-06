@@ -133,7 +133,8 @@ export const ProcessStep: FC<ProcessStepProps> = ({
             },
             onError: (error: AxiosError) => {
                 toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.processInstance.step.failedToEdit')} />);
-                console.log('failed to edit step. error', error);
+                // eslint-disable-next-line no-console
+                console.error('failed to edit step. error', error);
             },
         },
     );

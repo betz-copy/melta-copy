@@ -88,7 +88,8 @@ const EntitiesPage: React.FC<{
         },
         {
             onError(error) {
-                console.log('Failed to export tables', error);
+                // eslint-disable-next-line no-console
+                console.error('Failed to export tables', error);
                 toast.error(i18next.t('failedToExportTables'));
             },
             onSuccess(data) {

@@ -60,6 +60,7 @@ const IFramesPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) =>
 
         localStorage.setItem(sideBarOpenKey, `${isSideBarOpen}`);
         setIsDimensionsChange(true);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isSideBarOpen]);
 
     return (
@@ -99,7 +100,8 @@ const IFramesPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) =>
                             return allIFrames ? allIFrames.slice(index, index + infiniteScrollPageCount) : [];
                         }}
                         onQueryError={(error) => {
-                            console.log('Failed loading data:', error);
+                            // eslint-disable-next-line no-console
+                            console.error('Failed loading data:', error);
                             toast.error(i18next.t('iFrames.searchFailed'));
                         }}
                         getNextPageParam={(lastPage, allPages) => {

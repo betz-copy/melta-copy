@@ -248,7 +248,8 @@ const PermissionsTable = forwardRef<PermissionsTableRef<IUser>, PermissionsTable
         }));
 
         const datasourceOnFail = (error: unknown) => {
-            console.log('failed loading all users:', error);
+            // eslint-disable-next-line no-console
+            console.error('failed loading all users:', error);
             toast.error(i18next.t('permissions.failedToLoadAllPermissions'));
         };
 

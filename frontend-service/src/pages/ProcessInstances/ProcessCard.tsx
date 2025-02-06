@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import React, { CSSProperties, useState } from 'react';
 import { Box, Card, CardContent, Grid, Typography, styled, IconButton, Menu, Skeleton } from '@mui/material';
 import { ScatterPlotOutlined as HiveIcon, FiberManualRecordOutlined as StatusIcon, Unarchive } from '@mui/icons-material';
@@ -208,7 +209,7 @@ const ProcessCard: React.FC<{
         },
         {
             onError: (error: AxiosError) => {
-                console.log('failed to delete process. error:', error);
+                console.error('failed to delete process. error:', error);
                 toast.error(i18next.t('processInstancesPage.failedToDeleteProcess'));
             },
             onSuccess: () => {
@@ -223,10 +224,10 @@ const ProcessCard: React.FC<{
         {
             onError: (error: AxiosError, process: IMongoProcessInstancePopulated) => {
                 if (process.archived) {
-                    console.log('failed to send process to archive. error:', error);
+                    console.error('failed to send process to archive. error:', error);
                     toast.success(i18next.t('processInstancesPage.failedToSendProcessToArchive'));
                 } else {
-                    console.log('failed to remove process from archive. error:', error);
+                    console.error('failed to remove process from archive. error:', error);
                     toast.success(i18next.t('processInstancesPage.failedToRemoveProcessFromArchive'));
                 }
             },
