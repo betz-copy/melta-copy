@@ -741,7 +741,6 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
             Object.entries(currTemplate.properties.properties).forEach(([key, value]) => {
                 const newValue = updatedTemplateData.properties.properties[key];
-
                 if ((!newValue || newValue?.isNewPropNameEqualDeletedPropName) && !currTemplate.actions) removedProperties.push(key);
                 else {
                     const isSingularToPlural =
@@ -750,6 +749,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
                     if (value.serialCurrent !== undefined) updatedTemplateData.properties.properties[key].serialCurrent = value.serialCurrent;
 
                     if (value.type !== newValue.type && !isSingularToPlural) throw new BadRequestError('can not change property type');
+
                     if (
                         !(
                             (value.format === 'text-area' && !newValue.format && newValue.type === 'string') ||
@@ -761,7 +761,6 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
                         throw new BadRequestError('can not change property format');
                     if (value.enum && newValue.enum && !value.enum?.every((val) => newValue.enum?.includes(val)))
                         throw new BadRequestError('can not remove options from enum');
-
                     if (value.serialStarter !== newValue.serialStarter) throw new BadRequestError('can not change property serial starter');
                     if (value.relationshipReference && !_isEqual(value.relationshipReference, newValue.relationshipReference))
                         throw new BadRequestError('can not change relationship reference fields');

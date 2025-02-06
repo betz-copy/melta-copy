@@ -599,33 +599,27 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                             sx={{ marginRight: '5px' }}
                                             fullWidth
                                         >
-                                            {initialValue?.type === 'enum'
-                                                ? ['enumArray', 'enum'].map((validType) => {
-                                                      return (
-                                                          <MenuItem key={validType} value={validType}>
-                                                              {i18next.t(`propertyTypes.${validType}`)}
-                                                          </MenuItem>
-                                                      );
-                                                  })
-                                                : validPropertyTypes
-                                                      .filter((validPropertyType) => {
-                                                          if (validPropertyType === 'entityReference') return supportEntityReferenceType;
-                                                          if (validPropertyType === 'serialNumber') {
-                                                              if (!supportSerialNumberType) return false;
-                                                          }
-                                                          if (validPropertyType === 'text-area') return false;
-                                                          if (validPropertyType === 'enumArray') return supportArrayFields;
-                                                          if (validPropertyType === 'relationshipReference') return supportRelationshipReference;
-                                                          if (validPropertyType === 'fileId' || validPropertyType === 'multipleFiles') return false; // TODO: support file inputs
-                                                          return true;
-                                                      })
-                                                      .map((validType) => {
-                                                          return (
-                                                              <MenuItem key={validType} value={validType}>
-                                                                  {i18next.t(`propertyTypes.${validType}`)}
-                                                              </MenuItem>
-                                                          );
-                                                      })}
+                                            {validPropertyTypes
+                                                .filter((validPropertyType) => {
+                                                    if (initialValue?.type === 'enum')
+                                                        return validPropertyType === 'enumArray' || validPropertyType === 'enum';
+                                                    if (validPropertyType === 'entityReference') return supportEntityReferenceType;
+                                                    if (validPropertyType === 'serialNumber') {
+                                                        if (!supportSerialNumberType) return false;
+                                                    }
+                                                    if (validPropertyType === 'text-area') return false;
+                                                    if (validPropertyType === 'enumArray') return supportArrayFields;
+                                                    if (validPropertyType === 'relationshipReference') return supportRelationshipReference;
+                                                    if (validPropertyType === 'fileId' || validPropertyType === 'multipleFiles') return false; // TODO: support file inputs
+                                                    return true;
+                                                })
+                                                .map((validType) => {
+                                                    return (
+                                                        <MenuItem key={validType} value={validType}>
+                                                            {i18next.t(`propertyTypes.${validType}`)}
+                                                        </MenuItem>
+                                                    );
+                                                })}
                                         </TextField>
                                     </Grid>
                                     <Grid item container justifyContent="space-between" flexWrap="nowrap">
