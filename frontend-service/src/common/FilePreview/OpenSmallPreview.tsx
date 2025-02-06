@@ -1,6 +1,6 @@
 import { KeyboardArrowLeft, KeyboardArrowRight } from '@mui/icons-material';
 import { Box, IconButton } from '@mui/material';
-import React, { CSSProperties } from 'react';
+import React from 'react';
 import { FileExtensions, IFile } from '../../interfaces/preview';
 import { SmallPreview } from './SmallPreview';
 
@@ -10,11 +10,9 @@ interface IOpenSmallPreview {
     increaseIndex: () => void;
     decreaseIndex: () => void;
     targetExtensions?: FileExtensions[];
-    maxHeight?: CSSProperties['maxHeight'];
-    maxWidth?: CSSProperties['maxWidth'];
 }
 
-const OpenSmallPreview: React.FC<IOpenSmallPreview> = ({ files, currentIndex, increaseIndex, decreaseIndex, maxHeight, maxWidth }) => {
+const OpenSmallPreview: React.FC<IOpenSmallPreview> = ({ files, currentIndex, increaseIndex, decreaseIndex }) => {
     const file = files[currentIndex];
 
     return (
@@ -35,7 +33,7 @@ const OpenSmallPreview: React.FC<IOpenSmallPreview> = ({ files, currentIndex, in
                 </IconButton>
             )}
 
-            <SmallPreview file={file} height={maxHeight} width={maxWidth} />
+            <SmallPreview file={file} />
 
             {currentIndex !== files.length - 1 && (
                 <IconButton

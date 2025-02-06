@@ -1,4 +1,4 @@
-import * as Joi from 'joi';
+import Joi from 'joi';
 import { Request } from 'express';
 import { wrapValidator } from './express';
 
@@ -7,6 +7,20 @@ const defaultValidationOptions: Joi.ValidationOptions = {
     allowUnknown: false,
     convert: true,
 };
+
+export const fileSchema = Joi.object({
+    fieldname: Joi.string().required(),
+    originalname: Joi.string().required(),
+    encoding: Joi.string().required(),
+    mimetype: Joi.string().required(),
+    size: Joi.number().min(1).required(),
+}).unknown(true);
+
+export const iconFileSchema = fileSchema.keys({
+    originalname: Joi.string()
+        .regex(/\.(svg|png|jpeg|jpg)$/i)
+        .required(),
+});
 
 const normalizeRequest = (req: any, value: any) => {
     req.originalBody = req.body;

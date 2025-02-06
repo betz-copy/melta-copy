@@ -5,17 +5,17 @@ import { Grid, IconButton, Typography, useTheme } from '@mui/material';
 import { DropResult } from 'react-beautiful-dnd';
 import FilterAltOffIcon from '@mui/icons-material/FilterAltOff';
 import AddIcon from '@mui/icons-material/Add';
-import { FilterList } from '@mui/icons-material';
 import { TopBarGrid } from '../../common/TopBar';
 import { BlueTitle } from '../../common/BlueTitle';
 import { environment } from '../../globals';
 import { GlobalSearchBar } from '../../common/EntitiesPage/Headline';
 import { LocalStorage } from '../../utils/localStorage';
 import { IMongoIFrame } from '../../interfaces/iFrames';
-import { SelectCheckbox } from '../../common/SelectCheckbox';
+import { SelectCheckbox } from '../../common/SelectCheckBox';
 import { useUserStore } from '../../stores/user';
 import { MeltaTooltip } from '../../common/MeltaTooltip';
 import IconButtonWithPopover from '../../common/IconButtonWithPopover';
+import { useWorkspaceStore } from '../../stores/workspace';
 
 const { iFramesOrderKey } = environment.iFrames;
 
@@ -30,6 +30,8 @@ const IFramesPageHeadline: React.FC<{
     const [allIFramesAllowed, setAllIFramesAllowed] = useState<IMongoIFrame[]>();
     const [inputValue, setInputValue] = useState('');
     const currentUser = useUserStore((state) => state.user);
+    const workspace = useWorkspaceStore((state) => state.workspace);
+    const { headlineTitleFontSize } = workspace.metadata.mainFontSizes;
 
     useEffect(() => {
         setAllIFramesAllowed(queryClient.getQueryData('allIFrames')!);
@@ -63,26 +65,22 @@ const IFramesPageHeadline: React.FC<{
         <TopBarGrid sx={{ height: '3.6rem' }} dir="rtl" container justifyContent="space-between" alignItems="center" wrap="nowrap">
             <Grid container spacing={3} wrap="nowrap" alignItems="center">
                 <Grid item>
-                    <BlueTitle
-                        title={i18next.t('pages.iFrames')}
-                        component="h4"
-                        variant="h4"
-                        style={{ fontSize: environment.mainFontSizes.headlineTitleFontSize }}
-                    />
+                    <BlueTitle title={i18next.t('pages.iFrames')} component="h4" variant="h4" style={{ fontSize: headlineTitleFontSize }} />
                 </Grid>
                 <Grid item>
-                    <SelectCheckbox
+                    <SelectCheckbox<IMongoIFrame>
                         title={i18next.t('iFrames.arrangementIFrames')}
-                        img={<FilterList fontSize="small" />}
+                        filterIcon
                         options={allIFramesAllowed ?? []}
                         selectedOptions={[]}
                         setSelectedOptions={() => {}}
-                        getOptionId={({ _id }) => _id}
+                        getOptionId={(option) => option._id}
                         getOptionLabel={({ name }) => name}
                         toTopBar
                         onDragEnd={handleOnDragEnd}
                         isSelectDisabled
                         showIcon
+                        hideChooseAll
                     />
                 </Grid>
 

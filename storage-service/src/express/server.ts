@@ -1,6 +1,6 @@
-import * as http from 'http';
-import * as express from 'express';
-import * as bodyParser from 'body-parser';
+import http from 'http';
+import express from 'express';
+import bodyParser from 'body-parser';
 import helmet from 'helmet';
 
 import { once } from 'events';

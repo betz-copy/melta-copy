@@ -1,10 +1,29 @@
 import joi from 'joi';
 import { PermissionType } from '../../externalServices/userService/interfaces/permissions';
-import { MongoIdSchema } from '../../utils/joi';
+import { ExtendedJoi, iconFileSchema, MongoIdSchema } from '../../utils/joi';
+import config from '../../config';
+
+const { profilePathPattern } = config.userService;
+
+export const partialSchema = (schema: joi.ObjectSchema) => {
+    const keys = Object.keys(schema.describe().keys);
+
+    return schema.fork(keys, (keySchema) =>
+        keySchema.describe().type === 'object' ? partialSchema(keySchema as joi.ObjectSchema) : keySchema.optional(),
+    );
+};
 
 const UserExternalMetadataSchema = joi.object({
     kartoffelId: joi.string().required(),
     digitalIdentitySource: joi.string().required(),
+});
+
+const UserPreferencesMetadataSchema = joi.object({
+    darkMode: ExtendedJoi.boolean(),
+    mailsNotificationsTypes: ExtendedJoi.stringToArray(),
+    profilePath: joi.string().pattern(profilePathPattern).messages({
+        'string.pattern.base': 'profilePath must start with a valid UUID, or kartoffelProfile string',
+    }),
 });
 
 // GET /api/users/my
@@ -16,6 +35,24 @@ export const getMyUserRequestSchema = joi.object({
 
 // GET /api/users/:userId
 export const getUserByIdRequestSchema = joi.object({
+    query: {},
+    body: {},
+    params: {
+        userId: joi.string().required(),
+    },
+});
+
+// GET /api/users/kartoffelUserProfile/:kartoffelId
+export const getKartoffelUserProfileRequestSchema = joi.object({
+    query: {},
+    body: {},
+    params: {
+        kartoffelId: joi.string().required(),
+    },
+});
+
+// GET /api/users/user-profile/:userId
+export const getUserProfileRequestSchema = joi.object({
     query: {},
     body: {},
     params: {
@@ -50,6 +87,16 @@ export const createUserRequestSchema = joi.object({
         permissions: joi.object(),
     }).required(),
     params: {},
+});
+
+// PATCH /api/users/:id/preferences
+export const updateUserPreferencesMetadataRequestSchema = joi.object({
+    query: {},
+    body: UserPreferencesMetadataSchema.required(),
+    params: {
+        userId: MongoIdSchema.required(),
+    },
+    file: iconFileSchema,
 });
 
 // PATCH /api/users/:userId/external
@@ -97,7 +144,7 @@ export const searchExternalUsersRequestSchema = joi.object({
     params: {},
 });
 
-//GET /api/users/search/:workspaceId
+// GET /api/users/search/:workspaceId
 export const searchUsersByPermissionsSchema = joi.object({
     query: {},
     body: {},

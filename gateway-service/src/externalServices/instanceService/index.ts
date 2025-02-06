@@ -5,12 +5,14 @@ import { IAction, IBrokenRule } from '../ruleBreachService/interfaces';
 import {
     IConstraintsOfTemplate,
     ICountSearchResult,
+    IDeleteBody,
     IEntity,
     ISearchBatchBody,
     ISearchEntitiesOfTemplateBody,
     ISearchResult,
     ITemplateSearchBody,
     IUniqueConstraintOfTemplate,
+    ISearchEntitiesByLocationBody,
 } from './interfaces/entities';
 import { IEntitySingleProperty } from '../templates/entityTemplateService';
 import { IRelationship } from './interfaces/relationships';
@@ -25,6 +27,7 @@ const {
         baseConstraintsRoute,
         requestTimeout,
         searchOfTemplateRoute,
+        searchEntitiesByLocationRoute,
     },
 } = config;
 
@@ -99,14 +102,23 @@ export class InstancesService extends DefaultExternalServiceApi {
         return data;
     }
 
-    async deleteEntityInstance(id: string) {
-        const { data } = await this.api.delete<string>(`${baseEntitiesRoute}/${id}`);
+    async deleteEntityInstances(deleteBody: IDeleteBody) {
+        const { data } = await this.api.post<string[]>(`${baseEntitiesRoute}/delete/bulk`, deleteBody);
 
         return data;
     }
 
     async searchEntitiesOfTemplateRequest(templateId: string, searchBody: ISearchEntitiesOfTemplateBody & { entityIdsToInclude?: string[] }) {
         const { data } = await this.api.post<ISearchResult>(`${baseEntitiesRoute}${searchOfTemplateRoute}/${templateId}`, searchBody);
+
+        return data;
+    }
+
+    async searchEntitiesByLocationRequest(searchBody: ISearchEntitiesByLocationBody) {
+        const { data } = await this.api.post<{ node: IEntity; matchingFields: string[] }[]>(
+            `${baseEntitiesRoute}${searchEntitiesByLocationRoute}`,
+            searchBody,
+        );
 
         return data;
     }

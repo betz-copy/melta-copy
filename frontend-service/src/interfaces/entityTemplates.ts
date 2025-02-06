@@ -9,7 +9,7 @@ export interface IEntitySingleProperty {
     items?: {
         type: 'string';
         enum?: string[];
-        format?: 'fileId';
+        format?: 'fileId' | 'user';
     };
     minItems?: 1;
     readOnly?: true;
@@ -19,6 +19,7 @@ export interface IEntitySingleProperty {
     uniqueCheckbox?: boolean;
     dateNotification?: number;
     isDailyAlert?: boolean;
+    isDatePastAlert?: boolean;
     calculateTime?: boolean;
     serialStarter?: number;
     serialCurrent?: number;

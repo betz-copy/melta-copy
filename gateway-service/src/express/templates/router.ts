@@ -1,9 +1,8 @@
 import { Router } from 'express';
 import { createProxyMiddleware, fixRequestBody } from 'http-proxy-middleware';
-import multer from 'multer';
 import config from '../../config';
 import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
-import { createWorkspacesController, wrapMulter } from '../../utils/express';
+import { createWorkspacesController } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
 import TemplatesController from './controller';
 import { TemplatesValidator } from './middlewares';
@@ -29,10 +28,10 @@ import {
     updateRelationshipTemplateSchema,
     updateRuleStatusByIdRequestSchema,
 } from './validator.schema';
+import { busboyMiddleware } from '../../utils/busboy/busboyMiddleware';
 
 const {
     templateService: { url, requestTimeout, baseRoute },
-    service: { uploadsFolderPath },
 } = config;
 
 const TemplatesServiceProxy = createProxyMiddleware({
@@ -56,14 +55,14 @@ templatesRouter.get('/all', AuthorizerControllerMiddleware.userHasSomePermission
 templatesRouter.get('/categories', AuthorizerControllerMiddleware.userHasSomePermissions, TemplatesServiceProxy);
 templatesRouter.post(
     '/categories',
-    wrapMulter(multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).single('file')),
+    busboyMiddleware,
     ValidateRequest(createCategorySchema),
     AuthorizerControllerMiddleware.userCanWriteTemplates,
     templatesControllerMiddleware.createCategory,
 );
 templatesRouter.put(
     '/categories/:id',
-    wrapMulter(multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).single('file')),
+    busboyMiddleware,
     ValidateRequest(updateCategorySchema),
     AuthorizerControllerMiddleware.userCanWriteTemplates,
     templatesControllerMiddleware.updateCategory,
@@ -99,24 +98,14 @@ templatesRouter.patch('/entities/:id/actions', AuthorizerControllerMiddleware.us
 templatesRouter.post('/entities/search', AuthorizerControllerMiddleware.userCanReadTemplates, TemplatesServiceProxy);
 templatesRouter.post(
     '/entities',
-    wrapMulter(
-        multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).fields([
-            { name: 'file', maxCount: 1 },
-            { name: 'files' },
-        ]),
-    ),
+    busboyMiddleware,
     ValidateRequest(createEntityTemplateSchema),
     templatesValidatorMiddleware.validateUserCanCreateEntityTemplateUnderCategory,
     templatesControllerMiddleware.createEntityTemplate,
 );
 templatesRouter.put(
     '/entities/:id',
-    wrapMulter(
-        multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).fields([
-            { name: 'file', maxCount: 1 },
-            { name: 'files' },
-        ]),
-    ),
+    busboyMiddleware,
     ValidateRequest(updateEntityTemplateSchema),
     templatesValidatorMiddleware.validateUserCanUpdateOrDeleteEntityTemplate,
     templatesControllerMiddleware.updateEntityTemplate,
@@ -126,6 +115,7 @@ templatesRouter.patch(
     ValidateRequest(updateEntityTemplateStatusSchema),
     templatesControllerMiddleware.updateEntityTemplateStatus,
 );
+
 templatesRouter.delete(
     '/entities/:id',
     ValidateRequest(deleteEntityTemplateSchema),

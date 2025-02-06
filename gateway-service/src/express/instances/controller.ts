@@ -3,6 +3,7 @@ import { promisify } from 'util';
 import { Request, Response } from 'express';
 import { InstancesManager } from './manager';
 import DefaultController from '../../utils/express/controller';
+import { IDeleteBody, ISearchEntitiesByLocationBody } from '../../externalServices/instanceService/interfaces/entities';
 
 export class InstancesController extends DefaultController<InstancesManager> {
     constructor(workspaceId: string) {
@@ -11,7 +12,7 @@ export class InstancesController extends DefaultController<InstancesManager> {
 
     async createEntityInstance(req: Request, res: Response) {
         const { ignoredRules, ...instanceData } = req.body;
-        res.json(await this.manager.createEntityInstance(instanceData, req.files as Express.Multer.File[], ignoredRules, req.user!.id));
+        res.json(await this.manager.createEntityInstance(instanceData, req.files || (req.file ? [req.file] : []), ignoredRules, req.user!.id));
     }
 
     async exportEntities(req: Request, res: Response) {
@@ -25,15 +26,30 @@ export class InstancesController extends DefaultController<InstancesManager> {
 
     async loadEntities(req: Request, res: Response) {
         res.json(
-            await this.manager.loadEntities(req.body.templateId, req.user!.id, req.files as Express.Multer.File[], req.body.insertBrokenEntities),
+            await this.manager.loadEntities(
+                req.body.templateId,
+                req.user!.id,
+                req.files || (req.file ? [req.file] : []),
+                req.body.insertBrokenEntities,
+            ),
         );
     }
 
     async updateEntityInstance(req: Request, res: Response) {
         const { ignoredRules, ...instanceData } = req.body;
         res.json(
-            await this.manager.updateEntityInstance(req.params.id, instanceData, req.files as Express.Multer.File[], ignoredRules, req.user!.id),
+            await this.manager.updateEntityInstance(
+                req.params.id,
+                instanceData,
+                req.files || (req.file ? [req.file] : []),
+                ignoredRules,
+                req.user!.id,
+            ),
         );
+    }
+
+    async searchEntitiesByLocation(req: Request, res: Response) {
+        res.json(await this.manager.searchEntitiesByLocation(req.body as ISearchEntitiesByLocationBody));
     }
 
     async searchEntitiesBatch(req: Request, res: Response) {
@@ -53,12 +69,20 @@ export class InstancesController extends DefaultController<InstancesManager> {
     async duplicateEntityInstance(req: Request, res: Response) {
         const { ignoredRules, ...instanceData } = req.body;
         res.json(
-            await this.manager.duplicateEntityInstance(req.params.id, instanceData, req.files as Express.Multer.File[], ignoredRules, req.user!.id),
+            await this.manager.duplicateEntityInstance(
+                req.params.id,
+                instanceData,
+                req.files || (req.file ? [req.file] : []),
+                ignoredRules,
+                req.user!.id,
+            ),
         );
     }
 
-    async deleteEntityInstance(req: Request, res: Response) {
-        res.json(await this.manager.deleteEntityInstance(req.params.id));
+    async deleteEntityInstances(req: Request, res: Response) {
+        const body = req.body as IDeleteBody;
+
+        res.json(await this.manager.deleteEntityInstances(body));
     }
 
     async createRelationshipInstance(req: Request, res: Response) {

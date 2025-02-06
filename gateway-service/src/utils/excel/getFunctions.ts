@@ -14,15 +14,16 @@ import {
     ICreateEntityMetadata,
     IFailedEntity,
 } from '../../externalServices/ruleBreachService/interfaces';
-import { IValidationErrorData } from '../../externalServices/instanceService/interfaces/entities';
+import { IEntity, IValidationErrorData } from '../../externalServices/instanceService/interfaces/entities';
 import {
     IBrokenRulePopulated,
     ICreateEntityMetadataPopulated,
     IUpdateEntityMetadataPopulated,
 } from '../../externalServices/ruleBreachService/interfaces/populated';
 import config from '../../config';
+import { UploadedFile } from '../busboy/interface';
 
-const { entitiesFileLimit, invalidDate, invalidTime } = config.loadExcel;
+const { invalidDate, invalidTime } = config.loadExcel;
 
 const formatExcel = (value: Excel.CellValue | string, propertyTemplate: IEntitySingleProperty) => {
     const { type, format } = propertyTemplate;
@@ -51,7 +52,8 @@ export const isIncludedColumn = (propertyTemplate: IEntitySingleProperty) => {
     const isRelationshipRef = propertyTemplate.format === 'relationshipReference' || propertyTemplate.relationshipReference;
     const isFile = propertyTemplate.format === 'fileId' || (propertyTemplate.type === 'array' && propertyTemplate.items?.format === 'fileId');
     const isSerialNumber = propertyTemplate.type === 'number' && propertyTemplate.serialCurrent;
-    return !isRelationshipRef && !isFile && !isSerialNumber;
+    const isLocation = propertyTemplate.format === 'location';
+    return !isRelationshipRef && !isFile && !isSerialNumber && !isLocation;
 };
 
 type IFailedProperties = {
@@ -84,9 +86,14 @@ const handleFailedEntities = (rowData: Record<string, any>, failedProperties: IF
     };
     failedEntities.push(failedEntity);
 };
-const readExcelFile = async (files: Express.Multer.File[], template: IMongoEntityTemplatePopulated, failedEntities: IFailedEntity[]) => {
-    const allActions: IAction[] = [];
 
+const readExcelFile = async (
+    files: UploadedFile[],
+    template: IMongoEntityTemplatePopulated,
+    failedEntities: IFailedEntity[],
+    entitiesFileLimit = config.loadExcel.entitiesFileLimit,
+) => {
+    const entities: IEntity[] = [];
     const columns = Object.fromEntries(
         Object.entries(template.properties.properties).filter(([_propertyKey, propertyTemplate]) => isIncludedColumn(propertyTemplate)),
     );
@@ -94,7 +101,10 @@ const readExcelFile = async (files: Express.Multer.File[], template: IMongoEntit
     await Promise.all(
         files.map(async (file) => {
             const workbook = new Excel.Workbook();
-            await workbook.xlsx.readFile(file.path);
+
+            if (!file?.stream) return;
+
+            await workbook.xlsx.read(file.stream);
             const worksheet = workbook.worksheets[0];
             if (!worksheet) throw new BadRequestError(`Can't read excel`);
 
@@ -104,6 +114,7 @@ const readExcelFile = async (files: Express.Multer.File[], template: IMongoEntit
                 if (rowIndex === 1) return; // skip header row
                 const failedProperties: IFailedProperties = [];
                 const rowData: Record<string, any> = {};
+
                 Object.entries(columns).forEach(([key, value], columnIndex) => {
                     const cellValue = row.getCell(columnIndex + 1).value;
                     try {
@@ -117,18 +128,14 @@ const readExcelFile = async (files: Express.Multer.File[], template: IMongoEntit
                 });
 
                 if (failedProperties.length > 0) handleFailedEntities(rowData, failedProperties, failedEntities);
-                else
-                    allActions.push({
-                        actionType: ActionTypes.CreateEntity,
-                        actionMetadata: { templateId: template._id, properties: rowData },
-                    });
+                else entities.push({ templateId: template._id, properties: rowData });
             });
 
-            if (allActions.length > entitiesFileLimit) throw new BadRequestError(`file limit: more than ${entitiesFileLimit} entities`, file);
+            if (entities.length > entitiesFileLimit) throw new BadRequestError(`file limit: more than ${entitiesFileLimit} entities`, file);
         }),
     );
 
-    return allActions;
+    return entities;
 };
 
 const getValidationErrorEntities = (error: AxiosError, failedEntities: IFailedEntity[]) => {

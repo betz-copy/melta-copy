@@ -87,30 +87,6 @@ export const getDependentRulesRequestSchema = Joi.object({
 });
 
 /**
- * DELETE /api/instances/entities/:id?deleteAllRelationships=true
- */
-export const deleteEntityByIdRequestSchema = Joi.object({
-    query: {
-        deleteAllRelationships: Joi.boolean().default(false),
-    },
-    body: {},
-    params: {
-        id: Joi.string().required(),
-    },
-});
-
-/**
- * DELETE /api/instances/entities?templateId
- */
-export const deleteEntitiesByTemplateIdRequestSchema = Joi.object({
-    query: {
-        templateId: Joi.string().required(),
-    },
-    body: {},
-    params: {},
-});
-
-/**
  * POST /api/instances/entities
  */
 export const createEntityRequestSchema = Joi.object({
@@ -234,6 +210,44 @@ const semanticSearchResult = Joi.object().pattern(
     ),
 );
 
+// /**
+//  * POST /api/instances/entities/delete/bulk
+//  */
+const baseDeleteSchema = Joi.object({
+    selectAll: Joi.boolean().required(),
+    templateId: Joi.string().required(),
+    deleteAllRelationships: Joi.boolean(),
+});
+
+const selectAllSchema = baseDeleteSchema.keys({
+    selectAll: Joi.valid(true).required(),
+    idsToExclude: Joi.array().items(Joi.string()),
+    filter: searchFilterSchema,
+    textSearch: Joi.string().allow(''),
+});
+
+const specificIdsSchema = baseDeleteSchema.keys({
+    selectAll: Joi.valid(false).required(),
+    idsToInclude: Joi.array().items(Joi.string()).min(1).required(),
+});
+
+export const deleteEntitiesByIdsRequestSchema = Joi.object({
+    body: Joi.alternatives(selectAllSchema, specificIdsSchema).required(),
+    query: {},
+    params: {},
+});
+
+/**
+ * DELETE /api/instances/entities?templateId
+ */
+export const deleteEntitiesByTemplateIdRequestSchema = Joi.object({
+    query: {
+        templateId: Joi.string().required(),
+    },
+    body: {},
+    params: {},
+});
+
 /*
  * POST /api/instances/entities/count
  */
@@ -272,6 +286,27 @@ export const searchEntitiesBatchRequestSchema = Joi.object({
     },
     query: {},
     params: {},
+});
+
+// POST /api/instances/search/map
+export const searchEntitiesByLocation = Joi.object({
+    body: Joi.object({
+        textSearch: Joi.string().allow(''),
+        templates: Joi.object().pattern(
+            Joi.string(),
+            Joi.object({
+                filter: Joi.any(),
+                locationFields: Joi.array().items(Joi.string()).min(1),
+            }),
+        ),
+        circle: Joi.object({
+            coordinate: Joi.array().items(Joi.number()).length(2).required(),
+            radius: Joi.number().positive().required(),
+        }),
+        polygon: Joi.array().items(Joi.array().items(Joi.number()).length(2)),
+    }).xor('circle', 'polygon'),
+    query: Joi.object(),
+    params: Joi.object(),
 });
 
 /**

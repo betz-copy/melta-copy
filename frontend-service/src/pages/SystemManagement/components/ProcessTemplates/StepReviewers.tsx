@@ -2,14 +2,16 @@ import { ChevronLeft, ExpandMore } from '@mui/icons-material';
 import { Button, Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
 import React, { useState } from 'react';
-import { environment } from '../../../../globals';
 import { IUser } from '../../../../interfaces/users';
+import { useWorkspaceStore } from '../../../../stores/workspace';
 
 interface StepReviewersProps {
     reviewers: IUser[];
 }
 
 export const StepReviewers: React.FC<StepReviewersProps> = ({ reviewers }) => {
+    const workspace = useWorkspaceStore((state) => state.workspace);
+
     const [isOpen, setIsOpen] = useState(false);
 
     return (
@@ -32,7 +34,7 @@ export const StepReviewers: React.FC<StepReviewersProps> = ({ reviewers }) => {
                     <Grid item key={reviewer._id}>
                         <Typography
                             style={{
-                                fontSize: environment.mainFontSizes.headlineSubTitleFontSize,
+                                fontSize: workspace.metadata.mainFontSizes.headlineSubTitleFontSize,
                                 textOverflow: 'ellipsis',
                                 whiteSpace: 'nowrap',
                                 overflow: 'hidden',

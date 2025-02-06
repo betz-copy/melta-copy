@@ -8,11 +8,14 @@ import { promises as fsp } from 'fs';
 import { Dictionary } from 'lodash';
 import groupBy from 'lodash.groupby';
 import { menash } from 'menashmq';
+import { StatusCodes } from 'http-status-codes';
 import config from '../../config';
 import { InstancesService } from '../../externalServices/instanceService';
 import {
+    ISearchEntitiesByLocationBody,
     IBrokenRulesError,
     ICountSearchResult,
+    IDeleteBody,
     IEntity,
     ISearchBatchBody,
     ISearchEntitiesOfTemplateBody,
@@ -31,7 +34,6 @@ import {
     ICreateRelationshipMetadata,
     IFailedEntity,
     IUpdateEntityMetadata,
-    RuleBreachRequestStatus,
 } from '../../externalServices/ruleBreachService/interfaces';
 import { StorageService } from '../../externalServices/storageService';
 import {
@@ -44,19 +46,19 @@ import { createWorkbook, createWorksheet, styleAWorksheet } from '../../utils/ex
 import DefaultManagerProxy from '../../utils/express/manager';
 import logger from '../../utils/logger/logsLogger';
 import { objectFilter } from '../../utils/object';
-import { BadRequestError } from '../error';
+import { BadRequestError, ServiceError } from '../error';
 import RuleBreachesManager from '../ruleBreaches/manager';
 import { patchDocumentAsStream } from './documentExport';
 import { IExportEntitiesBody } from './interfaces';
 import { RabbitManager } from '../../utils/rabbit';
 import { SemanticSearchService } from '../../externalServices/semanticSearch';
 import { WorkspaceService } from '../workspaces/service';
+import { UploadedFile } from '../../utils/busboy/interface';
 import { createTextsFromEntitiesWithFiles, formatEntitiesBulkSearch, sortEntities } from '../../utils/semantic';
 import { ISemanticSearchResult } from '../../externalServices/semanticSearch/interface';
 import { getValidationErrorEntities, readExcelFile, updateIdOfBrokenRules } from '../../utils/excel/getFunctions';
 
 const { errorCodes, rabbit, ruleBreachService } = config;
-const { filesLimit } = config.loadExcel;
 
 export class InstancesManager extends DefaultManagerProxy<InstancesService> {
     private entityTemplateService: EntityTemplateService;
@@ -82,7 +84,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
     }
 
     async uploadInstanceFiles<TProps = Record<string, any>>(
-        files: Express.Multer.File[],
+        files: UploadedFile[],
         props: TProps = {} as TProps,
     ): Promise<{ props: TProps; files: Record<string, any> }> {
         if (files.length === 0) {
@@ -242,9 +244,11 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
             }, {});
     };
 
-    handleLoadEntitiesErrors = (error, failedEntities: IFailedEntity[], entity: IEntity, allBrokenRulesEntities: IBrokenRuleEntity[]) => {
+    handleLoadEntitiesErrors = (error: any, failedEntities: IFailedEntity[], entity: IEntity, allBrokenRulesEntities: IBrokenRuleEntity[]) => {
         if (error instanceof AxiosError) {
-            const { data } = error.response!;
+            if (!error.response) throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, 'no error.response in axiosError', error);
+
+            const { data } = error.response;
 
             if (data.metadata && data.metadata.errorCode === errorCodes.failedConstraintsValidation) {
                 const { constraint } = data.metadata;
@@ -312,7 +316,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
     async loadEntities(
         templateId: string,
         userId: string,
-        files?: Express.Multer.File[],
+        files?: UploadedFile[],
         insertBrokenEntities?: { entitiesToCreate: IEntity[]; ignoredRules: IBrokenRule[] },
     ) {
         let entities = insertBrokenEntities?.entitiesToCreate;
@@ -321,26 +325,40 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         const failedEntities: IFailedEntity[] = [];
 
         if (files && !entities) {
-            if (files?.length > filesLimit) throw new BadRequestError('files limit', {});
-            const actions = await readExcelFile(files, template, failedEntities);
-            entities = actions.map((action) => action.actionMetadata as IEntity);
+            const workspace = await WorkspaceService.getById(this.workspaceId);
+            const workspaceFilesLimit = workspace.metadata?.excel?.filesLimit;
+
+            const effectiveFilesLimit = workspaceFilesLimit ?? config.loadExcel.filesLimit;
+
+            if (files.length > effectiveFilesLimit) {
+                throw new BadRequestError(`files limit: more than ${effectiveFilesLimit} files`, {});
+            }
+
+            const actions = await readExcelFile(files, template, failedEntities, workspace.metadata?.excel?.entitiesFileLimit);
+            entities = actions;
         }
         const serialStarters = this.getSerialStarters(template);
+        const generateSerialNumbers = (index: number) =>
+            Object.fromEntries(Object.entries(serialStarters).map(([key, value]) => [key, value + index]));
+
         const succeededEntities: IEntity[] = [];
         const allBrokenRulesEntities: IBrokenRuleEntity[] = [];
+        const results: IEntity[] = [];
 
-        for (const entity of entities!) {
+        const handleLoadEntities = async (entity: IEntity) => {
             try {
-                // eslint-disable-next-line no-loop-func
-                const serialNumbers = Object.fromEntries(
-                    Object.entries(serialStarters).map(([key, value]) => [key, value + succeededEntities.length]),
-                );
+                const serialNumbers = generateSerialNumbers(succeededEntities.length);
                 const result = await this.createEntityInstance(entity, [], insertBrokenEntities?.ignoredRules || [], userId, serialNumbers);
-                succeededEntities.push(result);
+                results.push(result);
             } catch (error) {
                 this.handleLoadEntitiesErrors(error, failedEntities, entity, allBrokenRulesEntities);
             }
-        }
+        };
+
+        if (Object.keys(serialStarters).length > 0) for (const entity of entities!) handleLoadEntities(entity);
+        else await Promise.all(entities!.map(async (entity) => handleLoadEntities(entity)));
+
+        succeededEntities.push(...results);
 
         const brokenRulesEntities = await updateIdOfBrokenRules(allBrokenRulesEntities);
         if (serialStarters) await this.updateTemplateCurrentNumbers(template, serialStarters, succeededEntities.length);
@@ -393,7 +411,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         return updatedProperties;
     }
 
-    async handlePreparationsBeforeCreateEntity(instanceData: IEntity, files: Express.Multer.File[], serialNumbers?: Record<string, number>) {
+    async handlePreparationsBeforeCreateEntity(instanceData: IEntity, files: UploadedFile[], serialNumbers?: Record<string, number>) {
         const { props: propertiesWithFiles, files: upserstedFiles } = await this.uploadInstanceFiles(files, instanceData.properties);
 
         const entityTemplate = await this.entityTemplateService.getEntityTemplateById(instanceData.templateId);
@@ -408,7 +426,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
     async createEntityInstance(
         instanceData: IEntity,
-        files: Express.Multer.File[],
+        files: UploadedFile[],
         ignoredRules: IBrokenRule[],
         userId: string,
         serialNumbers?: Record<string, number>,
@@ -443,7 +461,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         return createdEntity;
     }
 
-    private async deleteUnusedFiles(currentEntity: IEntity, instanceData: IEntity, files: Express.Multer.File[]) {
+    private async deleteUnusedFiles(currentEntity: IEntity, instanceData: IEntity, files: UploadedFile[]) {
         const entityTemplate = await this.entityTemplateService.getEntityTemplateById(currentEntity.templateId);
         const newFilesKeys = files.map((file) => file.fieldname);
 
@@ -464,8 +482,8 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
             return [];
         }
 
-        await this.rabbitManager.deleteFiles(currentEntity.templateId, currentEntity.properties._id, fileIdsToDelete);
-        await menash.send(rabbit.deleteUnusedFilesQueue, JSON.stringify(fileIdsToDelete));
+        await this.rabbitManager.deleteFiles(fileIdsToDelete);
+        await menash.send(rabbit.deleteUnusedFilesQueue, JSON.stringify({ fileIds: fileIdsToDelete, bucketName: this.workspaceId }));
 
         return fileIdsToDelete;
     }
@@ -591,7 +609,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
     async duplicateEntityInstance(
         id: string,
         instanceData: IEntity,
-        files: Express.Multer.File[],
+        files: UploadedFile[],
         ignoredRules: IBrokenRule[],
         userId: string,
         duplicateFileProperties = true,
@@ -665,7 +683,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
     async updateEntityInstance(
         id: string,
         updatedInstanceData: IEntity,
-        files: Express.Multer.File[],
+        files: UploadedFile[],
         ignoredRules: IBrokenRule[],
         userId: string,
         createAlert: boolean = true,
@@ -743,35 +761,20 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         return updatedEntity;
     }
 
-    private async deleteAllEntityFiles(currentEntity: IEntity) {
-        const entityTemplate = await this.entityTemplateService.getEntityTemplateById(currentEntity.templateId);
-
-        const filePropertiesToRemove = this.getEntityFileProperties(currentEntity.properties, entityTemplate);
-        const fileIdsToRemove = Object.values(filePropertiesToRemove).flat();
-
-        if (fileIdsToRemove.length === 0) {
-            return [];
-        }
-
-        await this.rabbitManager.deleteFiles(currentEntity.templateId, currentEntity.properties._id, fileIdsToRemove);
-        await menash.send(rabbit.deleteUnusedFilesQueue, JSON.stringify(fileIdsToRemove));
+    private async deleteAllEntitiesFiles(fileIdsToRemove: string[]) {
+        if (!fileIdsToRemove.length) return [];
+        await menash.send(rabbit.deleteUnusedFilesQueue, JSON.stringify({ fileIds: fileIdsToRemove, bucketName: this.workspaceId }));
+        await this.rabbitManager.deleteFiles(fileIdsToRemove);
 
         return fileIdsToRemove;
     }
 
-    async deleteEntityInstance(id: string) {
-        const currentEntity = await this.service.getEntityInstanceById(id);
-        const deletedInstance = await this.service.deleteEntityInstance(id);
+    async deleteEntityInstances(deleteBody: IDeleteBody) {
+        const filesOfDeletedInstances = await this.service.deleteEntityInstances(deleteBody);
 
-        await this.ruleBreachesManager.updateManyRuleBreachRequestsStatusesByRelatedEntityId(id, RuleBreachRequestStatus.Canceled);
+        const { err: error } = await trycatch(() => this.deleteAllEntitiesFiles(filesOfDeletedInstances));
 
-        const { err: error } = await trycatch(() => this.deleteAllEntityFiles(currentEntity));
-
-        if (error) {
-            logger.error(`failed to delete files of instanceId ${id}`, { error });
-        }
-
-        return deletedInstance;
+        if (error) logger.error(`failed to delete files ${filesOfDeletedInstances}`, { error });
     }
 
     async createRelationshipInstance(relationship: IRelationship, ignoredRules: IBrokenRule[], userId: string, createAlert: boolean = true) {
@@ -943,5 +946,25 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         );
 
         return this.service.runBulkOfActions(newActionsGroups, dryRun, userId, ignoredRules);
+    }
+
+    async searchEntitiesByLocation(reqBody: ISearchEntitiesByLocationBody) {
+        const entityTemplates = await this.entityTemplateService.searchEntityTemplates({ ids: Object.keys(reqBody.templates) });
+
+        const locationFieldsMap = entityTemplates.reduce((acc, entityTemplate) => {
+            const { _id, properties } = entityTemplate;
+
+            const locationKeys = Object.entries(properties.properties)
+                .filter(([, value]) => value.format === 'location')
+                .map(([key]) => key);
+
+            if (locationKeys.length > 0) {
+                acc[_id] = { filter: reqBody.templates[_id].filter, locationFields: locationKeys };
+            }
+
+            return acc;
+        }, {});
+
+        return this.service.searchEntitiesByLocationRequest({ ...reqBody, templates: locationFieldsMap } as ISearchEntitiesByLocationBody);
     }
 }

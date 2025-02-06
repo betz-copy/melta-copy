@@ -1,3 +1,4 @@
+import { Card, CardContent, Dialog, Grid, IconButton, Menu } from '@mui/material';
 import {
     AccountTreeOutlined as GraphIcon,
     ContentCopy as DuplicateIcon,
@@ -9,13 +10,13 @@ import {
     Unarchive,
     Archive,
 } from '@mui/icons-material';
-import { Card, CardContent, Grid, IconButton, Menu } from '@mui/material';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React, { useState } from 'react';
+import { useLocation } from 'wouter';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import { useLocation } from 'wouter';
+import MapIcon from '@mui/icons-material/Map';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import { ExportFormats } from '../../../common/dialogs/entity/ExportFormats';
 import { EntityProperties } from '../../../common/EntityProperties';
@@ -23,19 +24,20 @@ import { ErrorToast } from '../../../common/ErrorToast';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
 import { ImageWithDisable } from '../../../common/ImageWithDisable';
 import { MenuButton } from '../../../common/MenuButton';
-import { IEntity, IEntityExpanded } from '../../../interfaces/entities';
+import { IDeleteEntityBody, IEntity, IEntityExpanded } from '../../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { PermissionScope } from '../../../interfaces/permissions';
 import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
 import { deleteEntityRequest, updateEntityStatusRequest } from '../../../services/entitiesService';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { useUserStore } from '../../../stores/user';
-import { checkUserCategoryPermission } from '../../../utils/permissions/instancePermissions';
+import { checkUserCategoryPermission, isWorkspaceAdmin } from '../../../utils/permissions/instancePermissions';
 import { EditEntityDetails } from './EditEntityDetails';
 import { EntityDates } from './EntityDates';
 import { EntityDisableCheckbox } from './EntityDisableCheckbox';
 import TooltipMenuButton from './TooltipMenuButton';
 import UpdateStatusWithRuleBreachDialog from './UpdateStatusWithRuleBreachDialog';
+import EntityWithLocationFields from '../../Map/LocationPreview';
 
 const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; expandedEntity: IEntityExpanded }> = ({
     entityTemplate,
@@ -45,9 +47,17 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
     const [_, navigate] = useLocation();
     const [isEditMode, setIsEditMode] = useState(false);
     const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+    const [mapDialogOpen, setMapDialogOpen] = useState(false);
     const queryClient = useQueryClient();
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
     const [displayArchiveProperties, setDisplayArchiveProperties] = useState(false);
+
+    const [updateStatusWithRuleBreachDialogState, setUpdateStatusWithRuleBreachDialogState] = useState<{
+        isOpen: boolean;
+        brokenRules?: IRuleBreachPopulated['brokenRules'];
+        rawBrokenRules?: IRuleBreach['brokenRules'];
+        disabledStatus?: boolean;
+    }>({ isOpen: false });
 
     const currentUser = useUserStore((state) => state.user);
     const darkMode = useDarkModeStore((state) => state.darkMode);
@@ -69,12 +79,14 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const currentEntityTemplate = entityTemplates.get(expandedEntity?.entity.templateId);
     const templateIds = Array.from(entityTemplates.keys());
-    const [updateStatusWithRuleBreachDialogState, setUpdateStatusWithRuleBreachDialogState] = useState<{
-        isOpen: boolean;
-        brokenRules?: IRuleBreachPopulated['brokenRules'];
-        rawBrokenRules?: IRuleBreach['brokenRules'];
-        disabledStatus?: boolean;
-    }>({ isOpen: false });
+
+    const workspaceAdmin = isWorkspaceAdmin(currentUser.currentWorkspacePermissions);
+    const canWriteInstance = checkUserCategoryPermission(currentUser.currentWorkspacePermissions, entityTemplate.category, PermissionScope.write);
+    const isEntityDisabled = expandedEntity.entity.properties.disabled;
+    const includeLocationProperty = Object.entries(entityTemplate.properties.properties).some(
+        ([field, property]) => property.format === 'location' && entity.properties[field] !== undefined,
+    );
+
     const { isLoading: isUpdateStatusLoading, mutateAsync: updateEntityStatus } = useMutation(
         ({ currEntity, disabled, ignoredRules }: { currEntity: IEntity; disabled: boolean; ignoredRules?: IRuleBreach['brokenRules'] }) =>
             updateEntityStatusRequest(currEntity.properties._id, disabled, JSON.stringify(ignoredRules)),
@@ -107,17 +119,26 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
         },
     );
 
-    const { isLoading: isDeleteLoading, mutateAsync: deleteMutation } = useMutation(() => deleteEntityRequest(entity.properties._id), {
-        onError: (error: AxiosError) => {
-            closeDeleteDialog();
-            toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.entity.failedToDelete')} />);
+    const { isLoading: isDeleteLoading, mutateAsync: deleteMutation } = useMutation(
+        () =>
+            deleteEntityRequest({
+                selectAll: false,
+                templateId: currentEntityTemplate?._id as string,
+                idsToInclude: [entity.properties._id],
+                deleteAllRelationships: expandedEntity.connections.length > 0 && workspaceAdmin,
+            } as IDeleteEntityBody<false>),
+        {
+            onError: (error: AxiosError) => {
+                closeDeleteDialog();
+                toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.entity.failedToDelete')} />);
+            },
+            onSuccess: () => {
+                toast.success(i18next.t('wizard.entity.deletedSuccessfully'));
+                closeDeleteDialog();
+                navigate(`/category/${currentEntityTemplate?.category._id}`);
+            },
         },
-        onSuccess: () => {
-            toast.success(i18next.t('wizard.entity.deletedSuccessfully'));
-            closeDeleteDialog();
-            navigate(`/category/${currentEntityTemplate?.category._id}`);
-        },
-    });
+    );
 
     if (isEditMode) {
         return (
@@ -138,9 +159,6 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
         );
     }
 
-    const canWriteInstance = checkUserCategoryPermission(currentUser.currentWorkspacePermissions, entityTemplate.category, PermissionScope.write);
-    const isEntityDisabled = expandedEntity.entity.properties.disabled;
-
     return (
         <>
             <Card
@@ -154,7 +172,14 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                 <CardContent sx={{ '&:last-child': { padding: 0 } }}>
                     <Grid item container flexDirection="column" flexWrap="nowrap" padding="20px">
                         <Grid item>
-                            <Grid container flexDirection="row" flexWrap="nowrap" justifyContent="flex-end">
+                            <Grid container flexDirection="row" flexWrap="nowrap" justifyContent="flex-end" alignItems="center">
+                                {includeLocationProperty && (
+                                    <Grid onClick={() => setMapDialogOpen(true)}>
+                                        <IconButtonWithPopover popoverText={i18next.t('map')}>
+                                            <MapIcon sx={{ color: '#787c9e' }} />
+                                        </IconButtonWithPopover>
+                                    </Grid>
+                                )}
                                 <Grid
                                     onClick={() => {
                                         if (canWriteInstance && !isEntityDisabled) setIsEditMode(true);
@@ -186,7 +211,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                                     </IconButtonWithPopover>
                                 </Grid>
                                 <IconButton onClick={handleClick}>
-                                    <MoreVertOutlined />
+                                    <MoreVertOutlined sx={{ color: '#787c9e' }} />
                                 </IconButton>
                                 <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
                                     <Grid>
@@ -335,6 +360,11 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                 <AreYouSureDialog
                     open={openDeleteDialog}
                     handleClose={closeDeleteDialog}
+                    body={
+                        expandedEntity.connections.length > 0 &&
+                        workspaceAdmin &&
+                        i18next.t('entityPage.wouldYouLikeToDeleteTheRelationshipsOfEntity')
+                    }
                     onYes={() => deleteMutation()}
                     isLoading={isDeleteLoading}
                 />
@@ -361,6 +391,11 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                         }))
                     }
                 />
+            )}
+            {mapDialogOpen && (
+                <Dialog open={mapDialogOpen} onClose={() => setMapDialogOpen(false)}>
+                    <EntityWithLocationFields entity={entity} entityTemplate={entityTemplate} styles={{ height: '800px', width: '600px' }} />
+                </Dialog>
             )}
         </>
     );

@@ -1,10 +1,40 @@
 import { create } from 'zustand';
-import { IWorkspace, WorkspaceTypes } from '../interfaces/workspaces';
+import { IMetadata, IWorkspace, WorkspaceTypes } from '../interfaces/workspaces';
 
 export interface WorkspaceState {
-    workspace: IWorkspace;
+    workspace: IWorkspace & { metadata: IMetadata };
     setWorkspace: (workspace: WorkspaceState['workspace']) => void;
+    updateWorkspaceMetadata: (metadata: Partial<IMetadata>) => void;
 }
+
+export const defaultMetadata = {
+    shouldNavigateToEntityPage: false,
+    isDrawerOpen: false,
+    agGrid: {
+        rowCount: 5,
+        defaultExpandedRowCount: 13,
+        defaultRowHeight: 50,
+        defaultFontSize: 14,
+        defaultExpandedTableHeight: 650,
+    },
+    mainFontSizes: {
+        headlineTitleFontSize: '24px',
+        entityTemplateTitleFontSize: '20px',
+        headlineSubTitleFontSize: '14px',
+    },
+    iconSize: {
+        width: '24px',
+        height: '24px',
+    },
+    excel: {
+        entitiesFileLimit: 500,
+        filesLimit: 5,
+    },
+    searchLimits: {
+        table: 5,
+        bulk: 5,
+    },
+} as const;
 
 export const useWorkspaceStore = create<WorkspaceState>((set) => ({
     workspace: {
@@ -16,6 +46,17 @@ export const useWorkspaceStore = create<WorkspaceState>((set) => ({
         colors: {
             primary: '#1E2775',
         },
+        metadata: defaultMetadata,
     },
     setWorkspace: (workspace) => set({ workspace }),
+    updateWorkspaceMetadata: (metadata) =>
+        set((state) => ({
+            workspace: {
+                ...state.workspace,
+                metadata: {
+                    ...state.workspace.metadata,
+                    ...metadata,
+                },
+            },
+        })),
 }));

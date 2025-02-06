@@ -5,6 +5,7 @@ import {
     Download,
     Expand,
     TableRowsOutlined,
+    LibraryAddCheckOutlined as SelectMultipleIcon,
     Upload,
 } from '@mui/icons-material';
 import { Box, CircularProgress, Dialog, Grid, useTheme } from '@mui/material';
@@ -34,10 +35,10 @@ import { TableButton } from '../TableButton';
 import { AddEntityButton } from './AddEntityButton';
 import { DraftCard } from './DraftCard';
 import { ResetFilterButton } from './ResetFilterButton';
+import { useWorkspaceStore } from '../../stores/workspace';
 import { LoadExcelButton } from './LoadExcelButton';
 
 const {
-    agGrid: { defaultRowHeight, defaultFontSize, defaultExpandedTableHeight },
     loadExcel: { excelExtension },
 } = environment;
 
@@ -52,15 +53,43 @@ const TemplateTable = forwardRef<
         setUpdatedEntities: React.Dispatch<React.SetStateAction<IEntity[]>>;
     }
 >(({ template, quickFilterText, page, setUpdatedEntities }, ref) => {
+    const workspace = useWorkspaceStore((state) => state.workspace);
+    const { defaultRowHeight, defaultFontSize, defaultExpandedTableHeight } = workspace.metadata.agGrid;
+    const { height, width } = workspace.metadata.iconSize;
+
     const currentUser = useUserStore((state) => state.user);
 
     const theme = useTheme();
+    const drafts = useDraftsStore((state) => state.drafts);
+
+    const setDraftId = useDraftIdStore((state) => state.setDraftId);
     const { trackEvent } = useMatomo();
 
     const entitiesTableRef = useRef<EntitiesTableOfTemplateRef<IEntity>>(null);
 
     const [isExpand, setIsExpand] = useState(() => sessionStorage.getItem(`isExpand-${template._id}`) === 'true');
+    const [multipleSelect, setMultipleSelect] = useState(false);
+    const [isFiltered, setIsFiltered] = useState(false);
+    const initializedExternalErrors = { files: false, unique: {}, action: '' };
+    const [externalErrors, setExternalErrors] = useState(initializedExternalErrors);
+    const [createOrUpdateWithRuleBreachDialogState, setCreateOrUpdateWithRuleBreachDialogState] = useState<ICreateOrUpdateWithRuleBreachDialogState>({
+        isOpen: false,
+    });
+    const [editDialog, setEditDialog] = useState<{
+        isOpen: boolean;
+        isEditMode: boolean;
+        entity?: IEntity;
+        wizardValues?: EntityWizardValues;
+    }>({
+        isOpen: false,
+        isEditMode: true,
+    });
+
     useImperativeHandle(ref, () => entitiesTableRef.current!);
+
+    useEffect(() => {
+        sessionStorage.setItem(`isExpand-${template._id}`, isExpand.toString());
+    }, [isExpand, template._id]);
 
     const handleExpandClick = useCallback(() => {
         setIsExpand((prevExpand) => {
@@ -71,7 +100,9 @@ const TemplateTable = forwardRef<
             sessionStorage.setItem(`resizeHeight-${template._id}`, JSON.stringify(defaultExpandedTableHeight));
             return newExpandState;
         });
-    }, [template._id, page]);
+
+        if (multipleSelect) setMultipleSelect(false);
+    }, [template._id, page, multipleSelect]);
 
     const { isLoading: isExportingTableToExcelFile, mutateAsync: exportTemplateToExcel } = useMutation(
         async () => {
@@ -97,28 +128,10 @@ const TemplateTable = forwardRef<
         },
     );
 
-    const [isFiltered, setIsFiltered] = useState(false);
-    const initializedExternalErrors = { files: false, unique: {}, action: '' };
-    const [externalErrors, setExternalErrors] = useState(initializedExternalErrors);
-    const [editDialog, setEditDialog] = useState<{
-        isOpen: boolean;
-        isEditMode: boolean;
-        entity?: IEntity;
-        wizardValues?: EntityWizardValues;
-    }>({
-        isOpen: false,
-        isEditMode: true,
-    });
-    const [createOrUpdateWithRuleBreachDialogState, setCreateOrUpdateWithRuleBreachDialogState] = useState<ICreateOrUpdateWithRuleBreachDialogState>({
-        isOpen: false,
-    });
     const entityTemplateColor = getEntityTemplateColor(template);
 
     const userHasWritePermissions = checkUserCategoryPermission(currentUser.currentWorkspacePermissions, template.category, PermissionScope.write);
 
-    const drafts = useDraftsStore((state) => state.drafts);
-
-    const setDraftId = useDraftIdStore((state) => state.setDraftId);
     useEffect(() => {
         sessionStorage.setItem(`isExpand-${template._id}`, isExpand.toString());
     }, [isExpand, template._id]);
@@ -138,12 +151,11 @@ const TemplateTable = forwardRef<
         const requiredProperties = new Set(template.properties.required);
 
         return Object.entries(properties).some(([key, property]) => {
-            return (property.format === 'fileId' || property.format === 'relationshipReference') && requiredProperties.has(key);
+            return property.format && ['fileId', 'relationshipReference', 'location'].includes(property.format) && requiredProperties.has(key);
         });
     };
 
     const isLoadExcelDisabled = !userHasWritePermissions || checkIfLoadEntityIsDisabled();
-
     return (
         <Grid container minWidth="fit-content">
             <Grid container justifyContent="space-between" width="fit-content" minWidth="fit-content">
@@ -153,21 +165,26 @@ const TemplateTable = forwardRef<
                     </Grid>
                     <Grid item minWidth="fit-content" sx={{ display: 'flex', justifyContent: 'center', alignContent: 'center' }}>
                         {template.iconFileId ? (
-                            <CustomIcon
-                                iconUrl={template.iconFileId}
-                                height={environment.iconSize.height}
-                                width={environment.iconSize.width}
-                                color={theme.palette.primary.main}
-                            />
+                            <CustomIcon iconUrl={template.iconFileId} height={height} width={width} color={theme.palette.primary.main} />
                         ) : (
                             <DefaultEntityTemplateIcon
-                                sx={{ color: theme.palette.primary.main, height: environment.iconSize.height, width: environment.iconSize.width }}
+                                sx={{
+                                    color: theme.palette.primary.main,
+                                    height,
+                                    width,
+                                }}
                             />
                         )}
                     </Grid>
                     <Grid item minWidth="fit-content" style={{ whiteSpace: 'nowrap', overflow: 'hidden' }}>
                         <BlueTitle
-                            style={{ minWidth: 'fit-content', whiteSpace: 'nowrap', overflow: 'hidden', fontWeight: '500', fontSize: '20px' }}
+                            style={{
+                                minWidth: 'fit-content',
+                                whiteSpace: 'nowrap',
+                                overflow: 'hidden',
+                                fontWeight: '500',
+                                fontSize: workspace.metadata.mainFontSizes.entityTemplateTitleFontSize,
+                            }}
                             title={template.displayName}
                             component="h5"
                             variant="h5"
@@ -202,7 +219,6 @@ const TemplateTable = forwardRef<
                             iconButtonProps: {
                                 onClick: () => {
                                     handleExpandClick();
-
                                     trackEvent({
                                         category: 'template-action',
                                         action: isExpand ? 'off' : 'on',
@@ -227,6 +243,21 @@ const TemplateTable = forwardRef<
                         }}
                         icon={isExportingTableToExcelFile ? <CircularProgress size="24px" /> : <Download fontSize="small" />}
                         text={isExportingTableToExcelFile ? '' : i18next.t('entitiesTableOfTemplate.downloadOneTableTitle')}
+                    />
+
+                    <TableButton
+                        iconButtonWithPopoverProps={{
+                            popoverText: i18next.t('entitiesTableOfTemplate.multipleSelect'),
+                            iconButtonProps: {
+                                onClick: () => {
+                                    setMultipleSelect(!multipleSelect);
+                                    if (!(isExpand && !multipleSelect)) setIsExpand(!isExpand);
+                                },
+                            },
+                        }}
+                        icon={<SelectMultipleIcon fontSize="small" />}
+                        text={i18next.t('entitiesTableOfTemplate.multipleSelect')}
+                        disableButton={!userHasWritePermissions}
                     />
                 </Grid>
 
@@ -329,6 +360,7 @@ const TemplateTable = forwardRef<
                     quickFilterText={quickFilterText}
                     rowHeight={defaultRowHeight}
                     fontSize={`${defaultFontSize}px`}
+                    multipleSelect={multipleSelect}
                     saveStorageProps={{
                         shouldSaveFilter: true,
                         shouldSaveWidth: true,

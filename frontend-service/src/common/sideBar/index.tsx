@@ -1,17 +1,18 @@
-import React, { useRef, useState } from 'react';
-import { useQuery, useQueryClient } from 'react-query';
 import {
-    Add as PlusIcon,
-    Air as FluidSimulationIcon,
     CalendarMonth as CalendarIcon,
+    MeetingRoom as ExitIcon,
+    Air as FluidSimulationIcon,
     Gavel as GavelIcon,
     Hive as HiveIcon,
     ManageAccounts as ManageAccountsIcon,
-    MeetingRoom as ExitIcon,
+    Add as PlusIcon,
     Widgets as WidgetsIcon,
+    Map,
 } from '@mui/icons-material';
 import { Box, Button, Grid, IconButton, Slide, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
+import React, { useRef, useState } from 'react';
+import { useQuery, useQueryClient } from 'react-query';
 import { useLocation } from 'wouter';
 import StarBorderPurple500Icon from '@mui/icons-material/StarBorderPurple500';
 import { useMatomo } from '@datapunt/matomo-tracker-react';
@@ -19,6 +20,7 @@ import { environment } from '../../globals';
 import { ICategoryMap } from '../../interfaces/categories';
 import { INotificationCountGroups } from '../../interfaces/notifications';
 import { PermissionScope } from '../../interfaces/permissions';
+import { searchIFrames } from '../../services/iFramesService';
 import { getMyNotificationGroupCountRequest } from '../../services/notificationService';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { useMeltaPlusStore } from '../../stores/meltaPlus';
@@ -28,7 +30,6 @@ import { sideBarTransition } from '../../theme';
 import { CustomIcon, CustomImage } from '../CustomIcon';
 import { GlobalSearchBar } from '../EntitiesPage/Headline';
 import IconButtonWithPopover from '../IconButtonWithPopover';
-import { searchIFrames } from '../../services/iFramesService';
 import { MeltaIcon } from '../MeltaIcon';
 import PermissionsOfUserDialog from '../permissionsOfUserDialog';
 import { NavButton } from './NavButton';
@@ -36,7 +37,6 @@ import { NotificationsButton } from './notifications/NotificationsButton';
 import { NotificationsScreen } from './notifications/NotificationsScreen';
 import { ProfileButton } from './ProfileButton';
 import { Drawer, DrawerDivider } from './SideBar.styled';
-import { SwitchThemeButton } from './SwitchThemeButton';
 import { CloseDrawerButton, OpenDrawerButton } from './ToggleDrawerButtons';
 
 interface SideBarProps {
@@ -51,7 +51,6 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
 
     const currentUser = useUserStore((state) => state.user);
     const darkMode = useDarkModeStore((state) => state.darkMode);
-    const toggleDarkMode = useDarkModeStore((state) => state.toggleDarkMode);
 
     const drawerRef = useRef<React.ComponentRef<typeof Drawer>>(null);
 
@@ -95,10 +94,9 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
     const meltaPlus = useMeltaPlusStore((state) => state.meltaPlus);
     const toggleMeltaPlus = useMeltaPlusStore((state) => state.toggleMeltaPlus);
 
-    const { trackEvent } = useMatomo();
-    const { trackPageView } = useMatomo();
+    const { trackEvent, trackPageView } = useMatomo();
     const workspace = useWorkspaceStore((state) => state.workspace);
-
+    const { iconSize } = workspace.metadata;
     return (
         <Drawer ref={drawerRef} variant="permanent" open={isDrawerOpen} data-tour="side-bar" style={{ zIndex: '1' }} sx={{ zIndex: '1' }}>
             <Grid container direction="column" wrap="nowrap" height="100%" sx={{ bgcolor: darkMode ? '#000' : theme.palette.primary.main }}>
@@ -151,7 +149,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                     <Grid item container direction={isDrawerOpen ? 'row' : 'column'} wrap="nowrap" alignItems="center">
                         <ProfileButton
                             currentUser={currentUser}
-                            text={i18next.t('permissions.permissionsOfUserDialog.readTitle')}
+                            text={i18next.t('personalDetails')}
                             isDrawerOpen={isDrawerOpen}
                             onClick={() => setIsMyPermissionsDialogOpen(!isMyPermissionsDialogOpen)}
                         />
@@ -163,7 +161,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                                         color: 'white',
                                         fontWeight: '600',
                                         margin: 0,
-                                        fontSize: environment.mainFontSizes.headlineSubTitleFontSize,
+                                        fontSize: workspace.metadata.mainFontSizes.headlineSubTitleFontSize,
                                     }}
                                 >{`${i18next.t('sideBar.hello')} ${currentUser.fullName.split(' ')[0]}, `}</Typography>
                                 <Button
@@ -171,7 +169,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                                         color: 'white',
                                         padding: 0,
                                         fontWeight: '400',
-                                        fontSize: environment.mainFontSizes.headlineSubTitleFontSize,
+                                        fontSize: workspace.metadata.mainFontSizes.headlineSubTitleFontSize,
                                         fontFamily: 'Rubik',
                                     }}
                                     onClick={() => setIsMyPermissionsDialogOpen(!isMyPermissionsDialogOpen)}
@@ -228,26 +226,14 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                                     popoverText={isDrawerOpen ? '' : i18next.t('pages.globalSearch')}
                                     disabledToolTip={isDrawerOpen}
                                     placement="left"
-                                    style={{ ...environment.iconSize }}
+                                    style={{ ...iconSize }}
                                 >
                                     <img src="/icons/search-icon.svg" style={{ alignSelf: 'center', height: '25px' }} />
                                 </IconButtonWithPopover>
                             </Grid>
                         )}
                     </Grid>
-
-                    {(meltaPlus || darkMode) && (
-                        <Grid container item marginTop="1rem" width="90%" justifyContent="center">
-                            <SwitchThemeButton
-                                text={i18next.t('sideBar.changeTheme')}
-                                isDrawerOpen={isDrawerOpen}
-                                darkMode={darkMode}
-                                onClick={toggleDarkMode}
-                            />
-                        </Grid>
-                    )}
                 </Grid>
-
                 <Grid
                     item
                     container
@@ -298,16 +284,17 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                                     ) : (
                                         <HiveIcon
                                             fontSize="large"
-                                            sx={{ color: activeButton === category._id ? '#545eb9' : 'white', ...environment.iconSize }}
+                                            sx={{
+                                                color: activeButton === category._id ? '#545eb9' : 'white',
+                                                ...iconSize,
+                                            }}
                                         />
                                     )}
                                 </NavButton>
                             ),
                     )}
                 </Grid>
-
                 <DrawerDivider />
-
                 <Grid item container direction="column" paddingY="0.5rem">
                     {meltaPlus && (
                         <NavButton
@@ -328,7 +315,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                         >
                             <FluidSimulationIcon
                                 fontSize="large"
-                                sx={{ color: activeButton === 'fluid-simulation' ? '#545eb9' : 'white', ...environment.iconSize }}
+                                sx={{ color: activeButton === 'fluid-simulation' ? '#545eb9' : 'white', ...iconSize }}
                             />
                         </NavButton>
                     )}
@@ -399,10 +386,17 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                         }}
                         isActiveButton={activeButton === 'iFrames'}
                     >
-                        <StarBorderPurple500Icon
-                            fontSize="large"
-                            sx={{ color: activeButton === 'iFrames' ? '#545eb9' : 'white', ...environment.iconSize }}
-                        />
+                        <StarBorderPurple500Icon fontSize="large" sx={{ color: activeButton === 'iFrames' ? '#545eb9' : 'white', ...iconSize }} />
+                    </NavButton>
+
+                    <NavButton
+                        to="/map"
+                        text="עמוד מפה"
+                        isDrawerOpen={isDrawerOpen}
+                        onChangeToActive={(isActive) => handleChangeActiveButton(isActive, 'map')}
+                        isActiveButton={activeButton === 'map'}
+                    >
+                        <Map fontSize="large" sx={{ color: activeButton === 'map' ? '#545eb9' : 'white', ...iconSize }} />
                     </NavButton>
 
                     <NavButton
@@ -420,10 +414,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                         }}
                         isActiveButton={activeButton === 'rule-management'}
                     >
-                        <GavelIcon
-                            fontSize="large"
-                            sx={{ color: activeButton === 'rule-management' ? '#545eb9' : 'white', ...environment.iconSize }}
-                        />
+                        <GavelIcon fontSize="large" sx={{ color: activeButton === 'rule-management' ? '#545eb9' : 'white', ...iconSize }} />
                     </NavButton>
 
                     <NavButton
@@ -441,7 +432,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                         }}
                         isActiveButton={activeButton === 'gantts'}
                     >
-                        <CalendarIcon fontSize="large" sx={{ color: activeButton === 'gantts' ? '#545eb9' : 'white', ...environment.iconSize }} />
+                        <CalendarIcon fontSize="large" sx={{ color: activeButton === 'gantts' ? '#545eb9' : 'white', ...iconSize }} />
                     </NavButton>
 
                     <NavButton
@@ -477,10 +468,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                             onChangeToActive={(isActive) => handleChangeActiveButton(isActive, 'system-management')}
                             isActiveButton={activeButton === 'system-management'}
                         >
-                            <WidgetsIcon
-                                fontSize="large"
-                                sx={{ color: activeButton === 'system-management' ? '#545eb9' : 'white', ...environment.iconSize }}
-                            />
+                            <WidgetsIcon fontSize="large" sx={{ color: activeButton === 'system-management' ? '#545eb9' : 'white', ...iconSize }} />
                         </NavButton>
                     )}
 
@@ -503,12 +491,14 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                         >
                             <ManageAccountsIcon
                                 fontSize="large"
-                                sx={{ color: activeButton === 'permissions-management' ? '#545eb9' : 'white', ...environment.iconSize }}
+                                sx={{
+                                    color: activeButton === 'permissions-management' ? '#545eb9' : 'white',
+                                    ...iconSize,
+                                }}
                             />
                         </NavButton>
                     )}
                 </Grid>
-
                 {Object.keys(currentUser.permissions).length > 1 && (
                     <>
                         <DrawerDivider />
@@ -521,12 +511,11 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                                 onChangeToActive={() => {}}
                                 onClick={() => queryClient.removeQueries('getAllTemplates')}
                             >
-                                <ExitIcon fontSize="large" sx={{ color: 'white', ...environment.iconSize }} />
+                                <ExitIcon fontSize="large" sx={{ color: 'white', ...iconSize }} />
                             </NavButton>
                         </Grid>
                     </>
                 )}
-
                 <Grid item>
                     <IconButton
                         onClick={() => {

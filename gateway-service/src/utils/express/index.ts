@@ -1,6 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
 import { get } from 'lodash';
-import { StatusCodes } from 'http-status-codes';
 import config from '../../config';
 import { InvalidWorkspaceHeaderError } from '../../express/error';
 import { WorkspaceService } from '../../express/workspaces/service';
@@ -80,28 +79,6 @@ export const wrapController = <ExtendedRequest extends Request<any, any, any, an
 };
 
 export type RequestWithQuery<Query> = Request<any, any, any, Query>;
-
-const handleMulterErrors = (err, _req, res, next) => {
-    if (!err) {
-        return next();
-    }
-
-    const statusCode = err.code === 'LIMIT_FILE_SIZE' ? StatusCodes.REQUEST_TOO_LONG : StatusCodes.INTERNAL_SERVER_ERROR;
-    const errorMessage = err.code === 'LIMIT_FILE_SIZE' ? 'File too large' : 'File upload error';
-
-    return res.status(statusCode).json({ error: errorMessage, details: err.message });
-};
-
-export const wrapMulter = (upload: any) => {
-    return (req: Request, res: Response, next: NextFunction) => {
-        upload(req, res, (err: any) => {
-            if (err) {
-                return handleMulterErrors(err, req, res, next);
-            }
-            next();
-        });
-    };
-};
 
 export const getWorkspaceId = async (req: Request) => {
     const workspaceId = req.headers[workspaceIdHeaderName];

@@ -188,6 +188,7 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
                                             supportDeleteForExistingInstances
                                             supportEditEnum
                                             supportUnique
+                                            supportLocation
                                             supportArchive
                                             supportAddFieldButton={itemId === 'attachmentProperties' || itemId === 'properties'}
                                             hasActions={hasActions}
