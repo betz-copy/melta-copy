@@ -7,6 +7,8 @@ import { MeltaTooltip } from '../../../common/MeltaTooltip';
 import { IBasicChart, IPermission } from '../../../interfaces/charts';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { ChartTypesEdit } from './ChartTypesEdit';
+import { useUserStore } from '../../../stores/user';
+import { isWorkspaceAdmin } from '../../../utils/permissions/instancePermissions';
 
 const ChartSideBar: React.FC<{
     formik: FormikProps<IBasicChart>;
@@ -14,6 +16,8 @@ const ChartSideBar: React.FC<{
     edit: boolean;
     readonly: boolean;
 }> = ({ formik, entityTemplate, edit, readonly }) => {
+    const currentUser = useUserStore();
+
     return (
         <Grid container direction="column" padding="20px">
             <Grid item paddingTop="10px">
@@ -89,7 +93,11 @@ const ChartSideBar: React.FC<{
                         onChange={(_event: React.MouseEvent<HTMLElement>, permission: IPermission) => {
                             formik.setFieldValue('permission', permission);
                         }}
-                        disabled={readonly}
+                        disabled={
+                            readonly ||
+                            (edit &&
+                                (formik.values.createdBy !== currentUser.user._id || !isWorkspaceAdmin(currentUser.user.currentWorkspacePermissions)))
+                        }
                     >
                         <ToggleButton value={IPermission.Private}>
                             <MeltaTooltip title={i18next.t('charts.personal')}>

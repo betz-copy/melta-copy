@@ -10,6 +10,7 @@ import {
     getChartByTemplateIdRequestSchema,
     updateChartRequestSchema,
 } from './validator.schema';
+import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
 
 export const ChartsRouter: Router = Router();
 
@@ -26,6 +27,7 @@ ChartsRouter.get(
 ChartsRouter.get(
     '/by-template/:templateId',
     ValidateRequest(getChartByTemplateIdRequestSchema),
+    AuthorizerControllerMiddleware.userHasSomePermissions,
     ChartsValidatorMiddleware.validateUserCanGetChartsByTemplate,
     ChartsControllerMiddleware.getChartsByTemplateId,
 );

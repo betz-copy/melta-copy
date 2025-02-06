@@ -3,8 +3,18 @@ import config from '../../config';
 import { InstancesService } from '../../externalServices/instanceService';
 import { DefaultManagerMongo } from '../../utils/mongo/manager';
 import { ServiceError } from '../error';
-import { ChartsAndGenerator, IChart, IChartDocument, IChartType, IColumnOrLineMetaData, INUmberMetaData, IPieMetaData } from './interface';
+import {
+    ChartsAndGenerator,
+    IChart,
+    IChartDocument,
+    IChartType,
+    IColumnOrLineMetaData,
+    INUmberMetaData,
+    IPermission,
+    IPieMetaData,
+} from './interface';
 import ChartSchema from './model';
+import { ISubCompactPermissions } from '../../externalServices/userService/interfaces/permissions/permissions';
 
 export class ChartManager extends DefaultManagerMongo<IChartDocument> {
     private instanceService: InstancesService;
@@ -18,12 +28,20 @@ export class ChartManager extends DefaultManagerMongo<IChartDocument> {
         return this.model.findById(chartId).orFail(new ServiceError(StatusCodes.NOT_FOUND, 'chart not found')).lean().exec();
     }
 
-    async getChartsByTemplateId(templateId: string) {
-        return this.model.find({ templateId }).lean().exec();
+    getChartsWithPermissions(charts: IChartDocument[], userId: string) {
+        return charts.filter(
+            (chart) => chart.permission === IPermission.Protected || (chart.permission === IPermission.Private && userId === chart.createdBy),
+        );
     }
 
-    async getChartsOfTemplateId(templateId: string): Promise<ChartsAndGenerator[]> {
-        const charts = await this.getChartsByTemplateId(templateId);
+    async getChartsByTemplateId(templateId: string, permissionsOfUserId: ISubCompactPermissions, userId: string) {
+        const allChartsOfTemplateId = await this.model.find({ templateId }).lean().exec();
+
+        return permissionsOfUserId.admin?.scope ? allChartsOfTemplateId : this.getChartsWithPermissions(allChartsOfTemplateId, userId);
+    }
+
+    async getChartsOfTemplateId(templateId: string, permissionsOfUserId: ISubCompactPermissions, userId: string): Promise<ChartsAndGenerator[]> {
+        const charts = await this.getChartsByTemplateId(templateId, permissionsOfUserId, userId);
         const templatesChart: ChartsAndGenerator[] = [];
 
         const chartPromises = charts.map(async (chartData) => {

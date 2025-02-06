@@ -9,6 +9,8 @@ import { MeltaTooltip } from '../../../common/MeltaTooltip';
 import { TopBarGrid } from '../../../common/TopBar';
 import { environment } from '../../../globals';
 import { IBasicChart } from '../../../interfaces/charts';
+import { isWorkspaceAdmin } from '../../../utils/permissions/instancePermissions';
+import { useUserStore } from '../../../stores/user';
 
 interface IChartTopBar {
     edit: boolean;
@@ -22,11 +24,11 @@ interface IChartTopBar {
 
 const ChartTopBar: React.FC<IChartTopBar> = ({ edit, onEdit, onDelete, isLoading, readonly, setReadOnly, formik }) => {
     const theme = useTheme();
-
+    const currentUser = useUserStore();
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
     return (
-        <>
+        <Box>
             <TopBarGrid container alignItems="center" wrap="nowrap" sx={{ marginBottom: 0, paddingRight: '1.6rem' }}>
                 <Grid>
                     <BlueTitle
@@ -36,6 +38,7 @@ const ChartTopBar: React.FC<IChartTopBar> = ({ edit, onEdit, onDelete, isLoading
                         style={{ fontSize: environment.mainFontSizes.headlineTitleFontSize, whiteSpace: 'nowrap' }}
                     />
                 </Grid>
+
                 <Grid item container wrap="nowrap" flexDirection="row-reverse" marginLeft="auto">
                     {readonly ? (
                         <MeltaTooltip title={i18next.t('actions.edit')}>
@@ -45,36 +48,38 @@ const ChartTopBar: React.FC<IChartTopBar> = ({ edit, onEdit, onDelete, isLoading
                         </MeltaTooltip>
                     ) : (
                         <Grid container justifyContent="space-between" alignItems="center" width="fit-content" wrap="nowrap">
-                            <Grid container justifyContent="space-between" width="fit-content">
-                                {isLoading ? (
-                                    <Grid item container alignItems="center" justifyContent="space-around" width="8rem">
-                                        <CircularProgress size={30} />
-                                    </Grid>
-                                ) : (
-                                    <Grid item container>
+                            {isLoading ? (
+                                <Grid item container alignItems="center" justifyContent="space-around" width="8rem">
+                                    <CircularProgress size={30} />
+                                </Grid>
+                            ) : (
+                                <Grid item container>
+                                    {edit && (
                                         <MeltaTooltip title={i18next.t('actions.cancel')}>
                                             <IconButton
                                                 type="reset"
                                                 onClick={() => {
-                                                    setReadOnly(true);
                                                     formik.resetForm();
+                                                    setReadOnly(true);
                                                 }}
                                                 sx={{ color: theme.palette.primary.main }}
+                                                disabled={!edit}
                                             >
                                                 <CancelIcon />
                                             </IconButton>
                                         </MeltaTooltip>
-                                        <MeltaTooltip title={i18next.t('actions.save')}>
-                                            <IconButton type="submit" disabled={!formik.dirty} sx={{ color: theme.palette.primary.main }}>
-                                                <SaveIcon />
-                                            </IconButton>
-                                        </MeltaTooltip>
-                                    </Grid>
-                                )}
-                            </Grid>
+                                    )}
+                                    <MeltaTooltip title={i18next.t('actions.save')}>
+                                        <IconButton type="submit" disabled={!formik.dirty} sx={{ color: theme.palette.primary.main }}>
+                                            <SaveIcon />
+                                        </IconButton>
+                                    </MeltaTooltip>
+                                </Grid>
+                            )}
                         </Grid>
                     )}
-                    {edit && (
+
+                    {edit && (formik.values.createdBy === currentUser.user._id || isWorkspaceAdmin(currentUser.user.currentWorkspacePermissions)) && (
                         <MeltaTooltip title={i18next.t('actions.delete')}>
                             <IconButton onClick={() => setDeleteDialogOpen(true)} sx={{ color: theme.palette.primary.main }}>
                                 <Delete />
@@ -83,8 +88,9 @@ const ChartTopBar: React.FC<IChartTopBar> = ({ edit, onEdit, onDelete, isLoading
                     )}
                 </Grid>
             </TopBarGrid>
-            <AreYouSureDialog open={deleteDialogOpen} handleClose={() => setDeleteDialogOpen(false)} onYes={() => onDelete()} />
-        </>
+
+            <AreYouSureDialog open={deleteDialogOpen} handleClose={() => setDeleteDialogOpen(false)} onYes={onDelete} />
+        </Box>
     );
 };
 
