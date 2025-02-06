@@ -45,6 +45,12 @@ export class FlowCubeManager extends DefaultManagerProxy<null> {
             if (template.properties.properties[field]) {
                 if (Array.isArray(filterValue)) {
                     filterAnd.push({ [field]: { $in: filterValue.map((val) => new RegExp(this.escapeRegExp(val))) } });
+                    // const regexConditions = filterValue.map((value) => ({
+                    //     [field]: { $regex: value, $options: 'i' }, // Case-insensitive regex search
+                    // }));
+
+                    // // Combine all the regex conditions using $or
+                    // filterAnd.push({ $or: regexConditions });
                 } else {
                     filterAnd.push({ [field]: { $eq: filterValue } });
                 }
@@ -84,7 +90,7 @@ export class FlowCubeManager extends DefaultManagerProxy<null> {
         return convertToFlow;
     }
 
-    async searchWorkspace(body: any, userId: string) {
+    static async searchWorkspace(body: any, userId: string) {
         const searchBody = {} as { search: string };
 
         if (body?.Parameters?.Value) {
@@ -102,7 +108,7 @@ export class FlowCubeManager extends DefaultManagerProxy<null> {
         });
     }
 
-    async filterWorkspacesByPermissions(workspaces: IWorkspace[], usersPermissions: ICompactPermissions): Promise<IWorkspace[]> {
+    static async filterWorkspacesByPermissions(workspaces: IWorkspace[], usersPermissions: ICompactPermissions): Promise<IWorkspace[]> {
         return (
             await Promise.all(
                 workspaces.map(async (workspace) => ({ ...workspace, hierarchyIds: await WorkspaceService.getWorkspaceHierarchyIds(workspace._id) })),
