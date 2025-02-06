@@ -1,3 +1,4 @@
+import { Readable } from 'stream';
 import { IFailedEntity } from '../common/wizards/loadEntities';
 import { IMongoEntityTemplatePopulated } from './entityTemplates';
 import { IMongoRelationshipTemplate } from './relationshipTemplates';
@@ -114,6 +115,17 @@ export interface ISearchBatchBody {
     };
     sort?: ISearchSort;
     shouldSemanticSearch?: boolean;
+}
+
+export interface UploadedFile {
+    fieldname: string;
+    originalname: string;
+    encoding: string;
+    mimetype: string;
+    size: number;
+    stream: Readable;
+    destination?: string;
+    buffer?: Buffer;
 }
 
 type Coordinate = [number, number];

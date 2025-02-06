@@ -15,7 +15,6 @@ import { EntityLink } from '../../common/EntityLink';
 import { EntityTemplateTextComponent, RelationshipTitle } from '../../common/RelationshipTitle';
 import { TableButton } from '../../common/TableButton';
 import '../../css/pages.css';
-import { environment } from '../../globals';
 import { ICategoryMap } from '../../interfaces/categories';
 import { IEntity, IEntityExpanded } from '../../interfaces/entities';
 import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
@@ -31,8 +30,7 @@ import { EntityDetails } from './components/EntityDetails';
 import { EntityTopBar } from './components/TopBar';
 import DeleteRelationshipDialog from './DeleteRelationshipDialog';
 import { RelationshipIcon } from './RelationshipIcon';
-
-const { defaultRowHeight, defaultFontSize } = environment.agGrid;
+import { useWorkspaceStore } from '../../stores/workspace';
 
 export const getButtonState = (
     isEntityDisabled: boolean,
@@ -102,6 +100,9 @@ const ConnectionsTable: React.FC<{
     disabledButtonText,
     hasPermissionToCategory,
 }) => {
+    const workspace = useWorkspaceStore((state) => state.workspace);
+    const { defaultRowHeight, defaultFontSize } = workspace.metadata.agGrid;
+
     const queryClient = useQueryClient();
 
     const [isExpand, setIsExpand] = useState(false);

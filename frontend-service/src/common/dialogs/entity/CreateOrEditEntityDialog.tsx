@@ -30,6 +30,7 @@ import { InstanceSingleFileInput } from '../../inputs/InstanceFilesInput/Instanc
 import { ajvValidate, JSONSchemaFormik } from '../../inputs/JSONSchemaFormik';
 import { DraftWarningDialog } from './draftWarningDialog';
 import { useDraftIdStore, useDraftsStore } from '../../../stores/drafts';
+import { useWorkspaceStore } from '../../../stores/workspace';
 
 const { errorCodes } = environment;
 
@@ -187,20 +188,26 @@ const CreateOrEditEntityDetails: React.FC<{
         }
     };
 
+    const [_, navigate] = useLocation();
+    const workspace = useWorkspaceStore((state) => state.workspace);
+    const { shouldNavigateToEntityPage } = workspace.metadata;
     const { isLoading: isUpdateLoading, mutateAsync: updateMutation } = useMutation(
         ({ newEntityData, ignoredRules }: { newEntityData: EntityWizardValues; ignoredRules?: IRuleBreach['brokenRules'] }) =>
             updateEntityRequestForMultiple(entityToUpdate!.properties._id, newEntityData, ignoredRules),
         {
             onSuccess: (data) => {
                 if (onSuccessUpdate) onSuccessUpdate(data);
+                if (Object.values(externalErrors.unique).length === 0 || !externalErrors.files || externalErrors.action.length === 0) {
+                    if (shouldNavigateToEntityPage === true) {
+                        navigate(`/entity/${data.properties._id}`);
+                    }
+                }
             },
             onError: (err: AxiosError, { newEntityData }) => {
                 handleMutationError(err, entityTemplate, newEntityData);
             },
         },
     );
-
-    const [_, navigate] = useLocation();
 
     const { isLoading: isCreateLoading, mutateAsync: createMutation } = useMutation(
         ({ newEntityData, ignoredRules }: { newEntityData: EntityWizardValues; ignoredRules?: IRuleBreach['brokenRules'] }) =>
@@ -210,6 +217,12 @@ const CreateOrEditEntityDetails: React.FC<{
                 onSuccessCreate?.(currEntity);
                 onSuccessUpdate?.(currEntity);
                 entityId = currEntity.properties._id;
+
+                if (Object.values(externalErrors.unique).length === 0 || !externalErrors.files || externalErrors.action.length === 0) {
+                    if (shouldNavigateToEntityPage === true) {
+                        navigate(`/entity/${currEntity.properties._id}`);
+                    }
+                }
             },
             onError: (err: AxiosError, { newEntityData }) => {
                 handleMutationError(err, entityTemplate, newEntityData);
@@ -293,13 +306,12 @@ const CreateOrEditEntityDetails: React.FC<{
     return (
         <Formik<EntityWizardValues>
             initialValues={initialValues}
-            onSubmit={(values, formikHelpers) => {
+            onSubmit={async (values, formikHelpers) => {
                 formikHelpers.setTouched({});
-                mutationPromiseToastify(values);
-
+                await mutationPromiseToastify(values);
                 if (!draftId) return;
 
-                // ? created via debounce, this counters that (waits for the debounce to complete and then removes the draft)
+                // delete the draft after the debounce
                 setTimeout(
                     () =>
                         deleteDraft(
