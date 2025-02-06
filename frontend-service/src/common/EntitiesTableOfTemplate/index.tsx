@@ -1,5 +1,6 @@
-/* eslint-disable no-case-declarations */
 /* eslint-disable no-param-reassign */
+/* eslint-disable no-case-declarations */
+import React, { ForwardedRef, forwardRef, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import {
     BodyScrollEvent,
     CellEditingStoppedEvent,
@@ -21,7 +22,6 @@ import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import isEqual from 'lodash.isequal';
 import sortBy from 'lodash.sortby';
-import React, { ForwardedRef, forwardRef, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
 import { useLocation } from 'wouter';
@@ -55,11 +55,11 @@ import { MultiSelectStatusBar } from '../EntitiesPage/MultiSelectStatusBar';
 import { ResizeBox } from '../EntitiesPage/ResizeBox';
 import { RowCountGridStatusBar } from '../EntitiesPage/RowCountGridStatusBar';
 import { ErrorToast } from '../ErrorToast';
+import { useWorkspaceStore } from '../../stores/workspace';
 import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
 import { getColumnDefs, IGetColumnDefsOptions } from './getColumnDefs';
 
 const { errorCodes } = environment;
-const { rowCount, defaultExpandedRowCount } = environment.agGrid;
 
 export const defaultFilterModel = {
     disabled: {
@@ -81,6 +81,7 @@ export interface IButtonProps<Data> {
 
 export const getDatasource = <Data extends any = EntityData>(
     template: IMongoEntityTemplatePopulated,
+    // tableCount: number, // comment out  waiting for Itay
     quickFilterText?: string,
     onFail?: (err: unknown) => void,
     rowData?: IConnection[],
@@ -100,7 +101,11 @@ export const getDatasource = <Data extends any = EntityData>(
             const { result: data, err } = await trycatch(() =>
                 searchEntitiesOfTemplateRequest(
                     template._id,
-                    agGridToSearchEntitiesOfTemplateRequest({ ...agGridRequest, quickFilter: quickFilterText } as IAGGridRequest, template),
+                    agGridToSearchEntitiesOfTemplateRequest(
+                        { ...agGridRequest, quickFilter: quickFilterText } as IAGGridRequest,
+                        template,
+                        // tableCount, // comment out  waiting for Itay
+                    ),
                 ),
             );
 
@@ -129,6 +134,7 @@ export const getRowModelProps = <Data extends any = EntityData>(
     template: IMongoEntityTemplatePopulated,
     rowData: Data[] | undefined,
     paginationPageSize: number,
+    // tableCount: number,// comment out  waiting for Itay
     quickFilterText?: string,
     datasourceOnFail?: (err: unknown) => void,
     hasInstances?: boolean,
@@ -222,7 +228,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             rowData,
             quickFilterText,
             rowHeight,
-            pageRowCount = rowCount,
+            pageRowCount,
             fontSize,
             hideNonPreview,
             saveStorageProps,
@@ -239,6 +245,11 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
     ) => {
         const [_, navigate] = useLocation();
         const darkMode = useDarkModeStore((state) => state.darkMode);
+        const workspace = useWorkspaceStore((state) => state.workspace);
+        const { rowCount, defaultExpandedRowCount } = workspace.metadata.agGrid;
+        // const { table } = workspace.metadata.searchLimits;// comment out  waiting for Itay
+
+        if (!pageRowCount) pageRowCount = rowCount;
 
         const gridRef = useRef<AgGridReact<Data>>(null);
         const tableRef = useRef<HTMLDivElement>(null);
@@ -247,6 +258,8 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
 
         const minHeightTable = rowHeight * pageRowCount + rowHeight * 2;
         const [gridHeight, setGridHeight] = useState<number>(rowHeight * defaultExpandedRowCount);
+        console.log({ defaultExpandedRowCount });
+        console.log({ gridHeight, minHeightTable });
 
         const [selectedRow, setSelectedRow] = useState('');
         const [currEntity, setCurrEntity] = useState<IEntity>();
@@ -564,7 +577,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         }));
 
         const rowModelProps = useMemo(
-            () => getRowModelProps(rowModelType, template, rowData, pageRowCount, quickFilterText, datasourceOnFail, hasInstances),
+            () => getRowModelProps(rowModelType, template, rowData, pageRowCount!, quickFilterText, datasourceOnFail, hasInstances),
             [rowModelType, template, rowData, pageRowCount, quickFilterText, hasInstances],
         );
 

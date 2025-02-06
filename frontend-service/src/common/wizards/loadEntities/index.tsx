@@ -105,11 +105,12 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
         },
         {
             async onSuccess(data) {
-                setStepsData((prev) => ({ ...prev, data }));
+                setStepsData((prev) => ({ ...prev, status: StepStatus.excelUploadResult, data }));
                 return data;
             },
             onError() {
                 toast.error(i18next.t('wizard.entity.loadEntities.failedLoadEntities'));
+                onClose();
             },
         },
     );
@@ -121,11 +122,16 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
         {
             async onSuccess(data) {
                 setCreateOrUpdateWithRuleBreachDialogState({ isOpen: false });
-                onClose();
+                toast.success(i18next.t('wizard.entity.loadEntities.createdSuccessfully'));
                 return data;
             },
             onError() {
                 toast.error(i18next.t('wizard.entity.loadEntities.failedLoadEntities'));
+                // onClose();
+                // setStepsData((prev) => ({ ...prev, status: StepStatus.excelUploadResult }));
+            },
+            onMutate() {
+                onClose();
             },
         },
     );
@@ -157,7 +163,7 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
             });
         else {
             onClose();
-            toast.success(i18next.t('wizard.entity.loadEntities.createdSuccessfully'));
+            if (stepsData.data.succeededEntities.length > 0) toast.success(i18next.t('wizard.entity.loadEntities.createdSuccessfully'));
         }
     };
 
@@ -279,6 +285,7 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
                             status: StepStatus.uploadExcel,
                             data: { succeededEntities: [], failedEntities: [] },
                         });
+                        onClose();
                     }}
                     doActionEntity={() => {
                         const brokenRulesEntities =

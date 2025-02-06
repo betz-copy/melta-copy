@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { RichTreeViewPro, TreeViewBaseItem } from '@mui/x-tree-view-pro';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { RichTreeViewPro, TreeItem2Props, TreeViewBaseItem } from '@mui/x-tree-view-pro';
 import { ChevronLeft, ExpandLess } from '@mui/icons-material';
 import { TreeViewItemReorderPosition } from '@mui/x-tree-view-pro/internals/plugins/useTreeViewItemsReordering';
 import { Box, Divider } from '@mui/material';
@@ -23,6 +23,7 @@ interface TreeProps<T extends {}> {
     filteredTreeItems?: T[];
     isSelectDisabled?: boolean;
     onDragEnd?: (params: { itemId: string; oldPosition: TreeViewItemReorderPosition; newPosition: TreeViewItemReorderPosition }) => void;
+    showIcon?: boolean;
     // If true parents only represent the state of their children.
     parentInfersChildren?: boolean;
 }
@@ -43,6 +44,7 @@ const Tree = <T extends {}>({
     multi = true,
     parentInfersChildren = true,
     onDragEnd,
+    showIcon,
 }: TreeProps<T>): React.ReactElement => {
     const { handleSelectedItemsChange, selectedItemsIds, setSelectedItemsIds, getSelectedLeafIds, selectParentIfAllChildrenAreSelected } =
         useTreeUtils(getItemId, parentInfersChildren, treeItems);
@@ -53,6 +55,8 @@ const Tree = <T extends {}>({
         () => selectParentIfAllChildrenAreSelected(treeItems, getItemId, preSelectedItemsIds),
         [getItemId, preSelectedItemsIds, selectParentIfAllChildrenAreSelected, treeItems],
     );
+
+    const TreeItemWrapper = useCallback((props: TreeItem2Props) => <TreeItem {...props} showIcon={showIcon} />, [showIcon]);
 
     useEffect(() => {
         setSelectedItemsIds(parentInfersChildren ? selectedIdsWithParents : preSelectedItemsIds ?? []);
@@ -97,9 +101,8 @@ const Tree = <T extends {}>({
             )}
             <RichTreeViewPro
                 style={{ direction: 'rtl' }}
-                checkboxSelection
+                checkboxSelection={!isSelectDisabled}
                 multiSelect
-                isItemDisabled={() => !!isSelectDisabled}
                 items={filteredTreeItems}
                 getItemId={getItemId}
                 getItemLabel={getItemLabel}
@@ -116,7 +119,7 @@ const Tree = <T extends {}>({
                 slots={{
                     expandIcon: ChevronLeft,
                     collapseIcon: ExpandLess,
-                    item: TreeItem,
+                    item: TreeItemWrapper,
                 }}
                 experimentalFeatures={{ indentationAtItemLevel: true, itemsReordering: true }}
                 canMoveItemToNewPosition={(params) => allowDraggingBetweenParents || params.oldPosition.parentId === params.newPosition.parentId}

@@ -20,6 +20,7 @@ import {
     PermissionsManagementProtectedRoute,
     SystemManagementProtectedRoute,
 } from '../../utils/ProtectedRoutes';
+import { useWorkspaceStore } from '../../stores/workspace';
 import { environment } from '../../globals';
 
 const GlobalSearch = lazy(() => import('../GlobalSearch'));
@@ -42,8 +43,10 @@ const Duplicate = lazy(() => import('../Entity/components/DuplicateEntity'));
 const FluidSimulation = lazy(() => import('../MeltaPlus/FluidSimulation'));
 
 export const MeltaRoutesInner: React.FC = () => {
+    const workspace = useWorkspaceStore((state) => state.workspace);
+    const { isDrawerOpen } = workspace.metadata;
     const [title, setTitle] = useState('');
-    const [open, setOpen] = useState(false);
+    const [open, setOpen] = useState(isDrawerOpen);
 
     const [location, navigate] = useLocation();
     const [entityMatch, entityParams] = useRoute('/entity/:entityId');

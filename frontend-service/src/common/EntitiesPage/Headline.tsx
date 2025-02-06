@@ -9,14 +9,14 @@ import React, { Dispatch, SetStateAction, useCallback, useEffect, useRef, useSta
 import { debounce } from 'lodash';
 import AutoAwesomeOutlinedIcon from '@mui/icons-material/AutoAwesomeOutlined';
 import { useMatomo } from '@datapunt/matomo-tracker-react';
+import { IEntity } from '../../interfaces/entities';
+import { IMongoCategory } from '../../interfaces/categories';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import SearchInput from '../inputs/SearchInput';
-import { IMongoCategory } from '../../interfaces/categories';
+import { useWorkspaceStore } from '../../stores/workspace';
 import TemplatesSelectCheckbox from '../templatesSelectCheckbox';
 import { BlueTitle } from '../BlueTitle';
 import { MeltaTooltip } from '../MeltaTooltip';
-import { environment } from '../../globals';
-import { IEntity } from '../../interfaces/entities';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { useLocalStorage } from '../../utils/hooks/useLocalStorage';
 import { useSearchParams } from '../../utils/hooks/useSearchParams';
@@ -188,6 +188,7 @@ const EntitiesPageHeadline: React.FC<{
     refreshServerSide,
     setUpdatedEntities,
 }) => {
+    const workspace = useWorkspaceStore((state) => state.workspace);
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const theme = useTheme();
     const { trackEvent } = useMatomo();
@@ -245,7 +246,12 @@ const EntitiesPageHeadline: React.FC<{
         >
             <Grid item>
                 <Grid container direction="row" display="flex" wrap="nowrap" alignItems="center">
-                    <BlueTitle title={pageTitle} component="h4" variant="h4" style={{ fontSize: environment.mainFontSizes.headlineTitleFontSize }} />
+                    <BlueTitle
+                        title={pageTitle}
+                        component="h4"
+                        variant="h4"
+                        style={{ fontSize: workspace.metadata.mainFontSizes.headlineTitleFontSize }}
+                    />
                     <Grid item paddingLeft="3rem" paddingTop="5px">
                         <Grid item container wrap="nowrap" gap="15px">
                             <Grid item data-tour="template-filter">

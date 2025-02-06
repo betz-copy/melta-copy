@@ -217,11 +217,12 @@ export const deleteRelationshipSchema = Joi.object({
 export const loadEntitiesSchema = Joi.object({
     body: {
         file: excelTemplateSchema,
-        insertBrokenEntities: {
+        insertBrokenEntities: ExtendedJoi.stringToObject({
             entitiesToCreate: Joi.array().items({ templateId: Joi.string(), properties: Joi.object() }).default([]),
             ignoredRules: Joi.array().items(brokenRuleSchema).default([]),
-        },
+        }),
         templateId: Joi.string().required(),
     },
     query: {},
+    params: {},
 });
