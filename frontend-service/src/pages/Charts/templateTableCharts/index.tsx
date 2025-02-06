@@ -1,29 +1,29 @@
-import { Box } from '@mui/material';
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable no-param-reassign */
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import 'react-grid-layout/css/styles.css';
 import { useMutation, useQueryClient } from 'react-query';
 import 'react-resizable/css/styles.css';
 import { toast } from 'react-toastify';
-import { useLocation, useParams } from 'wouter';
+import { useParams } from 'wouter';
 import { ErrorToast } from '../../../common/ErrorToast';
 import { GridLayout } from '../../../common/GridLayout';
+import { LayoutItem, Layouts } from '../../../common/GridLayout/interface';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
-import { ChartsAndGenerator, IChartType } from '../../../interfaces/charts';
+import { ChartsAndGenerator } from '../../../interfaces/charts';
 import { deleteChart } from '../../../services/chartsService';
-import { CardMenu } from '../../SystemManagement/components/CardMenu';
-import { NumberChartGenerator } from '../chartGenerator.tsx/NumberChartGenerator';
-import { HiighchartGenerator } from '../chartGenerator.tsx/highChartgenerator';
+import { useLocalStorage } from '../../../utils/hooks/useLocalStorage';
+import ChartItem from './chartItem';
 
 const TemplateTableCharts: React.FC<{ templatesChart: ChartsAndGenerator[] }> = ({ templatesChart = [] }) => {
     const queryClient = useQueryClient();
     const { templateId } = useParams();
 
-    const [currentLocation, navigate] = useLocation();
-
     const [mounted, setMounted] = useState(false);
     const [isHoverOnCard, setIsHoverOnCard] = useState<number | null>(null);
+    const [layout, setLayout] = useLocalStorage<Layouts['lg']>(`chartsOrder_${templateId}`, []);
     const [deleteChartDialogState, setDeleteChartDialogState] = useState<{
         isDialogOpen: boolean;
         chartId: string | null;
@@ -32,22 +32,24 @@ const TemplateTableCharts: React.FC<{ templatesChart: ChartsAndGenerator[] }> = 
         chartId: null,
     });
 
-    const cols = { lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 };
-    const rowHeight = 30;
+    const cols = { lg: 12, md: 12, sm: 12, xs: 12, xxs: 12 };
 
-    const layouts = {
-        lg: templatesChart.map((_, index) => ({
+    const layoutDetails: Layouts = Object.keys(cols).reduce((acc, col) => {
+        acc[col] = templatesChart.map((_, index) => ({
             i: String(index),
-            x: (index % 4) * 3,
-            y: Math.floor(index / 4) * 3,
-            w: 3,
+            x: (index % 3) * 4,
+            y: Math.floor(index / 3) * 3,
+            w: 4,
             h: 11,
-        })),
-    };
+        }));
+        return acc;
+    }, {} as Layouts);
+
+    useEffect(() => setMounted(true), []);
 
     useEffect(() => {
-        setMounted(true);
-    }, []);
+        if (!layout.length) setLayout(layoutDetails.lg);
+    }, [templatesChart]);
 
     const { mutateAsync: deleteChartMutateAsync, isLoading: isDeleteChartLoading } = useMutation((id: string) => deleteChart(id), {
         onSuccess: () => {
@@ -60,9 +62,13 @@ const TemplateTableCharts: React.FC<{ templatesChart: ChartsAndGenerator[] }> = 
         },
     });
 
-    const generateCharts = useCallback(() => {
-        return templatesChart.map(({ chart: chartData, type, name, description, metaData, _id }, index) => (
-            <Box
+    const handleLayoutChange = (newLayout: LayoutItem[]) => {
+        if (newLayout.length > 0) setLayout(newLayout);
+    };
+
+    const generateCharts = () =>
+        templatesChart.map((chart, index) => (
+            <div
                 // eslint-disable-next-line react/no-array-index-key
                 key={String(index)}
                 style={{
@@ -75,58 +81,32 @@ const TemplateTableCharts: React.FC<{ templatesChart: ChartsAndGenerator[] }> = 
                 }}
                 onMouseEnter={() => setIsHoverOnCard(index)}
                 onMouseLeave={() => setIsHoverOnCard(null)}
+                data-grid={layout[index]}
             >
-                {isHoverOnCard === index && (
-                    <Box
-                        style={{
-                            position: 'absolute',
-                            top: 10,
-                            left: 10,
-                            zIndex: 10,
-                            cursor: 'default',
-                        }}
-                        onMouseDown={(e) => e.stopPropagation()}
-                    >
-                        <CardMenu
-                            onEditClick={() => {
-                                navigate(`${currentLocation}/${_id}/chart`);
-                            }}
-                            onDeleteClick={() => setDeleteChartDialogState({ isDialogOpen: true, chartId: _id })}
-                        />
-                    </Box>
-                )}
-
-                {type === IChartType.Number ? (
-                    <NumberChartGenerator data={chartData} name={name} description={description} enableResize />
-                ) : (
-                    <HiighchartGenerator
-                        data={chartData}
-                        isLoading={false}
-                        isQueryEnabled
-                        name={name}
-                        description={description}
-                        metaData={metaData}
-                        type={type}
-                        enableRsize
-                    />
-                )}
-            </Box>
+                <ChartItem
+                    chartDetails={chart}
+                    indexInGrid={index}
+                    isHoverOnCard={isHoverOnCard}
+                    layout={layout[index]}
+                    onDelete={() => setDeleteChartDialogState({ chartId: chart._id, isDialogOpen: true })}
+                />
+            </div>
         ));
-    }, [currentLocation, isHoverOnCard, navigate, templatesChart]);
 
     return (
-        <div style={{ width: '100%', height: '100%', position: 'relative', margin: 10 }}>
-            <GridLayout
-                style={{ direction: 'ltr' }}
-                rowHeight={rowHeight}
-                cols={cols}
-                layouts={layouts}
-                measureBeforeMount={false}
-                useCSSTransforms={mounted}
-                compactType="vertical"
-                preventCollision
-                generateDom={generateCharts}
-            />
+        <div style={{ width: '100%', height: '100%' }}>
+            {layout.length > 0 && (
+                <GridLayout
+                    style={{ direction: 'ltr', width: '100%', height: '100%' }}
+                    rowHeight={30}
+                    cols={cols}
+                    useCSSTransforms={mounted}
+                    compactType="vertical"
+                    generateDom={generateCharts}
+                    layouts={{ ...layoutDetails, lg: layout }}
+                    onLayoutChange={handleLayoutChange}
+                />
+            )}
             <AreYouSureDialog
                 open={deleteChartDialogState.isDialogOpen}
                 handleClose={() => setDeleteChartDialogState({ isDialogOpen: false, chartId: null })}

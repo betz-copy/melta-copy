@@ -12,7 +12,7 @@ interface GridLayoutProps {
     rowHeight: number;
     cols: Record<Breakpoints, number>;
     layouts: Layouts;
-    onLayoutChange?: (layout: LayoutItem, allLayouts: Layouts) => void;
+    onLayoutChange?: (layout: LayoutItem[], allLayouts: Layouts) => void;
     handleBreakpointChange?: (breakpoint: string) => void;
     useCSSTransforms: boolean;
     compactType: CompactType;
