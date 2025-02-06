@@ -674,8 +674,8 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                         }}
                         onGridReady={(params) => {
                             if (saveStorageProps.pageType) {
-                                const visibleColumns = updateVisibleColumns(params);
-                                const visibleKeys = Object.keys(visibleColumns).filter((key) => visibleColumns[key] === true);
+                                const updatedVisibleColumns = updateVisibleColumns(params);
+                                const visibleKeys = Object.keys(updatedVisibleColumns).filter((key) => updatedVisibleColumns[key] === true);
                                 autoSizeAll(params, visibleKeys);
                             }
 
