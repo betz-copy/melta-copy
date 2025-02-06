@@ -93,6 +93,7 @@ export interface FieldEditCardProps {
     supportLocation?: boolean;
     supportArchive?: boolean;
     hasActions?: boolean;
+    displayValues: CommonFormInputProperties[];
 }
 
 export const FieldEditCard: React.FC<FieldEditCardProps> = ({
@@ -122,6 +123,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     supportLocation,
     supportArchive,
     hasActions,
+    displayValues,
 }) => {
     const currentUser = useUserStore((state) => state.user);
 
@@ -165,6 +167,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     const preview = `properties[${index}].preview`;
     const hide = `properties[${index}].hide`;
     const readOnly = `properties[${index}].readOnly`;
+    const identifier = `properties[${index}].identifier`;
 
     const unique =
         value.type !== 'serialNumber' &&
@@ -176,6 +179,9 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
 
     const touchedUniqueGroupName = touched?.groupName;
     const errorUniqueGroupName = errors?.groupName;
+
+    const isIdentifierAble = isText || value.type === 'number' || value.type === 'pattern' || value.type === 'serialNumber';
+    const currentIdentifier = displayValues.find((displayValue) => displayValue.identifier);
 
     const createNewUniqueGroup = (groupName) => {
         if (groupName) {
@@ -1118,6 +1124,30 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                     label={i18next.t('propertyTypes.text-area')}
                                                 />
                                             )}
+                                            {isIdentifierAble && (
+                                                <FormControlLabel
+                                                    control={
+                                                        <Switch
+                                                            id={identifier}
+                                                            name={identifier}
+                                                            onChange={(_e, checked) => {
+                                                                setValues?.((prevValue) => ({
+                                                                    ...prevValue,
+                                                                    required: checked ? true : prevValue.required,
+                                                                    identifier: checked || undefined,
+                                                                    groupName: undefined,
+                                                                    uniqueCheckbox: false,
+                                                                }));
+                                                                if (checked) createEmptyGroup(value.name);
+                                                                else deletePropFromUniqueConstraints(uniqueConstraintGroupName, value.name);
+                                                            }}
+                                                            disabled={currentIdentifier !== undefined && currentIdentifier !== value}
+                                                            checked={value.identifier}
+                                                        />
+                                                    }
+                                                    label={i18next.t('validation.identifier')}
+                                                />
+                                            )}
                                         </Box>
                                         <Grid display="flex">
                                             {supportArchive && isEditMode && (
@@ -1153,7 +1183,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                         </Grid>
                                     </Grid>
                                     <Grid item container justifyContent="space-between" alignItems="center" flexWrap="nowrap">
-                                        {unique && value.type !== 'serialNumber' && (
+                                        {unique && !isIdentifierAble && value.type !== 'serialNumber' && (
                                             <Grid container direction="row">
                                                 <Grid item container alignItems="center" flexWrap="nowrap">
                                                     <MeltaTooltip title={i18next.t('validation.uniqueTooltipTitle')}>

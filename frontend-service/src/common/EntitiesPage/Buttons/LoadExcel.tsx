@@ -1,10 +1,10 @@
 import i18next from 'i18next';
 import React, { CSSProperties, useState } from 'react';
 import { useTheme } from '@mui/material';
-import { EntityWizardValues } from '../dialogs/entity';
-import { TableButton } from '../TableButton';
-import { LoadEntitiesWizard } from '../wizards/loadEntities';
-import { useDarkModeStore } from '../../stores/darkMode';
+import { EntityWizardValues } from '../../dialogs/entity';
+import { TableButton } from '../../TableButton';
+import { LoadEntitiesWizard } from '../../wizards/loadEntities';
+import { useDarkModeStore } from '../../../stores/darkMode';
 
 const LoadExcelButton: React.FC<{
     style?: CSSProperties;
@@ -37,7 +37,7 @@ const LoadExcelButton: React.FC<{
                     },
                     popoverText:
                         popoverText ??
-                        (disabled ? i18next.t('permissions.dontHaveWritePermissions') : i18next.t('entitiesTableOfTemplate.addEntity')),
+                        (disabled ? i18next.t('permissions.dontHaveWritePermissions') : i18next.t('entitiesTableOfTemplate.loadEntitiesTitle')),
                 }}
                 disableButton={disabled}
             >
@@ -50,7 +50,7 @@ const LoadExcelButton: React.FC<{
                     onSuccessCreate();
                     setLoadEntitiesState({ isOpen: false });
                 }}
-                initialValues={{ template: initialValues?.template, files: undefined }}
+                initialValues={{ template: initialValues?.template, files: undefined, mode: 'create' }}
                 initialStep={1}
             />
         </>

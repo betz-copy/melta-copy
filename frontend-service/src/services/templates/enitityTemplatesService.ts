@@ -73,6 +73,7 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
             serialStarter: value.serialStarter,
             relationshipReference: value.relationshipReference || undefined,
             archive: value.archive || undefined,
+            identifier: value.identifier || undefined,
         };
 
         if (value.format === 'fileId' || value.items?.format === 'fileId') {
@@ -151,6 +152,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
             readOnly,
             relationshipReference,
             archive,
+            identifier,
         }) => {
             if (!deleted) {
                 let propertyType: IEntitySingleProperty['type'];
@@ -191,6 +193,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                     minItems: type === 'enumArray' || type === 'users' ? 1 : undefined,
                     readOnly,
                     archive,
+                    identifier,
                     uniqueItems: type === 'enumArray' || type === 'users' ? true : undefined,
                     pattern: type === 'pattern' ? pattern : undefined,
                     patternCustomErrorMessage: type === 'pattern' ? patternCustomErrorMessage : undefined,
@@ -257,6 +260,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
             hide,
             deleted,
             readOnly,
+            identifier,
             relationshipReference,
             archive,
         }) => {
@@ -286,6 +290,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                     items: type === 'enumArray' ? { type: 'string', enum: options } : undefined,
                     minItems: type === 'enumArray' ? 1 : undefined,
                     readOnly,
+                    identifier,
                     archive,
                     uniqueItems: type === 'enumArray' || type === 'users' ? true : undefined,
                     pattern: type === 'pattern' ? pattern : undefined,

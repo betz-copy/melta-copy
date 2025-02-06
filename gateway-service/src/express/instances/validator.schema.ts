@@ -90,6 +90,7 @@ export const exportEntitiesSchema = Joi.object({
             displayColumns: Joi.array().items(Joi.string()),
             headersOnly: Joi.boolean(),
             insertEntities: Joi.array().items(Joi.object().pattern(Joi.string(), Joi.any())),
+            edit: Joi.boolean(),
         }),
     },
     query: {},

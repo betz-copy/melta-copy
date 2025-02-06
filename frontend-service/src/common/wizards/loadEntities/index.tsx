@@ -20,6 +20,7 @@ import { IRequiredConstraint, IUniqueConstraint } from '../../../interfaces/enti
 import { environment } from '../../../globals';
 
 export interface EntitiesWizardValues {
+    mode: 'create' | 'edit';
     files?: File[];
     template?: IMongoEntityTemplatePopulated;
 }
@@ -74,11 +75,11 @@ const { excelExtension } = environment.loadExcel;
 const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
     open,
     handleClose,
-    initialValues = { template: undefined, file: undefined },
+    initialValues = { template: undefined, file: undefined, mode: 'create' },
     initialStep = 1,
     isEditMode = false,
 }) => {
-    const { template } = initialValues!;
+    const { template, mode } = initialValues!;
 
     const [stepsData, setStepsData] = useState<ISteps>({
         status: StepStatus.uploadExcel,
@@ -170,7 +171,7 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
                     onClick={() =>
                         exportTemplateToExcel({
                             fileName: `${template?.displayName}${excelExtension}`,
-                            headersOnly: true,
+                            headersOnly: mode === 'create',
                         })
                     }
                     download
@@ -183,7 +184,7 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
         {
             label: i18next.t('wizard.entity.loadEntities.uploadFilesTitle'),
             component: (props) => (
-                <UploadExcel formikProps={props} template={template!} stepsData={stepsData} setStepsData={setStepsData} onDownload={async () => {}} />
+                <UploadExcel formikProps={props} template={template!} stepsData={stepsData} setStepsData={setStepsData} mode={mode} />
             ),
             validationSchema: stepsData.status === StepStatus.uploadExcel ? attachmentPropertiesBaseSchema : {},
             stepperActions: {
@@ -262,7 +263,7 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
                 initialValues={initialValues}
                 initialStep={initialStep}
                 isEditMode={isEditMode}
-                title={`${i18next.t('wizard.entity.loadEntities.title')} - ${template?.displayName}`}
+                title={`${i18next.t(`wizard.entity.${mode === 'create' ? 'loadEntities' : 'editExcel'}.title`)} - ${template?.displayName}`}
                 steps={steps}
                 isLoading={isLoadingExcelEntities}
                 submitFunction={submitFunction}

@@ -16,6 +16,7 @@ export interface IExportEntitiesBody {
             displayColumns?: string[];
             headersOnly?: boolean;
             insertEntities?: Record<string, any>[];
+            edit?: boolean;
         };
     };
 }

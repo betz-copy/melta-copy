@@ -35,6 +35,7 @@ export interface EntityTemplateFormInputProperties {
     preview: boolean;
     hide: boolean;
     readOnly?: true;
+    identifier?: true;
     uniqueCheckbox?: boolean;
     groupName?: string;
     optionColors: Record<string, string>;

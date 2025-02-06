@@ -159,18 +159,26 @@ export const getFileName = (fileId: string) => {
     return fileId.slice(config.storageService.fileIdLength);
 };
 
-const relationshipRefCell = (cell: Excel.Cell, [key, value]: [string, IEntitySingleProperty], row: Record<string, any>, workspacePath: string) => {
+const relationshipRefCell = (
+    cell: Excel.Cell,
+    [key, value]: [string, IEntitySingleProperty],
+    row: Record<string, any>,
+    workspacePath: string,
+    edit?: boolean,
+) => {
     cell.value = {
         text: row[key].properties[value.relationshipReference!.relatedTemplateField],
         hyperlink: `${config.service.meltaBaseUrl}${workspacePath}/entity/${row[key].properties._id}`,
     };
+    cell.protection = { locked: edit };
 };
 
-const filesCell = (cell: Excel.Cell, isFileArray: boolean, rowIndex: number, value: string, workspaceId: string) => {
+const filesCell = (cell: Excel.Cell, isFileArray: boolean, rowIndex: number, value: string, workspaceId: string, edit?: boolean) => {
     cell.value = {
         text: isFileArray ? `${config.excel.multipleFilesName}${rowIndex}` : getFileName(value),
         hyperlink: `${config.service.meltaBaseUrl}${config.storageService.baseRoute}/${isFileArray ? 'zip/' : ''}${encodeURIComponent(value)}/${workspaceId}`,
     };
+    cell.protection = { locked: edit };
 };
 
 const fixComplexProperties = (
@@ -179,16 +187,17 @@ const fixComplexProperties = (
     [key, value]: [string, IEntitySingleProperty],
     rowIndex: number,
     workspace: { path: string; id: string },
+    edit?: boolean,
 ) => {
     const isFileArray = value.type === 'array' && value.items?.format === 'fileId';
     const isSingleFile = value.format === 'fileId';
 
     if (value.format === 'relationshipReference') {
-        relationshipRefCell(cell, [key, value], row, workspace.path);
+        relationshipRefCell(cell, [key, value], row, workspace.path, edit);
         return true;
     }
     if (isSingleFile || isFileArray) {
-        filesCell(cell, isFileArray, rowIndex, row[key], workspace.id);
+        filesCell(cell, isFileArray, rowIndex, row[key], workspace.id, edit);
         return true;
     }
     return false;
@@ -202,15 +211,17 @@ const styleAWorksheet = (
     displayColumns?: string[],
     headersOnly?: boolean,
     skip: number = 0,
+    edit: boolean = false,
 ) => {
     worksheet.getRow(1).eachCell((cell) => {
         cell.font = excelStyle.columnHeader.font;
         cell.alignment = excelStyle.columnHeader.alignment;
+        cell.protection = { locked: true };
     });
     const { properties } = template.properties;
     const { createdAt, updatedAt, disabled } = template;
 
-    const allProperties: Record<string, any> = Object.entries({ ...properties, disabled, createdAt, updatedAt })
+    const allProperties: Record<string, IEntitySingleProperty> = Object.entries({ ...properties, disabled, createdAt, updatedAt })
         .filter(([key]) => displayColumns?.includes(key))
         .reduce((acc, [key, value]) => {
             acc[key] = value;
@@ -224,8 +235,10 @@ const styleAWorksheet = (
             if (row[key] !== undefined && value !== undefined) {
                 cell.alignment = excelStyle.cell.alignment;
                 cell.font = excelStyle.cell.font;
+                if (value.readOnly || value.identifier || value.serialStarter) cell.protection = { locked: true };
+                else cell.protection = { locked: false };
 
-                const isComplex = fixComplexProperties(cell, row, [key, value], rowIndex, workspace);
+                const isComplex = fixComplexProperties(cell, row, [key, value], rowIndex, workspace, edit);
                 if (!isComplex) {
                     cell.value = row[key];
 
@@ -268,6 +281,25 @@ const styleAWorksheet = (
             }
         });
     });
+
+    worksheet
+        .protect('mypassword', {
+            selectLockedCells: true,
+            selectUnlockedCells: true,
+            formatCells: false,
+            formatColumns: false,
+            formatRows: false,
+            insertColumns: false,
+            insertRows: false,
+            deleteColumns: false,
+            deleteRows: false,
+        })
+        .then(() => {
+            console.log('Worksheet is protected');
+        })
+        .catch((error) => {
+            console.error('Error protecting worksheet:', error);
+        });
 };
 
 export { createWorkbook, createWorksheet, styleAWorksheet, fixComplexProperties };

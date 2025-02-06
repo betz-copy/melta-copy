@@ -2,12 +2,12 @@ import { Dialog, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import React, { CSSProperties, useState } from 'react';
 import { toast } from 'react-toastify';
-import { emptyEntityTemplate, EntityWizardValues } from '../dialogs/entity';
-import { CreateOrEditEntityDetails, ICreateOrUpdateWithRuleBreachDialogState } from '../dialogs/entity/CreateOrEditEntityDialog';
-import { IEntity } from '../../interfaces/entities';
-import { useDraftIdStore } from '../../stores/drafts';
-import { TableButton } from '../TableButton';
-import { useDarkModeStore } from '../../stores/darkMode';
+import { emptyEntityTemplate, EntityWizardValues } from '../../dialogs/entity';
+import { CreateOrEditEntityDetails, ICreateOrUpdateWithRuleBreachDialogState } from '../../dialogs/entity/CreateOrEditEntityDialog';
+import { IEntity } from '../../../interfaces/entities';
+import { useDraftIdStore } from '../../../stores/drafts';
+import { TableButton } from '../../TableButton';
+import { useDarkModeStore } from '../../../stores/darkMode';
 
 const AddEntityButton: React.FC<{
     style?: CSSProperties;

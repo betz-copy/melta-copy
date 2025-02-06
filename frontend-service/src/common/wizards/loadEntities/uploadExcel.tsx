@@ -20,9 +20,9 @@ export const UploadExcel: React.FC<{
     formikProps: FormikProps<EntitiesWizardValues>;
     template: IMongoEntityTemplatePopulated;
     stepsData: ISteps;
+    mode: 'create' | 'edit';
     setStepsData: React.Dispatch<React.SetStateAction<ISteps>>;
-    onDownload: () => Promise<any>;
-}> = ({ formikProps, template, stepsData, setStepsData, onDownload }) => {
+}> = ({ formikProps, template, stepsData, setStepsData, mode }) => {
     const theme = useTheme();
     const { values, setFieldValue, setFieldTouched } = formikProps;
 
@@ -34,11 +34,14 @@ export const UploadExcel: React.FC<{
         return (
             <>
                 <Grid marginTop="10px" marginLeft="20px">
-                    <Typography fontSize="13px" color="#9398C2">
-                        - {i18next.t('wizard.entity.loadEntities.limitNumberEntities')}
-                    </Typography>
+                    {mode === 'create' && (
+                        <Typography fontSize="13px" color="#9398C2">
+                            - {i18next.t('wizard.entity.loadEntities.limitNumberEntities')}
+                        </Typography>
+                    )}
                     <Typography fontSize="13px" color="#9398C2" marginTop="5px">
-                        - {i18next.t('wizard.entity.loadEntities.limitNumberFiles')}
+                        -{' '}
+                        {i18next.t('wizard.entity.loadEntities.limitNumberFiles', { limit: mode === 'edit' ? 1 : environment.loadExcel.filesLimit })}
                     </Typography>
                 </Grid>
                 <InstanceFileInput
@@ -56,6 +59,7 @@ export const UploadExcel: React.FC<{
                     onDrop={async (files) => {
                         await readFile(files as File[], template, setStepsData);
                     }}
+                    limit={mode === 'edit' ? 1 : undefined}
                 />
             </>
         );
@@ -64,7 +68,6 @@ export const UploadExcel: React.FC<{
         return (
             <OpenPreview
                 fileId={{ name: `${i18next.t('entitiesTableOfTemplate.downloadOneTableTitle')}${excelExtension}` } as File}
-                onClick={() => onDownload()}
                 download
                 showText
             />
@@ -75,7 +78,6 @@ export const UploadExcel: React.FC<{
             <Grid marginTop="5px">
                 <OpenPreview
                     fileId={{ name: `${i18next.t('entitiesTableOfTemplate.downloadOneTableTitle')}${excelExtension}` } as File}
-                    onClick={() => onDownload()}
                     download
                     showText
                 />

@@ -10,6 +10,9 @@ const validateProperties = (value, helpers) => {
         if (properties[key].required && properties[key].readOnly) {
             return helpers.message(`Property ${key} is readOnly and cannot be required`);
         }
+        if (properties[key].required && !properties[key].identifier) {
+            return helpers.message(`Property ${key} is identifier and has to be required`);
+        }
     }
 
     return value;

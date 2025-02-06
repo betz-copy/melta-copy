@@ -13,6 +13,7 @@ export interface IEntitySingleProperty {
     };
     minItems?: 1;
     readOnly?: true;
+    identifier?: true;
     uniqueItems?: true;
     pattern?: string;
     patternCustomErrorMessage?: string;
