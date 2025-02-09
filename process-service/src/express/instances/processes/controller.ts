@@ -22,6 +22,10 @@ export default class ProcessInstanceController extends DefaultController<IProces
         res.json(await this.manager.deleteProcess(req.params.id));
     }
 
+    async updateTemplate(req: Request, res: Response) {
+        res.json(await this.manager.updateTemplate(req.params.id, req.body));
+    }
+
     async updateProcess(req: Request, res: Response) {
         const { userId, ...updatedFields } = req.body;
 

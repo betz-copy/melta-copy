@@ -1,4 +1,5 @@
-import { ClientSession, FilterQuery, Types } from 'mongoose';
+/* eslint-disable no-restricted-syntax */
+import { ClientSession, FilterQuery, Types, UpdateWriteOpResult } from 'mongoose';
 /* eslint-disable class-methods-use-this */
 import { Request } from 'express';
 import config from '../../../config';
@@ -12,7 +13,7 @@ import {
 } from '../../../utils/mongo';
 import { DefaultManagerMongo } from '../../../utils/mongo/manager';
 import { InstancePropertiesValidationError, InstanceNotFoundError, ServiceError, ValidationError } from '../../error';
-import { IMongoProcessTemplate, IProcessDetails } from '../../templates/processes/interface';
+import { IMongoProcessTemplate, IMongoProcessTemplatePopulated, IProcessDetails } from '../../templates/processes/interface';
 import ProcessTemplateManager from '../../templates/processes/manager';
 import { IMongoStepTemplate } from '../../templates/steps/interface';
 import { IMongoStepInstance } from '../steps/interface';
@@ -238,6 +239,87 @@ class ProcessInstanceManager extends DefaultManagerMongo<IProcessInstance> {
         const steps = updatedStep ? process.steps.map((step) => (String(step._id) === String(updatedStep!._id) ? updatedStep : step)) : process.steps;
         if (steps.some((step) => step.status === Status.Rejected)) return Status.Rejected;
         return steps.some((step) => step.status === Status.Pending) ? Status.Pending : Status.Approved;
+    }
+
+    async deletePropertiesOfTemplate(
+        templateId: string,
+        removedProperties: {
+            processProperties: string[];
+            stepsProperties: Record<string, string[]>;
+        },
+        session?: ClientSession,
+    ) {
+        if (removedProperties.processProperties.length) {
+            const unsetProcessFields = removedProperties.processProperties.reduce((acc, prop) => {
+                acc[`details.${prop}`] = '';
+                return acc;
+            }, {});
+
+            await this.model.updateMany({ templateId }, { $unset: unsetProcessFields }, { session });
+        }
+
+        const stepsUpdatePromises: Promise<UpdateWriteOpResult>[] = [];
+
+        if (Object.values(removedProperties.stepsProperties).some((stepsProperties) => stepsProperties.length)) {
+            Object.entries(removedProperties.stepsProperties).forEach(([stepId, stepRemovedProperties]) => {
+                const unsetProcessFields = stepRemovedProperties.reduce((acc, prop) => {
+                    acc[`properties.${prop}`] = '';
+                    return acc;
+                }, {});
+
+                stepsUpdatePromises.push(this.stepInstanceManager.updateManySteps({ templateId: stepId }, { $unset: unsetProcessFields }, session));
+            });
+        }
+
+        await Promise.all(stepsUpdatePromises);
+
+        const updatedProcesses: IMongoProcessInstancePopulated[] = (await this.model
+            .find({ templateId }, null, { session })
+            .populate(config.processFields.steps)
+            .lean()
+            .exec()) as unknown as IMongoProcessInstancePopulated[];
+
+        await Promise.all(
+            updatedProcesses.map((updatedProcess) =>
+                this.elasticSearchManager.updateDocumentOnElastic(updatedProcess as IMongoProcessInstancePopulated),
+            ),
+        );
+    }
+
+    async updateTemplate(id: string, updatedData: IMongoProcessTemplatePopulated): Promise<IMongoProcessTemplatePopulated> {
+        const currProcessTemplate = await this.processTemplateManager.getProcessTemplateById(id);
+        await this.processTemplateManager.throwIfCantUpdateProcessTemplate(updatedData, currProcessTemplate);
+
+        return transaction(async (session) => {
+            const removedProperties = this.processTemplateManager.getRemovedPropertiesFromTemplate(currProcessTemplate, updatedData);
+
+            if (
+                removedProperties.processProperties.length ||
+                Object.values(removedProperties.stepsProperties).some((stepRemovedProperties) => stepRemovedProperties.length > 0)
+            ) {
+                const removedFilesProperties = removedProperties.processProperties.reduce(
+                    (acc, propertyToRemove) => {
+                        const { format, items } = currProcessTemplate.details.properties.properties[propertyToRemove];
+
+                        if (format === 'fileId' || items?.format === 'fileId') {
+                            acc[propertyToRemove] = items?.format === 'fileId';
+                        }
+
+                        return acc;
+                    },
+                    {} as Record<string, boolean>,
+                );
+
+                // TODO:
+                // if (Object.keys(removedFilesProperties).length) {
+                //     await this.deleteFilesOfDeletedProperty(id, removedFilesProperties, count);
+                // }
+
+                await this.deletePropertiesOfTemplate(id, removedProperties, session);
+            }
+
+            return this.processTemplateManager.updateTemplate(id, updatedData, session);
+        });
     }
 
     async archiveProcess(id: string, { archived }) {

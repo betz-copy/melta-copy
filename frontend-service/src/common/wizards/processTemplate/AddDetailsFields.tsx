@@ -14,7 +14,15 @@ import { processTemplateUniquePropertiesDetails } from '../../../utils/validatio
 import { StepComponentProps } from '..';
 
 const addDetailsFieldsSchema = Yup.object({
-    detailsProperties: Yup.array().of(propertiesBaseSchema).min(1, i18next.t('validation.oneField')),
+    detailsProperties: Yup.array()
+        .of(propertiesBaseSchema)
+        .min(1, i18next.t('validation.oneField'))
+        .test(i18next.t('validation.oneField'), i18next.t('validation.oneField'), (value) =>
+            value ? value.some((obj) => !('deleted' in obj) || obj.deleted === false) : false,
+        )
+        .test(i18next.t('validation.oneField'), i18next.t('validation.oneField'), (value) =>
+            value ? value.some((obj) => !('archive' in obj) || obj.archive === false || obj.archive === undefined) : false,
+        ),
     detailsAttachmentProperties: Yup.array().of(attachmentPropertiesBaseSchema),
 }).test('uniqueProperties', processTemplateUniquePropertiesDetails);
 
@@ -78,11 +86,12 @@ const AddDetailsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues,
                     errors={errors}
                     initialFieldCardDataOnAdd={initialFieldCardDataOnAdd}
                     supportSerialNumberType={false}
-                    supportEntityReferenceType
+                    supportEntityReferenceType={false} // TODO: for now unsupport user and relationship reference fields
                     supportChangeToRequiredWithInstances={false}
                     supportArrayFields={false}
-                    supportDeleteForExistingInstances={false}
+                    supportDeleteForExistingInstances
                     supportRelationshipReference={false}
+                    supportUserType={false}
                 />
             </Grid>
 
@@ -101,11 +110,12 @@ const AddDetailsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues,
                     errors={errors}
                     initialFieldCardDataOnAdd={initialFieldCardDataOnAdd}
                     supportSerialNumberType={false}
-                    supportEntityReferenceType
+                    supportEntityReferenceType={false}
                     supportChangeToRequiredWithInstances={false}
                     supportArrayFields={false}
-                    supportDeleteForExistingInstances={false}
+                    supportDeleteForExistingInstances
                     supportRelationshipReference={false}
+                    supportUserType={false}
                 />
             </Grid>
         </Grid>

@@ -199,11 +199,12 @@ const AddStepsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues, '
                                                                         }
                                                                         initialFieldCardDataOnAdd={initialFieldCardDataOnAdd}
                                                                         supportSerialNumberType={false}
-                                                                        supportEntityReferenceType
+                                                                        supportEntityReferenceType={false}
                                                                         supportChangeToRequiredWithInstances={false}
                                                                         supportArrayFields={false}
-                                                                        supportDeleteForExistingInstances={false}
+                                                                        supportDeleteForExistingInstances
                                                                         supportRelationshipReference={false}
+                                                                        supportUserType={false}
                                                                     />
                                                                 </Grid>
                                                                 <Grid item>
@@ -229,10 +230,11 @@ const AddStepsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues, '
                                                                         }
                                                                         initialFieldCardDataOnAdd={initialFieldCardDataOnAdd}
                                                                         supportSerialNumberType={false}
-                                                                        supportEntityReferenceType
+                                                                        supportEntityReferenceType={false}
                                                                         supportChangeToRequiredWithInstances={false}
                                                                         supportArrayFields={false}
-                                                                        supportDeleteForExistingInstances={false}
+                                                                        supportUserType={false}
+                                                                        supportDeleteForExistingInstances
                                                                         supportRelationshipReference={false}
                                                                     />
                                                                 </Grid>

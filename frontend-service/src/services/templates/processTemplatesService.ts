@@ -84,6 +84,10 @@ const processTemplateObjectToProcessTemplateForm = (
 
             if (value.format === 'fileId') {
                 stepsAttachmentProperties.push(property);
+            } else if (value.items?.format === 'fileId') {
+                property.type = 'multipleFiles';
+
+                stepsAttachmentProperties.push(property);
             } else {
                 stepsPropertiesArray.push(property);
             }
@@ -141,13 +145,16 @@ const addAttachmentProperties = (
     },
 ) => {
     attachmentProperties.forEach(({ name, title, type, required, deleted }) => {
+        if (!deleted) {
             const { required: requiredFile, ...attachmentProperty } = createFileAttachmentProperty(type, required);
-        // eslint-disable-next-line no-param-reassign
-        properties[name] = {
-            title,
-            ...attachmentProperty,
-        };
-        propertiesOrder.push(name);
+            // eslint-disable-next-line no-param-reassign
+            properties[name] = {
+                title,
+                ...attachmentProperty,
+            };
+            propertiesOrder.push(name);
+        }
+
         if (required) detailsSchema.required.push(name);
     });
 };
@@ -163,19 +170,21 @@ const formToJSONSchema = (values: ProcessTemplateWizardValues): ICreateProcessTe
         required: [],
     };
 
-    detailsProperties.forEach(({ name, title, type, required, options, pattern, patternCustomErrorMessage }) => {
-        detailsSchema.properties[name] = {
-            title,
-            type: basePropertyTypes.includes(type) ? (type as IProcessSingleProperty['type']) : 'string',
-            format: stringFormats.includes(type) ? (type as IProcessSingleProperty['format']) : undefined,
-            enum: type === 'enum' ? options : undefined,
-            pattern: type === 'pattern' ? pattern : undefined,
-            patternCustomErrorMessage: type === 'pattern' ? patternCustomErrorMessage : undefined,
-        };
+    detailsProperties.forEach(({ name, title, type, required, options, pattern, patternCustomErrorMessage, deleted }) => {
+        if (!deleted) {
+            detailsSchema.properties[name] = {
+                title,
+                type: basePropertyTypes.includes(type) ? (type as IProcessSingleProperty['type']) : 'string',
+                format: stringFormats.includes(type) ? (type as IProcessSingleProperty['format']) : undefined,
+                enum: type === 'enum' ? options : undefined,
+                pattern: type === 'pattern' ? pattern : undefined,
+                patternCustomErrorMessage: type === 'pattern' ? patternCustomErrorMessage : undefined,
+            };
 
-        detailsPropertiesOrder.push(name);
+            detailsPropertiesOrder.push(name);
 
-        if (required) detailsSchema.required.push(name);
+            if (required) detailsSchema.required.push(name);
+        }
     });
 
     addAttachmentProperties(detailsSchema.properties, detailsPropertiesOrder, detailsAttachmentProperties, detailsSchema);
@@ -187,19 +196,21 @@ const formToJSONSchema = (values: ProcessTemplateWizardValues): ICreateProcessTe
             properties: {},
             required: [],
         };
-        step.properties.forEach(({ name, title, type, required, options, pattern, patternCustomErrorMessage }) => {
-            stepSchema.properties[name] = {
-                title,
-                type: basePropertyTypes.includes(type) ? (type as IProcessSingleProperty['type']) : 'string',
-                format: stringFormats.includes(type) ? (type as IProcessSingleProperty['format']) : undefined,
-                enum: type === 'enum' ? options : undefined,
-                pattern: type === 'pattern' ? pattern : undefined,
-                patternCustomErrorMessage: type === 'pattern' ? patternCustomErrorMessage : undefined,
-            };
+        step.properties.forEach(({ name, title, type, required, options, pattern, patternCustomErrorMessage, deleted }) => {
+            if (!deleted) {
+                stepSchema.properties[name] = {
+                    title,
+                    type: basePropertyTypes.includes(type) ? (type as IProcessSingleProperty['type']) : 'string',
+                    format: stringFormats.includes(type) ? (type as IProcessSingleProperty['format']) : undefined,
+                    enum: type === 'enum' ? options : undefined,
+                    pattern: type === 'pattern' ? pattern : undefined,
+                    patternCustomErrorMessage: type === 'pattern' ? patternCustomErrorMessage : undefined,
+                };
 
-            stepPropertiesOrder.push(name);
+                stepPropertiesOrder.push(name);
 
-            if (required) stepSchema.required.push(name);
+                if (required) stepSchema.required.push(name);
+            }
         });
 
         addAttachmentProperties(stepSchema.properties, stepPropertiesOrder, step.attachmentProperties, stepSchema);

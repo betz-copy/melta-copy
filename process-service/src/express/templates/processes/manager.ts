@@ -1,5 +1,5 @@
 /* eslint-disable class-methods-use-this */
-import { FilterQuery, Types } from 'mongoose';
+import { ClientSession, FilterQuery, Types } from 'mongoose';
 import { StatusCodes } from 'http-status-codes';
 import config from '../../../config';
 import { escapeRegExp } from '../../../utils';
@@ -74,22 +74,23 @@ export default class ProcessTemplateManager extends DefaultManagerMongo<IProcess
 
         Object.entries(currProperties).forEach(([key, value]) => {
             const newValue = updatedProperties[key];
-            if (!newValue) throw new ServiceError(badRequestStatus, 'can not remove property');
-            if (value.type !== newValue.type) throw new ServiceError(badRequestStatus, 'can not change property type');
-            if (
-                !(
-                    (value.format === 'text-area' && !newValue.format && newValue.type === 'string') ||
-                    (!value.format && value.type === 'string' && newValue.format === 'text-area') ||
-                    value.format === newValue.format
+            if (newValue) {
+                if (value.type !== newValue.type) throw new ServiceError(badRequestStatus, 'can not change property type');
+                if (
+                    !(
+                        (value.format === 'text-area' && !newValue.format && newValue.type === 'string') ||
+                        (!value.format && value.type === 'string' && newValue.format === 'text-area') ||
+                        value.format === newValue.format
+                    )
                 )
-            )
-                throw new ServiceError(badRequestStatus, 'can not change property format');
-            if (value.enum && !value.enum?.every((val) => newValue.enum?.includes(val)))
-                throw new ServiceError(badRequestStatus, 'can not remove options from enum');
+                    throw new ServiceError(badRequestStatus, 'can not change property format');
+                if (value.enum && !value.enum?.every((val) => newValue.enum?.includes(val)))
+                    throw new ServiceError(badRequestStatus, 'can not remove options from enum');
+            }
         });
     }
 
-    private async throwIfCantUpdateProcessTemplate(updatedTemplate: IProcessTemplatePopulated, currTemplate: IMongoProcessTemplatePopulated) {
+    async throwIfCantUpdateProcessTemplate(updatedTemplate: IProcessTemplatePopulated, currTemplate: IMongoProcessTemplatePopulated) {
         const processInstanceManager = new ProcessInstanceManager(this.workspaceId);
         const processInstances = await processInstanceManager.searchProcesses({ templateIds: [currTemplate._id], limit: 0, skip: 0 });
         if (processInstances.length === 0) {
@@ -120,17 +121,42 @@ export default class ProcessTemplateManager extends DefaultManagerMongo<IProcess
         });
     }
 
-    async updateTemplate(id: string, updatedData: IMongoProcessTemplatePopulated): Promise<IMongoProcessTemplatePopulated> {
-        const currProcessTemplate = await this.getProcessTemplateById(id);
-        await this.throwIfCantUpdateProcessTemplate(updatedData, currProcessTemplate);
-        return transaction(async (session) => {
-            const stepsIds = await this.stepTemplateManager.updateStepsTemplates(updatedData.steps, session);
-            return this.model
-                .findByIdAndUpdate(id, { ...updatedData, steps: stepsIds }, { new: true, session })
-                .populate(config.processFields.steps)
-                .orFail(new TemplateNotFoundError('process', id))
-                .lean();
+    getRemovedPropertiesFromTemplate(currProcessTemplate: IMongoProcessTemplatePopulated, updatedData: IMongoProcessTemplatePopulated) {
+        const removedProperties: {
+            processProperties: string[];
+            stepsProperties: Record<string, string[]>;
+        } = {
+            processProperties: [],
+            stepsProperties: {},
+        };
+
+        Object.entries(currProcessTemplate.details.properties.properties).forEach(([key, _value]) => {
+            const newValue = updatedData.details.properties.properties[key];
+
+            if (!newValue) removedProperties.processProperties.push(key);
         });
+
+        currProcessTemplate.steps.forEach((step, index) => {
+            removedProperties.stepsProperties[step._id] = [];
+            Object.keys(step.properties.properties).forEach((key) => {
+                const newValue = updatedData.steps[index].properties.properties[key];
+
+                if (!newValue) removedProperties.stepsProperties[step._id].push(key);
+            });
+        });
+
+        // TODO: support remove files...
+
+        return removedProperties;
+    }
+
+    async updateTemplate(id: string, updatedData: IMongoProcessTemplatePopulated, session: ClientSession): Promise<IMongoProcessTemplatePopulated> {
+        const stepsIds = await this.stepTemplateManager.updateStepsTemplates(updatedData.steps, session);
+        return this.model
+            .findByIdAndUpdate(id, { ...updatedData, steps: stepsIds }, { new: true, session })
+            .populate(config.processFields.steps)
+            .orFail(new TemplateNotFoundError('process', id))
+            .lean();
     }
 
     async searchTemplates({ displayName, ids, limit, skip, reviewerId }: IProcessTemplateSearchProperties) {

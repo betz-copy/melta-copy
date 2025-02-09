@@ -1,5 +1,5 @@
 /* eslint-disable class-methods-use-this */
-import { ClientSession } from 'mongoose';
+import { ClientSession, UpdateQuery, UpdateWithAggregationPipeline } from 'mongoose';
 import config from '../../../config';
 import ElasticSearchManager from '../../../utils/elastic/documentsOnElastic';
 import { getTemplateAggregation, transaction } from '../../../utils/mongo';
@@ -122,6 +122,14 @@ export default class StepInstanceManager extends DefaultManagerMongo<IStepInstan
         });
 
         return updatedStep;
+    }
+
+    async updateManySteps(
+        query: Partial<IStepInstance>,
+        stepData: UpdateQuery<IStepInstance> | UpdateWithAggregationPipeline,
+        session?: ClientSession,
+    ) {
+        return this.model.updateMany(query, stepData, { session }).lean();
     }
 
     async deleteStepsByIds(stepIds: string[], session?: ClientSession) {

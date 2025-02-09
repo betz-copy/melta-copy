@@ -63,6 +63,23 @@ export const deleteInstanceByIdRequestSchema = Joi.object({
     },
 });
 
+/*
+ * PATCH /api/processes/instances/deletePropertiesOfTemplate/:templateId
+ */
+export const deletePropertiesOfTemplateRequestSchema = Joi.object({
+    body: {
+        removedProperties: Joi.object({
+            processProperties: Joi.array().items(Joi.string()),
+            stepsProperties: Joi.object(),
+        }),
+        currentTemplate: Joi.object(),
+    },
+    query: {},
+    params: {
+        templateId: Joi.string().required(),
+    },
+});
+
 // POST /api/processes/instances/search
 export const searchInstanceRequestSchema = Joi.object({
     query: {},
