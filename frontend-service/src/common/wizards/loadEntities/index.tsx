@@ -99,9 +99,13 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
         });
     };
 
-    const { isLoading: isLoadingExcelEntities, mutateAsync: loadEntities } = useMutation(
-        async (files: Record<string, File>) => {
-            return loadEntitiesRequest(template!._id, files);
+    const { isLoading: isLoadingExcelEntities, mutateAsync: loadEntities } = useMutation<
+        ITablesResults,
+        unknown,
+        { files: Record<string, File>; edit: boolean }
+    >(
+        async ({ files, edit }) => {
+            return loadEntitiesRequest(template!._id, edit, files);
         },
         {
             async onSuccess(data) {
@@ -115,9 +119,13 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
         },
     );
 
-    const { isLoading: isLoadingRules, mutateAsync: loadRules } = useMutation(
-        async (insertBrokenEntities: { entitiesToCreate: ICreateEntityMetadata[]; ignoredRules: IBrokenRule[] }) => {
-            return loadEntitiesRequest(template!._id, undefined, insertBrokenEntities);
+    const { isLoading: isLoadingRules, mutateAsync: loadRules } = useMutation<
+        ITablesResults,
+        unknown,
+        { insertBrokenEntities: { entitiesToCreate: ICreateEntityMetadata[]; ignoredRules: IBrokenRule[] }; edit: boolean }
+    >(
+        async ({ insertBrokenEntities, edit }) => {
+            return loadEntitiesRequest(template!._id, edit, undefined, insertBrokenEntities);
         },
         {
             async onSuccess(data) {
@@ -219,7 +227,7 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
                     onClick: async () => {
                         if (stepsData.status === StepStatus.previewExcelRows) {
                             setStepsData((prev) => ({ ...prev, status: StepStatus.excelUploadResult }));
-                            const data = await loadEntities(stepsData.files!);
+                            const data = await loadEntities({ files: stepsData.files!, edit: mode === 'edit' });
                             const hasFailedEntities = data.failedEntities.length > 0;
                             const hasBrokenRulesEntities = !!data.brokenRulesEntities?.entities?.length;
 
@@ -304,8 +312,11 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
                             })) || [];
 
                         return loadRules({
-                            entitiesToCreate: brokenRulesEntities,
-                            ignoredRules: stepsData.data.brokenRulesEntities?.rawBrokenRules || [],
+                            insertBrokenEntities: {
+                                entitiesToCreate: brokenRulesEntities,
+                                ignoredRules: stepsData.data.brokenRulesEntities?.rawBrokenRules || [],
+                            },
+                            edit: mode === 'edit',
                         });
                     }}
                     actionType={ActionTypes.CreateEntity}

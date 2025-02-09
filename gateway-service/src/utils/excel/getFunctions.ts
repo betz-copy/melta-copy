@@ -90,11 +90,14 @@ const readExcelFile = async (
     files: UploadedFile[],
     template: IMongoEntityTemplatePopulated,
     failedEntities: IFailedEntity[],
+    edit?: boolean,
     entitiesFileLimit = config.loadExcel.entitiesFileLimit,
 ) => {
     const entities: IEntity[] = [];
     const columns = Object.fromEntries(
-        Object.entries(template.properties.properties).filter(([_propertyKey, propertyTemplate]) => isIncludedColumn(propertyTemplate)),
+        Object.entries(template.properties.properties).filter(([_propertyKey, propertyTemplate]) =>
+            edit ? true : isIncludedColumn(propertyTemplate),
+        ),
     );
 
     await Promise.all(

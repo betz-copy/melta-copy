@@ -222,6 +222,7 @@ export const loadEntitiesSchema = Joi.object({
             ignoredRules: Joi.array().items(brokenRuleSchema).default([]),
         }),
         templateId: Joi.string().required(),
+        edit: Joi.boolean(),
     },
     query: {},
     params: {},

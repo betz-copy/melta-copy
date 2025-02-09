@@ -320,6 +320,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         userId: string,
         files?: UploadedFile[],
         insertBrokenEntities?: { entitiesToCreate: IEntity[]; ignoredRules: IBrokenRule[] },
+        edit?: boolean,
     ) {
         let entities = insertBrokenEntities?.entitiesToCreate;
         const template = await this.entityTemplateService.getEntityTemplateById(templateId);
@@ -331,14 +332,12 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
             const workspaceFilesLimit = workspace.metadata?.excel?.filesLimit;
 
             const effectiveFilesLimit = workspaceFilesLimit ?? config.loadExcel.filesLimit;
+            if (files.length > effectiveFilesLimit) throw new BadRequestError(`files limit: more than ${effectiveFilesLimit} files`, {});
 
-            if (files.length > effectiveFilesLimit) {
-                throw new BadRequestError(`files limit: more than ${effectiveFilesLimit} files`, {});
-            }
-
-            const actions = await readExcelFile(files, template, failedEntities, workspace.metadata?.excel?.entitiesFileLimit);
+            const actions = await readExcelFile(files, template, failedEntities, edit, workspace.metadata?.excel?.entitiesFileLimit);
             entities = actions;
         }
+
         const serialStarters = this.getSerialStarters(template);
         const generateSerialNumbers = (index: number) =>
             Object.fromEntries(Object.entries(serialStarters).map(([key, value]) => [key, value + index]));

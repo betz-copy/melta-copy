@@ -30,6 +30,7 @@ export const exportEntitiesRequest = async (body: IExportEntitiesBody) => {
 
 export const loadEntitiesRequest = async (
     templateId: string,
+    edit: boolean,
     files?: Record<string, File>,
     insertBrokenEntities?: { entitiesToCreate: ICreateEntityMetadata[]; ignoredRules: IBrokenRule[] },
 ): Promise<ITablesResults> => {
@@ -51,6 +52,7 @@ export const loadEntitiesRequest = async (
             ignoredRules,
         };
         formData.append('insertBrokenEntities', JSON.stringify(insertBrokenEntitiesObject));
+        formData.append('edit', String(edit));
     }
 
     const { data } = await axios.post(`${entities}/loadEntities`, formData);

@@ -237,12 +237,12 @@ const styleAWorksheet = (
         rows.forEach((row, index) => {
             const rowIndex = index + skip;
             const cell = worksheet.getCell(`${indexToExcelColumn(columnIndex + 1)}${rowIndex + SKIP_ROW_HEADER}`);
+            if (value.readOnly || value.identifier || value.serialStarter) {
+                readOnlyCell(cell);
+            } else cell.protection = { locked: false };
             if (row[key] !== undefined && value !== undefined) {
                 cell.alignment = excelStyle.cell.alignment;
                 cell.font = excelStyle.cell.font;
-                if (value.readOnly || value.identifier || value.serialStarter) {
-                    readOnlyCell(cell);
-                } else cell.protection = { locked: false };
 
                 const isComplex = fixComplexProperties(cell, row, [key, value], rowIndex, workspace);
                 if (isComplex) readOnlyCell(cell, edit);

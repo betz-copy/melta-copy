@@ -31,6 +31,7 @@ export class InstancesController extends DefaultController<InstancesManager> {
                 req.user!.id,
                 req.files || (req.file ? [req.file] : []),
                 req.body.insertBrokenEntities,
+                req.body.edit,
             ),
         );
     }
