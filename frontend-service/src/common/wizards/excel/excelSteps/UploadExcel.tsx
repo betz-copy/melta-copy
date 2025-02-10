@@ -1,16 +1,16 @@
 import React, { useState } from 'react';
 import { FormikProps } from 'formik';
 import i18next from 'i18next';
-import { Grid, Typography, useTheme } from '@mui/material';
+import { CircularProgress, Grid, Typography, useTheme } from '@mui/material';
 import { v4 as uuid } from 'uuid';
-import { EntitiesWizardValues, ISteps, StepStatus } from '.';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import OpenPreview from '../../FilePreview/OpenPreview';
-import { environment } from '../../../globals';
-import EntitiesTableOfTemplate from '../../EntitiesTableOfTemplate';
-import { InstanceFileInput } from '../../inputs/InstanceFilesInput/InstanceFileInput';
-import { useReadExcel } from '../../../utils/hooks/useReadExcel';
-import { useWorkspaceStore } from '../../../stores/workspace';
+import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
+import OpenPreview from '../../../FilePreview/OpenPreview';
+import { environment } from '../../../../globals';
+import EntitiesTableOfTemplate from '../../../EntitiesTableOfTemplate';
+import { InstanceFileInput } from '../../../inputs/InstanceFilesInput/InstanceFileInput';
+import { useReadExcel } from '../../../../utils/hooks/useReadExcel';
+import { useWorkspaceStore } from '../../../../stores/workspace';
+import { EntitiesWizardValues, IEditReadExcel, ISteps, StepStatus } from '../../../../interfaces/excel';
 
 const {
     loadExcel: { excelExtension, acceptedFilesTypes },
@@ -20,9 +20,10 @@ export const UploadExcel: React.FC<{
     formikProps: FormikProps<EntitiesWizardValues>;
     template: IMongoEntityTemplatePopulated;
     stepsData: ISteps;
-    mode: 'create' | 'edit';
     setStepsData: React.Dispatch<React.SetStateAction<ISteps>>;
-}> = ({ formikProps, template, stepsData, setStepsData, mode }) => {
+    onUploadExcel?: (file: Record<string, File>) => Promise<IEditReadExcel>;
+    isLoading?: boolean;
+}> = ({ formikProps, template, stepsData, setStepsData, onUploadExcel, isLoading }) => {
     const theme = useTheme();
     const { values, setFieldValue, setFieldTouched } = formikProps;
 
@@ -33,18 +34,20 @@ export const UploadExcel: React.FC<{
     const { defaultRowHeight, defaultFontSize } = workspace.metadata.agGrid;
     const { entitiesFileLimit, filesLimit } = workspace.metadata.excel;
 
+    if (isLoading) return <CircularProgress size={20} />;
+
     if (stepsData.status === StepStatus.uploadExcel)
         return (
             <>
                 <Grid marginTop="10px" marginLeft="20px">
-                    {mode === 'create' && (
+                    {!onUploadExcel && (
                         <Typography fontSize="13px" color="#9398C2">
                             - {i18next.t('wizard.entity.loadEntities.limitNumberEntities') + entitiesFileLimit}
                         </Typography>
                     )}
 
                     <Typography fontSize="13px" color="#9398C2" marginTop="5px">
-                        - {`${i18next.t('wizard.entity.loadEntities.limitNumberFiles')} ${mode === 'edit' ? 1 : filesLimit}`}
+                        - {`${i18next.t('wizard.entity.loadEntities.limitNumberFiles')} ${onUploadExcel ? 1 : filesLimit}`}
                     </Typography>
                 </Grid>
                 <InstanceFileInput
@@ -60,9 +63,14 @@ export const UploadExcel: React.FC<{
                     error={errorText || formikProps.errors.files}
                     setErrorText={setErrorText}
                     onDrop={async (files) => {
-                        await readFile(files as File[], template, setStepsData);
+                        if (onUploadExcel) {
+                            const file = files[0] as File;
+                            const fileRecord: Record<string, File> = { [file.name]: file };
+                            await onUploadExcel(fileRecord);
+                            setStepsData((prev) => ({ ...prev, files: fileRecord }));
+                        } else await readFile(files as File[], template, setStepsData);
                     }}
-                    limit={mode === 'edit' ? 1 : undefined}
+                    limit={onUploadExcel ? 1 : undefined}
                 />
             </>
         );
@@ -99,7 +107,7 @@ export const UploadExcel: React.FC<{
                     rowHeight={defaultRowHeight}
                     pageRowCount={10}
                     fontSize={`${defaultFontSize}px`}
-                    rowData={rowData}
+                    rowData={stepsData.entities || rowData}
                     saveStorageProps={{
                         shouldSaveFilter: false,
                         shouldSaveWidth: false,

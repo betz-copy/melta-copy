@@ -237,7 +237,7 @@ const styleAWorksheet = (
         rows.forEach((row, index) => {
             const rowIndex = index + skip;
             const cell = worksheet.getCell(`${indexToExcelColumn(columnIndex + 1)}${rowIndex + SKIP_ROW_HEADER}`);
-            if (value.readOnly || value.identifier || value.serialStarter) {
+            if (value.readOnly || value.identifier || value.serialStarter || row.disabled || disabled) {
                 readOnlyCell(cell);
             } else cell.protection = { locked: false };
             if (row[key] !== undefined && value !== undefined) {
@@ -287,6 +287,9 @@ const styleAWorksheet = (
                 }
             }
         });
+    });
+    Object.entries(allProperties).forEach(([_key, value], columnIndex) => {
+        if (value.archive) worksheet.getColumn(columnIndex + 1).hidden = true;
     });
 
     worksheet

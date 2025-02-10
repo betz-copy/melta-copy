@@ -1,5 +1,5 @@
 import { Readable } from 'stream';
-import { IFailedEntity } from '../common/wizards/loadEntities';
+import { IFailedEntity } from '../common/wizards/excel/LoadEntitiesWizard';
 import { IMongoEntityTemplatePopulated } from './entityTemplates';
 import { IMongoRelationshipTemplate } from './relationshipTemplates';
 import { IRelationship } from './relationships';

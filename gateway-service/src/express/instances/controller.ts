@@ -31,9 +31,16 @@ export class InstancesController extends DefaultController<InstancesManager> {
                 req.user!.id,
                 req.files || (req.file ? [req.file] : []),
                 req.body.insertBrokenEntities,
-                req.body.edit,
             ),
         );
+    }
+
+    async editReadExcel(req: Request, res: Response) {
+        res.json(await this.manager.editReadExcel(req.body.templateId, req.file!));
+    }
+
+    async editExcel(req: Request, res: Response) {
+        res.json(await this.manager.loadEntities(req.body.entities, req.user!.id, req.body.ignoredRules));
     }
 
     async updateEntityInstance(req: Request, res: Response) {

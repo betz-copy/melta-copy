@@ -7,83 +7,33 @@ import { useMutation } from 'react-query';
 import { Grid } from '@mui/material';
 import { StepType, Wizard, WizardBaseType } from '..';
 import OpenPreview from '../../FilePreview/OpenPreview';
-import { exportEntitiesRequest, loadEntitiesRequest } from '../../../services/entitiesService';
+import { editExcelRequest, editReadExcelRequest, exportEntitiesRequest, loadEntitiesRequest } from '../../../services/entitiesService';
 import { attachmentPropertiesBaseSchema } from '../entityTemplate/AddFields';
-import { LoadEntitiesTables } from './loadEntitiesTables';
-import { IBrokenRule, IBrokenRulePopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
-import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { UploadExcel } from './uploadExcel';
+import { IBrokenRule } from '../../../interfaces/ruleBreaches/ruleBreach';
 import ActionOnEntityWithRuleBreachDialog from '../../../pages/Entity/components/ActionOnEntityWithRuleBreachDialog';
-import { ActionErrors, ActionTypes, IAction, IActionMetadataPopulated, ICreateEntityMetadata } from '../../../interfaces/ruleBreaches/actionMetadata';
+import { ActionTypes, ICreateEntityMetadata } from '../../../interfaces/ruleBreaches/actionMetadata';
 import { ICreateOrUpdateWithRuleBreachDialogState } from '../../dialogs/entity/CreateOrEditEntityDialog';
-import { IRequiredConstraint, IUniqueConstraint } from '../../../interfaces/entities';
 import { environment } from '../../../globals';
-
-export interface EntitiesWizardValues {
-    mode: 'create' | 'edit';
-    files?: File[];
-    template?: IMongoEntityTemplatePopulated;
-}
-
-export type IValidationError = {
-    message: string;
-    path: string;
-    schemaPath: string;
-    params: Partial<IEntitySingleProperty> & { allowedValues?: string[] };
-};
-
-export type IBrokenRuleEntity = {
-    rawBrokenRules: IBrokenRule[];
-    brokenRules: IBrokenRulePopulated[];
-    actions: {
-        actionType: ActionTypes;
-        actionMetadata: IActionMetadataPopulated;
-    }[];
-    rawActions: IAction[];
-    entities: { properties: Record<string, any> }[];
-};
-
-export interface IError {
-    type: ActionErrors;
-    metadata: IValidationError | IUniqueConstraint | IRequiredConstraint;
-}
-
-export interface IFailedEntity {
-    properties: Record<string, any>;
-    errors: IError[];
-}
-
-export interface ITablesResults {
-    succeededEntities: ICreateEntityMetadata[];
-    failedEntities: IFailedEntity[];
-    brokenRulesEntities?: IBrokenRuleEntity;
-}
-
-export enum StepStatus {
-    uploadExcel = 'uploadExcel',
-    previewExcelRows = 'previewExcelRows',
-    excelUploadResult = 'excelUploadResult',
-}
-export interface ISteps {
-    status: StepStatus;
-    files?: Record<string, File>;
-    data: ITablesResults;
-}
+import { UploadExcel } from './excelSteps/UploadExcel';
+import { LoadEntitiesTables } from './excelSteps/LoadEntitiesTables';
+import { EntitiesWizardValues, ISteps, StepStatus } from '../../../interfaces/excel';
+import { IEntity } from '../../../interfaces/entities';
 
 const { excelExtension } = environment.loadExcel;
 
-const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
+const EditExcelWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
     open,
     handleClose,
-    initialValues = { template: undefined, file: undefined, mode: 'create' },
+    initialValues = { template: undefined, file: undefined },
     initialStep = 1,
     isEditMode = false,
 }) => {
-    const { template, mode } = initialValues!;
+    const { template } = initialValues!;
 
     const [stepsData, setStepsData] = useState<ISteps>({
         status: StepStatus.uploadExcel,
         data: { succeededEntities: [], failedEntities: [] },
+        entities: [],
     });
 
     const isBrokenRules = (stepsData.data.brokenRulesEntities?.brokenRules ?? []).length > 0;
@@ -95,17 +45,32 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
         handleClose();
         setStepsData({
             status: StepStatus.uploadExcel,
+            entities: [],
             data: { succeededEntities: [], failedEntities: [] },
         });
     };
 
-    const { isLoading: isLoadingExcelEntities, mutateAsync: loadEntities } = useMutation<
-        ITablesResults,
-        unknown,
-        { files: Record<string, File>; edit: boolean }
-    >(
-        async ({ files, edit }) => {
-            return loadEntitiesRequest(template!._id, edit, files);
+    const { isLoading: isLoadingReadExcel, mutateAsync: readExcel } = useMutation(
+        async (file: Record<string, File>) => {
+            return editReadExcelRequest(template!._id, file);
+        },
+        {
+            async onSuccess(data) {
+                const { entities, failedEntities } = data;
+                setStepsData((prev) => ({ ...prev, status: StepStatus.previewExcelRows, entities, data: { failedEntities, succeededEntities: [] } }));
+
+                return data;
+            },
+            onError() {
+                toast.error(i18next.t('wizard.entity.editExcel.failedReadExcel'));
+                onClose();
+            },
+        },
+    );
+
+    const { isLoading: isLoadingExcelEntities, mutateAsync: loadEntities } = useMutation(
+        async (entities: IEntity[]) => {
+            return editExcelRequest(template!._id, entities);
         },
         {
             async onSuccess(data) {
@@ -119,13 +84,9 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
         },
     );
 
-    const { isLoading: isLoadingRules, mutateAsync: loadRules } = useMutation<
-        ITablesResults,
-        unknown,
-        { insertBrokenEntities: { entitiesToCreate: ICreateEntityMetadata[]; ignoredRules: IBrokenRule[] }; edit: boolean }
-    >(
-        async ({ insertBrokenEntities, edit }) => {
-            return loadEntitiesRequest(template!._id, edit, undefined, insertBrokenEntities);
+    const { isLoading: isLoadingRules, mutateAsync: loadRules } = useMutation(
+        async ({ entities, ignoredRules }: { entities: IEntity[]; ignoredRules: IBrokenRule[] }) => {
+            return editExcelRequest(template!._id, entities, ignoredRules);
         },
         {
             async onSuccess(data) {
@@ -143,21 +104,11 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
     );
 
     const { isLoading: isExportingTableToExcelFile, mutateAsync: exportTemplateToExcel } = useMutation(
-        async ({
-            fileName,
-            headersOnly,
-            insertEntities,
-            edit,
-        }: {
-            fileName: string;
-            headersOnly?: boolean;
-            insertEntities?: Record<string, any>[];
-            edit?: boolean;
-        }) => {
+        async ({ fileName, headersOnly, insertEntities }: { fileName: string; headersOnly?: boolean; insertEntities?: Record<string, any>[] }) => {
             return exportEntitiesRequest({
                 fileName,
                 templates: {
-                    [template!._id]: { headersOnly, insertEntities, displayColumns: template?.propertiesOrder, edit },
+                    [template!._id]: { headersOnly, insertEntities, displayColumns: template?.propertiesOrder, edit: true },
                 },
             });
         },
@@ -193,8 +144,6 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
                     onClick={() =>
                         exportTemplateToExcel({
                             fileName: `${template?.displayName}${excelExtension}`,
-                            headersOnly: mode === 'create',
-                            edit: mode === 'edit',
                         })
                     }
                     download
@@ -207,7 +156,14 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
         {
             label: i18next.t('wizard.entity.loadEntities.uploadFilesTitle'),
             component: (props) => (
-                <UploadExcel formikProps={props} template={template!} stepsData={stepsData} setStepsData={setStepsData} mode={mode} />
+                <UploadExcel
+                    formikProps={props}
+                    template={template!}
+                    stepsData={stepsData}
+                    setStepsData={setStepsData}
+                    onUploadExcel={(file: Record<string, File>) => readExcel(file)}
+                    isLoading={isLoadingReadExcel}
+                />
             ),
             validationSchema: stepsData.status === StepStatus.uploadExcel ? attachmentPropertiesBaseSchema : {},
             stepperActions: {
@@ -217,6 +173,7 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
                         if (stepsData.status === StepStatus.previewExcelRows) {
                             setStepsData({
                                 status: StepStatus.uploadExcel,
+                                entities: [],
                                 data: { succeededEntities: [], failedEntities: [] },
                             });
                         }
@@ -227,7 +184,7 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
                     onClick: async () => {
                         if (stepsData.status === StepStatus.previewExcelRows) {
                             setStepsData((prev) => ({ ...prev, status: StepStatus.excelUploadResult }));
-                            const data = await loadEntities({ files: stepsData.files!, edit: mode === 'edit' });
+                            const data = await loadEntities(stepsData.entities!);
                             const hasFailedEntities = data.failedEntities.length > 0;
                             const hasBrokenRulesEntities = !!data.brokenRulesEntities?.entities?.length;
 
@@ -286,20 +243,21 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
                 initialValues={initialValues}
                 initialStep={initialStep}
                 isEditMode={isEditMode}
-                title={`${i18next.t(`wizard.entity.${mode === 'create' ? 'loadEntities' : 'editExcel'}.title`)} - ${template?.displayName}`}
+                title={`${i18next.t('wizard.entity.editExcel.title')} - ${template?.displayName}`}
                 steps={steps}
                 isLoading={isLoadingExcelEntities}
                 submitFunction={submitFunction}
                 direction="column"
                 showPrevSteps
             />
-            {createOrUpdateWithRuleBreachDialogState.isOpen && isBrokenRules && (
+            {/* {createOrUpdateWithRuleBreachDialogState.isOpen && isBrokenRules && (
                 <ActionOnEntityWithRuleBreachDialog
                     isLoadingActionOnEntity={isLoadingRules}
                     handleClose={() => {
                         setCreateOrUpdateWithRuleBreachDialogState({ isOpen: false });
                         setStepsData({
                             status: StepStatus.uploadExcel,
+                            entities: [],
                             data: { succeededEntities: [], failedEntities: [] },
                         });
                         onClose();
@@ -312,11 +270,8 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
                             })) || [];
 
                         return loadRules({
-                            insertBrokenEntities: {
-                                entitiesToCreate: brokenRulesEntities,
-                                ignoredRules: stepsData.data.brokenRulesEntities?.rawBrokenRules || [],
-                            },
-                            edit: mode === 'edit',
+                            entities: brokenRulesEntities,
+                            ignoredRules: stepsData.data.brokenRulesEntities?.rawBrokenRules || [],
                         });
                     }}
                     actionType={ActionTypes.CreateEntity}
@@ -341,9 +296,9 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
                     rawActions={createOrUpdateWithRuleBreachDialogState.rawActions}
                     loadEntities
                 />
-            )}
+            )} */}
         </Grid>
     );
 };
 
-export { LoadEntitiesWizard };
+export { EditExcelWizard };

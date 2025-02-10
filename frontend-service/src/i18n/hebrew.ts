@@ -658,7 +658,7 @@ export default {
                 wrongFileType: 'חלק מקבצים אלו לא קבצי אקסל',
                 notValid: 'שדה חייב להיות מסוג',
             },
-            editExcel: { title: 'עריכת טבלה מתוך קובץ' },
+            editExcel: { title: 'עריכת טבלה מתוך קובץ', failedReadExcel: 'קריאת קובץ נכשלה' },
         },
         rule: {
             createTitle: 'יצירת חוק',

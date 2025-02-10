@@ -3,8 +3,8 @@ import * as XLSX from 'xlsx';
 import { toast } from 'react-toastify';
 import i18next from 'i18next';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { ISteps, StepStatus } from '../../common/wizards/loadEntities';
 import { useWorkspaceStore } from '../../stores/workspace';
+import { ISteps, StepStatus } from '../../interfaces/excel';
 
 const convertFileDataToRowData = (gridData: any[][], headers: string[], template: IMongoEntityTemplatePopulated) => {
     return gridData

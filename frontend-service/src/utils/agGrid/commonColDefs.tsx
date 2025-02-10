@@ -30,7 +30,7 @@ import DateTimeCellEditor from './DateTimeCellEditor';
 import { ActionErrors } from '../../interfaces/ruleBreaches/actionMetadata';
 import RelationshipRefCellEditor from './RelationshipRefCellEditor';
 import { convertToPlainText } from '../HtmlTagsStringValue';
-import { IError, IFailedEntity, IValidationError } from '../../common/wizards/loadEntities';
+import { IError, IFailedEntity, IValidationError } from '../../common/wizards/excel/LoadEntitiesWizard';
 import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
 
 const hasErrors = (data: any): data is IFailedEntity => {

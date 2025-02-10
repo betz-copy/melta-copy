@@ -1,4 +1,4 @@
-import Excel from 'exceljs';
+import Excel, { CellModel } from 'exceljs';
 import { StatusCodes } from 'http-status-codes';
 import { AxiosError } from 'axios';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../externalServices/templates/entityTemplateService';
@@ -14,7 +14,7 @@ import {
     ICreateEntityMetadata,
     IFailedEntity,
 } from '../../externalServices/ruleBreachService/interfaces';
-import { IEntity, IValidationErrorData } from '../../externalServices/instanceService/interfaces/entities';
+import { IEntity, IEntityWithDirectRelationships, IValidationErrorData } from '../../externalServices/instanceService/interfaces/entities';
 import {
     IBrokenRulePopulated,
     ICreateEntityMetadataPopulated,
@@ -28,6 +28,7 @@ const { invalidDate, invalidTime } = config.loadExcel;
 const formatExcel = (value: Excel.CellValue | string, propertyTemplate: IEntitySingleProperty) => {
     const { type, format } = propertyTemplate;
     if (value === null) return undefined;
+
     switch (type) {
         case 'boolean':
             if (value === excelConfig.TRUE_TO_HEBREW) return true;
@@ -37,10 +38,12 @@ const formatExcel = (value: Excel.CellValue | string, propertyTemplate: IEntityS
             if (format === 'email' && typeof value === 'object') return (value as any).text;
             if (format === 'date') return new Date(value as string).toLocaleDateString('en-CA');
             if (format === 'date-time') return new Date(value as string).toISOString();
+            if (format === 'fileId') return (value as CellModel).text;
             return value?.toString();
         case 'array':
             if (propertyTemplate.items && propertyTemplate.items.type === 'string' && typeof value === 'object' && 'richText' in value)
                 return value?.richText.map((item) => item.text).filter((text) => text !== ', ' && text !== ',');
+            if (format === 'fileId') return (value as CellModel).text;
             return (value as string).split(',').map((val) => val.trim());
         default:
             break;
@@ -86,19 +89,43 @@ const handleFailedEntities = (rowData: Record<string, any>, failedProperties: IF
     failedEntities.push(failedEntity);
 };
 
+const getUpdatedEntity = (
+    entities: IEntityWithDirectRelationships[],
+    entity: IEntity,
+    identifier: keyof IEntity['properties'],
+    template: IMongoEntityTemplatePopulated,
+): IEntity | undefined => {
+    const existingEntity = entities.find((e) => e.entity.properties[identifier] === entity.properties[identifier]);
+
+    if (!existingEntity) return undefined;
+
+    const hasEntityChanged = Object.keys(entity.properties).some((key) =>
+        isIncludedColumn(template.properties.properties[key])
+            ? JSON.stringify(entity.properties[key]) !== JSON.stringify(existingEntity.entity.properties[key])
+            : false,
+    );
+
+    if (hasEntityChanged) return { ...existingEntity, ...entity };
+    return undefined;
+};
+
 const readExcelFile = async (
     files: UploadedFile[],
     template: IMongoEntityTemplatePopulated,
     failedEntities: IFailedEntity[],
-    edit?: boolean,
     entitiesFileLimit = config.loadExcel.entitiesFileLimit,
+    oldEntities: IEntityWithDirectRelationships[] = [],
 ) => {
+    const isEditMode = oldEntities.length > 0;
     const entities: IEntity[] = [];
     const columns = Object.fromEntries(
         Object.entries(template.properties.properties).filter(([_propertyKey, propertyTemplate]) =>
-            edit ? true : isIncludedColumn(propertyTemplate),
+            isEditMode ? true : isIncludedColumn(propertyTemplate),
         ),
     );
+
+    const identifier = Object.entries(template.properties.properties).find(([_key, value]) => value.identifier === true)?.[0];
+    if (!identifier) throw new BadRequestError('there is no identifier in template', { template });
 
     await Promise.all(
         files.map(async (file) => {
@@ -128,12 +155,16 @@ const readExcelFile = async (
                         if (error.message.includes(invalidTime)) failedProperties.push({ key, value, cellValue, dateOrTime: 'date-time' });
                     }
                 });
-
+                const entity = { templateId: template._id, properties: rowData };
                 if (failedProperties.length > 0) handleFailedEntities(rowData, failedProperties, failedEntities);
-                else entities.push({ templateId: template._id, properties: rowData });
+                else if (isEditMode) {
+                    const updatedEntity = getUpdatedEntity(oldEntities, entity, identifier, template);
+                    if (updatedEntity) entities.push(updatedEntity);
+                } else entities.push(entity);
             });
 
-            if (entities.length > entitiesFileLimit) throw new BadRequestError(`file limit: more than ${entitiesFileLimit} entities`, file);
+            if (!isEditMode)
+                if (entities.length > entitiesFileLimit) throw new BadRequestError(`file limit: more than ${entitiesFileLimit} entities`, file);
         }),
     );
 

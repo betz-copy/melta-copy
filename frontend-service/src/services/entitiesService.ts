@@ -18,8 +18,8 @@ import {
 import { EntityWizardValues } from '../common/dialogs/entity';
 import { IBrokenRule, IRuleBreach } from '../interfaces/ruleBreaches/ruleBreach';
 import { filterModelToFilterOfGraph } from '../pages/Graph/GraphFilterToBackend';
-import { ITablesResults } from '../common/wizards/loadEntities';
 import { ICreateEntityMetadata } from '../interfaces/ruleBreaches/actionMetadata';
+import { IEditReadExcel, ITablesResults } from '../interfaces/excel';
 
 const { entities, relationships } = environment.api;
 
@@ -30,7 +30,6 @@ export const exportEntitiesRequest = async (body: IExportEntitiesBody) => {
 
 export const loadEntitiesRequest = async (
     templateId: string,
-    edit: boolean,
     files?: Record<string, File>,
     insertBrokenEntities?: { entitiesToCreate: ICreateEntityMetadata[]; ignoredRules: IBrokenRule[] },
 ): Promise<ITablesResults> => {
@@ -52,10 +51,42 @@ export const loadEntitiesRequest = async (
             ignoredRules,
         };
         formData.append('insertBrokenEntities', JSON.stringify(insertBrokenEntitiesObject));
-        formData.append('edit', String(edit));
     }
 
     const { data } = await axios.post(`${entities}/loadEntities`, formData);
+
+    return data;
+};
+
+export const editReadExcelRequest = async (templateId: string, file: Record<string, File>): Promise<IEditReadExcel> => {
+    const formData = new FormData();
+
+    Object.entries(file).forEach(([key, value]) => {
+        formData.append(key, value as Blob);
+    });
+    formData.append('templateId', templateId);
+
+    const { data } = await axios.post(`${entities}/editReadExcel`, formData);
+
+    return data;
+};
+
+export const editExcelRequest = async (templateId: string, entitiesToUpdate: IEntity[], ignoredRules?: IBrokenRule[]): Promise<ITablesResults> => {
+    const formData = new FormData();
+
+    formData.append('templateId', templateId);
+
+    const entitiesObject = entitiesToUpdate.map((entity) => ({
+        templateId: entity.templateId,
+        properties: mapValues(entity.properties, (property) => property),
+    }));
+    formData.append('entities', JSON.stringify(entitiesObject));
+
+    if (ignoredRules) {
+        formData.append('ignoredRules', JSON.stringify(ignoredRules));
+    }
+
+    const { data } = await axios.post(`${entities}/editExcel`, formData);
 
     return data;
 };

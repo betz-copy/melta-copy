@@ -21,6 +21,7 @@ import {
     updateEntityInstanceSchema,
     updateEntityStatusSchema,
     loadEntitiesSchema,
+    editExcelSchema,
 } from './validator.schema';
 import { busboyMiddleware } from '../../utils/busboy/busboyMiddleware';
 
@@ -88,6 +89,22 @@ InstancesRouter.post(
     InstancesValidatorMiddleware.validateUserCanCreateEntityInstance,
     ValidateRequest(loadEntitiesSchema),
     InstancesControllerMiddleware.loadEntities,
+);
+
+InstancesRouter.post(
+    '/entities/editReadExcel',
+    busboyMiddleware,
+    InstancesValidatorMiddleware.validateUserCanCreateEntityInstance,
+    ValidateRequest(loadEntitiesSchema),
+    InstancesControllerMiddleware.editReadExcel,
+);
+
+InstancesRouter.post(
+    '/entities/editExcel',
+    busboyMiddleware,
+    InstancesValidatorMiddleware.validateUserCanCreateEntityInstance,
+    ValidateRequest(editExcelSchema),
+    InstancesControllerMiddleware.editExcel,
 );
 
 InstancesRouter.get('/entities/:id', InstancesValidatorMiddleware.validateUserCanReadEntityInstance, InstanceManagerProxy);

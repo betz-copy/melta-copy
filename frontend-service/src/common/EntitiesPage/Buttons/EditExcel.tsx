@@ -3,8 +3,8 @@ import React, { CSSProperties, useState } from 'react';
 import { useTheme } from '@mui/material';
 import { EntityWizardValues } from '../../dialogs/entity';
 import { TableButton } from '../../TableButton';
-import { LoadEntitiesWizard } from '../../wizards/loadEntities';
 import { useDarkModeStore } from '../../../stores/darkMode';
+import { EditExcelWizard } from '../../wizards/excel/EditExcelWizard';
 
 const EditExcelButton: React.FC<{
     style?: CSSProperties;
@@ -44,13 +44,13 @@ const EditExcelButton: React.FC<{
                 {children}
             </TableButton>
 
-            <LoadEntitiesWizard
+            <EditExcelWizard
                 open={editExcelState.isOpen}
                 handleClose={() => {
                     onSuccessCreate();
                     setEditExcelState({ isOpen: false });
                 }}
-                initialValues={{ template: initialValues?.template, files: undefined, mode: 'edit' }}
+                initialValues={{ template: initialValues?.template, files: undefined }}
                 initialStep={1}
             />
         </>

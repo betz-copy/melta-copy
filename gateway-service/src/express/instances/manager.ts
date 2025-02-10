@@ -22,6 +22,7 @@ import {
     ISearchFilter,
     ISearchSort,
     ITemplateSearchBody,
+    IEntityWithDirectRelationships,
 } from '../../externalServices/instanceService/interfaces/entities';
 import { IRelationship } from '../../externalServices/instanceService/interfaces/relationships';
 import {
@@ -320,7 +321,6 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         userId: string,
         files?: UploadedFile[],
         insertBrokenEntities?: { entitiesToCreate: IEntity[]; ignoredRules: IBrokenRule[] },
-        edit?: boolean,
     ) {
         let entities = insertBrokenEntities?.entitiesToCreate;
         const template = await this.entityTemplateService.getEntityTemplateById(templateId);
@@ -334,7 +334,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
             const effectiveFilesLimit = workspaceFilesLimit ?? config.loadExcel.filesLimit;
             if (files.length > effectiveFilesLimit) throw new BadRequestError(`files limit: more than ${effectiveFilesLimit} files`, {});
 
-            const actions = await readExcelFile(files, template, failedEntities, edit, workspace.metadata?.excel?.entitiesFileLimit);
+            const actions = await readExcelFile(files, template, failedEntities, workspace.metadata?.excel?.entitiesFileLimit);
             entities = actions;
         }
 
@@ -363,6 +363,56 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
         const brokenRulesEntities = await updateIdOfBrokenRules(allBrokenRulesEntities);
         if (serialStarters) await this.updateTemplateCurrentNumbers(template, serialStarters, succeededEntities.length);
+
+        return { succeededEntities, failedEntities, brokenRulesEntities };
+    }
+
+    async editReadExcel(templateId: string, file: UploadedFile) {
+        const template = await this.entityTemplateService.getEntityTemplateById(templateId);
+        const failedEntities: IFailedEntity[] = [];
+        const workspace = await WorkspaceService.getById(this.workspaceId);
+
+        const { searchEntitiesChunkSize } = config.service;
+        const templateCount = await this.getEntitiesCountByTemplates(true, {
+            templateIds: [template._id],
+        });
+
+        const { count, entitiesWithFiles } = templateCount?.[0] ?? { count: 0, entitiesWithFiles: {} };
+        const oldEntities: IEntityWithDirectRelationships[] = [];
+
+        for (let skip = 0; (count ?? 0) - skip > 0; skip += searchEntitiesChunkSize) {
+            const { entities: chunk } = await this.service.searchEntitiesOfTemplateRequest(template._id, {
+                skip,
+                limit: searchEntitiesChunkSize,
+                entityIdsToInclude: Object.keys(entitiesWithFiles ?? {}),
+            });
+            oldEntities.push(...chunk);
+        }
+
+        const entities = await readExcelFile([file], template, failedEntities, workspace.metadata?.excel?.entitiesFileLimit, oldEntities);
+        return { entities, failedEntities };
+    }
+
+    async editExcel(entities: IEntity[], userId: string, ignoredRules?: IBrokenRule[]) {
+        const failedEntities: IFailedEntity[] = [];
+        const succeededEntities: IEntity[] = [];
+        const allBrokenRulesEntities: IBrokenRuleEntity[] = [];
+        const results: IEntity[] = [];
+
+        const handleLoadEntities = async (entity: IEntity) => {
+            try {
+                const result = await this.updateEntityInstance(entity.properties._id, entity, [], ignoredRules || [], userId);
+                results.push(result);
+            } catch (error) {
+                this.handleLoadEntitiesErrors(error, failedEntities, entity, allBrokenRulesEntities);
+            }
+        };
+
+        await Promise.all(entities!.map(async (entity) => handleLoadEntities(entity)));
+
+        succeededEntities.push(...results);
+
+        const brokenRulesEntities = await updateIdOfBrokenRules(allBrokenRulesEntities);
 
         return { succeededEntities, failedEntities, brokenRulesEntities };
     }

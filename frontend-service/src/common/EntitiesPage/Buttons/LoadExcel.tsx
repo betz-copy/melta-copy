@@ -3,7 +3,7 @@ import React, { CSSProperties, useState } from 'react';
 import { useTheme } from '@mui/material';
 import { EntityWizardValues } from '../../dialogs/entity';
 import { TableButton } from '../../TableButton';
-import { LoadEntitiesWizard } from '../../wizards/loadEntities';
+import { LoadEntitiesWizard } from '../../wizards/excel/LoadEntitiesWizard';
 import { useDarkModeStore } from '../../../stores/darkMode';
 
 const LoadExcelButton: React.FC<{
@@ -50,7 +50,7 @@ const LoadExcelButton: React.FC<{
                     onSuccessCreate();
                     setLoadEntitiesState({ isOpen: false });
                 }}
-                initialValues={{ template: initialValues?.template, files: undefined, mode: 'create' }}
+                initialValues={{ template: initialValues?.template, files: undefined }}
                 initialStep={1}
             />
         </>
