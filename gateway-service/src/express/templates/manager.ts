@@ -794,7 +794,14 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
         await this.deletePropertyOfEntityTemplate(id, count, removedProperties, currTemplate);
 
-        if (propertiesKeysToPluralize.length > 0) await this.instancesService.convertFieldsToPlural(id, propertiesKeysToPluralize);
+        try {
+            if (propertiesKeysToPluralize.length > 0) await this.instancesService.convertFieldsToPlural(id, propertiesKeysToPluralize);
+        } catch (error) {
+            logger.error('Neo4j update failed: starting roll-back', { error });
+            const restOfEntityTemplate: Omit<IEntityTemplatePopulated, 'disabled'> = this.removeBasicFields(currTemplate);
+            await this.handleTemplateConversionRollback(id, restOfEntityTemplate);
+            throw new ServiceError(internalServerErrorStatus, 'Neo4j update failed: starting roll-back', { error });
+        }
 
         await this.instancesService.updateConstraintsOfTemplate(id, {
             uniqueConstraints,
@@ -911,14 +918,17 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         }
     }
 
-    async handleConversionRollback(
+    async handleTemplateConversionRollback(
         entityTemplateId: string,
-        currentRelationshipTemplate: IMongoRelationshipTemplate,
         rollBackTemplateWithoutProperties: Omit<IEntityTemplatePopulated, 'disabled'>,
+        currentRelationshipTemplate?: IMongoRelationshipTemplate,
+        allowToDeleteRelationshipFields: boolean = true,
     ) {
         try {
-            const { createdAt, updatedAt, _id, ...restRelationshipTemplate } = currentRelationshipTemplate;
-            await this.relationshipTemplateService.updateRelationshipTemplate(_id, restRelationshipTemplate);
+            if (currentRelationshipTemplate) {
+                const { createdAt, updatedAt, _id, ...restRelationshipTemplate } = currentRelationshipTemplate;
+                await this.relationshipTemplateService.updateRelationshipTemplate(_id, restRelationshipTemplate);
+            }
 
             await this.entityTemplateService.updateEntityTemplate(
                 entityTemplateId,
@@ -926,10 +936,10 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
                     ...rollBackTemplateWithoutProperties,
                     category: rollBackTemplateWithoutProperties.category._id,
                 },
-                false,
+                allowToDeleteRelationshipFields,
             );
 
-            logger.info('RollBack mongoDB succeeded', { rollBackTemplateWithoutProperties, restRelationshipTemplate });
+            logger.info('RollBack mongoDB succeeded');
         } catch (error) {
             throw new ServiceError(internalServerErrorStatus, 'RollBack mongoDB update failed', { error });
         }
@@ -1143,7 +1153,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
                 await this.instancesService.convertToRelationshipField(existingRelationships, addFieldToSrcEntity, fieldName, userId);
         } catch (error) {
             logger.error('Neo4j update failed: starting roll-back', { error });
-            await this.handleConversionRollback(entityIdToUpdate, currentRelationshipTemplate, restOfEntityTemplate);
+            await this.handleTemplateConversionRollback(entityIdToUpdate, restOfEntityTemplate, currentRelationshipTemplate, false);
             throw new ServiceError(internalServerErrorStatus, 'Neo4j update failed: starting roll-back', { error });
         }
         return { updatedRelationShipTemplate, updatedEntityTemplate };

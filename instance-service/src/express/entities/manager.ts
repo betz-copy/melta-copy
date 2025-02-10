@@ -1697,7 +1697,7 @@ export class EntityManager extends DefaultManagerNeo4j {
                         if (key in updatedProperties) updatedProperties[key] = [updatedProperties[key]];
                     });
 
-                    this.updateEntityByIdInnerTransaction(entity.properties._id, updatedProperties, entityTemplate, transaction);
+                    return this.updateEntityByIdInnerTransaction(entity.properties._id, updatedProperties, entityTemplate, transaction);
                 });
 
                 await Promise.all(updatePromises);

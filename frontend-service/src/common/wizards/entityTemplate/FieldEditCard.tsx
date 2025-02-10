@@ -592,7 +592,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                 setValues?.((prevValue) => ({
                                                     ...prevValue,
                                                     type: e.target.value,
-                                                    required: e.target.value === 'serialNumber',
+                                                    required: e.target.value === 'serialNumber' || prevValue.required,
                                                 }));
                                             }}
                                             error={touchedType && Boolean(errorType)}
