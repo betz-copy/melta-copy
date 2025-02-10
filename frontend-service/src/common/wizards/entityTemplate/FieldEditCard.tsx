@@ -603,7 +603,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                         >
                                             {validPropertyTypes
                                                 .filter((validPropertyType) => {
-                                                    if (initialValue?.type === 'enum')
+                                                    if (initialValue?.type === 'enum' && areThereAnyInstances)
                                                         return validPropertyType === 'enumArray' || validPropertyType === 'enum';
                                                     if (validPropertyType === 'entityReference') return supportEntityReferenceType;
                                                     if (validPropertyType === 'serialNumber') {
