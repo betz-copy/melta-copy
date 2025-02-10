@@ -145,8 +145,6 @@ export default class ProcessTemplateManager extends DefaultManagerMongo<IProcess
             });
         });
 
-        // TODO: support remove files...
-
         return removedProperties;
     }
 

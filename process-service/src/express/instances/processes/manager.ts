@@ -297,24 +297,6 @@ class ProcessInstanceManager extends DefaultManagerMongo<IProcessInstance> {
                 removedProperties.processProperties.length ||
                 Object.values(removedProperties.stepsProperties).some((stepRemovedProperties) => stepRemovedProperties.length > 0)
             ) {
-                const removedFilesProperties = removedProperties.processProperties.reduce(
-                    (acc, propertyToRemove) => {
-                        const { format, items } = currProcessTemplate.details.properties.properties[propertyToRemove];
-
-                        if (format === 'fileId' || items?.format === 'fileId') {
-                            acc[propertyToRemove] = items?.format === 'fileId';
-                        }
-
-                        return acc;
-                    },
-                    {} as Record<string, boolean>,
-                );
-
-                // TODO:
-                // if (Object.keys(removedFilesProperties).length) {
-                //     await this.deleteFilesOfDeletedProperty(id, removedFilesProperties, count);
-                // }
-
                 await this.deletePropertiesOfTemplate(id, removedProperties, session);
             }
 
