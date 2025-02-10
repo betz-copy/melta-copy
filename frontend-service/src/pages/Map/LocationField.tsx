@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Cartesian3 } from 'cesium';
 import { Viewer, CesiumMovementEvent } from 'resium';
 import { ToggleButton, ToggleButtonGroup } from '@mui/material';
@@ -53,14 +53,15 @@ const LocationField = ({ defaultLocation, field, updateValue }: Props) => {
     }, []);
 
     useEffect(() => {
-        setTimeout(() => {
+        const animateCamera = () => {
             const viewer = viewerRef.current?.cesiumElement;
             if (!viewer) return;
             const { camera } = viewer;
+    
             if (markerPosition !== null) {
                 const radius = 30000;
                 const boundingSphere = new Cesium.BoundingSphere(markerPosition, radius);
-
+    
                 camera.flyToBoundingSphere(boundingSphere, {
                     duration: 1.5,
                     offset: new Cesium.HeadingPitchRange(0, -Cesium.Math.toRadians(90), radius * 2.5),
@@ -70,7 +71,7 @@ const LocationField = ({ defaultLocation, field, updateValue }: Props) => {
                     const center = calculateCenterOfPolygon(polygonPosition);
                     const radius = getPolygonFarthestPoint(center, polygonPosition);
                     const boundingSphere = new Cesium.BoundingSphere(center, radius);
-
+    
                     camera.flyToBoundingSphere(boundingSphere, {
                         duration: 1.5,
                         offset: new Cesium.HeadingPitchRange(0, -Cesium.Math.toRadians(90), radius * 2.5),
@@ -82,32 +83,39 @@ const LocationField = ({ defaultLocation, field, updateValue }: Props) => {
                     duration: 1.5,
                 });
             }
-        }, 1);
+        };
+    
+        const animationFrameId = requestAnimationFrame(animateCamera);
+        return () => cancelAnimationFrame(animationFrameId);
     }, [markerPosition, polygonPosition]);
+    
 
-    const handleViewerClick = (clickEvent: CesiumMovementEvent) => {
-        if (drawingMode === null || !clickEvent.position) return;
-
-        const viewer = viewerRef.current?.cesiumElement;
-
-        if (!viewer) return;
-        const { scene } = viewer;
-        const cartesian = scene.camera.pickEllipsoid(clickEvent.position, scene.globe.ellipsoid);
-
-        if (cartesian) {
-            if (drawingMode === 'polygon') {
-                if (isValidPolygonPoint(polygonPosition, cartesian)) {
-                    setPolygonPosition((prev) => [...prev, cartesian]);
-                    const newPolygon = [...polygonPosition, cartesian];
-                    updateValue(cartesian3ToString(newPolygon));
+    const handleViewerClick = useCallback(
+        (clickEvent: CesiumMovementEvent) => {
+            if (drawingMode === null || !clickEvent.position) return;
+    
+            const viewer = viewerRef.current?.cesiumElement;
+            if (!viewer) return;
+    
+            const { scene } = viewer;
+            const cartesian = scene.camera.pickEllipsoid(clickEvent.position, scene.globe.ellipsoid);
+    
+            if (cartesian) {
+                if (drawingMode === 'polygon') {
+                    if (isValidPolygonPoint(polygonPosition, cartesian)) {
+                        setPolygonPosition((prev) => [...prev, cartesian]);
+                        const newPolygon = [...polygonPosition, cartesian];
+                        updateValue(cartesian3ToString(newPolygon));
+                    }
+                } else if (drawingMode === 'coordinate') {
+                    setMarkerPosition(cartesian);
+                    setDrawingMode(null);
+                    updateValue(cartesian3ToString(cartesian));
                 }
-            } else if (drawingMode === 'coordinate') {
-                setMarkerPosition(cartesian);
-                setDrawingMode(null);
-                updateValue(cartesian3ToString(cartesian));
             }
-        }
-    };
+        },
+        [drawingMode, viewerRef, polygonPosition, setPolygonPosition, setMarkerPosition, setDrawingMode, updateValue]
+    );
 
     const onClear = () => {
         setPolygonPosition([]);

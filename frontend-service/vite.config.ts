@@ -6,6 +6,13 @@ import { environment } from './src/globals';
 
 const { cesiumBaseUrl, cesiumSource } = environment.cesium;
 
+const cesiumCopyTargets = [
+    { src: `${cesiumSource}/ThirdParty`, dest: cesiumBaseUrl },
+    { src: `${cesiumSource}/Workers`, dest: cesiumBaseUrl },
+    { src: `${cesiumSource}/Assets`, dest: cesiumBaseUrl },
+    { src: `${cesiumSource}/Widgets`, dest: cesiumBaseUrl },
+];
+
 // https://vitejs.dev/config/
 export default defineConfig({
     define: {
@@ -14,14 +21,7 @@ export default defineConfig({
     plugins: [
         react(),
         cesium(),
-        viteStaticCopy({
-            targets: [
-                { src: `${cesiumSource}/ThirdParty`, dest: cesiumBaseUrl },
-                { src: `${cesiumSource}/Workers`, dest: cesiumBaseUrl },
-                { src: `${cesiumSource}/Assets`, dest: cesiumBaseUrl },
-                { src: `${cesiumSource}/Widgets`, dest: cesiumBaseUrl },
-            ],
-        }),
+        viteStaticCopy({ targets: cesiumCopyTargets }),
     ],
     server: {
         port: 3000,

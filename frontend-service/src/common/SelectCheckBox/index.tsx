@@ -151,11 +151,9 @@ const SelectCheckbox = <Option extends {}, Group extends any = Option>({
 
     const treeItems = useCallback(
         () => (groupsProps.useGroups && treeFunc ? treeFunc(groupsProps.groups, options, getOptionId) : options),
-        // eslint-disable-next-line react-hooks/exhaustive-deps
         [getOptionId, JSON.stringify(groupsProps), options, treeFunc],
     );
 
-    // eslint-disable-next-line no-nested-ternary
     const borderRadiusStyle = overrideSx ? (isOpen ? '12px 12px 12px 0' : '12px') : isOpen ? '7px 7px 0 0' : '7px';
 
     return (

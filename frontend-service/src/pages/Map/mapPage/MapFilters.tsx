@@ -27,7 +27,7 @@ export const DeleteMapDataBtn = ({ onClick, darkMode }: { onClick: () => void; d
     </IconButtonWithPopover>
 );
 
-type props = {
+type Props = {
     selectedTemplates: IMongoEntityTemplatePopulated[];
     setSelectedTemplates: React.Dispatch<React.SetStateAction<IMongoEntityTemplatePopulated[]>>;
     moveToEntityLocations: (entity: IEntity) => void;
@@ -36,7 +36,7 @@ type props = {
     darkMode: boolean;
 };
 
-const MapFilters = ({ selectedTemplates, setSelectedTemplates, moveToEntityLocations, entityTemplateMap, onClear, darkMode }: props) => {
+const MapFilters = ({ selectedTemplates, setSelectedTemplates, moveToEntityLocations, entityTemplateMap, onClear, darkMode }: Props) => {
     const templatesWithLocationField = Array.from(entityTemplateMap.values()).filter((key) =>
         Object.values(key.properties.properties).some((obj) => obj.format === 'location'),
     );
@@ -60,11 +60,11 @@ const MapFilters = ({ selectedTemplates, setSelectedTemplates, moveToEntityLocat
                     isDraggableDisabled
                     size="small"
                     categories={categories}
-                    overrideSx={{ background: darkMode ? '#FFFFFF' : '#121212' }}
+                    overrideSx={{ background: darkMode ? '#121212' : '#FFFFFF' }}
                 />
             </Grid>
             <Grid item>
-                <SearchAutoComplete selectedTemplates={selectedTemplates} handleEntityClick={(entity: IEntity) => moveToEntityLocations(entity)} />
+                <SearchAutoComplete selectedTemplates={selectedTemplates} handleEntityClick={moveToEntityLocations}  />
             </Grid>
 
             <Grid item>

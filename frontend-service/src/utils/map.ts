@@ -1,5 +1,7 @@
 import { Cartesian3, Ellipsoid, Math as CesiumMath } from 'cesium';
 import { environment } from '../globals';
+import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
+import { IEntity } from '../interfaces/entities';
 
 const {
     polygon: { polygonPrefix, polygonSuffix },
@@ -49,7 +51,7 @@ export const stringToCoordinates = (strCoords: string): CoordinatesResult => {
     // TODO: add validation to format
 };
 
-export const isCartesian3 = (coordinates: any) => coordinates.x > 91 || coordinates.x < -91 || coordinates.y > 181 || coordinates.x < -181;
+export const isCartesian3 = (coordinates: any) => Math.abs(coordinates.x) > 180 || Math.abs(coordinates.y) > 90;
 
 export const calculateCenterOfPolygon = (coordinates: Cartesian3[]): Cartesian3 => {
     if (coordinates.length === 0) return jerusalemCoordinates;
@@ -129,3 +131,23 @@ export const isValidPolygonPoint = (polygonPoints, newPoint) => {
 
     return true;
 };
+
+export const getLocationProperties = (entity: IEntity, selectedTemplates: IMongoEntityTemplatePopulated[]) => {   
+    const template = selectedTemplates.find(({ _id }) => _id === entity.templateId);
+
+    const locationTemplateProperties = Object.entries(template!.properties.properties)
+        .filter(([_key, value]) => value.format === 'location')
+        .reduce((acc, [key, value]) => {
+            acc[key] = value;
+            return acc;
+        }, {} as { [x: string]: IEntitySingleProperty });
+
+    const locationProperties = Object.entries(entity.properties)
+        .filter(([key, _value]) => key in locationTemplateProperties)
+        .reduce((acc, [key, value]) => {
+            acc[key] = value;
+            return acc;
+        }, {} as { [x: string]: any });
+
+    return { template, locationTemplateProperties, locationProperties };
+}

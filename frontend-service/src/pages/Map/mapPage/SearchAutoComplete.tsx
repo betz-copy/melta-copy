@@ -11,8 +11,9 @@ import { getEntitiesWithDirectConnections } from '../../../services/entitiesServ
 import { IEntity } from '../../../interfaces/entities';
 import { MeltaTooltip } from '../../../common/MeltaTooltip';
 import { EntityPropertiesInternal } from '../../../common/EntityProperties';
-import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { useDarkModeStore } from '../../../stores/darkMode';
+import { getLocationProperties } from '../../../utils/map';
 
 type props = {
     selectedTemplates: IMongoEntityTemplatePopulated[];
@@ -99,26 +100,9 @@ const SearchAutoComplete = ({ selectedTemplates, handleEntityClick }: props) => 
             setSearchResults(
                 data.pages
                     .flatMap(({ entities }) => entities.map(({ entity }) => entity))
-                    .filter((entity) => {
-                        const template = selectedTemplates.find(({ _id }) => _id === entity.templateId);
-                        if (!template) return false;
-
-                        const locationTemplateProperties = Object.entries(template.properties.properties)
-                            .filter(([_key, value]) => value.format === 'location')
-                            .reduce((acc, [key, value]) => {
-                                acc[key] = value;
-                                return acc;
-                            }, {} as { [x: string]: IEntitySingleProperty });
-
-                        const locationProperties = Object.entries(entity.properties)
-                            .filter(([key, _value]) => key in locationTemplateProperties)
-                            .reduce((acc, [key, value]) => {
-                                acc[key] = value;
-                                return acc;
-                            }, {} as { [x: string]: any });
-
-                        return Object.values(locationProperties).some((value) => value !== undefined);
-                    }),
+                    .filter((entity) => 
+                     Object.values(getLocationProperties(entity, selectedTemplates).locationProperties).some((value) => value !== undefined)
+                    ),
             );
         }
     }, [data, selectedTemplates]);
@@ -126,24 +110,7 @@ const SearchAutoComplete = ({ selectedTemplates, handleEntityClick }: props) => 
     return (
         <Autocomplete
             options={searchResults}
-            getOptionLabel={(option) => {
-                const template = selectedTemplates.find(({ _id }) => _id === option.templateId);
-
-                const locationTemplateProperties = Object.entries(template!.properties.properties)
-                    .filter(([_key, value]) => value.format === 'location')
-                    .reduce((acc, [key, value]) => {
-                        acc[key] = value;
-                        return acc;
-                    }, {} as { [x: string]: IEntitySingleProperty });
-                const locationProperties = Object.entries(option.properties)
-                    .filter(([key, _value]) => key in locationTemplateProperties)
-                    .reduce((acc, [key, value]) => {
-                        acc[key] = value;
-                        return acc;
-                    }, {} as { [x: string]: any });
-
-                return Object.values(locationProperties)[0];
-            }}
+            getOptionLabel={(option) => Object.values(getLocationProperties(option,selectedTemplates).locationProperties)[0]}
             loading={isLoading || isFetchingNextPage}
             loadingText={i18next.t('templateEntitiesAutocomplete.loading')}
             noOptionsText={i18next.t('templateEntitiesAutocomplete.noOptions')}
@@ -178,24 +145,8 @@ const SearchAutoComplete = ({ selectedTemplates, handleEntityClick }: props) => 
                 />
             )}
             renderOption={(props, option) => {
-                const template = selectedTemplates.find(({ _id }) => _id === option.templateId);
-
-                // TODO add template name below every item and take care of template not wxist
-                if (!template) return null;
-
-                const locationTemplateProperties = Object.entries(template.properties.properties)
-                    .filter(([_key, value]) => value.format === 'location')
-                    .reduce((acc, [key, value]) => {
-                        acc[key] = value;
-                        return acc;
-                    }, {} as { [x: string]: IEntitySingleProperty });
-
-                const locationProperties = Object.entries(option.properties)
-                    .filter(([key, _value]) => key in locationTemplateProperties)
-                    .reduce((acc, [key, value]) => {
-                        acc[key] = value;
-                        return acc;
-                    }, {} as { [x: string]: any });
+               const {template, locationTemplateProperties, locationProperties} = getLocationProperties(option, selectedTemplates);
+               if(!template) return false;
 
                 return (
                     <li {...props} ref={props['data-option-index'] === searchResults.length - 1 ? lastElementRef : null}>

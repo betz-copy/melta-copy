@@ -63,19 +63,15 @@ export const useEntityWithLocationFields = ({ entityTemplate, entity }: entityWi
         return { markers: markerList, polygons: polygonList, allCoordinates: coordinatesList };
     }, [propertyDefinitions, properties]);
 
-    useEffect(() => {
-        if (viewer && allCoordinates.length > 0) {
-            const boundingSphere = Cesium.BoundingSphere.fromPoints(allCoordinates);
-            viewer.camera.viewBoundingSphere(boundingSphere, new Cesium.HeadingPitchRange(0, -CesiumMath.PI_OVER_TWO, 0));
-        }
-    }, [allCoordinates, viewer]);
-
     const bounds = useMemo(() => {
-        if (allCoordinates.length > 0) {
-            return Cesium.BoundingSphere.fromPoints(allCoordinates);
-        }
-        return null;
+        return allCoordinates.length > 0 ? Cesium.BoundingSphere.fromPoints(allCoordinates) : null;
     }, [allCoordinates]);
+
+    useEffect(() => {
+        if (viewer && bounds) {
+            viewer.camera.viewBoundingSphere(bounds, new Cesium.HeadingPitchRange(0, -CesiumMath.PI_OVER_TWO, 0));
+        }
+    }, [bounds, viewer]);
 
     return { propertyDefinitions, allCoordinates, markers, polygons, bounds };
 };

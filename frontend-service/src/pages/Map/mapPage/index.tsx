@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Cartesian3, Color } from 'cesium';
 import { Viewer, Entity, EllipseGraphics, PolylineGraphics, CesiumMovementEvent, PointGraphics } from 'resium';
 import * as Cesium from 'cesium';
@@ -53,76 +53,93 @@ const MapPage = () => {
         polygons: searchedEntityPolygons,
         propertyDefinitions: searchedPropertyDefinitions,
     } = useEntityWithLocationFields({ entityTemplate: searchedEntityTemplate, entity: searchedEntity });
-
+   
     useEffect(() => {
-        setTimeout(() => {
+        const animateCamera = () => {
             const viewer = viewerRef.current?.cesiumElement;
             if (!viewer) return;
             const { camera } = viewer;
+    
             if (circleData.center !== null && circleData.radius !== null) {
                 const boundingSphere = new Cesium.BoundingSphere(circleData.center, circleData.radius);
-
+    
                 camera.flyToBoundingSphere(boundingSphere, {
                     duration: 1.5,
                     offset: new Cesium.HeadingPitchRange(0, -Cesium.Math.toRadians(90), circleData.radius * 2.5),
                 });
             } else if (searchedEntityPolygons.length > 0 || searchedEntityMarkers.length > 0) {
-                const boundingSphere = new Cesium.BoundingSphere(searchedEntityBounds?.center, searchedEntityBounds?.radius);
-
-                camera.flyToBoundingSphere(boundingSphere, {
-                    duration: 1.5,
-                    offset: new Cesium.HeadingPitchRange(0, -Cesium.Math.toRadians(90), searchedEntityBounds!.radius * 5),
-                });
+                if (searchedEntityBounds?.center && searchedEntityBounds?.radius) {
+                    const boundingSphere = new Cesium.BoundingSphere(searchedEntityBounds.center, searchedEntityBounds.radius);
+    
+                    camera.flyToBoundingSphere(boundingSphere, {
+                        duration: 1.5,
+                        offset: new Cesium.HeadingPitchRange(0, -Cesium.Math.toRadians(90), searchedEntityBounds.radius * 5),
+                    });
+                }
             } else if (circleData.center === null && circleData.radius === null) {
                 camera.flyTo({
                     destination: jerusalemCoordinates,
                     duration: 1.5,
                 });
             }
-        }, 1);
+        };
+    
+        const animationFrameId = requestAnimationFrame(animateCamera);
+        return () => cancelAnimationFrame(animationFrameId);
     }, [circleData, searchedEntityPolygons, searchedEntityMarkers]);
 
     useEffect(() => {
-        if (searchedEntity) {
-            setSearchedEntityTemplate(entityTemplateMap!.get(searchedEntity.templateId)!);
+        if (searchedEntity && entityTemplateMap) {
+            setSearchedEntityTemplate(entityTemplateMap.get(searchedEntity.templateId)!);
         }
-    }, [searchedEntity]);
+    }, [searchedEntity, entityTemplateMap]);
+    
 
-    const handleViewerClick = (clickEvent: CesiumMovementEvent) => {
-        if (drawingMode === null || !clickEvent.position) return;
-
-        const viewer = viewerRef.current?.cesiumElement;
-
-        if (!viewer) return;
-        const { scene } = viewer;
-        const cartesian: Cartesian3 = scene.camera.pickEllipsoid(clickEvent.position, scene.globe.ellipsoid);
-
-        if (cartesian) {
-            if (drawingMode === 'circle') {
-                if (circleData.center === null || (circleData.center !== null && circleData.radius !== null)) {
-                    setCircleData({ center: cartesian, radius: null, mouseRadius: null });
-                } else {
-                    const radius = Cartesian3.distance(circleData.center, cartesian);
-                    if (radius > maxRadius) toast.warn(i18next.t('location.radiusMaxLimit'));
-                    setCircleData({ center: circleData.center, radius: radius > maxRadius ? maxRadius : radius, mouseRadius: null });
-                    setDrawingMode(null);
-                }
-            } else if (drawingMode === 'line') {
-                setLineData((prev) => [...prev, cartesian]);
-            }
-        }
-    };
-
-    const handleMouseMove = (moveEvent: CesiumMovementEvent) => {
-        if (drawingMode === 'circle' && circleData.center !== null && circleData.radius === null) {
+    const handleViewerClick = useCallback(
+        (clickEvent: CesiumMovementEvent) => {
+            if (drawingMode === null || !clickEvent.position) return;
+    
             const viewer = viewerRef.current?.cesiumElement;
+    
             if (!viewer) return;
             const { scene } = viewer;
-            const cartesian: Cartesian3 = scene.camera.pickEllipsoid(moveEvent.endPosition, scene.globe.ellipsoid);
-            const radius = Cartesian3.distance(circleData.center, cartesian);
-            setCircleData({ center: circleData.center, radius: null, mouseRadius: radius });
-        }
-    };
+            const cartesian: Cartesian3 = scene.camera.pickEllipsoid(clickEvent.position, scene.globe.ellipsoid);
+    
+            if (cartesian) {
+                if (drawingMode === 'circle') {
+                    if (circleData.center === null || (circleData.center !== null && circleData.radius !== null)) {
+                        setCircleData({ center: cartesian, radius: null, mouseRadius: null });
+                    } else {
+                        const radius = Cartesian3.distance(circleData.center, cartesian);
+                        if (radius > maxRadius) toast.warn(i18next.t('location.radiusMaxLimit'));
+                        setCircleData({ center: circleData.center, radius: radius > maxRadius ? maxRadius : radius, mouseRadius: null });
+                        setDrawingMode(null);
+                    }
+                } else if (drawingMode === 'line') {
+                    setLineData((prev) => [...prev, cartesian]);
+                }
+            }
+        },
+        [drawingMode, viewerRef, circleData, maxRadius, setCircleData, setDrawingMode, setLineData]
+    );
+
+    const handleMouseMove = useCallback(
+        (moveEvent: CesiumMovementEvent) => {
+            if (drawingMode === 'circle' && circleData.center !== null && circleData.radius === null) {
+                const viewer = viewerRef.current?.cesiumElement;
+                if (!viewer) return;
+    
+                const { scene } = viewer;
+                const cartesian = scene.camera.pickEllipsoid(moveEvent.endPosition, scene.globe.ellipsoid);
+    
+                if (cartesian) {
+                    const radius = Cartesian3.distance(circleData.center, cartesian);
+                    setCircleData({ center: circleData.center, radius: null, mouseRadius: radius });
+                }
+            }
+        },
+        [drawingMode, circleData, viewerRef, setCircleData]
+    );
 
     const { mutateAsync } = useMutation(getEntitiesByLocation, {
         onSuccess: (response) => {

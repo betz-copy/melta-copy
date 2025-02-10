@@ -40,15 +40,14 @@ const LocationPreview = ({ entity, entityTemplate }: Props) => {
     });
 
     useEffect(() => {
-        setTimeout(() => {
+        const animateCamera = () => {
             const viewer = viewerRef.current?.cesiumElement;
-
             if (!viewer) return;
             const { camera } = viewer;
-
+    
             if (bounds !== null) {
                 const boundingSphere = new Cesium.BoundingSphere(bounds.center, bounds.radius);
-
+    
                 camera.flyToBoundingSphere(boundingSphere, {
                     duration: 1.5,
                     offset: new Cesium.HeadingPitchRange(0, -Cesium.Math.toRadians(90), bounds.radius * 10),
@@ -59,8 +58,11 @@ const LocationPreview = ({ entity, entityTemplate }: Props) => {
                     duration: 1.5,
                 });
             }
-        }, 1);
-    }, [bounds]);
+        };
+    
+        const animationFrameId = requestAnimationFrame(animateCamera);
+        return () => cancelAnimationFrame(animationFrameId);
+    }, [bounds]);    
 
     return (
         <div style={{ position: 'relative', height: '800px', width: '600px' }}>

@@ -1,5 +1,4 @@
-/* eslint-disable react-hooks/rules-of-hooks */
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import * as Cesium from 'cesium';
 import { Box, Divider, FormControlLabel, Grid, IconButton, Radio, RadioGroup, Typography } from '@mui/material';
 import { Layers } from '@mui/icons-material';
@@ -8,6 +7,12 @@ import { useQueryClient } from 'react-query';
 import { MeltaTooltip } from '../../common/MeltaTooltip';
 import { BackendConfigState } from '../../services/backendConfigService';
 import { MeltaCheckbox } from '../../common/MeltaCheckbox';
+
+type LayerProvider = {
+    id: string;
+    url: string;
+    type: 'map' | 'text';
+  };
 
 export const BaseLayers: React.FC<{ viewerRef: React.MutableRefObject<any> }> = ({ viewerRef }) => {
     const queryClient = useQueryClient();
@@ -18,13 +23,13 @@ export const BaseLayers: React.FC<{ viewerRef: React.MutableRefObject<any> }> = 
     if (!config) return <>{i18next.t('location.layers.noLayers')}</>;
     const { mapLayers, textLayers } = config;
 
-    const providers = useMemo(() => {
+    const providers = useMemo<LayerProvider[]>(() => {
         const mapLayerArray = Object.entries(mapLayers).map(([name, url]) => ({
             id: name,
             url,
             type: 'map' as const,
         }));
-        const textLayerArray = Object.entries(textLayers).map(([name, url]) => ({
+        const textLayerArray= Object.entries(textLayers).map(([name, url]) => ({
             id: name,
             url,
             type: 'text' as const,
@@ -35,7 +40,7 @@ export const BaseLayers: React.FC<{ viewerRef: React.MutableRefObject<any> }> = 
     const [activeMapLayer, setActiveMapLayer] = useState<string>(providers.find((p) => p.type === 'map')?.id || '');
     const [activeTextLayers, setActiveTextLayers] = useState<Set<string>>(new Set());
 
-    const handleTextLayerToggle = (layerId: string) => {
+    const handleTextLayerToggle = useCallback((layerId: string) => {
         setActiveTextLayers((prev) => {
             const next = new Set(prev);
             if (next.has(layerId)) {
@@ -45,7 +50,8 @@ export const BaseLayers: React.FC<{ viewerRef: React.MutableRefObject<any> }> = 
             }
             return next;
         });
-    };
+    }, []);
+    
 
     useEffect(() => {
         const viewer = viewerRef.current?.cesiumElement;
@@ -117,7 +123,6 @@ export const BaseLayers: React.FC<{ viewerRef: React.MutableRefObject<any> }> = 
                                         control={
                                             <Radio
                                                 checked={activeMapLayer === layer.id}
-                                                onChange={(e) => setActiveMapLayer(e.target.value)}
                                                 value={layer.id}
                                             />
                                         }
