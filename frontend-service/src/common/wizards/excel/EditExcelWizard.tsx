@@ -5,6 +5,7 @@ import { toast } from 'react-toastify';
 import fileDownload from 'js-file-download';
 import { useMutation } from 'react-query';
 import { Grid } from '@mui/material';
+import { AxiosError } from 'axios';
 import { StepType, Wizard, WizardBaseType } from '..';
 import OpenPreview from '../../FilePreview/OpenPreview';
 import { editExcelRequest, editReadExcelRequest, exportEntitiesRequest, loadEntitiesRequest } from '../../../services/entitiesService';
@@ -18,6 +19,7 @@ import { UploadExcel } from './excelSteps/UploadExcel';
 import { LoadEntitiesTables } from './excelSteps/LoadEntitiesTables';
 import { EntitiesWizardValues, ISteps, StepStatus } from '../../../interfaces/excel';
 import { IEntity } from '../../../interfaces/entities';
+import { useWorkspaceStore } from '../../../stores/workspace';
 
 const { excelExtension } = environment.loadExcel;
 
@@ -29,6 +31,8 @@ const EditExcelWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
     isEditMode = false,
 }) => {
     const { template } = initialValues!;
+    const workspace = useWorkspaceStore((state) => state.workspace);
+    const { entitiesFileLimit } = workspace.metadata.excel;
 
     const [stepsData, setStepsData] = useState<ISteps>({
         status: StepStatus.uploadExcel,
@@ -61,8 +65,11 @@ const EditExcelWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
 
                 return data;
             },
-            onError() {
-                toast.error(i18next.t('wizard.entity.editExcel.failedReadExcel'));
+            onError(error: AxiosError) {
+                const { message } = error.response?.data;                
+                if(message ==='Invalid excel') toast.error(i18next.t('wizard.entity.loadEntities.filesWrongTemplate'));
+                else if (message.includes('file limit')) toast.error(i18next.t('wizard.entity.loadEntities.limitNumberEntities') + entitiesFileLimit);
+                else toast.error(i18next.t('wizard.entity.editExcel.failedReadExcel'));
                 onClose();
             },
         },
@@ -70,7 +77,7 @@ const EditExcelWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
 
     const { isLoading: isLoadingExcelEntities, mutateAsync: loadEntities } = useMutation(
         async (entities: IEntity[]) => {
-            return editExcelRequest(template!._id, entities);
+            return editExcelRequest(template!, entities);
         },
         {
             async onSuccess(data) {
@@ -86,7 +93,7 @@ const EditExcelWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
 
     const { isLoading: isLoadingRules, mutateAsync: loadRules } = useMutation(
         async ({ entities, ignoredRules }: { entities: IEntity[]; ignoredRules: IBrokenRule[] }) => {
-            return editExcelRequest(template!._id, entities, ignoredRules);
+            return editExcelRequest(template!, entities, ignoredRules);
         },
         {
             async onSuccess(data) {
@@ -108,7 +115,7 @@ const EditExcelWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
             return exportEntitiesRequest({
                 fileName,
                 templates: {
-                    [template!._id]: { headersOnly, insertEntities, displayColumns: template?.propertiesOrder, edit: true },
+                    [template!._id]: { headersOnly, insertEntities, displayColumns: template?.propertiesOrder},
                 },
             });
         },
@@ -250,7 +257,7 @@ const EditExcelWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
                 direction="column"
                 showPrevSteps
             />
-            {/* {createOrUpdateWithRuleBreachDialogState.isOpen && isBrokenRules && (
+            {createOrUpdateWithRuleBreachDialogState.isOpen && isBrokenRules && (
                 <ActionOnEntityWithRuleBreachDialog
                     isLoadingActionOnEntity={isLoadingRules}
                     handleClose={() => {
@@ -296,7 +303,7 @@ const EditExcelWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
                     rawActions={createOrUpdateWithRuleBreachDialogState.rawActions}
                     loadEntities
                 />
-            )} */}
+            )}
         </Grid>
     );
 };

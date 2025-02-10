@@ -149,9 +149,9 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         workbook: stream.xlsx.WorkbookWriter,
         workspace: { path: string; id: string },
     ): Promise<void> {
-        const tasks = Object.entries(templates).map(async ([templateId, { filter, sort, displayColumns, headersOnly, insertEntities, edit }]) => {
+        const tasks = Object.entries(templates).map(async ([templateId, { filter, sort, displayColumns, headersOnly, insertEntities }]) => {
             const template = await this.entityTemplateService.getEntityTemplateById(templateId);
-            await this.createWorksheet(workbook, template, filter, sort, textSearch, workspace, displayColumns, headersOnly, insertEntities, edit);
+            await this.createWorksheet(workbook, template, filter, sort, textSearch, workspace, displayColumns, headersOnly, insertEntities);
         });
 
         await Promise.all(tasks);
@@ -196,7 +196,6 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         displayColumns?: string[],
         headersOnly?: boolean,
         insertEntities?: Record<string, any>[],
-        edit?: boolean,
     ) {
         const worksheet = await createWorksheet(workbook, template, displayColumns, headersOnly || !!insertEntities);
         const { searchEntitiesChunkSize } = config.service;
@@ -233,7 +232,6 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 displayColumns,
                 headersOnly,
                 skip,
-                edit,
             );
         }
     }
@@ -344,22 +342,20 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
         const succeededEntities: IEntity[] = [];
         const allBrokenRulesEntities: IBrokenRuleEntity[] = [];
-        const results: IEntity[] = [];
 
         const handleLoadEntities = async (entity: IEntity) => {
             try {
                 const serialNumbers = generateSerialNumbers(succeededEntities.length);
                 const result = await this.createEntityInstance(entity, [], insertBrokenEntities?.ignoredRules || [], userId, serialNumbers);
-                results.push(result);
+
+                succeededEntities.push(result);
             } catch (error) {
                 this.handleLoadEntitiesErrors(error, failedEntities, entity, allBrokenRulesEntities);
             }
         };
 
-        if (Object.keys(serialStarters).length > 0) for (const entity of entities!) handleLoadEntities(entity);
+        if (Object.keys(serialStarters).length > 0) for (const entity of entities!) await handleLoadEntities(entity);
         else await Promise.all(entities!.map(async (entity) => handleLoadEntities(entity)));
-
-        succeededEntities.push(...results);
 
         const brokenRulesEntities = await updateIdOfBrokenRules(allBrokenRulesEntities);
         if (serialStarters) await this.updateTemplateCurrentNumbers(template, serialStarters, succeededEntities.length);

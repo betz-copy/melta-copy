@@ -30,8 +30,8 @@ import DateTimeCellEditor from './DateTimeCellEditor';
 import { ActionErrors } from '../../interfaces/ruleBreaches/actionMetadata';
 import RelationshipRefCellEditor from './RelationshipRefCellEditor';
 import { convertToPlainText } from '../HtmlTagsStringValue';
-import { IError, IFailedEntity, IValidationError } from '../../common/wizards/excel/LoadEntitiesWizard';
 import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
+import { IError, IFailedEntity, IValidationError } from '../../interfaces/excel';
 
 const hasErrors = (data: any): data is IFailedEntity => {
     return data && Array.isArray(data.errors) && data.errors.every((error) => 'type' in error && 'metadata' in error);
@@ -84,7 +84,7 @@ const errorColDef = <Data extends any = EntityData>(
         }
         default:
             break;
-    }
+    }    
 
     return (
         <Box display="flex" justifyContent="center" alignItems="center" gap={1} width="100%">

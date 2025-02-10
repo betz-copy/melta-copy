@@ -1,9 +1,9 @@
 import { Readable } from 'stream';
-import { IFailedEntity } from '../common/wizards/excel/LoadEntitiesWizard';
 import { IMongoEntityTemplatePopulated } from './entityTemplates';
 import { IMongoRelationshipTemplate } from './relationshipTemplates';
 import { IRelationship } from './relationships';
 import { ISemanticSearchResult } from './semanticSearch';
+import { IFailedEntity } from './excel';
 
 export interface IEntity {
     templateId: string;
@@ -173,7 +173,6 @@ export interface IExportEntitiesBody {
             displayColumns?: string[];
             headersOnly?: boolean;
             insertEntities?: Record<string, any>[];
-            edit?: boolean;
         };
     };
 }

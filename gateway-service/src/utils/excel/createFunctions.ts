@@ -216,7 +216,6 @@ const styleAWorksheet = (
     displayColumns?: string[],
     headersOnly?: boolean,
     skip: number = 0,
-    edit: boolean = false,
 ) => {
     worksheet.getRow(1).eachCell((cell) => {
         cell.font = excelStyle.columnHeader.font;
@@ -237,7 +236,7 @@ const styleAWorksheet = (
         rows.forEach((row, index) => {
             const rowIndex = index + skip;
             const cell = worksheet.getCell(`${indexToExcelColumn(columnIndex + 1)}${rowIndex + SKIP_ROW_HEADER}`);
-            if (value.readOnly || value.identifier || value.serialStarter || row.disabled || disabled) {
+            if (value.readOnly || value.identifier || value.serialStarter || row.disabled || disabled || !isIncludedColumn(value)) {
                 readOnlyCell(cell);
             } else cell.protection = { locked: false };
             if (row[key] !== undefined && value !== undefined) {
@@ -245,7 +244,6 @@ const styleAWorksheet = (
                 cell.font = excelStyle.cell.font;
 
                 const isComplex = fixComplexProperties(cell, row, [key, value], rowIndex, workspace);
-                if (isComplex) readOnlyCell(cell, edit);
                 if (!isComplex) {
                     cell.value = row[key];
 
@@ -273,17 +271,17 @@ const styleAWorksheet = (
                         cell.value = String(cell.value).replace(/<[^>]*>/g, '');
                         cell.alignment = { vertical: 'top' };
                     }
+                    if (value.type === 'number') cell.value = row[key].toString();
 
-                    // Check if value is simple list
-                    if (!headersOnly)
+                    if (!headersOnly) {
+                        // Check if value is simple list
                         if (value.type === 'string' && value.enum) {
                             if (template?.enumPropertiesColors?.[key]?.[row?.[key]])
                                 cell.font = { ...excelStyle.cell.font, color: { argb: hexToARGB(template.enumPropertiesColors[key][row[key]]) } };
                         }
-
-                    // Check if value is multiple list
-                    if (!headersOnly)
+                        // Check if value is multiple list
                         if (value.type === 'array' && value.items?.type === 'string' && value.items.enum) cell.value = row[key].join(', ');
+                    }
                 }
             }
         });

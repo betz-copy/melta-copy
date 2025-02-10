@@ -45,6 +45,8 @@ const formatExcel = (value: Excel.CellValue | string, propertyTemplate: IEntityS
                 return value?.richText.map((item) => item.text).filter((text) => text !== ', ' && text !== ',');
             if (format === 'fileId') return (value as CellModel).text;
             return (value as string).split(',').map((val) => val.trim());
+        case 'number':
+            return Number.isNaN(parseFloat(value as string)) ? value : parseFloat(value as string);
         default:
             break;
     }
@@ -105,7 +107,7 @@ const getUpdatedEntity = (
             : false,
     );
 
-    if (hasEntityChanged) return { ...existingEntity, ...entity };
+    if (hasEntityChanged) return { ...entity, properties: { ...existingEntity.entity.properties, ...entity.properties } };
     return undefined;
 };
 
@@ -126,6 +128,7 @@ const readExcelFile = async (
 
     const identifier = Object.entries(template.properties.properties).find(([_key, value]) => value.identifier === true)?.[0];
     if (!identifier) throw new BadRequestError('there is no identifier in template', { template });
+    let isFailed = false;
 
     await Promise.all(
         files.map(async (file) => {
@@ -140,6 +143,7 @@ const readExcelFile = async (
             if (template.displayName.trim() !== worksheet.name.trim()) throw new ServiceError(StatusCodes.BAD_REQUEST, 'Invalid excel', file);
 
             worksheet.eachRow((row, rowIndex) => {
+                isFailed = false;
                 if (rowIndex === 1) return; // skip header row
                 const failedProperties: IFailedProperties = [];
                 const rowData: Record<string, any> = {};
@@ -148,19 +152,26 @@ const readExcelFile = async (
                     const cellValue = row.getCell(columnIndex + 1).value;
                     try {
                         const formatCellValue = formatExcel(cellValue, value);
-                        if (formatCellValue === invalidDate) failedProperties.push({ key, value, cellValue, dateOrTime: 'date' });
-                        else rowData[key] = formatCellValue;
+                        if (formatCellValue === invalidDate) {
+                            failedProperties.push({ key, value, cellValue, dateOrTime: 'date' });
+                            isFailed = true;
+                        } else rowData[key] = formatCellValue;
                     } catch (error: any) {
                         console.error("there's an error in the entity", { error });
-                        if (error.message.includes(invalidTime)) failedProperties.push({ key, value, cellValue, dateOrTime: 'date-time' });
+                        if (error.message.includes(invalidTime)) {
+                            failedProperties.push({ key, value, cellValue, dateOrTime: 'date-time' });
+                            isFailed = true;
+                        }
                     }
                 });
                 const entity = { templateId: template._id, properties: rowData };
                 if (failedProperties.length > 0) handleFailedEntities(rowData, failedProperties, failedEntities);
-                else if (isEditMode) {
+                else if (isEditMode && !isFailed) {
                     const updatedEntity = getUpdatedEntity(oldEntities, entity, identifier, template);
                     if (updatedEntity) entities.push(updatedEntity);
-                } else entities.push(entity);
+                } else {
+                    entities.push(entity);
+                }
             });
 
             if (!isEditMode)

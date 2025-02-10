@@ -40,7 +40,7 @@ export class InstancesController extends DefaultController<InstancesManager> {
     }
 
     async editExcel(req: Request, res: Response) {
-        res.json(await this.manager.loadEntities(req.body.entities, req.user!.id, req.body.ignoredRules));
+        res.json(await this.manager.editExcel(req.body.entities, req.user!.id, req.body.ignoredRules || []));
     }
 
     async updateEntityInstance(req: Request, res: Response) {
