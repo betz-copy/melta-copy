@@ -57,7 +57,7 @@ const ComponentToPrint = React.forwardRef<
                 {options.showSummary && (
                     <>
                         <Box sx={{ minHeight: '1000px' }}>
-                            <ProcessSummary isPrinting processInstance={processInstance} processTemplate={processTemplate} />
+                            <ProcessSummary isPrinting processInstance={processInstance} setActiveStep={() => {}} processTemplate={processTemplate} />
                         </Box>
                         {processTemplate.steps.length > 6 && <Divider sx={{ paddingY: '50px' }} />}
                     </>

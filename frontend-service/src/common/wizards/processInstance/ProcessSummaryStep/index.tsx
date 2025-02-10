@@ -16,7 +16,7 @@ export interface ProcessSummaryProp {
     processInstance: IMongoProcessInstancePopulated;
     processTemplate: IMongoProcessTemplatePopulated;
     isPrinting: boolean;
-    setActiveStep: (number) => void;
+    setActiveStep: (stepIndex: number) => void;
 }
 
 const StepperConnector = styled(StepConnector)(({ theme }) => ({
