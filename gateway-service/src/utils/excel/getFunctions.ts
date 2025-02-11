@@ -53,7 +53,8 @@ export const isIncludedColumn = (propertyTemplate: IEntitySingleProperty) => {
     const isFile = propertyTemplate.format === 'fileId' || (propertyTemplate.type === 'array' && propertyTemplate.items?.format === 'fileId');
     const isSerialNumber = propertyTemplate.type === 'number' && propertyTemplate.serialCurrent;
     const isLocation = propertyTemplate.format === 'location';
-    return !isRelationshipRef && !isFile && !isSerialNumber && !isLocation;
+    const isSignature = propertyTemplate.format === 'signature';
+    return !isRelationshipRef && !isFile && !isSerialNumber && !isLocation && !isSignature;
 };
 
 type IFailedProperties = {

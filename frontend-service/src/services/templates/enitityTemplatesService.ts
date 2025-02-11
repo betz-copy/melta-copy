@@ -15,7 +15,7 @@ import { CommonFormInputProperties } from '../../common/wizards/entityTemplate/c
 
 const { entityTemplates } = environment.api;
 export const basePropertyTypes = ['string', 'number', 'boolean'];
-export const stringFormats = ['date', 'date-time', 'email', 'fileId', 'text-area', 'relationshipReference', 'location', 'user'];
+export const stringFormats = ['date', 'date-time', 'email', 'fileId', 'text-area', 'relationshipReference', 'location', 'user', 'signature'];
 export const arrayTypes = ['multipleFiles', 'enumArray', 'users'];
 
 const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTemplatePopulated | null): EntityTemplateWizardValues | undefined => {
@@ -184,6 +184,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                         | 'text-area'
                         | 'relationshipReference'
                         | 'user'
+                        | 'signature'
                         | undefined,
                     enum: type === 'enum' ? options : undefined,
                     items:
@@ -456,6 +457,7 @@ const updateEntityTemplateRequest = async (entityTemplateId: string, updatedEnti
     if (entityTemplate.propertiesTypeOrder.includes('archiveProperties')) {
         entityTemplate.propertiesTypeOrder = entityTemplate.propertiesTypeOrder.filter((str) => str !== 'archiveProperties');
     }
+    console.log({ shir: entityTemplate.properties.properties });
 
     formData.append('displayName', entityTemplate.displayName);
     formData.append('name', entityTemplate.name);

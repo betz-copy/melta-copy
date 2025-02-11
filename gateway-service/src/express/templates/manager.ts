@@ -778,6 +778,8 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             (key) => delete restOfTemplatePropertiesObject.properties[key].isNewPropNameEqualDeletedPropName,
         );
 
+        console.dir({ restOfTemplatePropertiesObject }, { depth: null });
+
         const updatedTemplate = await this.entityTemplateService.updateEntityTemplate(id, {
             ...restOfTemplateData,
             properties: restOfTemplatePropertiesObject,

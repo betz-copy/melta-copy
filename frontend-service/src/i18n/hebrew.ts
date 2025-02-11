@@ -826,6 +826,7 @@ export default {
         location: 'מיקום',
         user: 'משתמש',
         users: 'משתמשים',
+        signature: 'חתימה',
     },
     input: {
         imagePicker: {

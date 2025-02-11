@@ -31,7 +31,7 @@ export interface ISearchCategoriesBody {
 export interface IEntitySingleProperty {
     title: string;
     type: 'string' | 'number' | 'boolean' | 'array';
-    format?: 'date' | 'date-time' | 'email' | 'fileId' | 'text-area' | 'relationshipReference' | 'location';
+    format?: 'date' | 'date-time' | 'email' | 'fileId' | 'text-area' | 'relationshipReference' | 'location' | 'signature';
     enum?: string[];
     readOnly?: true;
     items?: {
@@ -169,6 +169,7 @@ export class EntityTemplateService extends TemplatesManagerService {
             ...updatedEntityTemplate,
             allowToDeleteRelationshipFields,
         });
+        console.log('finish', { data });
 
         return data;
     }

@@ -7,6 +7,7 @@ import i18next from 'i18next';
 import { FormikErrors, FormikHelpers, FormikTouched } from 'formik';
 import mapValues from 'lodash.mapvalues';
 import pickBy from 'lodash.pickby';
+import SignatureCanvas from 'react-signature-canvas';
 import validator from '@rjsf/validator-ajv8';
 import { ErrorSchema, UiSchema } from '@rjsf/utils';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
@@ -19,6 +20,7 @@ import RjfsTemplateReferenceWidget from './RjfsTemplateReferenceWidget';
 import RjsfLocationWidget, { validateLocation } from './RjsfLocationWidget';
 import RjfsUserWidget from './RjfsUserWidget';
 import RjfsUserArrayWidget from './RjfsUserArrayWidget';
+import RjfsSignatureWidget from './RjfsSignatureWidgets';
 
 const ajvErrorsToFormikErrors = (schema: IMongoEntityTemplatePopulated['properties'], ajvErrors: ErrorObject[]): FormikErrors<any> => {
     const formikErrorsEntries = ajvErrors.map((ajvError) => {
@@ -205,6 +207,10 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                     return {
                         'ui:widget': 'LocationWidget',
                     };
+                if (propertySchema.format === 'signature')
+                    return {
+                        'ui:widget': 'SignatureWidget',
+                    };
                 return {};
             })}
             onChange={({ formData }) => {
@@ -241,6 +247,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                 LocationWidget: RjsfLocationWidget,
                 UserWidget: RjfsUserWidget,
                 UserArrayWidget: RjfsUserArrayWidget,
+                SignatureWidget: RjfsSignatureWidget,
             }}
         >
             <div /> {/* remove the built in submit button */}

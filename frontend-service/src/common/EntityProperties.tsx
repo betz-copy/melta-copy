@@ -226,7 +226,8 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                         propertySchema.format !== 'text-area' &&
                         propertySchema.format !== 'fileId' &&
                         propertySchema.format !== 'relationshipReference' &&
-                        propertySchema.format !== 'user'
+                        propertySchema.format !== 'user' &&
+                        propertySchema.format !== 'signature'
                             ? getTextDirection(propertyValue, {
                                   type: propertySchema.type,
                                   serialCurrent: propertySchema.serialCurrent,
