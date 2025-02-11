@@ -8,11 +8,11 @@ import { Grid } from '@mui/material';
 import { AxiosError } from 'axios';
 import { StepType, Wizard, WizardBaseType } from '..';
 import OpenPreview from '../../FilePreview/OpenPreview';
-import { editExcelRequest, editReadExcelRequest, exportEntitiesRequest, loadEntitiesRequest } from '../../../services/entitiesService';
+import { editExcelRequest, editReadExcelRequest, exportEntitiesRequest } from '../../../services/entitiesService';
 import { attachmentPropertiesBaseSchema } from '../entityTemplate/AddFields';
 import { IBrokenRule } from '../../../interfaces/ruleBreaches/ruleBreach';
 import ActionOnEntityWithRuleBreachDialog from '../../../pages/Entity/components/ActionOnEntityWithRuleBreachDialog';
-import { ActionTypes, ICreateEntityMetadata } from '../../../interfaces/ruleBreaches/actionMetadata';
+import { ActionTypes } from '../../../interfaces/ruleBreaches/actionMetadata';
 import { ICreateOrUpdateWithRuleBreachDialogState } from '../../dialogs/entity/CreateOrEditEntityDialog';
 import { environment } from '../../../globals';
 import { UploadExcel } from './excelSteps/UploadExcel';
@@ -273,8 +273,8 @@ const EditExcelWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
                         const brokenRulesEntities =
                             stepsData.data.brokenRulesEntities?.entities.map(({ properties }) => ({
                                 templateId: template!._id,
-                                properties,
-                            })) || [];
+                                properties: properties as IEntity['properties'],
+                            })) || [];                            
 
                         return loadRules({
                             entities: brokenRulesEntities,

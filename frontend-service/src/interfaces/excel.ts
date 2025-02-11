@@ -23,7 +23,7 @@ export type IBrokenRuleEntity = {
         actionMetadata: IActionMetadataPopulated;
     }[];
     rawActions: IAction[];
-    entities: { properties: Record<string, any> }[];
+    entities: { properties: Record<string, any> | IEntity['properties'] }[];
 };
 
 export interface IError {

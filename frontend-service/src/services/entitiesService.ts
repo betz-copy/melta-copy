@@ -72,7 +72,7 @@ export const editReadExcelRequest = async (templateId: string, file: Record<stri
     return data;
 };
 
-export const editExcelRequest = async (template: IMongoEntityTemplatePopulated, entitiesToUpdate: IEntity[], ignoredRules?: IBrokenRule[]): Promise<ITablesResults> => {    
+export const editExcelRequest = async (template: IMongoEntityTemplatePopulated, entitiesToUpdate: IEntity[] , ignoredRules?: IBrokenRule[]): Promise<ITablesResults> => {    
     const formData = new FormData();
 
     formData.append('templateId', template._id);
