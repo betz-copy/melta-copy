@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Dialog, IconButton, Grid, Box, Stepper, Step, StepLabel, Divider, Fab } from '@mui/material';
 import { useQueryClient } from 'react-query';
 import CloseIcon from '@mui/icons-material/Close';
@@ -87,16 +87,21 @@ const CreateOrEditProcess: React.FC<ISimpleDialogProps> = ({ open, onClose, proc
 
     const [previousTemplate, setPreviousTemplate] = useState<IMongoProcessTemplatePopulated>();
     const variant = viewMode ? 'standard' : 'outlined';
-    const templateFileProperties = values.template
-        ? pickBy(
-              values.template.details.properties.properties,
-              (value) => (value.type === 'array' && value.items?.format === 'fileId') || value.format === 'fileId',
-          )
-        : undefined;
+    const templateFileProperties = useMemo(
+        () =>
+            values.template
+                ? pickBy(
+                      values.template.details.properties.properties,
+                      (value) => (value.type === 'array' && value.items?.format === 'fileId') || value.format === 'fileId',
+                  )
+                : undefined,
+        [values.template],
+    );
 
-    const templateEntityReferenceProperties = values.template
-        ? pickBy(values.template.details.properties.properties, (value) => value.format === 'entityReference')
-        : undefined;
+    const templateEntityReferenceProperties = useMemo(
+        () => (values.template ? pickBy(values.template.details.properties.properties, (value) => value.format === 'entityReference') : undefined),
+        [values.template],
+    );
 
     useEffect(() => {
         if (values.template && !isEditMode) {
