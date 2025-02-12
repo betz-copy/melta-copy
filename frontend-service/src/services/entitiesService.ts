@@ -131,8 +131,10 @@ export const updateEntityRequestForMultiple = async (
     newEntityData: EntityWizardValues,
     ignoredRules?: IRuleBreach['brokenRules'],
 ) => {
-    const formData = new FormData();
+    console.log('!!!', { newEntityData });
 
+    const formData = new FormData();
+    
     const filesToUpload: any = [];
     const unchangedFiles: any = []; /// //send single file as array to the back
 
@@ -155,9 +157,15 @@ export const updateEntityRequestForMultiple = async (
             }
         }
     });
+    console.log('dsjksbvkjsbvs');
+
     filesToUpload.forEach(([key, value]) => {
         formData.append(key, value);
     });
+    console.log({filesToUpload});
+
+    console.log(...formData);
+    
     unchangedFiles.forEach(([key, _value]) => {
         newEntityData.properties[key] = [];
     });
@@ -177,8 +185,20 @@ export const updateEntityRequestForMultiple = async (
     formData.append(
         'properties',
         JSON.stringify(
-            mapValues(newEntityData.properties, (property, key) =>
-                newEntityData.template.properties.properties[key]?.format === 'relationshipReference' ? property?.properties._id : property,
+            mapValues(newEntityData.properties, (property, key) =>{
+                const templateProperty = newEntityData.template.properties.properties[key]
+                templateProperty?.format === 'relationshipReference' 
+                    ? property?.properties._id: property;
+//                 if(templateProperty?.format === 'signature'){
+//                         const response = await fetch(property);
+//     const blob = await response.blob();
+//     const file = new File([blob], templateProperty.title, { type: 'image/png' });
+// return file;
+//                 }
+               
+
+            }
+           
             ),
         ),
     );

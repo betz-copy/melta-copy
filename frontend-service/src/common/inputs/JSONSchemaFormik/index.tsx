@@ -7,7 +7,6 @@ import i18next from 'i18next';
 import { FormikErrors, FormikHelpers, FormikTouched } from 'formik';
 import mapValues from 'lodash.mapvalues';
 import pickBy from 'lodash.pickby';
-import SignatureCanvas from 'react-signature-canvas';
 import validator from '@rjsf/validator-ajv8';
 import { ErrorSchema, UiSchema } from '@rjsf/utils';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
@@ -46,6 +45,7 @@ const ajvErrorsToFormikErrors = (schema: IMongoEntityTemplatePopulated['properti
 export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'], data: any): FormikErrors<any> => {
     const ajv = new Ajv({ allErrors: true });
     ajv.addFormat('fileId', /.*/);
+    ajv.addFormat('signature', /.*/);
     ajv.addFormat('user', {
         type: 'string',
         validate: (user) => {
@@ -157,6 +157,10 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
             schema={schema}
             uiSchema={mapValues(schema.properties, (propertySchema, propertyKey): UiSchema => {
                 if (propertySchema.archive) return {};
+                if (propertySchema.format === 'signature')
+                    return {
+                        'ui:widget': 'SignatureWidget',
+                    };
                 if (propertySchema.readOnly)
                     return {
                         'ui:options': {
@@ -207,10 +211,6 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                     return {
                         'ui:widget': 'LocationWidget',
                     };
-                if (propertySchema.format === 'signature')
-                    return {
-                        'ui:widget': 'SignatureWidget',
-                    };
                 return {};
             })}
             onChange={({ formData }) => {
@@ -220,6 +220,8 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                         formData[key] = undefined;
                     }
                 });
+                console.log({ formData });
+
                 setValues(formData);
             }}
             formData={values.properties}
