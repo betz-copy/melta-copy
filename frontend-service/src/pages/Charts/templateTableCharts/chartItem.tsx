@@ -10,7 +10,6 @@ import { HiighchartGenerator } from '../chartGenerator.tsx/highChartgenerator';
 
 interface ChartItemProps {
     chartDetails: ChartsAndGenerator;
-    layout: any;
     isHoverOnCard: number | null;
     indexInGrid: number;
     onDelete: () => void;

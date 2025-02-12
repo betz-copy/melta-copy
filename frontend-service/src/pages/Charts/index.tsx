@@ -1,5 +1,5 @@
 import { CircularProgress, Grid } from '@mui/material';
-import React from 'react';
+import React, { useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { useParams } from 'wouter';
 import { ChartsAndGenerator } from '../../interfaces/charts';
@@ -15,10 +15,11 @@ interface IChartsPageProps {
 const ChartsPage: React.FC<IChartsPageProps> = () => {
     const { templateId } = useParams();
     const queryClient = useQueryClient();
+    const [textSearch, setTextSearch] = useState<string>();
 
     const { data: charts, isLoading } = useQuery({
-        queryKey: ['getCharts', templateId],
-        queryFn: () => getChartByTemplateId(templateId as string),
+        queryKey: ['getCharts', templateId, textSearch],
+        queryFn: () => getChartByTemplateId(templateId as string, textSearch),
         initialData: [],
     });
 
@@ -29,8 +30,8 @@ const ChartsPage: React.FC<IChartsPageProps> = () => {
 
     return (
         <Grid>
-            <ChartHeader template={template} />
-            <TemplateTableCharts templatesChart={charts as ChartsAndGenerator[]} />
+            <ChartHeader template={template} setTextSearch={setTextSearch} />
+            <TemplateTableCharts templatesChart={charts as ChartsAndGenerator[]} textSearch={textSearch} />
         </Grid>
     );
 };

@@ -43,6 +43,7 @@ const GridLayout: React.FC<GridLayoutProps> = ({
             useCSSTransforms={useCSSTransforms}
             compactType={compactType}
             preventCollision={!compactType}
+            autoSize
         >
             {generateDom()}
         </ResponsiveReactGridLayout>

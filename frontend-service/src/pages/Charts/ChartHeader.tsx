@@ -4,11 +4,15 @@ import i18next from 'i18next';
 import React from 'react';
 import { useLocation } from 'wouter';
 import { BlueTitle } from '../../common/BlueTitle';
+import { GlobalSearchBar } from '../../common/EntitiesPage/Headline';
 import { TopBarGrid } from '../../common/TopBar';
 import { environment } from '../../globals';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 
-const ChartHeader: React.FC<{ template: IMongoEntityTemplatePopulated }> = ({ template }) => {
+const ChartHeader: React.FC<{
+    template: IMongoEntityTemplatePopulated;
+    setTextSearch: React.Dispatch<React.SetStateAction<string | undefined>>;
+}> = ({ template, setTextSearch }) => {
     const [currentLocation, navigate] = useLocation();
 
     return (
@@ -23,6 +27,11 @@ const ChartHeader: React.FC<{ template: IMongoEntityTemplatePopulated }> = ({ te
                             style={{ fontSize: environment.mainFontSizes.headlineTitleFontSize }}
                         />
                     </Grid>
+                    <Grid item>
+                        <Grid container wrap="nowrap" gap="15px">
+                            <GlobalSearchBar onSearch={(searchValue) => setTextSearch(searchValue || undefined)} />
+                        </Grid>
+                    </Grid>
                 </Grid>
             </Grid>
 
@@ -34,4 +43,5 @@ const ChartHeader: React.FC<{ template: IMongoEntityTemplatePopulated }> = ({ te
         </TopBarGrid>
     );
 };
+
 export { ChartHeader };

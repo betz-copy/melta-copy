@@ -24,7 +24,7 @@ ChartsRouter.get(
     ChartsControllerMiddleware.getChartById,
 );
 
-ChartsRouter.get(
+ChartsRouter.post(
     '/by-template/:templateId',
     ValidateRequest(getChartByTemplateIdRequestSchema),
     AuthorizerControllerMiddleware.userHasSomePermissions,

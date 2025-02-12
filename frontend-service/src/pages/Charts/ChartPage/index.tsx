@@ -9,6 +9,7 @@ import { toast } from 'react-toastify';
 import { useLocation, useParams } from 'wouter';
 import EntitiesTableOfTemplate, { EntitiesTableOfTemplateRef } from '../../../common/EntitiesTableOfTemplate';
 import { ErrorToast } from '../../../common/ErrorToast';
+import { LayoutItem } from '../../../common/GridLayout/interface';
 import { environment } from '../../../globals';
 import { IBasicChart, IChart } from '../../../interfaces/charts';
 import { IEntity } from '../../../interfaces/entities';
@@ -17,6 +18,7 @@ import { createChart, deleteChart, editChart, getChartById } from '../../../serv
 import { useUserStore } from '../../../stores/user';
 import { filterModelToFilterOfTemplate, filterOfTemplateToFilterModel } from '../../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 import { chartValidationSchema, initialValues as defaultInitialValues } from '../../../utils/charts/getChartAxes';
+import { LocalStorage } from '../../../utils/localStorage';
 import { ChartGenerator } from '../chartGenerator.tsx';
 import { ChartSideBar } from './ChartSideBar';
 import { ChartTopBar } from './TopBar';
@@ -61,6 +63,32 @@ const ChartPage: React.FC = () => {
                 navigate(`/charts/${templateId}/${data._id}/chart`);
                 setReadonly(true);
                 setEdit(true);
+                const savedLayout: LayoutItem[] = LocalStorage.get(`chartsOrder_${templateId}`) || [];
+
+                const maxY = savedLayout.length ? Math.max(...savedLayout.map((item) => item.y)) : 0;
+                const lastRowItems = savedLayout.filter((item) => item.y === maxY);
+
+                const cols = 12;
+                const itemWidth = 4;
+
+                const gridMap = Array(cols).fill(false);
+                lastRowItems.forEach(({ x, w }) => {
+                    for (let i = x; i < x + w; i++) gridMap[i] = true;
+                });
+
+                const availableX = gridMap.findIndex((__, x) => x <= cols - itemWidth && gridMap.slice(x, x + itemWidth).every((slot) => !slot));
+
+                const availableY = availableX !== -1 ? maxY : maxY + 12;
+
+                const newItem = {
+                    i: data._id,
+                    x: availableX !== -1 ? availableX : (savedLayout.length % 3) * 4,
+                    y: availableY,
+                    w: itemWidth,
+                    h: 11,
+                };
+
+                LocalStorage.set(`chartsOrder_${templateId}`, [...savedLayout, newItem]);
             },
             onError: (error: AxiosError) => {
                 toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('charts.actions.failedToCreate')} />);

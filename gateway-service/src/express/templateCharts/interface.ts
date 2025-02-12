@@ -61,6 +61,8 @@ export interface IChart {
 
 export interface IChartDocument extends IChart {
     _id: string;
+    createdAt: string;
+    updatedAt: string;
 }
 
 type GeneratorChart = { x: any; y: any }[];

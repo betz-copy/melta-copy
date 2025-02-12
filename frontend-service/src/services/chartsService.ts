@@ -21,8 +21,8 @@ export const getChartById = async (chartId: string) => {
     return data;
 };
 
-export const getChartByTemplateId = async (templateId: string) => {
-    const { data } = await axios.get<ChartsAndGenerator[]>(`${charts}/by-template/${templateId}`);
+export const getChartByTemplateId = async (templateId: string, textSearch) => {
+    const { data } = await axios.post<ChartsAndGenerator[]>(`${charts}/by-template/${templateId}`, { textSearch });
     return data;
 };
 
