@@ -49,6 +49,7 @@ import { IUniqueConstraintOfTemplate } from '../../../interfaces/entities';
 import RelationshipReferenceField from './RelationshipReferenceField';
 import { PermissionScope } from '../../../interfaces/permissions';
 import { useUserStore } from '../../../stores/user';
+import { SelectCheckbox } from '../../SelectCheckBox';
 
 enum dateNotificationOptions {
     day = 1,
@@ -355,6 +356,10 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     const MemoizedIconButton = React.memo(IconButton);
 
     const [initialOptionArray, setInitialOptionArray] = useState<string[]>(initialValue?.options || []);
+
+    const userFields = [{ displayName: 'fullName' }, { displayName: 'jobTitle' }, { displayName: 'hierarchy' }, { displayName: 'mail' }];
+
+    const [userFieldsToShowCheckbox, setUserFieldsToShowCheckbox] = useState(userFields);
 
     const handleEditChange = (e, _tagIndex) => {
         e.preventDefault();
@@ -1277,6 +1282,45 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                     )}
                                                             </div>
                                                         )}
+                                                    />
+                                                )}
+                                            </Grid>
+                                        )}
+                                    </Grid>
+                                    <Grid item>
+                                        {value.type === 'user' && (
+                                            <Grid container direction="row">
+                                                <Grid item container alignItems="center" flexWrap="nowrap">
+                                                    <MeltaTooltip title={i18next.t('validation.expendUserFieldsTitle')}>
+                                                        <FormControlLabel
+                                                            control={
+                                                                <MeltaCheckbox
+                                                                    checked={value.expendUserFields}
+                                                                    onChange={(_e, checked) => {
+                                                                        setValues!((prevValue) => ({
+                                                                            ...prevValue,
+                                                                            expendUserFields: checked,
+                                                                        }));
+                                                                    }}
+                                                                />
+                                                            }
+                                                            label={i18next.t('wizard.entityTemplate.expendUserFields')}
+                                                        />
+                                                    </MeltaTooltip>
+                                                </Grid>
+                                                {value.expendUserFields && (
+                                                    <SelectCheckbox
+                                                        title={i18next.t('user.expendUserFields')}
+                                                        options={userFields}
+                                                        selectedOptions={userFieldsToShowCheckbox}
+                                                        setSelectedOptions={setUserFieldsToShowCheckbox}
+                                                        getOptionId={({ displayName }) => displayName}
+                                                        getOptionLabel={(option) => option.displayName}
+                                                        size="small"
+                                                        horizontalOrigin={128}
+                                                        isDraggableDisabled
+                                                        hideSearchBar
+                                                        hideChooseAll
                                                     />
                                                 )}
                                             </Grid>

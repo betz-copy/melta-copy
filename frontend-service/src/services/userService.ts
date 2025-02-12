@@ -66,6 +66,7 @@ export const syncUserPermissionsRequest = async (userId: string, permissions: IC
 };
 
 export const searchExternalUsersRequest = async (search: string, workspaceId?: string) => {
+    // TODO: change to IKartoffelUser interface ?
     if (search.length < 2) return [];
     const { data } = await axios.get<IExternalUser[]>(`${users}/external`, { params: { search, workspaceId } });
     return data;

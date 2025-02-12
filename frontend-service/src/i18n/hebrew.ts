@@ -425,6 +425,7 @@ export default {
         areYouSure: 'בפעולה זו השינויים ימחקו',
         succeededToUpdatePreferences: 'עודכנו העדפות משתמש בהצלחה',
         failedToUpdateRequest: 'נכשל בעידכון העדפות המשתמש',
+        expendUserFields: 'שדות להוספה',
     },
     entitiesCardView: {
         failedToLoadResults: 'נכשל לטעון תוצאות',
@@ -555,6 +556,7 @@ export default {
             cannotArchiveIfRequired: 'לא ניתן להכניס לארכיון שדה חובה',
             cannotArchiveIfUnique: 'לא ניתן להכניס לארכיון שדה מיוחד',
             cannotArchiveIfPreview: 'לא ניתן להכניס לארכיון שדה בתצוגה מצומצמת',
+            expendUserFields: 'הרחבת שדות נוספים',
         },
         relationshipTemplate: {
             createTitle: 'יצירת תבנית קשר',
@@ -779,6 +781,7 @@ export default {
         calculateTime: 'הצגת הפרש זמן',
         uniqueTooltipTitle:
             '* לחיצה על כפתור זה תדרוש להוסיף או ליצור קבוצת ייחודיים עבור שדה זה.\n* כאשר מספר שדות משוייכים לאותה הקבוצה, יאוכף שילוב של אותם השדות.\n* לדוגמה, כאשר "שם פרטי" ו"שם משפחה" משוייכים לקבוצת ייחודיים אחת, לא יהיה ניתן ליצור ישות חדשה עם אותו השילוב של "שם פרטי" ו"שם משפחה" שכבר קיים.',
+        expendUserFieldsTitle: 'בחירת שדות נוספים שנגזרים מהמשתמש שייוצרו במצב קריאה בלבד',
         invalidPropertyType: 'סוג שדה לא תקין',
         mustBeOneOfList: 'בחר באחת מתוך האפשרויות הנתונות',
         invalidNumberField: 'חייב להיות מספר',
