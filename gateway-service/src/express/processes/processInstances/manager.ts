@@ -73,7 +73,7 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
     async getPropertiesWithEntities(properties: InstanceProperties, template: IProcessDetails['properties'], userId: string) {
         const updatedProperties: InstanceProperties = { ...properties };
 
-        const entityProperties = Object.entries(template.properties).filter(
+        const entityProperties = Object.entries(template.properties || {}).filter(
             ([key, value]) => value.format === PropertyFormats.EntityReference && properties[key] !== undefined,
         );
 
@@ -278,7 +278,7 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
     private extractFileIdsFromProperties(templateProperties: IProcessDetails['properties'], instanceProperties: InstanceProperties = {}) {
         const fileIds: string[] = [];
 
-        Object.entries(templateProperties.properties).forEach(([key, value]) => {
+        Object.entries(templateProperties.properties || {}).forEach(([key, value]) => {
             if (value.format === PropertyFormats.FileId && instanceProperties[key]) {
                 fileIds.push(instanceProperties[key]);
             } else if (value.items?.format === PropertyFormats.FileId && instanceProperties[key]) {
