@@ -222,7 +222,7 @@ export const environment = {
         entityHasRelationships: 'ENTITY_HAS_RELATIONSHIPS',
     },
 
-    loadExcel: { excelExtension: '.xlsx', acceptedFilesTypes: { 'excel/xlsx': ['.xlsx', '.xls'] } },
+    loadExcel: { excelExtension: '.xlsx', acceptedFilesTypes: { 'excel/xlsx': ['.xlsx', '.xls'] }, entityId: '$0._id' },
     agGrid: {
         cacheBlockSize: 5,
         maxConcurrentDatasourceRequests: 1,
