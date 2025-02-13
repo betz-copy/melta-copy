@@ -19,6 +19,7 @@ const entityTemplateSchema = {
     propertiesPreview: previewPropertiesSchema.required(),
     enumPropertiesColors: enumPropertiesColorsSchema,
     documentTemplatesIds: Joi.array().items(Joi.string()),
+    mapSearchProperties: Joi.array().items(Joi.string()),
 };
 
 // POST /api/entities/templates/search

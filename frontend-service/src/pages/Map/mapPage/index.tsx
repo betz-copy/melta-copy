@@ -206,14 +206,19 @@ const MapPage = () => {
 
     return (
         <div style={{ height: '100vh', width: '100%' }}>
-            <Viewer
-                full
-                ref={viewerRef}
-                onClick={handleViewerClick}
-                onMouseMove={handleMouseMove}
-                baseLayerPicker={false}
-                animation={false}
-                timeline={false}
+         <Viewer
+            full
+            ref={viewerRef}
+            onClick={handleViewerClick}
+            onMouseMove={handleMouseMove}
+            baseLayerPicker={false}
+            animation={false}
+            timeline={false}
+            geocoder={false}
+            homeButton={false}
+            sceneModePicker={false}
+            vrButton={false}
+            fullscreenButton={false}
             >
                 {circleData.center && (circleData.radius || circleData.mouseRadius) && (
                     <Entity

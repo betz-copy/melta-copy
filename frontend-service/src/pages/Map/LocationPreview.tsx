@@ -66,8 +66,19 @@ const LocationPreview = ({ entity, entityTemplate }: Props) => {
 
     return (
         <div style={{ position: 'relative', height: '800px', width: '600px' }}>
-            <Viewer full ref={viewerRef} baseLayerPicker={false} animation={false} timeline={false}>
-                {polygons.map(({ key, position: polygon }) => (
+            <Viewer
+              full
+              ref={viewerRef}
+              baseLayerPicker={false}
+              animation={false}
+              timeline={false}
+              geocoder={false}
+              homeButton={false}
+              sceneModePicker={false}
+              vrButton={false}
+              fullscreenButton={false}
+              >                
+              {polygons.map(({ key, position: polygon }) => (
                     <MeltaPolygon key={key} name={propertyDefinitions[key].title} polygon={polygon} />
                 ))}
 

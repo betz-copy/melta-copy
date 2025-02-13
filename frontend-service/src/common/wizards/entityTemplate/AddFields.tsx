@@ -130,7 +130,7 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
         };
 
         return titles[itemId] || '';
-    };
+    };    
 
     return (
         <DragDropContext onDragEnd={onDragEnd}>
@@ -193,6 +193,10 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
                                             supportAddFieldButton={itemId === 'attachmentProperties' || itemId === 'properties'}
                                             hasActions={hasActions}
                                             draggable={{ isDraggable: true, dragHandleProps: draggableProvided.dragHandleProps }}
+                                            locationSearchFields={{
+                                                show: Object.values(values.properties).some(property => property.type === 'location'), 
+                                                disabled: Object.values(values.properties).filter(property => property.mapSearch).length >= 2 
+                                            }}
                                         />
                                     </Grid>
                                 )}

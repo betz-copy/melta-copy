@@ -45,6 +45,7 @@ interface FieldBlockProps<PropertiesType extends string, Values extends Record<P
     supportUnique?: boolean;
     supportLocation?: boolean;
     supportArchive?: boolean;
+    locationSearchFields?: {show: boolean, disabled: boolean};
     supportAddFieldButton?: boolean;
     hasActions?: boolean;
     draggable?: { isDraggable: false } | { isDraggable: true; dragHandleProps: DraggableProvided['dragHandleProps'] };
@@ -74,6 +75,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
     supportUnique,
     supportLocation,
     supportArchive,
+    locationSearchFields,
     supportAddFieldButton = true,
     hasActions,
     draggable = { isDraggable: false },
@@ -95,6 +97,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
         relationshipReference: undefined,
         serialStarter: 0,
         archive: false,
+        mapSearch: false,
     },
 }: React.PropsWithChildren<FieldBlockProps<PropertiesType, Values>>) => {
     // copy of values of formik in order to show changes on inputs fast (formik rerenders are slow)
@@ -239,6 +242,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
                                                 supportUnique,
                                                 supportLocation,
                                                 supportArchive,
+                                                locationSearchFields,
                                                 hasActions,
                                             };
 

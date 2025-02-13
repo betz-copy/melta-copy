@@ -498,6 +498,7 @@ export default {
             deletedSuccessfully: 'תבנית ישות נמחקה בהצלחה',
             failedToDelete: 'נכשל למחוק תבנית ישות',
             failedToEdit: 'נכשל בעריכת תבנית ישות',
+            searchLocation: 'הצגת שדה בחיפוש בעמוד מפות',
             failedToUpdateRequiredConstraintsBecauseOfEntitiesWithMissing: 'נכשל לעדכן שדות חובה בגלל שקיימות ישיות שלא מוזן להם שדה',
             failedToUpdateUniqueConstraintsBecauseOfEntitiesWithDuplicates: 'נכשל לעדכן שדות יחודיים בגלל שקיימות ישויות עם שכפולים בשדות',
             failedToDeleteFieldThatUsedInRules: 'נכשל למחוק שדה "{{property}}" אשר בשימוש בחוקים',

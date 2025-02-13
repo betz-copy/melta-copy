@@ -130,7 +130,19 @@ const LocationField = ({ defaultLocation, field, updateValue }: Props) => {
 
     return (
         <div style={{ position: 'relative', height: '800px', width: '600px' }}>
-            <Viewer full ref={viewerRef} onClick={handleViewerClick} baseLayerPicker={false} animation={false} timeline={false}>
+           <Viewer
+              full
+              ref={viewerRef}
+              onClick={handleViewerClick}
+              baseLayerPicker={false}
+              animation={false}
+              timeline={false}
+              geocoder={false}
+              homeButton={false}
+              sceneModePicker={false}
+              vrButton={false}
+              fullscreenButton={false}
+              >
                 {polygonPosition.length > 0 && <MeltaPolygon name={field} polygon={polygonPosition} />}
                 {markerPosition && <MeltaCoordinate name={field} position={markerPosition} />}
             </Viewer>
