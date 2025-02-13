@@ -136,7 +136,7 @@ const config = {
         requestTimeout: env.get('PERMISSION_SERVICE_REQUEST_TIMEOUT').default(100000).asIntPositive(),
         profilePathPattern: env
             .get('PROFILE_PATH_PATTERN')
-            .default('^(kartoffelProfile|[0-9a-f]{8}[0-9a-f]{4}[0-9a-f]{4}[0-9a-f]{4}[0-9a-f]{12}.*)$')
+            .default('^(kartoffelProfile|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{8}.*)$')
             .asRegExp(),
     },
     activityLogService: {
