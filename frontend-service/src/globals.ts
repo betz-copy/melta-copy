@@ -236,6 +236,7 @@ export const environment = {
         units: { km: 'km', squaredKm: 'km²' },
         polygon: { polygon: 'POLYGON', polygonPrefix: 'POLYGON((', polygonSuffix: '))' },
     },
+    meltaUpdatesShown: 'meltaUpdatesShown',
     profileIconsCount: 19,
     avatarIconPath: '/icons/profileAvatar/',
     fileExtensions: {
