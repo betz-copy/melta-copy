@@ -16,7 +16,7 @@ type FileAttachmentsProps = {
     templateFileProperties: Record<string, IProcessSingleProperty>;
     values: ProcessDetailsValues;
     errors?: FormikErrors<ProcessDetailsValues>;
-    setFieldValue?: (field: string, value: any) => void;
+    setFieldValue?: (field: string, value: File | File[] | undefined) => void;
     required?: string[];
     touched: FormikProps<ProcessDetailsValues>['touched'];
     setFieldTouched: FormikProps<ProcessFormikProps>['setFieldTouched'];

@@ -1,12 +1,13 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import { Dialog, IconButton, Grid, Box, Stepper, Step, StepLabel, Divider, Fab } from '@mui/material';
-import { useQueryClient } from 'react-query';
+import { UseMutateAsyncFunction, useQueryClient } from 'react-query';
 import CloseIcon from '@mui/icons-material/Close';
 import { pickBy } from 'lodash';
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
 import { FormikProvider } from 'formik';
 import i18next from 'i18next';
-import { IMongoProcessTemplatePopulated, IProcessTemplateMap } from '../../../interfaces/processes/processTemplate';
+import { AxiosError } from 'axios';
+import { IProcessTemplateMap } from '../../../interfaces/processes/processTemplate';
 import { initDetailsValues, useProcessDetailsFormik } from './ProcessDetails/detailsFormik';
 import { BlueTitle } from '../../BlueTitle';
 import { getAllFieldsTouched } from '../../../utils/processWizard/formik';
@@ -16,6 +17,7 @@ import { setInitialStepsObject } from '../../../utils/processWizard/steps';
 import StepsReviewers from './ProcessDetails/StepsReviewers';
 import { IMongoProcessInstancePopulated } from '../../../interfaces/processes/processInstance';
 import { useDarkModeStore } from '../../../stores/darkMode';
+import { ProcessDetailsValues } from './ProcessDetails';
 
 interface ISimpleDialogProps {
     open: boolean;
@@ -23,7 +25,7 @@ interface ISimpleDialogProps {
     processInstance?: IMongoProcessInstancePopulated;
     viewMode?: boolean;
     isEditMode?: boolean;
-    mutateAsync: any;
+    mutateAsync: UseMutateAsyncFunction<IMongoProcessInstancePopulated, AxiosError<any, any>, ProcessDetailsValues, unknown>;
 }
 
 const steps = [
@@ -49,7 +51,7 @@ const CreateOrEditProcess: React.FC<ISimpleDialogProps> = ({ open, onClose, proc
 
     const { details } = template || {};
 
-    const handleNext = () => {
+    const handleNext = useCallback(() => {
         const currentTouched: Record<string, any> = getAllFieldsTouched(detailsFormikData.values);
 
         const templateFileProperties = template
@@ -62,13 +64,13 @@ const CreateOrEditProcess: React.FC<ISimpleDialogProps> = ({ open, onClose, proc
             ? pickBy(details?.properties.properties, (value) => value.format === 'entityReference')
             : undefined;
 
-        const detailsAttachments = {};
+        const detailsAttachments: Record<string, boolean> = {};
         Object.keys(templateFileProperties!).forEach((fileField) => {
             detailsAttachments[fileField] = true;
         });
         currentTouched.detailsAttachments = detailsAttachments;
 
-        const entityReferences = {};
+        const entityReferences: Record<string, boolean> = {};
         Object.keys(templateEntityReferenceProperties!).forEach((entityField) => {
             entityReferences[entityField] = true;
         });
@@ -77,15 +79,18 @@ const CreateOrEditProcess: React.FC<ISimpleDialogProps> = ({ open, onClose, proc
         detailsFormikData.setTouched(currentTouched);
 
         if (detailsFormikData.isValid) setActiveProcessDetailsStep((prevActiveStep) => prevActiveStep + 1);
-    };
+    }, [details?.properties.properties, detailsFormikData, template]);
 
-    const handleBack = () => {
+    const handleBack = useCallback(() => {
         setActiveProcessDetailsStep((prevActiveStep) => prevActiveStep - 1);
-    };
+    }, []);
 
     const { values, touched, errors, setFieldValue, setFieldTouched, handleBlur, resetForm } = detailsFormikData;
 
-    const [previousTemplate, setPreviousTemplate] = useState<IMongoProcessTemplatePopulated>();
+    // const [previousTemplate, setPreviousTemplate] = useState<IMongoProcessTemplatePopulated>();
+
+    const previousTemplate = useRef(values.template);
+
     const variant = viewMode ? 'standard' : 'outlined';
     const templateFileProperties = useMemo(
         () =>
@@ -104,9 +109,12 @@ const CreateOrEditProcess: React.FC<ISimpleDialogProps> = ({ open, onClose, proc
     );
 
     useEffect(() => {
+        previousTemplate.current = values.template;
+    }, [values.template]);
+
+    useEffect(() => {
         if (values.template && !isEditMode) {
-            setPreviousTemplate(values.template);
-            if (values.template.name !== previousTemplate?.name) {
+            if (values.template.name !== previousTemplate?.current?.name) {
                 resetForm({
                     values: {
                         template: values.template,
