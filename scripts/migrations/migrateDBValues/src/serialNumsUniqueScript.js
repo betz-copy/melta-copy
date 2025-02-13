@@ -66,11 +66,16 @@ const SerialNumberNeoScript = async (mongoResult, session) => {
           `);
 
           if (existingUniqueConstraints.records.length === 0) {
-            try{
-            await tx.run(`
+            try {
+              await tx.run(`
               CREATE CONSTRAINT \`${uniqueConstraintName}\` FOR (n:\`${template._id}\`)
               REQUIRE (n.${serialProperty}) IS NODE KEY
-            `);}catch(error) {console.error(`Failed to create unique constraints in template: ${template._id} property: ${serialProperty}! some properties probably not unique, error: ${error}`)}
+            `);
+            } catch (error) {
+              console.error(
+                `Failed to create unique constraints in template: ${template._id} property: ${serialProperty}! some properties probably not unique, error: ${error}`
+              );
+            }
           }
         } else {
           await tx.run(`
@@ -119,7 +124,7 @@ const getSerialPropertiesFromTemplate = async (dbList) => {
     })
   );
 
-  console.log("finish get value to update constraints serial numbers properties", data.length);
+  console.log("updated serial numbers properties constraints:", data);
 
   return data;
 };
@@ -148,13 +153,13 @@ const serialNumbersNeo = async (driver, data) => {
   }
 };
 
-export const connectToMongo = async () => {
+const connectToMongo = async () => {
   await mongoose.connect(mongo.uri);
 
   console.log("Connected to MongoDB");
 };
 
-export const connectToNeo = async () => {
+const connectToNeo = async () => {
   const driver = neo4j.driver(
     neo.uri,
     neo4j.auth.basic(neo.user, neo.password)
@@ -164,7 +169,7 @@ export const connectToNeo = async () => {
   return driver;
 };
 
-export const listDatabasesWithMongoose = async () => {
+const listDatabasesWithMongoose = async () => {
   const adminDb = mongoose.connection.db.admin();
   const result = await adminDb.listDatabases();
   console.log("Databases:", result.databases);
