@@ -197,6 +197,7 @@ const config = {
         ruleBlock: 'RULE_BLOCK',
         ruleHasAlertsOrRequests: 'RULE_HAS_ALERTS_OR_REQUESTS',
         failedToDeleteField: 'FAILED_DELETE_FIELD',
+        failedToArchiveField: 'FAILED_ARCHIVE_FIELD',
         moreThenOneRelationshipInstanceExist: 'MORE_THEN_ONE_RELATIONSHIP_INSTANCE_EXIST',
         failedToArchiveField: 'FAILED_ARCHIVE_FIELD',
         failedConstraintsValidation: 'FAILED_CONSTRAINTS_VALIDATION',
