@@ -36,6 +36,7 @@ interface FieldBlockProps<PropertiesType extends string, Values extends Record<P
     errors: FormikErrors<Values> | undefined;
     initialFieldCardDataOnAdd?: Omit<CommonFormInputProperties, 'id'>;
     supportSerialNumberType: boolean;
+    supportUserType: boolean;
     supportEntityReferenceType: boolean;
     supportChangeToRequiredWithInstances: boolean;
     supportArrayFields: boolean;
@@ -65,6 +66,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
     touched,
     errors,
     supportSerialNumberType,
+    supportUserType,
     supportEntityReferenceType,
     supportChangeToRequiredWithInstances,
     supportArrayFields,
@@ -229,6 +231,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
                                                 remove,
                                                 onChange: onChangeWrapper(index),
                                                 supportSerialNumberType,
+                                                supportUserType,
                                                 supportEntityReferenceType,
                                                 supportChangeToRequiredWithInstances,
                                                 templateId: (values as any)._id,

@@ -1,196 +1,31 @@
-import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
-import { Autocomplete, Box, Card, CardActions, CardContent, Fab, Grid, TextField, Typography } from '@mui/material';
-import { LocalizationProvider } from '@mui/x-date-pickers';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { Field, FormikProps, FormikProvider } from 'formik';
-import i18next from 'i18next';
+import { Button, Card, CardContent, Divider, Grid, Typography } from '@mui/material';
+import { FormikProvider } from 'formik';
 import pickBy from 'lodash.pickby';
 import React, { useEffect, useState } from 'react';
 import { useQueryClient } from 'react-query';
-import { IDetailsStepProp, ProcessDetailsValues } from '.';
-import { IMongoProcessTemplatePopulated, IProcessSingleProperty, IProcessTemplateMap } from '../../../../interfaces/processes/processTemplate';
-import { pickProcessFieldsPropertiesSchema } from '../../../../utils/pickFieldsPropertiesSchema';
+import i18next from 'i18next';
+import Groups2Icon from '@mui/icons-material/Groups2';
+import { IDetailsStepProp } from '.';
+import { IMongoProcessTemplatePopulated, IProcessTemplateMap } from '../../../../interfaces/processes/processTemplate';
 import { setInitialStepsObject } from '../../../../utils/processWizard/steps';
-import { BlueTitle } from '../../../BlueTitle';
-import OpenPreview from '../../../FilePreview/OpenPreview';
-import { InstanceFileInput } from '../../../inputs/InstanceFilesInput/InstanceFileInput';
-import { JSONSchemaFormik } from '../../../inputs/JSONSchemaFormik';
-import { EntityReference } from '../EntityReference';
-import { ProcessStepValues } from '../ProcessSteps';
 import { initDetailsValues } from './detailsFormik';
-import { InstanceSingleFileInput } from '../../../inputs/InstanceFilesInput/InstanceSingleFileInput';
-import { TextAreaProperty } from '../ProcessSteps/processStep';
-import { renderHTML } from '../../../../utils/HtmlTagsStringValue';
+import { GeneralDetailsFields } from './GeneralDetailsFields';
+import { TemplateFields } from './TemplateFields';
+import { environment } from '../../../../globals';
 
-export const SchemaForm = ({ viewMode, values, errors, touched, setFieldValue, setFieldTouched, toPrint }) => {
-    const schema = pickProcessFieldsPropertiesSchema(values.template.details);
-    const textAreaSchema = Object.entries(schema.properties)
-        .filter(([_key, property]) => property.format === 'text-area')
-        .map(([key, property]) => ({
-            key,
-            title: property.title,
-        }));
-
-    const textAreaValues = textAreaSchema.flatMap((property) => {
-        if (values.details[property.key]) {
-            const value = renderHTML(values.details[property.key]);
-            return [{ ...property, value }];
-        }
-        return [{ ...property }];
-    });
-
-    return (
-        <Box paddingTop={0.5} paddingLeft={1}>
-            <BlueTitle
-                title={i18next.t('wizard.entityTemplate.properties')}
-                style={{ marginTop: toPrint ? '30px' : undefined }}
-                component="h6"
-                variant="h6"
-            />
-            <JSONSchemaFormik
-                schema={schema}
-                values={{ ...values, properties: values.details }}
-                setValues={(propertiesValues) => setFieldValue('details', propertiesValues)}
-                errors={errors.details ?? {}}
-                touched={touched.details ?? {}}
-                setFieldTouched={(field) => setFieldTouched(`details.${field}`)}
-                readonly={viewMode}
-                toPrint={toPrint}
-            />
-            {toPrint && textAreaValues.length > 0 && textAreaValues.map((textArea) => <TextAreaProperty key={textArea.key} textArea={textArea} />)}
-        </Box>
-    );
-};
-
-type ProcessFormikProps = ProcessStepValues | ProcessDetailsValues;
-
-type FileAttachmentsProps = {
-    templateFileProperties: Record<string, IProcessSingleProperty>;
-    values: any;
-    errors?: any;
-    setFieldValue?: (field: string, value: any) => void;
-    required?: string[];
-    touched: FormikProps<ProcessDetailsValues>['touched'];
-    setFieldTouched: FormikProps<ProcessFormikProps>['setFieldTouched'];
-    toPrint?: boolean;
-};
-
-const FileAttachmentsEdit: React.FC<FileAttachmentsProps> = ({
-    templateFileProperties,
-    values,
-    errors,
-    touched,
-    setFieldTouched,
-    setFieldValue = () => {},
-    required = [],
-}) => (
-    <>
-        {Object.entries(templateFileProperties).map(([key, value], index) => (
-            <Grid item key={key} marginTop={index > 0 ? 5 : 0}>
-                {value.items === undefined ? (
-                    <InstanceSingleFileInput
-                        key={key}
-                        fileFieldName={`detailsAttachments.${key}`}
-                        fieldTemplateTitle={value.title}
-                        setFieldValue={setFieldValue}
-                        required={required.includes(key)} // file error
-                        value={values.detailsAttachments[key]}
-                        error={
-                            errors.detailsAttachments?.[key] && touched.detailsAttachments?.[key]
-                                ? JSON.stringify(errors.detailsAttachments?.[key])
-                                : undefined
-                        }
-                        setFieldTouched={setFieldTouched}
-                    />
-                ) : (
-                    <InstanceFileInput
-                        key={key}
-                        fileFieldName={`detailsAttachments.${key}`}
-                        fieldTemplateTitle={value.title}
-                        setFieldValue={setFieldValue}
-                        required={required.includes(key)}
-                        value={values.detailsAttachments[key]}
-                        error={
-                            errors.detailsAttachments?.[key] && touched.detailsAttachments?.[key]
-                                ? JSON.stringify(errors.detailsAttachments?.[key])
-                                : undefined
-                        }
-                        setFieldTouched={setFieldTouched}
-                    />
-                )}
-            </Grid>
-        ))}
-    </>
-);
-
-export const FileAttachmentsView: React.FC<FileAttachmentsProps> = ({ templateFileProperties, values, toPrint }) => {
-    return (
-        <>
-            {Object.entries(templateFileProperties).map(([fieldName, { title }]) => {
-                let attachments: React.JSX.Element | React.JSX.Element[] = (
-                    <Typography display="inline" variant="h6">
-                        -
-                    </Typography>
-                );
-                if (values.detailsAttachments[fieldName]) {
-                    if (Array.isArray(values.detailsAttachments[fieldName])) {
-                        attachments = values.detailsAttachments[fieldName].map((v) => <OpenPreview key={v} fileId={v.name} download={toPrint} />);
-                    } else {
-                        attachments = <OpenPreview fileId={values.detailsAttachments[fieldName].name} download={toPrint} />;
-                    }
-                }
-                return (
-                    <Grid container spacing={1} display="flex" flexDirection="column" key={fieldName}>
-                        <Grid item>
-                            <Typography display="inline" variant="body1">
-                                {title}:
-                            </Typography>
-                        </Grid>
-                        <Grid item sx={{ overflowY: 'auto', maxHeight: '90px' }}>
-                            {attachments}
-                        </Grid>
-                    </Grid>
-                );
-            })}
-        </>
-    );
-};
-
-const FileAttachments = ({ viewMode, templateFileProperties, values, errors, touched, setFieldValue, required, setFieldTouched, toPrint }) => {
-    return (
-        <Box>
-            <BlueTitle title={i18next.t('wizard.entityTemplate.attachments')} component="h6" variant="h6" style={{ marginBottom: '22px' }} />
-            {!viewMode ? (
-                <FileAttachmentsEdit
-                    templateFileProperties={templateFileProperties}
-                    values={values}
-                    errors={errors}
-                    touched={touched}
-                    setFieldValue={setFieldValue}
-                    required={required}
-                    setFieldTouched={setFieldTouched}
-                />
-            ) : (
-                <FileAttachmentsView
-                    templateFileProperties={templateFileProperties}
-                    values={values}
-                    touched={touched}
-                    setFieldTouched={setFieldTouched}
-                    toPrint={toPrint}
-                />
-            )}
-        </Box>
-    );
-};
-
-const GeneralDetails: React.FC<IDetailsStepProp> = ({ detailsFormikData, onNext, processInstance, isEditMode, toPrint }) => {
+const GeneralDetails: React.FC<IDetailsStepProp> = ({
+    detailsFormikData,
+    processInstance,
+    toPrint,
+    setContentDisplay = () => {},
+    contentDisplay = environment.processDetailsContentDisplay.summary,
+}) => {
     const { values, touched, errors, setFieldValue, setFieldTouched, handleBlur, resetForm } = detailsFormikData;
     const queryClient = useQueryClient();
     const processTemplatesMap = queryClient.getQueryData<IProcessTemplateMap>('getProcessTemplates')!;
     const [previousTemplate, setPreviousTemplate] = useState<IMongoProcessTemplatePopulated>();
-    const viewMode = Boolean(processInstance && !isEditMode);
-    const variant = viewMode ? 'standard' : 'outlined';
+
+    const variant = processInstance ? 'standard' : 'outlined';
     const templateFileProperties = values.template
         ? pickBy(
               values.template.details.properties.properties,
@@ -226,268 +61,87 @@ const GeneralDetails: React.FC<IDetailsStepProp> = ({ detailsFormikData, onNext,
     }, [values.template?._id]);
 
     return (
-        <Card sx={{ border: 'none', boxShadow: 'none', background: 'transparent' }}>
-            <CardContent sx={{ height: !toPrint ? '56vh' : undefined, overflowY: 'auto' }}>
-                <Grid container direction="column" paddingLeft={toPrint ? 0 : 4} justifyContent="space-around">
-                    <Grid item>
-                        <FormikProvider value={detailsFormikData}>
-                            <Grid item container justifyContent="flex-start">
-                                <Grid item xs={4}>
-                                    <BlueTitle
-                                        title={i18next.t('wizard.processInstance.generalDetails')}
-                                        component="h6"
-                                        variant="h6"
-                                        style={{ marginBottom: '30px' }}
-                                    />
-                                    <Grid container direction="column" spacing={3}>
-                                        <Grid item>
-                                            <Autocomplete
-                                                id="template"
-                                                options={Array.from(processTemplatesMap.values())}
-                                                onChange={(_e, newValue) => {
-                                                    setFieldValue('template', newValue);
-                                                }}
-                                                value={values.template ?? null}
-                                                disabled={Boolean(isEditMode && processInstance)}
-                                                readOnly={viewMode}
-                                                getOptionLabel={(option) => option.displayName}
-                                                renderInput={(params) => (
-                                                    <TextField
-                                                        {...params}
-                                                        size="small"
-                                                        sx={{
-                                                            '& .MuiInputBase-root': {
-                                                                borderRadius: '10px',
-                                                            },
-                                                            '& fieldset': {
-                                                                borderColor: '#CCCFE5',
-                                                                color: '#CCCFE5',
-                                                            },
-                                                            '& label': {
-                                                                color: '#9398C2',
-                                                            },
-                                                        }}
-                                                        fullWidth
-                                                        name="template"
-                                                        variant={variant}
-                                                        InputLabelProps={{
-                                                            shrink: viewMode || undefined,
-                                                        }}
-                                                        label={i18next.t(
-                                                            processInstance
-                                                                ? 'wizard.processInstance.processTemplate'
-                                                                : 'processInstancesPage.chooseProcessTemplate',
-                                                        )}
-                                                        helperText={touched.template ? errors.template : ''}
-                                                        error={touched.template && Boolean(errors.template)}
-                                                        onBlur={handleBlur}
-                                                    />
-                                                )}
-                                            />
-                                        </Grid>
-                                        <Grid item>
-                                            <TextField
-                                                id="name"
-                                                name="name"
-                                                size="small"
-                                                sx={{
-                                                    '& .MuiInputBase-root': {
-                                                        borderRadius: '10px',
-                                                    },
-                                                    '& fieldset': {
-                                                        borderColor: '#CCCFE5',
-                                                        color: '#CCCFE5',
-                                                    },
-                                                    '& label': {
-                                                        color: '#9398C2',
-                                                    },
-                                                }}
-                                                fullWidth
-                                                label={i18next.t('wizard.processInstance.processInstanceName')}
-                                                value={values.name}
-                                                variant={variant}
-                                                InputLabelProps={{
-                                                    shrink: viewMode || undefined,
-                                                }}
-                                                onChange={(e) => setFieldValue('name', e.target.value)}
-                                                helperText={touched.name ? errors.name : ''}
-                                                error={touched.name && Boolean(errors.name)}
-                                                onBlur={handleBlur}
-                                                InputProps={{
-                                                    readOnly: viewMode,
-                                                }}
-                                            />
-                                        </Grid>
-                                        <Grid item>
-                                            <LocalizationProvider dateAdapter={AdapterDateFns}>
-                                                <DatePicker
-                                                    maxDate={values.endDate}
-                                                    label={i18next.t('wizard.processInstance.processInstanceStartDate')}
-                                                    value={values.startDate}
-                                                    onChange={(newStartDate) => {
-                                                        setFieldValue('startDate', newStartDate);
-                                                    }}
-                                                    renderInput={(params) => (
-                                                        <TextField
-                                                            size="small"
-                                                            sx={{
-                                                                '& .MuiInputBase-root': {
-                                                                    borderRadius: '10px',
-                                                                },
-                                                                '& fieldset': {
-                                                                    borderColor: '#CCCFE5',
-                                                                    color: '#CCCFE5',
-                                                                },
-                                                                '& label': {
-                                                                    color: '#9398C2',
-                                                                },
-                                                            }}
-                                                            fullWidth
-                                                            variant={variant}
-                                                            InputLabelProps={{
-                                                                shrink: viewMode || undefined,
-                                                            }}
-                                                            {...params}
-                                                            error={touched.startDate && Boolean(errors.startDate)}
-                                                            helperText={touched.startDate ? errors.startDate : ''}
-                                                            onBlur={() => setFieldTouched('startDate')}
-                                                        />
-                                                    )}
-                                                    readOnly={viewMode}
-                                                />
-                                            </LocalizationProvider>
-                                        </Grid>
-                                        <Grid item>
-                                            <LocalizationProvider dateAdapter={AdapterDateFns}>
-                                                <DatePicker
-                                                    minDate={values.startDate}
-                                                    label={i18next.t('wizard.processInstance.processInstanceEndDate')}
-                                                    value={values.endDate}
-                                                    onChange={(newEndDate) => {
-                                                        setFieldValue('endDate', newEndDate);
-                                                    }}
-                                                    renderInput={(params) => (
-                                                        <TextField
-                                                            size="small"
-                                                            sx={{
-                                                                '& .MuiInputBase-root': {
-                                                                    borderRadius: '10px',
-                                                                },
-                                                                '& fieldset': {
-                                                                    borderColor: '#CCCFE5',
-                                                                    color: '#CCCFE5',
-                                                                },
-                                                                '& label': {
-                                                                    color: '#9398C2',
-                                                                },
-                                                            }}
-                                                            variant={variant}
-                                                            fullWidth
-                                                            InputLabelProps={{
-                                                                shrink: viewMode || undefined,
-                                                            }}
-                                                            {...params}
-                                                            error={touched.endDate && Boolean(errors.endDate)}
-                                                            helperText={touched.endDate ? errors.endDate : ''}
-                                                            onBlur={() => setFieldTouched('endDate')}
-                                                        />
-                                                    )}
-                                                    readOnly={viewMode}
-                                                />
-                                            </LocalizationProvider>
-                                        </Grid>
-                                    </Grid>
-                                </Grid>
+        <Card sx={{ border: 'none', boxShadow: 'none', height: '100%', background: 'transparent' }}>
+            <CardContent sx={{ height: !toPrint ? '100%' : undefined }}>
+                <Grid container direction="column" height="100%" justifyContent="space-between">
+                    <FormikProvider value={detailsFormikData}>
+                        <Grid item height="90%">
+                            <Grid item height="20%">
+                                <GeneralDetailsFields
+                                    processTemplatesMap={processTemplatesMap}
+                                    setFieldValue={setFieldValue}
+                                    values={values}
+                                    isEditMode={false}
+                                    processInstance={processInstance}
+                                    viewMode={!!processInstance}
+                                    variant={variant}
+                                    touched={touched}
+                                    errors={errors}
+                                    handleBlur={handleBlur}
+                                    setFieldTouched={setFieldTouched}
+                                />
+                            </Grid>
+                            <Grid item>
+                                <Divider variant="fullWidth" sx={{ marginTop: '25px' }} />
+                            </Grid>
+                            <Grid item height="80%" sx={{ overflowY: 'auto' }}>
                                 {values.template && (
-                                    <Grid
-                                        item
-                                        sx={{
-                                            overflowY: 'auto',
-                                            paddingLeft: toPrint ? 0 : 3,
-                                        }}
-                                        xs={toPrint ? 15 : 7}
-                                    >
-                                        {Object.keys(pickProcessFieldsPropertiesSchema(values.template.details).properties).length !== 0 && (
-                                            <SchemaForm {...{ viewMode, values, errors, touched, setFieldValue, setFieldTouched, toPrint }} />
-                                        )}
-                                        {Object.keys(templateFileProperties!).length !== 0 && (
-                                            <FileAttachments
-                                                {...{
-                                                    viewMode,
-                                                    templateFileProperties,
-                                                    values,
-                                                    errors,
-                                                    setFieldValue,
-                                                    required: values.template.details.properties.required || [],
-                                                    touched,
-                                                    handleBlur,
-                                                    setFieldTouched,
-                                                    toPrint,
+                                    <TemplateFields
+                                        toPrint={toPrint}
+                                        values={values}
+                                        viewMode={!!processInstance}
+                                        errors={errors}
+                                        touched={touched}
+                                        setFieldValue={setFieldValue}
+                                        setFieldTouched={setFieldTouched}
+                                        templateFileProperties={templateFileProperties}
+                                        handleBlur={handleBlur}
+                                        templateEntityReferenceProperties={templateEntityReferenceProperties}
+                                    />
+                                )}
+                            </Grid>
+                        </Grid>
+                        <Grid item container height="5%">
+                            <Grid item>
+                                {values.template && !!processInstance && !toPrint && (
+                                    <Grid container gap="5px" width="100%" wrap="nowrap">
+                                        <Grid item flexBasis="50%">
+                                            <Button
+                                                variant="outlined"
+                                                sx={{
+                                                    borderRadius: '7px',
+                                                    width: '150px',
+                                                    height: '35px',
                                                 }}
-                                            />
-                                        )}
-                                        {Object.keys(templateEntityReferenceProperties!).length !== 0 && (
-                                            <Grid padding={1}>
-                                                <BlueTitle
-                                                    title={i18next.t('wizard.processInstance.refEntities')}
-                                                    component="h6"
-                                                    variant="h6"
-                                                    style={{ marginBottom: '22px' }}
-                                                />
-                                                {Object.entries(templateEntityReferenceProperties!).map(([fieldName, { title }]) => (
-                                                    <Field
-                                                        key={fieldName}
-                                                        validate={(changedValue) => {
-                                                            return (
-                                                                values.template?.details.properties.required.includes(fieldName) &&
-                                                                !changedValue?.entity &&
-                                                                i18next.t('validation.requiredEntity')
-                                                            );
-                                                        }}
-                                                        name={`entityReferences.${fieldName}`}
-                                                        component={EntityReference}
-                                                        errorText={
-                                                            errors.entityReferences?.[fieldName] && touched.entityReferences?.[fieldName]
-                                                                ? JSON.stringify(errors.entityReferences?.[fieldName])
-                                                                : undefined
-                                                        }
-                                                        field={fieldName || ''}
-                                                        values={values}
-                                                        errors={errors}
-                                                        touched={touched}
-                                                        setFieldValue={setFieldValue}
-                                                        handleBlur={handleBlur}
-                                                        isViewMode={viewMode}
-                                                        title={title}
-                                                    />
-                                                ))}
-                                            </Grid>
-                                        )}
+                                                onClick={() => {
+                                                    if (contentDisplay === environment.processDetailsContentDisplay.summary)
+                                                        setContentDisplay(environment.processDetailsContentDisplay.reviewers);
+                                                    else {
+                                                        setContentDisplay(environment.processDetailsContentDisplay.summary);
+                                                    }
+                                                }}
+                                                startIcon={
+                                                    contentDisplay === environment.processDetailsContentDisplay.summary && (
+                                                        <Groups2Icon sx={{ height: '100%' }} />
+                                                    )
+                                                }
+                                            >
+                                                <Typography fontSize="13px" fontWeight="400">
+                                                    {i18next.t(
+                                                        contentDisplay === environment.processDetailsContentDisplay.summary
+                                                            ? 'wizard.processInstance.showStepsReviewers'
+                                                            : 'wizard.processInstance.nextToSummaryDetails',
+                                                    )}
+                                                </Typography>
+                                            </Button>
+                                        </Grid>
                                     </Grid>
                                 )}
                             </Grid>
-                        </FormikProvider>
-                    </Grid>
+                        </Grid>
+                    </FormikProvider>
                 </Grid>
             </CardContent>
-            {!toPrint && (
-                <CardActions dir="ltr">
-                    <Grid item>
-                        {values.template && (
-                            <Fab
-                                onClick={() => {
-                                    onNext();
-                                }}
-                                variant="extended"
-                                color="primary"
-                            >
-                                <NavigateBeforeIcon />
-                                {i18next.t(viewMode ? 'wizard.processInstance.showStepsReviewers' : 'wizard.processInstance.moveToStepsReviewers')}
-                            </Fab>
-                        )}
-                    </Grid>
-                </CardActions>
-            )}
         </Card>
     );
 };

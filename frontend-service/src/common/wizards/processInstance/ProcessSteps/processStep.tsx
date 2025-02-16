@@ -24,8 +24,9 @@ import { InstanceFileInput } from '../../../inputs/InstanceFilesInput/InstanceFi
 import { InstanceSingleFileInput } from '../../../inputs/InstanceFilesInput/InstanceSingleFileInput';
 import { ajvValidate, JSONSchemaFormik } from '../../../inputs/JSONSchemaFormik';
 import { EntityReference } from '../EntityReference';
-import ProcessStatus from '../ProcessSummaryStep/ProcessStatus';
+import ProcessStatus, { ReviewedAtProcessStatus } from '../ProcessSummaryStep/ProcessStatus';
 import { getStepValuesFromStepInstance } from './stepsFormik';
+import { useDarkModeStore } from '../../../../stores/darkMode';
 
 export const CommentsDetails: FC<{ values: ProcessStepValues | IMongoStepInstancePopulated; toPrint?: boolean }> = ({ values, toPrint }) => {
     if (!values.comments) {
@@ -33,12 +34,26 @@ export const CommentsDetails: FC<{ values: ProcessStepValues | IMongoStepInstanc
     }
 
     return (
-        <div style={{ textAlign: toPrint ? 'right' : 'center' }}>
-            <BlueTitle title={i18next.t('wizard.processInstance.step.comment')} component="h6" variant={toPrint ? 'h6' : 'body1'} />
-            <Typography variant="body1" sx={{ paddingY: '5px', paddingX: '10px', wordBreak: 'break-word', fontSize: !toPrint ? '15px' : undefined }}>
-                {values.comments}
-            </Typography>
-        </div>
+        <Grid container style={{ textAlign: 'right' }} alignItems="center" flexDirection="row" flexWrap="nowrap" height="100%">
+            <Grid item>
+                <img src="/icons/comment-icon.svg" />
+            </Grid>
+            <Grid item>
+                <Typography
+                    variant="body1"
+                    sx={{
+                        paddingY: '5px',
+                        paddingX: '10px',
+                        wordBreak: 'break-word',
+                        fontSize: !toPrint ? '12px' : undefined,
+                        overflowY: 'auto',
+                        maxHeight: !toPrint ? '100px' : undefined,
+                    }}
+                >
+                    {values.comments}
+                </Typography>
+            </Grid>
+        </Grid>
     );
 };
 
@@ -100,6 +115,10 @@ interface ProcessStepProps {
     setIsStepEditMode: React.Dispatch<React.SetStateAction<boolean>>;
     onStepUpdateSuccess: (stepInstance: IMongoStepInstancePopulated) => void;
     toPrint?: boolean;
+    isTherePrevStep?: boolean;
+    isThereNextStep?: boolean;
+    onSetPrevStep?: () => void;
+    onSetNextStep?: () => void;
 }
 export const ProcessStep: FC<ProcessStepProps> = ({
     stepInstance,
@@ -109,8 +128,13 @@ export const ProcessStep: FC<ProcessStepProps> = ({
     setIsStepEditMode,
     onStepUpdateSuccess,
     toPrint,
+    isTherePrevStep = false,
+    isThereNextStep = false,
+    onSetPrevStep = () => {},
+    onSetNextStep = () => {},
 }) => {
     const currentUser = useUserStore((state) => state.user);
+    const darkMode = useDarkModeStore((state) => state.darkMode);
 
     const hasPermissionsToEditStep =
         (currentUser.currentWorkspacePermissions.processes?.scope === PermissionScope.write ||
@@ -145,6 +169,7 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                 setIsStepEditMode(false);
                 resetForm({ values: getStepValuesFromStepInstance(result, stepTemplate) });
             }}
+            enableReinitialize
             validate={(values) => {
                 const nonAttachmentsSchema = pickProcessFieldsPropertiesSchema({
                     properties: stepTemplate.properties,
@@ -181,57 +206,9 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                 });
 
                 return (
-                    <Form>
-                        <Grid container direction="column">
-                            {hasPermissionsToEditStep && !toPrint && (
-                                <Grid container spacing={1} marginBottom={1}>
-                                    {isStepEditMode ? (
-                                        <>
-                                            <Grid item>
-                                                <Button
-                                                    variant="outlined"
-                                                    startIcon={
-                                                        editStepIsLoading ? <CircularProgress sx={{ color: 'white' }} size={20} /> : <ClearIcon />
-                                                    }
-                                                    onClick={() => {
-                                                        setIsStepEditMode(false);
-                                                        resetForm();
-                                                    }}
-                                                >
-                                                    {i18next.t('wizard.processInstance.cancelBth')}
-                                                </Button>
-                                            </Grid>
-                                            <Grid item>
-                                                <Button
-                                                    type="submit"
-                                                    variant="contained"
-                                                    disabled={!dirty || editStepIsLoading}
-                                                    startIcon={
-                                                        editStepIsLoading ? <CircularProgress sx={{ color: 'white' }} size={20} /> : <DoneIcon />
-                                                    }
-                                                >
-                                                    {i18next.t('wizard.processInstance.saveBth')}
-                                                </Button>
-                                            </Grid>
-                                        </>
-                                    ) : (
-                                        <Grid item>
-                                            <Button
-                                                variant="outlined"
-                                                startIcon={<EditIcon />}
-                                                onClick={() => {
-                                                    setFieldValue('properties', getStepValuesFromStepInstance(stepInstance, stepTemplate).properties);
-                                                    setIsStepEditMode(!isStepEditMode);
-                                                }}
-                                            >
-                                                {i18next.t('wizard.processInstance.step.editStepBth')}
-                                            </Button>
-                                        </Grid>
-                                    )}
-                                </Grid>
-                            )}
-
-                            <Grid container spacing={2} justifyContent="space-between">
+                    <Grid container flexDirection="column" justifyContent="space-between" width="100%" height="80%">
+                        <Form style={{ height: '100%' }}>
+                            <Grid item container width="100%" height="90%" justifyContent="space-between">
                                 <Grid
                                     item
                                     xs={toPrint ? 0 : 7}
@@ -242,7 +219,12 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                 >
                                     {Object.keys(propertiesSchema.properties).length !== 0 && (
                                         <Grid>
-                                            <BlueTitle title={i18next.t('wizard.entityTemplate.properties')} component="h6" variant="h6" />
+                                            <BlueTitle
+                                                title={i18next.t('wizard.entityTemplate.properties')}
+                                                style={{ fontSize: '16px' }}
+                                                component="h6"
+                                                variant="h6"
+                                            />
                                             <JSONSchemaFormik
                                                 schema={propertiesSchema}
                                                 values={{ ...values, properties: values.properties }}
@@ -392,39 +374,143 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                     )}
                                 </Grid>
                                 {!toPrint && (
-                                    <Grid item container direction="column" xs={4.5} spacing={2} alignItems="center">
-                                        <Grid item>
-                                            <ProcessStatus
-                                                title={i18next.t('wizard.processInstance.step.stepStatus')}
-                                                instance={stepInstance}
-                                                editStatus={{ setFieldValue, isEditMode: isStepEditMode, values }}
-                                            />
-                                        </Grid>
-
-                                        <Grid item width={250}>
-                                            {isStepEditMode ? (
-                                                <TextField
-                                                    label={i18next.t('wizard.processInstance.step.comment')}
-                                                    multiline
-                                                    rows={8}
-                                                    value={values.comments}
-                                                    onChange={(e) => {
-                                                        setFieldValue('comments', e.target.value);
-                                                    }}
-                                                    style={{ width: '100%' }}
-                                                    InputProps={{
-                                                        style: { whiteSpace: 'pre-line', overflowWrap: 'break-word' },
-                                                    }}
+                                    <Grid
+                                        item
+                                        container
+                                        direction="column"
+                                        spacing={2}
+                                        justifyContent="space-between"
+                                        alignItems="center"
+                                        sx={{
+                                            backgroundColor: darkMode ? 'rgb(26 26 26 / 35%)' : '#F2F4FA',
+                                            borderRadius: '20px',
+                                            padding: '5px',
+                                            width: '305px',
+                                            height: '290px',
+                                        }}
+                                    >
+                                        <Grid item container flexDirection="column" gap="20px">
+                                            <Grid item>
+                                                <ProcessStatus
+                                                    title={i18next.t('wizard.processInstance.step.stepStatus')}
+                                                    instance={stepInstance}
+                                                    editStatus={{ setFieldValue, isEditMode: isStepEditMode, values }}
                                                 />
-                                            ) : (
-                                                <CommentsDetails values={values} toPrint={toPrint} />
-                                            )}
+                                            </Grid>
+                                            <Grid item width={250} height="fit-content" maxHeight="100px">
+                                                {isStepEditMode ? (
+                                                    <TextField
+                                                        label={i18next.t('wizard.processInstance.step.comment')}
+                                                        multiline
+                                                        rows={4}
+                                                        value={values.comments}
+                                                        onChange={(e) => {
+                                                            setFieldValue('comments', e.target.value);
+                                                        }}
+                                                        style={{ width: '100%', fontSize: '12px' }}
+                                                        InputProps={{
+                                                            style: {
+                                                                whiteSpace: 'pre-line',
+                                                                overflowWrap: 'break-word',
+                                                                fontSize: '12px',
+                                                            },
+                                                        }}
+                                                    />
+                                                ) : (
+                                                    <CommentsDetails values={values} toPrint={toPrint} />
+                                                )}
+                                            </Grid>
+                                        </Grid>
+                                        <Grid item>
+                                            <ReviewedAtProcessStatus instance={stepInstance} isPrinting={false} />
                                         </Grid>
                                     </Grid>
                                 )}
                             </Grid>
-                        </Grid>
-                    </Form>
+                            <Grid item container width="100%" alignItems="center" justifyContent="space-between">
+                                <Grid item container justifyContent="flex-start" flexBasis="33%">
+                                    <Grid item>
+                                        {isTherePrevStep && (
+                                            <Button disabled={isStepEditMode} onClick={() => onSetPrevStep()}>
+                                                <Typography>￫ {i18next.t('wizard.processInstance.step.prevStep')}</Typography>
+                                            </Button>
+                                        )}
+                                    </Grid>
+                                </Grid>
+                                <Grid item container justifyContent="center" flexBasis="33%">
+                                    <Grid item>
+                                        {hasPermissionsToEditStep && !toPrint && (
+                                            <Grid container spacing={1}>
+                                                {isStepEditMode ? (
+                                                    <>
+                                                        <Grid item>
+                                                            <Button
+                                                                variant="outlined"
+                                                                startIcon={
+                                                                    editStepIsLoading ? (
+                                                                        <CircularProgress sx={{ color: 'white' }} size={20} />
+                                                                    ) : (
+                                                                        <ClearIcon />
+                                                                    )
+                                                                }
+                                                                onClick={() => {
+                                                                    setIsStepEditMode(false);
+                                                                    resetForm();
+                                                                }}
+                                                            >
+                                                                {i18next.t('wizard.processInstance.cancelBth')}
+                                                            </Button>
+                                                        </Grid>
+                                                        <Grid item>
+                                                            <Button
+                                                                type="submit"
+                                                                variant="contained"
+                                                                disabled={!dirty || editStepIsLoading}
+                                                                startIcon={
+                                                                    editStepIsLoading ? (
+                                                                        <CircularProgress sx={{ color: 'white' }} size={20} />
+                                                                    ) : (
+                                                                        <DoneIcon />
+                                                                    )
+                                                                }
+                                                            >
+                                                                {i18next.t('wizard.processInstance.saveBth')}
+                                                            </Button>
+                                                        </Grid>
+                                                    </>
+                                                ) : (
+                                                    <Grid item>
+                                                        <Button
+                                                            variant="outlined"
+                                                            startIcon={<EditIcon />}
+                                                            onClick={() => {
+                                                                setFieldValue(
+                                                                    'properties',
+                                                                    getStepValuesFromStepInstance(stepInstance, stepTemplate).properties,
+                                                                );
+                                                                setIsStepEditMode(!isStepEditMode);
+                                                            }}
+                                                        >
+                                                            <Typography>{i18next.t('wizard.processInstance.step.editStepBth')}</Typography>
+                                                        </Button>
+                                                    </Grid>
+                                                )}
+                                            </Grid>
+                                        )}
+                                    </Grid>
+                                </Grid>
+                                <Grid item container justifyContent="flex-end" flexBasis="33%">
+                                    <Grid item>
+                                        {isThereNextStep && (
+                                            <Button disabled={isStepEditMode} onClick={() => onSetNextStep()}>
+                                                <Typography>{i18next.t('wizard.processInstance.step.nextStep')} ￩</Typography>
+                                            </Button>
+                                        )}
+                                    </Grid>
+                                </Grid>
+                            </Grid>
+                        </Form>
+                    </Grid>
                 );
             }}
         </Formik>
