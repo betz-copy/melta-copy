@@ -4,7 +4,6 @@ import i18next from 'i18next';
 import { AxiosError } from 'axios';
 import { UseMutateAsyncFunction, useQueryClient } from 'react-query';
 import { IMongoProcessInstancePopulated } from '../../../interfaces/processes/processInstance';
-import GeneralDetails from '../../../common/wizards/processInstance/ProcessDetails/GeneralDetails';
 import { EntityDates } from '../../Entity/components/EntityDates';
 import { CommentsDetails, ProcessStep } from '../../../common/wizards/processInstance/ProcessSteps/processStep';
 import { IMongoStepInstancePopulated } from '../../../interfaces/processes/stepInstance';
@@ -14,6 +13,7 @@ import { IProcessTemplateMap } from '../../../interfaces/processes/processTempla
 import { getInitialDetailsValues, useProcessDetailsFormik } from '../../../common/wizards/processInstance/ProcessDetails/detailsFormik';
 import { ProcessDetailsValues } from '../../../common/wizards/processInstance/ProcessDetails';
 import { getStepInstanceByStepTemplateId } from '../../../utils/processWizard/steps';
+import GeneralDetails from '../../../common/wizards/processInstance/ProcessDetails/GeneralDetails';
 
 const ProcessComponentToPrint: React.FC<{
     processInstance: IMongoProcessInstancePopulated;
@@ -33,6 +33,7 @@ const ProcessComponentToPrint: React.FC<{
                     detailsFormikData={detailsFormikData}
                     processInstance={processInstance}
                     toPrint
+                    isEditMode={false}
                     onNext={() => {}}
                     onBack={() => {}}
                     key={`${processInstance._id}//${processInstance.name}`}

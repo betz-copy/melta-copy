@@ -21,6 +21,7 @@ import {
     updateEntityStatusByIdRequestSchema,
     updateEnumFieldRequestSchema,
     deletePropertiesOfTemplateRequestSchema,
+    convertFieldsToPluralRequestSchema,
     searchEntitiesByLocation,
     updateEntityByIdRequestSchema,
     getDependentRulesRequestSchema,
@@ -70,6 +71,7 @@ entityRouter.post(
 entityRouter.post('/search/location', ValidateRequest(searchEntitiesByLocation), entityController.searchEntitiesByLocation);
 
 entityRouter.put('/update-enum-field/:id', ValidateRequest(updateEnumFieldRequestSchema), entityController.updateEnumFieldValue);
+entityRouter.put('/convert-fields-to-plural/:id', ValidateRequest(convertFieldsToPluralRequestSchema), entityController.convertFieldsToPlural);
 entityRouter.get('/get-is-field-used/:id', ValidateRequest(getIfValuefieldIsUsedRequestSchema), entityController.getIsFieldUsed);
 
 entityRouter.post('/rules/dependant', ValidateRequest(getDependentRulesRequestSchema), entityController.getDependentRules);

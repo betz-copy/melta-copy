@@ -1,18 +1,62 @@
-import { Box, Grid } from '@mui/material';
+import { Box, Grid, Step, StepConnector, stepConnectorClasses, Stepper, styled } from '@mui/material';
 import React from 'react';
 import i18next from 'i18next';
-import ProcessStatus from './ProcessStatus';
-import StepsStatuses from './StepsStatuses';
-import { IMongoProcessInstancePopulated } from '../../../../interfaces/processes/processInstance';
+import ProcessStatus, { ReviewedAtProcessStatus, StatusDisplay } from './ProcessStatus';
+import { IMongoProcessInstancePopulated, Status } from '../../../../interfaces/processes/processInstance';
 import { IMongoProcessTemplatePopulated } from '../../../../interfaces/processes/processTemplate';
+import { getStepTemplateByStepInstance } from '../../../../utils/processWizard/steps';
+import { StepIcon } from '../../../../pages/ProcessInstances/ProcessCard';
+import { IMongoStepInstancePopulated } from '../../../../interfaces/processes/stepInstance';
+import { IMongoStepTemplatePopulated } from '../../../../interfaces/processes/stepTemplate';
+import { CommentsDetails } from '../ProcessSteps/processStep';
+import { MeltaTooltip } from '../../../MeltaTooltip';
+import { BlueTitle } from '../../../BlueTitle';
 
 export interface ProcessSummaryProp {
     processInstance: IMongoProcessInstancePopulated;
     processTemplate: IMongoProcessTemplatePopulated;
     isPrinting: boolean;
+    setActiveStep: (stepIndex: number) => void;
 }
 
-const ProcessSummary = React.forwardRef<HTMLDivElement, ProcessSummaryProp>(({ processInstance, processTemplate, isPrinting }) => {
+const StepperConnector = styled(StepConnector)(({ theme }) => ({
+    [`&.${stepConnectorClasses.alternativeLabel}`]: {
+        top: 80,
+    },
+    [`& .${stepConnectorClasses.line}`]: {
+        marginTop: 15,
+        border: '1px dashed #eaeaf0',
+        borderRadius: 1,
+        ...theme.applyStyles('dark', {
+            backgroundColor: theme.palette.grey[800],
+        }),
+    },
+}));
+
+const StepIconComponent = (
+    stepInstance: IMongoStepInstancePopulated,
+    stepTemplate: IMongoStepTemplatePopulated,
+    setActiveStep: (val: number) => void,
+    index: number,
+    stepStatus: Status,
+) => (
+    <Grid container flexDirection="column" justifyContent="center" width="100%" gap="10px">
+        <StepIcon
+            iconColor="#9398C2"
+            step={stepInstance}
+            stepTemplate={stepTemplate}
+            setOpen={() => {
+                setActiveStep(index + 1);
+            }}
+            displayTitle={false}
+        />
+        <Grid item alignSelf="center" width="100%">
+            <StatusDisplay status={stepStatus} displayIcon={false} text={i18next.t(`wizard.processInstance.summary.processStatuses.${stepStatus}`)} />
+        </Grid>
+    </Grid>
+);
+
+const ProcessSummary: React.FC<ProcessSummaryProp> = ({ processInstance, processTemplate, isPrinting, setActiveStep }) => {
     return (
         <Box
             sx={{
@@ -23,7 +67,7 @@ const ProcessSummary = React.forwardRef<HTMLDivElement, ProcessSummaryProp>(({ p
             }}
             style={{ direction: 'rtl' }}
         >
-            <Grid container alignItems="space-around" direction="column">
+            <Grid container alignItems="space-around" direction="column" width="100%">
                 <Grid item xs={3}>
                     <ProcessStatus
                         title={i18next.t('wizard.processInstance.summary.processStatus')}
@@ -32,12 +76,56 @@ const ProcessSummary = React.forwardRef<HTMLDivElement, ProcessSummaryProp>(({ p
                     />
                 </Grid>
 
-                <Grid item xs={3}>
-                    <StepsStatuses processInstance={processInstance} processTemplate={processTemplate} isPrinting={isPrinting} />
+                <Grid item xs={3} width="100%">
+                    <Box sx={{ padding: 3, width: '100%', display: 'flex', flexWrap: 'wrap', alignItems: 'center' }}>
+                        <Stepper sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center' }} connector={<StepperConnector />} alternativeLabel>
+                            {processInstance.steps.map((stepInstance, index) => (
+                                <Step sx={{ minWidth: '175px', height: '200px', display: 'flex', alignItems: 'center' }} key={stepInstance._id}>
+                                    <Grid
+                                        container
+                                        flexDirection="column"
+                                        justifyContent="center"
+                                        width="100%"
+                                        alignSelf="center"
+                                        alignItems="center"
+                                        gap="10px"
+                                    >
+                                        <Grid item width="100%" alignSelf="center">
+                                            <BlueTitle
+                                                style={{ fontSize: '12px', fontWeight: '500', textAlign: 'center' }}
+                                                component="h4"
+                                                variant="h6"
+                                                title={`${i18next.t('wizard.processTemplate.level')} ${index + 1}: ${
+                                                    getStepTemplateByStepInstance(stepInstance, processTemplate).displayName
+                                                }`}
+                                            />
+                                        </Grid>
+                                        <Grid item>
+                                            {StepIconComponent(stepInstance, processTemplate.steps[index], setActiveStep, index, stepInstance.status)}
+                                        </Grid>
+                                        <Grid item container position="absolute" top="165px" alignItems="center" justifyContent="center">
+                                            <Grid item>
+                                                <ReviewedAtProcessStatus instance={stepInstance} />
+                                            </Grid>
+                                            {stepInstance.comments && (
+                                                <Grid item>
+                                                    <MeltaTooltip title={<CommentsDetails values={stepInstance} />}>
+                                                        <Grid item>
+                                                            <img src="/icons/comment-icon.svg" />
+                                                        </Grid>
+                                                    </MeltaTooltip>
+                                                </Grid>
+                                            )}
+                                        </Grid>
+                                    </Grid>
+                                </Step>
+                            ))}
+                        </Stepper>
+                    </Box>
                 </Grid>
             </Grid>
         </Box>
     );
-});
+};
 
 export default ProcessSummary;

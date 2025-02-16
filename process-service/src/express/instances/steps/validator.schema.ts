@@ -32,6 +32,7 @@ export const updateStepSchema = Joi.object({
                 .required(),
             reviewerId: Joi.string().required(),
         }),
+        userId: Joi.string(),
     }).or('statusReview', 'properties', 'comments'),
     query: {},
     params: {

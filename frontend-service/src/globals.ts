@@ -101,7 +101,13 @@ export const environment = {
         maxNumOfCharactersNotInFullWidth: 700,
         numOfFixedDigits: 18,
     },
+    entitiesCardsView: {
+        infiniteScrollPageCount: 12,
+    },
     permission: {
+        infiniteScrollPageCount: 13,
+    },
+    cardsView: {
         infiniteScrollPageCount: 13,
     },
     activityLog: {
@@ -109,6 +115,10 @@ export const environment = {
     },
     processInstances: {
         infiniteScrollPageCount: 10,
+    },
+    processDetailsContentDisplay: {
+        summary: 'SUMMARY',
+        reviewers: 'REVIEWERS',
     },
     iFrames: {
         iFrameDimensionKey: 'iFrameDimension_',
@@ -234,8 +244,7 @@ export const environment = {
         actionsCustomError: 'ACTIONS_CUSTOM_ERROR',
         entityHasRelationships: 'ENTITY_HAS_RELATIONSHIPS',
     },
-
-    loadExcel: { excelExtension: '.xlsx', acceptedFilesTypes: { 'excel/xlsx': ['.xlsx', '.xls'] } },
+    loadExcel: { excelExtension: '.xlsx', acceptedFilesTypes: { 'excel/xlsx': ['.xlsx', '.xls'] }, entityId: '$0._id' },
     draftAutoSaveDebounce: 250,
     map: {
         maxRadius: 30000,
@@ -243,6 +252,7 @@ export const environment = {
         units: { km: 'km', squaredKm: 'km²' },
         polygon: { polygon: 'POLYGON', polygonPrefix: 'POLYGON((', polygonSuffix: '))' },
     },
+    meltaUpdatesShown: 'meltaUpdatesShown',
     profileIconsCount: 19,
     avatarIconPath: '/icons/profileAvatar/',
     fileExtensions: {

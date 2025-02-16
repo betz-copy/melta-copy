@@ -63,11 +63,15 @@ const RjsfTextWidget = ({
             disabled={disabled}
             InputLabelProps={{
                 shrink: readonly || undefined,
+                style: {
+                    fontSize: '14px',
+                },
             }}
             inputProps={{
                 readOnly: readonly,
                 style: {
                     textOverflow: 'ellipsis',
+                    fontSize: '14px',
                 },
             }}
             type={(options.inputType ?? inputType) as string}

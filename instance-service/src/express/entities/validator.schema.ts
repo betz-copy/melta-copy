@@ -47,6 +47,19 @@ export const updateEnumFieldRequestSchema = Joi.object({
 });
 
 /**
+ * PUT /api/instances/entities/convert-fields-to-plural/:id
+ */
+export const convertFieldsToPluralRequestSchema = Joi.object({
+    body: Joi.object({
+        propertiesKeysToPluralize: Joi.array().items(Joi.string()).required(),
+    }),
+    query: {},
+    params: {
+        id: Joi.string().required(),
+    },
+});
+
+/**
  * GET /api/instances/entities/get-is-field-used/:id
  */
 export const getIfValuefieldIsUsedRequestSchema = Joi.object({
