@@ -136,7 +136,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
                 searchValue,
                 editable,
             );
-        if (format === 'fileId')
+        if (format === 'fileId' || format === 'signature')
             return fileColDef(
                 property,
                 valueGetter,

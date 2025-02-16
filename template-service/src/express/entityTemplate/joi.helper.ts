@@ -9,6 +9,7 @@ const { notifications, ajvCustomFormats } = config;
 
 const ajv = new Ajv();
 ajv.addFormat('fileId', /.*/);
+ajv.addFormat('signature', /.*/);
 ajv.addFormat('user', {
     type: 'string',
     validate: (user) => {

@@ -1,5 +1,5 @@
 /* eslint-disable no-param-reassign */
-import { mapValues } from 'lodash';
+import { mapValues, property } from 'lodash';
 import axios from '../axios';
 import { environment } from '../globals';
 import {
@@ -20,6 +20,7 @@ import { IBrokenRule, IRuleBreach } from '../interfaces/ruleBreaches/ruleBreach'
 import { filterModelToFilterOfGraph } from '../pages/Graph/GraphFilterToBackend';
 import { ITablesResults } from '../common/wizards/loadEntities';
 import { ICreateEntityMetadata } from '../interfaces/ruleBreaches/actionMetadata';
+import urlToFile from '../common/fileConversions';
 
 const { entities, relationships } = environment.api;
 
@@ -131,10 +132,10 @@ export const updateEntityRequestForMultiple = async (
     newEntityData: EntityWizardValues,
     ignoredRules?: IRuleBreach['brokenRules'],
 ) => {
-    console.log('!!!', { newEntityData });
+    // console.log('!!!', { newEntityData });
 
     const formData = new FormData();
-    
+
     const filesToUpload: any = [];
     const unchangedFiles: any = []; /// //send single file as array to the back
 
@@ -157,15 +158,26 @@ export const updateEntityRequestForMultiple = async (
             }
         }
     });
-    console.log('dsjksbvkjsbvs');
+
+    // const signatures = Object.entries(newEntityData.properties)
+    //     .filter(([key, _value]) => newEntityData.template.properties.properties[key]?.format === 'signature')
+    //     .map(([key, value]) => {
+    //         if (newEntityData.template.properties.properties[key]?.format === 'signature') return urlToFile(value, key);
+    //     });
+    const signaturesToUpload = Object.entries(newEntityData.properties)
+        .filter(([key]) => newEntityData.template.properties.properties[key]?.format === 'signature')
+        .map(async ([key, value]) => urlToFile(value, key));
+
+    (await Promise.all(signaturesToUpload)).forEach((signatureFile: File) => {
+        filesToUpload.push([signatureFile?.name.split('.').slice(0, -1).join('.'), signatureFile]);
+    });
+    console.log({ signaturesToUpload: await Promise.all(signaturesToUpload) }, { filesToUpload });
 
     filesToUpload.forEach(([key, value]) => {
         formData.append(key, value);
     });
-    console.log({filesToUpload});
 
     console.log(...formData);
-    
     unchangedFiles.forEach(([key, _value]) => {
         newEntityData.properties[key] = [];
     });
@@ -181,25 +193,18 @@ export const updateEntityRequestForMultiple = async (
             }
         }
     });
-
     formData.append(
         'properties',
         JSON.stringify(
-            mapValues(newEntityData.properties, (property, key) =>{
-                const templateProperty = newEntityData.template.properties.properties[key]
-                templateProperty?.format === 'relationshipReference' 
-                    ? property?.properties._id: property;
-//                 if(templateProperty?.format === 'signature'){
-//                         const response = await fetch(property);
-//     const blob = await response.blob();
-//     const file = new File([blob], templateProperty.title, { type: 'image/png' });
-// return file;
-//                 }
-               
+            mapValues(newEntityData.properties, (property, key) => {
+                const format = newEntityData.template.properties.properties[key]?.format;
 
-            }
-           
-            ),
+                if (format === 'signature') {
+                    return undefined; // Filtering out signatures
+                }
+
+                return format === 'relationshipReference' ? property?.properties._id : property;
+            }),
         ),
     );
 
@@ -208,6 +213,7 @@ export const updateEntityRequestForMultiple = async (
     if (ignoredRules) {
         formData.append('ignoredRules', JSON.stringify(ignoredRules));
     }
+    console.log('shirel', ...formData);
 
     const { data } = await axios.put<IEntity>(`${entities}/${entityId}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },

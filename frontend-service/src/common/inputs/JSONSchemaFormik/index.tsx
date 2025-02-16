@@ -220,7 +220,6 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                         formData[key] = undefined;
                     }
                 });
-                console.log({ formData });
 
                 setValues(formData);
             }}

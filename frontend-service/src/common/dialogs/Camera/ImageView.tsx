@@ -11,6 +11,7 @@ import 'cropperjs/dist/cropper.css';
 import jsPDF from 'jspdf';
 import { MeltaTooltip } from '../../MeltaTooltip';
 import { filterImageData } from '../../../utils/filterImageData';
+import urlToFile from '../../fileConversions';
 
 interface IImageView {
     setStream: React.Dispatch<React.SetStateAction<MediaStream | null>>;
@@ -39,14 +40,8 @@ const ImageView: React.FC<IImageView> = ({
 
     const cropperRef = useRef<any>(null);
 
-    const urlToFile = async () => {
-        const response = await fetch(imgURL!);
-        const blob = await response.blob();
-        return new File([blob], `${imgName!}.png`);
-    };
-
     const handleUploadPng = async () => {
-        const file = await urlToFile();
+        const file = await urlToFile(imgURL, imgName!);
         onPictureTaken(file);
         setOpenImageView(false);
         setImgName(null);
