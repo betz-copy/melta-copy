@@ -38,6 +38,10 @@ export const useEntityWithLocationFields = ({ entityTemplate, entity }: entityWi
             setPropertyDefinitions(entityTemplate.properties.properties);
             setProperties(entity.properties);
         }
+        else {
+            setPropertyDefinitions({});
+            setProperties({});
+        }
     }, [entityTemplate, entity]);
 
     const { markers, polygons, allCoordinates } = useMemo(() => {

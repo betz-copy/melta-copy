@@ -63,9 +63,10 @@ const LocationAutoCompleteOption: React.FC<LocationAutoCompleteOptionProps> = ({
 type props = {
     selectedTemplates: IMongoEntityTemplatePopulated[];
     handleEntityClick: (entity: IEntity) => void;
+    onClear: () => void;
 };
 
-const SearchAutoComplete = ({ selectedTemplates, handleEntityClick }: props) => {
+const SearchAutoComplete = ({ selectedTemplates, handleEntityClick, onClear }: props) => {
     const theme = useTheme();
 
     const [inputValue, setInputValue] = useState('');
@@ -154,7 +155,7 @@ const SearchAutoComplete = ({ selectedTemplates, handleEntityClick }: props) => 
     return (
         <Autocomplete
             options={searchResults}
-            getOptionLabel={(option) => Object.values(getLocationProperties(option,selectedTemplates).locationProperties)[0]}
+            getOptionLabel={(option) => option.properties._id}
             loading={isLoading || isFetchingNextPage}
             loadingText={i18next.t('templateEntitiesAutocomplete.loading')}
             noOptionsText={i18next.t('templateEntitiesAutocomplete.noOptions')}
@@ -173,6 +174,8 @@ const SearchAutoComplete = ({ selectedTemplates, handleEntityClick }: props) => 
             onInputChange={(event, _newInputValue, reason) => {
                 if (reason === 'reset') {
                     setInputValue('');
+                } else if(reason === 'clear') {
+                    onClear();
                 } else debouncedSearch((event.target as HTMLInputElement).value);
             }}
             renderInput={(params) => (
@@ -221,18 +224,18 @@ const SearchAutoComplete = ({ selectedTemplates, handleEntityClick }: props) => 
                                 </Grid>
                                 <Grid item container direction="column" spacing={1}>
                                     {template.mapSearchProperties ? (
-                                        template.mapSearchProperties.map((key) => (
+                                        template.mapSearchProperties.map((key, index) => (
                                             <LocationAutoCompleteOption
-                                                key={key}
+                                                key={`${key}-${index}`}
                                                 title={template.properties.properties[key].title}
                                                 value={option.properties[key]}
                                             />
                                         ))
                                     ) : (
-                                        Object.entries(locationProperties).map(([key, value]) => (
+                                        Object.entries(locationProperties).map(([key, value], index) => (
                                             <LocationAutoCompleteOption
-                                                key={key}
-                                                title={locationTemplateProperties[key].title}
+                                            key={`${key}-${index}`}
+                                            title={locationTemplateProperties[key].title}
                                                 value={value}
                                             />
                                         ))

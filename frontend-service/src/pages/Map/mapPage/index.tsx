@@ -39,8 +39,8 @@ const MapPage = () => {
     const [lineData, setLineData] = useState<Cartesian3[]>([]);
 
     const [selectedTemplates, setSelectedTemplates] = useState<IMongoEntityTemplatePopulated[]>([]);
-    const [searchedEntity, setSearchedEntity] = useState<IEntity>();
-    const [searchedEntityTemplate, setSearchedEntityTemplate] = useState<IMongoEntityTemplatePopulated>();
+    const [searchedEntity, setSearchedEntity] = useState<IEntity | undefined>(undefined);
+    const [searchedEntityTemplate, setSearchedEntityTemplate] = useState<IMongoEntityTemplatePopulated | undefined>(undefined);
     const [selectedEntity, setSelectedEntity] = useState<{ node: IEntity; matchingField: string } | null>(null);
     const [searchedPolygons, setSearchedPolygons] = useState<{ key: string; name: string; node: IEntity; position: Cartesian3[] }[]>([]);
     const [searchedMarkers, setSearchedMarkers] = useState<{ key: string; name: string; node: IEntity; position: Cartesian3 }[]>([]);
@@ -65,7 +65,7 @@ const MapPage = () => {
     
                 camera.flyToBoundingSphere(boundingSphere, {
                     duration: 1.5,
-                    offset: new Cesium.HeadingPitchRange(0, -Cesium.Math.toRadians(90), circleData.radius * 2.5),
+                    offset: new Cesium.HeadingPitchRange(0, -Cesium.Math.toRadians(90), circleData.radius * 5),
                 });
             } else if (searchedEntityPolygons.length > 0 || searchedEntityMarkers.length > 0) {
                 if (searchedEntityBounds?.center && searchedEntityBounds?.radius) {
@@ -192,12 +192,18 @@ const MapPage = () => {
         fetchData();
     }, [filteredTemplatesIds, circleData]);
 
+    const clearAutocompleteSearch = () => {
+        setSearchedEntity(undefined);
+        setSearchedEntityTemplate(undefined);
+    }
+
     const onClear = () => {
         setCircleData({ center: null, radius: null, mouseRadius: null });
         setLineData([]);
         setDrawingMode(null);
         setSearchedMarkers([]);
         setSearchedPolygons([]);
+        clearAutocompleteSearch();
     };
 
     const handleDrawType = (_event: React.MouseEvent<HTMLElement>, newShape: 'circle' | 'line' | null) => {
@@ -307,6 +313,7 @@ const MapPage = () => {
                     entityTemplateMap={entityTemplateMap!}
                     onClear={onClear}
                     darkMode={darkMode}
+                    clearAutocompleteSearch={clearAutocompleteSearch}
                 />
 
                 <ToggleButtonGroup
