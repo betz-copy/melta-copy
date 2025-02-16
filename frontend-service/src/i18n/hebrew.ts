@@ -449,6 +449,7 @@ export default {
         searchInPage: 'חיפוש בעמוד',
         turnOnSemanticSearch: 'חיפוש חכם בתוכן הקבצים כבוי',
         turnOffSemanticSearch: 'חיפוש חכם בתוכן הקבצים דלוק',
+        searchInHistory: 'חיפוש בהיסטוריה...',
     },
     wizard: {
         next: 'הבא',
