@@ -169,9 +169,8 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     const readOnly = `properties[${index}].readOnly`;
 
     const unique =
-        value.type !== 'serialNumber' &&
-        uniqueConstraints &&
-        uniqueConstraints.filter((constraints) => constraints.properties.includes(value.name)).length > 0;
+        value.type === 'serialNumber' ||
+        (uniqueConstraints && uniqueConstraints.filter((constraints) => constraints.properties.includes(value.name)).length > 0);
     const uniqueConstraintGroupName = uniqueConstraints
         ? uniqueConstraints.find((constraint) => constraint.properties.includes(value.name))?.groupName
         : '';
@@ -596,6 +595,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                     type: e.target.value,
                                                     required: e.target.value === 'serialNumber',
                                                 }));
+                                                if (e.target.value === 'serialNumber') createEmptyGroup(value.name);
                                             }}
                                             error={touchedType && Boolean(errorType)}
                                             helperText={touchedType && errorType}
@@ -1062,14 +1062,14 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                     label={i18next.t('validation.hide')}
                                                 />
                                             )}
-                                            {supportUnique && unique !== undefined && setValues && value.type !== 'serialNumber' && (
+                                            {supportUnique && unique !== undefined && setValues && (
                                                 <FormControlLabel
                                                     control={
                                                         <Switch
                                                             id={String(unique)}
                                                             name={String(unique)}
                                                             checked={unique}
-                                                            disabled={value.archive}
+                                                            disabled={value.archive || value.type === 'serialNumber'}
                                                             onChange={(_e, checked) => {
                                                                 setValues((prevValue) => ({
                                                                     ...prevValue,

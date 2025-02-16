@@ -128,6 +128,7 @@ const trimValuesNeo = async (driver, data) => {
     await driver.close();
   }
 };
+
 const connectToMongo = async () => {
   await mongoose.connect(mongo.uri);
 
