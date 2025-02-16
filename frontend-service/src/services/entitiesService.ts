@@ -159,14 +159,9 @@ export const updateEntityRequestForMultiple = async (
         }
     });
 
-    // const signatures = Object.entries(newEntityData.properties)
-    //     .filter(([key, _value]) => newEntityData.template.properties.properties[key]?.format === 'signature')
-    //     .map(([key, value]) => {
-    //         if (newEntityData.template.properties.properties[key]?.format === 'signature') return urlToFile(value, key);
-    //     });
     const signaturesToUpload = Object.entries(newEntityData.properties)
         .filter(([key]) => newEntityData.template.properties.properties[key]?.format === 'signature')
-        .map(async ([key, value]) => urlToFile(value, key));
+        .map(async ([key, value]) => urlToFile(value, newEntityData.template.properties.properties[key]!.title));
 
     (await Promise.all(signaturesToUpload)).forEach((signatureFile: File) => {
         filesToUpload.push([signatureFile?.name.split('.').slice(0, -1).join('.'), signatureFile]);
