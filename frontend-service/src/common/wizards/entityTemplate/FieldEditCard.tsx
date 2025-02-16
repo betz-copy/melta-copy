@@ -94,6 +94,7 @@ export interface FieldEditCardProps {
     supportLocation?: boolean;
     supportArchive?: boolean;
     hasActions?: boolean;
+    supportConvertingToMultipleFields?: boolean;
 }
 
 export const FieldEditCard: React.FC<FieldEditCardProps> = ({
@@ -124,6 +125,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     supportLocation,
     supportArchive,
     hasActions,
+    supportConvertingToMultipleFields = true,
 }) => {
     const currentUser = useUserStore((state) => state.user);
 
@@ -599,13 +601,15 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                             }}
                                             error={touchedType && Boolean(errorType)}
                                             helperText={touchedType && errorType}
-                                            disabled={(isDisabled && initialValue?.type !== 'enum') || value.deleted}
+                                            disabled={
+                                                (isDisabled && (initialValue?.type !== 'enum' || !supportConvertingToMultipleFields)) || value.deleted
+                                            }
                                             sx={{ marginRight: '5px' }}
                                             fullWidth
                                         >
                                             {validPropertyTypes
                                                 .filter((validPropertyType) => {
-                                                    if (initialValue?.type === 'enum' && areThereAnyInstances)
+                                                    if (initialValue?.type === 'enum' && areThereAnyInstances && supportConvertingToMultipleFields)
                                                         return validPropertyType === 'enumArray' || validPropertyType === 'enum';
                                                     if (validPropertyType === 'entityReference') return supportEntityReferenceType;
                                                     if (validPropertyType === 'serialNumber') {
