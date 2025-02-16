@@ -86,6 +86,7 @@ export interface FieldEditCardProps {
     supportArrayFields: boolean;
     supportDeleteForExistingInstances: boolean;
     supportRelationshipReference: boolean;
+    supportUserType: boolean;
     uniqueConstraints?: IUniqueConstraintOfTemplate[];
     setUniqueConstraints?: (uniqueConstraints: SetStateAction<IUniqueConstraintOfTemplate[]>) => void;
     supportEditEnum?: boolean;
@@ -111,6 +112,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     onChange,
     remove,
     supportSerialNumberType,
+    supportUserType,
     supportEntityReferenceType,
     supportChangeToRequiredWithInstances,
     templateId,
@@ -614,6 +616,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                     if (validPropertyType === 'enumArray') return supportArrayFields;
                                                     if (validPropertyType === 'relationshipReference') return supportRelationshipReference;
                                                     if (validPropertyType === 'fileId' || validPropertyType === 'multipleFiles') return false; // TODO: support file inputs
+                                                    if (validPropertyType === 'user' || validPropertyType === 'users') return supportUserType;
                                                     return true;
                                                 })
                                                 .map((validType) => {

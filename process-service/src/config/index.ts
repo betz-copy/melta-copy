@@ -18,6 +18,15 @@ const config = {
             socketTimeoutMS: env.get('MONGO_MAX_IDLE_SOCKET_TIME').default(10000).asIntPositive(), // Maximum idle time for an active connection
         },
     },
+    rabbit: {
+        url: env.get('RABBIT_URL').required().asUrlString(),
+        retryOptions: {
+            minTimeout: env.get('RABBIT_RETRY_MIN_TIMEOUT').default(1000).asIntPositive(),
+            retries: env.get('RABBIT_RETRY_RETRIES').default(10).asIntPositive(),
+            factor: env.get('RABBIT_RETRY_FACTOR').default(1.8).asFloatPositive(),
+        },
+        activityLogQueue: env.get('ACTIVITY_LOG_QUEUE_NAME').default('activity-log-queue').asString(),
+    },
     processFields: {
         name: env.get('PROCESS_FIELDS_NAME').default('name').asString(),
         displayName: env.get('PROCESS_FIELDS_DISPLAY_NAME').default('displayName').asString(),

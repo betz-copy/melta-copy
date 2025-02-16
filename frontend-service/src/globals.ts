@@ -116,6 +116,10 @@ export const environment = {
     processInstances: {
         infiniteScrollPageCount: 10,
     },
+    processDetailsContentDisplay: {
+        summary: 'SUMMARY',
+        reviewers: 'REVIEWERS',
+    },
     iFrames: {
         iFrameDimensionKey: 'iFrameDimension_',
         iFramesOrderKey: 'iFramesOrder',
