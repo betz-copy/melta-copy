@@ -11,7 +11,9 @@ const DateRange: React.FC<{
     endDateInput: Date | null;
     directionIsRow: boolean;
     overrideSx?: object;
-}> = ({ onStartDateChange, onEndDateChange, startDateInput, endDateInput, overrideSx, directionIsRow }) => {
+    maxEndDate?: Date;
+    maxStartDate?: Date;
+}> = ({ onStartDateChange, onEndDateChange, startDateInput, endDateInput, overrideSx, directionIsRow, maxEndDate, maxStartDate }) => {
     return (
         <Grid
             container
@@ -27,7 +29,7 @@ const DateRange: React.FC<{
                     label={i18next.t('processInstancesPage.startDate')}
                     value={startDateInput}
                     onChange={onStartDateChange}
-                    maxDate={endDateInput ?? new Date()}
+                    maxDate={endDateInput ?? maxStartDate}
                     minDate={undefined}
                     sx={overrideSx}
                     components={
@@ -45,7 +47,7 @@ const DateRange: React.FC<{
                     label={i18next.t('processInstancesPage.endDate')}
                     value={endDateInput}
                     onChange={onEndDateChange}
-                    maxDate={new Date()}
+                    maxDate={maxEndDate}
                     minDate={startDateInput}
                     sx={overrideSx}
                     components={

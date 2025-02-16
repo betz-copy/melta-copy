@@ -13,15 +13,23 @@ export default class ProcessInstanceController extends DefaultController<IProces
     }
 
     async createProcess(req: Request, res: Response) {
-        res.json(await this.manager.createProcess(req.body));
+        const { userId, ...createdFields } = req.body;
+
+        res.json(await this.manager.createProcess(createdFields, userId));
     }
 
     async deleteProcess(req: Request, res: Response) {
         res.json(await this.manager.deleteProcess(req.params.id));
     }
 
+    async updateTemplate(req: Request, res: Response) {
+        res.json(await this.manager.updateTemplate(req.params.id, req.body));
+    }
+
     async updateProcess(req: Request, res: Response) {
-        res.json(await this.manager.updateProcess(req.params.id, req.body));
+        const { userId, ...updatedFields } = req.body;
+
+        res.json(await this.manager.updateProcess(req.params.id, updatedFields, userId));
     }
 
     async archiveProcess(req: Request, res: Response) {

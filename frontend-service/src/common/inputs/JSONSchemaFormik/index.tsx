@@ -182,7 +182,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                             enumOptions: (propertySchema.items?.enum || propertySchema?.enum)!.map((option) => ({
                                 label: option,
                                 value: option,
-                                color: values.template.enumPropertiesColors?.[propertyKey]?.[option],
+                                color: values.template?.enumPropertiesColors?.[propertyKey]?.[option],
                             })),
                         },
                     };
