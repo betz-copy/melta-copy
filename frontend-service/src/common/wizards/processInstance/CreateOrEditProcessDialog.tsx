@@ -87,8 +87,6 @@ const CreateOrEditProcess: React.FC<ISimpleDialogProps> = ({ open, onClose, proc
 
     const { values, touched, errors, setFieldValue, setFieldTouched, handleBlur, resetForm } = detailsFormikData;
 
-    // const [previousTemplate, setPreviousTemplate] = useState<IMongoProcessTemplatePopulated>();
-
     const previousTemplate = useRef(values.template);
 
     const variant = viewMode ? 'standard' : 'outlined';

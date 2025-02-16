@@ -200,6 +200,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                                 startDateInput={startDate}
                                 endDateInput={endDate}
                                 maxEndDate={new Date()}
+                                maxStartDate={new Date()}
                                 directionIsRow
                                 {...(darkMode
                                     ? {}
