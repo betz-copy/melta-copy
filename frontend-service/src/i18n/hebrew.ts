@@ -1306,7 +1306,7 @@ export default {
             filesLimit: 'הגבלת מספר קבצים שניתן להעלות בטעינת יישויות',
         },
         searchLimits: {
-            table: 'כמות ישויות למשיכה בתצוגה טבלאית',
+            // table: 'כמות ישויות למשיכה בתצוגה טבלאית', // comment out  waiting for Itay
             bulk: 'כמות ישויות למשיכה בתצוגת כרטיסיות',
         },
         location: {
