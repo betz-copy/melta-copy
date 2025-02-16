@@ -49,6 +49,7 @@ interface FieldBlockProps<PropertiesType extends string, Values extends Record<P
     supportAddFieldButton?: boolean;
     hasActions?: boolean;
     draggable?: { isDraggable: false } | { isDraggable: true; dragHandleProps: DraggableProvided['dragHandleProps'] };
+    supportConvertingToMultipleFields?: boolean;
 }
 
 const FieldBlock = <PropertiesType extends string, Values extends Record<PropertiesType, CommonFormInputProperties[]>>({
@@ -98,6 +99,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
         serialStarter: 0,
         archive: false,
     },
+    supportConvertingToMultipleFields = true,
 }: React.PropsWithChildren<FieldBlockProps<PropertiesType, Values>>) => {
     // copy of values of formik in order to show changes on inputs fast (formik rerenders are slow)
     const [displayValues, setDisplayValues] = React.useState(values[propertiesType]);
@@ -243,6 +245,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
                                                 supportLocation,
                                                 supportArchive,
                                                 hasActions,
+                                                supportConvertingToMultipleFields,
                                             };
 
                                             if (
