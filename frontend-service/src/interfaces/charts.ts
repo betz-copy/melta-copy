@@ -9,6 +9,7 @@ export interface IBasicChart {
     filter?: FilterModel;
     templateId?: string;
     createdBy?: string;
+    color: string;
 }
 
 export interface IChart extends IBasicChart {
