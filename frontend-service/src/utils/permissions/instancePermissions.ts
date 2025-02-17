@@ -26,6 +26,7 @@ export const checkUserTemplatePermission = (
         Boolean(permissions?.admin) ||
         permissions?.instances?.categories[categoryId]?.scope === scope ||
         permissions?.instances?.categories[categoryId]?.scope === PermissionScope.write ||
+        permissions?.instances?.categories[categoryId]?.entityTemplates?.[templateId]?.scope === scope ||
         permissions?.instances?.categories[categoryId]?.entityTemplates?.[templateId]?.scope === PermissionScope.write
     );
 };

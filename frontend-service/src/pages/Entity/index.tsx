@@ -17,7 +17,7 @@ import { TableButton } from '../../common/TableButton';
 import '../../css/pages.css';
 import { ICategoryMap } from '../../interfaces/categories';
 import { IEntity, IEntityExpanded } from '../../interfaces/entities';
-import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { PermissionScope } from '../../interfaces/permissions';
 import { ISubCompactPermissions } from '../../interfaces/permissions/permissions';
 import { IRelationship } from '../../interfaces/relationships';
@@ -35,13 +35,13 @@ import { useWorkspaceStore } from '../../stores/workspace';
 export const getButtonState = (
     isEntityDisabled: boolean,
     hasWritePermissionToCurrTemplate: boolean,
-    categoryId: string,
+    relatedTemplate: IMongoEntityTemplatePopulated,
     permissions?: ISubCompactPermissions,
 ) => {
     let isEditButtonsDisabled = false;
     let disabledButtonText = '';
-
-    const permissionToRelatedCategory = permissions?.instances?.categories[categoryId];
+    const categoryPermission = permissions?.instances?.categories?.[relatedTemplate.category._id];
+    const permissionToRelatedTemplate = categoryPermission?.entityTemplates?.[relatedTemplate._id] || categoryPermission;
 
     if (isEntityDisabled) {
         isEditButtonsDisabled = true;
@@ -52,11 +52,14 @@ export const getButtonState = (
     } else if (!permissions?.admin && !permissions?.instances) {
         isEditButtonsDisabled = true;
         disabledButtonText = i18next.t('permissions.dontHaveWritePermissionsToTemplate');
+    } else if (!permissions?.admin && permissionToRelatedTemplate?.scope !== PermissionScope.write) {
+        isEditButtonsDisabled = true;
+        disabledButtonText = i18next.t('permissions.dontHaveWritePermissionsToCategory');
     } else {
         disabledButtonText = i18next.t('ruleManagement.create-relationship');
     }
 
-    return { isEditButtonsDisabled, disabledButtonText, permissionToRelatedCategory };
+    return { isEditButtonsDisabled, disabledButtonText, permissionToRelatedTemplate };
 };
 
 const ConnectionsTableTitle: React.FC<{
@@ -88,14 +91,14 @@ const ConnectionsTable: React.FC<{
     templateIds: string[];
     isEditButtonsDisabled: boolean;
     disabledButtonText: string;
-    hasPermissionToCategory: boolean;
+    hasPermissionToTemplate: boolean;
 }> = ({
     expandedEntity,
     connectionTemplate: { relationshipTemplate, isExpandedEntityRelationshipSource, hasInstances },
     templateIds,
     isEditButtonsDisabled,
     disabledButtonText,
-    hasPermissionToCategory,
+    hasPermissionToTemplate,
 }) => {
     const workspace = useWorkspaceStore((state) => state.workspace);
     const { defaultRowHeight, defaultFontSize } = workspace.metadata.agGrid;
@@ -312,7 +315,7 @@ const ConnectionsTable: React.FC<{
                         pageType: `entity-${expandedEntity.entity.properties._id}`,
                     }}
                     onFilter={() => setIsFiltered(entitiesTableRef.current?.isFiltered() ?? false)}
-                    hasPermissionToCategory={hasPermissionToCategory}
+                    hasPermissionToTemplate={hasPermissionToTemplate}
                     mainEntity={expandedEntity}
                 />
             </Box>
@@ -537,29 +540,38 @@ const Entity: React.FC = () => {
                                 </Box>
                                 {categoriesWithConnectionsTemplates.map(
                                     ({ category: { _id }, connectionsTemplates: connectionsTemplatesOfCategory }, index) => {
-                                        const { isEditButtonsDisabled, disabledButtonText, permissionToRelatedCategory } = getButtonState(
-                                            isEntityDisabled,
-                                            hasWritePermissionToCurrTemplate,
-                                            _id,
-                                            currentUser.currentWorkspacePermissions,
-                                        );
-
                                         const isAdmin = Boolean(currentUser.currentWorkspacePermissions?.admin) || false;
 
                                         return (
                                             <TabPanel key={_id} value={String(index)}>
-                                                {connectionsTemplatesOfCategory.map((connectionTemplate, connectedRelationshipTemplateIndex) => (
-                                                    <ConnectionsTable
-                                                        // eslint-disable-next-line react/no-array-index-key
-                                                        key={connectedRelationshipTemplateIndex}
-                                                        expandedEntity={expandedEntity}
-                                                        templateIds={templateIds}
-                                                        connectionTemplate={connectionTemplate}
-                                                        isEditButtonsDisabled={isEditButtonsDisabled}
-                                                        disabledButtonText={disabledButtonText}
-                                                        hasPermissionToCategory={Boolean(permissionToRelatedCategory) || isAdmin}
-                                                    />
-                                                ))}
+                                                {connectionsTemplatesOfCategory.map((connectionTemplate, connectedRelationshipTemplateIndex) => {
+                                                    const relationship = connectionTemplate.relationshipTemplate;
+
+                                                    const relatedTemplate =
+                                                        relationship.destinationEntity._id !== currentEntityTemplate._id
+                                                            ? relationship.destinationEntity
+                                                            : relationship.sourceEntity;
+
+                                                    const { isEditButtonsDisabled, disabledButtonText, permissionToRelatedTemplate } = getButtonState(
+                                                        isEntityDisabled,
+                                                        hasWritePermissionToCurrTemplate,
+                                                        relatedTemplate,
+                                                        currentUser.currentWorkspacePermissions,
+                                                    );
+
+                                                    return (
+                                                        <ConnectionsTable
+                                                            // eslint-disable-next-line react/no-array-index-key
+                                                            key={connectedRelationshipTemplateIndex}
+                                                            expandedEntity={expandedEntity}
+                                                            templateIds={templateIds}
+                                                            connectionTemplate={connectionTemplate}
+                                                            isEditButtonsDisabled={isEditButtonsDisabled}
+                                                            disabledButtonText={disabledButtonText}
+                                                            hasPermissionToTemplate={Boolean(permissionToRelatedTemplate) || isAdmin}
+                                                        />
+                                                    );
+                                                })}
                                             </TabPanel>
                                         );
                                     },
