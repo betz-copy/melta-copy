@@ -41,12 +41,21 @@ const ActivitiesContent: React.FC<{
     const entityId = expandedEntity?.entity.properties._id || activityEntityId || '';
 
     const [searchInput, setSearchInput] = useState('');
-    console.log({ searchInput });
     const theme = useTheme();
 
     return (
-        <Grid container justifyContent="center">
-            <Grid item sx={{ borderRadius: '7px', width: 'fit-content', boxShadow: '3' }}>
+        <>
+            <Grid
+                item
+                sx={{
+                    borderRadius: '7px',
+                    width: 'fit-content',
+                    border: `${theme.palette.primary.main} 1px solid`,
+                    height: '40px',
+                    marginBottom: '20px',
+                    alignSelf: 'center',
+                }}
+            >
                 <SearchInput
                     onChange={setSearchInput}
                     borderRadius="7px"
@@ -62,27 +71,27 @@ const ActivitiesContent: React.FC<{
                     toTopBar={false}
                 />
             </Grid>
-            <Grid item marginTop="20px">
-                <InfiniteScroll<IActivityLog>
-                    queryKey={['getActivityLogRequest', entityId]}
-                    queryFunction={({ pageParam }) => getActivityLogRequest(entityId, infiniteScrollPageCount, pageParam, ACTIVITY_TYPES)}
-                    onQueryError={(error) => {
-                        // eslint-disable-next-line no-console
-                        console.log('failed to get activities. error:', error);
-                        toast.error(i18next.t('entityPage.activityLog.failedToGetActivities'));
-                    }}
-                    getNextPageParam={getNextPageParam}
-                    endText={i18next.t('entityPage.activityLog.noSearchLeft')}
-                >
-                    {(activityLog) => (
-                        <>
-                            <ActivityLogRow log={activityLog} entityTemplate={entityTemplate} />
-                            <Divider variant="middle" style={{ marginTop: '7px' }} />
-                        </>
-                    )}
-                </InfiniteScroll>
-            </Grid>
-        </Grid>
+            <InfiniteScroll<IActivityLog>
+                queryKey={['getActivityLogRequest', entityId, searchInput]}
+                queryFunction={({ pageParam }) =>
+                    getActivityLogRequest(entityId, infiniteScrollPageCount, pageParam, ACTIVITY_TYPES, searchInput.trim())
+                }
+                onQueryError={(error) => {
+                    // eslint-disable-next-line no-console
+                    console.log('failed to get activities. error:', error);
+                    toast.error(i18next.t('entityPage.activityLog.failedToGetActivities'));
+                }}
+                getNextPageParam={getNextPageParam}
+                endText={i18next.t('entityPage.activityLog.noSearchLeft')}
+            >
+                {(activityLog) => (
+                    <>
+                        <ActivityLogRow log={activityLog} entityTemplate={entityTemplate} />
+                        <Divider variant="middle" style={{ marginTop: '7px' }} />
+                    </>
+                )}
+            </InfiniteScroll>
+        </>
     );
 };
 

@@ -1,3 +1,4 @@
+import { FilterQuery } from 'mongoose';
 import config from '../../config';
 import { DefaultManagerMongo } from '../../utils/mongo/manager';
 import { IActivityLog } from './interface';
@@ -8,17 +9,28 @@ export default class ActivityLogManager extends DefaultManagerMongo<IActivityLog
         super(workspaceId, config.mongo.activitiesCollectionName, ActivityLogSchema);
     }
 
-    async getActivity(entityId: string, limit: number, skip: number, actions?: string[]) {
+    async getActivity(entityId: string, limit: number, skip: number, actions?: string[], searchText?: string) {
         const regActions = actions?.map((action) => new RegExp(action));
+        const searchRegex = { $regex: searchText, $options: 'i' };
+        const query: FilterQuery<IActivityLog> = {};
+
         if (actions) {
-            const res = this.model
-                .find({ entityId, action: { $in: regActions } })
-                .limit(limit)
-                .skip(skip)
-                .exec();
-            return res;
+            query.action = { $in: regActions };
         }
-        return this.model.find({ entityId }).limit(limit).skip(skip).exec();
+
+        if (searchText && searchText !== '') {
+            query['metadata.updatedFields'] = {
+                $elemMatch: {
+                    $or: [{ fieldName: searchRegex }, { oldValue: searchRegex }, { newValue: searchRegex }],
+                },
+            };
+        }
+
+        return this.model
+            .find({ entityId, ...query })
+            .limit(limit)
+            .skip(skip)
+            .exec();
     }
 
     async createActivity(activityLog: IActivityLog) {

@@ -9,9 +9,9 @@ export default class ActivityLogController extends DefaultController<IActivityLo
     }
 
     async getActivity(req: Request, res: Response) {
-        const { limit, skip, actions } = req.query;
+        const { limit, skip, actions, searchText } = req.query;
         const { entityId } = req.params;
 
-        res.json(await this.manager.getActivity(entityId, Number(limit), Number(skip), actions as string[]));
+        res.json(await this.manager.getActivity(entityId, Number(limit), Number(skip), actions as string[], searchText as string | undefined));
     }
 }

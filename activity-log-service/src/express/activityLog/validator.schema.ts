@@ -7,6 +7,7 @@ export const getActivitySchema = Joi.object({
         limit: Joi.number().integer().min(0).default(0),
         skip: Joi.number().integer().min(0).default(0),
         actions: Joi.array().items(Joi.string()).default([]),
+        searchText: Joi.string().default(''),
     },
     body: {},
     params: {

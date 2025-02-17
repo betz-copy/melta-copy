@@ -38,8 +38,12 @@ export interface IUpdateProcessStepMetadata extends IBaseActivityLog {
 
 export type IActivityLog = IEmptyMetadata | IRelationshipMetadata | IDuplicateEntityMetadata | IUpdateEntityMetadata | IUpdateProcessStepMetadata;
 
-const getActivityLogRequest = async (entityId: string, limit: number, skip: number, actions?: string[]) => {
-    const { data } = await axios.get<IActivityLog[]>(`${activityLog}/${entityId}`, { params: { limit, skip, actions } });
+const getActivityLogRequest = async (entityId: string, limit: number, skip: number, actions?: string[], searchText?: string) => {
+    const params: Partial<{ limit: number; skip: number; actions: string[]; searchText: string }> = { limit, skip, actions };
+
+    if (searchText) params.searchText = searchText;
+
+    const { data } = await axios.get<IActivityLog[]>(`${activityLog}/${entityId}`, { params });
     return data;
 };
 
