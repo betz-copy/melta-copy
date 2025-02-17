@@ -52,7 +52,7 @@ export class UsersManager {
         return UserService.searchUserIds(searchBody);
     }
 
-    static async searchUsers(searchBody: IUserSearchBody): Promise<IUser[]> {
+    static async searchUsers(searchBody: IUserSearchBody): Promise<{ users: IUser[]; count: number }> {
         return UserService.searchUsers(searchBody);
     }
 
