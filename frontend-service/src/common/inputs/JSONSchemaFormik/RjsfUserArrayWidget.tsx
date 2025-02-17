@@ -4,7 +4,7 @@ import { Box, Grid } from '@mui/material';
 import UserAutocomplete from '../UserAutocomplete';
 import CreateUserCard from '../../wizards/processTemplate/ApproverCard';
 
-const RjfsUserArrayWidget = ({ label, value, onChange, rawErrors = [], onBlur, onFocus }: WidgetProps) => {
+const RjsfUserArrayWidget = ({ label, value, onChange, rawErrors = [], onBlur, onFocus }: WidgetProps) => {
     const [inputValue, setInputValue] = React.useState('');
     const [currentUsers, setCurrentUsers] = React.useState(
         (value && value.length && value[0] ? value.map((user) => JSON.parse(user)) : []).filter((user) => !!user),
@@ -73,4 +73,4 @@ const RjfsUserArrayWidget = ({ label, value, onChange, rawErrors = [], onBlur, o
     );
 };
 
-export default RjfsUserArrayWidget;
+export default RjsfUserArrayWidget;

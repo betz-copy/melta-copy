@@ -18,7 +18,7 @@ export const CustomDateTimePickerToolbar = styled(DateTimePickerToolbar)({
     },
 }) as (props: BaseToolbarProps<Date, Date | null>) => JSX.Element;
 
-const getRjfsDateOrDateTimeWidget =
+const getRjsfDateOrDateTimeWidget =
     (dateOrDateTime: 'date' | 'dateTime') =>
     ({
         id,
@@ -80,6 +80,7 @@ const getRjfsDateOrDateTimeWidget =
                 dateAdapter={AdapterDateFns}
                 adapterLocale={heLocale}
                 localeText={i18next.t('muiDatePickersLocaleText', { returnObjects: true })}
+                
             >
                 <MuiDatePicker<Date, Date>
                     value={currDate}
@@ -118,5 +119,5 @@ const getRjfsDateOrDateTimeWidget =
         );
     };
 
-export const RjfsDateWidget = getRjfsDateOrDateTimeWidget('date');
-export const RjfsDateTimeWidget = getRjfsDateOrDateTimeWidget('dateTime');
+export const RjsfDateWidget = getRjsfDateOrDateTimeWidget('date');
+export const RjsfDateTimeWidget = getRjsfDateOrDateTimeWidget('dateTime');

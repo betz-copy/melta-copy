@@ -10,15 +10,23 @@
     max-width: 100%;
 } */
 
-.has-other-field-child {
+.half-width-field {
     width: 50%;
     max-width: 50% !important;
 }
 
-.has-text-area-child {
+.full-width-field {
     width: 100%;
     max-width: 100%;
+    /* direction: rtl; */
+}
+
+.has-text-area-child {
     direction: rtl;
+}
+
+.no-padding-top{
+    padding-top: 0px !important;
 }
 
 #json-schema > .form-group.field.field-object > .MuiFormControl-root > .MuiGrid-root {

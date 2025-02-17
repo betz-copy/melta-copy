@@ -31,7 +31,7 @@ function processValue(schema: any, value: any) {
     return value;
 }
 
-const RjfsSelectWidget = ({
+const RjsfSelectWidget = ({
     schema,
     uiSchema,
     id,
@@ -153,4 +153,4 @@ const RjfsSelectWidget = ({
     );
 };
 
-export default RjfsSelectWidget;
+export default RjsfSelectWidget;

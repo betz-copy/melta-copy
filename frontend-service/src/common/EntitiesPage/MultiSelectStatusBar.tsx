@@ -1,6 +1,6 @@
 import { IServerSideSelectionState, IStatusPanelParams } from '@ag-grid-community/core';
-import { Delete } from '@mui/icons-material';
-import { CircularProgress, Grid, Typography } from '@mui/material';
+import { Delete, Edit } from '@mui/icons-material';
+import { CircularProgress, Dialog, Grid, Typography } from '@mui/material';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
@@ -16,6 +16,8 @@ import { isWorkspaceAdmin } from '../../utils/permissions/instancePermissions';
 import { ErrorToast } from '../ErrorToast';
 import { TableButton } from '../TableButton';
 import { DeleteEntitiesDialog } from './DeleteEntitiesDialog';
+import { CreateOrEditEntityDetails, ICreateOrUpdateWithRuleBreachDialogState } from '../dialogs/entity/CreateOrEditEntityDialog';
+import { EntityWizardValues } from '../dialogs/entity';
 
 interface MultiSelectStatusBarProps extends IStatusPanelParams {
     template: IMongoEntityTemplatePopulated;
@@ -30,6 +32,7 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
     const workspaceAdmin = isWorkspaceAdmin(currentUser.currentWorkspacePermissions);
 
     const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+    const [openEditDialog, setOpenEditDialog] = useState(false);
     const [selectedRowCount, setSelectedRowCount] = useState(0);
     const [confirmDeleteDisplayNameValue, setConfirmDeleteDisplayNameValue] = useState('');
 
@@ -116,6 +119,24 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
                 </Grid>
 
                 <Grid item>
+                    <TableButton
+                        iconButtonWithPopoverProps={{
+                            popoverText: i18next.t('actions.edit'),
+                            iconButtonProps: {
+                                onClick: () => setOpenEditDialog(true),
+                                sx: {
+                                    fontSize: '15px',
+                                    marginTop: '6px',
+                                },
+                            },
+                        }}
+                        icon={isDeleteLoading ? <CircularProgress /> : <Edit fontSize="small" />}
+                        text={i18next.t('actions.edit')}
+                        disableButton={selectedRowCount === 0 || selectedRowCount >= deleteEntitiesLimit}
+                    />
+                </Grid>
+
+                <Grid item>
                     <Typography sx={{ color: 'warning.main' }} variant="caption" fontSize="14px">
                         {i18next.t(
                             workspaceAdmin
@@ -146,6 +167,38 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
                 value={confirmDeleteDisplayNameValue}
                 setValue={setConfirmDeleteDisplayNameValue}
             />
+
+            {/* <Dialog open={openEditDialog} maxWidth={template.documentTemplatesIds?.length ? 'lg' : 'md'}>
+                <EditMultipleEntities
+                    isEditMode
+                    entityTemplate={template}
+                    handleClose={() => {
+                        console.log('close');
+                    }}
+                    onError={() => {
+                        console.log('error');
+                    }}
+                    externalErrors={{
+                        files: false,
+                        unique: {},
+                        action: '',
+                    }}
+                    setExternalErrors={(value) => {
+                        console.log('error2');
+                    }}
+                    createOrUpdateWithRuleBreachDialogState={{
+                        isOpen: false,
+                        brokenRules: undefined,
+                        rawBrokenRules: undefined,
+                        newEntityData: undefined,
+                        actions: undefined,
+                        rawActions: undefined,
+                    }}
+                    setCreateOrUpdateWithRuleBreachDialogState={(value) => {
+                        console.log('setCreateOrUpdateWithRuleBreachDialogState');
+                    }}
+                />
+            </Dialog> */}
         </Grid>
     );
 };

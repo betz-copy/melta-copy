@@ -8,7 +8,7 @@ import React, { useEffect, useState } from 'react';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { containsHTMLTags } from '../../../utils/HtmlTagsStringValue';
 
-const RjfsTextAreaWidget = ({ id, value, label, readonly, onChange, options }: WidgetProps) => {
+const RjsfTextAreaWidget = ({ id, value, label, readonly, onChange, options }: WidgetProps) => {
     const { toPrint } = options;
 
     const initialValue = () => {
@@ -133,4 +133,4 @@ const RjfsTextAreaWidget = ({ id, value, label, readonly, onChange, options }: W
     );
 };
 
-export default RjfsTextAreaWidget;
+export default RjsfTextAreaWidget;

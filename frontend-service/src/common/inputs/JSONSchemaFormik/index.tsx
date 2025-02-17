@@ -1,5 +1,5 @@
 /* eslint-disable import/no-extraneous-dependencies */
-import React, { useEffect } from 'react';
+import React, { memo, useEffect } from 'react';
 import { Form as JSONSchemaForm } from '@rjsf/mui';
 import Ajv, { ErrorObject } from 'ajv';
 import addFormats from 'ajv-formats';
@@ -8,17 +8,19 @@ import { FormikErrors, FormikHelpers, FormikTouched } from 'formik';
 import mapValues from 'lodash.mapvalues';
 import pickBy from 'lodash.pickby';
 import validator from '@rjsf/validator-ajv8';
-import { ErrorSchema, UiSchema } from '@rjsf/utils';
+import { ErrorSchema, UiSchema, WidgetProps } from '@rjsf/utils';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { RjfsDateWidget, RjfsDateTimeWidget } from './RjfsDatesWidgets';
-import RjfsSelectWidget from './RjfsSelectWidget';
+import { RjsfDateWidget, RjsfDateTimeWidget } from './RjsfDatesWidgets';
+import RjsfSelectWidget from './RjsfSelectWidget';
 import RjsfTextWidget from './RjsfStringWidget';
-import RjfsTextAreaWidget from './RjfsTextAreaWidget';
+import RjsfTextAreaWidget from './RjsfTextAreaWidget';
 import './form.css';
-import RjfsTemplateReferenceWidget from './RjfsTemplateReferenceWidget';
+import RjsfTemplateReferenceWidget from './RjsfTemplateReferenceWidget';
 import RjsfLocationWidget, { validateLocation } from './RjsfLocationWidget';
-import RjfsUserWidget from './RjfsUserWidget';
-import RjfsUserArrayWidget from './RjfsUserArrayWidget';
+import RjsfUserWidget from './RjsfUserWidget';
+import RjsfUserArrayWidget from './RjsfUserArrayWidget';
+import InputAccordion from './InputAccordion';
+import RjsfCheckboxWidget from './RjsfCheckboxWidget';
 
 const ajvErrorsToFormikErrors = (schema: IMongoEntityTemplatePopulated['properties'], ajvErrors: ErrorObject[]): FormikErrors<any> => {
     const formikErrorsEntries = ajvErrors.map((ajvError) => {
@@ -106,6 +108,26 @@ const mergeErrorSchemas = (errors1: ErrorSchema<{}>, errors2: ErrorSchema<{}>) =
     return merged;
 };
 
+const getComponent = (Component: React.ComponentType<WidgetProps>, haveAccordion: boolean) => {
+    if (haveAccordion) {
+        const WrappedComponent: React.FC<WidgetProps> = (props: WidgetProps) => {
+            const { label } = props;
+
+            return (
+                <InputAccordion label={label}>
+                    <Component {...props} />
+                </InputAccordion>
+            );
+        };
+        const MemoWrapped = memo(WrappedComponent);
+        const FinalComponent: React.FC<WidgetProps> = (props: WidgetProps) => <MemoWrapped {...props} />;
+
+        return FinalComponent;
+    }
+
+    return Component;
+};
+
 interface JSONSchemaFormFormikProps {
     schema: IMongoEntityTemplatePopulated['properties'];
     values: any;
@@ -117,6 +139,7 @@ interface JSONSchemaFormFormikProps {
     isEditMode?: boolean;
     readonly?: boolean;
     toPrint?: boolean;
+    multipleEntities?: boolean;
 }
 
 export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
@@ -130,7 +153,10 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
     setFieldTouched,
     isEditMode = false,
     toPrint = false,
+    multipleEntities,
 }) => {
+    console.log({ schema, values });
+
     useEffect(() => {
         // define 100% width to text-area field
         const containerDiv = document.querySelectorAll(
@@ -138,7 +164,12 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
         );
         containerDiv.forEach((innerDiv) => {
             const hasTextAreaField = innerDiv.querySelector('.text-area');
-            innerDiv.classList.add(hasTextAreaField ? 'has-text-area-child' : 'has-other-field-child');
+            const classesToAdd: string[] = [];
+            classesToAdd.push(hasTextAreaField || multipleEntities ? 'full-width-field' : 'half-width-field');
+            if (hasTextAreaField) classesToAdd.push('has-text-area-child');
+            if (multipleEntities) classesToAdd.push('no-padding-top');
+
+            innerDiv.classList.add(...classesToAdd);
         });
     }, [values.template]);
 
@@ -148,6 +179,22 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
 
     const notTouchedUnique: ErrorSchema<{}> = pickBy(rjsfExtraUniqueErrors, (_value, key) => !touched[key]);
     const mergedErrors: ErrorSchema<{}> = mergeErrorSchemas(ajvExtraErrorsOnlyTouched, notTouchedUnique);
+    const Widgets = React.useMemo(
+        () => ({
+            SelectWidget: getComponent(RjsfSelectWidget, !!multipleEntities),
+            DateWidget: getComponent(RjsfDateWidget, !!multipleEntities),
+            DateTimeWidget: getComponent(RjsfDateTimeWidget, !!multipleEntities),
+            TextWidget: getComponent(RjsfTextWidget, !!multipleEntities),
+            EmailWidget: getComponent(RjsfTextWidget, !!multipleEntities),
+            TextAreaWidget: getComponent(RjsfTextAreaWidget, !!multipleEntities),
+            TemplateReferenceWidget: getComponent(RjsfTemplateReferenceWidget, !!multipleEntities),
+            LocationWidget: getComponent(RjsfLocationWidget, !!multipleEntities),
+            UserWidget: getComponent(RjsfUserWidget, !!multipleEntities),
+            UserArrayWidget: getComponent(RjsfUserArrayWidget, !!multipleEntities),
+            CheckboxWidget: getComponent(RjsfCheckboxWidget, !!multipleEntities),
+        }),
+        [multipleEntities],
+    );
 
     return (
         <JSONSchemaForm
@@ -230,18 +277,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
             extraErrors={mergedErrors}
             tagName="div"
             readonly={readonly}
-            widgets={{
-                SelectWidget: RjfsSelectWidget,
-                DateWidget: RjfsDateWidget,
-                DateTimeWidget: RjfsDateTimeWidget,
-                TextWidget: RjsfTextWidget,
-                EmailWidget: RjsfTextWidget,
-                TextAreaWidget: RjfsTextAreaWidget,
-                TemplateReferenceWidget: RjfsTemplateReferenceWidget,
-                LocationWidget: RjsfLocationWidget,
-                UserWidget: RjfsUserWidget,
-                UserArrayWidget: RjfsUserArrayWidget,
-            }}
+            widgets={Widgets}
         >
             <div /> {/* remove the built in submit button */}
         </JSONSchemaForm>

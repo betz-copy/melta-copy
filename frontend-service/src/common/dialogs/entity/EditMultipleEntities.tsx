@@ -34,7 +34,7 @@ import { useWorkspaceStore } from '../../../stores/workspace';
 
 const { errorCodes } = environment;
 
-export type ICreateOrUpdateWithRuleBreachDialogState = {
+export type IEditMultipleEntitiesWithRuleBreachDialogState = {
     isOpen: boolean;
     brokenRules?: IRuleBreachPopulated['brokenRules'];
     rawBrokenRules?: IRuleBreach['brokenRules'];
@@ -81,7 +81,7 @@ const convertIEntityToEntityWizardValues = (
     };
 };
 
-const CreateOrEditEntityDetails: React.FC<{
+const EditMultipleEntitiesDetails: React.FC<{
     isEditMode?: boolean;
     entityTemplate: IMongoEntityTemplatePopulated;
     initialCurrValues?: EntityWizardValues;
@@ -102,8 +102,8 @@ const CreateOrEditEntityDetails: React.FC<{
             action: string;
         }>
     >;
-    createOrUpdateWithRuleBreachDialogState: ICreateOrUpdateWithRuleBreachDialogState;
-    setCreateOrUpdateWithRuleBreachDialogState: React.Dispatch<React.SetStateAction<ICreateOrUpdateWithRuleBreachDialogState>>;
+    createOrUpdateWithRuleBreachDialogState: IEditMultipleEntitiesWithRuleBreachDialogState;
+    setCreateOrUpdateWithRuleBreachDialogState: React.Dispatch<React.SetStateAction<IEditMultipleEntitiesWithRuleBreachDialogState>>;
 }> = ({
     isEditMode = false,
     entityTemplate,
@@ -340,6 +340,8 @@ const CreateOrEditEntityDetails: React.FC<{
                 const isPropertiesFirst = (values.template?.propertiesTypeOrder ?? [])[0] === 'properties';
                 const schema = filterFieldsFromPropertiesSchema(values.template.properties);
 
+                console.log({ schema, values, formInitialValues });
+
                 // eslint-disable-next-line react-hooks/rules-of-hooks
                 useEffect(() => {
                     if (initialCurrValues) setValues(initialCurrValues);
@@ -422,7 +424,6 @@ const CreateOrEditEntityDetails: React.FC<{
                         touched={touched.properties ?? {}}
                         setFieldTouched={(field) => setFieldTouched(`properties.${field}`)}
                         isEditMode={isEditMode}
-                        multipleEntities
                     />
                 );
 
@@ -649,4 +650,4 @@ const CreateOrEditEntityDetails: React.FC<{
     );
 };
 
-export { CreateOrEditEntityDetails };
+export { EditMultipleEntitiesDetails as CreateOrEditEntityDetails };

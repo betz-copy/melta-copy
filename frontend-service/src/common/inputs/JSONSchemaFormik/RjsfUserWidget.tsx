@@ -4,7 +4,7 @@ import { Grid } from '@mui/material';
 import UserAutocomplete from '../UserAutocomplete';
 import { IUser } from '../../../interfaces/users';
 
-const RjfsUserWidget = ({ disabled, label, value, onChange, rawErrors = [], onBlur, onFocus, id, autoFocus, ...textFieldProps }: WidgetProps) => {
+const RjsfUserWidget = ({ disabled, label, value, onChange, rawErrors = [], onBlur, onFocus, id, autoFocus, ...textFieldProps }: WidgetProps) => {
     const [currentUser, setCurrentUser] = React.useState(value ? JSON.parse(value) : undefined);
     if (!currentUser) {
         onChange(undefined);
@@ -57,4 +57,4 @@ const RjfsUserWidget = ({ disabled, label, value, onChange, rawErrors = [], onBl
     );
 };
 
-export default RjfsUserWidget;
+export default RjsfUserWidget;
