@@ -42,7 +42,7 @@ const MapPage = () => {
     
     const [searchedEntity, setSearchedEntity] = useState<IEntity | undefined>(undefined);
     const [searchedEntityTemplate, setSearchedEntityTemplate] = useState<IMongoEntityTemplatePopulated | undefined>(undefined);
-    const [selectedEntity, setSelectedEntity] = useState<{ node: IEntity; matchingField: string } | null>(null);
+    const [selectedEntity, setSelectedEntity] = useState<{ matchingField: string; node: IEntity; } | null>(null);
 
     const [searchedPolygons, setSearchedPolygons] = useState<{ key: string; name: string; node: IEntity; position: Cartesian3[] }[]>([]);
     const [searchedMarkers, setSearchedMarkers] = useState<{ key: string; name: string; node: IEntity; position: Cartesian3 }[]>([]);
@@ -223,7 +223,6 @@ const MapPage = () => {
         setDrawingMode(null);
         setSearchedMarkers([]);
         setSearchedPolygons([]);
-        clearAutocompleteSearch();
     };
 
     const handleDrawType = (_event: React.MouseEvent<HTMLElement>, newShape: 'circle' | 'line' | null) => {
@@ -348,12 +347,12 @@ const MapPage = () => {
                 >
                     <MeltaTooltip title={i18next.t('location.circle')}>
                         <ToggleButton value="circle">
-                            <Circle sx={{ width: '20px', height: '20px' }} />
+                            <Circle sx={{ width: '20px', height: '20px', color: darkMode ? '#9398c2' : '#787c9e'  }}  />
                         </ToggleButton>
                     </MeltaTooltip>
                     <MeltaTooltip title={i18next.t('location.line')}>
                         <ToggleButton value="line">
-                            <LinearScale sx={{ width: '20px', height: '20px' }} />
+                            <LinearScale sx={{ width: '20px', height: '20px',color: darkMode ? '#9398c2' : '#787c9e' }} />
                         </ToggleButton>
                     </MeltaTooltip>
                 </ToggleButtonGroup>
@@ -361,7 +360,7 @@ const MapPage = () => {
                 <BaseLayers viewerRef={viewerRef} />
             </div>
             {selectedEntity && (
-                <MapPageEntityDialog open={!!selectedEntity} entityWithMatchingField={selectedEntity} onClose={() => setSelectedEntity(null)} />
+                <MapPageEntityDialog open={!!selectedEntity} entityWithMatchingField={selectedEntity} onClose={() => setSelectedEntity(null)} key={selectedEntity.matchingField}/>
             )}
         </div>
     );

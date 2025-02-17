@@ -233,8 +233,8 @@ const SearchAutoComplete = ({ selectedTemplates, handleEntityClick, onClear }: p
                                     ) : (
                                         Object.entries(locationProperties).map(([key, value], index) => (
                                             <LocationAutoCompleteOption
-                                            key={`${key}-${index}`}
-                                            title={locationTemplateProperties[key].title}
+                                                key={`${key}-${index}`}
+                                                title={locationTemplateProperties[key].title}
                                                 value={value}
                                             />
                                         ))

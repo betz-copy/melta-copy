@@ -1314,7 +1314,6 @@ export default {
             coordinate: 'נקודת ציון',
             circle: 'חיפוש בעזרת מעגל',
             line: 'קו למדידת מרחק',
-            noCrsTypes: 'לא נמצאו סוגי CRS',
             clear: 'ניקוי תוצאות',
             radiusMaxLimit: `חיפוש מוגבל עד ${environment.map.maxRadius / 1000} ק"מ`,
             layers: {

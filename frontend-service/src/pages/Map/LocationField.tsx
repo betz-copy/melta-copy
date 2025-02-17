@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Cartesian3 } from 'cesium';
 import { Viewer, CesiumMovementEvent } from 'resium';
 import { ToggleButton, ToggleButtonGroup } from '@mui/material';
-import { Place, ShapeLine } from '@mui/icons-material';
+import { Place, Polyline } from '@mui/icons-material';
 import i18next from 'i18next';
 import * as Cesium from 'cesium';
 import { MeltaTooltip } from '../../common/MeltaTooltip';
@@ -157,12 +157,12 @@ const LocationField = ({ defaultLocation, field, updateValue }: Props) => {
                     >
                         <MeltaTooltip title={i18next.t('location.coordinate')}>
                             <ToggleButton value="coordinate" disabled={polygonPosition.length > 0}>
-                                <Place sx={{ width: '20px', height: '20px' }} />
+                                <Place sx={{ width: '20px', height: '20px', color: darkMode ? '#9398c2' : '#787c9e' }} />
                             </ToggleButton>
                         </MeltaTooltip>
                         <MeltaTooltip title={i18next.t('location.polygon')}>
                             <ToggleButton value="polygon" disabled={markerPosition !== null}>
-                                <ShapeLine sx={{ width: '20px', height: '20px' }} />
+                                <Polyline sx={{ width: '20px', height: '20px', color: darkMode ? '#9398c2' : '#787c9e' }} />
                             </ToggleButton>
                         </MeltaTooltip>
                     </ToggleButtonGroup>

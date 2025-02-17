@@ -7,6 +7,7 @@ import { useQueryClient } from 'react-query';
 import { MeltaTooltip } from '../../common/MeltaTooltip';
 import { BackendConfigState } from '../../services/backendConfigService';
 import { MeltaCheckbox } from '../../common/MeltaCheckbox';
+import { useDarkModeStore } from '../../stores/darkMode';
 
 type LayerProvider = {
     id: string;
@@ -17,6 +18,7 @@ type LayerProvider = {
 export const BaseLayers: React.FC<{ viewerRef: React.MutableRefObject<any> }> = ({ viewerRef }) => {
     const queryClient = useQueryClient();
     const config = queryClient.getQueryData<BackendConfigState>('getBackendConfig');
+    const darkMode = useDarkModeStore((state) => state.darkMode);
 
     const [isOpen, setIsOpen] = useState(false);
 
@@ -38,7 +40,7 @@ export const BaseLayers: React.FC<{ viewerRef: React.MutableRefObject<any> }> = 
     }, [mapLayers, textLayers]);
 
     const [activeMapLayer, setActiveMapLayer] = useState<string>(providers.find((p) => p.type === 'map')?.id || '');
-    const [activeTextLayers, setActiveTextLayers] = useState<Set<string>>(new Set());
+    const [activeTextLayers, setActiveTextLayers] = useState<Set<string>>(new Set());    
 
     const handleTextLayerToggle = useCallback((layerId: string) => {
         setActiveTextLayers((prev) => {
@@ -88,7 +90,7 @@ export const BaseLayers: React.FC<{ viewerRef: React.MutableRefObject<any> }> = 
         >
             <MeltaTooltip title={i18next.t('location.layers.map')}>
                 <IconButton size="small" onClick={() => setIsOpen((prev) => !prev)} sx={{ zIndex: 1001 }}>
-                    <Layers fontSize="small" />
+                    <Layers fontSize="small" sx={{ color: darkMode ? '#9398c2' : '#787c9e'}}/>
                 </IconButton>
             </MeltaTooltip>
 
