@@ -73,7 +73,7 @@ class ElasticSearchManager extends DefaultManagerElastic {
         }
     }
 
-    async processGlobalSearch(searchText: string, skip: number, limit: number) {
+    async processGlobalSearch(searchText: string, count: number) {
         const processes = await this.elasticClient.search({
             query: {
                 bool: {
@@ -90,8 +90,8 @@ class ElasticSearchManager extends DefaultManagerElastic {
                 },
             },
             sort: ['_score'],
-            from: skip,
-            size: limit,
+            from: 0,
+            size: count,
         });
 
         return processes.hits.hits.map(({ _id }) => _id);

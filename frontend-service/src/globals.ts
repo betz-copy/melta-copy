@@ -116,6 +116,10 @@ export const environment = {
     processInstances: {
         infiniteScrollPageCount: 10,
     },
+    processDetailsContentDisplay: {
+        summary: 'SUMMARY',
+        reviewers: 'REVIEWERS',
+    },
     iFrames: {
         iFrameDimensionKey: 'iFrameDimension_',
         iFramesOrderKey: 'iFramesOrder',
@@ -222,7 +226,7 @@ export const environment = {
         entityHasRelationships: 'ENTITY_HAS_RELATIONSHIPS',
     },
 
-    loadExcel: { excelExtension: '.xlsx', acceptedFilesTypes: { 'excel/xlsx': ['.xlsx', '.xls'] } },
+    loadExcel: { excelExtension: '.xlsx', acceptedFilesTypes: { 'excel/xlsx': ['.xlsx', '.xls'] }, entityId: '$0._id' },
     agGrid: {
         cacheBlockSize: 5,
         maxConcurrentDatasourceRequests: 1,
@@ -236,6 +240,7 @@ export const environment = {
         units: { km: 'km', squaredKm: 'km²' },
         polygon: { polygon: 'POLYGON', polygonPrefix: 'POLYGON((', polygonSuffix: '))' },
     },
+    meltaUpdatesShown: 'meltaUpdatesShown',
     profileIconsCount: 19,
     avatarIconPath: '/icons/profileAvatar/',
     fileExtensions: {

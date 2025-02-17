@@ -230,7 +230,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                     <Typography>-</Typography>
                                 </Grid>
                                 <Grid item>
-                                    <MeltaTooltip title={key}>
+                                    <MeltaTooltip title={value.title}>
                                         <Typography
                                             style={{
                                                 textOverflow: 'ellipsis',
@@ -240,7 +240,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                                 textAlign: 'right',
                                             }}
                                         >
-                                            {key}
+                                            {value.title}
                                         </Typography>
                                     </MeltaTooltip>
                                 </Grid>

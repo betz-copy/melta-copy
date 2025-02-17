@@ -181,6 +181,7 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
                                             touched={touched}
                                             errors={errors}
                                             supportSerialNumberType
+                                            supportUserType
                                             supportEntityReferenceType={false}
                                             supportChangeToRequiredWithInstances
                                             supportRelationshipReference

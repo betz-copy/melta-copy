@@ -4,6 +4,7 @@ import i18next from 'i18next';
 import { UseMutateAsyncFunction } from 'react-query';
 import { AxiosError } from 'axios';
 import { toast } from 'react-toastify';
+import { noop } from 'lodash';
 import { BlueTitle } from '../../../common/BlueTitle';
 import { IFile } from '../../../interfaces/preview';
 import { IMongoProcessInstancePopulated } from '../../../interfaces/processes/processInstance';
@@ -57,7 +58,7 @@ const ComponentToPrint = React.forwardRef<
                 {options.showSummary && (
                     <>
                         <Box sx={{ minHeight: '1000px' }}>
-                            <ProcessSummary isPrinting processInstance={processInstance} processTemplate={processTemplate} />
+                            <ProcessSummary isPrinting processInstance={processInstance} setActiveStep={noop} processTemplate={processTemplate} />
                         </Box>
                         {processTemplate.steps.length > 6 && <Divider sx={{ paddingY: '50px' }} />}
                     </>

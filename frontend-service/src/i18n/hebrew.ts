@@ -134,13 +134,18 @@ export default {
             deleteRelationship: 'מחק קשר מסוג',
             createRelationship: 'יצר קשר מסוג ',
             createEntity: 'יצר את הישות',
+            createProcess: 'יצר את התהליך',
             disableEntity: 'השבית את הישות',
             activateEntity: 'הפעיל את הישות',
             duplicateEntityFrom: 'שכפל את הישות מ',
             updateField: 'עדכן את השדה:',
             updateFields: 'עדכן את השדות הבאים:',
+            updatedStatus: 'עדכן את הסטטוס ל:',
+            updatedComment: 'עדכן את ההערות ל:',
             emptyField: 'שדה ריק',
             header: 'היסטוריה',
+            processHeader: 'היסטוריית תהליך',
+            stepHeader: 'היסטוריית שלב',
             loading: 'טוען היסטוריה',
             noSearchLeft: 'אין עוד היסטוריה לישות',
             from: 'מ:',
@@ -374,7 +379,7 @@ export default {
         succeededToDeleteUser: 'נמחק הרשאות של משתמש בהצלחה',
         failedToLoadAllPermissions: 'נכשל לטעון את כל ההרשאות',
         dontHavePermissionsToCategory: 'אין הרשאות לקטגוריה',
-        dontHaveWritePermissionsToCategory: 'אין הרשאות עריכה לקטגוריה',
+        dontHaveWritePermissionsToTemplate: 'אין הרשאות עריכה לתבנית',
         dontHavePermissionToEntityPage: 'אין לך הרשאות לגשת לעמוד פרט של ישות זו',
         dontHaveWritePermissions: 'אין לך הרשאות עריכה',
         permissionsOfUserDialog: {
@@ -738,9 +743,16 @@ export default {
                 StepStatusNotYetBeeUpdated: 'טרם עודכן סטטוס של שלב זה',
                 printedBy: 'הודפס ע"י',
                 printedAt: 'תאריך',
+                processStatuses: {
+                    approved: 'הושלם',
+                    rejected: 'נדחה',
+                    pending: 'ממתין',
+                },
             },
             step: {
                 stepStatus: 'סטטוס שלב',
+                prevStep: 'שלב קודם',
+                nextStep: 'שלב הבא',
                 editStepBth: 'ערוך שלב',
                 editedSuccessfully: 'שלב עודכן בהצלחה',
                 failedToEdit: 'נכשל לערוך שלב',
@@ -872,6 +884,7 @@ export default {
         forTour: 'לסיור במערכת',
         pressHere: 'לחץ כאן',
     },
+    meltaUpdates: { title: 'התחדשנו בשבילכם!', confirmation: 'אישור', renewed: 'התחדשנו', btn: 'מה חדש?' },
     ruleBreachInfo: {
         relActionInfo: {
             [ActionTypes.CreateRelationship]: 'יצירת',
@@ -1019,6 +1032,9 @@ export default {
         newBreachDetected: 'זוהתה הפרת חוק חדשה',
     },
     processInstancesPage: {
+        process: 'תהליך',
+        createdBy: 'נוצר ע"י',
+        createdAt: 'נוצר ב',
         failedToCreateProcess: 'נכשל ליצור תהליך',
         processCreatedSuccessfully: 'תהליך נוצר בהצלחה',
         failedToDeleteProcess: 'נכשל למחוק תהליך',
@@ -1036,6 +1052,8 @@ export default {
         openProcessesTitle: 'תהליכים פתוחים',
         closedProcessesTitle: 'תהליכים סגורים',
         someStepIsApprovedAreYouSureEditProcessDetails: 'קיים שלב שכבר אושר. האם אתה בטוח רוצה לשנות את פרטי התהליך?',
+        waitForMyApprove: 'תהליכים הממתינים להתייחסותי',
+        groupByWaitingForMe: 'קבץ תהליכים הממתינים לאישורי',
         stepStatus: {
             pending: 'ממתין',
             approved: 'בוצע',
@@ -1048,7 +1066,9 @@ export default {
         nextBth: 'הבא',
         addApprover: 'הוסף מאשר ',
         filter: 'סינון',
+        cleanFilter: 'נקה סינון',
         startDate: 'החל מ',
+        dateFilter: 'תאריכי התהליך',
         endDate: 'עד',
         allProcesses: 'כל התהליכים',
         pendingProcesses: 'תהליכים בתהליך',
@@ -1286,7 +1306,7 @@ export default {
             filesLimit: 'הגבלת מספר קבצים שניתן להעלות בטעינת יישויות',
         },
         searchLimits: {
-            table: 'כמות ישויות למשיכה בתצוגה טבלאית',
+            // table: 'כמות ישויות למשיכה בתצוגה טבלאית', // comment out  waiting for Itay
             bulk: 'כמות ישויות למשיכה בתצוגת כרטיסיות',
         },
         location: {

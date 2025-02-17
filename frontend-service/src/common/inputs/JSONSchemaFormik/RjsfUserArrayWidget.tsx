@@ -13,7 +13,7 @@ const RjsfUserArrayWidget = ({ label, value, onChange, rawErrors = [], onBlur, o
     if (!currentUsers.length || !currentUsers[0]) onChange(undefined);
 
     return (
-        <Box sx={{ bgcolor: 'white' }}>
+        <Box>
             <Grid marginBottom={2}>
                 <UserAutocomplete
                     mode="external"
