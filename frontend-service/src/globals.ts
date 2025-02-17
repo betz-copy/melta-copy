@@ -240,6 +240,7 @@ export const environment = {
         maxRadius: 30000,
         squareLength: 2500,
         polygon: { polygonPrefix: 'POLYGON((', polygonSuffix: '))' },
+        mapSearchPropertiesLimit: 2,
     },
     profileIconsCount: 19,
     avatarIconPath: '/icons/profileAvatar/',
