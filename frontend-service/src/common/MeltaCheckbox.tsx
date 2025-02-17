@@ -12,6 +12,7 @@ interface MeltaCheckboxProps {
     sxEmpty?: SxProps<any>;
     sxIcon?: CSSProperties;
     sx?: SxProps<any>;
+    checkboxSx?: SxProps;
 }
 
 const MeltaCheckbox: React.FC<MeltaCheckboxProps> = ({
@@ -24,10 +25,11 @@ const MeltaCheckbox: React.FC<MeltaCheckboxProps> = ({
     sxEmpty,
     sxIcon,
     sx,
+    checkboxSx,
 }) => {
     const theme = useTheme();
 
-    const checkboxSx: SxProps = {
+    const defaultCheckboxSx: SxProps = {
         borderRadius: '4px',
         width: '20px',
         height: '20px',
@@ -35,6 +37,7 @@ const MeltaCheckbox: React.FC<MeltaCheckboxProps> = ({
         justifyContent: 'center',
         alignItems: 'center',
     };
+    const mergedCheckboxSx = { ...defaultCheckboxSx, ...checkboxSx };
 
     return (
         <Checkbox
@@ -45,7 +48,7 @@ const MeltaCheckbox: React.FC<MeltaCheckboxProps> = ({
             checkedIcon={
                 <Box
                     sx={{
-                        ...checkboxSx,
+                        ...mergedCheckboxSx,
                         background: theme.palette.primary.main,
                         opacity: disabled ? 0.5 : 1,
                         ...sxChecked,
@@ -57,7 +60,7 @@ const MeltaCheckbox: React.FC<MeltaCheckboxProps> = ({
             indeterminateIcon={
                 <Box
                     sx={{
-                        ...checkboxSx,
+                        ...mergedCheckboxSx,
                         background: theme.palette.primary.main,
                         opacity: disabled ? 0.5 : 1,
                         border: 'none',
@@ -70,7 +73,7 @@ const MeltaCheckbox: React.FC<MeltaCheckboxProps> = ({
             icon={
                 <Box
                     sx={{
-                        ...checkboxSx,
+                        ...mergedCheckboxSx,
                         border: `1px solid ${theme.palette.primary.main}`,
                         ...sxEmpty,
                     }}
