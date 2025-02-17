@@ -1,19 +1,16 @@
-import axios, { AxiosInstance, AxiosRequestConfig } from "axios";
-import config from "../../config";
+import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
+import config from '../../config';
 
 const {
-  service: { workspaceIdHeaderName },
+    service: { workspaceIdHeaderName },
 } = config;
 
 export default abstract class DefaultExternalServiceApi {
-  public api: AxiosInstance;
+    public api: AxiosInstance;
 
-  constructor(
-    workspaceId: string,
-    axiosConfig?: AxiosRequestConfig<any> | undefined
-  ) {
-    this.api = axios.create(axiosConfig);
-    // Add the workspace id header to axios requests
-    this.api.defaults.headers[workspaceIdHeaderName] = workspaceId;
-  }
+    constructor(workspaceId: string, axiosConfig?: AxiosRequestConfig<any> | undefined) {
+        this.api = axios.create(axiosConfig);
+        // Add the workspace id header to axios requests
+        this.api.defaults.headers[workspaceIdHeaderName] = workspaceId;
+    }
 }
