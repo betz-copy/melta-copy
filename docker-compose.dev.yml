@@ -303,14 +303,14 @@ services:
     networks:
       - network
 
-  # mailer-service:
-  #   depends_on:
-  #     - redis
-  #   ports:
-  #     - 8010:8000
-  #   restart: always
-  #   networks:
-  #     - network
+  mailer-service:
+    depends_on:
+      - redis
+    ports:
+      - 8010:8000
+    restart: always
+    networks:
+      - network
 
   preview-service:
     ports:

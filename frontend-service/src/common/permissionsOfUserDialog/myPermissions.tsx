@@ -298,11 +298,6 @@ const MyPermissions: React.FC<{
                                         mode === 'view'
                                             ? undefined
                                             : {
-                                                  indeterminate:
-                                                      Object.keys(categoriesPermissions).length > 0 &&
-                                                      Object.values(categoriesPermissions).filter(
-                                                          (categoryPermission) => categoryPermission?.scope !== PermissionScope.write,
-                                                      ).length < categories.size,
                                                   permissionType: {
                                                       write: {
                                                           checked:

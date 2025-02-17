@@ -3,13 +3,12 @@ import React, { useState } from 'react';
 import ArrowLeftRoundedIcon from '@mui/icons-material/ArrowLeftRounded';
 import { FormikProps } from 'formik';
 import { _cloneObject } from '@ag-grid-community/core';
-import { MeltaCheckbox } from '../MeltaCheckbox';
-import PermissionViewIcon from './PermissionViewIcon';
 import { permissionTypeCheckboxProps } from './instancesPermissionsCard';
 import { IUser } from '../../interfaces/users';
 import { PermissionScope } from '../../interfaces/permissions';
 import { getChangedTemplatePermission } from '../../utils/permissions/instancePermissions';
 import { entityTemplatePermissionDialog } from '../../utils/permissions/permissionOfUserDialog';
+import PermissionScopeBtn from './PermissionScopeBtn';
 
 const CategoryCheckboxPermission: React.FC<{
     categoryDisplayName: string;
@@ -26,6 +25,7 @@ const CategoryCheckboxPermission: React.FC<{
     const [openEntitiesList, setOpenEntitiesList] = useState(false);
     const categoriesPermission = formikProps.values?.permissions?.[workspaceId]?.instances?.categories ?? {};
     const categoryPermissions = categoriesPermission?.[categoryId] ?? {};
+    const templatesPermissions = categoryPermissions?.entityTemplates ?? {};
 
     return (
         <Grid item container>
@@ -43,22 +43,32 @@ const CategoryCheckboxPermission: React.FC<{
                 <Typography>{categoryDisplayName}</Typography>
             </Grid>
             <Grid xs={3}>
-                {viewMode ? (
-                    <PermissionViewIcon checked={permissionType.read.checked} />
-                ) : (
-                    <MeltaCheckbox
-                        checked={permissionType.read.checked}
-                        onChange={permissionType.read.onChange}
-                        disabled={disabled || permissionType.write.checked}
-                    />
-                )}
+                <PermissionScopeBtn
+                    viewMode={viewMode}
+                    defaultChecked={permissionType.read.checked}
+                    onChange={permissionType.read.onChange}
+                    disabled={disabled || permissionType.write.checked}
+                    indeterminate={
+                        !categoryPermissions.scope &&
+                        Object.keys(templatesPermissions ?? {}).length > 0 &&
+                        Object.keys(templatesPermissions ?? {}).length < entityTemplates.length
+                    }
+                />
             </Grid>
             <Grid xs={3}>
-                {viewMode ? (
-                    <PermissionViewIcon checked={permissionType.write.checked} />
-                ) : (
-                    <MeltaCheckbox checked={permissionType.write.checked} onChange={permissionType.write.onChange} disabled={disabled} />
-                )}
+                <PermissionScopeBtn
+                    viewMode={viewMode}
+                    defaultChecked={permissionType.write.checked}
+                    onChange={permissionType.write.onChange}
+                    disabled={disabled}
+                    indeterminate={
+                        categoryPermissions.scope !== PermissionScope.write &&
+                        Object.values(templatesPermissions ?? {}).filter((templatePermission) => templatePermission.scope === PermissionScope.write)
+                            .length > 0 &&
+                        Object.values(templatesPermissions ?? {}).filter((templatePermission) => templatePermission.scope === PermissionScope.write)
+                            .length < entityTemplates.length
+                    }
+                />
             </Grid>
             <Grid xs={12}>
                 <Collapse in={openEntitiesList}>
@@ -71,63 +81,56 @@ const CategoryCheckboxPermission: React.FC<{
                                 </Grid>
                                 <Grid xs={0.5} />
                                 <Grid xs={2.5}>
-                                    {viewMode ? (
-                                        <PermissionViewIcon checked={permissionType.read.checked} />
-                                    ) : (
-                                        <MeltaCheckbox
-                                            checked={
-                                                categoryPermissions?.entityTemplates?.[entityCheck.id]?.scope !== undefined ||
-                                                permissionType.read.checked
-                                            }
-                                            onChange={(_event, checked) => {
-                                                formikProps.setFieldValue(
-                                                    `${permissionsPath}.instances.categories`,
-                                                    getChangedTemplatePermission(
-                                                        categoriesPermission,
-                                                        checked,
-                                                        PermissionScope.read,
-                                                        categoryId,
-                                                        entityCheck.id,
-                                                        entityTemplates,
-                                                    ),
-                                                );
-                                            }}
-                                            disabled={
-                                                disabled ||
-                                                categoryPermissions?.entityTemplates?.[entityCheck.id]?.scope === PermissionScope.write ||
-                                                permissionType.write.checked
-                                            }
-                                            checkboxSx={{ width: '17px', height: '17px' }}
-                                        />
-                                    )}
+                                    <PermissionScopeBtn
+                                        viewMode={viewMode}
+                                        defaultChecked={
+                                            categoryPermissions?.entityTemplates?.[entityCheck.id]?.scope !== undefined || permissionType.read.checked
+                                        }
+                                        onChange={(_event, checked) => {
+                                            formikProps.setFieldValue(
+                                                `${permissionsPath}.instances.categories`,
+                                                getChangedTemplatePermission(
+                                                    categoriesPermission,
+                                                    checked,
+                                                    PermissionScope.read,
+                                                    categoryId,
+                                                    entityCheck.id,
+                                                    entityTemplates,
+                                                ),
+                                            );
+                                        }}
+                                        disabled={
+                                            disabled ||
+                                            categoryPermissions?.entityTemplates?.[entityCheck.id]?.scope === PermissionScope.write ||
+                                            permissionType.write.checked
+                                        }
+                                        checkboxSx={{ width: '17px', height: '17px' }}
+                                    />
                                 </Grid>
                                 <Grid xs={0.5} />
                                 <Grid xs={2.5}>
-                                    {viewMode ? (
-                                        <PermissionViewIcon checked={permissionType.write.checked} />
-                                    ) : (
-                                        <MeltaCheckbox
-                                            checked={
-                                                categoryPermissions?.entityTemplates?.[entityCheck.id]?.scope === PermissionScope.write ||
-                                                permissionType.write.checked
-                                            }
-                                            onChange={(_event, checked) => {
-                                                formikProps.setFieldValue(
-                                                    `${permissionsPath}.instances.categories`,
-                                                    getChangedTemplatePermission(
-                                                        categoriesPermission,
-                                                        checked,
-                                                        PermissionScope.write,
-                                                        categoryId,
-                                                        entityCheck.id,
-                                                        entityTemplates,
-                                                    ),
-                                                );
-                                            }}
-                                            disabled={disabled}
-                                            checkboxSx={{ width: '17px', height: '17px' }}
-                                        />
-                                    )}
+                                    <PermissionScopeBtn
+                                        viewMode={viewMode}
+                                        defaultChecked={
+                                            categoryPermissions?.entityTemplates?.[entityCheck.id]?.scope === PermissionScope.write ||
+                                            permissionType.write.checked
+                                        }
+                                        onChange={(_event, checked) => {
+                                            formikProps.setFieldValue(
+                                                `${permissionsPath}.instances.categories`,
+                                                getChangedTemplatePermission(
+                                                    categoriesPermission,
+                                                    checked,
+                                                    PermissionScope.write,
+                                                    categoryId,
+                                                    entityCheck.id,
+                                                    entityTemplates,
+                                                ),
+                                            );
+                                        }}
+                                        disabled={disabled}
+                                        checkboxSx={{ width: '17px', height: '17px' }}
+                                    />
                                 </Grid>
                             </Grid>
                         );

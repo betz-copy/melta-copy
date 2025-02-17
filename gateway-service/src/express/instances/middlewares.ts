@@ -47,15 +47,7 @@ export class InstancesValidator extends DefaultController {
 
     async validateUserCanCreateEntityInstance(req: Request) {
         const { templateId } = req.body;
-
-        const [categoryId, userPermissions] = await Promise.all([
-            this.getCategoryIdFromTemplateId(templateId),
-            this.authorizer.getWorkspacePermissions(req.user!.id),
-        ]);
-
-        if (!userPermissions.admin?.scope && !Object.keys(userPermissions.instances?.categories ?? {}).includes(categoryId)) {
-            throw new ForbiddenError('user not authorized', { metadata: `user does not have write permission on category ${categoryId}` });
-        }
+        await this.validateUserPermissionForEntityInstance(req, templateId, PermissionScope.write);
     }
 
     async getAllowedEntityTemplatesForInstances(
@@ -110,7 +102,9 @@ export class InstancesValidator extends DefaultController {
                         entityTemplates?.[templateId]?.scope === PermissionScope.write),
             )
         ) {
-            throw new ForbiddenError(`user not authorized, does not have ${permissionScope} permission on category ${categoryId}`);
+            throw new ForbiddenError(
+                `user not authorized, does not have ${permissionScope} permission on template ${templateId} in category ${categoryId}`,
+            );
         }
         (req as RequestWithPermissionsOfUserId).permissionsOfUserId = userPermissions;
     }

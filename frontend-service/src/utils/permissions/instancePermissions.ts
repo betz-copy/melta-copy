@@ -54,22 +54,12 @@ export const isWorkspaceAdmin = (permissions: ISubCompactPermissions) => Boolean
 
 export const getNewScope = (oldScope: PermissionScope | undefined, clickedScope: PermissionScope, checked: boolean) => {
     let newScope: PermissionScope | undefined;
+
     if (clickedScope === PermissionScope.write) {
-        if (checked) {
-            newScope = PermissionScope.write;
-        } else {
-            newScope = PermissionScope.read;
-        }
-    } else if (clickedScope === PermissionScope.read) {
-        if (checked) {
-            if (oldScope === PermissionScope.write) {
-                newScope = PermissionScope.write;
-            } else {
-                newScope = PermissionScope.read;
-            }
-        } else if (oldScope === PermissionScope.write) {
-            newScope = PermissionScope.write;
-        }
+        newScope = checked ? PermissionScope.write : PermissionScope.read;
+    } else {
+        // eslint-disable-next-line no-nested-ternary
+        newScope = oldScope === PermissionScope.write ? PermissionScope.write : checked ? PermissionScope.read : undefined;
     }
 
     return newScope;
@@ -82,29 +72,22 @@ export const getChangedCategoryPermissions = (
     id: string,
 ) => {
     const categoriesPermissions = { ...permissions };
+    const newScope = getNewScope(categoriesPermissions?.[id]?.scope, scope, checked);
+    const newTemplatePermission = {};
+
     if (scope === PermissionScope.read) {
-        const newScope: undefined | PermissionScope = getNewScope(categoriesPermissions?.[id]?.scope, scope, checked);
-        const newTemplatePermission = {};
-
-        if (categoriesPermissions?.[id]?.entityTemplates)
-            Object.keys(categoriesPermissions?.[id]?.entityTemplates).forEach((key) => {
-                if (categoriesPermissions?.[id]?.entityTemplates?.[key]?.scope === PermissionScope.write) {
-                    newTemplatePermission[key] = {
-                        scope: getNewScope(categoriesPermissions?.[id]?.entityTemplates?.[key]?.scope, scope, checked),
-                        fields: {},
-                    };
-                }
-            });
-
-        return {
-            entityTemplates: newTemplatePermission,
-            scope: newScope,
-        };
+        Object.keys(categoriesPermissions?.[id]?.entityTemplates ?? {}).forEach((key) => {
+            if (categoriesPermissions?.[id]?.entityTemplates?.[key]?.scope === PermissionScope.write)
+                newTemplatePermission[key] = {
+                    scope: PermissionScope.write,
+                    fields: {},
+                };
+        });
     }
 
     return {
-        scope: getNewScope(categoriesPermissions?.[id]?.scope, scope, checked),
-        entityTemplates: {},
+        scope: newScope,
+        entityTemplates: newTemplatePermission,
     };
 };
 
@@ -126,8 +109,8 @@ const changeSpecificTemplate = (
             entityTemplates: {
                 ...categoriesPermissions[categoryId]?.entityTemplates,
                 [templateId]: {
-                    ...categoriesPermissions[categoryId]?.entityTemplates?.[templateId],
-                    scope: getNewScope(categoriesPermissions?.[categoryId]?.entityTemplates?.[templateId]?.scope, scope, checked),
+                    scope: newScope,
+                    fields: categoriesPermissions[categoryId]?.entityTemplates?.[templateId]?.fields ?? {},
                 },
             },
         };
@@ -138,7 +121,6 @@ const changeSpecificTemplate = (
 
 const handleCheckCategoryByTemplates = (
     permissions: ICompact<IInstancesPermission>['categories'],
-    checked: boolean,
     categoryId: string,
     entityTemplates: entityTemplatePermissionDialog[],
 ) => {
@@ -146,22 +128,20 @@ const handleCheckCategoryByTemplates = (
     let countRead = 0;
     let countWrite = 0;
 
-    if (categoriesPermissions?.[categoryId]?.entityTemplates) {
-        const templatesIds = Object.keys(categoriesPermissions[categoryId].entityTemplates);
+    const templatesIds = Object.keys(categoriesPermissions[categoryId].entityTemplates ?? {});
 
-        templatesIds.forEach((currTemplateId) => {
-            if (categoriesPermissions[categoryId].entityTemplates?.[currTemplateId].scope === PermissionScope.read) countRead++;
-            else if (categoriesPermissions[categoryId].entityTemplates?.[currTemplateId].scope === PermissionScope.write) countWrite++;
-        });
-    }
+    templatesIds.forEach((currTemplateId) => {
+        if (categoriesPermissions[categoryId].entityTemplates?.[currTemplateId].scope === PermissionScope.read) countRead++;
+        else if (categoriesPermissions[categoryId].entityTemplates?.[currTemplateId].scope === PermissionScope.write) countWrite++;
+    });
 
-    if (countWrite + countRead === entityTemplates.length) {
-        if (countWrite === entityTemplates.length) {
-            categoriesPermissions[categoryId] = getChangedCategoryPermissions(categoriesPermissions, checked, PermissionScope.write, categoryId);
-        } else {
-            categoriesPermissions[categoryId] = getChangedCategoryPermissions(categoriesPermissions, checked, PermissionScope.read, categoryId);
-        }
-    }
+    if (countRead + countWrite === entityTemplates.length)
+        categoriesPermissions[categoryId] = getChangedCategoryPermissions(
+            categoriesPermissions,
+            true,
+            countWrite === entityTemplates.length ? PermissionScope.write : PermissionScope.read,
+            categoryId,
+        );
 
     return categoriesPermissions;
 };
@@ -175,23 +155,16 @@ const handleUncheckCategoryByTemplates = (
     entityTemplates: entityTemplatePermissionDialog[],
 ) => {
     const categoriesPermissions = { ...permissions };
-
     const categoryScope = categoriesPermissions[categoryId]?.scope && getNewScope(categoriesPermissions[categoryId]?.scope, scope, checked);
 
-    if (categoriesPermissions[categoryId]?.scope === PermissionScope.read) {
+    if (categoriesPermissions[categoryId]?.scope) {
         entityTemplates.forEach((entityTemplate) => {
             if (entityTemplate.id !== templateId) {
                 categoriesPermissions[categoryId].entityTemplates[entityTemplate.id] = {
-                    scope: categoriesPermissions?.[categoryId]?.entityTemplates?.[entityTemplate.id]?.scope ?? PermissionScope.read,
-                    fields: {},
-                };
-            }
-        });
-    } else if (categoriesPermissions[categoryId]?.scope === PermissionScope.write) {
-        entityTemplates.forEach((entityTemplate) => {
-            if (entityTemplate.id !== templateId) {
-                categoriesPermissions[categoryId].entityTemplates[entityTemplate.id] = {
-                    scope: PermissionScope.write,
+                    scope:
+                        categoriesPermissions[categoryId]?.scope === PermissionScope.write
+                            ? PermissionScope.write
+                            : categoriesPermissions?.[categoryId]?.entityTemplates?.[entityTemplate.id]?.scope ?? PermissionScope.read,
                     fields: {},
                 };
             }
@@ -204,8 +177,9 @@ const handleUncheckCategoryByTemplates = (
         delete categoriesPermissions[categoryId].scope;
     }
 
-    return categoriesPermissions;
+    return handleCheckCategoryByTemplates(categoriesPermissions, categoryId, entityTemplates);
 };
+
 export const getChangedTemplatePermission = (
     permissions: ICompact<IInstancesPermission>['categories'],
     checked: boolean,
@@ -217,7 +191,7 @@ export const getChangedTemplatePermission = (
     let categoriesPermissions = changeSpecificTemplate(permissions, checked, scope, categoryId, templateId);
 
     if (checked) {
-        categoriesPermissions = handleCheckCategoryByTemplates(categoriesPermissions, checked, categoryId, entityTemplates);
+        categoriesPermissions = handleCheckCategoryByTemplates(categoriesPermissions, categoryId, entityTemplates);
     } else {
         categoriesPermissions = handleUncheckCategoryByTemplates(categoriesPermissions, checked, scope, categoryId, templateId, entityTemplates);
     }

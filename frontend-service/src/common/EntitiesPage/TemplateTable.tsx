@@ -161,17 +161,10 @@ const TemplateTable = forwardRef<
     };
 
     const isLoadExcelDisabled = !userHasWritePermissions || checkIfLoadEntityIsDisabled();
-    const getLoadExcelTooltip = () => {
-        if (!userHasWritePermissions) {
-            return i18next.t('permissions.dontHaveWritePermissionsToTemplate');
-        }
+    const getLoadExcelTooltip = isLoadExcelDisabled
+        ? i18next.t(!userHasWritePermissions ? 'permissions.dontHaveWritePermissionsToTemplate' : 'wizard.entity.loadEntities.tableCantLoadEntities')
+        : undefined;
 
-        if (checkIfLoadEntityIsDisabled()) {
-            return i18next.t('wizard.entity.loadEntities.tableCantLoadEntities');
-        }
-
-        return undefined;
-    };
     return (
         <Grid container minWidth="fit-content">
             <Grid container justifyContent="space-between" width="fit-content" minWidth="fit-content">
@@ -289,7 +282,7 @@ const TemplateTable = forwardRef<
                             color: theme.palette.primary.main,
                         }}
                         onSuccessCreate={() => entitiesTableRef.current?.refreshServerSide()}
-                        popoverText={getLoadExcelTooltip()}
+                        popoverText={getLoadExcelTooltip}
                     >
                         <Upload
                             fontSize="small"

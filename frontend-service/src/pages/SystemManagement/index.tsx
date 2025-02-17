@@ -61,9 +61,7 @@ const SystemManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateAction
         });
     }, [tabValue, trackPageView]);
 
-    const defaultTabs = Object.keys(tabsComponentsMapping).filter((tabName) => {
-        return tabsPermissionsMapping[tabName];
-    });
+    const defaultTabs = Object.keys(tabsComponentsMapping).filter((tabName) => tabsPermissionsMapping[tabName]);
 
     return (
         <Box

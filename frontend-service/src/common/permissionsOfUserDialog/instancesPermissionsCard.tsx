@@ -18,6 +18,7 @@ export type permissionTypeCheckboxProps = {
     read: checkboxControlProps;
     write: checkboxControlProps;
 };
+
 const InstancesPermissionsCard: React.FC<{
     viewMode: boolean;
     formikProps: FormikProps<IUser>;
@@ -33,7 +34,6 @@ const InstancesPermissionsCard: React.FC<{
     }[];
     checkboxAllProps?: {
         permissionType: permissionTypeCheckboxProps;
-        indeterminate: boolean;
     };
 }> = ({ categoriesCheckboxProps, viewMode, checkboxAllProps, formikProps, permissionsPath, workspaceId }) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
