@@ -14,7 +14,7 @@ import {
     ICreateEntityMetadata,
     IFailedEntity,
 } from '../../externalServices/ruleBreachService/interfaces';
-import { IEntity, IValidationErrorData } from '../../externalServices/instanceService/interfaces/entities';
+import { IEntityWithIgnoredRules, IValidationErrorData } from '../../externalServices/instanceService/interfaces/entities';
 import {
     IBrokenRulePopulated,
     ICreateEntityMetadataPopulated,
@@ -93,7 +93,7 @@ const readExcelFile = async (
     failedEntities: IFailedEntity[],
     entitiesFileLimit = config.loadExcel.entitiesFileLimit,
 ) => {
-    const entities: IEntity[] = [];
+    const entities: IEntityWithIgnoredRules[] = [];
     const columns = Object.fromEntries(
         Object.entries(template.properties.properties).filter(([_propertyKey, propertyTemplate]) => isIncludedColumn(propertyTemplate)),
     );
@@ -128,7 +128,7 @@ const readExcelFile = async (
                 });
 
                 if (failedProperties.length > 0) handleFailedEntities(rowData, failedProperties, failedEntities);
-                else entities.push({ templateId: template._id, properties: rowData });
+                else entities.push({ templateId: template._id, properties: rowData, ignoredRules: [] });
             });
 
             if (entities.length > entitiesFileLimit) throw new BadRequestError(`file limit: more than ${entitiesFileLimit} entities`, file);

@@ -51,6 +51,9 @@ export interface ISearchProcessInstancesBody extends IBaseSearchProperties {
     startDate?: Date;
     endDate?: Date;
     archived?: boolean;
+    isWaitingForMeFilterOn?: boolean;
+    isStepStatusPendeing?: boolean;
+    userId?: string;
 }
 
 export interface IReferencedEntityForProcess {
