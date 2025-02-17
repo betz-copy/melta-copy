@@ -1,11 +1,9 @@
-import DefaultExternalServiceApi from "./externalService";
+import DefaultExternalServiceApi from './externalService';
 
-export default abstract class DefaultManagerProxy<
-  ExternalService extends DefaultExternalServiceApi | null = null
-> {
-  public service: ExternalService;
+export default abstract class DefaultManagerProxy<ExternalService extends DefaultExternalServiceApi | null = null> {
+    public service: ExternalService;
 
-  constructor(externalService: ExternalService) {
-    this.service = externalService;
-  }
+    constructor(externalService: ExternalService) {
+        this.service = externalService;
+    }
 }
