@@ -32,7 +32,7 @@ export const searchCategoryInWorkspaceSchema = Joi.object({
 });
 
 // POST /api/flow-cube/templates/search
-export const searchTemplatesSchema = Joi.object({
+export const searchEntityTemplateSchema = Joi.object({
     body: Joi.object({
         Value: Joi.string().allow(''),
         WorkspaceId: Joi.string().required(),

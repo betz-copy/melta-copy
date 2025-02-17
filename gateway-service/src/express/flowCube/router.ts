@@ -14,11 +14,10 @@ import {
     searchFlowCubeRequestSchema,
     searchEntitiesByTemplateSchema,
     searchCategoryInWorkspaceSchema,
-    searchTemplatesSchema,
+    searchEntityTemplateSchema,
     searchWorkspacesSchema,
 } from './validator.schema';
 import validateFlowHeaders from './flowMiddleware';
-// import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
 
 const FlowCubeRouter: Router = Router();
 const FlowCubeControllerMiddleware = createWorkspacesController(FlowCubeController);
@@ -50,9 +49,9 @@ FlowCubeRouter.post(
 
 FlowCubeRouter.post(
     '/templates/search',
-    ValidateRequest(searchTemplatesSchema),
+    ValidateRequest(searchEntityTemplateSchema),
     wrapMiddleware(translateWorkspaceParameterFlow),
-    FlowCubeControllerMiddleware.searchTemplates,
+    FlowCubeControllerMiddleware.searchEntityTemplate,
 );
 
 FlowCubeRouter.post(

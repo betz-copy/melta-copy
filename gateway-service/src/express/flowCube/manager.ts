@@ -37,23 +37,18 @@ export class FlowCubeManager extends DefaultManagerProxy<null> {
     async convertFlowToNeoSearch(templateId: string, flowSearchBody: Record<string, any>) {
         const filterAnd: IFilterOfTemplate<any>[] = [];
         const template = await this.entityTemplateService.getEntityTemplateById(templateId);
+
         Object.entries(flowSearchBody).forEach(([field, filterValue]) => {
             if (Array.isArray(filterValue) && filterValue.length === 0) {
                 return;
             }
 
             if (template.properties.properties[field]) {
-                if (Array.isArray(filterValue)) {
-                    filterAnd.push({ [field]: { $in: filterValue.map((val) => new RegExp(this.escapeRegExp(val))) } });
-                    // const regexConditions = filterValue.map((value) => ({
-                    //     [field]: { $regex: value, $options: 'i' }, // Case-insensitive regex search
-                    // }));
+                const filterCondition = Array.isArray(filterValue)
+                    ? { $in: filterValue.map((val) => new RegExp(this.escapeRegExp(val))) }
+                    : { $eq: filterValue };
 
-                    // // Combine all the regex conditions using $or
-                    // filterAnd.push({ $or: regexConditions });
-                } else {
-                    filterAnd.push({ [field]: { $eq: filterValue } });
-                }
+                filterAnd.push({ [field]: filterCondition });
             } else if (field.endsWith('From') || field.endsWith('To')) {
                 const isFrom = field.endsWith('From');
                 const originalField = isFrom ? field.slice(0, -4) : field.slice(0, -2);
@@ -98,9 +93,7 @@ export class FlowCubeManager extends DefaultManagerProxy<null> {
         }
 
         const usersPermissions = await UserService.getUserPermissions(userId);
-
         const workspaces = await WorkspaceService.getWorkspaces(searchBody);
-
         const filteredWorkspaces = await this.filterWorkspacesByPermissions(workspaces, usersPermissions);
 
         return filteredWorkspaces.map(({ _id, displayName }) => {
@@ -124,9 +117,7 @@ export class FlowCubeManager extends DefaultManagerProxy<null> {
         }
 
         const usersPermissions = await this.authorizer.getWorkspacePermissions(userId);
-
-        const categories = await this.entityTemplateService.getAllCategories(searchInput);
-
+        const categories = await this.entityTemplateService.searchCategories(searchInput);
         const filteredCategories = usersPermissions.admin ? categories : this.filterCategoriesByPermissions(categories, usersPermissions);
 
         return filteredCategories.map(({ _id, displayName }) => {
@@ -142,7 +133,7 @@ export class FlowCubeManager extends DefaultManagerProxy<null> {
         return categories.filter(({ _id }) => usersPermissions.instances?.categories[_id]);
     }
 
-    async searchTemplates(body: any, userId: string): Promise<IFlowAutoComplete[]> {
+    async searchEntityTemplate(body: any, userId: string): Promise<IFlowAutoComplete[]> {
         const searchEntityTemplatesBody = {} as ISearchEntityTemplatesBody;
 
         if (body?.Value) {
@@ -154,9 +145,7 @@ export class FlowCubeManager extends DefaultManagerProxy<null> {
         }
 
         const usersPermissions = await this.authorizer.getWorkspacePermissions(userId);
-
         const templates = await this.templatesManager.searchEntityTemplates(usersPermissions, searchEntityTemplatesBody);
-
         const filteredTemplates =
             Object.keys(body).length === 0 || body.CategoryType === ''
                 ? templates
