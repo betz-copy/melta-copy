@@ -16,16 +16,15 @@ import { useDarkModeStore } from '../../../stores/darkMode';
 import { getLocationProperties } from '../../../utils/map';
 
 interface LocationAutoCompleteOptionProps {
-    key: string;
     title: string;
     value: string;
 }
 
-const LocationAutoCompleteOption: React.FC<LocationAutoCompleteOptionProps> = ({ key, title, value }) => {
+const LocationAutoCompleteOption: React.FC<LocationAutoCompleteOptionProps> = ({ title, value }) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
     return (
-        <Grid key={key} container item alignItems="center" justifyContent="space-between" paddingX="10px">
+        <Grid container item alignItems="center" justifyContent="space-between" paddingX="10px">
             <Typography
                 style={{
                     textOverflow: 'ellipsis',

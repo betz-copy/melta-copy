@@ -39,9 +39,11 @@ const MapPage = () => {
     const [lineData, setLineData] = useState<Cartesian3[]>([]);
 
     const [selectedTemplates, setSelectedTemplates] = useState<IMongoEntityTemplatePopulated[]>([]);
+    
     const [searchedEntity, setSearchedEntity] = useState<IEntity | undefined>(undefined);
     const [searchedEntityTemplate, setSearchedEntityTemplate] = useState<IMongoEntityTemplatePopulated | undefined>(undefined);
     const [selectedEntity, setSelectedEntity] = useState<{ node: IEntity; matchingField: string } | null>(null);
+
     const [searchedPolygons, setSearchedPolygons] = useState<{ key: string; name: string; node: IEntity; position: Cartesian3[] }[]>([]);
     const [searchedMarkers, setSearchedMarkers] = useState<{ key: string; name: string; node: IEntity; position: Cartesian3 }[]>([]);
 
@@ -155,7 +157,7 @@ const MapPage = () => {
                         setSearchedPolygons((prev) => [
                             ...prev,
                             {
-                                key: matchingField,
+                                key: `${matchingField}-${node.properties._id}`,
                                 name,
                                 node,
                                 position: value as Cartesian3[],
@@ -163,7 +165,7 @@ const MapPage = () => {
                         ]);
                         return;
                     }
-                    setSearchedMarkers((prev) => [...prev, { key: matchingField, name, node, position: value as Cartesian3 }]);
+                    setSearchedMarkers((prev) => [...prev, { key: `${matchingField}-${node.properties._id}`, name, node, position: value as Cartesian3 }]);
                 });
             });
         },
@@ -182,7 +184,7 @@ const MapPage = () => {
                         mutateAsync({
                             textSearch: '',
                             templates: { [templateId]: { filter: {} } },
-                            circle: { coordinate: [longitude, latitude], radius: circleData.radius! },
+                            circle: { coordinate: [latitude, longitude], radius: circleData.radius! },
                         }),
                     ),
                 );
