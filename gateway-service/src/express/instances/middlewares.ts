@@ -47,15 +47,7 @@ export class InstancesValidator extends DefaultController {
 
     async validateUserCanCreateEntityInstance(req: Request) {
         const { templateId } = req.body;
-
-        const [categoryId, userPermissions] = await Promise.all([
-            this.getCategoryIdFromTemplateId(templateId),
-            this.authorizer.getWorkspacePermissions(req.user!.id),
-        ]);
-
-        if (!userPermissions.admin?.scope && !Object.keys(userPermissions.instances?.categories ?? {}).includes(categoryId)) {
-            throw new ForbiddenError('user not authorized', { metadata: `user does not have write permission on category ${categoryId}` });
-        }
+        await this.validateUserPermissionForEntityInstance(req, templateId, PermissionScope.write);
     }
 
     async getAllowedEntityTemplatesForInstances(
@@ -95,17 +87,29 @@ export class InstancesValidator extends DefaultController {
         await this.validateHasPermissionsToEntitiesInTemplates(req.user!, Object.keys(templates));
     }
 
-    private async validateUserPermissionForEntityInstance(req: Request, templateId: string, permissionScope: PermissionScope) {
-        const categoryId = await this.getCategoryIdFromTemplateId(templateId);
-
+    private async validateUserPermissionForEntityInstance(
+        req: Request,
+        templateId: string,
+        permissionScope: PermissionScope,
+        givenCategoryId?: string,
+    ) {
+        const categoryId = givenCategoryId ?? (await this.getCategoryIdFromTemplateId(templateId));
         const userPermissions = await this.authorizer.getWorkspacePermissions(req.user!.id);
+
         if (
             !userPermissions.admin?.scope &&
             !Object.entries(userPermissions.instances?.categories ?? {}).some(
-                ([category, { scope }]) => category === categoryId && (scope === permissionScope || scope === PermissionScope.write),
+                ([category, { scope, entityTemplates }]) =>
+                    category === categoryId &&
+                    (scope === permissionScope ||
+                        scope === PermissionScope.write ||
+                        entityTemplates?.[templateId]?.scope === permissionScope ||
+                        entityTemplates?.[templateId]?.scope === PermissionScope.write),
             )
         ) {
-            throw new ForbiddenError(`user not authorized, does not have ${permissionScope} permission on category ${categoryId}`);
+            throw new ForbiddenError(
+                `user not authorized, does not have ${permissionScope} permission on template ${templateId} in category ${categoryId}`,
+            );
         }
         (req as RequestWithPermissionsOfUserId).permissionsOfUserId = userPermissions;
     }
@@ -182,52 +186,39 @@ export class InstancesValidator extends DefaultController {
     }
 
     // relationships
-    private async getRelatedCategoriesFromRelationshipInstance(relationshipInstance: IRelationship) {
+    private async getRelatedTemplatesFromRelationshipInstance(relationshipInstance: IRelationship) {
         const { templateId: relationshipTemplateId } = relationshipInstance;
 
         const relationshipTemplate = await this.relationshipsTemplateService.getRelationshipTemplateById(relationshipTemplateId);
         const { sourceEntityId, destinationEntityId } = relationshipTemplate;
 
-        const [{ category: srcCategory }, { category: dstCategory }] = await Promise.all([
+        const [srcTemplate, dstTemplate] = await Promise.all([
             this.entityTemplateService.getEntityTemplateById(sourceEntityId),
             this.entityTemplateService.getEntityTemplateById(destinationEntityId),
         ]);
 
-        return lodashUniqby([srcCategory._id, dstCategory._id], (categoryId) => categoryId);
+        return lodashUniqby([srcTemplate, dstTemplate], (template) => template._id);
     }
 
     async validateUserCanCreateRelationshipInstance(req: Request) {
-        const [relatedCategories, userPermissions] = await Promise.all([
-            this.getRelatedCategoriesFromRelationshipInstance(req.body.relationshipInstance),
-            this.authorizer.getWorkspacePermissions(req.user!.id),
-        ]);
+        const relatedTemplates = await this.getRelatedTemplatesFromRelationshipInstance(req.body.relationshipInstance);
 
-        if (
-            !userPermissions.admin?.scope &&
-            !Object.entries(userPermissions.instances?.categories ?? {}).some(
-                ([categoryId, { scope }]) => relatedCategories.includes(categoryId) && scope === PermissionScope.write,
-            )
-        ) {
-            throw new ForbiddenError(`user not authorized, does not have ${PermissionScope.write} permission on categories ${relatedCategories}`);
-        }
+        await Promise.all(
+            relatedTemplates.map((template) =>
+                this.validateUserPermissionForEntityInstance(req, template._id, PermissionScope.write, template.category._id),
+            ),
+        );
     }
 
     async validateUserCanUpdateOrDeleteRelationshipInstance(req: Request) {
         const relationshipInstance = await this.instancesService.getRelationshipInstanceById(req.params.id);
+        const relatedTemplates = await this.getRelatedTemplatesFromRelationshipInstance(relationshipInstance);
 
-        const [relatedCategories, userPermissions] = await Promise.all([
-            this.getRelatedCategoriesFromRelationshipInstance(relationshipInstance),
-            this.authorizer.getWorkspacePermissions(req.user!.id),
-        ]);
-
-        if (
-            !userPermissions.admin?.scope &&
-            !Object.entries(userPermissions.instances?.categories ?? {}).some(
-                ([categoryId, { scope }]) => relatedCategories.includes(categoryId) && scope === PermissionScope.write,
-            )
-        ) {
-            throw new ForbiddenError(`user not authorized, does not have ${PermissionScope.write} permission on categories ${relatedCategories}`);
-        }
+        await Promise.all(
+            relatedTemplates.map((template) =>
+                this.validateUserPermissionForEntityInstance(req, template._id, PermissionScope.write, template.category._id),
+            ),
+        );
     }
 
     // rules

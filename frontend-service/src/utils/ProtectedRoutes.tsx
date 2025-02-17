@@ -25,10 +25,7 @@ export const CategoryProtectedRoute: React.FC<{ permissions: ISubCompactPermissi
     const params = useParams<{ categoryId: string }>();
     const { categoryId } = params;
 
-    return protectedRoute(
-        children,
-        permissions.admin?.scope === PermissionScope.write || Boolean(permissions.instances?.categories[categoryId]?.scope),
-    );
+    return protectedRoute(children, permissions.admin?.scope === PermissionScope.write || Boolean(permissions.instances?.categories[categoryId]));
 };
 
 export const EntityProtectedRoute: React.FC<{ permissions: ISubCompactPermissions; entityTemplates: IEntityTemplateMap }> = ({

@@ -38,7 +38,7 @@ export interface IGetColumnDefsOptions<Data extends any> {
     menuRowButtonProps?: boolean;
     hideNonPreview?: boolean;
     editRowButtonProps?: IButtonPopoverProps<Data>;
-    hasPermissionToCategory?: boolean;
+    hasPermissionToTemplate?: boolean;
     defaultVisibleColumns?: { [key: string]: boolean };
     defaultColumnsOrder?: { [key: string]: { order: number } };
     defaultColumnWidths?: { [key: string]: number };
@@ -66,7 +66,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
     deleteRowButtonProps,
     editRowButtonProps,
     menuRowButtonProps,
-    hasPermissionToCategory = true,
+    hasPermissionToTemplate = true,
     defaultVisibleColumns = {},
     defaultColumnsOrder = {},
     defaultColumnWidths = {},
@@ -308,17 +308,17 @@ export const getColumnDefs = <Data extends any = EntityData>({
                                 <Link
                                     href={`/entity/${getEntityPropertiesData(data)._id}`}
                                     onClick={(e) => {
-                                        if (!hasPermissionToCategory) e.preventDefault();
+                                        if (!hasPermissionToTemplate) e.preventDefault();
                                     }}
                                     data-tour="entity-page"
                                 >
                                     <IconButtonWithPopover
                                         popoverText={
-                                            !hasPermissionToCategory
+                                            !hasPermissionToTemplate
                                                 ? i18next.t('permissions.dontHavePermissionToEntityPage')
                                                 : i18next.t('entitiesTableOfTemplate.navigateToEntityPage')
                                         }
-                                        disabled={!hasPermissionToCategory}
+                                        disabled={!hasPermissionToTemplate}
                                     >
                                         <img src="/icons/read-more-icon.svg" />
                                     </IconButtonWithPopover>

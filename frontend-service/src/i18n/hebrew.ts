@@ -379,7 +379,7 @@ export default {
         succeededToDeleteUser: 'נמחק הרשאות של משתמש בהצלחה',
         failedToLoadAllPermissions: 'נכשל לטעון את כל ההרשאות',
         dontHavePermissionsToCategory: 'אין הרשאות לקטגוריה',
-        dontHaveWritePermissionsToCategory: 'אין הרשאות עריכה לקטגוריה',
+        dontHaveWritePermissionsToTemplate: 'אין הרשאות עריכה לתבנית',
         dontHavePermissionToEntityPage: 'אין לך הרשאות לגשת לעמוד פרט של ישות זו',
         dontHaveWritePermissions: 'אין לך הרשאות עריכה',
         permissionsOfUserDialog: {
@@ -1306,7 +1306,7 @@ export default {
             filesLimit: 'הגבלת מספר קבצים שניתן להעלות בטעינת יישויות',
         },
         searchLimits: {
-            table: 'כמות ישויות למשיכה בתצוגה טבלאית',
+            // table: 'כמות ישויות למשיכה בתצוגה טבלאית', // comment out  waiting for Itay
             bulk: 'כמות ישויות למשיכה בתצוגת כרטיסיות',
         },
         location: {
