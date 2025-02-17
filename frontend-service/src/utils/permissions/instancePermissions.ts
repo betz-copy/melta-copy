@@ -127,12 +127,13 @@ const handleCheckCategoryByTemplates = (
     const categoriesPermissions = { ...permissions };
     let countRead = 0;
     let countWrite = 0;
-
     const templatesIds = Object.keys(categoriesPermissions[categoryId].entityTemplates ?? {});
 
     templatesIds.forEach((currTemplateId) => {
-        if (categoriesPermissions[categoryId].entityTemplates?.[currTemplateId].scope === PermissionScope.read) countRead++;
-        else if (categoriesPermissions[categoryId].entityTemplates?.[currTemplateId].scope === PermissionScope.write) countWrite++;
+        const templateScope = categoriesPermissions[categoryId].entityTemplates?.[currTemplateId].scope;
+
+        if (templateScope === PermissionScope.read) countRead++;
+        else if (templateScope === PermissionScope.write) countWrite++;
     });
 
     if (countRead + countWrite === entityTemplates.length)

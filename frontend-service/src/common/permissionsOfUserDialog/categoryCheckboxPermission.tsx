@@ -27,6 +27,12 @@ const CategoryCheckboxPermission: React.FC<{
     const categoryPermissions = categoriesPermission?.[categoryId] ?? {};
     const templatesPermissions = categoryPermissions?.entityTemplates ?? {};
 
+    const changePermissions = (checked: boolean, entityId: string, permissionScope: PermissionScope) =>
+        formikProps.setFieldValue(
+            `${permissionsPath}.instances.categories`,
+            getChangedTemplatePermission(categoriesPermission, checked, permissionScope, categoryId, entityId, entityTemplates),
+        );
+
     return (
         <Grid item container>
             <Grid xs={6} display="flex" alignItems="center">
@@ -86,19 +92,7 @@ const CategoryCheckboxPermission: React.FC<{
                                         defaultChecked={
                                             categoryPermissions?.entityTemplates?.[entityCheck.id]?.scope !== undefined || permissionType.read.checked
                                         }
-                                        onChange={(_event, checked) => {
-                                            formikProps.setFieldValue(
-                                                `${permissionsPath}.instances.categories`,
-                                                getChangedTemplatePermission(
-                                                    categoriesPermission,
-                                                    checked,
-                                                    PermissionScope.read,
-                                                    categoryId,
-                                                    entityCheck.id,
-                                                    entityTemplates,
-                                                ),
-                                            );
-                                        }}
+                                        onChange={(_event, checked) => changePermissions(checked, entityCheck.id, PermissionScope.read)}
                                         disabled={
                                             disabled ||
                                             categoryPermissions?.entityTemplates?.[entityCheck.id]?.scope === PermissionScope.write ||
@@ -115,19 +109,7 @@ const CategoryCheckboxPermission: React.FC<{
                                             categoryPermissions?.entityTemplates?.[entityCheck.id]?.scope === PermissionScope.write ||
                                             permissionType.write.checked
                                         }
-                                        onChange={(_event, checked) => {
-                                            formikProps.setFieldValue(
-                                                `${permissionsPath}.instances.categories`,
-                                                getChangedTemplatePermission(
-                                                    categoriesPermission,
-                                                    checked,
-                                                    PermissionScope.write,
-                                                    categoryId,
-                                                    entityCheck.id,
-                                                    entityTemplates,
-                                                ),
-                                            );
-                                        }}
+                                        onChange={(_event, checked) => changePermissions(checked, entityCheck.id, PermissionScope.write)}
                                         disabled={disabled}
                                         checkboxSx={{ width: '17px', height: '17px' }}
                                     />
