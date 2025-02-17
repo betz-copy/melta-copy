@@ -4,6 +4,8 @@ import { IMongoEntityTemplatePopulated } from './entityTemplates';
 import { IMongoRelationshipTemplate } from './relationshipTemplates';
 import { IRelationship } from './relationships';
 import { ISemanticSearchResult } from './semanticSearch';
+import { IBrokenRule } from './ruleBreaches/ruleBreach';
+import { ICreateEntityMetadata } from './ruleBreaches/actionMetadata';
 
 export interface IEntity {
     templateId: string;
@@ -206,3 +208,7 @@ export type IDeleteEntityBody<T extends boolean = boolean> = IDeleteEntityBodyBa
           });
 
 export type EntityData = IEntity | IFailedEntity;
+
+export interface IEntityWithIgnoredRules extends ICreateEntityMetadata {
+    ignoredRules: IBrokenRule[];
+}

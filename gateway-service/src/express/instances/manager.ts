@@ -22,6 +22,7 @@ import {
     ISearchFilter,
     ISearchSort,
     ITemplateSearchBody,
+    IEntityWithIgnoredRules,
 } from '../../externalServices/instanceService/interfaces/entities';
 import { IRelationship } from '../../externalServices/instanceService/interfaces/relationships';
 import {
@@ -313,13 +314,8 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         });
     };
 
-    async loadEntities(
-        templateId: string,
-        userId: string,
-        files?: UploadedFile[],
-        insertBrokenEntities?: { entitiesToCreate: IEntity[]; ignoredRules: IBrokenRule[] },
-    ) {
-        let entities = insertBrokenEntities?.entitiesToCreate;
+    async loadEntities(templateId: string, userId: string, files?: UploadedFile[], insertBrokenEntities?: IEntityWithIgnoredRules[]) {
+        let entities = insertBrokenEntities;
         const template = await this.entityTemplateService.getEntityTemplateById(templateId);
 
         const failedEntities: IFailedEntity[] = [];
@@ -334,8 +330,8 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 throw new BadRequestError(`files limit: more than ${effectiveFilesLimit} files`, {});
             }
 
-            const actions = await readExcelFile(files, template, failedEntities, workspace.metadata?.excel?.entitiesFileLimit);
-            entities = actions;
+            const fileEntities = await readExcelFile(files, template, failedEntities, workspace.metadata?.excel?.entitiesFileLimit);
+            entities = fileEntities;
         }
         const serialStarters = this.getSerialStarters(template);
         const generateSerialNumbers = (index: number) =>
@@ -345,10 +341,11 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         const allBrokenRulesEntities: IBrokenRuleEntity[] = [];
         const results: IEntity[] = [];
 
-        const handleLoadEntities = async (entity: IEntity) => {
+        const handleLoadEntities = async (entityWithIgnoredRules: IEntityWithIgnoredRules) => {
+            const { ignoredRules, ...entity } = entityWithIgnoredRules;
             try {
                 const serialNumbers = generateSerialNumbers(succeededEntities.length);
-                const result = await this.createEntityInstance(entity, [], insertBrokenEntities?.ignoredRules || [], userId, serialNumbers);
+                const result = await this.createEntityInstance(entity, [], ignoredRules, userId, serialNumbers);
                 results.push(result);
             } catch (error) {
                 this.handleLoadEntitiesErrors(error, failedEntities, entity, allBrokenRulesEntities);

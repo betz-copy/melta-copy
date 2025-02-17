@@ -27,7 +27,6 @@ const metadataSchema = Joi.object({
         filesLimit: Joi.number(),
     }).optional(),
     searchLimits: Joi.object({
-        table: Joi.number().min(Joi.ref('agGrid.rowCount')),
         bulk: Joi.number(),
     }).optional(),
 }).optional();
