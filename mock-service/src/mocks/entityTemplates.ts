@@ -51,7 +51,7 @@ export const entityTemplates: IEntityTemplateMock[] = [
         name: 'tourist',
         displayName: 'תייר',
         category: {
-            name: 'pepole',
+            name: 'people',
         },
         properties: {
             type: 'object',
@@ -84,7 +84,7 @@ export const entityTemplates: IEntityTemplateMock[] = [
         name: 'travelAgent',
         displayName: 'סוכן נסיעות',
         category: {
-            name: 'pepole',
+            name: 'people',
         },
         properties: {
             type: 'object',

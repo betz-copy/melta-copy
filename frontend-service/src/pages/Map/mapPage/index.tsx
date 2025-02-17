@@ -175,7 +175,7 @@ const MapPage = () => {
                         setSearchedPolygons((prev) => [
                             ...prev,
                             {
-                                key: `${matchingField}-${node.properties._id}`,
+                                key: matchingField,
                                 name,
                                 node,
                                 position: value as Cartesian3[],
@@ -183,7 +183,7 @@ const MapPage = () => {
                         ]);
                         return;
                     }
-                    setSearchedMarkers((prev) => [...prev, { key: `${matchingField}-${node.properties._id}`, name, node, position: value as Cartesian3 }]);
+                    setSearchedMarkers((prev) => [...prev, { key: matchingField, name, node, position: value as Cartesian3 }]);
                 });
             });
         },
@@ -286,7 +286,7 @@ const MapPage = () => {
                         name={searchedPropertyDefinitions[key].title}
                         polygon={polygon}
                         onClick={() => {
-                            setSelectedEntity({ matchingField: key, node: searchedEntity! });
+                            setSelectedEntity({ matchingField: `${key}-${searchedEntity!.properties._id}`, node: searchedEntity! });
                         }}
                     />
                 ))}
@@ -297,7 +297,7 @@ const MapPage = () => {
                         name={searchedPropertyDefinitions[key].title}
                         position={Cartesian3.fromDegrees(position.x, position.y)}
                         onClick={() => {
-                            setSelectedEntity({ matchingField: key, node: searchedEntity! });
+                            setSelectedEntity({ matchingField: `${key}-${searchedEntity!.properties._id}`, node: searchedEntity! });
                         }}
                     />
                 ))}
@@ -308,7 +308,7 @@ const MapPage = () => {
                         name={name}
                         polygon={polygon}
                         onClick={() => {
-                            setSelectedEntity({ matchingField: key, node });
+                            setSelectedEntity({ matchingField: `${key}-${node.properties._id}`, node });
                         }}
                     />
                 ))}
@@ -319,7 +319,7 @@ const MapPage = () => {
                         name={name}
                         position={Cartesian3.fromDegrees(position.x, position.y)}
                         onClick={() => {
-                            setSelectedEntity({ matchingField: key, node });
+                            setSelectedEntity({ matchingField: `${key}-${node.properties._id}`, node });
                         }}
                     />
                 ))}

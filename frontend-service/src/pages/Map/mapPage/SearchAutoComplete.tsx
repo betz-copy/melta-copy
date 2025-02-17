@@ -140,12 +140,12 @@ const SearchAutoComplete = ({ selectedTemplates, handleEntityClick, onClear }: p
     );
 
     useEffect(() => {
-        if (data) {
+        if (data) {            
             setSearchResults(
                 data.pages
                     .flatMap(({ entities }) => entities.map(({ entity }) => entity))
                     .filter((entity) => 
-                     Object.values(getLocationProperties(entity, selectedTemplates).locationProperties).some((value) => value !== undefined)
+                     Object.values(getLocationProperties(entity, selectedTemplates).locationProperties || {}).some((value) => value !== undefined)
                     ),
             );
         }

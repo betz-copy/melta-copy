@@ -135,8 +135,10 @@ export const isValidPolygonPoint = (polygonPoints, newPoint) => {
 
 export const getLocationProperties = (entity: IEntity, selectedTemplates: IMongoEntityTemplatePopulated[]) => {   
     const template = selectedTemplates.find(({ _id }) => _id === entity.templateId);
-
-    const locationTemplateProperties = Object.entries(template!.properties.properties)
+    
+    if (!template) return {template: undefined, locationTemplateProperties: undefined, locationProperties: undefined};
+    
+    const locationTemplateProperties = Object.entries(template.properties.properties)
         .filter(([_key, value]) => value.format === 'location')
         .reduce((acc, [key, value]) => {
             acc[key] = value;

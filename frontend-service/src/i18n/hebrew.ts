@@ -1284,6 +1284,20 @@ export default {
         takePicture: 'צלם תמונה',
         blackAndWhite: 'שחור לבן',
     },
+    location: {
+        polygon: 'פוליגון',
+        coordinate: 'נקודת ציון',
+        circle: 'חיפוש בעזרת מעגל',
+        line: 'קו למדידת מרחק',
+        noCrsTypes: 'לא נמצאו סוגי CRS',
+        clear: 'ניקוי תוצאות',
+        radiusMaxLimit: `חיפוש מוגבל עד ${environment.map.maxRadius / 1000} ק"מ`,
+        layers: {
+            map: 'שכבות מפה',
+            noLayers: 'לא נמצאו שכבות',
+            overlay: 'שכבות מיפוי',
+        }
+    },
     DynamicsConfigs: {
         isDrawerOpen: 'תפריט צד פתוח',
         shouldNavigateToEntityPage: 'עבור לעמוד פרט בעת יצירת/עריכת ישות',
@@ -1295,7 +1309,20 @@ export default {
             defaultExpandedTableHeight: 'גודל טבלה במצב פתוח',
         },
         mainFontSizes: {
-            headlineTitleFontSize: 'גודל גופן כותרת ראשית',
+            headlineTitleFontSize: 'גודל גופן כותרת ראשית',location: {
+            polygon: 'פוליגון',
+            coordinate: 'נקודת ציון',
+            circle: 'חיפוש בעזרת מעגל',
+            line: 'קו למדידת מרחק',
+            noCrsTypes: 'לא נמצאו סוגי CRS',
+            clear: 'ניקוי תוצאות',
+            radiusMaxLimit: `חיפוש מוגבל עד ${environment.map.maxRadius / 1000} ק"מ`,
+            layers: {
+                map: 'שכבות מפה',
+                noLayers: 'לא נמצאו שכבות',
+                overlay: 'שכבות מיפוי',
+            }
+        },
             entityTemplateTitleFontSize: 'גודל גופן כותרת טבלה',
             headlineSubTitleFontSize: 'גודל גופן כותרת משנית',
         },
@@ -1310,20 +1337,6 @@ export default {
         searchLimits: {
             // table: 'כמות ישויות למשיכה בתצוגה טבלאית', // comment out  waiting for Itay
             bulk: 'כמות ישויות למשיכה בתצוגת כרטיסיות',
-        },
-        location: {
-            polygon: 'פוליגון',
-            coordinate: 'נקודת ציון',
-            circle: 'חיפוש בעזרת מעגל',
-            line: 'קו למדידת מרחק',
-            noCrsTypes: 'לא נמצאו סוגי CRS',
-            clear: 'ניקוי תוצאות',
-            radiusMaxLimit: `חיפוש מוגבל עד ${environment.map.maxRadius / 1000} ק"מ`,
-            layers: {
-                map: 'שכבות מפה',
-                noLayers: 'לא נמצאו שכבות',
-                overlay: 'שכבות מיפוי',
-            }
         },
     },
 };
