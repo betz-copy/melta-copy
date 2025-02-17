@@ -54,7 +54,7 @@ export const getButtonState = (
         disabledButtonText = i18next.t('permissions.dontHaveWritePermissionsToTemplate');
     } else if (!permissions?.admin && permissionToRelatedTemplate?.scope !== PermissionScope.write) {
         isEditButtonsDisabled = true;
-        disabledButtonText = i18next.t('permissions.dontHaveWritePermissionsToCategory');
+        disabledButtonText = i18next.t('permissions.dontHaveWritePermissionsToTemplate');
     } else {
         disabledButtonText = i18next.t('ruleManagement.create-relationship');
     }
