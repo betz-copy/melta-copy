@@ -1,47 +1,45 @@
-import { GeometryUtil, LatLng, LatLngExpression } from 'leaflet';
-import * as L from 'leaflet';
-import { useMap } from 'react-leaflet';
-import { useEffect } from 'react';
-import { IEntity } from '../interfaces/entities';
-import { IEntityTemplatePopulated } from '../interfaces/entityTemplates';
+import { Cartesian3, Ellipsoid, Math as CesiumMath } from 'cesium';
 import { environment } from '../globals';
+import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
+import { IEntity } from '../interfaces/entities';
 
 const {
     polygon: { polygonPrefix, polygonSuffix },
-    units: { km, squaredKm },
 } = environment.map;
 
-export const jerusalemCoordinates: LatLngExpression = [31.7683, 35.2137];
+export const zoomNumber = 300000;
 
-export const parsePolygon = (polygonStr: string): LatLng[] | undefined => {
+export const jerusalemCoordinates: Cartesian3 = Cartesian3.fromDegrees(35.2137, 31.7683, zoomNumber);
+
+export const parsePolygon = (polygonStr: string): Cartesian3[] | undefined => {
     if (!polygonStr.startsWith(polygonPrefix) || !polygonStr.endsWith(polygonSuffix)) {
         return undefined;
     }
 
-    const coordsStr = polygonStr.slice(polygonPrefix.length, -polygonSuffix.length);
-    const coordPairs = coordsStr.split(',');
+    const coordsStr = polygonStr.slice(polygonPrefix.length, -polygonSuffix.length).trim();
+    const coordPairs = coordsStr.split(',').map((pair) => pair.trim());
 
-    const coordinates: LatLng[] = coordPairs.map((pair) => {
-        const [latStr, lonStr] = pair.trim().split(/\s+/);
-        return L.latLng(+latStr, +lonStr);
-    });
+    const coordinates: Cartesian3[] = coordPairs
+        .map((pair) => {
+            const [longitudeStr, latitudeStr] = pair.split(/\s+/);
+            const longitude = parseFloat(longitudeStr);
+            const latitude = parseFloat(latitudeStr);
+
+            if (Number.isNaN(longitude) || Number.isNaN(latitude)) {
+                console.error(`Invalid coordinate pair: ${pair}`);
+                return null;
+            }
+            
+            return Cartesian3.fromDegrees(longitude,latitude);
+        })
+        .filter((coord): coord is Cartesian3 => coord !== null);
 
     return coordinates.length > 0 ? coordinates : undefined;
 };
 
-export const calculateDistance = (latlngs: LatLng[]) => {
-    let totalDistance = 0;
-    for (let i = 1; i < latlngs.length; i++) {
-        totalDistance += latlngs[i - 1].distanceTo(latlngs[i]);
-    }
-    return totalDistance;
-};
-
-export const calculatePolygonArea = (latlngs: LatLng[]) => GeometryUtil.geodesicArea(latlngs);
-
 type CoordinatesResult = {
     type: 'polygon' | 'marker';
-    value: LatLngExpression | LatLng[];
+    value: Cartesian3 | Cartesian3[];
 };
 
 export const stringToCoordinates = (strCoords: string): CoordinatesResult => {
@@ -49,78 +47,110 @@ export const stringToCoordinates = (strCoords: string): CoordinatesResult => {
     if (polygon) return { type: 'polygon', value: polygon };
 
     const formatted = strCoords.split(',').map((val) => +val);
-    return { type: 'marker', value: formatted as LatLngExpression };
+    return { type: 'marker', value: { x: formatted[0], y: formatted[1] } as Cartesian3 };
 
     // TODO: add validation to format
 };
 
-export const latLngToString = (latLng: LatLng | LatLng[], includePolygon = true) => {
-    if (!Array.isArray(latLng)) {
-        return `${latLng.lat}, ${latLng.lng}`;
+export const isCartesian3 = (coordinates: any) => Math.abs(coordinates.x) > 180 || Math.abs(coordinates.y) > 90;
+
+export const calculateCenterOfPolygon = (coordinates: Cartesian3[]): Cartesian3 => {
+    if (coordinates.length === 0) return jerusalemCoordinates;
+
+    let sumX = 0;
+    let sumY = 0;
+    let sumZ = 0;
+
+    coordinates.forEach((coordinate) => {
+        const newCoordinate = !isCartesian3(coordinate) ? Cartesian3.fromDegrees(coordinate.x, coordinate.y, zoomNumber) : coordinate;
+        sumX += newCoordinate.x;
+        sumY += newCoordinate.y;
+        sumZ += newCoordinate.z;
+    });
+
+    const { length } = coordinates;
+    return new Cartesian3(sumX / length, sumY / length, sumZ / length);
+};
+
+export const getPolygonFarthestPoint = (polygonCenter: Cartesian3, polygon: Cartesian3[]) => {
+    let longestDistance = 0;
+
+    polygon.forEach((point) => {
+        const distance = Cartesian3.distance(polygonCenter, point);
+        if (distance > longestDistance) longestDistance = distance;
+    });
+
+    return longestDistance;
+};
+
+export const convertToDegrees = (point: Cartesian3): { longitude: number; latitude: number } => {
+    const cartographic = Ellipsoid.WGS84.cartesianToCartographic(point);
+
+    if (!cartographic) {
+        console.error('Invalid Point');
     }
 
-    const matchedPoints = latLng.toString().match(/LatLng\(([^)]+)\)/g);
+    const longitude = CesiumMath.toDegrees(cartographic.longitude);
+    const latitude = CesiumMath.toDegrees(cartographic.latitude);
 
-    if (!matchedPoints) {
-        return includePolygon ? `${polygonPrefix}${polygonSuffix}` : '';
+    return { longitude, latitude };
+};
+
+export const cartesian3ToString = (cartesian3: Cartesian3 | Cartesian3[], includePolygon = true): string => {
+    if (!Array.isArray(cartesian3)) {
+        const { longitude, latitude } = convertToDegrees(cartesian3);
+        return `${longitude}, ${latitude}`;
     }
 
-    const points = matchedPoints.map((point) =>
-        point
-            .replace(/LatLng|\(|\)/g, '')
-            .replace(',', '')
-            .trim(),
-    );
-
+    const points = cartesian3.map((point) => {
+        const { longitude, latitude } = convertToDegrees(point);
+        return `${longitude} ${latitude}`;
+    });
     return includePolygon ? `${polygonPrefix}${points.join(',')}${polygonSuffix}` : points.join(',');
 };
 
-// ugly af find better solution
-export const bindPopupForMarker = (coordinates: LatLng) => {
-    const { lat, lng } = coordinates;
-    if (lat && lng) {
-        return `Coordinates: ${lat.toFixed(5)}, ${lng.toFixed(5)}`;
-    }
-    return `Coordinates: ${coordinates[0].toFixed(5)}, ${coordinates[1].toFixed(5)}`;
-};
+export const isValidPolygonPoint = (polygonPoints, newPoint) => {
+    if (polygonPoints.length < 2) return true;
 
-export const bindPopupForLine = (coordinates: LatLng[]) => {
-    const distanceMeters = calculateDistance(coordinates);
-    const distanceKm = distanceMeters / 1000;
-    return `Distance: ${distanceKm.toFixed(2)} ${km}`;
-};
+    const points = [...polygonPoints, newPoint];
+    const numPoints = points.length;
+    let isClockwise = false;
 
-export const bindPopupForPolygon = (coordinates: LatLng[]) => {
-    const areaMeters = calculatePolygonArea(coordinates);
-    const areaKm2 = areaMeters / 1_000_000;
-    return `Area: ${areaKm2.toFixed(2)} ${squaredKm}`;
-};
+    for (let i = 0; i < numPoints; i++) {
+        const p1 = points[i];
+        const p2 = points[(i + 1) % numPoints];
+        const p3 = points[(i + 2) % numPoints];
 
-export const bindPopupForCircle = (radius: number) => {
-    const areaMeters = Math.PI * radius * radius;
-    const areaKm2 = areaMeters / 1_000_000;
-    const radiusKm = radius / 1000;
-    return `Area: ${areaKm2.toFixed(2)} ${squaredKm}, Radius: ${radiusKm.toFixed(2)} ${km}`;
-};
+        const crossProduct = (p2.x - p1.x) * (p3.y - p1.y) - (p2.y - p1.y) * (p3.x - p1.x);
 
-export const extractLocationFieldsFromEntity = (entity: IEntity, entityTemplate: IEntityTemplatePopulated) => {
-    const locationFields = Object.entries(entityTemplate.properties.properties)
-        .filter(([, value]) => value.format === 'location')
-        .map(([key]) => key);
-
-    return Object.entries(entity.properties)
-        .filter(([key]) => locationFields.includes(key))
-        .map(([, value]) => value as string);
-};
-
-export const UpdateMapBounds = ({ bounds }: { bounds: L.LatLngBounds | null }) => {
-    const map = useMap();
-
-    useEffect(() => {
-        if (bounds?.isValid()) {
-            map.fitBounds(bounds);
+        if (i === 0) {
+            isClockwise = crossProduct > 0;
+        } else if (crossProduct > 0 !== isClockwise) {
+            return false;
         }
-    }, [bounds, map]);
+    }
 
-    return null;
+    return true;
 };
+
+export const getLocationProperties = (entity: IEntity, selectedTemplates: IMongoEntityTemplatePopulated[]) => {   
+    const template = selectedTemplates.find(({ _id }) => _id === entity.templateId);
+    
+    if (!template) return {template: undefined, locationTemplateProperties: undefined, locationProperties: undefined};
+    
+    const locationTemplateProperties = Object.entries(template.properties.properties)
+        .filter(([_key, value]) => value.format === 'location')
+        .reduce((acc, [key, value]) => {
+            acc[key] = value;
+            return acc;
+        }, {} as { [x: string]: IEntitySingleProperty });
+
+    const locationProperties = Object.entries(entity.properties)
+        .filter(([key, _value]) => key in locationTemplateProperties)
+        .reduce((acc, [key, value]) => {
+            acc[key] = value;
+            return acc;
+        }, {} as { [x: string]: any });
+
+    return { template, locationTemplateProperties, locationProperties };
+}

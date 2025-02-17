@@ -154,7 +154,6 @@ const SelectCheckbox = <Option extends {}, Group extends any = Option>({
         [getOptionId, JSON.stringify(groupsProps), options, treeFunc],
     );
 
-    // eslint-disable-next-line no-nested-ternary
     const borderRadiusStyle = overrideSx ? (isOpen ? '12px 12px 12px 0' : '12px') : isOpen ? '7px 7px 0 0' : '7px';
 
     return (
@@ -192,7 +191,6 @@ const SelectCheckbox = <Option extends {}, Group extends any = Option>({
                         horizontal: overrideSx ? 'center' : horizontalOrigin,
                     },
                 }}
-                // eslint-disable-next-line react/no-unstable-nested-components
                 IconComponent={(params) => CustomExpandMore({ filterIcon, ...params })}
                 size={size}
                 onOpen={() => {
@@ -215,7 +213,10 @@ const SelectCheckbox = <Option extends {}, Group extends any = Option>({
                     boxShadow: toUserProfile ? '0px 3px 10px rgba(0,0,0,0.2)' : 'none',
                     borderRadius: '8px',
                     ...(darkMode
-                        ? { color: theme.palette.primary.main, '& .MuiOutlinedInput-notchedOutline': { borderColor: '#d2d3e3' } }
+                        ? {
+                              color: theme.palette.primary.main,
+                              '& .MuiOutlinedInput-notchedOutline': { borderColor: '#d2d3e3' },
+                          }
                         : {
                               '& .MuiOutlinedInput-notchedOutline': { display: 'none' },
                               background: toTopBar ? '#EBEFFA' : '#FFFFFF',

@@ -2,10 +2,10 @@ import { Dialog, Grid, IconButton, Typography } from '@mui/material';
 import React, { useState } from 'react';
 import { LocationOn } from '@mui/icons-material';
 import { HighlightText } from '../../utils/HighlightText';
-import EntityWithLocationFields from './LocationPreview';
 import { IEntity } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { useWorkspaceStore } from '../../stores/workspace';
+import LocationPreview from './LocationPreview';
 
 const OpenMap: React.FC<{
     field: string;
@@ -50,7 +50,7 @@ const OpenMap: React.FC<{
             </Grid>
             {open && (
                 <Dialog open={open} onClose={() => setOpen(false)}>
-                    <EntityWithLocationFields entity={entity} entityTemplate={entityTemplate} styles={{ height: '800px', width: '600px' }} />
+                    <LocationPreview entity={entity} entityTemplate={entityTemplate} />
                 </Dialog>
             )}
         </Grid>

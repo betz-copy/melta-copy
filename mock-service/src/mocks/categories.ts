@@ -1,6 +1,6 @@
 export const categories = [
     {
-        name: 'pepole',
+        name: 'people',
         displayName: 'אנשים',
         color: '#B80000',
     },
