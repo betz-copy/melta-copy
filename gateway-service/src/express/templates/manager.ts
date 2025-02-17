@@ -279,7 +279,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
     // categories
     async getAllCategories() {
-        return this.entityTemplateService.getAllCategories();
+        return this.entityTemplateService.searchCategories();
     }
 
     async createCategory(categoryData: Omit<ICategory, 'iconFileId'>, file?: UploadedFile) {

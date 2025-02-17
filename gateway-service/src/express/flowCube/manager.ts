@@ -11,6 +11,7 @@ import { UserService } from '../../externalServices/userService';
 import { ICompactPermissions, ISubCompactPermissions } from '../../externalServices/userService/interfaces/permissions/permissions';
 import { Authorizer } from '../../utils/authorizer';
 import DefaultManagerProxy from '../../utils/express/manager';
+import { escapeRegExp } from '../../utils/regex';
 import TemplatesManager from '../templates/manager';
 import { IWorkspace } from '../workspaces/interface';
 import { WorkspaceService } from '../workspaces/service';
@@ -45,7 +46,7 @@ export class FlowCubeManager extends DefaultManagerProxy<null> {
 
             if (template.properties.properties[field]) {
                 const filterCondition = Array.isArray(filterValue)
-                    ? { $in: filterValue.map((val) => new RegExp(this.escapeRegExp(val))) }
+                    ? { $in: filterValue.map((val) => new RegExp(escapeRegExp(val))) }
                     : { $eq: filterValue };
 
                 filterAnd.push({ [field]: filterCondition });
@@ -72,10 +73,6 @@ export class FlowCubeManager extends DefaultManagerProxy<null> {
         }
 
         return { filter, limit: config.instanceService.searchEntitiesFlowMaxLimit };
-    }
-
-    escapeRegExp(text: string) {
-        return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
     }
 
     async searchFlowCube(templateId: string, searchBody: Record<string, any>) {
@@ -164,20 +161,7 @@ export class FlowCubeManager extends DefaultManagerProxy<null> {
             ([_key, value]) => value.format !== 'fileId' && value.format !== 'relationshipReference',
         );
 
-        const additionalFields = [
-            {
-                Name: 'createdAt',
-                Type: 'DateTime',
-                DisplayName: 'תאריך יצירה',
-                OntologyType: 'TIME',
-            },
-            {
-                Name: 'updatedAt',
-                Type: 'DateTime',
-                DisplayName: 'תאריך עדכון',
-                OntologyType: 'TIME',
-            },
-        ];
+        const additionalFields = this.getAdditionalFields();
 
         const parameters: FlowParameters[] = [
             ...filteredProperties.map(([key, value]) => ({
@@ -202,6 +186,13 @@ export class FlowCubeManager extends DefaultManagerProxy<null> {
         ];
 
         return { parameters, fields };
+    }
+
+    private getAdditionalFields(): { Name: string; Type: string; DisplayName: string; OntologyType: string }[] {
+        return [
+            { Name: 'createdAt', Type: 'DateTime', DisplayName: 'תאריך יצירה', OntologyType: 'TIME' },
+            { Name: 'updatedAt', Type: 'DateTime', DisplayName: 'תאריך עדכון', OntologyType: 'TIME' },
+        ];
     }
 
     convertTypeToFlowType(property: IEntitySingleProperty): string {
