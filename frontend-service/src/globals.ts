@@ -238,7 +238,7 @@ export const environment = {
     draftAutoSaveDebounce: 250,
     map: {
         maxRadius: 30000,
-        squareLength: 10,
+        squareLength: 2500,
         polygon: { polygonPrefix: 'POLYGON((', polygonSuffix: '))' },
     },
     profileIconsCount: 19,

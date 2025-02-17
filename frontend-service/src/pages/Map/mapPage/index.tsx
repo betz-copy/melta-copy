@@ -47,7 +47,9 @@ const MapPage = () => {
     const [searchedPolygons, setSearchedPolygons] = useState<{ key: string; name: string; node: IEntity; position: Cartesian3[] }[]>([]);
     const [searchedMarkers, setSearchedMarkers] = useState<{ key: string; name: string; node: IEntity; position: Cartesian3 }[]>([]);
 
-    const filteredTemplatesIds = useMemo(() => selectedTemplates.map(({ _id }) => _id), [selectedTemplates]);
+    const [cameraFocus, setCameraFocus] = useState<'search' | 'circle'>();
+
+    const filteredTemplatesIds = useMemo(() => selectedTemplates.map(({ _id }) => _id), [selectedTemplates]);    
 
     const {
         bounds: searchedEntityBounds,
@@ -61,15 +63,16 @@ const MapPage = () => {
             const viewer = viewerRef.current?.cesiumElement;
             if (!viewer) return;
             const { camera } = viewer;
-    
-            if (circleData.center !== null && circleData.radius !== null) {
-                const boundingSphere = new Cesium.BoundingSphere(circleData.center, circleData.radius);
-    
-                camera.flyToBoundingSphere(boundingSphere, {
+
+            if (!circleData.center && !circleData.radius) {
+                camera.flyTo({
+                    destination: jerusalemCoordinates,
                     duration: 1.5,
-                    offset: new Cesium.HeadingPitchRange(0, -Cesium.Math.toRadians(90), circleData.radius * 5),
                 });
-            } else if (searchedEntityPolygons.length > 0 || searchedEntityMarkers.length > 0) {
+            }
+
+            if(cameraFocus === 'search'){
+            if (searchedEntityPolygons.length > 0 || searchedEntityMarkers.length > 0) {
                 if (searchedEntityBounds?.center && searchedEntityBounds?.radius) {
                     const boundingSphere = new Cesium.BoundingSphere(searchedEntityBounds.center, searchedEntityBounds.radius);
     
@@ -78,11 +81,25 @@ const MapPage = () => {
                         offset: new Cesium.HeadingPitchRange(0, -Cesium.Math.toRadians(90), searchedEntityBounds.radius * 5),
                     });
                 }
-            } else if (circleData.center === null && circleData.radius === null) {
-                camera.flyTo({
-                    destination: jerusalemCoordinates,
-                    duration: 1.5,
-                });
+            }}
+            else {
+                if(circleData.center && !circleData.radius) { 
+                    const boundingSphere = new Cesium.BoundingSphere(circleData.center, circleData.mouseRadius || 500);
+        
+                    camera.flyToBoundingSphere(boundingSphere, {
+                        duration: 1.5,
+                        offset: new Cesium.HeadingPitchRange(0, -Cesium.Math.toRadians(90), (circleData.mouseRadius || 1000) * 5 ),
+                    });
+                }
+    
+                if (circleData.center && circleData.radius) {
+                    const boundingSphere = new Cesium.BoundingSphere(circleData.center, circleData.radius);
+        
+                    camera.flyToBoundingSphere(boundingSphere, {
+                        duration: 1.5,
+                        offset: new Cesium.HeadingPitchRange(0, -Cesium.Math.toRadians(90), circleData.radius * 5),
+                    });
+                }
             }
         };
     
@@ -109,6 +126,7 @@ const MapPage = () => {
     
             if (cartesian) {
                 if (drawingMode === 'circle') {
+                    setCameraFocus('circle');
                     if (circleData.center === null || (circleData.center !== null && circleData.radius !== null)) {
                         setCircleData({ center: cartesian, radius: null, mouseRadius: null });
                     } else {
@@ -311,7 +329,10 @@ const MapPage = () => {
                 <MapFilters
                     selectedTemplates={selectedTemplates}
                     setSelectedTemplates={setSelectedTemplates}
-                    moveToEntityLocations={(entity: IEntity) => setSearchedEntity(entity)}
+                    moveToEntityLocations={(entity: IEntity) => {
+                        setSearchedEntity(entity);
+                        setCameraFocus('search');
+                    }}
                     entityTemplateMap={entityTemplateMap!}
                     onClear={onClear}
                     darkMode={darkMode}

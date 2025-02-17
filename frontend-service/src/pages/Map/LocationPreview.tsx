@@ -12,8 +12,8 @@ export const MeltaPolygon = ({ name, polygon, onClick }: { name: string; polygon
     <Entity name={name} description={cartesian3ToString(polygon)} onClick={onClick}>
         <PolylineGraphics positions={[...polygon, polygon[0]]} material={Color.fromCssColorString('#11695a')} width={3} />
         <PolygonGraphics hierarchy={polygon} material={Color.fromAlpha(Color.GRAY, 0.3)} />
-        {polygon.map((position) => (
-            <Entity key={`${position.x}, ${position.y} - ${name}`} position={position}>
+        {polygon.map((position, index) => (
+            <Entity key={`${position.x}, ${position.y} - ${index}`} position={position}>
                 <PointGraphics color={Color.BLACK} outlineColor={Color.fromCssColorString('#11695a')} pixelSize={10} outlineWidth={2} />
             </Entity>
         ))}
