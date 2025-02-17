@@ -20,6 +20,7 @@ import { EntityWizardValues } from '../common/dialogs/entity';
 import { IRuleBreach } from '../interfaces/ruleBreaches/ruleBreach';
 import { filterModelToFilterOfGraph } from '../pages/Graph/GraphFilterToBackend';
 import { ITablesResults } from '../common/wizards/loadEntities';
+import { location3ToString, stringToCoordinates } from '../utils/map';
 
 const { entities, relationships } = environment.api;
 
@@ -103,8 +104,22 @@ export const createEntityRequest = async (entity: EntityWizardValues, ignoredRul
     formData.append(
         'properties',
         JSON.stringify(
-            mapValues(entity.properties, (property, key) =>
-                entity.template.properties.properties[key]?.format === 'relationshipReference' ? property?.properties._id : property,
+            mapValues(entity.properties, (property, key) => {
+                switch (entity.template.properties.properties[key]?.format) {
+                    case 'relationshipReference': return property?.properties._id;
+                    case 'location': {
+                        if (property.unit === 'UTM') {
+                            const locationUTA = stringToCoordinates(property.location).value;
+                            console.log({ locationUTA });
+                            const locationString = location3ToString(locationUTA);
+                            console.log({ locationString });
+                            return JSON.stringify({location: locationString, unit: property.unit});
+                        }
+                        return JSON.stringify(property);
+                    }
+                    default: return property;
+                }
+            }
             ),
         ),
     );
@@ -174,8 +189,13 @@ export const updateEntityRequestForMultiple = async (
     formData.append(
         'properties',
         JSON.stringify(
-            mapValues(newEntityData.properties, (property, key) =>
-                newEntityData.template.properties.properties[key]?.format === 'relationshipReference' ? property?.properties._id : property,
+            mapValues(newEntityData.properties, (property, key) => {
+                switch (newEntityData.template.properties.properties[key]?.format) {
+                    case 'relationshipReference': return property?.properties._id;
+                    case 'location': return JSON.stringify(property);
+                    default: return property;
+                }
+            }
             ),
         ),
     );
@@ -240,11 +260,17 @@ export const duplicateEntityRequest = async (entityId: string, newEntityData: En
     formData.append(
         'properties',
         JSON.stringify(
-            mapValues(newEntityData.properties, (property, key) =>
-                newEntityData.template.properties.properties[key].format === 'relationshipReference' ? property?.properties._id : property,
+            mapValues(newEntityData.properties, (property, key) => {
+                switch (newEntityData.template.properties.properties[key]?.format) {
+                    case 'relationshipReference': return property?.properties._id;
+                    case 'location': return JSON.stringify(property);
+                    default: return property;
+                }
+            }
             ),
         ),
     );
+    
     formData.append('templateId', newEntityData.template._id);
 
     if (ignoredRules) {

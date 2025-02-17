@@ -10,9 +10,9 @@ import { MeltaTooltip } from '../../common/MeltaTooltip';
 import { useDarkModeStore } from '../../stores/darkMode';
 import {
     calculateCenterOfPolygon,
-    cartesian3ToString,
+    location3ToString,
     getPolygonFarthestPoint,
-    isCartesian3,
+    isValidWGS84,
     isValidPolygonPoint,
     jerusalemCoordinates,
     stringToCoordinates,
@@ -33,20 +33,24 @@ const LocationField = ({ defaultLocation, field, updateValue }: Props) => {
     const [drawingMode, setDrawingMode] = useState<'polygon' | 'coordinate' | null>(null);
     const [polygonPosition, setPolygonPosition] = useState<Cartesian3[]>([]);
     const [markerPosition, setMarkerPosition] = useState<Cartesian3 | null>(null);
+    console.log({ polygonPosition, markerPosition });
+    
 
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
     useEffect(() => {
         const initialCoordinates = defaultLocation ? stringToCoordinates(defaultLocation) : null;
+        console.log({ initialCoordinates });
+        
         if (initialCoordinates?.type === 'marker') {
-            const { value } = initialCoordinates;
+            const { value } = initialCoordinates;            
             setMarkerPosition(
-                !isCartesian3(value) ? Cartesian3.fromDegrees((value as Cartesian3).x, (value as Cartesian3).y) : ({ ...value } as Cartesian3),
+                isValidWGS84(value as Cartesian3) ? Cartesian3.fromDegrees((value as Cartesian3).x, (value as Cartesian3).y) : ({ ...value } as Cartesian3),
             );
         }
         if (initialCoordinates?.type === 'polygon') {
             const positions = (initialCoordinates.value as Cartesian3[]).map((position) =>
-                !isCartesian3(position) ? Cartesian3.fromDegrees(position.x, position.y) : position,
+                isValidWGS84(position) ? Cartesian3.fromDegrees(position.x, position.y) : position,
             );
             setPolygonPosition(positions);
         }
@@ -105,12 +109,12 @@ const LocationField = ({ defaultLocation, field, updateValue }: Props) => {
                     if (isValidPolygonPoint(polygonPosition, cartesian)) {
                         setPolygonPosition((prev) => [...prev, cartesian]);
                         const newPolygon = [...polygonPosition, cartesian];
-                        updateValue(cartesian3ToString(newPolygon));
+                        updateValue(location3ToString(newPolygon));
                     }
                 } else if (drawingMode === 'coordinate') {
                     setMarkerPosition(cartesian);
                     setDrawingMode(null);
-                    updateValue(cartesian3ToString(cartesian));
+                    updateValue(location3ToString(cartesian));
                 }
             }
         },
@@ -142,6 +146,7 @@ const LocationField = ({ defaultLocation, field, updateValue }: Props) => {
               sceneModePicker={false}
               vrButton={false}
               fullscreenButton={false}
+              navigationHelpButton={false} 
               >
                 {polygonPosition.length > 0 && <MeltaPolygon name={field} polygon={polygonPosition} />}
                 {markerPosition && <MeltaCoordinate name={field} position={markerPosition} />}

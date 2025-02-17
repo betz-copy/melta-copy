@@ -13,7 +13,7 @@ import MapFilters from './MapFilters';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IEntity } from '../../../interfaces/entities';
 import { getEntitiesByLocation } from '../../../services/entitiesService';
-import { cartesian3ToString, convertToDegrees, jerusalemCoordinates, stringToCoordinates } from '../../../utils/map';
+import { location3ToString, convertToWGS84, jerusalemCoordinates, stringToCoordinates } from '../../../utils/map';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { environment } from '../../../globals';
 import { useEntityWithLocationFields } from '../../../utils/hooks/useLocation';
@@ -195,7 +195,7 @@ const MapPage = () => {
     useEffect(() => {
         const fetchData = async () => {
             if (circleData.center && circleData.radius) {
-                const { longitude, latitude } = convertToDegrees(circleData.center);
+                const { longitude, latitude } = convertToWGS84(circleData.center);
 
                 await Promise.all(
                     filteredTemplatesIds.map(async (templateId) =>
@@ -244,11 +244,12 @@ const MapPage = () => {
             sceneModePicker={false}
             vrButton={false}
             fullscreenButton={false}
+            navigationHelpButton={false} 
             >
                 {circleData.center && (circleData.radius || circleData.mouseRadius) && (
                     <Entity
                         name={i18next.t('location.circle')}
-                        description={`${cartesian3ToString(circleData.center)}, ${circleData.radius}`}
+                        description={`${location3ToString(circleData.center)}, ${circleData.radius}`}
                         position={circleData.center}
                     >
                         <EllipseGraphics

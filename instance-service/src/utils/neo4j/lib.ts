@@ -33,7 +33,8 @@ const normalizeFields = (properties: Record<string, any>): Record<string, any> =
         if (
             key.endsWith(config.neo4j.stringPropertySuffix) ||
             key.endsWith(config.neo4j.booleanPropertySuffix) ||
-            key.endsWith(config.neo4j.filePropertySuffix)
+            key.endsWith(config.neo4j.filePropertySuffix) ||
+            key.endsWith(config.neo4j.locationUnitPropertySuffix)
         ) {
             return;
         }
@@ -61,13 +62,16 @@ const normalizeFields = (properties: Record<string, any>): Record<string, any> =
         }
 
         if (value instanceof neo4j.types.Point) {
-            props[key] = `${value.x}, ${value.y}`;
+            props[key] = { location: `${value.x}, ${value.y}`, unit: properties[`${key}${config.neo4j.locationUnitPropertySuffix}`] };
 
             return;
         }
         if (Array.isArray(value) && value.every((item) => item instanceof neo4j.types.Point)) {
             const points = value.map((point) => `${point.x} ${point.y}`);
-            props[key] = `${polygonPrefix}${points.join(',')}${polygonSuffix}`;
+            props[key] = {
+                location: `${polygonPrefix}${points.join(',')}${polygonSuffix}`,
+                unit: properties[`${key}${config.neo4j.locationUnitPropertySuffix}`],
+            };
 
             return;
         }
@@ -116,10 +120,10 @@ type ResponseType = 'singleResponse' | 'singleResponseNotNullable' | 'multipleRe
 type Response<ResType extends ResponseType, Data> = ResType extends 'singleResponse'
     ? Data | null
     : ResType extends 'singleResponseNotNullable'
-    ? Data
-    : ResType extends 'multipleResponses'
-    ? Data[]
-    : never;
+      ? Data
+      : ResType extends 'multipleResponses'
+        ? Data[]
+        : never;
 
 const nodeToEntity = (node: Node): IEntity => {
     const entity = {
@@ -338,9 +342,7 @@ export const generateDefaultProperties = () => {
 
 const getLocationPoint = (pointString: string, splitBy: SplitBy) => {
     const [longitude, latitude] = pointString.split(splitBy).map(Number);
-    if (Number.isNaN(longitude) || Number.isNaN(latitude)) {
-        throw new ValidationError('Invalid format. Expected format: "number, number".');
-    }
+    if (Number.isNaN(longitude) || Number.isNaN(latitude)) throw new ValidationError('Invalid format. Expected format: "number, number".');
 
     return new neo4j.types.Point(srid, longitude, latitude);
 };

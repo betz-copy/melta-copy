@@ -5,11 +5,11 @@ import * as Cesium from 'cesium';
 import { IEntity } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { useEntityWithLocationFields } from '../../utils/hooks/useLocation';
-import { cartesian3ToString, jerusalemCoordinates } from '../../utils/map';
+import { location3ToString, jerusalemCoordinates } from '../../utils/map';
 import { BaseLayers } from './BaseLayers';
 
 export const MeltaPolygon = ({ name, polygon, onClick }: { name: string; polygon: Cartesian3[]; onClick?: () => void }) => (
-    <Entity name={name} description={cartesian3ToString(polygon)} onClick={onClick}>
+    <Entity name={name} description={location3ToString(polygon)} onClick={onClick}>
         <PolylineGraphics positions={[...polygon, polygon[0]]} material={Color.fromCssColorString('#11695a')} width={3} />
         <PolygonGraphics hierarchy={polygon} material={Color.fromAlpha(Color.GRAY, 0.3)} />
         {polygon.map((position, index) => (
@@ -21,7 +21,7 @@ export const MeltaPolygon = ({ name, polygon, onClick }: { name: string; polygon
 );
 
 export const MeltaCoordinate = ({ name, position, onClick }: { name: string; position: Cartesian3; onClick?: () => void }) => (
-    <Entity name={name} description={cartesian3ToString(position)} position={position} onClick={onClick}>
+    <Entity name={name} description={location3ToString(position)} position={position} onClick={onClick}>
         <BillboardGraphics image="/icons/location.svg" scale={1} verticalOrigin={Cesium.VerticalOrigin.BOTTOM} />
     </Entity>
 );
@@ -66,7 +66,7 @@ const LocationPreview = ({ entity, entityTemplate }: Props) => {
 
     return (
         <div style={{ position: 'relative', height: '800px', width: '600px' }}>
-            <Viewer
+          <Viewer
               full
               ref={viewerRef}
               baseLayerPicker={false}
@@ -77,7 +77,8 @@ const LocationPreview = ({ entity, entityTemplate }: Props) => {
               sceneModePicker={false}
               vrButton={false}
               fullscreenButton={false}
-              >                
+              navigationHelpButton={false} 
+            >
               {polygons.map(({ key, position: polygon }) => (
                     <MeltaPolygon key={key} name={propertyDefinitions[key].title} polygon={polygon} />
                 ))}

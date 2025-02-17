@@ -42,7 +42,13 @@ ajv.addFormat('user', {
 });
 ajv.addFormat('text-area', ajvCustomFormats.textAreaFieldRegex);
 ajv.addFormat('relationshipReference', ajvCustomFormats.relationshipReferenceFieldRegex);
-ajv.addFormat('location', ajvCustomFormats.locationFieldRegex);
+ajv.addFormat('location', {
+    type: 'string',
+    validate: (location) => {
+        const locationObj = JSON.parse(location);
+        return locationObj.location && (locationObj.unit === 'UTM' || locationObj.unit === 'WGS84');
+    },
+});
 
 addFormats(ajv);
 ajv.addVocabulary(['patternCustomErrorMessage', 'hide']);
@@ -514,8 +520,10 @@ export const addStringFieldsAndNormalizeSpecialStringValues = (
             return;
         }
         if (type === 'string' && format === 'location') {
-            normalizedEntity[key] = getNeo4jLocation(propertyValue);
-            normalizedEntity[`${key}${neo4j.stringPropertySuffix}`] = propertyValue;
+            const location = JSON.parse(propertyValue);
+            normalizedEntity[key] = getNeo4jLocation(location.location);
+            normalizedEntity[`${key}${neo4j.stringPropertySuffix}`] = location.location;
+            normalizedEntity[`${key}${neo4j.locationUnitPropertySuffix}`] = location.unit;
 
             return;
         }

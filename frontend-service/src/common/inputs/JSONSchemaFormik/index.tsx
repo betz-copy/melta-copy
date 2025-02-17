@@ -41,7 +41,7 @@ const ajvErrorsToFormikErrors = (schema: IMongoEntityTemplatePopulated['properti
     return Object.fromEntries(formikErrorsEntries);
 };
 
-export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'], data: any): FormikErrors<any> => {
+export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'], data: any): FormikErrors<any> => {    
     const ajv = new Ajv({ allErrors: true });
     ajv.addFormat('fileId', /.*/);
     ajv.addFormat('user', {
@@ -53,7 +53,8 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
     });
     ajv.addKeyword({ keyword: 'user', type: 'string' });
     ajv.addFormat('text-area', /.*/);
-    ajv.addFormat('location', (value: string) => validateLocation(value));
+    ajv.addKeyword({ keyword: 'location', type: 'string' });
+    ajv.addFormat('location', (value: string) =>  validateLocation(JSON.parse(value), true));
     addFormats(ajv);
     ajv.addVocabulary(['patternCustomErrorMessage', 'hide']);
     ajv.addKeyword({
@@ -76,7 +77,7 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
 
     const schemaToValidate = {
         ...schema,
-        properties: pickBy(schema.properties, (value) => value.format !== 'relationshipReference'),
+        properties: pickBy(schema.properties, (value) => value.format !== 'relationshipReference' && value.format !== 'location'),
     };
 
     const validateFunction = ajv.compile(schemaToValidate);
