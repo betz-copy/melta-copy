@@ -1,10 +1,13 @@
-import { Box } from '@mui/material';
+import { Delete } from '@mui/icons-material';
+import { Box, IconButton } from '@mui/material';
+import i18next from 'i18next';
 import React from 'react';
 import { useLocation } from 'wouter';
+import { MeltaTooltip } from '../../../common/MeltaTooltip';
 import { ChartsAndGenerator, IChartType } from '../../../interfaces/charts';
 import { useUserStore } from '../../../stores/user';
+import { GripVertical } from '../../../utils/icons/fontAwesome';
 import { isWorkspaceAdmin } from '../../../utils/permissions/instancePermissions';
-import { CardMenu } from '../../SystemManagement/components/CardMenu';
 import { NumberChartGenerator } from '../chartGenerator.tsx/NumberChartGenerator';
 import { HiighchartGenerator } from '../chartGenerator.tsx/highChartgenerator';
 
@@ -25,29 +28,42 @@ const ChartItem: React.FC<ChartItemProps> = ({
     const [currentLocation, navigate] = useLocation();
 
     return (
-        <>
+        <Box style={{ width: '100%', height: '100%', position: 'relative' }} onClick={() => navigate(`${currentLocation}/${_id}/chart`)}>
+            <Box
+                className="drag-handle"
+                style={{
+                    position: 'absolute',
+                    top: 10,
+                    right: 10,
+                    zIndex: 10,
+                    cursor: 'grab',
+                    backgroundColor: 'rgba(255,255,255,0.8)',
+                    padding: '4px',
+                    borderRadius: '4px',
+                }}
+                onClick={(e) => e.stopPropagation()}
+            >
+                <GripVertical color="grey" size={16} />
+            </Box>
             {isHoverOnCard === indexInGrid && (
                 <Box
                     style={{
                         position: 'absolute',
-                        top: 10,
-                        left: 10,
+                        top: 0,
+                        left: 0,
                         zIndex: 10,
                         cursor: 'default',
                     }}
-                    onMouseDown={(e) => e.stopPropagation()}
+                    onClick={(e) => e.stopPropagation()}
                 >
-                    <CardMenu
-                        onNavigate={() => {
-                            navigate(`${currentLocation}/${_id}/chart`);
-                        }}
-                        onDeleteClick={onDelete}
-                        disabledProps={{
-                            isDeleteDisabled: createdBy !== currentUser.user._id || !isWorkspaceAdmin(currentUser.user.currentWorkspacePermissions),
-                            isEditDisabled: false,
-                            tooltipTitle: '',
-                        }}
-                    />
+                    <MeltaTooltip title={i18next.t('actions.delete')}>
+                        <IconButton
+                            onClick={onDelete}
+                            disabled={createdBy !== currentUser.user._id || !isWorkspaceAdmin(currentUser.user.currentWorkspacePermissions)}
+                        >
+                            <Delete />
+                        </IconButton>
+                    </MeltaTooltip>
                 </Box>
             )}
 
@@ -65,7 +81,7 @@ const ChartItem: React.FC<ChartItemProps> = ({
                     enableResize
                 />
             )}
-        </>
+        </Box>
     );
 };
 

@@ -10,25 +10,30 @@ import { toast } from 'react-toastify';
 import { useParams } from 'wouter';
 import { ErrorToast } from '../../../common/ErrorToast';
 import { GridLayout } from '../../../common/GridLayout';
-import { LayoutItem, Layouts } from '../../../common/GridLayout/interface';
+import { LayoutItem } from '../../../common/GridLayout/interface';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
+import { environment } from '../../../globals';
 import { ChartsAndGenerator } from '../../../interfaces/charts';
 import { deleteChart } from '../../../services/chartsService';
+import { generateLayoutDetails } from '../../../utils/charts/defaultChartSizes';
 import { LocalStorage } from '../../../utils/localStorage';
 import ChartItem from './chartItem';
 
-const TemplateTableCharts: React.FC<{ templatesChart: ChartsAndGenerator[]; textSearch: string | undefined }> = ({
-    templatesChart = [],
-    textSearch,
-}) => {
+const {
+    charts: { chartsOrderKey, defaultColumnSizes },
+} = environment;
+
+const TemplateTableCharts: React.FC<{
+    templatesChart: ChartsAndGenerator[];
+    layout: LayoutItem[];
+    setLayout: React.Dispatch<React.SetStateAction<LayoutItem[]>>;
+    textSearch: string | undefined;
+}> = ({ templatesChart = [], layout, setLayout, textSearch }) => {
     const queryClient = useQueryClient();
     const { templateId } = useParams();
 
     const [mounted, setMounted] = useState(false);
     const [isHoverOnCard, setIsHoverOnCard] = useState<number | null>(null);
-
-    const [layout, setLayout] = useState<LayoutItem[]>([]);
-
     const [deleteChartDialogState, setDeleteChartDialogState] = useState<{
         isDialogOpen: boolean;
         chartId: string | null;
@@ -37,33 +42,19 @@ const TemplateTableCharts: React.FC<{ templatesChart: ChartsAndGenerator[]; text
         chartId: null,
     });
 
-    const cols = { lg: 12, md: 12, sm: 12, xs: 12, xxs: 12 };
-
-    const layoutDetails: Layouts = Object.keys(cols).reduce((acc, col) => {
-        acc[col] = templatesChart.map(({ _id }, index) => ({
-            i: _id,
-            x: (index % 3) * 4,
-            y: Math.floor(index / 3) * 3,
-            w: 4,
-            h: 11,
-        }));
-        return acc;
-    }, {} as Layouts);
+    const getSavedLayout = (): LayoutItem[] => LocalStorage.get(`${chartsOrderKey}${templateId}`) || [];
 
     useEffect(() => {
-        const savedLayout: LayoutItem[] | null = LocalStorage.get(`chartsOrder_${templateId}`);
-
-        if (savedLayout) setLayout(savedLayout);
-        else setLayout(layoutDetails.lg);
-
+        const savedLayout = getSavedLayout();
+        setLayout(savedLayout.length ? savedLayout : generateLayoutDetails(templatesChart as ChartsAndGenerator[]).lg);
         setMounted(true);
     }, []);
 
     useEffect(() => {
-        const savedLayout: LayoutItem[] | null = LocalStorage.get(`chartsOrder_${templateId}`);
-        if (savedLayout) {
-            if (!textSearch) setLayout(savedLayout);
-            else setLayout(savedLayout.filter((l) => templatesChart.some((chart) => chart._id === l.i)));
+        const savedLayout = getSavedLayout();
+        if (savedLayout.length) {
+            const filteredLayout = textSearch ? savedLayout.filter((l) => templatesChart.some((chart) => chart._id === l.i)) : savedLayout;
+            setLayout(filteredLayout);
         }
     }, [templatesChart, textSearch]);
 
@@ -71,14 +62,17 @@ const TemplateTableCharts: React.FC<{ templatesChart: ChartsAndGenerator[]; text
         onSuccess: (data) => {
             toast.success(i18next.t('charts.actions.deletedSuccessfully'));
             setDeleteChartDialogState({ isDialogOpen: false, chartId: null });
-            const savedLayout: LayoutItem[] | null = LocalStorage.get(`chartsOrder_${templateId}`);
+
+            const savedLayout = getSavedLayout();
 
             LocalStorage.set(
-                `chartsOrder_${templateId}`,
+                `${chartsOrderKey}${templateId}`,
                 savedLayout?.filter((layoutItem) => layoutItem.i !== data._id),
             );
+
             setLayout(layout.filter((layoutItem) => layoutItem.i !== data._id));
-            queryClient.invalidateQueries({ queryKey: ['getCharts', templateId] });
+
+            queryClient.invalidateQueries({ queryKey: ['getCharts', templateId, textSearch] });
         },
         onError: (error: AxiosError) => {
             toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('charts.actions.failedToDelete')} />);
@@ -86,7 +80,7 @@ const TemplateTableCharts: React.FC<{ templatesChart: ChartsAndGenerator[]; text
     });
 
     const handleLayoutChange = (newLayout: LayoutItem[]) => {
-        const savedLayout: LayoutItem[] | null = LocalStorage.get(`chartsOrder_${templateId}`);
+        const savedLayout = getSavedLayout();
 
         if (newLayout.length) {
             setLayout((prevLayout) => {
@@ -94,13 +88,13 @@ const TemplateTableCharts: React.FC<{ templatesChart: ChartsAndGenerator[]; text
 
                 const updatedLayout = newLayout.map((newItem, index) => {
                     const existingItem = prevLayout[index];
-
-                    return existingItem ? { ...existingItem, x: newItem.x, y: newItem.y, w: newItem.w, h: newItem.h } : newItem;
+                    return existingItem ? { ...newItem, i: existingItem.i } : newItem;
                 });
 
                 if (savedLayout && savedLayout.length > newLayout.length) updatedLayout.push(savedLayout[savedLayout.length - 1]);
 
-                if (!textSearch) LocalStorage.set(`chartsOrder_${templateId}`, updatedLayout);
+                if (!textSearch) LocalStorage.set(`${chartsOrderKey}${templateId}`, updatedLayout);
+
                 return updatedLayout;
             });
         }
@@ -110,7 +104,6 @@ const TemplateTableCharts: React.FC<{ templatesChart: ChartsAndGenerator[]; text
         templatesChart.map((chart, index) => {
             return (
                 <div
-                    // eslint-disable-next-line react/no-array-index-key
                     key={chart._id}
                     style={{
                         background: '#f9f9f9',
@@ -128,9 +121,7 @@ const TemplateTableCharts: React.FC<{ templatesChart: ChartsAndGenerator[]; text
                         chartDetails={chart}
                         indexInGrid={index}
                         isHoverOnCard={isHoverOnCard}
-                        onDelete={() => {
-                            setDeleteChartDialogState({ chartId: chart._id, isDialogOpen: true });
-                        }}
+                        onDelete={() => setDeleteChartDialogState({ chartId: chart._id, isDialogOpen: true })}
                     />
                 </div>
             );
@@ -142,12 +133,13 @@ const TemplateTableCharts: React.FC<{ templatesChart: ChartsAndGenerator[]; text
                 <GridLayout
                     style={{ direction: 'ltr', width: '100%', height: '100%' }}
                     rowHeight={30}
-                    cols={cols}
+                    cols={defaultColumnSizes}
                     useCSSTransforms={mounted}
                     compactType="vertical"
                     generateDom={generateCharts}
                     layouts={{ md: layout, lg: layout, sm: layout, xs: layout, xxs: layout }}
                     onLayoutChange={handleLayoutChange}
+                    draggableHandle=".drag-handle"
                 />
             )}
             <AreYouSureDialog

@@ -17,6 +17,7 @@ interface GridLayoutProps {
     useCSSTransforms: boolean;
     compactType: CompactType;
     generateDom: () => React.ReactNode[];
+    draggableHandle?: string;
 }
 
 const GridLayout: React.FC<GridLayoutProps> = ({
@@ -29,6 +30,7 @@ const GridLayout: React.FC<GridLayoutProps> = ({
     useCSSTransforms,
     compactType,
     generateDom,
+    draggableHandle,
 }) => {
     return (
         <ResponsiveReactGridLayout
@@ -44,6 +46,8 @@ const GridLayout: React.FC<GridLayoutProps> = ({
             compactType={compactType}
             preventCollision={!compactType}
             autoSize
+            draggableHandle={draggableHandle}
+            resizeHandles={['se']}
         >
             {generateDom()}
         </ResponsiveReactGridLayout>

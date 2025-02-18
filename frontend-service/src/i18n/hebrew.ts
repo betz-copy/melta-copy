@@ -99,7 +99,7 @@ export default {
         favorites: 'מועדפים',
         addActions: 'הוספת פעולות',
         convertToRelationShipFieldClick: 'המרה לשדה קשר',
-        navigate: 'עמוד פרט',
+        navigate: 'פרטי תרשים',
     },
     entityPage: {
         deleteRelationshipPopoverText: 'מחק קשר',
@@ -1120,6 +1120,7 @@ export default {
         generalDetails: 'פרטים כלליים',
         chartDetails: 'פרטי התרשים',
         permissions: 'הרשאות',
+        color: 'צבע התרשים',
         personal: 'אישי',
         protected: 'לכל המשתמשים',
         name: 'שם',
@@ -1134,6 +1135,7 @@ export default {
         pieChart: 'עוגה',
         barChart: 'עמודות',
         numberChart: 'מספרי',
+        noChartsFound: 'לא נמצאו תרשימים',
         actions: {
             createdSuccessfully: 'תרשים נוצר בהצלחה',
             failedToCreate: 'נכשל ביצירת תרשים',

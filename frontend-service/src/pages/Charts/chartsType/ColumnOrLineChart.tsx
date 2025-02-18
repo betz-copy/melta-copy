@@ -13,7 +13,7 @@ const ColumnOrLineChart: React.FC<{
     disabled: boolean;
 }> = ({ formik, formikValues, entityTemplate, disabled }) => {
     return (
-        <Grid container direction="column" spacing={2}>
+        <Grid container direction="column" spacing={2} marginTop={1}>
             <Grid item>
                 <AxisInput
                     formikField="metaData.xAxis.field"

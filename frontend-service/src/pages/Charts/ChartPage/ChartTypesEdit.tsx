@@ -1,15 +1,15 @@
 import { BarChart as BarChartIcon, Money as NumberChartIcon, PieChart as PieChartIcon, ShowChart as ShowChartIcon } from '@mui/icons-material';
-import { Box, Grid, Typography } from '@mui/material';
+import { Grid, Typography } from '@mui/material';
 import { FormikProps } from 'formik';
 import i18next from 'i18next';
 import React, { useMemo } from 'react';
 import { IBasicChart, IChartType } from '../../../interfaces/charts';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { initializeChartMetaData } from '../../../utils/charts/getChartAxes';
+import { ColumnOrLineChart } from '../chartsType/ColumnOrLineChart';
 import { NumberChart } from '../chartsType/NumberChart';
 import { PieChart } from '../chartsType/PieChart';
 import { ChartTypeButton } from './ChartTypeButton';
-import { ColumnOrLineChart } from '../chartsType/ColumnOrLineChart';
 
 interface ChartProps {
     formik: FormikProps<IBasicChart>;
@@ -44,7 +44,7 @@ const ChartTypesEdit: React.FC<ChartProps> = ({ formik, formikValues, entityTemp
         <Grid item marginTop={2}>
             <Typography variant="subtitle1">{i18next.t('charts.chartDetails')}</Typography>
 
-            <Grid item container spacing={2} marginTop={2}>
+            <Grid item marginTop={2}>
                 {chartTypeButtons.map(({ icon, type, label }) => (
                     <ChartTypeButton
                         key={type}

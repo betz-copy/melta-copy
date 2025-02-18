@@ -1,4 +1,7 @@
 .react-grid-placeholder {
     background-color: #ccccdc !important;
-    border: 1px dashed #999 !important; 
+    border: 1px dashed #999 !important;
+}
+.react-resizable-handle::after {
+    display: none !important;
 }

@@ -6,10 +6,9 @@ import React from 'react';
 import { MeltaTooltip } from '../../../common/MeltaTooltip';
 import { IBasicChart, IPermission } from '../../../interfaces/charts';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { ChartTypesEdit } from './ChartTypesEdit';
 import { useUserStore } from '../../../stores/user';
 import { isWorkspaceAdmin } from '../../../utils/permissions/instancePermissions';
-import { MinimizedColorPicker } from '../../../common/inputs/MinimizedColorPicker';
+import { ChartTypesEdit } from './ChartTypesEdit';
 
 const ChartSideBar: React.FC<{
     formik: FormikProps<IBasicChart>;
@@ -77,31 +76,6 @@ const ChartSideBar: React.FC<{
 
             <Grid item>
                 <ChartTypesEdit formik={formik} formikValues={formik.values} entityTemplate={entityTemplate} disabled={readonly} />
-            </Grid>
-
-            <Grid container marginTop={2} direction="column" spacing={2}>
-                <Grid item>
-                    <Typography variant="subtitle1">{i18next.t('charts.color')}</Typography>
-                </Grid>
-                <Grid item>
-                    <MinimizedColorPicker
-                        color="red"
-                        onColorChange={(color) => {
-                            console.log({ color });
-
-                            formik.setFieldValue('color', color);
-                        }}
-                        circleSize="1.6rem"
-                        style={
-                            {
-                                // position: 'absolute',
-                                // top: 4.5,
-                                // left: 4.2,
-                                // zIndex: 10000,
-                            }
-                        }
-                    />
-                </Grid>
             </Grid>
 
             <Grid container direction="column" marginTop={2} spacing={2}>
