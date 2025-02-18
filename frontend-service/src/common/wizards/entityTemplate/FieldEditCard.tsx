@@ -190,7 +190,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     const errorUniqueGroupName = errors?.groupName;
 
     const isIdentifierAble = isText || value.type === 'number' || value.type === 'pattern' || value.type === 'serialNumber';
-    const currentIdentifier = displayValues.find((displayValue) => displayValue.identifier);
+    const currentIdentifier = displayValues.find((displayValue) => displayValue.identifier)?.name;
     
     const mapSearchDisabled = !value.mapSearch && locationSearchFields?.disabled;
 
@@ -1012,6 +1012,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                 setValues((prevValue) => ({
                                                                     ...prevValue,
                                                                     required: checked,
+                                                                    identifier: !checked ? false : prevValue.identifier,
                                                                 }));
                                                                 // unique is allowed only if required=true, automatic uncheck 'unique' too
                                                                 if (!checked && unique) {
@@ -1094,6 +1095,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                 setValues((prevValue) => ({
                                                                     ...prevValue,
                                                                     required: checked ? true : prevValue.required,
+                                                                    identifier: !checked ? false : prevValue.identifier,
                                                                     groupName: undefined,
                                                                     uniqueCheckbox: false,
                                                                 }));
@@ -1156,10 +1158,9 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                     uniqueCheckbox: false,
                                                                 }));
                                                                 if (checked) createEmptyGroup(value.name);
-                                                                else deletePropFromUniqueConstraints(uniqueConstraintGroupName, value.name);
                                                             }}
-                                                            disabled={currentIdentifier !== undefined && currentIdentifier !== value}
-                                                            checked={value.identifier}
+                                                            disabled={currentIdentifier !== undefined && currentIdentifier !== value.name}
+                                                            checked={value.identifier ?? false}
                                                         />
                                                     }
                                                     label={i18next.t('validation.identifier')}
@@ -1219,7 +1220,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                         </Grid>
                                     </Grid>
                                     <Grid item container justifyContent="space-between" alignItems="center" flexWrap="nowrap">
-                                        {unique && !isIdentifierAble && value.type !== 'serialNumber' && (
+                                        {unique && !value.identifier && value.type !== 'serialNumber' && (
                                             <Grid container direction="row">
                                                 <Grid item container alignItems="center" flexWrap="nowrap">
                                                     <MeltaTooltip title={i18next.t('validation.uniqueTooltipTitle')}>
@@ -1367,5 +1368,5 @@ export const MemoFieldEditCard = memo(
         isEqual(prev.touched, next.touched) &&
         isEqual(prev.errors, next.errors) &&
         isEqual(prev.uniqueConstraints, next.uniqueConstraints)&&
-        isEqual(prev.locationSearchFields, next.locationSearchFields) ,
+        isEqual(prev.locationSearchFields, next.locationSearchFields),
 );
