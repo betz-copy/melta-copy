@@ -52,6 +52,7 @@ export interface EntityTemplateFormInputProperties {
         relatedTemplateField: string;
     };
     archive?: boolean;
+    mapSearch?: boolean;
 }
 export interface EntityTemplateWizardValues
     extends Omit<
@@ -82,6 +83,7 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
         propertiesTypeOrder: ['properties', 'attachmentProperties'],
         uniqueConstraints: [],
         documentTemplatesIds: [],
+        mapSearchProperties: []
     },
     isEditMode = false,
 }) => {

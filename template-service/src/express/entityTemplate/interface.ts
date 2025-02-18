@@ -53,6 +53,7 @@ export interface IEntityTemplate {
     iconFileId: string | null;
     actions?: string;
     documentTemplatesIds?: string[];
+    mapSearchProperties?: string[];
 }
 
 export interface IMongoEntityTemplate extends IEntityTemplate, Document<string> {

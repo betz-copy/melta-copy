@@ -25,7 +25,7 @@ import { useDraftIdStore, useDraftsStore } from '../../stores/drafts';
 import { useUserStore } from '../../stores/user';
 import { filterModelToFilterOfTemplate, sortModelToSortOfSearchRequest } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 import { getEntityTemplateColor } from '../../utils/colors';
-import { checkUserCategoryPermission } from '../../utils/permissions/instancePermissions';
+import { checkUserTemplatePermission } from '../../utils/permissions/instancePermissions';
 import { BlueTitle } from '../BlueTitle';
 import { CustomIcon } from '../CustomIcon';
 import { EntityWizardValues } from '../dialogs/entity';
@@ -132,7 +132,12 @@ const TemplateTable = forwardRef<
 
     const entityTemplateColor = getEntityTemplateColor(template);
 
-    const userHasWritePermissions = checkUserCategoryPermission(currentUser.currentWorkspacePermissions, template.category, PermissionScope.write);
+    const userHasWritePermissions = checkUserTemplatePermission(
+        currentUser.currentWorkspacePermissions,
+        template.category,
+        template._id,
+        PermissionScope.write,
+    );
 
     useEffect(() => {
         sessionStorage.setItem(`isExpand-${template._id}`, isExpand.toString());
@@ -157,13 +162,20 @@ const TemplateTable = forwardRef<
         });
     };
 
+    const isLoadExcelDisabled = !userHasWritePermissions || checkIfLoadExcelIsDisabled();
+    const loadExcelTooltip = isLoadExcelDisabled
+        ? i18next.t(!userHasWritePermissions ? 'permissions.dontHaveWritePermissionsToTemplate' : 'wizard.entity.loadEntities.tableCantLoadEntities')
+        : undefined;
+
     const checkIfEditExcelIsDisabled = () => {
         const { properties } = template.properties;
         return Object.values(properties).some((property) => property.identifier);
     };
 
-    const isLoadExcelDisabled = !userHasWritePermissions || checkIfLoadExcelIsDisabled();
     const isEditExcelDisabled = !userHasWritePermissions || !checkIfEditExcelIsDisabled();
+    const editExcelTooltip = isEditExcelDisabled
+        ? i18next.t(!userHasWritePermissions ? 'permissions.dontHaveWritePermissionsToTemplate' : 'wizard.entity.loadEntities.tableCantEditExcel')
+        : undefined
 
     return (
         <Grid container minWidth="fit-content">
@@ -282,7 +294,7 @@ const TemplateTable = forwardRef<
                             color: theme.palette.primary.main,
                         }}
                         onSuccessCreate={() => entitiesTableRef.current?.refreshServerSide()}
-                        popoverText={isEditExcelDisabled ? i18next.t('wizard.entity.loadEntities.tableCantEditExcel') : undefined}
+                        popoverText={editExcelTooltip}
                     >
                         <EditNote
                             fontSize="small"
@@ -304,7 +316,7 @@ const TemplateTable = forwardRef<
                             color: theme.palette.primary.main,
                         }}
                         onSuccessCreate={() => entitiesTableRef.current?.refreshServerSide()}
-                        popoverText={isLoadExcelDisabled ? i18next.t('wizard.entity.loadEntities.tableCantLoadEntities') : undefined}
+                        popoverText={loadExcelTooltip}
                     >
                         <Upload
                             fontSize="small"
@@ -415,7 +427,7 @@ const TemplateTable = forwardRef<
                             toast.dismiss();
                         },
                         popoverText: i18next.t(
-                            !userHasWritePermissions ? 'permissions.dontHaveWritePermissions' : 'entitiesTableOfTemplate.editEntity',
+                            !userHasWritePermissions ? 'permissions.dontHaveWritePermissionsToTemplate' : 'entitiesTableOfTemplate.editEntity',
                         ),
                         disabledButton: !userHasWritePermissions,
                     }}

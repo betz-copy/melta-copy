@@ -23,6 +23,7 @@ import {
     ISearchSort,
     ITemplateSearchBody,
     IEntityWithDirectRelationships,
+    IEntityWithIgnoredRules,
 } from '../../externalServices/instanceService/interfaces/entities';
 import { IRelationship } from '../../externalServices/instanceService/interfaces/relationships';
 import {
@@ -314,13 +315,8 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         });
     };
 
-    async loadEntities(
-        templateId: string,
-        userId: string,
-        files?: UploadedFile[],
-        insertBrokenEntities?: { entitiesToCreate: IEntity[]; ignoredRules: IBrokenRule[] },
-    ) {
-        let entities = insertBrokenEntities?.entitiesToCreate;
+    async loadEntities(templateId: string, userId: string, files?: UploadedFile[], insertBrokenEntities?: IEntityWithIgnoredRules[]) {
+        let entities = insertBrokenEntities;
         const template = await this.entityTemplateService.getEntityTemplateById(templateId);
 
         const failedEntities: IFailedEntity[] = [];
@@ -332,8 +328,8 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
             const effectiveFilesLimit = workspaceFilesLimit ?? config.loadExcel.filesLimit;
             if (files.length > effectiveFilesLimit) throw new BadRequestError(`files limit: more than ${effectiveFilesLimit} files`, {});
 
-            const actions = await readExcelFile(files, template, failedEntities, workspace.metadata?.excel?.entitiesFileLimit);
-            entities = actions;
+            const fileEntities = await readExcelFile(files, template, failedEntities, workspace.metadata?.excel?.entitiesFileLimit);
+            entities = fileEntities;
         }
 
         const serialStarters = this.getSerialStarters(template);
@@ -343,10 +339,11 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         const succeededEntities: IEntity[] = [];
         const allBrokenRulesEntities: IBrokenRuleEntity[] = [];
 
-        const handleLoadEntities = async (entity: IEntity) => {
+        const handleLoadEntities = async (entityWithIgnoredRules: IEntityWithIgnoredRules) => {
+            const { ignoredRules, ...entity } = entityWithIgnoredRules;
             try {
                 const serialNumbers = generateSerialNumbers(succeededEntities.length);
-                const result = await this.createEntityInstance(entity, [], insertBrokenEntities?.ignoredRules || [], userId, serialNumbers);
+                const result = await this.createEntityInstance(entity, [], ignoredRules, userId, serialNumbers);
 
                 succeededEntities.push(result);
             } catch (error) {
@@ -385,19 +382,29 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
             oldEntities.push(...chunk);
         }
 
-        const entities = await readExcelFile([file], template, failedEntities, workspace.metadata?.excel?.entitiesFileLimit, oldEntities);
+        const entitiesWithIgnoresRules = await readExcelFile(
+            [file],
+            template,
+            failedEntities,
+            workspace.metadata?.excel?.entitiesFileLimit,
+            oldEntities,
+        );
+        const entities = entitiesWithIgnoresRules.map((entityWithIgnoresRules) => ({
+            templateId: entityWithIgnoresRules.templateId,
+            properties: entityWithIgnoresRules.properties,
+        }));
         return { entities, failedEntities };
     }
 
-    async editExcel(entities: IEntity[], userId: string, ignoredRules?: IBrokenRule[]) {
+    async editExcel(entities: IEntityWithIgnoredRules[], userId: string) {
         const failedEntities: IFailedEntity[] = [];
         const succeededEntities: IEntity[] = [];
         const allBrokenRulesEntities: IBrokenRuleEntity[] = [];
         const results: IEntity[] = [];
 
-        const handleLoadEntities = async (entity: IEntity) => {
+        const handleLoadEntities = async (entity: IEntityWithIgnoredRules) => {
             try {
-                const result = await this.updateEntityInstance(entity.properties._id, entity, [], ignoredRules || [], userId);
+                const result = await this.updateEntityInstance(entity.properties._id, entity, [], entity.ignoredRules || [], userId);
                 results.push(result);
             } catch (error) {
                 this.handleLoadEntitiesErrors(error, failedEntities, entity, allBrokenRulesEntities);

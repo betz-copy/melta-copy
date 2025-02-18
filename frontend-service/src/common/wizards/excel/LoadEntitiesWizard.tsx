@@ -9,14 +9,15 @@ import { StepType, Wizard, WizardBaseType } from '..';
 import OpenPreview from '../../FilePreview/OpenPreview';
 import { exportEntitiesRequest, loadEntitiesRequest } from '../../../services/entitiesService';
 import { attachmentPropertiesBaseSchema } from '../entityTemplate/AddFields';
-import { IBrokenRule } from '../../../interfaces/ruleBreaches/ruleBreach';
 import ActionOnEntityWithRuleBreachDialog from '../../../pages/Entity/components/ActionOnEntityWithRuleBreachDialog';
-import { ActionTypes, ICreateEntityMetadata } from '../../../interfaces/ruleBreaches/actionMetadata';
+import { ActionTypes } from '../../../interfaces/ruleBreaches/actionMetadata';
 import { ICreateOrUpdateWithRuleBreachDialogState } from '../../dialogs/entity/CreateOrEditEntityDialog';
 import { environment } from '../../../globals';
 import { UploadExcel } from './excelSteps/UploadExcel';
 import { EntitiesWizardValues, ISteps, StepStatus } from '../../../interfaces/excel';
 import { LoadEntitiesTables } from './excelSteps/LoadEntitiesTables';
+import { IEntityWithIgnoredRules } from '../../../interfaces/entities';
+import { groupBrokenRulesByEntity } from '../../../utils/loadEntities';
 
 const { excelExtension } = environment.loadExcel;
 
@@ -64,12 +65,13 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
     );
 
     const { isLoading: isLoadingRules, mutateAsync: loadRules } = useMutation(
-        async (insertBrokenEntities: { entitiesToCreate: ICreateEntityMetadata[]; ignoredRules: IBrokenRule[] }) => {
+        async (insertBrokenEntities: IEntityWithIgnoredRules[]) => {
             return loadEntitiesRequest(template!._id, undefined, insertBrokenEntities);
         },
         {
             async onSuccess(data) {
                 setCreateOrUpdateWithRuleBreachDialogState({ isOpen: false });
+                onClose();
                 toast.success(i18next.t('wizard.entity.loadEntities.createdSuccessfully'));
                 return data;
             },
@@ -78,6 +80,7 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
             },
             onMutate() {
                 onClose();
+                toast.error(i18next.t('wizard.entity.loadEntities.failedLoadEntities'));
             },
         },
     );
@@ -238,10 +241,13 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
                                 properties,
                             })) || [];
 
-                        return loadRules({
-                            entitiesToCreate: brokenRulesEntities,
-                            ignoredRules: stepsData.data.brokenRulesEntities?.rawBrokenRules || [],
-                        });
+                        const groupedRawBrokenRules = groupBrokenRulesByEntity(stepsData.data.brokenRulesEntities?.rawBrokenRules || []);
+                        const insertBrokenEntities: IEntityWithIgnoredRules[] = brokenRulesEntities.map((brokenEntity, index) => ({
+                            ...brokenEntity,
+                            ignoredRules: groupedRawBrokenRules[index],
+                        }));
+
+                        return loadRules(insertBrokenEntities);
                     }}
                     actionType={ActionTypes.CreateEntity}
                     brokenRules={createOrUpdateWithRuleBreachDialogState.brokenRules!}

@@ -135,13 +135,18 @@ export default {
             deleteRelationship: 'מחק קשר מסוג',
             createRelationship: 'יצר קשר מסוג ',
             createEntity: 'יצר את הישות',
+            createProcess: 'יצר את התהליך',
             disableEntity: 'השבית את הישות',
             activateEntity: 'הפעיל את הישות',
             duplicateEntityFrom: 'שכפל את הישות מ',
             updateField: 'עדכן את השדה:',
             updateFields: 'עדכן את השדות הבאים:',
+            updatedStatus: 'עדכן את הסטטוס ל:',
+            updatedComment: 'עדכן את ההערות ל:',
             emptyField: 'שדה ריק',
             header: 'היסטוריה',
+            processHeader: 'היסטוריית תהליך',
+            stepHeader: 'היסטוריית שלב',
             loading: 'טוען היסטוריה',
             noSearchLeft: 'אין עוד היסטוריה לישות',
             from: 'מ:',
@@ -375,7 +380,7 @@ export default {
         succeededToDeleteUser: 'נמחק הרשאות של משתמש בהצלחה',
         failedToLoadAllPermissions: 'נכשל לטעון את כל ההרשאות',
         dontHavePermissionsToCategory: 'אין הרשאות לקטגוריה',
-        dontHaveWritePermissionsToCategory: 'אין הרשאות עריכה לקטגוריה',
+        dontHaveWritePermissionsToTemplate: 'אין הרשאות עריכה לתבנית',
         dontHavePermissionToEntityPage: 'אין לך הרשאות לגשת לעמוד פרט של ישות זו',
         dontHaveWritePermissions: 'אין לך הרשאות עריכה',
         permissionsOfUserDialog: {
@@ -499,6 +504,7 @@ export default {
             deletedSuccessfully: 'תבנית ישות נמחקה בהצלחה',
             failedToDelete: 'נכשל למחוק תבנית ישות',
             failedToEdit: 'נכשל בעריכת תבנית ישות',
+            searchLocation: 'הצגת שדה בחיפוש בעמוד מפות',
             failedToUpdateRequiredConstraintsBecauseOfEntitiesWithMissing: 'נכשל לעדכן שדות חובה בגלל שקיימות ישיות שלא מוזן להם שדה',
             failedToUpdateUniqueConstraintsBecauseOfEntitiesWithDuplicates: 'נכשל לעדכן שדות יחודיים בגלל שקיימות ישויות עם שכפולים בשדות',
             failedToDeleteFieldThatUsedInRules: 'נכשל למחוק שדה "{{property}}" אשר בשימוש בחוקים',
@@ -741,9 +747,16 @@ export default {
                 StepStatusNotYetBeeUpdated: 'טרם עודכן סטטוס של שלב זה',
                 printedBy: 'הודפס ע"י',
                 printedAt: 'תאריך',
+                processStatuses: {
+                    approved: 'הושלם',
+                    rejected: 'נדחה',
+                    pending: 'ממתין',
+                },
             },
             step: {
                 stepStatus: 'סטטוס שלב',
+                prevStep: 'שלב קודם',
+                nextStep: 'שלב הבא',
                 editStepBth: 'ערוך שלב',
                 editedSuccessfully: 'שלב עודכן בהצלחה',
                 failedToEdit: 'נכשל לערוך שלב',
@@ -808,6 +821,7 @@ export default {
         stepNameExists: 'קיים שלב עם שם באנגלית זהה',
         stepDisplayNameExists: 'קיים שלב עם שם לתצוגה זהה',
         fileslimit: 'מספר קבצים מוגבל ל{{limit}}',
+        mapSearchPropertiesLimit: 'מספר השדות המקסימלי בחיפוש עמוד מפות הוא: {{limit}}'
     },
     propertyTypes: {
         string: 'טקסט',
@@ -877,6 +891,7 @@ export default {
         forTour: 'לסיור במערכת',
         pressHere: 'לחץ כאן',
     },
+    meltaUpdates: { title: 'התחדשנו בשבילכם!', confirmation: 'אישור', renewed: 'התחדשנו', btn: 'מה חדש?' },
     ruleBreachInfo: {
         relActionInfo: {
             [ActionTypes.CreateRelationship]: 'יצירת',
@@ -1024,6 +1039,9 @@ export default {
         newBreachDetected: 'זוהתה הפרת חוק חדשה',
     },
     processInstancesPage: {
+        process: 'תהליך',
+        createdBy: 'נוצר ע"י',
+        createdAt: 'נוצר ב',
         failedToCreateProcess: 'נכשל ליצור תהליך',
         processCreatedSuccessfully: 'תהליך נוצר בהצלחה',
         failedToDeleteProcess: 'נכשל למחוק תהליך',
@@ -1041,6 +1059,8 @@ export default {
         openProcessesTitle: 'תהליכים פתוחים',
         closedProcessesTitle: 'תהליכים סגורים',
         someStepIsApprovedAreYouSureEditProcessDetails: 'קיים שלב שכבר אושר. האם אתה בטוח רוצה לשנות את פרטי התהליך?',
+        waitForMyApprove: 'תהליכים הממתינים להתייחסותי',
+        groupByWaitingForMe: 'קבץ תהליכים הממתינים לאישורי',
         stepStatus: {
             pending: 'ממתין',
             approved: 'בוצע',
@@ -1053,7 +1073,9 @@ export default {
         nextBth: 'הבא',
         addApprover: 'הוסף מאשר ',
         filter: 'סינון',
+        cleanFilter: 'נקה סינון',
         startDate: 'החל מ',
+        dateFilter: 'תאריכי התהליך',
         endDate: 'עד',
         allProcesses: 'כל התהליכים',
         pendingProcesses: 'תהליכים בתהליך',
@@ -1267,6 +1289,20 @@ export default {
         takePicture: 'צלם תמונה',
         blackAndWhite: 'שחור לבן',
     },
+    location: {
+        polygon: 'פוליגון',
+        coordinate: 'נקודת ציון',
+        circle: 'חיפוש בעזרת מעגל',
+        line: 'קו למדידת מרחק',
+        noCrsTypes: 'לא נמצאו סוגי CRS',
+        clear: 'ניקוי תוצאות',
+        radiusMaxLimit: `חיפוש מוגבל עד ${environment.map.maxRadius / 1000} ק"מ`,
+        layers: {
+            map: 'שכבות מפה',
+            noLayers: 'לא נמצאו שכבות',
+            overlay: 'שכבות מיפוי',
+        }
+    },
     DynamicsConfigs: {
         isDrawerOpen: 'תפריט צד פתוח',
         shouldNavigateToEntityPage: 'עבור לעמוד פרט בעת יצירת/עריכת ישות',
@@ -1278,7 +1314,19 @@ export default {
             defaultExpandedTableHeight: 'גודל טבלה במצב פתוח',
         },
         mainFontSizes: {
-            headlineTitleFontSize: 'גודל גופן כותרת ראשית',
+            headlineTitleFontSize: 'גודל גופן כותרת ראשית',location: {
+            polygon: 'פוליגון',
+            coordinate: 'נקודת ציון',
+            circle: 'חיפוש בעזרת מעגל',
+            line: 'קו למדידת מרחק',
+            clear: 'ניקוי תוצאות',
+            radiusMaxLimit: `חיפוש מוגבל עד ${environment.map.maxRadius / 1000} ק"מ`,
+            layers: {
+                map: 'שכבות מפה',
+                noLayers: 'לא נמצאו שכבות',
+                overlay: 'שכבות מיפוי',
+            }
+        },
             entityTemplateTitleFontSize: 'גודל גופן כותרת טבלה',
             headlineSubTitleFontSize: 'גודל גופן כותרת משנית',
         },
@@ -1291,15 +1339,8 @@ export default {
             filesLimit: 'הגבלת מספר קבצים שניתן להעלות בטעינת יישויות',
         },
         searchLimits: {
-            table: 'כמות ישויות למשיכה בתצוגה טבלאית',
+            // table: 'כמות ישויות למשיכה בתצוגה טבלאית', // comment out  waiting for Itay
             bulk: 'כמות ישויות למשיכה בתצוגת כרטיסיות',
-        },
-        location: {
-            noLayers: 'לא נמצאו שכבות',
-            noCrsTypes: 'לא נמצאו סוגי CRS',
-            entityWithoutLocation: 'ליישות אין ערך שדה מיקום',
-            clear: 'ניקוי תוצאות',
-            radiusMaxLimit: `חיפוש מוגבל עד ${environment.map.maxRadius / 1000} ק"מ`,
         },
     },
 };

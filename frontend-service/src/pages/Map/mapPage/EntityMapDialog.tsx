@@ -19,7 +19,7 @@ type props = {
     entityWithMatchingField: { node: IEntity; matchingField: string };
 };
 
-const MapPageEntityDialog = ({ open, onClose, entityWithMatchingField }: props) => {
+const EntityMapDialog = ({ open, onClose, entityWithMatchingField }: props) => {
     const [_, navigate] = useLocation();
     const queryClient = useQueryClient();
     const workspace = useWorkspaceStore((state) => state.workspace);
@@ -29,6 +29,9 @@ const MapPageEntityDialog = ({ open, onClose, entityWithMatchingField }: props) 
 
     const entityTemplate = entityTemplateMap!.get(entityWithMatchingField.node.templateId)!;
     const entityTemplateColor = getEntityTemplateColor(entityTemplate);
+    
+    const locationField = entityWithMatchingField.matchingField.slice(0, -37);
+    const locationFieldTitle = entityTemplate.properties.properties[locationField].title
 
     return (
         <Dialog open={open} onClose={onClose} sx={{ opacity: 0.95 }}>
@@ -44,9 +47,7 @@ const MapPageEntityDialog = ({ open, onClose, entityWithMatchingField }: props) 
                     </Typography>
                     <Typography fontSize="18px" fontWeight={600}>
                         (
-                        {`${i18next.t('wizard.processTemplate.field')} ${
-                            entityTemplate.properties.properties[entityWithMatchingField.matchingField].title
-                        }`}
+                        {`${i18next.t('wizard.processTemplate.field')} ${locationFieldTitle}`}
                         )
                     </Typography>
                 </Box>
@@ -76,4 +77,4 @@ const MapPageEntityDialog = ({ open, onClose, entityWithMatchingField }: props) 
     );
 };
 
-export default MapPageEntityDialog;
+export default EntityMapDialog;

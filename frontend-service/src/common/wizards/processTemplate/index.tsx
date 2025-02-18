@@ -25,6 +25,7 @@ export interface ProcessTemplateFormInputProperties {
     pattern: string;
     patternCustomErrorMessage: string;
     required: boolean;
+    deleted?: boolean | undefined;
 }
 export interface ProcessTemplateWizardValues extends Omit<IMongoProcessTemplatePopulated, 'details' | 'steps' | 'createdAt' | 'updatedAt'> {
     detailsProperties: ProcessTemplateFormInputProperties[];

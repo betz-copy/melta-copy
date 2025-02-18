@@ -1,4 +1,4 @@
-import { IEntity, IRequiredConstraint, IUniqueConstraint } from './entities';
+import { IEntity, IEntityWithIgnoredRules, IRequiredConstraint, IUniqueConstraint } from './entities';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from './entityTemplates';
 import { ActionErrors, ActionTypes, IAction, IActionMetadataPopulated, ICreateEntityMetadata } from './ruleBreaches/actionMetadata';
 import { IBrokenRule, IBrokenRulePopulated } from './ruleBreaches/ruleBreach';
@@ -51,10 +51,10 @@ export interface ISteps {
     status: StepStatus;
     files?: Record<string, File>;
     data: ITablesResults;
-    entities?: IEntity[];
+    entities?: IEntityWithIgnoredRules[];
 }
 
 export interface IEditReadExcel {
     failedEntities: IFailedEntity[];
-    entities: IEntity[];
+    entities: IEntityWithIgnoredRules[];
 }

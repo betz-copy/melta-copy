@@ -29,7 +29,6 @@ const MetadataSchema = new mongoose.Schema<IMetadata>(
             filesLimit: { type: Number },
         },
         searchLimits: {
-            table: { type: Number },
             bulk: { type: Number },
         },
     },

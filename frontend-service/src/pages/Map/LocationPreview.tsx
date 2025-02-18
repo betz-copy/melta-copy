@@ -1,74 +1,96 @@
-import React from 'react';
-import { MapContainer, Marker, Polygon, LayersControl, LayerGroup } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
-import 'leaflet-draw/dist/leaflet.draw.css';
-import { CRS } from 'leaflet';
-import { useQueryClient } from 'react-query';
-import i18next from 'i18next';
-import EntityLocationPopup from './EntityLocationPopup';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { jerusalemCoordinates, UpdateMapBounds } from '../../utils/map';
+import React, { useEffect, useRef } from 'react';
+import { Cartesian3, Color } from 'cesium';
+import { Viewer, Entity, PolygonGraphics, PointGraphics, PolylineGraphics, BillboardGraphics } from 'resium';
+import * as Cesium from 'cesium';
 import { IEntity } from '../../interfaces/entities';
+import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { useEntityWithLocationFields } from '../../utils/hooks/useLocation';
-import { useDarkModeStore } from '../../stores/darkMode';
-import { BaseLayers } from './mapPage';
-import { BackendConfigState } from '../../services/backendConfigService';
+import { cartesian3ToString, jerusalemCoordinates } from '../../utils/map';
+import { BaseLayers } from './BaseLayers';
+
+export const MeltaPolygon = ({ name, polygon, onClick }: { name: string; polygon: Cartesian3[]; onClick?: () => void }) => (
+    <Entity name={name} description={cartesian3ToString(polygon)} onClick={onClick}>
+        <PolylineGraphics positions={[...polygon, polygon[0]]} material={Color.fromCssColorString('#11695a')} width={3} />
+        <PolygonGraphics hierarchy={polygon} material={Color.fromAlpha(Color.GRAY, 0.3)} />
+        {polygon.map((position, index) => (
+            <Entity key={`${position.x}, ${position.y} - ${index}`} position={position}>
+                <PointGraphics color={Color.BLACK} outlineColor={Color.fromCssColorString('#11695a')} pixelSize={10} outlineWidth={2} />
+            </Entity>
+        ))}
+    </Entity>
+);
+
+export const MeltaCoordinate = ({ name, position, onClick }: { name: string; position: Cartesian3; onClick?: () => void }) => (
+    <Entity name={name} description={cartesian3ToString(position)} position={position} onClick={onClick}>
+        <BillboardGraphics image="/icons/location.svg" scale={1} verticalOrigin={Cesium.VerticalOrigin.BOTTOM} />
+    </Entity>
+);
 
 type Props = {
-    entity: IEntity;
+    entityProperties: IEntity['properties'];
     entityTemplate: IMongoEntityTemplatePopulated;
-    styles?: React.CSSProperties;
 };
 
-const LocationPreview = ({ styles, entity, entityTemplate }: Props) => {
-    const queryClient = useQueryClient();
-    const { bounds, polygons, propertyDefinitions, markers } = useEntityWithLocationFields({ entityTemplate, entity });
-    const darkMode = useDarkModeStore((state) => state.darkMode);
+const LocationPreview = ({ entityProperties, entityTemplate }: Props) => {    
+    const viewerRef = useRef<any>(null);
 
-    const config = queryClient.getQueryData<BackendConfigState>('getBackendConfig');
-    if (!config) return <>{i18next.t('location.noCrsTypes')}</>;
-    const { crsType } = config;
+    const { bounds, polygons, propertyDefinitions, markers } = useEntityWithLocationFields({
+        entityTemplate,
+        entityProperties,
+    });
+
+    useEffect(() => {
+        const animateCamera = () => {
+            const viewer = viewerRef.current?.cesiumElement;
+            if (!viewer) return;
+            const { camera } = viewer;
+    
+            if (bounds !== null) {
+                const boundingSphere = new Cesium.BoundingSphere(bounds.center, bounds.radius);
+    
+                camera.flyToBoundingSphere(boundingSphere, {
+                    duration: 1.5,
+                    offset: new Cesium.HeadingPitchRange(0, -Cesium.Math.toRadians(90), bounds.radius * 10),
+                });
+            } else {
+                camera.flyTo({
+                    destination: jerusalemCoordinates,
+                    duration: 1.5,
+                });
+            }
+        };
+    
+        const animationFrameId = requestAnimationFrame(animateCamera);
+        return () => cancelAnimationFrame(animationFrameId);
+    }, [bounds]);    
 
     return (
-        <MapContainer
-            style={{ width: '100%', height: '100vh', ...styles }}
-            bounds={bounds?.isValid() ? bounds : undefined}
-            center={!bounds?.isValid() ? jerusalemCoordinates : undefined}
-            zoom={!bounds?.isValid() ? 8 : undefined}
-            maxBoundsViscosity={1}
-            maxBounds={[
-                [-90, -180],
-                [90, 180],
-            ]}
-            crs={CRS[crsType]}
-        >
-            {(polygons.length > 0 || markers.length > 0) && <UpdateMapBounds bounds={bounds} />}
+        <div style={{ position: 'relative', height: '800px', width: '600px' }}>
+            <Viewer
+              full
+              ref={viewerRef}
+              baseLayerPicker={false}
+              animation={false}
+              timeline={false}
+              geocoder={false}
+              homeButton={false}
+              sceneModePicker={false}
+              vrButton={false}
+              fullscreenButton={false}
+              >                
+              {polygons.map(({ key, position: polygon }) => (
+                    <MeltaPolygon key={key} name={propertyDefinitions[key].title} polygon={polygon} />
+                ))}
 
-            <LayersControl position="topright">
-                <BaseLayers />
+                {markers.map(({ key, position }) => (
+                    <MeltaCoordinate key={key} name={propertyDefinitions[key].title} position={Cartesian3.fromDegrees(position.x, position.y, 0)} />
+                ))}
 
-                {/* Overlay Layers */}
-                <LayersControl.Overlay checked name="Polygons">
-                    <LayerGroup>
-                        {polygons.map(({ key, position }) => (
-                            <Polygon key={key} positions={position}>
-                                <EntityLocationPopup header={propertyDefinitions[key].title} value={entity.properties[key]} darkMode={darkMode} />
-                            </Polygon>
-                        ))}
-                    </LayerGroup>
-                </LayersControl.Overlay>
-
-                <LayersControl.Overlay checked name="Markers">
-                    <LayerGroup>
-                        {markers.map(({ key, position }) => (
-                            <Marker key={key} position={position}>
-                                <EntityLocationPopup header={propertyDefinitions[key].title} value={entity.properties[key]} darkMode={darkMode} />
-                            </Marker>
-                        ))}
-                    </LayerGroup>
-                </LayersControl.Overlay>
-            </LayersControl>
-        </MapContainer>
+                <div style={{ position: 'absolute', top: '10px', left: '10px', display: 'flex', gap: '15px' }}>
+                    <BaseLayers viewerRef={viewerRef} />
+                </div>
+            </Viewer>
+        </div>
     );
 };
 

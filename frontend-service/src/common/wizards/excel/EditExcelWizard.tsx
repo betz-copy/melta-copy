@@ -10,7 +10,6 @@ import { StepType, Wizard, WizardBaseType } from '..';
 import OpenPreview from '../../FilePreview/OpenPreview';
 import { editExcelRequest, editReadExcelRequest, exportEntitiesRequest } from '../../../services/entitiesService';
 import { attachmentPropertiesBaseSchema } from '../entityTemplate/AddFields';
-import { IBrokenRule } from '../../../interfaces/ruleBreaches/ruleBreach';
 import ActionOnEntityWithRuleBreachDialog from '../../../pages/Entity/components/ActionOnEntityWithRuleBreachDialog';
 import { ActionTypes } from '../../../interfaces/ruleBreaches/actionMetadata';
 import { ICreateOrUpdateWithRuleBreachDialogState } from '../../dialogs/entity/CreateOrEditEntityDialog';
@@ -18,8 +17,9 @@ import { environment } from '../../../globals';
 import { UploadExcel } from './excelSteps/UploadExcel';
 import { LoadEntitiesTables } from './excelSteps/LoadEntitiesTables';
 import { EntitiesWizardValues, ISteps, StepStatus } from '../../../interfaces/excel';
-import { IEntity } from '../../../interfaces/entities';
+import { IEntityWithIgnoredRules } from '../../../interfaces/entities';
 import { useWorkspaceStore } from '../../../stores/workspace';
+import { groupBrokenRulesByEntity } from '../../../utils/loadEntities';
 
 const { excelExtension } = environment.loadExcel;
 
@@ -76,7 +76,7 @@ const EditExcelWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
     );
 
     const { isLoading: isLoadingExcelEntities, mutateAsync: loadEntities } = useMutation(
-        async (entities: IEntity[]) => {
+        async (entities: IEntityWithIgnoredRules[]) => {
             return editExcelRequest(template!, entities);
         },
         {
@@ -92,8 +92,8 @@ const EditExcelWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
     );
 
     const { isLoading: isLoadingRules, mutateAsync: loadRules } = useMutation(
-        async ({ entities, ignoredRules }: { entities: IEntity[]; ignoredRules: IBrokenRule[] }) => {
-            return editExcelRequest(template!, entities, ignoredRules);
+        async (entities: IEntityWithIgnoredRules[]) => {
+            return editExcelRequest(template!, entities);
         },
         {
             async onSuccess(data) {
@@ -269,17 +269,20 @@ const EditExcelWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
                         });
                         onClose();
                     }}
-                    doActionEntity={() => {
+                     doActionEntity={() => {
                         const brokenRulesEntities =
                             stepsData.data.brokenRulesEntities?.entities.map(({ properties }) => ({
                                 templateId: template!._id,
-                                properties: properties as IEntity['properties'],
-                            })) || [];                            
+                                properties,
+                            })) || [];
 
-                        return loadRules({
-                            entities: brokenRulesEntities,
-                            ignoredRules: stepsData.data.brokenRulesEntities?.rawBrokenRules || [],
-                        });
+                        const groupedRawBrokenRules = groupBrokenRulesByEntity(stepsData.data.brokenRulesEntities?.rawBrokenRules || []);
+                        const insertBrokenEntities: IEntityWithIgnoredRules[] = brokenRulesEntities.map((brokenEntity, index) => ({
+                            ...brokenEntity,
+                            ignoredRules: groupedRawBrokenRules[index],
+                        }));
+
+                        return loadRules(insertBrokenEntities);
                     }}
                     actionType={ActionTypes.CreateEntity}
                     brokenRules={createOrUpdateWithRuleBreachDialogState.brokenRules!}

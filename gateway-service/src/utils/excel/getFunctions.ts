@@ -14,7 +14,12 @@ import {
     ICreateEntityMetadata,
     IFailedEntity,
 } from '../../externalServices/ruleBreachService/interfaces';
-import { IEntity, IEntityWithDirectRelationships, IValidationErrorData } from '../../externalServices/instanceService/interfaces/entities';
+import {
+    IEntity,
+    IEntityWithDirectRelationships,
+    IEntityWithIgnoredRules,
+    IValidationErrorData,
+} from '../../externalServices/instanceService/interfaces/entities';
 import {
     IBrokenRulePopulated,
     ICreateEntityMetadataPopulated,
@@ -119,7 +124,7 @@ const readExcelFile = async (
     oldEntities: IEntityWithDirectRelationships[] = [],
 ) => {
     const isEditMode = oldEntities.length > 0;
-    const entities: IEntity[] = [];
+    const entities: IEntityWithIgnoredRules[] = [];
     const columns = Object.fromEntries(
         Object.entries(template.properties.properties).filter(([_propertyKey, propertyTemplate]) =>
             isEditMode ? true : isIncludedColumn(propertyTemplate),
@@ -168,9 +173,9 @@ const readExcelFile = async (
                 if (failedProperties.length > 0) handleFailedEntities(rowData, failedProperties, failedEntities);
                 else if (isEditMode && !isFailed) {
                     const updatedEntity = getUpdatedEntity(oldEntities, entity, identifier, template);
-                    if (updatedEntity) entities.push(updatedEntity);
+                    if (updatedEntity) entities.push({ ...updatedEntity, ignoredRules: [] });
                 } else {
-                    entities.push(entity);
+                    entities.push({ templateId: template._id, properties: rowData, ignoredRules: [] });
                 }
             });
 
