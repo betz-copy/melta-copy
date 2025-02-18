@@ -190,6 +190,13 @@ export interface IAggregation {
 }
 
 export type IAxisField = IAggregation | string;
+
+export interface IChartBody {
+    _id?: string;
+    xAxis: IAxisField;
+    yAxis: IAxisField | undefined;
+    filter: ISearchFilter;
+}
 export interface IDeleteBodyBase {
     selectAll: boolean;
     templateId: string;

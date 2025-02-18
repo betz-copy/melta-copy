@@ -158,11 +158,14 @@ const searchByTemplateSchema = {
 };
 
 export const chartSchema = Joi.object({
-    body: {
-        xAxis: Joi.any(),
-        yAxis: Joi.any(),
-        filter: searchFilterSchema,
-    },
+    body: Joi.array().items(
+        Joi.object({
+            _id: Joi.string(),
+            xAxis: Joi.any(),
+            yAxis: Joi.any(),
+            filter: searchFilterSchema,
+        }),
+    ),
     query: {},
     params: {
         templateId: Joi.string().required(),

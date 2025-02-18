@@ -51,6 +51,9 @@ import { runRulesOnEntity } from '../rules/runRulesOnEntity';
 import { throwIfActionCausedRuleFailures } from '../rules/throwIfActionCausedRuleFailures';
 import {
     EntitiesIdsRulesReasonsMap,
+    IAggregation,
+    IAxisField,
+    IChartBody,
     IConstraint,
     IConstraintsOfTemplate,
     IDeleteBody,
@@ -61,15 +64,12 @@ import {
     IGetExpandedEntityBody,
     IRequiredConstraint,
     ISearchBatchBody,
+    ISearchEntitiesByLocationBody,
     ISearchEntitiesByTemplatesBody,
     ISearchEntitiesOfTemplateBody,
     IUniqueConstraint,
     IUniqueConstraintOfTemplate,
     RunRuleReason,
-    IAxisField,
-    IAggregation,
-    ISearchFilter,
-    ISearchEntitiesByLocationBody,
 } from './interface';
 import { addStringFieldsAndNormalizeSpecialStringValues } from './validator.template';
 
@@ -2059,6 +2059,8 @@ export class EntityManager extends DefaultManagerNeo4j {
               RETURN ${xAggregation}
             `;
 
+        console.dir({ query }, { depth: null });
+
         return query;
     }
 
@@ -2083,15 +2085,19 @@ export class EntityManager extends DefaultManagerNeo4j {
         }
     }
 
-    async getChart(xAxis: IAxisField, yAxis: IAxisField | undefined, templateId: string, filter: ISearchFilter) {
+    async getChart(templateId: string, chartBody: IChartBody[]) {
         const entityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(templateId);
         const entityTemplatesMap = new Map([[templateId, entityTemplate]]);
-        const templatesFilter = { [templateId]: { filter, showRelationships: false } };
 
-        const { cypherQuery: filterQuery, parameters } = templatesFilterToNeoQuery(templatesFilter, entityTemplatesMap);
+        const chartPromises = chartBody.map(async ({ filter, xAxis, yAxis, _id }) => {
+            const templatesFilter = { [templateId]: { filter, showRelationships: false } };
+            const { cypherQuery: filterQuery, parameters } = templatesFilterToNeoQuery(templatesFilter, entityTemplatesMap);
 
-        const query = this.buildAggregationQuery(xAxis, yAxis, filterQuery);
+            const query = this.buildAggregationQuery(xAxis, yAxis, filterQuery);
+            const chart = await this.neo4jClient.readTransaction(query, normalizeChartResponse, parameters);
+            return _id ? { _id, chart } : chart;
+        });
 
-        return this.neo4jClient.readTransaction(query, normalizeChartResponse, parameters);
+        return Promise.all(chartPromises);
     }
 }

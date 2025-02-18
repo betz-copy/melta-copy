@@ -1,24 +1,23 @@
 import config from '../../config';
+import { IChartBody } from '../../express/templateCharts/interface';
 import { IMongoRule } from '../../express/templates/rules/interfaces';
 import DefaultExternalServiceApi from '../../utils/express/externalService';
 import { IAction, IBrokenRule } from '../ruleBreachService/interfaces';
+import { ISemanticSearchResult } from '../semanticSearch/interface';
+import { IEntitySingleProperty } from '../templates/entityTemplateService';
 import {
     IConstraintsOfTemplate,
     ICountSearchResult,
     IDeleteBody,
     IEntity,
     ISearchBatchBody,
+    ISearchEntitiesByLocationBody,
     ISearchEntitiesOfTemplateBody,
     ISearchResult,
     ITemplateSearchBody,
     IUniqueConstraintOfTemplate,
-    ISearchEntitiesByLocationBody,
-    ISearchFilter,
 } from './interfaces/entities';
-import { IEntitySingleProperty } from '../templates/entityTemplateService';
 import { IRelationship } from './interfaces/relationships';
-import { ISemanticSearchResult } from '../semanticSearch/interface';
-import { IAxisField } from '../../express/templateCharts/interface';
 
 const {
     instanceService: {
@@ -137,13 +136,8 @@ export class InstancesService extends DefaultExternalServiceApi {
         return data;
     }
 
-    getChartOfTemplate = async (
-        xAxis: IAxisField,
-        yAxis: IAxisField | undefined,
-        templateId: string,
-        filter?: ISearchFilter<Record<string, any>>,
-    ) => {
-        const { data } = await this.api.post<{ x: any; y: any }[]>(`${baseEntitiesRoute}/chart/${templateId}`, { xAxis, yAxis, filter });
+    getChartsOfTemplate = async (templateId: string, chartsData: IChartBody[]) => {
+        const { data } = await this.api.post<{ _id: string; chart: { x: any; y: any }[] }[]>(`${baseEntitiesRoute}/chart/${templateId}`, chartsData);
 
         return data;
     };

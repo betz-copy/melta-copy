@@ -12,7 +12,7 @@ import {
     IPieMetaData,
 } from '../../interfaces/charts';
 
-export const getChartAxes = (type: IChartType, metaData: IChartTypeMetaData) => {
+export const getChartAxes = (type: IChartType, metaData: IChartTypeMetaData, includeTitle: boolean = false) => {
     let xAxis;
     let yAxis;
 
@@ -20,8 +20,8 @@ export const getChartAxes = (type: IChartType, metaData: IChartTypeMetaData) => 
         case IChartType.Column:
         case IChartType.Line: {
             const chartMetaData = metaData as IColumnOrLineMetaData;
-            xAxis = chartMetaData.xAxis.field;
-            yAxis = chartMetaData.yAxis.field;
+            xAxis = includeTitle ? chartMetaData.xAxis : chartMetaData.xAxis.field;
+            yAxis = includeTitle ? chartMetaData.yAxis : chartMetaData.yAxis.field;
             break;
         }
         case IChartType.Pie: {

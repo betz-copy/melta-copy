@@ -1,3 +1,5 @@
+import { ISearchFilter } from '../../externalServices/instanceService/interfaces/entities';
+
 export enum IChartType {
     Column = 'column',
     Line = 'line',
@@ -63,6 +65,13 @@ export interface IChartDocument extends IChart {
     _id: string;
     createdAt: string;
     updatedAt: string;
+}
+
+export interface IChartBody {
+    _id: string;
+    xAxis: IAxisField;
+    yAxis?: IAxisField;
+    filter: ISearchFilter;
 }
 
 type GeneratorChart = { x: any; y: any }[];

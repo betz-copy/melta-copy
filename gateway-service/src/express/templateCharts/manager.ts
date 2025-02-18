@@ -2,20 +2,12 @@ import { StatusCodes } from 'http-status-codes';
 import { FilterQuery } from 'mongoose';
 import config from '../../config';
 import { InstancesService } from '../../externalServices/instanceService';
+import { ISubCompactPermissions } from '../../externalServices/userService/interfaces/permissions/permissions';
+import { getMetaDataAxes } from '../../utils/templateCharts/getMetaDataAxes';
 import { DefaultManagerMongo } from '../../utils/mongo/manager';
 import { ServiceError } from '../error';
-import {
-    ChartsAndGenerator,
-    IChart,
-    IChartDocument,
-    IChartType,
-    IColumnOrLineMetaData,
-    INUmberMetaData,
-    IPermission,
-    IPieMetaData,
-} from './interface';
+import { ChartsAndGenerator, IChart, IChartBody, IChartDocument, IPermission } from './interface';
 import ChartSchema from './model';
-import { ISubCompactPermissions } from '../../externalServices/userService/interfaces/permissions/permissions';
 
 export class ChartManager extends DefaultManagerMongo<IChartDocument> {
     private instanceService: InstancesService;
@@ -49,8 +41,10 @@ export class ChartManager extends DefaultManagerMongo<IChartDocument> {
                 ],
             }),
         };
+        console.log('hi');
 
         const allChartsOfTemplateId = await this.model.find(query).lean().exec();
+        console.log('bye');
 
         return permissionsOfUserId.admin?.scope ? allChartsOfTemplateId : this.getChartsWithPermissions(allChartsOfTemplateId, userId);
     }
@@ -62,57 +56,22 @@ export class ChartManager extends DefaultManagerMongo<IChartDocument> {
         textSearch?: string,
     ): Promise<ChartsAndGenerator[]> {
         const charts = await this.getChartsByTemplateId(templateId, permissionsOfUserId, userId, textSearch);
-        const templatesChart: ChartsAndGenerator[] = [];
 
-        const chartPromises = charts.map(async (chartData) => {
-            const { type, metaData, filter } = chartData;
+        const chartsData: IChartBody[] = charts.map(({ _id, type, metaData, filter }) => ({
+            _id,
+            ...getMetaDataAxes(type, metaData, filter),
+        }));
 
-            let xAxis;
-            let yAxis;
+        const generatedCharts = await this.instanceService.getChartsOfTemplate(templateId, chartsData);
 
-            switch (type) {
-                case IChartType.Column:
-                case IChartType.Line: {
-                    const chartMetaData = metaData as IColumnOrLineMetaData;
-                    xAxis = chartMetaData.xAxis.field;
-                    yAxis = chartMetaData.yAxis.field;
-                    break;
-                }
-                case IChartType.Pie: {
-                    const { dividedByField, aggregationType } = metaData as IPieMetaData;
-                    xAxis = dividedByField;
-                    yAxis = aggregationType;
-                    break;
-                }
-                case IChartType.Number: {
-                    const { accumulator } = metaData as INUmberMetaData;
-                    xAxis = accumulator;
-                    break;
-                }
-                default:
-                    throw new Error(`Unsupported chart type: ${type}`);
-            }
+        const generatedChartsMap = new Map(generatedCharts.map(({ _id, chart }) => [_id, chart]));
 
-            const appliedFilter = filter ?? {
-                $and: [
-                    {
-                        disabled: {
-                            $in: ['false'],
-                        },
-                    },
-                ],
-            };
+        const GeneratedAndDataCharts: ChartsAndGenerator[] = charts.map((chart) => ({
+            ...chart,
+            chart: generatedChartsMap.get(chart._id.toString())!,
+        }));
 
-            const chart = await this.instanceService.getChartOfTemplate(xAxis, yAxis, templateId, appliedFilter);
-
-            templatesChart.push({ chart, ...chartData });
-        });
-
-        await Promise.all(chartPromises);
-
-        console.dir({ charts, templatesChart });
-
-        return templatesChart.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+        return GeneratedAndDataCharts.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
     }
 
     async createChart(chartData: IChart) {
