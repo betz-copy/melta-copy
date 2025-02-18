@@ -87,6 +87,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
         const hideField = template.properties.hide.includes(property);
 
         const valueGetter: ValueGetterFunc = ({ data }) => (data ? getEntityPropertiesData(data)[property] : undefined);
+        const entityGetter: ValueGetterFunc = ({ data }) => (data ? getEntityPropertiesData(data) : undefined);
 
         const hideColumn =
             archive ||
@@ -147,7 +148,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
                 Object.values(template.entitiesWithFiles ?? {}).flat(),
             );
         if (format === 'location')
-            return locationColDef(property, valueGetter, propertyTemplate, template, defaultColumnWidths[property], hideColumn, searchValue);
+            return locationColDef(property, valueGetter, entityGetter, propertyTemplate, template, defaultColumnWidths[property], hideColumn, searchValue);
         if (format === 'relationshipReference')
             return relatedTemplateColDef(
                 property,

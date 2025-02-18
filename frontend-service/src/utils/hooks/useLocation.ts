@@ -10,7 +10,7 @@ import { environment } from '../../globals';
 const { squareLength } = environment.map;
 
 type entityWithLocationsProps = {
-    entity?: IEntity;
+    entityProperties?: IEntity['properties'];
     entityTemplate?: IMongoEntityTemplatePopulated;
 };
 
@@ -27,22 +27,22 @@ export const createSquareAroundPoint = (center: Cartesian3, sideLength: number):
     return [topLeft, topRight, bottomRight, bottomLeft, topLeft];
 };
 
-export const useEntityWithLocationFields = ({ entityTemplate, entity }: entityWithLocationsProps) => {
+export const useEntityWithLocationFields = ({ entityTemplate, entityProperties }: entityWithLocationsProps) => {
     const [propertyDefinitions, setPropertyDefinitions] = useState<Record<string, IEntitySingleProperty>>({});
     const [properties, setProperties] = useState<Record<string, any>>({});
 
     const { viewer } = useCesium();
 
     useEffect(() => {
-        if (entityTemplate && entity) {
+        if (entityTemplate && entityProperties) {
             setPropertyDefinitions(entityTemplate.properties.properties);
-            setProperties(entity.properties);
+            setProperties(entityProperties);
         }
         else {
             setPropertyDefinitions({});
             setProperties({});
         }
-    }, [entityTemplate, entity]);
+    }, [entityTemplate, entityProperties]);
 
     const { markers, polygons, allCoordinates } = useMemo(() => {
         const markerList: { key: string; position: Cartesian3 }[] = [];
