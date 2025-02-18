@@ -170,7 +170,7 @@ export type EntitiesTableOfTemplateProps<Data> = {
     deleteRowButtonProps?: IButtonPopoverProps<Data>;
     editRowButtonProps?: IButtonPopoverProps<Data>;
     menuRowButtonProps?: boolean;
-    hasPermissionToCategory?: boolean;
+    hasPermissionToTemplate?: boolean;
     getRowId: (data: Data) => string;
     getEntityPropertiesData: (data: Data) => Partial<IEntity['properties']>;
     rowModelType: 'serverSide' | 'clientSide' | 'infinite';
@@ -233,7 +233,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             hideNonPreview,
             saveStorageProps,
             onFilter,
-            hasPermissionToCategory,
+            hasPermissionToTemplate,
             ignoreType,
             refetch,
             hasInstances,
@@ -396,7 +396,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             menuRowButtonProps,
             hideNonPreview,
             editRowButtonProps,
-            hasPermissionToCategory,
+            hasPermissionToTemplate,
             defaultVisibleColumns,
             defaultColumnsOrder,
             defaultColumnWidths,

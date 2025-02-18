@@ -279,7 +279,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
     // categories
     async getAllCategories() {
-        return this.entityTemplateService.getAllCategories();
+        return this.entityTemplateService.searchCategories();
     }
 
     async createCategory(categoryData: Omit<ICategory, 'iconFileId'>, file?: UploadedFile) {
@@ -507,12 +507,12 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         return updatedTemplateData;
     }
 
-    private async isPropertyOfTemplateInUsedInRules(templateId: string, properties: string[]) {
+    private async isPropertyOfTemplateInUsedInRules(templateId: string, properties: string[], archive: boolean) {
         const allRules = await this.relationshipTemplateService.searchRules({});
-        return allRules.forEach((rule) => checkPropertyInUsedFromFormula(rule.formula, templateId, properties));
+        return allRules.forEach((rule) => checkPropertyInUsedFromFormula(rule.formula, templateId, properties, archive));
     }
 
-    private async isPropertyOfTemplateInUsedInGantts(entityTemplateId: string, properties: string[]) {
+    private async isPropertyOfTemplateInUsedInGantts(entityTemplateId: string, properties: string[], archive: boolean) {
         const [sourceRelationShipTemplatesIDs, destinationRelationShipTemplatesIDs] = await Promise.all([
             this.relationshipTemplateService.searchRelationshipTemplates({ sourceEntityIds: [entityTemplateId] }),
             this.relationshipTemplateService.searchRelationshipTemplates({ destinationEntityIds: [entityTemplateId] }),
@@ -549,7 +549,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
                     if (isFieldUsed)
                         throw new BadRequestError('can not delete field that used in gantts', {
-                            errorCode: config.errorCodes.failedToDeleteField,
+                            errorCode: archive ? config.errorCodes.failedToArchiveField : config.errorCodes.failedToDeleteField,
                             type: 'gantts',
                             property,
                         });
@@ -558,12 +558,12 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         });
     }
 
-    private async checkIfPropertyInUsedBeforeDeleteOrArchive(templateId: string, properties: string[]) {
+    private async checkIfPropertyInUsedBeforeDeleteOrArchive(templateId: string, properties: string[], archive: boolean) {
         if (properties.length)
             await Promise.all([
-                this.isPropertyOfTemplateInUsedInGantts(templateId, properties),
-                this.isPropertyOfTemplateInUsedInRules(templateId, properties),
-                this.isPropertyInUsedAsRelatedFieldInRelationshipReference(templateId, properties),
+                this.isPropertyOfTemplateInUsedInGantts(templateId, properties, archive),
+                this.isPropertyOfTemplateInUsedInRules(templateId, properties, archive),
+                this.isPropertyInUsedAsRelatedFieldInRelationshipReference(templateId, properties, archive),
             ]);
     }
 
@@ -601,7 +601,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         await Promise.all(promises);
     }
 
-    private async isPropertyInUsedAsRelatedFieldInRelationshipReference(templateId: string, properties: string[]) {
+    private async isPropertyInUsedAsRelatedFieldInRelationshipReference(templateId: string, properties: string[], archive: boolean) {
         const allEntityTemplates = await this.entityTemplateService.searchEntityTemplates();
 
         allEntityTemplates.forEach((entityTemplate) => {
@@ -612,7 +612,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
                     properties.includes(relationshipReference?.relatedTemplateField)
                 ) {
                     throw new BadRequestError('that field is used as relationship reference field', {
-                        errorCode: config.errorCodes.failedToDeleteField,
+                        errorCode: archive ? config.errorCodes.failedToArchiveField : config.errorCodes.failedToDeleteField,
                         type: 'relationshipReference',
                         property: relationshipReference?.relatedTemplateField,
                         relatedTemplateName: entityTemplate.name,
@@ -726,7 +726,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         );
 
         if (removeRequiredProperties.length > 0)
-            this.isPropertyInUsedAsRelatedFieldInRelationshipReference(currTemplate._id, removeRequiredProperties);
+            this.isPropertyInUsedAsRelatedFieldInRelationshipReference(currTemplate._id, removeRequiredProperties, false);
 
         const removedProperties: string[] = [];
         const archiveProperties: string[] = [];
@@ -766,8 +766,8 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             });
         }
 
-        await this.checkIfPropertyInUsedBeforeDeleteOrArchive(id, removedProperties);
-        await this.checkIfPropertyInUsedBeforeDeleteOrArchive(id, archiveProperties);
+        await this.checkIfPropertyInUsedBeforeDeleteOrArchive(id, removedProperties, false);
+        await this.checkIfPropertyInUsedBeforeDeleteOrArchive(id, archiveProperties, true);
 
         const { iconFileId, documentTemplatesIds } = await this.handleFiles(updatedTemplateData, currTemplate, { file, files });
 

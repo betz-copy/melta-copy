@@ -1,37 +1,39 @@
 /* eslint-disable import/no-extraneous-dependencies */
 /* eslint-disable no-underscore-dangle */
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { getDisplayLabel, WidgetProps } from '@rjsf/utils';
 import validator from '@rjsf/validator-ajv8';
 import { Box, Dialog, InputAdornment, TextField } from '@mui/material';
 import MapIcon from '@mui/icons-material/Map';
 import { getTextDirection } from '../../../utils/stringValues';
-import LocationField from '../../../pages/Map/LocationField';
 import { environment } from '../../../globals';
+import LocationField from '../../../pages/Map/LocationField';
 
-const { polygon, polygonPrefix, polygonSuffix } = environment.map.polygon;
+const { polygonPrefix, polygonSuffix } = environment.map.polygon;
+
+export enum SplitBy {
+    space = ' ',
+    comma = ',',
+}
+
+const validatePoint = (pointString: string, splitBy: SplitBy) => {
+    const [longitude, latitude] = pointString.split(splitBy).map(Number);
+    if (Number.isNaN(longitude) || Number.isNaN(latitude)) {
+        return false;
+    }
+    return true;
+};
 
 export const validateLocation = (value: string) => {
-    const locationString = value.trim();
+    if (value === '') return true;
+    if (!value.startsWith(polygonPrefix)) return validatePoint(value, SplitBy.comma);
 
-    const [longitude, latitude] = locationString
-        .split(',')
-        .map((v) => v.trim())
-        .map(Number);
-
-    if (locationString.startsWith(polygon)) {
-        if (locationString.startsWith(polygonPrefix) && locationString.endsWith(polygonSuffix)) {
-            const coordinates = locationString.slice(polygonPrefix.length, -polygonSuffix.length).split(',');
-            for (let i = 0; i < coordinates.length; i++) {
-                const [lng, lat] = coordinates[i].split(' ').map(Number);
-                if (Number.isNaN(lng) || Number.isNaN(lat)) return false;
-            }
-            return true;
-        }
+    if (!value.startsWith(polygonPrefix) || !value.endsWith(polygonSuffix)) {
         return false;
     }
 
-    return !Number.isNaN(longitude) && !Number.isNaN(latitude);
+    const coordsStr = value.slice(polygonPrefix.length, -polygonSuffix.length);
+    return coordsStr.split(SplitBy.comma).every((stringedLocation: string) => validatePoint(stringedLocation, SplitBy.space));
 };
 
 const RjsfLocationWidget = ({
@@ -59,13 +61,14 @@ const RjsfLocationWidget = ({
 }: WidgetProps) => {
     const [error, setError] = useState(false);
     const [mapOpen, setMapOpen] = useState(false);
-    const [newLocationValue, setNewLocationValue] = useState<string>(value);
+    const [newLocationValue, setNewLocationValue] = useState<string | undefined>(value);
 
     const displayLabel = getDisplayLabel(validator, schema, uiSchema, registry.rootSchema);
     const inputType = (type || schema.type) === 'string' ? 'text' : `${type || schema.type}`;
 
     const _onChange = ({ target: { value: newValue } }: React.ChangeEvent<HTMLInputElement>) => {
-        setError(validateLocation(newValue));
+        const hasError = validateLocation(newValue) === false;
+        setError(hasError);
         onChange(newValue === '' ? options.emptyValue : newValue);
     };
 
@@ -78,6 +81,10 @@ const RjsfLocationWidget = ({
         onChange(newLocationValue);
         setMapOpen(false);
     };
+
+    useEffect(() => {
+        setNewLocationValue(value);
+    }, [value]);
 
     return (
         <Box>
@@ -120,9 +127,9 @@ const RjsfLocationWidget = ({
 
             <Dialog open={mapOpen} onClose={handleCloseDialog}>
                 <LocationField
-                    styles={{ height: '800px', width: '600px' }}
                     defaultLocation={newLocationValue}
-                    updateValue={(newVal: string) => setNewLocationValue(newVal)}
+                    field={label}
+                    updateValue={(newVal: string | undefined) => setNewLocationValue(newVal)}
                 />
             </Dialog>
         </Box>

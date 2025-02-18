@@ -1,0 +1,157 @@
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import * as Cesium from 'cesium';
+import { Box, Divider, FormControlLabel, Grid, IconButton, Radio, RadioGroup, Typography } from '@mui/material';
+import { Layers } from '@mui/icons-material';
+import i18next from 'i18next';
+import { useQueryClient } from 'react-query';
+import { MeltaTooltip } from '../../common/MeltaTooltip';
+import { BackendConfigState } from '../../services/backendConfigService';
+import { MeltaCheckbox } from '../../common/MeltaCheckbox';
+import { useDarkModeStore } from '../../stores/darkMode';
+
+type LayerProvider = {
+    id: string;
+    url: string;
+    type: 'map' | 'text';
+  };
+
+export const BaseLayers: React.FC<{ viewerRef: React.MutableRefObject<any> }> = ({ viewerRef }) => {
+    const queryClient = useQueryClient();
+    const config = queryClient.getQueryData<BackendConfigState>('getBackendConfig');
+    const darkMode = useDarkModeStore((state) => state.darkMode);
+
+    const [isOpen, setIsOpen] = useState(false);
+
+    if (!config) return <>{i18next.t('location.layers.noLayers')}</>;
+    const { mapLayers, textLayers } = config;
+
+    const providers = useMemo<LayerProvider[]>(() => {
+        const mapLayerArray = Object.entries(mapLayers).map(([name, url]) => ({
+            id: name,
+            url,
+            type: 'map' as const,
+        }));
+        const textLayerArray= Object.entries(textLayers).map(([name, url]) => ({
+            id: name,
+            url,
+            type: 'text' as const,
+        }));
+        return [...mapLayerArray, ...textLayerArray];
+    }, [mapLayers, textLayers]);
+
+    const [activeMapLayer, setActiveMapLayer] = useState<string>(providers.find((p) => p.type === 'map')?.id || '');
+    const [activeTextLayers, setActiveTextLayers] = useState<Set<string>>(new Set());    
+
+    const handleTextLayerToggle = useCallback((layerId: string) => {
+        setActiveTextLayers((prev) => {
+            const next = new Set(prev);
+            if (next.has(layerId)) {
+                next.delete(layerId);
+            } else {
+                next.add(layerId);
+            }
+            return next;
+        });
+    }, []);
+    
+
+    useEffect(() => {
+        const viewer = viewerRef.current?.cesiumElement;
+        if (!viewer) return;
+
+        viewer.imageryLayers.removeAll();
+
+        const activeLayers = providers.filter(
+            (layer) => (layer.type === 'map' && layer.id === activeMapLayer) || (layer.type === 'text' && activeTextLayers.has(layer.id)),
+        );
+
+        activeLayers.forEach((layer) => {
+            viewer.imageryLayers.addImageryProvider(
+                new Cesium.UrlTemplateImageryProvider({
+                    url: layer.url,
+                }),
+            );
+        });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [activeMapLayer, activeTextLayers, providers]);
+
+    return (
+        <Box
+            sx={{
+                position: 'relative',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                minWidth: 35,
+                minHeight: 35,
+                borderRadius: 1,
+                bgcolor: 'background.paper',
+            }}
+        >
+            <MeltaTooltip title={i18next.t('location.layers.map')}>
+                <IconButton size="small" onClick={() => setIsOpen((prev) => !prev)} sx={{ zIndex: 1001 }}>
+                    <Layers fontSize="small" sx={{ color: darkMode ? '#9398c2' : '#787c9e'}}/>
+                </IconButton>
+            </MeltaTooltip>
+
+            {isOpen && (
+                <Box
+                    component={Grid}
+                    container
+                    gap={2}
+                    direction="column"
+                    sx={{
+                        position: 'absolute',
+                        top: '100%',
+                        right: 0,
+                        marginTop: 1,
+                        minWidth: 250,
+                        maxWidth: 300,
+                        p: 2,
+                        bgcolor: 'background.paper',
+                        borderRadius: 1,
+                        boxShadow: 2,
+                        zIndex: 1000,
+                    }}
+                >
+                    <Grid item>
+                        <Typography variant="subtitle1">{i18next.t('location.layers.map')}</Typography>
+                        <RadioGroup value={activeMapLayer} onChange={(e) => setActiveMapLayer(e.target.value)}>
+                            {providers
+                                .filter((provider) => provider.type === 'map')
+                                .map((layer) => (
+                                    <FormControlLabel
+                                        key={layer.id}
+                                        control={
+                                            <Radio
+                                                checked={activeMapLayer === layer.id}
+                                                value={layer.id}
+                                            />
+                                        }
+                                        label={layer.id}
+                                        sx={{ display: 'flex', alignItems: 'center' }}
+                                    />
+                                ))}
+                        </RadioGroup>
+                    </Grid>
+                    <Divider />
+                    <Grid item>
+                        <Typography variant="subtitle1">{i18next.t('location.layers.overlay')}</Typography>
+                        {providers
+                            .filter((provider) => provider.type === 'text')
+                            .map((layer) => (
+                                <FormControlLabel
+                                    key={layer.id}
+                                    control={
+                                        <MeltaCheckbox checked={activeTextLayers.has(layer.id)} onChange={() => handleTextLayerToggle(layer.id)} />
+                                    }
+                                    label={layer.id}
+                                    sx={{ display: 'flex', alignItems: 'center' }}
+                                />
+                            ))}
+                    </Grid>
+                </Box>
+            )}
+        </Box>
+    );
+};

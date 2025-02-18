@@ -33,7 +33,6 @@ export interface IMetadata {
         filesLimit: number;
     };
     searchLimits: {
-        table: number;
         bulk: number;
     };
 }

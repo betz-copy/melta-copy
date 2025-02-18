@@ -9,6 +9,7 @@ import { ServiceError } from '../error';
 import { IFrame, IFrameDocument } from './interface';
 import IFrameSchema from './model';
 import { UploadedFile } from '../../utils/busboy/interface';
+import { escapeRegExp } from '../../utils/regex';
 
 export class IFrameManager extends DefaultManagerMongo<IFrameDocument> {
     private storageService: StorageService;
@@ -22,10 +23,6 @@ export class IFrameManager extends DefaultManagerMongo<IFrameDocument> {
         return allIFrames.filter((iFrame) => iFrame.categoryIds.every((categoryId) => allowedCategories.includes(categoryId)));
     }
 
-    escapeRegExp(text: string) {
-        return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
-    }
-
     async searchIFrames(
         { search, limit, skip, ids }: ISearchIFramesBody,
         permissionsOfUserId: RequestWithPermissionsOfUserId['permissionsOfUserId'],
@@ -34,7 +31,7 @@ export class IFrameManager extends DefaultManagerMongo<IFrameDocument> {
 
         const query: FilterQuery<IFrameDocument> = {};
         if (search) {
-            const searchRegex = { $regex: this.escapeRegExp(search), $options: 'i' };
+            const searchRegex = { $regex: escapeRegExp(search), $options: 'i' };
             query.$or = [{ name: searchRegex }, { url: searchRegex }];
         }
         if (ids) query._id = { $in: ids.map((id) => new Types.ObjectId(id)) };

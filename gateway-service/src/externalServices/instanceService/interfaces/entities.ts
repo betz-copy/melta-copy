@@ -85,7 +85,7 @@ export interface IFilterOfField {
     $gte?: boolean | string | number;
     $lt?: boolean | string | number;
     $lte?: boolean | string | number;
-    $in?: Array<boolean | string | number | null>;
+    $in?: Array<boolean | string | number | RegExp | null>;
     $not?: IFilterOfField;
 }
 

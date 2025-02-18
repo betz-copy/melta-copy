@@ -5,6 +5,7 @@ import { IMongoRelationshipTemplate } from './relationshipsTemplateService';
 
 const {
     templateService: {
+        baseRoute,
         entities: { baseEntitiesRoute, baseCategoriesRoute },
     },
 } = config;
@@ -76,6 +77,7 @@ export interface IEntityTemplate {
     iconFileId: string | null;
     actions?: string;
     documentTemplatesIds?: string[];
+    mapSearchProperties?: string[];
 }
 
 export interface IEntityTemplatePopulated extends Omit<IEntityTemplate, 'category'> {
@@ -111,8 +113,10 @@ export interface RequestWithSearchEntityTemplateBody extends RequestWithPermissi
 
 export class EntityTemplateService extends TemplatesManagerService {
     // categories
-    async getAllCategories() {
-        const { data } = await this.api.get<IMongoCategory[]>(baseCategoriesRoute);
+    async searchCategories(searchInput?: string) {
+        const params: Record<string, string> = searchInput ? { search: searchInput } : {};
+
+        const { data } = await this.api.get<IMongoCategory[]>(baseCategoriesRoute, { params });
 
         return data;
     }
@@ -144,6 +148,12 @@ export class EntityTemplateService extends TemplatesManagerService {
     // entity templates
     async searchEntityTemplates(body: ISearchEntityTemplatesBody = {}) {
         const { data } = await this.api.post<IMongoEntityTemplatePopulated[]>(`${baseEntitiesRoute}/search`, body);
+
+        return data;
+    }
+
+    async getAllTemplatesByWorkspaceId(workspaceId: string) {
+        const { data } = await this.api.get<IMongoEntityTemplate[]>(`${baseRoute}/entities/`, { headers: { workspaceId } });
 
         return data;
     }
