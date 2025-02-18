@@ -79,6 +79,8 @@ export default {
     noSearchLeft: 'אין עוד תוצאות',
     failedToLoadResults: 'נכשל לטעון תוצאות',
     actions: {
+        save: 'שמירה',
+        clean: 'ניקוי',
         edit: 'עריכה',
         editment: 'עריכת',
         createment: 'יצירת',
@@ -816,7 +818,7 @@ export default {
         attachmentFieldTitleExists: 'קיים שם קובץ לתצוגה זהה',
         stepNameExists: 'קיים שלב עם שם באנגלית זהה',
         stepDisplayNameExists: 'קיים שלב עם שם לתצוגה זהה',
-        mapSearchPropertiesLimit: 'מספר השדות המקסימלי בחיפוש עמוד מפות הוא: {{limit}}'
+        mapSearchPropertiesLimit: 'מספר השדות המקסימלי בחיפוש עמוד מפות הוא: {{limit}}',
     },
     propertyTypes: {
         string: 'טקסט',
@@ -1297,7 +1299,7 @@ export default {
             map: 'שכבות מפה',
             noLayers: 'לא נמצאו שכבות',
             overlay: 'שכבות מיפוי',
-        }
+        },
     },
     DynamicsConfigs: {
         isDrawerOpen: 'תפריט צד פתוח',
@@ -1310,19 +1312,20 @@ export default {
             defaultExpandedTableHeight: 'גודל טבלה במצב פתוח',
         },
         mainFontSizes: {
-            headlineTitleFontSize: 'גודל גופן כותרת ראשית',location: {
-            polygon: 'פוליגון',
-            coordinate: 'נקודת ציון',
-            circle: 'חיפוש בעזרת מעגל',
-            line: 'קו למדידת מרחק',
-            clear: 'ניקוי תוצאות',
-            radiusMaxLimit: `חיפוש מוגבל עד ${environment.map.maxRadius / 1000} ק"מ`,
-            layers: {
-                map: 'שכבות מפה',
-                noLayers: 'לא נמצאו שכבות',
-                overlay: 'שכבות מיפוי',
-            }
-        },
+            headlineTitleFontSize: 'גודל גופן כותרת ראשית',
+            location: {
+                polygon: 'פוליגון',
+                coordinate: 'נקודת ציון',
+                circle: 'חיפוש בעזרת מעגל',
+                line: 'קו למדידת מרחק',
+                clear: 'ניקוי תוצאות',
+                radiusMaxLimit: `חיפוש מוגבל עד ${environment.map.maxRadius / 1000} ק"מ`,
+                layers: {
+                    map: 'שכבות מפה',
+                    noLayers: 'לא נמצאו שכבות',
+                    overlay: 'שכבות מיפוי',
+                },
+            },
             entityTemplateTitleFontSize: 'גודל גופן כותרת טבלה',
             headlineSubTitleFontSize: 'גודל גופן כותרת משנית',
         },

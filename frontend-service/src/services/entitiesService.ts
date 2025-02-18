@@ -129,6 +129,7 @@ export const updateEntityRequestForMultiple = async (
     newEntityData: EntityWizardValues,
     ignoredRules?: IRuleBreach['brokenRules'],
 ) => {
+    console.log({ newEntityData });
     const isUUID = (str) => /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{8}/.test(str);
     const formData = new FormData();
 
@@ -163,7 +164,7 @@ export const updateEntityRequestForMultiple = async (
         if (templateProperties[key]?.format === 'signature') {
             if (value && isUUID(value)) {
                 unchangedFiles.push([key, { name: value }]);
-            } else {
+            } else if (value) {
                 fileUploadPromises.push(urlToFile(value, templateProperties[key]!.title).then((file) => [key, file]));
             }
         }

@@ -2,7 +2,7 @@ import Joi from 'joi';
 import { MongoIdSchema, variableNameValidation } from '../../utils/joi';
 import {
     enumPropertiesColorsSchema,
-    // innerPropertiesSchema,
+    innerPropertiesSchema,
     orderPropertiesSchema,
     previewPropertiesSchema,
     orderPropertiesTypeSchema,
@@ -12,7 +12,7 @@ const entityTemplateSchema = {
     name: variableNameValidation.required(),
     displayName: Joi.string().required(),
     category: Joi.string().required(),
-    properties: Joi.object(), // innerPropertiesSchema.required(),
+    properties: innerPropertiesSchema.required(),
     iconFileId: Joi.string().allow(null),
     propertiesOrder: orderPropertiesSchema.required(),
     propertiesTypeOrder: orderPropertiesTypeSchema.required(),

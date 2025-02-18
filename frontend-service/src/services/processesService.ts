@@ -10,6 +10,8 @@ import { IMongoProcessTemplatePopulated } from '../interfaces/processes/processT
 import urlToFile from '../common/fileConversions';
 
 const { processes } = environment.api;
+const { signatureUrlPrefix } = environment;
+
 export const getProcessByIdRequest = async (processId: string) => {
     const { data } = await axios.get<IMongoProcessInstancePopulated>(`${processes}/${processId}`);
     return data;
@@ -25,9 +27,20 @@ const referencedEntityToEntityId = (entityReferences: Record<string, IReferenced
 };
 export const createProcessRequest = async (process: ProcessDetailsValues) => {
     const formData = new FormData();
-    // Object.entries(process.detailsAttachments).forEach(([key, value]) => formData.append(key, value as Blob));
 
     const filesToUpload: any = [];
+
+    const filePropertiesToUpload = await Promise.all(
+        Object.entries(process.details).map(async ([key, value]) => {
+            const templatePropertyTitle = process.template!.details.properties.properties[key].title;
+            const file = await urlToFile(value, templatePropertyTitle);
+            return { key, file };
+        }),
+    );
+    filePropertiesToUpload.forEach(({ key, file }) => {
+        filesToUpload.push([`${key}`, file]);
+    });
+
     Object.entries(process.detailsAttachments).forEach(([key, value]: [string, any]) => {
         if (Array.isArray(value)) {
             value.forEach((file, index) => {
@@ -45,8 +58,11 @@ export const createProcessRequest = async (process: ProcessDetailsValues) => {
         formData.append(key, value as Blob);
     });
     const entityReferences = referencedEntityToEntityId(process.entityReferences);
+    const filteredDetails = Object.fromEntries(
+        Object.entries(process.details).filter(([key]) => !filePropertiesToUpload.some(({ key: uploadedKey }) => uploadedKey === key)),
+    );
     formData.append('name', process.name);
-    formData.append('details', JSON.stringify({ ...process.details, ...entityReferences }));
+    formData.append('details', JSON.stringify({ ...filteredDetails, ...entityReferences }));
     formData.append('templateId', process.template!._id);
     formData.append('startDate', process.startDate!.toISOString());
     formData.append('endDate', process.endDate!.toISOString());
@@ -92,8 +108,9 @@ const handleAttachmentProperties = async (attachments: object, propertiesToFileU
         }),
     );
     filePropertiesToUpload.forEach(({ key, file }) => {
-        filesToUpload.push([key, file]);
+        filesToUpload.push([`${key}`, file]);
     });
+
     filesToUpload.forEach(([key, value]) => formData.append(key, value as Blob));
 
     const fileProperties: { [key: string]: any } = {};
@@ -113,7 +130,7 @@ const handleAttachmentProperties = async (attachments: object, propertiesToFileU
 export const updateProcessRequest = async (processId: string, updatedData: ProcessDetailsValues, template: IMongoProcessTemplatePopulated) => {
     const entityReferences = referencedEntityToEntityId(updatedData.entityReferences);
     const detailsFileToUpload = Object.entries(updatedData.details)
-        .filter(([, value]) => typeof value === 'string' && value.startsWith('data:image/png;base64,'))
+        .filter(([, value]) => typeof value === 'string' && value.startsWith(signatureUrlPrefix))
         .reduce((acc, [key, value]) => {
             acc[key] = value;
             return acc;
@@ -126,8 +143,9 @@ export const updateProcessRequest = async (processId: string, updatedData: Proce
     );
     const transformedStepsObj = mapValues(updatedData.steps, (reviewers) => reviewers.map(({ _id }) => _id));
 
-    const filteredDetails = Object.entries(updatedData.details).filter(([key]) => !Object.keys(detailsFileToUpload).includes(key));
-    console.log({ filteredDetails });
+    const filteredDetails = Object.fromEntries(
+        Object.entries(updatedData.details).filter(([key]) => !Object.keys(detailsFileToUpload).includes(key)),
+    );
 
     formData.append(
         'details',
@@ -164,20 +182,19 @@ export const updateStepRequest = async (
     currStep: IMongoStepInstancePopulated,
     template: any,
 ) => {
-    console.log('kkkk', { template });
-
     const propertiesFileToUpload = Object.entries(values.properties)
-        .filter(([, value]) => typeof value === 'string' && value.startsWith('data:image/png;base64,'))
+        .filter(([, value]) => typeof value === 'string' && value.startsWith(signatureUrlPrefix))
         .reduce((acc, [key, value]) => {
             acc[key] = value;
             return acc;
         }, {});
-    console.log({ propertiesFileToUpload });
 
     const { formData, fileProperties } = await handleAttachmentProperties(values.attachmentsProperties, propertiesFileToUpload, template);
     const entityReferences = referencedEntityToEntityId(values.entityReferences);
 
-    const filteredProperties = Object.entries(values.properties).filter(([key]) => !Object.keys(propertiesFileToUpload).includes(key));
+    const filteredProperties = Object.fromEntries(
+        Object.entries(values.properties).filter(([key]) => !Object.keys(propertiesFileToUpload).includes(key)),
+    );
     console.log({ filteredProperties });
 
     formData.append(

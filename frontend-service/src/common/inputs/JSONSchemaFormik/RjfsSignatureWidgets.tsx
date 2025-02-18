@@ -3,6 +3,7 @@ import SignatureCanvas from 'react-signature-canvas';
 import React, { useEffect, useRef } from 'react';
 import { WidgetProps } from '@rjsf/utils';
 import { Button, createTheme, Grid, ThemeProvider } from '@mui/material';
+import i18next from 'i18next';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { getFilePreviewRequest } from '../../../services/previewService';
 
@@ -21,49 +22,42 @@ const RjfsSignatureWidget = ({
     rawErrors = [],
     formContext,
     registry,
-    color,
 }: // ...textFieldProps
 WidgetProps) => {
-    const sigCanvas = useRef<SignatureCanvas | null>(null);
-
-    // useEffect(() => {
-    //     if (value && sigCanvas.current) {
-    //         console.log('############', value);
-
-    //         sigCanvas.current.fromDataURL(value);
-    //     }
-    // }, [value]);
+    const signatureCanvas = useRef<SignatureCanvas | null>(null);
+    // const isDisabled = signatureCanvas.current.isEmpty();
+    console.log({ registry }, signatureCanvas.current);
 
     useEffect(() => {
-        if (sigCanvas.current) {
+        if (signatureCanvas.current) {
             if (readonly || disabled) {
-                sigCanvas.current.off();
+                signatureCanvas.current.off();
             } else {
-                sigCanvas.current.on();
+                signatureCanvas.current.on();
             }
         }
     }, [readonly, disabled]);
 
     useEffect(() => {
         const fetchData = async () => {
-            if (value && sigCanvas.current) {
+            if (value && signatureCanvas.current) {
                 const currentSignature = await getFilePreviewRequest(value, 'contentType');
-                sigCanvas.current?.fromDataURL(currentSignature);
+                signatureCanvas.current?.fromDataURL(currentSignature);
             }
         };
         fetchData();
     }, [value]);
 
     const saveSignature = () => {
-        if (!sigCanvas.current) return;
-        const newSignature = sigCanvas.current.toDataURL();
-        console.log({ newSignature });
-        onChange(newSignature);
+        if (!signatureCanvas.current) return;
+        if (signatureCanvas.current.isEmpty()) onChange(undefined);
+        else onChange(signatureCanvas.current.toDataURL());
     };
 
     const clearSignature = () => {
-        if (!sigCanvas.current) return;
-        sigCanvas.current.clear();
+        if (!signatureCanvas.current) return;
+        signatureCanvas.current.clear();
+        onChange(undefined);
     };
 
     // const darkMode = useDarkModeStore((state) => state.darkMode);
@@ -74,10 +68,10 @@ WidgetProps) => {
             <Grid position="relative">
                 <Grid>{label}</Grid>
                 <Grid sx={{ border: 'black 1px solid', width: 210 }}>
-                    <SignatureCanvas ref={sigCanvas} penColor="black" canvasProps={{ width: 205, height: 100 }} />
+                    <SignatureCanvas ref={signatureCanvas} penColor="black" canvasProps={{ width: 205, height: 100 }} />
                 </Grid>
-                <Button onClick={saveSignature}>שמור</Button>
-                <Button onClick={clearSignature}>נקה</Button>
+                <Button onClick={saveSignature}>{i18next.t('actions.save')}</Button>
+                <Button onClick={clearSignature}>{i18next.t('actions.clean')}</Button>
             </Grid>
         </ThemeProvider>
     );
