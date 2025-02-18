@@ -77,11 +77,11 @@ const addFieldsSchema = Yup.object({
         .test(i18next.t('validation.oneField'), i18next.t('validation.oneField'), (value) =>
             value ? value.some((obj) => !('archive' in obj) || obj.archive === false || obj.archive === undefined) : false,
         )
-        .test(i18next.t('validation.mapSearchPropertiesLimit', {limit: mapSearchPropertiesLimit}), (value) => {
+        .test(i18next.t('validation.mapSearchPropertiesLimit', { limit: mapSearchPropertiesLimit }), (value) => {
             if (!value) return true;
             const mapSearchCount = value.filter((obj) => obj.mapSearch === true).length;
             if (mapSearchCount > mapSearchPropertiesLimit) toast.error(i18next.t('validation.mapSearchPropertiesLimit', {limit: mapSearchPropertiesLimit}));
-            return mapSearchCount >= mapSearchPropertiesLimit;
+            return mapSearchCount <= mapSearchPropertiesLimit;
         }),
     attachmentProperties: Yup.array().of(
         attachmentPropertiesBaseSchema.shape({
