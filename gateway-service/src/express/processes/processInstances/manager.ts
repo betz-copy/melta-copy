@@ -279,7 +279,7 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
         const fileIds: string[] = [];
 
         Object.entries(templateProperties.properties || {}).forEach(([key, value]) => {
-            if (value.format === PropertyFormats.FileId && instanceProperties[key]) {
+            if ((value.format === PropertyFormats.FileId || value.format === PropertyFormats.Signature) && instanceProperties[key]) {
                 fileIds.push(instanceProperties[key]);
             } else if (value.items?.format === PropertyFormats.FileId && instanceProperties[key]) {
                 fileIds.push(...instanceProperties[key]);

@@ -7,6 +7,7 @@ import { environment } from '../globals';
 import { IMongoProcessInstancePopulated, IReferencedEntityForProcess, ISearchProcessInstancesBody } from '../interfaces/processes/processInstance';
 import { ProcessStepValues } from '../common/wizards/processInstance/ProcessSteps';
 import { IMongoProcessTemplatePopulated } from '../interfaces/processes/processTemplate';
+import urlToFile from '../common/fileConversions';
 
 const { processes } = environment.api;
 export const getProcessByIdRequest = async (processId: string) => {
@@ -62,7 +63,7 @@ export const deleteProcessRequest = async (processId: string) => {
     return data;
 };
 
-const handleAttachmentProperties = (attachments: object, template: any) => {
+const handleAttachmentProperties = async (attachments: object, propertiesToFileUpload: object, template: any) => {
     const formData = new FormData();
     const filesToUpload: any = [];
     const unchangedFiles: any = [];
@@ -83,6 +84,16 @@ const handleAttachmentProperties = (attachments: object, template: any) => {
             }
         }
     });
+
+    const filePropertiesToUpload = await Promise.all(
+        Object.entries(propertiesToFileUpload).map(async ([key, value]) => {
+            const file = await urlToFile(value, template[key].title);
+            return { key, file };
+        }),
+    );
+    filePropertiesToUpload.forEach(({ key, file }) => {
+        filesToUpload.push([key, file]);
+    });
     filesToUpload.forEach(([key, value]) => formData.append(key, value as Blob));
 
     const fileProperties: { [key: string]: any } = {};
@@ -101,12 +112,27 @@ const handleAttachmentProperties = (attachments: object, template: any) => {
 
 export const updateProcessRequest = async (processId: string, updatedData: ProcessDetailsValues, template: IMongoProcessTemplatePopulated) => {
     const entityReferences = referencedEntityToEntityId(updatedData.entityReferences);
-    const { formData, fileProperties } = handleAttachmentProperties(updatedData.detailsAttachments, template.details.properties.properties);
+    const detailsFileToUpload = Object.entries(updatedData.details)
+        .filter(([, value]) => typeof value === 'string' && value.startsWith('data:image/png;base64,'))
+        .reduce((acc, [key, value]) => {
+            acc[key] = value;
+            return acc;
+        }, {});
+
+    const { formData, fileProperties } = await handleAttachmentProperties(
+        updatedData.detailsAttachments,
+        detailsFileToUpload,
+        template.details.properties.properties,
+    );
     const transformedStepsObj = mapValues(updatedData.steps, (reviewers) => reviewers.map(({ _id }) => _id));
+
+    const filteredDetails = Object.entries(updatedData.details).filter(([key]) => !Object.keys(detailsFileToUpload).includes(key));
+    console.log({ filteredDetails });
+
     formData.append(
         'details',
         JSON.stringify({
-            ...updatedData.details,
+            ...filteredDetails,
             ...fileProperties,
             ...entityReferences,
         }),
@@ -138,13 +164,26 @@ export const updateStepRequest = async (
     currStep: IMongoStepInstancePopulated,
     template: any,
 ) => {
-    const { formData, fileProperties } = handleAttachmentProperties(values.attachmentsProperties, template);
+    console.log('kkkk', { template });
+
+    const propertiesFileToUpload = Object.entries(values.properties)
+        .filter(([, value]) => typeof value === 'string' && value.startsWith('data:image/png;base64,'))
+        .reduce((acc, [key, value]) => {
+            acc[key] = value;
+            return acc;
+        }, {});
+    console.log({ propertiesFileToUpload });
+
+    const { formData, fileProperties } = await handleAttachmentProperties(values.attachmentsProperties, propertiesFileToUpload, template);
     const entityReferences = referencedEntityToEntityId(values.entityReferences);
+
+    const filteredProperties = Object.entries(values.properties).filter(([key]) => !Object.keys(propertiesFileToUpload).includes(key));
+    console.log({ filteredProperties });
 
     formData.append(
         'properties',
         JSON.stringify({
-            ...values.properties,
+            ...filteredProperties,
             ...fileProperties,
             ...entityReferences,
         }),

@@ -129,12 +129,15 @@ export const updateEntityRequestForMultiple = async (
     newEntityData: EntityWizardValues,
     ignoredRules?: IRuleBreach['brokenRules'],
 ) => {
-    // console.log('!!!', { newEntityData });
-
+    const isUUID = (str) => /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{8}/.test(str);
     const formData = new FormData();
 
     const filesToUpload: any = [];
     const unchangedFiles: any = []; /// //send single file as array to the back
+
+    const properties = Object.entries(newEntityData.properties);
+    const templateProperties = newEntityData.template.properties.properties;
+    const fileUploadPromises: Promise<[string, File]>[] = [];
 
     Object.entries(newEntityData.attachmentsProperties).forEach(([key, value]: [string, any]) => {
         if (Array.isArray(value) && value) {
@@ -156,20 +159,22 @@ export const updateEntityRequestForMultiple = async (
         }
     });
 
-    const signaturesToUpload = Object.entries(newEntityData.properties)
-        .filter(([key]) => newEntityData.template.properties.properties[key]?.format === 'signature')
-        .map(async ([key, value]) => urlToFile(value, newEntityData.template.properties.properties[key]!.title));
+    for (const [key, value] of properties) {
+        if (templateProperties[key]?.format === 'signature') {
+            if (value && isUUID(value)) {
+                unchangedFiles.push([key, { name: value }]);
+            } else {
+                fileUploadPromises.push(urlToFile(value, templateProperties[key]!.title).then((file) => [key, file]));
+            }
+        }
+    }
 
-    (await Promise.all(signaturesToUpload)).forEach((signatureFile: File) => {
-        filesToUpload.push([signatureFile?.name.split('.').slice(0, -1).join('.'), signatureFile]);
-    });
-    console.log({ signaturesToUpload: await Promise.all(signaturesToUpload) }, { filesToUpload });
+    filesToUpload.push(...(await Promise.all(fileUploadPromises)));
 
     filesToUpload.forEach(([key, value]) => {
         formData.append(key, value);
     });
 
-    console.log(...formData);
     unchangedFiles.forEach(([key, _value]) => {
         newEntityData.properties[key] = [];
     });
@@ -191,8 +196,8 @@ export const updateEntityRequestForMultiple = async (
             mapValues(newEntityData.properties, (property, key) => {
                 const format = newEntityData.template.properties.properties[key]?.format;
 
-                if (format === 'signature') {
-                    return undefined; // Filtering out signatures
+                if (format === 'signature' && !isUUID(property)) {
+                    return undefined;
                 }
 
                 return format === 'relationshipReference' ? property?.properties._id : property;

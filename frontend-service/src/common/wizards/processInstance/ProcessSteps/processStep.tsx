@@ -149,7 +149,8 @@ export const ProcessStep: FC<ProcessStepProps> = ({
     );
     const templateEntityReferenceProperties = pickBy(stepTemplate.properties.properties, (value) => value.format === 'entityReference');
     const { isLoading: editStepIsLoading, mutateAsync: editStepMutateAsync } = useMutation(
-        (stepData: ProcessStepValues) => updateStepRequest(stepInstance._id, stepData, processInstance._id, stepInstance, templateFileProperties),
+        (stepData: ProcessStepValues) =>
+            updateStepRequest(stepInstance._id, stepData, processInstance._id, stepInstance, stepTemplate.properties.properties),
         {
             onSuccess: (updatedStepInstance) => {
                 toast.success(i18next.t('wizard.processInstance.step.editedSuccessfully'));

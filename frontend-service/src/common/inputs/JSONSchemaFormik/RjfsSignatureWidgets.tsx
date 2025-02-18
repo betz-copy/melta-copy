@@ -73,8 +73,8 @@ WidgetProps) => {
         <ThemeProvider theme={theme}>
             <Grid position="relative">
                 <Grid>{label}</Grid>
-                <Grid sx={{ border: 'black 1px solid', width: 370 }}>
-                    <SignatureCanvas ref={sigCanvas} penColor="black" canvasProps={{ width: 365, height: 150 }} />
+                <Grid sx={{ border: 'black 1px solid', width: 210 }}>
+                    <SignatureCanvas ref={sigCanvas} penColor="black" canvasProps={{ width: 205, height: 100 }} />
                 </Grid>
                 <Button onClick={saveSignature}>שמור</Button>
                 <Button onClick={clearSignature}>נקה</Button>

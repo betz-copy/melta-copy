@@ -342,8 +342,6 @@ const CreateOrEditEntityDetails: React.FC<{
             }}
         >
             {({ setFieldValue, values, errors, touched, setFieldTouched, setValues, dirty, initialValues: formInitialValues }) => {
-                console.log('innnnnnn', { values });
-
                 const { templateFilesProperties, templateFileKeys, requiredFilesNames } = getEntityTemplateFilesFieldsInfo(
                     values.template || entityTemplate,
                 );
