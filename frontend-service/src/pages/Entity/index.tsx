@@ -274,11 +274,7 @@ const ConnectionsTable: React.FC<{
                     getEntityPropertiesData={(
                         connection:
                             | IEntity
-                            | {
-                                  relationship: Pick<IRelationship, 'properties' | 'templateId'>;
-                                  sourceEntity: IEntity;
-                                  destinationEntity: IEntity;
-                              },
+                            | IConnection,
                     ) => {
                         if ('relationship' in connection) {
                             if (expandedEntity.entity.properties._id === connection.destinationEntity.properties._id)

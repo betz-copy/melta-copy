@@ -56,7 +56,7 @@ const MapPage = () => {
         markers: searchedEntityMarkers,
         polygons: searchedEntityPolygons,
         propertyDefinitions: searchedPropertyDefinitions,
-    } = useEntityWithLocationFields({ entityTemplate: searchedEntityTemplate, entity: searchedEntity });
+    } = useEntityWithLocationFields({ entityTemplate: searchedEntityTemplate, entityProperties: searchedEntity?.properties });
    
     useEffect(() => {
         const animateCamera = () => {

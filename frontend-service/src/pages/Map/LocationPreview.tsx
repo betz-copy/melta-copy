@@ -27,16 +27,16 @@ export const MeltaCoordinate = ({ name, position, onClick }: { name: string; pos
 );
 
 type Props = {
-    entity: IEntity;
+    entityProperties: IEntity['properties'];
     entityTemplate: IMongoEntityTemplatePopulated;
 };
 
-const LocationPreview = ({ entity, entityTemplate }: Props) => {
+const LocationPreview = ({ entityProperties, entityTemplate }: Props) => {    
     const viewerRef = useRef<any>(null);
 
     const { bounds, polygons, propertyDefinitions, markers } = useEntityWithLocationFields({
         entityTemplate,
-        entity,
+        entityProperties,
     });
 
     useEffect(() => {
