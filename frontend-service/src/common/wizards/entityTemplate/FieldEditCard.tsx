@@ -605,7 +605,6 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                     type: e.target.value,
                                                     required: e.target.value === 'serialNumber' || prevValue.required,
                                                 }));
-                                                if (e.target.value === 'serialNumber') createEmptyGroup(value.name);
                                             }}
                                             error={touchedType && Boolean(errorType)}
                                             helperText={touchedType && errorType}
