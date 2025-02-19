@@ -286,13 +286,6 @@ const TemplateTable = forwardRef<
                     <EditExcelButton
                         disabled={isEditExcelDisabled}
                         initialValues={{ template, properties: { disabled: false }, attachmentsProperties: {} }}
-                        style={{
-                            display: 'flex',
-                            gap: '0.25rem',
-                            borderRadius: '5px',
-                            fontSize: '0.75rem',
-                            color: theme.palette.primary.main,
-                        }}
                         onSuccessCreate={() => entitiesTableRef.current?.refreshServerSide()}
                         popoverText={editExcelTooltip}
                     >
@@ -308,13 +301,6 @@ const TemplateTable = forwardRef<
                     <LoadExcelButton
                         disabled={isLoadExcelDisabled}
                         initialValues={{ template, properties: { disabled: false }, attachmentsProperties: {} }}
-                        style={{
-                            display: 'flex',
-                            gap: '0.25rem',
-                            borderRadius: '5px',
-                            fontSize: '0.75rem',
-                            color: theme.palette.primary.main,
-                        }}
                         onSuccessCreate={() => entitiesTableRef.current?.refreshServerSide()}
                         popoverText={loadExcelTooltip}
                     >

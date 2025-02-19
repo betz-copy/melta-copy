@@ -24,7 +24,7 @@ const { excelExtension } = environment.loadExcel;
 const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
     open,
     handleClose,
-    initialValues = { template: undefined, file: undefined },
+    initialValues = {},
     initialStep = 1,
     isEditMode = false,
 }) => {

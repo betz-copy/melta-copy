@@ -100,6 +100,8 @@ export interface FieldEditCardProps {
     locationSearchFields?: {show: boolean, disabled: boolean};
     hasActions?: boolean;
     displayValues: CommonFormInputProperties[];
+    currentIdentifier: string | undefined,
+    setCurrentIdentifier: React.Dispatch<React.SetStateAction<string | undefined>>,
     supportConvertingToMultipleFields?: boolean;
 }
 
@@ -132,7 +134,8 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     supportArchive,
     locationSearchFields,
     hasActions,
-    displayValues,
+    currentIdentifier,
+    setCurrentIdentifier,
     supportConvertingToMultipleFields = true,
 }) => {
     const currentUser = useUserStore((state) => state.user);
@@ -190,7 +193,6 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     const errorUniqueGroupName = errors?.groupName;
 
     const isIdentifierAble = isText || value.type === 'number' || value.type === 'pattern' || value.type === 'serialNumber';
-    const currentIdentifier = displayValues.find((displayValue) => displayValue.identifier)?.name;
     
     const mapSearchDisabled = !value.mapSearch && locationSearchFields?.disabled;
 
@@ -1143,7 +1145,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                     label={i18next.t('propertyTypes.text-area')}
                                                 />
                                             )}
-                                            {isIdentifierAble && (
+                                            {isIdentifierAble &&  locationSearchFields?.show && (
                                                 <FormControlLabel
                                                     control={
                                                         <Switch
@@ -1157,7 +1159,11 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                     groupName: undefined,
                                                                     uniqueCheckbox: false,
                                                                 }));
-                                                                if (checked) createEmptyGroup(value.name);
+                                                                if (checked) {
+                                                                    createEmptyGroup(value.name);
+                                                                    setCurrentIdentifier(value.name);
+                                                                }
+                                                                else setCurrentIdentifier(undefined);
                                                             }}
                                                             disabled={currentIdentifier !== undefined && currentIdentifier !== value.name}
                                                             checked={value.identifier ?? false}
@@ -1367,6 +1373,7 @@ export const MemoFieldEditCard = memo(
         isEqual(prev.value, next.value) &&
         isEqual(prev.touched, next.touched) &&
         isEqual(prev.errors, next.errors) &&
-        isEqual(prev.uniqueConstraints, next.uniqueConstraints)&&
-        isEqual(prev.locationSearchFields, next.locationSearchFields),
+        isEqual(prev.uniqueConstraints, next.uniqueConstraints) &&
+        isEqual(prev.locationSearchFields, next.locationSearchFields) &&
+        isEqual(prev.currentIdentifier, next.currentIdentifier),
 );
