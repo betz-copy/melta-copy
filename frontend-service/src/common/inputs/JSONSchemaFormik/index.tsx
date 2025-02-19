@@ -222,7 +222,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
             noHtml5Validate
             onBlur={(id) => {
                 const [_, field] = id.split('root_');
-                setFieldTouched(field);
+            setFieldTouched(field);
             }}
             experimental_defaultFormStateBehavior={{
                 emptyObjectFields: 'skipEmptyDefaults', // library has for array a default empty array ([]). disable this

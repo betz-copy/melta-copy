@@ -32,9 +32,7 @@ const LocationField = ({ defaultLocation, field, updateValue }: Props) => {
 
     const [drawingMode, setDrawingMode] = useState<'polygon' | 'coordinate' | null>(null);
     const [polygonPosition, setPolygonPosition] = useState<Cartesian3[]>([]);
-    const [markerPosition, setMarkerPosition] = useState<Cartesian3 | null>(null);
-    console.log({ polygonPosition, markerPosition });
-    
+    const [markerPosition, setMarkerPosition] = useState<Cartesian3 | null>(null);    
 
     const darkMode = useDarkModeStore((state) => state.darkMode);
 

@@ -19,7 +19,6 @@ import { HighlightText } from '../utils/HighlightText';
 import { BlueTitle } from './BlueTitle';
 import UserAvatar from './UserAvatar';
 import OverflowWrapper from '../utils/agGrid/OverflowWrapper';
-import { location3ToString } from '../utils/map';
 
 const { maxNumOfCharactersNotInFullWidth } = environment.entitiesProperties;
 
@@ -69,7 +68,7 @@ export const formatToString = (value: any, property: IEntitySingleProperty, opti
         }
     }
     if (format === 'location')
-        return value.unit === 'UTM'? location3ToString(value.location): value.location; 
+        return value.location; 
     if (keyEnumColors?.[value] && valueType === 'string') return pureString ? value : <ColoredEnumChip label={value} color={keyEnumColors[value]} />;
     if (valueType === 'array') {
         if (property.items?.format === 'fileId') {

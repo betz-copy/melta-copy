@@ -38,7 +38,7 @@ const validatePoint = (point: LocationData, splitBy: SplitBy, schemaValidation?:
     return true;
 };
 
-export const validateLocation = (value: LocationData, schemaValidation?: boolean) => {       
+export const validateLocation = (value: LocationData, schemaValidation?: boolean) => {      
     if (value.location === '') return true;
     if (!value.location.startsWith(polygonPrefix)) return validatePoint(value, SplitBy.comma, schemaValidation);
 
@@ -109,8 +109,6 @@ const RjsfLocationWidget = ({
     };
 
     useEffect(() => {
-        console.log({value});
-        
         setNewLocationValue(value?.location || '');
         setCoordinateSystem(value?.unit || 'WGS84');
     }, [value]);

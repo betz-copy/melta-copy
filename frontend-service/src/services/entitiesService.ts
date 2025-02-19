@@ -110,10 +110,8 @@ export const createEntityRequest = async (entity: EntityWizardValues, ignoredRul
                     case 'location': {
                         if (property.unit === 'UTM') {
                             const locationUTA = stringToCoordinates(property.location).value;
-                            console.log({ locationUTA });
                             const locationString = location3ToString(locationUTA);
-                            console.log({ locationString });
-                            return JSON.stringify({location: locationString, unit: property.unit});
+                            return JSON.stringify({ location: locationString, unit: property.unit });
                         }
                         return JSON.stringify(property);
                     }

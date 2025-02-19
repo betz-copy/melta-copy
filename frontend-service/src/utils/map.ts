@@ -44,13 +44,10 @@ type CoordinatesResult = {
 };
 
 export const stringToCoordinates = (strCoords: string): CoordinatesResult => {
-    console.log({ strCoords });
     const polygon = parsePolygon(strCoords);
     if (polygon) return { type: 'polygon', value: polygon };
 
     const formatted = strCoords.split(',').map((val) => +val);
-    console.log({ formatted });
-    
     return { type: 'marker', value: { x: formatted[0], y: formatted[1] } as Cartesian3 };
 
     // TODO: add validation to format
@@ -83,7 +80,6 @@ export const isValidUTM =(position: Cartesian3): boolean => {
 
     const easting = 500000; 
     const northing = latitude >= 0 ? 0 : 10000000;
-    console.log({valid: validateUTM(zone, hemisphere, easting, northing), zone, hemisphere, easting, northing});
     
     return validateUTM(zone, hemisphere, easting, northing);
 }
@@ -117,9 +113,8 @@ export const getPolygonFarthestPoint = (polygonCenter: Cartesian3, polygon: Cart
     return longestDistance;
 };
 
-export const convertToWGS84 = (point: Cartesian3): { longitude: number; latitude: number } => {    
-    const cartographic = Ellipsoid.WGS84.cartesianToCartographic(point);    
-console.log({cartographic});
+export const convertToWGS84 = (point: Cartesian3): { longitude: number; latitude: number } => {
+    const cartographic = Ellipsoid.WGS84.cartesianToCartographic(point);   
 
     if (!cartographic) 
         console.error('Invalid Point');
@@ -131,31 +126,13 @@ console.log({cartographic});
 };
 
 export const location3ToString = (location: Cartesian3 | Cartesian3[]): string => {
-    if (!Array.isArray(location)) {    
-        let longitude, latitude;
-        console.log({valid: isValidWGS84(location), wgs: convertToWGS84(location)});
-        
-        if (!isValidWGS84(location)) ({ longitude, latitude } = convertToWGS84(location));
-        else {
-            const wgs84Location = Cartesian3.fromDegrees(location.x, location.y);
-            longitude = wgs84Location.x;
-            latitude = wgs84Location.y;
-        }
-        console.log({longitude, latitude });
-        
-           
+    if (!Array.isArray(location)) {
+        const { longitude, latitude } = convertToWGS84(location);        
         return `${longitude}, ${latitude}`;
     }
 
     const points = location.map((point) => {
-        let longitude, latitude;
-        if (isValidWGS84(point)) ({ longitude, latitude } = convertToWGS84(point));
-        else {
-            const wgs84Location = Cartesian3.fromDegrees(point.x, point.y);
-            longitude = wgs84Location.x;
-            latitude = wgs84Location.y;
-        }
-        // const { longitude, latitude } = isValidWGS84(point)? convertToWGS84(point): { longitude: point.x, latitude: point.y };  
+        const { longitude, latitude } = convertToWGS84(point);
         return `${longitude} ${latitude}`;
     });
     return `${polygonPrefix}${points.join(',')}${polygonSuffix}`;
