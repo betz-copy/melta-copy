@@ -1145,7 +1145,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                     label={i18next.t('propertyTypes.text-area')}
                                                 />
                                             )}
-                                            {isIdentifierAble &&  locationSearchFields?.show && (
+                                            {isIdentifierAble && (
                                                 <FormControlLabel
                                                     control={
                                                         <Switch
