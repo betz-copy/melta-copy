@@ -33,7 +33,6 @@ export const UploadExcel: React.FC<{
     const workspace = useWorkspaceStore((state) => state.workspace);
     const { defaultRowHeight, defaultFontSize } = workspace.metadata.agGrid;
     const { entitiesFileLimit, filesLimit } = workspace.metadata.excel;
-    const editEntities = stepsData.entities?.map(({ ignoredRules, ...entity }) => entity);
 
     if (isLoading) return <CircularProgress size={20} />;
 
@@ -108,7 +107,7 @@ export const UploadExcel: React.FC<{
                     rowHeight={defaultRowHeight}
                     pageRowCount={10}
                     fontSize={`${defaultFontSize}px`}
-                    rowData={editEntities || rowData}
+                    rowData={stepsData.entities || rowData}
                     saveStorageProps={{
                         shouldSaveFilter: false,
                         shouldSaveWidth: false,
