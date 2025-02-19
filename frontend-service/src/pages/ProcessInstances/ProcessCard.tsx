@@ -222,6 +222,7 @@ const ProcessCard: React.FC<{
                 setIsProcessChanged(true);
                 setIsEditMode(false);
                 setCurrProcessInstance(processNewData);
+                queryClient.resetQueries({ queryKey: ['searchProcesses'] });
             },
             onError: (error: AxiosError) => {
                 toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.processInstance.failedToEdit')} />);

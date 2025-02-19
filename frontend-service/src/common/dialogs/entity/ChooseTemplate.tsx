@@ -9,7 +9,7 @@ import { emptyEntityTemplate, EntityWizardValues } from '.';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { PermissionScope } from '../../../interfaces/permissions';
 import { useUserStore } from '../../../stores/user';
-import { checkUserCategoryPermission } from '../../../utils/permissions/instancePermissions';
+import { checkUserTemplatePermission } from '../../../utils/permissions/instancePermissions';
 
 const chooseTemplateSchema = Yup.object({
     template: Yup.object({
@@ -39,12 +39,12 @@ const ChooseTemplate: React.FC<{
         entityTemplatesFilteredByCategory = Array.from(entityTemplates.values()).filter((entity) => {
             return (
                 entity.category._id === categoryId &&
-                checkUserCategoryPermission(currentUser.currentWorkspacePermissions, entity.category, PermissionScope.write)
+                checkUserTemplatePermission(currentUser.currentWorkspacePermissions, entity.category, entity._id, PermissionScope.write)
             );
         });
     } else {
         entityTemplatesFilteredByCategory = Array.from(entityTemplates.values()).filter((entity) => {
-            return checkUserCategoryPermission(currentUser.currentWorkspacePermissions, entity.category, PermissionScope.write);
+            return checkUserTemplatePermission(currentUser.currentWorkspacePermissions, entity.category, entity._id, PermissionScope.write);
         });
     }
 

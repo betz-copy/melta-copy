@@ -245,6 +245,7 @@ export const fileColDef = <Data extends any = EntityData>(
 export const locationColDef = <Data extends any = EntityData>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
+    entityGetter: ValueGetterFunc<any, any>,
     value: Partial<IEntitySingleProperty>,
     template: IMongoEntityTemplatePopulated,
     hardcodedWidth: number | undefined,
@@ -258,7 +259,7 @@ export const locationColDef = <Data extends any = EntityData>(
         valueGetter,
         cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => {
             if (!props.value) return null;
-            return <OpenMap field={value.title!} entity={props.data as IEntity} entityTemplate={template} searchValue={searchValue} />;
+            return <OpenMap field={value.title!} entityProperties={entityGetter(props as any)} entityTemplate={template} searchValue={searchValue} />;
         },
         filter: 'agTextColumnFilter',
         width: hardcodedWidth,

@@ -66,6 +66,12 @@ export const environment = {
     mui: {
         activationKey: '8c5d3fd6a4390125cf8590dea55dbb05Tz1HdXksRT0yMDAwMDAwMDAwMDAwLFM9cHJlbWl1bSxMTT1zdWJzY3JpcHRpb24sS1Y9Mg==',
     },
+    cesium: {
+        activationKey:
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJjZWI5M2EyNC1lODE3LTQwYTQtYTUxZi00NDlhODAyZDM0NTMiLCJpZCI6MjcwNDM5LCJpYXQiOjE3Mzc0NDk3MzN9.WLi4Zcm4D_PMstHcM3YNMJsw1xPhiNGuJyizwg_4nbg',
+        cesiumSource: 'node_modules/cesium/Build/Cesium',
+        cesiumBaseUrl: 'cesiumStatic',
+    },
     canvasSettings: {
         heightPaddingMultiplier: 0.3,
         widthPaddingMultiplier: 0.6,
@@ -248,9 +254,9 @@ export const environment = {
     draftAutoSaveDebounce: 250,
     map: {
         maxRadius: 30000,
-        squareLength: 10,
-        units: { km: 'km', squaredKm: 'km²' },
-        polygon: { polygon: 'POLYGON', polygonPrefix: 'POLYGON((', polygonSuffix: '))' },
+        squareLength: 2500,
+        polygon: { polygonPrefix: 'POLYGON((', polygonSuffix: '))' },
+        mapSearchPropertiesLimit: 2,
     },
     meltaUpdatesShown: 'meltaUpdatesShown',
     profileIconsCount: 19,

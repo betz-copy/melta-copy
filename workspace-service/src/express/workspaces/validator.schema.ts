@@ -27,7 +27,6 @@ const metadataSchema = Joi.object({
         filesLimit: Joi.number(),
     }).optional(),
     searchLimits: Joi.object({
-        table: Joi.number().min(Joi.ref('agGrid.rowCount')),
         bulk: Joi.number(),
     }).optional(),
 }).optional();
@@ -122,4 +121,13 @@ export const updateMetadataSchema = Joi.object({
     params: {
         id: MongoIdSchema.required(),
     },
+});
+
+// POST /api/workspaces/search
+export const searchWorkspacesSchema = Joi.object({
+    query: {},
+    body: {
+        search: Joi.string(),
+    },
+    params: {},
 });

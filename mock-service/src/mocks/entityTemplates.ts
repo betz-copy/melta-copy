@@ -51,7 +51,7 @@ export const entityTemplates: IEntityTemplateMock[] = [
         name: 'tourist',
         displayName: 'תייר',
         category: {
-            name: 'pepole',
+            name: 'people',
         },
         properties: {
             type: 'object',
@@ -84,7 +84,7 @@ export const entityTemplates: IEntityTemplateMock[] = [
         name: 'travelAgent',
         displayName: 'סוכן נסיעות',
         category: {
-            name: 'pepole',
+            name: 'people',
         },
         properties: {
             type: 'object',
@@ -534,6 +534,11 @@ export const entityTemplates: IEntityTemplateMock[] = [
                     type: 'string',
                     pattern: '^0[2-9]\\d-\\d{4}-\\d{3}$',
                     patternCustomErrorMessage: 'יש להזין בפורמט מס טלפון בלבד (050-1234-123)',
+                },
+                location: {
+                    type: 'string',
+                    title: 'מיקום',
+                    format: 'location',
                 },
                 file: {
                     title: 'קובץ יחיד',

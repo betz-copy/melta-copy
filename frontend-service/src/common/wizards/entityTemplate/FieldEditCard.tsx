@@ -29,6 +29,7 @@ import {
     Update as DailyAlertIcon,
     Archive,
     Unarchive,
+    AddLocationAlt, WrongLocation
 } from '@mui/icons-material';
 import AddIcon from '@mui/icons-material/Add';
 import { Draggable } from 'react-beautiful-dnd';
@@ -41,7 +42,7 @@ import { dateNotificationTypes, validPropertyTypes } from './AddFields';
 import { CommonFormInputProperties, IRelationshipReference } from './commonInterfaces';
 import { MinimizedColorPicker } from '../../inputs/MinimizedColorPicker';
 import { MeltaCheckbox } from '../../MeltaCheckbox';
-import { deleteEnumFieldRequest, updateEnumFieldRequest } from '../../../services/templates/enitityTemplatesService';
+import { arrayTypes, deleteEnumFieldRequest, updateEnumFieldRequest } from '../../../services/templates/enitityTemplatesService';
 import { AreYouSureDialog } from '../../dialogs/AreYouSureDialog';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { MeltaTooltip } from '../../MeltaTooltip';
@@ -49,6 +50,9 @@ import { IUniqueConstraintOfTemplate } from '../../../interfaces/entities';
 import RelationshipReferenceField from './RelationshipReferenceField';
 import { PermissionScope } from '../../../interfaces/permissions';
 import { useUserStore } from '../../../stores/user';
+import { environment } from '../../../globals';
+
+const { mapSearchPropertiesLimit } = environment.map;
 
 enum dateNotificationOptions {
     day = 1,
@@ -93,6 +97,7 @@ export interface FieldEditCardProps {
     supportUnique?: boolean;
     supportLocation?: boolean;
     supportArchive?: boolean;
+    locationSearchFields?: {show: boolean, disabled: boolean};
     hasActions?: boolean;
     supportConvertingToMultipleFields?: boolean;
 }
@@ -124,6 +129,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     supportUnique,
     supportLocation,
     supportArchive,
+    locationSearchFields,
     hasActions,
     supportConvertingToMultipleFields = true,
 }) => {
@@ -179,6 +185,8 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
 
     const touchedUniqueGroupName = touched?.groupName;
     const errorUniqueGroupName = errors?.groupName;
+
+    const mapSearchDisabled = !value.mapSearch && locationSearchFields?.disabled;
 
     const createNewUniqueGroup = (groupName) => {
         if (groupName) {
@@ -1129,6 +1137,25 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                             )}
                                         </Box>
                                         <Grid display="flex">
+                                            {locationSearchFields?.show && value.type !== 'fileId' && value.type !== 'relationshipReference' && !arrayTypes.includes(value.type) && (
+                                                <MeltaTooltip 
+                                                    title={i18next.t(
+                                                        mapSearchDisabled 
+                                                        ? 'validation.mapSearchPropertiesLimit' 
+                                                        : 'wizard.entityTemplate.searchLocation', 
+                                                        { limit: mapSearchPropertiesLimit }
+                                                    )} 
+                                                    placement="right"
+                                                >
+                                                    <Box>
+                                                        <IconButton
+                                                            onClick={() => setFieldValue('mapSearch', !value.mapSearch)}
+                                                            disabled={mapSearchDisabled}
+                                                        >
+                                                            {value.mapSearch ? <WrongLocation color="primary" /> : <AddLocationAlt />}
+                                                        </IconButton>
+                                                    </Box>
+                                                </MeltaTooltip>)}
                                             {supportArchive && isEditMode && (
                                                 <MeltaTooltip title={archiveButtonTooltip()} placement="right">
                                                     <Box>
@@ -1309,5 +1336,6 @@ export const MemoFieldEditCard = memo(
         isEqual(prev.value, next.value) &&
         isEqual(prev.touched, next.touched) &&
         isEqual(prev.errors, next.errors) &&
-        isEqual(prev.uniqueConstraints, next.uniqueConstraints),
+        isEqual(prev.uniqueConstraints, next.uniqueConstraints)&&
+        isEqual(prev.locationSearchFields, next.locationSearchFields) ,
 );

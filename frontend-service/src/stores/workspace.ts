@@ -31,7 +31,6 @@ export const defaultMetadata = {
         filesLimit: 5,
     },
     searchLimits: {
-        table: 5,
         bulk: 5,
     },
 } as const;
