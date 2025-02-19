@@ -429,8 +429,14 @@ const formatDateForFullTextSearch = (date: Date) => {
     return formatFns(date, 'dd/MM/yyyy');
 };
 
-const getFileName = (fileId: string): string => {
+export const getFileName = (fileId: string): string => {
     return fileId.slice(config.fileIdLength);
+};
+
+export const getFilesName = (files: string[]): string => {
+    const fileNames = files.map((fileId: string) => getFileName(fileId));
+
+    return fileNames.join(', ');
 };
 
 export const addStringFieldsAndNormalizeSpecialStringValues = (

@@ -1,12 +1,13 @@
 /* eslint-disable class-methods-use-this */
 /* eslint-disable no-continue */
 /* eslint-disable no-await-in-loop */
+import { fromZonedTime } from 'date-fns-tz';
 import { StatusCodes } from 'http-status-codes';
 import differenceWith from 'lodash.differencewith';
 import groupBy from 'lodash.groupby';
 import mapValues from 'lodash.mapvalues';
 import pickBy from 'lodash.pickby';
-import { Neo4jError, Transaction } from 'neo4j-driver';
+import neo4j, { Neo4jError, Transaction } from 'neo4j-driver';
 import config from '../../config';
 import { ActionsLog, IActivityLog, IUpdatedFields } from '../../externalServices/activityLog/interface';
 import { ActivityLogProducer } from '../../externalServices/activityLog/producer';
@@ -25,6 +26,7 @@ import { isBodyFunctionHasContent } from '../../utils/actions/isBodyFunctionHasC
 import { arraysEqualsNonOrdered } from '../../utils/lib';
 import { expandEntityToNeoQuery, getExpandedFilteredGraphRecursively } from '../../utils/neo4j/getExpandedEntityByIdRecursive';
 import {
+    formatDate,
     generateDefaultProperties,
     getNeo4jDateTime,
     normalizeChartResponse,
@@ -71,9 +73,13 @@ import {
     IUniqueConstraintOfTemplate,
     RunRuleReason,
 } from './interface';
-import { addStringFieldsAndNormalizeSpecialStringValues } from './validator.template';
+import { addStringFieldsAndNormalizeSpecialStringValues, getFileName, getFilesName } from './validator.template';
 
-const { brokenRulesFakeEntityIdPrefix, deleteEntitiesMaxLimit } = config;
+const {
+    brokenRulesFakeEntityIdPrefix,
+    deleteEntitiesMaxLimit,
+    map: { polygonPrefix, polygonSuffix },
+} = config;
 
 const { BAD_REQUEST: badRequestStatus } = StatusCodes;
 
@@ -2032,15 +2038,72 @@ export class EntityManager extends DefaultManagerNeo4j {
         return filterDependentRulesViaAggregation(rules, relationshipTemplateId);
     }
 
-    getAggregation(axis: IAxisField): IAggregation {
-        if (typeof axis === 'string') return { type: 'none', byField: axis };
-        if (axis.type === 'countAll') return { type: 'countAll', byField: '*' };
+    handlePropertiesTemplate = (entityTemplate: IMongoEntityTemplate) => {
+        const specialProperties: Record<string, { valueToSearch: string; valueToReturn?: (output: any) => Promise<string> | string }> = {};
+        Object.entries(entityTemplate.properties.properties).forEach(([key, value]) => {
+            if (value.format === 'user')
+                specialProperties[key] = {
+                    valueToSearch: `${key}.fullName${config.neo4j.userFieldPropertySuffix}`,
+                };
+            if (value.items?.format === 'user')
+                specialProperties[key] = {
+                    valueToSearch: `${key}.fullNames${config.neo4j.usersFieldsPropertySuffix}`,
+                };
+            if (value.format === 'relationshipReference')
+                specialProperties[key] = {
+                    valueToSearch: `${key}.properties._id${config.neo4j.relationshipReferencePropertySuffix}`,
+                    valueToReturn: (id: string) => this.getRelatedEntityName(id, value.relationshipReference?.relatedTemplateField),
+                };
+            if (value.format === 'fileId')
+                specialProperties[key] = {
+                    valueToSearch: key,
+                    valueToReturn: (fileId: string) => getFileName(fileId),
+                };
+            if (value.items?.format === 'fileId')
+                specialProperties[key] = {
+                    valueToSearch: key,
+                    valueToReturn: (fileId: string[]) => getFilesName(fileId),
+                };
+        });
+
+        return specialProperties;
+    };
+
+    private async getRelatedEntityName(id: string, relatedTemplateField?: string): Promise<string> {
+        if (!relatedTemplateField) return id;
+
+        const relatedEntity = await this.getEntityById(id);
+        return relatedEntity?.properties?.[relatedTemplateField] ?? id;
+    }
+
+    getAggregation(
+        axis: IAxisField,
+        specialProperties: Record<string, { valueToSearch: string; valueToReturn?: (output: any) => Promise<string> | string }>,
+    ): IAggregation {
+        if (typeof axis === 'string') {
+            const byField = specialProperties[axis]?.valueToSearch ?? axis;
+            return { type: 'none', byField: `\`${byField}\`` };
+        }
+
+        if (axis.type === 'countAll') {
+            return { type: 'countAll', byField: '*' };
+        }
+
+        if (axis.type === 'countDistinct' && specialProperties[axis.byField!]) {
+            return { type: 'countDistinct', byField: `\`${specialProperties[axis.byField!].valueToSearch}\`` };
+        }
+
         return axis;
     }
 
-    buildAggregationQuery(xAxis: IAxisField, yAxis: IAxisField | undefined, filterQuery?: string) {
-        const xAgg = this.getAggregation(xAxis);
-        const yAgg = yAxis ? this.getAggregation(yAxis) : undefined;
+    buildAggregationQuery(
+        xAxis: IAxisField,
+        yAxis: IAxisField | undefined,
+        specialProperties: Record<string, { valueToSearch: string; valueToReturn?: (output: any) => Promise<string> | string }>,
+        filterQuery?: string,
+    ) {
+        const xAgg = this.getAggregation(xAxis, specialProperties);
+        const yAgg = yAxis ? this.getAggregation(yAxis, specialProperties) : undefined;
 
         const xAggregation = this.generateAggregation(xAgg, 'x');
         const yAggregation = yAgg ? this.generateAggregation(yAgg, 'y') : null;
@@ -2058,8 +2121,6 @@ export class EntityManager extends DefaultManagerNeo4j {
             query += `
               RETURN ${xAggregation}
             `;
-
-        console.dir({ query }, { depth: null });
 
         return query;
     }
@@ -2085,17 +2146,51 @@ export class EntityManager extends DefaultManagerNeo4j {
         }
     }
 
+    manipulateReturnedChart = async (
+        xAxis: IAxisField,
+        chart: { x: any; y: any }[],
+        specialProperties: Record<string, { valueToSearch: string; valueToReturn?: (output: any) => Promise<string> | string }>,
+    ) => {
+        if (typeof xAxis !== 'string') return chart;
+
+        return Promise.all(
+            chart.map(async ({ x, y }) => {
+                if (!x) return { x, y };
+
+                const { valueToReturn } = specialProperties[xAxis] || {};
+
+                if (typeof valueToReturn === 'function') return { x: await valueToReturn(x), y };
+
+                if (x instanceof neo4j.types.LocalDateTime) return { x: fromZonedTime(new Date(x.toString()), 'Asia/Jerusalem').toISOString(), y };
+
+                if (x instanceof neo4j.types.Date) return { x: formatDate(x.toString()), y };
+
+                if (x instanceof neo4j.types.Point) return { x: `${x.x}, ${x.y}`, y };
+
+                if (Array.isArray(x) && x.every((item) => item instanceof neo4j.types.Point)) {
+                    const points = x.map((point) => `${point.x} ${point.y}`).join(',');
+                    return { x: `${polygonPrefix}${points}${polygonSuffix}`, y };
+                }
+
+                return { x, y };
+            }),
+        );
+    };
+
     async getChart(templateId: string, chartBody: IChartBody[]) {
         const entityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(templateId);
         const entityTemplatesMap = new Map([[templateId, entityTemplate]]);
+        const specialProperties = this.handlePropertiesTemplate(entityTemplate);
 
         const chartPromises = chartBody.map(async ({ filter, xAxis, yAxis, _id }) => {
             const templatesFilter = { [templateId]: { filter, showRelationships: false } };
             const { cypherQuery: filterQuery, parameters } = templatesFilterToNeoQuery(templatesFilter, entityTemplatesMap);
 
-            const query = this.buildAggregationQuery(xAxis, yAxis, filterQuery);
+            const query = this.buildAggregationQuery(xAxis, yAxis, specialProperties, filterQuery);
             const chart = await this.neo4jClient.readTransaction(query, normalizeChartResponse, parameters);
-            return _id ? { _id, chart } : chart;
+            const manipulatedChart = await this.manipulateReturnedChart(xAxis, chart, specialProperties);
+
+            return _id ? { _id, chart: manipulatedChart } : manipulatedChart;
         });
 
         return Promise.all(chartPromises);
