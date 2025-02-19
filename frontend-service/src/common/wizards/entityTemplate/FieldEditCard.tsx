@@ -50,6 +50,9 @@ import { IUniqueConstraintOfTemplate } from '../../../interfaces/entities';
 import RelationshipReferenceField from './RelationshipReferenceField';
 import { PermissionScope } from '../../../interfaces/permissions';
 import { useUserStore } from '../../../stores/user';
+import { environment } from '../../../globals';
+
+const { mapSearchPropertiesLimit } = environment.map;
 
 enum dateNotificationOptions {
     day = 1,
@@ -182,6 +185,8 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
 
     const touchedUniqueGroupName = touched?.groupName;
     const errorUniqueGroupName = errors?.groupName;
+
+    const mapSearchDisabled = !value.mapSearch && locationSearchFields?.disabled;
 
     const createNewUniqueGroup = (groupName) => {
         if (groupName) {
@@ -1133,11 +1138,19 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                         </Box>
                                         <Grid display="flex">
                                             {locationSearchFields?.show && value.type !== 'fileId' && value.type !== 'relationshipReference' && !arrayTypes.includes(value.type) && (
-                                                <MeltaTooltip title={i18next.t('wizard.entityTemplate.searchLocation')} placement="right">
+                                                <MeltaTooltip 
+                                                    title={i18next.t(
+                                                        mapSearchDisabled 
+                                                        ? 'validation.mapSearchPropertiesLimit' 
+                                                        : 'wizard.entityTemplate.searchLocation', 
+                                                        { limit: mapSearchPropertiesLimit }
+                                                    )} 
+                                                    placement="right"
+                                                >
                                                     <Box>
                                                         <IconButton
                                                             onClick={() => setFieldValue('mapSearch', !value.mapSearch)}
-                                                            disabled={!value.mapSearch && locationSearchFields.disabled}
+                                                            disabled={mapSearchDisabled}
                                                         >
                                                             {value.mapSearch ? <WrongLocation color="primary" /> : <AddLocationAlt />}
                                                         </IconButton>

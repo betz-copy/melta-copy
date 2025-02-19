@@ -197,6 +197,7 @@ const config = {
         ruleBlock: 'RULE_BLOCK',
         ruleHasAlertsOrRequests: 'RULE_HAS_ALERTS_OR_REQUESTS',
         failedToDeleteField: 'FAILED_DELETE_FIELD',
+        failedToArchiveField: 'FAILED_ARCHIVE_FIELD',
         moreThenOneRelationshipInstanceExist: 'MORE_THEN_ONE_RELATIONSHIP_INSTANCE_EXIST',
         failedConstraintsValidation: 'FAILED_CONSTRAINTS_VALIDATION',
         templateValidationError: 'TemplateValidationError',
@@ -251,6 +252,10 @@ const config = {
         filesLimit: env.get('FILES_LIMIT').default(5).asIntPositive(),
         invalidDate: env.get('INVALID_DATE').default('Invalid Date').asString(),
         invalidTime: env.get('INVALID_TIME').default('Invalid time value').asString(),
+    },
+    flowCube: {
+        flowRequestHostName: env.get('REQUEST_HOST_NAME').default('host-name').required().asString(),
+        flowSystemName: env.get('FLOW_SYSTEM_NAME').default('system-name').required().asString(),
     },
 };
 

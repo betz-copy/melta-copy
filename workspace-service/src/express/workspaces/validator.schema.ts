@@ -122,3 +122,12 @@ export const updateMetadataSchema = Joi.object({
         id: MongoIdSchema.required(),
     },
 });
+
+// POST /api/workspaces/search
+export const searchWorkspacesSchema = Joi.object({
+    query: {},
+    body: {
+        search: Joi.string(),
+    },
+    params: {},
+});

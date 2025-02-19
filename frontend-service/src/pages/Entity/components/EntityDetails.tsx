@@ -366,7 +366,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
             )}
             {mapDialogOpen && (
                 <Dialog open={mapDialogOpen} onClose={() => setMapDialogOpen(false)}>
-                    <LocationPreview entity={entity} entityTemplate={entityTemplate} />
+                    <LocationPreview entityProperties={entity.properties} entityTemplate={entityTemplate} />
                 </Dialog>
             )}
         </>
