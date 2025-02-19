@@ -305,7 +305,7 @@ const ConnectionsTable: React.FC<{
                         shouldSaveWidth: false,
                         shouldSaveVisibleColumns: false,
                         shouldSaveSorting: false,
-                        shouldSaveColumnOrder: false,
+                        shouldSaveColumnOrder: true,
                         shouldSavePagination: false,
                         shouldSaveScrollPosition: false,
                         pageType: `entity-${expandedEntity.entity.properties._id}`,

@@ -121,6 +121,7 @@ export const numberColDef = <Data extends any = EntityData>(
     valueGetter: ValueGetterFunc<Data>,
     value: Partial<IEntitySingleProperty>,
     hardcodedWidth: number | undefined,
+    isLastColumn: boolean,
     hideColumn = false,
     hideValue = false,
     ignoreType = false,
@@ -138,7 +139,7 @@ export const numberColDef = <Data extends any = EntityData>(
             return <Value hideValue={hideValue} value={props.value?.toString() ?? ''} isNumberField={!ignoreType} searchValue={searchValue} />;
         },
         width: hardcodedWidth,
-        flex: hardcodedWidth ? 0 : 1,
+        flex: isLastColumn ? 1 : 0,
         hide: hideColumn,
         editable: (params) => (editable(params.data) ?? false) && value.serialStarter === undefined,
         cellEditor: 'agNumberCellEditor',
@@ -155,6 +156,7 @@ export const regexColDef = <Data extends any = EntityData>(
     valueGetter: ValueGetterFunc<Data>,
     value: Partial<IEntitySingleProperty>,
     hardcodedWidth: number | undefined,
+    isLastColumn: boolean,
     hideColumn = false,
     hideValue = false,
     ignoreType = false,
@@ -172,7 +174,7 @@ export const regexColDef = <Data extends any = EntityData>(
         valueGetter,
         filter: 'agTextColumnFilter',
         width: hardcodedWidth,
-        flex: hardcodedWidth ? 0 : 1,
+        flex: isLastColumn ? 1 : 0,
         hide: hideColumn,
         cellStyle: { direction: 'ltr' },
         editable: (params) => editable(params.data) ?? false,
@@ -185,6 +187,7 @@ export const stringColDef = <Data extends any = EntityData>(
     valueGetter: ValueGetterFunc<Data>,
     value: Partial<IEntitySingleProperty>,
     hardcodedWidth: number | undefined,
+    isLastColumn: boolean,
     hideColumn = false,
     hideValue = false,
     ignoreType = false,
@@ -202,7 +205,7 @@ export const stringColDef = <Data extends any = EntityData>(
         valueGetter,
         filter: 'agTextColumnFilter',
         width: hardcodedWidth,
-        flex: hardcodedWidth ? 0 : 1,
+        flex: isLastColumn ? 1 : 0,
         hide: hideColumn,
         editable: (params) => editable(params.data) ?? false,
         cellEditor: value.format === 'text-area' ? 'agLargeTextCellEditor' : 'agTextCellEditor',
@@ -219,6 +222,7 @@ export const fileColDef = <Data extends any = EntityData>(
     valueGetter: ValueGetterFunc<Data>,
     value: { title: string },
     hardcodedWidth: number | undefined,
+    isLastColumn: boolean,
     hideColumn = false,
     searchValue: string | undefined = undefined,
     entityFileIdsWithTexts: ISemanticSearchResult[string][string] | undefined = undefined,
@@ -233,7 +237,7 @@ export const fileColDef = <Data extends any = EntityData>(
             ) : null,
         filter: 'agTextColumnFilter',
         width: hardcodedWidth,
-        flex: hardcodedWidth ? 0 : 1,
+        flex: isLastColumn ? 1 : 0,
         hide: hideColumn,
     };
 };
@@ -245,6 +249,7 @@ export const locationColDef = <Data extends any = EntityData>(
     value: Partial<IEntitySingleProperty>,
     template: IMongoEntityTemplatePopulated,
     hardcodedWidth: number | undefined,
+    isLastColumn: boolean,
     hideColumn = false,
     searchValue: string | undefined = undefined,
 ): ColDef => {
@@ -258,7 +263,7 @@ export const locationColDef = <Data extends any = EntityData>(
         },
         filter: 'agTextColumnFilter',
         width: hardcodedWidth,
-        flex: hardcodedWidth ? 0 : 1,
+        flex: isLastColumn ? 1 : 0,
         hide: hideColumn,
     };
 };
@@ -270,6 +275,7 @@ export const relatedTemplateColDef = <Data extends any = EntityData>(
     hardcodedWidth: number | undefined,
     relatedTemplateId: string,
     relatedTemplateField: string,
+    isLastColumn: boolean,
     hideColumn = false,
     searchValue: string | undefined = undefined,
     editable: (data: any) => boolean = () => false,
@@ -289,7 +295,7 @@ export const relatedTemplateColDef = <Data extends any = EntityData>(
             ) : null,
         filter: 'agTextColumnFilter',
         width: hardcodedWidth,
-        flex: hardcodedWidth ? 0 : 1,
+        flex: isLastColumn ? 1 : 0,
         hide: hideColumn,
         editable: (params) => editable(params.data) ?? false,
         cellEditor: RelationshipRefCellEditor,
@@ -305,6 +311,7 @@ export const booleanColDef = <Data extends any = EntityData>(
     valueGetter: ValueGetterFunc<Data>,
     value: Partial<IEntitySingleProperty>,
     hardcodedWidth: number | undefined,
+    isLastColumn: boolean,
     hideColumn = false,
     hideValue = false,
     ignoreType = false,
@@ -337,7 +344,7 @@ export const booleanColDef = <Data extends any = EntityData>(
         filter: 'agSetColumnFilter',
         filterParams,
         width: hardcodedWidth,
-        flex: hardcodedWidth ? 0 : 1,
+        flex: isLastColumn ? 1 : 0,
         hide: hideColumn,
         editable: (params) => editable(params.data) ?? false,
         cellEditor: 'agCheckboxCellEditor',
@@ -350,6 +357,7 @@ export const enumColDef = <Data extends any = EntityData>(
     value: Partial<IEntitySingleProperty>,
     values: Array<string>,
     hardcodedWidth: number | undefined,
+    isLastColumn: boolean,
     enumColorOptions?: Record<string, string>,
     hideColumn = false,
     hideValue = false,
@@ -381,7 +389,7 @@ export const enumColDef = <Data extends any = EntityData>(
         filter: 'agSetColumnFilter',
         filterParams,
         width: hardcodedWidth,
-        flex: hardcodedWidth ? 0 : 1,
+        flex: isLastColumn ? 1 : 0,
         hide: hideColumn,
         editable: (params) => editable(params.data) ?? false,
         cellEditor: SelectCellEditor,
@@ -400,6 +408,7 @@ export const enumArrayColDef = <Data extends any = EntityData>(
     values: Array<string>,
     hardcodedWidth: number | undefined,
     rowHeight: number,
+    isLastColumn: boolean,
     enumColorOptions?: Record<string, string>,
     hideColumn = false,
     hideValue = false,
@@ -437,7 +446,7 @@ export const enumArrayColDef = <Data extends any = EntityData>(
         filter: 'agSetColumnFilter',
         filterParams,
         width: hardcodedWidth,
-        flex: hardcodedWidth ? 0 : 1,
+        flex: isLastColumn ? 1 : 0,
         hide: hideColumn,
         editable: (params) => editable(params.data) ?? false,
         cellEditor: SelectCellEditor,
@@ -454,6 +463,7 @@ export const userColDef = <Data extends any = IUser>(
     value: { title: string },
     values: Array<string>,
     hardcodedWidth: number | undefined,
+    isLastColumn: boolean,
     hideColumn = false,
 ): ColDef => {
     const filterParams: ISetFilterParams<Data, string | undefined> = {
@@ -485,7 +495,7 @@ export const userColDef = <Data extends any = IUser>(
         filter: 'agSetColumnFilter',
         filterParams,
         width: hardcodedWidth,
-        flex: hardcodedWidth ? 0 : 1,
+        flex: isLastColumn ? 1 : 0,
         hide: hideColumn,
     };
 };
@@ -497,6 +507,7 @@ export const userArrayColDef = <Data extends any = IEntity>(
     values: Array<string>,
     hardcodedWidth: number | undefined,
     rowHeight: number,
+    isLastColumn: boolean,
     hideColumn = false,
 ): ColDef => {
     const filterParams: ISetFilterParams<Data, string | undefined> = {
@@ -531,7 +542,7 @@ export const userArrayColDef = <Data extends any = IEntity>(
         filter: 'agSetColumnFilter',
         filterParams,
         width: hardcodedWidth,
-        flex: hardcodedWidth ? 0 : 1,
+        flex: isLastColumn ? 1 : 0,
         hide: hideColumn,
     };
 };
@@ -542,6 +553,7 @@ export const enumFilesColDef = <Data extends any = EntityData>(
     value: { title: string },
     hardcodedWidth: number | undefined,
     rowHeight: number,
+    isLastColumn: boolean,
     hideColumn = false,
     searchValue: string | undefined = undefined,
     entityFileIdsWithTexts: ISemanticSearchResult[string][string] | undefined = undefined,
@@ -575,7 +587,7 @@ export const enumFilesColDef = <Data extends any = EntityData>(
         filter: 'agSetColumnFilter',
         filterParams,
         width: hardcodedWidth,
-        flex: hardcodedWidth ? 0 : 1,
+        flex: isLastColumn ? 1 : 0,
         hide: hideColumn,
     };
 };
@@ -584,6 +596,7 @@ export const dateColDef = <Data extends any = EntityData>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
     value: Partial<IEntitySingleProperty>,
+    isLastColumn: boolean,
     hardcodedWidth?: number,
     hideColumn = false,
     hideValue = false,
@@ -639,7 +652,7 @@ export const dateColDef = <Data extends any = EntityData>(
         filterParams,
         minWidth: format === 'date-time' ? 220 : undefined,
         width: hardcodedWidth,
-        flex: hardcodedWidth ? 0 : 1,
+        flex: isLastColumn ? 1 : 0,
         hide: hideColumn,
         editable: (params) => editable(params.data) ?? false,
         cellEditor: DateTimeCellEditor,
@@ -656,6 +669,7 @@ interface TranslatedEnumColDefOptions<Data> {
     hideColumn?: boolean;
     hideValue?: boolean;
     searchValue?: string;
+    isLastColumn?: boolean;
 }
 
 export const translatedEnumColDef = <Data extends any = EntityData>({
@@ -667,6 +681,7 @@ export const translatedEnumColDef = <Data extends any = EntityData>({
     hideColumn = false,
     hideValue = false,
     searchValue = undefined,
+    isLastColumn = false,
 }: TranslatedEnumColDefOptions<Data>): ColDef => {
     const formatValue = (propertyValue: string | null | undefined) => (propertyValue ? valuesMap[propertyValue] : '');
 
@@ -690,7 +705,7 @@ export const translatedEnumColDef = <Data extends any = EntityData>({
         filter: 'agSetColumnFilter',
         filterParams,
         width: hardcodedWidth,
-        flex: hardcodedWidth ? 0 : 1,
+        flex: isLastColumn ? 1 : 0,
         hide: hideColumn,
     };
 };
