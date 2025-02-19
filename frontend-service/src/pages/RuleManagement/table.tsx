@@ -102,11 +102,17 @@ const getColumnDefs = (
             Object.values(actionTypeTranslations),
             400,
             defaultRowHeight,
+            false,
         ),
-        dateColDef<IRuleBreachPopulated>('createdAt', ({ data }) => data?.createdAt, {
-            title: i18next.t('ruleManagement.createdAt'),
-            format: 'date-time',
-        }),
+        dateColDef<IRuleBreachPopulated>(
+            'createdAt',
+            ({ data }) => data?.createdAt,
+            {
+                title: i18next.t('ruleManagement.createdAt'),
+                format: 'date-time',
+            },
+            true,
+        ),
     ];
 
     const requestColDef: ColDef<IRuleBreachRequestPopulated>[] = [
@@ -129,10 +135,15 @@ const getColumnDefs = (
             menuTabs: [],
             sortable: false,
         },
-        dateColDef<IRuleBreachRequestPopulated>('reviewedAt', ({ data }) => data?.reviewedAt, {
-            title: i18next.t('ruleManagement.reviewedAt'),
-            format: 'date-time',
-        }),
+        dateColDef<IRuleBreachRequestPopulated>(
+            'reviewedAt',
+            ({ data }) => data?.reviewedAt,
+            {
+                title: i18next.t('ruleManagement.reviewedAt'),
+                format: 'date-time',
+            },
+            true,
+        ),
     ];
 
     if (breachType === 'request') {
