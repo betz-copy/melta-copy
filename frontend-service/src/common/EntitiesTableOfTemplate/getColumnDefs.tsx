@@ -166,6 +166,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
                 defaultColumnWidths[property],
                 isLastColumn,
                 hideColumn,
+                ignoreType,
                 searchValue,
             );
         if (format === 'relationshipReference')

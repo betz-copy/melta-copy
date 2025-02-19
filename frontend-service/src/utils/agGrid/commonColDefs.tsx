@@ -251,6 +251,7 @@ export const locationColDef = <Data extends any = EntityData>(
     hardcodedWidth: number | undefined,
     isLastColumn: boolean,
     hideColumn = false,
+    ignoreType = false,
     searchValue: string | undefined = undefined,
 ): ColDef => {
     return {
@@ -259,6 +260,9 @@ export const locationColDef = <Data extends any = EntityData>(
         valueGetter,
         cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => {
             if (!props.value) return null;
+            const error = isPropertyInvalid(props, field, ignoreType);
+            
+            if (error) return errorColDef(props, error, value);
             return <OpenMap field={value.title!} entityProperties={entityGetter(props as any)} entityTemplate={template} searchValue={searchValue} />;
         },
         filter: 'agTextColumnFilter',

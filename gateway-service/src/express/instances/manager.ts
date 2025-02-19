@@ -247,7 +247,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
     handleLoadEntitiesErrors = (error: any, failedEntities: IFailedEntity[], entity: IEntity, allBrokenRulesEntities: IBrokenRuleEntity[]) => {
         if (error instanceof AxiosError) {
-            if (!error.response) throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, 'no error.response in axiosError', error);
+            if (!error.response) throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, 'no error. response in axiosError', error);
 
             const { data } = error.response;
 
@@ -352,7 +352,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
             }
         };
 
-        if (Object.keys(serialStarters).length > 0) for (const entity of entities!) handleLoadEntities(entity);
+        if (Object.keys(serialStarters).length > 0) for (const entity of entities!) await handleLoadEntities(entity);
         else await Promise.all(entities!.map(async (entity) => handleLoadEntities(entity)));
 
         succeededEntities.push(...results);

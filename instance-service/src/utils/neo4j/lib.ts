@@ -8,6 +8,7 @@ import { EntityManager } from '../../express/entities/manager';
 import { IFormulaCauses } from '../../express/rules/interfaces/formulaWithCauses';
 import { ValidationError } from '../../express/error';
 import { SplitBy } from '../types';
+import { ActionErrors } from '../../express/bulkActions/interface';
 
 const { polygonPrefix, polygonSuffix, srid } = config.map;
 
@@ -116,10 +117,10 @@ type ResponseType = 'singleResponse' | 'singleResponseNotNullable' | 'multipleRe
 type Response<ResType extends ResponseType, Data> = ResType extends 'singleResponse'
     ? Data | null
     : ResType extends 'singleResponseNotNullable'
-    ? Data
-    : ResType extends 'multipleResponses'
-    ? Data[]
-    : never;
+      ? Data
+      : ResType extends 'multipleResponses'
+        ? Data[]
+        : never;
 
 const nodeToEntity = (node: Node): IEntity => {
     const entity = {
@@ -336,23 +337,45 @@ export const generateDefaultProperties = () => {
     };
 };
 
-const getLocationPoint = (pointString: string, splitBy: SplitBy) => {
+const getLocationPoint = (pointString: string, splitBy: SplitBy, entityProperties: Record<string, any>, key: string) => {
     const [longitude, latitude] = pointString.split(splitBy).map(Number);
     if (Number.isNaN(longitude) || Number.isNaN(latitude)) {
-        throw new ValidationError('Invalid format. Expected format: "number, number".');
+        throw new ValidationError('Invalid format. Expected format: "number, number".', {
+            properties: entityProperties,
+            errors: {
+                type: ActionErrors.validation,
+                metadata: {
+                    message: 'must be location, Invalid format. Expected format: "number, number".',
+                    path: `/${key}`,
+                    schemaPath: `#/properties/${key}/format`,
+                    params: { type: 'string', format: 'location' },
+                },
+            },
+        });
     }
 
     return new neo4j.types.Point(srid, longitude, latitude);
 };
 
-export const getNeo4jLocation = (locationString: string) => {
-    if (!locationString.startsWith('POLYGON')) return getLocationPoint(locationString, SplitBy.comma);
+export const getNeo4jLocation = (locationString: string, entityProperties: Record<string, any>, key: string) => {
+    if (!locationString.startsWith('POLYGON')) return getLocationPoint(locationString, SplitBy.comma, entityProperties, key);
 
     if (!locationString.startsWith(polygonPrefix) || !locationString.endsWith(polygonSuffix)) {
-        throw new ValidationError('Invalid format. Expected polygon format: POLYGON((number number, number number, ...))');
+        throw new ValidationError('Invalid format. Expected format: "number, number".', {
+            properties: entityProperties,
+            errors: {
+                type: ActionErrors.validation,
+                metadata: {
+                    message: 'must be location, Invalid format. Expected polygon format: POLYGON((number number, number number, ...))',
+                    path: `/${key}`,
+                    schemaPath: `#/properties/${key}/format`,
+                    params: { type: 'string', format: 'location' },
+                },
+            },
+        });
     }
 
     const coordsStr = locationString.slice(polygonPrefix.length, -polygonSuffix.length);
 
-    return coordsStr.split(SplitBy.comma).map((stringedLocation: string) => getLocationPoint(stringedLocation, SplitBy.space));
+    return coordsStr.split(SplitBy.comma).map((stringedLocation: string) => getLocationPoint(stringedLocation, SplitBy.space, entityProperties, key));
 };
