@@ -17,6 +17,7 @@ export enum WorkspaceTypes {
 export interface IMetadata {
     shouldNavigateToEntityPage: boolean;
     isDrawerOpen: boolean;
+    isSemanticOn: boolean;
     agGrid: {
         rowCount: number;
         defaultExpandedRowCount: number;

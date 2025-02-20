@@ -23,10 +23,9 @@ const validateFlowHeaders = async (req: Request, _res: Response, next: NextFunct
         }
 
         const userT = userMail.substring(0, userMail.indexOf('@'));
-
         const targetUser = await UserService.searchUsers({ search: userT, limit: 1 });
 
-        req.user = { id: targetUser.users[0]._id };
+        req.user = { id: targetUser.users[0]?._id };
 
         next();
     } catch (error) {
