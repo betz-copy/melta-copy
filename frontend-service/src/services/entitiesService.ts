@@ -83,8 +83,10 @@ export const getRelationshipInstancesCountByTemplateIdRequest = async (templateI
 
 export const createEntityRequest = async (entity: EntityWizardValues, ignoredRules?: IRuleBreach['brokenRules']) => {
     const formData = new FormData();
-
+    const templateProperties = entity.template.properties.properties;
     const filesToUpload: any = [];
+    const fileUploadPromises: Promise<[string, File]>[] = [];
+
     Object.entries(entity.attachmentsProperties).forEach(([key, value]: [string, any]) => {
         if (Array.isArray(value)) {
             value.forEach((file, index) => {
@@ -98,15 +100,27 @@ export const createEntityRequest = async (entity: EntityWizardValues, ignoredRul
             filesToUpload.push([`${key}`, value]);
         }
     });
+
+    Object.entries(entity.properties).forEach(([key, value]: [string, any]) => {
+        if (templateProperties[key]?.format === 'signature') {
+            fileUploadPromises.push(urlToFile(value, templateProperties[key]!.title).then((file) => [key, file]));
+        }
+    });
+
+    filesToUpload.push(...(await Promise.all(fileUploadPromises)));
+
     filesToUpload.forEach(([key, value]) => {
         formData.append(key, value as Blob);
     });
     formData.append(
         'properties',
         JSON.stringify(
-            mapValues(entity.properties, (property, key) =>
-                entity.template.properties.properties[key]?.format === 'relationshipReference' ? property?.properties._id : property,
-            ),
+            mapValues(entity.properties, (property, key) => {
+                const format = entity.template.properties.properties[key]?.format;
+
+                if (format === 'signature') return undefined;
+                return format === 'relationshipReference' ? property?.properties._id : property;
+            }),
         ),
     );
     formData.append('templateId', entity.template._id);
@@ -129,7 +143,6 @@ export const updateEntityRequestForMultiple = async (
     newEntityData: EntityWizardValues,
     ignoredRules?: IRuleBreach['brokenRules'],
 ) => {
-    console.log({ newEntityData });
     const isUUID = (str) => /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{8}/.test(str);
     const formData = new FormData();
 
@@ -197,10 +210,7 @@ export const updateEntityRequestForMultiple = async (
             mapValues(newEntityData.properties, (property, key) => {
                 const format = newEntityData.template.properties.properties[key]?.format;
 
-                if (format === 'signature' && !isUUID(property)) {
-                    return undefined;
-                }
-
+                if (format === 'signature' && !isUUID(property)) return undefined;
                 return format === 'relationshipReference' ? property?.properties._id : property;
             }),
         ),

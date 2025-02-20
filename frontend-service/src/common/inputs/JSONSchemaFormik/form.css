@@ -15,9 +15,9 @@
     max-width: 50% !important;
 }
 
-.has-text-area-child {
-    width: 100%;
-    max-width: 100%;
+.has-unique-field-child {
+    width: '100%';
+    max-width: '100%';
     direction: rtl;
 }
 
