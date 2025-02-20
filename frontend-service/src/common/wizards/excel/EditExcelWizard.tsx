@@ -8,7 +8,7 @@ import { Grid } from '@mui/material';
 import { AxiosError } from 'axios';
 import { StepType, Wizard, WizardBaseType } from '..';
 import OpenPreview from '../../FilePreview/OpenPreview';
-import { editExcelRequest, editReadExcelRequest, exportEntitiesRequest } from '../../../services/entitiesService';
+import { editManyEntitiesByExcelRequest, getChangedEntitiesFromExcelRequest, exportEntitiesRequest } from '../../../services/entitiesService';
 import { attachmentPropertiesBaseSchema } from '../entityTemplate/AddFields';
 import ActionOnEntityWithRuleBreachDialog from '../../../pages/Entity/components/ActionOnEntityWithRuleBreachDialog';
 import { ActionTypes } from '../../../interfaces/ruleBreaches/actionMetadata';
@@ -16,7 +16,7 @@ import { ICreateOrUpdateWithRuleBreachDialogState } from '../../dialogs/entity/C
 import { environment } from '../../../globals';
 import { UploadExcel } from './excelSteps/UploadExcel';
 import { LoadEntitiesTables } from './excelSteps/LoadEntitiesTables';
-import { EntitiesWizardValues, ISteps, StepStatus } from '../../../interfaces/excel';
+import { EntitiesWizardValues, IExcelSteps, ExcelStepStatus } from '../../../interfaces/excel';
 import { IEntityWithIgnoredRules } from '../../../interfaces/entities';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { groupBrokenRulesByEntity } from '../../../utils/loadEntities';
@@ -34,8 +34,8 @@ const EditExcelWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
     const workspace = useWorkspaceStore((state) => state.workspace);
     const { entitiesFileLimit } = workspace.metadata.excel;
 
-    const [stepsData, setStepsData] = useState<ISteps>({
-        status: StepStatus.uploadExcel,
+    const [stepsData, setStepsData] = useState<IExcelSteps>({
+        status: ExcelStepStatus.uploadExcel,
         data: { succeededEntities: [], failedEntities: [] },
         entities: [],
     });
@@ -48,7 +48,7 @@ const EditExcelWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
     const onClose = () => {
         handleClose();
         setStepsData({
-            status: StepStatus.uploadExcel,
+            status: ExcelStepStatus.uploadExcel,
             entities: [],
             data: { succeededEntities: [], failedEntities: [] },
         });
@@ -56,12 +56,12 @@ const EditExcelWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
 
     const { isLoading: isLoadingReadExcel, mutateAsync: readExcel } = useMutation(
         async (file: Record<string, File>) => {
-            return editReadExcelRequest(template!._id, file);
+            return getChangedEntitiesFromExcelRequest(template!._id, file);
         },
         {
             async onSuccess(data) {
                 const { entities, failedEntities } = data;
-                setStepsData((prev) => ({ ...prev, status: StepStatus.previewExcelRows, entities, data: { failedEntities, succeededEntities: [] } }));
+                setStepsData((prev) => ({ ...prev, status: ExcelStepStatus.previewExcelRows, entities, data: { failedEntities, succeededEntities: [] } }));
 
                 return data;
             },
@@ -77,11 +77,11 @@ const EditExcelWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
 
     const { isLoading: isLoadingExcelEntities, mutateAsync: loadEntities } = useMutation(
         async (entities: IEntityWithIgnoredRules[]) => {
-            return editExcelRequest(template!, entities);
+            return editManyEntitiesByExcelRequest(template!, entities);
         },
         {
             async onSuccess(data) {
-                setStepsData((prev) => ({ ...prev, status: StepStatus.excelUploadResult, data }));
+                setStepsData((prev) => ({ ...prev, status: ExcelStepStatus.excelUploadResult, data }));
                 return data;
             },
             onError() {
@@ -93,7 +93,7 @@ const EditExcelWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
 
     const { isLoading: isLoadingRules, mutateAsync: loadRules } = useMutation(
         async (entities: IEntityWithIgnoredRules[]) => {
-            return editExcelRequest(template!, entities);
+            return editManyEntitiesByExcelRequest(template!, entities);
         },
         {
             async onSuccess(data) {
@@ -172,14 +172,14 @@ const EditExcelWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
                     isLoading={isLoadingReadExcel}
                 />
             ),
-            validationSchema: stepsData.status === StepStatus.uploadExcel ? attachmentPropertiesBaseSchema : {},
+            validationSchema: stepsData.status === ExcelStepStatus.uploadExcel ? attachmentPropertiesBaseSchema : {},
             stepperActions: {
-                disable: stepsData.status === StepStatus.uploadExcel ? 'all' : undefined,
+                disable: stepsData.status === ExcelStepStatus.uploadExcel ? 'all' : undefined,
                 back: {
                     onClick: () => {
-                        if (stepsData.status === StepStatus.previewExcelRows) {
+                        if (stepsData.status === ExcelStepStatus.previewExcelRows) {
                             setStepsData({
-                                status: StepStatus.uploadExcel,
+                                status: ExcelStepStatus.uploadExcel,
                                 entities: [],
                                 data: { succeededEntities: [], failedEntities: [] },
                             });
@@ -189,8 +189,8 @@ const EditExcelWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
                 next: {
                     text: i18next.t('wizard.entity.loadEntities.loadEntities'),
                     onClick: async () => {
-                        if (stepsData.status === StepStatus.previewExcelRows) {
-                            setStepsData((prev) => ({ ...prev, status: StepStatus.excelUploadResult }));
+                        if (stepsData.status === ExcelStepStatus.previewExcelRows) {
+                            setStepsData((prev) => ({ ...prev, status: ExcelStepStatus.excelUploadResult }));
                             const data = await loadEntities(stepsData.entities!);
                             const hasFailedEntities = data.failedEntities.length > 0;
                             const hasBrokenRulesEntities = !!data.brokenRulesEntities?.entities?.length;
@@ -263,7 +263,7 @@ const EditExcelWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
                     handleClose={() => {
                         setCreateOrUpdateWithRuleBreachDialogState({ isOpen: false });
                         setStepsData({
-                            status: StepStatus.uploadExcel,
+                            status: ExcelStepStatus.uploadExcel,
                             entities: [],
                             data: { succeededEntities: [], failedEntities: [] },
                         });

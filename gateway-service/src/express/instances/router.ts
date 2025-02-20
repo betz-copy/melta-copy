@@ -92,7 +92,7 @@ InstancesRouter.post(
 );
 
 InstancesRouter.post(
-    '/entities/editReadExcel',
+    '/entities/getChangedEntitiesFromExcel',
     busboyMiddleware,
     InstancesValidatorMiddleware.validateUserCanCreateEntityInstance,
     ValidateRequest(loadEntitiesSchema),
@@ -100,11 +100,11 @@ InstancesRouter.post(
 );
 
 InstancesRouter.post(
-    '/entities/editExcel',
+    '/entities/editManyEntitiesByExcel',
     busboyMiddleware,
     InstancesValidatorMiddleware.validateUserCanCreateEntityInstance,
     ValidateRequest(editExcelSchema),
-    InstancesControllerMiddleware.editExcel,
+    InstancesControllerMiddleware.editManyEntitiesByExcel,
 );
 
 InstancesRouter.get('/entities/:id', InstancesValidatorMiddleware.validateUserCanReadEntityInstance, InstanceManagerProxy);

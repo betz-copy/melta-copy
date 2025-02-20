@@ -62,7 +62,9 @@ export const isIncludedColumn = (propertyTemplate: IEntitySingleProperty) => {
     const isRelationshipRef = propertyTemplate.format === 'relationshipReference' || propertyTemplate.relationshipReference;
     const isFile = propertyTemplate.format === 'fileId' || (propertyTemplate.type === 'array' && propertyTemplate.items?.format === 'fileId');
     const isSerialNumber = propertyTemplate.type === 'number' && propertyTemplate.serialCurrent;
-    return !isRelationshipRef && !isFile && !isSerialNumber;
+    const isUser = propertyTemplate.format === 'user';
+    const isUsers = propertyTemplate.items?.format === 'user';
+    return !isRelationshipRef && !isFile && !isSerialNumber && !isUser && !isUsers;
 };
 
 type IFailedProperties = {
@@ -126,9 +128,7 @@ const readExcelFile = async (
     const isEditMode = oldEntities.length > 0;
     const entities: IEntityWithIgnoredRules[] = [];
     const columns = Object.fromEntries(
-        Object.entries(template.properties.properties).filter(([_propertyKey, propertyTemplate]) =>
-            isEditMode ? true : isIncludedColumn(propertyTemplate),
-        ),
+        Object.entries(template.properties.properties).filter(([_propertyKey, propertyTemplate]) => isEditMode || isIncludedColumn(propertyTemplate)),
     );
 
     const identifier = Object.entries(template.properties.properties).find(([_key, value]) => value.identifier === true)?.[0];
@@ -282,7 +282,7 @@ const updateAction = (actions: IActionPopulated[], _id: string) => {
     });
 };
 
-const updateIdOfBrokenRules = async (allBrokenRulesEntities: IBrokenRuleEntity[]) => {
+const convertIdOfBrokenRules = async (allBrokenRulesEntities: IBrokenRuleEntity[]) => {
     return allBrokenRulesEntities.reduce<IBrokenRuleEntity>(
         (accumulator, current, index) => {
             const entityId = `$${index}._id`;
@@ -307,4 +307,4 @@ const updateIdOfBrokenRules = async (allBrokenRulesEntities: IBrokenRuleEntity[]
     );
 };
 
-export { readExcelFile, getValidationErrorEntities, updateIdOfBrokenRules };
+export { readExcelFile, getValidationErrorEntities, convertIdOfBrokenRules };

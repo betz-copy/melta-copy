@@ -42,13 +42,13 @@ export interface ITablesResults {
     brokenRulesEntities?: IBrokenRuleEntity;
 }
 
-export enum StepStatus {
+export enum ExcelStepStatus {
     uploadExcel = 'uploadExcel',
     previewExcelRows = 'previewExcelRows',
     excelUploadResult = 'excelUploadResult',
 }
-export interface ISteps {
-    status: StepStatus;
+export interface IExcelSteps {
+    status: ExcelStepStatus;
     files?: Record<string, File>;
     data: ITablesResults;
     entities?: IEntityWithIgnoredRules[];

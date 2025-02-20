@@ -250,6 +250,12 @@ const styleAWorksheet = (
                     if (typeof cell.value === 'boolean') {
                         cell.value = cell.value ? excelConfig.TRUE_TO_HEBREW : excelConfig.FALSE_TO_HEBREW;
                     }
+                    if (value.format === 'user') {
+                        cell.value = JSON.parse(cell.value as string).fullName;
+                    }
+                    if (value.items?.format === 'user') {
+                        cell.value = (cell.value as any).map((stringUser) => JSON.parse(stringUser).fullName).join(', ');
+                    }
                     // Check if value is date
                     if (cell.value && typeof cell.value === 'string') {
                         const cellValue = String(cell.value);

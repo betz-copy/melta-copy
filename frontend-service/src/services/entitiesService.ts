@@ -56,7 +56,7 @@ export const loadEntitiesRequest = async (
     return data;
 };
 
-export const editReadExcelRequest = async (templateId: string, file: Record<string, File>): Promise<IEditReadExcel> => {
+export const getChangedEntitiesFromExcelRequest = async (templateId: string, file: Record<string, File>): Promise<IEditReadExcel> => {
     const formData = new FormData();
 
     Object.entries(file).forEach(([key, value]) => {
@@ -64,12 +64,12 @@ export const editReadExcelRequest = async (templateId: string, file: Record<stri
     });
     formData.append('templateId', templateId);
 
-    const { data } = await axios.post(`${entities}/editReadExcel`, formData);
+    const { data } = await axios.post(`${entities}/getChangedEntitiesFromExcel`, formData);
 
     return data;
 };
 
-export const editExcelRequest = async (template: IMongoEntityTemplatePopulated, entitiesToUpdate: IEntityWithIgnoredRules[]): Promise<ITablesResults> => {    
+export const editManyEntitiesByExcelRequest = async (template: IMongoEntityTemplatePopulated, entitiesToUpdate: IEntityWithIgnoredRules[]): Promise<ITablesResults> => {    
     const formData = new FormData();
 
     formData.append('templateId', template._id);
@@ -83,7 +83,7 @@ export const editExcelRequest = async (template: IMongoEntityTemplatePopulated, 
     }));
     formData.append('entities', JSON.stringify(entitiesArray));
 
-    const { data } = await axios.post(`${entities}/editExcel`, formData);
+    const { data } = await axios.post(`${entities}/editManyEntitiesByExcel`, formData);
 
     return data;
 };

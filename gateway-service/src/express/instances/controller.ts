@@ -36,11 +36,11 @@ export class InstancesController extends DefaultController<InstancesManager> {
     }
 
     async editReadExcel(req: Request, res: Response) {
-        res.json(await this.manager.editReadExcel(req.body.templateId, req.file!));
+        res.json(await this.manager.getChangedEntitiesFromExcel(req.body.templateId, req.file!));
     }
 
-    async editExcel(req: Request, res: Response) {
-        res.json(await this.manager.editExcel(req.body.entities, req.user!.id));
+    async editManyEntitiesByExcel(req: Request, res: Response) {
+        res.json(await this.manager.editManyEntitiesByExcel(req.body.entities, req.user!.id));
     }
 
     async updateEntityInstance(req: Request, res: Response) {

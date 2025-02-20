@@ -2,18 +2,16 @@
 /* eslint-disable no-continue */
 /* eslint-disable no-plusplus */
 /* eslint-disable no-await-in-loop */
-import axios, { AxiosError } from 'axios';
+import axios from 'axios';
 import { stream } from 'exceljs';
 import { promises as fsp } from 'fs';
 import { Dictionary } from 'lodash';
 import groupBy from 'lodash.groupby';
 import { menash } from 'menashmq';
-import { StatusCodes } from 'http-status-codes';
 import config from '../../config';
 import { InstancesService } from '../../externalServices/instanceService';
 import {
     ISearchEntitiesByLocationBody,
-    IBrokenRulesError,
     ICountSearchResult,
     IDeleteBody,
     IEntity,
@@ -27,7 +25,6 @@ import {
 } from '../../externalServices/instanceService/interfaces/entities';
 import { IRelationship } from '../../externalServices/instanceService/interfaces/relationships';
 import {
-    ActionErrors,
     ActionTypes,
     IAction,
     IBrokenRule,
@@ -48,7 +45,7 @@ import { createWorkbook, createWorksheet, styleAWorksheet } from '../../utils/ex
 import DefaultManagerProxy from '../../utils/express/manager';
 import logger from '../../utils/logger/logsLogger';
 import { objectFilter } from '../../utils/object';
-import { BadRequestError, ServiceError } from '../error';
+import { BadRequestError } from '../error';
 import RuleBreachesManager from '../ruleBreaches/manager';
 import { patchDocumentAsStream } from './documentExport';
 import { IExportEntitiesBody } from './interfaces';
@@ -58,7 +55,8 @@ import { WorkspaceService } from '../workspaces/service';
 import { UploadedFile } from '../../utils/busboy/interface';
 import { createTextsFromEntitiesWithFiles, formatEntitiesBulkSearch, sortEntities } from '../../utils/semantic';
 import { ISemanticSearchResult } from '../../externalServices/semanticSearch/interface';
-import { getValidationErrorEntities, readExcelFile, updateIdOfBrokenRules } from '../../utils/excel/getFunctions';
+import { convertIdOfBrokenRules, readExcelFile } from '../../utils/excel/getFunctions';
+import { generateSerialNumbers, getAllEntitiesFromExcel, getSerialStarters, handleExcelErrors } from '../../utils/excel';
 
 const { errorCodes, rabbit, ruleBreachService } = config;
 
@@ -187,6 +185,26 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         return { ...searchResult, entities: sortEntities(searchResult.entities, rerank, texts) };
     }
 
+    async getAllTemplateEntities(templateId: string) {
+        const { searchEntitiesChunkSize } = config.service;
+        const templateCount = await this.getEntitiesCountByTemplates(true, {
+            templateIds: [templateId],
+        });
+
+        const { count, entitiesWithFiles } = templateCount?.[0] ?? { count: 0, entitiesWithFiles: {} };
+        const entities: IEntityWithDirectRelationships[] = [];
+
+        for (let skip = 0; (count ?? 0) - skip > 0; skip += searchEntitiesChunkSize) {
+            const { entities: chunk } = await this.service.searchEntitiesOfTemplateRequest(templateId, {
+                skip,
+                limit: searchEntitiesChunkSize,
+                entityIdsToInclude: Object.keys(entitiesWithFiles ?? {}),
+            });
+            entities.push(...chunk);
+        }
+        return entities;
+    }
+
     private async createWorksheet(
         workbook: stream.xlsx.WorkbookWriter,
         template: IMongoEntityTemplatePopulated,
@@ -237,62 +255,6 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         }
     }
 
-    getSerialStarters = (template: IMongoEntityTemplatePopulated): Record<string, number> => {
-        return Object.entries(template.properties.properties)
-            .filter(([_key, value]) => value.type === 'number' && value.serialStarter !== undefined)
-            .reduce((acc, [key, value]) => {
-                acc[key] = value.serialCurrent || 0;
-                return acc;
-            }, {});
-    };
-
-    handleLoadEntitiesErrors = (error: any, failedEntities: IFailedEntity[], entity: IEntity, allBrokenRulesEntities: IBrokenRuleEntity[]) => {
-        if (error instanceof AxiosError) {
-            if (!error.response) throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, 'no error.response in axiosError', error);
-
-            const { data } = error.response;
-
-            if (data.metadata && data.metadata.errorCode === errorCodes.failedConstraintsValidation) {
-                const { constraint } = data.metadata;
-                switch (constraint.type) {
-                    case ActionErrors.unique:
-                        failedEntities.push({
-                            properties: entity.properties,
-                            errors: [{ type: ActionErrors.unique, metadata: constraint }],
-                        });
-                        break;
-                    case ActionErrors.required:
-                        failedEntities.push({
-                            properties: entity.properties,
-                            errors: [{ type: ActionErrors.required, metadata: constraint }],
-                        });
-                        break;
-                    default:
-                        break;
-                }
-            }
-            if (data.type === errorCodes.templateValidationError) getValidationErrorEntities(error as AxiosError, failedEntities);
-        } else if ((error as IBrokenRulesError).metadata.errorCode === errorCodes.ruleBlock) {
-            allBrokenRulesEntities.push({
-                brokenRules: error.metadata.brokenRules,
-                rawBrokenRules: error.metadata.rawBrokenRules,
-                actions: error.metadata.actions ?? [
-                    {
-                        actionType: ActionTypes.CreateEntity,
-                        actionMetadata: entity,
-                    },
-                ],
-                rawActions: error.metadata.rawActions ?? [
-                    {
-                        actionType: ActionTypes.CreateEntity,
-                        actionMetadata: entity,
-                    },
-                ],
-                entities: [{ properties: entity.properties }],
-            });
-        }
-    };
-
     updateTemplateCurrentNumbers = async (
         template: IMongoEntityTemplatePopulated,
         serialStarters: Record<string, number>,
@@ -323,64 +285,40 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
         if (files && !entities) {
             const workspace = await WorkspaceService.getById(this.workspaceId);
-            const workspaceFilesLimit = workspace.metadata?.excel?.filesLimit;
-
-            const effectiveFilesLimit = workspaceFilesLimit ?? config.loadExcel.filesLimit;
-            if (files.length > effectiveFilesLimit) throw new BadRequestError(`files limit: more than ${effectiveFilesLimit} files`, {});
-
-            const fileEntities = await readExcelFile(files, template, failedEntities, workspace.metadata?.excel?.entitiesFileLimit);
-            entities = fileEntities;
+            entities = await getAllEntitiesFromExcel(files, template, failedEntities, workspace);
         }
 
-        const serialStarters = this.getSerialStarters(template);
-        const generateSerialNumbers = (index: number) =>
-            Object.fromEntries(Object.entries(serialStarters).map(([key, value]) => [key, value + index]));
-
+        const serialStarters = getSerialStarters(template);
         const succeededEntities: IEntity[] = [];
         const allBrokenRulesEntities: IBrokenRuleEntity[] = [];
 
-        const handleLoadEntities = async (entityWithIgnoredRules: IEntityWithIgnoredRules) => {
+        const handleCreateEntity = async (entityWithIgnoredRules: IEntityWithIgnoredRules) => {
             const { ignoredRules, ...entity } = entityWithIgnoredRules;
             try {
-                const serialNumbers = generateSerialNumbers(succeededEntities.length);
+                const serialNumbers = generateSerialNumbers(succeededEntities.length, serialStarters);
                 const result = await this.createEntityInstance(entity, [], ignoredRules, userId, serialNumbers);
 
                 succeededEntities.push(result);
             } catch (error) {
-                this.handleLoadEntitiesErrors(error, failedEntities, entity, allBrokenRulesEntities);
+                handleExcelErrors(error, failedEntities, entity, allBrokenRulesEntities);
             }
         };
 
-        if (Object.keys(serialStarters).length > 0) for (const entity of entities!) await handleLoadEntities(entity);
-        else await Promise.all(entities!.map(async (entity) => handleLoadEntities(entity)));
+        if (Object.keys(serialStarters).length > 0) for (const entity of entities!) await handleCreateEntity(entity);
+        else await Promise.all(entities!.map(async (entity) => handleCreateEntity(entity)));
 
-        const brokenRulesEntities = await updateIdOfBrokenRules(allBrokenRulesEntities);
+        const brokenRulesEntities = await convertIdOfBrokenRules(allBrokenRulesEntities);
         if (serialStarters) await this.updateTemplateCurrentNumbers(template, serialStarters, succeededEntities.length);
 
         return { succeededEntities, failedEntities, brokenRulesEntities };
     }
 
-    async editReadExcel(templateId: string, file: UploadedFile) {
+    async getChangedEntitiesFromExcel(templateId: string, file: UploadedFile) {
         const template = await this.entityTemplateService.getEntityTemplateById(templateId);
         const failedEntities: IFailedEntity[] = [];
         const workspace = await WorkspaceService.getById(this.workspaceId);
 
-        const { searchEntitiesChunkSize } = config.service;
-        const templateCount = await this.getEntitiesCountByTemplates(true, {
-            templateIds: [template._id],
-        });
-
-        const { count, entitiesWithFiles } = templateCount?.[0] ?? { count: 0, entitiesWithFiles: {} };
-        const oldEntities: IEntityWithDirectRelationships[] = [];
-
-        for (let skip = 0; (count ?? 0) - skip > 0; skip += searchEntitiesChunkSize) {
-            const { entities: chunk } = await this.service.searchEntitiesOfTemplateRequest(template._id, {
-                skip,
-                limit: searchEntitiesChunkSize,
-                entityIdsToInclude: Object.keys(entitiesWithFiles ?? {}),
-            });
-            oldEntities.push(...chunk);
-        }
+        const oldEntities = await this.getAllTemplateEntities(template._id);
 
         const entitiesWithIgnoresRules = await readExcelFile(
             [file],
@@ -389,33 +327,35 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
             workspace.metadata?.excel?.entitiesFileLimit,
             oldEntities,
         );
-        const entities = entitiesWithIgnoresRules.map((entityWithIgnoresRules) => ({
-            templateId: entityWithIgnoresRules.templateId,
-            properties: entityWithIgnoresRules.properties,
+
+        const entities = entitiesWithIgnoresRules.map(({ properties }) => ({
+            templateId,
+            properties,
         }));
+
         return { entities, failedEntities };
     }
 
-    async editExcel(entities: IEntityWithIgnoredRules[], userId: string) {
+    async editManyEntitiesByExcel(entities: IEntityWithIgnoredRules[], userId: string) {
         const failedEntities: IFailedEntity[] = [];
         const succeededEntities: IEntity[] = [];
         const allBrokenRulesEntities: IBrokenRuleEntity[] = [];
         const results: IEntity[] = [];
 
-        const handleLoadEntities = async (entity: IEntityWithIgnoredRules) => {
+        const handleUpdateEntity = async (entity: IEntityWithIgnoredRules) => {
             try {
                 const result = await this.updateEntityInstance(entity.properties._id, entity, [], entity.ignoredRules || [], userId);
                 results.push(result);
             } catch (error) {
-                this.handleLoadEntitiesErrors(error, failedEntities, entity, allBrokenRulesEntities);
+                handleExcelErrors(error, failedEntities, entity, allBrokenRulesEntities);
             }
         };
 
-        await Promise.all(entities!.map(async (entity) => handleLoadEntities(entity)));
+        await Promise.all(entities!.map(async (entity) => handleUpdateEntity(entity)));
 
         succeededEntities.push(...results);
 
-        const brokenRulesEntities = await updateIdOfBrokenRules(allBrokenRulesEntities);
+        const brokenRulesEntities = await convertIdOfBrokenRules(allBrokenRulesEntities);
 
         return { succeededEntities, failedEntities, brokenRulesEntities };
     }

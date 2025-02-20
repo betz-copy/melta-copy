@@ -80,7 +80,7 @@ const FilesInput: React.FC<FilesInputProps> = ({
         border: isDragActive ? `2px dashed ${theme.palette.primary.main}` : '2px dashed #CCCFE5',
         BorderRadius: '10px',
         padding: '10px',
-        height: '200px',
+        height: errorText? '200px': '100%',
         display: 'flex',
         justifyContext: 'center',
         alignItems: 'center',

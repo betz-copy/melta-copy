@@ -10,7 +10,7 @@ import EntitiesTableOfTemplate from '../../../EntitiesTableOfTemplate';
 import { InstanceFileInput } from '../../../inputs/InstanceFilesInput/InstanceFileInput';
 import { useReadExcel } from '../../../../utils/hooks/useReadExcel';
 import { useWorkspaceStore } from '../../../../stores/workspace';
-import { EntitiesWizardValues, IEditReadExcel, ISteps, StepStatus } from '../../../../interfaces/excel';
+import { EntitiesWizardValues, IEditReadExcel, IExcelSteps, ExcelStepStatus } from '../../../../interfaces/excel';
 
 const {
     loadExcel: { excelExtension, acceptedFilesTypes },
@@ -19,8 +19,8 @@ const {
 export const UploadExcel: React.FC<{
     formikProps: FormikProps<EntitiesWizardValues>;
     template: IMongoEntityTemplatePopulated;
-    stepsData: ISteps;
-    setStepsData: React.Dispatch<React.SetStateAction<ISteps>>;
+    stepsData: IExcelSteps;
+    setStepsData: React.Dispatch<React.SetStateAction<IExcelSteps>>;
     onUploadExcel?: (file: Record<string, File>) => Promise<IEditReadExcel>;
     isLoading?: boolean;
 }> = ({ formikProps, template, stepsData, setStepsData, onUploadExcel, isLoading }) => {
@@ -36,7 +36,7 @@ export const UploadExcel: React.FC<{
 
     if (isLoading) return <CircularProgress size={20} />;
 
-    if (stepsData.status === StepStatus.uploadExcel)
+    if (stepsData.status === ExcelStepStatus.uploadExcel)
         return (
             <>
                 <Grid marginTop="10px" marginLeft="20px">
@@ -75,7 +75,7 @@ export const UploadExcel: React.FC<{
             </>
         );
 
-    if (stepsData.status === StepStatus.excelUploadResult)
+    if (stepsData.status === ExcelStepStatus.excelUploadResult)
         return (
             <OpenPreview
                 fileId={{ name: `${i18next.t('entitiesTableOfTemplate.downloadOneTableTitle')}${excelExtension}` } as File}
