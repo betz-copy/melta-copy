@@ -342,15 +342,17 @@ const getLocationPoint = (pointString: string, splitBy: SplitBy, entityPropertie
     if (Number.isNaN(longitude) || Number.isNaN(latitude)) {
         throw new ValidationError('Invalid format. Expected format: "number, number".', {
             properties: entityProperties,
-            errors: {
-                type: ActionErrors.validation,
-                metadata: {
-                    message: 'must be location, Invalid format. Expected format: "number, number".',
-                    path: `/${key}`,
-                    schemaPath: `#/properties/${key}/format`,
-                    params: { type: 'string', format: 'location' },
+            errors: [
+                {
+                    type: ActionErrors.validation,
+                    metadata: {
+                        message: 'must be location, Invalid format. Expected format: "number, number".',
+                        path: `/${key}`,
+                        schemaPath: `#/properties/${key}/format`,
+                        params: { type: 'string', format: 'location' },
+                    },
                 },
-            },
+            ],
         });
     }
 
@@ -363,15 +365,17 @@ export const getNeo4jLocation = (locationString: string, entityProperties: Recor
     if (!locationString.startsWith(polygonPrefix) || !locationString.endsWith(polygonSuffix)) {
         throw new ValidationError('Invalid format. Expected format: "number, number".', {
             properties: entityProperties,
-            errors: {
-                type: ActionErrors.validation,
-                metadata: {
-                    message: 'must be location, Invalid format. Expected polygon format: POLYGON((number number, number number, ...))',
-                    path: `/${key}`,
-                    schemaPath: `#/properties/${key}/format`,
-                    params: { type: 'string', format: 'location' },
+            errors: [
+                {
+                    type: ActionErrors.validation,
+                    metadata: {
+                        message: 'must be location, Invalid format. Expected polygon format: POLYGON((number number, number number, ...))',
+                        path: `/${key}`,
+                        schemaPath: `#/properties/${key}/format`,
+                        params: { type: 'string', format: 'location' },
+                    },
                 },
-            },
+            ],
         });
     }
 
