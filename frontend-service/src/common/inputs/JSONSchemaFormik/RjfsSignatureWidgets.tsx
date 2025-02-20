@@ -1,6 +1,6 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import SignatureCanvas from 'react-signature-canvas';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { WidgetProps } from '@rjsf/utils';
 import { Box, Button, createTheme, Grid, ThemeProvider, Typography } from '@mui/material';
 import i18next from 'i18next';
@@ -32,7 +32,7 @@ const RjfsSignatureWidget = ({
     const signatureCanvas = useRef<SignatureCanvas | null>(null);
     const [updatedSignature, setUpdatedSignature] = useState('');
     const [isDraw, setIsDraw] = useState(false);
-    const[ signatureUpdated, setSignatureUpdated] = useState(false)
+    const[ signatureUpdated, setSignatureUpdated] = useState(false);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -65,7 +65,7 @@ const RjfsSignatureWidget = ({
     //     }
     // });
 
-    const saveSignature = () => {
+    const saveSignature = useCallback(() => {
         if (!signatureCanvas.current) return;
         if (signatureCanvas.current.isEmpty()) onChange(undefined);
         else {
@@ -74,7 +74,18 @@ const RjfsSignatureWidget = ({
         // signatureCanvas.current.clear();
     }
     setSignatureUpdated(false)
-    };
+      }, []);
+    
+    // () => {
+    //     if (!signatureCanvas.current) return;
+    //     if (signatureCanvas.current.isEmpty()) onChange(undefined);
+    //     else {
+    //         // setUpdatedSignature(signatureCanvas.current.toDataURL());
+    //     onChange(signatureCanvas.current.toDataURL());
+    //     // signatureCanvas.current.clear();
+    // }
+    // setSignatureUpdated(false)
+    // };
 
     const clearSignature = () => {
         if (!signatureCanvas.current) return;
@@ -120,12 +131,12 @@ const RjfsSignatureWidget = ({
                                 boxShadow: '0px 2px 6px rgba(0, 0, 0, 0.1)',
                             },
                         }}
-                        // onEnd={saveSignature}
-                        onBegin={() => {
-                            setSignatureUpdated(true)
-                            // setIsDraw(true);
-                            // onBlur(id, value);
-                        }}
+                        onEnd={saveSignature}
+                        // onBegin={() => {
+                        //     setSignatureUpdated(true)
+                        //     // setIsDraw(true);
+                        //     // onBlur(id, value);
+                        // }}
                         clearOnResize={false}
                         
                     />
