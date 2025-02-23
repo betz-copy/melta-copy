@@ -40,7 +40,7 @@ export const getSerialStarters = (template: IMongoEntityTemplatePopulated): Reco
 
 export const handleExcelErrors = (error: any, failedEntities: IFailedEntity[], entity: IEntity, allBrokenRulesEntities: IBrokenRuleEntity[]) => {
     if (error instanceof AxiosError) {
-        if (!error.response) throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, 'no error.response in axiosError', error);
+        if (!error.response) throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, 'no error. response in axiosError', error);
 
         const { data } = error.response;
 
