@@ -393,6 +393,21 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         return searchResults.filter((rule) => allowedEntityTemplatesIds.includes(rule.entityTemplateId));
     }
 
+    validateConstraintsProperties = (properties: Record<string, IEntitySingleProperty>, requiredConstraints: string[]) => {
+        let identifier;
+        Object.entries(properties).forEach(([key, value]) => {
+            if (value.readOnly && requiredConstraints.includes(key)) throw new BadRequestError(`${key} property can't be both readOnly and required`);
+            if (value.archive && requiredConstraints.includes(key)) throw new BadRequestError(`${key} property can't be both archive and required`);
+            if (value.identifier) {
+                if (identifier) throw new BadRequestError(`can't be more than one identifier: ${key}, ${identifier}`);
+                identifier = key;
+                if (!requiredConstraints.includes(key)) throw new BadRequestError(`${key} property identifier has to be required`);
+            }
+            if (value.serialCurrent && !requiredConstraints.includes(key))
+                throw new BadRequestError(`${key} property serial number has to be required`);
+        });
+    };
+
     async createEntityTemplate(
         templateData: Omit<IEntityTemplateWithConstraints, 'iconFileId' | 'documentTemplatesIds'>,
         { file, files }: { file?: [UploadedFile]; files?: UploadedFile[] },
@@ -406,6 +421,8 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
         const { uniqueConstraints, properties, ...restOfTemplateData } = templateData;
         const { required: requiredConstraints, ...restOfTemplatePropertiesObject } = properties;
+
+        this.validateConstraintsProperties(restOfTemplatePropertiesObject.properties, requiredConstraints);
 
         const entityTemplate = await this.entityTemplateService.createEntityTemplate({
             ...restOfTemplateData,
@@ -715,6 +732,10 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
         const populatedTemplates = await this.getAndPopulateAllTemplatesConstraints([currTemplate]);
         const [populatedCurrTemplate] = populatedTemplates;
+
+        const { required, ...currProperties } = populatedCurrTemplate.properties;
+
+        this.validateConstraintsProperties(currProperties.properties, required);
 
         if (currTemplate.disabled === true) throw new BadRequestError('can not update disabled template');
 

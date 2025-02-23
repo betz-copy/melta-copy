@@ -35,6 +35,14 @@ export class InstancesController extends DefaultController<InstancesManager> {
         );
     }
 
+    async getChangedEntitiesFromExcel(req: Request, res: Response) {
+        res.json(await this.manager.getChangedEntitiesFromExcel(req.body.templateId, req.file!));
+    }
+
+    async editManyEntitiesByExcel(req: Request, res: Response) {
+        res.json(await this.manager.editManyEntitiesByExcel(req.body.entities, req.user!.id));
+    }
+
     async updateEntityInstance(req: Request, res: Response) {
         const { ignoredRules, ...instanceData } = req.body;
         res.json(
