@@ -132,7 +132,7 @@ const readExcelFile = async (
     );
 
     const identifier = Object.entries(template.properties.properties).find(([_key, value]) => value.identifier === true)?.[0];
-    if (!identifier) throw new BadRequestError('there is no identifier in template', { template });
+    if (!identifier && isEditMode) throw new BadRequestError('there is no identifier in template', { template });
     let isFailed = false;
 
     await Promise.all(
@@ -172,7 +172,7 @@ const readExcelFile = async (
                 const entity = { templateId: template._id, properties: rowData };
                 if (failedProperties.length > 0) handleFailedEntities(rowData, failedProperties, failedEntities);
                 else if (isEditMode && !isFailed) {
-                    const updatedEntity = getUpdatedEntity(oldEntities, entity, identifier, template);
+                    const updatedEntity = getUpdatedEntity(oldEntities, entity, identifier ?? '', template);
                     if (updatedEntity) entities.push({ ...updatedEntity, ignoredRules: [] });
                 } else {
                     entities.push({ templateId: template._id, properties: rowData, ignoredRules: [] });
