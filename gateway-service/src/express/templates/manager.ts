@@ -394,11 +394,17 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
     }
 
     validateConstraintsProperties = (properties: Record<string, IEntitySingleProperty>, requiredConstraints: string[]) => {
+        let identifier;
         Object.entries(properties).forEach(([key, value]) => {
-            if (value.readOnly && requiredConstraints[key]) throw new BadRequestError(`${key} property can't be both readOnly and required`);
-            if (value.archive && requiredConstraints[key]) throw new BadRequestError(`${key} property can't be both archive and required`);
-            if (value.identifier && !requiredConstraints[key]) throw new BadRequestError(`${key} property identifier has to be required`);
-            if (value.serialCurrent && !requiredConstraints[key]) throw new BadRequestError(`${key} property serial number has to be required`);
+            if (value.readOnly && requiredConstraints.includes(key)) throw new BadRequestError(`${key} property can't be both readOnly and required`);
+            if (value.archive && requiredConstraints.includes(key)) throw new BadRequestError(`${key} property can't be both archive and required`);
+            if (value.identifier) {
+                if (identifier) throw new BadRequestError(`can't be more than one identifier: ${key}, ${identifier}`);
+                identifier = key;
+                if (!requiredConstraints.includes(key)) throw new BadRequestError(`${key} property identifier has to be required`);
+            }
+            if (value.serialCurrent && !requiredConstraints.includes(key))
+                throw new BadRequestError(`${key} property serial number has to be required`);
         });
     };
 

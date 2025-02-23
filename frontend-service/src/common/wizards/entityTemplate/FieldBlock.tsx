@@ -51,7 +51,8 @@ interface FieldBlockProps<PropertiesType extends string, Values extends Record<P
     hasActions?: boolean;
     draggable?: { isDraggable: false } | { isDraggable: true; dragHandleProps: DraggableProvided['dragHandleProps'] };
     supportConvertingToMultipleFields?: boolean;
-    supportIdentifier?: boolean; 
+    supportIdentifier?: boolean;
+    hasIdentifier?: boolean;
 }
 
 const FieldBlock = <PropertiesType extends string, Values extends Record<PropertiesType, CommonFormInputProperties[]>>({
@@ -81,6 +82,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
     supportArchive,
     locationSearchFields,
     supportIdentifier,
+    hasIdentifier,
     supportAddFieldButton = true,
     hasActions,
     draggable = { isDraggable: false },
@@ -108,7 +110,6 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
 }: React.PropsWithChildren<FieldBlockProps<PropertiesType, Values>>) => {
     // copy of values of formik in order to show changes on inputs fast (formik rerenders are slow)
     const [displayValues, setDisplayValues] = React.useState(values[propertiesType]);
-    const [currentIdentifier, setCurrentIdentifier] =  useState(displayValues.find((displayValue) => displayValue.identifier)?.name);
 
     const [showAreUSureDialogForRemoveProperty, setShowAreUSureDialogForRemoveProperty] = useState(false);
     const [selectedIndexToRemove, setSelectedIndexForRemove] = useState(-1);
@@ -252,10 +253,9 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
                                                 supportLocation,
                                                 supportArchive,
                                                 supportIdentifier,
+                                                hasIdentifier,
                                                 locationSearchFields,
                                                 hasActions,
-                                                currentIdentifier,
-                                                setCurrentIdentifier,
                                                 supportConvertingToMultipleFields,
                                             };
 
