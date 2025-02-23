@@ -232,3 +232,24 @@ export const loadEntitiesSchema = Joi.object({
     query: {},
     params: {},
 });
+
+// POST /api/instances/entities/editReadExcel
+export const editReadExcelSchema = Joi.object({
+    body: {
+        file: excelTemplateSchema,
+        templateId: Joi.string().required(),
+    },
+    query: {},
+    params: {},
+});
+
+// POST /api/instances/entities/editExcel
+export const editExcelSchema = Joi.object({
+    body: {
+        templateId: Joi.string().required(),
+        entities: ExtendedJoi.stringToArray({ templateId: Joi.string(), properties: Joi.object() }).default([]),
+        ignoredRules: ExtendedJoi.stringToArray(brokenRuleSchema),
+    },
+    query: {},
+    params: {},
+});

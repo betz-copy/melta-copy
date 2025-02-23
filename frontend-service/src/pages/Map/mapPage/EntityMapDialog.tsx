@@ -29,9 +29,9 @@ const EntityMapDialog = ({ open, onClose, entityWithMatchingField }: props) => {
 
     const entityTemplate = entityTemplateMap!.get(entityWithMatchingField.node.templateId)!;
     const entityTemplateColor = getEntityTemplateColor(entityTemplate);
-    
+
     const locationField = entityWithMatchingField.matchingField.slice(0, -37);
-    const locationFieldTitle = entityTemplate.properties.properties[locationField].title
+    const locationFieldTitle = entityTemplate.properties.properties[locationField].title;
 
     return (
         <Dialog open={open} onClose={onClose} sx={{ opacity: 0.95 }}>
@@ -46,9 +46,7 @@ const EntityMapDialog = ({ open, onClose, entityWithMatchingField }: props) => {
                         {entityTemplate.displayName} -
                     </Typography>
                     <Typography fontSize="18px" fontWeight={600}>
-                        (
-                        {`${i18next.t('wizard.processTemplate.field')} ${locationFieldTitle}`}
-                        )
+                        ({`${i18next.t('wizard.processTemplate.field')} ${locationFieldTitle}`})
                     </Typography>
                 </Box>
                 <IconButtonWithPopover popoverText={i18next.t('entitiesTableOfTemplate.navigateToEntityPage')}>

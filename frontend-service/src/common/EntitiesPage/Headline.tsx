@@ -10,10 +10,9 @@ import { debounce } from 'lodash';
 import AutoAwesomeOutlinedIcon from '@mui/icons-material/AutoAwesomeOutlined';
 import { useMatomo } from '@datapunt/matomo-tracker-react';
 import { IEntity } from '../../interfaces/entities';
-import { IMongoCategory } from '../../interfaces/categories';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import SearchInput from '../inputs/SearchInput';
-import { AddEntityButton } from './AddEntityButton';
+import { IMongoCategory } from '../../interfaces/categories';
 import { useWorkspaceStore } from '../../stores/workspace';
 import TemplatesSelectCheckbox from '../templatesSelectCheckbox';
 import { BlueTitle } from '../BlueTitle';
@@ -22,6 +21,7 @@ import { useDarkModeStore } from '../../stores/darkMode';
 import { useLocalStorage } from '../../utils/hooks/useLocalStorage';
 import { useSearchParams } from '../../utils/hooks/useSearchParams';
 import { convertToBool } from '../../utils/convertStringToBool';
+import { AddEntityButton } from './Buttons/AddEntity';
 
 export const GlobalSearchBar: React.FC<{
     inputValue?: string;

@@ -29,7 +29,8 @@ import {
     Update as DailyAlertIcon,
     Archive,
     Unarchive,
-    AddLocationAlt, WrongLocation
+    AddLocationAlt,
+    WrongLocation,
 } from '@mui/icons-material';
 import AddIcon from '@mui/icons-material/Add';
 import { Draggable } from 'react-beautiful-dnd';
@@ -97,7 +98,9 @@ export interface FieldEditCardProps {
     supportUnique?: boolean;
     supportLocation?: boolean;
     supportArchive?: boolean;
-    locationSearchFields?: {show: boolean, disabled: boolean};
+    supportIdentifier?: boolean;
+    hasIdentifier?: boolean;
+    locationSearchFields?: { show: boolean; disabled: boolean };
     hasActions?: boolean;
     supportConvertingToMultipleFields?: boolean;
 }
@@ -128,6 +131,8 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     supportEditEnum,
     supportUnique,
     supportLocation,
+    supportIdentifier,
+    hasIdentifier,
     supportArchive,
     locationSearchFields,
     hasActions,
@@ -175,6 +180,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     const preview = `properties[${index}].preview`;
     const hide = `properties[${index}].hide`;
     const readOnly = `properties[${index}].readOnly`;
+    const identifier = `properties[${index}].identifier`;
 
     const unique =
         value.type === 'serialNumber' ||
@@ -185,6 +191,8 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
 
     const touchedUniqueGroupName = touched?.groupName;
     const errorUniqueGroupName = errors?.groupName;
+
+    const isIdentifierAble = isText || value.type === 'number' || value.type === 'pattern' || value.type === 'serialNumber';
 
     const mapSearchDisabled = !value.mapSearch && locationSearchFields?.disabled;
 
@@ -605,7 +613,6 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                     type: e.target.value,
                                                     required: e.target.value === 'serialNumber' || prevValue.required,
                                                 }));
-                                                if (e.target.value === 'serialNumber') createEmptyGroup(value.name);
                                             }}
                                             error={touchedType && Boolean(errorType)}
                                             helperText={touchedType && errorType}
@@ -1006,6 +1013,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                 setValues((prevValue) => ({
                                                                     ...prevValue,
                                                                     required: checked,
+                                                                    identifier: !checked ? false : prevValue.identifier,
                                                                 }));
                                                                 // unique is allowed only if required=true, automatic uncheck 'unique' too
                                                                 if (!checked && unique) {
@@ -1088,6 +1096,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                 setValues((prevValue) => ({
                                                                     ...prevValue,
                                                                     required: checked ? true : prevValue.required,
+                                                                    identifier: !checked ? false : prevValue.identifier,
                                                                     groupName: undefined,
                                                                     uniqueCheckbox: false,
                                                                 }));
@@ -1135,27 +1144,54 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                     label={i18next.t('propertyTypes.text-area')}
                                                 />
                                             )}
+                                            {isIdentifierAble && supportIdentifier && (
+                                                <FormControlLabel
+                                                    control={
+                                                        <Switch
+                                                            id={identifier}
+                                                            name={identifier}
+                                                            onChange={(_e, checked) => {
+                                                                setValues?.((prevValue) => ({
+                                                                    ...prevValue,
+                                                                    required: checked ? true : prevValue.required,
+                                                                    identifier: checked || undefined,
+                                                                    groupName: undefined,
+                                                                    uniqueCheckbox: false,
+                                                                }));
+                                                                if (checked) createEmptyGroup(value.name);
+                                                            }}
+                                                            disabled={hasIdentifier && !value.identifier}
+                                                            checked={value.identifier ?? false}
+                                                        />
+                                                    }
+                                                    label={i18next.t('validation.identifier')}
+                                                />
+                                            )}
                                         </Box>
                                         <Grid display="flex">
-                                            {locationSearchFields?.show && value.type !== 'fileId' && value.type !== 'relationshipReference' && !arrayTypes.includes(value.type) && (
-                                                <MeltaTooltip 
-                                                    title={i18next.t(
-                                                        mapSearchDisabled 
-                                                        ? 'validation.mapSearchPropertiesLimit' 
-                                                        : 'wizard.entityTemplate.searchLocation', 
-                                                        { limit: mapSearchPropertiesLimit }
-                                                    )} 
-                                                    placement="right"
-                                                >
-                                                    <Box>
-                                                        <IconButton
-                                                            onClick={() => setFieldValue('mapSearch', !value.mapSearch)}
-                                                            disabled={mapSearchDisabled}
-                                                        >
-                                                            {value.mapSearch ? <WrongLocation color="primary" /> : <AddLocationAlt />}
-                                                        </IconButton>
-                                                    </Box>
-                                                </MeltaTooltip>)}
+                                            {locationSearchFields?.show &&
+                                                value.type !== 'fileId' &&
+                                                value.type !== 'relationshipReference' &&
+                                                !arrayTypes.includes(value.type) && (
+                                                    <MeltaTooltip
+                                                        title={i18next.t(
+                                                            mapSearchDisabled
+                                                                ? 'validation.mapSearchPropertiesLimit'
+                                                                : 'wizard.entityTemplate.searchLocation',
+                                                            { limit: mapSearchPropertiesLimit },
+                                                        )}
+                                                        placement="right"
+                                                    >
+                                                        <Box>
+                                                            <IconButton
+                                                                onClick={() => setFieldValue('mapSearch', !value.mapSearch)}
+                                                                disabled={mapSearchDisabled}
+                                                            >
+                                                                {value.mapSearch ? <WrongLocation color="primary" /> : <AddLocationAlt />}
+                                                            </IconButton>
+                                                        </Box>
+                                                    </MeltaTooltip>
+                                                )}
                                             {supportArchive && isEditMode && (
                                                 <MeltaTooltip title={archiveButtonTooltip()} placement="right">
                                                     <Box>
@@ -1189,7 +1225,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                         </Grid>
                                     </Grid>
                                     <Grid item container justifyContent="space-between" alignItems="center" flexWrap="nowrap">
-                                        {unique && value.type !== 'serialNumber' && (
+                                        {unique && !value.identifier && value.type !== 'serialNumber' && (
                                             <Grid container direction="row">
                                                 <Grid item container alignItems="center" flexWrap="nowrap">
                                                     <MeltaTooltip title={i18next.t('validation.uniqueTooltipTitle')}>
@@ -1336,6 +1372,6 @@ export const MemoFieldEditCard = memo(
         isEqual(prev.value, next.value) &&
         isEqual(prev.touched, next.touched) &&
         isEqual(prev.errors, next.errors) &&
-        isEqual(prev.uniqueConstraints, next.uniqueConstraints)&&
-        isEqual(prev.locationSearchFields, next.locationSearchFields) ,
+        isEqual(prev.locationSearchFields, next.locationSearchFields) &&
+        isEqual(prev.hasIdentifier, next.hasIdentifier),
 );

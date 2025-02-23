@@ -6,6 +6,7 @@ import { ToggleButton, ToggleButtonGroup } from '@mui/material';
 import { Place, Polyline } from '@mui/icons-material';
 import i18next from 'i18next';
 import * as Cesium from 'cesium';
+import { useQueryClient } from 'react-query';
 import { MeltaTooltip } from '../../common/MeltaTooltip';
 import { useDarkModeStore } from '../../stores/darkMode';
 import {
@@ -20,6 +21,7 @@ import {
 import { MeltaCoordinate, MeltaPolygon } from './LocationPreview';
 import { DeleteMapDataBtn } from './mapPage/MapFilters';
 import { BaseLayers } from './BaseLayers';
+import { BackendConfigState } from '../../services/backendConfigService';
 
 type Props = {
     defaultLocation?: string;
@@ -28,6 +30,9 @@ type Props = {
 };
 
 const LocationField = ({ defaultLocation, field, updateValue }: Props) => {
+    const queryClient = useQueryClient();
+    const config = queryClient.getQueryData<BackendConfigState>('getBackendConfig');
+
     const viewerRef = useRef<any>(null);
 
     const [drawingMode, setDrawingMode] = useState<'polygon' | 'coordinate' | null>(null);
@@ -57,11 +62,11 @@ const LocationField = ({ defaultLocation, field, updateValue }: Props) => {
             const viewer = viewerRef.current?.cesiumElement;
             if (!viewer) return;
             const { camera } = viewer;
-    
+
             if (markerPosition !== null) {
                 const radius = 30000;
                 const boundingSphere = new Cesium.BoundingSphere(markerPosition, radius);
-    
+
                 camera.flyToBoundingSphere(boundingSphere, {
                     duration: 1.5,
                     offset: new Cesium.HeadingPitchRange(0, -Cesium.Math.toRadians(90), radius * 2.5),
@@ -71,7 +76,7 @@ const LocationField = ({ defaultLocation, field, updateValue }: Props) => {
                     const center = calculateCenterOfPolygon(polygonPosition);
                     const radius = getPolygonFarthestPoint(center, polygonPosition);
                     const boundingSphere = new Cesium.BoundingSphere(center, radius);
-    
+
                     camera.flyToBoundingSphere(boundingSphere, {
                         duration: 1.5,
                         offset: new Cesium.HeadingPitchRange(0, -Cesium.Math.toRadians(90), radius * 2.5),
@@ -84,22 +89,21 @@ const LocationField = ({ defaultLocation, field, updateValue }: Props) => {
                 });
             }
         };
-    
+
         const animationFrameId = requestAnimationFrame(animateCamera);
         return () => cancelAnimationFrame(animationFrameId);
     }, [markerPosition, polygonPosition]);
-    
 
     const handleViewerClick = useCallback(
         (clickEvent: CesiumMovementEvent) => {
             if (drawingMode === null || !clickEvent.position) return;
-    
+
             const viewer = viewerRef.current?.cesiumElement;
             if (!viewer) return;
-    
+
             const { scene } = viewer;
             const cartesian = scene.camera.pickEllipsoid(clickEvent.position, scene.globe.ellipsoid);
-    
+
             if (cartesian) {
                 if (drawingMode === 'polygon') {
                     if (isValidPolygonPoint(polygonPosition, cartesian)) {
@@ -114,7 +118,7 @@ const LocationField = ({ defaultLocation, field, updateValue }: Props) => {
                 }
             }
         },
-        [drawingMode, viewerRef, polygonPosition, setPolygonPosition, setMarkerPosition, setDrawingMode, updateValue]
+        [drawingMode, viewerRef, polygonPosition, setPolygonPosition, setMarkerPosition, setDrawingMode, updateValue],
     );
 
     const onClear = () => {
@@ -130,19 +134,19 @@ const LocationField = ({ defaultLocation, field, updateValue }: Props) => {
 
     return (
         <div style={{ position: 'relative', height: '800px', width: '600px' }}>
-           <Viewer
-              full
-              ref={viewerRef}
-              onClick={handleViewerClick}
-              baseLayerPicker={false}
-              animation={false}
-              timeline={false}
-              geocoder={false}
-              homeButton={false}
-              sceneModePicker={false}
-              vrButton={false}
-              fullscreenButton={false}
-              >
+            <Viewer
+                full
+                ref={viewerRef}
+                onClick={handleViewerClick}
+                baseLayerPicker={false}
+                animation={false}
+                timeline={false}
+                geocoder={false}
+                homeButton={false}
+                sceneModePicker={false}
+                vrButton={false}
+                fullscreenButton={false}
+            >
                 {polygonPosition.length > 0 && <MeltaPolygon name={field} polygon={polygonPosition} />}
                 {markerPosition && <MeltaCoordinate name={field} position={markerPosition} />}
             </Viewer>
@@ -169,7 +173,7 @@ const LocationField = ({ defaultLocation, field, updateValue }: Props) => {
                 )}
                 <DeleteMapDataBtn onClick={onClear} darkMode={darkMode} />
 
-                <BaseLayers viewerRef={viewerRef} />
+                {config && <BaseLayers viewerRef={viewerRef} config={config} />}
             </div>
         </div>
     );
