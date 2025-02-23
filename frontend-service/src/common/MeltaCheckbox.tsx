@@ -74,7 +74,7 @@ const MeltaCheckbox: React.FC<MeltaCheckboxProps> = ({
                 <Box
                     sx={{
                         ...mergedCheckboxSx,
-                        border: `1px solid ${theme.palette.primary.main}`,
+                        border: `1px solid ${disabled ? 'grey' : theme.palette.primary.main}`,
                         ...sxEmpty,
                     }}
                 />

@@ -28,13 +28,13 @@ const RjsfCheckboxWidget = ({
     propertyReadOnly,
     ...textFieldProps
 }: WidgetProps) => {
-    const _onChange = ({ target: { checked } }: React.ChangeEvent<HTMLInputElement>) => {
+    const _onChange = ({ target: { checked } }: React.ChangeEvent<HTMLInputElement>) => {        
         onChange(checked);
     };
-
+    
     return (
         <Box display="flex" alignItems="center">
-            <MeltaCheckbox {...textFieldProps} disabled={disabled} onChange={_onChange} />
+            <MeltaCheckbox {...textFieldProps} disabled={disabled} onChange={_onChange} checked={value}/>
             <Typography>{label}</Typography>
         </Box>
     );

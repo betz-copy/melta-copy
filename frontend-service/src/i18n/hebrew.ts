@@ -461,6 +461,7 @@ export default {
         color: 'בחר צבע',
         failedToUpdateSystemData: 'נכשל לעדכן נתוני מערכת',
         date: 'בחר תאריך',
+        disabledField: 'לא ניתן לעדכן ערך זה',
         category: {
             createTitle: 'יצירת קטגוריה',
             updateTitle: 'עריכת קטגוריה',

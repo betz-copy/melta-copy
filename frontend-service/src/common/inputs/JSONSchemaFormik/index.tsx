@@ -111,18 +111,20 @@ const mergeErrorSchemas = (errors1: ErrorSchema<{}>, errors2: ErrorSchema<{}>) =
 const getComponent = (Component: React.ComponentType<WidgetProps>, haveAccordion: boolean) => {
     if (haveAccordion) {
         const WrappedComponent: React.FC<WidgetProps> = (props: WidgetProps) => {
-            const { label } = props;
+            const { label, onChange, disabled } = props;
+
+            console.log(props);
 
             return (
-                <InputAccordion label={label}>
+                <InputAccordion label={label} onChange={onChange} disabled={disabled}>
                     <Component {...props} />
                 </InputAccordion>
             );
         };
         const MemoWrapped = memo(WrappedComponent);
-        const FinalComponent: React.FC<WidgetProps> = (props: WidgetProps) => <MemoWrapped {...props} />;
+        const getWrappedComponent: React.FC<WidgetProps> = (props: WidgetProps) => <MemoWrapped {...props} />;
 
-        return FinalComponent;
+        return getWrappedComponent;
     }
 
     return Component;
@@ -194,7 +196,10 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
             CheckboxWidget: getComponent(RjsfCheckboxWidget, !!multipleEntities),
         }),
         [multipleEntities],
+        
     );
+
+    console.log({ mergedErrors });
 
     return (
         <JSONSchemaForm
@@ -254,7 +259,9 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                     };
                 return {};
             })}
-            onChange={({ formData }) => {
+            onChange={({ formData, ...rest }) => {
+                console.log({ formData, ...rest });
+
                 Object.entries(formData).forEach(([key, value]) => {
                     if (JSON.stringify(value) === JSON.stringify([undefined]) || JSON.stringify(value) === JSON.stringify([null])) {
                         // eslint-disable-next-line no-param-reassign
