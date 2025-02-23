@@ -99,7 +99,6 @@ export interface FieldEditCardProps {
     supportArchive?: boolean;
     locationSearchFields?: {show: boolean, disabled: boolean};
     hasActions?: boolean;
-    displayValues: CommonFormInputProperties[];
     currentIdentifier: string | undefined,
     setCurrentIdentifier: React.Dispatch<React.SetStateAction<string | undefined>>,
     supportConvertingToMultipleFields?: boolean;
@@ -584,7 +583,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                             onChange={onChange}
                                             error={touchedName && Boolean(errorName)}
                                             helperText={touchedName && errorName}
-                                            disabled={isDisabled || value.deleted}
+                                            disabled={isDisabled || value.deleted || currentIdentifier === name}
                                             sx={{ marginRight: '5px' }}
                                             fullWidth
                                         />
@@ -1164,7 +1163,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                 }
                                                                 else setCurrentIdentifier(undefined);
                                                             }}
-                                                            disabled={currentIdentifier !== undefined && currentIdentifier !== value.name}
+                                                            disabled={!value.name || (currentIdentifier !== undefined && currentIdentifier !== value.name)}
                                                             checked={value.identifier ?? false}
                                                         />
                                                     }
@@ -1372,7 +1371,6 @@ export const MemoFieldEditCard = memo(
         isEqual(prev.value, next.value) &&
         isEqual(prev.touched, next.touched) &&
         isEqual(prev.errors, next.errors) &&
-        isEqual(prev.uniqueConstraints, next.uniqueConstraints) &&
         isEqual(prev.locationSearchFields, next.locationSearchFields) &&
         isEqual(prev.currentIdentifier, next.currentIdentifier),
 );

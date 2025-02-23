@@ -269,7 +269,6 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
                                                         setValues={setDisplayValueWrapper(index)}
                                                         uniqueConstraints={uniqueConstraints}
                                                         setUniqueConstraints={setUniqueConstraints}
-                                                        displayValues={displayValues}
                                                     />
                                                 );
                                             }
