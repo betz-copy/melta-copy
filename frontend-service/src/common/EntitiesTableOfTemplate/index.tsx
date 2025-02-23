@@ -3,6 +3,7 @@
 import {
     BodyScrollEvent,
     CellEditingStoppedEvent,
+    ChartModel,
     ColumnMovedEvent,
     ColumnResizedEvent,
     ColumnVisibleEvent,
@@ -17,12 +18,12 @@ import {
     StatusPanelDef,
 } from '@ag-grid-community/core';
 import { AgGridReact } from '@ag-grid-community/react';
-import { Box, CircularProgress, debounce } from '@mui/material';
+import { Box, Button, CircularProgress, debounce } from '@mui/material';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import isEqual from 'lodash.isequal';
 import sortBy from 'lodash.sortby';
-import React, { ForwardedRef, forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
+import React, { ForwardedRef, forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
 import { useLocation } from 'wouter';
@@ -274,9 +275,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
 
         const savedColumnWidths = localStorage.getItem(`columnWidths-${saveStorageProps.pageType}-${template._id}`);
 
-        useEffect(() => {
-            if (initialFilter) gridRef.current?.api.setFilterModel(initialFilter);
-        }, [initialFilter]);
+     
 
         const defaultColumnWidths = savedColumnWidths ? JSON.parse(savedColumnWidths) : {};
 
@@ -530,6 +529,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                 },
             },
         );
+        let chartModel: ChartModel | undefined;
 
         useImperativeHandle(ref, () => ({
             getExcelData() {
@@ -625,6 +625,18 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
 
             return undefined;
         }, [multipleSelect, onRowSelected]);
+        const popupParent = useMemo<HTMLElement | null>(() => {
+            return document.body;
+        }, []);
+
+        const saveChart = useCallback(() => {
+            const chartModels = gridRef.current!.api.getChartModels() || [];
+            if (chartModels.length > 0) {
+                // eslint-disable-next-line prefer-destructuring
+                chartModel = chartModels[0];
+                console.log({ chartModel });
+            }
+        }, []);
 
         const gridContent = (
             <>
@@ -665,16 +677,16 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                         onColumnMoved={handleColumnMoved}
                         onColumnResized={handleColumnResized}
                         onPaginationChanged={handlePaginationChanged}
+                        enableCharts
                         onBodyScroll={rowModelType === 'infinite' ? handleBodyScroll : undefined}
                         onSortChanged={handleSortChanged}
                         enableRtl
-                        enableCellTextSelection
                         maintainColumnOrder
                         rowSelection={rowSelection}
-                        suppressAggFuncInHeader
-                        onRowSelected={onRowSelected ? ({ data }) => data && onRowSelected(data) : undefined}
+                        // suppressAggFuncInHeader
+                        // onRowSelected={onRowSelected ? ({ data }) => data && onRowSelected(data) : undefined}
                         rowStyle={onRowSelected ? { cursor: 'pointer' } : undefined}
-                        suppressCellFocus
+                        // suppressCellFocus
                         onFilterChanged={(params) => {
                             onFilter?.();
                             if (saveStorageProps.shouldSaveFilter) {
@@ -689,13 +701,13 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                         animateRows
                         loadingCellRenderer={LoadingCellRenderer}
                         suppressCsvExport
-                        suppressContextMenu
-                        onToolPanelVisibleChanged={() => {
-                            const gridApi = gridRef.current?.api;
-                            if (!gridApi) return;
-                            const isSideBarOpen = gridApi.isToolPanelShowing();
-                            gridApi.setSideBarVisible(isSideBarOpen);
-                        }}
+                        // suppressContextMenu
+                        // onToolPanelVisibleChanged={() => {
+                        //     const gridApi = gridRef.current?.api;
+                        //     if (!gridApi) return;
+                        //     const isSideBarOpen = gridApi.isToolPanelShowing();
+                        //     gridApi.setSideBarVisible(isSideBarOpen);
+                        // }}
                         onGridReady={(params) => {
                             const savedSortModel = localStorage.getItem(`sortModel-${saveStorageProps.pageType}-${template._id}`);
                             if (savedSortModel) {
@@ -740,6 +752,18 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                                     }, 300);
                                 }
                             }
+                            if (initialFilter) gridRef.current?.api.setFilterModel(initialFilter);
+
+                            // params.api.createRangeChart({
+                            //     chartContainer: document.querySelector('#myChart') as HTMLElement,
+                            //     cellRange: {
+                            //         rowStartIndex: 0,
+                            //         rowEndIndex: 1000,
+                            //         columns: ['firstName', 'age'],
+                            //     },
+                            //     chartType: 'groupedColumn',
+                            //     aggFunc: 'sum',
+                            // });
                         }}
                         defaultColDef={{
                             filterParams: {
@@ -774,39 +798,40 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                         statusBar={rowModelType === 'infinite' && !withoutResizeBox ? { statusPanels } : undefined}
                         localeText={agGridLocaleText}
                         paginationPageSizeSelector={paginationPageSizeSelector}
-                        onCellEditingStopped={(params: CellEditingStoppedEvent) => {
-                            setCurrEditingCell(undefined);
-                            if (params.valueChanged === false) return;
-                            const isEmpty = params.newValue === '' || params.newValue === null || params.newValue.length === 0;
-                            const isRequired = template.properties.required.includes(params.colDef.field!);
-                            const updatedProperties = {
-                                ...params.data?.properties,
-                                // eslint-disable-next-line no-nested-ternary
-                                [params.column.getColId()]: isEmpty ? (isRequired ? undefined : '') : params.newValue,
-                            };
-                            setCurrEntity({ templateId: template._id, properties: params.data?.properties });
+                        // onCellEditingStopped={(params: CellEditingStoppedEvent) => {
+                        //     setCurrEditingCell(undefined);
+                        //     if (params.valueChanged === false) return;
+                        //     const isEmpty = params.newValue === '' || params.newValue === null || params.newValue.length === 0;
+                        //     const isRequired = template.properties.required.includes(params.colDef.field!);
+                        //     const updatedProperties = {
+                        //         ...params.data?.properties,
+                        //         // eslint-disable-next-line no-nested-ternary
+                        //         [params.column.getColId()]: isEmpty ? (isRequired ? undefined : '') : params.newValue,
+                        //     };
+                        //     setCurrEntity({ templateId: template._id, properties: params.data?.properties });
 
-                            const properties: any = { properties: updatedProperties };
-                            gridRef.current?.api.forEachNode((rowNode) => {
-                                if (rowNode.data && getRowId(properties) === getRowId(rowNode.data)) {
-                                    rowNode.updateData(properties);
-                                }
-                            });
+                        //     const properties: any = { properties: updatedProperties };
+                        //     gridRef.current?.api.forEachNode((rowNode) => {
+                        //         if (rowNode.data && getRowId(properties) === getRowId(rowNode.data)) {
+                        //             rowNode.updateData(properties);
+                        //         }
+                        //     });
 
-                            updateMutation({
-                                newEntityData: {
-                                    template,
-                                    properties: updatedProperties,
-                                    attachmentsProperties: {},
-                                },
-                            });
-                        }}
-                        onCellClicked={(params) => {
-                            const isHidden = template.properties.hide.includes(params.colDef.field!);
-                            if (isHidden || !params.colDef.cellEditor) return;
-                            setCurrEditingCell(params);
-                            if (currEditingCell && currEditingCell.value !== params.value) params.api.stopEditing();
-                        }}
+                        //     updateMutation({
+                        //         newEntityData: {
+                        //             template,
+                        //             properties: updatedProperties,
+                        //             attachmentsProperties: {},
+                        //         },
+                        //     });
+                        // }}
+                        // onCellClicked={(params) => {
+                        //     const isHidden = template.properties.hide.includes(params.colDef.field!);
+                        //     if (isHidden || !params.colDef.cellEditor) return;
+                        //     setCurrEditingCell(params);
+                        //     if (currEditingCell && currEditingCell.value !== params.value) params.api.stopEditing();
+                        // }}
+                        cellSelection
                     />
                     <AreYouSureDialog
                         open={openDeleteDialog && selectedRow !== ''}

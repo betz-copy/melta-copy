@@ -33,6 +33,7 @@
     "@ag-grid-community/locale": "^32.3.2",
     "@ag-grid-community/react": "^32.3.2",
     "@ag-grid-community/styles": "^32.3.2",
+    "@ag-grid-enterprise/charts": "^32.3.3",
     "@ag-grid-enterprise/column-tool-panel": "^32.3.2",
     "@ag-grid-enterprise/core": "^32.3.2",
     "@ag-grid-enterprise/menu": "^32.3.2",
