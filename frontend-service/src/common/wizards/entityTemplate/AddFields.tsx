@@ -211,6 +211,7 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
                                                 show: Object.values(values.properties).some(property => property.type === 'location'), 
                                                 disabled: countMapSearchProperties >= 2, 
                                             }}
+                                            supportIdentifier
                                         />
                                     </Grid>
                                 )}

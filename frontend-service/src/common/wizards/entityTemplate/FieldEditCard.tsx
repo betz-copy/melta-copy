@@ -97,6 +97,7 @@ export interface FieldEditCardProps {
     supportUnique?: boolean;
     supportLocation?: boolean;
     supportArchive?: boolean;
+    supportIdentifier?: boolean;
     locationSearchFields?: {show: boolean, disabled: boolean};
     hasActions?: boolean;
     currentIdentifier: string | undefined,
@@ -130,6 +131,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     supportEditEnum,
     supportUnique,
     supportLocation,
+    supportIdentifier,
     supportArchive,
     locationSearchFields,
     hasActions,
@@ -1143,7 +1145,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                     label={i18next.t('propertyTypes.text-area')}
                                                 />
                                             )}
-                                            {isIdentifierAble && (
+                                            {isIdentifierAble && supportIdentifier && (
                                                 <FormControlLabel
                                                     control={
                                                         <Switch

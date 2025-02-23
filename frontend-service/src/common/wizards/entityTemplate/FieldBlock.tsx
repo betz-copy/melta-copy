@@ -51,6 +51,7 @@ interface FieldBlockProps<PropertiesType extends string, Values extends Record<P
     hasActions?: boolean;
     draggable?: { isDraggable: false } | { isDraggable: true; dragHandleProps: DraggableProvided['dragHandleProps'] };
     supportConvertingToMultipleFields?: boolean;
+    supportIdentifier?: boolean; 
 }
 
 const FieldBlock = <PropertiesType extends string, Values extends Record<PropertiesType, CommonFormInputProperties[]>>({
@@ -79,6 +80,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
     supportLocation,
     supportArchive,
     locationSearchFields,
+    supportIdentifier,
     supportAddFieldButton = true,
     hasActions,
     draggable = { isDraggable: false },
@@ -249,6 +251,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
                                                 supportUnique,
                                                 supportLocation,
                                                 supportArchive,
+                                                supportIdentifier,
                                                 locationSearchFields,
                                                 hasActions,
                                                 currentIdentifier,
