@@ -31,3 +31,4 @@ usersRouter.patch('/:id', ValidateRequest(updateUserRequestSchema), wrapControll
 usersRouter.patch('/bulk', ValidateRequest(updateUsersBulkRequestSchema), wrapController(UsersController.updateUsersBulk));
 
 usersRouter.get('/search/:workspaceId', ValidateRequest(searchUsersByPermissionsSchema), wrapController(UsersController.searchUsersByPermissions));
+usersRouter.get('/kartoffelUser/:kartoffelId', ValidateRequest(getUserByKartoffelIdSchema), wrapController(UsersController.getUserByKartoffelId));

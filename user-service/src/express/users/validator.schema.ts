@@ -96,3 +96,12 @@ export const searchUsersByPermissionsSchema = joi.object({
         workspaceId: joi.string().required(),
     },
 });
+
+// GET /api/users/kartoffelUser/:kartoffelId
+export const getUserByKartoffelIdSchema = joi.object({
+    query: {},
+    body: {},
+    params: {
+        kartoffelId: mongoIdSchema.required(),
+    },
+});

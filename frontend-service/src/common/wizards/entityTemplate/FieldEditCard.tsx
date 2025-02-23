@@ -50,6 +50,7 @@ import RelationshipReferenceField from './RelationshipReferenceField';
 import { PermissionScope } from '../../../interfaces/permissions';
 import { useUserStore } from '../../../stores/user';
 import { SelectCheckbox } from '../../SelectCheckBox';
+import { IKartoffelUser } from '../../../interfaces/users';
 
 enum dateNotificationOptions {
     day = 1,
@@ -357,7 +358,36 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
 
     const [initialOptionArray, setInitialOptionArray] = useState<string[]>(initialValue?.options || []);
 
-    const userFields = [{ displayName: 'fullName' }, { displayName: 'jobTitle' }, { displayName: 'hierarchy' }, { displayName: 'mail' }];
+    // const userFields = [{ displayName: 'fullName' }, { displayName: 'jobTitle' }, { displayName: 'hierarchy' }, { displayName: 'mail' }]; // TODO: get relevant fields
+
+    // const keys = Object.keys({} as IKartoffelUser) as (keyof IKartoffelUser)[];
+
+    const userFields = [
+        'displayName',
+        'identityCard',
+        'personalNumber',
+        'goalUserId',
+        'employeeNumber',
+        'employeeId',
+        'organization',
+        'serviceType',
+        'firstName',
+        'lastName',
+        'akaUnit',
+        'rank',
+        'mail',
+        'jobTitle',
+        'phone',
+        'mobilePhone',
+        'address',
+        'fullClearance',
+        'sex',
+        'birthDate',
+        'directGroup',
+        'hierarchy',
+    ];
+
+    console.log({ userFields });
 
     const [userFieldsToShowCheckbox, setUserFieldsToShowCheckbox] = useState(userFields);
 
@@ -1314,8 +1344,8 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                         options={userFields}
                                                         selectedOptions={userFieldsToShowCheckbox}
                                                         setSelectedOptions={setUserFieldsToShowCheckbox}
-                                                        getOptionId={({ displayName }) => displayName}
-                                                        getOptionLabel={(option) => option.displayName}
+                                                        getOptionId={(op) => op}
+                                                        getOptionLabel={(option) => option}
                                                         size="small"
                                                         horizontalOrigin={128}
                                                         isDraggableDisabled

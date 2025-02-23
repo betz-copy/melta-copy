@@ -2,7 +2,7 @@ import axios from '../axios';
 import { environment } from '../globals';
 import { NotificationType } from '../interfaces/notifications';
 import { ICompactNullablePermissions, ICompactPermissions, IPermission, ISubCompactPermissions } from '../interfaces/permissions/permissions';
-import { IExternalUser, IMongoUser, IUser, IUserPreferences, IUserSearchBody } from '../interfaces/users';
+import { IExternalUser, IKartoffelUser, IMongoUser, IUser, IUserPreferences, IUserSearchBody } from '../interfaces/users';
 import { RecursiveNullable } from '../utils/types';
 
 const {
@@ -16,6 +16,11 @@ export const getMyUserRequest = async () => {
 
 export const getUserByIdRequest = async (userId: string) => {
     const { data } = await axios.get<IUser>(`${users}/${userId}`);
+    return data;
+};
+
+export const getKartoffelUserRequest = async (kartoffelId: string) => {
+    const { data } = await axios.get<IKartoffelUser>(`${users}/kartoffelUser/${kartoffelId}`);
     return data;
 };
 
@@ -66,8 +71,8 @@ export const syncUserPermissionsRequest = async (userId: string, permissions: IC
 };
 
 export const searchExternalUsersRequest = async (search: string, workspaceId?: string) => {
-    // TODO: change to IKartoffelUser interface ?
     if (search.length < 2) return [];
+    // TODO: change to IKartoffelUser interface instead of IExternalUser interface ? //
     const { data } = await axios.get<IExternalUser[]>(`${users}/external`, { params: { search, workspaceId } });
     return data;
 };
