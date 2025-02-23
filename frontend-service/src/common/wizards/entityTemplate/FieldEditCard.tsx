@@ -29,7 +29,8 @@ import {
     Update as DailyAlertIcon,
     Archive,
     Unarchive,
-    AddLocationAlt, WrongLocation
+    AddLocationAlt,
+    WrongLocation,
 } from '@mui/icons-material';
 import AddIcon from '@mui/icons-material/Add';
 import { Draggable } from 'react-beautiful-dnd';
@@ -99,7 +100,7 @@ export interface FieldEditCardProps {
     supportArchive?: boolean;
     supportIdentifier?: boolean;
     hasIdentifier?: boolean;
-    locationSearchFields?: {show: boolean, disabled: boolean};
+    locationSearchFields?: { show: boolean; disabled: boolean };
     hasActions?: boolean;
     supportConvertingToMultipleFields?: boolean;
 }
@@ -192,7 +193,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     const errorUniqueGroupName = errors?.groupName;
 
     const isIdentifierAble = isText || value.type === 'number' || value.type === 'pattern' || value.type === 'serialNumber';
-    
+
     const mapSearchDisabled = !value.mapSearch && locationSearchFields?.disabled;
 
     const createNewUniqueGroup = (groupName) => {
@@ -1168,25 +1169,29 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                             )}
                                         </Box>
                                         <Grid display="flex">
-                                            {locationSearchFields?.show && value.type !== 'fileId' && value.type !== 'relationshipReference' && !arrayTypes.includes(value.type) && (
-                                                <MeltaTooltip 
-                                                    title={i18next.t(
-                                                        mapSearchDisabled 
-                                                        ? 'validation.mapSearchPropertiesLimit' 
-                                                        : 'wizard.entityTemplate.searchLocation', 
-                                                        { limit: mapSearchPropertiesLimit }
-                                                    )} 
-                                                    placement="right"
-                                                >
-                                                    <Box>
-                                                        <IconButton
-                                                            onClick={() => setFieldValue('mapSearch', !value.mapSearch)}
-                                                            disabled={mapSearchDisabled}
-                                                        >
-                                                            {value.mapSearch ? <WrongLocation color="primary" /> : <AddLocationAlt />}
-                                                        </IconButton>
-                                                    </Box>
-                                                </MeltaTooltip>)}
+                                            {locationSearchFields?.show &&
+                                                value.type !== 'fileId' &&
+                                                value.type !== 'relationshipReference' &&
+                                                !arrayTypes.includes(value.type) && (
+                                                    <MeltaTooltip
+                                                        title={i18next.t(
+                                                            mapSearchDisabled
+                                                                ? 'validation.mapSearchPropertiesLimit'
+                                                                : 'wizard.entityTemplate.searchLocation',
+                                                            { limit: mapSearchPropertiesLimit },
+                                                        )}
+                                                        placement="right"
+                                                    >
+                                                        <Box>
+                                                            <IconButton
+                                                                onClick={() => setFieldValue('mapSearch', !value.mapSearch)}
+                                                                disabled={mapSearchDisabled}
+                                                            >
+                                                                {value.mapSearch ? <WrongLocation color="primary" /> : <AddLocationAlt />}
+                                                            </IconButton>
+                                                        </Box>
+                                                    </MeltaTooltip>
+                                                )}
                                             {supportArchive && isEditMode && (
                                                 <MeltaTooltip title={archiveButtonTooltip()} placement="right">
                                                     <Box>
@@ -1369,4 +1374,4 @@ export const MemoFieldEditCard = memo(
         isEqual(prev.errors, next.errors) &&
         isEqual(prev.locationSearchFields, next.locationSearchFields) &&
         isEqual(prev.hasIdentifier, next.hasIdentifier),
-    );
+);

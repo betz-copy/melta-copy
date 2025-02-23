@@ -84,7 +84,7 @@ const errorColDef = <Data extends any = EntityData>(
         }
         default:
             break;
-    }    
+    }
 
     return (
         <Box display="flex" justifyContent="center" alignItems="center" gap={1} width="100%">
@@ -261,7 +261,7 @@ export const locationColDef = <Data extends any = EntityData>(
         cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => {
             if (!props.value) return null;
             const error = isPropertyInvalid(props, field, ignoreType);
-            
+
             if (error) return errorColDef(props, error, value);
             return <OpenMap field={value.title!} entityProperties={entityGetter(props as any)} entityTemplate={template} searchValue={searchValue} />;
         },

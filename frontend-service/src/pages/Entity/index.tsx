@@ -271,11 +271,7 @@ const ConnectionsTable: React.FC<{
                         );
                         return foundConnection ? foundConnection.relationship.properties._id : (connection as IEntity).properties._id;
                     }}
-                    getEntityPropertiesData={(
-                        connection:
-                            | IEntity
-                            | IConnection,
-                    ) => {
+                    getEntityPropertiesData={(connection: IEntity | IConnection) => {
                         if ('relationship' in connection) {
                             if (expandedEntity.entity.properties._id === connection.destinationEntity.properties._id)
                                 return connection.sourceEntity.properties;

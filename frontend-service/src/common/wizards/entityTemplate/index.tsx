@@ -83,7 +83,7 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
         propertiesTypeOrder: ['properties', 'attachmentProperties'],
         uniqueConstraints: [],
         documentTemplatesIds: [],
-        mapSearchProperties: []
+        mapSearchProperties: [],
     },
     isEditMode = false,
 }) => {

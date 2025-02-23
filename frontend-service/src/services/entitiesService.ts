@@ -69,7 +69,10 @@ export const getChangedEntitiesFromExcelRequest = async (templateId: string, fil
     return data;
 };
 
-export const editManyEntitiesByExcelRequest = async (template: IMongoEntityTemplatePopulated, entitiesToUpdate: IEntityWithIgnoredRules[]): Promise<ITablesResults> => {    
+export const editManyEntitiesByExcelRequest = async (
+    template: IMongoEntityTemplatePopulated,
+    entitiesToUpdate: IEntityWithIgnoredRules[],
+): Promise<ITablesResults> => {
     const formData = new FormData();
 
     formData.append('templateId', template._id);
@@ -78,7 +81,7 @@ export const editManyEntitiesByExcelRequest = async (template: IMongoEntityTempl
         templateId: entity.templateId,
         properties: mapValues(entity.properties, (property, key) =>
             template.properties.properties[key]?.format === 'relationshipReference' ? property?.properties._id : property,
-            ),
+        ),
         ignoredRules: entity.ignoredRules,
     }));
     formData.append('entities', JSON.stringify(entitiesArray));

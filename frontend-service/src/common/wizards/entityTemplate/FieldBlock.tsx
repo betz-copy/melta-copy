@@ -46,7 +46,7 @@ interface FieldBlockProps<PropertiesType extends string, Values extends Record<P
     supportUnique?: boolean;
     supportLocation?: boolean;
     supportArchive?: boolean;
-    locationSearchFields?: {show: boolean, disabled: boolean};
+    locationSearchFields?: { show: boolean; disabled: boolean };
     supportAddFieldButton?: boolean;
     hasActions?: boolean;
     draggable?: { isDraggable: false } | { isDraggable: true; dragHandleProps: DraggableProvided['dragHandleProps'] };

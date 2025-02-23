@@ -61,13 +61,18 @@ const EditExcelWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
         {
             async onSuccess(data) {
                 const { entities, failedEntities } = data;
-                setStepsData((prev) => ({ ...prev, status: ExcelStepStatus.previewExcelRows, entities, data: { failedEntities, succeededEntities: [] } }));
+                setStepsData((prev) => ({
+                    ...prev,
+                    status: ExcelStepStatus.previewExcelRows,
+                    entities,
+                    data: { failedEntities, succeededEntities: [] },
+                }));
 
                 return data;
             },
             onError(error: AxiosError) {
-                const { message } = error.response?.data;                
-                if(message ==='Invalid excel') toast.error(i18next.t('wizard.entity.loadEntities.filesWrongTemplate'));
+                const { message } = error.response?.data as any;
+                if (message === 'Invalid excel') toast.error(i18next.t('wizard.entity.loadEntities.filesWrongTemplate'));
                 else if (message.includes('file limit')) toast.error(i18next.t('wizard.entity.loadEntities.limitNumberEntities') + entitiesFileLimit);
                 else toast.error(i18next.t('wizard.entity.editExcel.failedReadExcel'));
                 onClose();
@@ -115,7 +120,7 @@ const EditExcelWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
             return exportEntitiesRequest({
                 fileName,
                 templates: {
-                    [template!._id]: { headersOnly, insertEntities, displayColumns: template?.propertiesOrder},
+                    [template!._id]: { headersOnly, insertEntities, displayColumns: template?.propertiesOrder },
                 },
             });
         },
@@ -269,7 +274,7 @@ const EditExcelWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
                         });
                         onClose();
                     }}
-                     doActionEntity={() => {
+                    doActionEntity={() => {
                         const brokenRulesEntities =
                             stepsData.data.brokenRulesEntities?.entities.map(({ properties }) => ({
                                 templateId: template!._id,

@@ -175,7 +175,7 @@ const TemplateTable = forwardRef<
     const isEditExcelDisabled = !userHasWritePermissions || !checkIfEditExcelIsDisabled();
     const editExcelTooltip = isEditExcelDisabled
         ? i18next.t(!userHasWritePermissions ? 'permissions.dontHaveWritePermissionsToTemplate' : 'wizard.entity.loadEntities.tableCantEditExcel')
-        : undefined
+        : undefined;
 
     return (
         <Grid container minWidth="fit-content">
