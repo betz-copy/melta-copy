@@ -25,6 +25,7 @@ export interface ProcessTemplateFormInputProperties {
     pattern: string;
     patternCustomErrorMessage: string;
     required: boolean;
+    deleted?: boolean | undefined;
 }
 export interface ProcessTemplateWizardValues extends Omit<IMongoProcessTemplatePopulated, 'details' | 'steps' | 'createdAt' | 'updatedAt'> {
     detailsProperties: ProcessTemplateFormInputProperties[];
@@ -60,7 +61,7 @@ const ProcessTemplateWizard: React.FC<WizardBaseType<ProcessTemplateWizardValues
     const queryClient = useQueryClient();
     const templates = queryClient.getQueryData<IProcessTemplateMap>('getProcessTemplates') || new Map();
 
-    const createTemplateNameSchema = useCreateOrEditTemplateNameSchema(templates);
+    const createTemplateNameSchema = useCreateOrEditTemplateNameSchema(templates, initialValues._id);
 
     const { isLoading, mutateAsync } = useMutation(
         (processTemplate: ProcessTemplateWizardValues) =>

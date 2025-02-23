@@ -1,7 +1,7 @@
 // Most code is copied from
 // https://mui.com/x/react-tree-view/rich-tree-view/ordering/
 
-import { Box, Divider, Typography } from '@mui/material';
+import { Box, Divider, Typography, useTheme } from '@mui/material';
 import {
     TreeItem2Props,
     useTreeItem2,
@@ -14,15 +14,33 @@ import {
     TreeItem2Provider,
     TreeViewCancellableEventHandler,
 } from '@mui/x-tree-view-pro';
-import React from 'react';
-import { Menu } from '@mui/icons-material';
+import React, { useMemo } from 'react';
+import { Menu, Hive as HiveIcon } from '@mui/icons-material';
 import { MeltaCheckbox } from '../MeltaCheckbox';
 import { MeltaTooltip } from '../MeltaTooltip';
+import { CustomIcon } from '../CustomIcon';
 
 const LabelWithToolTip = ({ children, className }) => (
-    <Box className={className}>
+    <Box
+        className={className}
+        sx={{
+            width: '200px',
+            display: 'inline-block',
+            position: 'relative',
+            overflow: 'hidden',
+        }}
+    >
         <MeltaTooltip title={children}>
-            <Typography sx={{ fontSize: '14px' }}>{children}</Typography>
+            <Typography
+                sx={{
+                    fontSize: '14px',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                }}
+            >
+                {children}
+            </Typography>
         </MeltaTooltip>
     </Box>
 );
@@ -53,9 +71,8 @@ const draggableHandle = (
     </TreeItem2IconContainer>
 );
 
-const TreeItem = React.forwardRef(function CustomTreeItem(props: TreeItem2Props, ref: React.Ref<HTMLLIElement>) {
-    const { id, itemId, label, disabled, children, ...other } = props;
-
+const TreeItem = React.forwardRef(function CustomTreeItem(props: TreeItem2Props & { showIcon?: boolean }, ref: React.Ref<HTMLLIElement>) {
+    const { id, itemId, label, disabled, children, showIcon, ...other } = props;
     const {
         getRootProps,
         getContentProps,
@@ -65,7 +82,12 @@ const TreeItem = React.forwardRef(function CustomTreeItem(props: TreeItem2Props,
         getGroupTransitionProps,
         getDragAndDropOverlayProps,
         status,
+        publicAPI,
     } = useTreeItem2({ id, itemId, children, label, disabled, rootRef: ref });
+    const theme = useTheme();
+
+    const checkBoxProps = getCheckboxProps();
+    const item = (publicAPI as any).getItem(itemId);
 
     const { draggable, onDragStart, onDragOver, onDragEnd, ...otherRootProps }: ReturnType<typeof getRootProps> = getRootProps(other);
     const itemDepth = otherRootProps.style?.['--TreeView-itemDepth'];
@@ -76,6 +98,16 @@ const TreeItem = React.forwardRef(function CustomTreeItem(props: TreeItem2Props,
         onDragStart(event);
         event.dataTransfer.setDragImage((event.target as HTMLElement).parentElement!, 0, 0);
     };
+
+    const additionalRowIcon = useMemo(() => {
+        if (!showIcon) return undefined;
+
+        return item.iconFileId ? (
+            <CustomIcon color={theme.palette.primary.main} iconUrl={item.iconFileId!} height="15px" width="15px" />
+        ) : (
+            <HiveIcon style={{ color: theme.palette.primary.main }} fontSize="inherit" />
+        );
+    }, [item, showIcon, theme.palette.primary.main]);
 
     return (
         // To fix this error probably requires to upgrade to react 18.
@@ -101,7 +133,8 @@ const TreeItem = React.forwardRef(function CustomTreeItem(props: TreeItem2Props,
                         </TreeItem2IconContainer>
                     )}
                     {draggable && draggableHandle(handleDragStart, onDragOver, onDragEnd)}
-                    <MeltaCheckbox {...getCheckboxProps()} sxChecked={{ width: '18px', height: '18px' }} />
+                    {checkBoxProps.visible && <MeltaCheckbox {...checkBoxProps} sxChecked={{ width: '18px', height: '18px' }} />}
+                    {additionalRowIcon}
                     <LabelWithToolTip {...getLabelProps()} />
                     <TreeItem2DragAndDropOverlay {...getDragAndDropOverlayProps()} />
                 </TreeItem2Content>

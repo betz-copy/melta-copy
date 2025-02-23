@@ -7,7 +7,6 @@ import {
     deleteTemplateByIdRequestSchema,
     getTemplateByIdRequestSchema,
     searchTemplateRequestSchema,
-    updateTemplateByIdRequestSchema,
 } from './validator.schema';
 
 const processTemplateRouter: Router = Router();
@@ -17,7 +16,6 @@ const controller = createController(ProcessTemplateController);
 processTemplateRouter.get('/:id', ValidateRequest(getTemplateByIdRequestSchema), controller.getTemplateById);
 processTemplateRouter.post('/', ValidateRequest(createTemplateRequestSchema), controller.createTemplate);
 processTemplateRouter.delete('/:id', ValidateRequest(deleteTemplateByIdRequestSchema), controller.deleteTemplate);
-processTemplateRouter.put('/:id', ValidateRequest(updateTemplateByIdRequestSchema), controller.updateTemplate);
 processTemplateRouter.post('/search', ValidateRequest(searchTemplateRequestSchema), controller.searchTemplates);
 
 export default processTemplateRouter;

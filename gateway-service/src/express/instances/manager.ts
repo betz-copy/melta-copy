@@ -22,6 +22,7 @@ import {
     ISearchFilter,
     ISearchSort,
     ITemplateSearchBody,
+    IEntityWithIgnoredRules,
 } from '../../externalServices/instanceService/interfaces/entities';
 import { IRelationship } from '../../externalServices/instanceService/interfaces/relationships';
 import {
@@ -53,12 +54,12 @@ import { IExportEntitiesBody } from './interfaces';
 import { RabbitManager } from '../../utils/rabbit';
 import { SemanticSearchService } from '../../externalServices/semanticSearch';
 import { WorkspaceService } from '../workspaces/service';
+import { UploadedFile } from '../../utils/busboy/interface';
 import { createTextsFromEntitiesWithFiles, formatEntitiesBulkSearch, sortEntities } from '../../utils/semantic';
 import { ISemanticSearchResult } from '../../externalServices/semanticSearch/interface';
 import { getValidationErrorEntities, readExcelFile, updateIdOfBrokenRules } from '../../utils/excel/getFunctions';
 
 const { errorCodes, rabbit, ruleBreachService } = config;
-const { filesLimit } = config.loadExcel;
 
 export class InstancesManager extends DefaultManagerProxy<InstancesService> {
     private entityTemplateService: EntityTemplateService;
@@ -84,7 +85,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
     }
 
     async uploadInstanceFiles<TProps = Record<string, any>>(
-        files: Express.Multer.File[],
+        files: UploadedFile[],
         props: TProps = {} as TProps,
     ): Promise<{ props: TProps; files: Record<string, any> }> {
         if (files.length === 0) {
@@ -246,7 +247,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
     handleLoadEntitiesErrors = (error: any, failedEntities: IFailedEntity[], entity: IEntity, allBrokenRulesEntities: IBrokenRuleEntity[]) => {
         if (error instanceof AxiosError) {
-            if (!error.response) throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, 'no error.response in axiosError', error);
+            if (!error.response) throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, 'no error. response in axiosError', error);
 
             const { data } = error.response;
 
@@ -313,21 +314,24 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         });
     };
 
-    async loadEntities(
-        templateId: string,
-        userId: string,
-        files?: Express.Multer.File[],
-        insertBrokenEntities?: { entitiesToCreate: IEntity[]; ignoredRules: IBrokenRule[] },
-    ) {
-        let entities = insertBrokenEntities?.entitiesToCreate;
+    async loadEntities(templateId: string, userId: string, files?: UploadedFile[], insertBrokenEntities?: IEntityWithIgnoredRules[]) {
+        let entities = insertBrokenEntities;
         const template = await this.entityTemplateService.getEntityTemplateById(templateId);
 
         const failedEntities: IFailedEntity[] = [];
 
         if (files && !entities) {
-            if (files?.length > filesLimit) throw new BadRequestError('files limit', {});
-            const actions = await readExcelFile(files, template, failedEntities);
-            entities = actions;
+            const workspace = await WorkspaceService.getById(this.workspaceId);
+            const workspaceFilesLimit = workspace.metadata?.excel?.filesLimit;
+
+            const effectiveFilesLimit = workspaceFilesLimit ?? config.loadExcel.filesLimit;
+
+            if (files.length > effectiveFilesLimit) {
+                throw new BadRequestError(`files limit: more than ${effectiveFilesLimit} files`, {});
+            }
+
+            const fileEntities = await readExcelFile(files, template, failedEntities, workspace.metadata?.excel?.entitiesFileLimit);
+            entities = fileEntities;
         }
         const serialStarters = this.getSerialStarters(template);
         const generateSerialNumbers = (index: number) =>
@@ -337,17 +341,18 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         const allBrokenRulesEntities: IBrokenRuleEntity[] = [];
         const results: IEntity[] = [];
 
-        const handleLoadEntities = async (entity: IEntity) => {
+        const handleLoadEntities = async (entityWithIgnoredRules: IEntityWithIgnoredRules) => {
+            const { ignoredRules, ...entity } = entityWithIgnoredRules;
             try {
                 const serialNumbers = generateSerialNumbers(succeededEntities.length);
-                const result = await this.createEntityInstance(entity, [], insertBrokenEntities?.ignoredRules || [], userId, serialNumbers);
+                const result = await this.createEntityInstance(entity, [], ignoredRules, userId, serialNumbers);
                 results.push(result);
             } catch (error) {
                 this.handleLoadEntitiesErrors(error, failedEntities, entity, allBrokenRulesEntities);
             }
         };
 
-        if (Object.keys(serialStarters).length > 0) for (const entity of entities!) handleLoadEntities(entity);
+        if (Object.keys(serialStarters).length > 0) for (const entity of entities!) await handleLoadEntities(entity);
         else await Promise.all(entities!.map(async (entity) => handleLoadEntities(entity)));
 
         succeededEntities.push(...results);
@@ -403,7 +408,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         return updatedProperties;
     }
 
-    async handlePreparationsBeforeCreateEntity(instanceData: IEntity, files: Express.Multer.File[], serialNumbers?: Record<string, number>) {
+    async handlePreparationsBeforeCreateEntity(instanceData: IEntity, files: UploadedFile[], serialNumbers?: Record<string, number>) {
         const { props: propertiesWithFiles, files: upserstedFiles } = await this.uploadInstanceFiles(files, instanceData.properties);
 
         const entityTemplate = await this.entityTemplateService.getEntityTemplateById(instanceData.templateId);
@@ -418,7 +423,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
     async createEntityInstance(
         instanceData: IEntity,
-        files: Express.Multer.File[],
+        files: UploadedFile[],
         ignoredRules: IBrokenRule[],
         userId: string,
         serialNumbers?: Record<string, number>,
@@ -453,7 +458,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         return createdEntity;
     }
 
-    private async deleteUnusedFiles(currentEntity: IEntity, instanceData: IEntity, files: Express.Multer.File[]) {
+    private async deleteUnusedFiles(currentEntity: IEntity, instanceData: IEntity, files: UploadedFile[]) {
         const entityTemplate = await this.entityTemplateService.getEntityTemplateById(currentEntity.templateId);
         const newFilesKeys = files.map((file) => file.fieldname);
 
@@ -474,8 +479,8 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
             return [];
         }
 
-        await this.rabbitManager.deleteFiles(currentEntity.templateId, currentEntity.properties._id, fileIdsToDelete);
-        await menash.send(rabbit.deleteUnusedFilesQueue, JSON.stringify(fileIdsToDelete));
+        await this.rabbitManager.deleteFiles(fileIdsToDelete);
+        await menash.send(rabbit.deleteUnusedFilesQueue, JSON.stringify({ fileIds: fileIdsToDelete, bucketName: this.workspaceId }));
 
         return fileIdsToDelete;
     }
@@ -601,7 +606,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
     async duplicateEntityInstance(
         id: string,
         instanceData: IEntity,
-        files: Express.Multer.File[],
+        files: UploadedFile[],
         ignoredRules: IBrokenRule[],
         userId: string,
         duplicateFileProperties = true,
@@ -675,7 +680,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
     async updateEntityInstance(
         id: string,
         updatedInstanceData: IEntity,
-        files: Express.Multer.File[],
+        files: UploadedFile[],
         ignoredRules: IBrokenRule[],
         userId: string,
         createAlert: boolean = true,
@@ -755,8 +760,8 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
     private async deleteAllEntitiesFiles(fileIdsToRemove: string[]) {
         if (!fileIdsToRemove.length) return [];
-
-        await menash.send(rabbit.deleteUnusedFilesQueue, JSON.stringify(fileIdsToRemove));
+        await menash.send(rabbit.deleteUnusedFilesQueue, JSON.stringify({ fileIds: fileIdsToRemove, bucketName: this.workspaceId }));
+        await this.rabbitManager.deleteFiles(fileIdsToRemove);
 
         return fileIdsToRemove;
     }

@@ -95,6 +95,10 @@ class EntityController extends DefaultController<EntityManager> {
         res.json(await this.manager.updateEnumFieldValue(req.params.id, newValue, oldValue, field));
     }
 
+    async convertFieldsToPlural(req: Request, res: Response) {
+        res.json(await this.manager.convertFieldsToPlural(req.params.id, req.body.propertiesKeysToPluralize));
+    }
+
     async getIsFieldUsed(req: Request, res: Response) {
         const { fieldValue, fieldName, type } = (req as RequestWithQuery<{ fieldValue: string; fieldName: string; type: string }>).query;
         res.json(await this.manager.getIsFieldUsed(req.params.id, fieldValue, fieldName, type));

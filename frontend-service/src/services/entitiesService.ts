@@ -15,12 +15,12 @@ import {
     IDeleteEntityBody,
     ICountSearchResult,
     ISearchFilter,
+    IEntityWithIgnoredRules,
 } from '../interfaces/entities';
 import { EntityWizardValues } from '../common/dialogs/entity';
-import { IBrokenRule, IRuleBreach } from '../interfaces/ruleBreaches/ruleBreach';
+import { IRuleBreach } from '../interfaces/ruleBreaches/ruleBreach';
 import { filterModelToFilterOfGraph } from '../pages/Graph/GraphFilterToBackend';
 import { ITablesResults } from '../common/wizards/loadEntities';
-import { ICreateEntityMetadata } from '../interfaces/ruleBreaches/actionMetadata';
 import { IAxisField } from '../interfaces/charts';
 
 const { entities, relationships } = environment.api;
@@ -33,7 +33,7 @@ export const exportEntitiesRequest = async (body: IExportEntitiesBody) => {
 export const loadEntitiesRequest = async (
     templateId: string,
     files?: Record<string, File>,
-    insertBrokenEntities?: { entitiesToCreate: ICreateEntityMetadata[]; ignoredRules: IBrokenRule[] },
+    insertBrokenEntities?: IEntityWithIgnoredRules[],
 ): Promise<ITablesResults> => {
     const formData = new FormData();
     if (files)
@@ -43,17 +43,13 @@ export const loadEntitiesRequest = async (
     formData.append('templateId', templateId);
 
     if (insertBrokenEntities) {
-        const { entitiesToCreate = [], ignoredRules = [] } = insertBrokenEntities;
+        const formattedInsertBrokenEntities = insertBrokenEntities.map((entity) => ({
+            templateId: entity.templateId,
+            properties: mapValues(entity.properties, (property) => property),
+            ignoredRules: entity.ignoredRules,
+        }));
 
-        const insertBrokenEntitiesObject = {
-            entitiesToCreate: entitiesToCreate.map((entity) => ({
-                templateId: entity.templateId,
-                properties: mapValues(entity.properties, (property) => property),
-            })),
-            ignoredRules,
-        };
-
-        formData.append('insertBrokenEntities', JSON.stringify(insertBrokenEntitiesObject));
+        formData.append('insertBrokenEntities', JSON.stringify(formattedInsertBrokenEntities));
     }
 
     const { data } = await axios.post(`${entities}/loadEntities`, formData);
@@ -138,6 +134,7 @@ export const updateEntityRequestForMultiple = async (
 
     const filesToUpload: any = [];
     const unchangedFiles: any = []; /// //send single file as array to the back
+
     Object.entries(newEntityData.attachmentsProperties).forEach(([key, value]: [string, any]) => {
         if (Array.isArray(value) && value) {
             value.forEach((file, index) => {
@@ -158,7 +155,7 @@ export const updateEntityRequestForMultiple = async (
         }
     });
     filesToUpload.forEach(([key, value]) => {
-        formData.append(key, value as Blob);
+        formData.append(key, value);
     });
     unchangedFiles.forEach(([key, _value]) => {
         newEntityData.properties[key] = [];
@@ -175,6 +172,7 @@ export const updateEntityRequestForMultiple = async (
             }
         }
     });
+
     formData.append(
         'properties',
         JSON.stringify(
@@ -183,12 +181,17 @@ export const updateEntityRequestForMultiple = async (
             ),
         ),
     );
+
     formData.append('templateId', newEntityData.template._id);
 
     if (ignoredRules) {
         formData.append('ignoredRules', JSON.stringify(ignoredRules));
     }
-    const { data } = await axios.put<IEntity>(`${entities}/${entityId}`, formData);
+
+    const { data } = await axios.put<IEntity>(`${entities}/${entityId}`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+    });
+
     return data;
 };
 

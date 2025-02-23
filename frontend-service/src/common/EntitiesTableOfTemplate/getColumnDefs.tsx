@@ -38,7 +38,7 @@ export interface IGetColumnDefsOptions<Data extends any> {
     menuRowButtonProps?: boolean;
     hideNonPreview?: boolean;
     editRowButtonProps?: IButtonPopoverProps<Data>;
-    hasPermissionToCategory?: boolean;
+    hasPermissionToTemplate?: boolean;
     defaultVisibleColumns?: { [key: string]: boolean };
     defaultColumnsOrder?: { [key: string]: { order: number } };
     defaultColumnWidths?: { [key: string]: number };
@@ -66,7 +66,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
     deleteRowButtonProps,
     editRowButtonProps,
     menuRowButtonProps,
-    hasPermissionToCategory = true,
+    hasPermissionToTemplate = true,
     defaultVisibleColumns = {},
     defaultColumnsOrder = {},
     defaultColumnWidths = {},
@@ -79,14 +79,20 @@ export const getColumnDefs = <Data extends any = EntityData>({
     searchValue,
     disableEditCell,
 }: IGetColumnDefsOptions<Data>): ColDef[] => {
+    const invisibleColumnsAmount = Object.values(defaultVisibleColumns).filter((value) => value === false).length;
+    const lastColumnIndex = Object.keys(defaultColumnsOrder).length - invisibleColumnsAmount - 2;
+
     const columnDefs = template.propertiesOrder.map((property) => {
         const propertyTemplate = { ...template.properties.properties[property] };
         const hiddenProperties = template.properties.hide;
         const { type, format, calculateTime, archive } = propertyTemplate;
 
+        const isLastColumn = defaultColumnsOrder[property]?.order === lastColumnIndex;
+
         const hideField = template.properties.hide.includes(property);
 
         const valueGetter: ValueGetterFunc = ({ data }) => (data ? getEntityPropertiesData(data)[property] : undefined);
+        const entityGetter: ValueGetterFunc = ({ data }) => (data ? getEntityPropertiesData(data) : undefined);
 
         const hideColumn =
             archive ||
@@ -105,6 +111,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
                 valueGetter,
                 propertyTemplate,
                 defaultColumnWidths[property],
+                isLastColumn,
                 hideColumn,
                 hideField,
                 ignoreType,
@@ -117,6 +124,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
                 valueGetter,
                 propertyTemplate,
                 defaultColumnWidths[property],
+                isLastColumn,
                 hideColumn,
                 hideField,
                 ignoreType,
@@ -128,6 +136,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
                 property,
                 valueGetter,
                 propertyTemplate,
+                isLastColumn,
                 defaultColumnWidths[property],
                 hideColumn,
                 hideField,
@@ -142,12 +151,24 @@ export const getColumnDefs = <Data extends any = EntityData>({
                 valueGetter,
                 propertyTemplate,
                 defaultColumnWidths[property],
+                isLastColumn,
                 hideColumn,
                 searchValue,
                 Object.values(template.entitiesWithFiles ?? {}).flat(),
             );
         if (format === 'location')
-            return locationColDef(property, valueGetter, propertyTemplate, template, defaultColumnWidths[property], hideColumn, searchValue);
+            return locationColDef(
+                property,
+                valueGetter,
+                entityGetter,
+                propertyTemplate,
+                template,
+                defaultColumnWidths[property],
+                isLastColumn,
+                hideColumn,
+                ignoreType,
+                searchValue,
+            );
         if (format === 'relationshipReference')
             return relatedTemplateColDef(
                 property,
@@ -156,6 +177,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
                 defaultColumnWidths[property],
                 propertyTemplate.relationshipReference!.relatedTemplateId,
                 propertyTemplate.relationshipReference!.relatedTemplateField,
+                isLastColumn,
                 hideColumn,
                 searchValue,
                 editable,
@@ -167,6 +189,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
                 propertyTemplate,
                 propertyTemplate.enum,
                 defaultColumnWidths[property],
+                isLastColumn,
                 template.enumPropertiesColors?.[property],
                 hideColumn,
                 hideField,
@@ -180,6 +203,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
                 valueGetter,
                 propertyTemplate,
                 defaultColumnWidths[property],
+                isLastColumn,
                 hideColumn,
                 hideField,
                 ignoreType,
@@ -194,6 +218,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
                 propertyTemplate.items.enum,
                 defaultColumnWidths[property],
                 rowHeight,
+                isLastColumn,
                 template.enumPropertiesColors?.[property],
                 hideColumn,
                 hideField,
@@ -202,10 +227,10 @@ export const getColumnDefs = <Data extends any = EntityData>({
                 editable,
             );
         if (propertyTemplate.items?.format === 'fileId') {
-            return enumFilesColDef(property, valueGetter, { title: propertyTemplate.title }, defaultColumnWidths[property], rowHeight);
+            return enumFilesColDef(property, valueGetter, { title: propertyTemplate.title }, defaultColumnWidths[property], rowHeight, isLastColumn);
         }
         if (propertyTemplate.format === 'user') {
-            return userColDef(property, valueGetter, { title: propertyTemplate.title }, [], defaultColumnWidths[property], hideColumn);
+            return userColDef(property, valueGetter, { title: propertyTemplate.title }, [], defaultColumnWidths[property], isLastColumn, hideColumn);
         }
         if (propertyTemplate.items?.format === 'user') {
             return userArrayColDef(
@@ -215,6 +240,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
                 [],
                 defaultColumnWidths[property],
                 rowHeight,
+                isLastColumn,
                 hideColumn,
             );
         }
@@ -223,6 +249,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
             valueGetter,
             propertyTemplate,
             defaultColumnWidths[property],
+            isLastColumn,
             hideColumn,
             hideField,
             ignoreType,
@@ -239,6 +266,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
                 title: i18next.t('entitiesTableOfTemplate.disabledHeaderName'),
             },
             defaultColumnWidths.disabled,
+            defaultColumnsOrder.disable?.order === lastColumnIndex,
             defaultVisibleColumns.disabled !== undefined ? !defaultVisibleColumns.disabled : true,
         ),
     );
@@ -251,6 +279,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
                 title: i18next.t('entityPage.createdAt'),
                 format: 'date-time',
             },
+            defaultColumnsOrder.createdAt?.order === lastColumnIndex,
             defaultColumnWidths.createdAt,
             defaultVisibleColumns.createdAt !== undefined ? !defaultVisibleColumns.createdAt : true,
         ),
@@ -264,6 +293,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
                 title: i18next.t('entityPage.updatedAt'),
                 format: 'date-time',
             },
+            defaultColumnsOrder.updatedAt?.order === lastColumnIndex,
             defaultColumnWidths.updatedAt,
             defaultVisibleColumns.updatedAt !== undefined ? !defaultVisibleColumns.updatedAt : true,
         ),
@@ -283,6 +313,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
 
     if (onNavigateToRow || deleteRowButtonProps || editRowButtonProps || menuRowButtonProps) {
         columnDefs.push({
+            field: `actions-${template._id}`,
             headerName: i18next.t('entitiesTableOfTemplate.actionsHeaderName'),
             pinned: 'left',
             menuTabs: [],
@@ -308,17 +339,17 @@ export const getColumnDefs = <Data extends any = EntityData>({
                                 <Link
                                     href={`/entity/${getEntityPropertiesData(data)._id}`}
                                     onClick={(e) => {
-                                        if (!hasPermissionToCategory) e.preventDefault();
+                                        if (!hasPermissionToTemplate) e.preventDefault();
                                     }}
                                     data-tour="entity-page"
                                 >
                                     <IconButtonWithPopover
                                         popoverText={
-                                            !hasPermissionToCategory
+                                            !hasPermissionToTemplate
                                                 ? i18next.t('permissions.dontHavePermissionToEntityPage')
                                                 : i18next.t('entitiesTableOfTemplate.navigateToEntityPage')
                                         }
-                                        disabled={!hasPermissionToCategory}
+                                        disabled={!hasPermissionToTemplate}
                                     >
                                         <img src="/icons/read-more-icon.svg" />
                                     </IconButtonWithPopover>

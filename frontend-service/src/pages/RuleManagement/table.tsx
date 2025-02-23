@@ -7,7 +7,6 @@ import React, { forwardRef, memo, useImperativeHandle, useMemo, useRef } from 'r
 import { toast } from 'react-toastify';
 import IconButtonWithPopover from '../../common/IconButtonWithPopover';
 import '../../css/table.css';
-import { environment } from '../../globals';
 import { ActionTypes } from '../../interfaces/ruleBreaches/actionMetadata';
 import { BreachType, IRuleBreachPopulated } from '../../interfaces/ruleBreaches/ruleBreach';
 import { IRuleBreachAlertPopulated } from '../../interfaces/ruleBreaches/ruleBreachAlert';
@@ -18,6 +17,7 @@ import { agGridLocaleText } from '../../utils/agGrid/agGridLocaleText';
 import { dateColDef, enumArrayColDef, translatedEnumColDef } from '../../utils/agGrid/commonColDefs';
 import { DateFilterComponent } from '../../utils/agGrid/DateFilterComponent';
 import { trycatch } from '../../utils/trycatch';
+import { useWorkspaceStore } from '../../stores/workspace';
 
 const getDatasource = (breachType: BreachType, onFail: ((err: unknown) => void) | undefined): IServerSideDatasource => {
     return {
@@ -46,6 +46,7 @@ const getDatasource = (breachType: BreachType, onFail: ((err: unknown) => void) 
 };
 
 const getColumnDefs = (
+    defaultRowHeight: number,
     breachType: BreachType,
     onReviewBreachClick: (ruleBreach: IRuleBreachAlertPopulated | IRuleBreachRequestPopulated, breachType: BreachType) => void,
 ) => {
@@ -100,12 +101,18 @@ const getColumnDefs = (
             { title: i18next.t('ruleManagement.actionType') },
             Object.values(actionTypeTranslations),
             400,
-            environment.agGrid.defaultRowHeight,
+            defaultRowHeight,
+            false,
         ),
-        dateColDef<IRuleBreachPopulated>('createdAt', ({ data }) => data?.createdAt, {
-            title: i18next.t('ruleManagement.createdAt'),
-            format: 'date-time',
-        }),
+        dateColDef<IRuleBreachPopulated>(
+            'createdAt',
+            ({ data }) => data?.createdAt,
+            {
+                title: i18next.t('ruleManagement.createdAt'),
+                format: 'date-time',
+            },
+            true,
+        ),
     ];
 
     const requestColDef: ColDef<IRuleBreachRequestPopulated>[] = [
@@ -128,10 +135,15 @@ const getColumnDefs = (
             menuTabs: [],
             sortable: false,
         },
-        dateColDef<IRuleBreachRequestPopulated>('reviewedAt', ({ data }) => data?.reviewedAt, {
-            title: i18next.t('ruleManagement.reviewedAt'),
-            format: 'date-time',
-        }),
+        dateColDef<IRuleBreachRequestPopulated>(
+            'reviewedAt',
+            ({ data }) => data?.reviewedAt,
+            {
+                title: i18next.t('ruleManagement.reviewedAt'),
+                format: 'date-time',
+            },
+            true,
+        ),
     ];
 
     if (breachType === 'request') {
@@ -152,10 +164,11 @@ const RuleBreachTable = forwardRef<
         onReviewBreachClick: (ruleBreach: IRuleBreachAlertPopulated | IRuleBreachRequestPopulated, breachType: BreachType) => void;
     }
 >(({ rowHeight, pageRowCount = 5, fontSize, minColumnWidth, breachType, onReviewBreachClick }, ref) => {
+    const workspace = useWorkspaceStore((state) => state.workspace);
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
     const gridRef = useRef<AgGridReact>(null);
-    const columnDefs: ColDef[] = getColumnDefs(breachType, onReviewBreachClick);
+    const columnDefs: ColDef[] = getColumnDefs(workspace.metadata.agGrid.defaultRowHeight, breachType, onReviewBreachClick);
 
     const datasourceOnFail = (err: unknown) => {
         toast.error(i18next.t('entitiesTableOfTemplate.failedToLoadData'));

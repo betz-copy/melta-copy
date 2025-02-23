@@ -15,7 +15,6 @@ import OpenSmallPreview from '../../../common/FilePreview/OpenSmallPreview';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
 import { ImageWithDisable } from '../../../common/ImageWithDisable';
 import { MeltaTooltip } from '../../../common/MeltaTooltip';
-import { environment } from '../../../globals';
 import { IEntity } from '../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { PermissionScope } from '../../../interfaces/permissions';
@@ -24,11 +23,12 @@ import { useUserStore } from '../../../stores/user';
 import { getEntityTemplateColor } from '../../../utils/colors';
 import { getFileName } from '../../../utils/getFileName';
 import { getFileNameWithoutExtension, getPreviewContentType } from '../../../utils/getFileType';
-import { checkUserCategoryPermission } from '../../../utils/permissions/instancePermissions';
+import { checkUserTemplatePermission } from '../../../utils/permissions/instancePermissions';
 import { EntityDates } from '../../Entity/components/EntityDates';
 import { EntityDisableCheckbox } from '../../Entity/components/EntityDisableCheckbox';
 import { EntityWizardValues } from '../../../common/dialogs/entity';
 import { NoFile } from './NoFile';
+import { useWorkspaceStore } from '../../../stores/workspace';
 import { HighlightText } from '../../../utils/HighlightText';
 
 export const StyledCard = styled(Card)(({ theme }) => ({
@@ -74,15 +74,18 @@ const EntityCard: React.FC<EntityCardProps> = ({
     minioFileId,
     matchedSentence,
 }) => {
+    const workspace = useWorkspaceStore((state) => state.workspace);
+
     const [open, setOpen] = useState<boolean>(expandCard);
     const [externalErrors, setExternalErrors] = useState({ files: false, unique: {}, action: '' });
     const [previewImageIndex, setPreviewImageIndex] = useState(0);
     const cardRef = useRef<HTMLDivElement>(null);
     const currentUser = useUserStore((state) => state.user);
 
-    const userHasWritePermissions = checkUserCategoryPermission(
+    const userHasWritePermissions = checkUserTemplatePermission(
         currentUser.currentWorkspacePermissions,
         entityTemplate.category,
+        entityTemplate._id,
         PermissionScope.write,
     );
 
@@ -201,11 +204,13 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                 <CustomIcon
                                     color={entityTemplateColor}
                                     iconUrl={entityTemplate.iconFileId}
-                                    height={environment.iconSize.height}
-                                    width={environment.iconSize.width}
+                                    height={workspace.metadata.iconSize.height}
+                                    width={workspace.metadata.iconSize.width}
                                 />
                             ) : (
-                                <AppRegistrationIcon sx={{ fontSize: environment.mainFontSizes.headlineTitleFontSize, color: entityTemplateColor }} />
+                                <AppRegistrationIcon
+                                    sx={{ fontSize: workspace.metadata.mainFontSizes.headlineTitleFontSize, color: entityTemplateColor }}
+                                />
                             )}
                         </Grid>
                         <BlueTitle title={entityTemplate.displayName} component="h4" variant="h6" style={{ fontWeight: 400 }} />

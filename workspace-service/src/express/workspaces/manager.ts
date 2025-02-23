@@ -2,8 +2,9 @@ import { FilterQuery } from 'mongoose';
 import { parse as parsePath } from 'node:path/posix';
 import { transaction } from '../../utils/mongoose';
 import { DocumentNotFoundError, PathDoesNotExistError, PathIsNotFolderError, WorkspaceUnderRootMustBeDirError } from '../error';
-import { IWorkspace, WorkspaceTypes } from './interface';
+import { IMetadata, IWorkspace, WorkspaceTypes } from './interface';
 import { WorkspacesModel } from './model';
+import { escapeRegExp } from '../../utils/regex';
 
 export class WorkspacesManager {
     static async getWorkspaceIds(type: IWorkspace['type']) {
@@ -123,5 +124,41 @@ export class WorkspacesManager {
 
             return WorkspacesModel.findByIdAndDelete(id, { session }).orFail(new DocumentNotFoundError(id)).lean().exec();
         });
+    }
+
+    static async updateMetadata(id: string, metadata: Partial<IMetadata>) {
+        return transaction(async (session) => {
+            const existingWorkspace = await WorkspacesModel.findById(id, {}, { session }).orFail(new DocumentNotFoundError(id)).lean().exec();
+
+            const updatedMetadata = {
+                ...existingWorkspace.metadata,
+                ...metadata,
+            };
+
+            return WorkspacesModel.findOneAndUpdate(
+                { _id: id },
+                {
+                    $set: {
+                        metadata: updatedMetadata,
+                    },
+                },
+                { new: true, session, lean: true },
+            )
+                .orFail(new DocumentNotFoundError(id))
+                .exec();
+        });
+    }
+
+    static async searchWorkspaces(searchQuery: { search?: string }) {
+        const { search: displayName } = searchQuery;
+        const query: FilterQuery<IWorkspace> = {};
+
+        if (displayName) {
+            query.displayName = { $regex: escapeRegExp(displayName) };
+        }
+
+        query.type = WorkspaceTypes.mlt;
+
+        return WorkspacesModel.find(query).sort({ name: 1 }).lean().exec();
     }
 }

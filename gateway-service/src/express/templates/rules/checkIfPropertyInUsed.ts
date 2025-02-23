@@ -6,26 +6,31 @@ import { IEquation, isEquation } from './interfaces/formula/equation';
 import { isCountAggFunction, isRegularFunction, isSumAggFunction, ISumAggFunction } from './interfaces/formula/function';
 import { isAggregationGroup, isGroup } from './interfaces/formula/group';
 
-const checkPropertyInUsed = ({ variable, property }: IPropertyOfVariable | ISumAggFunction, entityId: string, properties: string[]) => {
+const checkPropertyInUsed = (
+    { variable, property }: IPropertyOfVariable | ISumAggFunction,
+    entityId: string,
+    properties: string[],
+    archive: boolean,
+) => {
     if (
         (variable.entityTemplateId === entityId || variable.aggregatedRelationship?.otherEntityTemplateId === entityId) &&
         properties.includes(property)
     ) {
         throw new ServiceError(400, 'can not delete field that used in rules', {
-            errorCode: config.errorCodes.failedToDeleteField,
+            errorCode: archive ? config.errorCodes.failedToArchiveField : config.errorCodes.failedToDeleteField,
             type: 'rules',
             property,
         });
     }
 };
 
-const checkPropertyInUsedFromArgument = (argument: IArgument, entityId: string, properties: string[]) => {
+const checkPropertyInUsedFromArgument = (argument: IArgument, entityId: string, properties: string[], archive: boolean) => {
     if (isPropertyOfVariable(argument) || isSumAggFunction(argument)) {
-        return checkPropertyInUsed(argument, entityId, properties);
+        return checkPropertyInUsed(argument, entityId, properties, archive);
     }
 
     if (isRegularFunction(argument)) {
-        return argument.arguments.forEach((arg) => checkPropertyInUsedFromArgument(arg, entityId, properties));
+        return argument.arguments.forEach((arg) => checkPropertyInUsedFromArgument(arg, entityId, properties, archive));
     }
 
     if (!isConstant(argument) && !isCountAggFunction(argument)) {
@@ -35,18 +40,18 @@ const checkPropertyInUsedFromArgument = (argument: IArgument, entityId: string, 
     return undefined;
 };
 
-const checkPropertyInUsedFromEquation = (formula: IEquation, entityId: string, properties: string[]) => {
-    checkPropertyInUsedFromArgument(formula.lhsArgument, entityId, properties);
-    checkPropertyInUsedFromArgument(formula.rhsArgument, entityId, properties);
+const checkPropertyInUsedFromEquation = (formula: IEquation, entityId: string, properties: string[], archive: boolean) => {
+    checkPropertyInUsedFromArgument(formula.lhsArgument, entityId, properties, archive);
+    checkPropertyInUsedFromArgument(formula.rhsArgument, entityId, properties, archive);
 };
 
-export const checkPropertyInUsedFromFormula = (formula: IFormula, entityId: string, properties: string[]) => {
+export const checkPropertyInUsedFromFormula = (formula: IFormula, entityId: string, properties: string[], archive: boolean) => {
     if (isGroup(formula)) {
-        return formula.subFormulas.map((subFormula) => checkPropertyInUsedFromFormula(subFormula, entityId, properties));
+        return formula.subFormulas.map((subFormula) => checkPropertyInUsedFromFormula(subFormula, entityId, properties, archive));
     }
 
     if (isEquation(formula)) {
-        return checkPropertyInUsedFromEquation(formula, entityId, properties);
+        return checkPropertyInUsedFromEquation(formula, entityId, properties, archive);
     }
 
     if (isAggregationGroup(formula)) {
@@ -54,6 +59,7 @@ export const checkPropertyInUsedFromFormula = (formula: IFormula, entityId: stri
             { isGroup: true, ruleOfGroup: formula.ruleOfGroup, subFormulas: formula.subFormulas },
             entityId,
             properties,
+            archive,
         );
     }
 

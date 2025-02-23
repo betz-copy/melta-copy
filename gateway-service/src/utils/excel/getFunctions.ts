@@ -1,7 +1,6 @@
 import Excel from 'exceljs';
 import { StatusCodes } from 'http-status-codes';
 import { AxiosError } from 'axios';
-import fs from 'fs';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../externalServices/templates/entityTemplateService';
 import { excelConfig } from './excelConfig';
 import { BadRequestError, ServiceError } from '../../express/error';
@@ -15,15 +14,16 @@ import {
     ICreateEntityMetadata,
     IFailedEntity,
 } from '../../externalServices/ruleBreachService/interfaces';
-import { IEntity, IValidationErrorData } from '../../externalServices/instanceService/interfaces/entities';
+import { IEntityWithIgnoredRules, IValidationErrorData } from '../../externalServices/instanceService/interfaces/entities';
 import {
     IBrokenRulePopulated,
     ICreateEntityMetadataPopulated,
     IUpdateEntityMetadataPopulated,
 } from '../../externalServices/ruleBreachService/interfaces/populated';
 import config from '../../config';
+import { UploadedFile } from '../busboy/interface';
 
-const { entitiesFileLimit, invalidDate, invalidTime } = config.loadExcel;
+const { invalidDate, invalidTime } = config.loadExcel;
 
 const formatExcel = (value: Excel.CellValue | string, propertyTemplate: IEntitySingleProperty) => {
     const { type, format } = propertyTemplate;
@@ -52,8 +52,7 @@ export const isIncludedColumn = (propertyTemplate: IEntitySingleProperty) => {
     const isRelationshipRef = propertyTemplate.format === 'relationshipReference' || propertyTemplate.relationshipReference;
     const isFile = propertyTemplate.format === 'fileId' || (propertyTemplate.type === 'array' && propertyTemplate.items?.format === 'fileId');
     const isSerialNumber = propertyTemplate.type === 'number' && propertyTemplate.serialCurrent;
-    const isLocation = propertyTemplate.format === 'location';
-    return !isRelationshipRef && !isFile && !isSerialNumber && !isLocation;
+    return !isRelationshipRef && !isFile && !isSerialNumber;
 };
 
 type IFailedProperties = {
@@ -87,17 +86,24 @@ const handleFailedEntities = (rowData: Record<string, any>, failedProperties: IF
     failedEntities.push(failedEntity);
 };
 
-const readExcelFile = async (files: Express.Multer.File[], template: IMongoEntityTemplatePopulated, failedEntities: IFailedEntity[]) => {
-    const entities: IEntity[] = [];
+const readExcelFile = async (
+    files: UploadedFile[],
+    template: IMongoEntityTemplatePopulated,
+    failedEntities: IFailedEntity[],
+    entitiesFileLimit = config.loadExcel.entitiesFileLimit,
+) => {
+    const entities: IEntityWithIgnoredRules[] = [];
     const columns = Object.fromEntries(
         Object.entries(template.properties.properties).filter(([_propertyKey, propertyTemplate]) => isIncludedColumn(propertyTemplate)),
     );
 
     await Promise.all(
         files.map(async (file) => {
-            const stream = fs.createReadStream(file.path);
             const workbook = new Excel.Workbook();
-            await workbook.xlsx.read(stream);
+
+            if (!file?.stream) return;
+
+            await workbook.xlsx.read(file.stream);
             const worksheet = workbook.worksheets[0];
             if (!worksheet) throw new BadRequestError(`Can't read excel`);
 
@@ -121,7 +127,7 @@ const readExcelFile = async (files: Express.Multer.File[], template: IMongoEntit
                 });
 
                 if (failedProperties.length > 0) handleFailedEntities(rowData, failedProperties, failedEntities);
-                else entities.push({ templateId: template._id, properties: rowData });
+                else entities.push({ templateId: template._id, properties: rowData, ignoredRules: [] });
             });
 
             if (entities.length > entitiesFileLimit) throw new BadRequestError(`file limit: more than ${entitiesFileLimit} entities`, file);

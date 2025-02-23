@@ -5,12 +5,10 @@ import i18next from 'i18next';
 import { v4 as uuid } from 'uuid';
 import EntitiesTableOfTemplate, { EntitiesTableOfTemplateRef } from '../../EntitiesTableOfTemplate';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { environment } from '../../../globals';
 import { TableButton } from '../../TableButton';
 import { IEntity } from '../../../interfaces/entities';
 import { IFailedEntity } from '.';
-
-const { defaultRowHeight, defaultFontSize } = environment.agGrid;
+import { useWorkspaceStore } from '../../../stores/workspace';
 
 export const EntitiesTable: React.FC<{
     rowData?: IEntity[] | IFailedEntity[];
@@ -24,6 +22,8 @@ export const EntitiesTable: React.FC<{
 }> = ({ rowData, rowModelType, template, defaultExpanded, icon, title, description, download }) => {
     const theme = useTheme();
     const entitiesTableRef = useRef<EntitiesTableOfTemplateRef<IEntity>>(null);
+    const workspace = useWorkspaceStore((state) => state.workspace);
+    const { defaultRowHeight, defaultFontSize } = workspace.metadata.agGrid;
 
     return (
         <Accordion

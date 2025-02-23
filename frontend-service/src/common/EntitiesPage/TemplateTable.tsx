@@ -26,7 +26,7 @@ import { useDraftIdStore, useDraftsStore } from '../../stores/drafts';
 import { useUserStore } from '../../stores/user';
 import { filterModelToFilterOfTemplate, sortModelToSortOfSearchRequest } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 import { getEntityTemplateColor } from '../../utils/colors';
-import { checkUserCategoryPermission } from '../../utils/permissions/instancePermissions';
+import { checkUserTemplatePermission } from '../../utils/permissions/instancePermissions';
 import { BlueTitle } from '../BlueTitle';
 import { CustomIcon } from '../CustomIcon';
 import { EntityWizardValues } from '../dialogs/entity';
@@ -37,10 +37,10 @@ import { TableButton } from '../TableButton';
 import { AddEntityButton } from './AddEntityButton';
 import { DraftCard } from './DraftCard';
 import { ResetFilterButton } from './ResetFilterButton';
+import { useWorkspaceStore } from '../../stores/workspace';
 import { LoadExcelButton } from './LoadExcelButton';
 
 const {
-    agGrid: { defaultRowHeight, defaultFontSize, defaultExpandedTableHeight },
     loadExcel: { excelExtension },
 } = environment;
 
@@ -56,6 +56,9 @@ const TemplateTable = forwardRef<
     }
 >(({ template, quickFilterText, page, setUpdatedEntities }, ref) => {
     const [_, navigate] = useLocation();
+    const workspace = useWorkspaceStore((state) => state.workspace);
+    const { defaultRowHeight, defaultFontSize, defaultExpandedTableHeight } = workspace.metadata.agGrid;
+    const { height, width } = workspace.metadata.iconSize;
 
     const currentUser = useUserStore((state) => state.user);
 
@@ -102,7 +105,7 @@ const TemplateTable = forwardRef<
         });
 
         if (multipleSelect) setMultipleSelect(false);
-    }, [template._id, page, multipleSelect]);
+    }, [multipleSelect, template._id, page, defaultExpandedTableHeight]);
 
     const { isLoading: isExportingTableToExcelFile, mutateAsync: exportTemplateToExcel } = useMutation(
         async () => {
@@ -130,7 +133,12 @@ const TemplateTable = forwardRef<
 
     const entityTemplateColor = getEntityTemplateColor(template);
 
-    const userHasWritePermissions = checkUserCategoryPermission(currentUser.currentWorkspacePermissions, template.category, PermissionScope.write);
+    const userHasWritePermissions = checkUserTemplatePermission(
+        currentUser.currentWorkspacePermissions,
+        template.category,
+        template._id,
+        PermissionScope.write,
+    );
 
     useEffect(() => {
         sessionStorage.setItem(`isExpand-${template._id}`, isExpand.toString());
@@ -156,6 +164,9 @@ const TemplateTable = forwardRef<
     };
 
     const isLoadExcelDisabled = !userHasWritePermissions || checkIfLoadEntityIsDisabled();
+    const getLoadExcelTooltip = isLoadExcelDisabled
+        ? i18next.t(!userHasWritePermissions ? 'permissions.dontHaveWritePermissionsToTemplate' : 'wizard.entity.loadEntities.tableCantLoadEntities')
+        : undefined;
 
     return (
         <Grid container minWidth="fit-content">
@@ -166,21 +177,26 @@ const TemplateTable = forwardRef<
                     </Grid>
                     <Grid item minWidth="fit-content" sx={{ display: 'flex', justifyContent: 'center', alignContent: 'center' }}>
                         {template.iconFileId ? (
-                            <CustomIcon
-                                iconUrl={template.iconFileId}
-                                height={environment.iconSize.height}
-                                width={environment.iconSize.width}
-                                color={theme.palette.primary.main}
-                            />
+                            <CustomIcon iconUrl={template.iconFileId} height={height} width={width} color={theme.palette.primary.main} />
                         ) : (
                             <DefaultEntityTemplateIcon
-                                sx={{ color: theme.palette.primary.main, height: environment.iconSize.height, width: environment.iconSize.width }}
+                                sx={{
+                                    color: theme.palette.primary.main,
+                                    height,
+                                    width,
+                                }}
                             />
                         )}
                     </Grid>
                     <Grid item minWidth="fit-content" style={{ whiteSpace: 'nowrap', overflow: 'hidden' }}>
                         <BlueTitle
-                            style={{ minWidth: 'fit-content', whiteSpace: 'nowrap', overflow: 'hidden', fontWeight: '500', fontSize: '20px' }}
+                            style={{
+                                minWidth: 'fit-content',
+                                whiteSpace: 'nowrap',
+                                overflow: 'hidden',
+                                fontWeight: '500',
+                                fontSize: workspace.metadata.mainFontSizes.entityTemplateTitleFontSize,
+                            }}
                             title={template.displayName}
                             component="h5"
                             variant="h5"
@@ -215,7 +231,6 @@ const TemplateTable = forwardRef<
                             iconButtonProps: {
                                 onClick: () => {
                                     handleExpandClick();
-
                                     trackEvent({
                                         category: 'template-action',
                                         action: isExpand ? 'off' : 'on',
@@ -279,7 +294,7 @@ const TemplateTable = forwardRef<
                             color: theme.palette.primary.main,
                         }}
                         onSuccessCreate={() => entitiesTableRef.current?.refreshServerSide()}
-                        popoverText={isLoadExcelDisabled ? i18next.t('wizard.entity.loadEntities.tableCantLoadEntities') : undefined}
+                        popoverText={getLoadExcelTooltip}
                     >
                         <Upload
                             fontSize="small"
@@ -390,7 +405,7 @@ const TemplateTable = forwardRef<
                             toast.dismiss();
                         },
                         popoverText: i18next.t(
-                            !userHasWritePermissions ? 'permissions.dontHaveWritePermissions' : 'entitiesTableOfTemplate.editEntity',
+                            !userHasWritePermissions ? 'permissions.dontHaveWritePermissionsToTemplate' : 'entitiesTableOfTemplate.editEntity',
                         ),
                         disabledButton: !userHasWritePermissions,
                     }}

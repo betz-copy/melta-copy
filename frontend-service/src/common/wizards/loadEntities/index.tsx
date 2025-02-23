@@ -16,8 +16,9 @@ import { UploadExcel } from './uploadExcel';
 import ActionOnEntityWithRuleBreachDialog from '../../../pages/Entity/components/ActionOnEntityWithRuleBreachDialog';
 import { ActionErrors, ActionTypes, IAction, IActionMetadataPopulated, ICreateEntityMetadata } from '../../../interfaces/ruleBreaches/actionMetadata';
 import { ICreateOrUpdateWithRuleBreachDialogState } from '../../dialogs/entity/CreateOrEditEntityDialog';
-import { IRequiredConstraint, IUniqueConstraint } from '../../../interfaces/entities';
+import { IEntityWithIgnoredRules, IRequiredConstraint, IUniqueConstraint } from '../../../interfaces/entities';
 import { environment } from '../../../globals';
+import { groupBrokenRulesByEntity } from '../../../utils/loadEntities';
 
 export interface EntitiesWizardValues {
     files?: File[];
@@ -104,26 +105,29 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
         },
         {
             async onSuccess(data) {
-                setStepsData((prev) => ({ ...prev, data }));
+                setStepsData((prev) => ({ ...prev, status: StepStatus.excelUploadResult, data }));
                 return data;
             },
             onError() {
                 toast.error(i18next.t('wizard.entity.loadEntities.failedLoadEntities'));
+                onClose();
             },
         },
     );
 
     const { isLoading: isLoadingRules, mutateAsync: loadRules } = useMutation(
-        async (insertBrokenEntities: { entitiesToCreate: ICreateEntityMetadata[]; ignoredRules: IBrokenRule[] }) => {
+        async (insertBrokenEntities: IEntityWithIgnoredRules[]) => {
             return loadEntitiesRequest(template!._id, undefined, insertBrokenEntities);
         },
         {
             async onSuccess(data) {
                 setCreateOrUpdateWithRuleBreachDialogState({ isOpen: false });
                 onClose();
+                toast.success(i18next.t('wizard.entity.loadEntities.createdSuccessfully'));
                 return data;
             },
             onError() {
+                onClose();
                 toast.error(i18next.t('wizard.entity.loadEntities.failedLoadEntities'));
             },
         },
@@ -156,7 +160,7 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
             });
         else {
             onClose();
-            toast.success(i18next.t('wizard.entity.loadEntities.createdSuccessfully'));
+            if (stepsData.data.succeededEntities.length > 0) toast.success(i18next.t('wizard.entity.loadEntities.createdSuccessfully'));
         }
     };
 
@@ -278,6 +282,7 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
                             status: StepStatus.uploadExcel,
                             data: { succeededEntities: [], failedEntities: [] },
                         });
+                        onClose();
                     }}
                     doActionEntity={() => {
                         const brokenRulesEntities =
@@ -286,10 +291,13 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
                                 properties,
                             })) || [];
 
-                        return loadRules({
-                            entitiesToCreate: brokenRulesEntities,
-                            ignoredRules: stepsData.data.brokenRulesEntities?.rawBrokenRules || [],
-                        });
+                        const groupedRawBrokenRules = groupBrokenRulesByEntity(stepsData.data.brokenRulesEntities?.rawBrokenRules || []);
+                        const insertBrokenEntities: IEntityWithIgnoredRules[] = brokenRulesEntities.map((brokenEntity, index) => ({
+                            ...brokenEntity,
+                            ignoredRules: groupedRawBrokenRules[index],
+                        }));
+
+                        return loadRules(insertBrokenEntities);
                     }}
                     actionType={ActionTypes.CreateEntity}
                     brokenRules={createOrUpdateWithRuleBreachDialogState.brokenRules!}

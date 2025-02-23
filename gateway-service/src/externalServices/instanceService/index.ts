@@ -196,6 +196,12 @@ export class InstancesService extends DefaultExternalServiceApi {
         return data;
     }
 
+    async convertFieldsToPlural(templateId: string, propertiesKeysToPluralize: string[]) {
+        const { data } = await this.api.put(`${baseEntitiesRoute}/convert-fields-to-plural/${templateId}`, { propertiesKeysToPluralize });
+
+        return data;
+    }
+
     async updateConstraintsOfTemplate(
         templateId: string,
         constraints: { requiredConstraints: string[]; uniqueConstraints: IUniqueConstraintOfTemplate[] },

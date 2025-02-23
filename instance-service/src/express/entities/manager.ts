@@ -1607,7 +1607,6 @@ export class EntityManager extends DefaultManagerNeo4j {
                         entityId,
                         {
                             ...entityProperties,
-
                             [fieldName]: addFieldToSrcEntity ? relationship.destinationEntityId : relationship.sourceEntityId,
                         },
                         entityTemplate,
@@ -1688,6 +1687,34 @@ export class EntityManager extends DefaultManagerNeo4j {
             .catch((error) => {
                 throw error instanceof NotFoundError ? new NotFoundError(`[NEO4J] entity not found`) : new Error('Change failed');
             });
+    }
+
+    async convertFieldsToPlural(templateId: string, propertiesKeysToPluralize: string[]) {
+        try {
+            const entityTemplate: IMongoEntityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(templateId);
+
+            await this.neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
+                const allEntitiesOfTemplate = await runInTransactionAndNormalize(
+                    transaction,
+                    `MATCH (e: \`${templateId}\`) RETURN e`,
+                    normalizeReturnedEntity('multipleResponses'),
+                );
+
+                const updatePromises = allEntitiesOfTemplate.map(async (entity) => {
+                    const updatedProperties = { ...entity.properties };
+
+                    propertiesKeysToPluralize.forEach((key) => {
+                        if (key in updatedProperties) updatedProperties[key] = [updatedProperties[key]];
+                    });
+
+                    return this.updateEntityByIdInnerTransaction(entity.properties._id, updatedProperties, entityTemplate, transaction);
+                });
+
+                await Promise.all(updatePromises);
+            });
+        } catch (err) {
+            this.throwServiceErrorIfFailedConstraintsValidation(err);
+        }
     }
 
     private getConstraintFromName(constraintName: string): IConstraint {

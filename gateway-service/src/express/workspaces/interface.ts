@@ -9,6 +9,33 @@ export enum WorkspaceTypes {
     mlt = '.mlt',
 }
 
+export interface IMetadata {
+    shouldNavigateToEntityPage: boolean;
+    isDrawerOpen: boolean;
+    agGrid: {
+        rowCount: number;
+        defaultExpandedRowCount: number;
+        defaultRowHeight: number;
+        defaultFontSize: number;
+        defaultExpandedTableHeight: number;
+    };
+    mainFontSizes: {
+        headlineTitleFontSize: string;
+        entityTemplateTitleFontSize: string;
+        headlineSubTitleFontSize: string;
+    };
+    iconSize: {
+        width: string;
+        height: string;
+    };
+    excel: {
+        entitiesFileLimit: number;
+        filesLimit: number;
+    };
+    searchLimits: {
+        bulk: number;
+    };
+}
 export interface IWorkspace {
     _id: string;
     name: string;
@@ -18,4 +45,5 @@ export interface IWorkspace {
     colors: Record<Colors, HexColor>;
     iconFileId?: string;
     logoFileId?: string;
+    metadata?: Partial<IMetadata>;
 }

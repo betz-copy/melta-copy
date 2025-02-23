@@ -39,7 +39,7 @@ export const environment = {
             '7-8': 6,
             '9-10': 8,
         },
-        maximumNodeSize: 7,
+        maxNodeSize: 7,
         nodeSizeMultiplier: 4,
         nodeIconSizeMultiplier: 0.7,
         nodeHoverSizeMultiplier: 1.2,
@@ -66,6 +66,12 @@ export const environment = {
     },
     mui: {
         activationKey: '8c5d3fd6a4390125cf8590dea55dbb05Tz1HdXksRT0yMDAwMDAwMDAwMDAwLFM9cHJlbWl1bSxMTT1zdWJzY3JpcHRpb24sS1Y9Mg==',
+    },
+    cesium: {
+        activationKey:
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJjZWI5M2EyNC1lODE3LTQwYTQtYTUxZi00NDlhODAyZDM0NTMiLCJpZCI6MjcwNDM5LCJpYXQiOjE3Mzc0NDk3MzN9.WLi4Zcm4D_PMstHcM3YNMJsw1xPhiNGuJyizwg_4nbg',
+        cesiumSource: 'node_modules/cesium/Build/Cesium',
+        cesiumBaseUrl: 'cesiumStatic',
     },
     canvasSettings: {
         heightPaddingMultiplier: 0.3,
@@ -98,12 +104,28 @@ export const environment = {
             heatmapModeKey: 'heatmapMode',
         },
     },
-    entitiesCardsView: {
-        infiniteScrollPageCount: 12,
-    },
     entitiesProperties: {
         maxNumOfCharactersNotInFullWidth: 700,
         numOfFixedDigits: 18,
+    },
+    entitiesCardsView: {
+        infiniteScrollPageCount: 12,
+    },
+    permission: {
+        infiniteScrollPageCount: 13,
+    },
+    cardsView: {
+        infiniteScrollPageCount: 13,
+    },
+    activityLog: {
+        infiniteScrollPageCount: 10,
+    },
+    processInstances: {
+        infiniteScrollPageCount: 10,
+    },
+    processDetailsContentDisplay: {
+        summary: 'SUMMARY',
+        reviewers: 'REVIEWERS',
     },
     iFrames: {
         iFrameDimensionKey: 'iFrameDimension_',
@@ -210,15 +232,13 @@ export const environment = {
         infiniteInitialRowCount: 1,
         defaultExpandedTableHeight: 650,
         paginationPageSizeSelector: [5, 10, 25, 50],
-    },
-    activityLog: {
-        infiniteScrollPageCount: 10,
-    },
-    processInstances: {
-        infiniteScrollPageCount: 10,
-    },
-    permission: {
-        infiniteScrollPageCount: 13,
+        actionsWidth: 200,
+        actionPrefix: 'actions-',
+        localStorage: {
+            visibleColumns: 'visibleColumns-',
+            columnsOrder: 'columnsOrder-',
+            columnWidths: 'columnWidths-',
+        },
     },
     accessTokenName: 'rabaz-access-token',
     brokenRulesFakeEntityIdPrefix: '$',
@@ -226,6 +246,7 @@ export const environment = {
     fileIdLength: 32,
     maxDateTimestamp: 8640000000000000,
     attemptInterval: 100,
+    unit: 'px',
     errorCodes: {
         ruleBlock: 'RULE_BLOCK',
         failedToCreateConstraints: 'FAILED_TO_CREATE_CONSTRAINTS',
@@ -234,26 +255,15 @@ export const environment = {
         actionsCustomError: 'ACTIONS_CUSTOM_ERROR',
         entityHasRelationships: 'ENTITY_HAS_RELATIONSHIPS',
     },
-    mainFontSizes: {
-        headlineTitleFontSize: '24px',
-        headlineSubTitleFontSize: '14px',
-    },
-    smallPreviewHeight: {
-        number: '150',
-        unit: 'px',
-    },
-    iconSize: {
-        width: '24px',
-        height: '24px',
-    },
-    loadExcel: { excelExtension: '.xlsx', acceptedFilesTypes: { 'excel/xlsx': ['.xlsx', '.xls'] }, filesLimit: 5, entitiesLimit: 500 },
+    loadExcel: { excelExtension: '.xlsx', acceptedFilesTypes: { 'excel/xlsx': ['.xlsx', '.xls'] }, entityId: '$0._id' },
     draftAutoSaveDebounce: 250,
     map: {
         maxRadius: 30000,
-        squareLength: 10,
-        units: { km: 'km', squaredKm: 'km²' },
-        polygon: { polygon: 'POLYGON', polygonPrefix: 'POLYGON((', polygonSuffix: '))' },
+        squareLength: 2500,
+        polygon: { polygonPrefix: 'POLYGON((', polygonSuffix: '))' },
+        mapSearchPropertiesLimit: 2,
     },
+    meltaUpdatesShown: 'meltaUpdatesShown',
     profileIconsCount: 19,
     avatarIconPath: '/icons/profileAvatar/',
     fileExtensions: {
@@ -1286,10 +1296,6 @@ export const environment = {
             'prw',
         ],
     },
-    // matomo: {
-    //     urlBase: 'matomo.yesodot.services.idf',
-    //     siteId: 24,
-    // },
     systemManagement: {
         actions: {
             unusedPropertyErrorCodeTs: '6133',

@@ -56,11 +56,13 @@ const config = {
             .required()
             .asJsonObject(),
 
-        crsType: env.get('CRS_TYPE').default('EPSG3857').asString(),
+        crsType: env.get('CRS_TYPE').default('EPSG3857').asString(), // unused when implement cesuim
 
         agGridLimit: {
             deleteLimit: env.get('DELETE_ENTITIES_MAX_LIMIT').default(1000).asIntPositive(),
         },
+        meltaUpdates: env.get('FRONTEND_CONFIG_MELTA_UPDATES').default({ אא: 'בב', גג: 'דד' }).asJsonObject(),
+        meltaUpdatesDescription: env.get('FRONTEND_CONFIG_MELTA_UPDATES_DESCRIPTION').default('תיאור').asString(),
     },
 
     authentication: {
@@ -139,7 +141,7 @@ const config = {
         requestTimeout: env.get('PERMISSION_SERVICE_REQUEST_TIMEOUT').default(100000).asIntPositive(),
         profilePathPattern: env
             .get('PROFILE_PATH_PATTERN')
-            .default('^(kartoffelProfile|[0-9a-f]{8}[0-9a-f]{4}[0-9a-f]{4}[0-9a-f]{4}[0-9a-f]{12}.*)$')
+            .default('^(kartoffelProfile|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{8}.*)$')
             .asRegExp(),
     },
     activityLogService: {
@@ -185,9 +187,9 @@ const config = {
         url: env.get('KARTOFFEL_BASE_URL').required().asString(),
         baseEntitiesRoute: env.get('KARTOFFEL_BASE_ENTITIES_ROUTE').default('/api/entities').asString(),
         getByIdRoute: env.get('KARTOFFEL_FIND_USER_BY_ID_ROUTE').default('').asString(),
-        requestTimeout: env.get('KARTOFFEL_REQUEST_TIMEOUT').default(10000).asIntPositive(),
         searchRoute: env.get('KARTOFFEL_SEARCH_ROUTE').default('/search').asString(),
         fieldToSearch: env.get('KARTOFFEL_FIELDS_TO_SEARCH').default('fullName,uniqueId,personalNumber,identityCard').asString(),
+        requestTimeout: env.get('KARTOFFEL_REQUEST_TIMEOUT').default(10000).asIntPositive(),
         profilePath: env.get('KARTOFFEL_PROFILE_PATH').default('pictures/profile').asString(),
     },
     errorCodes: {
@@ -200,6 +202,7 @@ const config = {
         ruleBlock: 'RULE_BLOCK',
         ruleHasAlertsOrRequests: 'RULE_HAS_ALERTS_OR_REQUESTS',
         failedToDeleteField: 'FAILED_DELETE_FIELD',
+        failedToArchiveField: 'FAILED_ARCHIVE_FIELD',
         moreThenOneRelationshipInstanceExist: 'MORE_THEN_ONE_RELATIONSHIP_INSTANCE_EXIST',
         failedConstraintsValidation: 'FAILED_CONSTRAINTS_VALIDATION',
         templateValidationError: 'TemplateValidationError',
@@ -254,6 +257,10 @@ const config = {
         filesLimit: env.get('FILES_LIMIT').default(5).asIntPositive(),
         invalidDate: env.get('INVALID_DATE').default('Invalid Date').asString(),
         invalidTime: env.get('INVALID_TIME').default('Invalid time value').asString(),
+    },
+    flowCube: {
+        flowRequestHostName: env.get('REQUEST_HOST_NAME').default('host-name').required().asString(),
+        flowSystemName: env.get('FLOW_SYSTEM_NAME').default('system-name').required().asString(),
     },
 };
 

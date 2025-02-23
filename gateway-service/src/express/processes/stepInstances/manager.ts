@@ -8,11 +8,11 @@ import {
 } from '../../../externalServices/processService/interfaces/stepInstance';
 import { StorageService } from '../../../externalServices/storageService';
 import DefaultManagerProxy from '../../../utils/express/manager';
-import { removeTmpFile } from '../../../utils/fs';
 import { InstancesManager } from '../../instances/manager';
 import { UsersManager } from '../../users/manager';
 import ProcessesInstancesManager from '../processInstances/manager';
 import logger from '../../../utils/logger/logsLogger';
+import { UploadedFile } from '../../../utils/busboy/interface';
 
 export default class StepsInstancesManager extends DefaultManagerProxy<ProcessService> {
     private storageService: StorageService;
@@ -62,7 +62,7 @@ export default class StepsInstancesManager extends DefaultManagerProxy<ProcessSe
         processId: string,
         stepId: string,
         updatedData: Partial<Pick<IStepInstance, 'properties' | 'status' | 'comments'>>,
-        files: Express.Multer.File[],
+        files: UploadedFile[],
         userId: string,
     ) {
         const processInstancesManager = new ProcessesInstancesManager(this.workspaceId);
@@ -78,7 +78,7 @@ export default class StepsInstancesManager extends DefaultManagerProxy<ProcessSe
 
         if (!files.length) {
             // add remove old files
-            const updatedStep = await this.service.updateStepInstance(stepId, processServiceUpdateData);
+            const updatedStep = await this.service.updateStepInstance(stepId, processServiceUpdateData, userId);
             const updatedProcess = await processInstancesManager.getProcessInstance(processId, userId);
             if (updatedStepStatus) this.handleNotificationsOnUpdateStepInstance(updatedProcess, process, updatedStep);
             return this.getStepInstanceWithEntitesAndReviewers(updatedStep, userId);
@@ -88,10 +88,14 @@ export default class StepsInstancesManager extends DefaultManagerProxy<ProcessSe
         const { properties: oldProperties } = await processInstancesManager.service.getStepInstanceById(stepId);
 
         const updatedStep = await processInstancesManager.service
-            .updateStepInstance(stepId, {
-                ...processServiceUpdateData,
-                properties: props,
-            })
+            .updateStepInstance(
+                stepId,
+                {
+                    ...processServiceUpdateData,
+                    properties: props,
+                },
+                userId,
+            )
             .catch(async (processServiceError) => {
                 await this.storageService.deleteFiles(Object.values(filesToUpload).flat(1) as string[]).catch((deleteFilesError) => {
                     logger.error('failed to delete files error: ', { error: { deleteFilesError, processServiceError } });
@@ -102,12 +106,6 @@ export default class StepsInstancesManager extends DefaultManagerProxy<ProcessSe
             });
 
         if (oldProperties) await processInstancesManager.removeUnusedFileIds(stepTemplate.properties, oldProperties, { ...props });
-
-        await Promise.all(
-            files.map((file) => {
-                return removeTmpFile(file.path);
-            }),
-        );
 
         if (updatedData.status) {
             const updatedProcess = await processInstancesManager.getProcessInstance(processId, userId);

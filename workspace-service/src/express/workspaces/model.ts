@@ -1,8 +1,39 @@
 import mongoose from 'mongoose';
 import { config } from '../../config';
 import { BadRequestError } from '../error';
-import { Colors, IWorkspace } from './interface';
+import { Colors, IMetadata, IWorkspace } from './interface';
 import { AllowedEmptyString } from '../../utils/mongoose';
+
+const MetadataSchema = new mongoose.Schema<IMetadata>(
+    {
+        shouldNavigateToEntityPage: { type: Boolean },
+        isDrawerOpen: { type: Boolean },
+        agGrid: {
+            rowCount: { type: Number },
+            defaultExpandedRowCount: { type: Number },
+            defaultRowHeight: { type: Number },
+            defaultFontSize: { type: Number },
+            defaultExpandedTableHeight: { type: Number },
+        },
+        mainFontSizes: {
+            headlineTitleFontSize: { type: String },
+            entityTemplateTitleFontSize: { type: String },
+            headlineSubTitleFontSize: { type: String },
+        },
+        iconSize: {
+            width: { type: String },
+            height: { type: String },
+        },
+        excel: {
+            entitiesFileLimit: { type: Number },
+            filesLimit: { type: Number },
+        },
+        searchLimits: {
+            bulk: { type: Number },
+        },
+    },
+    { _id: false },
+);
 
 const ColorsSchema = new mongoose.Schema<IWorkspace['colors']>(
     Object.values(Colors).reduce((acc, color) => ({ ...acc, [color]: { type: String, required: true } }), {}),
@@ -37,6 +68,7 @@ const WorkspacesSchema = new mongoose.Schema<IWorkspace>(
         logoFileId: {
             type: String,
         },
+        metadata: MetadataSchema,
     },
     { timestamps: true, versionKey: false },
 );
