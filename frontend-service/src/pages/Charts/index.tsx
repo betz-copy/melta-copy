@@ -35,7 +35,7 @@ const ChartsPage: React.FC<IChartsPageProps> = () => {
     return (
         <Grid>
             <ChartHeader template={template} setTextSearch={setTextSearch} resetLayout={() => setLayout(generateLayoutDetails(charts ?? []).lg)} />
-            {charts?.length === 0 && (
+            {charts?.length === 0 && !isLoading && (
                 <Grid container justifyContent="center" marginTop="2rem">
                     {i18next.t('charts.noChartsFound')}
                 </Grid>

@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { Box, useTheme } from '@mui/material';
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
@@ -17,7 +18,7 @@ interface HighchartGeneratorProps {
 }
 
 const HiighchartGenerator: React.FC<HighchartGeneratorProps> = ({
-    data,
+    data = [],
     isLoading,
     isQueryEnabled,
     type,
@@ -28,19 +29,21 @@ const HiighchartGenerator: React.FC<HighchartGeneratorProps> = ({
 }) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const chartRef = useRef<HighchartsReact.RefObject>(null);
-
-    const { xAxis, yAxis } = getChartAxes(type, metaData);
-
     const theme = useTheme();
-
     const darkMode = theme.palette.mode === 'dark';
 
-    const seriesData = data?.map((item) => ({
-        name: item.x,
-        y: item.y,
-    }));
+    const { xAxis, yAxis } = getChartAxes(type, metaData, true);
 
-    // TODO: refactor and eslint errors
+    const commonStyles = {
+        backgroundColor: darkMode ? '#131313' : '#fcfeff',
+        gridLineColor: darkMode ? '#444' : '#dddddd',
+        labelsColor: darkMode ? '#fff' : '#000',
+    };
+
+    const { backgroundColor, gridLineColor, labelsColor } = commonStyles;
+
+    const seriesData = data.map(({ x, y }) => ({ name: x, y }));
+
     const resizeChart = () => {
         if (chartRef.current && containerRef.current) {
             const newHeight = enableResize ? containerRef.current.offsetHeight : undefined;
@@ -49,74 +52,50 @@ const HiighchartGenerator: React.FC<HighchartGeneratorProps> = ({
     };
 
     useEffect(() => {
-        const handleResize = () => resizeChart();
-
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
+        window.addEventListener('resize', resizeChart);
+        return () => window.removeEventListener('resize', resizeChart);
     }, []);
 
     useEffect(() => {
-        const observer = new ResizeObserver(() => resizeChart());
-
+        const observer = new ResizeObserver(resizeChart);
         if (containerRef.current) observer.observe(containerRef.current);
-
-        return () => {
-            if (containerRef.current) observer.unobserve(containerRef.current);
-        };
+        return () => observer.disconnect();
     }, []);
 
     const chartOptions: Highcharts.Options = {
-        chart: {
-            type,
-            backgroundColor: darkMode ? '#131313' : '#fcfeff',
-        },
+        chart: { type, backgroundColor },
         title: {
-            style: {
-                color: darkMode ? '#fff' : '#000',
-            },
-
             text: name,
+            style: {
+                color: labelsColor,
+            },
         },
         subtitle: { text: description },
         xAxis: {
-            gridLineColor: darkMode ? '#444' : '#dddddd',
-            labels: {
-                style: {
-                    color: darkMode ? '#fff' : '#000',
-                },
-            },
-            lineColor: darkMode ? '#444' : '#dddddd',
-            tickColor: darkMode ? '#444' : '#dddddd',
-            title: {
-                style: {
-                    color: darkMode ? '#fff' : '#000',
-                },
-                text: xAxis.title,
-            },
-
-            categories: data?.map((point) => point.x ?? '-'),
+            categories: data.map(({ x }) => x ?? '-'),
+            gridLineColor,
+            lineColor: gridLineColor,
+            tickColor: gridLineColor,
+            title: { text: xAxis.title, style: { color: labelsColor } },
         },
-
         yAxis: {
-            gridLineColor: darkMode ? '#444' : '#dddddd',
-
-            labels: {
-                style: {
-                    color: darkMode ? '#fff' : '#000',
-                },
-            },
-            lineColor: darkMode ? '#444' : '#dddddd',
-            tickColor: darkMode ? '#444' : '#dddddd',
-            title: {
-                style: {
-                    color: darkMode ? '#fff' : '#000',
-                    text: yAxis.title,
-                },
-            },
+            gridLineColor,
+            labels: { style: { color: labelsColor } },
+            lineColor: gridLineColor,
+            tickColor: gridLineColor,
+            title: { text: yAxis.title, style: { color: labelsColor } },
         },
         legend: {
-            itemStyle: {
-                color: darkMode ? '#fff' : '#000',
+            itemStyle: { color: labelsColor },
+            enabled: type === IChartType.Pie,
+            layout: 'vertical',
+            align: 'left',
+            verticalAlign: 'middle',
+            labelFormatter() {
+                const point = this as Highcharts.Point;
+                const pointName = point.name ?? '-';
+                const percentage = point.percentage != null ? `${point.percentage.toFixed(1)}%` : '-';
+                return `${pointName}: ${percentage}`;
             },
         },
         credits: {
@@ -130,21 +109,15 @@ const HiighchartGenerator: React.FC<HighchartGeneratorProps> = ({
                 allowPointSelect: true,
                 cursor: 'pointer',
                 dataLabels: {
-                    enabled: true,
-                    formatter() {
-                        const point = this as Highcharts.Point;
-
-                        const pointName = point.name ?? '-';
-                        const percentage = point.percentage != null ? `${point.percentage.toFixed(1)}%` : '-';
-                        return `${pointName}: ${percentage}`;
-                    },
+                    enabled: false,
                 },
+
+                showInLegend: true,
             },
         },
         series: [
             {
-                name: yAxis.title,
-                data: type === IChartType.Pie ? seriesData : seriesData?.map((item) => item.y),
+                data: type === IChartType.Pie ? seriesData : seriesData.map(({ y }) => y),
                 color: theme.palette.primary.main,
                 type,
             },
@@ -154,11 +127,12 @@ const HiighchartGenerator: React.FC<HighchartGeneratorProps> = ({
     return (
         <Box
             ref={containerRef}
-            style={{
+            sx={{
                 width: '100%%',
-                height: '100%',
+                height: enableResize ? '100%' : '50%',
                 margin: '0 auto',
                 alignContent: 'center',
+                backgroundColor: darkMode ? '#131313' : '#fcfeff',
             }}
         >
             {isQueryEnabled && !isLoading && <HighchartsReact highcharts={Highcharts} options={chartOptions} ref={chartRef} />}

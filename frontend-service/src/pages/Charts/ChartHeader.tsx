@@ -24,7 +24,7 @@ const ChartHeader: React.FC<{
                 <Grid container spacing={5} wrap="nowrap" alignItems="center">
                     <Grid item>
                         <BlueTitle
-                            title={`${i18next.t('pages.charts')} ${template.displayName}`}
+                            title={`${i18next.t('charts.chartsOf')} ${template.displayName}`}
                             component="h4"
                             variant="h4"
                             style={{ fontSize: environment.mainFontSizes.headlineTitleFontSize }}

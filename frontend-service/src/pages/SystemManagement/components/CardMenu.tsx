@@ -1,19 +1,18 @@
-import React, { MouseEventHandler, useMemo } from 'react';
-import { Grid, IconButton, Menu } from '@mui/material';
-import i18next from 'i18next';
 import {
-    Edit as EditIcon,
-    Delete as DeleteIcon,
-    MoreVertOutlined as OptionsIcon,
-    DoNotDisturbOnOutlined as DoNotDisturbOnOutlinedIcon,
-    DoNotDisturbOffOutlined as DoNotDisturbOffOutlinedIcon,
-    ContentCopy as DuplicateIcon,
     ControlPoint as AddIcon,
-    NavigateBefore as NavigateIcon,
+    Delete as DeleteIcon,
+    DoNotDisturbOffOutlined as DoNotDisturbOffOutlinedIcon,
+    DoNotDisturbOnOutlined as DoNotDisturbOnOutlinedIcon,
+    ContentCopy as DuplicateIcon,
+    Edit as EditIcon,
+    MoreVertOutlined as OptionsIcon,
 } from '@mui/icons-material';
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
-import { MenuButton } from '../../../common/MenuButton';
+import { Grid, IconButton, Menu } from '@mui/material';
+import i18next from 'i18next';
+import React, { MouseEventHandler, useMemo } from 'react';
 import { MeltaTooltip } from '../../../common/MeltaTooltip';
+import { MenuButton } from '../../../common/MenuButton';
 import { environment } from '../../../globals';
 import { useUserStore } from '../../../stores/user';
 
@@ -25,17 +24,7 @@ export const CardMenu: React.FC<{
     onDuplicateClick?: MouseEventHandler;
     onAddActionsClick?: MouseEventHandler;
     onConvertToRelationShipFieldClick?: MouseEventHandler;
-    onNavigate?: MouseEventHandler;
-}> = ({
-    onEditClick,
-    onDeleteClick,
-    disabledProps,
-    onDisableClick,
-    onDuplicateClick,
-    onAddActionsClick,
-    onConvertToRelationShipFieldClick,
-    onNavigate,
-}) => {
+}> = ({ onEditClick, onDeleteClick, disabledProps, onDisableClick, onDuplicateClick, onAddActionsClick, onConvertToRelationShipFieldClick }) => {
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
     const open = Boolean(anchorEl);
 
@@ -98,17 +87,6 @@ export const CardMenu: React.FC<{
                         }}
                         text={i18next.t('actions.addActions')}
                         icon={<AddIcon color="action" />}
-                    />
-                )}
-
-                {onNavigate && (
-                    <MenuButton
-                        onClick={(e) => {
-                            onNavigate(e);
-                            handleClose(e);
-                        }}
-                        text={i18next.t('actions.navigate')}
-                        icon={<NavigateIcon color="action" />}
                     />
                 )}
 

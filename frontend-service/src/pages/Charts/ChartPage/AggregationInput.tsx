@@ -83,7 +83,7 @@ const AxisInput: React.FC<AxisInputProps> = ({
                     </Grid>
                 </>
             )}
-            <Grid item sx={{ marginTop: titleFormikField ? undefined : 2 }}>
+            <Grid item>
                 <FormikAutoComplete
                     formik={formik}
                     formikField={isAggregation(fieldValue) ? `${formikField}.type` : `${formikField}`}

@@ -11,6 +11,7 @@ import { environment } from '../../../globals';
 import { IBasicChart } from '../../../interfaces/charts';
 import { isWorkspaceAdmin } from '../../../utils/permissions/instancePermissions';
 import { useUserStore } from '../../../stores/user';
+import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 
 interface IChartTopBar {
     edit: boolean;
@@ -20,9 +21,10 @@ interface IChartTopBar {
     isLoading: boolean;
     setReadOnly: React.Dispatch<React.SetStateAction<boolean>>;
     formik: FormikProps<IBasicChart>;
+    template: IMongoEntityTemplatePopulated;
 }
 
-const ChartTopBar: React.FC<IChartTopBar> = ({ edit, onEdit, onDelete, isLoading, readonly, setReadOnly, formik }) => {
+const ChartTopBar: React.FC<IChartTopBar> = ({ edit, onEdit, onDelete, isLoading, readonly, setReadOnly, formik, template }) => {
     const theme = useTheme();
     const currentUser = useUserStore();
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -32,7 +34,9 @@ const ChartTopBar: React.FC<IChartTopBar> = ({ edit, onEdit, onDelete, isLoading
             <TopBarGrid container alignItems="center" wrap="nowrap" sx={{ marginBottom: 0, paddingRight: '1.6rem' }}>
                 <Grid>
                     <BlueTitle
-                        title={`${i18next.t(edit ? 'actions.editment' : 'actions.createment')} ${i18next.t('charts.chart')}`}
+                        title={`${i18next.t(edit ? 'actions.editment' : 'actions.createment')} ${i18next.t('charts.chart')} - ${
+                            template.displayName
+                        }`}
                         component="h4"
                         variant="h4"
                         style={{ fontSize: environment.mainFontSizes.headlineTitleFontSize, whiteSpace: 'nowrap' }}

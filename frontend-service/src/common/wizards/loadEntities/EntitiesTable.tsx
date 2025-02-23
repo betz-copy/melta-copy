@@ -1,9 +1,9 @@
 import { Accordion, AccordionDetails, AccordionSummary, CircularProgress, Grid, Typography, useTheme } from '@mui/material';
-import React from 'react';
+import React, { useRef } from 'react';
 import { Download, ExpandMore } from '@mui/icons-material';
 import i18next from 'i18next';
 import { v4 as uuid } from 'uuid';
-import EntitiesTableOfTemplate from '../../EntitiesTableOfTemplate';
+import EntitiesTableOfTemplate, { EntitiesTableOfTemplateRef } from '../../EntitiesTableOfTemplate';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { environment } from '../../../globals';
 import { TableButton } from '../../TableButton';
@@ -14,14 +14,16 @@ const { defaultRowHeight, defaultFontSize } = environment.agGrid;
 
 export const EntitiesTable: React.FC<{
     rowData?: IEntity[] | IFailedEntity[];
+    rowModelType: 'serverSide' | 'clientSide' | 'infinite';
     template: IMongoEntityTemplatePopulated;
     defaultExpanded: boolean;
-    icon: React.JSX.Element;
+    icon?: React.JSX.Element;
     title: string;
     description?: string;
     download?: { onDownload: (brokenRulesEntities?: boolean) => Promise<any>; isLoading: boolean };
-}> = ({ rowData, template, defaultExpanded, icon, title, description, download }) => {
+}> = ({ rowData, rowModelType, template, defaultExpanded, icon, title, description, download }) => {
     const theme = useTheme();
+    const entitiesTableRef = useRef<EntitiesTableOfTemplateRef<IEntity>>(null);
 
     return (
         <Accordion
@@ -52,7 +54,7 @@ export const EntitiesTable: React.FC<{
                 expandIcon={<ExpandMore style={{ color: '#787C9E', width: '20px', height: '20px' }} />}
             >
                 <Grid container direction="row" alignItems="center" gap="10px">
-                    {icon}
+                    {icon && icon}
                     <Typography color={theme.palette.mode === 'dark' ? '#FFFFFF' : '#1E2775'} fontFamily="Rubik" fontWeight={400} fontSize="14px">
                         {title}
                     </Typography>
@@ -80,13 +82,14 @@ export const EntitiesTable: React.FC<{
             </AccordionSummary>
             <AccordionDetails>
                 <EntitiesTableOfTemplate
+                    ref={entitiesTableRef}
                     template={template}
                     getRowId={(currentEntity) => currentEntity.properties._id || uuid()}
                     getEntityPropertiesData={(currentEntity) => currentEntity.properties}
-                    rowModelType="clientSide"
                     rowHeight={defaultRowHeight}
                     fontSize={`${defaultFontSize}px`}
                     rowData={rowData as (IEntity | IFailedEntity)[]}
+                    rowModelType={rowModelType}
                     saveStorageProps={{
                         shouldSaveFilter: false,
                         shouldSaveWidth: false,
@@ -99,6 +102,7 @@ export const EntitiesTable: React.FC<{
                     ignoreType
                     showNavigateToRowButton={false}
                     editable={false}
+                    withoutResizeBox
                 />
             </AccordionDetails>
         </Accordion>

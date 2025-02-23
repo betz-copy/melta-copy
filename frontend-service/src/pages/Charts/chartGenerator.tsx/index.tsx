@@ -38,12 +38,12 @@ const ChartGenerator: React.FC<IChartGeneratorProps> = ({ template, formikValues
         () => {
             const yAxisField = type === IChartType.Number ? undefined : yAxis;
             const currentFilter = entitiesTableRef.current?.getFilterModel();
-            const filter = currentFilter ? filterModelToFilterOfTemplate(currentFilter, entityTemplate) : {};
+            const filter = currentFilter ? filterModelToFilterOfTemplate(currentFilter, entityTemplate) : undefined;
 
             return getChartOfTemplate(xAxis, yAxisField, template._id, filter);
         },
         {
-            enabled: Boolean(isQueryEnabled) && Boolean(entitiesTableRef.current),
+            enabled: Boolean(isQueryEnabled),
         },
     );
 

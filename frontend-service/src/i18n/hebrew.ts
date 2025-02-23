@@ -1116,8 +1116,10 @@ export default {
     },
     charts: {
         chart: 'תרשים',
+        chartsOf: 'תרשימי',
         visualDefinition: 'הגדרות ויזואלזציה',
         generalDetails: 'פרטים כלליים',
+        filterDetails: 'הגדרות סינון',
         chartDetails: 'פרטי התרשים',
         permissions: 'הרשאות',
         color: 'צבע התרשים',
@@ -1143,6 +1145,7 @@ export default {
             failedToEdit: 'נכשל בעדכון תרשים',
             deletedSuccessfully: 'תרשים נמחק בהצלחה',
             failedToDelete: 'מחיקת תרשים נכשלה',
+            filterFields: 'סינון שדות',
         },
         aggregationTypes: {
             countAll: 'כמות רשומות',

@@ -20,12 +20,7 @@ const ChartSideBar: React.FC<{
 
     return (
         <Grid container direction="column" padding="20px">
-            <Grid item paddingTop="10px">
-                <Typography variant="h6">{i18next.t('charts.visualDefinition')}</Typography>
-            </Grid>
-
             <Grid item>
-                <Typography variant="subtitle1">{i18next.t('charts.generalDetails')}</Typography>
                 <Grid container direction="column" spacing={2} marginTop={1}>
                     <Grid item>
                         <TextField

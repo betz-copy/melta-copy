@@ -1,13 +1,11 @@
-import { Delete } from '@mui/icons-material';
-import { Box, IconButton } from '@mui/material';
-import i18next from 'i18next';
+import { Box } from '@mui/material';
 import React from 'react';
 import { useLocation } from 'wouter';
-import { MeltaTooltip } from '../../../common/MeltaTooltip';
 import { ChartsAndGenerator, IChartType } from '../../../interfaces/charts';
 import { useUserStore } from '../../../stores/user';
 import { GripVertical } from '../../../utils/icons/fontAwesome';
 import { isWorkspaceAdmin } from '../../../utils/permissions/instancePermissions';
+import { CardMenu } from '../../SystemManagement/components/CardMenu';
 import { NumberChartGenerator } from '../chartGenerator.tsx/NumberChartGenerator';
 import { HiighchartGenerator } from '../chartGenerator.tsx/highChartgenerator';
 
@@ -45,25 +43,26 @@ const ChartItem: React.FC<ChartItemProps> = ({
             >
                 <GripVertical color="grey" size={16} />
             </Box>
+
             {isHoverOnCard === indexInGrid && (
                 <Box
                     style={{
                         position: 'absolute',
-                        top: 0,
-                        left: 0,
+                        top: 10,
+                        left: 10,
                         zIndex: 10,
                         cursor: 'default',
                     }}
-                    onClick={(e) => e.stopPropagation()}
+                    onMouseDown={(e) => e.stopPropagation()}
                 >
-                    <MeltaTooltip title={i18next.t('actions.delete')}>
-                        <IconButton
-                            onClick={onDelete}
-                            disabled={createdBy !== currentUser.user._id || !isWorkspaceAdmin(currentUser.user.currentWorkspacePermissions)}
-                        >
-                            <Delete />
-                        </IconButton>
-                    </MeltaTooltip>
+                    <CardMenu
+                        onDeleteClick={onDelete}
+                        disabledProps={{
+                            isDeleteDisabled: createdBy !== currentUser.user._id || !isWorkspaceAdmin(currentUser.user.currentWorkspacePermissions),
+                            isEditDisabled: false,
+                            tooltipTitle: '',
+                        }}
+                    />
                 </Box>
             )}
 
