@@ -35,7 +35,7 @@ export class InstancesController extends DefaultController<InstancesManager> {
         );
     }
 
-    async editReadExcel(req: Request, res: Response) {
+    async getChangedEntitiesFromExcel(req: Request, res: Response) {
         res.json(await this.manager.getChangedEntitiesFromExcel(req.body.templateId, req.file!));
     }
 

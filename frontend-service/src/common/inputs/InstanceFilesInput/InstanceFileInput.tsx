@@ -3,7 +3,6 @@ import { Field, FormikProps } from 'formik';
 import i18next from 'i18next';
 import React from 'react';
 import { Accept } from 'react-dropzone';
-import { File } from 'react-pdf/dist/cjs/shared/types';
 import { toast } from 'react-toastify';
 import { ProcessDetailsValues } from '../../wizards/processInstance/ProcessDetails';
 import { ProcessStepValues } from '../../wizards/processInstance/ProcessSteps';
