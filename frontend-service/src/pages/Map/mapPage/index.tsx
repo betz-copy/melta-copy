@@ -13,7 +13,7 @@ import MapFilters from './MapFilters';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IEntity } from '../../../interfaces/entities';
 import { getEntitiesByLocation } from '../../../services/entitiesService';
-import { location3ToString, convertToWGS84, jerusalemCoordinates, stringToCoordinates } from '../../../utils/map';
+import { location3ToString, jerusalemCoordinates, stringToCoordinates, convertUTMToWGS84 } from '../../../utils/map';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { environment } from '../../../globals';
 import { useEntityWithLocationFields } from '../../../utils/hooks/useLocation';
@@ -195,7 +195,7 @@ const MapPage = () => {
     useEffect(() => {
         const fetchData = async () => {
             if (circleData.center && circleData.radius) {
-                const { longitude, latitude } = convertToWGS84(circleData.center);
+                const { longitude, latitude } = convertUTMToWGS84(circleData.center.x, circleData.center.y);
 
                 await Promise.all(
                     filteredTemplatesIds.map(async (templateId) =>

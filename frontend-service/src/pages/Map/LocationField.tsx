@@ -100,7 +100,7 @@ const LocationField = ({ defaultLocation, field, updateValue }: Props) => {
             if (!viewer) return;
     
             const { scene } = viewer;
-            const cartesian = scene.camera.pickEllipsoid(clickEvent.position, scene.globe.ellipsoid);
+            const cartesian: Cartesian3 = scene.camera.pickEllipsoid(clickEvent.position, scene.globe.ellipsoid);
     
             if (cartesian) {
                 if (drawingMode === 'polygon') {

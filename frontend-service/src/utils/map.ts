@@ -1,4 +1,4 @@
-import { Cartesian3, Ellipsoid, Math as CesiumMath } from 'cesium';
+import { Cartesian3 } from 'cesium';
 import * as Cesium from "cesium";
 import { environment } from '../globals';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
@@ -6,6 +6,7 @@ import { IEntity } from '../interfaces/entities';
 
 const {
     polygon: { polygonPrefix, polygonSuffix },
+    earthRadius, eccentricitySquared, scaleFactor, centralMeridian
 } = environment.map;
 
 export const zoomNumber = 300000;
@@ -113,32 +114,93 @@ export const getPolygonFarthestPoint = (polygonCenter: Cartesian3, polygon: Cart
     return longestDistance;
 };
 
-export const convertToWGS84 = (point: Cartesian3): { longitude: number; latitude: number } => {
-    const cartographic = Ellipsoid.WGS84.cartesianToCartographic(point);   
+// Computes the foot point latitude for the inverse projection
+const utmFootPointLatitude = (meridionalArc: number): number => {
+  const mu =
+    meridionalArc /
+    (earthRadius *
+      (1 -
+        eccentricitySquared / 4 -
+        (3 * eccentricitySquared ** 2) / 64 -
+        (5 * eccentricitySquared ** 3) / 256));
 
-    if (!cartographic) 
-        console.error('Invalid Point');
+  const e1 =
+    (1 - Math.sqrt(1 - eccentricitySquared)) /
+    (1 + Math.sqrt(1 - eccentricitySquared));
 
-    const longitude = CesiumMath.toDegrees(cartographic.longitude);
-    const latitude = CesiumMath.toDegrees(cartographic.latitude);
+  return (
+    mu +
+    ((3 * e1) / 2 - (27 * e1 ** 3) / 32) * Math.sin(2 * mu) +
+    ((21 * e1 ** 2) / 16 - (55 * e1 ** 4) / 32) * Math.sin(4 * mu) +
+    ((151 * e1 ** 3) / 96) * Math.sin(6 * mu) +
+    ((1097 * e1 ** 4) / 512) * Math.sin(8 * mu)
+  );
+}
 
-    return { longitude, latitude };
-};
+// Computes projection parameters for the conversion
+const computeProjectionParameters = (xAdj: number, phi1: number) => {
+  const sinPhi1 = Math.sin(phi1);
+  const cosPhi1 = Math.cos(phi1);
+  
+  const N1 = earthRadius / Math.sqrt(1 - eccentricitySquared * sinPhi1 ** 2);
+  const T1 = Math.tan(phi1) ** 2;
+  const C1 = (eccentricitySquared / (1 - eccentricitySquared)) * cosPhi1 ** 2;
+  const D = xAdj / (N1 * scaleFactor);
+  const R1 =
+    (earthRadius * (1 - eccentricitySquared)) /
+    Math.pow(1 - eccentricitySquared * sinPhi1 ** 2, 1.5);
+
+  return { N1, T1, C1, D, cosPhi1, R1 };
+}
+
+// Computes the latitude (in radians) from projection parameters
+const computeLatitude = (phi1: number, N1: number, R1: number, T1: number, C1: number, D: number): number => (
+    phi1 -
+    (N1 * Math.tan(phi1) / R1) *
+      ((D ** 2) / 2 -
+        ((5 + 3 * T1 + 10 * C1 - 4 * C1 ** 2 - 9 * eccentricitySquared) * D ** 4) / 24 +
+        ((61 + 90 * T1 + 298 * C1 + 45 * T1 ** 2 - 252 * eccentricitySquared - 3 * C1 ** 2) * D ** 6) / 720)
+);
+
+// Computes the longitude (in radians) from projection parameters
+const computeLongitude = (T1: number, C1: number, D: number, cosPhi1: number): number => (
+  centralMeridian +
+  (D / cosPhi1 -
+    ((1 + 2 * T1 + C1) * D ** 3) / 6 +
+    ((5 - 2 * C1 + 28 * T1 - 3 * C1 ** 2 + 8 * eccentricitySquared + 24 * T1 ** 2) * D ** 5) / 120)
+);
+
+// Converts UTM coordinates (in meters) to geographic (lat/lon in degrees)
+export const convertUTMToWGS84 = (easting: number, northing: number) => {
+  const xAdj = easting - 500000; // Remove false easting
+  const m = northing / scaleFactor;
+  const phi1 = utmFootPointLatitude(m);
+  
+  const { N1, T1, C1, D, cosPhi1, R1 } = computeProjectionParameters(xAdj, phi1);
+  
+  const latitudeRad = computeLatitude(phi1, N1, R1, T1, C1, D);
+  const longitudeRad = computeLongitude(T1, C1, D, cosPhi1);
+  
+  return {
+    latitude: (latitudeRad * 180) / Math.PI,
+    longitude: (longitudeRad * 180) / Math.PI,
+  };
+}
 
 export const location3ToString = (location: Cartesian3 | Cartesian3[]): string => {
     if (!Array.isArray(location)) {
-        const { longitude, latitude } = convertToWGS84(location);        
+        const { longitude, latitude } = convertUTMToWGS84(location.x, location.y);
         return `${longitude}, ${latitude}`;
     }
 
     const points = location.map((point) => {
-        const { longitude, latitude } = convertToWGS84(point);
+        const { longitude, latitude } = convertUTMToWGS84(point.x, point.y);
         return `${longitude} ${latitude}`;
     });
     return `${polygonPrefix}${points.join(',')}${polygonSuffix}`;
 };
 
-export const isValidPolygonPoint = (polygonPoints, newPoint) => {
+export const isValidPolygonPoint = (polygonPoints: Cartesian3[], newPoint: Cartesian3) => {
     if (polygonPoints.length < 2) return true;
 
     const points = [...polygonPoints, newPoint];
