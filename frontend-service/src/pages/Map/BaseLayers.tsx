@@ -64,6 +64,7 @@ export const BaseLayers: React.FC<{ viewerRef: React.MutableRefObject<any>; conf
             viewer.imageryLayers.addImageryProvider(
                 new Cesium.UrlTemplateImageryProvider({
                     url: layer.url,
+                    tilingScheme: new Cesium.GeographicTilingScheme(),
                 }),
             );
         });
