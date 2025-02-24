@@ -33,6 +33,12 @@ export class UsersManager {
         return Kartoffel.getUserProfile(kartoffelId);
     }
 
+    static async getKartoffelUserByIdSchema(kartoffelId: string) {
+        const kartoffelUser = await Kartoffel.getUserById(kartoffelId);
+        console.log({ kartoffelUser });
+        return kartoffelUser;
+    }
+
     static async getUserProfile(userId: string) {
         const user: IUser = await UserService.getUserById(userId);
         const { profilePath } = user.preferences;

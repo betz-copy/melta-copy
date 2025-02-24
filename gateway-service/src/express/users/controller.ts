@@ -16,6 +16,10 @@ export class UsersController {
         stream.pipe(res);
     }
 
+    static async getKartoffelUserByIdSchema(req: Request, res: Response) {
+        res.json(await UsersManager.getKartoffelUserByIdSchema(req.params.kartoffelId));
+    }
+
     static async getUserProfile(req: Request, res: Response) {
         const stream = await UsersManager.getUserProfile(req.params.userId);
         res.setHeader('Content-Type', 'image/*');
