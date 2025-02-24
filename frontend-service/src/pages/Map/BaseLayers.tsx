@@ -3,7 +3,6 @@ import * as Cesium from 'cesium';
 import { Box, Divider, FormControlLabel, Grid, IconButton, Radio, RadioGroup, Typography } from '@mui/material';
 import { Layers } from '@mui/icons-material';
 import i18next from 'i18next';
-import { useQueryClient } from 'react-query';
 import { MeltaTooltip } from '../../common/MeltaTooltip';
 import { BackendConfigState } from '../../services/backendConfigService';
 import { MeltaCheckbox } from '../../common/MeltaCheckbox';
@@ -13,16 +12,13 @@ type LayerProvider = {
     id: string;
     url: string;
     type: 'map' | 'text';
-  };
+};
 
-export const BaseLayers: React.FC<{ viewerRef: React.MutableRefObject<any> }> = ({ viewerRef }) => {
-    const queryClient = useQueryClient();
-    const config = queryClient.getQueryData<BackendConfigState>('getBackendConfig');
+export const BaseLayers: React.FC<{ viewerRef: React.MutableRefObject<any>; config: BackendConfigState }> = ({ viewerRef, config }) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
     const [isOpen, setIsOpen] = useState(false);
 
-    if (!config) return <>{i18next.t('location.layers.noLayers')}</>;
     const { mapLayers, textLayers } = config;
 
     const providers = useMemo<LayerProvider[]>(() => {
@@ -31,7 +27,7 @@ export const BaseLayers: React.FC<{ viewerRef: React.MutableRefObject<any> }> = 
             url,
             type: 'map' as const,
         }));
-        const textLayerArray= Object.entries(textLayers).map(([name, url]) => ({
+        const textLayerArray = Object.entries(textLayers).map(([name, url]) => ({
             id: name,
             url,
             type: 'text' as const,
@@ -40,7 +36,7 @@ export const BaseLayers: React.FC<{ viewerRef: React.MutableRefObject<any> }> = 
     }, [mapLayers, textLayers]);
 
     const [activeMapLayer, setActiveMapLayer] = useState<string>(providers.find((p) => p.type === 'map')?.id || '');
-    const [activeTextLayers, setActiveTextLayers] = useState<Set<string>>(new Set());    
+    const [activeTextLayers, setActiveTextLayers] = useState<Set<string>>(new Set());
 
     const handleTextLayerToggle = useCallback((layerId: string) => {
         setActiveTextLayers((prev) => {
@@ -53,7 +49,6 @@ export const BaseLayers: React.FC<{ viewerRef: React.MutableRefObject<any> }> = 
             return next;
         });
     }, []);
-    
 
     useEffect(() => {
         const viewer = viewerRef.current?.cesiumElement;
@@ -90,7 +85,7 @@ export const BaseLayers: React.FC<{ viewerRef: React.MutableRefObject<any> }> = 
         >
             <MeltaTooltip title={i18next.t('location.layers.map')}>
                 <IconButton size="small" onClick={() => setIsOpen((prev) => !prev)} sx={{ zIndex: 1001 }}>
-                    <Layers fontSize="small" sx={{ color: darkMode ? '#9398c2' : '#787c9e'}}/>
+                    <Layers fontSize="small" sx={{ color: darkMode ? '#9398c2' : '#787c9e' }} />
                 </IconButton>
             </MeltaTooltip>
 
@@ -122,12 +117,7 @@ export const BaseLayers: React.FC<{ viewerRef: React.MutableRefObject<any> }> = 
                                 .map((layer) => (
                                     <FormControlLabel
                                         key={layer.id}
-                                        control={
-                                            <Radio
-                                                checked={activeMapLayer === layer.id}
-                                                value={layer.id}
-                                            />
-                                        }
+                                        control={<Radio checked={activeMapLayer === layer.id} value={layer.id} />}
                                         label={layer.id}
                                         sx={{ display: 'flex', alignItems: 'center' }}
                                     />

@@ -37,8 +37,7 @@ export const useEntityWithLocationFields = ({ entityTemplate, entityProperties }
         if (entityTemplate && entityProperties) {
             setPropertyDefinitions(entityTemplate.properties.properties);
             setProperties(entityProperties);
-        }
-        else {
+        } else {
             setPropertyDefinitions({});
             setProperties({});
         }

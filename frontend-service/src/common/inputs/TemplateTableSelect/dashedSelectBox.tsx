@@ -1,7 +1,6 @@
 import React from 'react';
 import { Grid } from '@mui/material';
 import i18next from 'i18next';
-import { AddEntityButton } from '../../EntitiesPage/AddEntityButton';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IEntity } from '../../../interfaces/entities';
 import { AddIconWithText } from '../../AddIconWithText';
@@ -9,6 +8,7 @@ import IconButtonWithPopover from '../../IconButtonWithPopover';
 import { checkUserTemplatePermission } from '../../../utils/permissions/instancePermissions';
 import { PermissionScope } from '../../../interfaces/permissions';
 import { useUserStore } from '../../../stores/user';
+import { AddEntityButton } from '../../EntitiesPage/Buttons/AddEntity';
 
 const DashedSelectBox: React.FC<{
     text: string;

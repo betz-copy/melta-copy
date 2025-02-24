@@ -60,6 +60,7 @@ ajv.addKeyword({ keyword: 'calculateTime', type: 'boolean' });
 ajv.addKeyword({ keyword: 'isDailyAlert', type: 'boolean' });
 ajv.addKeyword({ keyword: 'isDatePastAlert', type: 'boolean' });
 ajv.addKeyword({ keyword: 'archive', type: 'boolean' });
+ajv.addKeyword({ keyword: 'identifier', type: 'boolean' });
 ajv.addKeyword({
     keyword: 'serialStarter',
     type: 'number',
@@ -521,7 +522,7 @@ export const addStringFieldsAndNormalizeSpecialStringValues = (
         }
         if (type === 'string' && format === 'location') {
             const location = JSON.parse(propertyValue);
-            normalizedEntity[key] = getNeo4jLocation(location.location);
+            normalizedEntity[key] = getNeo4jLocation(location.location, entityProperties, key);
             normalizedEntity[`${key}${neo4j.stringPropertySuffix}`] = location.location;
             normalizedEntity[`${key}${neo4j.locationUnitPropertySuffix}`] = location.unit;
 

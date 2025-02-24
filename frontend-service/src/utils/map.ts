@@ -1,12 +1,16 @@
+/* eslint-disable no-param-reassign */
 import { Cartesian3 } from 'cesium';
-import * as Cesium from "cesium";
+import * as Cesium from 'cesium';
 import { environment } from '../globals';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { IEntity } from '../interfaces/entities';
 
 const {
     polygon: { polygonPrefix, polygonSuffix },
-    earthRadius, eccentricitySquared, scaleFactor, centralMeridian
+    earthRadius,
+    eccentricitySquared,
+    scaleFactor,
+    centralMeridian,
 } = environment.map;
 
 export const zoomNumber = 300000;
@@ -31,8 +35,8 @@ export const parsePolygon = (polygonStr: string): Cartesian3[] | undefined => {
                 console.error(`Invalid coordinate pair: ${pair}`);
                 return null;
             }
-            
-            return Cartesian3.fromDegrees(longitude,latitude);
+
+            return Cartesian3.fromDegrees(longitude, latitude);
         })
         .filter((coord): coord is Cartesian3 => coord !== null);
 
@@ -56,15 +60,15 @@ export const stringToCoordinates = (strCoords: string): CoordinatesResult => {
 
 export const isValidWGS84 = (coordinate: Cartesian3) => Math.abs(coordinate.x) < 180 && Math.abs(coordinate.y) < 90;
 
-const validateUTM = (zone: number, hemisphere: string, easting: number, northing: number): boolean  => {
+const validateUTM = (zone: number, hemisphere: string, easting: number, northing: number): boolean => {
     if (zone < 1 || zone > 60) return false;
-    if (!["N", "S"].includes(hemisphere)) return false;
+    if (!['N', 'S'].includes(hemisphere)) return false;
     if (easting < 160000 || easting > 834000) return false;
     if (northing < 0 || northing > 10000000) return false;
     return true;
-}
+};
 
-export const isValidUTM =(position: Cartesian3): boolean => {
+export const isValidUTM = (position: Cartesian3): boolean => {
     if (!position) return false;
 
     const cartographic = Cesium.Cartographic.fromCartesian(position);
@@ -77,13 +81,13 @@ export const isValidUTM =(position: Cartesian3): boolean => {
     if (longitude < -180 || longitude > 180) return false;
 
     const zone = Math.floor((longitude + 180) / 6) + 1;
-    const hemisphere = latitude >= 0 ? "N" : "S";
+    const hemisphere = latitude >= 0 ? 'N' : 'S';
 
-    const easting = 500000; 
+    const easting = 500000;
     const northing = latitude >= 0 ? 0 : 10000000;
-    
+
     return validateUTM(zone, hemisphere, easting, northing);
-}
+};
 
 export const calculateCenterOfPolygon = (coordinates: Cartesian3[]): Cartesian3 => {
     if (coordinates.length === 0) return jerusalemCoordinates;
@@ -116,76 +120,63 @@ export const getPolygonFarthestPoint = (polygonCenter: Cartesian3, polygon: Cart
 
 // Computes the foot point latitude for the inverse projection
 const utmFootPointLatitude = (meridionalArc: number): number => {
-  const mu =
-    meridionalArc /
-    (earthRadius *
-      (1 -
-        eccentricitySquared / 4 -
-        (3 * eccentricitySquared ** 2) / 64 -
-        (5 * eccentricitySquared ** 3) / 256));
+    const mu =
+        meridionalArc / (earthRadius * (1 - eccentricitySquared / 4 - (3 * eccentricitySquared ** 2) / 64 - (5 * eccentricitySquared ** 3) / 256));
 
-  const e1 =
-    (1 - Math.sqrt(1 - eccentricitySquared)) /
-    (1 + Math.sqrt(1 - eccentricitySquared));
+    const e1 = (1 - Math.sqrt(1 - eccentricitySquared)) / (1 + Math.sqrt(1 - eccentricitySquared));
 
-  return (
-    mu +
-    ((3 * e1) / 2 - (27 * e1 ** 3) / 32) * Math.sin(2 * mu) +
-    ((21 * e1 ** 2) / 16 - (55 * e1 ** 4) / 32) * Math.sin(4 * mu) +
-    ((151 * e1 ** 3) / 96) * Math.sin(6 * mu) +
-    ((1097 * e1 ** 4) / 512) * Math.sin(8 * mu)
-  );
-}
+    return (
+        mu +
+        ((3 * e1) / 2 - (27 * e1 ** 3) / 32) * Math.sin(2 * mu) +
+        ((21 * e1 ** 2) / 16 - (55 * e1 ** 4) / 32) * Math.sin(4 * mu) +
+        ((151 * e1 ** 3) / 96) * Math.sin(6 * mu) +
+        ((1097 * e1 ** 4) / 512) * Math.sin(8 * mu)
+    );
+};
 
 // Computes projection parameters for the conversion
 const computeProjectionParameters = (xAdj: number, phi1: number) => {
-  const sinPhi1 = Math.sin(phi1);
-  const cosPhi1 = Math.cos(phi1);
-  
-  const N1 = earthRadius / Math.sqrt(1 - eccentricitySquared * sinPhi1 ** 2);
-  const T1 = Math.tan(phi1) ** 2;
-  const C1 = (eccentricitySquared / (1 - eccentricitySquared)) * cosPhi1 ** 2;
-  const D = xAdj / (N1 * scaleFactor);
-  const R1 =
-    (earthRadius * (1 - eccentricitySquared)) /
-    Math.pow(1 - eccentricitySquared * sinPhi1 ** 2, 1.5);
+    const sinPhi1 = Math.sin(phi1);
+    const cosPhi1 = Math.cos(phi1);
 
-  return { N1, T1, C1, D, cosPhi1, R1 };
-}
+    const N1 = earthRadius / Math.sqrt(1 - eccentricitySquared * sinPhi1 ** 2);
+    const T1 = Math.tan(phi1) ** 2;
+    const C1 = (eccentricitySquared / (1 - eccentricitySquared)) * cosPhi1 ** 2;
+    const D = xAdj / (N1 * scaleFactor);
+    const R1 = (earthRadius * (1 - eccentricitySquared)) / (1 - eccentricitySquared * sinPhi1 ** 2) ** 1.5;
+
+    return { N1, T1, C1, D, cosPhi1, R1 };
+};
 
 // Computes the latitude (in radians) from projection parameters
-const computeLatitude = (phi1: number, N1: number, R1: number, T1: number, C1: number, D: number): number => (
+const computeLatitude = (phi1: number, N1: number, R1: number, T1: number, C1: number, D: number): number =>
     phi1 -
-    (N1 * Math.tan(phi1) / R1) *
-      ((D ** 2) / 2 -
-        ((5 + 3 * T1 + 10 * C1 - 4 * C1 ** 2 - 9 * eccentricitySquared) * D ** 4) / 24 +
-        ((61 + 90 * T1 + 298 * C1 + 45 * T1 ** 2 - 252 * eccentricitySquared - 3 * C1 ** 2) * D ** 6) / 720)
-);
+    ((N1 * Math.tan(phi1)) / R1) *
+        (D ** 2 / 2 -
+            ((5 + 3 * T1 + 10 * C1 - 4 * C1 ** 2 - 9 * eccentricitySquared) * D ** 4) / 24 +
+            ((61 + 90 * T1 + 298 * C1 + 45 * T1 ** 2 - 252 * eccentricitySquared - 3 * C1 ** 2) * D ** 6) / 720);
 
 // Computes the longitude (in radians) from projection parameters
-const computeLongitude = (T1: number, C1: number, D: number, cosPhi1: number): number => (
-  centralMeridian +
-  (D / cosPhi1 -
-    ((1 + 2 * T1 + C1) * D ** 3) / 6 +
-    ((5 - 2 * C1 + 28 * T1 - 3 * C1 ** 2 + 8 * eccentricitySquared + 24 * T1 ** 2) * D ** 5) / 120)
-);
+const computeLongitude = (T1: number, C1: number, D: number, cosPhi1: number): number =>
+    centralMeridian +
+    (D / cosPhi1 - ((1 + 2 * T1 + C1) * D ** 3) / 6 + ((5 - 2 * C1 + 28 * T1 - 3 * C1 ** 2 + 8 * eccentricitySquared + 24 * T1 ** 2) * D ** 5) / 120);
 
 // Converts UTM coordinates (in meters) to geographic (lat/lon in degrees)
 export const convertUTMToWGS84 = (easting: number, northing: number) => {
-  const xAdj = easting - 500000; // Remove false easting
-  const m = northing / scaleFactor;
-  const phi1 = utmFootPointLatitude(m);
-  
-  const { N1, T1, C1, D, cosPhi1, R1 } = computeProjectionParameters(xAdj, phi1);
-  
-  const latitudeRad = computeLatitude(phi1, N1, R1, T1, C1, D);
-  const longitudeRad = computeLongitude(T1, C1, D, cosPhi1);
-  
-  return {
-    latitude: (latitudeRad * 180) / Math.PI,
-    longitude: (longitudeRad * 180) / Math.PI,
-  };
-}
+    const xAdj = easting - 500000; // Remove false easting
+    const m = northing / scaleFactor;
+    const phi1 = utmFootPointLatitude(m);
+
+    const { N1, T1, C1, D, cosPhi1, R1 } = computeProjectionParameters(xAdj, phi1);
+
+    const latitudeRad = computeLatitude(phi1, N1, R1, T1, C1, D);
+    const longitudeRad = computeLongitude(T1, C1, D, cosPhi1);
+
+    return {
+        latitude: (latitudeRad * 180) / Math.PI,
+        longitude: (longitudeRad * 180) / Math.PI,
+    };
+};
 
 export const location3ToString = (location: Cartesian3 | Cartesian3[]): string => {
     if (!Array.isArray(location)) {
@@ -224,11 +215,11 @@ export const isValidPolygonPoint = (polygonPoints: Cartesian3[], newPoint: Carte
     return true;
 };
 
-export const getLocationProperties = (entity: IEntity, selectedTemplates: IMongoEntityTemplatePopulated[]) => {   
+export const getLocationProperties = (entity: IEntity, selectedTemplates: IMongoEntityTemplatePopulated[]) => {
     const template = selectedTemplates.find(({ _id }) => _id === entity.templateId);
-    
-    if (!template) return {template: undefined, locationTemplateProperties: undefined, locationProperties: undefined};
-    
+
+    if (!template) return { template: undefined, locationTemplateProperties: undefined, locationProperties: undefined };
+
     const locationTemplateProperties = Object.entries(template.properties.properties)
         .filter(([_key, value]) => value.format === 'location')
         .reduce((acc, [key, value]) => {
@@ -244,4 +235,4 @@ export const getLocationProperties = (entity: IEntity, selectedTemplates: IMongo
         }, {} as { [x: string]: any });
 
     return { template, locationTemplateProperties, locationProperties };
-}
+};

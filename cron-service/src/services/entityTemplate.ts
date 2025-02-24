@@ -31,6 +31,7 @@ export interface IEntitySingleProperty {
         enum?: string[];
         format?: 'fileId';
     };
+    identifier?: true;
     minItems?: 1;
     uniqueItems?: true;
     pattern?: string;

@@ -216,6 +216,25 @@ export const environment = {
             ],
         },
     },
+    agGrid: {
+        rowCount: 5,
+        defaultExpandedRowCount: 13,
+        defaultRowHeight: 50,
+        defaultFontSize: 14,
+        cacheBlockSize: 5,
+        maxBlocksInCache: 50,
+        maxConcurrentDatasourceRequests: 1,
+        infiniteInitialRowCount: 1,
+        defaultExpandedTableHeight: 650,
+        paginationPageSizeSelector: [5, 10, 25, 50],
+        actionsWidth: 200,
+        actionPrefix: 'actions-',
+        localStorage: {
+            visibleColumns: 'visibleColumns-',
+            columnsOrder: 'columnsOrder-',
+            columnWidths: 'columnWidths-',
+        },
+    },
     accessTokenName: 'rabaz-access-token',
     brokenRulesFakeEntityIdPrefix: '$',
     minimumSupportedChromeVersion: 85,
@@ -231,14 +250,7 @@ export const environment = {
         actionsCustomError: 'ACTIONS_CUSTOM_ERROR',
         entityHasRelationships: 'ENTITY_HAS_RELATIONSHIPS',
     },
-
     loadExcel: { excelExtension: '.xlsx', acceptedFilesTypes: { 'excel/xlsx': ['.xlsx', '.xls'] }, entityId: '$0._id' },
-    agGrid: {
-        cacheBlockSize: 5,
-        maxConcurrentDatasourceRequests: 1,
-        paginationPageSizeSelector: [5, 10, 25, 50],
-    },
-
     draftAutoSaveDebounce: 250,
     map: {
         maxRadius: 30000,

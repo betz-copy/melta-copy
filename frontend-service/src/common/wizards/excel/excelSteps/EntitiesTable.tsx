@@ -3,12 +3,12 @@ import React from 'react';
 import { Download, ExpandMore } from '@mui/icons-material';
 import i18next from 'i18next';
 import { v4 as uuid } from 'uuid';
-import EntitiesTableOfTemplate from '../../EntitiesTableOfTemplate';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { TableButton } from '../../TableButton';
-import { IEntity } from '../../../interfaces/entities';
-import { IFailedEntity } from '.';
-import { useWorkspaceStore } from '../../../stores/workspace';
+import EntitiesTableOfTemplate from '../../../EntitiesTableOfTemplate';
+import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
+import { TableButton } from '../../../TableButton';
+import { IEntity } from '../../../../interfaces/entities';
+import { useWorkspaceStore } from '../../../../stores/workspace';
+import { IFailedEntity } from '../../../../interfaces/excel';
 
 export const EntitiesTable: React.FC<{
     rowData?: IEntity[] | IFailedEntity[];

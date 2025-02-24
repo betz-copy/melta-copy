@@ -18,11 +18,7 @@ export default defineConfig({
     define: {
         CESIUM_BASE_URL: JSON.stringify(`/${cesiumBaseUrl}`),
     },
-    plugins: [
-        react(),
-        cesium(),
-        viteStaticCopy({ targets: cesiumCopyTargets }),
-    ],
+    plugins: [react(), cesium(), viteStaticCopy({ targets: cesiumCopyTargets })],
     server: {
         port: 3000,
         host: true,
