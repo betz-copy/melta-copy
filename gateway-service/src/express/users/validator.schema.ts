@@ -148,6 +148,7 @@ export const searchExternalUsersRequestSchema = joi.object({
     query: {
         search: joi.string().required(),
         workspaceId: MongoIdSchema,
+        isKartoffelUser: joi.boolean().default(false),
     },
     body: {},
     params: {},

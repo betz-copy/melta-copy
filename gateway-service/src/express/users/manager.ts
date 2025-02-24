@@ -152,11 +152,13 @@ export class UsersManager {
         return UserService.updateUser(userId, digitalIdentity);
     }
 
-    static async searchExternalUsers(search: string, workspaceId?: string): Promise<IExternalUser[]> {
+    static async searchExternalUsers(search: string, isKartoffelUser: boolean, workspaceId?: string): Promise<IExternalUser[] | IKartoffelUser[]> {
         const kartoffelUsers: IKartoffelUser[] = await Kartoffel.searchUsers(search);
 
-        const normalizedKartoffelUsers = await Promise.all(kartoffelUsers.flatMap((kartoffelUser) => this.kartoffelUserToUser(kartoffelUser)));
+        // TODO - check the permissions
+        if (isKartoffelUser) return kartoffelUsers;
 
+        const normalizedKartoffelUsers = await Promise.all(kartoffelUsers.flatMap((kartoffelUser) => this.kartoffelUserToUser(kartoffelUser)));
         return normalizedKartoffelUsers.filter(
             (normalizedKartoffelUser) =>
                 !normalizedKartoffelUser.permissions[workspaceId || ''] ||

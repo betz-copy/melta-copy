@@ -57,7 +57,13 @@ export class UsersController {
     }
 
     static async searchExternalUsers(req: Request, res: Response) {
-        res.json(await UsersManager.searchExternalUsers(req.query.search as string, req.query.workspaceId as string));
+        res.json(
+            await UsersManager.searchExternalUsers(
+                req.query.search as string,
+                req.query.isKartoffelUser as unknown as boolean,
+                req.query.workspaceId as string,
+            ),
+        );
     }
 
     static async searchUsersByPermissions(req: Request, res: Response) {

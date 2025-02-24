@@ -2,7 +2,7 @@ import React from 'react';
 import { WidgetProps } from '@rjsf/utils';
 import { Grid } from '@mui/material';
 import UserAutocomplete from '../UserAutocomplete';
-import { IUser } from '../../../interfaces/users';
+import { IKartoffelUser, IUser } from '../../../interfaces/users';
 
 const RjfsUserWidget = ({ disabled, label, value, onChange, rawErrors = [], onBlur, onFocus, id, autoFocus, ...textFieldProps }: WidgetProps) => {
     const [currentUser, setCurrentUser] = React.useState(value ? JSON.parse(value) : undefined);
@@ -10,14 +10,15 @@ const RjfsUserWidget = ({ disabled, label, value, onChange, rawErrors = [], onBl
         onChange(undefined);
     }
 
-    function handleUserChange(_event: React.SyntheticEvent, chosenUser: IUser | null) {
+    function handleUserChange(_event: React.SyntheticEvent, chosenUser: IKartoffelUser | null) {
+        console.log({ chosenUser });
         if (!chosenUser) {
             setCurrentUser(undefined);
             return;
         }
         onChange(
             JSON.stringify({
-                _id: chosenUser?._id,
+                _id: chosenUser?._id || chosenUser?.id,
                 fullName: chosenUser?.fullName,
                 jobTitle: chosenUser?.jobTitle,
                 hierarchy: chosenUser?.hierarchy,
@@ -31,7 +32,8 @@ const RjfsUserWidget = ({ disabled, label, value, onChange, rawErrors = [], onBl
     return (
         <Grid>
             <UserAutocomplete
-                mode="external"
+                mode="kartoffel"
+                // mode="external"
                 value={
                     currentUser
                         ? { _id: currentUser._id, displayName: `${currentUser.fullName} - ${currentUser.hierarchy}`, ...currentUser }

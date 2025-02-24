@@ -1410,7 +1410,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                         />
                                                     </MeltaTooltip>
                                                 </Grid>
-                                                {value.expendUserFields && (
+                                                {value.expendUserFields && ( //
                                                     <SelectCheckbox
                                                         title={i18next.t('user.expendUserFields')}
                                                         options={userFields}

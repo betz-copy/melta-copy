@@ -19,6 +19,7 @@ export const getUserByIdRequest = async (userId: string) => {
     return data;
 };
 
+//
 export const getKartoffelUserRequest = async (kartoffelId: string) => {
     const { data } = await axios.get<IKartoffelUser>(`${users}/kartoffelUser/${kartoffelId}`);
     return data;
@@ -70,10 +71,10 @@ export const syncUserPermissionsRequest = async (userId: string, permissions: IC
     return data;
 };
 
-export const searchExternalUsersRequest = async (search: string, workspaceId?: string) => {
+export const searchExternalUsersRequest = async (search: string, workspaceId?: string, isKartoffelUser?: boolean) => {
     if (search.length < 2) return [];
     // TODO: change to IKartoffelUser interface instead of IExternalUser interface ? //
-    const { data } = await axios.get<IExternalUser[]>(`${users}/external`, { params: { search, workspaceId } });
+    const { data } = await axios.get<IExternalUser[] | IKartoffelUser[]>(`${users}/external`, { params: { search, workspaceId, isKartoffelUser } });
     return data;
 };
 
