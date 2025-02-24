@@ -2,6 +2,7 @@ import isEqualWith from 'lodash.isequalwith';
 import { PermissionScope } from '../../interfaces/permissions';
 import { ISubCompactPermissions } from '../../interfaces/permissions/permissions';
 import { IUser } from '../../interfaces/users';
+import { IMongoCategory } from '../../interfaces/categories';
 
 export const userHasNoPermissions = (permissions: ISubCompactPermissions) => {
     return (
@@ -15,3 +16,12 @@ export const userHasNoPermissions = (permissions: ISubCompactPermissions) => {
 
 export const didPermissionsChange = (currentPermissions: IUser['permissions'], newPermissions: IUser['permissions']) =>
     isEqualWith(currentPermissions, newPermissions);
+
+export type entityTemplatePermissionDialog = {
+    id: string;
+    name: string;
+};
+
+export type CategoryWithTemplates = IMongoCategory & {
+    entityTemplates: entityTemplatePermissionDialog[];
+};

@@ -14,12 +14,13 @@ import {
     ISearchEntitiesByLocationBody,
     IDeleteEntityBody,
     ICountSearchResult,
+    IEntityWithIgnoredRules,
 } from '../interfaces/entities';
 import { EntityWizardValues } from '../common/dialogs/entity';
-import { IBrokenRule, IRuleBreach } from '../interfaces/ruleBreaches/ruleBreach';
+import { IRuleBreach } from '../interfaces/ruleBreaches/ruleBreach';
 import { filterModelToFilterOfGraph } from '../pages/Graph/GraphFilterToBackend';
-import { ITablesResults } from '../common/wizards/loadEntities';
-import { ICreateEntityMetadata } from '../interfaces/ruleBreaches/actionMetadata';
+import { IEditReadExcel, ITablesResults } from '../interfaces/excel';
+import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 
 const { entities, relationships } = environment.api;
 
@@ -31,7 +32,7 @@ export const exportEntitiesRequest = async (body: IExportEntitiesBody) => {
 export const loadEntitiesRequest = async (
     templateId: string,
     files?: Record<string, File>,
-    insertBrokenEntities?: { entitiesToCreate: ICreateEntityMetadata[]; ignoredRules: IBrokenRule[] },
+    insertBrokenEntities?: IEntityWithIgnoredRules[],
 ): Promise<ITablesResults> => {
     const formData = new FormData();
     if (files)
@@ -41,19 +42,51 @@ export const loadEntitiesRequest = async (
     formData.append('templateId', templateId);
 
     if (insertBrokenEntities) {
-        const { entitiesToCreate = [], ignoredRules = [] } = insertBrokenEntities;
+        const formattedInsertBrokenEntities = insertBrokenEntities.map((entity) => ({
+            templateId: entity.templateId,
+            properties: mapValues(entity.properties, (property) => property),
+            ignoredRules: entity.ignoredRules,
+        }));
 
-        const insertBrokenEntitiesObject = {
-            entitiesToCreate: entitiesToCreate.map((entity) => ({
-                templateId: entity.templateId,
-                properties: mapValues(entity.properties, (property) => property),
-            })),
-            ignoredRules,
-        };
-        formData.append('insertBrokenEntities', JSON.stringify(insertBrokenEntitiesObject));
+        formData.append('insertBrokenEntities', JSON.stringify(formattedInsertBrokenEntities));
     }
 
     const { data } = await axios.post(`${entities}/loadEntities`, formData);
+
+    return data;
+};
+
+export const getChangedEntitiesFromExcelRequest = async (templateId: string, file: Record<string, File>): Promise<IEditReadExcel> => {
+    const formData = new FormData();
+
+    Object.entries(file).forEach(([key, value]) => {
+        formData.append(key, value as Blob);
+    });
+    formData.append('templateId', templateId);
+
+    const { data } = await axios.post(`${entities}/getChangedEntitiesFromExcel`, formData);
+
+    return data;
+};
+
+export const editManyEntitiesByExcelRequest = async (
+    template: IMongoEntityTemplatePopulated,
+    entitiesToUpdate: IEntityWithIgnoredRules[],
+): Promise<ITablesResults> => {
+    const formData = new FormData();
+
+    formData.append('templateId', template._id);
+
+    const entitiesArray = entitiesToUpdate.map((entity) => ({
+        templateId: entity.templateId,
+        properties: mapValues(entity.properties, (property, key) =>
+            template.properties.properties[key]?.format === 'relationshipReference' ? property?.properties._id : property,
+        ),
+        ignoredRules: entity.ignoredRules,
+    }));
+    formData.append('entities', JSON.stringify(entitiesArray));
+
+    const { data } = await axios.post(`${entities}/editManyEntitiesByExcel`, formData);
 
     return data;
 };

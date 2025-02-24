@@ -20,10 +20,6 @@ export default class ProcessTemplateController extends DefaultController<IProces
         res.json(await this.manager.deleteProcessTemplate(req.params.id));
     }
 
-    async updateTemplate(req: Request, res: Response) {
-        res.json(await this.manager.updateTemplate(req.params.id, req.body));
-    }
-
     async searchTemplates(req: Request, res: Response) {
         res.json(await this.manager.searchTemplates(req.body));
     }

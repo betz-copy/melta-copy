@@ -4,7 +4,12 @@ import { Authorizer } from '../../utils/authorizer';
 import DefaultExternalServiceApi from '../../utils/express/externalService';
 import { PermissionScope } from '../userService/interfaces/permissions';
 import { IMongoProcessInstanceWithSteps, IProcessInstance, ISearchProcessInstancesBody } from './interfaces/processInstance';
-import { IMongoProcessTemplateWithSteps, IProcessTemplateWithSteps, ISearchProcessTemplatesBody } from './interfaces/processTemplate';
+import {
+    IMongoProcessTemplatePopulated,
+    IMongoProcessTemplateWithSteps,
+    IProcessTemplateWithSteps,
+    ISearchProcessTemplatesBody,
+} from './interfaces/processTemplate';
 import { IMongoStepInstance, UpdateStepReqBody } from './interfaces/stepInstance';
 import { IMongoStepTemplate } from './interfaces/stepTemplate';
 
@@ -48,7 +53,10 @@ export class ProcessService extends DefaultExternalServiceApi {
     }
 
     async updateProcessTemplate(processTemplateId: string, updatedProcessTemplate: IProcessTemplateWithSteps) {
-        const { data } = await this.api.put<IMongoProcessTemplateWithSteps>(`${templatesBaseRoute}/${processTemplateId}`, updatedProcessTemplate);
+        const { data } = await this.api.put<IMongoProcessTemplateWithSteps>(
+            `${instancesBaseRoute}/template/${processTemplateId}`,
+            updatedProcessTemplate,
+        );
 
         return data;
     }
@@ -78,13 +86,13 @@ export class ProcessService extends DefaultExternalServiceApi {
         return process;
     }
 
-    async createProcessInstance(processData: IProcessInstance) {
-        const { data } = await this.api.post<IMongoProcessInstanceWithSteps>(`${instancesBaseRoute}`, processData);
+    async createProcessInstance(processData: IProcessInstance, userId: string) {
+        const { data } = await this.api.post<IMongoProcessInstanceWithSteps>(`${instancesBaseRoute}`, { ...processData, userId });
         return data;
     }
 
-    async updateProcessInstance(id: string, processData: IProcessInstance) {
-        const { data } = await this.api.put<IMongoProcessInstanceWithSteps>(`${instancesBaseRoute}/${id}`, processData);
+    async updateProcessInstance(id: string, processData: IProcessInstance, userId: string) {
+        const { data } = await this.api.put<IMongoProcessInstanceWithSteps>(`${instancesBaseRoute}/${id}`, { ...processData, userId });
         return data;
     }
 
@@ -105,6 +113,22 @@ export class ProcessService extends DefaultExternalServiceApi {
         return data;
     }
 
+    async deletePropertiesOfTemplate(
+        templateId: string,
+        removedProperties: {
+            processProperties: string[];
+            stepsProperties: Record<string, string[]>;
+        },
+        currentTemplate: IMongoProcessTemplatePopulated,
+    ) {
+        const { data } = await this.api.patch<IMongoProcessInstanceWithSteps[]>(`${instancesBaseRoute}/deletePropertiesOfTemplate/${templateId}`, {
+            removedProperties,
+            currentTemplate,
+        });
+
+        return data;
+    }
+
     // Step Instance
     async getStepInstanceById(id: string) {
         const { data } = await this.api.get<IMongoStepInstance>(`${instancesBaseRoute}/steps/${id}`);
@@ -116,8 +140,8 @@ export class ProcessService extends DefaultExternalServiceApi {
         return data;
     }
 
-    async updateStepInstance(id: string, updatedStep: UpdateStepReqBody) {
-        const { data } = await this.api.patch<IMongoStepInstance>(`${instancesBaseRoute}/steps/${id}`, updatedStep);
+    async updateStepInstance(id: string, updatedStep: UpdateStepReqBody, userId: string) {
+        const { data } = await this.api.patch<IMongoStepInstance>(`${instancesBaseRoute}/steps/${id}`, { ...updatedStep, userId });
         return data;
     }
 }

@@ -1,6 +1,13 @@
 import React, { useState, CSSProperties } from 'react';
+import { useMutation, useQueryClient } from 'react-query';
+import { toast } from 'react-toastify';
+import i18next from 'i18next';
+import { AxiosError } from 'axios';
 import IconButtonWithPopover from '../../common/IconButtonWithPopover';
-import CreateProcess from '../../common/wizards/processInstance/CreateProcessDialog';
+import CreateOrEditProcess from '../../common/wizards/processInstance/CreateOrEditProcessDialog';
+import { ErrorToast } from '../../common/ErrorToast';
+import { ProcessDetailsValues } from '../../common/wizards/processInstance/ProcessDetails';
+import { createProcessRequest } from '../../services/processesService';
 
 const AddProcessButton: React.FC<{
     style?: CSSProperties;
@@ -18,6 +25,20 @@ const AddProcessButton: React.FC<{
         setAddNewProcessState(false);
     };
 
+    const queryClient = useQueryClient();
+
+    const { mutateAsync } = useMutation((processData: ProcessDetailsValues) => createProcessRequest(processData), {
+        onSuccess: () => {
+            toast.success(i18next.t('processInstancesPage.processCreatedSuccessfully'));
+            handleClose();
+            queryClient.resetQueries({ queryKey: ['searchProcesses'] }); // reset ProcessesList search results
+        },
+        onError: (error: AxiosError) => {
+            toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('processInstancesPage.failedToCreateProcess')} />);
+            console.log('Failed to create process. Error', error);
+        },
+    });
+
     return (
         <>
             <IconButtonWithPopover
@@ -34,7 +55,7 @@ const AddProcessButton: React.FC<{
             >
                 {children}
             </IconButtonWithPopover>
-            {addNewProcessState && <CreateProcess open={addNewProcessState} onClose={handleClose} />}
+            {addNewProcessState && <CreateOrEditProcess open={addNewProcessState} onClose={handleClose} mutateAsync={mutateAsync} />}
         </>
     );
 };

@@ -74,6 +74,14 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
         keyword: 'serialCurrent',
     });
 
+    ajv.addKeyword('identifier', {
+        modifying: true,
+        // eslint-disable-next-line @typescript-eslint/no-shadow
+        validate: (_schema, data) => data !== undefined,
+        errors: false,
+        keyword: '',
+    });
+
     const schemaToValidate = {
         ...schema,
         properties: pickBy(schema.properties, (value) => value.format !== 'relationshipReference'),
@@ -176,7 +184,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                             enumOptions: (propertySchema.items?.enum || propertySchema?.enum)!.map((option) => ({
                                 label: option,
                                 value: option,
-                                color: values.template.enumPropertiesColors?.[propertyKey]?.[option],
+                                color: values.template?.enumPropertiesColors?.[propertyKey]?.[option],
                             })),
                         },
                     };

@@ -29,6 +29,8 @@ export interface CommonFormInputProperties {
     expendUserFields?: boolean;
     groupName?: string;
     archive?: boolean;
+    identifier?: boolean;
+    mapSearch?: boolean;
 }
 
 export interface ConvertToRelationshipFieldFormInputProperties {

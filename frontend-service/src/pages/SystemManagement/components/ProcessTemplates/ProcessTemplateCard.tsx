@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Divider, Grid, Typography, useTheme } from '@mui/material';
+import { ScatterPlotOutlined as HiveIcon } from '@mui/icons-material';
 import i18next from 'i18next';
 import { ViewingCard } from '../Card';
 import { IMongoProcessTemplatePopulated } from '../../../../interfaces/processes/processTemplate';
@@ -85,8 +86,10 @@ export const ProcessTemplateCard: React.FC<ProcessTemplateCardProps> = ({
                     <Grid item container flexDirection="row" gap="20px">
                         {processTemplate.steps.map((step) => (
                             <Grid key={step._id} item container alignItems="center" gap="10px" width="fit-content">
-                                {step.iconFileId && (
+                                {step.iconFileId ? (
                                     <CustomIcon iconUrl={step.iconFileId} height="24px" width="24px" color={theme.palette.primary.main} />
+                                ) : (
+                                    <HiveIcon sx={{ color: theme.palette.primary.main }} height="24px" width="24px" />
                                 )}
                                 <MeltaTooltip title={step.displayName}>
                                     <Typography

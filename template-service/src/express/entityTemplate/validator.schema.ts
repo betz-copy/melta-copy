@@ -19,6 +19,7 @@ const entityTemplateSchema = {
     propertiesPreview: previewPropertiesSchema.required(),
     enumPropertiesColors: enumPropertiesColorsSchema,
     documentTemplatesIds: Joi.array().items(Joi.string()),
+    mapSearchProperties: Joi.array().items(Joi.string()),
 };
 
 // POST /api/entities/templates/search
@@ -112,4 +113,11 @@ export const updateEntityTemplateActionSchema = Joi.object({
     params: {
         templateId: MongoIdSchema.required(),
     },
+});
+
+// GET /api/entities/templates/
+export const getAllTemplatesSchema = Joi.object({
+    body: {},
+    query: {},
+    params: {},
 });

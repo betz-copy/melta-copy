@@ -3,7 +3,7 @@ import { Field, FormikProps } from 'formik';
 import i18next from 'i18next';
 import React from 'react';
 import { Accept } from 'react-dropzone';
-import { File } from 'react-pdf/dist/cjs/shared/types';
+import { toast } from 'react-toastify';
 import { ProcessDetailsValues } from '../../wizards/processInstance/ProcessDetails';
 import { ProcessStepValues } from '../../wizards/processInstance/ProcessSteps';
 import FilesInput from '../FilesInput';
@@ -30,6 +30,7 @@ interface InstanceFileInputProps {
     onDrop?: (files: File[]) => Promise<void>;
     isLoading?: boolean;
     comment?: string;
+    limit?: number;
 }
 
 export const InstanceFileInput: React.FC<InstanceFileInputProps> = ({
@@ -46,6 +47,7 @@ export const InstanceFileInput: React.FC<InstanceFileInputProps> = ({
     onDrop,
     isLoading,
     comment,
+    limit,
 }) => {
     return (
         <Box
@@ -68,10 +70,13 @@ export const InstanceFileInput: React.FC<InstanceFileInputProps> = ({
                 files={value ?? []}
                 onDropFiles={(acceptedFiles: File[]) => {
                     const updatedFiles = value ? [...value, ...acceptedFiles] : acceptedFiles;
-                    setFieldValue(fileFieldName, updatedFiles);
-                    setFieldTouched(fileFieldName, true, false);
-                    setExternalErrors?.((prev) => ({ ...prev, files: false }));
-                    onDrop?.(acceptedFiles);
+                    if (limit && updatedFiles.length > limit) toast.warn(i18next.t('validation.fileslimit', { limit }));
+                    else {
+                        setFieldValue(fileFieldName, updatedFiles);
+                        setFieldTouched(fileFieldName, true, false);
+                        setExternalErrors?.((prev) => ({ ...prev, files: false }));
+                        onDrop?.(acceptedFiles);
+                    }
                 }}
                 onDeleteFile={(fileIndex: number, event: React.MouseEvent<HTMLButtonElement>) => {
                     event.stopPropagation();

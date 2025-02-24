@@ -26,7 +26,6 @@ const metadataSchema = Joi.object({
         filesLimit: Joi.number(),
     }).optional(),
     searchLimits: Joi.object({
-        table: Joi.number(),
         bulk: Joi.number(),
     }).optional(),
 }).optional();

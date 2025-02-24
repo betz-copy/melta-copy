@@ -1,9 +1,11 @@
 import { Readable } from 'stream';
-import { IFailedEntity } from '../common/wizards/loadEntities';
 import { IMongoEntityTemplatePopulated } from './entityTemplates';
 import { IMongoRelationshipTemplate } from './relationshipTemplates';
 import { IRelationship } from './relationships';
 import { ISemanticSearchResult } from './semanticSearch';
+import { IFailedEntity } from './excel';
+import { IBrokenRule } from './ruleBreaches/ruleBreach';
+import { ICreateEntityMetadata } from './ruleBreaches/actionMetadata';
 
 export interface IEntity {
     templateId: string;
@@ -130,7 +132,7 @@ export interface UploadedFile {
 
 type Coordinate = [number, number];
 export interface Circle {
-    coordinate: Coordinate; // [latitude, longitude]
+    coordinate: Coordinate; // [x, y]
     radius: number; // Positive number
 }
 
@@ -206,3 +208,7 @@ export type IDeleteEntityBody<T extends boolean = boolean> = IDeleteEntityBodyBa
           });
 
 export type EntityData = IEntity | IFailedEntity;
+
+export interface IEntityWithIgnoredRules extends ICreateEntityMetadata {
+    ignoredRules: IBrokenRule[];
+}
