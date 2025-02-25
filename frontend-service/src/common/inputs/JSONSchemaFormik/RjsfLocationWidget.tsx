@@ -6,9 +6,10 @@ import validator from '@rjsf/validator-ajv8';
 import { Cartesian3 } from 'cesium';
 import { Box, Dialog, FormControl, Grid, InputAdornment, InputLabel, MenuItem, Select, TextField } from '@mui/material';
 import MapIcon from '@mui/icons-material/Map';
+import i18next from 'i18next';
 import { environment } from '../../../globals';
 import LocationField from '../../../pages/Map/LocationField';
-import { isValidUTM, isValidWGS84, stringToCoordinates } from '../../../utils/map';
+import { isValidUTM, isValidWGS84, location3ToString, stringToCoordinates } from '../../../utils/map';
 
 const { polygonPrefix, polygonSuffix } = environment.map.polygon;
 
@@ -22,30 +23,35 @@ export enum SplitBy {
     comma = ',',
 }
 
-const validatePoint = (point: LocationData, splitBy: SplitBy, schemaValidation?: boolean) => {      
+const validatePoint = (point: LocationData, splitBy: SplitBy, schemaValidation?: boolean) => {
     const [longitude, latitude] = point.location.split(splitBy).map(Number);
-    
-    if (Number.isNaN(longitude) || Number.isNaN(latitude)) return false;    
+
+    if (Number.isNaN(longitude) || Number.isNaN(latitude)) return false;
     const location = stringToCoordinates(point.location).value as Cartesian3;
 
-    if(schemaValidation){
+    if (schemaValidation) {
         switch (point.unit) {
-            case 'WGS84': return isValidWGS84(location);
-            case 'UTM': return isValidUTM(location);
-            default: return true;
+            case 'WGS84':
+                return isValidWGS84(location);
+            case 'UTM':
+                return isValidUTM(location);
+            default:
+                return true;
         }
     }
     return true;
 };
 
-export const validateLocation = (value: LocationData, schemaValidation?: boolean) => {      
+export const validateLocation = (value: LocationData, schemaValidation?: boolean) => {
     if (value.location === '') return true;
     if (!value.location.startsWith(polygonPrefix)) return validatePoint(value, SplitBy.comma, schemaValidation);
 
     if (!value.location.startsWith(polygonPrefix) || !value.location.endsWith(polygonSuffix)) return false;
 
     const coordsStr = value.location.slice(polygonPrefix.length, -polygonSuffix.length);
-    return coordsStr.split(SplitBy.comma).every((stringedLocation: string) => validatePoint({location: stringedLocation, unit: value.unit}, SplitBy.space, schemaValidation));
+    return coordsStr
+        .split(SplitBy.comma)
+        .every((stringedLocation: string) => validatePoint({ location: stringedLocation, unit: value.unit }, SplitBy.space, schemaValidation));
 };
 
 const RjsfLocationWidget = ({
@@ -71,9 +77,13 @@ const RjsfLocationWidget = ({
     propertyReadOnly,
     ...textFieldProps
 }: WidgetProps) => {
+    const getInitialLocation = (location) =>
+        location?.unit === 'UTM' ? location3ToString(stringToCoordinates(location.location).value, 'UTM') : value;
+
     const [error, setError] = useState(false);
     const [mapOpen, setMapOpen] = useState(false);
-    const [newLocationValue, setNewLocationValue] = useState<string | undefined>(value);
+    const [newLocationValue, setNewLocationValue] = useState<string | undefined>(getInitialLocation(value));
+
     const [coordinateSystem, setCoordinateSystem] = useState<'WGS84' | 'UTM'>(value?.unit || 'WGS84');
 
     const displayLabel = getDisplayLabel(validator, schema, uiSchema, registry.rootSchema);
@@ -83,23 +93,36 @@ const RjsfLocationWidget = ({
         const hasError = validateLocation({ location: newValue, unit: coordinateSystem }) === false;
         setError(hasError);
 
-        const locationObj = newValue.toString().trim() ? { location: newValue, unit: coordinateSystem } : undefined;    
-        onChange(locationObj? locationObj : undefined);
+        const locationObj = newValue.toString().trim() ? { location: newValue, unit: coordinateSystem } : undefined;
+        onChange(locationObj || undefined);
     };
 
-    const onChangeUnit = ({ target: { value: newUnit } }) => {        
+    const onChangeUnit = ({ target: { value: newUnit } }) => {
         setCoordinateSystem(newUnit);
-        if(!newLocationValue) return;
+        if (!newLocationValue) return;
 
         const hasError = validateLocation({ location: newLocationValue, unit: newUnit }) === false;
         setError(hasError);
 
-        onChange(newLocationValue?.toString().trim() ? { location: newLocationValue, unit: newUnit } : undefined);
-    };
-    
+        const locationParse = stringToCoordinates(newLocationValue);
+        let updatedLocation = newLocationValue;
+        if (locationParse.type === 'marker') {
+            const coordinate = locationParse.value as Cartesian3;
+            if (newUnit === 'UTM' && isValidWGS84(coordinate)) updatedLocation = location3ToString(coordinate, 'UTM');
+            if (newUnit === 'WGS84' && isValidUTM(coordinate)) updatedLocation = location3ToString(coordinate);
+        } else {
+            const points = locationParse.value as Cartesian3[];
+            if (newUnit === 'UTM' && isValidWGS84(points)) updatedLocation = location3ToString(points, 'UTM');
+            if (newUnit === 'WGS84' && isValidUTM(points)) updatedLocation = location3ToString(points);
+        }
 
-    const _onBlur = ({ target: { value: newValue } }: React.FocusEvent<HTMLInputElement>) => onBlur(id, { location: newValue, unit: coordinateSystem });
-    const _onFocus = ({ target: { value: newValue } }: React.FocusEvent<HTMLInputElement>) => onFocus(id, { location: newValue, unit: coordinateSystem });
+        onChange(newLocationValue?.toString().trim() ? { location: updatedLocation, unit: newUnit } : undefined);
+    };
+
+    const _onBlur = ({ target: { value: newValue } }: React.FocusEvent<HTMLInputElement>) =>
+        onBlur(id, { location: newValue, unit: coordinateSystem });
+    const _onFocus = ({ target: { value: newValue } }: React.FocusEvent<HTMLInputElement>) =>
+        onFocus(id, { location: newValue, unit: coordinateSystem });
 
     const variant = readonly && !schema.readOnly ? 'standard' : 'outlined';
 
@@ -108,14 +131,14 @@ const RjsfLocationWidget = ({
         setMapOpen(false);
     };
 
-    useEffect(() => {
-        setNewLocationValue(value?.location || '');
-        setCoordinateSystem(value?.unit || 'WGS84');
-    }, [value]);
+    // useEffect(() => {
+    //     setNewLocationValue(getInitialLocation(value) || '');
+    //     setCoordinateSystem(value?.unit || 'WGS84');
+    // }, [value]);
 
     return (
         <Box width="100%">
-            <Grid container justifyContent='space-between' alignItems="center" width="100%">
+            <Grid container justifyContent="space-between" alignItems="center" width="100%">
                 <Grid item xs={8.5}>
                     <TextField
                         {...textFieldProps}
@@ -151,20 +174,20 @@ const RjsfLocationWidget = ({
                         onWheel={(e) => {
                             if (inputType === 'number') (e.target as HTMLElement).blur();
                         }}
-                        dir='ltr'
+                        dir="ltr"
                     />
                 </Grid>
                 <Grid item xs={3.25}>
                     <FormControl fullWidth variant={variant}>
-                        <InputLabel sx={{color: '#787C9E'}}>Unit</InputLabel>
+                        <InputLabel sx={{ color: '#787C9E' }}>{i18next.t('location.unit')}</InputLabel>
                         <Select
                             value={coordinateSystem}
                             onChange={onChangeUnit}
-                            label='Unit'
-                            sx={{height: '40px', borderRadius: '10px', borderColor: '#787C9E'}}
+                            label="Unit"
+                            sx={{ height: '40px', borderRadius: '10px', borderColor: '#787C9E' }}
                         >
-                            <MenuItem value="WGS84">WGS84</MenuItem>
-                            <MenuItem value="UTM">UTM</MenuItem>
+                            <MenuItem value="WGS84">{i18next.t('location.WGS84')}</MenuItem>
+                            <MenuItem value="UTM">{i18next.t('location.UTM')}</MenuItem>
                         </Select>
                     </FormControl>
                 </Grid>
@@ -173,7 +196,12 @@ const RjsfLocationWidget = ({
                 <LocationField
                     defaultLocation={newLocationValue}
                     field={label}
-                    updateValue={(newVal: string | undefined) => setNewLocationValue(newVal)}
+                    updateValue={(newVal: string | undefined) => {
+                        console.log({ newVal });
+
+                        setNewLocationValue(newVal);
+                    }}
+                    unit={coordinateSystem}
                 />
             </Dialog>
         </Box>

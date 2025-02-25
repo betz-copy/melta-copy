@@ -13,6 +13,16 @@ const {
     centralMeridian,
 } = environment.map;
 
+export type LatLng = {
+    latitude: number;
+    longitude: number;
+};
+
+type CoordinatesResult = {
+    type: 'polygon' | 'marker';
+    value: Cartesian3 | Cartesian3[];
+};
+
 export const zoomNumber = 300000;
 
 export const jerusalemCoordinates: Cartesian3 = Cartesian3.fromDegrees(35.2137, 31.7683, zoomNumber);
@@ -41,81 +51,6 @@ export const parsePolygon = (polygonStr: string): Cartesian3[] | undefined => {
         .filter((coord): coord is Cartesian3 => coord !== null);
 
     return coordinates.length > 0 ? coordinates : undefined;
-};
-
-type CoordinatesResult = {
-    type: 'polygon' | 'marker';
-    value: Cartesian3 | Cartesian3[];
-};
-
-export const stringToCoordinates = (strCoords: string): CoordinatesResult => {
-    const polygon = parsePolygon(strCoords);
-    if (polygon) return { type: 'polygon', value: polygon };
-
-    const formatted = strCoords.split(',').map((val) => +val);
-    return { type: 'marker', value: { x: formatted[0], y: formatted[1] } as Cartesian3 };
-
-    // TODO: add validation to format
-};
-
-export const isValidWGS84 = (coordinate: Cartesian3) => Math.abs(coordinate.x) < 180 && Math.abs(coordinate.y) < 90;
-
-const validateUTM = (zone: number, hemisphere: string, easting: number, northing: number): boolean => {
-    if (zone < 1 || zone > 60) return false;
-    if (!['N', 'S'].includes(hemisphere)) return false;
-    if (easting < 160000 || easting > 834000) return false;
-    if (northing < 0 || northing > 10000000) return false;
-    return true;
-};
-
-export const isValidUTM = (position: Cartesian3): boolean => {
-    if (!position) return false;
-
-    const cartographic = Cesium.Cartographic.fromCartesian(position);
-    if (!cartographic) return false;
-
-    const latitude = Cesium.Math.toDegrees(cartographic.latitude);
-    const longitude = Cesium.Math.toDegrees(cartographic.longitude);
-
-    if (latitude < -80 || latitude > 84) return false;
-    if (longitude < -180 || longitude > 180) return false;
-
-    const zone = Math.floor((longitude + 180) / 6) + 1;
-    const hemisphere = latitude >= 0 ? 'N' : 'S';
-
-    const easting = 500000;
-    const northing = latitude >= 0 ? 0 : 10000000;
-
-    return validateUTM(zone, hemisphere, easting, northing);
-};
-
-export const calculateCenterOfPolygon = (coordinates: Cartesian3[]): Cartesian3 => {
-    if (coordinates.length === 0) return jerusalemCoordinates;
-
-    let sumX = 0;
-    let sumY = 0;
-    let sumZ = 0;
-
-    coordinates.forEach((coordinate) => {
-        const newCoordinate = isValidWGS84(coordinate) ? Cartesian3.fromDegrees(coordinate.x, coordinate.y, zoomNumber) : coordinate;
-        sumX += newCoordinate.x;
-        sumY += newCoordinate.y;
-        sumZ += newCoordinate.z;
-    });
-
-    const { length } = coordinates;
-    return new Cartesian3(sumX / length, sumY / length, sumZ / length);
-};
-
-export const getPolygonFarthestPoint = (polygonCenter: Cartesian3, polygon: Cartesian3[]) => {
-    let longestDistance = 0;
-
-    polygon.forEach((point) => {
-        const distance = Cartesian3.distance(polygonCenter, point);
-        if (distance > longestDistance) longestDistance = distance;
-    });
-
-    return longestDistance;
 };
 
 // Computes the foot point latitude for the inverse projection
@@ -162,7 +97,7 @@ const computeLongitude = (T1: number, C1: number, D: number, cosPhi1: number): n
     (D / cosPhi1 - ((1 + 2 * T1 + C1) * D ** 3) / 6 + ((5 - 2 * C1 + 28 * T1 - 3 * C1 ** 2 + 8 * eccentricitySquared + 24 * T1 ** 2) * D ** 5) / 120);
 
 // Converts UTM coordinates (in meters) to geographic (lat/lon in degrees)
-export const convertUTMToWGS84 = (easting: number, northing: number) => {
+const UTMConcenter = (easting: number, northing: number) => {
     const xAdj = easting - 500000; // Remove false easting
     const m = northing / scaleFactor;
     const phi1 = utmFootPointLatitude(m);
@@ -178,17 +113,119 @@ export const convertUTMToWGS84 = (easting: number, northing: number) => {
     };
 };
 
-export const location3ToString = (location: Cartesian3 | Cartesian3[]): string => {
+export const convertUTMToWGS84 = (location: Cartesian3 | Cartesian3[]) => {
+    return !Array.isArray(location) ? UTMConcenter(location.x, location.y) : location.map((point) => UTMConcenter(point.x, point.y));
+};
+
+export const convertWGS94ToUTM = (location: Cartesian3 | Cartesian3[]) => {
+    return !Array.isArray(location)
+        ? Cartesian3.fromDegrees(location.x, location.y)
+        : location.map((point) => Cartesian3.fromDegrees(point.x, point.y));
+};
+
+export const location3ToString = (location: Cartesian3 | Cartesian3[], unit: 'UTM' | 'WGS84' = 'WGS84'): string => {
+    console.log({ location });
+
+    let longitude;
+    let latitude;
     if (!Array.isArray(location)) {
-        const { longitude, latitude } = convertUTMToWGS84(location.x, location.y);
+        if (unit === 'WGS84') ({ longitude, latitude } = convertUTMToWGS84(location) as LatLng);
+        else {
+            const convertedWGS84 = convertWGS94ToUTM(location) as Cartesian3;
+            longitude = convertedWGS84.x;
+            latitude = convertedWGS84.y;
+        }
+        console.log({ longitude, latitude });
+
         return `${longitude}, ${latitude}`;
     }
 
     const points = location.map((point) => {
-        const { longitude, latitude } = convertUTMToWGS84(point.x, point.y);
+        if (unit === 'WGS84') ({ longitude, latitude } = convertUTMToWGS84(point) as LatLng);
+        else {
+            const convertedWGS84 = convertWGS94ToUTM(location) as Cartesian3;
+            longitude = convertedWGS84.x;
+            latitude = convertedWGS84.y;
+        }
         return `${longitude} ${latitude}`;
     });
     return `${polygonPrefix}${points.join(',')}${polygonSuffix}`;
+};
+
+export const stringToCoordinates = (strCoords: string): CoordinatesResult => {
+    const polygon = parsePolygon(strCoords);
+    if (polygon) return { type: 'polygon', value: polygon };
+
+    const formatted = strCoords.split(',').map((val) => +val);
+    return { type: 'marker', value: { x: formatted[0], y: formatted[1] } as Cartesian3 };
+
+    // TODO: add validation to format
+};
+
+export const isValidWGS84 = (location: Cartesian3 | Cartesian3[]) =>
+    !Array.isArray(location)
+        ? Math.abs(location.x) < 180 && Math.abs(location.y) < 90
+        : location.every((point) => Math.abs(point.x) < 180 && Math.abs(point.y) < 90);
+
+const validateUTM = (zone: number, hemisphere: string, easting: number, northing: number): boolean => {
+    if (zone < 1 || zone > 60) return false;
+    if (!['N', 'S'].includes(hemisphere)) return false;
+    if (easting < 160000 || easting > 834000) return false;
+    if (northing < 0 || northing > 10000000) return false;
+    return true;
+};
+
+const isValidUTMCoordinate = (point: Cartesian3) => {
+    const cartographic = Cesium.Cartographic.fromCartesian(point);
+    if (!cartographic) return false;
+
+    const latitude = Cesium.Math.toDegrees(cartographic.latitude);
+    const longitude = Cesium.Math.toDegrees(cartographic.longitude);
+
+    if (latitude < -80 || latitude > 84) return false;
+    if (longitude < -180 || longitude > 180) return false;
+
+    const zone = Math.floor((longitude + 180) / 6) + 1;
+    const hemisphere = latitude >= 0 ? 'N' : 'S';
+
+    const easting = 500000;
+    const northing = latitude >= 0 ? 0 : 10000000;
+
+    return validateUTM(zone, hemisphere, easting, northing);
+};
+
+export const isValidUTM = (location: Cartesian3 | Cartesian3[]): boolean => {
+    if (!location) return false;
+    return !Array.isArray(location) ? isValidUTMCoordinate(location) : location.every((point) => isValidUTMCoordinate(point));
+};
+
+export const calculateCenterOfPolygon = (coordinates: Cartesian3[]): Cartesian3 => {
+    if (coordinates.length === 0) return jerusalemCoordinates;
+
+    let sumX = 0;
+    let sumY = 0;
+    let sumZ = 0;
+
+    coordinates.forEach((coordinate) => {
+        const newCoordinate = isValidWGS84(coordinate) ? (convertWGS94ToUTM(coordinate) as Cartesian3) : coordinate;
+        sumX += newCoordinate.x;
+        sumY += newCoordinate.y;
+        sumZ += newCoordinate.z;
+    });
+
+    const { length } = coordinates;
+    return new Cartesian3(sumX / length, sumY / length, sumZ / length);
+};
+
+export const getPolygonFarthestPoint = (polygonCenter: Cartesian3, polygon: Cartesian3[]) => {
+    let longestDistance = 0;
+
+    polygon.forEach((point) => {
+        const distance = Cartesian3.distance(polygonCenter, point);
+        if (distance > longestDistance) longestDistance = distance;
+    });
+
+    return longestDistance;
 };
 
 export const isValidPolygonPoint = (polygonPoints: Cartesian3[], newPoint: Cartesian3) => {

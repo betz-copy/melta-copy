@@ -51,7 +51,7 @@ const config = {
             .required()
             .asJsonObject(),
 
-        crsType: env.get('CRS_TYPE').default('EPSG3857').asString(), // unused when implement cesuim
+        crsType: env.get('CRS_TYPE').default('EPSG4326').asString(), // unused when implement cesuim
 
         agGridLimit: {
             deleteLimit: env.get('DELETE_ENTITIES_MAX_LIMIT').default(1000).asIntPositive(),

@@ -1302,6 +1302,9 @@ export default {
             noLayers: 'לא נמצאו שכבות',
             overlay: 'שכבות מיפוי',
         },
+        unit: 'קואורדינטות',
+        UTM: 'UTM',
+        WGS84: 'WGS84',
     },
     DynamicsConfigs: {
         isDrawerOpen: 'תפריט צד פתוח',
@@ -1315,19 +1318,6 @@ export default {
         },
         mainFontSizes: {
             headlineTitleFontSize: 'גודל גופן כותרת ראשית',
-            location: {
-                polygon: 'פוליגון',
-                coordinate: 'נקודת ציון',
-                circle: 'חיפוש בעזרת מעגל',
-                line: 'קו למדידת מרחק',
-                clear: 'ניקוי תוצאות',
-                radiusMaxLimit: `חיפוש מוגבל עד ${environment.map.maxRadius / 1000} ק"מ`,
-                layers: {
-                    map: 'שכבות מפה',
-                    noLayers: 'לא נמצאו שכבות',
-                    overlay: 'שכבות מיפוי',
-                },
-            },
             entityTemplateTitleFontSize: 'גודל גופן כותרת טבלה',
             headlineSubTitleFontSize: 'גודל גופן כותרת משנית',
         },

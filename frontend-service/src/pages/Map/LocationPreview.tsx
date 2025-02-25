@@ -6,7 +6,7 @@ import { useQueryClient } from 'react-query';
 import { IEntity } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { useEntityWithLocationFields } from '../../utils/hooks/useLocation';
-import { location3ToString, jerusalemCoordinates } from '../../utils/map';
+import { location3ToString, jerusalemCoordinates, convertWGS94ToUTM } from '../../utils/map';
 import { BaseLayers } from './BaseLayers';
 import { BackendConfigState } from '../../services/backendConfigService';
 
@@ -89,7 +89,7 @@ const LocationPreview = ({ entityProperties, entityTemplate }: Props) => {
                 ))}
 
                 {markers.map(({ key, position }) => (
-                    <MeltaCoordinate key={key} name={propertyDefinitions[key].title} position={Cartesian3.fromDegrees(position.x, position.y, 0)} />
+                    <MeltaCoordinate key={key} name={propertyDefinitions[key].title} position={convertWGS94ToUTM(position) as Cartesian3} />
                 ))}
 
                 <div style={{ position: 'absolute', top: '10px', left: '10px', display: 'flex', gap: '15px' }}>
