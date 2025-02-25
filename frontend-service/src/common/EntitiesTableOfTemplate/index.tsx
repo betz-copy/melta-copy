@@ -249,7 +249,6 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         const [_, navigate] = useLocation();
         const darkMode = useDarkModeStore((state) => state.darkMode);
         const savedVisibleColumns = localStorage.getItem(`${visibleColumns}${saveStorageProps.pageType}-${template._id}`);
-        const [defaultVisibleColumns, setDefaultVisibleColumns] = useState(savedVisibleColumns ? JSON.parse(savedVisibleColumns) : {});
 
         const workspace = useWorkspaceStore((state) => state.workspace);
         const { rowCount, defaultExpandedRowCount } = workspace.metadata.agGrid;
@@ -402,7 +401,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             hideNonPreview,
             editRowButtonProps,
             hasPermissionToTemplate,
-            defaultVisibleColumns,
+            defaultVisibleColumns: JSON.parse(savedVisibleColumns!),
             defaultColumnsOrder,
             defaultColumnWidths,
             rowHeight,
@@ -445,7 +444,6 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             }, {});
 
             localStorage.setItem(`${visibleColumns}${saveStorageProps.pageType}-${template._id}`, JSON.stringify(updatedVisibleColumns));
-            setDefaultVisibleColumns(updatedVisibleColumns);
 
             return updatedVisibleColumns;
         };
