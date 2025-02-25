@@ -764,6 +764,8 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
                         (value.format === 'fileId' && newValue.items?.format === 'fileId') || (value.enum && newValue.items?.enum);
 
                     if (value.serialCurrent !== undefined) updatedTemplateData.properties.properties[key].serialCurrent = value.serialCurrent;
+                    if (!value.identifier && newValue.identifier)
+                        throw new BadRequestError('can not add identifier fields because there are existing instances');
 
                     if (value.type !== newValue.type && !isSingularToPlural) throw new BadRequestError('can not change property type');
 
@@ -785,6 +787,13 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
                     if (isSingularToPlural) propertiesKeysToPluralize.push(key);
                 }
             });
+
+            const newProperties = Object.keys(updatedTemplateData.properties.properties).filter(
+                (property) => !currProperties[property] && !removedProperties.includes(property),
+            );
+
+            if (newProperties.some((property) => updatedTemplateData.properties.properties[property].identifier))
+                throw new BadRequestError('can not add identifier fields because there are existing instances');
         }
 
         await this.checkIfPropertyInUsedBeforeDeleteOrArchive(id, removedProperties, false);

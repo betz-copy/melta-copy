@@ -323,51 +323,51 @@ const MapPage = () => {
                         }}
                     />
                 ))}
+
+                <div style={{ position: 'absolute', top: '10px', left: '10px', display: 'flex', gap: '15px' }}>
+                    <MapFilters
+                        selectedTemplates={selectedTemplates}
+                        setSelectedTemplates={setSelectedTemplates}
+                        moveToEntityLocations={(entity: IEntity) => {
+                            setSearchedEntity(entity);
+                            setCameraFocus('search');
+                        }}
+                        entityTemplateMap={entityTemplateMap!}
+                        onClear={onClear}
+                        darkMode={darkMode}
+                        clearAutocompleteSearch={clearAutocompleteSearch}
+                    />
+
+                    <ToggleButtonGroup
+                        value={drawingMode}
+                        exclusive
+                        onChange={handleDrawType}
+                        size="small"
+                        style={{ background: darkMode ? '#121212' : 'white', height: '35px' }}
+                    >
+                        <MeltaTooltip title={i18next.t('location.circle')}>
+                            <ToggleButton value="circle">
+                                <Circle sx={{ width: '20px', height: '20px', color: darkMode ? '#9398c2' : '#787c9e' }} />
+                            </ToggleButton>
+                        </MeltaTooltip>
+                        <MeltaTooltip title={i18next.t('location.line')}>
+                            <ToggleButton value="line">
+                                <LinearScale sx={{ width: '20px', height: '20px', color: darkMode ? '#9398c2' : '#787c9e' }} />
+                            </ToggleButton>
+                        </MeltaTooltip>
+                    </ToggleButtonGroup>
+
+                    {config && <BaseLayers viewerRef={viewerRef} config={config} />}
+                </div>
+                {selectedEntity && (
+                    <MapPageEntityDialog
+                        open={!!selectedEntity}
+                        entityWithMatchingField={selectedEntity}
+                        onClose={() => setSelectedEntity(null)}
+                        key={selectedEntity.matchingField}
+                    />
+                )}
             </Viewer>
-
-            <div style={{ position: 'absolute', top: '10px', left: '10px', display: 'flex', gap: '15px' }}>
-                <MapFilters
-                    selectedTemplates={selectedTemplates}
-                    setSelectedTemplates={setSelectedTemplates}
-                    moveToEntityLocations={(entity: IEntity) => {
-                        setSearchedEntity(entity);
-                        setCameraFocus('search');
-                    }}
-                    entityTemplateMap={entityTemplateMap!}
-                    onClear={onClear}
-                    darkMode={darkMode}
-                    clearAutocompleteSearch={clearAutocompleteSearch}
-                />
-
-                <ToggleButtonGroup
-                    value={drawingMode}
-                    exclusive
-                    onChange={handleDrawType}
-                    size="small"
-                    style={{ background: darkMode ? '#121212' : 'white', height: '35px' }}
-                >
-                    <MeltaTooltip title={i18next.t('location.circle')}>
-                        <ToggleButton value="circle">
-                            <Circle sx={{ width: '20px', height: '20px', color: darkMode ? '#9398c2' : '#787c9e' }} />
-                        </ToggleButton>
-                    </MeltaTooltip>
-                    <MeltaTooltip title={i18next.t('location.line')}>
-                        <ToggleButton value="line">
-                            <LinearScale sx={{ width: '20px', height: '20px', color: darkMode ? '#9398c2' : '#787c9e' }} />
-                        </ToggleButton>
-                    </MeltaTooltip>
-                </ToggleButtonGroup>
-
-                {config && <BaseLayers viewerRef={viewerRef} config={config} />}
-            </div>
-            {selectedEntity && (
-                <MapPageEntityDialog
-                    open={!!selectedEntity}
-                    entityWithMatchingField={selectedEntity}
-                    onClose={() => setSelectedEntity(null)}
-                    key={selectedEntity.matchingField}
-                />
-            )}
         </div>
     );
 };
