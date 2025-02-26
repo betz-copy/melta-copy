@@ -514,7 +514,8 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
 
             const hasActions = visibleKeys.some((key) => key.startsWith(actionPrefix));
             const templateKeys = Object.keys(template.properties.properties);
-            const defaultKeys = Object.keys(defaultColumnWidths).filter((key) => !key.includes(actionPrefix));
+            const uniqKeys = ['disabled', 'createdAt', 'updatedAt'];
+            const defaultKeys = Object.keys(defaultColumnWidths).filter((key) => !key.includes(actionPrefix) && !uniqKeys.includes(key));
             const isRemovedFields = defaultKeys.some((key) => !templateKeys.includes(key));
 
             if (templateKeys.length === defaultKeys.length && templateKeys.every((key, index) => key === defaultKeys[index])) return;
