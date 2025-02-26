@@ -81,6 +81,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
 }: IGetColumnDefsOptions<Data>): ColDef[] => {
     const invisibleColumnsAmount = Object.values(defaultVisibleColumns).filter((value) => value === false).length;
     const lastColumnIndex = Object.keys(defaultColumnsOrder).length - invisibleColumnsAmount - 2;
+    const firstTwoPropsOrder = template.propertiesOrder.slice(0, 2);
 
     const columnDefs = template.propertiesOrder.map((property) => {
         const propertyTemplate = { ...template.properties.properties[property] };
@@ -95,10 +96,12 @@ export const getColumnDefs = <Data extends any = EntityData>({
         const entityGetter: ValueGetterFunc = ({ data }) => (data ? getEntityPropertiesData(data) : undefined);
 
         const hideColumn =
-            archive ||
-            (defaultVisibleColumns[property] !== undefined
-                ? !defaultVisibleColumns[property]
-                : hideNonPreview && !template.propertiesPreview.includes(property));
+            template.propertiesPreview.length === 0
+                ? !firstTwoPropsOrder.find((propOrder) => propOrder === property)
+                : archive ||
+                  (defaultVisibleColumns[property] !== undefined
+                      ? !defaultVisibleColumns[property]
+                      : hideNonPreview && !template.propertiesPreview.includes(property));
 
         if (propertyTemplate.archive) propertyTemplate.title = `${propertyTemplate.title} ${i18next.t('entitiesTableOfTemplate.archiveTitle')}`;
 

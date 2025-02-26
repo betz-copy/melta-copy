@@ -729,6 +729,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
         const { count } = await this.instancesService.searchEntitiesOfTemplateRequest(id, { limit: 1 });
         const currTemplate = await this.entityTemplateService.getEntityTemplateById(id);
+        const { uniqueConstraints: currUnique } = await this.instancesService.getConstraintsOfTemplate(id);
 
         const populatedTemplates = await this.getAndPopulateAllTemplatesConstraints([currTemplate]);
         const [populatedCurrTemplate] = populatedTemplates;
@@ -747,7 +748,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         );
 
         if (removeRequiredProperties.length > 0)
-            this.isPropertyInUsedAsRelatedFieldInRelationshipReference(currTemplate._id, removeRequiredProperties, false);
+            await this.isPropertyInUsedAsRelatedFieldInRelationshipReference(currTemplate._id, removeRequiredProperties, false);
 
         const removedProperties: string[] = [];
         const archiveProperties: string[] = [];
@@ -764,8 +765,11 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
                         (value.format === 'fileId' && newValue.items?.format === 'fileId') || (value.enum && newValue.items?.enum);
 
                     if (value.serialCurrent !== undefined) updatedTemplateData.properties.properties[key].serialCurrent = value.serialCurrent;
-                    if (!value.identifier && newValue.identifier)
-                        throw new BadRequestError('can not add identifier fields because there are existing instances');
+                    if (
+                        !currUnique.some((uniqueConstraint) => uniqueConstraint.properties.includes(key)) &&
+                        updatedTemplateData.uniqueConstraints.some((uniqueConstraint) => uniqueConstraint.properties.includes(key))
+                    )
+                        throw new BadRequestError('can`t add unique constraints to property that already used');
 
                     if (value.type !== newValue.type && !isSingularToPlural) throw new BadRequestError('can not change property type');
 
@@ -789,10 +793,11 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             });
 
             const newProperties = Object.keys(updatedTemplateData.properties.properties).filter(
-                (property) => !currProperties[property] && !removedProperties.includes(property),
+                (property) => !currProperties.properties[property] && !removedProperties.includes(property),
             );
 
-            if (newProperties.some((property) => updatedTemplateData.properties.properties[property].identifier))
+            const updatedProperties = updatedTemplateData.properties.properties;
+            if (newProperties.some((property) => updatedProperties[property].identifier && updatedProperties[property].serialStarter === undefined))
                 throw new BadRequestError('can not add identifier fields because there are existing instances');
         }
 
