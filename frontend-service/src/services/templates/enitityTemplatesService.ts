@@ -460,7 +460,6 @@ const updateEntityTemplateRequest = async (entityTemplateId: string, updatedEnti
     if (entityTemplate.propertiesTypeOrder.includes('archiveProperties')) {
         entityTemplate.propertiesTypeOrder = entityTemplate.propertiesTypeOrder.filter((str) => str !== 'archiveProperties');
     }
-    console.log({ shir: entityTemplate.properties.properties });
 
     if (entityTemplate.mapSearchProperties) formData.append('mapSearchProperties', JSON.stringify(entityTemplate.mapSearchProperties));
 

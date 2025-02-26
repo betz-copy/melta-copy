@@ -466,7 +466,6 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         const newFilesKeys = files.map((file) => file.fieldname);
 
         const fileProperties = this.getEntityFileProperties(currentEntity.properties, entityTemplate);
-        console.log({ currentEntity, instanceData, files, fileProperties });
 
         const fileIdsToDelete = Object.entries(fileProperties).flatMap(([key, value]) => {
             if (Array.isArray(value)) {
@@ -482,11 +481,9 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         if (fileIdsToDelete.length === 0) {
             return [];
         }
-        console.log('before delete');
 
         await this.rabbitManager.deleteFiles(fileIdsToDelete);
         await menash.send(rabbit.deleteUnusedFilesQueue, JSON.stringify({ fileIds: fileIdsToDelete, bucketName: this.workspaceId }));
-        console.log('after delete', { fileIdsToDelete });
 
         return fileIdsToDelete;
     }
@@ -696,7 +693,6 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         const entityTemplate = await this.entityTemplateService.getEntityTemplateById(currentEntity.templateId);
 
         this.checkSerialFieldWasUpdated(entityTemplate, updatedInstanceData.properties, currentEntity);
-        console.log('helooo1111', { uploadedFilesAndProperties });
 
         const { updatedEntity, actions } = await this.service
             .updateEntityInstance(
@@ -712,7 +708,6 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         await this.deleteUnusedFiles(currentEntity, updatedInstanceData, files).catch((error) =>
             logger.error(`failed to delete files of instanceId ${id}`, { error }),
         );
-        console.log('helloooo22222');
 
         const updatedFields: Record<string, any> = {};
 

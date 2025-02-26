@@ -179,7 +179,6 @@ export class EntityTemplateService extends TemplatesManagerService {
             ...updatedEntityTemplate,
             allowToDeleteRelationshipFields,
         });
-        console.log('finish', { data });
 
         return data;
     }

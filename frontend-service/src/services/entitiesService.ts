@@ -22,7 +22,8 @@ import { filterModelToFilterOfGraph } from '../pages/Graph/GraphFilterToBackend'
 import { ITablesResults } from '../common/wizards/loadEntities';
 import urlToFile from '../common/fileConversions';
 
-const { entities, relationships } = environment.api;
+const { entities, relationships} = environment.api;
+const { uuid} = environment;
 
 export const exportEntitiesRequest = async (body: IExportEntitiesBody) => {
     const { data } = await axios.post(`${entities}/export`, body, { responseType: 'blob' });
@@ -106,7 +107,6 @@ export const createEntityRequest = async (entity: EntityWizardValues, ignoredRul
             fileUploadPromises.push(urlToFile(value, templateProperties[key]!.title).then((file) => [key, file]));
         }
     });
-
     filesToUpload.push(...(await Promise.all(fileUploadPromises)));
 
     filesToUpload.forEach(([key, value]) => {
@@ -143,7 +143,7 @@ export const updateEntityRequestForMultiple = async (
     newEntityData: EntityWizardValues,
     ignoredRules?: IRuleBreach['brokenRules'],
 ) => {
-    const isUUID = (str) => /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{8}/.test(str);
+    const isUUID = (str) => uuid.test(str);
     const formData = new FormData();
 
     const filesToUpload: any = [];
@@ -156,7 +156,7 @@ export const updateEntityRequestForMultiple = async (
     Object.entries(newEntityData.attachmentsProperties).forEach(([key, value]: [string, any]) => {
         if (Array.isArray(value) && value) {
             value.forEach((file, index) => {
-                if (file instanceof File && newEntityData.template.properties.properties[key].items) {
+                if (file instanceof File && templateProperties[key].items) {
                     filesToUpload.push([`${key}.${index}`, file]);
                 } else if (file instanceof File) {
                     filesToUpload.push([`${key}`, file]);
@@ -182,7 +182,6 @@ export const updateEntityRequestForMultiple = async (
             }
         }
     }
-
     filesToUpload.push(...(await Promise.all(fileUploadPromises)));
 
     filesToUpload.forEach(([key, value]) => {
@@ -204,6 +203,7 @@ export const updateEntityRequestForMultiple = async (
             }
         }
     });
+
     formData.append(
         'properties',
         JSON.stringify(
@@ -221,7 +221,6 @@ export const updateEntityRequestForMultiple = async (
     if (ignoredRules) {
         formData.append('ignoredRules', JSON.stringify(ignoredRules));
     }
-    console.log('shirel', ...formData);
 
     const { data } = await axios.put<IEntity>(`${entities}/${entityId}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },

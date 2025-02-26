@@ -146,7 +146,6 @@ export const updateProcessRequest = async (processId: string, updatedData: Proce
     const filteredDetails = Object.fromEntries(
         Object.entries(updatedData.details).filter(([key]) => !Object.keys(detailsFileToUpload).includes(key)),
     );
-
     formData.append(
         'details',
         JSON.stringify({
