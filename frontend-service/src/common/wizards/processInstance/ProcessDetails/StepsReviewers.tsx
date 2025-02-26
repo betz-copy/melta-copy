@@ -138,7 +138,16 @@ const StepsReviewers: React.FC<IDetailsStepProp> = ({ detailsFormikData, isEditM
                 <Grid item container sx={{ justifyContent: 'space-between', alignItems: 'flex-start', padding: 1 }}>
                     <Grid item>
                         {!viewMode && (
-                            <Fab size="small" onClick={onBack} color="primary" variant="extended">
+                            <Fab
+                                size="small"
+                                onClick={onBack}
+                                style={{
+                                    borderRadius: '7px',
+                                    padding: '10px',
+                                }}
+                                color="primary"
+                                variant="extended"
+                            >
                                 <NavigateNextIcon />
                                 {i18next.t('wizard.processInstance.backTo')}
                             </Fab>
@@ -150,6 +159,10 @@ const StepsReviewers: React.FC<IDetailsStepProp> = ({ detailsFormikData, isEditM
                                 size="small"
                                 onClick={() => {
                                     submitForm();
+                                }}
+                                style={{
+                                    borderRadius: '7px',
+                                    padding: '10px',
                                 }}
                                 variant="extended"
                                 color="primary"
@@ -165,6 +178,10 @@ const StepsReviewers: React.FC<IDetailsStepProp> = ({ detailsFormikData, isEditM
                                 size="small"
                                 onClick={() => {
                                     submitForm();
+                                }}
+                                style={{
+                                    borderRadius: '7px',
+                                    padding: '10px',
                                 }}
                                 disabled={!dirty}
                                 variant="extended"
