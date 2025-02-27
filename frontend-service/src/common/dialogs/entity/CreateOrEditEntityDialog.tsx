@@ -307,8 +307,6 @@ const CreateOrEditEntityDetails: React.FC<{
         <Formik<EntityWizardValues>
             initialValues={initialValues}
             onSubmit={async (values, formikHelpers) => {
-                console.log('@@@@@@@');
-
                 formikHelpers.setTouched({});
                 await mutationPromiseToastify(values);
                 if (!draftId) return;
@@ -326,7 +324,6 @@ const CreateOrEditEntityDetails: React.FC<{
             }}
             validate={(values) => {
                 const nonAttachmentsSchema = filterFieldsFromPropertiesSchema(values.template.properties);
-
                 const propertiesErrors = ajvValidate(nonAttachmentsSchema, values.properties);
 
                 if (Object.keys(propertiesErrors).length === 0) {
@@ -418,8 +415,6 @@ const CreateOrEditEntityDetails: React.FC<{
                         schema={schema}
                         values={values}
                         setValues={(propertiesValues) => {
-                            console.log({ propertiesValues });
-
                             return setFieldValue('properties', propertiesValues);
                         }}
                         errors={errors.properties ?? {}}

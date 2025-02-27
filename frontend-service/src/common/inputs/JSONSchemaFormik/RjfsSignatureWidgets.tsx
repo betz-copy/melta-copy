@@ -2,9 +2,8 @@
 import SignatureCanvas from 'react-signature-canvas';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { WidgetProps } from '@rjsf/utils';
-import { Box, Button, createTheme, Grid, ThemeProvider, Typography } from '@mui/material';
+import { Box, Button, ThemeProvider, Typography } from '@mui/material';
 import i18next from 'i18next';
-// import ReactSignatureCanvas from 'react-signature-canvas';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { getFilePreviewRequest } from '../../../services/previewService';
 import { darkTheme, lightTheme } from '../../../theme';
@@ -25,12 +24,9 @@ const RjfsSignatureWidget = ({
     formContext,
     registry,
     setFieldError,
-    options
 }: WidgetProps) => {
-    const {touched} = options;
     
     const signatureCanvas = useRef<SignatureCanvas | null>(null);
-    const [updatedSignature, setUpdatedSignature] = useState('');
     const [isDraw, setIsDraw] = useState(false);
     const[ signatureUpdated, setSignatureUpdated] = useState(false);
 
@@ -58,34 +54,13 @@ const RjfsSignatureWidget = ({
         }
     }, [readonly, disabled]);
 
-    // document.addEventListener('click', (event) => {
-    //     if (signatureCanvas.current?.getCanvas() && signatureCanvas.current?.getCanvas() !== event.target && isDraw) {
-    //         console.log('inside!');
-    //         onChange(updatedSignature);
-    //     }
-    // });
-
     const saveSignature = useCallback(() => {
         if (!signatureCanvas.current) return;
         if (signatureCanvas.current.isEmpty()) onChange(undefined);
-        else {
-            // setUpdatedSignature(signatureCanvas.current.toDataURL());
-        onChange(signatureCanvas.current.toDataURL());
-        // signatureCanvas.current.clear();
-    }
-    setSignatureUpdated(false)
+        else onChange(signatureCanvas.current.toDataURL());
+    
       }, []);
     
-    // () => {
-    //     if (!signatureCanvas.current) return;
-    //     if (signatureCanvas.current.isEmpty()) onChange(undefined);
-    //     else {
-    //         // setUpdatedSignature(signatureCanvas.current.toDataURL());
-    //     onChange(signatureCanvas.current.toDataURL());
-    //     // signatureCanvas.current.clear();
-    // }
-    // setSignatureUpdated(false)
-    // };
 
     const clearSignature = () => {
         if (!signatureCanvas.current) return;
@@ -94,7 +69,6 @@ const RjfsSignatureWidget = ({
     };
 
     if (required && (!signatureCanvas.current || signatureCanvas.current.isEmpty())) onBlur(id, value);
-    // const theme = createTheme();
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const isDisabled = readonly || disabled;
     
@@ -104,13 +78,9 @@ const RjfsSignatureWidget = ({
                 <Box sx={{ position: 'relative', width: 210 }}>
                     <Typography
                         sx={{
-                            // position: 'absolute',
-                            // top: '-10px',
-                            // left: '12px',
                             marginBottom: '8px',
                             fontSize: '13px',
                             color: darkMode ? 'white' : 'black',
-                            // backgroundColor: darkMode ? '#333' : '#fff',
                             padding: '0 5px',
                             userSelect: 'none',
                         }}
@@ -132,11 +102,6 @@ const RjfsSignatureWidget = ({
                             },
                         }}
                         onEnd={saveSignature}
-                        // onBegin={() => {
-                        //     setSignatureUpdated(true)
-                        //     // setIsDraw(true);
-                        //     // onBlur(id, value);
-                        // }}
                         clearOnResize={false}
                         
                     />

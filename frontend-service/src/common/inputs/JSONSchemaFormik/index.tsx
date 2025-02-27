@@ -1,5 +1,5 @@
 /* eslint-disable import/no-extraneous-dependencies */
-import React, { memo, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { Form as JSONSchemaForm } from '@rjsf/mui';
 import Ajv, { ErrorObject } from 'ajv';
 import addFormats from 'ajv-formats';
@@ -20,7 +20,6 @@ import RjsfLocationWidget, { validateLocation } from './RjsfLocationWidget';
 import RjfsUserWidget from './RjfsUserWidget';
 import RjfsUserArrayWidget from './RjfsUserArrayWidget';
 import RjfsSignatureWidget from './RjfsSignatureWidgets';
-import { WidgetProps } from '@react-awesome-query-builder/mui';
 
 const ajvErrorsToFormikErrors = (schema: IMongoEntityTemplatePopulated['properties'], ajvErrors: ErrorObject[]): FormikErrors<any> => {
     const formikErrorsEntries = ajvErrors.map((ajvError) => {
@@ -141,7 +140,6 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
         );
         containerDiv.forEach((innerDiv) => {
             const changeFieldCss = innerDiv.querySelector('.text-area') || innerDiv.querySelector('.signature');
-
             innerDiv.classList.add(changeFieldCss ? 'has-unique-field-child' : 'has-other-field-child');
         });
     }, [values.template]);
@@ -153,8 +151,6 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
     const notTouchedUnique: ErrorSchema<{}> = pickBy(rjsfExtraUniqueErrors, (_value, key) => !touched[key]);
     const mergedErrors: ErrorSchema<{}> = mergeErrorSchemas(ajvExtraErrorsOnlyTouched, notTouchedUnique);
 
-    // const SignatureComponent:any = memo(RjfsSignatureWidget);
-    // const RjsfSignatureWidgetComponent:any = (props: WidgetProps)=> <SignatureComponent {...props} />
     return (
         <JSONSchemaForm
             id="json-schema"
@@ -164,7 +160,6 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                 if (propertySchema.format === 'signature')
                     return {
                         'ui:widget': 'SignatureWidget',
-                        'ui:options': { touched: touched[propertyKey] },
                     };
                 if (propertySchema.readOnly)
                     return {
@@ -219,7 +214,6 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                 return {};
             })}
             onChange={({ formData }) => {
-                console.log('lll', { formData });
                 Object.entries(formData).forEach(([key, value]) => {
                     if (
                         JSON.stringify(value) === JSON.stringify([undefined]) ||
@@ -230,16 +224,13 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                         formData[key] = undefined;
                     }
                 });
-
                 setValues(formData);
             }}
             formData={values.properties}
             showErrorList={false}
             noHtml5Validate
             onBlur={(id) => {
-                const [_, field] = id.split('root_');
-                console.log({field});
-                
+                const [_, field] = id.split('root_');                
                 setFieldTouched(field);
             }}
             experimental_defaultFormStateBehavior={{
