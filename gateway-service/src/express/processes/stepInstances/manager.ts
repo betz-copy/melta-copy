@@ -40,7 +40,7 @@ export default class StepsInstancesManager extends DefaultManagerProxy<ProcessSe
         ]);
     }
 
-    async getStepInstanceWithEntitesAndReviewers(step: IMongoStepInstance, userId: string): Promise<IMongoStepInstancePopulated> {
+    async getStepInstanceWithEntitiesAndReviewers(step: IMongoStepInstance, userId: string): Promise<IMongoStepInstancePopulated> {
         const processInstancesManager = new ProcessesInstancesManager(this.workspaceId);
         const stepTemplate = await this.service.getStepTemplateByStepInstanceId(step._id);
         const reviewerPromise = step.reviewerId ? UsersManager.getUserById(step.reviewerId) : Promise.resolve(undefined);
@@ -81,7 +81,7 @@ export default class StepsInstancesManager extends DefaultManagerProxy<ProcessSe
             const updatedStep = await this.service.updateStepInstance(stepId, processServiceUpdateData, userId);
             const updatedProcess = await processInstancesManager.getProcessInstance(processId, userId);
             if (updatedStepStatus) this.handleNotificationsOnUpdateStepInstance(updatedProcess, process, updatedStep);
-            return this.getStepInstanceWithEntitesAndReviewers(updatedStep, userId);
+            return this.getStepInstanceWithEntitiesAndReviewers(updatedStep, userId);
         }
 
         const { props, files: filesToUpload } = await this.instancesManager.uploadInstanceFiles(files, processServiceUpdateData.properties);
@@ -112,6 +112,6 @@ export default class StepsInstancesManager extends DefaultManagerProxy<ProcessSe
             this.handleNotificationsOnUpdateStepInstance(updatedProcess, process, updatedStep);
         }
 
-        return this.getStepInstanceWithEntitesAndReviewers(updatedStep, userId);
+        return this.getStepInstanceWithEntitiesAndReviewers(updatedStep, userId);
     }
 }

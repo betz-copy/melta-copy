@@ -179,7 +179,7 @@ export const updateEntityRequestForMultiple = async (
     newEntityData: EntityWizardValues,
     ignoredRules?: IRuleBreach['brokenRules'],
 ) => {
-    const isUUID = (str) => uuid.test(str);
+    const isUUID = (str: string) => uuid.test(str);
     const formData = new FormData();
 
     const filesToUpload: any = [];

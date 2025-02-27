@@ -1,37 +1,21 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import SignatureCanvas from 'react-signature-canvas';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { WidgetProps } from '@rjsf/utils';
-import { Box, Button, ThemeProvider, Typography } from '@mui/material';
+import { Box, Button, ThemeProvider, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { getFilePreviewRequest } from '../../../services/previewService';
 import { darkTheme, lightTheme } from '../../../theme';
 
-const RjfsSignatureWidget = ({
-    id,
-    required,
-    readonly,
-    disabled,
-    label,
-    value,
-    onChange,
-    onBlur,
-    onFocus,
-    autofocus,
-    uiSchema,
-    rawErrors = [],
-    formContext,
-    registry,
-    setFieldError,
-}: WidgetProps) => {
-    
+const RjfsSignatureWidget = ({ id, required, readonly, disabled, label, value, onChange, onBlur }: WidgetProps) => {
+    const darkMode = useDarkModeStore((state) => state.darkMode);
+    const isDisabled = readonly || disabled;
+    const globalTheme = useTheme();
     const signatureCanvas = useRef<SignatureCanvas | null>(null);
-    const [isDraw, setIsDraw] = useState(false);
-    const[ signatureUpdated, setSignatureUpdated] = useState(false);
 
     useEffect(() => {
-        const fetchData = async () => {
+        const fetchSignature = async () => {
             if (value && signatureCanvas.current) {
                 try {
                     const current = await getFilePreviewRequest(value, 'contentType');
@@ -41,7 +25,7 @@ const RjfsSignatureWidget = ({
                 }
             }
         };
-        fetchData();
+        fetchSignature();
     }, []);
 
     useEffect(() => {
@@ -58,9 +42,7 @@ const RjfsSignatureWidget = ({
         if (!signatureCanvas.current) return;
         if (signatureCanvas.current.isEmpty()) onChange(undefined);
         else onChange(signatureCanvas.current.toDataURL());
-    
-      }, []);
-    
+    }, []);
 
     const clearSignature = () => {
         if (!signatureCanvas.current) return;
@@ -69,19 +51,16 @@ const RjfsSignatureWidget = ({
     };
 
     if (required && (!signatureCanvas.current || signatureCanvas.current.isEmpty())) onBlur(id, value);
-    const darkMode = useDarkModeStore((state) => state.darkMode);
-    const isDisabled = readonly || disabled;
-    
+
     return (
         <ThemeProvider theme={darkMode ? darkTheme : lightTheme}>
             <Box display="flex" flexDirection="column" className="signature">
                 <Box sx={{ position: 'relative', width: 210 }}>
                     <Typography
                         sx={{
-                            marginBottom: '8px',
                             fontSize: '13px',
                             color: darkMode ? 'white' : 'black',
-                            padding: '0 5px',
+                            padding: '0 3px',
                             userSelect: 'none',
                         }}
                     >
@@ -89,31 +68,31 @@ const RjfsSignatureWidget = ({
                     </Typography>
                     <SignatureCanvas
                         ref={signatureCanvas}
+                        velocityFilterWeight={0.7}
                         penColor="black"
                         canvasProps={{
+                            className: 'signature',
                             width: 205,
                             height: '100%',
                             style: {
-                                border: `1px solid ${darkMode ? 'white' : 'black'}`,
-                                borderRadius: '8px',
                                 // eslint-disable-next-line no-nested-ternary
-                                backgroundColor: darkMode ? '#3353' : !isDisabled ? '#fff' : undefined,
-                                boxShadow: '0px 2px 6px rgba(0, 0, 0, 0.1)',
+                                backgroundColor: darkMode ? '#39414d' : !isDisabled ? '#fff' : undefined,
+                                border: `1px solid ${darkMode ? 'white' : `${globalTheme.palette.primary.main}`}`,
+                                borderRadius: '8px',
+                                boxShadow: '0px 1px 6px rgba(0, 0, 0, 0.1)',
                             },
                         }}
                         onEnd={saveSignature}
                         clearOnResize={false}
-                        
                     />
                 </Box>
                 {!isDisabled && (
-                    <Box display="flex" >
-                        {signatureUpdated &&
-                        <Button color="primary" onClick={saveSignature}>
-                            {i18next.t('actions.save')}
-                        </Button>
-}
-                        <Button color="primary" onClick={clearSignature}>
+                    <Box>
+                        <Button
+                            color="primary"
+                            onClick={clearSignature}
+                            sx={{ fontSize: '12px', padding: '0 3px', display: 'flex', justifyContent: 'flex-start' }}
+                        >
                             {i18next.t('actions.clean')}
                         </Button>
                     </Box>
@@ -121,8 +100,6 @@ const RjfsSignatureWidget = ({
             </Box>
         </ThemeProvider>
     );
-
-
 };
 
 export default RjfsSignatureWidget;

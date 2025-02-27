@@ -187,12 +187,13 @@ const fixComplexProperties = (
 ) => {
     const isFileArray = value.type === 'array' && value.items?.format === 'fileId';
     const isSingleFile = value.format === 'fileId';
+    const isSignature = value.format === 'signature';
 
     if (value.format === 'relationshipReference') {
         relationshipRefCell(cell, [key, value], row, workspace.path);
         return true;
     }
-    if (isSingleFile || isFileArray) {
+    if (isSingleFile || isFileArray || isSignature) {
         filesCell(cell, isFileArray, rowIndex, row[key], workspace.id);
         return true;
     }
