@@ -6,6 +6,7 @@ export interface IEntitySingleProperty {
     format?: 'date' | 'date-time' | 'email' | 'fileId' | 'text-area' | 'relationshipReference'| 'signature';
     enum?: string[];
     readOnly?: true;
+    identifier?: true;
     pattern?: string;
     patternCustomErrorMessage?: string;
     dateNotification?: number;

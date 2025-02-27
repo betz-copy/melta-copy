@@ -74,6 +74,7 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
             serialStarter: value.serialStarter,
             relationshipReference: value.relationshipReference || undefined,
             archive: value.archive || undefined,
+            identifier: value.identifier || undefined,
             mapSearch: mapSearchProperties?.includes(key) || undefined,
         };
 
@@ -154,6 +155,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
             readOnly,
             relationshipReference,
             archive,
+            identifier,
             mapSearch,
         }) => {
             if (deleted) return;
@@ -196,6 +198,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                 minItems: type === 'enumArray' || type === 'users' ? 1 : undefined,
                 readOnly,
                 archive,
+                identifier,
                 uniqueItems: type === 'enumArray' || type === 'users' ? true : undefined,
                 pattern: type === 'pattern' ? pattern : undefined,
                 patternCustomErrorMessage: type === 'pattern' ? patternCustomErrorMessage : undefined,
@@ -259,6 +262,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
             hide,
             deleted,
             readOnly,
+            identifier,
             relationshipReference,
             archive,
             mapSearch,
@@ -291,6 +295,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                 minItems: type === 'enumArray' ? 1 : undefined,
                 readOnly,
                 archive,
+                identifier,
                 uniqueItems: type === 'enumArray' || type === 'users' ? true : undefined,
                 pattern: type === 'pattern' ? pattern : undefined,
                 patternCustomErrorMessage: type === 'pattern' ? patternCustomErrorMessage : undefined,

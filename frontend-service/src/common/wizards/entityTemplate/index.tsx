@@ -35,6 +35,7 @@ export interface EntityTemplateFormInputProperties {
     preview: boolean;
     hide: boolean;
     readOnly?: true;
+    identifier?: true;
     uniqueCheckbox?: boolean;
     groupName?: string;
     optionColors: Record<string, string>;
@@ -82,7 +83,7 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
         propertiesTypeOrder: ['properties', 'attachmentProperties'],
         uniqueConstraints: [],
         documentTemplatesIds: [],
-        mapSearchProperties: []
+        mapSearchProperties: [],
     },
     isEditMode = false,
 }) => {

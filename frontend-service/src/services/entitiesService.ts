@@ -19,11 +19,12 @@ import {
 import { EntityWizardValues } from '../common/dialogs/entity';
 import { IRuleBreach } from '../interfaces/ruleBreaches/ruleBreach';
 import { filterModelToFilterOfGraph } from '../pages/Graph/GraphFilterToBackend';
-import { ITablesResults } from '../common/wizards/loadEntities';
 import urlToFile from '../common/fileConversions';
+import { IEditReadExcel, ITablesResults } from '../interfaces/excel';
+import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 
-const { entities, relationships} = environment.api;
-const { uuid} = environment;
+const { entities, relationships } = environment.api;
+const { uuid } = environment;
 
 export const exportEntitiesRequest = async (body: IExportEntitiesBody) => {
     const { data } = await axios.post(`${entities}/export`, body, { responseType: 'blob' });
@@ -53,6 +54,41 @@ export const loadEntitiesRequest = async (
     }
 
     const { data } = await axios.post(`${entities}/loadEntities`, formData);
+
+    return data;
+};
+
+export const getChangedEntitiesFromExcelRequest = async (templateId: string, file: Record<string, File>): Promise<IEditReadExcel> => {
+    const formData = new FormData();
+
+    Object.entries(file).forEach(([key, value]) => {
+        formData.append(key, value as Blob);
+    });
+    formData.append('templateId', templateId);
+
+    const { data } = await axios.post(`${entities}/getChangedEntitiesFromExcel`, formData);
+
+    return data;
+};
+
+export const editManyEntitiesByExcelRequest = async (
+    template: IMongoEntityTemplatePopulated,
+    entitiesToUpdate: IEntityWithIgnoredRules[],
+): Promise<ITablesResults> => {
+    const formData = new FormData();
+
+    formData.append('templateId', template._id);
+
+    const entitiesArray = entitiesToUpdate.map((entity) => ({
+        templateId: entity.templateId,
+        properties: mapValues(entity.properties, (property, key) =>
+            template.properties.properties[key]?.format === 'relationshipReference' ? property?.properties._id : property,
+        ),
+        ignoredRules: entity.ignoredRules,
+    }));
+    formData.append('entities', JSON.stringify(entitiesArray));
+
+    const { data } = await axios.post(`${entities}/editManyEntitiesByExcel`, formData);
 
     return data;
 };

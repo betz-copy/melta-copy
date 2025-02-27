@@ -10,6 +10,8 @@ export interface IEntitySingleProperty {
     type: 'string' | 'number' | 'boolean' | 'array';
     format?: string;
     enum?: string[];
+    identifier?: true;
+    readOnly?: true;
     pattern?: string;
     patternCustomErrorMessage?: string;
     dateNotification?: number;

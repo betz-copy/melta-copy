@@ -1,16 +1,16 @@
 import React, { useState } from 'react';
 import { FormikProps } from 'formik';
 import i18next from 'i18next';
-import { Grid, Typography, useTheme } from '@mui/material';
+import { CircularProgress, Grid, Typography, useTheme } from '@mui/material';
 import { v4 as uuid } from 'uuid';
-import { EntitiesWizardValues, ISteps, StepStatus } from '.';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import OpenPreview from '../../FilePreview/OpenPreview';
-import { environment } from '../../../globals';
-import EntitiesTableOfTemplate from '../../EntitiesTableOfTemplate';
-import { InstanceFileInput } from '../../inputs/InstanceFilesInput/InstanceFileInput';
-import { useReadExcel } from '../../../utils/hooks/useReadExcel';
-import { useWorkspaceStore } from '../../../stores/workspace';
+import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
+import OpenPreview from '../../../FilePreview/OpenPreview';
+import { environment } from '../../../../globals';
+import EntitiesTableOfTemplate from '../../../EntitiesTableOfTemplate';
+import { InstanceFileInput } from '../../../inputs/InstanceFilesInput/InstanceFileInput';
+import { useReadExcel } from '../../../../utils/hooks/useReadExcel';
+import { useWorkspaceStore } from '../../../../stores/workspace';
+import { EntitiesWizardValues, IEditReadExcel, IExcelSteps, ExcelStepStatus } from '../../../../interfaces/excel';
 
 const {
     loadExcel: { excelExtension, acceptedFilesTypes },
@@ -19,10 +19,11 @@ const {
 export const UploadExcel: React.FC<{
     formikProps: FormikProps<EntitiesWizardValues>;
     template: IMongoEntityTemplatePopulated;
-    stepsData: ISteps;
-    setStepsData: React.Dispatch<React.SetStateAction<ISteps>>;
-    onDownload: () => Promise<any>;
-}> = ({ formikProps, template, stepsData, setStepsData, onDownload }) => {
+    stepsData: IExcelSteps;
+    setStepsData: React.Dispatch<React.SetStateAction<IExcelSteps>>;
+    onUploadExcel?: (file: Record<string, File>) => Promise<IEditReadExcel>;
+    isLoading?: boolean;
+}> = ({ formikProps, template, stepsData, setStepsData, onUploadExcel, isLoading }) => {
     const theme = useTheme();
     const { values, setFieldValue, setFieldTouched } = formikProps;
 
@@ -33,15 +34,20 @@ export const UploadExcel: React.FC<{
     const { defaultRowHeight, defaultFontSize } = workspace.metadata.agGrid;
     const { entitiesFileLimit, filesLimit } = workspace.metadata.excel;
 
-    if (stepsData.status === StepStatus.uploadExcel)
+    if (isLoading) return <CircularProgress size={20} />;
+
+    if (stepsData.status === ExcelStepStatus.uploadExcel)
         return (
             <>
                 <Grid marginTop="10px" marginLeft="20px">
-                    <Typography fontSize="13px" color="#9398C2">
-                        - {i18next.t('wizard.entity.loadEntities.limitNumberEntities') + entitiesFileLimit}
-                    </Typography>
+                    {!onUploadExcel && (
+                        <Typography fontSize="13px" color="#9398C2">
+                            - {i18next.t('wizard.entity.loadEntities.limitNumberEntities') + entitiesFileLimit}
+                        </Typography>
+                    )}
+
                     <Typography fontSize="13px" color="#9398C2" marginTop="5px">
-                        - {i18next.t('wizard.entity.loadEntities.limitNumberFiles') + filesLimit}
+                        - {`${i18next.t('wizard.entity.loadEntities.limitNumberFiles')} ${onUploadExcel ? 1 : filesLimit}`}
                     </Typography>
                 </Grid>
                 <InstanceFileInput
@@ -57,17 +63,22 @@ export const UploadExcel: React.FC<{
                     error={errorText || formikProps.errors.files}
                     setErrorText={setErrorText}
                     onDrop={async (files) => {
-                        await readFile(files as File[], template, setStepsData);
+                        if (onUploadExcel) {
+                            const file = files[0] as File;
+                            const fileRecord: Record<string, File> = { [file.name]: file };
+                            await onUploadExcel(fileRecord);
+                            setStepsData((prev) => ({ ...prev, files: fileRecord }));
+                        } else await readFile(files as File[], template, setStepsData);
                     }}
+                    limit={onUploadExcel ? 1 : undefined}
                 />
             </>
         );
 
-    if (stepsData.status === StepStatus.excelUploadResult)
+    if (stepsData.status === ExcelStepStatus.excelUploadResult)
         return (
             <OpenPreview
                 fileId={{ name: `${i18next.t('entitiesTableOfTemplate.downloadOneTableTitle')}${excelExtension}` } as File}
-                onClick={() => onDownload()}
                 download
                 showText
             />
@@ -78,7 +89,6 @@ export const UploadExcel: React.FC<{
             <Grid marginTop="5px">
                 <OpenPreview
                     fileId={{ name: `${i18next.t('entitiesTableOfTemplate.downloadOneTableTitle')}${excelExtension}` } as File}
-                    onClick={() => onDownload()}
                     download
                     showText
                 />
@@ -97,7 +107,7 @@ export const UploadExcel: React.FC<{
                     rowHeight={defaultRowHeight}
                     pageRowCount={10}
                     fontSize={`${defaultFontSize}px`}
-                    rowData={rowData}
+                    rowData={stepsData.entities || rowData}
                     saveStorageProps={{
                         shouldSaveFilter: false,
                         shouldSaveWidth: false,

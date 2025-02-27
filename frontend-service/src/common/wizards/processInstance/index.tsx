@@ -159,20 +159,31 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({
                     >
                         <Grid container item flexDirection="column" width="100%" height="100%">
                             <Grid item>
-                                <BlueTitle
-                                    title={processInstance.name}
-                                    component="h5"
-                                    variant="h5"
-                                    style={{
-                                        fontWeight: 500,
-                                        opacity: 0.9,
-                                        maxWidth: '200px',
-                                        maxHeight: '200px',
-                                        textOverflow: 'ellipsis',
-                                        overflow: 'hidden',
-                                        whiteSpace: 'nowrap',
+                                <MeltaTooltip
+                                    componentsProps={{
+                                        tooltip: {
+                                            sx: {
+                                                bgcolor: 'rgba(181, 181, 181, 0.9)',
+                                            },
+                                        },
                                     }}
-                                />
+                                    title={processInstance.name}
+                                >
+                                    <BlueTitle
+                                        title={processInstance.name}
+                                        component="h5"
+                                        variant="h5"
+                                        style={{
+                                            fontWeight: 500,
+                                            opacity: 0.9,
+                                            maxWidth: '200px',
+                                            maxHeight: '200px',
+                                            textOverflow: 'ellipsis',
+                                            overflow: 'hidden',
+                                            whiteSpace: 'nowrap',
+                                        }}
+                                    />
+                                </MeltaTooltip>
                             </Grid>
                             <Grid item height="90%" width="100%">
                                 <GeneralDetails

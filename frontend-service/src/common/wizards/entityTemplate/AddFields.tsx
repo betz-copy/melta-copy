@@ -104,7 +104,7 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
     const hasActions = Boolean(initialValues?.actions);
     const countMapSearchProperties = Object.values(values.properties).filter((property) => property.mapSearch).length;
 
-    if(countMapSearchProperties > mapSearchPropertiesLimit) setBlock(true);
+    if (countMapSearchProperties > mapSearchPropertiesLimit) setBlock(true);
 
     const { data: areThereInstancesByTemplateIdResponse } = useQuery(
         ['areThereInstancesByTemplateId', (values as EntityTemplateWizardValues & { _id: string })._id],
@@ -212,6 +212,8 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
                                                 show: Object.values(values.properties).some((property) => property.type === 'location'),
                                                 disabled: countMapSearchProperties >= 2,
                                             }}
+                                            supportIdentifier
+                                            hasIdentifier={Object.values(values.properties).some((value) => value.identifier)}
                                         />
                                     </Grid>
                                 )}

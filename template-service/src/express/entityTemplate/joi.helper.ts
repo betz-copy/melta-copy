@@ -43,6 +43,7 @@ ajv.addKeyword({ keyword: 'calculateTime', type: 'boolean' });
 ajv.addKeyword({ keyword: 'isDailyAlert', type: 'boolean' });
 ajv.addKeyword({ keyword: 'isDatePastAlert', type: 'boolean' });
 ajv.addKeyword({ keyword: 'archive', type: 'boolean' });
+ajv.addKeyword({ keyword: 'identifier', type: 'boolean' });
 
 const stringFormats = ['date', 'date-time', 'email', 'fileId', 'text-area', 'relationshipReference', 'location', 'user', 'signature'];
 const allowedJSONSchemaTypes = ['string', 'number', 'boolean', 'array'];
@@ -61,6 +62,7 @@ const propertiesArraySchema = Joi.array()
                 .when('enum', { is: Joi.exist(), then: Joi.forbidden() }),
             enum: Joi.array().items(Joi.string()).when('type', { not: 'string', then: Joi.forbidden() }),
             readOnly: Joi.valid(true),
+            identifier: Joi.valid(true),
             archive: Joi.boolean().optional(),
             pattern: Joi.string().when('type', { not: 'string', then: Joi.forbidden() }),
             patternCustomErrorMessage: Joi.string().when('pattern', { is: Joi.exist(), then: Joi.required(), otherwise: Joi.forbidden() }),
