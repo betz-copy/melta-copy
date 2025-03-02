@@ -182,10 +182,9 @@ export const updateStepRequest = async (
 ) => {
     const { formData, fileProperties } = await handleAttachmentProperties(values.attachmentsProperties, values.properties, template);
     const entityReferences = referencedEntityToEntityId(values.entityReferences);
-
     const filteredProperties = mapValues(values.properties, (property, key) => {
-        const format = template.details.properties.properties[key]?.format;
-        return !(format === 'signature' && !isUUID(property)) && property;
+        const format = template[key]?.format;
+        return format === 'signature' && !isUUID(property) ? undefined : property;
     });
     formData.append(
         'properties',

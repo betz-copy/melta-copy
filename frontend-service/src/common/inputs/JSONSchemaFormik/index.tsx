@@ -238,7 +238,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
             showErrorList={false}
             noHtml5Validate
             onBlur={(id) => {
-                const [_, field] = id.split('root_');                
+                const [_, field] = id.split('root_');
                 setFieldTouched(field);
             }}
             experimental_defaultFormStateBehavior={{
