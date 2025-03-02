@@ -8,6 +8,8 @@ interface IEntitySingleProperty {
         enum?: string[];
         format?: 'fileId' | 'user';
     };
+    identifier?: true;
+    readOnly?: true;
     pattern?: string;
     patternCustomErrorMessage?: string;
     dateNotification?: number;

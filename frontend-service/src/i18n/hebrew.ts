@@ -59,6 +59,7 @@ export default {
         addRelationship: 'הוסף קשר',
         addEntityTitle: 'יישות חדשה',
         loadEntitiesTitle: 'טעינה מקבצים',
+        editExcelTitle: 'עריכת טבלה',
         addEntity: 'הוסף ישות',
         selectEntity: 'בחר ישות',
         deleteEntity: 'מחק ישות',
@@ -654,6 +655,7 @@ export default {
                 required: 'ליישות חסרה שדה חובה',
                 createdSuccessfully: 'ישויות נוצרו בהצלחה',
                 tableCantLoadEntities: 'טבלה זו לא תומכת בטעינה מקבצים',
+                tableCantEditExcel: 'טבלה זו לא תומכת בעריכת טבלה, נא להוסיף שדה מזהה ייחודי',
                 limitNumberFiles: 'מספר קבצים שניתן להעלות: ',
                 limitNumberEntities: 'מספר ישויות שניתן להעלות בתוך קובץ הוא: ',
                 emptyExcel: 'יש להעלות קבצים עם יישויות',
@@ -662,6 +664,7 @@ export default {
                 wrongFileType: 'חלק מקבצים אלו לא קבצי אקסל',
                 notValid: 'שדה חייב להיות מסוג',
             },
+            editExcel: { title: 'עריכת טבלה מתוך קובץ', failedReadExcel: 'קריאת קובץ נכשלה' },
         },
         rule: {
             createTitle: 'יצירת חוק',
@@ -786,6 +789,7 @@ export default {
         hide: 'הסתר',
         unique: 'ייחודי',
         readOnly: 'לקריאה בלבד',
+        identifier: 'מזהה ייחודי',
         incoming: 'משויך מ',
         outgoing: 'משויך ל',
         relatedDirection: 'כיוון שיוך',
@@ -816,7 +820,8 @@ export default {
         attachmentFieldTitleExists: 'קיים שם קובץ לתצוגה זהה',
         stepNameExists: 'קיים שלב עם שם באנגלית זהה',
         stepDisplayNameExists: 'קיים שלב עם שם לתצוגה זהה',
-        mapSearchPropertiesLimit: 'מספר השדות המקסימלי בחיפוש עמוד מפות הוא: {{limit}}'
+        fileslimit: 'מספר קבצים מוגבל ל{{limit}}',
+        mapSearchPropertiesLimit: 'מספר השדות המקסימלי בחיפוש עמוד מפות הוא: {{limit}}',
     },
     propertyTypes: {
         string: 'טקסט',
@@ -1296,7 +1301,7 @@ export default {
             map: 'שכבות מפה',
             noLayers: 'לא נמצאו שכבות',
             overlay: 'שכבות מיפוי',
-        }
+        },
     },
     DynamicsConfigs: {
         isDrawerOpen: 'תפריט צד פתוח',
@@ -1309,19 +1314,20 @@ export default {
             defaultExpandedTableHeight: 'גודל טבלה במצב פתוח',
         },
         mainFontSizes: {
-            headlineTitleFontSize: 'גודל גופן כותרת ראשית',location: {
-            polygon: 'פוליגון',
-            coordinate: 'נקודת ציון',
-            circle: 'חיפוש בעזרת מעגל',
-            line: 'קו למדידת מרחק',
-            clear: 'ניקוי תוצאות',
-            radiusMaxLimit: `חיפוש מוגבל עד ${environment.map.maxRadius / 1000} ק"מ`,
-            layers: {
-                map: 'שכבות מפה',
-                noLayers: 'לא נמצאו שכבות',
-                overlay: 'שכבות מיפוי',
-            }
-        },
+            headlineTitleFontSize: 'גודל גופן כותרת ראשית',
+            location: {
+                polygon: 'פוליגון',
+                coordinate: 'נקודת ציון',
+                circle: 'חיפוש בעזרת מעגל',
+                line: 'קו למדידת מרחק',
+                clear: 'ניקוי תוצאות',
+                radiusMaxLimit: `חיפוש מוגבל עד ${environment.map.maxRadius / 1000} ק"מ`,
+                layers: {
+                    map: 'שכבות מפה',
+                    noLayers: 'לא נמצאו שכבות',
+                    overlay: 'שכבות מיפוי',
+                },
+            },
             entityTemplateTitleFontSize: 'גודל גופן כותרת טבלה',
             headlineSubTitleFontSize: 'גודל גופן כותרת משנית',
         },

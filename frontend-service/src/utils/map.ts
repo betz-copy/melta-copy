@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 import { Cartesian3, Ellipsoid, Math as CesiumMath } from 'cesium';
 import { environment } from '../globals';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
@@ -29,8 +30,8 @@ export const parsePolygon = (polygonStr: string): Cartesian3[] | undefined => {
                 console.error(`Invalid coordinate pair: ${pair}`);
                 return null;
             }
-            
-            return Cartesian3.fromDegrees(longitude,latitude);
+
+            return Cartesian3.fromDegrees(longitude, latitude);
         })
         .filter((coord): coord is Cartesian3 => coord !== null);
 
@@ -133,11 +134,11 @@ export const isValidPolygonPoint = (polygonPoints, newPoint) => {
     return true;
 };
 
-export const getLocationProperties = (entity: IEntity, selectedTemplates: IMongoEntityTemplatePopulated[]) => {   
+export const getLocationProperties = (entity: IEntity, selectedTemplates: IMongoEntityTemplatePopulated[]) => {
     const template = selectedTemplates.find(({ _id }) => _id === entity.templateId);
-    
-    if (!template) return {template: undefined, locationTemplateProperties: undefined, locationProperties: undefined};
-    
+
+    if (!template) return { template: undefined, locationTemplateProperties: undefined, locationProperties: undefined };
+
     const locationTemplateProperties = Object.entries(template.properties.properties)
         .filter(([_key, value]) => value.format === 'location')
         .reduce((acc, [key, value]) => {
@@ -153,4 +154,4 @@ export const getLocationProperties = (entity: IEntity, selectedTemplates: IMongo
         }, {} as { [x: string]: any });
 
     return { template, locationTemplateProperties, locationProperties };
-}
+};

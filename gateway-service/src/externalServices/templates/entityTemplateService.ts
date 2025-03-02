@@ -32,13 +32,14 @@ export interface ISearchCategoriesBody {
 export interface IEntitySingleProperty {
     title: string;
     type: 'string' | 'number' | 'boolean' | 'array';
-    format?: 'date' | 'date-time' | 'email' | 'fileId' | 'text-area' | 'relationshipReference' | 'location';
+    format?: 'date' | 'date-time' | 'email' | 'fileId' | 'text-area' | 'relationshipReference' | 'location' | 'user';
     enum?: string[];
     readOnly?: true;
+    identifier?: true;
     items?: {
         type: 'string';
         enum?: string[];
-        format?: 'fileId';
+        format?: 'fileId' | 'user';
     };
     minItems?: 1;
     uniqueItems?: true;

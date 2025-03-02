@@ -30,8 +30,8 @@ import DateTimeCellEditor from './DateTimeCellEditor';
 import { ActionErrors } from '../../interfaces/ruleBreaches/actionMetadata';
 import RelationshipRefCellEditor from './RelationshipRefCellEditor';
 import { convertToPlainText } from '../HtmlTagsStringValue';
-import { IError, IFailedEntity, IValidationError } from '../../common/wizards/loadEntities';
 import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
+import { IError, IFailedEntity, IValidationError } from '../../interfaces/excel';
 
 const hasErrors = (data: any): data is IFailedEntity => {
     return data && Array.isArray(data.errors) && data.errors.every((error) => 'type' in error && 'metadata' in error);
@@ -261,7 +261,7 @@ export const locationColDef = <Data extends any = EntityData>(
         cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => {
             if (!props.value) return null;
             const error = isPropertyInvalid(props, field, ignoreType);
-            
+
             if (error) return errorColDef(props, error, value);
             return <OpenMap field={value.title!} entityProperties={entityGetter(props as any)} entityTemplate={template} searchValue={searchValue} />;
         },

@@ -206,6 +206,7 @@ const AddStepsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues, '
                                                                         supportRelationshipReference={false}
                                                                         supportUserType={false}
                                                                         supportConvertingToMultipleFields={false}
+                                                                        locationSearchFields={{ show: false, disabled: false }}
                                                                     />
                                                                 </Grid>
                                                                 <Grid item>
@@ -238,6 +239,7 @@ const AddStepsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues, '
                                                                         supportDeleteForExistingInstances
                                                                         supportRelationshipReference={false}
                                                                         supportConvertingToMultipleFields={false}
+                                                                        locationSearchFields={{ show: false, disabled: false }}
                                                                     />
                                                                 </Grid>
                                                                 <Grid item>
