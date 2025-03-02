@@ -48,7 +48,6 @@ const FluidSimulation = lazy(() => import('../MeltaPlus/FluidSimulation'));
 export const MeltaRoutesInner: React.FC = () => {
     const workspace = useWorkspaceStore((state) => state.workspace);
     const { isDrawerOpen } = workspace.metadata;
-    const { isSemanticOn } = workspace.metadata;
     const [title, setTitle] = useState('');
     const [open, setOpen] = useState(isDrawerOpen);
     const [on, setOn] = useState(isSemanticOn);
