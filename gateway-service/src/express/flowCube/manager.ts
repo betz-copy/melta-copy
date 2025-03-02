@@ -82,7 +82,9 @@ export class FlowCubeManager extends DefaultManagerProxy<null> {
         return convertToFlow;
     }
 
-    static async searchWorkspace(body: any, userId: string) {
+    static async searchWorkspace(body: any, userId: string | undefined) {
+        if (!userId) return [];
+
         const searchBody = {} as { search: string };
 
         if (body?.Parameters?.Value) {
@@ -106,7 +108,9 @@ export class FlowCubeManager extends DefaultManagerProxy<null> {
         ).filter(({ hierarchyIds }) => hierarchyIds.some((id) => Boolean(usersPermissions[id])));
     }
 
-    async searchCategory(body: any, userId: string): Promise<IFlowAutoComplete[]> {
+    async searchCategory(body: any, userId: string | undefined): Promise<IFlowAutoComplete[]> {
+        if (!userId) return [];
+
         let searchInput = '';
 
         if (body?.Value) {
@@ -130,7 +134,9 @@ export class FlowCubeManager extends DefaultManagerProxy<null> {
         return categories.filter(({ _id }) => usersPermissions.instances?.categories[_id]);
     }
 
-    async searchEntityTemplate(body: any, userId: string): Promise<IFlowAutoComplete[]> {
+    async searchEntityTemplate(body: any, userId: string | undefined): Promise<IFlowAutoComplete[]> {
+        if (!userId) return [];
+
         const searchEntityTemplatesBody = {} as ISearchEntityTemplatesBody;
 
         if (body?.Value) {
