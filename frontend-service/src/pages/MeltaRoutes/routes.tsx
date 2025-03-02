@@ -50,7 +50,6 @@ export const MeltaRoutesInner: React.FC = () => {
     const { isDrawerOpen } = workspace.metadata;
     const [title, setTitle] = useState('');
     const [open, setOpen] = useState(isDrawerOpen);
-    const [on, setOn] = useState(isSemanticOn);
     const [openMeltaUpdates, setOpenMeltaUpdates] = useState(false);
 
     const [location, navigate] = useLocation();

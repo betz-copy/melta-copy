@@ -1300,7 +1300,6 @@ export default {
     },
     DynamicsConfigs: {
         isDrawerOpen: 'תפריט צד פתוח',
-        isSemanticOn: 'חיפוש סמנטי דולק',
         shouldNavigateToEntityPage: 'עבור לעמוד פרט בעת יצירת/עריכת ישות',
         agGrid: {
             rowCount: 'מספר שורות להצגה בטבלה במצב סגור',
