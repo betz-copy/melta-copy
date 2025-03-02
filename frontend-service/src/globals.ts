@@ -261,7 +261,7 @@ export const environment = {
     meltaUpdatesShown: 'meltaUpdatesShown',
     profileIconsCount: 19,
     avatarIconPath: '/icons/profileAvatar/',
-    uuid: /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{8}/,
+    uuidFormat: /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{8}/,
     fileExtensions: {
         image: ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'webp', 'ico', 'psd', 'raw', 'heif', 'indd', 'ai', 'eps'],
         imageToManipulate: ['png', 'jpg', 'jpeg', 'svg'] as string[],

@@ -10,9 +10,9 @@ import { IMongoProcessTemplatePopulated } from '../interfaces/processes/processT
 import urlToFile from '../common/fileConversions';
 
 const { processes } = environment.api;
-const { uuid } = environment;
+const { uuidFormat } = environment;
 
-const isUUID = (str: string) => uuid.test(str);
+const isUUID = (str: string) => uuidFormat.test(str);
 
 export const getProcessByIdRequest = async (processId: string) => {
     const { data } = await axios.get<IMongoProcessInstancePopulated>(`${processes}/${processId}`);
@@ -85,7 +85,7 @@ const handleAttachmentProperties = async (attachments: object, properties: objec
     const formData = new FormData();
     const filesToUpload: any = [];
     const unchangedFiles: any = [];
-    const fileUploadPromises: Promise<[string, File]>[] = [];
+    const signatureFilesUploadPromises: Promise<[string, File]>[] = [];
     Object.entries(attachments).forEach(([key, value]: [string, any]) => {
         if (Array.isArray(value) && value) {
             value.forEach((file, index) => {
@@ -109,11 +109,11 @@ const handleAttachmentProperties = async (attachments: object, properties: objec
             if (value && isUUID(value)) {
                 unchangedFiles.push([key, { name: value }]);
             } else if (value) {
-                fileUploadPromises.push(urlToFile(value, template[key]!.title).then((file) => [key, file]));
+                signatureFilesUploadPromises.push(urlToFile(value, template[key]!.title).then((file) => [key, file]));
             }
         }
     }
-    filesToUpload.push(...(await Promise.all(fileUploadPromises)));
+    filesToUpload.push(...(await Promise.all(signatureFilesUploadPromises)));
 
     filesToUpload.forEach(([key, value]) => formData.append(key, value as Blob));
 

@@ -1,6 +1,6 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import SignatureCanvas from 'react-signature-canvas';
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { WidgetProps } from '@rjsf/utils';
 import { Box, Button, ThemeProvider, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
@@ -58,7 +58,7 @@ const RjfsSignatureWidget = ({ id, required, readonly, disabled, label, value, o
                 <Box sx={{ position: 'relative', width: 210 }}>
                     <Typography
                         sx={{
-                            fontSize: '13px',
+                            fontSize: '15px',
                             color: darkMode ? 'white' : 'black',
                             padding: '0 3px',
                             userSelect: 'none',
@@ -76,10 +76,13 @@ const RjfsSignatureWidget = ({ id, required, readonly, disabled, label, value, o
                             height: '100%',
                             style: {
                                 // eslint-disable-next-line no-nested-ternary
-                                backgroundColor: darkMode ? '#39414d' : !isDisabled ? '#fff' : undefined,
-                                border: `1px solid ${darkMode ? 'white' : `${globalTheme.palette.primary.main}`}`,
+                                backgroundColor: darkMode ? '#44505D' : !isDisabled ? '#fff' : undefined,
+                                border:
+                                    !signatureCanvas.current || signatureCanvas.current.isEmpty()
+                                        ? '1px solid rgb(154, 159, 202)'
+                                        : `1.5px solid ${darkMode ? 'white' : `${globalTheme.palette.primary.main}`}`,
                                 borderRadius: '8px',
-                                boxShadow: '0px 1px 6px rgba(0, 0, 0, 0.1)',
+                                boxShadow: '0px 0px 2px rgba(0, 0, 0, 0.1)',
                             },
                         }}
                         onEnd={saveSignature}

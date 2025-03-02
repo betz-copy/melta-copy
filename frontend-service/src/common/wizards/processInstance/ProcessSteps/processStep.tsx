@@ -166,8 +166,6 @@ export const ProcessStep: FC<ProcessStepProps> = ({
         <Formik
             initialValues={getStepValuesFromStepInstance(stepInstance, stepTemplate)}
             onSubmit={async (values, { resetForm }) => {
-                console.log({ values });
-
                 const result = await editStepMutateAsync(values);
                 setIsStepEditMode(false);
                 resetForm({ values: getStepValuesFromStepInstance(result, stepTemplate) });

@@ -302,6 +302,7 @@ const CreateOrEditEntityDetails: React.FC<{
         () => drafts[entityTemplate.category._id]?.[entityTemplate._id]?.find(({ uniqueId }) => uniqueId === draftId),
         [drafts, entityTemplate._id, entityTemplate.category._id, draftId],
     );
+    const [initialValuePropsToFilter, setInitialValuePropsToFilter] = useState<object>({});
 
     return (
         <Formik<EntityWizardValues>
@@ -339,7 +340,10 @@ const CreateOrEditEntityDetails: React.FC<{
                 );
                 const isPropertiesFirst = (values.template?.propertiesTypeOrder ?? [])[0] === 'properties';
                 const schema = filterFieldsFromPropertiesSchema(values.template.properties);
-
+                // eslint-disable-next-line react-hooks/rules-of-hooks
+                useEffect(() => {
+                    setInitialValuePropsToFilter({ ...formInitialValues.properties });
+                }, []);
                 // eslint-disable-next-line react-hooks/rules-of-hooks
                 useEffect(() => {
                     if (initialCurrValues) setValues(initialCurrValues);
@@ -378,22 +382,26 @@ const CreateOrEditEntityDetails: React.FC<{
                             { ...newValues, entityId: entityToUpdate?.properties._id },
                             uniqueDraftId,
                         );
+                        setInitialValuePropsToFilter({ ...newValues.properties });
                     }, environment.draftAutoSaveDebounce),
                     [],
                 );
-
                 // eslint-disable-next-line react-hooks/rules-of-hooks
                 const absoluteDirty = useMemo(() => {
                     // textarea/long-text causes the field to first be undefined, setting dirty to true,
                     // so we check for dirty manually while ignoring these fields
                     // (if the value changes it won't be undefined and it will consider it dirty)
                     const valuePropsToFilter = { ...values.properties };
-                    const initialValuePropsToFilter = { ...formInitialValues.properties };
+                    Object.keys(valuePropsToFilter).forEach((key) => {
+                        const signatureField = values.template.properties.properties[key]?.format === 'signature';
+                        return valuePropsToFilter[key] === undefined || signatureField ? delete valuePropsToFilter[key] : {};
+                    });
 
-                    Object.keys(valuePropsToFilter).forEach((key) => (valuePropsToFilter[key] === undefined ? delete valuePropsToFilter[key] : {}));
-                    Object.keys(initialValuePropsToFilter).forEach((key) =>
-                        initialValuePropsToFilter[key] === undefined ? delete initialValuePropsToFilter[key] : {},
-                    );
+                    Object.keys(initialValuePropsToFilter).forEach((key) => {
+                        const signatureField = values.template.properties.properties[key]?.format === 'signature';
+                        return initialValuePropsToFilter[key] === undefined || signatureField ? delete initialValuePropsToFilter[key] : {};
+                    });
+                    console.log({ equal: isEqual(valuePropsToFilter, initialValuePropsToFilter) });
 
                     return !isEqual(valuePropsToFilter, initialValuePropsToFilter);
                 }, [formInitialValues, values]);

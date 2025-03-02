@@ -24,7 +24,7 @@ import { IEditReadExcel, ITablesResults } from '../interfaces/excel';
 import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 
 const { entities, relationships } = environment.api;
-const { uuid } = environment;
+const { uuidFormat } = environment;
 
 export const exportEntitiesRequest = async (body: IExportEntitiesBody) => {
     const { data } = await axios.post(`${entities}/export`, body, { responseType: 'blob' });
@@ -139,9 +139,8 @@ export const createEntityRequest = async (entity: EntityWizardValues, ignoredRul
     });
 
     Object.entries(entity.properties).forEach(([key, value]: [string, any]) => {
-        if (templateProperties[key]?.format === 'signature') {
+        if (templateProperties[key]?.format === 'signature')
             fileUploadPromises.push(urlToFile(value, templateProperties[key]!.title).then((file) => [key, file]));
-        }
     });
     filesToUpload.push(...(await Promise.all(fileUploadPromises)));
 
@@ -153,9 +152,9 @@ export const createEntityRequest = async (entity: EntityWizardValues, ignoredRul
         JSON.stringify(
             mapValues(entity.properties, (property, key) => {
                 const format = entity.template.properties.properties[key]?.format;
-
                 if (format === 'signature') return undefined;
-                return format === 'relationshipReference' ? property?.properties._id : property;
+                if (format === 'relationshipReference') return property?.properties?._id;
+                return property;
             }),
         ),
     );
@@ -179,7 +178,7 @@ export const updateEntityRequestForMultiple = async (
     newEntityData: EntityWizardValues,
     ignoredRules?: IRuleBreach['brokenRules'],
 ) => {
-    const isUUID = (str: string) => uuid.test(str);
+    const isUUID = (str: string) => uuidFormat.test(str);
     const formData = new FormData();
 
     const filesToUpload: any = [];
@@ -223,7 +222,6 @@ export const updateEntityRequestForMultiple = async (
     filesToUpload.forEach(([key, value]) => {
         formData.append(key, value);
     });
-
     unchangedFiles.forEach(([key, _value]) => {
         newEntityData.properties[key] = [];
     });
@@ -245,9 +243,9 @@ export const updateEntityRequestForMultiple = async (
         JSON.stringify(
             mapValues(newEntityData.properties, (property, key) => {
                 const format = newEntityData.template.properties.properties[key]?.format;
-
                 if (format === 'signature' && !isUUID(property)) return undefined;
-                return format === 'relationshipReference' ? property?.properties._id : property;
+                if (format === 'relationshipReference') return property?.properties?._id;
+                return property;
             }),
         ),
     );
