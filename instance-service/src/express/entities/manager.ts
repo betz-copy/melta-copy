@@ -2066,31 +2066,14 @@ export class EntityManager extends DefaultManagerNeo4j {
     }
 
     handlePropertiesTemplate = (entityTemplate: IMongoEntityTemplate) => {
-        const specialProperties: Record<string, { valueToSearch: string; valueToReturn?: (output: any) => Promise<string> | string }> = {};
+        const specialProperties: Record<string, string> = {};
         Object.entries(entityTemplate.properties.properties).forEach(([key, value]) => {
-            if (value.format === 'user')
-                specialProperties[key] = {
-                    valueToSearch: `${key}.fullName${config.neo4j.userFieldPropertySuffix}`,
-                };
-            if (value.items?.format === 'user')
-                specialProperties[key] = {
-                    valueToSearch: `${key}.fullNames${config.neo4j.usersFieldsPropertySuffix}`,
-                };
+            if (value.format === 'user') specialProperties[key] = `${key}.fullName${config.neo4j.userFieldPropertySuffix}`;
+
+            if (value.items?.format === 'user') specialProperties[key] = `${key}.fullNames${config.neo4j.usersFieldsPropertySuffix}`;
+
             if (value.format === 'relationshipReference')
-                specialProperties[key] = {
-                    valueToSearch: `${key}.properties._id${config.neo4j.relationshipReferencePropertySuffix}`,
-                    valueToReturn: (id: string) => this.getRelatedEntityName(id, value.relationshipReference?.relatedTemplateField),
-                };
-            if (value.format === 'fileId')
-                specialProperties[key] = {
-                    valueToSearch: key,
-                    valueToReturn: (fileId: string) => getFileName(fileId),
-                };
-            if (value.items?.format === 'fileId')
-                specialProperties[key] = {
-                    valueToSearch: key,
-                    valueToReturn: (fileId: string[]) => getFilesName(fileId),
-                };
+                specialProperties[key] = `${key}.properties._id${config.neo4j.relationshipReferencePropertySuffix}`;
         });
 
         return specialProperties;
@@ -2103,12 +2086,9 @@ export class EntityManager extends DefaultManagerNeo4j {
         return relatedEntity?.properties?.[relatedTemplateField] ?? id;
     }
 
-    getAggregation(
-        axis: IAxisField,
-        specialProperties: Record<string, { valueToSearch: string; valueToReturn?: (output: any) => Promise<string> | string }>,
-    ): IAggregation {
+    getAggregation(axis: IAxisField, specialProperties: Record<string, string>): IAggregation {
         if (typeof axis === 'string') {
-            const byField = specialProperties[axis]?.valueToSearch ?? axis;
+            const byField = specialProperties[axis] ?? axis;
             return { type: 'none', byField: `\`${byField}\`` };
         }
 
@@ -2117,18 +2097,13 @@ export class EntityManager extends DefaultManagerNeo4j {
         }
 
         if (axis.type === 'countDistinct' && specialProperties[axis.byField!]) {
-            return { type: 'countDistinct', byField: `\`${specialProperties[axis.byField!].valueToSearch}\`` };
+            return { type: 'countDistinct', byField: `\`${specialProperties[axis.byField!]}\`` };
         }
 
         return axis;
     }
 
-    buildAggregationQuery(
-        xAxis: IAxisField,
-        yAxis: IAxisField | undefined,
-        specialProperties: Record<string, { valueToSearch: string; valueToReturn?: (output: any) => Promise<string> | string }>,
-        filterQuery?: string,
-    ) {
+    buildAggregationQuery(xAxis: IAxisField, yAxis: IAxisField | undefined, specialProperties: Record<string, string>, filterQuery?: string) {
         const xAgg = this.getAggregation(xAxis, specialProperties);
         const yAgg = yAxis ? this.getAggregation(yAxis, specialProperties) : undefined;
 
@@ -2173,20 +2148,19 @@ export class EntityManager extends DefaultManagerNeo4j {
         }
     }
 
-    manipulateReturnedChart = async (
-        xAxis: IAxisField,
-        chart: { x: any; y: any }[],
-        specialProperties: Record<string, { valueToSearch: string; valueToReturn?: (output: any) => Promise<string> | string }>,
-    ) => {
+    manipulateReturnedChart = async (xAxis: IAxisField, chart: { x: any; y: any }[], entityTemplate: IMongoEntityTemplate) => {
         if (typeof xAxis !== 'string') return chart;
+
+        const { format, items, relationshipReference } = entityTemplate.properties.properties[xAxis];
 
         return Promise.all(
             chart.map(async ({ x, y }) => {
                 if (!x) return { x, y };
 
-                const { valueToReturn } = specialProperties[xAxis] || {};
-
-                if (typeof valueToReturn === 'function') return { x: await valueToReturn(x), y };
+                if (format === 'relationshipReference')
+                    return { x: await this.getRelatedEntityName(x, relationshipReference?.relatedTemplateField), y };
+                if (format === 'fileId') return { x: getFileName(x), y };
+                if (items?.format === 'fileId') return { x: getFilesName(x), y };
 
                 if (x instanceof neo4j.types.LocalDateTime) return { x: fromZonedTime(new Date(x.toString()), 'Asia/Jerusalem').toISOString(), y };
 
@@ -2215,7 +2189,7 @@ export class EntityManager extends DefaultManagerNeo4j {
 
             const query = this.buildAggregationQuery(xAxis, yAxis, specialProperties, filterQuery);
             const chart = await this.neo4jClient.readTransaction(query, normalizeChartResponse, parameters);
-            const manipulatedChart = await this.manipulateReturnedChart(xAxis, chart, specialProperties);
+            const manipulatedChart = await this.manipulateReturnedChart(xAxis, chart, entityTemplate);
 
             return _id ? { _id, chart: manipulatedChart } : manipulatedChart;
         });
