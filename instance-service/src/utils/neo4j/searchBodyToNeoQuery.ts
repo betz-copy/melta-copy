@@ -172,6 +172,10 @@ const filterOfFieldToNeoQuery = (
         }\``;
     }
 
+    if (fieldTemplate.format === 'user') {
+        filterField = `\`${field}.fullName_userField\``;
+    }
+
     const queries: CypherQueryWithParameters[] = Object.entries(filterOfField).map(([key, filterRhs]) => {
         const filterType = key as keyof IFilterOfField;
 
