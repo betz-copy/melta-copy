@@ -411,7 +411,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
                             </Grid>
                         )}
 
-                        {menuRowButtonProps && (
+                        {menuRowButtonProps && !template?.disabled && (
                             <Grid item>
                                 <CardMenu
                                     onDuplicateClick={() => {

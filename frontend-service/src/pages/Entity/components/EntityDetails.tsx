@@ -226,7 +226,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                                             }
                                             handleClose();
                                         }}
-                                        disabled={!canWriteInstance}
+                                        disabled={!canWriteInstance || entityTemplate.disabled || entity.properties.disabled}
                                         icon={DuplicateIcon}
                                         text={i18next.t('actions.duplicate')}
                                     />
@@ -237,7 +237,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                                             setOpenDeleteDialog(true);
                                             handleClose();
                                         }}
-                                        disabled={!canWriteInstance}
+                                        disabled={!canWriteInstance || entityTemplate.disabled || entity.properties.disabled}
                                         icon={DeleteIcon}
                                         text={i18next.t('actions.delete')}
                                     />
@@ -250,7 +250,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                                             }
                                             handleClose();
                                         }}
-                                        disabled={!canWriteInstance}
+                                        disabled={!canWriteInstance || entityTemplate.disabled}
                                         icon={isEntityDisabled ? DoNotDisturbOffOutlinedIcon : DoNotDisturbOnOutlinedIcon}
                                         text={isEntityDisabled ? i18next.t('actions.activate') : i18next.t('actions.disable')}
                                     />

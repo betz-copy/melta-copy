@@ -315,7 +315,7 @@ const TemplateTable = forwardRef<
                     </LoadExcelButton>
                     <AddEntityButton
                         initialStep={1}
-                        disabled={!userHasWritePermissions}
+                        disabled={!userHasWritePermissions || template.disabled}
                         initialValues={{ template, properties: { disabled: false }, attachmentsProperties: {} }}
                         style={{
                             display: 'flex',
@@ -324,6 +324,7 @@ const TemplateTable = forwardRef<
                             fontSize: '0.75rem',
                             color: theme.palette.primary.main,
                         }}
+                        popoverText={template.disabled ? i18next.t('permissions.EntityTemplateDisplay') : undefined}
                         onSuccessCreate={() => {
                             entitiesTableRef.current?.refreshServerSide();
 
@@ -415,7 +416,7 @@ const TemplateTable = forwardRef<
                         popoverText: i18next.t(
                             !userHasWritePermissions ? 'permissions.dontHaveWritePermissionsToTemplate' : 'entitiesTableOfTemplate.editEntity',
                         ),
-                        disabledButton: !userHasWritePermissions,
+                        disabledButton: !userHasWritePermissions || template.disabled,
                     }}
                     onFilter={() => {
                         setIsFiltered(entitiesTableRef.current?.isFiltered() ?? false);

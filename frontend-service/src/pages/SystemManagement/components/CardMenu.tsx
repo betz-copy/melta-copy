@@ -20,7 +20,13 @@ export const CardMenu: React.FC<{
     onOptionsIconClose?: () => void;
     onEditClick?: MouseEventHandler;
     onDeleteClick?: MouseEventHandler;
-    disabledProps?: { isDisabled?: boolean; isEditDisabled: boolean; isDeleteDisabled?: boolean; tooltipTitle: string; editTooltipTitle?: string };
+    disabledProps?: {
+        isDisabled?: boolean;
+        isEditDisabled: boolean;
+        isDeleteDisabled?: boolean;
+        tooltipTitle: string;
+        editTooltipTitle?: string;
+    };
     onDisableClick?: MouseEventHandler;
     onDuplicateClick?: MouseEventHandler;
     onAddActionsClick?: MouseEventHandler;
@@ -92,6 +98,7 @@ export const CardMenu: React.FC<{
                         }}
                         text={i18next.t('actions.duplicate')}
                         icon={<DuplicateIcon color="action" />}
+                        disabled={disabledProps?.isDisabled}
                     />
                 )}
 
@@ -102,6 +109,7 @@ export const CardMenu: React.FC<{
                             handleClose(e);
                         }}
                         text={i18next.t('actions.addActions')}
+                        disabled={disabledProps?.isDisabled}
                         icon={<AddIcon color="action" />}
                     />
                 )}
@@ -121,16 +129,20 @@ export const CardMenu: React.FC<{
                         </Grid>
                     </MeltaTooltip>
                 )}
-
                 {onConvertToRelationShipFieldClick && (
-                    <MenuButton
-                        onClick={(e) => {
-                            onConvertToRelationShipFieldClick(e);
-                            handleClose(e);
-                        }}
-                        text={i18next.t('actions.convertToRelationShipFieldClick')}
-                        icon={<CompareArrowsIcon color="action" />}
-                    />
+                    <MeltaTooltip placement="top" title={editTooltipTitle} disableHoverListener={!disabledProps?.isEditDisabled}>
+                        <Grid>
+                            <MenuButton
+                                onClick={(e) => {
+                                    onConvertToRelationShipFieldClick(e);
+                                    handleClose(e);
+                                }}
+                                text={i18next.t('actions.convertToRelationShipFieldClick')}
+                                icon={<CompareArrowsIcon color="action" />}
+                                disabled={disabledProps?.isEditDisabled}
+                            />
+                        </Grid>
+                    </MeltaTooltip>
                 )}
 
                 {onDisableClick && (
