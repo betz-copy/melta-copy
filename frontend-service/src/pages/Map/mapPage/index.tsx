@@ -258,7 +258,7 @@ const MapPage = () => {
                             fill={false}
                             outline
                             outlineColor={Color.fromAlpha(Color.RED, 0.7)}
-                            outlineWidth={10}
+                            outlineWidth={15}
                         />
                         {circleData.mouseRadius && <PointGraphics color={Color.RED} pixelSize={10} />}
                     </Entity>
