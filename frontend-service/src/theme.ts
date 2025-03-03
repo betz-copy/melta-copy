@@ -37,17 +37,6 @@ const basicTheme: ThemeOptions = {
 
 export const sideBarTransition = 'all 0.3s linear';
 
-// // TODO - move to globals file
-// export const mainFontSizes = {
-//     headlineTitleFontSize: '24px',
-//     headlineSubTitleFontSize: '14px',
-// };
-
-// export const iconSize = {
-//     width: '24px',
-//     height: '24px',
-// };
-
 const colors = {
     main: {
         light: '#1E2775',

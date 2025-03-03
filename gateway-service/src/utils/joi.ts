@@ -2,19 +2,6 @@ import { Request } from 'express';
 import Joi from 'joi';
 import { wrapValidator } from './express';
 
-const validateProperties = (value, helpers) => {
-    const properties = value;
-    const requiredFields = Object.keys(properties).filter((key) => properties[key].readOnly !== true || properties[key].archive !== true);
-
-    for (const key of requiredFields) {
-        if (properties[key].required && properties[key].readOnly) {
-            return helpers.message(`Property ${key} is readOnly and cannot be required`);
-        }
-    }
-
-    return value;
-};
-
 export const ExtendedJoi = Joi.extend(
     {
         base: Joi.object(),
@@ -24,10 +11,7 @@ export const ExtendedJoi = Joi.extend(
         },
         coerce: (value: string, helpers) => {
             try {
-                let parsedValue = JSON.parse(value);
-                if ('required' in parsedValue && 'type' in parsedValue && 'hide' in parsedValue)
-                    parsedValue = validateProperties(parsedValue, helpers);
-                return { value: parsedValue };
+                return { value: JSON.parse(value) };
             } catch {
                 return { errors: [helpers.error('string.object')] };
             }
@@ -64,10 +48,9 @@ export const WorkspaceNameSchema = Joi.string().regex(/^[a-zA-Z0-9_-]+$/, 'valid
 export const fileSchema = Joi.object({
     fieldname: Joi.string().required(),
     originalname: Joi.string().required(),
-    size: Joi.number().min(1).required(),
     encoding: Joi.string().required(),
     mimetype: Joi.string().required(),
-    path: Joi.string().required(),
+    size: Joi.number().min(1).required(),
 }).unknown(true);
 
 export const iconFileSchema = fileSchema.keys({

@@ -1,4 +1,5 @@
-import * as Joi from 'joi';
+import Joi from 'joi';
+import { fileSchema, iconFileSchema } from '../../utils/joi';
 
 export const defaultSchema = Joi.object({
     query: {
@@ -12,14 +13,14 @@ export const defaultSchema = Joi.object({
 
 // POST /api/files
 export const uploadFileRequestSchema = Joi.object({
-    file: Joi.required(),
+    file: iconFileSchema,
     query: {},
     params: {},
 });
 
 // POST /api/files/bulk
 export const uploadFilesRequestSchema = Joi.object({
-    files: Joi.required(),
+    files: Joi.array().items(fileSchema),
     query: {},
     params: {},
 });

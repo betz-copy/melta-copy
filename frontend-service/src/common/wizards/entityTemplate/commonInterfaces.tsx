@@ -28,6 +28,8 @@ export interface CommonFormInputProperties {
     uniqueCheckbox?: boolean;
     groupName?: string;
     archive?: boolean;
+    identifier?: boolean;
+    mapSearch?: boolean;
 }
 
 export interface ConvertToRelationshipFieldFormInputProperties {

@@ -1,60 +1,70 @@
 import { Card, CardContent, CheckboxProps, Divider, FormControlLabel, Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
+import { FormikProps } from 'formik';
 import { PermissionScope } from '../../interfaces/permissions';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { MeltaCheckbox } from '../MeltaCheckbox';
-import PermissionViewIcon from './PermissionViewIcon';
+import CategoryCheckboxPermission from './categoryCheckboxPermission';
+import { IUser } from '../../interfaces/users';
+import { entityTemplatePermissionDialog } from '../../utils/permissions/permissionOfUserDialog';
 
 type checkboxControlProps = {
     onChange: CheckboxProps['onChange'];
     checked: boolean;
 };
 
-type permissionTypeCheckboxProps = {
+export type permissionTypeCheckboxProps = {
     read: checkboxControlProps;
     write: checkboxControlProps;
 };
+
 const InstancesPermissionsCard: React.FC<{
     viewMode: boolean;
+    formikProps: FormikProps<IUser>;
+    permissionsPath: string;
+    workspaceId: string;
     categoriesCheckboxProps: {
         categoryId: string;
         categoryDisplayName: string;
         disabled: boolean;
         permissionType: permissionTypeCheckboxProps;
         scope?: PermissionScope;
+        entityTemplates: entityTemplatePermissionDialog[];
     }[];
     checkboxAllProps?: {
         permissionType: permissionTypeCheckboxProps;
-        indeterminate: boolean;
     };
-}> = ({ categoriesCheckboxProps, viewMode, checkboxAllProps }) => {
+}> = ({ categoriesCheckboxProps, viewMode, checkboxAllProps, formikProps, permissionsPath, workspaceId }) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const bgcolor = darkMode ? '#242424' : 'white';
 
     return (
         <Card variant="outlined" sx={{ bgcolor, overflowY: 'auto', maxHeight: 500 }}>
             <CardContent>
-                <Grid container spacing={2}>
+                <Grid container rowGap={1}>
                     <Grid container sx={{ position: 'sticky', top: 0, zIndex: 2, bgcolor }}>
-                        <Grid item xs={12}>
-                            <Typography sx={{ padding: 2 }} fontWeight="bold">
+                        <Grid xs={12}>
+                            <Typography sx={{ padding: 2, boxSizing: 'border-box' }} fontWeight="bold">
                                 {i18next.t('permissions.permissionsOfUserDialog.instancesPermissions')}
                             </Typography>
                         </Grid>
-                        <Grid item xs={6}>
-                            <Typography sx={{ paddingLeft: 2 }} fontWeight="bold">
+                        <Grid xs={6}>
+                            <Typography sx={{ paddingLeft: 2, boxSizing: 'border-box' }} fontWeight="bold">
                                 {i18next.t('category')}
                             </Typography>
                         </Grid>
-                        <Grid item xs={3} paddingLeft={2}>
-                            <Typography fontWeight="bold">{i18next.t('permissions.permissionsOfUserDialog.read')}</Typography>
+                        <Grid xs={3}>
+                            <Typography paddingLeft="15px" fontWeight="bold">
+                                {i18next.t('permissions.permissionsOfUserDialog.read')}
+                            </Typography>
                             {!viewMode && (
                                 <FormControlLabel
+                                    sx={{ margin: '0' }}
                                     label={i18next.t('permissions.permissionsOfUserDialog.chooseAll') as string}
                                     control={
                                         <MeltaCheckbox
-                                            checked={checkboxAllProps?.permissionType.read.checked || checkboxAllProps?.permissionType.write.checked}
+                                            checked={checkboxAllProps?.permissionType.read.checked}
                                             disabled={checkboxAllProps?.permissionType.write.checked}
                                             onChange={checkboxAllProps?.permissionType.read.onChange}
                                         />
@@ -62,10 +72,13 @@ const InstancesPermissionsCard: React.FC<{
                                 />
                             )}
                         </Grid>
-                        <Grid item xs={3} paddingLeft={2}>
-                            <Typography fontWeight="bold">{i18next.t('permissions.permissionsOfUserDialog.write')}</Typography>
+                        <Grid xs={3}>
+                            <Typography paddingLeft="15px" fontWeight="bold">
+                                {i18next.t('permissions.permissionsOfUserDialog.write')}
+                            </Typography>
                             {!viewMode && (
                                 <FormControlLabel
+                                    sx={{ margin: '0' }}
                                     label={i18next.t('permissions.permissionsOfUserDialog.chooseAll') as string}
                                     control={
                                         <MeltaCheckbox
@@ -80,34 +93,24 @@ const InstancesPermissionsCard: React.FC<{
                             <Divider />
                         </Grid>
                     </Grid>
-                    {categoriesCheckboxProps.map(({ categoryId, categoryDisplayName, disabled, permissionType }) => (
-                        <React.Fragment key={categoryId}>
-                            <Grid item xs={6}>
-                                <Typography>{categoryDisplayName}</Typography>
+                    {categoriesCheckboxProps.map(({ categoryId, categoryDisplayName, disabled, permissionType, entityTemplates }) => (
+                        <>
+                            <CategoryCheckboxPermission
+                                categoryDisplayName={categoryDisplayName}
+                                viewMode={viewMode}
+                                disabled={disabled}
+                                permissionType={permissionType}
+                                key={categoryId}
+                                formikProps={formikProps}
+                                entityTemplates={entityTemplates}
+                                permissionsPath={permissionsPath}
+                                categoryId={categoryId}
+                                workspaceId={workspaceId}
+                            />
+                            <Grid item xs={12}>
+                                <Divider sx={{ opacity: 0.5 }} />
                             </Grid>
-                            <Grid item xs={3}>
-                                {viewMode ? (
-                                    <PermissionViewIcon checked={permissionType.read.checked} />
-                                ) : (
-                                    <MeltaCheckbox
-                                        checked={permissionType.read.checked}
-                                        onChange={permissionType.read.onChange}
-                                        disabled={disabled || permissionType.write.checked}
-                                    />
-                                )}
-                            </Grid>
-                            <Grid item xs={3}>
-                                {viewMode ? (
-                                    <PermissionViewIcon checked={permissionType.write.checked} />
-                                ) : (
-                                    <MeltaCheckbox
-                                        checked={permissionType.write.checked}
-                                        onChange={permissionType.write.onChange}
-                                        disabled={disabled}
-                                    />
-                                )}
-                            </Grid>
-                        </React.Fragment>
+                        </>
                     ))}
                 </Grid>
             </CardContent>

@@ -1,5 +1,5 @@
 /* eslint-disable no-param-reassign */
-import Excel from 'exceljs';
+import Excel, { Cell } from 'exceljs';
 import { v4 as uuidv4 } from 'uuid';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../externalServices/templates/entityTemplateService';
 import { IEntity } from '../../externalServices/instanceService/interfaces/entities';
@@ -151,6 +151,11 @@ const createWorksheet = async (
             const type = TypesToHebrew(Object.values(properties).find((propertyTemplate) => propertyTemplate.title === cell.value)!);
             cell.note = type;
         }
+        cell.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FFA7C7E7' },
+        };
     });
     return worksheet;
 };
@@ -194,6 +199,15 @@ const fixComplexProperties = (
     return false;
 };
 
+const readOnlyCell = (cell: Cell, edit: boolean = true) => {
+    cell.protection = { locked: edit };
+    cell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FFD3D3D3' },
+    };
+};
+
 const styleAWorksheet = (
     worksheet: Excel.Worksheet,
     rows: IEntity['properties'][],
@@ -206,11 +220,12 @@ const styleAWorksheet = (
     worksheet.getRow(1).eachCell((cell) => {
         cell.font = excelStyle.columnHeader.font;
         cell.alignment = excelStyle.columnHeader.alignment;
+        cell.protection = { locked: true };
     });
     const { properties } = template.properties;
     const { createdAt, updatedAt, disabled } = template;
 
-    const allProperties: Record<string, any> = Object.entries({ ...properties, disabled, createdAt, updatedAt })
+    const allProperties: Record<string, IEntitySingleProperty> = Object.entries({ ...properties, disabled, createdAt, updatedAt })
         .filter(([key]) => displayColumns?.includes(key))
         .reduce((acc, [key, value]) => {
             acc[key] = value;
@@ -221,6 +236,9 @@ const styleAWorksheet = (
         rows.forEach((row, index) => {
             const rowIndex = index + skip;
             const cell = worksheet.getCell(`${indexToExcelColumn(columnIndex + 1)}${rowIndex + SKIP_ROW_HEADER}`);
+            if (value.readOnly || value.identifier || value.serialStarter || row.disabled || disabled || !isIncludedColumn(value)) {
+                readOnlyCell(cell);
+            } else cell.protection = { locked: false };
             if (row[key] !== undefined && value !== undefined) {
                 cell.alignment = excelStyle.cell.alignment;
                 cell.font = excelStyle.cell.font;
@@ -231,6 +249,12 @@ const styleAWorksheet = (
 
                     if (typeof cell.value === 'boolean') {
                         cell.value = cell.value ? excelConfig.TRUE_TO_HEBREW : excelConfig.FALSE_TO_HEBREW;
+                    }
+                    if (value.format === 'user') {
+                        cell.value = JSON.parse(cell.value as string).fullName;
+                    }
+                    if (value.items?.format === 'user') {
+                        cell.value = (cell.value as any).map((stringUser) => JSON.parse(stringUser).fullName).join(', ');
                     }
                     // Check if value is date
                     if (cell.value && typeof cell.value === 'string') {
@@ -253,21 +277,43 @@ const styleAWorksheet = (
                         cell.value = String(cell.value).replace(/<[^>]*>/g, '');
                         cell.alignment = { vertical: 'top' };
                     }
+                    if (value.type === 'number') cell.value = row[key].toString();
 
-                    // Check if value is simple list
-                    if (!headersOnly)
+                    if (!headersOnly) {
+                        // Check if value is simple list
                         if (value.type === 'string' && value.enum) {
                             if (template?.enumPropertiesColors?.[key]?.[row?.[key]])
                                 cell.font = { ...excelStyle.cell.font, color: { argb: hexToARGB(template.enumPropertiesColors[key][row[key]]) } };
                         }
-
-                    // Check if value is multiple list
-                    if (!headersOnly)
+                        // Check if value is multiple list
                         if (value.type === 'array' && value.items?.type === 'string' && value.items.enum) cell.value = row[key].join(', ');
+                    }
                 }
             }
         });
     });
+    Object.entries(allProperties).forEach(([_key, value], columnIndex) => {
+        if (value.archive) worksheet.getColumn(columnIndex + 1).hidden = true;
+    });
+
+    worksheet
+        .protect('mypassword', {
+            selectLockedCells: true,
+            selectUnlockedCells: true,
+            formatCells: false,
+            formatColumns: false,
+            formatRows: false,
+            insertColumns: false,
+            insertRows: false,
+            deleteColumns: false,
+            deleteRows: false,
+        })
+        .then(() => {
+            console.log('Worksheet is protected');
+        })
+        .catch((error) => {
+            console.error('Error protecting worksheet:', error);
+        });
 };
 
-export { createWorkbook, createWorksheet, styleAWorksheet, fixComplexProperties };
+export { createWorkbook, createWorksheet, styleAWorksheet };

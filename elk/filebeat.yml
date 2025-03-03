@@ -5,4 +5,4 @@ filebeat.inputs:
       - /var/log/test/*.log
 
 output.logstash:
-  hosts: ['logstash:5044']
+  hosts: ["logstash:5044"]

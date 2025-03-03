@@ -47,10 +47,11 @@ export class RabbitManager {
         });
     }
 
-    async deleteFiles(templateId: string, entityId: string, minioFileIds: string[]) {
-        const fileData = { templateId, entityId, minioFileIds };
-        await menash.send(rabbit.deleteDocsSemanticQueue, fileData, { headers: { [workspaceIdHeaderName]: this.workspaceId } }).catch((err) => {
-            logger.error('Failed at deleting file', err);
-        });
+    async deleteFiles(minioFileIds: string[]) {
+        await menash
+            .send(rabbit.deleteDocsSemanticQueue, { minioFileIds }, { headers: { [workspaceIdHeaderName]: this.workspaceId } })
+            .catch((err) => {
+                logger.error('Failed at deleting file', err);
+            });
     }
 }

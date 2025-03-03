@@ -4,11 +4,12 @@ import config from '../../config';
 import { ISearchIFramesBody } from '../../externalServices/iFramesService';
 import { StorageService } from '../../externalServices/storageService';
 import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
-import { removeTmpFile } from '../../utils/fs';
 import { DefaultManagerMongo } from '../../utils/mongo/manager';
 import { ServiceError } from '../error';
 import { IFrame, IFrameDocument } from './interface';
 import IFrameSchema from './model';
+import { UploadedFile } from '../../utils/busboy/interface';
+import { escapeRegExp } from '../../utils/regex';
 
 export class IFrameManager extends DefaultManagerMongo<IFrameDocument> {
     private storageService: StorageService;
@@ -22,10 +23,6 @@ export class IFrameManager extends DefaultManagerMongo<IFrameDocument> {
         return allIFrames.filter((iFrame) => iFrame.categoryIds.every((categoryId) => allowedCategories.includes(categoryId)));
     }
 
-    escapeRegExp(text: string) {
-        return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
-    }
-
     async searchIFrames(
         { search, limit, skip, ids }: ISearchIFramesBody,
         permissionsOfUserId: RequestWithPermissionsOfUserId['permissionsOfUserId'],
@@ -34,7 +31,7 @@ export class IFrameManager extends DefaultManagerMongo<IFrameDocument> {
 
         const query: FilterQuery<IFrameDocument> = {};
         if (search) {
-            const searchRegex = { $regex: this.escapeRegExp(search), $options: 'i' };
+            const searchRegex = { $regex: escapeRegExp(search), $options: 'i' };
             query.$or = [{ name: searchRegex }, { url: searchRegex }];
         }
         if (ids) query._id = { $in: ids.map((id) => new Types.ObjectId(id)) };
@@ -54,11 +51,10 @@ export class IFrameManager extends DefaultManagerMongo<IFrameDocument> {
         return this.model.findById(iFrameId).orFail(new ServiceError(StatusCodes.NOT_FOUND, 'IFrame not found')).lean().exec();
     }
 
-    async createIFrame(iFrameData: Omit<IFrame, 'iconFileId'>, file?: Express.Multer.File) {
+    async createIFrame(iFrameData: Omit<IFrame, 'iconFileId'>, file?: UploadedFile) {
         let newIFrame: IFrame;
         if (file) {
             const newFileId = await this.storageService.uploadFile(file);
-            await removeTmpFile(file.path);
             newIFrame = { ...iFrameData, iconFileId: newFileId };
         } else newIFrame = { ...iFrameData, iconFileId: null };
 
@@ -82,7 +78,7 @@ export class IFrameManager extends DefaultManagerMongo<IFrameDocument> {
             .exec();
     }
 
-    async updateIFrame(iFrameId: string, updatedData: Partial<IFrame> & { file?: string }, file?: Express.Multer.File) {
+    async updateIFrame(iFrameId: string, updatedData: Partial<IFrame> & { file?: string }, file?: UploadedFile) {
         const { iconFileId } = await this.getIFrameById(iFrameId);
         let updatedIFrame: IFrame;
 
@@ -92,7 +88,6 @@ export class IFrameManager extends DefaultManagerMongo<IFrameDocument> {
             }
 
             const newFileId = await this.storageService.uploadFile(file);
-            await removeTmpFile(file.path);
 
             updatedIFrame = await this.update(iFrameId, { ...updatedData, iconFileId: newFileId });
         } else if (iconFileId && !updatedData.iconFileId) {

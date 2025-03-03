@@ -9,10 +9,10 @@ import { RelationshipTemplatesRow } from './components/RelationshipTemplatesRow'
 import { RulesRow } from './components/RulesRow';
 import { ProcessTemplatesRow } from './components/ProcessTemplates/ProcessTemplatesRow';
 import '../../css/pages.css';
-import { NoPermissions } from './components/NoPermissions';
 import { useUserStore } from '../../stores/user';
 import { PermissionScope } from '../../interfaces/permissions';
 import { useSearchParams } from '../../utils/hooks/useSearchParams';
+import { ConfigurationManagement } from './components/ConfigurationManagement';
 
 const SystemManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> }> = ({ setTitle }) => {
     const theme = useTheme();
@@ -31,6 +31,7 @@ const SystemManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateAction
         relationshipTemplates: <RelationshipTemplatesRow />,
         rules: <RulesRow />,
         processTemplates: <ProcessTemplatesRow />,
+        configurationManagement: <ConfigurationManagement />,
     };
 
     const tabsPermissionsMapping: Record<string, boolean> = {
@@ -49,6 +50,7 @@ const SystemManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateAction
         processTemplates:
             currentUser.currentWorkspacePermissions.processes?.scope === PermissionScope.write ||
             currentUser.currentWorkspacePermissions.admin?.scope === PermissionScope.write,
+        configurationManagement: !!currentUser.currentWorkspacePermissions.admin,
     };
 
     useEffect(() => {
@@ -58,6 +60,8 @@ const SystemManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateAction
             href: tabPath,
         });
     }, [tabValue, trackPageView]);
+
+    const defaultTabs = Object.keys(tabsComponentsMapping).filter((tabName) => tabsPermissionsMapping[tabName]);
 
     return (
         <Box
@@ -72,7 +76,7 @@ const SystemManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateAction
                 <Grid container direction="column">
                     <Grid item>
                         <TabList onChange={(_event, newValue) => setSearchParams({ tab: newValue })} scrollButtons="auto" variant="scrollable">
-                            {Object.keys(tabsComponentsMapping).map((tabName) => (
+                            {defaultTabs.map((tabName) => (
                                 <Tab
                                     key={tabName}
                                     label={i18next.t(tabName)}
@@ -94,7 +98,7 @@ const SystemManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateAction
                         {Object.entries(tabsComponentsMapping).map(([tabName, tabComponent]) => {
                             return (
                                 <TabPanel key={tabName} value={tabName}>
-                                    {tabsPermissionsMapping[tabName] ? tabComponent : <NoPermissions />}
+                                    {tabComponent}
                                 </TabPanel>
                             );
                         })}

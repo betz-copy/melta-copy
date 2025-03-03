@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import { Divider, Grid, Typography, useTheme } from '@mui/material';
+import { ScatterPlotOutlined as HiveIcon } from '@mui/icons-material';
 import i18next from 'i18next';
 import { ViewingCard } from '../Card';
 import { IMongoProcessTemplatePopulated } from '../../../../interfaces/processes/processTemplate';
 import { CardMenu } from '../CardMenu';
 import { CustomIcon } from '../../../../common/CustomIcon';
 import { MeltaTooltip } from '../../../../common/MeltaTooltip';
-import { environment } from '../../../../globals';
 import { ProcessProperties } from './ProcessProperties';
 import { ProcessStep } from './ProcessStep';
+import { useWorkspaceStore } from '../../../../stores/workspace';
 
 interface ProcessTemplateCardProps {
     processTemplate: IMongoProcessTemplatePopulated;
@@ -31,6 +32,8 @@ export const ProcessTemplateCard: React.FC<ProcessTemplateCardProps> = ({
     setProcessTemplateWizardDialogState,
     setDeleteProcessTemplateDialogState,
 }) => {
+    const workspace = useWorkspaceStore((state) => state.workspace);
+
     const theme = useTheme();
     const [isHoverOnCard, setIsHoverOnCard] = useState(false);
 
@@ -53,7 +56,7 @@ export const ProcessTemplateCard: React.FC<ProcessTemplateCardProps> = ({
                             <MeltaTooltip title={processTemplate.displayName}>
                                 <Typography
                                     style={{
-                                        fontSize: environment.mainFontSizes.headlineSubTitleFontSize,
+                                        fontSize: workspace.metadata.mainFontSizes.headlineSubTitleFontSize,
                                         color: theme.palette.primary.main,
                                         fontWeight: '400',
                                         textOverflow: 'ellipsis',
@@ -69,6 +72,7 @@ export const ProcessTemplateCard: React.FC<ProcessTemplateCardProps> = ({
                         <Grid item container flexBasis="10%">
                             {isHoverOnCard && (
                                 <CardMenu
+                                    onOptionsIconClose={() => setIsHoverOnCard(false)}
                                     onEditClick={() => {
                                         setProcessTemplateWizardDialogState({ isWizardOpen: true, processTemplate });
                                     }}
@@ -82,8 +86,10 @@ export const ProcessTemplateCard: React.FC<ProcessTemplateCardProps> = ({
                     <Grid item container flexDirection="row" gap="20px">
                         {processTemplate.steps.map((step) => (
                             <Grid key={step._id} item container alignItems="center" gap="10px" width="fit-content">
-                                {step.iconFileId && (
+                                {step.iconFileId ? (
                                     <CustomIcon iconUrl={step.iconFileId} height="24px" width="24px" color={theme.palette.primary.main} />
+                                ) : (
+                                    <HiveIcon sx={{ color: theme.palette.primary.main }} height="24px" width="24px" />
                                 )}
                                 <MeltaTooltip title={step.displayName}>
                                     <Typography

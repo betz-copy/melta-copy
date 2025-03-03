@@ -31,7 +31,6 @@ import { PermissionType } from '../../externalServices/userService/interfaces/pe
 import { trycatch } from '../../utils';
 import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
 import DefaultManagerProxy from '../../utils/express/manager';
-import { removeTmpFile } from '../../utils/fs';
 import { BadRequestError, NotFoundError, ServiceError } from '../error';
 import ProcessTemplatesManager from '../processes/processTemplates/manager';
 import { UsersManager } from '../users/manager';
@@ -46,6 +45,7 @@ import { IMongoRule, IRule } from './rules/interfaces';
 import { IFormula } from './rules/interfaces/formula';
 import { GanttsService } from '../../externalServices/ganttsService';
 import { checkPropertyInUsedFromFormula } from './rules/checkIfPropertyInUsed';
+import { UploadedFile } from '../../utils/busboy/interface';
 import { IRelationship } from '../../externalServices/instanceService/interfaces/relationships';
 import { buildNewRelationshipField, validateNoDependentRules, validateRequiredConstraints, validateUniqueRelationships } from '../../utils/templates';
 
@@ -279,13 +279,12 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
     // categories
     async getAllCategories() {
-        return this.entityTemplateService.getAllCategories();
+        return this.entityTemplateService.searchCategories();
     }
 
-    async createCategory(categoryData: Omit<ICategory, 'iconFileId'>, file?: Express.Multer.File) {
+    async createCategory(categoryData: Omit<ICategory, 'iconFileId'>, file?: UploadedFile) {
         if (file) {
             const newFileId = await this.storageService.uploadFile(file);
-            await removeTmpFile(file.path);
             return this.entityTemplateService.createCategory({ ...categoryData, iconFileId: newFileId });
         }
 
@@ -314,7 +313,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         ).catch(() => {});
     }
 
-    async updateCategory(id: string, updatedData: Partial<ICategory> & { file?: string }, file?: Express.Multer.File) {
+    async updateCategory(id: string, updatedData: Partial<ICategory> & { file?: string }, file?: UploadedFile) {
         const { iconFileId } = await this.entityTemplateService.getCategoryById(id);
 
         if (file) {
@@ -323,7 +322,6 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             }
 
             const newFileId = await this.storageService.uploadFile(file);
-            await removeTmpFile(file.path);
 
             return this.entityTemplateService.updateCategory(id, { ...updatedData, iconFileId: newFileId });
         }
@@ -395,20 +393,36 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         return searchResults.filter((rule) => allowedEntityTemplatesIds.includes(rule.entityTemplateId));
     }
 
+    validateConstraintsProperties = (properties: Record<string, IEntitySingleProperty>, requiredConstraints: string[]) => {
+        let identifier;
+        Object.entries(properties).forEach(([key, value]) => {
+            if (value.readOnly && requiredConstraints.includes(key)) throw new BadRequestError(`${key} property can't be both readOnly and required`);
+            if (value.archive && requiredConstraints.includes(key)) throw new BadRequestError(`${key} property can't be both archive and required`);
+            if (value.identifier) {
+                if (identifier) throw new BadRequestError(`can't be more than one identifier: ${key}, ${identifier}`);
+                identifier = key;
+                if (!requiredConstraints.includes(key)) throw new BadRequestError(`${key} property identifier has to be required`);
+            }
+            if (value.serialCurrent && !requiredConstraints.includes(key))
+                throw new BadRequestError(`${key} property serial number has to be required`);
+        });
+    };
+
     async createEntityTemplate(
         templateData: Omit<IEntityTemplateWithConstraints, 'iconFileId' | 'documentTemplatesIds'>,
-        { file, files }: { file?: [Express.Multer.File]; files?: Express.Multer.File[] },
+        { file, files }: { file?: [UploadedFile]; files?: UploadedFile[] },
     ): Promise<IMongoEntityTemplateWithConstraintsPopulated> {
         await this.entityTemplateService.getCategoryById(templateData.category);
         let iconFileId: string | null;
 
         if (file) {
             iconFileId = await this.storageService.uploadFile(file[0]);
-            await removeTmpFile(file[0].path);
         } else iconFileId = null;
 
         const { uniqueConstraints, properties, ...restOfTemplateData } = templateData;
         const { required: requiredConstraints, ...restOfTemplatePropertiesObject } = properties;
+
+        this.validateConstraintsProperties(restOfTemplatePropertiesObject.properties, requiredConstraints);
 
         const entityTemplate = await this.entityTemplateService.createEntityTemplate({
             ...restOfTemplateData,
@@ -510,12 +524,12 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         return updatedTemplateData;
     }
 
-    private async isPropertyOfTemplateInUsedInRules(templateId: string, properties: string[]) {
+    private async isPropertyOfTemplateInUsedInRules(templateId: string, properties: string[], archive: boolean) {
         const allRules = await this.relationshipTemplateService.searchRules({});
-        return allRules.forEach((rule) => checkPropertyInUsedFromFormula(rule.formula, templateId, properties));
+        return allRules.forEach((rule) => checkPropertyInUsedFromFormula(rule.formula, templateId, properties, archive));
     }
 
-    private async isPropertyOfTemplateInUsedInGantts(entityTemplateId: string, properties: string[]) {
+    private async isPropertyOfTemplateInUsedInGantts(entityTemplateId: string, properties: string[], archive: boolean) {
         const [sourceRelationShipTemplatesIDs, destinationRelationShipTemplatesIDs] = await Promise.all([
             this.relationshipTemplateService.searchRelationshipTemplates({ sourceEntityIds: [entityTemplateId] }),
             this.relationshipTemplateService.searchRelationshipTemplates({ destinationEntityIds: [entityTemplateId] }),
@@ -552,7 +566,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
                     if (isFieldUsed)
                         throw new BadRequestError('can not delete field that used in gantts', {
-                            errorCode: config.errorCodes.failedToDeleteField,
+                            errorCode: archive ? config.errorCodes.failedToArchiveField : config.errorCodes.failedToDeleteField,
                             type: 'gantts',
                             property,
                         });
@@ -561,12 +575,12 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         });
     }
 
-    private async checkIfPropertyInUsedBeforeDeleteOrArchive(templateId: string, properties: string[]) {
+    private async checkIfPropertyInUsedBeforeDeleteOrArchive(templateId: string, properties: string[], archive: boolean) {
         if (properties.length)
             await Promise.all([
-                this.isPropertyOfTemplateInUsedInGantts(templateId, properties),
-                this.isPropertyOfTemplateInUsedInRules(templateId, properties),
-                this.isPropertyInUsedAsRelatedFieldInRelationshipReference(templateId, properties),
+                this.isPropertyOfTemplateInUsedInGantts(templateId, properties, archive),
+                this.isPropertyOfTemplateInUsedInRules(templateId, properties, archive),
+                this.isPropertyInUsedAsRelatedFieldInRelationshipReference(templateId, properties, archive),
             ]);
     }
 
@@ -604,7 +618,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         await Promise.all(promises);
     }
 
-    private async isPropertyInUsedAsRelatedFieldInRelationshipReference(templateId: string, properties: string[]) {
+    private async isPropertyInUsedAsRelatedFieldInRelationshipReference(templateId: string, properties: string[], archive: boolean) {
         const allEntityTemplates = await this.entityTemplateService.searchEntityTemplates();
 
         allEntityTemplates.forEach((entityTemplate) => {
@@ -615,7 +629,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
                     properties.includes(relationshipReference?.relatedTemplateField)
                 ) {
                     throw new BadRequestError('that field is used as relationship reference field', {
-                        errorCode: config.errorCodes.failedToDeleteField,
+                        errorCode: archive ? config.errorCodes.failedToArchiveField : config.errorCodes.failedToDeleteField,
                         type: 'relationshipReference',
                         property: relationshipReference?.relatedTemplateField,
                         relatedTemplateName: entityTemplate.name,
@@ -633,15 +647,18 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
     ) {
         if (!removedProperties.length) return;
 
-        const removedFilesProperties = removedProperties.reduce((acc, propertyToRemove) => {
-            const { format, items } = currentTemplate.properties.properties[propertyToRemove];
+        const removedFilesProperties = removedProperties.reduce(
+            (acc, propertyToRemove) => {
+                const { format, items } = currentTemplate.properties.properties[propertyToRemove];
 
-            if (format === 'fileId' || items?.format === 'fileId') {
-                acc[propertyToRemove] = items?.format === 'fileId';
-            }
+                if (format === 'fileId' || items?.format === 'fileId') {
+                    acc[propertyToRemove] = items?.format === 'fileId';
+                }
 
-            return acc;
-        }, {} as Record<string, boolean>);
+                return acc;
+            },
+            {} as Record<string, boolean>,
+        );
 
         if (Object.keys(removedFilesProperties).length) {
             await this.deleteFilesOfDeletedProperty(id, removedFilesProperties, count);
@@ -674,14 +691,13 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
     private async handleFiles(
         updatedTemplateData: Omit<IEntityTemplateWithConstraints, 'disabled'> & { file?: string },
         currTemplate: IMongoEntityTemplatePopulated,
-        { file, files }: { file?: [Express.Multer.File]; files?: Express.Multer.File[] },
+        { file, files }: { file?: [UploadedFile]; files?: UploadedFile[] },
     ) {
         let iconFileId: string | null;
 
         if (file) {
             if (currTemplate.iconFileId) await this.storageService.deleteFile(currTemplate.iconFileId);
             iconFileId = await this.storageService.uploadFile(file[0]);
-            await removeTmpFile(file[0].path);
         } else if (currTemplate.iconFileId && !updatedTemplateData.iconFileId) {
             await this.storageService.deleteFile(currTemplate.iconFileId);
             iconFileId = null;
@@ -707,15 +723,20 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
     async updateEntityTemplate(
         id: string,
         updatedTemplateData: Omit<IEntityTemplateWithConstraints, 'disabled'> & { file?: string },
-        { file, files }: { file?: [Express.Multer.File]; files?: Express.Multer.File[] },
+        { file, files }: { file?: [UploadedFile]; files?: UploadedFile[] },
     ): Promise<IMongoEntityTemplateWithConstraintsPopulated> {
         await this.entityTemplateService.getCategoryById(updatedTemplateData.category);
 
         const { count } = await this.instancesService.searchEntitiesOfTemplateRequest(id, { limit: 1 });
         const currTemplate = await this.entityTemplateService.getEntityTemplateById(id);
+        const { uniqueConstraints: currUnique } = await this.instancesService.getConstraintsOfTemplate(id);
 
         const populatedTemplates = await this.getAndPopulateAllTemplatesConstraints([currTemplate]);
         const [populatedCurrTemplate] = populatedTemplates;
+
+        const { required, ...currProperties } = populatedCurrTemplate.properties;
+
+        this.validateConstraintsProperties(currProperties.properties, required);
 
         if (currTemplate.disabled === true) throw new BadRequestError('can not update disabled template');
 
@@ -727,41 +748,61 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         );
 
         if (removeRequiredProperties.length > 0)
-            this.isPropertyInUsedAsRelatedFieldInRelationshipReference(currTemplate._id, removeRequiredProperties);
+            await this.isPropertyInUsedAsRelatedFieldInRelationshipReference(currTemplate._id, removeRequiredProperties, false);
 
         const removedProperties: string[] = [];
         const archiveProperties: string[] = [];
+        const propertiesKeysToPluralize: string[] = [];
 
         if (count > 0) {
             if (updatedTemplateData.name !== currTemplate.name) throw new BadRequestError('can not change template name');
 
             Object.entries(currTemplate.properties.properties).forEach(([key, value]) => {
                 const newValue = updatedTemplateData.properties.properties[key];
-
                 if ((!newValue || newValue?.isNewPropNameEqualDeletedPropName) && !currTemplate.actions) removedProperties.push(key);
                 else {
+                    const isSingularToPlural =
+                        (value.format === 'fileId' && newValue.items?.format === 'fileId') || (value.enum && newValue.items?.enum);
+
                     if (value.serialCurrent !== undefined) updatedTemplateData.properties.properties[key].serialCurrent = value.serialCurrent;
-                    if (value.type !== newValue.type) throw new BadRequestError('can not change property type');
-                    if (!value.archive && newValue.archive && !currTemplate.actions) archiveProperties.push(key);
+                    if (
+                        !currUnique.some((uniqueConstraint) => uniqueConstraint.properties.includes(key)) &&
+                        updatedTemplateData.uniqueConstraints.some((uniqueConstraint) => uniqueConstraint.properties.includes(key))
+                    )
+                        throw new BadRequestError('can`t add unique constraints to property that already used');
+
+                    if (value.type !== newValue.type && !isSingularToPlural) throw new BadRequestError('can not change property type');
+
                     if (
                         !(
                             (value.format === 'text-area' && !newValue.format && newValue.type === 'string') ||
                             (!value.format && value.type === 'string' && newValue.format === 'text-area') ||
-                            value.format === newValue.format
+                            value.format === newValue.format ||
+                            isSingularToPlural
                         )
                     )
                         throw new BadRequestError('can not change property format');
-                    if (value.enum && !value.enum?.every((val) => newValue.enum?.includes(val)))
+                    if (value.enum && newValue.enum && !value.enum?.every((val) => newValue.enum?.includes(val)))
                         throw new BadRequestError('can not remove options from enum');
                     if (value.serialStarter !== newValue.serialStarter) throw new BadRequestError('can not change property serial starter');
                     if (value.relationshipReference && !_isEqual(value.relationshipReference, newValue.relationshipReference))
                         throw new BadRequestError('can not change relationship reference fields');
+                    if (!value.archive && newValue.archive && !currTemplate.actions) archiveProperties.push(key);
+                    if (isSingularToPlural) propertiesKeysToPluralize.push(key);
                 }
             });
+
+            const newProperties = Object.keys(updatedTemplateData.properties.properties).filter(
+                (property) => !currProperties.properties[property] && !removedProperties.includes(property),
+            );
+
+            const updatedProperties = updatedTemplateData.properties.properties;
+            if (newProperties.some((property) => updatedProperties[property].identifier && updatedProperties[property].serialStarter === undefined))
+                throw new BadRequestError('can not add identifier fields because there are existing instances');
         }
 
-        await this.checkIfPropertyInUsedBeforeDeleteOrArchive(id, removedProperties);
-        await this.checkIfPropertyInUsedBeforeDeleteOrArchive(id, archiveProperties);
+        await this.checkIfPropertyInUsedBeforeDeleteOrArchive(id, removedProperties, false);
+        await this.checkIfPropertyInUsedBeforeDeleteOrArchive(id, archiveProperties, true);
 
         const { iconFileId, documentTemplatesIds } = await this.handleFiles(updatedTemplateData, currTemplate, { file, files });
 
@@ -787,6 +828,15 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         });
 
         await this.deletePropertyOfEntityTemplate(id, count, removedProperties, currTemplate);
+
+        try {
+            if (propertiesKeysToPluralize.length > 0) await this.instancesService.convertFieldsToPlural(id, propertiesKeysToPluralize);
+        } catch (error) {
+            logger.error('Neo4j update failed: starting roll-back', { error });
+            const restOfEntityTemplate: Omit<IEntityTemplatePopulated, 'disabled'> = this.removeBasicFields(currTemplate);
+            await this.handleTemplateConversionRollback(id, restOfEntityTemplate);
+            throw new ServiceError(internalServerErrorStatus, 'Neo4j update failed: starting roll-back', { error });
+        }
 
         await this.instancesService.updateConstraintsOfTemplate(id, {
             uniqueConstraints,
@@ -838,6 +888,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         const curentTemplateEnum = template.properties.properties[values.name].enum || values.options;
         let templateEnumFieldValues = [...curentTemplateEnum];
         if (update) templateEnumFieldValues[valueIndex] = field;
+        // eslint-disable-next-line @typescript-eslint/no-shadow
         else templateEnumFieldValues = templateEnumFieldValues.filter((_, index) => valueIndex !== index);
         const templateWithoutProperties: Omit<IEntityTemplatePopulated, 'disabled'> = this.removeBasicFields(template);
         if (template.enumPropertiesColors?.[values.name]?.[fieldValue] !== undefined) {
@@ -902,14 +953,17 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         }
     }
 
-    async handleConversionRollback(
+    async handleTemplateConversionRollback(
         entityTemplateId: string,
-        currentRelationshipTemplate: IMongoRelationshipTemplate,
         rollBackTemplateWithoutProperties: Omit<IEntityTemplatePopulated, 'disabled'>,
+        currentRelationshipTemplate?: IMongoRelationshipTemplate,
+        allowToDeleteRelationshipFields: boolean = true,
     ) {
         try {
-            const { createdAt, updatedAt, _id, ...restRelationshipTemplate } = currentRelationshipTemplate;
-            await this.relationshipTemplateService.updateRelationshipTemplate(_id, restRelationshipTemplate);
+            if (currentRelationshipTemplate) {
+                const { createdAt, updatedAt, _id, ...restRelationshipTemplate } = currentRelationshipTemplate;
+                await this.relationshipTemplateService.updateRelationshipTemplate(_id, restRelationshipTemplate);
+            }
 
             await this.entityTemplateService.updateEntityTemplate(
                 entityTemplateId,
@@ -917,10 +971,10 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
                     ...rollBackTemplateWithoutProperties,
                     category: rollBackTemplateWithoutProperties.category._id,
                 },
-                false,
+                allowToDeleteRelationshipFields,
             );
 
-            logger.info('RollBack mongoDB succeeded', { rollBackTemplateWithoutProperties, restRelationshipTemplate });
+            logger.info('RollBack mongoDB succeeded');
         } catch (error) {
             throw new ServiceError(internalServerErrorStatus, 'RollBack mongoDB update failed', { error });
         }
@@ -1134,7 +1188,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
                 await this.instancesService.convertToRelationshipField(existingRelationships, addFieldToSrcEntity, fieldName, userId);
         } catch (error) {
             logger.error('Neo4j update failed: starting roll-back', { error });
-            await this.handleConversionRollback(entityIdToUpdate, currentRelationshipTemplate, restOfEntityTemplate);
+            await this.handleTemplateConversionRollback(entityIdToUpdate, restOfEntityTemplate, currentRelationshipTemplate, false);
             throw new ServiceError(internalServerErrorStatus, 'Neo4j update failed: starting roll-back', { error });
         }
         return { updatedRelationShipTemplate, updatedEntityTemplate };

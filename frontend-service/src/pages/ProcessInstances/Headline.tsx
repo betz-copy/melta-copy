@@ -1,19 +1,15 @@
 import React, { Dispatch, SetStateAction } from 'react';
-import { Grid, IconButton, Typography, useTheme } from '@mui/material';
+import { Grid, Typography, useTheme } from '@mui/material';
 import { Add as AddIcon } from '@mui/icons-material';
 import i18next from 'i18next';
-import FilterAltOffIcon from '@mui/icons-material/FilterAltOff';
 import { TopBarGrid } from '../../common/TopBar';
 import { BlueTitle } from '../../common/BlueTitle';
-import { GlobalSearchBar } from '../../common/EntitiesPage/Headline';
-import ProcessTemplatesSelectCheckbox from './ProcessTemplatesCheckbox';
 import { AddProcessButton } from './AddProcessButton';
 import { IMongoProcessTemplatePopulated } from '../../interfaces/processes/processTemplate';
 import './ProcessesList.css';
-import DateRange from '../../common/inputs/DateRange';
-import { environment } from '../../globals';
 import { useUserStore } from '../../stores/user';
 import { PermissionScope } from '../../interfaces/permissions';
+import { useWorkspaceStore } from '../../stores/workspace';
 
 const ProcessInstancesHeadline: React.FC<{
     onSearch: (value: string) => void;
@@ -27,7 +23,9 @@ const ProcessInstancesHeadline: React.FC<{
     startDateInput: Date | null;
     endDateInput: Date | null;
     searchInput: string;
-}> = ({ onSearch, onSetStartDate, onSetEndDate, templatesSelectCheckboxProps, startDateInput, endDateInput, searchInput }) => {
+}> = () => {
+    const workspace = useWorkspaceStore((state) => state.workspace);
+
     const theme = useTheme();
 
     const currentUser = useUserStore((state) => state.user);
@@ -41,50 +39,8 @@ const ProcessInstancesHeadline: React.FC<{
                             title={i18next.t('pages.processInstances')}
                             component="h4"
                             variant="h4"
-                            style={{ fontSize: environment.mainFontSizes.headlineTitleFontSize }}
+                            style={{ fontSize: workspace.metadata.mainFontSizes.headlineTitleFontSize }}
                         />
-                    </Grid>
-                    <Grid item>
-                        <Grid container wrap="nowrap" gap="15px">
-                            <Grid item>
-                                <ProcessTemplatesSelectCheckbox
-                                    templates={templatesSelectCheckboxProps.templates}
-                                    selectedTemplates={templatesSelectCheckboxProps.templatesToShow}
-                                    setSelectedTemplates={templatesSelectCheckboxProps.setTemplatesToShow}
-                                />
-                            </Grid>
-                            <Grid item>
-                                <GlobalSearchBar
-                                    inputValue={searchInput}
-                                    setInputValue={onSearch}
-                                    onSearch={onSearch}
-                                    borderRadius="7px"
-                                    placeholder={i18next.t('globalSearch.searchInPage')}
-                                    toTopBar
-                                />
-                            </Grid>
-                        </Grid>
-                    </Grid>
-                    <Grid item>
-                        <DateRange
-                            onStartDateChange={onSetStartDate}
-                            onEndDateChange={onSetEndDate}
-                            startDateInput={startDateInput}
-                            endDateInput={endDateInput}
-                            directionIsRow
-                        />
-                    </Grid>
-                    <Grid item>
-                        <IconButton
-                            onClick={() => {
-                                onSetStartDate(null);
-                                onSetEndDate(null);
-                                onSearch('');
-                            }}
-                            sx={{ borderRadius: 10, height: '35px', width: '35px' }}
-                        >
-                            <FilterAltOffIcon />
-                        </IconButton>
                     </Grid>
                 </Grid>
             </Grid>

@@ -4,6 +4,7 @@ import config from './config';
 import Server from './express/server';
 import ElasticClient from './utils/elastic';
 import logger from './utils/logger/logsLogger';
+import initializeRabbit from './utils/rabbit';
 
 const { mongo, service } = config;
 
@@ -24,6 +25,8 @@ const initializeElasticsearch = async () => {
 };
 
 const main = async () => {
+    await initializeRabbit();
+
     await initializeMongo();
 
     await initializeElasticsearch();

@@ -216,11 +216,40 @@ export const deleteRelationshipSchema = Joi.object({
 export const loadEntitiesSchema = Joi.object({
     body: {
         file: excelTemplateSchema,
-        insertBrokenEntities: {
-            entitiesToCreate: Joi.array().items({ templateId: Joi.string(), properties: Joi.object() }).default([]),
-            ignoredRules: Joi.array().items(brokenRuleSchema).default([]),
-        },
+        insertBrokenEntities: ExtendedJoi.stringToArray(
+            Joi.array()
+                .items(
+                    Joi.object({
+                        templateId: Joi.string().required(),
+                        properties: Joi.object().required(),
+                        ignoredRules: Joi.array().items(brokenRuleSchema).default([]),
+                    }),
+                )
+                .default([]),
+        ),
         templateId: Joi.string().required(),
     },
     query: {},
+    params: {},
+});
+
+// POST /api/instances/entities/editReadExcel
+export const editReadExcelSchema = Joi.object({
+    body: {
+        file: excelTemplateSchema,
+        templateId: Joi.string().required(),
+    },
+    query: {},
+    params: {},
+});
+
+// POST /api/instances/entities/editExcel
+export const editExcelSchema = Joi.object({
+    body: {
+        templateId: Joi.string().required(),
+        entities: ExtendedJoi.stringToArray({ templateId: Joi.string(), properties: Joi.object() }).default([]),
+        ignoredRules: ExtendedJoi.stringToArray(brokenRuleSchema),
+    },
+    query: {},
+    params: {},
 });

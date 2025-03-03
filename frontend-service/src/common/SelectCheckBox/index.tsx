@@ -1,5 +1,5 @@
 /* eslint-disable no-nested-ternary */
-import { Box, FormControl, Select, useTheme } from '@mui/material';
+import { Box, FormControl, Select, Typography, useTheme } from '@mui/material';
 import lodashUniqby from 'lodash.uniqby';
 import React, { Dispatch, Key, PropsWithChildren, SetStateAction, useCallback, useState } from 'react';
 import { DropResult } from 'react-beautiful-dnd';
@@ -104,6 +104,7 @@ const SelectCheckbox = <Option extends {}, Group extends any = Option>({
     treeFunc,
     onDragEnd,
     setOptions,
+    showIcon,
 }: SelectCheckboxProps<Option, Group>) => {
     const [miniFilterValue, setMiniFilterValue] = useState('');
     const [isOpen, setIsOpen] = useState(false);
@@ -153,7 +154,6 @@ const SelectCheckbox = <Option extends {}, Group extends any = Option>({
         [getOptionId, JSON.stringify(groupsProps), options, treeFunc],
     );
 
-    // eslint-disable-next-line no-nested-ternary
     const borderRadiusStyle = overrideSx ? (isOpen ? '12px 12px 12px 0' : '12px') : isOpen ? '7px 7px 0 0' : '7px';
 
     return (
@@ -191,7 +191,6 @@ const SelectCheckbox = <Option extends {}, Group extends any = Option>({
                         horizontal: overrideSx ? 'center' : horizontalOrigin,
                     },
                 }}
-                // eslint-disable-next-line react/no-unstable-nested-components
                 IconComponent={(params) => CustomExpandMore({ filterIcon, ...params })}
                 size={size}
                 onOpen={() => {
@@ -214,7 +213,10 @@ const SelectCheckbox = <Option extends {}, Group extends any = Option>({
                     boxShadow: toUserProfile ? '0px 3px 10px rgba(0,0,0,0.2)' : 'none',
                     borderRadius: '8px',
                     ...(darkMode
-                        ? { color: theme.palette.primary.main, '& .MuiOutlinedInput-notchedOutline': { borderColor: '#d2d3e3' } }
+                        ? {
+                              color: theme.palette.primary.main,
+                              '& .MuiOutlinedInput-notchedOutline': { borderColor: '#d2d3e3' },
+                          }
                         : {
                               '& .MuiOutlinedInput-notchedOutline': { display: 'none' },
                               background: toTopBar ? '#EBEFFA' : '#FFFFFF',
@@ -230,6 +232,11 @@ const SelectCheckbox = <Option extends {}, Group extends any = Option>({
                 }}
             >
                 {!isSelectDisabled && !hideSearchBar && <Search value={miniFilterValue} onChange={setMiniFilterValue} toTopBar={toTopBar} />}
+                {isSelectDisabled && hideChooseAll ? (
+                    <Typography color={theme.palette.primary.main} fontFamily="Rubik" fontWeight={400} marginX="16px" marginY="8px">
+                        {title}
+                    </Typography>
+                ) : undefined}
 
                 <Tree
                     onDragEnd={({ itemId, newPosition, oldPosition }) => {
@@ -266,6 +273,7 @@ const SelectCheckbox = <Option extends {}, Group extends any = Option>({
                         const filteredOptions = options.filter((option) => ids.includes(getOptionId(option)));
                         setSelectedOptions(filteredOptions);
                     }}
+                    showIcon={showIcon}
                 />
             </Select>
         </FormControl>

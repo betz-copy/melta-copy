@@ -13,6 +13,7 @@ export interface IEntitySingleProperty {
     };
     minItems?: 1;
     readOnly?: true;
+    identifier?: true;
     uniqueItems?: true;
     pattern?: string;
     patternCustomErrorMessage?: string;
@@ -52,6 +53,7 @@ export interface IEntityTemplate {
     actions?: string;
     uniqueConstraints: IUniqueConstraintOfTemplate[];
     documentTemplatesIds?: string[];
+    mapSearchProperties?: string[];
 }
 
 export interface IEntityTemplatePopulated extends Omit<IEntityTemplate, 'category'> {

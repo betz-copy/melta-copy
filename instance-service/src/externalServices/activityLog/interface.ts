@@ -1,3 +1,10 @@
+/* eslint-disable no-shadow */
+export enum ProcessStatus {
+    Pending = 'pending',
+    Approved = 'approved',
+    Rejected = 'rejected',
+}
+
 export interface IUpdatedFields {
     fieldName: string;
     oldValue: any;
@@ -16,6 +23,9 @@ export enum ActionsLog {
     DISABLE_ENTITY = 'DISABLE_ENTITY',
     ACTIVATE_ENTITY = 'ACTIVATE_ENTITY',
     VIEW_ENTITY = 'VIEW_ENTITY',
+    CREATE_PROCESS = 'CREATE_PROCESS',
+    UPDATE_PROCESS = 'UPDATE_PROCESS',
+    UPDATE_PROCESS_STEP = 'UPDATE_PROCESS_STEP',
     DELETE_RELATIONSHIP = 'DELETE_RELATIONSHIP',
     CREATE_RELATIONSHIP = 'CREATE_RELATIONSHIP',
     DUPLICATE_ENTITY = 'DUPLICATE_ENTITY',
@@ -23,7 +33,7 @@ export enum ActionsLog {
 }
 
 interface IEmptyMetadata extends IBaseActivityLog {
-    action: ActionsLog.CREATE_ENTITY | ActionsLog.DISABLE_ENTITY | ActionsLog.ACTIVATE_ENTITY | ActionsLog.VIEW_ENTITY;
+    action: ActionsLog.CREATE_ENTITY | ActionsLog.DISABLE_ENTITY | ActionsLog.ACTIVATE_ENTITY | ActionsLog.VIEW_ENTITY | ActionsLog.CREATE_PROCESS;
     metadata: {};
 }
 
@@ -38,8 +48,13 @@ interface IDuplicateEntityMetadata extends IBaseActivityLog {
 }
 
 interface IUpdateEntityMetadata extends IBaseActivityLog {
-    action: ActionsLog.UPDATE_ENTITY;
+    action: ActionsLog.UPDATE_ENTITY | ActionsLog.UPDATE_PROCESS;
     metadata: { updatedFields: IUpdatedFields[] };
 }
 
-export type IActivityLog = IEmptyMetadata | IRelationshipMetadata | IDuplicateEntityMetadata | IUpdateEntityMetadata;
+export interface IUpdateProcessStepMetadata extends IBaseActivityLog {
+    action: ActionsLog.UPDATE_PROCESS_STEP;
+    metadata: { updatedFields?: IUpdatedFields[]; comments?: string; status?: ProcessStatus };
+}
+
+export type IActivityLog = IEmptyMetadata | IRelationshipMetadata | IDuplicateEntityMetadata | IUpdateEntityMetadata | IUpdateProcessStepMetadata;
