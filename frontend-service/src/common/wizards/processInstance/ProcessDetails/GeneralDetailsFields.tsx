@@ -26,6 +26,7 @@ export const GeneralDetailsFields = ({
         '& .MuiInputBase-root': {
             borderRadius: '10px',
             backgroundColor: viewMode ? 'transparent' : darkMode ? '#4949499e' : 'white',
+            fontSize: '14px',
         },
         '& fieldset': {
             borderColor: '#CCCFE5',

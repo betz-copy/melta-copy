@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useMemo } from 'react';
 import i18next from 'i18next';
 import { Grid } from '@mui/material';
@@ -7,20 +8,44 @@ import TemplatesSelectCheckbox from '../../../common/templatesSelectCheckbox';
 import SearchAutoComplete from './SearchAutoComplete';
 import { IEntity } from '../../../interfaces/entities';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
-import { useDarkModeStore } from '../../../stores/darkMode';
 import { IMongoCategory } from '../../../interfaces/categories';
 
-type props = {
+export const DeleteMapDataBtn = ({ onClick, darkMode }: { onClick: () => void; darkMode: boolean }) => (
+    <IconButtonWithPopover
+        popoverText={i18next.t('location.clear')}
+        iconButtonProps={{
+            onClick,
+        }}
+        style={{
+            background: darkMode ? '#131313' : '#FFFFFF',
+            borderRadius: '7px',
+            height: '34px',
+            opacity: 1,
+        }}
+    >
+        <Delete htmlColor={darkMode ? '#9398c2' : '#787c9e'} />
+    </IconButtonWithPopover>
+);
+
+type Props = {
     selectedTemplates: IMongoEntityTemplatePopulated[];
     setSelectedTemplates: React.Dispatch<React.SetStateAction<IMongoEntityTemplatePopulated[]>>;
     moveToEntityLocations: (entity: IEntity) => void;
     entityTemplateMap: IEntityTemplateMap;
     onClear: () => void;
+    darkMode: boolean;
+    clearAutocompleteSearch: () => void;
 };
 
-const MapFilters = ({ selectedTemplates, setSelectedTemplates, moveToEntityLocations, entityTemplateMap, onClear }: props) => {
-    const darkMode = useDarkModeStore((state) => state.darkMode);
-
+const MapFilters = ({
+    selectedTemplates,
+    setSelectedTemplates,
+    moveToEntityLocations,
+    entityTemplateMap,
+    onClear,
+    darkMode,
+    clearAutocompleteSearch,
+}: Props) => {
     const templatesWithLocationField = Array.from(entityTemplateMap.values()).filter((key) =>
         Object.values(key.properties.properties).some((obj) => obj.format === 'location'),
     );
@@ -34,7 +59,7 @@ const MapFilters = ({ selectedTemplates, setSelectedTemplates, moveToEntityLocat
     }, [templatesWithLocationField]);
 
     return (
-        <Grid item zIndex={1000} position="absolute" top={10} left={270} container wrap="nowrap" gap="15px">
+        <Grid item zIndex={1000} top={10} container wrap="nowrap" gap="15px">
             <Grid item>
                 <TemplatesSelectCheckbox
                     title={i18next.t('entityTemplatesCheckboxLabel')}
@@ -44,27 +69,19 @@ const MapFilters = ({ selectedTemplates, setSelectedTemplates, moveToEntityLocat
                     isDraggableDisabled
                     size="small"
                     categories={categories}
+                    overrideSx={{ background: darkMode ? '#121212' : '#FFFFFF' }}
                 />
             </Grid>
             <Grid item>
-                <SearchAutoComplete selectedTemplates={selectedTemplates} handleEntityClick={(entity: IEntity) => moveToEntityLocations(entity)} />
+                <SearchAutoComplete
+                    selectedTemplates={selectedTemplates}
+                    handleEntityClick={moveToEntityLocations}
+                    onClear={clearAutocompleteSearch}
+                />
             </Grid>
 
             <Grid item>
-                <IconButtonWithPopover
-                    popoverText={i18next.t('location.clear')}
-                    iconButtonProps={{
-                        onClick: onClear,
-                    }}
-                    style={{
-                        background: darkMode ? '#131313' : '#FFFFFF',
-                        borderRadius: '7px',
-                        height: '34px',
-                        opacity: 1,
-                    }}
-                >
-                    <Delete htmlColor={darkMode ? '#9398c2' : '#787c9e'} />
-                </IconButtonWithPopover>
+                <DeleteMapDataBtn onClick={onClear} darkMode={darkMode} />
             </Grid>
         </Grid>
     );

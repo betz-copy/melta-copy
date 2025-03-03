@@ -1,14 +1,14 @@
 import React from 'react';
 import { Grid } from '@mui/material';
 import i18next from 'i18next';
-import { AddEntityButton } from '../../EntitiesPage/AddEntityButton';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IEntity } from '../../../interfaces/entities';
 import { AddIconWithText } from '../../AddIconWithText';
 import IconButtonWithPopover from '../../IconButtonWithPopover';
-import { checkUserCategoryPermission } from '../../../utils/permissions/instancePermissions';
+import { checkUserTemplatePermission } from '../../../utils/permissions/instancePermissions';
 import { PermissionScope } from '../../../interfaces/permissions';
 import { useUserStore } from '../../../stores/user';
+import { AddEntityButton } from '../../EntitiesPage/Buttons/AddEntity';
 
 const DashedSelectBox: React.FC<{
     text: string;
@@ -27,7 +27,7 @@ const DashedSelectBox: React.FC<{
 
     const userHasPermissions = !entityTemplate
         ? undefined
-        : checkUserCategoryPermission(currentUser.currentWorkspacePermissions, entityTemplate.category, checkUsersPermissions);
+        : checkUserTemplatePermission(currentUser.currentWorkspacePermissions, entityTemplate.category, entityTemplate._id, checkUsersPermissions);
 
     const disabled = !entityTemplate || userHasPermissions === false;
 

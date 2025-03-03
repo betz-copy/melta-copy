@@ -92,6 +92,8 @@ const AddDetailsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues,
                     supportDeleteForExistingInstances
                     supportRelationshipReference={false}
                     supportUserType={false}
+                    supportConvertingToMultipleFields={false}
+                    locationSearchFields={{ show: false, disabled: false }}
                 />
             </Grid>
 
@@ -116,6 +118,8 @@ const AddDetailsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues,
                     supportDeleteForExistingInstances
                     supportRelationshipReference={false}
                     supportUserType={false}
+                    supportConvertingToMultipleFields={false}
+                    locationSearchFields={{ show: false, disabled: false }}
                 />
             </Grid>
         </Grid>

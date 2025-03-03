@@ -1,9 +1,9 @@
-import { ISubCompactPermissions } from "./permissions/permissions";
+import { ISubCompactPermissions } from './permissions/permissions';
 
 export interface IUserSearchBody {
-  search?: string;
-  permissions?: ISubCompactPermissions;
-  workspaceIds?: string[];
-  limit: number;
-  step?: number;
+    search?: string;
+    permissions?: ISubCompactPermissions;
+    workspaceIds?: string[];
+    limit: number;
+    step?: number;
 }

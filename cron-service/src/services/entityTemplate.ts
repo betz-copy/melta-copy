@@ -31,6 +31,7 @@ export interface IEntitySingleProperty {
         enum?: string[];
         format?: 'fileId';
     };
+    identifier?: true;
     minItems?: 1;
     uniqueItems?: true;
     pattern?: string;
@@ -66,6 +67,7 @@ export interface IEntityTemplate {
     disabled: boolean;
     iconFileId: string | null;
     documentTemplatesIds?: string[];
+    mapSearchProperties?: string[];
 }
 
 export interface IEntityTemplatePopulated extends Omit<IEntityTemplate, 'category'> {

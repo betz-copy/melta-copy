@@ -227,6 +227,10 @@ const CreateOrEditProcess: React.FC<ISimpleDialogProps> = ({ open, onClose, proc
                                                 }}
                                                 variant="extended"
                                                 color="primary"
+                                                style={{
+                                                    borderRadius: '7px',
+                                                    padding: '10px',
+                                                }}
                                             >
                                                 <NavigateBeforeIcon />
                                                 {i18next.t('wizard.processInstance.moveToStepsReviewers')}

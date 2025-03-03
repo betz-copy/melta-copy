@@ -6,6 +6,7 @@ export interface IEntitySingleProperty {
     format?: 'date' | 'date-time' | 'email' | 'fileId' | 'text-area' | 'relationshipReference';
     enum?: string[];
     readOnly?: true;
+    identifier?: true;
     pattern?: string;
     patternCustomErrorMessage?: string;
     dateNotification?: number;
@@ -50,6 +51,7 @@ export interface IEntityTemplate {
     iconFileId: string | null;
     actions?: string;
     documentTemplatesIds?: string[];
+    mapSearchProperties?: string[];
 }
 
 export interface IMongoEntityTemplate extends IEntityTemplate, Document<string> {

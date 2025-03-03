@@ -53,6 +53,9 @@ export const EntityTemplateSchema = new mongoose.Schema(
         documentTemplatesIds: {
             type: [String],
         },
+        mapSearchProperties: {
+            type: [String],
+        },
     },
     {
         timestamps: true,
