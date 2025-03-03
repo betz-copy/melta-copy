@@ -1,4 +1,3 @@
-import { ISearchFilter } from '../../externalServices/instanceService/interfaces/entities';
 
 export enum IChartType {
     Column = 'column',
@@ -71,7 +70,7 @@ export interface IChartBody {
     _id: string;
     xAxis: IAxisField;
     yAxis?: IAxisField;
-    filter: ISearchFilter;
+    filter: string;
 }
 
 type GeneratorChart = { x: any; y: any }[];

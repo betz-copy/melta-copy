@@ -19,7 +19,7 @@ const ChartSideBar: React.FC<{
     const currentUser = useUserStore();
 
     return (
-        <Grid container direction="column" padding="20px">
+        <Grid container direction="column">
             <Grid item>
                 <Grid container direction="column" spacing={2} marginTop={1}>
                     <Grid item>
@@ -34,7 +34,7 @@ const ChartSideBar: React.FC<{
                             error={formik.touched.name && Boolean(formik.errors.name)}
                             helperText={formik.touched.name && formik.errors.name}
                             variant={readonly ? 'standard' : 'outlined'}
-                            sx={{ width: '90%' }}
+                            sx={{ width: '100%' }}
                             inputProps={{
                                 readOnly: readonly,
                                 style: {
@@ -57,7 +57,7 @@ const ChartSideBar: React.FC<{
                             helperText={formik.touched.description && formik.errors.description}
                             variant={readonly ? 'standard' : 'outlined'}
                             rows={formik.values.description || !readonly ? 4 : 1}
-                            sx={{ width: '90%' }}
+                            sx={{ width: '100%' }}
                             inputProps={{
                                 readOnly: readonly,
                                 style: {

@@ -1,27 +1,27 @@
 /* eslint-disable no-param-reassign */
 import { mapValues } from 'lodash';
 import axios from '../axios';
+import { EntityWizardValues } from '../common/dialogs/entity';
+import { ITablesResults } from '../common/wizards/loadEntities';
 import { environment } from '../globals';
+import { IAxisField } from '../interfaces/charts';
 import {
+    ICountSearchResult,
+    IDeleteEntityBody,
     IEntity,
     IEntityExpanded,
-    ISearchBatchBody,
-    ISearchResult,
-    ISearchEntitiesOfTemplateBody,
+    IEntityWithIgnoredRules,
     IExportEntitiesBody,
     IGraphFilterBodyBatch,
-    ISearchEntitiesByTemplatesBody,
+    ISearchBatchBody,
     ISearchEntitiesByLocationBody,
-    IDeleteEntityBody,
-    ICountSearchResult,
+    ISearchEntitiesByTemplatesBody,
+    ISearchEntitiesOfTemplateBody,
     ISearchFilter,
-    IEntityWithIgnoredRules,
+    ISearchResult,
 } from '../interfaces/entities';
-import { EntityWizardValues } from '../common/dialogs/entity';
 import { IRuleBreach } from '../interfaces/ruleBreaches/ruleBreach';
 import { filterModelToFilterOfGraph } from '../pages/Graph/GraphFilterToBackend';
-import { ITablesResults } from '../common/wizards/loadEntities';
-import { IAxisField } from '../interfaces/charts';
 
 const { entities, relationships } = environment.api;
 

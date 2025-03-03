@@ -16,7 +16,7 @@ export const NumberChartGenerator: React.FC<{
 
     const darkMode = theme.palette.mode === 'dark';
 
-    if (!data?.[0]?.x) return null;
+    if (data?.[0]?.x === undefined || data?.[0]?.x === null) return null;
 
     return (
         <Box

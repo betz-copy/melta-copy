@@ -6,9 +6,8 @@ import {
     INUmberMetaData,
     IPieMetaData,
 } from '../../express/templateCharts/interface';
-import { ISearchFilter } from '../../externalServices/instanceService/interfaces/entities';
 
-export const getMetaDataAxes = (type: IChartType, metaData: IChartTypeMetaData, filter: ISearchFilter) => {
+export const getMetaDataAxes = (type: IChartType, metaData: IChartTypeMetaData, filter: string) => {
     let xAxis: IAxisField;
     let yAxis: IAxisField | undefined;
 
@@ -35,15 +34,17 @@ export const getMetaDataAxes = (type: IChartType, metaData: IChartTypeMetaData, 
             throw new Error(`Unsupported chart type: ${type}`);
     }
 
-    const appliedFilter = filter ?? {
-        $and: [
-            {
-                disabled: {
-                    $in: ['false'],
-                },
-            },
-        ],
-    };
+    const appliedFilter = filter
+        ? JSON.parse(filter)
+        : {
+              $and: [
+                  {
+                      disabled: {
+                          $in: ['false'],
+                      },
+                  },
+              ],
+          };
 
     return { xAxis, yAxis: yAxis || undefined, filter: appliedFilter };
 };

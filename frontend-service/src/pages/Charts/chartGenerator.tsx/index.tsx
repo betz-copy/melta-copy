@@ -1,14 +1,13 @@
-import { FilterModel } from '@ag-grid-community/core';
-import React, { useEffect, useRef, useState } from 'react';
-import { useQuery } from 'react-query';
 import { CircularProgress } from '@mui/material';
+import React from 'react';
+import { useQuery } from 'react-query';
 import { EntitiesTableOfTemplateRef } from '../../../common/EntitiesTableOfTemplate';
 import { IAxisField, IBasicChart, IChartType } from '../../../interfaces/charts';
 import { IEntity } from '../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { getChartOfTemplate } from '../../../services/entitiesService';
-import { filterModelToFilterOfTemplate } from '../../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 import { getChartAxes } from '../../../utils/charts/getChartAxes';
+import { filterModelToFilterOfGraph } from '../../Graph/GraphFilterToBackend';
 import { NumberChartGenerator } from './NumberChartGenerator';
 import { HiighchartGenerator } from './highChartgenerator';
 
@@ -16,11 +15,10 @@ interface IChartGeneratorProps {
     formikValues: IBasicChart;
     template: IMongoEntityTemplatePopulated;
     entityTemplate: IMongoEntityTemplatePopulated;
-    filterModel: FilterModel | undefined;
     entitiesTableRef: React.RefObject<EntitiesTableOfTemplateRef<IEntity> | undefined>;
 }
 
-const ChartGenerator: React.FC<IChartGeneratorProps> = ({ template, formikValues, entityTemplate, entitiesTableRef, filterModel }) => {
+const ChartGenerator: React.FC<IChartGeneratorProps> = ({ template, formikValues, entityTemplate, entitiesTableRef }) => {
     const { type, metaData } = formikValues;
 
     const isAggregationValid = (field: IAxisField): boolean => {
@@ -34,11 +32,10 @@ const ChartGenerator: React.FC<IChartGeneratorProps> = ({ template, formikValues
     const isQueryEnabled = type === IChartType.Number ? isAggregationValid(xAxis) : isAggregationValid(xAxis) && isAggregationValid(yAxis);
 
     const { data, isLoading } = useQuery(
-        ['chart', template._id, xAxis, yAxis, filterModel],
+        ['chart', template._id, xAxis, yAxis, formikValues.filter],
         () => {
             const yAxisField = type === IChartType.Number ? undefined : yAxis;
-            const currentFilter = entitiesTableRef.current?.getFilterModel();
-            const filter = currentFilter ? filterModelToFilterOfTemplate(currentFilter, entityTemplate) : undefined;
+            const filter = formikValues.filter ? filterModelToFilterOfGraph(formikValues.filter)[entityTemplate._id].filter : undefined;
 
             return getChartOfTemplate(xAxis, yAxisField, template._id, filter);
         },

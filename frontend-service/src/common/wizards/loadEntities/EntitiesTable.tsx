@@ -6,7 +6,7 @@ import { v4 as uuid } from 'uuid';
 import EntitiesTableOfTemplate, { EntitiesTableOfTemplateRef } from '../../EntitiesTableOfTemplate';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { TableButton } from '../../TableButton';
-import { IEntity } from '../../../interfaces/entities';
+import { IEntity, ISearchFilter } from '../../../interfaces/entities';
 import { IFailedEntity } from '.';
 import { useWorkspaceStore } from '../../../stores/workspace';
 
@@ -18,8 +18,9 @@ export const EntitiesTable: React.FC<{
     icon?: React.JSX.Element;
     title: string;
     description?: string;
-    download?: { onDownload: (brokenRulesEntities?: boolean) => Promise<any>; isLoading: boolean };
-}> = ({ rowData, rowModelType, template, defaultExpanded, icon, title, description, download }) => {
+    download?: { onDownload: (brokenRulesEntities?: boolean) => Promise<any>; isLoading: boolean; defaultFilter };
+    defaultFilter?: ISearchFilter;
+}> = ({ rowData, rowModelType, template, defaultExpanded, icon, title, description, download, defaultFilter }) => {
     const theme = useTheme();
     const entitiesTableRef = useRef<EntitiesTableOfTemplateRef<IEntity>>(null);
     const workspace = useWorkspaceStore((state) => state.workspace);
@@ -29,8 +30,9 @@ export const EntitiesTable: React.FC<{
         <Accordion
             sx={{
                 '&.MuiPaper-root': {
-                    boxShadow: 'none',
-                    border: 'none',
+                    boxShadow: '0px -2px 10.15px 0px #1E277533',
+                    borderTopLeftRadius: '13px',
+                    borderTopRightRadius: '13px',
                 },
                 '&:before': {
                     display: 'none',
@@ -103,6 +105,7 @@ export const EntitiesTable: React.FC<{
                     showNavigateToRowButton={false}
                     editable={false}
                     withoutResizeBox
+                    defaultFilter={defaultFilter}
                 />
             </AccordionDetails>
         </Accordion>

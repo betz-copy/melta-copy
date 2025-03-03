@@ -71,7 +71,7 @@ const AxisInput: React.FC<AxisInputProps> = ({
                             helperText={titleError}
                             fullWidth
                             margin="normal"
-                            sx={{ width: '90%' }}
+                            sx={{ width: '100%' }}
                             variant={readonly ? 'standard' : 'outlined'}
                             inputProps={{
                                 readOnly: readonly,
@@ -96,7 +96,7 @@ const AxisInput: React.FC<AxisInputProps> = ({
                             formik.setFieldValue(`${formikField}`, { type: newValue, byField: '' } as IAggregation);
                         else formik.setFieldValue(`${formikField}`, (newValue as string) ?? '');
                     }}
-                    style={{ width: '90%' }}
+                    style={{ width: '100%' }}
                     readonly={readonly}
                 />
             </Grid>
@@ -114,7 +114,7 @@ const AxisInput: React.FC<AxisInputProps> = ({
                         getOptionLabel={(option) => getOptionLabel(option)}
                         multiple={false}
                         style={{
-                            width: '90%',
+                            width: '100%',
                         }}
                         readonly={readonly}
                     />

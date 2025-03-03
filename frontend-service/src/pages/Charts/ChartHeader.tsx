@@ -8,14 +8,16 @@ import { BlueTitle } from '../../common/BlueTitle';
 import { GlobalSearchBar } from '../../common/EntitiesPage/Headline';
 import { MeltaTooltip } from '../../common/MeltaTooltip';
 import { TopBarGrid } from '../../common/TopBar';
-import { environment } from '../../globals';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { useWorkspaceStore } from '../../stores/workspace';
 
 const ChartHeader: React.FC<{
     template: IMongoEntityTemplatePopulated;
     setTextSearch: React.Dispatch<React.SetStateAction<string | undefined>>;
     resetLayout: () => void;
 }> = ({ template, setTextSearch, resetLayout }) => {
+    const workspace = useWorkspaceStore((state) => state.workspace);
+
     const [currentLocation, navigate] = useLocation();
 
     return (
@@ -27,7 +29,7 @@ const ChartHeader: React.FC<{
                             title={`${i18next.t('charts.chartsOf')} ${template.displayName}`}
                             component="h4"
                             variant="h4"
-                            style={{ fontSize: environment.mainFontSizes.headlineTitleFontSize }}
+                            style={{ fontSize: workspace.metadata.mainFontSizes.headlineTitleFontSize }}
                         />
                     </Grid>
                     <Grid item>

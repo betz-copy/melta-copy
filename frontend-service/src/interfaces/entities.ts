@@ -182,7 +182,7 @@ export interface IExportEntitiesBody {
 export interface IGraphFilterBody {
     selectedTemplate: IMongoEntityTemplatePopulated;
     selectedProperty?: string;
-    filterField?: any;
+    filterField?: any; // will be the value adusted to the type and format of the value
 }
 
 export interface IGraphFilterBodyBatch {

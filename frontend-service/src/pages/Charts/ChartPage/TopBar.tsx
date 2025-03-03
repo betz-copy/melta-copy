@@ -7,11 +7,11 @@ import { BlueTitle } from '../../../common/BlueTitle';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import { MeltaTooltip } from '../../../common/MeltaTooltip';
 import { TopBarGrid } from '../../../common/TopBar';
-import { environment } from '../../../globals';
 import { IBasicChart } from '../../../interfaces/charts';
-import { isWorkspaceAdmin } from '../../../utils/permissions/instancePermissions';
-import { useUserStore } from '../../../stores/user';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { useUserStore } from '../../../stores/user';
+import { useWorkspaceStore } from '../../../stores/workspace';
+import { isWorkspaceAdmin } from '../../../utils/permissions/instancePermissions';
 
 interface IChartTopBar {
     edit: boolean;
@@ -27,11 +27,18 @@ interface IChartTopBar {
 const ChartTopBar: React.FC<IChartTopBar> = ({ edit, onEdit, onDelete, isLoading, readonly, setReadOnly, formik, template }) => {
     const theme = useTheme();
     const currentUser = useUserStore();
+    const workspace = useWorkspaceStore((state) => state.workspace);
+
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
     return (
         <Box>
-            <TopBarGrid container alignItems="center" wrap="nowrap" sx={{ marginBottom: 0, paddingRight: '1.6rem' }}>
+            <TopBarGrid
+                container
+                alignItems="center"
+                wrap="nowrap"
+                sx={{ marginBottom: 0, paddingRight: '1.6rem', boxShadow: '  -2px 2px 6px 0px #1E277533' }}
+            >
                 <Grid>
                     <BlueTitle
                         title={`${i18next.t(edit ? 'actions.editment' : 'actions.createment')} ${i18next.t('charts.chart')} - ${
@@ -39,7 +46,7 @@ const ChartTopBar: React.FC<IChartTopBar> = ({ edit, onEdit, onDelete, isLoading
                         }`}
                         component="h4"
                         variant="h4"
-                        style={{ fontSize: environment.mainFontSizes.headlineTitleFontSize, whiteSpace: 'nowrap' }}
+                        style={{ fontSize: workspace.metadata.mainFontSizes.headlineTitleFontSize, whiteSpace: 'nowrap' }}
                     />
                 </Grid>
 

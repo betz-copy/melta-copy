@@ -41,10 +41,8 @@ export class ChartManager extends DefaultManagerMongo<IChartDocument> {
                 ],
             }),
         };
-        console.log('hi');
 
         const allChartsOfTemplateId = await this.model.find(query).lean().exec();
-        console.log('bye');
 
         return permissionsOfUserId.admin?.scope ? allChartsOfTemplateId : this.getChartsWithPermissions(allChartsOfTemplateId, userId);
     }
