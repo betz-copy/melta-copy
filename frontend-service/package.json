@@ -8,7 +8,6 @@
     "lint": "eslint --ext .ts,.tsx .",
     "lint:fix": "eslint --ext .ts,.tsx . --fix",
     "postinstall": "patch-package"
-
   },
   "browserslist": {
     "production": [
@@ -141,6 +140,9 @@
     "stylis-plugin-rtl": "^2.1.1",
     "three": "^0.170.0",
     "typescript-actions": "npm:typescript@^5.5.4",
+    "utm": "^1.1.1",
+    "utm-converter": "^0.1.1",
+    "utm-latlng": "^1.0.8",
     "uuid": "^8.3.2",
     "vite": "^5.0.12",
     "vite-plugin-cesium": "^1.2.23",

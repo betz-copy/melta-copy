@@ -257,11 +257,6 @@ export const environment = {
         squareLength: 2500,
         polygon: { polygonPrefix: 'POLYGON((', polygonSuffix: '))' },
         mapSearchPropertiesLimit: 2,
-        // Constants for UTM zone 36N
-        earthRadius: 6378137,
-        eccentricitySquared: 0.00669438,
-        scaleFactor: 0.9996,
-        centralMeridian: (33 * Math.PI) / 180, // 33° in radians
     },
     meltaUpdatesShown: 'meltaUpdatesShown',
     profileIconsCount: 19,

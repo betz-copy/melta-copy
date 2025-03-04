@@ -32,6 +32,8 @@ type Props = {
 };
 
 const LocationField = ({ defaultLocation, field, updateValue, unit }: Props) => {
+    console.log({ unit });
+
     const queryClient = useQueryClient();
     const config = queryClient.getQueryData<BackendConfigState>('getBackendConfig');
 

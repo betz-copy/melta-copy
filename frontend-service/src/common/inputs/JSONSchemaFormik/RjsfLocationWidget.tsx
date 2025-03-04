@@ -1,6 +1,6 @@
 /* eslint-disable import/no-extraneous-dependencies */
 /* eslint-disable no-underscore-dangle */
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { getDisplayLabel, WidgetProps } from '@rjsf/utils';
 import validator from '@rjsf/validator-ajv8';
 import { Cartesian3 } from 'cesium';
@@ -24,6 +24,8 @@ export enum SplitBy {
 }
 
 const validatePoint = (point: LocationData, splitBy: SplitBy, schemaValidation?: boolean) => {
+    console.log({ point });
+
     const [longitude, latitude] = point.location.split(splitBy).map(Number);
 
     if (Number.isNaN(longitude) || Number.isNaN(latitude)) return false;
@@ -43,6 +45,8 @@ const validatePoint = (point: LocationData, splitBy: SplitBy, schemaValidation?:
 };
 
 export const validateLocation = (value: LocationData, schemaValidation?: boolean) => {
+    console.log({ value, schemaValidation });
+
     if (value.location === '') return true;
     if (!value.location.startsWith(polygonPrefix)) return validatePoint(value, SplitBy.comma, schemaValidation);
 
@@ -95,9 +99,12 @@ const RjsfLocationWidget = ({
 
         const locationObj = newValue.toString().trim() ? { location: newValue, unit: coordinateSystem } : undefined;
         onChange(locationObj || undefined);
+        setNewLocationValue(newValue);
     };
 
     const onChangeUnit = ({ target: { value: newUnit } }) => {
+        console.log('change', { newLocationValue, newUnit });
+
         setCoordinateSystem(newUnit);
         if (!newLocationValue) return;
 
@@ -106,15 +113,10 @@ const RjsfLocationWidget = ({
 
         const locationParse = stringToCoordinates(newLocationValue);
         let updatedLocation = newLocationValue;
-        if (locationParse.type === 'marker') {
-            const coordinate = locationParse.value as Cartesian3;
-            if (newUnit === 'UTM' && isValidWGS84(coordinate)) updatedLocation = location3ToString(coordinate, 'UTM');
-            if (newUnit === 'WGS84' && isValidUTM(coordinate)) updatedLocation = location3ToString(coordinate);
-        } else {
-            const points = locationParse.value as Cartesian3[];
-            if (newUnit === 'UTM' && isValidWGS84(points)) updatedLocation = location3ToString(points, 'UTM');
-            if (newUnit === 'WGS84' && isValidUTM(points)) updatedLocation = location3ToString(points);
-        }
+        const location = locationParse.value;
+        if (newUnit === 'UTM' && isValidWGS84(location)) updatedLocation = location3ToString(location, newUnit);
+        if (newUnit === 'WGS84' && isValidUTM(location)) updatedLocation = location3ToString(location, newUnit);
+        console.log({ updatedLocation });
 
         onChange(newLocationValue?.toString().trim() ? { location: updatedLocation, unit: newUnit } : undefined);
     };
