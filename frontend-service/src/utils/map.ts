@@ -84,17 +84,17 @@ const computeProjectionParameters = (xAdj: number, phi1: number) => {
 };
 
 // Computes the latitude (in radians) from projection parameters
-const computeLatitude = (phi1: number, N1: number, R1: number, T1: number, C1: number, D: number): number =>
-    phi1 -
-    ((N1 * Math.tan(phi1)) / R1) *
-        (D ** 2 / 2 -
-            ((5 + 3 * T1 + 10 * C1 - 4 * C1 ** 2 - 9 * eccentricitySquared) * D ** 4) / 24 +
-            ((61 + 90 * T1 + 298 * C1 + 45 * T1 ** 2 - 252 * eccentricitySquared - 3 * C1 ** 2) * D ** 6) / 720);
+const computeLatitude = (phi1: number, N1: number, R1: number, T1: number, C1: number, D: number): number => {
+    const latTerm = D ** 2 / 2 - ((5 + 3 * T1 + 10 * C1 - 4 * C1 ** 2 - 9 * (eccentricitySquared / (1 - eccentricitySquared))) * D ** 4) / 24;
+    return phi1 - ((N1 * Math.tan(phi1)) / R1) * latTerm;
+};
 
 // Computes the longitude (in radians) from projection parameters
-const computeLongitude = (T1: number, C1: number, D: number, cosPhi1: number): number =>
-    centralMeridian +
-    (D / cosPhi1 - ((1 + 2 * T1 + C1) * D ** 3) / 6 + ((5 - 2 * C1 + 28 * T1 - 3 * C1 ** 2 + 8 * eccentricitySquared + 24 * T1 ** 2) * D ** 5) / 120);
+const computeLongitude = (T1: number, C1: number, D: number, cosPhi1: number): number => {
+    const ePrimeSquared = eccentricitySquared / (1 - eccentricitySquared);
+    const lonTerm = D - ((1 + 2 * T1 + C1) * D ** 3) / 6 + ((5 - 2 * C1 + 28 * T1 - 3 * C1 ** 2 + 8 * ePrimeSquared + 24 * T1 ** 2) * D ** 5) / 120;
+    return centralMeridian + lonTerm / cosPhi1;
+};
 
 // Converts UTM coordinates (in meters) to geographic (lat/lon in degrees)
 const UTMConcenter = (easting: number, northing: number) => {

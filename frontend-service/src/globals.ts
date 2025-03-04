@@ -261,7 +261,7 @@ export const environment = {
         earthRadius: 6378137,
         eccentricitySquared: 0.00669438,
         scaleFactor: 0.9996,
-        centralMeridian: (33 * Math.PI) / 180 // 33° in radians
+        centralMeridian: (33 * Math.PI) / 180, // 33° in radians
     },
     meltaUpdatesShown: 'meltaUpdatesShown',
     profileIconsCount: 19,
