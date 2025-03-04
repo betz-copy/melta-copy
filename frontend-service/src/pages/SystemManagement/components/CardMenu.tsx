@@ -75,7 +75,7 @@ export const CardMenu: React.FC<{
             </IconButton>
             <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
                 {onEditClick && (
-                    <MeltaTooltip placement="top" title={editTooltipTitle} disableHoverListener={!disabledProps?.isEditDisabled}>
+                    <MeltaTooltip placement="left" title={editTooltipTitle} disableHoverListener={!disabledProps?.isEditDisabled}>
                         <Grid>
                             <MenuButton
                                 onClick={(e) => {
@@ -91,31 +91,50 @@ export const CardMenu: React.FC<{
                 )}
 
                 {onDuplicateClick && (
-                    <MenuButton
-                        onClick={(e) => {
-                            onDuplicateClick(e);
-                            handleClose(e);
-                        }}
-                        text={i18next.t('actions.duplicate')}
-                        icon={<DuplicateIcon color="action" />}
-                        disabled={disabledProps?.isDisabled}
-                    />
+                    <MeltaTooltip
+                        placement="left"
+                        title={disabledProps?.isDisabled && disabledProps?.tooltipTitle}
+                        disableHoverListener={!disabledProps?.isEditDisabled}
+                    >
+                        <Grid>
+                            <MenuButton
+                                onClick={(e) => {
+                                    onDuplicateClick(e);
+                                    handleClose(e);
+                                }}
+                                text={i18next.t('actions.duplicate')}
+                                icon={<DuplicateIcon color="action" />}
+                                disabled={disabledProps?.isDisabled}
+                            />
+                        </Grid>
+                    </MeltaTooltip>
                 )}
 
                 {onAddActionsClick && currentUser.isRoot && (
-                    <MenuButton
-                        onClick={(e) => {
-                            onAddActionsClick(e);
-                            handleClose(e);
-                        }}
-                        text={i18next.t('actions.addActions')}
-                        disabled={disabledProps?.isDisabled}
-                        icon={<AddIcon color="action" />}
-                    />
+                    <MeltaTooltip
+                        placement="left"
+                        title={disabledProps?.isDisabled && disabledProps?.tooltipTitle}
+                        disableHoverListener={!disabledProps?.isEditDisabled}
+                    >
+                        <Grid>
+                            <MenuButton
+                                onClick={(e) => {
+                                    onAddActionsClick(e);
+                                    handleClose(e);
+                                }}
+                                text={i18next.t('actions.addActions')}
+                                disabled={disabledProps?.isDisabled}
+                                icon={<AddIcon color="action" />}
+                            />
+                        </Grid>
+                    </MeltaTooltip>
                 )}
 
                 {onDeleteClick && (
-                    <MeltaTooltip placement="left" title={disabledProps?.tooltipTitle}>
+                    <MeltaTooltip
+                        placement="left"
+                        title={disabledProps?.isDisabled || disabledProps?.isDeleteDisabled ? disabledProps?.tooltipTitle : ''}
+                    >
                         <Grid>
                             <MenuButton
                                 onClick={(e) => {

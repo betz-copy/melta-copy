@@ -378,7 +378,9 @@ export const getColumnDefs = <Data extends any = EntityData>({
                         {editRowButtonProps && (
                             <Grid item>
                                 <IconButtonWithPopover
-                                    popoverText={disabledEntity ? i18next.t('entityPage.disabledEntity') : editRowButtonProps.popoverText}
+                                    popoverText={
+                                        disabledEntity || template.disabled ? i18next.t('entityPage.disabledEntity') : editRowButtonProps.popoverText
+                                    }
                                     iconButtonProps={{
                                         onClick: () => editRowButtonProps.onClick(data),
                                     }}

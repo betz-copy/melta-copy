@@ -84,7 +84,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
         entityTemplate._id,
         PermissionScope.write,
     );
-    const isEntityDisabled = expandedEntity.entity.properties.disabled;
+    const isEntityDisabled = expandedEntity.entity.properties.disabled || entityTemplate.disabled;
     const includeLocationProperty = Object.entries(entityTemplate.properties.properties).some(
         ([field, property]) => property.format === 'location' && entity.properties[field] !== undefined,
     );
@@ -217,7 +217,14 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                                 </IconButton>
                                 <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
                                     <TooltipMenuButton
-                                        tooltipTitle={!canWriteInstance ? i18next.t('permissions.dontHaveWritePermissionsToTemplate') : ''}
+                                        tooltipTitle={
+                                            // eslint-disable-next-line no-nested-ternary
+                                            !canWriteInstance
+                                                ? i18next.t('permissions.dontHaveWritePermissionsToTemplate')
+                                                : isEntityDisabled
+                                                ? i18next.t('entityPage.disabledEntity')
+                                                : ''
+                                        }
                                         onClick={() => {
                                             if (canWriteInstance && !isEntityDisabled) {
                                                 navigate(`/entity/${entity.properties._id}/duplicate`, {
@@ -226,13 +233,20 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                                             }
                                             handleClose();
                                         }}
-                                        disabled={!canWriteInstance || entityTemplate.disabled || entity.properties.disabled}
+                                        disabled={!canWriteInstance || isEntityDisabled}
                                         icon={DuplicateIcon}
                                         text={i18next.t('actions.duplicate')}
                                     />
 
                                     <TooltipMenuButton
-                                        tooltipTitle={i18next.t('permissions.dontHaveWritePermissionsToTemplate')}
+                                        tooltipTitle={
+                                            // eslint-disable-next-line no-nested-ternary
+                                            !canWriteInstance
+                                                ? i18next.t('permissions.dontHaveWritePermissionsToTemplate')
+                                                : isEntityDisabled
+                                                ? i18next.t('entityPage.disabledEntity')
+                                                : ''
+                                        }
                                         onClick={() => {
                                             setOpenDeleteDialog(true);
                                             handleClose();
@@ -243,7 +257,14 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                                     />
 
                                     <TooltipMenuButton
-                                        tooltipTitle={!canWriteInstance ? i18next.t('permissions.dontHaveWritePermissionsToTemplate') : ''}
+                                        tooltipTitle={
+                                            // eslint-disable-next-line no-nested-ternary
+                                            !canWriteInstance
+                                                ? i18next.t('permissions.dontHaveWritePermissionsToTemplate')
+                                                : isEntityDisabled
+                                                ? i18next.t('entityPage.disabledEntity')
+                                                : ''
+                                        }
                                         onClick={() => {
                                             if (canWriteInstance) {
                                                 updateEntityStatus({ currEntity: entity, disabled: !entity.properties.disabled });
