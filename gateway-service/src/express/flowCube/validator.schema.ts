@@ -16,6 +16,7 @@ export const searchWorkspacesSchema = Joi.object({
         Parameters: Joi.object({
             Value: Joi.string().allow(''),
         }),
+        Value: Joi.string().allow(''),
     }),
     query: {},
     params: {},
@@ -25,7 +26,7 @@ export const searchWorkspacesSchema = Joi.object({
 export const searchCategoryInWorkspaceSchema = Joi.object({
     body: Joi.object({
         Value: Joi.string().allow(''),
-        WorkspaceId: Joi.string().required(),
+        WorkspaceId: Joi.string(),
     }),
     query: {},
     params: {},

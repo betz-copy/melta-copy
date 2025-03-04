@@ -87,8 +87,9 @@ export class FlowCubeManager extends DefaultManagerProxy<null> {
 
         const searchBody = {} as { search: string };
 
-        if (body?.Parameters?.Value) {
-            searchBody.search = body?.Parameters?.Value;
+        if (body?.Parameters?.Value || body?.Value) {
+            searchBody.search = body?.Parameters?.Value || body?.Value;
+            console.dir(searchBody.search, { depth: null });
         }
 
         const usersPermissions = await UserService.getUserPermissions(userId);
