@@ -382,9 +382,12 @@ export const getColumnDefs = <Data extends any = EntityData>({
                                     iconButtonProps={{
                                         onClick: () => editRowButtonProps.onClick(data),
                                     }}
-                                    disabled={editRowButtonProps.disabledButton || disabledEntity}
+                                    disabled={editRowButtonProps.disabledButton || disabledEntity || template.disabled}
                                 >
-                                    <ImageWithDisable srcPath="/icons/edit-icon.svg" disabled={editRowButtonProps.disabledButton || disabledEntity} />
+                                    <ImageWithDisable
+                                        srcPath="/icons/edit-icon.svg"
+                                        disabled={editRowButtonProps.disabledButton || disabledEntity || template.disabled}
+                                    />
                                 </IconButtonWithPopover>
                             </Grid>
                         )}

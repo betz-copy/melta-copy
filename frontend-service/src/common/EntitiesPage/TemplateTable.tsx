@@ -416,7 +416,7 @@ const TemplateTable = forwardRef<
                         popoverText: i18next.t(
                             !userHasWritePermissions ? 'permissions.dontHaveWritePermissionsToTemplate' : 'entitiesTableOfTemplate.editEntity',
                         ),
-                        disabledButton: !userHasWritePermissions || template.disabled,
+                        disabledButton: !userHasWritePermissions,
                     }}
                     onFilter={() => {
                         setIsFiltered(entitiesTableRef.current?.isFiltered() ?? false);
