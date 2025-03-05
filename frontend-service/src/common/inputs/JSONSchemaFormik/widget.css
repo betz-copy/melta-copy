@@ -1,0 +1,81 @@
+/* Base styles */
+.MuiAutocomplete-inputRoot {
+    & fieldset {
+        border-color: #cccfe5 !important; /* View mode */
+    }
+}
+
+/* Hover state */
+.MuiAutocomplete-inputRoot:hover fieldset {
+    border-color: #9398c2 !important; /* Hover */
+}
+
+/* Focus (Edit) state styling */
+.MuiAutocomplete-inputRoot.Mui-focused fieldset {
+    border-color: #4752b6 !important; /* Edit mode */
+}
+
+/* Read-only/Disabled state styling */
+.MuiAutocomplete-inputRoot.Mui-disabled fieldset,
+.MuiAutocomplete-inputRoot[readonly] fieldset {
+    border-color: #bbbed8 !important; /* Readonly/Disabled */
+    background-color: #f3f5f9 !important;
+}
+
+/* Error state styling */
+.MuiAutocomplete-inputRoot.Mui-error fieldset {
+    border-color: #ff0000 !important; /* Error */
+}
+
+/* Options list styling */
+.MuiAutocomplete-paper {
+    box-shadow: 0px 2px 6px 0px #1e27754d !important;
+    border-radius: 10px !important;
+    margin-top: 5px !important;
+}
+
+/* Target the dropdown options */
+.MuiAutocomplete-option {
+    border-left: 2px solid #9398c2 !important; /* Optional left border for options */
+}
+
+/* Popup icon styles */
+.MuiAutocomplete-endAdornment .MuiIconButton-root,
+.MuiAutocomplete-endAdornment .MuiSvgIcon-root {
+    color: #cccfe5 !important; /* View mode */
+}
+
+/* Hover state for popup icon */
+.MuiAutocomplete-inputRoot:hover .MuiAutocomplete-endAdornment .MuiIconButton-root,
+.MuiAutocomplete-inputRoot:hover .MuiAutocomplete-endAdornment .MuiSvgIcon-root {
+    color: #9398c2 !important; /* Hover */
+}
+
+/* Focus (Edit) state for popup icon */
+.MuiAutocomplete-inputRoot.Mui-focused .MuiAutocomplete-endAdornment .MuiIconButton-root,
+.MuiAutocomplete-inputRoot.Mui-focused .MuiAutocomplete-endAdornment .MuiSvgIcon-root {
+    color: #4752b6 !important; /* Edit mode */
+}
+
+/* Readonly/Disabled state for popup icon */
+.MuiAutocomplete-inputRoot.Mui-disabled .MuiAutocomplete-endAdornment .MuiIconButton-root,
+.MuiAutocomplete-inputRoot[readonly] .MuiAutocomplete-endAdornment .MuiIconButton-root,
+.MuiAutocomplete-inputRoot.Mui-disabled .MuiAutocomplete-endAdornment .MuiSvgIcon-root,
+.MuiAutocomplete-inputRoot[readonly] .MuiAutocomplete-endAdornment .MuiSvgIcon-root {
+    color: #bbbed8 !important; /* Readonly/Disabled */
+}
+
+/* Error state for popup icon */
+.MuiAutocomplete-inputRoot.Mui-error .MuiAutocomplete-endAdornment .MuiIconButton-root,
+.MuiAutocomplete-inputRoot.Mui-error .MuiAutocomplete-endAdornment .MuiSvgIcon-root {
+    color: #ff0000 !important; /* Error */
+}
+
+/* Widget-specific styles */
+.RjfsSelectWidget .MuiAutocomplete-inputRoot fieldset {
+    border-color: #4752b6 !important; /* Edit mode */
+}
+
+.RjfsSelectWidget .MuiAutocomplete-endAdornment .MuiIconButton-root {
+    color: #4752b6 !important; /* Edit mode */
+}

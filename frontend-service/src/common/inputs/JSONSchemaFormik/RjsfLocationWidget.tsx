@@ -8,6 +8,7 @@ import MapIcon from '@mui/icons-material/Map';
 import { getTextDirection } from '../../../utils/stringValues';
 import { environment } from '../../../globals';
 import LocationField from '../../../pages/Map/LocationField';
+import './widget.css';
 
 const { polygonPrefix, polygonSuffix } = environment.map.polygon;
 
@@ -103,13 +104,9 @@ const RjsfLocationWidget = ({
                     shrink: readonly || undefined,
                 }}
                 InputProps={{
-                    [value === undefined ? 'endAdornment' : 'startAdornment']: (
-                        <InputAdornment
-                            position={value === undefined ? 'end' : 'start'}
-                            onClick={() => (error ? '' : setMapOpen(true))}
-                            style={{ cursor: 'pointer' }}
-                        >
-                            <MapIcon color={error ? 'disabled' : 'action'} />
+                    startAdornment: (
+                        <InputAdornment position="start" onClick={() => (error ? '' : setMapOpen(true))} style={{ cursor: 'pointer' }}>
+                            <MapIcon color={readonly || error ? 'disabled' : 'action'} />
                         </InputAdornment>
                     ),
                 }}

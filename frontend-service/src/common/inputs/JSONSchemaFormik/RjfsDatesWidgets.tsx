@@ -1,16 +1,18 @@
 /* eslint-disable consistent-return */
 /* eslint-disable no-underscore-dangle */
 import React from 'react';
-import { styled, TextField, TextFieldProps } from '@mui/material';
+import { InputAdornment, styled, TextField, TextFieldProps } from '@mui/material';
 import i18next from 'i18next';
 import { WidgetProps, getDisplayLabel } from '@rjsf/utils';
 import validator from '@rjsf/validator-ajv8';
+import { CalendarToday, Alarm } from '@mui/icons-material';
 import { LocalizationProvider, MobileDatePicker, MobileDateTimePicker, dateTimePickerToolbarClasses } from '@mui/x-date-pickers';
 import heLocale from 'date-fns/locale/he';
 import format from 'date-fns/format';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DateTimePickerToolbar } from '@mui/x-date-pickers/DateTimePicker/DateTimePickerToolbar';
 import { BaseToolbarProps } from '@mui/x-date-pickers/internals';
+import './widget.css';
 
 export const CustomDateTimePickerToolbar = styled(DateTimePickerToolbar)({
     [`& .${dateTimePickerToolbarClasses.timeContainer}`]: {
@@ -104,6 +106,17 @@ const getRjfsDateOrDateTimeWidget =
                             variant={variant}
                             InputLabelProps={{
                                 shrink: readonly || undefined,
+                            }}
+                            InputProps={{
+                                endAdornment: (
+                                    <InputAdornment position="end" style={{ cursor: 'pointer' }}>
+                                        {dateOrDateTime === 'date' ? (
+                                            <CalendarToday fontSize="small" color={value && !readonly ? 'action' : 'disabled'} />
+                                        ) : (
+                                            <Alarm fontSize="small" color={value && !readonly ? 'action' : 'disabled'} />
+                                        )}
+                                    </InputAdornment>
+                                ),
                             }}
                         />
                     )}

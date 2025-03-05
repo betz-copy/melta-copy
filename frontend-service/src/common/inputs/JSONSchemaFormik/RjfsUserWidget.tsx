@@ -3,6 +3,7 @@ import { WidgetProps } from '@rjsf/utils';
 import { Grid } from '@mui/material';
 import UserAutocomplete from '../UserAutocomplete';
 import { IUser } from '../../../interfaces/users';
+import './widget.css';
 
 const RjfsUserWidget = ({ disabled, label, value, onChange, rawErrors = [], onBlur, onFocus, id, autoFocus, ...textFieldProps }: WidgetProps) => {
     const [currentUser, setCurrentUser] = React.useState(value ? JSON.parse(value) : undefined);

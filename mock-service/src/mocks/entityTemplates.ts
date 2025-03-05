@@ -523,12 +523,6 @@ export const entityTemplates: IEntityTemplateMock[] = [
                     type: 'string',
                     enum: ['אא', 'בב', 'גג', 'דד'],
                 },
-                serialNumber: {
-                    title: 'מספר סידורי',
-                    type: 'number',
-                    serialStarter: 0,
-                    serialCurrent: 0,
-                },
                 regex: {
                     title: 'תבנית',
                     type: 'string',
@@ -566,7 +560,6 @@ export const entityTemplates: IEntityTemplateMock[] = [
             'mail',
             'multiEnum',
             'enum',
-            'serialNumber',
             'location',
             'regex',
             'file',

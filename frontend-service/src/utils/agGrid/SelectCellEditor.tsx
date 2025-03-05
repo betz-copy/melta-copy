@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { FormControl, TextField, Autocomplete, InputAdornment, Select, MenuItem, ListItemText, SelectChangeEvent, Box } from '@mui/material';
+import { Autocomplete, TextField, Box } from '@mui/material';
+import { Close } from '@mui/icons-material';
 import { MeltaCheckbox } from '../../common/MeltaCheckbox';
 import { ColoredEnumChip } from '../../common/ColoredEnumChip';
 
@@ -12,17 +13,11 @@ interface SelectCellEditorProps {
 }
 
 const SelectCellEditor: React.FC<SelectCellEditorProps> = ({ values, value, onValueChange, multiple = false, colorsOptions }) => {
-    const [selectedValues, setSelectedValues] = useState<string | string[] | undefined>(value);
+    const [selectedValues, setSelectedValues] = useState<string | string[] | undefined>(value || (multiple ? [] : ''));
 
     useEffect(() => {
         setSelectedValues(value || (multiple ? [] : ''));
     }, [value, multiple]);
-
-    const handleChange = (event: SelectChangeEvent<string | string[] | null>) => {
-        const newValue = event.target.value;
-        setSelectedValues(newValue as string | string[]);
-        onValueChange(newValue as string | string[]);
-    };
 
     const handleAutocompleteChange = (newValue: string | string[] | null) => {
         // eslint-disable-next-line no-nested-ternary
@@ -32,64 +27,66 @@ const SelectCellEditor: React.FC<SelectCellEditorProps> = ({ values, value, onVa
     };
 
     return (
-        <FormControl fullWidth>
-            {multiple ? (
-                /** MULTIPLE SELECTION MODE (via <Select>) * */
-                <Select
-                    multiple
-                    value={selectedValues}
-                    onChange={handleChange}
-                    // Render colored chips when displaying selected items
-                    renderValue={(selected) => (
-                        <Box>
-                            {(selected as string[]).map((val) => (
-                                <ColoredEnumChip key={val} label={val} color={colorsOptions?.[val] || 'default'} />
-                            ))}
-                        </Box>
-                    )}
-                    style={{ width: '100%', height: '100%' }}
-                >
-                    {values.map((option) => (
-                        <MenuItem key={option} value={option} style={{ height: '40px' }}>
-                            <MeltaCheckbox checked={(selectedValues as string[]).indexOf(option) > -1} />
-                            {colorsOptions ? (
-                                <ColoredEnumChip label={option} color={colorsOptions[option] || 'default'} />
-                            ) : (
-                                <ListItemText primary={option} />
-                            )}
-                        </MenuItem>
-                    ))}
-                </Select>
-            ) : (
-                <Autocomplete<string, boolean>
-                    multiple={multiple}
-                    value={selectedValues}
-                    onChange={(_, newValue) => handleAutocompleteChange(newValue as string | string[] | null)}
-                    isOptionEqualToValue={(option, val) => option === val}
-                    fullWidth
-                    renderInput={(params) => (
-                        <TextField
-                            {...params}
-                            InputProps={{
-                                ...params.InputProps,
-                                startAdornment: <InputAdornment position="start" />,
+        <Autocomplete<string, boolean>
+            multiple={multiple}
+            value={selectedValues}
+            onChange={(_, newValue) => handleAutocompleteChange(newValue)}
+            disableCloseOnSelect={multiple}
+            options={values}
+            fullWidth
+            getOptionLabel={(option) => option}
+            isOptionEqualToValue={(option, val) => option === val}
+            renderOption={(props, option) => (
+                <Box component="li" {...props} key={option} style={{ height: '40px' }}>
+                    {multiple && <MeltaCheckbox checked={Array.isArray(selectedValues) && selectedValues.includes(option)} />}
+                    <ColoredEnumChip label={option} color={colorsOptions?.[option] || 'default'} style={{ marginLeft: '8px' }} />
+                </Box>
+            )}
+            renderTags={(tagValue, getTagProps) =>
+                tagValue.map((option, index) => {
+                    const { key, onDelete, ...restTagProps } = getTagProps({ index });
+                    return (
+                        <ColoredEnumChip
+                            key={key}
+                            label={option}
+                            color={colorsOptions?.[option] || 'default'}
+                            onDelete={onDelete}
+                            deleteIcon={<Close />}
+                            {...restTagProps}
+                            style={{
+                                margin: '0 4px 4px 0',
                             }}
                         />
-                    )}
-                    renderOption={(props, option) =>
-                        colorsOptions ? (
-                            <li {...props} key={option}>
-                                <ColoredEnumChip label={option} color={colorsOptions[option] || 'default'} />
-                            </li>
-                        ) : (
-                            <span {...props}>{option}</span>
-                        )
-                    }
-                    options={values.map((option) => option).sort()}
-                    getOptionDisabled={(option) => (multiple ? Boolean(value?.includes(option as string)) : false)}
+                    );
+                })
+            }
+            renderInput={(params) => (
+                <TextField
+                    {...params}
+                    fullWidth
+                    variant="outlined"
+                    error={false}
+                    inputProps={{
+                        ...params.inputProps,
+                    }}
+                    sx={{
+                        '& .MuiAutocomplete-listbox': {
+                            '::webkit-scrollbar': {
+                                width: '8px',
+                                backgroundColor: '#CCCFE5',
+                            },
+                            '::webkit-scrollbar-thumb': {
+                                backgroundColor: '#CCCFE5',
+                                borderRadius: '4px',
+                            },
+                            '::webkit-scrollbar-thumb:hover': {
+                                backgroundColor: '#CCCFE5',
+                            },
+                        },
+                    }}
                 />
             )}
-        </FormControl>
+        />
     );
 };
 

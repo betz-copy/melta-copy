@@ -1,14 +1,16 @@
 /* eslint-disable no-underscore-dangle */
 import React from 'react';
 import { WidgetProps, asNumber, getUiOptions, guessType } from '@rjsf/utils';
-import { Autocomplete, TextField, TextFieldProps } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
+import { Autocomplete, MenuItem, TextField, TextFieldProps } from '@mui/material';
+import { ExpandMore, Close } from '@mui/icons-material';
 import './form.css';
 import { ColoredEnumChip } from '../../ColoredEnumChip';
+import { MeltaCheckbox } from '../../MeltaCheckbox';
+import './widget.css';
 
 const nums = new Set(['number', 'integer']);
 
-function processValue(schema: any, value: any) {
+export const processValue = (schema: any, value: any) => {
     const { type, items } = schema;
     if (value === null) return undefined;
     if (type === 'array' && items && nums.has(items.type)) {
@@ -29,7 +31,7 @@ function processValue(schema: any, value: any) {
         }
     }
     return value;
-}
+};
 
 const RjfsSelectWidget = ({
     schema,
@@ -101,15 +103,15 @@ const RjfsSelectWidget = ({
                     onChange(val ? processValue(schema, val) : undefined);
                 }
             }}
-            renderOption={(props, option) =>
-                option.color ? (
-                    <li {...props} key={option.value}>
-                        <ColoredEnumChip label={option.label} color={option.color || 'default'} />
-                    </li>
-                ) : (
-                    <span {...props}>{option.label}</span>
-                )
-            }
+            popupIcon={<ExpandMore />}
+            renderOption={(props, option) => {
+                return (
+                    <MenuItem {...props} key={option.value} value={option.value} style={{ height: '40px' }}>
+                        {multiple && <MeltaCheckbox checked={value.includes(option.value)} />}
+                        <ColoredEnumChip {...props} label={option.label} color={option.color || 'default'} />
+                    </MenuItem>
+                );
+            }}
             renderTags={(tagValue, getTagProps) =>
                 tagValue.map((option, index) => {
                     const { key, onDelete, ...restTagProps } = getTagProps({ index });
@@ -119,7 +121,7 @@ const RjfsSelectWidget = ({
                             label={option.label}
                             color={option.color || 'default'}
                             onDelete={onDelete}
-                            deleteIcon={<CloseIcon />}
+                            deleteIcon={<Close />}
                             {...restTagProps}
                             style={{
                                 margin: '0 4px 4px 0',

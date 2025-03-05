@@ -4,6 +4,7 @@ import { useQueryClient } from 'react-query';
 import TemplateEntitiesAutocomplete from '../TemplateEntitiesAutocomplete';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { IEntity } from '../../../interfaces/entities';
+import './widget.css';
 
 const RjfsTemplateReferenceWidget = ({
     id,

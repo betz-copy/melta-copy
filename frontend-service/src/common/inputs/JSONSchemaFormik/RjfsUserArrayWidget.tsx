@@ -3,6 +3,7 @@ import { WidgetProps } from '@rjsf/utils';
 import { Box, Grid } from '@mui/material';
 import UserAutocomplete from '../UserAutocomplete';
 import CreateUserCard from '../../wizards/processTemplate/ApproverCard';
+import './widget.css';
 
 const RjfsUserArrayWidget = ({ label, value, onChange, rawErrors = [], onBlur, onFocus }: WidgetProps) => {
     const [inputValue, setInputValue] = React.useState('');

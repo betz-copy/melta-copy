@@ -167,11 +167,11 @@ const TemplateEntitiesAutocomplete: React.FC<{
 
                 return (
                     <li {...props} ref={props['data-option-index'] === allEntities.length - 1 ? lastElementRef : null}>
-                        <Grid container justifyContent="space-between" direction="row" spacing={1}>
+                        <Grid container justifyContent="space-between" direction="row" spacing={1} my={0.05}>
                             {displayOptionValues.map((displayOptionValue, index) => (
                                 <Grid item key={displayOptionValue} xs={4} overflow="hidden">
                                     <MeltaTooltip placement="right" title={displayOptionValue}>
-                                        <Typography color={index > 0 ? '#166BD4' : 'black'} overflow="hidden">
+                                        <Typography color={index > 0 ? '#9398C2' : '#53566E'} overflow="hidden">
                                             {displayOptionValue}
                                         </Typography>
                                     </MeltaTooltip>
@@ -193,7 +193,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
                                         )
                                     }
                                 >
-                                    <InfoOutlined sx={{ color: '#166BD4' }} />
+                                    <InfoOutlined sx={{ color: '#9398C2' }} />
                                 </MeltaTooltip>
                             </Grid>
                         </Grid>

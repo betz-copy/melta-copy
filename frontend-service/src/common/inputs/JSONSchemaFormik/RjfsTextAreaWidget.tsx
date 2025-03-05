@@ -7,6 +7,7 @@ import MUIRichTextEditor, { TMUIRichTextEditorStyles } from 'mui-rte';
 import React, { useEffect, useState } from 'react';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { containsHTMLTags } from '../../../utils/HtmlTagsStringValue';
+import './widget.css';
 
 const RjfsTextAreaWidget = ({ id, value, label, readonly, onChange, options }: WidgetProps) => {
     const { toPrint } = options;

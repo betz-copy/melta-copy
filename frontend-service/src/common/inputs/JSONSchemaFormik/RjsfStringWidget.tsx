@@ -1,11 +1,14 @@
+/* eslint-disable react/jsx-no-duplicate-props */
 /* eslint-disable import/no-extraneous-dependencies */
 /* eslint-disable no-underscore-dangle */
 import React from 'react';
 import { getDisplayLabel, WidgetProps } from '@rjsf/utils';
 import validator from '@rjsf/validator-ajv8';
-import { TextField } from '@mui/material';
+import { IconButton, InputAdornment, TextField } from '@mui/material';
+import { KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material';
 import { convertToPlainText, containsHTMLTags } from '../../../utils/HtmlTagsStringValue';
 import { getFixedNumber, getTextDirection } from '../../../utils/stringValues';
+import './widget.css';
 
 const RjsfTextWidget = ({
     id,
@@ -49,6 +52,16 @@ const RjsfTextWidget = ({
     else if (schema.type === 'number' && value) finalValue = getFixedNumber(Number(value));
     else finalValue = value ?? '';
 
+    const handleIncrement = () => {
+        const newValue = Number(value || 0) + 1;
+        onChange(newValue);
+    };
+
+    const handleDecrement = () => {
+        const newValue = Number(value || 0) - 1;
+        onChange(newValue);
+    };
+
     return (
         <TextField
             {...textFieldProps}
@@ -73,6 +86,10 @@ const RjsfTextWidget = ({
                     textOverflow: 'ellipsis',
                     fontSize: '14px',
                 },
+                sx: {
+                    '&::-webkit-inner-spin-button': { display: 'none' },
+                    '&::-webkit-outer-spin-button': { display: 'none' },
+                },
             }}
             type={(options.inputType ?? inputType) as string}
             value={finalValue}
@@ -82,6 +99,21 @@ const RjsfTextWidget = ({
             onFocus={_onFocus}
             onWheel={(e) => {
                 if (inputType === 'number') (e.target as HTMLElement).blur(); // disable number input scroll to change value when focused, but blurring it
+            }}
+            InputProps={{
+                endAdornment:
+                    inputType === 'number' && schema.serialCurrent === undefined ? (
+                        <InputAdornment position="end">
+                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                <IconButton sx={{ padding: 0 }} size="small" onClick={handleIncrement} disabled={readonly || disabled}>
+                                    <KeyboardArrowUp fontSize="small" color={value && !readonly ? 'action' : 'disabled'} />
+                                </IconButton>
+                                <IconButton sx={{ padding: 0 }} size="small" onClick={handleDecrement} disabled={readonly || disabled}>
+                                    <KeyboardArrowDown fontSize="small" color={value && !readonly ? 'action' : 'disabled'} />
+                                </IconButton>
+                            </div>
+                        </InputAdornment>
+                    ) : null,
             }}
             dir={getTextDirection(value, schema)}
         />

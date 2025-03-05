@@ -19,12 +19,9 @@ export const isStartWithHebrewLetter = (value: string) => {
 };
 
 export const getTextDirection = (value: string, schema: RJSFSchema): Direction => {
-    if (schema.type === 'string' && value) {
-        return isStartWithHebrewLetter(value) ? 'rtl' : 'ltr';
-    }
+    if (schema.type === 'string' && value) return isStartWithHebrewLetter(value) ? 'rtl' : 'ltr';
 
-    if (schema.serialCurrent === undefined) {
-        return schema.type === 'number' || Boolean(schema.pattern) ? 'ltr' : 'rtl';
-    }
-    return 'ltr';
+    if (schema.serialCurrent === undefined) return schema.type !== 'number' || Boolean(schema.pattern) ? 'ltr' : 'rtl';
+
+    return 'rtl';
 };
