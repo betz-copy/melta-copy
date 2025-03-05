@@ -3,8 +3,13 @@ import config from '../../config';
 import { BadRequestError, ForbiddenError } from '../error';
 import { UserService } from '../../externalServices/userService';
 
-const validateFlowHeaders = async (req: Request, _res: Response, next: NextFunction) => {
+const validateFlowHeaders = async (req: Request, res: Response, next: NextFunction) => {
     try {
+        if (!req.body.WorkspaceId) {
+            res.json([]);
+            return;
+        }
+
         const expectedHeaders = {
             requestHostName: config.flowCube.flowRequestHostName,
             system: config.flowCube.flowSystemName,
