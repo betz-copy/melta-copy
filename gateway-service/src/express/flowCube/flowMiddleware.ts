@@ -30,7 +30,12 @@ const validateFlowHeaders = async (req: Request, res: Response, next: NextFuncti
         const userT = userMail.substring(0, userMail.indexOf('@'));
         const targetUser = await UserService.searchUsers({ search: userT, limit: 1 });
 
-        req.user = targetUser.users[0] ? { id: targetUser.users[0]?._id } : ({} as any);
+        if (!targetUser || !targetUser.users[0] || targetUser.count === 0) {
+            res.json([]);
+            return;
+        }
+
+        req.user = { id: targetUser.users[0]._id };
 
         next();
     } catch (error) {
