@@ -5,7 +5,7 @@ import { UserService } from '../../externalServices/userService';
 
 const validateFlowHeaders = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (!req.body.WorkspaceId) {
+        if (!req.path.includes('/workspaces/search') && !req.body.WorkspaceId) {
             res.json([]);
             return;
         }
