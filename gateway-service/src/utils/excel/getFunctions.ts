@@ -68,6 +68,9 @@ export const isIncludedColumn = (propertyTemplate: IEntitySingleProperty) => {
     return !isRelationshipRef && !isFile && !isSerialNumber && !isUser && !isUsers && !isSignature;
 };
 
+export const isIncludedEditColumn = (propertyTemplate: IEntitySingleProperty, entityDisabled: boolean, templateDisabled: boolean) =>
+    !propertyTemplate.readOnly && !propertyTemplate.identifier && !entityDisabled && !templateDisabled && isIncludedColumn(propertyTemplate);
+
 type IFailedProperties = {
     key: string;
     value: IEntitySingleProperty;
@@ -109,13 +112,17 @@ const getUpdatedEntity = (
 
     if (!existingEntity) return undefined;
 
-    const hasEntityChanged = Object.keys(entity.properties).some((key) =>
-        isIncludedColumn(template.properties.properties[key])
-            ? JSON.stringify(entity.properties[key]) !== JSON.stringify(existingEntity.entity.properties[key])
-            : false,
+    const changedProperties = Object.fromEntries(
+        Object.entries(entity.properties).filter(([key, value]) => {
+            const propertyTemplate = template.properties.properties[key];
+            return (
+                isIncludedEditColumn(propertyTemplate, existingEntity.entity.properties.disabled, template.disabled) &&
+                JSON.stringify(value) !== JSON.stringify(existingEntity.entity.properties[key])
+            );
+        }),
     );
 
-    if (hasEntityChanged) return { ...entity, properties: { ...existingEntity.entity.properties, ...entity.properties } };
+    if (Object.keys(changedProperties).length) return { ...entity, properties: { ...existingEntity.entity.properties, ...changedProperties } };
     return undefined;
 };
 

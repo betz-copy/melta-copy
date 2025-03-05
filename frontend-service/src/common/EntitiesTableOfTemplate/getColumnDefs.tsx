@@ -96,7 +96,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
         const entityGetter: ValueGetterFunc = ({ data }) => (data ? getEntityPropertiesData(data) : undefined);
 
         const hideColumn =
-            template.propertiesPreview.length === 0
+            template.propertiesPreview.length === 0 && hideNonPreview
                 ? !firstTwoPropsOrder.find((propOrder) => propOrder === property)
                 : archive ||
                   (defaultVisibleColumns[property] !== undefined
