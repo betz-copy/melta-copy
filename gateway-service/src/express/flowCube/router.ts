@@ -34,11 +34,7 @@ FlowCubeRouter.post(
     FlowCubeControllerMiddleware.searchFlowCube,
 );
 
-FlowCubeRouter.post(
-    '/workspaces/search',
-    ValidateRequest(searchWorkspacesSchema),
-    wrapMiddleware((req, res) => FlowCubeController.searchWorkspaces(req, res!)),
-);
+FlowCubeRouter.post('/workspaces/search', ValidateRequest(searchWorkspacesSchema), FlowCubeController.searchWorkspaces);
 
 FlowCubeRouter.post(
     '/categories/search',
