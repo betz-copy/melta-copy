@@ -1,31 +1,30 @@
 import { KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material';
 import ClearIcon from '@mui/icons-material/Clear';
 import CloseIcon from '@mui/icons-material/Close';
-import { Autocomplete, Box, Checkbox, Chip, Divider, Grid, IconButton, ListItemText, MenuItem, Select, TextField, Typography } from '@mui/material';
+import { Autocomplete, Box, Checkbox, Chip, Divider, Grid, IconButton, ListItemText, MenuItem, TextField, Typography } from '@mui/material';
 import i18next from 'i18next';
+import debounce from 'lodash/debounce';
 import React, { useState } from 'react';
 import { IoIosArrowDown } from 'react-icons/io';
-import debounce from 'lodash/debounce';
-import { AG_GRID_LOCALE_IL } from '@ag-grid-community/locale';
+import Condition from 'yup/lib/Condition';
 import { CustomIcon } from '../../common/CustomIcon';
 import DateRange from '../../common/inputs/DateRange';
-import { IGraphFilterBody, IGraphFilterBodyBatch } from '../../interfaces/entities';
+import { UserArrayInput } from '../../common/inputs/UserArrayInput';
+import { IGraphFilterBody } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { useDarkModeStore } from '../../stores/darkMode';
-import UserAutocomplete from '../../common/inputs/UserAutocomplete';
-import CreateUserCard from '../../common/wizards/processTemplate/ApproverCard';
-import { UserArrayInput } from '../../common/inputs/UserArrayInput';
 
 interface GraphFilterProps {
     templateOptions: IMongoEntityTemplatePopulated[];
     graphEntityTemplateIds: string[];
     deleteFilter: React.Dispatch<React.SetStateAction<number>>;
-    setFilterRecord: React.Dispatch<React.SetStateAction<IGraphFilterBodyBatch>>;
-    filterKey: number;
+    setFilters: React.Dispatch<React.SetStateAction<IGraphFilterBody[]>>;
+    filterIndex: number;
     removeFilterFromFilterList: any;
     filter?: IGraphFilterBody;
     onFilter: () => void;
     selectedEntityTemplate?: IMongoEntityTemplatePopulated | null;
+    readOnly?: boolean;
 }
 
 const filterOptions = {
@@ -34,15 +33,16 @@ const filterOptions = {
 };
 
 const GraphFilter: React.FC<GraphFilterProps> = ({
-    filterKey,
+    filterIndex,
     templateOptions,
     deleteFilter,
-    setFilterRecord,
+    setFilters,
     filter,
     graphEntityTemplateIds,
     removeFilterFromFilterList,
     onFilter,
     selectedEntityTemplate,
+    readOnly = false,
 }) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const [selectedTemplate, setSelectedTemplate] = useState<IMongoEntityTemplatePopulated | null>(
@@ -61,27 +61,24 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
         : [];
     const x = true;
 
-    console.log({ selectedTemplate, selectedProperty, filterField }, filter?.selectedProperty);
-
-    const debouncedOnFilter = debounce((newFilterField) => {
-        onFilter(newFilterField);
-    }, 500); // 500ms delay after the last input
-
     const handleSetFilterRecord = (newFilterField, condition: boolean = true) => {
-        setFilterRecord((prev) => ({
-            ...prev,
-            [filterKey]: { selectedTemplate, selectedProperty, filterField: newFilterField },
-        }));
-
         if (condition)
-            debouncedOnFilter({
-                [filterKey]: { selectedTemplate, selectedProperty, filterField: newFilterField },
+            setFilters((prev) => {
+                const updatedFilters = [...prev];
+                updatedFilters[filterIndex] = { selectedTemplate, selectedProperty, filterField: newFilterField };
+
+                return updatedFilters;
             });
+
+        // if (condition)
+        //     debouncedOnFilter({
+        //         [filterIndex]: { selectedTemplate, selectedProperty, filterField: newFilterField },
+        //     });
     };
 
     const handleStartDate = (newValue) => {
         if (!newValue && !endDate) {
-            removeFilterFromFilterList(filterKey);
+            removeFilterFromFilterList(filterIndex);
         } else {
             setStartDate(newValue);
             handleSetFilterRecord([newValue, endDate], newValue && endDate);
@@ -89,7 +86,7 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
     };
     const handleEndDate = (newValue) => {
         if (!startDate && !newValue) {
-            removeFilterFromFilterList(filterKey);
+            removeFilterFromFilterList(filterIndex);
         } else {
             setEndDate(newValue);
             handleSetFilterRecord([startDate, newValue], newValue && startDate);
@@ -100,17 +97,18 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
         const updatedFilterField = checked ? [...filterField, option] : filterField.filter((item) => item !== option);
         setFilterField(updatedFilterField);
         if (updatedFilterField.length === 0) {
-            removeFilterFromFilterList(filterKey);
+            removeFilterFromFilterList(filterIndex);
         } else {
             handleSetFilterRecord(updatedFilterField);
         }
     };
+
     const handleSelectTemplate = (newValue: IMongoEntityTemplatePopulated | null) => {
         setSelectedTemplate(newValue);
         setSelectedProperty(null);
         setFilterField('');
         if (!newValue && selectedProperty) {
-            removeFilterFromFilterList(filterKey);
+            removeFilterFromFilterList(filterIndex);
         }
     };
 
@@ -118,7 +116,7 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
         setSelectedProperty(newValue);
         setFilterField('');
         if (!newValue && filterField) {
-            removeFilterFromFilterList(filterKey);
+            removeFilterFromFilterList(filterIndex);
         }
     };
 
@@ -134,7 +132,7 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
 
         setFilterField({ ...filterField, type: value });
         if (value === '' && typeof filterField !== 'object') {
-            removeFilterFromFilterList(filterKey);
+            removeFilterFromFilterList(filterIndex);
         } else {
             // Use a default value (empty string) if filterField.filter is undefined.
             const currentFilter = filterField.filter ?? '';
@@ -150,15 +148,15 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
 
         setFilterField(value);
         if (value === '' && typeof filterField !== 'object') {
-            removeFilterFromFilterList(filterKey);
+            removeFilterFromFilterList(filterIndex);
         } else {
             handleSetFilterRecord(value, condition);
         }
     };
 
     const handleFilterErasion = () => {
-        removeFilterFromFilterList(filterKey);
-        deleteFilter(filterKey);
+        removeFilterFromFilterList(filterIndex);
+        deleteFilter(filterIndex);
     };
 
     const renderFilterInput = () => {
@@ -176,6 +174,12 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
                         sx={{ width: '100%' }}
                         value={filterField || ''}
                         onChange={(e) => handleFilterFieldChange(e.target.value)}
+                        inputProps={{
+                            readOnly,
+                            style: {
+                                textOverflow: 'ellipsis',
+                            },
+                        }}
                     >
                         {propEnum.map((option, index) => (
                             // eslint-disable-next-line react/no-array-index-key
@@ -216,6 +220,12 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
                             else if (e.target.value === 'false') handleFilterFieldChange(false);
                             else handleFilterFieldChange('');
                         }}
+                        inputProps={{
+                            readOnly,
+                            style: {
+                                textOverflow: 'ellipsis',
+                            },
+                        }}
                     >
                         <MenuItem value="true">{i18next.t('booleanOptions.yes')}</MenuItem>
                         <MenuItem value="false">{i18next.t('booleanOptions.no')}</MenuItem>
@@ -234,6 +244,12 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
                         sx={{ width: '100%' }}
                         value={filterField || []}
                         onChange={() => {}}
+                        inputProps={{
+                            readOnly,
+                            style: {
+                                textOverflow: 'ellipsis',
+                            },
+                        }}
                         SelectProps={{
                             multiple: true,
                             renderValue: (selected: any) => (
@@ -279,7 +295,19 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
         return (
             <Grid container justifyContent="center" spacing={1}>
                 <Grid item width={x ? '40%' : '100%'}>
-                    <TextField fullWidth select size="small" value={filterField.type || ''} onChange={(e) => handleFilterTypeChange(e.target.value)}>
+                    <TextField
+                        fullWidth
+                        select
+                        size="small"
+                        value={filterField.type || ''}
+                        inputProps={{
+                            readOnly,
+                            style: {
+                                textOverflow: 'ellipsis',
+                            },
+                        }}
+                        onChange={(e) => handleFilterTypeChange(e.target.value)}
+                    >
                         {filterOptions[type].map((option, index) => (
                             // eslint-disable-next-line react/no-array-index-key
                             <MenuItem key={index} value={option}>
@@ -291,11 +319,21 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
 
                 <Grid item width={x ? '60%' : '100%'}>
                     <TextField
+                        inputProps={{
+                            readOnly,
+                            style: {
+                                textOverflow: 'ellipsis',
+                            },
+                        }}
                         size="small"
                         fullWidth
                         type={selectedTemplate?.properties.properties[selectedProperty].type}
                         value={filterField.filter || ''}
-                        onChange={(e) => handleFilterFieldChange({ ...filterField, filter: e.target.value }, filterField.type && e.target.value)}
+                        onChange={(e) => {
+                            console.log({ curr: filterField, condition: filterField.type && e.target.value });
+
+                            handleFilterFieldChange({ ...filterField, filter: e.target.value }, Boolean(filterField.type && e.target.value));
+                        }}
                     />
                 </Grid>
             </Grid>

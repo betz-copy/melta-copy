@@ -19,7 +19,7 @@ const ChartSideBar: React.FC<{
     const currentUser = useUserStore();
 
     return (
-        <Grid container direction="column">
+        <Grid container direction="column" width="100%">
             <Grid item>
                 <Grid container direction="column" spacing={2} marginTop={1}>
                     <Grid item>

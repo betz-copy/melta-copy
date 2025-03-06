@@ -2,7 +2,7 @@ import { ArrowForwardIosOutlined, ArrowOutwardRounded, FilterList, Settings } fr
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { Box, Button, Grid, IconButton, Tab, Typography, useTheme } from '@mui/material';
 import { AxiosError } from 'axios';
-import { Form, Formik } from 'formik';
+import { Form, Formik, FormikTouched } from 'formik';
 import i18next from 'i18next';
 import React, { CSSProperties, ReactElement, useMemo, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
@@ -13,7 +13,7 @@ import { ErrorToast } from '../../../common/ErrorToast';
 import { LayoutItem } from '../../../common/GridLayout/interface';
 import { EntitiesTable } from '../../../common/wizards/loadEntities/EntitiesTable';
 import { IBasicChart, IChart } from '../../../interfaces/charts';
-import { IEntity } from '../../../interfaces/entities';
+import { IEntity, IGraphFilterBody } from '../../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { createChart, deleteChart, editChart, getChartById } from '../../../services/chartsService';
 import { useUserStore } from '../../../stores/user';
@@ -24,8 +24,13 @@ import { ChartGenerator } from '../chartGenerator.tsx';
 import { ChartSideBar } from './ChartSideBar';
 import { FilterSideBar } from './filterSideBar';
 import { ChartTopBar } from './TopBar';
+import { markTouched } from '../../../utils/charts/markTouchedRecursive';
 
 const ChartPage: React.FC = () => {
+    const [filters, setFilters] = useState<IGraphFilterBody[]>([]);
+
+    console.log({ filters });
+
     const { templateId, chartId } = useParams<{ templateId: string; chartId?: string }>();
 
     const { data: chart } = useQuery(['getChart', chartId], () => getChartById(chartId!), {
@@ -134,6 +139,10 @@ const ChartPage: React.FC = () => {
 
     const tabsComponentsNames: string[] = ['generalDetails', 'filterDetails'];
 
+    const isFilterComplete = (filter: IGraphFilterBody) => {
+        return filter.selectedTemplate && filter.selectedProperty && filter.filterField;
+    };
+
     return (
         <Formik<IBasicChart>
             initialValues={initialValues}
@@ -184,8 +193,8 @@ const ChartPage: React.FC = () => {
                                     defaultExpanded={false}
                                     title="הנתונים המוצגים "
                                     defaultFilter={
-                                        formik.values.filter && Object.keys(formik.values.filter).length !== 0
-                                            ? filterModelToFilterOfGraph(formik.values.filter)[templateId].filter
+                                        filters.length > 0 && filters.every(isFilterComplete)
+                                            ? filterModelToFilterOfGraph(filters)[templateId].filter
                                             : undefined
                                     }
                                 />
@@ -216,8 +225,15 @@ const ChartPage: React.FC = () => {
                             >
                                 <Grid item sx={{ marginTop: '5px', justifyContent: 'space-between', width: '92%' }}>
                                     <TabList
-                                        onChange={(_event, newValue) => {
-                                            setTabValue(newValue);
+                                        onChange={async (_event, newValue) => {
+                                            if (!readonly) {
+                                                const allTouched = markTouched(formik.values);
+                                                await formik.setTouched(allTouched);
+
+                                                const errors = await formik.validateForm();
+
+                                                if (Object.keys(errors).length === 0) setTabValue(newValue);
+                                            } else setTabValue(newValue);
                                         }}
                                         variant="standard"
                                         sx={{
@@ -257,7 +273,13 @@ const ChartPage: React.FC = () => {
                                         <ChartSideBar formik={formik} entityTemplate={template} readonly={readonly} edit={edit} />
                                     </TabPanel>
                                     <TabPanel key="filterDetails" value="filterDetails" sx={{ padding: 0 }}>
-                                        <FilterSideBar templateId={template._id} formik={formik} template={template} />
+                                        <FilterSideBar
+                                            templateId={template._id}
+                                            filters={filters}
+                                            setFilters={setFilters}
+                                            readonly={readonly}
+                                            template={template}
+                                        />
                                     </TabPanel>
                                 </Grid>
                             </Grid>

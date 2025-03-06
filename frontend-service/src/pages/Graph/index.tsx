@@ -14,7 +14,7 @@ import { useParams } from 'wouter';
 import { toast } from 'react-toastify';
 import { environment } from '../../globals';
 import { ICategoryMap, IMongoCategory } from '../../interfaces/categories';
-import { IEntityExpanded, IGraphFilterBodyBatch } from '../../interfaces/entities';
+import { IEntityExpanded, IGraphFilterBody } from '../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
 import { getExpandedEntityByIdRequest } from '../../services/entitiesService';
@@ -62,6 +62,8 @@ const Graph: React.FC = () => {
 
     const [nodeMenuState, setNodeMenuState] = useState<genericMenuState>();
     const [graphMenuState, setGraphMenuState] = useState<Omit<genericMenuState, 'node'>>();
+
+    const [filters, setFilters] = useState<IGraphFilterBody[]>([]);
 
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
@@ -120,9 +122,6 @@ const Graph: React.FC = () => {
         });
     };
 
-    const [filterRecord, setFilterRecord] = useState<IGraphFilterBodyBatch>({});
-    const [filters, setFilters] = useState<number[]>([]);
-
     const expandedParams = {
         [entityId]: 1,
         ...JSON.parse(searchParams.get('expandedEntities')!),
@@ -137,7 +136,7 @@ const Graph: React.FC = () => {
                 disabled: false,
                 templateIds: filteredEntityTemplates.map((entityTemplate) => entityTemplate._id),
             },
-            filterRecord,
+            filters,
         ],
         () =>
             getExpandedEntityByIdRequest(
@@ -147,7 +146,7 @@ const Graph: React.FC = () => {
                     disabled: false,
                     templateIds: filteredEntityTemplates.map((entityTemplate) => entityTemplate._id),
                 },
-                filterRecord,
+                filters,
             ),
         {
             enabled: false,
@@ -207,7 +206,7 @@ const Graph: React.FC = () => {
 
     useEffect(() => {
         loadNextBatch();
-    }, [currentBatchIndex, initialExpandedEntity, is3DGraph, entityId, filteredEntityTemplates, load, filterRecord]);
+    }, [currentBatchIndex, initialExpandedEntity, is3DGraph, entityId, filteredEntityTemplates, load, filters]);
 
     const renderTooltip = (node: NodeObject) => {
         const entityTemplate = entityTemplates.get(node.templateId)!;
@@ -332,7 +331,7 @@ const Graph: React.FC = () => {
 
     const [openFilter, setOpenFilter] = useState<boolean>(false);
     const addNewFilter = () => {
-        setFilters((prevFilters) => [...prevFilters, Date.now()]);
+        setFilters((prevFilters) => [...prevFilters, { selectedTemplate: null }]);
     };
 
     const onSuccessExpandGraph = (data: IEntityExpanded) => {
@@ -350,7 +349,6 @@ const Graph: React.FC = () => {
                     setFilteredEntityTemplates(Array.from(entityTemplates.values()));
                     reload();
                     setFilters([]);
-                    setFilterRecord({});
                     resetGraph(undefined, true);
                 }}
                 set3DView={(is3DView) => {
@@ -401,8 +399,6 @@ const Graph: React.FC = () => {
                     <Box style={{ flex: '1 1 0', overflowY: 'auto', height: '0px' }}>
                         <GraphFilterBatch
                             templateOptions={templateOptions}
-                            filterRecord={filterRecord}
-                            setFilterRecord={setFilterRecord}
                             filters={filters}
                             setFilters={setFilters}
                             graphEntityTemplateIds={graphEntityTemplateIds}
@@ -422,7 +418,7 @@ const Graph: React.FC = () => {
                         forceRef.current?.resumeAnimation();
                         setNodeMenuState(undefined);
                     }}
-                    filterRecord={filterRecord}
+                    filters={filters}
                     onSuccessExpandGraph={(data: IEntityExpanded) => onSuccessExpandGraph(data)}
                 />
             )}

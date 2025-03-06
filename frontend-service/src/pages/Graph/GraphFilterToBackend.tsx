@@ -62,21 +62,30 @@ const backFilterToGraoph = (template: IMongoEntityTemplatePopulated, property: s
     }
 };
 
-export const filterModelToFilterOfGraph = (filterModel: IGraphFilterBodyBatch): IGraphFilterToBackendBody['filters'] => {
-    const groupedByTemplate = Object.values(filterModel).reduce((acc: Record<string, Record<string, IFilterOfField>[]>, obj: IGraphFilterBody) => {
+export const filterModelToFilterOfGraph = (filterModel: IGraphFilterBody[]): IGraphFilterToBackendBody['filters'] => {
+    console.log({ filterModel });
+
+    const groupedByTemplate = filterModel.reduce((acc: Record<string, Record<string, IFilterOfField>[]>, obj: IGraphFilterBody) => {
         const { selectedTemplate, selectedProperty, filterField } = obj;
+        if (!selectedTemplate) return acc; // Handle case where no template is selected
+
         const { _id } = selectedTemplate;
 
         if (!acc[_id]) {
             // eslint-disable-next-line no-param-reassign
             acc[_id] = [];
         }
-        if (selectedProperty && selectedTemplate.properties.properties[selectedProperty].items?.enum && filterField.length > 0) {
-            acc[_id].push(propertyAndValueRelation(selectedTemplate, selectedProperty, filterField));
-        } else if (selectedProperty) acc[_id].push(propertyAndValueRelation(selectedTemplate, selectedProperty, filterField));
-        else acc[_id].push({});
+
+        if (selectedProperty) {
+            const templateProperties = selectedTemplate.properties?.properties || {};
+            const isEnumProperty = templateProperties[selectedProperty]?.items?.enum && filterField?.length > 0;
+            if (isEnumProperty) acc[_id].push(propertyAndValueRelation(selectedTemplate, selectedProperty, filterField));
+            else acc[_id].push(propertyAndValueRelation(selectedTemplate, selectedProperty, filterField));
+        } else acc[_id].push({});
+
         return acc;
     }, {} as Record<string, Record<string, IFilterOfField>[]>);
+
     const result = Object.keys(groupedByTemplate).reduce((finalObj: Record<string, IGraphFilterToBackendBody['filters']>, template: string) => {
         // eslint-disable-next-line no-param-reassign
         finalObj[template] = {

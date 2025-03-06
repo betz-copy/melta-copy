@@ -1,34 +1,36 @@
+/* eslint-disable react/no-array-index-key */
 import React from 'react';
 import { Box, Grid } from '@mui/material';
 import { deepEquals } from '@rjsf/utils';
 import { isEqual } from 'lodash';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { GraphFilter } from './GraphFilter';
-import { IGraphFilterBodyBatch } from '../../interfaces/entities';
+import { IGraphFilterBody } from '../../interfaces/entities';
 
 interface GraphFilterBatchProps {
     templateOptions: IMongoEntityTemplatePopulated[];
     graphEntityTemplateIds: string[];
-    setFilterRecord: React.Dispatch<React.SetStateAction<IGraphFilterBodyBatch>>;
-    filters: number[];
-    setFilters: React.Dispatch<React.SetStateAction<number[]>>;
-    filterRecord: IGraphFilterBodyBatch;
+    filters: IGraphFilterBody[];
+    setFilters: React.Dispatch<React.SetStateAction<IGraphFilterBody[]>>;
     onFilter: () => void;
+    readonly?: boolean;
     selectedEntityTemplate?: IMongoEntityTemplatePopulated | null;
 }
 
 const GraphFilterBatch: React.FC<GraphFilterBatchProps> = React.memo(
-    ({ templateOptions, setFilterRecord, filters, setFilters, filterRecord, graphEntityTemplateIds, onFilter, selectedEntityTemplate }) => {
+    ({ templateOptions, filters, setFilters, graphEntityTemplateIds, onFilter, readonly, selectedEntityTemplate }) => {
         // deletes filter box from screen
         const deleteFilter = (value) => {
             setFilters((prevFilters) => prevFilters.filter((item) => item !== value));
         };
 
-        const removeFilterFromFilterList = (filterKey) => {
-            setFilterRecord((prev) => {
-                const { [filterKey]: deletedFilter, ...restFilters } = prev;
-                return restFilters;
+        const removeFilterFromFilterList = (index: number) => {
+            setFilters((prevFilters) => {
+                const updatedFilters = [...prevFilters];
+                updatedFilters.splice(index, 1);
+                return updatedFilters;
             });
+
             onFilter();
         };
 
@@ -37,14 +39,14 @@ const GraphFilterBatch: React.FC<GraphFilterBatchProps> = React.memo(
         return (
             <Box display="flex" flexDirection="column" style={{ position: 'relative' }}>
                 <Grid container zIndex="100" gap="20px">
-                    {filters?.map((key) => {
+                    {filters?.map((filter, index) => {
                         return (
                             <GraphFilter
-                                key={key}
-                                filterKey={key}
+                                key={index}
+                                filterIndex={index}
                                 templateOptions={templateOptions}
-                                setFilterRecord={setFilterRecord}
-                                filter={filterRecord[key]}
+                                setFilters={setFilters}
+                                filter={filter}
                                 deleteFilter={deleteFilter}
                                 graphEntityTemplateIds={graphEntityTemplateIds}
                                 removeFilterFromFilterList={removeFilterFromFilterList}
@@ -58,11 +60,7 @@ const GraphFilterBatch: React.FC<GraphFilterBatchProps> = React.memo(
         );
     },
     (prevProps, nextProps) => {
-        console.log('Previous filterRecord:', prevProps.filterRecord);
-        console.log('Next filterRecord:', nextProps.filterRecord);
-        console.log('isEqual', isEqual(prevProps.filterRecord, nextProps.filterRecord));
-
-        return isEqual(prevProps.filterRecord, nextProps.filterRecord) && deepEquals(prevProps.filters, nextProps.filters);
+        return isEqual(prevProps.filters, nextProps.filters);
     },
 );
 
