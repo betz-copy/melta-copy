@@ -20,6 +20,13 @@ type CoordinatesResult = {
     value: Cartesian3 | Cartesian3[];
 };
 
+type UTM = {
+    zone: number; // UTM Zone (1-60)
+    hemi: 'N' | 'S'; // Hemisphere (North or South)
+    east: number; // Easting (6-digit)
+    north: number; // Northing (7-digit)
+};
+
 export const zoomNumber = 300000;
 
 export const jerusalemCoordinates: Cartesian3 = Cartesian3.fromDegrees(35.2137, 31.7683, zoomNumber);
@@ -71,28 +78,60 @@ export const convertWGS84ToUTM = (wgs84Location: Cartesian3 | Cartesian3[]) =>
         ? utm.convertLatLonToUtm(wgs84Location.x, wgs84Location.y)
         : wgs84Location.map((point) => utm.convertLatLonToUtm(point.x, point.y));
 
-export const convertUTMToWGS84 = (utmLocation) =>
+export const convertUTMToWGS84 = (utmLocation: UTM | UTM[]) =>
     !Array.isArray(utmLocation)
-        ? utm.convertUtmToLatLon(utmLocation.easting, utmLocation.northing, utmLocation.zoneNumber, utmLocation.zoneLetter)
-        : utmLocation.map((point) => utm.convertUtmToLatLon(point.easting, point.northing, point.zoneNumber, point.zoneLetter));
+        ? utm.convertUtmToLatLon(utmLocation.east, utmLocation.north, utmLocation.zone, utmLocation.hemi)
+        : utmLocation.map((point) => utm.convertUtmToLatLon(point.east, point.north, point.zone, point.hemi));
 
-const extractUtmData = (utmString) => {
-    const utmRegex = /\b([1-9]|[1-5][0-9]|60)([C-HJ-NP-X])\s(\d{6})\s(\d{7})\b/;
-    const match = utmString.match(utmRegex);
-
-    if (!match) {
+const extractUtmPoint = (utmMatchRegex: RegExpMatchArray | null): UTM => {
+    if (!utmMatchRegex) {
         throw new Error('Invalid UTM coordinate format');
     }
 
-    const zone = parseInt(match[1], 10);
-    const hemi = match[2] >= 'N' ? 'N' : 'S';
-    const east = parseInt(match[3], 10);
-    const north = parseInt(match[4], 10);
+    const zone = parseInt(utmMatchRegex[1], 10);
+    const hemi = utmMatchRegex[2] >= 'N' ? 'N' : 'S';
+    const east = parseInt(utmMatchRegex[3], 10);
+    const north = parseInt(utmMatchRegex[4], 10);
 
     return { zone, hemi, east, north };
 };
 
-export const locationConverterToString = (location: string, unit: 'WGS84' | 'UTM') => {};
+const extractUtmLocation = (utmString: string): UTM | UTM[] => {
+    const utmRegex = /\b([1-9]|[1-5][0-9]|60)([C-HJ-NP-X])\s(\d{6})\s(\d{7})\b/;
+
+    if (utmString.startsWith('POLYGON((')) {
+        const matches = [...utmString.matchAll(utmRegex)];
+
+        if (matches.length === 0) {
+            throw new Error('Invalid UTM coordinates in POLYGON');
+        }
+
+        const utmDataArray = matches.map((match) => extractUtmPoint(match));
+
+        return utmDataArray;
+    }
+    const match = utmString.match(utmRegex);
+    return extractUtmPoint(match);
+};
+
+export const stringToCoordinates = (strCoords: string): CoordinatesResult => {
+    const polygon = parsePolygon(strCoords);
+    if (polygon) return { type: 'polygon', value: polygon };
+
+    const formatted = strCoords.split(',').map((val) => +val);
+    return { type: 'marker', value: { x: formatted[0], y: formatted[1] } as Cartesian3 };
+
+    // TODO: add validation to format
+};
+
+export const locationConverterToString = (location: string, unitToConvertTo: 'WGS84' | 'UTM') => {
+    if (unitToConvertTo === 'WGS84') {
+        const utmLocation = extractUtmLocation(location);
+        return convertUTMToWGS84(utmLocation);
+    }
+    const wgs84Location = stringToCoordinates(location);
+    convertWGS84ToUTM(wgs84Location.value);
+};
 
 export const locationToWGS84String = (cartesian3: Cartesian3 | Cartesian3[], includePolygon = true): string => {
     if (!Array.isArray(cartesian3)) {
@@ -105,16 +144,6 @@ export const locationToWGS84String = (cartesian3: Cartesian3 | Cartesian3[], inc
         return `${longitude} ${latitude}`;
     });
     return includePolygon ? `${polygonPrefix}${points.join(',')}${polygonSuffix}` : points.join(',');
-};
-
-export const stringToCoordinates = (strCoords: string, unit: 'WGS84' | 'UTM' = 'WGS84'): CoordinatesResult => {
-    const polygon = parsePolygon(strCoords);
-    if (polygon) return { type: 'polygon', value: polygon };
-
-    const formatted = strCoords.split(',').map((val) => +val);
-    return { type: 'marker', value: { x: formatted[0], y: formatted[1] } as Cartesian3 };
-
-    // TODO: add validation to format
 };
 
 export const isValidWGS84 = (location: Cartesian3 | Cartesian3[]) =>
