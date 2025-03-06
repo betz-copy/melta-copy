@@ -1,6 +1,6 @@
-import { FilterList, Settings } from '@mui/icons-material';
+import { ArrowForwardIosOutlined, ArrowOutwardRounded, FilterList, Settings } from '@mui/icons-material';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
-import { Box, Grid, Tab, useTheme } from '@mui/material';
+import { Box, Button, Grid, IconButton, Tab, Typography, useTheme } from '@mui/material';
 import { AxiosError } from 'axios';
 import { Form, Formik } from 'formik';
 import i18next from 'i18next';
@@ -158,8 +158,18 @@ const ChartPage: React.FC = () => {
                         template={template}
                     />
                     <Grid container flexWrap="nowrap" height="94.5vh" justifyContent="space-evenly">
-                        <Grid item container flexDirection="column" justifyContent="space-evenly" flexWrap="nowrap" height="100%" alignItems="center">
-                            <Grid item container height="100%" alignItems="center" justifyContent="center">
+                        <Grid container item flexDirection="column" flexWrap="nowrap" height="100%" alignItems="center">
+                            <Grid item alignSelf="flex-start">
+                                <Button
+                                    variant="text"
+                                    sx={{ fontWeight: '400', fontSize: '18px', top: '30px', left: '30px' }}
+                                    startIcon={<ArrowForwardIosOutlined sx={{ width: '12px', height: '12px' }} />}
+                                    onClick={() => navigate(`/charts/${templateId}`)}
+                                >
+                                    חזרה
+                                </Button>
+                            </Grid>
+                            <Grid container item height="100%" alignItems="center" justifyContent="center">
                                 <ChartGenerator
                                     formikValues={formik.values}
                                     template={template}
@@ -167,18 +177,18 @@ const ChartPage: React.FC = () => {
                                     entitiesTableRef={entitiesTableRef}
                                 />
                             </Grid>
-                            <Grid container item width="98%" display="flex" flexDirection="column" justifyContent="center">
-                                <Grid item>
-                                    <EntitiesTable
-                                        rowModelType="infinite"
-                                        template={template}
-                                        defaultExpanded={false}
-                                        title="הנתונים המוצגים "
-                                        defaultFilter={
-                                            formik.values.filter ? filterModelToFilterOfGraph(formik.values.filter)[templateId].filter : undefined
-                                        }
-                                    />
-                                </Grid>
+                            <Grid item width="98%">
+                                <EntitiesTable
+                                    rowModelType="infinite"
+                                    template={template}
+                                    defaultExpanded={false}
+                                    title="הנתונים המוצגים "
+                                    defaultFilter={
+                                        formik.values.filter && Object.keys(formik.values.filter).length !== 0
+                                            ? filterModelToFilterOfGraph(formik.values.filter)[templateId].filter
+                                            : undefined
+                                    }
+                                />
                             </Grid>
                         </Grid>
                         <TabContext value={tabValue}>
@@ -187,8 +197,8 @@ const ChartPage: React.FC = () => {
                                 // height="100%"
                                 sx={{
                                     // marginTop: 2,
-                                    width: '18rem',
-                                    padding: '20px',
+                                    width: 375,
+                                    // padding: '20px',
                                     // height: 1041,
                                     // position: 'relative',
                                     // top: 63,
@@ -202,7 +212,7 @@ const ChartPage: React.FC = () => {
                                     flexDirection: 'column',
                                     alignItems: 'center',
                                 }}
-                                direction="column"
+                                // direction="column"
                             >
                                 <Grid item sx={{ marginTop: '5px', justifyContent: 'space-between', width: '92%' }}>
                                     <TabList
@@ -211,8 +221,8 @@ const ChartPage: React.FC = () => {
                                         }}
                                         variant="standard"
                                         sx={{
-                                            display: 'flex',
-                                            justifyContent: 'space-between',
+                                            // display: 'flex',
+                                            // justifyContent: 'space-between',
                                             borderBottom: '1px solid #E0E0E0',
                                         }}
                                     >
