@@ -11,13 +11,13 @@ import { MeltaTooltip } from '../../common/MeltaTooltip';
 import { useDarkModeStore } from '../../stores/darkMode';
 import {
     calculateCenterOfPolygon,
-    location3ToString,
+    locationToWGS84String,
     getPolygonFarthestPoint,
     isValidWGS84,
     isValidPolygonPoint,
     jerusalemCoordinates,
     stringToCoordinates,
-    convertWGS94ToUTM,
+    convertWGS94ToECEF,
 } from '../../utils/map';
 import { MeltaCoordinate, MeltaPolygon } from './LocationPreview';
 import { DeleteMapDataBtn } from './mapPage/MapFilters';
@@ -28,12 +28,9 @@ type Props = {
     defaultLocation?: string;
     field: string;
     updateValue: (newValue: string | undefined) => void;
-    unit: 'WGS84' | 'UTM';
 };
 
-const LocationField = ({ defaultLocation, field, updateValue, unit }: Props) => {
-    console.log({ unit });
-
+const LocationField = ({ defaultLocation, field, updateValue }: Props) => {
     const queryClient = useQueryClient();
     const config = queryClient.getQueryData<BackendConfigState>('getBackendConfig');
 
@@ -50,12 +47,12 @@ const LocationField = ({ defaultLocation, field, updateValue, unit }: Props) => 
 
         if (initialCoordinates?.type === 'marker') {
             const { value } = initialCoordinates;
-            setMarkerPosition(isValidWGS84(value as Cartesian3) ? (convertWGS94ToUTM(value) as Cartesian3) : ({ ...value } as Cartesian3));
+            setMarkerPosition(isValidWGS84(value as Cartesian3) ? (convertWGS94ToECEF(value) as Cartesian3) : ({ ...value } as Cartesian3));
         }
 
         if (initialCoordinates?.type === 'polygon') {
             const positions = (initialCoordinates.value as Cartesian3[]).map((position) =>
-                isValidWGS84(position) ? (convertWGS94ToUTM(position) as Cartesian3) : position,
+                isValidWGS84(position) ? (convertWGS94ToECEF(position) as Cartesian3) : position,
             );
             setPolygonPosition(positions);
         }
@@ -113,12 +110,12 @@ const LocationField = ({ defaultLocation, field, updateValue, unit }: Props) => 
                     if (isValidPolygonPoint(polygonPosition, cartesian)) {
                         setPolygonPosition((prev) => [...prev, cartesian]);
                         const newPolygon = [...polygonPosition, cartesian];
-                        updateValue(location3ToString(newPolygon, unit));
+                        updateValue(locationToWGS84String(newPolygon));
                     }
                 } else if (drawingMode === 'coordinate') {
                     setMarkerPosition(cartesian);
                     setDrawingMode(null);
-                    updateValue(location3ToString(cartesian, unit));
+                    updateValue(locationToWGS84String(cartesian));
                 }
             }
         },

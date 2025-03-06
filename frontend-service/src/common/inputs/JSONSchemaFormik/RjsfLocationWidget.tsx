@@ -9,7 +9,7 @@ import MapIcon from '@mui/icons-material/Map';
 import i18next from 'i18next';
 import { environment } from '../../../globals';
 import LocationField from '../../../pages/Map/LocationField';
-import { isValidUTM, isValidWGS84, location3ToString, stringToCoordinates } from '../../../utils/map';
+import { isValidUTM, isValidWGS84, locationToWGS84String, stringToCoordinates } from '../../../utils/map';
 
 const { polygonPrefix, polygonSuffix } = environment.map.polygon;
 
@@ -82,7 +82,7 @@ const RjsfLocationWidget = ({
     ...textFieldProps
 }: WidgetProps) => {
     const getInitialLocation = (location) =>
-        location?.unit === 'UTM' ? location3ToString(stringToCoordinates(location.location).value, 'UTM') : value;
+        location?.unit === 'UTM' ? locationToWGS84String(stringToCoordinates(location.location).value, 'UTM') : value;
 
     const [error, setError] = useState(false);
     const [mapOpen, setMapOpen] = useState(false);
@@ -114,8 +114,8 @@ const RjsfLocationWidget = ({
         const locationParse = stringToCoordinates(newLocationValue);
         let updatedLocation = newLocationValue;
         const location = locationParse.value;
-        if (newUnit === 'UTM' && isValidWGS84(location)) updatedLocation = location3ToString(location, newUnit);
-        if (newUnit === 'WGS84' && isValidUTM(location)) updatedLocation = location3ToString(location, newUnit);
+        if (newUnit === 'UTM' && isValidWGS84(location)) updatedLocation = locationToWGS84String(location, newUnit);
+        if (newUnit === 'WGS84' && isValidUTM(location)) updatedLocation = locationToWGS84String(location, newUnit);
         console.log({ updatedLocation });
 
         onChange(newLocationValue?.toString().trim() ? { location: updatedLocation, unit: newUnit } : undefined);
@@ -199,11 +199,8 @@ const RjsfLocationWidget = ({
                     defaultLocation={newLocationValue}
                     field={label}
                     updateValue={(newVal: string | undefined) => {
-                        console.log({ newVal });
-
                         setNewLocationValue(newVal);
                     }}
-                    unit={coordinateSystem}
                 />
             </Dialog>
         </Box>

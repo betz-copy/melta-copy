@@ -13,7 +13,7 @@ import MapFilters from './MapFilters';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IEntity } from '../../../interfaces/entities';
 import { getEntitiesByLocation } from '../../../services/entitiesService';
-import { location3ToString, jerusalemCoordinates, stringToCoordinates, convertUTMToWGS84, convertWGS94ToUTM, LatLng } from '../../../utils/map';
+import { locationToWGS84String, jerusalemCoordinates, stringToCoordinates, convertECEFToWGS84, convertWGS94ToECEF, LatLng } from '../../../utils/map';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { environment } from '../../../globals';
 import { useEntityWithLocationFields } from '../../../utils/hooks/useLocation';
@@ -230,7 +230,7 @@ const MapPage = () => {
     useEffect(() => {
         const fetchData = async () => {
             if (circleData.center && circleData.radius) {
-                const { longitude, latitude } = convertUTMToWGS84(circleData.center) as LatLng;
+                const { longitude, latitude } = convertECEFToWGS84(circleData.center) as LatLng;
 
                 await Promise.all(
                     filteredTemplatesIds.map(async (templateId) =>
@@ -285,7 +285,7 @@ const MapPage = () => {
                 {circleData.center && (circleData.radius || circleData.mouseRadius) && (
                     <Entity
                         name={i18next.t('location.circle')}
-                        description={`${location3ToString(circleData.center)}, ${circleData.radius}`}
+                        description={`${locationToWGS84String(circleData.center)}, ${circleData.radius}`}
                         position={circleData.center}
                     >
                         <EllipseGraphics
@@ -331,7 +331,7 @@ const MapPage = () => {
                     <MeltaCoordinate
                         key={key}
                         name={searchedPropertyDefinitions[key].title}
-                        position={convertWGS94ToUTM(position) as Cartesian3}
+                        position={convertWGS94ToECEF(position) as Cartesian3}
                         onClick={() => {
                             setSelectedEntity({ matchingField: `${key}-${searchedEntity!.properties._id}`, node: searchedEntity! });
                         }}
@@ -353,7 +353,7 @@ const MapPage = () => {
                     <MeltaCoordinate
                         key={key}
                         name={name}
-                        position={convertWGS94ToUTM(position) as Cartesian3}
+                        position={convertWGS94ToECEF(position) as Cartesian3}
                         onClick={() => {
                             setSelectedEntity({ matchingField: `${key}-${node.properties._id}`, node });
                         }}
