@@ -10,12 +10,12 @@
     max-width: 100%;
 } */
 
-.has-other-field-child {
+.has-field-child {
     width: 50%;
     max-width: 50% !important;
 }
 
-.has-unique-field-child {
+.has-bigger-field-child {
     width: '100%';
     max-width: '100%';
     direction: rtl;

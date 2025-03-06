@@ -393,15 +393,14 @@ const CreateOrEditEntityDetails: React.FC<{
                     // (if the value changes it won't be undefined and it will consider it dirty)
                     const valuePropsToFilter = { ...values.properties };
                     Object.keys(valuePropsToFilter).forEach((key) => {
-                        const signatureField = values.template.properties.properties[key]?.format === 'signature';
-                        return valuePropsToFilter[key] === undefined || signatureField ? delete valuePropsToFilter[key] : {};
+                        const isSignatureField = values.template.properties.properties[key]?.format === 'signature';
+                        return valuePropsToFilter[key] === undefined || isSignatureField ? delete valuePropsToFilter[key] : {};
                     });
 
                     Object.keys(initialValuePropsToFilter).forEach((key) => {
-                        const signatureField = values.template.properties.properties[key]?.format === 'signature';
-                        return initialValuePropsToFilter[key] === undefined || signatureField ? delete initialValuePropsToFilter[key] : {};
+                        const isSignatureField = values.template.properties.properties[key]?.format === 'signature';
+                        return initialValuePropsToFilter[key] === undefined || isSignatureField ? delete initialValuePropsToFilter[key] : {};
                     });
-                    console.log({ equal: isEqual(valuePropsToFilter, initialValuePropsToFilter) });
 
                     return !isEqual(valuePropsToFilter, initialValuePropsToFilter);
                 }, [formInitialValues, values]);

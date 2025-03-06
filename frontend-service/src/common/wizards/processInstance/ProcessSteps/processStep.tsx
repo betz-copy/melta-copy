@@ -6,8 +6,8 @@ import { Field, Form, Formik } from 'formik';
 import i18next from 'i18next';
 import pickBy from 'lodash.pickby';
 import React, { FC } from 'react';
-import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
+import { useMutation, useQueryClient } from 'react-query';
 import { ProcessStepValues } from '.';
 import { PermissionScope } from '../../../../interfaces/permissions';
 import { IMongoProcessInstancePopulated } from '../../../../interfaces/processes/processInstance';
@@ -135,6 +135,7 @@ export const ProcessStep: FC<ProcessStepProps> = ({
 }) => {
     const currentUser = useUserStore((state) => state.user);
     const darkMode = useDarkModeStore((state) => state.darkMode);
+    const queryClient = useQueryClient();
 
     const hasPermissionsToEditStep =
         (currentUser.currentWorkspacePermissions.processes?.scope === PermissionScope.write ||
@@ -155,6 +156,7 @@ export const ProcessStep: FC<ProcessStepProps> = ({
             onSuccess: (updatedStepInstance) => {
                 toast.success(i18next.t('wizard.processInstance.step.editedSuccessfully'));
                 onStepUpdateSuccess(updatedStepInstance);
+                queryClient.resetQueries({ queryKey: ['searchProcesses'] });
             },
             onError: (error: AxiosError) => {
                 toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.processInstance.step.failedToEdit')} />);

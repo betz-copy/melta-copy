@@ -147,8 +147,8 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
             '#json-schema > .form-group.field.field-object > .MuiFormControl-root > .MuiGrid-root > .MuiGrid-root',
         );
         containerDiv.forEach((innerDiv) => {
-            const changeFieldCss = innerDiv.querySelector('.text-area') || innerDiv.querySelector('.signature');
-            innerDiv.classList.add(changeFieldCss ? 'has-unique-field-child' : 'has-other-field-child');
+            const biggerFieldCss = innerDiv.querySelector('.text-area') || innerDiv.querySelector('.signature');
+            innerDiv.classList.add(biggerFieldCss ? 'has-bigger-field-child' : 'has-field-child');
         });
     }, [values.template]);
 
