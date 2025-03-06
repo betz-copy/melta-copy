@@ -1,6 +1,6 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import SignatureCanvas from 'react-signature-canvas';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { WidgetProps } from '@rjsf/utils';
 import { Box, Button, ThemeProvider, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
@@ -26,7 +26,7 @@ const RjfsSignatureWidget = ({ id, required, readonly, disabled, label, value, o
             }
         };
         fetchSignature();
-    }, []);
+    }, [value]);
 
     useEffect(() => {
         if (signatureCanvas.current) {
