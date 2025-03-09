@@ -51,7 +51,6 @@ const ActivitiesContent: React.FC<{
                     borderRadius: '7px',
                     width: 'fit-content',
                     border: `${theme.palette.primary.main} 1px solid`,
-                    height: '40px',
                     marginBottom: '20px',
                     alignSelf: 'center',
                 }}
