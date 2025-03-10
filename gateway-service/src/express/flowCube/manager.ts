@@ -82,11 +82,13 @@ export class FlowCubeManager extends DefaultManagerProxy<null> {
         return convertToFlow;
     }
 
-    static async searchWorkspace(body: any, userId: string) {
+    static async searchWorkspace(body: any, userId: string | undefined) {
+        if (!userId) return [];
+
         const searchBody = {} as { search: string };
 
-        if (body?.Parameters?.Value) {
-            searchBody.search = body?.Parameters?.Value;
+        if (body?.Parameters?.Value || body?.Value) {
+            searchBody.search = body?.Parameters?.Value || body?.Value;
         }
 
         const usersPermissions = await UserService.getUserPermissions(userId);
@@ -106,7 +108,9 @@ export class FlowCubeManager extends DefaultManagerProxy<null> {
         ).filter(({ hierarchyIds }) => hierarchyIds.some((id) => Boolean(usersPermissions[id])));
     }
 
-    async searchCategory(body: any, userId: string): Promise<IFlowAutoComplete[]> {
+    async searchCategory(body: any, userId: string | undefined): Promise<IFlowAutoComplete[]> {
+        if (!userId) return [];
+
         let searchInput = '';
 
         if (body?.Value) {
@@ -130,8 +134,10 @@ export class FlowCubeManager extends DefaultManagerProxy<null> {
         return categories.filter(({ _id }) => usersPermissions.instances?.categories[_id]);
     }
 
-    async searchEntityTemplate(body: any, userId: string): Promise<IFlowAutoComplete[]> {
-        const searchEntityTemplatesBody = {} as ISearchEntityTemplatesBody;
+    async searchEntityTemplate(body: any, userId: string | undefined): Promise<IFlowAutoComplete[]> {
+        if (!userId) return [];
+
+        const searchEntityTemplatesBody: ISearchEntityTemplatesBody = {};
 
         if (body?.Value) {
             searchEntityTemplatesBody.search = body.Value;
@@ -142,15 +148,36 @@ export class FlowCubeManager extends DefaultManagerProxy<null> {
         }
 
         const usersPermissions = await this.authorizer.getWorkspacePermissions(userId);
-        const templates = await this.templatesManager.searchEntityTemplates(usersPermissions, searchEntityTemplatesBody);
-        const filteredTemplates =
-            Object.keys(body).length === 0 || body.CategoryType === ''
-                ? templates
-                : templates.filter(({ category }) => body.CategoryType === category._id);
+        const entityTemplates = await this.templatesManager.searchEntityTemplates(usersPermissions, searchEntityTemplatesBody);
+        const userPermissionsByCategory = this.getEntityTemplatesPermissionsByCategory(usersPermissions);
+        const allowedEntityTemplates = usersPermissions.admin
+            ? entityTemplates
+            : entityTemplates.filter(
+                  (entityTemplate) =>
+                      userPermissionsByCategory[entityTemplate.category._id].length === 0 ||
+                      userPermissionsByCategory[entityTemplate.category._id].includes(entityTemplate._id),
+              );
+        const filteredEntityTemplates = body.CategoryType
+            ? allowedEntityTemplates.filter(({ category }) => category._id === body.CategoryType)
+            : allowedEntityTemplates;
 
-        return filteredTemplates.map(({ _id, displayName }) => {
+        return filteredEntityTemplates.map(({ _id, displayName }) => {
             return { Value: _id, Name: displayName };
         });
+    }
+
+    getEntityTemplatesPermissionsByCategory(usersPermissions: ISubCompactPermissions): Record<string, string[]> {
+        if (!usersPermissions.instances) return {};
+
+        return Object.entries(usersPermissions.instances.categories).reduce(
+            (acc, [categoryId, category]) => {
+                const templateIds = category.entityTemplates ? Object.keys(category.entityTemplates) : [];
+                acc[categoryId] = templateIds;
+
+                return acc;
+            },
+            {} as Record<string, string[]>,
+        );
     }
 
     async getEntityTemplateById(templateId: string[]): Promise<{ parameters: FlowParameters[]; fields: FlowFields[] }> {

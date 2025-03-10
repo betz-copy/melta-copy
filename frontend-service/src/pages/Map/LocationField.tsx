@@ -146,35 +146,36 @@ const LocationField = ({ defaultLocation, field, updateValue }: Props) => {
                 sceneModePicker={false}
                 vrButton={false}
                 fullscreenButton={false}
+                navigationHelpButton={false}
             >
                 {polygonPosition.length > 0 && <MeltaPolygon name={field} polygon={polygonPosition} />}
                 {markerPosition && <MeltaCoordinate name={field} position={markerPosition} />}
+
+                <div style={{ position: 'absolute', top: '10px', left: '10px', display: 'flex', gap: '10px' }}>
+                    {polygonPosition.length === 0 && markerPosition === null && (
+                        <ToggleButtonGroup
+                            value={drawingMode}
+                            exclusive
+                            onChange={handleDrawType}
+                            style={{ background: darkMode ? '#121212' : 'white', height: '34px' }}
+                        >
+                            <MeltaTooltip title={i18next.t('location.coordinate')}>
+                                <ToggleButton value="coordinate" disabled={polygonPosition.length > 0}>
+                                    <Place sx={{ width: '20px', height: '20px', color: darkMode ? '#9398c2' : '#787c9e' }} />
+                                </ToggleButton>
+                            </MeltaTooltip>
+                            <MeltaTooltip title={i18next.t('location.polygon')}>
+                                <ToggleButton value="polygon" disabled={markerPosition !== null}>
+                                    <Polyline sx={{ width: '20px', height: '20px', color: darkMode ? '#9398c2' : '#787c9e' }} />
+                                </ToggleButton>
+                            </MeltaTooltip>
+                        </ToggleButtonGroup>
+                    )}
+                    <DeleteMapDataBtn onClick={onClear} darkMode={darkMode} />
+
+                    {config && <BaseLayers viewerRef={viewerRef} config={config} />}
+                </div>
             </Viewer>
-
-            <div style={{ position: 'absolute', top: '10px', left: '10px', display: 'flex', gap: '10px' }}>
-                {polygonPosition.length === 0 && markerPosition === null && (
-                    <ToggleButtonGroup
-                        value={drawingMode}
-                        exclusive
-                        onChange={handleDrawType}
-                        style={{ background: darkMode ? '#121212' : 'white', height: '34px' }}
-                    >
-                        <MeltaTooltip title={i18next.t('location.coordinate')}>
-                            <ToggleButton value="coordinate" disabled={polygonPosition.length > 0}>
-                                <Place sx={{ width: '20px', height: '20px', color: darkMode ? '#9398c2' : '#787c9e' }} />
-                            </ToggleButton>
-                        </MeltaTooltip>
-                        <MeltaTooltip title={i18next.t('location.polygon')}>
-                            <ToggleButton value="polygon" disabled={markerPosition !== null}>
-                                <Polyline sx={{ width: '20px', height: '20px', color: darkMode ? '#9398c2' : '#787c9e' }} />
-                            </ToggleButton>
-                        </MeltaTooltip>
-                    </ToggleButtonGroup>
-                )}
-                <DeleteMapDataBtn onClick={onClear} darkMode={darkMode} />
-
-                {config && <BaseLayers viewerRef={viewerRef} config={config} />}
-            </div>
         </div>
     );
 };

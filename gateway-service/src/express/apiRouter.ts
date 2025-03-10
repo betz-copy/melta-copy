@@ -23,9 +23,9 @@ apiRouter.use('/config', (_req, res) =>
         mapLayers: config.frontendConfig.mapLayers,
         textLayers: config.frontendConfig.textLayers,
         deleteEntitiesLimit: config.frontendConfig.agGridLimit.deleteLimit,
-        crsType: config.frontendConfig.crsType,
         meltaUpdates: config.frontendConfig.meltaUpdates,
         meltaUpdatesDescription: config.frontendConfig.meltaUpdatesDescription,
+        isOutsideDevelopment: config.frontendConfig.isOutsideDevelopment,
     }),
 );
 

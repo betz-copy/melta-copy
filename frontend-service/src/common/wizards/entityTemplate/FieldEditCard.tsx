@@ -1048,7 +1048,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                 setValues((prevValue) => ({
                                                                     ...prevValue,
                                                                     required: checked,
-                                                                    identifier: !checked ? false : prevValue.identifier,
+                                                                    identifier: !checked ? undefined : prevValue.identifier,
                                                                 }));
                                                                 // unique is allowed only if required=true, automatic uncheck 'unique' too
                                                                 if (!checked && unique) {
@@ -1131,7 +1131,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                 setValues((prevValue) => ({
                                                                     ...prevValue,
                                                                     required: checked ? true : prevValue.required,
-                                                                    identifier: !checked ? false : prevValue.identifier,
+                                                                    identifier: !checked ? undefined : prevValue.identifier,
                                                                     groupName: undefined,
                                                                     uniqueCheckbox: false,
                                                                 }));
@@ -1246,12 +1246,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                 <Box>
                                                     <IconButton
                                                         onClick={() => remove(index, isNewProperty)}
-                                                        disabled={
-                                                            !supportDeleteForExistingInstances ||
-                                                            initialValue?.required ||
-                                                            currentUser.currentWorkspacePermissions.admin?.scope !== PermissionScope.write ||
-                                                            hasActions
-                                                        }
+                                                        disabled={!supportDeleteForExistingInstances || initialValue?.required || hasActions}
                                                     >
                                                         {value.deleted ? <DeleteOff /> : <DeleteIcon />}
                                                     </IconButton>

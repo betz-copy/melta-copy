@@ -13,6 +13,7 @@ import {
     Step,
     StepConnector,
     stepConnectorClasses,
+    useTheme,
 } from '@mui/material';
 import { Edit, ScatterPlotOutlined as HiveIcon, Unarchive } from '@mui/icons-material';
 import { useMutation, useQueryClient } from 'react-query';
@@ -125,7 +126,7 @@ export const StepIcon: React.FC<{
                 <Box
                     sx={{
                         borderRadius: '50%',
-                        backgroundColor: '#E0E1ED',
+                        backgroundColor: '#E6E8F5',
                         display: 'flex',
                         justifyContent: 'center',
                         alignItems: 'center',
@@ -152,7 +153,7 @@ export const StepIcon: React.FC<{
                     <img src="/icons/uncheck-icon.svg" style={{ marginRight: '35px', marginTop: '35px', position: 'absolute' }} />
                 )}
                 {displayTitle && (
-                    <Typography ref={stageNameRef} noWrap sx={{ maxWidth: '8em', textOverflow: 'ellipsis' }} variant="caption">
+                    <Typography ref={stageNameRef} noWrap sx={{ maxWidth: '70px', textOverflow: 'ellipsis' }} variant="caption" color="#787C9E">
                         {stepTemplate.displayName}
                     </Typography>
                 )}
@@ -279,6 +280,8 @@ const ProcessCard: React.FC<{
         },
     }));
 
+    const theme = useTheme();
+
     return (
         <div>
             <StyledCard onClick={() => setOpen({ isOpen: true })}>
@@ -297,7 +300,7 @@ const ProcessCard: React.FC<{
                                         }}
                                     />
                                     <Grid item sx={{ paddingLeft: '5px' }}>
-                                        <Typography component="h6" variant="h6" noWrap>
+                                        <Typography component="h6" variant="h6" noWrap color={theme.palette.primary.main}>
                                             {currProcessInstance.name}
                                         </Typography>
                                     </Grid>
@@ -365,14 +368,14 @@ const ProcessCard: React.FC<{
                             </Grid>
                             <Grid item container justifyContent="space-between">
                                 <Grid item>
-                                    <Typography fontSize="14px" sx={{ color: '#787C9E' }} noWrap>
+                                    <Typography fontSize="12px" sx={{ color: '#787C9E' }} noWrap>
                                         {`${i18next.t('processInstancesPage.process')}: ${
                                             processTemplatesMap.get(currProcessInstance.templateId)!.displayName
                                         }`}
                                     </Typography>
                                 </Grid>
                                 <Grid item>
-                                    <Typography fontSize="14px" sx={{ color: '#787C9E' }} noWrap>
+                                    <Typography fontSize="12px" sx={{ color: '#787C9E' }} noWrap>
                                         {`${new Date(currProcessInstance.startDate).toLocaleDateString('he-IL', {
                                             year: '2-digit',
                                             month: '2-digit',
@@ -390,7 +393,7 @@ const ProcessCard: React.FC<{
                                     {currProcessInstance.steps.map((step, index) => {
                                         const stepTemplate = processTemplate.steps[index];
                                         return (
-                                            <Step sx={{ display: 'flex', alignItems: 'center' }} key={step._id}>
+                                            <Step sx={{ display: 'flex', alignItems: 'center', width: '85px' }} key={step._id}>
                                                 <Grid
                                                     container
                                                     flexDirection="column"
@@ -409,7 +412,7 @@ const ProcessCard: React.FC<{
                             <Grid item container justifyContent="space-between">
                                 <Grid item />
                                 <Grid item>
-                                    <Typography fontSize="14px" sx={{ color: '#787C9E' }} noWrap>
+                                    <Typography fontSize="12px" sx={{ color: '#787C9E' }} noWrap>
                                         {`${i18next.t('processInstancesPage.createdAt')}: ${new Date(processInstance.createdAt).toLocaleDateString(
                                             'he-IL',
                                             {
