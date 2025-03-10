@@ -1211,12 +1211,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                 <Box>
                                                     <IconButton
                                                         onClick={() => remove(index, isNewProperty)}
-                                                        disabled={
-                                                            !supportDeleteForExistingInstances ||
-                                                            initialValue?.required ||
-                                                            currentUser.currentWorkspacePermissions.admin?.scope !== PermissionScope.write ||
-                                                            hasActions
-                                                        }
+                                                        disabled={!supportDeleteForExistingInstances || initialValue?.required || hasActions}
                                                     >
                                                         {value.deleted ? <DeleteOff /> : <DeleteIcon />}
                                                     </IconButton>

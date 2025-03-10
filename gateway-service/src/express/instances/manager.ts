@@ -344,7 +344,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
         const handleUpdateEntity = async (entity: IEntityWithIgnoredRules) => {
             try {
-                const result = await this.updateEntityInstance(entity.properties._id, entity, [], entity.ignoredRules || [], userId);
+                const result = await this.updateEntityInstance(entity.properties._id, entity, [], entity.ignoredRules || [], userId, true, true);
                 results.push(result);
             } catch (error) {
                 handleExcelErrors(error, failedEntities, entity, allBrokenRulesEntities);
@@ -412,6 +412,9 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         const { props: propertiesWithFiles, files: upserstedFiles } = await this.uploadInstanceFiles(files, instanceData.properties);
 
         const entityTemplate = await this.entityTemplateService.getEntityTemplateById(instanceData.templateId);
+
+        if (!serialNumbers && entityTemplate.disabled) throw new BadRequestError('cannot create, entity template disabled');
+
         const newInstanceProperties = await this.setSerialPropertiesAndUpdateTemplate(propertiesWithFiles, entityTemplate, serialNumbers);
 
         return {
@@ -615,6 +618,9 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         const currentEntity = await this.service.getEntityInstanceById(id);
         const currentEntityTemplate = await this.entityTemplateService.getEntityTemplateById(currentEntity.templateId);
 
+        if (currentEntityTemplate.disabled) throw new BadRequestError("can't duplicate, entity template disabled");
+        if (currentEntity.properties.disabled) throw new BadRequestError("can't duplicate disabled entity");
+
         const fileProperties = this.getEntityFileProperties(instanceData.properties, currentEntityTemplate);
 
         let duplicatedFileProperties: Record<string, string | string[]> = {};
@@ -684,11 +690,15 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         ignoredRules: IBrokenRule[],
         userId: string,
         createAlert: boolean = true,
+        isEditExcel: boolean = false,
     ) {
         const { props: uploadedFilesAndProperties, files: updatedFiles } = await this.uploadInstanceFiles(files, updatedInstanceData.properties);
         const currentEntity = await this.service.getEntityInstanceById(id);
         const entityTemplate = await this.entityTemplateService.getEntityTemplateById(currentEntity.templateId);
-
+        if (!isEditExcel) {
+            if (entityTemplate.disabled) throw new BadRequestError("can't update, entity template disabled");
+            if (currentEntity.properties.disabled) throw new BadRequestError("can't update disabled entity");
+        }
         this.checkSerialFieldWasUpdated(entityTemplate, updatedInstanceData.properties, currentEntity);
 
         const { updatedEntity, actions } = await this.service
@@ -767,6 +777,17 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
     }
 
     async deleteEntityInstances(deleteBody: IDeleteBody) {
+        const template = await this.entityTemplateService.getEntityTemplateById(deleteBody.templateId);
+
+        if (template.disabled) throw new BadRequestError('cannot delete entities with disabled template');
+        if (!deleteBody.selectAll) {
+            const entities = await Promise.all(
+                (deleteBody as IDeleteBody<false>).idsToInclude!.map((entityId) => this.service.getEntityInstanceById(entityId)),
+            );
+            const disabledEntity = entities.find((entity) => entity.properties.disabled === true);
+            if (disabledEntity) throw new BadRequestError('cannot delete, some entities are disabled');
+        }
+
         const filesOfDeletedInstances = await this.service.deleteEntityInstances(deleteBody);
 
         const { err: error } = await trycatch(() => this.deleteAllEntitiesFiles(filesOfDeletedInstances));

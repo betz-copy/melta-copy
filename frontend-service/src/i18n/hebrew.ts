@@ -270,7 +270,7 @@ export default {
         destinationTemplates: 'תבניות יעד',
         cannotDeleteWithEntities: 'לא ניתן למחוק תבנית זאת, קיימות תחתיה ישויות',
         cannotDeleteWithRelationship: 'לא ניתן למחוק קשר זה, קיימים תחתיו קשרים',
-        cannotEditEntityDisabled: 'לא ניתן לערוך קשר זה, מכיל ישות מושבתת',
+        cannotPerformActionEntityDisabled: 'לא ניתן לבצע פעולה זו, מכיל ישות מושבתת',
         disabledEntityTemplate: 'תבנית מושבתת',
         disabledEntity: 'ישות מושבתת',
         disabledRule: 'חוק מושבת',
@@ -383,6 +383,7 @@ export default {
         failedToLoadAllPermissions: 'נכשל לטעון את כל ההרשאות',
         dontHavePermissionsToCategory: 'אין הרשאות לקטגוריה',
         dontHaveWritePermissionsToTemplate: 'אין הרשאות עריכה לתבנית',
+        EntityTemplateDisplay: 'תבנית ישות מושבתת',
         dontHavePermissionToEntityPage: 'אין לך הרשאות לגשת לעמוד פרט של ישות זו',
         dontHaveWritePermissions: 'אין לך הרשאות עריכה',
         permissionsOfUserDialog: {
