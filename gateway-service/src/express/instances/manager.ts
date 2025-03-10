@@ -363,7 +363,10 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
     getEntityFileProperties(entityProperties: IEntity['properties'], template: IEntityTemplatePopulated): Record<string, string | string[]> {
         return objectFilter(entityProperties, (key) => {
             const propertyTemplate = template.properties.properties[key];
-            return propertyTemplate && (propertyTemplate.format === 'fileId' || propertyTemplate.items?.format === 'fileId');
+            return (
+                propertyTemplate &&
+                (propertyTemplate.format === 'fileId' || propertyTemplate.items?.format === 'fileId' || propertyTemplate.format === 'signature')
+            );
         });
     }
 

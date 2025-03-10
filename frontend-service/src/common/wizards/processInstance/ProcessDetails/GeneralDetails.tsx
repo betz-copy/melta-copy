@@ -61,12 +61,12 @@ const GeneralDetails: React.FC<IDetailsStepProp> = ({
     }, [values.template?._id]);
 
     return (
-        <Card sx={{ border: 'none', boxShadow: 'none', height: '100%', background: 'transparent' }}>
-            <CardContent sx={{ height: !toPrint ? '100%' : undefined }}>
-                <Grid container direction="column" height="100%" justifyContent="space-between">
+        <Card sx={{ border: 'none', boxShadow: 'none', height: '100%', width: '100%', background: 'transparent' }}>
+            <CardContent sx={{ height: !toPrint ? '100%' : undefined, width: '100%' }}>
+                <Grid container direction="column" height="100%" justifyContent="space-between" width="100%">
                     <FormikProvider value={detailsFormikData}>
-                        <Grid item height="90%">
-                            <Grid item height="20%">
+                        <Grid item height="90%" width="100%">
+                            <Grid item height="20%" width="100%">
                                 <GeneralDetailsFields
                                     processTemplatesMap={processTemplatesMap}
                                     setFieldValue={setFieldValue}
@@ -84,7 +84,7 @@ const GeneralDetails: React.FC<IDetailsStepProp> = ({
                             <Grid item>
                                 <Divider variant="fullWidth" sx={{ marginTop: '25px' }} />
                             </Grid>
-                            <Grid item height="80%" sx={{ overflowY: 'auto' }}>
+                            <Grid item height="80%" width="100%" sx={{ overflowY: 'auto' }}>
                                 {values.template && (
                                     <TemplateFields
                                         toPrint={toPrint}

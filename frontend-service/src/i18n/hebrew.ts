@@ -80,6 +80,8 @@ export default {
     noSearchLeft: 'אין עוד תוצאות',
     failedToLoadResults: 'נכשל לטעון תוצאות',
     actions: {
+        save: 'שמירה',
+        clean: 'ניקוי',
         edit: 'עריכה',
         editment: 'עריכת',
         createment: 'יצירת',
@@ -846,6 +848,7 @@ export default {
         location: 'מיקום',
         user: 'משתמש',
         users: 'משתמשים',
+        signature: 'חתימה',
     },
     input: {
         imagePicker: {

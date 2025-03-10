@@ -43,7 +43,7 @@ export const formatToString = (value: any, property: IEntitySingleProperty, opti
     if (valueType === 'string') {
         if (format === 'date') return new Date(value).toLocaleDateString('en-uk');
         if (format === 'date-time') return new Date(value).toLocaleString('en-uk');
-        if (format === 'fileId') return <OpenPreview fileId={value} download={isPrintingMode} />;
+        if (format === 'fileId' || format === 'signature') return <OpenPreview fileId={value} download={isPrintingMode} />;
         if (format === 'relationshipReference') {
             return pureString ? (
                 value.properties[property.relationshipReference!.relatedTemplateField!]
@@ -226,7 +226,8 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                         propertySchema.format !== 'text-area' &&
                         propertySchema.format !== 'fileId' &&
                         propertySchema.format !== 'relationshipReference' &&
-                        propertySchema.format !== 'user'
+                        propertySchema.format !== 'user' &&
+                        propertySchema.format !== 'signature'
                             ? getTextDirection(propertyValue, {
                                   type: propertySchema.type,
                                   serialCurrent: propertySchema.serialCurrent,

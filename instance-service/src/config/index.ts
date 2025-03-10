@@ -93,6 +93,7 @@ const config = {
     },
     ajvCustomFormats: {
         fileIdFieldRegex: env.get('FILE_ID_FIELD_REGEX').default('.*').asRegExp(),
+        signatureFieldRegex: env.get('SIGNATURE_FIELD_REGEX').default('.*').asRegExp(),
         textAreaFieldRegex: env.get('TEXT_AREA_FIELD_REGEX').default('.*').asRegExp(),
         relationshipReferenceFieldRegex: env.get('RELATIONSHIP_REFERENCE_FIELD_REGEX').default('.*').asRegExp(),
         locationFieldRegex: env.get('LOCATION_FIELD_REGEX').default('.*').asRegExp(),

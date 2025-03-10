@@ -1084,7 +1084,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                     label={i18next.t('validation.hide')}
                                                 />
                                             )}
-                                            {supportUnique && unique !== undefined && setValues && (
+                                            {supportUnique && unique !== undefined && setValues && value.type !== 'signature' && (
                                                 <FormControlLabel
                                                     control={
                                                         <Switch
