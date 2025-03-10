@@ -74,13 +74,23 @@ export const DraftWarningDialog: React.FC<{
                                 variant="contained"
                                 sx={{ borderRadius: '8px' }}
                                 onClick={() => {
+                                    const filterProperties = {
+                                        ...Object.fromEntries(
+                                            Object.entries(values.properties).filter(
+                                                ([_key, value]) => typeof value === 'string' && !value.startsWith('data:image/png;base64,'),
+                                            ),
+                                        ),
+                                        disabled: values.properties.disabled ?? false,
+                                    };
+                                    const newValues = { ...values, properties: filterProperties };
+
                                     if (isEditMode) {
                                         setAllDrafts(originalDrafts);
                                     } else if (draftId) {
-                                        createOrUpdateDraft(values.template.category._id, values.template._id, values, draftId);
+                                        createOrUpdateDraft(values.template.category._id, values.template._id, newValues, draftId);
                                         toast.success(i18next.t('draftSaveDialog.success.edit'));
                                     } else {
-                                        createOrUpdateDraft(values.template.category._id, values.template._id, values);
+                                        createOrUpdateDraft(values.template.category._id, values.template._id, newValues);
                                         toast.success(i18next.t('draftSaveDialog.success.create'));
                                     }
 

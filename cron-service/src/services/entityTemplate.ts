@@ -23,7 +23,7 @@ export interface IMongoCategory extends ICategory {
 export interface IEntitySingleProperty {
     title: string;
     type: 'string' | 'number' | 'boolean' | 'array';
-    format?: 'date' | 'date-time' | 'email' | 'fileId' | 'text-area' | 'relationshipReference';
+    format?: 'date' | 'date-time' | 'email' | 'fileId' | 'text-area' | 'relationshipReference' | 'signature';
     enum?: string[];
     readOnly?: true;
     items?: {

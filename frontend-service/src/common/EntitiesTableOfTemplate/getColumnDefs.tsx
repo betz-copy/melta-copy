@@ -96,7 +96,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
         const entityGetter: ValueGetterFunc = ({ data }) => (data ? getEntityPropertiesData(data) : undefined);
 
         const hideColumn =
-            template.propertiesPreview.length === 0
+            template.propertiesPreview.length === 0 && hideNonPreview
                 ? !firstTwoPropsOrder.find((propOrder) => propOrder === property)
                 : archive ||
                   (defaultVisibleColumns[property] !== undefined
@@ -148,7 +148,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
                 searchValue,
                 editable,
             );
-        if (format === 'fileId')
+        if (format === 'fileId' || format === 'signature')
             return fileColDef(
                 property,
                 valueGetter,
@@ -378,13 +378,18 @@ export const getColumnDefs = <Data extends any = EntityData>({
                         {editRowButtonProps && (
                             <Grid item>
                                 <IconButtonWithPopover
-                                    popoverText={disabledEntity ? i18next.t('entityPage.disabledEntity') : editRowButtonProps.popoverText}
+                                    popoverText={
+                                        disabledEntity || template.disabled ? i18next.t('entityPage.disabledEntity') : editRowButtonProps.popoverText
+                                    }
                                     iconButtonProps={{
                                         onClick: () => editRowButtonProps.onClick(data),
                                     }}
-                                    disabled={editRowButtonProps.disabledButton || disabledEntity}
+                                    disabled={editRowButtonProps.disabledButton || disabledEntity || template.disabled}
                                 >
-                                    <ImageWithDisable srcPath="/icons/edit-icon.svg" disabled={editRowButtonProps.disabledButton || disabledEntity} />
+                                    <ImageWithDisable
+                                        srcPath="/icons/edit-icon.svg"
+                                        disabled={editRowButtonProps.disabledButton || disabledEntity || template.disabled}
+                                    />
                                 </IconButtonWithPopover>
                             </Grid>
                         )}
@@ -411,7 +416,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
                             </Grid>
                         )}
 
-                        {menuRowButtonProps && (
+                        {menuRowButtonProps && !template?.disabled && (
                             <Grid item>
                                 <CardMenu
                                     onDuplicateClick={() => {

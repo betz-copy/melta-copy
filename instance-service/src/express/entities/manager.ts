@@ -2029,7 +2029,7 @@ export class EntityManager extends DefaultManagerNeo4j {
 
             if (type !== 'string') propertiesToRemove.push(`${property}${config.neo4j.stringPropertySuffix}`);
             if (type === 'boolean') propertiesToRemove.push(`${property}${config.neo4j.booleanPropertySuffix}`);
-            if (format === 'fileId' || (type === 'array' && items?.format === 'fileId'))
+            if (format === 'fileId' || (type === 'array' && items?.format === 'fileId') || format === 'signature')
                 propertiesToRemove.push(`${property}${config.neo4j.filePropertySuffix}`);
 
             if (format !== 'relationshipReference') continue;

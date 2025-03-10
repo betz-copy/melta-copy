@@ -10,11 +10,16 @@
     max-width: 100%;
 } */
 
+<<<<<<< HEAD
 .half-width-field {
+=======
+.has-field-child {
+>>>>>>> 363d58f9a244fd2e49439e79dcb7df117e7b19cf
     width: 50%;
     max-width: 50% !important;
 }
 
+<<<<<<< HEAD
 .full-width-field {
     width: 100%;
     max-width: 100%;
@@ -22,6 +27,11 @@
 }
 
 .has-text-area-child {
+=======
+.has-bigger-field-child {
+    width: '100%';
+    max-width: '100%';
+>>>>>>> 363d58f9a244fd2e49439e79dcb7df117e7b19cf
     direction: rtl;
 }
 

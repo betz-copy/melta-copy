@@ -9,7 +9,7 @@ const { url, createProcessTemplateRoute, isAliveRoute } = config.processService;
 export interface IProcessSingleProperty {
     title: string;
     type: 'string' | 'number' | 'boolean';
-    format?: 'date' | 'date-time' | 'email' | 'fileId' | 'entityId' | 'text-area';
+    format?: 'date' | 'date-time' | 'email' | 'fileId' | 'entityId' | 'text-area' | 'signature';
     enum?: string[];
     pattern?: string;
     patternCustomErrorMessage?: string;

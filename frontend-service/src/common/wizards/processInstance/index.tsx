@@ -185,7 +185,7 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({
                                     />
                                 </MeltaTooltip>
                             </Grid>
-                            <Grid item height="90%">
+                            <Grid item height="90%" width="100%">
                                 <GeneralDetails
                                     detailsFormikData={detailsFormikData}
                                     processInstance={processInstance}
