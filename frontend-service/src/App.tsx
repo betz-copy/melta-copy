@@ -28,11 +28,6 @@ const App: React.FC = () => {
 
     const [location, navigate] = useLocation();
 
-
-
-
-    
-
     const matomoInstance = useMatomoInstance();
 
     useEffect(() => {

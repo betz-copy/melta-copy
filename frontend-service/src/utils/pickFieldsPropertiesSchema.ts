@@ -4,7 +4,10 @@ import { IProcessDetails } from '../interfaces/processes/processTemplate';
 
 export const filterFieldsFromPropertiesSchema = (
     schema: IMongoEntityTemplatePopulated['properties'] | undefined = {} as IMongoEntityTemplatePopulated['properties'],
+    checkedFields: Record<string, boolean> | undefined = undefined,
 ): IMongoEntityTemplatePopulated['properties'] => {
+    // ? maybe change here and give array
+
     return {
         ...schema,
         properties: pickBy(
@@ -14,10 +17,11 @@ export const filterFieldsFromPropertiesSchema = (
         required:
             schema?.required?.filter(
                 (requiredKey) =>
-                    schema.properties[requiredKey].format !== 'fileId' &&
-                    schema.properties[requiredKey].format !== 'entityReference' &&
-                    schema.properties[requiredKey].items?.format !== 'fileId' &&
-                    schema.properties[requiredKey].serialCurrent === undefined,
+                    schema.properties[requiredKey]?.format !== 'fileId' &&
+                    schema.properties[requiredKey]?.format !== 'entityReference' &&
+                    schema.properties[requiredKey]?.items?.format !== 'fileId' &&
+                    schema.properties[requiredKey]?.serialCurrent === undefined &&
+                    (!checkedFields || checkedFields[requiredKey]),
             ) ?? [],
     };
 };

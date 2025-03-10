@@ -1,5 +1,5 @@
 /* eslint-disable import/no-extraneous-dependencies */
-import React, { memo, useEffect } from 'react';
+import React, { Dispatch, memo, SetStateAction, useEffect, useState } from 'react';
 import { Form as JSONSchemaForm } from '@rjsf/mui';
 import Ajv, { ErrorObject } from 'ajv';
 import addFormats from 'ajv-formats';
@@ -7,6 +7,7 @@ import i18next from 'i18next';
 import { FormikErrors, FormikHelpers, FormikTouched } from 'formik';
 import mapValues from 'lodash.mapvalues';
 import pickBy from 'lodash.pickby';
+import _cloneDeep from 'lodash.clonedeep';
 import validator from '@rjsf/validator-ajv8';
 import { ErrorSchema, UiSchema, WidgetProps } from '@rjsf/utils';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
@@ -21,6 +22,7 @@ import RjsfUserWidget from './RjsfUserWidget';
 import RjsfUserArrayWidget from './RjsfUserArrayWidget';
 import InputAccordion from './InputAccordion';
 import RjsfCheckboxWidget from './RjsfCheckboxWidget';
+import { EntityWizardValues } from '../../dialogs/entity';
 
 const ajvErrorsToFormikErrors = (schema: IMongoEntityTemplatePopulated['properties'], ajvErrors: ErrorObject[]): FormikErrors<any> => {
     const formikErrorsEntries = ajvErrors.map((ajvError) => {
@@ -64,7 +66,7 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
     ajv.addKeyword({ keyword: 'isDailyAlert' });
     ajv.addKeyword({ keyword: 'isDatePastAlert' });
     ajv.addKeyword({ keyword: 'calculateTime' });
-    ajv.addKeyword({ keyword: 'archive', type: 'boolean' });
+    ajv.addKeyword({ keyword: 'archive', metaSchema: { type: 'boolean' } });
     ajv.addKeyword({
         keyword: 'serialStarter',
     });
@@ -76,23 +78,25 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
         keyword: 'serialCurrent',
     });
 
-    ajv.addKeyword('identifier', {
-        modifying: true,
-        // eslint-disable-next-line @typescript-eslint/no-shadow
-        validate: (_schema, data) => data !== undefined,
+    ajv.addKeyword({
+        keyword: 'identifier',
+        type: 'string', // Define the expected data type
+        schema: false, // No schema expected
+        validate: (data1) => data1 !== undefined, // Adjusted validate function
         errors: false,
-        keyword: '',
     });
 
     const schemaToValidate = {
-        ...schema,
+        ...schema, // ?  maybe change here the require - require
         properties: pickBy(schema.properties, (value) => value.format !== 'relationshipReference'),
     };
 
+    console.log({ schemaToValidate });
+
     const validateFunction = ajv.compile(schemaToValidate);
     validateFunction(data);
-
     const ajvErrors = validateFunction.errors ?? [];
+
     return ajvErrorsToFormikErrors(schema, ajvErrors);
 };
 
@@ -116,15 +120,25 @@ const mergeErrorSchemas = (errors1: ErrorSchema<{}>, errors2: ErrorSchema<{}>) =
     return merged;
 };
 
-const getComponent = (Component: React.ComponentType<WidgetProps>, haveAccordion: boolean) => {
-    if (haveAccordion) {
+const getComponent = (
+    Component: React.ComponentType<WidgetProps>,
+    setFieldTouched: FormikHelpers<any>['setFieldTouched'],
+    multipleEntities?: boolean,
+) => {
+    if (multipleEntities) {
         const WrappedComponent: React.FC<WidgetProps> = (props: WidgetProps) => {
-            const { label, onChange, disabled } = props;
+            const [checked, setChecked] = useState(false);
+            const { label, onChange, disabled, name } = props;
 
-            console.log(props);
+            useEffect(() => {
+                if (!checked) {
+                    setFieldTouched(name, false);
+                    onChange(undefined);
+                }
+            }, [checked]);
 
             return (
-                <InputAccordion label={label} onChange={onChange} disabled={disabled}>
+                <InputAccordion label={label} disabled={disabled} checked={checked} setChecked={setChecked}>
                     <Component {...props} />
                 </InputAccordion>
             );
@@ -150,6 +164,7 @@ interface JSONSchemaFormFormikProps {
     readonly?: boolean;
     toPrint?: boolean;
     multipleEntities?: boolean;
+    // setSelectedFields?: FormikHelpers<any>['setFieldValue'];
 }
 
 export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
@@ -164,9 +179,8 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
     isEditMode = false,
     toPrint = false,
     multipleEntities,
+    // setSelectedFields,
 }) => {
-    console.log({ schema, values });
-
     useEffect(() => {
         // define 100% width to text-area field
         const containerDiv = document.querySelectorAll(
@@ -191,23 +205,20 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
     const mergedErrors: ErrorSchema<{}> = mergeErrorSchemas(ajvExtraErrorsOnlyTouched, notTouchedUnique);
     const Widgets = React.useMemo(
         () => ({
-            SelectWidget: getComponent(RjsfSelectWidget, !!multipleEntities),
-            DateWidget: getComponent(RjsfDateWidget, !!multipleEntities),
-            DateTimeWidget: getComponent(RjsfDateTimeWidget, !!multipleEntities),
-            TextWidget: getComponent(RjsfTextWidget, !!multipleEntities),
-            EmailWidget: getComponent(RjsfTextWidget, !!multipleEntities),
-            TextAreaWidget: getComponent(RjsfTextAreaWidget, !!multipleEntities),
-            TemplateReferenceWidget: getComponent(RjsfTemplateReferenceWidget, !!multipleEntities),
-            LocationWidget: getComponent(RjsfLocationWidget, !!multipleEntities),
-            UserWidget: getComponent(RjsfUserWidget, !!multipleEntities),
-            UserArrayWidget: getComponent(RjsfUserArrayWidget, !!multipleEntities),
-            CheckboxWidget: getComponent(RjsfCheckboxWidget, !!multipleEntities),
+            SelectWidget: getComponent(RjsfSelectWidget, setFieldTouched, multipleEntities),
+            DateWidget: getComponent(RjsfDateWidget, setFieldTouched, multipleEntities),
+            DateTimeWidget: getComponent(RjsfDateTimeWidget, setFieldTouched, multipleEntities),
+            TextWidget: getComponent(RjsfTextWidget, setFieldTouched, multipleEntities),
+            EmailWidget: getComponent(RjsfTextWidget, setFieldTouched, multipleEntities),
+            TextAreaWidget: getComponent(RjsfTextAreaWidget, setFieldTouched, multipleEntities),
+            TemplateReferenceWidget: getComponent(RjsfTemplateReferenceWidget, setFieldTouched, multipleEntities),
+            LocationWidget: getComponent(RjsfLocationWidget, setFieldTouched, multipleEntities),
+            UserWidget: getComponent(RjsfUserWidget, setFieldTouched, multipleEntities),
+            UserArrayWidget: getComponent(RjsfUserArrayWidget, setFieldTouched, multipleEntities),
+            CheckboxWidget: getComponent(RjsfCheckboxWidget, setFieldTouched, multipleEntities),
         }),
-        [multipleEntities],
-        
+        [],
     );
-
-    console.log({ mergedErrors });
 
     return (
         <JSONSchemaForm
@@ -267,15 +278,14 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                     };
                 return {};
             })}
-            onChange={({ formData, ...rest }) => {
-                console.log({ formData, ...rest });
-
+            onChange={({ formData }) => {
                 Object.entries(formData).forEach(([key, value]) => {
                     if (JSON.stringify(value) === JSON.stringify([undefined]) || JSON.stringify(value) === JSON.stringify([null])) {
                         // eslint-disable-next-line no-param-reassign
                         formData[key] = undefined;
                     }
                 });
+
                 setValues(formData);
             }}
             formData={values.properties}

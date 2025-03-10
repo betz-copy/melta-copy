@@ -86,6 +86,7 @@ const CreateOrEditEntityDetails: React.FC<{
     entityTemplate: IMongoEntityTemplatePopulated;
     initialCurrValues?: EntityWizardValues;
     entityToUpdate?: IEntity;
+    entitiesToUpdate?: string[];
     onSuccessUpdate?: (entity: IEntity) => void;
     onSuccessCreate?: (entity: IEntity) => void;
     handleClose: () => void;
@@ -94,7 +95,7 @@ const CreateOrEditEntityDetails: React.FC<{
         files: boolean;
         unique: {};
         action: string;
-    };
+    }; // TODO understand this
     setExternalErrors: React.Dispatch<
         React.SetStateAction<{
             files: boolean;
@@ -102,12 +103,13 @@ const CreateOrEditEntityDetails: React.FC<{
             action: string;
         }>
     >;
-    createOrUpdateWithRuleBreachDialogState: ICreateOrUpdateWithRuleBreachDialogState;
+    createOrUpdateWithRuleBreachDialogState: ICreateOrUpdateWithRuleBreachDialogState; // TODO understand this
     setCreateOrUpdateWithRuleBreachDialogState: React.Dispatch<React.SetStateAction<ICreateOrUpdateWithRuleBreachDialogState>>;
 }> = ({
     isEditMode = false,
     entityTemplate,
     entityToUpdate,
+    entitiesToUpdate,
     initialCurrValues,
     onSuccessUpdate,
     handleClose,
@@ -119,10 +121,9 @@ const CreateOrEditEntityDetails: React.FC<{
     setCreateOrUpdateWithRuleBreachDialogState,
 }) => {
     const [isDraftDialogOpen, setIsDraftDialogOpen] = useState(false);
-    const [wasDirty, setWasDirty] = useState(false);
-
+    const [wasDirty, setWasDirty] = useState(false); // * i think that this is if the form has changed
     const { templateFileKeys: initialTemplateFileKeys } = getEntityTemplateFilesFieldsInfo(entityTemplate);
-    let entityId = entityToUpdate?.properties._id;
+    let entityId = entityToUpdate?.properties._id; // TODO if changed to array change this too
 
     const initialValues = useMemo(() => {
         if (entityToUpdate) {
@@ -207,7 +208,7 @@ const CreateOrEditEntityDetails: React.FC<{
                 handleMutationError(err, entityTemplate, newEntityData);
             },
         },
-    );
+    ); // ? update
 
     const { isLoading: isCreateLoading, mutateAsync: createMutation } = useMutation(
         ({ newEntityData, ignoredRules }: { newEntityData: EntityWizardValues; ignoredRules?: IRuleBreach['brokenRules'] }) =>
@@ -228,7 +229,8 @@ const CreateOrEditEntityDetails: React.FC<{
                 handleMutationError(err, entityTemplate, newEntityData);
             },
         },
-    );
+    ); // ? create
+    // TODO add another mutation for mult edit
 
     const mutationPromiseToastify = async (values: EntityWizardValues, ignoredRules?: IRuleBreach['brokenRules']) => {
         const mutationPromise = isEditMode
@@ -288,20 +290,23 @@ const CreateOrEditEntityDetails: React.FC<{
             mutationPromise.finally(resolve);
         });
     };
-    const drafts = useDraftsStore((state) => state.drafts);
-    const createOrUpdateDraft = useDraftsStore((state) => state.createOrUpdateDraft);
-    const deleteDraft = useDraftsStore((state) => state.deleteDraft);
 
-    const draftId = useDraftIdStore((state) => state.draftId);
-    const setDraftId = useDraftIdStore((state) => state.setDraftId);
+    const drafts = useDraftsStore((state) => state.drafts); //* draft
+    const createOrUpdateDraft = useDraftsStore((state) => state.createOrUpdateDraft); //* draft
+    const deleteDraft = useDraftsStore((state) => state.deleteDraft); //* draft
+
+    const draftId = useDraftIdStore((state) => state.draftId); //* draft
+    const setDraftId = useDraftIdStore((state) => state.setDraftId); //* draft
+
+    // ? draft not to mult edit
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    const originalDrafts = useMemo(() => cloneDeep(drafts), []);
+    const originalDrafts = useMemo(() => cloneDeep(drafts), []); //* draft
 
     const currentDraft = useMemo(
         () => drafts[entityTemplate.category._id]?.[entityTemplate._id]?.find(({ uniqueId }) => uniqueId === draftId),
         [drafts, entityTemplate._id, entityTemplate.category._id, draftId],
-    );
+    ); //* draft
 
     return (
         <Formik<EntityWizardValues>
@@ -323,7 +328,7 @@ const CreateOrEditEntityDetails: React.FC<{
                 );
             }}
             validate={(values) => {
-                const nonAttachmentsSchema = filterFieldsFromPropertiesSchema(values.template.properties);
+                const nonAttachmentsSchema = filterFieldsFromPropertiesSchema(values.template.properties, values.selected);
                 const propertiesErrors = ajvValidate(nonAttachmentsSchema, values.properties);
 
                 if (Object.keys(propertiesErrors).length === 0) {
@@ -338,7 +343,7 @@ const CreateOrEditEntityDetails: React.FC<{
                     values.template || entityTemplate,
                 );
                 const isPropertiesFirst = (values.template?.propertiesTypeOrder ?? [])[0] === 'properties';
-                const schema = filterFieldsFromPropertiesSchema(values.template.properties);
+                const schema = filterFieldsFromPropertiesSchema(values.template.properties, values.selected);
 
                 // eslint-disable-next-line react-hooks/rules-of-hooks
                 useEffect(() => {
@@ -380,7 +385,7 @@ const CreateOrEditEntityDetails: React.FC<{
                         );
                     }, environment.draftAutoSaveDebounce),
                     [],
-                );
+                ); //* draft
 
                 // eslint-disable-next-line react-hooks/rules-of-hooks
                 const absoluteDirty = useMemo(() => {
@@ -396,7 +401,7 @@ const CreateOrEditEntityDetails: React.FC<{
                     );
 
                     return !isEqual(valuePropsToFilter, initialValuePropsToFilter);
-                }, [formInitialValues, values]);
+                }, [formInitialValues, values]); // TODO change by mult
 
                 // eslint-disable-next-line react-hooks/rules-of-hooks
                 useEffect(() => {
@@ -410,6 +415,15 @@ const CreateOrEditEntityDetails: React.FC<{
                     if (absoluteDirty && !wasDirty) setWasDirty(true);
                 }, [absoluteDirty]);
 
+                //! here - only for mult
+                const aaa: any[] = [];
+                values.template.uniqueConstraints.forEach((props) => aaa.push(...props.properties));
+
+                aaa.forEach((a) => {
+                    schema.properties[a].readOnly = true;
+                }); // TODO change only to mult
+                //! here
+
                 const propertiesComp = values.template?._id && (
                     <JSONSchemaFormik
                         schema={schema}
@@ -420,9 +434,12 @@ const CreateOrEditEntityDetails: React.FC<{
                         errors={errors.properties ?? {}}
                         uniqueErrors={{ ...externalErrors.unique }}
                         touched={touched.properties ?? {}}
-                        setFieldTouched={(field) => setFieldTouched(`properties.${field}`)}
+                        setFieldTouched={(field, isTouched?) => setFieldTouched(`properties.${field}`, isTouched)}
                         isEditMode={isEditMode}
-                        multipleEntities
+                        multipleEntities={!!entitiesToUpdate} // TODO maybe change to array or something
+                        // setSelectedFields={(field, value) => {
+                        //     return setFieldValue(`selected.${field}`, value);
+                        // }}
                     />
                 );
 
@@ -493,6 +510,8 @@ const CreateOrEditEntityDetails: React.FC<{
                                                         </Grid>
 
                                                         {currentDraft && (
+                                                            // TODO change if mult
+                                                            // ?  this is  the last update in the modal
                                                             <Grid item container xs={8} justifyContent="right">
                                                                 <Typography color="#53566E" marginTop="0.5rem" fontWeight={100}>
                                                                     {i18next.t('draftSaveDialog.lastSavedAt', {
@@ -585,7 +604,7 @@ const CreateOrEditEntityDetails: React.FC<{
                                                         type="submit"
                                                         variant="contained"
                                                         startIcon={
-                                                            isUpdateLoading || isCreateLoading ? (
+                                                            isUpdateLoading || isCreateLoading ? ( // TODO add mult
                                                                 <CircularProgress sx={{ color: 'white' }} size={20} />
                                                             ) : (
                                                                 <DoneIcon />
@@ -596,7 +615,7 @@ const CreateOrEditEntityDetails: React.FC<{
                                                                 ? ''
                                                                 : setTimeout(() => (externalErrors ? undefined : handleClose()), 5000)
                                                         }
-                                                        disabled={!dirty || isUpdateLoading || isCreateLoading}
+                                                        disabled={!dirty || isUpdateLoading || isCreateLoading} // TODO add mult
                                                     >
                                                         {i18next.t('entityPage.save')}
                                                     </Button>
@@ -608,8 +627,8 @@ const CreateOrEditEntityDetails: React.FC<{
                             </Card>
                         </Form>
                         {createOrUpdateWithRuleBreachDialogState.isOpen && (
-                            <ActionOnEntityWithRuleBreachDialog
-                                isLoadingActionOnEntity={isEditMode ? isUpdateLoading : isCreateLoading}
+                            <ActionOnEntityWithRuleBreachDialog // ? do later
+                                isLoadingActionOnEntity={isEditMode ? isUpdateLoading : isCreateLoading} // TODO add mult
                                 handleClose={() => setCreateOrUpdateWithRuleBreachDialogState({ isOpen: false })}
                                 doActionEntity={() => {
                                     return mutationPromiseToastify(

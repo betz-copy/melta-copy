@@ -17,8 +17,9 @@ import { ErrorToast } from '../ErrorToast';
 import { TableButton } from '../TableButton';
 import { DeleteEntitiesDialog } from './DeleteEntitiesDialog';
 import { CreateOrEditEntityDetails, ICreateOrUpdateWithRuleBreachDialogState } from '../dialogs/entity/CreateOrEditEntityDialog';
-import { EntityWizardValues } from '../dialogs/entity';
-
+import { emptyEntityTemplate, EntityWizardValues } from '../dialogs/entity';
+import { EditMultipleEntities } from '../dialogs/entity/EditMultipleEntities'; // TODO dele this file
+// TODO delete EditMultipleEntities file
 interface MultiSelectStatusBarProps extends IStatusPanelParams {
     template: IMongoEntityTemplatePopulated;
     quickFilterText: string;
@@ -35,6 +36,11 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
     const [openEditDialog, setOpenEditDialog] = useState(false);
     const [selectedRowCount, setSelectedRowCount] = useState(0);
     const [confirmDeleteDisplayNameValue, setConfirmDeleteDisplayNameValue] = useState('');
+
+    const [externalErrors, setExternalErrors] = useState({ files: false, unique: {}, action: '' });
+    const [createOrUpdateWithRuleBreachDialogState, setCreateOrUpdateWithRuleBreachDialogState] = useState<ICreateOrUpdateWithRuleBreachDialogState>({
+        isOpen: false,
+    });
 
     const { isLoading: isDeleteLoading, mutateAsync: deleteMutation } = useMutation(
         (deleteBody: IDeleteEntityBody) => deleteEntityRequest(deleteBody),
@@ -168,37 +174,32 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
                 setValue={setConfirmDeleteDisplayNameValue}
             />
 
-            {/* <Dialog open={openEditDialog} maxWidth={template.documentTemplatesIds?.length ? 'lg' : 'md'}>
-                <EditMultipleEntities
+            <Dialog open={openEditDialog} maxWidth={template.documentTemplatesIds?.length ? 'lg' : 'md'}>
+                <CreateOrEditEntityDetails
                     isEditMode
                     entityTemplate={template}
+                    onSuccessUpdate={() => {
+                        setOpenEditDialog((prev) => !prev);
+                        setExternalErrors({ files: false, unique: {}, action: '' });
+                        // refetchQuery?.();
+                    }}
                     handleClose={() => {
-                        console.log('close');
+                        setOpenEditDialog((prev) => !prev);
                     }}
-                    onError={() => {
-                        console.log('error');
-                    }}
-                    externalErrors={{
-                        files: false,
-                        unique: {},
-                        action: '',
-                    }}
-                    setExternalErrors={(value) => {
-                        console.log('error2');
-                    }}
-                    createOrUpdateWithRuleBreachDialogState={{
-                        isOpen: false,
-                        brokenRules: undefined,
-                        rawBrokenRules: undefined,
-                        newEntityData: undefined,
-                        actions: undefined,
-                        rawActions: undefined,
-                    }}
-                    setCreateOrUpdateWithRuleBreachDialogState={(value) => {
-                        console.log('setCreateOrUpdateWithRuleBreachDialogState');
-                    }}
+                    onError={
+                        (currEntityValues) => {}
+                        // setEditDialog({
+                        //     isOpen: true,
+                        //     wizardValues: currEntityValues,
+                        // })
+                    }
+                    externalErrors={externalErrors}
+                    setExternalErrors={setExternalErrors}
+                    createOrUpdateWithRuleBreachDialogState={createOrUpdateWithRuleBreachDialogState}
+                    setCreateOrUpdateWithRuleBreachDialogState={setCreateOrUpdateWithRuleBreachDialogState}
+                    entitiesToUpdate={[]}
                 />
-            </Dialog> */}
+            </Dialog>
         </Grid>
     );
 };

@@ -34,7 +34,7 @@ import { useWorkspaceStore } from '../../../stores/workspace';
 
 const { errorCodes } = environment;
 
-export type IEditMultipleEntitiesWithRuleBreachDialogState = {
+export type IEditMultipleWithRuleBreach = {
     isOpen: boolean;
     brokenRules?: IRuleBreachPopulated['brokenRules'];
     rawBrokenRules?: IRuleBreach['brokenRules'];
@@ -81,7 +81,7 @@ const convertIEntityToEntityWizardValues = (
     };
 };
 
-const EditMultipleEntitiesDetails: React.FC<{
+const EditMultipleEntities: React.FC<{
     isEditMode?: boolean;
     entityTemplate: IMongoEntityTemplatePopulated;
     initialCurrValues?: EntityWizardValues;
@@ -102,8 +102,8 @@ const EditMultipleEntitiesDetails: React.FC<{
             action: string;
         }>
     >;
-    createOrUpdateWithRuleBreachDialogState: IEditMultipleEntitiesWithRuleBreachDialogState;
-    setCreateOrUpdateWithRuleBreachDialogState: React.Dispatch<React.SetStateAction<IEditMultipleEntitiesWithRuleBreachDialogState>>;
+    createOrUpdateWithRuleBreachDialogState: IEditMultipleWithRuleBreach;
+    setCreateOrUpdateWithRuleBreachDialogState: React.Dispatch<React.SetStateAction<IEditMultipleWithRuleBreach>>;
 }> = ({
     isEditMode = false,
     entityTemplate,
@@ -340,8 +340,6 @@ const EditMultipleEntitiesDetails: React.FC<{
                 const isPropertiesFirst = (values.template?.propertiesTypeOrder ?? [])[0] === 'properties';
                 const schema = filterFieldsFromPropertiesSchema(values.template.properties);
 
-                console.log({ schema, values, formInitialValues });
-
                 // eslint-disable-next-line react-hooks/rules-of-hooks
                 useEffect(() => {
                     if (initialCurrValues) setValues(initialCurrValues);
@@ -412,6 +410,17 @@ const EditMultipleEntitiesDetails: React.FC<{
                     if (absoluteDirty && !wasDirty) setWasDirty(true);
                 }, [absoluteDirty]);
 
+                //! here
+                const aaa: any[] = [];
+                values.template.uniqueConstraints.forEach((props) => aaa.push(...props.properties));
+
+                aaa.forEach((a) => {
+                    schema.properties[a].readOnly = true;
+                });
+
+                console.log({ values, aaa });
+                //! here
+
                 const propertiesComp = values.template?._id && (
                     <JSONSchemaFormik
                         schema={schema}
@@ -424,6 +433,7 @@ const EditMultipleEntitiesDetails: React.FC<{
                         touched={touched.properties ?? {}}
                         setFieldTouched={(field) => setFieldTouched(`properties.${field}`)}
                         isEditMode={isEditMode}
+                        multipleEntities
                     />
                 );
 
@@ -650,4 +660,4 @@ const EditMultipleEntitiesDetails: React.FC<{
     );
 };
 
-export { EditMultipleEntitiesDetails as CreateOrEditEntityDetails };
+export { EditMultipleEntities };
