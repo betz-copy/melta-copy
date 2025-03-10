@@ -258,6 +258,7 @@ export const environment = {
         polygon: { polygonPrefix: 'POLYGON((', polygonSuffix: '))' },
         mapSearchPropertiesLimit: 2,
     },
+    signaturePrefix: 'data:image/png;base64,',
     meltaUpdatesShown: 'meltaUpdatesShown',
     profileIconsCount: 19,
     avatarIconPath: '/icons/profileAvatar/',

@@ -1,28 +1,35 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import SignatureCanvas from 'react-signature-canvas';
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { WidgetProps } from '@rjsf/utils';
 import { Box, Button, ThemeProvider, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { getFilePreviewRequest } from '../../../services/previewService';
 import { darkTheme, lightTheme } from '../../../theme';
+import { environment } from '../../../globals';
+
+const { signaturePrefix } = environment;
 
 const RjfsSignatureWidget = ({ id, required, readonly, disabled, label, value, onChange, onBlur }: WidgetProps) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const isDisabled = readonly || disabled;
     const globalTheme = useTheme();
     const signatureCanvas = useRef<SignatureCanvas | null>(null);
+    const valueIsSignatureImg = typeof value === 'string' && value.startsWith(signaturePrefix);
+    const [isDrawing, setIsDrawing] = useState(valueIsSignatureImg ?? false);
 
     useEffect(() => {
         const fetchSignature = async () => {
-            if (value && signatureCanvas.current) {
+            if (value && signatureCanvas.current && !isDrawing) {
                 try {
                     const current = await getFilePreviewRequest(value, 'contentType');
                     signatureCanvas.current?.fromDataURL(current);
                 } catch (error) {
                     console.error('Error loading signature preview:', error);
                 }
+            } else if (value) {
+                signatureCanvas.current?.fromDataURL(value);
             }
         };
         fetchSignature();
@@ -85,20 +92,26 @@ const RjfsSignatureWidget = ({ id, required, readonly, disabled, label, value, o
                                 boxShadow: '0px 0px 2px rgba(0, 0, 0, 0.1)',
                             },
                         }}
+                        onBegin={() => setIsDrawing(true)}
                         onEnd={saveSignature}
                         clearOnResize={false}
                     />
                 </Box>
                 {!isDisabled && (
-                    <Box>
-                        <Button
-                            color="primary"
-                            onClick={clearSignature}
-                            sx={{ fontSize: '12px', padding: '0 3px', display: 'flex', justifyContent: 'flex-start' }}
-                        >
-                            {i18next.t('actions.clean')}
-                        </Button>
-                    </Box>
+                    <Button
+                        color="primary"
+                        onClick={clearSignature}
+                        sx={{
+                            display: 'inline-block',
+                            fontSize: '12px',
+                            padding: 0,
+                            minWidth: 0,
+                            minHeight: 0,
+                            width: '35px',
+                        }}
+                    >
+                        {i18next.t('actions.clean')}
+                    </Button>
                 )}
             </Box>
         </ThemeProvider>

@@ -32,7 +32,7 @@ import { DraftWarningDialog } from './draftWarningDialog';
 import { useDraftIdStore, useDraftsStore } from '../../../stores/drafts';
 import { useWorkspaceStore } from '../../../stores/workspace';
 
-const { errorCodes } = environment;
+const { errorCodes, signaturePrefix } = environment;
 
 export type ICreateOrUpdateWithRuleBreachDialogState = {
     isOpen: boolean;
@@ -376,10 +376,19 @@ const CreateOrEditEntityDetails: React.FC<{
                             uniqueDraftId = createdDraftId;
                         }
 
+                        const filterProperties = {
+                            ...Object.fromEntries(
+                                Object.entries(newValues.properties).filter(
+                                    ([_key, value]) => typeof value === 'string' && !value.startsWith(signaturePrefix),
+                                ),
+                            ),
+                            disabled: newValues.properties.disabled ?? false,
+                        };
+
                         createOrUpdateDraft(
                             newValues.template.category._id,
                             newValues.template._id,
-                            { ...newValues, entityId: entityToUpdate?.properties._id },
+                            { ...newValues, properties: filterProperties, entityId: entityToUpdate?.properties._id },
                             uniqueDraftId,
                         );
                         setInitialValuePropsToFilter({ ...newValues.properties });
@@ -422,6 +431,8 @@ const CreateOrEditEntityDetails: React.FC<{
                         schema={schema}
                         values={values}
                         setValues={(propertiesValues) => {
+                            console.log({ propertiesValues });
+
                             return setFieldValue('properties', propertiesValues);
                         }}
                         errors={errors.properties ?? {}}

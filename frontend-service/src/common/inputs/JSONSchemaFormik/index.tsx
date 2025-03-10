@@ -223,11 +223,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
             })}
             onChange={({ formData }) => {
                 Object.entries(formData).forEach(([key, value]) => {
-                    if (
-                        JSON.stringify(value) === JSON.stringify([undefined]) ||
-                        JSON.stringify(value) === JSON.stringify([null]) ||
-                        value === undefined
-                    ) {
+                    if (JSON.stringify(value) === JSON.stringify([undefined]) || JSON.stringify(value) === JSON.stringify([null])) {
                         // eslint-disable-next-line no-param-reassign
                         formData[key] = undefined;
                     }
