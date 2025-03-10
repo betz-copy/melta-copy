@@ -1,6 +1,7 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable import/no-extraneous-dependencies */
 /* eslint-disable no-underscore-dangle */
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { getDisplayLabel, WidgetProps } from '@rjsf/utils';
 import validator from '@rjsf/validator-ajv8';
 import { Cartesian3 } from 'cesium';
@@ -9,7 +10,8 @@ import MapIcon from '@mui/icons-material/Map';
 import i18next from 'i18next';
 import { environment } from '../../../globals';
 import LocationField from '../../../pages/Map/LocationField';
-import { isValidUTM, isValidWGS84, locationToWGS84String, stringToCoordinates } from '../../../utils/map';
+import { stringToCoordinates } from '../../../utils/map';
+import { extractUtmLocation, isValidUTM, isValidWGS84, locationConverterToString } from '../../../utils/map/convert';
 
 const { polygonPrefix, polygonSuffix } = environment.map.polygon;
 
@@ -24,19 +26,20 @@ export enum SplitBy {
 }
 
 const validatePoint = (point: LocationData, splitBy: SplitBy, schemaValidation?: boolean) => {
-    console.log({ point });
-
     const [longitude, latitude] = point.location.split(splitBy).map(Number);
 
     if (Number.isNaN(longitude) || Number.isNaN(latitude)) return false;
-    const location = stringToCoordinates(point.location).value as Cartesian3;
 
     if (schemaValidation) {
         switch (point.unit) {
-            case 'WGS84':
-                return isValidWGS84(location);
-            case 'UTM':
-                return isValidUTM(location);
+            case 'WGS84': {
+                const wgs84Location = stringToCoordinates(point.location).value as Cartesian3;
+                return isValidWGS84(wgs84Location);
+            }
+            case 'UTM': {
+                const utmLocation = extractUtmLocation(point.location);
+                return isValidUTM(utmLocation);
+            }
             default:
                 return true;
         }
@@ -45,8 +48,6 @@ const validatePoint = (point: LocationData, splitBy: SplitBy, schemaValidation?:
 };
 
 export const validateLocation = (value: LocationData, schemaValidation?: boolean) => {
-    console.log({ value, schemaValidation });
-
     if (value.location === '') return true;
     if (!value.location.startsWith(polygonPrefix)) return validatePoint(value, SplitBy.comma, schemaValidation);
 
@@ -81,12 +82,18 @@ const RjsfLocationWidget = ({
     propertyReadOnly,
     ...textFieldProps
 }: WidgetProps) => {
-    const getInitialLocation = (location) =>
-        location?.unit === 'UTM' ? locationToWGS84String(stringToCoordinates(location.location).value, 'UTM') : value;
+    const getInitialLocation = (location) => {
+        if (!location) return undefined;
+        return location?.unit === 'UTM' ? locationConverterToString(location.location, 'WGS84', 'UTM') : value;
+    };
 
     const [error, setError] = useState(false);
     const [mapOpen, setMapOpen] = useState(false);
-    const [newLocationValue, setNewLocationValue] = useState<string | undefined>(getInitialLocation(value));
+    const [newLocationValue, setNewLocationValue] = useState<string | undefined>('');
+
+    useEffect(() => {
+        setNewLocationValue(getInitialLocation(value));
+    }, []);
 
     const [coordinateSystem, setCoordinateSystem] = useState<'WGS84' | 'UTM'>(value?.unit || 'WGS84');
 
@@ -103,22 +110,14 @@ const RjsfLocationWidget = ({
     };
 
     const onChangeUnit = ({ target: { value: newUnit } }) => {
-        console.log('change', { newLocationValue, newUnit });
-
         setCoordinateSystem(newUnit);
         if (!newLocationValue) return;
 
         const hasError = validateLocation({ location: newLocationValue, unit: newUnit }) === false;
         setError(hasError);
-
-        const locationParse = stringToCoordinates(newLocationValue);
-        let updatedLocation = newLocationValue;
-        const location = locationParse.value;
-        if (newUnit === 'UTM' && isValidWGS84(location)) updatedLocation = locationToWGS84String(location, newUnit);
-        if (newUnit === 'WGS84' && isValidUTM(location)) updatedLocation = locationToWGS84String(location, newUnit);
-        console.log({ updatedLocation });
-
-        onChange(newLocationValue?.toString().trim() ? { location: updatedLocation, unit: newUnit } : undefined);
+        const convertedLocation = locationConverterToString(newLocationValue, coordinateSystem, newUnit);
+        setNewLocationValue(convertedLocation);
+        onChange(newLocationValue?.toString().trim() ? { location: convertedLocation, unit: newUnit } : undefined);
     };
 
     const _onBlur = ({ target: { value: newValue } }: React.FocusEvent<HTMLInputElement>) =>
@@ -196,10 +195,11 @@ const RjsfLocationWidget = ({
             </Grid>
             <Dialog open={mapOpen} onClose={handleCloseDialog}>
                 <LocationField
-                    defaultLocation={newLocationValue}
+                    defaultLocation={coordinateSystem === 'UTM' && newLocationValue ? locationConverterToString(newLocationValue) : newLocationValue}
                     field={label}
                     updateValue={(newVal: string | undefined) => {
-                        setNewLocationValue(newVal);
+                        if (coordinateSystem === 'UTM' && newVal) setNewLocationValue(locationConverterToString(newVal, 'WGS84', coordinateSystem));
+                        else setNewLocationValue(newVal);
                     }}
                 />
             </Dialog>

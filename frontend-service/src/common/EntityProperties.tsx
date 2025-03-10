@@ -19,7 +19,7 @@ import { HighlightText } from '../utils/HighlightText';
 import { BlueTitle } from './BlueTitle';
 import UserAvatar from './UserAvatar';
 import OverflowWrapper from '../utils/agGrid/OverflowWrapper';
-import { locationToWGS84String, stringToCoordinates } from '../utils/map';
+import { locationConverterToString } from '../utils/map/convert';
 
 const { maxNumOfCharactersNotInFullWidth } = environment.entitiesProperties;
 
@@ -68,7 +68,7 @@ export const formatToString = (value: any, property: IEntitySingleProperty, opti
             );
         }
     }
-    if (format === 'location') return value.unit === 'UTM' ? locationToWGS84String(stringToCoordinates(value.location).value, 'UTM') : value.location;
+    if (format === 'location') return value.unit === 'UTM' ? locationConverterToString(value.location, 'WGS84', 'UTM') : value.location;
     if (keyEnumColors?.[value] && valueType === 'string') return pureString ? value : <ColoredEnumChip label={value} color={keyEnumColors[value]} />;
     if (valueType === 'array') {
         if (property.items?.format === 'fileId') {

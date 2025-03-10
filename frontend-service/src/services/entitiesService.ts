@@ -19,9 +19,9 @@ import {
 import { EntityWizardValues } from '../common/dialogs/entity';
 import { IRuleBreach } from '../interfaces/ruleBreaches/ruleBreach';
 import { filterModelToFilterOfGraph } from '../pages/Graph/GraphFilterToBackend';
-import { locationToWGS84String, stringToCoordinates } from '../utils/map';
 import { IEditReadExcel, ITablesResults } from '../interfaces/excel';
 import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
+import { locationConverterToString } from '../utils/map/convert';
 
 const { entities, relationships } = environment.api;
 
@@ -146,9 +146,10 @@ export const createEntityRequest = async (entity: EntityWizardValues, ignoredRul
                         return property?.properties._id;
                     case 'location': {
                         if (property.unit === 'UTM') {
-                            const locationUTA = stringToCoordinates(property.location).value;
-                            const locationString = locationToWGS84String(locationUTA);
-                            return JSON.stringify({ location: locationString, unit: property.unit });
+                            console.log('im here');
+                            console.log({ wgs84: locationConverterToString(property.location) });
+
+                            return JSON.stringify({ location: locationConverterToString(property.location), unit: property.unit });
                         }
                         return JSON.stringify(property);
                     }

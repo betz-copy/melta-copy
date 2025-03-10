@@ -13,16 +13,15 @@ import {
     calculateCenterOfPolygon,
     locationToWGS84String,
     getPolygonFarthestPoint,
-    isValidWGS84,
     isValidPolygonPoint,
     jerusalemCoordinates,
     stringToCoordinates,
-    convertWGS94ToECEF,
 } from '../../utils/map';
 import { MeltaCoordinate, MeltaPolygon } from './LocationPreview';
 import { DeleteMapDataBtn } from './mapPage/MapFilters';
 import { BaseLayers } from './BaseLayers';
 import { BackendConfigState } from '../../services/backendConfigService';
+import { convertWGS94ToECEF, isValidWGS84 } from '../../utils/map/convert';
 
 type Props = {
     defaultLocation?: string;
