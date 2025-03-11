@@ -102,8 +102,6 @@ export const editManyEntitiesByExcelRequest = async (
                 case 'relationshipReference':
                     return property?.properties._id;
                 case 'location': {
-                    if (property.unit === 'UTM')
-                        return JSON.stringify({ location: locationConverterToString(property.location), unit: property.unit });
                     return JSON.stringify(property);
                 }
                 default:

@@ -33,7 +33,7 @@ const { invalidDate, invalidTime } = config.loadExcel;
 
 export const locationFormatError = 'location format not valid';
 
-const formatExcel = (value: Excel.CellValue | string, propertyTemplate: IEntitySingleProperty) => {
+const formatExcel = (value: Excel.CellValue | string, propertyTemplate: IEntitySingleProperty, isEditMode: boolean) => {
     const { type, format } = propertyTemplate;
     if (value === null) return undefined;
 
@@ -54,12 +54,14 @@ const formatExcel = (value: Excel.CellValue | string, propertyTemplate: IEntityS
                 if (unit === 'WGS84') {
                     const wgs84Location = stringToCoordinates(locationString).value;
                     if (!isValidWGS84(wgs84Location)) throw new BadRequestError(locationFormatError);
-                    return JSON.stringify({ location: wgs84Location, unit });
+                    const location = { location: wgs84Location, unit };
+                    return isEditMode ? location : JSON.stringify(location);
                 }
                 const utmLocation = extractUtmLocation(locationString);
 
                 if (!isValidUTM(utmLocation)) throw new BadRequestError(locationFormatError);
-                return JSON.stringify({ location: locationConverterToString(locationString), unit });
+                const location = { location: locationConverterToString(locationString), unit };
+                return isEditMode ? location : JSON.stringify(location);
             }
             return value?.toString();
         case 'array':
@@ -173,7 +175,7 @@ const readExcelFile = async (
                 Object.entries(columns).forEach(([key, value], columnIndex) => {
                     const cellValue = row.getCell(columnIndex + 1).value;
                     try {
-                        const formatCellValue = formatExcel(cellValue, value);
+                        const formatCellValue = formatExcel(cellValue, value, isEditMode);
                         if (formatCellValue === invalidDate) {
                             failedProperties.push({ key, value, cellValue, format: 'date' });
                             isFailed = true;
