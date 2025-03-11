@@ -38,6 +38,9 @@ import { CreateButton } from './CreateButton';
 import { FilterButton } from './FilterButton';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { environment } from '../../../globals';
+import { allowedCategories, allowedEntities, checkUserTemplatePermission } from '../../../utils/permissions/instancePermissions';
+import { useUserStore } from '../../../stores/user';
+import { PermissionScope } from '../../../interfaces/permissions';
 
 const { infiniteScrollPageCount } = environment.processInstances;
 
@@ -97,6 +100,14 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
     updateEntityTemplateStatusAsync,
 }) => {
     const workspace = useWorkspaceStore((state) => state.workspace);
+    const currentUser = useUserStore((state) => state.user);
+
+    const entityHasWritePermissions = checkUserTemplatePermission(
+        currentUser.currentWorkspacePermissions,
+        entityTemplate.category,
+        entityTemplate._id,
+        PermissionScope.write,
+    );
 
     const [isHoverOnCard, setIsHoverOnCard] = useState(false);
     const theme = useTheme();
@@ -112,7 +123,14 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
             return count > 0;
         });
 
-        setIsDeleteButtonDisabled(templatesHaveEntities);
+        setIsDeleteButtonDisabled(!entityHasWritePermissions || templatesHaveEntities);
+    };
+
+    const entityTemplateCardTooltip = () => {
+        if (entityTemplate.disabled) return i18next.t('systemManagement.disabledEntityTemplate');
+        if (!entityHasWritePermissions) return i18next.t('systemManagement.entityTemplateEditDisabled');
+        if (isDeleteButtonDisabled) return i18next.t('systemManagement.cannotDeleteWithEntities');
+        return '';
     };
 
     const isFile = (value: IEntitySingleProperty) => value.format === 'fileId' || value.items?.format === 'fileId';
@@ -192,15 +210,11 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                     setIsHoverOnCard(false);
                                 }}
                                 disabledProps={{
+                                    disableForReadPermissions: !entityHasWritePermissions,
                                     isDeleteDisabled: isDeleteButtonDisabled,
                                     isDisabled: entityTemplate.disabled,
-                                    isEditDisabled: entityTemplate.disabled,
-                                    // eslint-disable-next-line no-nested-ternary
-                                    tooltipTitle: entityTemplate.disabled
-                                        ? i18next.t('systemManagement.disabledEntityTemplate')
-                                        : isDeleteButtonDisabled
-                                        ? i18next.t('systemManagement.cannotDeleteWithEntities')
-                                        : '',
+                                    isEditDisabled: entityTemplate.disabled || !entityHasWritePermissions,
+                                    tooltipTitle: entityTemplateCardTooltip(),
                                 }}
                             />
                         )}
@@ -475,19 +489,19 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
 
 const EntityTemplatesRow: React.FC = () => {
     const queryClient = useQueryClient();
-
+    const currentUser = useUserStore((state) => state.user);
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
 
-    const categoriesArray = Array.from(categories.values());
-    const [categoriesToShow, setCategoriesToShow] = useState<IMongoCategory[]>(categoriesArray);
+    const allowedCategoriesToShow = allowedCategories(categories, currentUser);
+    const [categoriesToShow, setCategoriesToShow] = useState<IMongoCategory[]>(allowedCategoriesToShow);
 
     const [searchText, setSearchText] = useState('');
     const [loadedEntityTemplateId, setLoadedEntityTemplateId] = useState('');
 
     const isFilterButtonDisabled = useMemo(
-        () => !(categoriesToShow.length < categoriesArray.length || searchText.length),
-        [categoriesToShow, searchText, categoriesArray],
+        () => !(categoriesToShow.length < allowedCategoriesToShow.length || searchText.length),
+        [categoriesToShow, searchText, allowedCategoriesToShow],
     );
 
     const [deleteEntityTemplateDialogState, setDeleteEntityTemplateDialogState] = useState<{
@@ -522,7 +536,7 @@ const EntityTemplatesRow: React.FC = () => {
             const relatedEntityTemplatesToShow = entityTemplatesToShow.filter((entity) => entity.category._id === category._id);
             categoriesToShowMapEntities.push({
                 category,
-                entityTemplates: relatedEntityTemplatesToShow,
+                entityTemplates: allowedEntities(relatedEntityTemplatesToShow, category, currentUser),
             });
         });
 
@@ -621,7 +635,7 @@ const EntityTemplatesRow: React.FC = () => {
                 <Grid item>
                     <SelectCheckbox
                         title={i18next.t('categories')}
-                        options={categoriesArray}
+                        options={allowedCategoriesToShow}
                         selectedOptions={categoriesToShow}
                         setSelectedOptions={setCategoriesToShow}
                         getOptionId={(category) => category._id}
@@ -635,7 +649,7 @@ const EntityTemplatesRow: React.FC = () => {
                     <FilterButton
                         onClick={() => {
                             setSearchText('');
-                            setCategoriesToShow(categoriesArray);
+                            setCategoriesToShow(allowedCategoriesToShow);
                         }}
                         text={i18next.t('entitiesTableOfTemplate.resetFilters')}
                         disabled={isFilterButtonDisabled}

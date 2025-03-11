@@ -1,8 +1,24 @@
 import _cloneDeep from 'lodash.clonedeep';
 import { PermissionScope } from '../../interfaces/permissions';
 import { ICompact, IInstancesPermission, ISubCompactPermissions } from '../../interfaces/permissions/permissions';
-import { IMongoCategory } from '../../interfaces/categories';
+import { ICategoryMap, IMongoCategory } from '../../interfaces/categories';
 import { entityTemplatePermissionDialog } from './permissionOfUserDialog';
+import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+
+export const allowedCategories = (categories: ICategoryMap, currentUser): IMongoCategory[] => {
+    const allowedCategoriesToShow = currentUser.currentWorkspacePermissions?.admin
+        ? Array.from(categories.keys())
+        : Object.keys(currentUser.currentWorkspacePermissions?.instances?.categories ?? {});
+
+    return allowedCategoriesToShow.map((categoryId) => categories?.get(categoryId)).filter((category) => category !== undefined);
+};
+
+export const allowedEntities = (relatedEntityTemplatesToShow: IMongoEntityTemplatePopulated[], category: IMongoCategory, currentUser) => {
+    if (currentUser.currentWorkspacePermissions.admin || currentUser.currentWorkspacePermissions.instances?.categories[category._id].scope)
+        return relatedEntityTemplatesToShow;
+    const entitiesKeys = Object.keys(currentUser.currentWorkspacePermissions.instances?.categories[category._id].entityTemplates);
+    return relatedEntityTemplatesToShow.filter((entity) => entitiesKeys.includes(entity._id));
+};
 
 export const checkUserCategoryPermission = (
     permissions: ISubCompactPermissions,
