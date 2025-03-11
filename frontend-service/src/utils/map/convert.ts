@@ -105,11 +105,12 @@ const extractUtmPoint = (utmMatchRegex: RegExpMatchArray | null): UTM => {
 };
 
 export const extractUtmLocation = (utmString: string): UTM | UTM[] => {
-    const utmRegex = /\b([1-9]|[1-5][0-9]|60)([C-HJ-NP-X])\s([0-9]+(?:\.[0-9]+)?)\s([0-9]+(?:\.[0-9]+)?)\b/g;
+    const utmRegex = /\b([1-9]|[1-5][0-9]|60)([C-HJ-NP-X])\s([0-9]+(?:\.[0-9]+)?)\s([0-9]+(?:\.[0-9]+)?)\b/;
+    const utmPolygonRegex = /\b([1-9]|[1-5][0-9]|60)([C-HJ-NP-X])\s([0-9]+(?:\.[0-9]+)?)\s([0-9]+(?:\.[0-9]+)?)\b/g;
 
     if (utmString.startsWith(polygonPrefix)) {
         const polygonString = utmString.slice(9, -2);
-        const matches = [...polygonString.matchAll(utmRegex)];
+        const matches = [...polygonString.matchAll(utmPolygonRegex)];
         if (matches.length === 0) throw new Error('Invalid UTM coordinates in POLYGON');
 
         const utmDataArray = matches.map((match) => extractUtmPoint(match));

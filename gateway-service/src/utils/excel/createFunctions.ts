@@ -252,7 +252,7 @@ const styleAWorksheet = (
                     if (value.format === 'user') cell.value = JSON.parse(cell.value as string).fullName;
                     if (value.items?.format === 'user')
                         cell.value = (cell.value as any).map((stringUser) => JSON.parse(stringUser).fullName).join(', ');
-                    if (value.format === 'location') {
+                    if (value.format === 'location' && (cell.value as string).includes('{')) {
                         const location: { location: string; unit: 'UTM' | 'WGS84' } = JSON.parse(cell.value as string);
                         cell.value = location.unit === 'UTM' ? locationConverterToString(location.location, 'WGS84', 'UTM') : location.location;
                     }

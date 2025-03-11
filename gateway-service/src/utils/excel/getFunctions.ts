@@ -27,7 +27,7 @@ import {
 } from '../../externalServices/ruleBreachService/interfaces/populated';
 import config from '../../config';
 import { UploadedFile } from '../busboy/interface';
-import { extractUtmLocation, getUnit, isValidUTM, isValidWGS84, stringToCoordinates } from './map';
+import { extractUtmLocation, getUnit, isValidUTM, isValidWGS84, locationConverterToString, stringToCoordinates } from './map';
 
 const { invalidDate, invalidTime } = config.loadExcel;
 
@@ -50,14 +50,16 @@ const formatExcel = (value: Excel.CellValue | string, propertyTemplate: IEntityS
             if (format === 'location') {
                 const locationString = value as string;
                 const unit = getUnit(locationString);
+
                 if (unit === 'WGS84') {
                     const wgs84Location = stringToCoordinates(locationString).value;
                     if (!isValidWGS84(wgs84Location)) throw new BadRequestError(locationFormatError);
-                    return { location: wgs84Location, unit };
+                    return JSON.stringify({ location: wgs84Location, unit });
                 }
                 const utmLocation = extractUtmLocation(locationString);
+
                 if (!isValidUTM(utmLocation)) throw new BadRequestError(locationFormatError);
-                return { location: utmLocation, unit };
+                return JSON.stringify({ location: locationConverterToString(locationString), unit });
             }
             return value?.toString();
         case 'array':
