@@ -90,7 +90,6 @@ const EditExcelWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
                 return data;
             },
             onError(error) {
-                console.log({ error });
                 toast.error(i18next.t('wizard.entity.loadEntities.failedLoadEntities'));
                 onClose();
             },
