@@ -89,7 +89,7 @@ const EditExcelWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
                 setStepsData((prev) => ({ ...prev, status: ExcelStepStatus.excelUploadResult, data }));
                 return data;
             },
-            onError(error) {
+            onError() {
                 toast.error(i18next.t('wizard.entity.loadEntities.failedLoadEntities'));
                 onClose();
             },
