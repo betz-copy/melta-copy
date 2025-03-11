@@ -306,12 +306,8 @@ const CreateOrEditEntityDetails: React.FC<{
     const currentDraft = useMemo(
         () => drafts[entityTemplate.category._id]?.[entityTemplate._id]?.find(({ uniqueId }) => uniqueId === draftId),
         [drafts, entityTemplate._id, entityTemplate.category._id, draftId],
-<<<<<<< HEAD
     ); //* draft
-=======
-    );
     const [initialValuePropsToFilter, setInitialValuePropsToFilter] = useState<object>({});
->>>>>>> 363d58f9a244fd2e49439e79dcb7df117e7b19cf
 
     return (
         <Formik<EntityWizardValues>
@@ -348,16 +344,11 @@ const CreateOrEditEntityDetails: React.FC<{
                     values.template || entityTemplate,
                 );
                 const isPropertiesFirst = (values.template?.propertiesTypeOrder ?? [])[0] === 'properties';
-<<<<<<< HEAD
                 const schema = filterFieldsFromPropertiesSchema(values.template.properties, values.selected);
-
-=======
-                const schema = filterFieldsFromPropertiesSchema(values.template.properties);
                 // eslint-disable-next-line react-hooks/rules-of-hooks
                 useEffect(() => {
                     setInitialValuePropsToFilter({ ...formInitialValues.properties });
                 }, []);
->>>>>>> 363d58f9a244fd2e49439e79dcb7df117e7b19cf
                 // eslint-disable-next-line react-hooks/rules-of-hooks
                 useEffect(() => {
                     if (initialCurrValues) setValues(initialCurrValues);
@@ -408,12 +399,8 @@ const CreateOrEditEntityDetails: React.FC<{
                         setInitialValuePropsToFilter({ ...newValues.properties });
                     }, environment.draftAutoSaveDebounce),
                     [],
-<<<<<<< HEAD
                 ); //* draft
 
-=======
-                );
->>>>>>> 363d58f9a244fd2e49439e79dcb7df117e7b19cf
                 // eslint-disable-next-line react-hooks/rules-of-hooks
                 const absoluteDirty = useMemo(() => {
                     // textarea/long-text causes the field to first be undefined, setting dirty to true,

@@ -11,7 +11,7 @@ import { environment } from '../../../globals';
 
 const { signaturePrefix } = environment;
 
-const RjfsSignatureWidget = ({ id, required, readonly, disabled, label, value, onChange, onBlur }: WidgetProps) => {
+const RjsfSignatureWidgets = ({ id, required, readonly, disabled, label, value, onChange, onBlur }: WidgetProps) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const isDisabled = readonly || disabled;
     const globalTheme = useTheme();
@@ -118,4 +118,4 @@ const RjfsSignatureWidget = ({ id, required, readonly, disabled, label, value, o
     );
 };
 
-export default RjfsSignatureWidget;
+export default RjsfSignatureWidgets;

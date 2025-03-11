@@ -18,17 +18,11 @@ import RjsfTextAreaWidget from './RjsfTextAreaWidget';
 import './form.css';
 import RjsfTemplateReferenceWidget from './RjsfTemplateReferenceWidget';
 import RjsfLocationWidget, { validateLocation } from './RjsfLocationWidget';
-<<<<<<< HEAD
 import RjsfUserWidget from './RjsfUserWidget';
 import RjsfUserArrayWidget from './RjsfUserArrayWidget';
 import InputAccordion from './InputAccordion';
 import RjsfCheckboxWidget from './RjsfCheckboxWidget';
 import { EntityWizardValues } from '../../dialogs/entity';
-=======
-import RjfsUserWidget from './RjfsUserWidget';
-import RjfsUserArrayWidget from './RjfsUserArrayWidget';
-import RjfsSignatureWidget from './RjfsSignatureWidgets';
->>>>>>> 363d58f9a244fd2e49439e79dcb7df117e7b19cf
 
 const ajvErrorsToFormikErrors = (schema: IMongoEntityTemplatePopulated['properties'], ajvErrors: ErrorObject[]): FormikErrors<any> => {
     const formikErrorsEntries = ajvErrors.map((ajvError) => {
@@ -73,7 +67,8 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
     ajv.addKeyword({ keyword: 'isDailyAlert' });
     ajv.addKeyword({ keyword: 'isDatePastAlert' });
     ajv.addKeyword({ keyword: 'calculateTime' });
-    ajv.addKeyword({ keyword: 'archive', metaSchema: { type: 'boolean' } });
+    ajv.addKeyword({ keyword: 'archive', type: 'boolean' });
+    // ajv.addKeyword({ keyword: 'archive', metaSchema: { type: 'boolean' } });
     ajv.addKeyword({
         keyword: 'serialStarter',
     });
@@ -92,6 +87,14 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
         validate: (data1) => data1 !== undefined, // Adjusted validate function
         errors: false,
     });
+
+    // ajv.addKeyword('identifier', {
+    //     modifying: true,
+    //     // eslint-disable-next-line @typescript-eslint/no-shadow
+    //     validate: (_schema, data) => data !== undefined,
+    //     errors: false,
+    //     keyword: '',
+    // });
 
     const schemaToValidate = {
         ...schema, // ?  maybe change here the require - require
@@ -194,7 +197,6 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
             '#json-schema > .form-group.field.field-object > .MuiFormControl-root > .MuiGrid-root > .MuiGrid-root',
         );
         containerDiv.forEach((innerDiv) => {
-<<<<<<< HEAD
             const hasTextAreaField = innerDiv.querySelector('.text-area');
             const classesToAdd: string[] = [];
             classesToAdd.push(hasTextAreaField || multipleEntities ? 'full-width-field' : 'half-width-field');
@@ -202,10 +204,9 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
             if (multipleEntities) classesToAdd.push('no-padding-top');
 
             innerDiv.classList.add(...classesToAdd);
-=======
+
             const biggerFieldCss = innerDiv.querySelector('.text-area') || innerDiv.querySelector('.signature');
-            innerDiv.classList.add(biggerFieldCss ? 'has-bigger-field-child' : 'has-field-child');
->>>>>>> 363d58f9a244fd2e49439e79dcb7df117e7b19cf
+            innerDiv.classList.add(biggerFieldCss ? 'has-bigger-field-child' : 'has-field-child'); // TODO change shorel to class to add
         });
     }, [values.template]);
 
@@ -318,23 +319,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
             extraErrors={mergedErrors}
             tagName="div"
             readonly={readonly}
-<<<<<<< HEAD
             widgets={Widgets}
-=======
-            widgets={{
-                SelectWidget: RjfsSelectWidget,
-                DateWidget: RjfsDateWidget,
-                DateTimeWidget: RjfsDateTimeWidget,
-                TextWidget: RjsfTextWidget,
-                EmailWidget: RjsfTextWidget,
-                TextAreaWidget: RjfsTextAreaWidget,
-                TemplateReferenceWidget: RjfsTemplateReferenceWidget,
-                LocationWidget: RjsfLocationWidget,
-                UserWidget: RjfsUserWidget,
-                UserArrayWidget: RjfsUserArrayWidget,
-                SignatureWidget: RjfsSignatureWidget,
-            }}
->>>>>>> 363d58f9a244fd2e49439e79dcb7df117e7b19cf
         >
             <div /> {/* remove the built in submit button */}
         </JSONSchemaForm>
