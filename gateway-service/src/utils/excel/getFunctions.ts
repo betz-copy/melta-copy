@@ -27,8 +27,11 @@ import {
 } from '../../externalServices/ruleBreachService/interfaces/populated';
 import config from '../../config';
 import { UploadedFile } from '../busboy/interface';
+import { extractUtmLocation, getUnit, isValidUTM, isValidWGS84, stringToCoordinates } from './map';
 
 const { invalidDate, invalidTime } = config.loadExcel;
+
+export const locationFormatError = 'location format not valid';
 
 const formatExcel = (value: Excel.CellValue | string, propertyTemplate: IEntitySingleProperty) => {
     const { type, format } = propertyTemplate;
@@ -44,6 +47,18 @@ const formatExcel = (value: Excel.CellValue | string, propertyTemplate: IEntityS
             if (format === 'date') return new Date(value as string).toLocaleDateString('en-CA');
             if (format === 'date-time') return new Date(value as string).toISOString();
             if (format === 'fileId') return (value as CellModel).text;
+            if (format === 'location') {
+                const locationString = value as string;
+                const unit = getUnit(locationString);
+                if (unit === 'WGS84') {
+                    const wgs84Location = stringToCoordinates(locationString).value;
+                    if (!isValidWGS84(wgs84Location)) throw new BadRequestError(locationFormatError);
+                    return { location: wgs84Location, unit };
+                }
+                const utmLocation = extractUtmLocation(locationString);
+                if (!isValidUTM(utmLocation)) throw new BadRequestError(locationFormatError);
+                return { location: utmLocation, unit };
+            }
             return value?.toString();
         case 'array':
             if (propertyTemplate.items && propertyTemplate.items.type === 'string' && typeof value === 'object' && 'richText' in value)
@@ -71,7 +86,7 @@ type IFailedProperties = {
     key: string;
     value: IEntitySingleProperty;
     cellValue: Excel.CellValue;
-    dateOrTime: 'date' | 'date-time';
+    format: 'date' | 'date-time' | 'location';
 }[];
 
 const handleFailedEntities = (rowData: Record<string, any>, failedProperties: IFailedProperties, failedEntities: IFailedEntity[]) => {
@@ -85,10 +100,10 @@ const handleFailedEntities = (rowData: Record<string, any>, failedProperties: IF
 
     const failedEntity: IFailedEntity = {
         properties: failedEntityProperties,
-        errors: failedProperties.map(({ key, value, dateOrTime }) => ({
+        errors: failedProperties.map(({ key, value, format }) => ({
             type: ActionErrors.validation,
             metadata: {
-                message: `must be valid ${dateOrTime ? 'date' : 'date-time'}`,
+                message: `must be valid ${format}`,
                 path: `/${key}`,
                 params: value,
                 schemaPath: `#/properties/${key}/type`,
@@ -158,13 +173,17 @@ const readExcelFile = async (
                     try {
                         const formatCellValue = formatExcel(cellValue, value);
                         if (formatCellValue === invalidDate) {
-                            failedProperties.push({ key, value, cellValue, dateOrTime: 'date' });
+                            failedProperties.push({ key, value, cellValue, format: 'date' });
                             isFailed = true;
                         } else rowData[key] = formatCellValue;
                     } catch (error: any) {
                         console.error("there's an error in the entity", { error });
                         if (error.message.includes(invalidTime)) {
-                            failedProperties.push({ key, value, cellValue, dateOrTime: 'date-time' });
+                            failedProperties.push({ key, value, cellValue, format: 'date-time' });
+                            isFailed = true;
+                        }
+                        if (error.message.includes(locationFormatError)) {
+                            failedProperties.push({ key, value, cellValue, format: 'location' });
                             isFailed = true;
                         }
                     }

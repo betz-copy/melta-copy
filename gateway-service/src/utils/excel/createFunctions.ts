@@ -7,6 +7,7 @@ import config from '../../config/index';
 import { excelConfig } from './excelConfig';
 import { hexToARGB } from './colors';
 import { isIncludedColumn } from './getFunctions';
+import { locationConverterToString } from './map';
 
 interface IExcelStyle {
     columnHeader: {
@@ -247,15 +248,15 @@ const styleAWorksheet = (
                 if (!isComplex) {
                     cell.value = row[key];
 
-                    if (typeof cell.value === 'boolean') {
-                        cell.value = cell.value ? excelConfig.TRUE_TO_HEBREW : excelConfig.FALSE_TO_HEBREW;
-                    }
-                    if (value.format === 'user') {
-                        cell.value = JSON.parse(cell.value as string).fullName;
-                    }
-                    if (value.items?.format === 'user') {
+                    if (typeof cell.value === 'boolean') cell.value = cell.value ? excelConfig.TRUE_TO_HEBREW : excelConfig.FALSE_TO_HEBREW;
+                    if (value.format === 'user') cell.value = JSON.parse(cell.value as string).fullName;
+                    if (value.items?.format === 'user')
                         cell.value = (cell.value as any).map((stringUser) => JSON.parse(stringUser).fullName).join(', ');
+                    if (value.format === 'location') {
+                        const location: { location: string; unit: 'UTM' | 'WGS84' } = JSON.parse(cell.value as string);
+                        cell.value = location.unit === 'UTM' ? locationConverterToString(location.location, 'WGS84', 'UTM') : location.location;
                     }
+
                     // Check if value is date
                     if (cell.value && typeof cell.value === 'string') {
                         const cellValue = String(cell.value);

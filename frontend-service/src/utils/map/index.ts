@@ -23,7 +23,7 @@ export const zoomNumber = 300000;
 
 export const jerusalemCoordinates: Cartesian3 = Cartesian3.fromDegrees(35.2137, 31.7683, zoomNumber);
 
-export const parsePolygon = (polygonStr: string): Cartesian3[] | undefined => {
+export const parsePolygon = (polygonStr: string, toECEF: boolean = true): Cartesian3[] | undefined => {
     if (!polygonStr.startsWith(polygonPrefix) || !polygonStr.endsWith(polygonSuffix)) {
         return undefined;
     }
@@ -42,15 +42,15 @@ export const parsePolygon = (polygonStr: string): Cartesian3[] | undefined => {
                 return null;
             }
 
-            return Cartesian3.fromDegrees(longitude, latitude);
+            return toECEF ? Cartesian3.fromDegrees(longitude, latitude) : { x: longitude, y: latitude };
         })
         .filter((coord): coord is Cartesian3 => coord !== null);
 
     return coordinates.length > 0 ? coordinates : undefined;
 };
 
-export const stringToCoordinates = (strCoords: string): CoordinatesResult => {
-    const polygon = parsePolygon(strCoords);
+export const stringToCoordinates = (strCoords: string, toECEF?: boolean): CoordinatesResult => {
+    const polygon = parsePolygon(strCoords, toECEF);
     if (polygon) return { type: 'polygon', value: polygon };
 
     const formatted = strCoords.split(',').map((val) => +val);

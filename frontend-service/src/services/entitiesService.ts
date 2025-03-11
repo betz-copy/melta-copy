@@ -31,7 +31,7 @@ export const exportEntitiesRequest = async (body: IExportEntitiesBody) => {
 };
 
 export const loadEntitiesRequest = async (
-    templateId: string,
+    template: IMongoEntityTemplatePopulated,
     files?: Record<string, File>,
     insertBrokenEntities?: IEntityWithIgnoredRules[],
 ): Promise<ITablesResults> => {
@@ -40,12 +40,29 @@ export const loadEntitiesRequest = async (
         Object.entries(files).forEach(([key, value]) => {
             formData.append(key, value as Blob);
         });
-    formData.append('templateId', templateId);
+    formData.append('templateId', template._id);
 
     if (insertBrokenEntities) {
         const formattedInsertBrokenEntities = insertBrokenEntities.map((entity) => ({
             templateId: entity.templateId,
-            properties: mapValues(entity.properties, (property) => property),
+            properties: formData.append(
+                'properties',
+                JSON.stringify(
+                    mapValues(entity.properties, (property, key) => {
+                        switch (template.properties.properties[key]?.format) {
+                            case 'relationshipReference':
+                                return property?.properties._id;
+                            case 'location': {
+                                if (property.unit === 'UTM')
+                                    return JSON.stringify({ location: locationConverterToString(property.location), unit: property.unit });
+                                return JSON.stringify(property);
+                            }
+                            default:
+                                return property;
+                        }
+                    }),
+                ),
+            ),
             ignoredRules: entity.ignoredRules,
         }));
 
@@ -80,9 +97,19 @@ export const editManyEntitiesByExcelRequest = async (
 
     const entitiesArray = entitiesToUpdate.map((entity) => ({
         templateId: entity.templateId,
-        properties: mapValues(entity.properties, (property, key) =>
-            template.properties.properties[key]?.format === 'relationshipReference' ? property?.properties._id : property,
-        ),
+        properties: mapValues(entity.properties, (property, key) => {
+            switch (template.properties.properties[key]?.format) {
+                case 'relationshipReference':
+                    return property?.properties._id;
+                case 'location': {
+                    if (property.unit === 'UTM')
+                        return JSON.stringify({ location: locationConverterToString(property.location), unit: property.unit });
+                    return JSON.stringify(property);
+                }
+                default:
+                    return property;
+            }
+        }),
         ignoredRules: entity.ignoredRules,
     }));
     formData.append('entities', JSON.stringify(entitiesArray));
@@ -145,12 +172,8 @@ export const createEntityRequest = async (entity: EntityWizardValues, ignoredRul
                     case 'relationshipReference':
                         return property?.properties._id;
                     case 'location': {
-                        if (property.unit === 'UTM') {
-                            console.log('im here');
-                            console.log({ wgs84: locationConverterToString(property.location) });
-
+                        if (property.unit === 'UTM')
                             return JSON.stringify({ location: locationConverterToString(property.location), unit: property.unit });
-                        }
                         return JSON.stringify(property);
                     }
                     default:
@@ -229,8 +252,11 @@ export const updateEntityRequestForMultiple = async (
                 switch (newEntityData.template.properties.properties[key]?.format) {
                     case 'relationshipReference':
                         return property?.properties._id;
-                    case 'location':
+                    case 'location': {
+                        if (property.unit === 'UTM')
+                            return JSON.stringify({ location: locationConverterToString(property.location), unit: property.unit });
                         return JSON.stringify(property);
+                    }
                     default:
                         return property;
                 }
@@ -302,8 +328,11 @@ export const duplicateEntityRequest = async (entityId: string, newEntityData: En
                 switch (newEntityData.template.properties.properties[key]?.format) {
                     case 'relationshipReference':
                         return property?.properties._id;
-                    case 'location':
+                    case 'location': {
+                        if (property.unit === 'UTM')
+                            return JSON.stringify({ location: locationConverterToString(property.location), unit: property.unit });
                         return JSON.stringify(property);
+                    }
                     default:
                         return property;
                 }

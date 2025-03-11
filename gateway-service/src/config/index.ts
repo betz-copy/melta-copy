@@ -255,6 +255,18 @@ const config = {
         flowRequestHostName: env.get('REQUEST_HOST_NAME').default('host-name').required().asString(),
         flowSystemName: env.get('FLOW_SYSTEM_NAME').default('system-name').required().asString(),
     },
+    map: {
+        polygon: {
+            polygonPrefix: env.get('POLYGON_PREFIX').default('POLYGON((').asString(),
+            polygonSuffix: env.get('POLYGON_SUFFIX').default('))').asString(),
+        },
+        epsgCode: {
+            epsg: env.get('EPSG').default('EPSG').asString(),
+            wgs84: env.get('WGS84').default('EPSG:4326').asString(),
+            southHemiUTM: env.get('SOUTH_HEMI_UTM').default('327').asString(),
+            northHemiUTM: env.get('NORTH_HEMI_UTM').default('326').asString(),
+        },
+    },
 };
 
 export default config;

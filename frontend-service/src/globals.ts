@@ -257,6 +257,7 @@ export const environment = {
         squareLength: 2500,
         polygon: { polygonPrefix: 'POLYGON((', polygonSuffix: '))' },
         mapSearchPropertiesLimit: 2,
+        epsgCode: { epsg: 'EPSG', wgs84: 'EPSG:4326', southHemiUTM: '327', northHemiUTM: '326' },
     },
     meltaUpdatesShown: 'meltaUpdatesShown',
     profileIconsCount: 19,

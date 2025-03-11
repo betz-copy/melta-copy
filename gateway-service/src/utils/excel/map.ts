@@ -1,19 +1,28 @@
-import * as Cesium from 'cesium';
 import proj4 from 'proj4';
-import { Cartesian3 } from 'cesium';
-import { stringToCoordinates } from '.';
-import { environment } from '../../globals';
+import config from '../../config';
+import { BadRequestError } from '../../express/error';
+import { locationFormatError } from './getFunctions';
 
 const {
     polygon: { polygonPrefix, polygonSuffix },
     epsgCode: { wgs84, epsg, southHemiUTM, northHemiUTM },
-} = environment.map;
+} = config.map;
 
 export type UTM = {
     zone: number; // UTM Zone (1-60)
     hemi: 'N' | 'S'; // Hemisphere (North or South)
     east: number; // Easting (6-digit)
     north: number; // Northing (7-digit)
+};
+
+export type Cartesian3 = {
+    x: number;
+    y: number;
+};
+
+type CoordinatesResult = {
+    type: 'polygon' | 'marker';
+    value: Cartesian3 | Cartesian3[];
 };
 
 const utm = (zone: UTM['zone'], hemi: UTM['hemi']) => `${epsg}:${hemi === 'N' ? northHemiUTM : southHemiUTM}${zone}`;
@@ -36,20 +45,6 @@ export const isValidWGS84 = (location: Cartesian3 | Cartesian3[]) =>
         ? Math.abs(location.x) < 180 && Math.abs(location.y) < 90
         : location.every((point) => Math.abs(point.x) < 180 && Math.abs(point.y) < 90);
 
-export const convertWGS94ToECEF = (location: Cartesian3 | Cartesian3[]) =>
-    !Array.isArray(location) ? Cartesian3.fromDegrees(location.x, location.y) : location.map((point) => Cartesian3.fromDegrees(point.x, point.y));
-
-export const convertECEFToWGS84 = (point: Cartesian3): { longitude: number; latitude: number } => {
-    const cartographic = Cesium.Ellipsoid.WGS84.cartesianToCartographic(point);
-
-    if (!cartographic) console.error('Invalid Point');
-
-    const longitude = Cesium.Math.toDegrees(cartographic.longitude);
-    const latitude = Cesium.Math.toDegrees(cartographic.latitude);
-
-    return { longitude, latitude };
-};
-
 const getZoneAndHemi = (longitude: number, latitude: number): { epsgCode: string; zone: number; hemi: 'N' | 'S' } => {
     let zoneNumber: number;
 
@@ -70,7 +65,7 @@ const getZoneAndHemi = (longitude: number, latitude: number): { epsgCode: string
     return { epsgCode, zone: zoneNumber, hemi: latitude >= 0 ? 'N' : 'S' };
 };
 
-export const convertWGS84ToUTM = (wgs84Location: Cartesian3 | Cartesian3[]): UTM | UTM[] => {
+const convertWGS84ToUTM = (wgs84Location: Cartesian3 | Cartesian3[]): UTM | UTM[] => {
     const convertToUTM = (point: Cartesian3): UTM => {
         const { zone, hemi, epsgCode } = getZoneAndHemi(point.x, point.y);
         const [east, north] = proj4(wgs84, epsgCode, [point.x, point.y]);
@@ -86,15 +81,15 @@ export const convertWGS84ToUTM = (wgs84Location: Cartesian3 | Cartesian3[]): UTM
     return !Array.isArray(wgs84Location) ? convertToUTM(wgs84Location) : wgs84Location.map((point) => convertToUTM(point));
 };
 
-export const convertUTMToWGS84 = (utmLocation: UTM | UTM[]): Cartesian3 | Cartesian3[] => {
+const convertUTMToWGS84 = (utmLocation: UTM | UTM[]): Cartesian3 | Cartesian3[] => {
     const convertToWGS84 = (point: UTM) => proj4(utm(point.zone, point.hemi), wgs84, [point.east, point.north]);
     return !Array.isArray(utmLocation)
         ? ({ x: convertToWGS84(utmLocation)[0], y: convertToWGS84(utmLocation)[1] } as Cartesian3)
-        : utmLocation.map((point) => ({ x: convertToWGS84(point)[0], y: convertToWGS84(point)[1] } as Cartesian3));
+        : utmLocation.map((point) => ({ x: convertToWGS84(point)[0], y: convertToWGS84(point)[1] }) as Cartesian3);
 };
 
 const extractUtmPoint = (utmMatchRegex: RegExpMatchArray | null): UTM => {
-    if (!utmMatchRegex) throw new Error('Invalid UTM coordinate format');
+    if (!utmMatchRegex) throw new BadRequestError(locationFormatError);
 
     const zone = parseInt(utmMatchRegex[1], 10);
     const hemi = utmMatchRegex[2] >= 'N' ? 'N' : 'S';
@@ -110,13 +105,46 @@ export const extractUtmLocation = (utmString: string): UTM | UTM[] => {
     if (utmString.startsWith(polygonPrefix)) {
         const polygonString = utmString.slice(9, -2);
         const matches = [...polygonString.matchAll(utmRegex)];
-        if (matches.length === 0) throw new Error('Invalid UTM coordinates in POLYGON');
+        if (matches.length === 0) throw new BadRequestError(locationFormatError);
 
         const utmDataArray = matches.map((match) => extractUtmPoint(match));
         return utmDataArray;
     }
     const match = utmString.match(utmRegex);
     return extractUtmPoint(match);
+};
+
+const parsePolygon = (polygonStr: string): Cartesian3[] | undefined => {
+    if (!polygonStr.startsWith(polygonPrefix) || !polygonStr.endsWith(polygonSuffix)) {
+        return undefined;
+    }
+
+    const coordsStr = polygonStr.slice(polygonPrefix.length, -polygonSuffix.length).trim();
+    const coordPairs = coordsStr.split(',').map((pair) => pair.trim());
+
+    const coordinates: Cartesian3[] = coordPairs
+        .map((pair) => {
+            const [longitudeStr, latitudeStr] = pair.split(/\s+/);
+            const longitude = parseFloat(longitudeStr);
+            const latitude = parseFloat(latitudeStr);
+
+            if (Number.isNaN(longitude) || Number.isNaN(latitude)) throw new BadRequestError(locationFormatError);
+
+            return { x: longitude, y: latitude };
+        })
+        .filter((coord): coord is Cartesian3 => coord !== null);
+
+    return coordinates.length > 0 ? coordinates : undefined;
+};
+
+export const stringToCoordinates = (strCoords: string): CoordinatesResult => {
+    const polygon = parsePolygon(strCoords);
+    if (polygon) return { type: 'polygon', value: polygon };
+
+    const formatted = strCoords.split(',').map((val) => +val);
+    return { type: 'marker', value: { x: formatted[0], y: formatted[1] } as Cartesian3 };
+
+    // TODO: add validation to format
 };
 
 export const locationConverterToString = (
@@ -138,7 +166,7 @@ export const locationConverterToString = (
         });
         return `${polygonPrefix}${points.join(',')}${polygonSuffix}`;
     }
-    const wgs84Location = stringToCoordinates(location, false);
+    const wgs84Location = stringToCoordinates(location);
 
     const utmLocation = convertWGS84ToUTM(wgs84Location.value);
 
@@ -148,4 +176,17 @@ export const locationConverterToString = (
         return `${point.zone}${point.hemi} ${point.east} ${point.north}`;
     });
     return `${polygonPrefix}${points.join(',')}${polygonSuffix}`;
+};
+
+export const getUnit = (locationString: string): 'UTM' | 'WGS84' => {
+    if (locationString.startsWith(polygonPrefix)) {
+        const polygonString = locationString.slice(9, -2).trim();
+        const stringPoints = polygonString.split(',');
+        stringPoints.map((stringPoint) => {
+            const pointLength = stringPoint.split(' ').length;
+            if (pointLength === 1) return 'WGS84';
+            return 'UTM';
+        });
+    } else if (locationString.includes(',')) return 'WGS84';
+    return 'UTM';
 };
