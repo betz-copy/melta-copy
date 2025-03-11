@@ -93,8 +93,11 @@ export const convertUTMToWGS84 = (utmLocation: UTM | UTM[]): Cartesian3 | Cartes
         : utmLocation.map((point) => ({ x: convertToWGS84(point)[0], y: convertToWGS84(point)[1] } as Cartesian3));
 };
 
-const extractUtmPoint = (utmMatchRegex: RegExpMatchArray | null): UTM => {
-    if (!utmMatchRegex) throw new Error('Invalid UTM coordinate format');
+const extractUtmPoint = (utmMatchRegex: RegExpMatchArray | null): UTM | undefined => {
+    if (!utmMatchRegex) {
+        console.error('Invalid UTM coordinate format');
+        return undefined;
+    }
 
     const zone = parseInt(utmMatchRegex[1], 10);
     const hemi = utmMatchRegex[2] >= 'N' ? 'N' : 'S';
@@ -104,17 +107,22 @@ const extractUtmPoint = (utmMatchRegex: RegExpMatchArray | null): UTM => {
     return { zone, hemi, east, north };
 };
 
-export const extractUtmLocation = (utmString: string): UTM | UTM[] => {
+export const extractUtmLocation = (utmString: string): UTM | UTM[] | undefined => {
     const utmRegex = /\b([1-9]|[1-5][0-9]|60)([C-HJ-NP-X])\s([0-9]+(?:\.[0-9]+)?)\s([0-9]+(?:\.[0-9]+)?)\b/;
     const utmPolygonRegex = /\b([1-9]|[1-5][0-9]|60)([C-HJ-NP-X])\s([0-9]+(?:\.[0-9]+)?)\s([0-9]+(?:\.[0-9]+)?)\b/g;
 
     if (utmString.startsWith(polygonPrefix)) {
         const polygonString = utmString.slice(9, -2);
         const matches = [...polygonString.matchAll(utmPolygonRegex)];
-        if (matches.length === 0) throw new Error('Invalid UTM coordinates in POLYGON');
+        if (matches.length === 0) {
+            console.error('Invalid UTM coordinates in POLYGON');
+            return undefined;
+        }
 
         const utmDataArray = matches.map((match) => extractUtmPoint(match));
-        return utmDataArray;
+        if (utmDataArray.some((utmData) => utmData === undefined)) return undefined;
+
+        return utmDataArray.filter(Boolean) as UTM[];
     }
     const match = utmString.match(utmRegex);
     return extractUtmPoint(match);
@@ -130,6 +138,7 @@ export const locationConverterToString = (
 
     if (unitToConvertTo === 'WGS84') {
         const utmLocation = extractUtmLocation(location);
+        if (!utmLocation) return undefined;
         const wgs84Location = convertUTMToWGS84(utmLocation);
 
         if (!Array.isArray(wgs84Location)) return `${wgs84Location.x}, ${wgs84Location.y}`;
