@@ -1,6 +1,7 @@
 import { TemplatesManagerService } from '.';
 import config from '../../config';
 import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
+import { ISubCompactPermissions } from '../userService/interfaces/permissions/permissions';
 import { IMongoRelationshipTemplate } from './relationshipsTemplateService';
 
 const {
@@ -114,12 +115,20 @@ export interface RequestWithSearchEntityTemplateBody extends RequestWithPermissi
 
 export class EntityTemplateService extends TemplatesManagerService {
     // categories
-    async searchCategories(searchInput?: string) {
+    filterCategoriesByPermissions(categories: IMongoCategory[], usersPermissions: ISubCompactPermissions): IMongoCategory[] {
+        if (!usersPermissions.instances) {
+            return [] as IMongoCategory[];
+        }
+
+        return categories.filter(({ _id }) => usersPermissions.instances?.categories[_id]);
+    }
+
+    async searchCategories(userPermissions: ISubCompactPermissions, searchInput?: string) {
         const params: Record<string, string> = searchInput ? { search: searchInput } : {};
 
-        const { data } = await this.api.get<IMongoCategory[]>(baseCategoriesRoute, { params });
+        const { data: categories } = await this.api.get<IMongoCategory[]>(baseCategoriesRoute, { params });
 
-        return data;
+        return userPermissions.admin ? categories : this.filterCategoriesByPermissions(categories, userPermissions);
     }
 
     async createCategory(category: ICategory) {

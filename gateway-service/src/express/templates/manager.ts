@@ -211,8 +211,8 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
     // all
     async getAllAllowedTemplates(userId: string, permissionsOfUserId: RequestWithPermissionsOfUserId['permissionsOfUserId']) {
-        const [allCategories, allowedEntityTemplates] = await Promise.all([
-            this.getAllCategories(),
+        const [allAllowedCategories, allowedEntityTemplates] = await Promise.all([
+            this.getAllAllowedCategories(permissionsOfUserId),
             this.getAllowedEntitiesTemplates(permissionsOfUserId),
         ]);
 
@@ -243,7 +243,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         ]);
 
         return {
-            categories: allCategories,
+            categories: allAllowedCategories,
             entityTemplates: allAllowedEntityTemplatesWithConstraints,
             relationshipTemplates: [...allowedRelationshipsTemplates, ...allowedRelationshipTemplatesBecauseOfRules],
             rules: allowedRules,
@@ -278,8 +278,8 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
     }
 
     // categories
-    async getAllCategories() {
-        return this.entityTemplateService.searchCategories();
+    async getAllAllowedCategories(permissionsOfUserId: RequestWithPermissionsOfUserId['permissionsOfUserId']) {
+        return this.entityTemplateService.searchCategories(permissionsOfUserId);
     }
 
     async createCategory(categoryData: Omit<ICategory, 'iconFileId'>, file?: UploadedFile) {

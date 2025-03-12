@@ -24,6 +24,11 @@ export default class TemplatesController extends DefaultController<TemplatesMana
     }
 
     // categories
+    async getAllAllowedCategories(req: Request, res: Response) {
+        const { permissionsOfUserId } = req as RequestWithPermissionsOfUserId;
+        res.json(await this.manager.getAllAllowedCategories(permissionsOfUserId));
+    }
+
     async createCategory(req: Request, res: Response) {
         res.json(await this.manager.createCategory(req.body, req.file));
     }
@@ -37,10 +42,11 @@ export default class TemplatesController extends DefaultController<TemplatesMana
     }
 
     async searchCategories(req: Request, res: Response) {
-        const { user } = req as RequestWithPermissionsOfUserId;
+        const { user, permissionsOfUserId } = req as RequestWithPermissionsOfUserId;
+
         assert(user, 'User doesnt exists under request');
 
-        res.json(await this.manager.getAllCategories());
+        res.json(await this.manager.getAllAllowedCategories(permissionsOfUserId));
     }
 
     // entityTemplates

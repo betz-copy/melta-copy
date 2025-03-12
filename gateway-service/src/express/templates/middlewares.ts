@@ -34,14 +34,19 @@ export class TemplatesValidator extends DefaultController {
     async validateUserCanUpdateOrDeleteEntityTemplate(req: Request) {
         const templateId = req.params.id;
 
-        const [{ category }, userPermissions] = await Promise.all([
+        const [entityTemplate, userPermissions] = await Promise.all([
             this.entityTemplateService.getEntityTemplateById(templateId),
             this.authorizer.getWorkspacePermissions(req.user!.id),
         ]);
 
-        if (!userPermissions.admin?.scope && !Object.keys(userPermissions.instances?.categories ?? {}).includes(category._id)) {
-            throw new ForbiddenError('user not authorized', { metadata: `user does not have write permission on category ${category}` });
-        }
+        if (
+            !userPermissions.admin?.scope &&
+            userPermissions.instances?.categories[entityTemplate.category._id]?.scope !== PermissionScope.write &&
+            userPermissions.instances?.categories[entityTemplate.category._id]?.entityTemplates[templateId]?.scope !== PermissionScope.write
+        )
+            throw new ForbiddenError('user not authorized', {
+                metadata: `user does not have write permission on entity ${entityTemplate.displayName}`,
+            });
     }
 
     async getRelatedCategoriesFromRelationshipTemplate(relationshipTemplate: IRelationshipTemplate) {

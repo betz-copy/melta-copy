@@ -52,7 +52,7 @@ const templatesValidatorMiddleware = createWorkspacesController(TemplatesValidat
 templatesRouter.get('/all', AuthorizerControllerMiddleware.userHasSomePermissions, templatesControllerMiddleware.getAllAllowedTemplates);
 
 // categories
-templatesRouter.get('/categories', AuthorizerControllerMiddleware.userHasSomePermissions, TemplatesServiceProxy);
+templatesRouter.get('/categories', AuthorizerControllerMiddleware.userHasSomePermissions, templatesControllerMiddleware.getAllAllowedCategories);
 templatesRouter.post(
     '/categories',
     busboyMiddleware,
@@ -65,12 +65,14 @@ templatesRouter.put(
     busboyMiddleware,
     ValidateRequest(updateCategorySchema),
     AuthorizerControllerMiddleware.userCanWriteTemplates,
+    AuthorizerControllerMiddleware.userCanWriteCategory,
     templatesControllerMiddleware.updateCategory,
 );
 templatesRouter.delete(
     '/categories/:id',
     ValidateRequest(deleteCategorySchema),
     AuthorizerControllerMiddleware.userCanWriteTemplates,
+    AuthorizerControllerMiddleware.userCanWriteCategory,
     templatesControllerMiddleware.deleteCategory,
 );
 
@@ -95,7 +97,7 @@ templatesRouter.patch(
     templatesControllerMiddleware.deleteEntityEnumFieldValue,
 );
 templatesRouter.patch('/entities/:id/actions', AuthorizerControllerMiddleware.userIsRootAdmin, TemplatesServiceProxy);
-templatesRouter.post('/entities/search', AuthorizerControllerMiddleware.userCanReadTemplates, TemplatesServiceProxy);
+templatesRouter.post('/entities/search', AuthorizerControllerMiddleware.userCanReadTemplates, templatesControllerMiddleware.searchEntityTemplates); // todo shirel
 templatesRouter.post(
     '/entities',
     busboyMiddleware,
@@ -113,6 +115,7 @@ templatesRouter.put(
 templatesRouter.patch(
     '/entities/:id/status',
     ValidateRequest(updateEntityTemplateStatusSchema),
+    templatesValidatorMiddleware.validateUserCanUpdateOrDeleteEntityTemplate,
     templatesControllerMiddleware.updateEntityTemplateStatus,
 );
 

@@ -33,6 +33,8 @@ import { useWorkspaceStore } from '../../../stores/workspace';
 import { environment } from '../../../globals';
 import { ConvertToRelationship } from '../../../common/wizards/relationshipTemplate/convertRelationshipToRelationshipField';
 import { IRelationshipReference } from '../../../common/wizards/entityTemplate/commonInterfaces';
+import { allowedEntitiesOfCategory, getAllAllowedEntities } from '../../../utils/permissions/instancePermissions';
+import { useUserStore } from '../../../stores/user';
 
 const { infiniteScrollPageCount } = environment.processInstances;
 
@@ -157,6 +159,7 @@ const defaultRelationshipTemplate: IMongoRelationshipTemplate = {
 const RelationshipTemplatesRow: React.FC = () => {
     const workspace = useWorkspaceStore((state) => state.workspace);
     const config = workspace.metadata;
+    const currentUser = useUserStore((state) => state.user);
 
     const queryClient = useQueryClient();
 
@@ -166,9 +169,10 @@ const RelationshipTemplatesRow: React.FC = () => {
 
     const categoriesArray = Array.from(categories.values());
     const entityTemplatesArray = Array.from(entityTemplates.values());
+    const allowedEntityTemplates = getAllAllowedEntities(entityTemplatesArray, currentUser);
 
-    const [sourceEntityTemplatesToShow, setSourceEntityTemplatesToShow] = useState<IMongoEntityTemplatePopulated[]>(entityTemplatesArray);
-    const [destinationEntityTemplatesToShow, setDestinationEntityTemplatesToShow] = useState<IMongoEntityTemplatePopulated[]>(entityTemplatesArray);
+    const [sourceEntityTemplatesToShow, setSourceEntityTemplatesToShow] = useState<IMongoEntityTemplatePopulated[]>(allowedEntityTemplates);
+    const [destinationEntityTemplatesToShow, setDestinationEntityTemplatesToShow] = useState<IMongoEntityTemplatePopulated[]>(allowedEntityTemplates);
 
     const [searchText, setSearchText] = useState('');
 
@@ -177,11 +181,11 @@ const RelationshipTemplatesRow: React.FC = () => {
     const isFilterButtonDisabled = useMemo(
         () =>
             !(
-                sourceEntityTemplatesToShow.length < entityTemplatesArray.length ||
-                destinationEntityTemplatesToShow.length < entityTemplatesArray.length ||
+                sourceEntityTemplatesToShow.length < allowedEntityTemplates.length ||
+                destinationEntityTemplatesToShow.length < allowedEntityTemplates.length ||
                 searchText.length
             ),
-        [destinationEntityTemplatesToShow, entityTemplatesArray, searchText, sourceEntityTemplatesToShow],
+        [destinationEntityTemplatesToShow, allowedEntityTemplates, searchText, sourceEntityTemplatesToShow],
     );
 
     const [deleteRelationshipTemplateDialogState, setDeleteRelationshipTemplateDialogState] = useState<{
@@ -302,7 +306,7 @@ const RelationshipTemplatesRow: React.FC = () => {
                     <Grid item>
                         <TemplatesSelectCheckbox
                             title={i18next.t('systemManagement.sourceTemplates')}
-                            templates={entityTemplatesArray}
+                            templates={allowedEntityTemplates}
                             selectedTemplates={sourceEntityTemplatesToShow}
                             setSelectedTemplates={setSourceEntityTemplatesToShow}
                             categories={categoriesArray}
@@ -313,7 +317,7 @@ const RelationshipTemplatesRow: React.FC = () => {
                     <Grid item>
                         <TemplatesSelectCheckbox
                             title={i18next.t('systemManagement.destinationTemplates')}
-                            templates={entityTemplatesArray}
+                            templates={allowedEntityTemplates}
                             selectedTemplates={destinationEntityTemplatesToShow}
                             setSelectedTemplates={setDestinationEntityTemplatesToShow}
                             categories={categoriesArray}
@@ -325,8 +329,8 @@ const RelationshipTemplatesRow: React.FC = () => {
                         <FilterButton
                             onClick={() => {
                                 setSearchText('');
-                                setSourceEntityTemplatesToShow(entityTemplatesArray);
-                                setDestinationEntityTemplatesToShow(entityTemplatesArray);
+                                setSourceEntityTemplatesToShow(allowedEntityTemplates);
+                                setDestinationEntityTemplatesToShow(allowedEntityTemplates);
                             }}
                             disabled={isFilterButtonDisabled}
                             text={i18next.t('entitiesTableOfTemplate.resetFilters')}

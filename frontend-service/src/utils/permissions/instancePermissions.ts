@@ -3,7 +3,7 @@ import { PermissionScope } from '../../interfaces/permissions';
 import { ICompact, IInstancesPermission, ISubCompactPermissions } from '../../interfaces/permissions/permissions';
 import { ICategoryMap, IMongoCategory } from '../../interfaces/categories';
 import { entityTemplatePermissionDialog } from './permissionOfUserDialog';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 
 export const allowedCategories = (categories: ICategoryMap, currentUser): IMongoCategory[] => {
     const allowedCategoriesToShow = currentUser.currentWorkspacePermissions?.admin
@@ -13,11 +13,22 @@ export const allowedCategories = (categories: ICategoryMap, currentUser): IMongo
     return allowedCategoriesToShow.map((categoryId) => categories?.get(categoryId)).filter((category) => category !== undefined);
 };
 
-export const allowedEntities = (relatedEntityTemplatesToShow: IMongoEntityTemplatePopulated[], category: IMongoCategory, currentUser) => {
+export const allowedEntitiesOfCategory = (relatedEntityTemplatesToShow: IMongoEntityTemplatePopulated[], category: IMongoCategory, currentUser) => {
     if (currentUser.currentWorkspacePermissions.admin || currentUser.currentWorkspacePermissions.instances?.categories[category._id].scope)
         return relatedEntityTemplatesToShow;
     const entitiesKeys = Object.keys(currentUser.currentWorkspacePermissions.instances?.categories[category._id].entityTemplates);
     return relatedEntityTemplatesToShow.filter((entity) => entitiesKeys.includes(entity._id));
+};
+
+export const getAllAllowedEntities = (allEntityTemplates: IMongoEntityTemplatePopulated[], currentUser) => {
+    return currentUser.currentWorkspacePermissions.admin
+        ? allEntityTemplates
+        : allEntityTemplates.filter((entity) => {
+              return (
+                  currentUser.currentWorkspacePermissions.instances?.categories[entity.category._id]?.scope ||
+                  currentUser.currentWorkspacePermissions.instances?.categories[entity.category._id]?.entityTemplates[entity._id]
+              );
+          });
 };
 
 export const checkUserCategoryPermission = (

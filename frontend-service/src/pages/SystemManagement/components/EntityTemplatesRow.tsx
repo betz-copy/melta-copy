@@ -38,7 +38,7 @@ import { CreateButton } from './CreateButton';
 import { FilterButton } from './FilterButton';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { environment } from '../../../globals';
-import { allowedCategories, allowedEntities, checkUserTemplatePermission } from '../../../utils/permissions/instancePermissions';
+import { allowedCategories, allowedEntitiesOfCategory, checkUserTemplatePermission } from '../../../utils/permissions/instancePermissions';
 import { useUserStore } from '../../../stores/user';
 import { PermissionScope } from '../../../interfaces/permissions';
 
@@ -536,7 +536,7 @@ const EntityTemplatesRow: React.FC = () => {
             const relatedEntityTemplatesToShow = entityTemplatesToShow.filter((entity) => entity.category._id === category._id);
             categoriesToShowMapEntities.push({
                 category,
-                entityTemplates: allowedEntities(relatedEntityTemplatesToShow, category, currentUser),
+                entityTemplates: allowedEntitiesOfCategory(relatedEntityTemplatesToShow, category, currentUser),
             });
         });
 

@@ -6,6 +6,8 @@ import { useQueryClient } from 'react-query';
 import { EntityTemplateWizardValues } from './index';
 import { StepComponentProps } from '../index';
 import { ICategoryMap } from '../../../interfaces/categories';
+import { allowedCategories } from '../../../utils/permissions/instancePermissions';
+import { useUserStore } from '../../../stores/user';
 
 const chooseCategorySchema = Yup.object({
     category: Yup.object({
@@ -17,13 +19,14 @@ const chooseCategorySchema = Yup.object({
 
 const ChooseCategory: React.FC<StepComponentProps<EntityTemplateWizardValues>> = ({ values, touched, errors, setFieldValue }) => {
     const queryClient = useQueryClient();
+    const currentUser = useUserStore((state) => state.user);
 
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
 
     return (
         <Autocomplete
             id="category"
-            options={Array.from(categories.values())}
+            options={allowedCategories(categories, currentUser)}
             onChange={(_e, value) => setFieldValue('category', value || '')}
             value={values.category._id ? values.category : null}
             getOptionLabel={(option) => option.displayName}

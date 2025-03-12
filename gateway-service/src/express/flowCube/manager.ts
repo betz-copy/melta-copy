@@ -1,12 +1,7 @@
 import config from '../../config';
 import { InstancesService } from '../../externalServices/instanceService';
 import { IFilterOfTemplate, ISearchEntitiesOfTemplateBody } from '../../externalServices/instanceService/interfaces/entities';
-import {
-    EntityTemplateService,
-    IEntitySingleProperty,
-    IMongoCategory,
-    ISearchEntityTemplatesBody,
-} from '../../externalServices/templates/entityTemplateService';
+import { EntityTemplateService, IEntitySingleProperty, ISearchEntityTemplatesBody } from '../../externalServices/templates/entityTemplateService';
 import { UserService } from '../../externalServices/userService';
 import { ICompactPermissions, ISubCompactPermissions } from '../../externalServices/userService/interfaces/permissions/permissions';
 import { Authorizer } from '../../utils/authorizer';
@@ -118,20 +113,10 @@ export class FlowCubeManager extends DefaultManagerProxy<null> {
         }
 
         const usersPermissions = await this.authorizer.getWorkspacePermissions(userId);
-        const categories = await this.entityTemplateService.searchCategories(searchInput);
-        const filteredCategories = usersPermissions.admin ? categories : this.filterCategoriesByPermissions(categories, usersPermissions);
-
+        const filteredCategories = await this.entityTemplateService.searchCategories(usersPermissions, searchInput);
         return filteredCategories.map(({ _id, displayName }) => {
             return { Value: _id, Name: displayName };
         });
-    }
-
-    filterCategoriesByPermissions(categories: IMongoCategory[], usersPermissions: ISubCompactPermissions): IMongoCategory[] {
-        if (!usersPermissions.instances) {
-            return [] as IMongoCategory[];
-        }
-
-        return categories.filter(({ _id }) => usersPermissions.instances?.categories[_id]);
     }
 
     async searchEntityTemplate(body: any, userId: string | undefined): Promise<IFlowAutoComplete[]> {
