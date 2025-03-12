@@ -396,7 +396,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
                         {onNavigateToRow && (
                             <Grid item>
                                 <Link
-                                    href={`/entity/${getRowId(data)}/graph`}
+                                    href={`/entity/${getEntityPropertiesData(data)._id}/graph`}
                                     onClick={(e) => {
                                         if (disabledEntity) e.preventDefault();
                                     }}
