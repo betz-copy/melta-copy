@@ -96,8 +96,8 @@ const axisSchema = Yup.object({
 });
 
 const IBarOrLineMetaDataSchema = Yup.object({
-    xAxis: axisSchema.required(),
-    yAxis: axisSchema.required(),
+    xAxis: axisSchema.required().required(i18next.t('validation.required')),
+    yAxis: axisSchema.required().required(i18next.t('validation.required')),
 });
 
 const IPieMetaDataSchema = Yup.object({

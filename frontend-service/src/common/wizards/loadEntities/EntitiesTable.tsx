@@ -1,5 +1,5 @@
-import { Accordion, AccordionDetails, AccordionSummary, CircularProgress, Grid, Typography, useTheme } from '@mui/material';
-import React, { useRef } from 'react';
+import { Accordion, AccordionDetails, AccordionSummary, CircularProgress, Grid, SxProps, Theme, Typography, useTheme } from '@mui/material';
+import React, { CSSProperties, useRef } from 'react';
 import { Download, ExpandMore } from '@mui/icons-material';
 import i18next from 'i18next';
 import { v4 as uuid } from 'uuid';
@@ -20,7 +20,8 @@ export const EntitiesTable: React.FC<{
     description?: string;
     download?: { onDownload: (brokenRulesEntities?: boolean) => Promise<any>; isLoading: boolean; defaultFilter };
     defaultFilter?: ISearchFilter;
-}> = ({ rowData, rowModelType, template, defaultExpanded, icon, title, description, download, defaultFilter }) => {
+    overrideSx?: object;
+}> = ({ rowData, rowModelType, template, defaultExpanded, icon, title, description, download, defaultFilter, overrideSx }) => {
     const theme = useTheme();
     const entitiesTableRef = useRef<EntitiesTableOfTemplateRef<IEntity>>(null);
     const workspace = useWorkspaceStore((state) => state.workspace);
@@ -30,13 +31,13 @@ export const EntitiesTable: React.FC<{
         <Accordion
             sx={{
                 '&.MuiPaper-root': {
-                    boxShadow: '0px -2px 10.15px 0px #1E277533',
-                    borderTopLeftRadius: '13px',
-                    borderTopRightRadius: '13px',
+                    boxShadow: 'none',
+                    border: 'none',
                 },
                 '&:before': {
                     display: 'none',
                 },
+                ...overrideSx,
             }}
             defaultExpanded={defaultExpanded}
         >
