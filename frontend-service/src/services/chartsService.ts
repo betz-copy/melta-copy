@@ -5,14 +5,14 @@ import { ChartsAndGenerator, IBasicChart, IChart } from '../interfaces/charts';
 const { charts } = environment.api;
 
 export const createChart = async (newChart: IBasicChart) => {
-    const { data } = await axios.post<IChart>(charts, { ...newChart, filter: JSON.stringify(newChart.filter) });
+    const { data } = await axios.post<IChart>(charts, newChart);
     return data;
 };
 
 export const editChart = async (chartId: string, updatedChart: IChart) => {
     const { _id, createdAt, updatedAt, ...restChart } = updatedChart;
 
-    const { data } = await axios.put<IChart>(`${charts}/${chartId}`, { ...restChart, filter: JSON.stringify(restChart.filter) });
+    const { data } = await axios.put<IChart>(`${charts}/${chartId}`, restChart);
     return data;
 };
 

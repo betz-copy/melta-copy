@@ -1,24 +1,37 @@
 /* eslint-disable react/no-array-index-key */
-import React from 'react';
-import { Box, Grid } from '@mui/material';
-import { deepEquals } from '@rjsf/utils';
+import { Box } from '@mui/material';
 import { isEqual } from 'lodash';
+import React from 'react';
+import { IGraphFilterBodyBatch } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { GraphFilter } from './GraphFilter';
-import { IGraphFilterBody } from '../../interfaces/entities';
 
 interface GraphFilterBatchProps {
     templateOptions: IMongoEntityTemplatePopulated[];
     graphEntityTemplateIds: string[];
-    filters: IGraphFilterBody[];
-    setFilters: React.Dispatch<React.SetStateAction<IGraphFilterBody[]>>;
+    setFilterRecord: React.Dispatch<React.SetStateAction<IGraphFilterBodyBatch>>;
+    filters: number[];
+    setFilters: React.Dispatch<React.SetStateAction<number[]>>;
+    filterRecord: IGraphFilterBodyBatch;
     onFilter: () => void;
+    entityFilter: boolean;
     readonly?: boolean;
     selectedEntityTemplate?: IMongoEntityTemplatePopulated | null;
 }
 
 const GraphFilterBatch: React.FC<GraphFilterBatchProps> = React.memo(
-    ({ templateOptions, filters, setFilters, graphEntityTemplateIds, onFilter, readonly, selectedEntityTemplate }) => {
+    ({
+        templateOptions,
+        setFilterRecord,
+        filters,
+        setFilters,
+        filterRecord,
+        graphEntityTemplateIds,
+        onFilter,
+        entityFilter,
+        readonly,
+        selectedEntityTemplate,
+    }) => {
         // deletes filter box from screen
         const deleteFilter = (value) => {
             setFilters((prevFilters) => prevFilters.filter((item) => item !== value));
@@ -34,28 +47,28 @@ const GraphFilterBatch: React.FC<GraphFilterBatchProps> = React.memo(
             onFilter();
         };
 
-        console.log({ filters, setFilters });
-
         return (
-            <Box display="flex" flexDirection="column" style={{ position: 'relative' }}>
-                <Grid container zIndex="100" gap="20px">
-                    {filters?.map((filter, index) => {
+            <Box display="flex" flexDirection="column" style={{ paddingLeft: '10px' }}>
+                <Box zIndex="100">
+                    {filters?.map((key) => {
                         return (
                             <GraphFilter
-                                key={index}
-                                filterIndex={index}
+                                key={key}
+                                filterKey={key}
                                 templateOptions={templateOptions}
-                                setFilters={setFilters}
-                                filter={filter}
+                                setFilterRecord={setFilterRecord}
+                                filter={filterRecord[key]}
                                 deleteFilter={deleteFilter}
                                 graphEntityTemplateIds={graphEntityTemplateIds}
                                 removeFilterFromFilterList={removeFilterFromFilterList}
                                 onFilter={onFilter}
+                                readOnly={readonly}
                                 selectedEntityTemplate={selectedEntityTemplate}
+                                entityFilter={entityFilter}
                             />
                         );
                     })}
-                </Grid>
+                </Box>
             </Box>
         );
     },

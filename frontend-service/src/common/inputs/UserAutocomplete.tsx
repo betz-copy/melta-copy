@@ -9,7 +9,7 @@ import { searchExternalUsersRequest, searchUsersRequest } from '../../services/u
 import { useWorkspaceStore } from '../../stores/workspace';
 import { MeltaTooltip } from '../MeltaTooltip';
 
-interface IUserAutocomplete<TMode = 'internal' | 'external'> {
+export interface IUserAutocomplete<TMode = 'internal' | 'external'> {
     mode: TMode;
     value: IUser | null;
     displayValue?: string;

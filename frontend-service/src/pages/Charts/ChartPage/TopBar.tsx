@@ -53,7 +53,7 @@ const ChartTopBar: React.FC<IChartTopBar> = ({ edit, onEdit, onDelete, isLoading
                 <Grid item container wrap="nowrap" flexDirection="row-reverse" marginLeft="auto">
                     {readonly ? (
                         <MeltaTooltip title={i18next.t('actions.edit')}>
-                            <IconButton onClick={onEdit} sx={{ color: theme.palette.primary.main }}>
+                            <IconButton onClick={() => setReadOnly(false)} sx={{ color: theme.palette.primary.main }}>
                                 <EditIcon />
                             </IconButton>
                         </MeltaTooltip>
@@ -81,7 +81,7 @@ const ChartTopBar: React.FC<IChartTopBar> = ({ edit, onEdit, onDelete, isLoading
                                         </MeltaTooltip>
                                     )}
                                     <MeltaTooltip title={i18next.t('actions.save')}>
-                                        <IconButton type="submit" disabled={!formik.dirty} sx={{ color: theme.palette.primary.main }}>
+                                        <IconButton type="submit" sx={{ color: theme.palette.primary.main }}>
                                             <SaveIcon />
                                         </IconButton>
                                     </MeltaTooltip>

@@ -1,40 +1,41 @@
 import { Button, Grid } from '@mui/material';
 import i18next from 'i18next';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { BsFillPlusCircleFill } from 'react-icons/bs';
 import { useQueryClient } from 'react-query';
-import { IGraphFilterBody } from '../../../interfaces/entities';
+import { IGraphFilterBody, IGraphFilterBodyBatch } from '../../../interfaces/entities';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { GraphFilterBatch } from '../../Graph/GraphFilterBatch';
 
 const FilterSideBar: React.FC<{
     templateId: string;
-    setFilters: React.Dispatch<React.SetStateAction<IGraphFilterBody[]>>;
-    filters: IGraphFilterBody[];
     readonly: boolean;
     template;
-}> = ({ templateId, filters, setFilters, readonly, template }) => {
+    filterRecord: IGraphFilterBodyBatch;
+    setFilterRecord: React.Dispatch<React.SetStateAction<IGraphFilterBodyBatch>>;
+}> = ({ templateId, filterRecord, setFilterRecord, readonly, template }) => {
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const templateOptions = Array.from(entityTemplates.values());
 
-    // const [filters, setFilters] = useState<number[]>(formik.values.filter ? Object.keys(formik.values.filter) : []);
+    // const [filters, setFilters] = useState(Object.keys(filterRecord));
+
+    const [filters, setFilters] = useState<number[]>(filterRecord ? Object.keys(filterRecord) : []);
 
     const addNewFilter = () => {
-        setFilters((prevFilters) => [...prevFilters, { selectedTemplate: template }]);
+        setFilters((prevFilters) => [...prevFilters, Date.now()]);
     };
-
-    useEffect(() => {
-        console.log({ filters });
-    }, [filters]);
 
     return (
         <Grid container direction="column" padding="20px" marginTop={2}>
             <GraphFilterBatch
-                templateOptions={templateOptions}
                 filters={filters}
                 setFilters={setFilters}
+                templateOptions={templateOptions}
+                filterRecord={filterRecord}
+                setFilterRecord={setFilterRecord}
                 graphEntityTemplateIds={[templateId]}
+                entityFilter
                 // onFilter={(newFilter) => {
                 //     // console.log({
                 //     //     ok: filterModelToFilterOfGraph(filterRecord),

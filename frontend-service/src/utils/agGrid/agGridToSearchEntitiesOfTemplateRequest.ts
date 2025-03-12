@@ -18,6 +18,8 @@ export const setFilterToFilterOfTemplate = (field: string, { values }: IAGGridSe
 };
 
 export const textFilterToFilterOfTemplate = (field: string, { type, filter }: IAGGridTextFilter): IFilterOfTemplate => {
+    if (!type || !filter) return { [field]: { $rgx: '' } };
+
     const escapeRegExp = (string: string) => {
         return string.replace(/[.*+\-?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
     };
@@ -34,8 +36,9 @@ export const textFilterToFilterOfTemplate = (field: string, { type, filter }: IA
             return { [field]: { $rgx: `${escapeRegExp(filter!)}.*` } };
         case 'endsWith':
             return { [field]: { $rgx: `.*${escapeRegExp(filter!)}` } };
-        case 'blank':
+        case 'blank': {
             return { [field]: { $eq: null } };
+        }
         case 'notBlank':
             return { [field]: { $ne: null } };
         default:
@@ -188,6 +191,10 @@ export const filterModelToFilterOfTemplate = (
         switch (fieldFilter.filterType) {
             case 'text':
                 if (fieldTemplate.format === 'fileId') return textFilterOfFileToFilterTemplate(field, fieldFilter);
+
+                if (fieldTemplate.type === 'array' && fieldTemplate.items?.format === 'user')
+                    return textFilterOfFileToFilterTemplate(field, fieldFilter);
+
                 return textFilterToFilterOfTemplate(field, fieldFilter);
             case 'number':
                 return numberFilterToFilterOfTemplate(field, fieldFilter);
@@ -213,97 +220,16 @@ export const sortModelToSortOfSearchRequest = (sortModel: IAGGridSort[]): ISearc
 export const agGridToSearchEntitiesOfTemplateRequest = (
     agGridRequest: IAGGridRequest,
     entityTemplate: IMongoEntityTemplatePopulated & { entitiesWithFiles?: ICountSearchResult['entitiesWithFiles'] },
+    defaultFilter?: ISearchEntitiesOfTemplateBody['filter'],
 ): ISearchEntitiesOfTemplateBody => {
     const { startRow, endRow, filterModel, quickFilter, sortModel } = agGridRequest;
     return {
         skip: startRow,
         limit: endRow - startRow,
         textSearch: quickFilter,
-        filter: filterModelToFilterOfTemplate(filterModel, entityTemplate),
+        filter: defaultFilter ?? filterModelToFilterOfTemplate(filterModel, entityTemplate),
         showRelationships: false,
         sort: sortModelToSortOfSearchRequest(sortModel),
         entitiesWithFiles: entityTemplate.entitiesWithFiles,
     };
-};
-
-export const filterOfTemplateToFilterModel = (filterOfTemplate: ISearchFilter, entityTemplate: IMongoEntityTemplatePopulated): IAGGridFilterModel => {
-    const filterModel: IAGGridFilterModel = {};
-    const typeMapping: Record<string, IAGGidNumberFilter['type']> = {
-        $lt: 'lessThan',
-        $lte: 'lessThanOrEqual',
-        $gt: 'greaterThan',
-        $gte: 'greaterThanOrEqual',
-    };
-
-    const getFieldTemplate = (field: string) => entityTemplate.properties.properties[field];
-
-    const addSetFilter = (field: string, values: string[]) => {
-        filterModel[field] = { filterType: 'set', values } as IAGGridSetFilter;
-    };
-
-    const addEqualityFilter = (field: string, fieldFilter: any, fieldTemplate: any) => {
-        const isTextField = fieldTemplate?.format === 'string';
-        const value = fieldFilter.$eq ?? fieldFilter.$ne;
-        if (value !== undefined)
-            filterModel[field] = {
-                filterType: isTextField ? 'text' : 'number',
-                type: fieldFilter.$eq !== undefined ? 'equals' : 'notEqual',
-                filter: value,
-            } as IAGGridTextFilter | IAGGidNumberFilter;
-    };
-
-    const addRangeFilter = (field: string, fieldFilter: any, fieldTemplate: any) => {
-        const isDateField = ['date', 'datetime'].includes(fieldTemplate?.format);
-        Object.entries(typeMapping).forEach(([key, type]) => {
-            if (fieldFilter[key] !== undefined)
-                filterModel[field] = {
-                    filterType: isDateField ? 'date' : 'number',
-                    type,
-                    filter: fieldFilter[key],
-                } as IAGGidNumberFilter | IAGGridDateFilter;
-        });
-    };
-
-    const addRegexFilter = (field: string, regex: string) => {
-        const regexPatterns: Record<string, IAGGridTextFilter['type']> = {
-            '^.*': 'endsWith',
-            '.*$': 'startsWith',
-            '^.*$': 'contains',
-        };
-
-        const cleanRegex = regex.replace(/^[.*]+|[.*]+$/g, '');
-        const type = regexPatterns[regex.replace(/[^.*^$]/g, '')] || 'contains';
-
-        filterModel[field] = { filterType: 'text', type, filter: cleanRegex } as IAGGridTextFilter;
-    };
-
-    const addNotContainsFilter = (field: string, regex: string) => {
-        const cleanRegex = regex.replace(/^[.*]+|[.*]+$/g, '');
-        filterModel[field] = { filterType: 'text', type: 'notContains', filter: cleanRegex } as IAGGridTextFilter;
-    };
-
-    const processFilter = (filter: IFilterOfTemplate<any>) => {
-        Object.entries(filter).forEach(([field, fieldFilter]) => {
-            if (!fieldFilter) return;
-
-            const fieldTemplate = getFieldTemplate(field);
-
-            if ('$in' in fieldFilter) addSetFilter(field, fieldFilter.$in as string[]);
-            else if ('$eq' in fieldFilter || '$ne' in fieldFilter) addEqualityFilter(field, fieldFilter, fieldTemplate);
-            else if ('$lt' in fieldFilter || '$lte' in fieldFilter || '$gt' in fieldFilter || '$gte' in fieldFilter)
-                addRangeFilter(field, fieldFilter, fieldTemplate);
-            else if ('$rgx' in fieldFilter) addRegexFilter(field, fieldFilter.$rgx as string);
-            else if ('$not' in fieldFilter && fieldFilter.$not?.$rgx) addNotContainsFilter(field, fieldFilter.$not.$rgx);
-        });
-    };
-
-    let combinedFilters: IFilterOfTemplate<Record<string, any>>[] = [];
-
-    if (Array.isArray(filterOfTemplate.$and)) combinedFilters = combinedFilters.concat(filterOfTemplate.$and.filter(Boolean));
-
-    if (Array.isArray(filterOfTemplate.$or)) combinedFilters = combinedFilters.concat(filterOfTemplate.$or);
-
-    combinedFilters.forEach(processFilter);
-
-    return filterModel;
 };

@@ -2159,7 +2159,9 @@ export class EntityManager extends DefaultManagerNeo4j {
 
                 if (format === 'relationshipReference')
                     return { x: await this.getRelatedEntityName(x, relationshipReference?.relatedTemplateField), y };
+
                 if (format === 'fileId') return { x: getFileName(x), y };
+
                 if (items?.format === 'fileId') return { x: getFilesName(x), y };
 
                 if (x instanceof neo4j.types.LocalDateTime) return { x: fromZonedTime(new Date(x.toString()), 'Asia/Jerusalem').toISOString(), y };

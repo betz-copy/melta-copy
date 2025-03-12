@@ -1,12 +1,10 @@
-import { FilterModel } from '@ag-grid-community/core';
-
 export interface IBasicChart {
     name: string;
     description: string;
     type: IChartType;
     metaData: IChartTypeMetaData;
     permission: IPermission;
-    filter?: FilterModel;
+    filter?: string;
     templateId?: string;
     createdBy?: string;
 }

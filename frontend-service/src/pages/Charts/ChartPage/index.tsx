@@ -1,42 +1,36 @@
-import { ArrowForwardIosOutlined, ArrowOutwardRounded, FilterList, Settings } from '@mui/icons-material';
+import { ArrowForwardIosOutlined, FilterList, Settings } from '@mui/icons-material';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
-import { Box, Button, Grid, IconButton, Tab, Typography, useTheme } from '@mui/material';
+import { Box, Button, CircularProgress, Grid, Tab, useTheme } from '@mui/material';
 import { AxiosError } from 'axios';
-import { Form, Formik, FormikTouched } from 'formik';
+import { Form, Formik } from 'formik';
 import i18next from 'i18next';
-import React, { CSSProperties, ReactElement, useMemo, useRef, useState } from 'react';
+import React, { CSSProperties, useEffect, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { useLocation, useParams } from 'wouter';
 import { EntitiesTableOfTemplateRef } from '../../../common/EntitiesTableOfTemplate';
 import { ErrorToast } from '../../../common/ErrorToast';
-import { LayoutItem } from '../../../common/GridLayout/interface';
 import { EntitiesTable } from '../../../common/wizards/loadEntities/EntitiesTable';
 import { IBasicChart, IChart } from '../../../interfaces/charts';
-import { IEntity, IGraphFilterBody } from '../../../interfaces/entities';
+import { IEntity, IGraphFilterBodyBatch } from '../../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { createChart, deleteChart, editChart, getChartById } from '../../../services/chartsService';
 import { useUserStore } from '../../../stores/user';
+import { generateNewItemSizes } from '../../../utils/charts/defaultChartSizes';
 import { chartValidationSchema, initialValues as defaultInitialValues } from '../../../utils/charts/getChartAxes';
-import { LocalStorage } from '../../../utils/localStorage';
-import { filterBackendToFilterDocument, filterModelToFilterOfGraph } from '../../Graph/GraphFilterToBackend';
+import { markTouched } from '../../../utils/charts/markTouchedRecursive';
+import { FilterOfGraphToFilterRecord, filterModelToFilterOfGraph } from '../../Graph/GraphFilterToBackend';
 import { ChartGenerator } from '../chartGenerator.tsx';
 import { ChartSideBar } from './ChartSideBar';
 import { FilterSideBar } from './filterSideBar';
 import { ChartTopBar } from './TopBar';
-import { markTouched } from '../../../utils/charts/markTouchedRecursive';
 
 const ChartPage: React.FC = () => {
-    const [filters, setFilters] = useState<IGraphFilterBody[]>([]);
-
-    console.log({ filters });
-
     const { templateId, chartId } = useParams<{ templateId: string; chartId?: string }>();
 
-    const { data: chart } = useQuery(['getChart', chartId], () => getChartById(chartId!), {
+    const { data: chart, isLoading } = useQuery(['getChart', chartId], () => getChartById(chartId!), {
         enabled: !!chartId,
     });
-
     const theme = useTheme();
     const entitiesTableRef = useRef<EntitiesTableOfTemplateRef<IEntity>>(null);
     const bgColor: CSSProperties['backgroundColor'] = theme.palette.mode === 'dark' ? '#131313' : '#fcfeff';
@@ -47,15 +41,17 @@ const ChartPage: React.FC = () => {
 
     const template = entityTemplates.get(templateId as string) as IMongoEntityTemplatePopulated;
 
-    const initialValues = useMemo(() => {
-        if (chartId && chart) {
-            return {
-                ...chart,
-                filter: chart.filter ? filterBackendToFilterDocument(JSON.parse(chart.filter), template) : undefined,
-            };
+    const initialValues = chartId && chart ? chart : defaultInitialValues;
+
+    const [filterRecord, setFilterRecord] = useState<IGraphFilterBodyBatch>({});
+
+    useEffect(() => {
+        if (chart && chart?.filter) {
+            const parsedFilter = JSON.parse(chart?.filter);
+            const formattedFilter = FilterOfGraphToFilterRecord(parsedFilter, template);
+            setFilterRecord(formattedFilter);
         }
-        return defaultInitialValues;
-    }, [chart, chartId, template]);
+    }, [chart, template]);
 
     const [_, navigate] = useLocation();
 
@@ -68,7 +64,8 @@ const ChartPage: React.FC = () => {
             createChart({
                 ...newChart,
                 templateId,
-                filter: filterModelToFilterOfGraph(newChart.filter)[templateId].filter,
+                filter:
+                    Object.keys(filterRecord).length > 0 ? JSON.stringify(filterModelToFilterOfGraph(filterRecord)[templateId].filter) : undefined,
                 createdBy: currentUser._id,
             } as IBasicChart),
         {
@@ -77,32 +74,7 @@ const ChartPage: React.FC = () => {
                 navigate(`/charts/${templateId}/${data._id}/chart`);
                 setReadonly(true);
                 setEdit(true);
-                const savedLayout: LayoutItem[] = LocalStorage.get(`chartsOrder_${templateId}`) || [];
-
-                const maxY = savedLayout.length ? Math.max(...savedLayout.map((item) => item.y)) : 0;
-                const lastRowItems = savedLayout.filter((item) => item.y === maxY);
-
-                const cols = 12;
-                const itemWidth = 4;
-
-                const gridMap = Array(cols).fill(false);
-                lastRowItems.forEach(({ x, w }) => {
-                    for (let i = x; i < x + w; i++) gridMap[i] = true;
-                });
-
-                const availableX = gridMap.findIndex((__, x) => x <= cols - itemWidth && gridMap.slice(x, x + itemWidth).every((slot) => !slot));
-
-                const availableY = availableX !== -1 ? maxY : maxY + 12;
-
-                const newItem = {
-                    i: data._id,
-                    x: availableX !== -1 ? availableX : (savedLayout.length % 3) * 4,
-                    y: availableY,
-                    w: itemWidth,
-                    h: 11,
-                };
-
-                LocalStorage.set(`chartsOrder_${templateId}`, [...savedLayout, newItem]);
+                generateNewItemSizes(templateId, data._id);
             },
             onError: (error: AxiosError) => {
                 toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('charts.actions.failedToCreate')} />);
@@ -111,10 +83,14 @@ const ChartPage: React.FC = () => {
     );
 
     const { mutateAsync: editChartMutateAsync } = useMutation(
-        (updatedChart: IChart) =>
+        (updatedChart: IBasicChart) =>
             editChart(chartId!, {
                 ...updatedChart,
-                filter: filterModelToFilterOfGraph(updatedChart.filter)[templateId].filter,
+                _id: chartId,
+                createdAt: (initialValues as IChart).createdAt,
+                updatedAt: (initialValues as IChart).updatedAt,
+                filter:
+                    Object.keys(filterRecord).length > 0 ? JSON.stringify(filterModelToFilterOfGraph(filterRecord)[templateId].filter) : undefined,
             } as IChart),
         {
             onSuccess: () => {
@@ -137,18 +113,14 @@ const ChartPage: React.FC = () => {
         },
     });
 
-    const tabsComponentsNames: string[] = ['generalDetails', 'filterDetails'];
-
-    const isFilterComplete = (filter: IGraphFilterBody) => {
-        return filter.selectedTemplate && filter.selectedProperty && filter.filterField;
-    };
+    if (isLoading) return <CircularProgress />;
 
     return (
         <Formik<IBasicChart>
             initialValues={initialValues}
             onSubmit={async (values, formikHelpers) => {
-                if (edit) editChartMutateAsync(values);
-                else createChartMutateAsync(values);
+                if (edit) await editChartMutateAsync(values);
+                else await createChartMutateAsync(values);
                 formikHelpers.setSubmitting(false);
             }}
             validationSchema={chartValidationSchema}
@@ -175,7 +147,7 @@ const ChartPage: React.FC = () => {
                                     startIcon={<ArrowForwardIosOutlined sx={{ width: '12px', height: '12px' }} />}
                                     onClick={() => navigate(`/charts/${templateId}`)}
                                 >
-                                    חזרה
+                                    {i18next.t('filters.back')}
                                 </Button>
                             </Grid>
                             <Grid container item height="100%" alignItems="center" justifyContent="center">
@@ -184,6 +156,7 @@ const ChartPage: React.FC = () => {
                                     template={template}
                                     entityTemplate={template}
                                     entitiesTableRef={entitiesTableRef}
+                                    filterRecord={filterRecord}
                                 />
                             </Grid>
                             <Grid item width="98%">
@@ -191,37 +164,33 @@ const ChartPage: React.FC = () => {
                                     rowModelType="infinite"
                                     template={template}
                                     defaultExpanded={false}
-                                    title="הנתונים המוצגים "
+                                    title={i18next.t('filters.viewData')}
                                     defaultFilter={
-                                        filters.length > 0 && filters.every(isFilterComplete)
-                                            ? filterModelToFilterOfGraph(filters)[templateId].filter
+                                        filterRecord && Object.keys(filterRecord).length > 0
+                                            ? filterModelToFilterOfGraph(filterRecord)[templateId].filter
                                             : undefined
                                     }
+                                    overrideSx={{
+                                        '&.MuiPaper-root': {
+                                            boxShadow: '0px -2px 10.15px 0px #1E277533',
+                                            borderTopLeftRadius: '13px',
+                                            borderTopRightRadius: '13px',
+                                        },
+                                    }}
                                 />
                             </Grid>
                         </Grid>
                         <TabContext value={tabValue}>
                             <Grid
                                 item
-                                // height="100%"
                                 sx={{
-                                    // marginTop: 2,
                                     width: 375,
-                                    // padding: '20px',
-                                    // height: 1041,
-                                    // position: 'relative',
-                                    // top: 63,
-                                    // borderTopLeftRadius: '30.44px',
-                                    // borderBottomLeftRadius: '30.44px',
-                                    // paddingTop: '25.37px',
-                                    // paddingBottom: '15.22px',
                                     backgroundColor: bgColor,
                                     boxShadow: '2px 2px 10.15px 0px #1E277533',
                                     display: 'flex',
                                     flexDirection: 'column',
                                     alignItems: 'center',
                                 }}
-                                // direction="column"
                             >
                                 <Grid item sx={{ marginTop: '5px', justifyContent: 'space-between', width: '92%' }}>
                                     <TabList
@@ -237,12 +206,10 @@ const ChartPage: React.FC = () => {
                                         }}
                                         variant="standard"
                                         sx={{
-                                            // display: 'flex',
-                                            // justifyContent: 'space-between',
                                             borderBottom: '1px solid #E0E0E0',
                                         }}
                                     >
-                                        {tabsComponentsNames.map((tabName) => (
+                                        {['generalDetails', 'filterDetails'].map((tabName) => (
                                             <Tab
                                                 key={tabName}
                                                 iconPosition="start"
@@ -275,8 +242,8 @@ const ChartPage: React.FC = () => {
                                     <TabPanel key="filterDetails" value="filterDetails" sx={{ padding: 0 }}>
                                         <FilterSideBar
                                             templateId={template._id}
-                                            filters={filters}
-                                            setFilters={setFilters}
+                                            filterRecord={filterRecord}
+                                            setFilterRecord={setFilterRecord}
                                             readonly={readonly}
                                             template={template}
                                         />
