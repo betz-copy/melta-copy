@@ -288,7 +288,13 @@ const Steps: React.FC<IStepsProp> = ({
                 </Grid>
                 <Divider variant="middle" sx={{ width: '100%' }} />
             </Grid>
-            <Grid item height="100%">
+            <Grid
+                item
+                height="100%"
+                sx={{
+                    overflowY: 'auto',
+                }}
+            >
                 {currStepInstance && !openActivityPopper && (
                     <ProcessStep
                         onStepUpdateSuccess={(stepInstance: IMongoStepInstancePopulated) => {
