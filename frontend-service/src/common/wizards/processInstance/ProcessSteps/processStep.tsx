@@ -209,9 +209,9 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                 });
 
                 return (
-                    <Grid container flexDirection="column" justifyContent="space-between" width="100%" height="80%">
-                        <Form style={{ height: '100%' }}>
-                            <Grid item container width="100%" height="90%" justifyContent="space-between">
+                    <Form style={{ height: '100%', overflowY: 'auto', paddingTop: '10px' }}>
+                        <Grid container flexDirection="column" justifyContent="space-between" width="100%" height="100%" minHeight="320px">
+                            <Grid item container width="100%" height="90%" justifyContent="space-between" flexWrap="nowrap">
                                 <Grid
                                     item
                                     xs={toPrint ? 0 : 7}
@@ -430,7 +430,7 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                     </Grid>
                                 )}
                             </Grid>
-                            <Grid item container width="100%" alignItems="center" justifyContent="space-between">
+                            <Grid item container width="100%" height="10%" alignItems="center" justifyContent="space-between">
                                 <Grid item container justifyContent="flex-start" flexBasis="33%">
                                     <Grid item>
                                         {isTherePrevStep && (
@@ -512,8 +512,8 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                     </Grid>
                                 </Grid>
                             </Grid>
-                        </Form>
-                    </Grid>
+                        </Grid>
+                    </Form>
                 );
             }}
         </Formik>
