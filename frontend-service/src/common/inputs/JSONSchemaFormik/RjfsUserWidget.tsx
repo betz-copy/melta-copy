@@ -4,14 +4,34 @@ import { Grid } from '@mui/material';
 import UserAutocomplete from '../UserAutocomplete';
 import { IKartoffelUser, IUser } from '../../../interfaces/users';
 
-const RjfsUserWidget = ({ disabled, label, value, onChange, rawErrors = [], onBlur, onFocus, id, autoFocus, ...textFieldProps }: WidgetProps) => {
+const RjfsUserWidget = ({
+    disabled,
+    label,
+    value,
+    onChange,
+    rawErrors = [],
+    onBlur,
+    onFocus,
+    id,
+    autoFocus,
+    options,
+
+    ...textFieldProps
+}: WidgetProps) => {
+    // const { updateExpandedUserFields } = options;
+    // TODO: lir
+    const onC = options.updateExpandedUserFields as (user: IKartoffelUser | null) => void;
+
     const [currentUser, setCurrentUser] = React.useState(value ? JSON.parse(value) : undefined);
     if (!currentUser) {
+        console.log('updatee!!3');
+        if (onC) onC(null);
         onChange(undefined);
     }
 
     function handleUserChange(_event: React.SyntheticEvent, chosenUser: IKartoffelUser | null) {
-        console.log({ chosenUser });
+        console.log('updatee!!2', { chosenUser });
+        if (onC) onC(chosenUser);
         if (!chosenUser) {
             setCurrentUser(undefined);
             return;
@@ -24,6 +44,7 @@ const RjfsUserWidget = ({ disabled, label, value, onChange, rawErrors = [], onBl
                 hierarchy: chosenUser?.hierarchy,
                 mail: chosenUser?.mail,
             }),
+            // chosenUser,
         );
 
         setCurrentUser(chosenUser);

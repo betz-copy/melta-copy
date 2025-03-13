@@ -51,6 +51,7 @@ export interface IEntityTemplate {
     propertiesOrder: string[];
     propertiesTypeOrder: ('properties' | 'attachmentProperties')[];
     propertiesPreview: string[];
+    // expandedUsersFields?: Record<string, string[]>, // TODO: lir
     disabled: boolean;
     iconFileId: string | null;
     documentTemplatesIds?: string[];

@@ -780,8 +780,10 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
                             value.format === newValue.format ||
                             isSingularToPlural
                         )
-                    )
+                    ) {
+                        console.log({ value });
                         throw new BadRequestError('can not change property format');
+                    }
                     if (value.enum && newValue.enum && !value.enum?.every((val) => newValue.enum?.includes(val)))
                         throw new BadRequestError('can not remove options from enum');
                     if (value.serialStarter !== newValue.serialStarter) throw new BadRequestError('can not change property serial starter');

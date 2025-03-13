@@ -54,6 +54,7 @@ const getEntityTemplateFilesFieldsInfo = (entityTemplate: IMongoEntityTemplatePo
     return { templateFilesProperties, templateFileKeys, requiredFilesNames };
 };
 
+// TODO: lir
 const convertIEntityToEntityWizardValues = (
     entityToUpdate: IEntity,
     entityTemplate: IMongoEntityTemplatePopulated,
@@ -126,7 +127,7 @@ const CreateOrEditEntityDetails: React.FC<{
 
     const initialValues = useMemo(() => {
         if (entityToUpdate) {
-            return convertIEntityToEntityWizardValues(entityToUpdate, entityTemplate, initialTemplateFileKeys);
+            return convertIEntityToEntityWizardValues(entityToUpdate, entityTemplate, initialTemplateFileKeys); // TODO: lir
         }
         if (initialCurrValues) return initialCurrValues;
         return {
@@ -334,11 +335,13 @@ const CreateOrEditEntityDetails: React.FC<{
             }}
         >
             {({ setFieldValue, values, errors, touched, setFieldTouched, setValues, dirty, initialValues: formInitialValues }) => {
+                console.log({ hiiivalues: values }); // TODO: lir
+
                 const { templateFilesProperties, templateFileKeys, requiredFilesNames } = getEntityTemplateFilesFieldsInfo(
                     values.template || entityTemplate,
                 );
                 const isPropertiesFirst = (values.template?.propertiesTypeOrder ?? [])[0] === 'properties';
-                const schema = filterFieldsFromPropertiesSchema(values.template.properties);
+                const schema = filterFieldsFromPropertiesSchema(values.template.properties); // TODO: lir
 
                 // eslint-disable-next-line react-hooks/rules-of-hooks
                 useEffect(() => {
@@ -415,6 +418,7 @@ const CreateOrEditEntityDetails: React.FC<{
                         schema={schema}
                         values={values}
                         setValues={(propertiesValues) => {
+                            console.log({ newPropertiesValues: propertiesValues });
                             return setFieldValue('properties', propertiesValues);
                         }}
                         errors={errors.properties ?? {}}

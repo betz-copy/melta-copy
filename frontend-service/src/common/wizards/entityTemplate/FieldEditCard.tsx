@@ -381,7 +381,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
 
     // const keys = Object.keys({} as IKartoffelUser) as (keyof IKartoffelUser)[];
 
-    const userFields = [
+    const userFields: string[] = [
         'displayName',
         'identityCard',
         'personalNumber',
@@ -406,9 +406,9 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
         'hierarchy',
     ];
 
-    console.log({ userFields });
-
-    const [userFieldsToShowCheckbox, setUserFieldsToShowCheckbox] = useState(userFields);
+    // const [userFieldsToShowCheckbox, setUserFieldsToShowCheckbox] = useState<string[]>([]);
+    // TODO: lir
+    const [expandUserFields, setExpandUserFields] = useState<boolean>(!!value.expandedUserFields?.length);
 
     const handleEditChange = (e, _tagIndex) => {
         e.preventDefault();
@@ -643,10 +643,12 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                             name={type}
                                             value={value.type === 'text-area' ? 'string' : value.type}
                                             onChange={(e) => {
+                                                console.log('change typpeee');
                                                 setValues?.((prevValue) => ({
                                                     ...prevValue,
                                                     type: e.target.value,
                                                     required: e.target.value === 'serialNumber' || prevValue.required,
+                                                    expandedUserFields: undefined,
                                                 }));
                                             }}
                                             error={touchedType && Boolean(errorType)}
@@ -1392,12 +1394,15 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                         <FormControlLabel
                                                             control={
                                                                 <MeltaCheckbox
-                                                                    checked={value.expendUserFields}
+                                                                    checked={expandUserFields}
                                                                     onChange={(_e, checked) => {
-                                                                        setValues!((prevValue) => ({
-                                                                            ...prevValue,
-                                                                            expendUserFields: checked,
-                                                                        }));
+                                                                        // TODO: lir
+                                                                        console.log({ value });
+                                                                        // setValues!((prevValue) => ({
+                                                                        //     ...prevValue,
+                                                                        //     expendUserFields: checked,
+                                                                        // }));
+                                                                        setExpandUserFields(checked);
                                                                     }}
                                                                 />
                                                             }
@@ -1405,12 +1410,20 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                         />
                                                     </MeltaTooltip>
                                                 </Grid>
-                                                {value.expendUserFields && ( //
+                                                {expandUserFields && ( ///
                                                     <SelectCheckbox
                                                         title={i18next.t('user.expendUserFields')}
                                                         options={userFields}
-                                                        selectedOptions={userFieldsToShowCheckbox}
-                                                        setSelectedOptions={setUserFieldsToShowCheckbox}
+                                                        selectedOptions={value.expandedUserFields || []}
+                                                        setSelectedOptions={(val) => {
+                                                            // TODO: lir
+                                                            setValues!((prevValue) => ({
+                                                                ...prevValue,
+                                                                expandedUserFields: val as unknown as string[],
+                                                            }));
+                                                            console.log({ value });
+                                                            // setUserFieldsToShowCheckbox(val);
+                                                        }}
                                                         getOptionId={(op) => op}
                                                         getOptionLabel={(option) => option}
                                                         size="small"

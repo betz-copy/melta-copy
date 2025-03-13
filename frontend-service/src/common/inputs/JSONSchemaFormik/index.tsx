@@ -19,6 +19,7 @@ import RjfsTemplateReferenceWidget from './RjfsTemplateReferenceWidget';
 import RjsfLocationWidget, { validateLocation } from './RjsfLocationWidget';
 import RjfsUserWidget from './RjfsUserWidget';
 import RjfsUserArrayWidget from './RjfsUserArrayWidget';
+import { IKartoffelUser } from '../../../interfaces/users';
 
 const ajvErrorsToFormikErrors = (schema: IMongoEntityTemplatePopulated['properties'], ajvErrors: ErrorObject[]): FormikErrors<any> => {
     const formikErrorsEntries = ajvErrors.map((ajvError) => {
@@ -197,6 +198,31 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                 if (propertySchema.format === 'user') {
                     return {
                         'ui:widget': 'UserWidget',
+                        'ui:options': {
+                            // TODO: lir
+                            updateExpandedUserFields: (user: IKartoffelUser | null) => {
+                                // updateExpandedUserFields: (key: string, user: IKartoffelUser) => {
+                                console.log('updatee!!', { user, propertyKey, schema });
+                                const userFieldsToUpdate = Object.keys(schema.properties).filter((key) =>
+                                    key.startsWith(`userprefix_${propertyKey}`),
+                                );
+
+                                console.log({ userFieldsToUpdate, values });
+
+                                const propertiesToUpdate = values.properties;
+                                console.log({ propertiesToUpdateBefore: propertiesToUpdate });
+
+                                userFieldsToUpdate.forEach((userField) => {
+                                    const fieldKey = userField.split('_')[2];
+                                    console.log({ fieldKey });
+                                    propertiesToUpdate[userField] = user ? user[fieldKey] : undefined;
+                                });
+
+                                console.log({ propertiesToUpdateAfter: propertiesToUpdate });
+                                setValues({ ...propertiesToUpdate });
+                                console.log('set values 1');
+                            },
+                        },
                     };
                 }
                 if (propertySchema.format === 'text-area')
@@ -216,13 +242,21 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                 return {};
             })}
             onChange={({ formData }) => {
+                console.log({ formData });
                 Object.entries(formData).forEach(([key, value]) => {
                     if (JSON.stringify(value) === JSON.stringify([undefined]) || JSON.stringify(value) === JSON.stringify([null])) {
                         // eslint-disable-next-line no-param-reassign
                         formData[key] = undefined;
                     }
                 });
-                setValues(formData);
+                // TODO: lir
+                const valuesToUpdate = { ...formData };
+                Object.keys(valuesToUpdate).forEach((key) => {
+                    if (key.startsWith('userprefix_')) delete valuesToUpdate[key];
+                });
+                console.log({ valuesToUpdate });
+                setValues(valuesToUpdate);
+                console.log('set values 2');
             }}
             formData={values.properties}
             showErrorList={false}

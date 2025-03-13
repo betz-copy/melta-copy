@@ -19,6 +19,7 @@ export const stringFormats = ['date', 'date-time', 'email', 'fileId', 'text-area
 export const arrayTypes = ['multipleFiles', 'enumArray', 'users'];
 
 const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTemplatePopulated | null): EntityTemplateWizardValues | undefined => {
+    // TODO: lir add expandedUsersFields
     if (!entityTemplate) return undefined;
     const {
         iconFileId,
@@ -28,6 +29,7 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
         enumPropertiesColors,
         uniqueConstraints,
         documentTemplatesIds,
+        // expandedUsersFields, // TODO: lir addapt it to the new struct..
         propertiesTypeOrder,
         mapSearchProperties,
         ...restOfEntityTemplate
@@ -37,55 +39,76 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
     const attachmentProperties: EntityTemplateFormInputProperties[] = [];
     const archiveProperties: EntityTemplateFormInputProperties[] = [];
 
+    const expandedUsersFields: Record<string, string[]> = {};
+
     propertiesOrder.forEach((key) => {
-        const value = properties.properties[key];
-
-        let type = value.format || value.type;
-        if (value.serialStarter !== undefined) type = 'serialNumber';
-        // else if (value.items?.format === 'user') type = 'users'; // TODO
-        else if (value.enum) type = 'enum';
-        else if (value.pattern) type = 'pattern';
-        else if (value.format && value.format === 'text-area') type = 'text-area';
-        else if (value.format && value.format === 'location') type = 'location';
-        else if (value.items?.enum) type = 'enumArray';
-        else if (value.items?.format === 'fileId') type = 'multipleFiles';
-        else if (value.items?.format === 'user') type = 'users';
-        else if (value.items?.format === 'text-area') type = 'text-area';
-
-        const property: EntityTemplateFormInputProperties = {
-            id: uuid(),
-            name: key,
-            title: value.title,
-            required: properties.required.includes(key),
-            preview: propertiesPreview.includes(key),
-            hide: properties.hide.includes(key),
-            readOnly: value.readOnly || undefined,
-            uniqueCheckbox: uniqueConstraints.some((constraint) => constraint.properties.includes(key) && constraint.groupName !== ''),
-            groupName: uniqueConstraints.find((constraint) => constraint.properties.includes(key) && constraint.groupName !== '')?.groupName,
-            calculateTime: value.calculateTime ?? undefined,
-            type,
-            options: value.enum || value.items?.enum || [],
-            optionColors: enumPropertiesColors?.[key] ? enumPropertiesColors[key] : {},
-            pattern: value.pattern || '',
-            patternCustomErrorMessage: value.patternCustomErrorMessage || '',
-            dateNotification: value.dateNotification,
-            isDailyAlert: value.isDailyAlert ?? undefined,
-            isDatePastAlert: value.isDatePastAlert ?? undefined,
-            serialStarter: value.serialStarter,
-            relationshipReference: value.relationshipReference || undefined,
-            archive: value.archive || undefined,
-            identifier: value.identifier || undefined,
-            mapSearch: mapSearchProperties?.includes(key) || undefined,
-        };
-
-        if (value.format === 'fileId' || value.items?.format === 'fileId') {
-            attachmentProperties.push(property);
-        } else if (value.archive) {
-            archiveProperties.push(property);
-        } else {
-            propertiesArray.push(property);
+        // userprefix_us1_personalNumber
+        if (key.startsWith('userprefix')) {
+            const keySubstrings = key.split('_');
+            const userKeyName = keySubstrings[1];
+            const expandedUserKeyName = keySubstrings[2];
+            if (!expandedUsersFields[userKeyName]) {
+                expandedUsersFields[userKeyName] = [expandedUserKeyName];
+            } else {
+                expandedUsersFields[userKeyName].push(expandedUserKeyName);
+            }
         }
     });
+
+    console.log(expandedUsersFields);
+
+    propertiesOrder
+        .filter((key) => !key.startsWith('userprefix'))
+        .forEach((key) => {
+            const value = properties.properties[key];
+
+            let type = value.format || value.type;
+            if (value.serialStarter !== undefined) type = 'serialNumber';
+            else if (value.enum) type = 'enum';
+            else if (value.pattern) type = 'pattern';
+            else if (value.format && value.format === 'text-area') type = 'text-area';
+            else if (value.format && value.format === 'location') type = 'location';
+            else if (value.items?.enum) type = 'enumArray';
+            else if (value.items?.format === 'fileId') type = 'multipleFiles';
+            else if (value.items?.format === 'user') type = 'users';
+            else if (value.items?.format === 'text-area') type = 'text-area';
+
+            const property: EntityTemplateFormInputProperties = {
+                id: uuid(),
+                name: key,
+                title: value.title,
+                required: properties.required.includes(key),
+                preview: propertiesPreview.includes(key),
+                hide: properties.hide.includes(key),
+                readOnly: value.readOnly || undefined,
+                expandedUserFields: expandedUsersFields[key] || [],
+                // expandedUserFields: expandedUsersFields && expandedUsersFields[key] ? expandedUsersFields[key] : [], // TODO: check for expand users field by this key...
+                uniqueCheckbox: uniqueConstraints.some((constraint) => constraint.properties.includes(key) && constraint.groupName !== ''),
+                groupName: uniqueConstraints.find((constraint) => constraint.properties.includes(key) && constraint.groupName !== '')?.groupName,
+                calculateTime: value.calculateTime ?? undefined,
+                type,
+                options: value.enum || value.items?.enum || [],
+                optionColors: enumPropertiesColors?.[key] ? enumPropertiesColors[key] : {},
+                pattern: value.pattern || '',
+                patternCustomErrorMessage: value.patternCustomErrorMessage || '',
+                dateNotification: value.dateNotification,
+                isDailyAlert: value.isDailyAlert ?? undefined,
+                isDatePastAlert: value.isDatePastAlert ?? undefined,
+                serialStarter: value.serialStarter,
+                relationshipReference: value.relationshipReference || undefined,
+                archive: value.archive || undefined,
+                identifier: value.identifier || undefined,
+                mapSearch: mapSearchProperties?.includes(key) || undefined,
+            };
+
+            if (value.format === 'fileId' || value.items?.format === 'fileId') {
+                attachmentProperties.push(property);
+            } else if (value.archive) {
+                archiveProperties.push(property);
+            } else {
+                propertiesArray.push(property);
+            }
+        });
 
     if (archiveProperties.length !== 0 && !propertiesTypeOrder.includes('archiveProperties')) propertiesTypeOrder.push('archiveProperties');
 
@@ -123,6 +146,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
     const propertiesOrder: string[] = [];
     const attachmentPropertiesOrder: string[] = [];
     const propertiesPreview: string[] = [];
+    const expandedUsersFields: Record<string, string[]> = {};
     const mapSearchProperties: string[] = [];
     const schema: IEntityTemplate['properties'] = {
         type: 'object',
@@ -157,6 +181,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
             archive,
             identifier,
             mapSearch,
+            expandedUserFields,
         }) => {
             if (deleted) return;
 
@@ -222,6 +247,12 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                     isNewPropNameEqualDeletedPropName: properties.some((property) => property.id !== id && property.name === name),
                 };
             }
+            if (expandedUserFields && expandedUserFields.length) {
+                schema.properties[name] = {
+                    ...schema.properties[name],
+                    expandedUserFields,
+                };
+            }
 
             propertiesOrder.push(name);
 
@@ -238,6 +269,8 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                     enumPropertiesColors[name][option] = color;
                 });
             }
+            console.log({ expandedUserFields });
+            if (expandedUserFields && expandedUserFields.length) expandedUsersFields[name] = expandedUserFields;
         },
     );
 
@@ -371,6 +404,8 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
         if (required) schema.required.push(name);
     });
 
+    console.log({ expandedUsersFields });
+
     return {
         ...restOfProperties,
         properties: schema,
@@ -383,6 +418,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
         propertiesPreview,
         enumPropertiesColors,
         uniqueConstraints: restOfProperties.uniqueConstraints || [],
+        // expandedUsersFields,
         mapSearchProperties,
     };
 };
@@ -393,6 +429,7 @@ const searchEntityTemplates = async (searchQuery: ISearchEntityTemplateQuery) =>
 };
 
 const createEntityTemplateRequest = async (newEntityTemplate: EntityTemplateWizardValues) => {
+    console.log({ newEntityTemplate });
     const formData = new FormData();
 
     const entityTemplate = formToJSONSchema(newEntityTemplate, false);
@@ -437,6 +474,7 @@ const updateEntityTemplateStatusRequest = async (entityTemplateId: string, disab
 };
 
 const updateEntityTemplateRequest = async (entityTemplateId: string, updatedEntityTemplate: IEntityTemplate | EntityTemplateWizardValues) => {
+    console.log({ updatedEntityTemplate });
     const formData = new FormData();
     const entityTemplate: IEntityTemplate =
         'attachmentProperties' in updatedEntityTemplate // its type is - EntityTemplateWizardValues
@@ -475,6 +513,7 @@ const updateEntityTemplateRequest = async (entityTemplateId: string, updatedEnti
     formData.append('propertiesTypeOrder', JSON.stringify(entityTemplate.propertiesTypeOrder));
     formData.append('propertiesPreview', JSON.stringify(entityTemplate.propertiesPreview));
     formData.append('uniqueConstraints', JSON.stringify(entityTemplate.uniqueConstraints));
+    // formData.append('expandedUsersFields', JSON.stringify(entityTemplate.expandedUsersFields));
     if (updatedEntityTemplate.documentTemplatesIds)
         formData.append(
             'documentTemplatesIds',

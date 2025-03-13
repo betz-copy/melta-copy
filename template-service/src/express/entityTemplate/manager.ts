@@ -221,18 +221,50 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
         return updatedEntityTemplate;
     }
 
+    convertExpendedUserFields(templateData: Omit<IEntityTemplate, 'disabled'>): Omit<IEntityTemplate, 'disabled'> {
+        const convertedProperties = templateData.properties.properties;
+        const updatedPropertiesOrder = templateData.propertiesOrder;
+        Object.entries(templateData.properties.properties).forEach(([key, value]) => { // TODO: run only on regular keys - without the special user prefix
+            if(value.expandedUserFields) {
+                const { expandedUserFields, ...restOfTheValue } = value;
+                convertedProperties[key] = restOfTheValue;
+                expandedUserFields.forEach((userFieldToAdd) => {
+                    convertedProperties[`userprefix_${key}_${userFieldToAdd}`] = {
+                        title: `${value.title}_${userFieldToAdd}`,
+                        type: 'string',
+                        readOnly: true,
+                    };
+
+                    updatedPropertiesOrder.push(`userprefix_${key}_${userFieldToAdd}`);
+                });
+            }
+        });
+
+        return {
+            ...templateData,
+            properties: {
+                ...templateData.properties,
+                properties: convertedProperties
+            },
+            propertiesOrder: updatedPropertiesOrder,
+        }
+    }
+
     async updateEntityTemplate(
         id: string,
         updatedTemplateData: Omit<IEntityTemplate, 'disabled'>,
         allowToDeleteRelationshipFields: boolean,
         session?: ClientSession,
     ) {
+        console.log({ updatedTemplateData }); // TODO: create from the expandedUserFields array, readonly properties... here and in create entity...
         const currentEntityTemplate = await this.getTemplateById(id);
 
+        const convertedTemplateDataToUpdate = this.convertExpendedUserFields(updatedTemplateData);
+
         const newEntityTemplate = session
-            ? await this.updateEntityTemplateInTransaction(id, currentEntityTemplate, updatedTemplateData, allowToDeleteRelationshipFields, session)
+            ? await this.updateEntityTemplateInTransaction(id, currentEntityTemplate, convertedTemplateDataToUpdate, allowToDeleteRelationshipFields, session)
             : await withTransaction(async (newSession: ClientSession) =>
-                  this.updateEntityTemplateInTransaction(id, currentEntityTemplate, updatedTemplateData, allowToDeleteRelationshipFields, newSession),
+                  this.updateEntityTemplateInTransaction(id, currentEntityTemplate, convertedTemplateDataToUpdate, allowToDeleteRelationshipFields, newSession),
               );
 
         const propertyTypeWithToString = ['number', 'boolean', 'date', 'date-time'];

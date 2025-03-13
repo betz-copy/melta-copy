@@ -43,6 +43,7 @@ ajv.addKeyword({ keyword: 'isDailyAlert', type: 'boolean' });
 ajv.addKeyword({ keyword: 'isDatePastAlert', type: 'boolean' });
 ajv.addKeyword({ keyword: 'archive', type: 'boolean' });
 ajv.addKeyword({ keyword: 'identifier', type: 'boolean' });
+ajv.addKeyword({ keyword: 'expandedUserFields', type: 'array' });
 
 const stringFormats = ['date', 'date-time', 'email', 'fileId', 'text-area', 'relationshipReference', 'location', 'user'];
 const allowedJSONSchemaTypes = ['string', 'number', 'boolean', 'array'];
@@ -62,6 +63,8 @@ const propertiesArraySchema = Joi.array()
             enum: Joi.array().items(Joi.string()).when('type', { not: 'string', then: Joi.forbidden() }),
             readOnly: Joi.valid(true),
             identifier: Joi.valid(true),
+            expandedUserFields: Joi.array().items(Joi.string())
+                .when('format', { not: 'user', then: Joi.forbidden() }),
             archive: Joi.boolean().optional(),
             pattern: Joi.string().when('type', { not: 'string', then: Joi.forbidden() }),
             patternCustomErrorMessage: Joi.string().when('pattern', { is: Joi.exist(), then: Joi.required(), otherwise: Joi.forbidden() }),
@@ -181,6 +184,10 @@ const customOrderPropertiesValidation: Joi.CustomValidator = (propertiesOrder: s
 export const orderPropertiesSchema = Joi.array().unique().items(Joi.string()).custom(customOrderPropertiesValidation);
 
 export const orderPropertiesTypeSchema = Joi.array().unique().items(Joi.valid('properties', 'attachmentProperties'));
+
+// export const expandedUsersFields = Joi.array().unique().items(
+//     {}
+// );
 
 const customPreviewPropertiesValidation: Joi.CustomValidator = (propertiesPreview: string[], helpers) => {
     return validatePropertiesArrayInProperties(propertiesPreview, helpers.state.ancestors[0].properties.properties);

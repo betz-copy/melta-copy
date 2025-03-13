@@ -39,6 +39,10 @@ export const EntityTemplateSchema = new mongoose.Schema(
         enumPropertiesColors: {
             type: Object,
         },
+        // expandedUsersFields: {
+        //     type: Object,
+        //     required: true,
+        // },
         disabled: {
             type: Boolean,
             required: true,

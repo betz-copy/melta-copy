@@ -45,6 +45,7 @@ export const entityTemplates: IEntityTemplateMock[] = [
         propertiesOrder: ['name', 'destination', 'startDate', 'endDate', 'firstFile', 'location'],
         propertiesTypeOrder: ['properties', 'attachmentProperties'],
         propertiesPreview: ['name', 'destination', 'startDate', 'endDate'],
+        // expandedUsersFields: {},
         disabled: false,
     },
     {
@@ -78,6 +79,7 @@ export const entityTemplates: IEntityTemplateMock[] = [
         propertiesOrder: ['firstName', 'lastName', 'age', 'gender'],
         propertiesTypeOrder: ['properties', 'attachmentProperties'],
         propertiesPreview: ['firstName', 'age'],
+        // expandedUsersFields: {},
         disabled: false,
     },
     {
@@ -120,6 +122,7 @@ export const entityTemplates: IEntityTemplateMock[] = [
         propertiesOrder: ['firstName', 'lastName', 'age', 'gender', 'agentId', 'location'],
         propertiesTypeOrder: ['properties', 'attachmentProperties'],
         propertiesPreview: ['firstName', 'age'],
+        // expandedUsersFields: {},
         disabled: false,
     },
     {
@@ -173,6 +176,7 @@ export const entityTemplates: IEntityTemplateMock[] = [
         propertiesOrder: ['flightNumber', 'departureDate', 'landingDate', 'from', 'to', 'planeType', 'seatType', 'location'],
         propertiesTypeOrder: ['properties', 'attachmentProperties'],
         propertiesPreview: ['flightNumber', 'from', 'to'],
+        // expandedUsersFields: {},
         disabled: false,
     },
     {
@@ -224,6 +228,7 @@ export const entityTemplates: IEntityTemplateMock[] = [
         propertiesOrder: ['FlightNum', 'Flighttype', 'FlightPlatform', 'FlightDepart', 'FlightDest', 'FlightDepTime', 'FlightArrTime'],
         propertiesTypeOrder: ['properties', 'attachmentProperties'],
         propertiesPreview: ['FlightNum', 'FlightDepart', 'FlightDest'],
+        // expandedUsersFields: {},
         disabled: false,
     },
     {
@@ -253,6 +258,7 @@ export const entityTemplates: IEntityTemplateMock[] = [
         propertiesOrder: ['airportName', 'airportId', 'country'],
         propertiesTypeOrder: ['properties', 'attachmentProperties'],
         propertiesPreview: ['airportName', 'country'],
+        // expandedUsersFields: {},
         disabled: false,
     },
     {
@@ -292,6 +298,7 @@ export const entityTemplates: IEntityTemplateMock[] = [
         propertiesOrder: ['hotelName', 'hotelChain', 'checkInDate', 'checkOutDate', 'country'],
         propertiesTypeOrder: ['properties', 'attachmentProperties'],
         propertiesPreview: ['hotelName', 'checkInDate', 'checkOutDate'],
+        // expandedUsersFields: {},
         disabled: false,
     },
     {
@@ -327,6 +334,7 @@ export const entityTemplates: IEntityTemplateMock[] = [
         propertiesOrder: ['name', 'checkInDate', 'checkOutDate', 'country'],
         propertiesTypeOrder: ['properties', 'attachmentProperties'],
         propertiesPreview: ['name', 'checkInDate', 'checkOutDate'],
+        // expandedUsersFields: {},
         disabled: false,
     },
     {
@@ -361,6 +369,7 @@ export const entityTemplates: IEntityTemplateMock[] = [
         propertiesOrder: ['name', 'company', 'expirtaionDate', 'monthlyAmount'],
         propertiesTypeOrder: ['properties', 'attachmentProperties'],
         propertiesPreview: ['name', 'expirtaionDate'],
+        // expandedUsersFields: {},
         disabled: false,
     },
     {
@@ -387,6 +396,7 @@ export const entityTemplates: IEntityTemplateMock[] = [
         propertiesOrder: ['name', 'amount'],
         propertiesTypeOrder: ['properties', 'attachmentProperties'],
         propertiesPreview: ['name', 'amount'],
+        // expandedUsersFields: {},
         disabled: false,
     },
     {
@@ -416,6 +426,7 @@ export const entityTemplates: IEntityTemplateMock[] = [
         propertiesOrder: ['model', 'color', 'serialNumber'],
         propertiesTypeOrder: ['properties', 'attachmentProperties'],
         propertiesPreview: ['model', 'serialNumber'],
+        // expandedUsersFields: {},
         disabled: false,
     },
     {
@@ -441,6 +452,7 @@ export const entityTemplates: IEntityTemplateMock[] = [
         propertiesOrder: ['company', 'number'],
         propertiesTypeOrder: ['properties', 'attachmentProperties'],
         propertiesPreview: ['company', 'number'],
+        // expandedUsersFields: {},
         disabled: false,
     },
     {
@@ -470,6 +482,7 @@ export const entityTemplates: IEntityTemplateMock[] = [
         propertiesOrder: ['company', 'color', 'weight'],
         propertiesTypeOrder: ['properties', 'attachmentProperties'],
         propertiesPreview: ['company', 'weight'],
+        // expandedUsersFields: {},
         disabled: false,
     },
     {
@@ -574,6 +587,7 @@ export const entityTemplates: IEntityTemplateMock[] = [
         ],
         propertiesTypeOrder: ['properties', 'attachmentProperties'],
         propertiesPreview: [],
+        // expandedUsersFields: {},
         disabled: false,
         documentTemplatesIds: [],
     },
