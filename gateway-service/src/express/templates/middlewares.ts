@@ -45,7 +45,7 @@ export class TemplatesValidator extends DefaultController {
             userPermissions.instances?.categories[entityTemplate.category._id]?.entityTemplates[templateId]?.scope !== PermissionScope.write
         )
             throw new ForbiddenError('user not authorized', {
-                metadata: `user does not have write permission on entity ${entityTemplate.displayName}`,
+                metadata: `user does not have write permission on entity ${entityTemplate}`,
             });
     }
 
@@ -88,5 +88,24 @@ export class TemplatesValidator extends DefaultController {
         ) {
             throw new ForbiddenError(`user not authorized, does not have ${PermissionScope.write} permission on categories ${relatedCategories}`);
         }
+    }
+
+    async validateUserCanUpdateOrDeleteRuleTemplate(req: Request) {
+        const ruleTemplateId = req.params.ruleId;
+
+        const [ruleTemplate, userPermissions] = await Promise.all([
+            this.relationshipsTemplateService.getRuleById(ruleTemplateId),
+            this.authorizer.getWorkspacePermissions(req.user!.id),
+        ]);
+
+        const entityTemplate = await this.entityTemplateService.getEntityTemplateById(ruleTemplate.entityTemplateId);
+        if (
+            !userPermissions.admin?.scope &&
+            userPermissions.instances?.categories[entityTemplate.category._id]?.scope !== PermissionScope.write &&
+            userPermissions.instances?.categories[entityTemplate.category._id]?.entityTemplates[entityTemplate._id]?.scope !== PermissionScope.write
+        )
+            throw new ForbiddenError('user not authorized', {
+                metadata: `user does not have write permission on entity ${entityTemplate}`,
+            });
     }
 }

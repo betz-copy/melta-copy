@@ -102,7 +102,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
     const workspace = useWorkspaceStore((state) => state.workspace);
     const currentUser = useUserStore((state) => state.user);
 
-    const entityHasWritePermissions = checkUserTemplatePermission(
+    const entityHasWritePermission = checkUserTemplatePermission(
         currentUser.currentWorkspacePermissions,
         entityTemplate.category,
         entityTemplate._id,
@@ -123,12 +123,12 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
             return count > 0;
         });
 
-        setIsDeleteButtonDisabled(!entityHasWritePermissions || templatesHaveEntities);
+        setIsDeleteButtonDisabled(!entityHasWritePermission || templatesHaveEntities);
     };
 
     const entityTemplateCardTooltip = () => {
+        if (!entityHasWritePermission) return i18next.t('systemManagement.entityTemplateEditDisabled');
         if (entityTemplate.disabled) return i18next.t('systemManagement.disabledEntityTemplate');
-        if (!entityHasWritePermissions) return i18next.t('systemManagement.entityTemplateEditDisabled');
         if (isDeleteButtonDisabled) return i18next.t('systemManagement.cannotDeleteWithEntities');
         return '';
     };
@@ -210,10 +210,10 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                     setIsHoverOnCard(false);
                                 }}
                                 disabledProps={{
-                                    disableForReadPermissions: !entityHasWritePermissions,
+                                    disableForReadPermissions: !entityHasWritePermission,
                                     isDeleteDisabled: isDeleteButtonDisabled,
                                     isDisabled: entityTemplate.disabled,
-                                    isEditDisabled: entityTemplate.disabled || !entityHasWritePermissions,
+                                    isEditDisabled: entityTemplate.disabled || !entityHasWritePermission,
                                     tooltipTitle: entityTemplateCardTooltip(),
                                 }}
                             />

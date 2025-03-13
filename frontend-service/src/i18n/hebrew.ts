@@ -270,6 +270,7 @@ export default {
         destinationTemplates: 'תבניות יעד',
         cannotDeleteWithEntities: 'לא ניתן למחוק תבנית זאת, קיימות תחתיה ישויות',
         entityTemplateEditDisabled: 'אין הרשאות עריכה לתבנית',
+        ruleTemplateEditDisabled: 'אין הרשאות עריכה לחוק',
         cannotDeleteWithRelationship: 'לא ניתן למחוק קשר זה, קיימים תחתיו קשרים',
         cannotPerformActionEntityDisabled: 'לא ניתן לבצע פעולה זו, מכיל ישות מושבתת',
         disabledEntityTemplate: 'תבנית מושבתת',

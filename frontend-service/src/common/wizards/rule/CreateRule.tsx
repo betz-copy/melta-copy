@@ -6,6 +6,8 @@ import { useQueryClient } from 'react-query';
 import { StepComponentProps } from '../index';
 import { RuleWizardValues } from '.';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
+import { getAllWritePermissionEntityTemplates } from '../../../utils/permissions/instancePermissions';
+import { useUserStore } from '../../../stores/user';
 
 const createRuleSchema = {
     name: Yup.string().required(i18next.t('validation.required')),
@@ -24,12 +26,13 @@ const CreateRule: React.FC<StepComponentProps<RuleWizardValues, 'isEditMode'>> =
     isEditMode,
 }) => {
     const queryClient = useQueryClient();
-
+    const currentUser = useUserStore((state) => state.user);
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
 
     const { entityTemplateId } = values;
 
     const activeEntityTemplatesFiltered = Array.from(entityTemplates.values()).filter(({ disabled }) => !disabled);
+    const allowedEntityTemplates = getAllWritePermissionEntityTemplates(activeEntityTemplatesFiltered, currentUser);
 
     const entityTemplate = entityTemplateId ? entityTemplates.get(entityTemplateId)! : null;
 
@@ -68,7 +71,7 @@ const CreateRule: React.FC<StepComponentProps<RuleWizardValues, 'isEditMode'>> =
             </Grid>
             <Grid item width="250px">
                 <Autocomplete
-                    options={activeEntityTemplatesFiltered}
+                    options={allowedEntityTemplates}
                     onChange={(_e, value) => setFieldValue('entityTemplateId', value?._id || '')}
                     value={entityTemplate}
                     getOptionLabel={(option) => option.displayName}

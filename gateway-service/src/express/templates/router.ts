@@ -181,16 +181,23 @@ templatesRouter.put(
 );
 
 // rules (templates)
-templatesRouter.put('/rules/:ruleId', AuthorizerControllerMiddleware.userCanWriteRules, TemplatesServiceProxy);
+templatesRouter.put(
+    '/rules/:ruleId',
+    AuthorizerControllerMiddleware.userCanWriteRules,
+    templatesValidatorMiddleware.validateUserCanUpdateOrDeleteRuleTemplate,
+    TemplatesServiceProxy,
+);
 templatesRouter.patch(
     '/rules/:ruleId/status',
     AuthorizerControllerMiddleware.userCanWriteRules,
+    templatesValidatorMiddleware.validateUserCanUpdateOrDeleteRuleTemplate,
     ValidateRequest(updateRuleStatusByIdRequestSchema),
     templatesControllerMiddleware.updateRuleStatusById,
 );
 templatesRouter.delete(
     '/rules/:ruleId',
     AuthorizerControllerMiddleware.userCanWriteRules,
+    templatesValidatorMiddleware.validateUserCanUpdateOrDeleteRuleTemplate,
     ValidateRequest(deleteRuleByIdRequestSchema),
     templatesControllerMiddleware.deleteRuleById,
 );

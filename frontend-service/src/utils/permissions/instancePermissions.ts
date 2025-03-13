@@ -3,7 +3,8 @@ import { PermissionScope } from '../../interfaces/permissions';
 import { ICompact, IInstancesPermission, ISubCompactPermissions } from '../../interfaces/permissions/permissions';
 import { ICategoryMap, IMongoCategory } from '../../interfaces/categories';
 import { entityTemplatePermissionDialog } from './permissionOfUserDialog';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IMongoRule } from '../../interfaces/rules';
 
 export const allowedCategories = (categories: ICategoryMap, currentUser): IMongoCategory[] => {
     const allowedCategoriesToShow = currentUser.currentWorkspacePermissions?.admin
@@ -29,6 +30,29 @@ export const getAllAllowedEntities = (allEntityTemplates: IMongoEntityTemplatePo
                   currentUser.currentWorkspacePermissions.instances?.categories[entity.category._id]?.entityTemplates[entity._id]
               );
           });
+};
+
+export const getAllWritePermissionEntityTemplates = (allEntityTemplates: IMongoEntityTemplatePopulated[], currentUser) => {
+    return currentUser.currentWorkspacePermissions.admin
+        ? allEntityTemplates
+        : allEntityTemplates.filter((entity) => {
+              return (
+                  currentUser.currentWorkspacePermissions.instances?.categories[entity.category._id]?.scope === PermissionScope.write ||
+                  currentUser.currentWorkspacePermissions.instances?.categories[entity.category._id]?.entityTemplates[entity._id]?.scope ===
+                      PermissionScope.write
+              );
+          });
+};
+
+export const getAllAllowedRulesAndWriteEntities = (rules: IMongoRule[], entityTemplates: IMongoEntityTemplatePopulated[], currentUser) => {
+    if (currentUser.currentWorkspacePermissions.admin) return { allowedEntityTemplates: entityTemplates, allowedRules: rules }; // Add default structure for non-admin
+
+    const allowedEntityTemplates = getAllAllowedEntities(entityTemplates, currentUser);
+    const entityTemplatesIds = allowedEntityTemplates.map((entity) => entity._id);
+    return {
+        allowedEntityTemplates,
+        allowedRules: rules.filter((rule) => entityTemplatesIds.includes(rule.entityTemplateId)),
+    };
 };
 
 export const checkUserCategoryPermission = (
