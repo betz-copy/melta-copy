@@ -40,6 +40,7 @@ export type SelectCheckboxProps<Option extends {}, Group extends any = Option> =
     dynamicWidth?: number;
     showIcon?: boolean;
     treeFunc?: (groups: Group[], options: Option[], getItemId: SelectCheckboxProps<Option>['getOptionId']) => TreeViewBaseItem<Option>[];
+    allowOnlyParents?: boolean;
 }>;
 
 export const getOptionsAndGroupsMiniFiltered = <Option extends {}, Group extends any = Option>(
@@ -105,6 +106,7 @@ const SelectCheckbox = <Option extends {}, Group extends any = Option>({
     onDragEnd,
     setOptions,
     showIcon,
+    allowOnlyParents,
 }: SelectCheckboxProps<Option, Group>) => {
     const [miniFilterValue, setMiniFilterValue] = useState('');
     const [isOpen, setIsOpen] = useState(false);
@@ -166,7 +168,7 @@ const SelectCheckbox = <Option extends {}, Group extends any = Option>({
                         style: {
                             height: toTopBar ? '180px' : '333px',
                             minWidth: '219px',
-                            width: horizontalOrigin === 154 ? '219px' : dynamicWidth ? `${dynamicWidth}px` : undefined,
+                            width: dynamicWidth ? `${dynamicWidth}px` : horizontalOrigin === 154 ? '219px' : undefined,
                             ...(darkMode ? {} : { backgroundColor: toTopBar ? '#EBEFFA' : '#FFFFFF' }),
                             borderRadius: overrideSx ? '10px' : '20px 0px 20px 20px',
                             padding: toTopBar ? '5px, 10px' : '10px, 10px, 5px, 10px',
@@ -274,6 +276,8 @@ const SelectCheckbox = <Option extends {}, Group extends any = Option>({
                         setSelectedOptions(filteredOptions);
                     }}
                     showIcon={showIcon}
+                    parentInfersChildren={!allowOnlyParents}
+                    allowOnlyParents={allowOnlyParents}
                 />
             </Select>
         </FormControl>
