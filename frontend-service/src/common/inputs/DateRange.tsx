@@ -7,8 +7,8 @@ import DatePickerWrapper from './DatePickerWrapper';
 const DateRange: React.FC<{
     onStartDateChange: (newStartDateInput: Date | null) => void;
     onEndDateChange: (newEndDateInput: Date | null) => void;
-    startDateInput: Date | null;
-    endDateInput: Date | null;
+    startDateInput: Date | string | null;
+    endDateInput: Date | string | null;
     directionIsRow: boolean;
     overrideSx?: object;
     maxEndDate?: Date;
@@ -20,7 +20,8 @@ const DateRange: React.FC<{
             justifyContent="center"
             alignItems="center"
             wrap="nowrap"
-            spacing={overrideSx ? 2 : 0}
+            // eslint-disable-next-line no-nested-ternary
+            spacing={overrideSx && 'spacing' in overrideSx ? (overrideSx.spacing as number) : overrideSx ? 2 : 0}
             display="flex"
             flexDirection={directionIsRow ? 'row' : 'column'}
         >

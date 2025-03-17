@@ -96,6 +96,7 @@ const ChartPage: React.FC = () => {
             onSuccess: () => {
                 toast.success(i18next.t('charts.actions.editedSuccessfully'));
                 setReadonly(true);
+                queryClient.invalidateQueries(['getChart', chartId]);
             },
             onError: (error: AxiosError) => {
                 toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('charts.actions.failedToEdit')} />);
@@ -235,7 +236,7 @@ const ChartPage: React.FC = () => {
                                         ))}
                                     </TabList>
                                 </Grid>
-                                <Grid item sx={{ width: '100%' }}>
+                                <Grid item sx={{ width: '100%', padding: '20px' }}>
                                     <TabPanel key="generalDetails" value="generalDetails" sx={{ padding: 0 }}>
                                         <ChartSideBar formik={formik} entityTemplate={template} readonly={readonly} edit={edit} />
                                     </TabPanel>

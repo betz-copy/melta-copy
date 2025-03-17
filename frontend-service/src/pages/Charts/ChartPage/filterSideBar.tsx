@@ -27,7 +27,7 @@ const FilterSideBar: React.FC<{
     };
 
     return (
-        <Grid container direction="column" padding="20px" marginTop={2}>
+        <Grid container direction="column" marginTop={2}>
             <GraphFilterBatch
                 filters={filters}
                 setFilters={setFilters}
