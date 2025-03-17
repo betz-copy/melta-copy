@@ -1,20 +1,18 @@
 import { KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material';
 import ClearIcon from '@mui/icons-material/Clear';
 import CloseIcon from '@mui/icons-material/Close';
-import { Autocomplete, Box, Checkbox, Chip, Divider, Grid, IconButton, ListItemText, MenuItem, TextField, Typography } from '@mui/material';
+import { Autocomplete, Checkbox, Chip, Divider, Grid, IconButton, ListItemText, MenuItem, TextField, Typography } from '@mui/material';
 import i18next from 'i18next';
 import debounce from 'lodash/debounce';
 import React, { useCallback, useState } from 'react';
 import { IoIosArrowDown } from 'react-icons/io';
 import { CustomIcon } from '../../common/CustomIcon';
 import DateRange from '../../common/inputs/DateRange';
-import UserAutocomplete from '../../common/inputs/UserAutocomplete';
-import CreateUserCard from '../../common/wizards/processTemplate/ApproverCard';
+import { UserArrayInput } from '../../common/inputs/UserArrayInput';
 import { IGraphFilterBody, IGraphFilterBodyBatch } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter, IAGGridTextFilter } from '../../utils/agGrid/interfaces';
-import { TextInput } from '../../common/inputs/genericInputs/TextInput';
 
 interface GraphFilterProps {
     templateOptions: IMongoEntityTemplatePopulated[];
@@ -342,42 +340,28 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
 
         if (items?.format === 'user' && type === 'array')
             return (
-                <Box>
-                    <Grid marginBottom={2}>
-                        <UserAutocomplete
-                            mode="external"
-                            value={null}
-                            label=""
-                            onChange={(_e, chosenUser, reason) => {
-                                if (reason !== 'selectOption' || !chosenUser) return;
-                                if (filterField?.filterType === 'set') handleCheckboxChange(chosenUser.fullName, true);
+                <UserArrayInput
+                    mode="external"
+                    value={null}
+                    label=""
+                    onChange={(_e, chosenUser, reason) => {
+                        if (reason !== 'selectOption' || !chosenUser) return;
+                        if (filterField?.filterType === 'set') handleCheckboxChange(chosenUser.fullName, true);
 
-                                setInputValue('');
-                            }}
-                            isError={false}
-                            displayValue={inputValue}
-                            onDisplayValueChange={(_, newDisplayValue) => setInputValue(newDisplayValue)}
-                            overrideSx={textFieldStyle}
-                        />
-                    </Grid>
-                    <Grid container spacing={1}>
-                        {filterField?.filterType === 'set' &&
-                            filterField.values &&
-                            filterField.values.map((user, index) => (
-                                <CreateUserCard
-                                    // eslint-disable-next-line react/no-array-index-key
-                                    key={index}
-                                    userName={user as string}
-                                    userIndex={index}
-                                    remove={() => {
-                                        const currentUser = filterField.values[index];
-                                        handleCheckboxChange(currentUser as string, false);
-                                        return currentUser as unknown as any;
-                                    }}
-                                />
-                            ))}
-                    </Grid>
-                </Box>
+                        setInputValue('');
+                    }}
+                    isError={false}
+                    displayValue={inputValue}
+                    onDisplayValueChange={(_, newDisplayValue) => setInputValue(newDisplayValue)}
+                    currentUsers={filterField?.filterType === 'set' ? (filterField.values as string[]) : []}
+                    onRemove={(index) => {
+                        if (filterField?.filterType !== 'set') return undefined;
+                        const currentUser = filterField.values[index];
+                        handleCheckboxChange(currentUser as string, false);
+                        return undefined;
+                    }}
+                    overrideSx={textFieldStyle}
+                />
             );
 
         return (
@@ -416,7 +400,7 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
                 </Grid>
 
                 <Grid item xs={entityFilter ? 7 : 12}>
-                    <TextInput
+                    <TextField
                         inputProps={{
                             readOnly,
                             style: {
