@@ -33,8 +33,9 @@ import { useWorkspaceStore } from '../../../stores/workspace';
 import { environment } from '../../../globals';
 import { ConvertToRelationship } from '../../../common/wizards/relationshipTemplate/convertRelationshipToRelationshipField';
 import { IRelationshipReference } from '../../../common/wizards/entityTemplate/commonInterfaces';
-import { allowedEntitiesOfCategory, getAllAllowedEntities } from '../../../utils/permissions/instancePermissions';
+import { checkUserTemplatePermission, getAllAllowedEntities } from '../../../utils/permissions/instancePermissions';
 import { useUserStore } from '../../../stores/user';
+import { PermissionScope } from '../../../interfaces/permissions';
 
 const { infiniteScrollPageCount } = environment.processInstances;
 
@@ -66,14 +67,30 @@ const RelationshipTemplateCard: React.FC<RelationshipTemplateCardProps> = ({
     setDeleteRelationshipTemplateDialogState,
     setConvertToRelationshipFieldDialogState,
 }) => {
+    const currentUser = useUserStore((state) => state.user);
     const [isHoverOnCard, setIsHoverOnCard] = useState(false);
     const [isDeleteButtonDisabled, setIsDeleteButtonDisabled] = useState(false);
+    const [isRelationshipHasWritePermission, setIsRelationshipHasWritePermission] = useState(true);
+    const areEntitiesDisabled = relationshipTemplate.sourceEntity.disabled || relationshipTemplate.destinationEntity.disabled;
 
     const { isProperty } = relationshipTemplate;
 
     const checkRelationshipTemplateHasRelationships = async () => {
+        const isSourceEntityHasWritePermission = checkUserTemplatePermission(
+            currentUser.currentWorkspacePermissions,
+            relationshipTemplate.sourceEntity.category,
+            relationshipTemplate.sourceEntity._id,
+            PermissionScope.write,
+        );
+        const isDestEntityHasWritePermission = checkUserTemplatePermission(
+            currentUser.currentWorkspacePermissions,
+            relationshipTemplate.destinationEntity.category,
+            relationshipTemplate.destinationEntity._id,
+            PermissionScope.write,
+        );
         const relationshipsCountByTemplates = await getRelationshipInstancesCountByTemplateIdRequest(relationshipTemplate._id);
         setIsDeleteButtonDisabled(relationshipsCountByTemplates > 0);
+        setIsRelationshipHasWritePermission(isDestEntityHasWritePermission && isSourceEntityHasWritePermission);
     };
 
     const handleHover = (isHover: boolean) => {
@@ -131,10 +148,15 @@ const RelationshipTemplateCard: React.FC<RelationshipTemplateCardProps> = ({
                                     });
                                 }}
                                 disabledProps={{
-                                    isDeleteDisabled: isDeleteButtonDisabled,
-                                    tooltipTitle: isDeleteButtonDisabled ? i18next.t('systemManagement.cannotDeleteWithRelationship') : '',
-                                    isEditDisabled: relationshipTemplate.sourceEntity.disabled || relationshipTemplate.destinationEntity.disabled,
-                                    editTooltipTitle: i18next.t('systemManagement.cannotPerformActionEntityDisabled'),
+                                    isDeleteDisabled: !isRelationshipHasWritePermission || isDeleteButtonDisabled,
+                                    // eslint-disable-next-line no-nested-ternary
+                                    tooltipTitle: !isRelationshipHasWritePermission
+                                        ? i18next.t('systemManagement.cannotEditRelationship')
+                                        : isDeleteButtonDisabled
+                                        ? i18next.t('systemManagement.cannotDeleteWithRelationship')
+                                        : '',
+                                    isEditDisabled: areEntitiesDisabled || !isRelationshipHasWritePermission,
+                                    editTooltipTitle: areEntitiesDisabled ? i18next.t('systemManagement.cannotPerformActionEntityDisabled') : '',
                                 }}
                             />
                         )}

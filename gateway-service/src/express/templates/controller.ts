@@ -34,7 +34,7 @@ export default class TemplatesController extends DefaultController<TemplatesMana
     }
 
     async deleteCategory(req: Request, res: Response) {
-        res.json(await this.manager.deleteCategory(req.params.id));
+        res.json(await this.manager.deleteCategory(req.params.id, req.user!.id));
     }
 
     async updateCategory(req: Request, res: Response) {
@@ -59,7 +59,12 @@ export default class TemplatesController extends DefaultController<TemplatesMana
     }
 
     async updateEntityTemplate(req: Request, res: Response) {
-        res.json(await this.manager.updateEntityTemplate(req.params.id, req.body, { files: req.files, file: req.file ? [req.file] : undefined }));
+        res.json(
+            await this.manager.updateEntityTemplate(req.params.id, req.user!.id, req.body, {
+                files: req.files,
+                file: req.file ? [req.file] : undefined,
+            }),
+        );
     }
 
     async updateEntityTemplateStatus(req: Request, res: Response) {
@@ -80,7 +85,7 @@ export default class TemplatesController extends DefaultController<TemplatesMana
         const { user, permissionsOfUserId, searchQuery } = req as RequestWithSearchEntityTemplateBody;
         assert(user, 'User doesnt exists under request');
 
-        res.json(await this.manager.searchEntityTemplates(permissionsOfUserId, searchQuery));
+        res.json(await this.manager.searchEntityTemplates(permissionsOfUserId, searchQuery, user.id));
     }
 
     // relationshipTemplates
@@ -100,15 +105,17 @@ export default class TemplatesController extends DefaultController<TemplatesMana
         res.json(await this.manager.convertRelationshipToRelationshipField(req.params.id, req.body, req.user!.id));
     }
 
-    async getAllRelationshipTemplates(_req: Request, res: Response) {
-        res.json(await this.manager.getAllRelationshipTemplates());
+    async getAllRelationshipTemplates(req: Request, res: Response) {
+        const { user, permissionsOfUserId } = req as RequestWithSearchRelationshipTemplateBody;
+        assert(user, 'User doesnt exists under request');
+        res.json(await this.manager.getAllRelationshipTemplates(permissionsOfUserId, user!.id));
     }
 
     async searchRelationshipTemplates(req: Request, res: Response) {
         const { user, permissionsOfUserId, searchBody } = req as RequestWithSearchRelationshipTemplateBody;
         assert(user, 'User doesnt exists under request');
 
-        res.json(await this.manager.searchRelationshipTemplates(permissionsOfUserId, searchBody));
+        res.json(await this.manager.searchRelationshipTemplates(permissionsOfUserId, searchBody, user.id));
     }
 
     // rules
@@ -124,6 +131,6 @@ export default class TemplatesController extends DefaultController<TemplatesMana
         const { user, permissionsOfUserId, searchBody } = req as RequestWithSearchRuleTemplateBody;
         assert(user, 'User doesnt exists under request');
 
-        res.json(await this.manager.searchRulesTemplates(permissionsOfUserId, searchBody));
+        res.json(await this.manager.searchRulesTemplates(permissionsOfUserId, searchBody, req.user!.id));
     }
 }

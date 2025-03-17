@@ -133,7 +133,7 @@ export class FlowCubeManager extends DefaultManagerProxy<null> {
         }
 
         const usersPermissions = await this.authorizer.getWorkspacePermissions(userId);
-        const entityTemplates = await this.templatesManager.searchEntityTemplates(usersPermissions, searchEntityTemplatesBody);
+        const entityTemplates = await this.templatesManager.searchEntityTemplates(usersPermissions, searchEntityTemplatesBody, userId);
         const userPermissionsByCategory = this.getEntityTemplatesPermissionsByCategory(usersPermissions);
         const allowedEntityTemplates = usersPermissions.admin
             ? entityTemplates

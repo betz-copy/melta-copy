@@ -150,7 +150,7 @@ export const CardMenu: React.FC<{
                     </MeltaTooltip>
                 )}
                 {onConvertToRelationShipFieldClick && (
-                    <MeltaTooltip placement="top" title={editTooltipTitle} disableHoverListener={!disabledProps?.isEditDisabled}>
+                    <MeltaTooltip placement="left" title={editTooltipTitle} disableHoverListener={!disabledProps?.isEditDisabled}>
                         <Grid>
                             <MenuButton
                                 onClick={(e) => {

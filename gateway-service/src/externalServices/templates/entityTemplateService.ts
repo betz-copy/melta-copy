@@ -1,10 +1,11 @@
 import { TemplatesManagerService } from '.';
 import config from '../../config';
-import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
+import { Authorizer, RequestWithPermissionsOfUserId } from '../../utils/authorizer';
 import { ISubCompactPermissions } from '../userService/interfaces/permissions/permissions';
 import { IMongoRelationshipTemplate } from './relationshipsTemplateService';
 
 const {
+    service: { workspaceIdHeaderName },
     templateService: {
         baseRoute,
         entities: { baseEntitiesRoute, baseCategoriesRoute },
@@ -156,10 +157,19 @@ export class EntityTemplateService extends TemplatesManagerService {
     }
 
     // entity templates
-    async searchEntityTemplates(body: ISearchEntityTemplatesBody = {}) {
-        const { data } = await this.api.post<IMongoEntityTemplatePopulated[]>(`${baseEntitiesRoute}/search`, body);
+    async searchEntityTemplates(userId: string, body: ISearchEntityTemplatesBody = {}) {
+        const workspaceId = this.api.defaults.headers[workspaceIdHeaderName]!.toString();
+        const usersPermissions = await new Authorizer(workspaceId).getWorkspacePermissions(userId);
 
-        return data;
+        const { data: entityTemplates } = await this.api.post<IMongoEntityTemplatePopulated[]>(`${baseEntitiesRoute}/search`, body);
+        return usersPermissions.admin
+            ? entityTemplates
+            : entityTemplates.filter((entity) => {
+                  return (
+                      usersPermissions.instances?.categories[entity.category._id]?.scope ||
+                      usersPermissions.instances?.categories[entity.category._id]?.entityTemplates[entity._id]
+                  );
+              });
     }
 
     async getAllTemplatesByWorkspaceId(workspaceId: string) {

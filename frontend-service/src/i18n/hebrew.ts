@@ -272,6 +272,7 @@ export default {
         entityTemplateEditDisabled: 'אין הרשאות עריכה לתבנית',
         ruleTemplateEditDisabled: 'אין הרשאות עריכה לחוק',
         cannotDeleteWithRelationship: 'לא ניתן למחוק קשר זה, קיימים תחתיו קשרים',
+        cannotEditRelationship: 'לא ניתן לערוך קשר.מכיל ישות ללא הרשאות עריכה',
         cannotPerformActionEntityDisabled: 'לא ניתן לבצע פעולה זו, מכיל ישות מושבתת',
         disabledEntityTemplate: 'תבנית מושבתת',
         disabledEntity: 'ישות מושבתת',

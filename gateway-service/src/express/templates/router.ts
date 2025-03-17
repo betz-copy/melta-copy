@@ -177,6 +177,7 @@ templatesRouter.put(
     '/relationships/convertToRelationshipField/:id',
     ValidateRequest(convertToRelationshipFieldRequestSchema),
     AuthorizerControllerMiddleware.userCanWriteTemplates,
+    templatesValidatorMiddleware.validateUserCanUpdateOrDeleteRelationshipTemplate,
     templatesControllerMiddleware.convertToRelationshipField,
 );
 

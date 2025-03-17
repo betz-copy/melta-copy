@@ -8,7 +8,7 @@ import { StepComponentProps } from '../index';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { variableNameValidation } from '../../../utils/validation';
 import { getRelationshipInstancesCountByTemplateIdRequest } from '../../../services/entitiesService';
-import { getAllAllowedEntities } from '../../../utils/permissions/instancePermissions';
+import { getAllWritePermissionEntityTemplates } from '../../../utils/permissions/instancePermissions';
 import { useUserStore } from '../../../stores/user';
 
 const createRelationshipTemplateNameSchema = {
@@ -37,7 +37,7 @@ const CreateRelationshipTemplateName: React.FC<StepComponentProps<RelationshipTe
 
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates');
     const entityTemplatesArray = Array.from(entityTemplates!.values());
-    const allowedEntityTemplates = getAllAllowedEntities(entityTemplatesArray, currentUser);
+    const allowedEntityTemplates = getAllWritePermissionEntityTemplates(entityTemplatesArray, currentUser);
 
     const { data: areThereRelationshipInstancesByTemplateId } = useQuery(
         ['areThereRelationshipInstancesByTemplateId', (values as RelationshipTemplateWizardValues & { _id: string })._id],
