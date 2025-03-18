@@ -173,11 +173,7 @@ export const updateEntityStatusRequest = async (entityId: string, disabled: bool
     return data;
 };
 
-export const updateEntityRequestForMultiple = async (
-    entityId: string,
-    newEntityData: EntityWizardValues,
-    ignoredRules?: IRuleBreach['brokenRules'],
-) => {
+const getBodyForUpdateRequest = async (newEntityData: EntityWizardValues, ignoredRules?: IRuleBreach['brokenRules']) => {
     const isUUID = (str: string) => uuidFormat.test(str);
     const formData = new FormData();
 
@@ -256,11 +252,39 @@ export const updateEntityRequestForMultiple = async (
         formData.append('ignoredRules', JSON.stringify(ignoredRules));
     }
 
+    return formData;
+};
+
+export const updateEntityRequestForMultiple = async (
+    entityId: string,
+    newEntityData: EntityWizardValues,
+    ignoredRules?: IRuleBreach['brokenRules'],
+) => {
+    const formData = await getBodyForUpdateRequest(newEntityData, ignoredRules);
+
     const { data } = await axios.put<IEntity>(`${entities}/${entityId}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
     });
 
     return data;
+};
+
+export const updateMultEntitiesRequestForMultiple = async (
+    entitiesToUpdate: string[],
+    newEntityData: EntityWizardValues,
+    ignoredRules?: IRuleBreach['brokenRules'],
+) => {
+    console.log({ newEntityData });
+
+    const formData = await getBodyForUpdateRequest(newEntityData, ignoredRules);
+
+    // const { data } = await axios.put<IEntity>(`${entities}/${entityId}`, formData, {
+    //     headers: { 'Content-Type': 'multipart/form-data' },
+    // });
+
+    console.log(formData.values().forEach((prop) => console.log(prop)));
+
+    return 'yayayayaya';
 };
 
 export const duplicateEntityRequest = async (entityId: string, newEntityData: EntityWizardValues, ignoredRules?: IRuleBreach['brokenRules']) => {

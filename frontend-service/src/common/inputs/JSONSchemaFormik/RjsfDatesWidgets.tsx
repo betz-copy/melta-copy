@@ -84,7 +84,6 @@ const getRjsfDateOrDateTimeWidget =
                 dateAdapter={AdapterDateFns}
                 adapterLocale={heLocale}
                 localeText={i18next.t('muiDatePickersLocaleText', { returnObjects: true })}
-                
             >
                 <MuiDatePicker<Date, Date>
                     value={currDate}

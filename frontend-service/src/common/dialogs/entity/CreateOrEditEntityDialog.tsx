@@ -15,7 +15,7 @@ import { cloneDeep } from 'lodash';
 import { StatusCodes } from 'http-status-codes';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IEntity, IUniqueConstraint } from '../../../interfaces/entities';
-import { createEntityRequest, updateEntityRequestForMultiple } from '../../../services/entitiesService';
+import { createEntityRequest, updateEntityRequestForMultiple, updateMultEntitiesRequestForMultiple } from '../../../services/entitiesService';
 import { EntityWizardValues } from '.';
 import { environment } from '../../../globals';
 import { InstanceFileInput } from '../../inputs/InstanceFilesInput/InstanceFileInput';
@@ -121,9 +121,10 @@ const CreateOrEditEntityDetails: React.FC<{
     setCreateOrUpdateWithRuleBreachDialogState,
 }) => {
     const [isDraftDialogOpen, setIsDraftDialogOpen] = useState(false);
-    const [wasDirty, setWasDirty] = useState(false); // * i think that this is if the form has changed
+    const [wasDirty, setWasDirty] = useState(false);
     const { templateFileKeys: initialTemplateFileKeys } = getEntityTemplateFilesFieldsInfo(entityTemplate);
-    let entityId = entityToUpdate?.properties._id; // TODO if changed to array change this too
+    let entityId = entityToUpdate?.properties._id;
+    const [selectedFields, setSelectedFields] = useState<Record<string, boolean> | undefined>(entitiesToUpdate ? {} : undefined);
 
     const initialValues = useMemo(() => {
         if (entityToUpdate) {
@@ -208,7 +209,7 @@ const CreateOrEditEntityDetails: React.FC<{
                 handleMutationError(err, entityTemplate, newEntityData);
             },
         },
-    ); // ? update
+    );
 
     const { isLoading: isCreateLoading, mutateAsync: createMutation } = useMutation(
         ({ newEntityData, ignoredRules }: { newEntityData: EntityWizardValues; ignoredRules?: IRuleBreach['brokenRules'] }) =>
@@ -229,13 +230,32 @@ const CreateOrEditEntityDetails: React.FC<{
                 handleMutationError(err, entityTemplate, newEntityData);
             },
         },
-    ); // ? create
+    );
     // TODO add another mutation for mult edit
+    const { isLoading: isMultUpdateLoading, mutateAsync: updateMultMutation } = useMutation(
+        ({ newEntityData, ignoredRules }: { newEntityData: EntityWizardValues; ignoredRules?: IRuleBreach['brokenRules'] }) =>
+            updateMultEntitiesRequestForMultiple(entitiesToUpdate!, newEntityData, ignoredRules),
+        {
+            onSuccess: (data) => {
+                if (onSuccessUpdate) onSuccessUpdate(data);
+            },
+            onError: (err: AxiosError, { newEntityData }) => {
+                handleMutationError(err, entityTemplate, newEntityData);
+            },
+        },
+    ); // TODO move this and all mutation func to another file and return only the wanted func
 
     const mutationPromiseToastify = async (values: EntityWizardValues, ignoredRules?: IRuleBreach['brokenRules']) => {
-        const mutationPromise = isEditMode
+        // const mutationPromise = isEditMode
+        //     ? updateMutation({ newEntityData: values, ignoredRules })
+        //     : createMutation({ newEntityData: values, ignoredRules });
+
+        // eslint-disable-next-line no-nested-ternary
+        const mutationPromise = !isEditMode
+            ? createMutation({ newEntityData: values, ignoredRules })
+            : entityToUpdate
             ? updateMutation({ newEntityData: values, ignoredRules })
-            : createMutation({ newEntityData: values, ignoredRules });
+            : updateMultMutation({ newEntityData: values, ignoredRules });
         toast.dismiss();
 
         await new Promise<void>((resolve) => {
@@ -298,8 +318,6 @@ const CreateOrEditEntityDetails: React.FC<{
     const draftId = useDraftIdStore((state) => state.draftId); //* draft
     const setDraftId = useDraftIdStore((state) => state.setDraftId); //* draft
 
-    // ? draft not to mult edit
-
     // eslint-disable-next-line react-hooks/exhaustive-deps
     const originalDrafts = useMemo(() => cloneDeep(drafts), []); //* draft
 
@@ -329,7 +347,7 @@ const CreateOrEditEntityDetails: React.FC<{
                 );
             }}
             validate={(values) => {
-                const nonAttachmentsSchema = filterFieldsFromPropertiesSchema(values.template.properties, values.selected);
+                const nonAttachmentsSchema = filterFieldsFromPropertiesSchema(values.template.properties, selectedFields);
                 const propertiesErrors = ajvValidate(nonAttachmentsSchema, values.properties);
 
                 if (Object.keys(propertiesErrors).length === 0) {
@@ -344,7 +362,7 @@ const CreateOrEditEntityDetails: React.FC<{
                     values.template || entityTemplate,
                 );
                 const isPropertiesFirst = (values.template?.propertiesTypeOrder ?? [])[0] === 'properties';
-                const schema = filterFieldsFromPropertiesSchema(values.template.properties, values.selected);
+                const schema = filterFieldsFromPropertiesSchema(values.template.properties, selectedFields);
                 // eslint-disable-next-line react-hooks/rules-of-hooks
                 useEffect(() => {
                     setInitialValuePropsToFilter({ ...formInitialValues.properties });
@@ -418,8 +436,7 @@ const CreateOrEditEntityDetails: React.FC<{
                     });
 
                     return !isEqual(valuePropsToFilter, initialValuePropsToFilter);
-                }, [formInitialValues, values]); // TODO change by mult
-
+                }, [formInitialValues, values]);
                 // eslint-disable-next-line react-hooks/rules-of-hooks
                 useEffect(() => {
                     if (!absoluteDirty) return;
@@ -432,14 +449,26 @@ const CreateOrEditEntityDetails: React.FC<{
                     if (absoluteDirty && !wasDirty) setWasDirty(true);
                 }, [absoluteDirty]);
 
-                //! here - only for mult
-                const aaa: any[] = [];
-                values.template.uniqueConstraints.forEach((props) => aaa.push(...props.properties));
+                if (entitiesToUpdate) {
+                    const uniqueFields: string[] = [];
+                    values.template.uniqueConstraints.forEach((groupField) => uniqueFields.push(...groupField.properties));
+                    uniqueFields.forEach((uniqueField) => {
+                        schema.properties[uniqueField].readOnly = true;
+                    });
+                }
 
-                aaa.forEach((a) => {
-                    schema.properties[a].readOnly = true;
-                }); // TODO change only to mult
-                //! here
+                const onCheckboxChange = entitiesToUpdate
+                    ? (field: string, checked: boolean) => {
+                          if (!checked) {
+                              setFieldTouched(`properties.${field}`, false);
+                              const { [field]: removedField, ...rest } = values.properties;
+                              setFieldValue('properties', rest);
+                          }
+                          setSelectedFields((prev) => {
+                              return { ...prev, [field]: checked };
+                          });
+                      }
+                    : undefined;
 
                 const propertiesComp = values.template?._id && (
                     <JSONSchemaFormik
@@ -453,10 +482,8 @@ const CreateOrEditEntityDetails: React.FC<{
                         touched={touched.properties ?? {}}
                         setFieldTouched={(field, isTouched?) => setFieldTouched(`properties.${field}`, isTouched)}
                         isEditMode={isEditMode}
-                        multipleEntities={!!entitiesToUpdate} // TODO maybe change to array or something
-                        // setSelectedFields={(field, value) => {
-                        //     return setFieldValue(`selected.${field}`, value);
-                        // }}
+                        multipleEntities={!!entitiesToUpdate}
+                        onCheckboxChange={onCheckboxChange}
                     />
                 );
 

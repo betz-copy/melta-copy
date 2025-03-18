@@ -1,5 +1,5 @@
 /* eslint-disable import/no-extraneous-dependencies */
-import React, { memo, useEffect, useState } from 'react';
+import React, { memo, useEffect, useRef, useState } from 'react';
 import { Form as JSONSchemaForm } from '@rjsf/mui';
 import Ajv, { ErrorObject } from 'ajv';
 import addFormats from 'ajv-formats';
@@ -127,15 +127,27 @@ const getComponent = (
 ) => {
     if (multipleEntities) {
         const WrappedComponent: React.FC<WidgetProps> = (props: WidgetProps) => {
+            const { label, disabled, name } = props;
             const [checked, setChecked] = useState(false);
-            const { label, onChange, disabled, name } = props;
 
             useEffect(() => {
                 onCheckboxChange(name, checked);
-                if (!checked) {
-                    onChange(undefined);
-                }
-            }, [checked]);
+            }, [checked, name]);
+
+            // let hasMounted = false;
+            // if (!hasMounted) {
+            //     hasMounted = true;
+            // } else {
+            //     onCheckboxChange(name, checked);
+            // }
+
+            // useEffect(() => {
+            //     if (!hasMounted.current) {
+            //         hasMounted.current = true;
+            //         return; // Skip the first render
+            //     }
+            //     onCheckboxChange(name, checked);
+            // }, [checked]);
 
             return (
                 <InputAccordion label={label} disabled={disabled} checked={checked} setChecked={setChecked}>

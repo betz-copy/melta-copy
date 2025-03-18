@@ -17,9 +17,7 @@ import { ErrorToast } from '../ErrorToast';
 import { TableButton } from '../TableButton';
 import { DeleteEntitiesDialog } from './DeleteEntitiesDialog';
 import { CreateOrEditEntityDetails, ICreateOrUpdateWithRuleBreachDialogState } from '../dialogs/entity/CreateOrEditEntityDialog';
-import { emptyEntityTemplate, EntityWizardValues } from '../dialogs/entity';
-import { EditMultipleEntities } from '../dialogs/entity/EditMultipleEntities'; // TODO dele this file
-// TODO delete EditMultipleEntities file
+
 interface MultiSelectStatusBarProps extends IStatusPanelParams {
     template: IMongoEntityTemplatePopulated;
     quickFilterText: string;
@@ -74,6 +72,28 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
 
         return () => api.removeEventListener('selectionChanged', updateSelectedRowCount);
     }, [api]);
+
+    const getSelectedEntities = () => {
+        const { selectAll, toggledNodes } = api.getServerSideSelectionState() as IServerSideSelectionState;
+        let selectedEntities: IDeleteEntityBody<boolean>;
+
+        if (selectAll) {
+            selectedEntities = {
+                selectAll: true,
+                idsToExclude: toggledNodes,
+                filter: filterModelToFilterOfTemplate(api.getFilterModel(), template),
+                textSearch: quickFilterText,
+            } as IDeleteEntityBody<true>;
+        } else {
+            const selectedRowsIds = api.getSelectedRows().map((row) => row.properties._id);
+            selectedEntities = {
+                selectAll: false,
+                idsToInclude: selectedRowsIds,
+            } as IDeleteEntityBody<false>;
+        }
+
+        return selectedEntities;
+    };
 
     const handleMultipleDelete = (deleteAllRelationships = false) => {
         const { selectAll, toggledNodes } = api.getServerSideSelectionState() as IServerSideSelectionState;
@@ -187,11 +207,12 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
                         setOpenEditDialog((prev) => !prev);
                     }}
                     onError={
-                        (currEntityValues) => {}
+                        // (currEntityValues) => {}
                         // setEditDialog({
                         //     isOpen: true,
                         //     wizardValues: currEntityValues,
                         // })
+                        () => setOpenEditDialog(true)
                     }
                     externalErrors={externalErrors}
                     setExternalErrors={setExternalErrors}

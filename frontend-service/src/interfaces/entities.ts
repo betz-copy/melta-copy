@@ -195,7 +195,11 @@ export interface IDeleteEntityBodyBase {
     deleteAllRelationships?: boolean;
 }
 
-export type IDeleteEntityBody<T extends boolean = boolean> = IDeleteEntityBodyBase & {
+export interface IBulkUpdateBodyBase {
+    selectAll: boolean;
+}
+
+export type IDeleteEntityBody<T extends boolean = boolean> = (IDeleteEntityBodyBase | IBulkUpdateBodyBase) & {
     selectAll: T;
 } & (T extends true
         ? {
@@ -206,6 +210,18 @@ export type IDeleteEntityBody<T extends boolean = boolean> = IDeleteEntityBodyBa
         : {
               idsToInclude: string[];
           });
+
+export type IMultipleSelect<T extends boolean = boolean> = {
+    selectAll: T;
+} & (T extends true
+    ? {
+          idsToExclude?: string[];
+          filter?: ISearchEntitiesOfTemplateBody['filter'];
+          textSearch?: string;
+      }
+    : {
+          idsToInclude: string[];
+      });
 
 export type EntityData = IEntity | IFailedEntity;
 
