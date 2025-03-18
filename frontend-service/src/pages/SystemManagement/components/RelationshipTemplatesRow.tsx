@@ -33,9 +33,10 @@ import { useWorkspaceStore } from '../../../stores/workspace';
 import { environment } from '../../../globals';
 import { ConvertToRelationship } from '../../../common/wizards/relationshipTemplate/convertRelationshipToRelationshipField';
 import { IRelationshipReference } from '../../../common/wizards/entityTemplate/commonInterfaces';
-import { checkUserTemplatePermission, getAllAllowedEntities } from '../../../utils/permissions/instancePermissions';
+import { checkUserTemplatePermission } from '../../../utils/permissions/instancePermissions';
 import { useUserStore } from '../../../stores/user';
 import { PermissionScope } from '../../../interfaces/permissions';
+import { getAllAllowedEntities } from '../../../utils/permissions/templatePermissions';
 
 const { infiniteScrollPageCount } = environment.processInstances;
 
@@ -96,6 +97,12 @@ const RelationshipTemplateCard: React.FC<RelationshipTemplateCardProps> = ({
     const handleHover = (isHover: boolean) => {
         setIsHoverOnCard(isHover);
     };
+
+    const relationshipTemplateCardTooltip = () => {
+        if (!isRelationshipHasWritePermission) return i18next.t('systemManagement.cannotEditRelationship');
+        if (isDeleteButtonDisabled) i18next.t('systemManagement.cannotDeleteWithRelationship');
+        return '';
+    };
     return (
         <ViewingCard
             title={
@@ -149,12 +156,7 @@ const RelationshipTemplateCard: React.FC<RelationshipTemplateCardProps> = ({
                                 }}
                                 disabledProps={{
                                     isDeleteDisabled: !isRelationshipHasWritePermission || isDeleteButtonDisabled,
-                                    // eslint-disable-next-line no-nested-ternary
-                                    tooltipTitle: !isRelationshipHasWritePermission
-                                        ? i18next.t('systemManagement.cannotEditRelationship')
-                                        : isDeleteButtonDisabled
-                                        ? i18next.t('systemManagement.cannotDeleteWithRelationship')
-                                        : '',
+                                    tooltipTitle: relationshipTemplateCardTooltip(),
                                     isEditDisabled: areEntitiesDisabled || !isRelationshipHasWritePermission,
                                     editTooltipTitle: areEntitiesDisabled ? i18next.t('systemManagement.cannotPerformActionEntityDisabled') : '',
                                 }}

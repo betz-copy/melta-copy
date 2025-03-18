@@ -8,8 +8,8 @@ import { StepComponentProps } from '../index';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { variableNameValidation } from '../../../utils/validation';
 import { getRelationshipInstancesCountByTemplateIdRequest } from '../../../services/entitiesService';
-import { getAllWritePermissionEntityTemplates } from '../../../utils/permissions/instancePermissions';
 import { useUserStore } from '../../../stores/user';
+import { getAllWritePermissionEntityTemplates } from '../../../utils/permissions/templatePermissions';
 
 const createRelationshipTemplateNameSchema = {
     name: Yup.string().matches(variableNameValidation, i18next.t('validation.variableName')).required(i18next.t('validation.required')),

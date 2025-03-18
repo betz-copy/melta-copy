@@ -38,9 +38,10 @@ import { CreateButton } from './CreateButton';
 import { FilterButton } from './FilterButton';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { environment } from '../../../globals';
-import { allowedCategories, allowedEntitiesOfCategory, checkUserTemplatePermission } from '../../../utils/permissions/instancePermissions';
+import { checkUserTemplatePermission } from '../../../utils/permissions/instancePermissions';
 import { useUserStore } from '../../../stores/user';
 import { PermissionScope } from '../../../interfaces/permissions';
+import { allowedCategories, allowedEntitiesOfCategory } from '../../../utils/permissions/templatePermissions';
 
 const { infiniteScrollPageCount } = environment.processInstances;
 

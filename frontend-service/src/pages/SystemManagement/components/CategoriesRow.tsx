@@ -22,7 +22,7 @@ import { Box } from './Box';
 import { CardMenu } from './CardMenu';
 import { CreateButton } from './CreateButton';
 import { useWorkspaceStore } from '../../../stores/workspace';
-import { allowedCategories } from '../../../utils/permissions/instancePermissions';
+import { allowedCategories } from '../../../utils/permissions/templatePermissions';
 
 interface CategoryCardProps {
     category: IMongoCategory;

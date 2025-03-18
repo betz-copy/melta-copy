@@ -6,7 +6,7 @@ import { useQueryClient } from 'react-query';
 import { StepComponentProps } from '../index';
 import { RuleWizardValues } from '.';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
-import { getAllWritePermissionEntityTemplates } from '../../../utils/permissions/instancePermissions';
+import { getAllWritePermissionEntityTemplates } from '../../../utils/permissions/templatePermissions';
 import { useUserStore } from '../../../stores/user';
 
 const createRuleSchema = {

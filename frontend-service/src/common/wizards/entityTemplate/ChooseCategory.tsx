@@ -6,8 +6,8 @@ import { useQueryClient } from 'react-query';
 import { EntityTemplateWizardValues } from './index';
 import { StepComponentProps } from '../index';
 import { ICategoryMap } from '../../../interfaces/categories';
-import { allowedCategories } from '../../../utils/permissions/instancePermissions';
 import { useUserStore } from '../../../stores/user';
+import { allowedCategories } from '../../../utils/permissions/templatePermissions';
 
 const chooseCategorySchema = Yup.object({
     category: Yup.object({

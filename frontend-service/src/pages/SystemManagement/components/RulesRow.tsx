@@ -17,9 +17,10 @@ import { ViewingCard } from './Card';
 import { CardMenu } from './CardMenu';
 import { CreateButton } from './CreateButton';
 import { useWorkspaceStore } from '../../../stores/workspace';
-import { checkUserTemplatePermission, getAllAllowedRulesAndWriteEntities } from '../../../utils/permissions/instancePermissions';
+import { checkUserTemplatePermission } from '../../../utils/permissions/instancePermissions';
 import { useUserStore } from '../../../stores/user';
 import { PermissionScope } from '../../../interfaces/permissions';
+import { getAllAllowedRulesAndWriteEntities } from '../../../utils/permissions/templatePermissions';
 
 export const RuleCard: React.FC<{
     rule: IMongoRule;
