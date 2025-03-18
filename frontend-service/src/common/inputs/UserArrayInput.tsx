@@ -21,6 +21,7 @@ const UserArrayInput: React.FC<UserArrayInputProps> = ({
     onDisplayValueChange,
     currentUsers,
     onRemove,
+    overrideSx,
 }) => {
     return (
         <Box>
@@ -37,6 +38,7 @@ const UserArrayInput: React.FC<UserArrayInputProps> = ({
                     isError={isError}
                     displayValue={displayValue}
                     onDisplayValueChange={onDisplayValueChange}
+                    overrideSx={overrideSx}
                 />
             </Grid>
             <Grid container spacing={1}>

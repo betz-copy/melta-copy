@@ -1,14 +1,19 @@
 import { KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material';
 import ClearIcon from '@mui/icons-material/Clear';
 import CloseIcon from '@mui/icons-material/Close';
-import { Autocomplete, Checkbox, Chip, Divider, Grid, IconButton, ListItemText, MenuItem, TextField, Typography } from '@mui/material';
+import { Autocomplete, Divider, Grid, IconButton, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import debounce from 'lodash/debounce';
 import React, { useCallback, useState } from 'react';
 import { IoIosArrowDown } from 'react-icons/io';
 import { CustomIcon } from '../../common/CustomIcon';
-import DateRange from '../../common/inputs/DateRange';
-import { UserArrayInput } from '../../common/inputs/UserArrayInput';
+import { BooleanFilterInput } from '../../common/inputs/FilterInputs/BooleanFilterInput';
+import { DateFilterInput } from '../../common/inputs/FilterInputs/DateFilterInput';
+import { MultipleSelectFilterInput } from '../../common/inputs/FilterInputs/MultipleSelectFilterInput';
+import { MultipleUserFilterInput } from '../../common/inputs/FilterInputs/MultipleUserFilterInput';
+import { SelectFilterInput } from '../../common/inputs/FilterInputs/SelectFilterInput';
+import { StyledFilterInput } from '../../common/inputs/FilterInputs/StyledFilterInput';
+import { TextFilterInput } from '../../common/inputs/FilterInputs/TextFilterInput';
 import { IGraphFilterBody, IGraphFilterBodyBatch } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { useDarkModeStore } from '../../stores/darkMode';
@@ -28,11 +33,6 @@ interface GraphFilterProps {
     readOnly?: boolean;
 }
 
-const filterOptions = {
-    string: ['contains', 'notContains', 'equals', 'notEqual', 'startsWith', 'endsWith'],
-    number: ['equals', 'notEqual', 'greaterThan', 'greaterThanOrEqual', 'lessThan', 'lessThanOrEqual', 'inRange'],
-};
-
 const GraphFilter: React.FC<GraphFilterProps> = ({
     filterKey,
     templateOptions,
@@ -47,6 +47,7 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
     readOnly = false,
 }) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
+    const theme = useTheme();
     const [selectedTemplate, setSelectedTemplate] = useState<IMongoEntityTemplatePopulated | null>(
         filter?.selectedTemplate || selectedEntityTemplate || null,
     );
@@ -59,25 +60,6 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
     const propOptionsNotFile = properties
         ? Object.keys(properties).filter((prop) => properties[prop].format !== 'fileId' && properties[prop].items?.format !== 'fileId')
         : [];
-
-    const textFieldStyle = {
-        '& .MuiInputBase-root': {
-            borderRadius: '7px',
-            backgroundColor: darkMode ? '#4949499e' : 'white',
-        },
-        '& .MuiInputBase-input': {
-            color: ' rgba(83, 86, 110, 1)',
-            fontSize: '14px',
-            fontWeight: '400',
-        },
-        '& fieldset': {
-            borderColor: '#CCCFE5',
-            color: '#CCCFE5',
-        },
-        '& label': {
-            color: '#9398C2',
-        },
-    };
 
     const debouncedOnFilter = useCallback(
         debounce((newFilterField) => {
@@ -199,232 +181,67 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
 
         if (propEnum)
             return (
-                <Grid container justifyContent="center">
-                    <TextField
-                        select
-                        size="small"
-                        fullWidth
-                        sx={textFieldStyle}
-                        value={filterField?.filterType === 'text' ? (filterField as IAGGridTextFilter).filter : ''}
-                        onChange={(e) => handleFilterFieldChange({ type: 'equals', filter: e.target.value } as IAGGridTextFilter)}
-                        inputProps={{
-                            readOnly,
-                            style: {
-                                textOverflow: 'ellipsis',
-                            },
-                        }}
-                    >
-                        {propEnum.map((option, index) => (
-                            // eslint-disable-next-line react/no-array-index-key
-                            <MenuItem key={index} value={option}>
-                                {option}
-                            </MenuItem>
-                        ))}
-                    </TextField>
-                </Grid>
+                <SelectFilterInput
+                    filterField={filterField?.filterType === 'text' ? (filterField as IAGGridTextFilter) : undefined}
+                    enumOptions={propEnum}
+                    handleFilterFieldChange={handleFilterFieldChange}
+                    readOnly={readOnly}
+                />
             );
 
         if (format === 'date-time' || format === 'date')
             return (
-                <Grid container justifyContent="center">
-                    <TextField
-                        fullWidth
-                        select
-                        size="small"
-                        value={(filterField as IAGGridDateFilter).type || ''}
-                        inputProps={{
-                            readOnly,
-                            style: {
-                                textOverflow: 'ellipsis',
-                            },
-                        }}
-                        onChange={(e) =>
-                            handleFilterTypeChange(e.target.value as IAGGridDateFilter['type'], Boolean((filterField as IAGGridDateFilter).dateFrom))
-                        }
-                        SelectProps={{
-                            IconComponent: IoIosArrowDown,
-                        }}
-                        sx={{ mb: 4, ...textFieldStyle }}
-                    >
-                        {filterOptions.number.map((option, index) => (
-                            // eslint-disable-next-line react/no-array-index-key
-                            <MenuItem key={index} value={option}>
-                                {i18next.t(`filters.${option}`)}
-                            </MenuItem>
-                        ))}
-                    </TextField>
-                    <DateRange
-                        onStartDateChange={(newValue) => handleDateChange(newValue, true)}
-                        onEndDateChange={(newValue) => handleDateChange(newValue, false)}
-                        startDateInput={filterField?.filterType === 'date' && filterField.dateFrom ? filterField.dateFrom : null}
-                        endDateInput={filterField?.filterType === 'date' && filterField.dateTo ? filterField.dateTo : null}
-                        maxEndDate={new Date()}
-                        maxStartDate={new Date()}
-                        directionIsRow={entityFilter}
-                        overrideSx={{
-                            '& input': {
-                                backgroundColor: '#FFFF',
-                            },
-                            spacing: 0,
-                        }}
-                    />
-                </Grid>
+                <DateFilterInput
+                    filterField={filterField?.filterType === 'date' ? (filterField as IAGGridDateFilter) : undefined}
+                    handleFilterTypeChange={handleFilterTypeChange}
+                    handleDateChange={handleDateChange}
+                    readOnly={readOnly}
+                    entityFilter={entityFilter}
+                />
             );
 
         if (type === 'boolean')
             return (
-                <Grid container justifyContent="center">
-                    <TextField
-                        select
-                        size="small"
-                        sx={textFieldStyle}
-                        fullWidth
-                        value={filterField?.filterType === 'text' ? filterField?.filter : ''}
-                        onChange={(e) => {
-                            handleFilterFieldChange({ ...filterField, type: 'equals', filter: e.target.value } as IAGGridTextFilter);
-                        }}
-                        inputProps={{
-                            readOnly,
-                            style: {
-                                textOverflow: 'ellipsis',
-                            },
-                        }}
-                    >
-                        <MenuItem value="true">{i18next.t('booleanOptions.yes')}</MenuItem>
-                        <MenuItem value="false">{i18next.t('booleanOptions.no')}</MenuItem>
-                    </TextField>
-                </Grid>
+                <BooleanFilterInput
+                    filterField={filterField?.filterType === 'text' ? (filterField as IAGGridTextFilter) : undefined}
+                    handleFilterFieldChange={handleFilterFieldChange}
+                    readOnly={readOnly}
+                />
             );
 
         if (items && selectedTemplate.properties.properties[selectedProperty].items?.enum)
             return (
-                <Grid container justifyContent="center">
-                    <TextField
-                        select
-                        rows={2}
-                        size="small"
-                        fullWidth
-                        sx={textFieldStyle}
-                        value={filterField?.filterType === 'set' && filterField.values ? filterField.values : []}
-                        onChange={() => {}}
-                        inputProps={{
-                            readOnly,
-                            style: {
-                                textOverflow: 'ellipsis',
-                            },
-                        }}
-                        SelectProps={{
-                            multiple: true,
-                            renderValue: (selected: any) => (
-                                <div>
-                                    {selected.map((value: string) => (
-                                        <Chip key={value} label={value} style={{ marginRight: 5 }} />
-                                    ))}
-                                </div>
-                            ),
-                        }}
-                    >
-                        {selectedTemplate.properties.properties[selectedProperty].items?.enum?.map((option, index) => (
-                            // eslint-disable-next-line react/no-array-index-key
-                            <MenuItem key={index} value={option}>
-                                <Checkbox
-                                    checked={filterField?.filterType === 'set' ? filterField.values.includes(option) : false}
-                                    onChange={(e) => handleCheckboxChange(option, e.target.checked)}
-                                />
-                                <ListItemText primary={option} />
-                            </MenuItem>
-                        ))}
-                    </TextField>
-                </Grid>
+                <MultipleSelectFilterInput
+                    filterField={filterField?.filterType === 'set' ? (filterField as IAGGridSetFilter) : undefined}
+                    handleCheckboxChange={handleCheckboxChange}
+                    enumOptions={items?.enum}
+                    readOnly={readOnly}
+                />
             );
 
         if (items?.format === 'user' && type === 'array')
             return (
-                <UserArrayInput
-                    mode="external"
-                    value={null}
-                    label=""
-                    onChange={(_e, chosenUser, reason) => {
-                        if (reason !== 'selectOption' || !chosenUser) return;
-                        if (filterField?.filterType === 'set') handleCheckboxChange(chosenUser.fullName, true);
-
-                        setInputValue('');
-                    }}
-                    isError={false}
-                    displayValue={inputValue}
-                    onDisplayValueChange={(_, newDisplayValue) => setInputValue(newDisplayValue)}
-                    currentUsers={filterField?.filterType === 'set' ? (filterField.values as string[]) : []}
-                    onRemove={(index) => {
-                        if (filterField?.filterType !== 'set') return undefined;
-                        const currentUser = filterField.values[index];
-                        handleCheckboxChange(currentUser as string, false);
-                        return undefined;
-                    }}
-                    overrideSx={textFieldStyle}
+                <MultipleUserFilterInput
+                    filterField={filterField?.filterType === 'set' ? (filterField as IAGGridSetFilter) : undefined}
+                    inputValue={inputValue}
+                    setInputValue={setInputValue}
+                    handleCheckboxChange={handleCheckboxChange}
+                    readOnly={readOnly}
                 />
             );
-
         return (
-            <Grid container justifyContent="center" direction={entityFilter ? 'row' : 'column'} spacing={2}>
-                <Grid item xs={entityFilter ? 5 : 12}>
-                    {/* TODO : same height after defining fontsize */}
-                    <TextField
-                        fullWidth
-                        select
-                        size="small"
-                        sx={textFieldStyle}
-                        value={(filterField as IAGGridTextFilter | IAGGidNumberFilter).type || ''}
-                        inputProps={{
-                            readOnly,
-                            style: {
-                                textOverflow: 'ellipsis',
-                            },
-                        }}
-                        onChange={(e) =>
-                            handleFilterTypeChange(
-                                e.target.value as IAGGidNumberFilter['type'] | IAGGridTextFilter['type'],
-                                Boolean((filterField as IAGGidNumberFilter | IAGGridTextFilter).filter),
-                            )
-                        }
-                        SelectProps={{
-                            IconComponent: IoIosArrowDown,
-                        }}
-                    >
-                        {filterOptions[type].map((option, index) => (
-                            // eslint-disable-next-line react/no-array-index-key
-                            <MenuItem key={index} value={option}>
-                                {i18next.t(`filters.${option}`)}
-                            </MenuItem>
-                        ))}
-                    </TextField>
-                </Grid>
-
-                <Grid item xs={entityFilter ? 7 : 12}>
-                    <TextField
-                        inputProps={{
-                            readOnly,
-                            style: {
-                                textOverflow: 'ellipsis',
-                            },
-                        }}
-                        size="small"
-                        fullWidth
-                        sx={textFieldStyle}
-                        type={selectedTemplate?.properties.properties[selectedProperty].type}
-                        value={filterField && 'filter' in filterField ? filterField.filter ?? '' : ''}
-                        onChange={(e) => {
-                            const { value } = e.target;
-
-                            const updatedFilter =
-                                type === 'number'
-                                    ? ({ ...filterField, filter: value ? Number(value) : undefined } as IAGGidNumberFilter)
-                                    : ({ ...filterField, filter: value } as IAGGridTextFilter);
-
-                            handleFilterFieldChange(updatedFilter, Boolean(filterField && 'type' in filterField && filterField.type && value));
-                        }}
-                    />
-                </Grid>
-            </Grid>
+            <TextFilterInput
+                entityFilter={entityFilter}
+                filterField={
+                    filterField?.filterType === 'number' || filterField?.filterType === 'text'
+                        ? (filterField as IAGGidNumberFilter | IAGGridTextFilter)
+                        : undefined
+                }
+                handleFilterFieldChange={handleFilterFieldChange}
+                handleFilterTypeChange={handleFilterTypeChange}
+                type={type}
+                readOnly={readOnly}
+            />
         );
     };
 
@@ -467,14 +284,12 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
                                 <Autocomplete
                                     popupIcon={<IoIosArrowDown size="20px" />}
                                     size="small"
-                                    style={{ width: '195px', margin: 'auto', paddingBottom: '10px' }}
+                                    style={{ width: '90%', margin: 'auto', paddingBottom: '10px' }}
                                     value={null}
                                     onChange={(_event, newValue) => handleSelectTemplate(newValue)}
                                     options={options}
                                     getOptionLabel={(option) => option.displayName}
-                                    renderInput={(params) => (
-                                        <TextField {...params} variant="outlined" sx={{ borderRadius: '5px', ...textFieldStyle }} />
-                                    )}
+                                    renderInput={(params) => <StyledFilterInput {...params} variant="outlined" sx={{ borderRadius: '5px' }} />}
                                 />
                             )}
                             {selectedTemplate && (
@@ -499,12 +314,23 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
                 )}
                 <Grid display={fullView ? undefined : 'none'}>
                     {selectedTemplate && (
-                        <Grid item sx={{ height: '90px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                            {!entityFilter && <Divider sx={{ width: '195px', margin: 'auto', border: '1px 0px 0px 0px' }} />}{' '}
+                        <Grid
+                            item
+                            sx={{
+                                height: '90px',
+                                display: 'flex',
+                                flexDirection: entityFilter ? 'row' : 'column',
+                                alignItems: 'center',
+                            }}
+                        >
+                            {!entityFilter && <Divider sx={{ width: '90%', margin: 'auto', border: '1px 0px 0px 0px' }} />}
                             <Autocomplete
                                 popupIcon={<IoIosArrowDown size="20px" />}
                                 size="small"
-                                style={{ width: '90%', margin: 'auto', paddingBottom: '10px' }}
+                                sx={{
+                                    width: '90%',
+                                    ...(entityFilter ? { marginLeft: '5%' } : { margin: 'auto', paddingBottom: '10px' }),
+                                }}
                                 value={selectedProperty}
                                 onChange={(_event, newValue) => handleSelectProperty(newValue)}
                                 options={propOptionsNotFile}
@@ -512,9 +338,19 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
                                     selectedTemplate?.properties.properties[option] ? selectedTemplate.properties.properties[option].title : ''
                                 }
                                 renderInput={(params) => (
-                                    <TextField {...params} variant="outlined" sx={{ borderRadius: '5px', ...textFieldStyle }} label="שדה" />
+                                    <StyledFilterInput
+                                        {...params}
+                                        variant="outlined"
+                                        sx={{ borderRadius: '5px' }}
+                                        label={entityFilter ? i18next.t('charts.field') : undefined}
+                                    />
                                 )}
                             />
+                            {entityFilter && (
+                                <IconButton onClick={handleFilterErasion}>
+                                    <CloseIcon fontSize="small" sx={{ color: theme.palette.primary.main }} />
+                                </IconButton>
+                            )}
                         </Grid>
                     )}
 

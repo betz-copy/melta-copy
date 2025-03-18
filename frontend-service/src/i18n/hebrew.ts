@@ -1162,6 +1162,9 @@ export default {
         barChart: 'עמודות',
         numberChart: 'מספרי',
         noChartsFound: 'לא נמצאו תרשימים',
+        viewData: 'הנתונים המוצגים',
+        back: 'חזרה',
+        field: 'שדה',
         actions: {
             createdSuccessfully: 'תרשים נוצר בהצלחה',
             failedToCreate: 'נכשל ביצירת תרשים',
@@ -1357,8 +1360,6 @@ export default {
         greaterThanOrEqual: 'יותר או שווה ל',
         greaterThan: 'יותר מ',
         inRange: 'בין',
-        viewData: 'הנתונים המוצגים',
-        back: 'חזרה',
     },
     DynamicsConfigs: {
         isDrawerOpen: 'תפריט צד פתוח',

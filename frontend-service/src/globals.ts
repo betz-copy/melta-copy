@@ -240,6 +240,10 @@ export const environment = {
             columnWidths: 'columnWidths-',
         },
     },
+    filterOptions: {
+        string: ['contains', 'notContains', 'equals', 'notEqual', 'startsWith', 'endsWith'],
+        number: ['equals', 'notEqual', 'greaterThan', 'greaterThanOrEqual', 'lessThan', 'lessThanOrEqual', 'inRange'],
+    },
     accessTokenName: 'rabaz-access-token',
     brokenRulesFakeEntityIdPrefix: '$',
     minimumSupportedChromeVersion: 85,

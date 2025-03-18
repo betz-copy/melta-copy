@@ -148,7 +148,7 @@ const ChartPage: React.FC = () => {
                                     startIcon={<ArrowForwardIosOutlined sx={{ width: '12px', height: '12px' }} />}
                                     onClick={() => navigate(`/charts/${templateId}`)}
                                 >
-                                    {i18next.t('filters.back')}
+                                    {i18next.t('charts.back')}
                                 </Button>
                             </Grid>
                             <Grid container item height="100%" alignItems="center" justifyContent="center">
@@ -165,7 +165,7 @@ const ChartPage: React.FC = () => {
                                     rowModelType="infinite"
                                     template={template}
                                     defaultExpanded={false}
-                                    title={i18next.t('filters.viewData')}
+                                    title={i18next.t('charts.viewData')}
                                     defaultFilter={
                                         filterRecord && Object.keys(filterRecord).length > 0
                                             ? filterModelToFilterOfGraph(filterRecord)[templateId].filter
