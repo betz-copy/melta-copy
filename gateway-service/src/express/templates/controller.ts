@@ -30,7 +30,10 @@ export default class TemplatesController extends DefaultController<TemplatesMana
     }
 
     async createCategory(req: Request, res: Response) {
-        res.json(await this.manager.createCategory(req.body, req.file));
+        const { user, permissionsOfUserId } = req as RequestWithPermissionsOfUserId;
+        assert(user, 'User doesnt exists under request');
+
+        res.json(await this.manager.createCategory(req.body, permissionsOfUserId, user!.id, req.file));
     }
 
     async deleteCategory(req: Request, res: Response) {
@@ -51,7 +54,15 @@ export default class TemplatesController extends DefaultController<TemplatesMana
 
     // entityTemplates
     async createEntityTemplate(req: Request, res: Response) {
-        res.json(await this.manager.createEntityTemplate(req.body, { files: req.files, file: req.file ? [req.file] : undefined }));
+        const { user, permissionsOfUserId } = req as RequestWithPermissionsOfUserId;
+        assert(user, 'User doesnt exists under request');
+
+        res.json(
+            await this.manager.createEntityTemplate(req.body, permissionsOfUserId, user!.id, {
+                files: req.files,
+                file: req.file ? [req.file] : undefined,
+            }),
+        );
     }
 
     async deleteEntityTemplate(req: Request, res: Response) {
@@ -132,5 +143,12 @@ export default class TemplatesController extends DefaultController<TemplatesMana
         assert(user, 'User doesnt exists under request');
 
         res.json(await this.manager.searchRulesTemplates(permissionsOfUserId, searchBody, req.user!.id));
+    }
+
+    async getManyRulesByIds(req: Request, res: Response) {
+        const { user, permissionsOfUserId } = req as RequestWithSearchRuleTemplateBody;
+        assert(user, 'User doesnt exists under request');
+
+        res.json(await this.manager.getManyRulesByIds(req.body.rulesIds, permissionsOfUserId, user!.id));
     }
 }

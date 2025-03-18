@@ -120,4 +120,22 @@ export class TemplatesValidator extends DefaultController {
                 metadata: `user does not have write permission on entity ${entityTemplate}`,
             });
     }
+
+    async validateUserCanCreateRuleTemplate(req: Request) {
+        const { entityTemplateId } = req.body;
+
+        const [entityTemplate, userPermissions] = await Promise.all([
+            this.entityTemplateService.getEntityTemplateById(entityTemplateId),
+            this.authorizer.getWorkspacePermissions(req.user!.id),
+        ]);
+
+        if (
+            !userPermissions.admin?.scope &&
+            userPermissions.instances?.categories[entityTemplate.category._id]?.scope !== PermissionScope.write &&
+            userPermissions.instances?.categories[entityTemplate.category._id]?.entityTemplates[entityTemplate._id]?.scope !== PermissionScope.write
+        )
+            throw new ForbiddenError('user not authorized', {
+                metadata: `user does not have write permission on entity ${entityTemplate}`,
+            });
+    }
 }

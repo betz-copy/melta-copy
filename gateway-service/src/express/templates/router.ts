@@ -102,6 +102,7 @@ templatesRouter.post(
     '/entities',
     busboyMiddleware,
     ValidateRequest(createEntityTemplateSchema),
+    AuthorizerControllerMiddleware.userCanWriteTemplates,
     templatesValidatorMiddleware.validateUserCanCreateEntityTemplateUnderCategory,
     templatesControllerMiddleware.createEntityTemplate,
 );
@@ -202,7 +203,13 @@ templatesRouter.delete(
     ValidateRequest(deleteRuleByIdRequestSchema),
     templatesControllerMiddleware.deleteRuleById,
 );
-templatesRouter.post(['/rules', '/rules/get-many'], AuthorizerControllerMiddleware.userCanWriteRules, TemplatesServiceProxy);
+templatesRouter.post(
+    '/rules',
+    AuthorizerControllerMiddleware.userCanWriteRules,
+    templatesValidatorMiddleware.validateUserCanCreateRuleTemplate,
+    TemplatesServiceProxy,
+);
+templatesRouter.post('/rules/get-many', AuthorizerControllerMiddleware.userCanWriteRules, templatesControllerMiddleware.getManyRulesByIds);
 
 templatesRouter.post(
     '/rules/search',

@@ -27,7 +27,7 @@ import {
     ISearchRulesBody,
     RelationshipsTemplateService,
 } from '../../externalServices/templates/relationshipsTemplateService';
-import { PermissionType } from '../../externalServices/userService/interfaces/permissions';
+import { PermissionScope, PermissionType } from '../../externalServices/userService/interfaces/permissions';
 import { trycatch } from '../../utils';
 import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
 import DefaultManagerProxy from '../../utils/express/manager';
@@ -48,6 +48,7 @@ import { checkPropertyInUsedFromFormula } from './rules/checkIfPropertyInUsed';
 import { UploadedFile } from '../../utils/busboy/interface';
 import { IRelationship } from '../../externalServices/instanceService/interfaces/relationships';
 import { buildNewRelationshipField, validateNoDependentRules, validateRequiredConstraints, validateUniqueRelationships } from '../../utils/templates';
+import { ISubCompactPermissions } from '../../externalServices/userService/interfaces/permissions/permissions';
 
 const {
     categoryHasTemplates,
@@ -291,13 +292,33 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         return this.entityTemplateService.searchCategories(permissionsOfUserId);
     }
 
-    async createCategory(categoryData: Omit<ICategory, 'iconFileId'>, file?: UploadedFile) {
-        if (file) {
-            const newFileId = await this.storageService.uploadFile(file);
-            return this.entityTemplateService.createCategory({ ...categoryData, iconFileId: newFileId });
-        }
+    async createCategory(
+        categoryData: Omit<ICategory, 'iconFileId'>,
+        permissionsOfUserId: ISubCompactPermissions,
+        userId: string,
+        file?: UploadedFile,
+    ) {
+        const iconFileId = file ? await this.storageService.uploadFile(file) : null;
 
-        return this.entityTemplateService.createCategory({ ...categoryData, iconFileId: null });
+        const newCategory = await this.entityTemplateService.createCategory({ ...categoryData, iconFileId });
+
+        const updatedPermissions = permissionsOfUserId.admin
+            ? permissionsOfUserId
+            : {
+                  ...permissionsOfUserId,
+                  instances: {
+                      categories: {
+                          ...permissionsOfUserId.instances?.categories,
+                          [newCategory._id]: { scope: PermissionScope.write, entityTemplates: {} },
+                      },
+                  },
+              };
+
+        await UsersManager.syncUserPermissions(userId, {
+            [this.workspaceId]: updatedPermissions,
+        });
+
+        return newCategory;
     }
 
     // TODO: race condition here
@@ -390,7 +411,6 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         userId: string,
     ) {
         const allowedEntityTemplatesIds = await this.getAllowedEntityTemplateIds(permissionsOfUserId, userId, searchBody);
-        console.log({ allowedEntityTemplatesIds });
 
         const allowedRelationshipsTemplates = await this.getAllowedRelationshipTemplates(allowedEntityTemplatesIds);
 
@@ -431,6 +451,8 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
     async createEntityTemplate(
         templateData: Omit<IEntityTemplateWithConstraints, 'iconFileId' | 'documentTemplatesIds'>,
+        permissionsOfUserId: ISubCompactPermissions,
+        userId: string,
         { file, files }: { file?: [UploadedFile]; files?: UploadedFile[] },
     ): Promise<IMongoEntityTemplateWithConstraintsPopulated> {
         await this.entityTemplateService.getCategoryById(templateData.category);
@@ -453,6 +475,32 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         });
 
         await this.instancesService.updateConstraintsOfTemplate(entityTemplate._id, { requiredConstraints, uniqueConstraints });
+
+        const categoryScope = permissionsOfUserId.instances?.categories[entityTemplate.category._id]?.scope ?? undefined;
+        const categoryId = entityTemplate.category._id;
+
+        const updatedPermissions =
+            permissionsOfUserId.admin || categoryScope === PermissionScope.write
+                ? permissionsOfUserId
+                : ({
+                      ...permissionsOfUserId,
+                      instances: {
+                          categories: {
+                              ...permissionsOfUserId.instances?.categories,
+                              [categoryId]: {
+                                  scope: categoryScope,
+                                  entityTemplates: {
+                                      ...permissionsOfUserId.instances?.categories?.[categoryId]?.entityTemplates,
+                                      [entityTemplate._id]: { scope: PermissionScope.write, fields: {} },
+                                  },
+                              },
+                          },
+                      },
+                  } as ISubCompactPermissions);
+
+        await UsersManager.syncUserPermissions(userId, {
+            [this.workspaceId]: updatedPermissions,
+        });
 
         return this.populateTemplateConstraints(entityTemplate, requiredConstraints, uniqueConstraints);
     }
@@ -1248,6 +1296,12 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             throw new BadRequestError('rules has alerts/requests', { errorCode: ruleHasAlertsOrRequests });
         }
         return this.relationshipTemplateService.deleteRuleById(ruleId);
+    }
+
+    async getManyRulesByIds(rulesIds: string[], permissionsOfUserId: RequestWithPermissionsOfUserId['permissionsOfUserId'], userId: string) {
+        const allowedEntityTemplatesIds = await this.getAllowedEntityTemplateIds(permissionsOfUserId, userId);
+        const rules = await this.relationshipTemplateService.getManyRulesByIds(rulesIds);
+        return rules.filter((rule) => allowedEntityTemplatesIds.includes(rule.entityTemplateId));
     }
 }
 
