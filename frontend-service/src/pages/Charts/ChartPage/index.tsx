@@ -64,8 +64,7 @@ const ChartPage: React.FC = () => {
             createChart({
                 ...newChart,
                 templateId,
-                filter:
-                    Object.keys(filterRecord).length > 0 ? JSON.stringify(filterModelToFilterOfGraph(filterRecord)[templateId].filter) : undefined,
+                filter: Object.keys(filterRecord).length > 0 ? filterModelToFilterOfGraph(filterRecord)[templateId].filter : undefined,
                 createdBy: currentUser._id,
             } as IBasicChart),
         {
@@ -89,8 +88,7 @@ const ChartPage: React.FC = () => {
                 _id: chartId,
                 createdAt: (initialValues as IChart).createdAt,
                 updatedAt: (initialValues as IChart).updatedAt,
-                filter:
-                    Object.keys(filterRecord).length > 0 ? JSON.stringify(filterModelToFilterOfGraph(filterRecord)[templateId].filter) : undefined,
+                filter: Object.keys(filterRecord).length > 0 ? filterModelToFilterOfGraph(filterRecord)[templateId].filter : undefined,
             } as IChart),
         {
             onSuccess: () => {

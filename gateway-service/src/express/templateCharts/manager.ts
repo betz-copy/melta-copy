@@ -82,7 +82,7 @@ export class ChartManager extends DefaultManagerMongo<IChartDocument> {
 
     async updateChart(chartId: string, updatedChart: IChart) {
         return this.model
-            .findByIdAndUpdate(chartId, updatedChart, { new: true, overwrite: true })
+            .findOneAndReplace({ _id: chartId }, updatedChart, { new: true })
             .orFail(new ServiceError(StatusCodes.NOT_FOUND, 'chart not found'))
             .lean()
             .exec();

@@ -1,45 +1,6 @@
 import * as mongoose from 'mongoose';
 import { IChartDocument, IChartType, IPermission } from './interface';
 
-// const AggregationSchema = new mongoose.Schema({
-//     type: {
-//         type: String,
-//         enum: Object.values(IAggregationType),
-//         required: true,
-//     },
-//     byField: {
-//         type: String,
-//     },
-// });
-
-// const AxisSchema = new mongoose.Schema<IAxis>({
-//     title: String,
-//     field: { type: mongoose.Schema.Types.Mixed },
-// });
-
-// const BarOrLineMetaDataSchema = new mongoose.Schema<IBarOrLineMetaData>({
-//     xAxis: {
-//         type: AxisSchema,
-//         required: true,
-//     },
-//     yAxis: {
-//         type: AxisSchema,
-//         required: true,
-//     },
-// });
-
-// const PieMetaDataSchema = new mongoose.Schema<IPieMetaData>({
-//     dividedByField: {
-//         type: String,
-//         required: true,
-//     },
-//     aggregationType: { type: AggregationSchema, required: true },
-// });
-
-// const NumberMetaDataSchema = new mongoose.Schema<INUmberMetaData>({
-//     accumulator: { type: AggregationSchema, required: true },
-// });
-
 const ChartSchema = new mongoose.Schema<IChartDocument>(
     {
         name: {
@@ -72,7 +33,7 @@ const ChartSchema = new mongoose.Schema<IChartDocument>(
             type: String,
         },
         filter: {
-            type: Object,
+            type: String, // todo: change to Object when upgrade mongoose version
         },
     },
     { timestamps: true, versionKey: false },

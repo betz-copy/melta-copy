@@ -1,6 +1,6 @@
 import Joi from 'joi';
-import { IAggregationType, IChartType, IPermission } from './interface';
 import { MongoIdSchema } from '../../utils/joi';
+import { IAggregationType, IChartType, IPermission } from './interface';
 
 // format of properties keys in entity template
 export const variableNameValidation = Joi.string().regex(/^[a-zA-Z][a-zA-Z_$0-9]*$/);
@@ -31,7 +31,6 @@ const searchFilterSchema = Joi.object({
     $and: Joi.alternatives(filterOfTemplateSchema, Joi.array().items(filterOfTemplateSchema).min(1)),
     $or: Joi.array().items(filterOfTemplateSchema).min(1),
 }).min(1);
-console.log({ searchFilterSchema });
 
 const aggregationSchema = Joi.object({
     type: Joi.string()
@@ -41,7 +40,7 @@ const aggregationSchema = Joi.object({
 });
 
 const axisSchema = Joi.object({
-    title: Joi.string(),
+    title: Joi.string().allow(''),
     field: Joi.alternatives().try(Joi.string(), aggregationSchema).required(),
 });
 
@@ -62,6 +61,7 @@ const INUmberMetaDataSchema = Joi.object({
 const chartSchema = Joi.object({
     name: Joi.string().required(),
     description: Joi.string().allow(''),
+    templateId: Joi.string().required(),
     type: Joi.string()
         .valid(...Object.values(IChartType))
         .required(),
@@ -75,13 +75,15 @@ const chartSchema = Joi.object({
             ],
         })
         .required(),
-    /// check that
-    filter: Joi.any(),
+    filter: searchFilterSchema.custom((value) => {
+        // todo: upgrade mongo version up to 5 and then delete that convert
+        if (value) return JSON.stringify(value);
+        return value;
+    }),
     permission: Joi.string()
         .valid(...Object.values(IPermission))
         .required(),
     createdBy: Joi.string().required(),
-    templateId: Joi.string().required(),
 });
 
 // GET /api/charts/:chartId
@@ -95,7 +97,9 @@ export const getChartByIdRequestSchema = Joi.object({
 
 // GET /api/charts/by-template/:templateId
 export const getChartByTemplateIdRequestSchema = Joi.object({
-    body: {},
+    body: {
+        textSearch: Joi.string().allow(''),
+    },
     query: {},
     params: {
         templateId: MongoIdSchema.required(),

@@ -113,7 +113,6 @@ class EntityController extends DefaultController<EntityManager> {
     }
 
     async getChartOfTemplate(req: Request, res: Response) {
-        console.dir({ body: req.body }, { depth: null });
         res.json(await this.manager.getChart(req.params.templateId, req.body));
     }
 
