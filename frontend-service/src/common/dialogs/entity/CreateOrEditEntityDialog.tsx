@@ -415,7 +415,6 @@ const CreateOrEditEntityDetails: React.FC<{
                         schema={schema}
                         values={values}
                         setValues={(propertiesValues) => {
-                            console.log({ newPropertiesValues: propertiesValues });
                             return setFieldValue('properties', propertiesValues);
                         }}
                         errors={errors.properties ?? {}}

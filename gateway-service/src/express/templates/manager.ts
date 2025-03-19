@@ -781,7 +781,6 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
                             isSingularToPlural
                         )
                     ) {
-                        console.log({ value });
                         throw new BadRequestError('can not change property format');
                     }
                     if (value.enum && newValue.enum && !value.enum?.every((val) => newValue.enum?.includes(val)))

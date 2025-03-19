@@ -52,7 +52,6 @@ import RelationshipReferenceField from './RelationshipReferenceField';
 import { PermissionScope } from '../../../interfaces/permissions';
 import { useUserStore } from '../../../stores/user';
 import { SelectCheckbox } from '../../SelectCheckBox';
-// import { IKartoffelUser } from '../../../interfaces/users';
 import { environment } from '../../../globals';
 
 const { mapSearchPropertiesLimit } = environment.map;
@@ -377,10 +376,6 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
 
     const [initialOptionArray, setInitialOptionArray] = useState<string[]>(initialValue?.options || []);
 
-    // const userFields = [{ displayName: 'fullName' }, { displayName: 'jobTitle' }, { displayName: 'hierarchy' }, { displayName: 'mail' }]; // TODO: get relevant fields
-
-    // const keys = Object.keys({} as IKartoffelUser) as (keyof IKartoffelUser)[];
-
     const userFields: string[] = [
         'displayName',
         'identityCard',
@@ -641,7 +636,6 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                             name={type}
                                             value={value.type === 'text-area' ? 'string' : value.type}
                                             onChange={(e) => {
-                                                console.log('change typpeee');
                                                 setValues?.((prevValue) => ({
                                                     ...prevValue,
                                                     type: e.target.value,

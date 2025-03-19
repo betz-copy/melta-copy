@@ -263,7 +263,6 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                     enumPropertiesColors[name][option] = color;
                 });
             }
-            console.log({ expandedUserFields });
             if (expandedUserFields && expandedUserFields.length) expandedUsersFields[name] = expandedUserFields;
         },
     );
@@ -398,8 +397,6 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
         if (required) schema.required.push(name);
     });
 
-    console.log({ expandedUsersFields });
-
     return {
         ...restOfProperties,
         properties: schema,
@@ -412,7 +409,6 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
         propertiesPreview,
         enumPropertiesColors,
         uniqueConstraints: restOfProperties.uniqueConstraints || [],
-        // expandedUsersFields,
         mapSearchProperties,
     };
 };
@@ -423,7 +419,6 @@ const searchEntityTemplates = async (searchQuery: ISearchEntityTemplateQuery) =>
 };
 
 const createEntityTemplateRequest = async (newEntityTemplate: EntityTemplateWizardValues) => {
-    console.log({ newEntityTemplate });
     const formData = new FormData();
 
     const entityTemplate = formToJSONSchema(newEntityTemplate, false);
@@ -468,7 +463,6 @@ const updateEntityTemplateStatusRequest = async (entityTemplateId: string, disab
 };
 
 const updateEntityTemplateRequest = async (entityTemplateId: string, updatedEntityTemplate: IEntityTemplate | EntityTemplateWizardValues) => {
-    console.log({ updatedEntityTemplate });
     const formData = new FormData();
     const entityTemplate: IEntityTemplate =
         'attachmentProperties' in updatedEntityTemplate // its type is - EntityTemplateWizardValues
@@ -507,7 +501,6 @@ const updateEntityTemplateRequest = async (entityTemplateId: string, updatedEnti
     formData.append('propertiesTypeOrder', JSON.stringify(entityTemplate.propertiesTypeOrder));
     formData.append('propertiesPreview', JSON.stringify(entityTemplate.propertiesPreview));
     formData.append('uniqueConstraints', JSON.stringify(entityTemplate.uniqueConstraints));
-    // formData.append('expandedUsersFields', JSON.stringify(entityTemplate.expandedUsersFields));
     if (updatedEntityTemplate.documentTemplatesIds)
         formData.append(
             'documentTemplatesIds',

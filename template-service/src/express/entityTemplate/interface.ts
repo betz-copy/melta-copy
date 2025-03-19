@@ -49,7 +49,6 @@ export interface IEntityTemplate {
     propertiesOrder: string[];
     propertiesTypeOrder: ('properties' | 'attachmentProperties')[];
     propertiesPreview: string[];
-    // expandedUsersFields: Record<string, string[]>;
     enumPropertiesColors?: IEnumPropertiesColors;
     disabled: boolean;
     iconFileId: string | null;

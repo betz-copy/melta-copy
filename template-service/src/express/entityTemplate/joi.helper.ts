@@ -185,10 +185,6 @@ export const orderPropertiesSchema = Joi.array().unique().items(Joi.string()).cu
 
 export const orderPropertiesTypeSchema = Joi.array().unique().items(Joi.valid('properties', 'attachmentProperties'));
 
-// export const expandedUsersFields = Joi.array().unique().items(
-//     {}
-// );
-
 const customPreviewPropertiesValidation: Joi.CustomValidator = (propertiesPreview: string[], helpers) => {
     return validatePropertiesArrayInProperties(propertiesPreview, helpers.state.ancestors[0].properties.properties);
 };

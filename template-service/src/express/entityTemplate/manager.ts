@@ -259,7 +259,6 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
         allowToDeleteRelationshipFields: boolean,
         session?: ClientSession,
     ) {
-        console.log({ updatedTemplateData }); // TODO: create from the expandedUserFields array, readonly properties... here and in create entity...
         const currentEntityTemplate = await this.getTemplateById(id);
 
         const convertedTemplateDataToUpdate = this.convertExpendedUserFields(updatedTemplateData);

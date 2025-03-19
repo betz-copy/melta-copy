@@ -17,7 +17,6 @@ const entityTemplateSchema = {
     propertiesOrder: orderPropertiesSchema.required(),
     propertiesTypeOrder: orderPropertiesTypeSchema.required(),
     propertiesPreview: previewPropertiesSchema.required(),
-    // expandedUsersFields: Joi.object().required(), // TODO - use specific schama...
     enumPropertiesColors: enumPropertiesColorsSchema,
     documentTemplatesIds: Joi.array().items(Joi.string()),
     mapSearchProperties: Joi.array().items(Joi.string()),

@@ -96,14 +96,14 @@ templatesRouter.patch(
 );
 templatesRouter.patch('/entities/:id/actions', AuthorizerControllerMiddleware.userIsRootAdmin, TemplatesServiceProxy);
 templatesRouter.post('/entities/search', AuthorizerControllerMiddleware.userCanReadTemplates, TemplatesServiceProxy);
-templatesRouter.post( //
+templatesRouter.post(
     '/entities',
     busboyMiddleware,
     ValidateRequest(createEntityTemplateSchema),
     templatesValidatorMiddleware.validateUserCanCreateEntityTemplateUnderCategory,
     templatesControllerMiddleware.createEntityTemplate,
 );
-templatesRouter.put( //
+templatesRouter.put(
     '/entities/:id',
     busboyMiddleware,
     ValidateRequest(updateEntityTemplateSchema),
