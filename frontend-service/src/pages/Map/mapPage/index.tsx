@@ -13,7 +13,7 @@ import MapFilters from './MapFilters';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IEntity } from '../../../interfaces/entities';
 import { getEntitiesByLocation } from '../../../services/entitiesService';
-import { locationToWGS84String, jerusalemCoordinates, stringToCoordinates, convertECEFToWGS84, convertWGS94ToECEF, LatLng } from '../../../utils/map';
+import { locationToWGS84String, jerusalemCoordinates, stringToCoordinates, LatLng } from '../../../utils/map';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { environment } from '../../../globals';
 import { useEntityWithLocationFields } from '../../../utils/hooks/useLocation';
@@ -21,6 +21,7 @@ import MapPageEntityDialog from './EntityMapDialog';
 import { MeltaCoordinate, MeltaPolygon } from '../LocationPreview';
 import { BaseLayers } from '../BaseLayers';
 import { BackendConfigState } from '../../../services/backendConfigService';
+import { convertECEFToWGS84, convertWGS94ToECEF } from '../../../utils/map/convert';
 
 const { maxRadius } = environment.map;
 
