@@ -19,7 +19,6 @@ export const stringFormats = ['date', 'date-time', 'email', 'fileId', 'text-area
 export const arrayTypes = ['multipleFiles', 'enumArray', 'users'];
 
 const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTemplatePopulated | null): EntityTemplateWizardValues | undefined => {
-    // TODO: lir add expandedUsersFields
     if (!entityTemplate) return undefined;
     const {
         iconFileId,
@@ -29,7 +28,6 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
         enumPropertiesColors,
         uniqueConstraints,
         documentTemplatesIds,
-        // expandedUsersFields, // TODO: lir addapt it to the new struct..
         propertiesTypeOrder,
         mapSearchProperties,
         ...restOfEntityTemplate
@@ -42,7 +40,6 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
     const expandedUsersFields: Record<string, string[]> = {};
 
     propertiesOrder.forEach((key) => {
-        // userprefix_us1_personalNumber
         if (key.startsWith('userprefix')) {
             const keySubstrings = key.split('_');
             const userKeyName = keySubstrings[1];
@@ -54,8 +51,6 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
             }
         }
     });
-
-    console.log(expandedUsersFields);
 
     propertiesOrder
         .filter((key) => !key.startsWith('userprefix'))
@@ -82,7 +77,6 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
                 hide: properties.hide.includes(key),
                 readOnly: value.readOnly || undefined,
                 expandedUserFields: expandedUsersFields[key] || [],
-                // expandedUserFields: expandedUsersFields && expandedUsersFields[key] ? expandedUsersFields[key] : [], // TODO: check for expand users field by this key...
                 uniqueCheckbox: uniqueConstraints.some((constraint) => constraint.properties.includes(key) && constraint.groupName !== ''),
                 groupName: uniqueConstraints.find((constraint) => constraint.properties.includes(key) && constraint.groupName !== '')?.groupName,
                 calculateTime: value.calculateTime ?? undefined,

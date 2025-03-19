@@ -406,8 +406,6 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
         'hierarchy',
     ];
 
-    // const [userFieldsToShowCheckbox, setUserFieldsToShowCheckbox] = useState<string[]>([]);
-    // TODO: lir
     const [expandUserFields, setExpandUserFields] = useState<boolean>(!!value.expandedUserFields?.length);
 
     const handleEditChange = (e, _tagIndex) => {
@@ -1396,12 +1394,6 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                 <MeltaCheckbox
                                                                     checked={expandUserFields}
                                                                     onChange={(_e, checked) => {
-                                                                        // TODO: lir
-                                                                        console.log({ value });
-                                                                        // setValues!((prevValue) => ({
-                                                                        //     ...prevValue,
-                                                                        //     expendUserFields: checked,
-                                                                        // }));
                                                                         setExpandUserFields(checked);
                                                                     }}
                                                                 />
@@ -1416,13 +1408,10 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                         options={userFields}
                                                         selectedOptions={value.expandedUserFields || []}
                                                         setSelectedOptions={(val) => {
-                                                            // TODO: lir
                                                             setValues!((prevValue) => ({
                                                                 ...prevValue,
                                                                 expandedUserFields: val as unknown as string[],
                                                             }));
-                                                            console.log({ value });
-                                                            // setUserFieldsToShowCheckbox(val);
                                                         }}
                                                         getOptionId={(op) => op}
                                                         getOptionLabel={(option) => option}

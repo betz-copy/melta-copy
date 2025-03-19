@@ -2,7 +2,6 @@ import pickBy from 'lodash.pickby';
 import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { IProcessDetails } from '../interfaces/processes/processTemplate';
 
-// TODO: lir here?
 export const filterFieldsFromPropertiesSchema = (
     schema: IMongoEntityTemplatePopulated['properties'] | undefined = {} as IMongoEntityTemplatePopulated['properties'],
 ): IMongoEntityTemplatePopulated['properties'] => {
