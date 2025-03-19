@@ -86,9 +86,10 @@ const RjsfLocationWidget = ({
     propertyReadOnly,
     ...textFieldProps
 }: WidgetProps) => {
-    const getInitialLocation = (location) => {
+    const getInitialLocation = (location: string | LocationData | undefined) => {
         if (!location) return undefined;
-        return location?.unit === 'UTM' ? locationConverterToString(location.location, 'WGS84', 'UTM') : value;
+        if (typeof location === 'string') return value;
+        return location?.unit === 'UTM' ? locationConverterToString(location.location, 'WGS84', 'UTM') : value.location;
     };
 
     const [error, setError] = useState(false);
