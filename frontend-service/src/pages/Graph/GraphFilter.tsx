@@ -28,7 +28,7 @@ interface GraphFilterProps {
     removeFilterFromFilterList: (filterKey: number) => void;
     entityFilter: boolean;
     filter?: IGraphFilterBody;
-    onFilter: () => void;
+    onFilter?: () => void;
     selectedEntityTemplate?: IMongoEntityTemplatePopulated | null;
     readOnly?: boolean;
 }
@@ -72,7 +72,7 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
                 },
             }));
 
-            onFilter();
+            onFilter?.();
         }, 500),
         [filterKey, selectedTemplate, selectedProperty],
     );
@@ -325,7 +325,8 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
                         >
                             {!entityFilter && <Divider sx={{ width: '90%', margin: 'auto', border: '1px 0px 0px 0px' }} />}
                             <Autocomplete
-                                popupIcon={<IoIosArrowDown size="20px" />}
+                                popupIcon={<IoIosArrowDown size="15px" />}
+                                clearIcon={<CloseIcon sx={{ fontSize: '16px' }} />}
                                 size="small"
                                 sx={{
                                     width: '90%',
@@ -345,8 +346,9 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
                                         label={entityFilter ? i18next.t('charts.field') : undefined}
                                     />
                                 )}
+                                readOnly={readOnly}
                             />
-                            {entityFilter && (
+                            {entityFilter && !readOnly && (
                                 <IconButton onClick={handleFilterErasion}>
                                     <CloseIcon fontSize="small" sx={{ color: theme.palette.primary.main }} />
                                 </IconButton>

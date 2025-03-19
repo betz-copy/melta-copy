@@ -1,14 +1,14 @@
-import { Accordion, AccordionDetails, AccordionSummary, CircularProgress, Grid, SxProps, Theme, Typography, useTheme } from '@mui/material';
-import React, { CSSProperties, useRef } from 'react';
 import { Download, ExpandMore } from '@mui/icons-material';
+import { Accordion, AccordionDetails, AccordionSummary, CircularProgress, Grid, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
+import React, { useRef } from 'react';
 import { v4 as uuid } from 'uuid';
-import EntitiesTableOfTemplate, { EntitiesTableOfTemplateRef } from '../../EntitiesTableOfTemplate';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { TableButton } from '../../TableButton';
-import { IEntity, ISearchFilter } from '../../../interfaces/entities';
 import { IFailedEntity } from '.';
+import { IEntity, ISearchFilter } from '../../../interfaces/entities';
+import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { useWorkspaceStore } from '../../../stores/workspace';
+import EntitiesTableOfTemplate, { EntitiesTableOfTemplateRef } from '../../EntitiesTableOfTemplate';
+import { TableButton } from '../../TableButton';
 
 export const EntitiesTable: React.FC<{
     rowData?: IEntity[] | IFailedEntity[];
@@ -21,7 +21,22 @@ export const EntitiesTable: React.FC<{
     download?: { onDownload: (brokenRulesEntities?: boolean) => Promise<any>; isLoading: boolean; defaultFilter };
     defaultFilter?: ISearchFilter;
     overrideSx?: object;
-}> = ({ rowData, rowModelType, template, defaultExpanded, icon, title, description, download, defaultFilter, overrideSx }) => {
+    infiniteModeWithoutExpand?: boolean;
+    disableFilter?: boolean;
+}> = ({
+    rowData,
+    rowModelType,
+    template,
+    defaultExpanded,
+    icon,
+    title,
+    description,
+    download,
+    defaultFilter,
+    overrideSx,
+    infiniteModeWithoutExpand,
+    disableFilter,
+}) => {
     const theme = useTheme();
     const entitiesTableRef = useRef<EntitiesTableOfTemplateRef<IEntity>>(null);
     const workspace = useWorkspaceStore((state) => state.workspace);
@@ -105,8 +120,9 @@ export const EntitiesTable: React.FC<{
                     ignoreType
                     showNavigateToRowButton={false}
                     editable={false}
-                    withoutResizeBox
+                    infiniteModeWithoutExpand={infiniteModeWithoutExpand}
                     defaultFilter={defaultFilter}
+                    disableFilter={disableFilter}
                 />
             </AccordionDetails>
         </Accordion>

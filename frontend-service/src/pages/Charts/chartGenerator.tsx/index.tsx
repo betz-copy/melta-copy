@@ -1,9 +1,8 @@
 import { CircularProgress } from '@mui/material';
 import React from 'react';
 import { useQuery } from 'react-query';
-import { EntitiesTableOfTemplateRef } from '../../../common/EntitiesTableOfTemplate';
 import { IAxisField, IBasicChart, IChartType } from '../../../interfaces/charts';
-import { IEntity, IGraphFilterBodyBatch } from '../../../interfaces/entities';
+import { IGraphFilterBodyBatch } from '../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { getChartOfTemplate } from '../../../services/entitiesService';
 import { getChartAxes } from '../../../utils/charts/getChartAxes';
@@ -16,10 +15,9 @@ interface IChartGeneratorProps {
     template: IMongoEntityTemplatePopulated;
     entityTemplate: IMongoEntityTemplatePopulated;
     filterRecord: IGraphFilterBodyBatch;
-    entitiesTableRef: React.RefObject<EntitiesTableOfTemplateRef<IEntity> | undefined>;
 }
 
-const ChartGenerator: React.FC<IChartGeneratorProps> = ({ template, formikValues, entityTemplate, filterRecord, entitiesTableRef }) => {
+const ChartGenerator: React.FC<IChartGeneratorProps> = ({ template, formikValues, entityTemplate, filterRecord }) => {
     const { type, metaData } = formikValues;
 
     const isAggregationValid = (field: IAxisField): boolean => {

@@ -64,7 +64,7 @@ import { ErrorToast } from '../ErrorToast';
 import { getColumnDefs, IGetColumnDefsOptions } from './getColumnDefs';
 
 const { errorCodes } = environment;
-const { cacheBlockSize, maxConcurrentDatasourceRequests, actionPrefix, actionsWidth } = environment.agGrid;
+const { cacheBlockSize, maxConcurrentDatasourceRequests, actionPrefix, actionsWidth, rowCountInfiniteModeWithoutExpand } = environment.agGrid;
 const { columnWidths, columnsOrder, visibleColumns } = environment.agGrid.localStorage;
 
 export const defaultFilterModel = {
@@ -204,10 +204,10 @@ export type EntitiesTableOfTemplateProps<Data> = {
     refetch?: () => void;
     hasInstances?: boolean;
     paginationPageSizeSelector?: boolean | number[];
-    withoutResizeBox?: boolean;
+    infiniteModeWithoutExpand?: boolean;
     editable?: boolean;
-    initialFilter?: FilterModel;
     defaultFilter?: FilterModel;
+    disableFilter?: boolean;
 };
 
 export type EntitiesTableOfTemplateRef<Data> = {
@@ -249,10 +249,10 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             hasInstances,
             multipleSelect,
             paginationPageSizeSelector = environment.agGrid.paginationPageSizeSelector as unknown as number[],
-            withoutResizeBox,
+            infiniteModeWithoutExpand,
             editable = true,
-            initialFilter,
             defaultFilter,
+            disableFilter = false,
         }: EntitiesTableOfTemplateProps<Data>,
         ref: ForwardedRef<EntitiesTableOfTemplateRef<Data>>,
     ) => {
@@ -273,7 +273,9 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
 
         const minHeightTable = rowHeight * pageRowCount + rowHeight * 2;
-        const [gridHeight, setGridHeight] = useState<number>(() => (withoutResizeBox ? rowHeight * 6 : rowHeight * defaultExpandedRowCount));
+        const [gridHeight, setGridHeight] = useState<number>(() =>
+            infiniteModeWithoutExpand ? rowHeight * rowCountInfiniteModeWithoutExpand : rowHeight * defaultExpandedRowCount,
+        );
 
         const [selectedRow, setSelectedRow] = useState('');
         const [currEntity, setCurrEntity] = useState<IEntity>();
@@ -744,7 +746,6 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                         onColumnMoved={handleColumnsOrder}
                         onColumnResized={handleColumnResized}
                         onPaginationChanged={handlePaginationChanged}
-                        enableCharts
                         onBodyScroll={rowModelType === 'infinite' ? handleBodyScroll : undefined}
                         onSortChanged={handleSortChanged}
                         enableRtl
@@ -753,7 +754,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                         suppressAggFuncInHeader
                         onRowSelected={onRowSelected ? ({ data }) => data && onRowSelected(data) : undefined}
                         rowStyle={onRowSelected ? { cursor: 'pointer' } : undefined}
-                        // suppressCellFocus
+                        suppressCellFocus
                         onFilterChanged={(params) => {
                             onFilter?.();
                             if (saveStorageProps.shouldSaveFilter) {
@@ -787,7 +788,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                             lockPinned: true,
                             initialWidth: 250,
                             suppressSizeToFit: true,
-                            suppressHeaderFilterButton: withoutResizeBox,
+                            suppressHeaderFilterButton: disableFilter,
                         }}
                         onGridReady={(params) => {
                             if (saveStorageProps.pageType) {
@@ -838,7 +839,6 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                                     }, 300);
                                 }
                             }
-                            if (initialFilter) gridRef.current?.api.setFilterModel(initialFilter);
                         }}
                         sideBar={{
                             toolPanels: [
@@ -858,7 +858,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                             hiddenByDefault: true,
                             position: 'left',
                         }}
-                        statusBar={rowModelType === 'infinite' && !withoutResizeBox ? { statusPanels } : undefined}
+                        statusBar={rowModelType === 'infinite' && !infiniteModeWithoutExpand ? { statusPanels } : undefined}
                         localeText={agGridLocaleText}
                         paginationPageSizeSelector={paginationPageSizeSelector}
                         onCellEditingStopped={(params: CellEditingStoppedEvent) => {
@@ -894,7 +894,6 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                             setCurrEditingCell(params);
                             if (currEditingCell && currEditingCell.value !== params.value) params.api.stopEditing();
                         }}
-                        cellSelection
                     />
                     <AreYouSureDialog
                         open={openDeleteDialog && selectedRow !== ''}
@@ -935,7 +934,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             </>
         );
 
-        return rowModelType === 'infinite' && !withoutResizeBox ? (
+        return rowModelType === 'infinite' && !infiniteModeWithoutExpand ? (
             <ResizeBox initialHeight={gridHeight} setHeight={setGridHeight} minHeight={minHeightTable} templateId={template._id}>
                 {gridContent}
             </ResizeBox>

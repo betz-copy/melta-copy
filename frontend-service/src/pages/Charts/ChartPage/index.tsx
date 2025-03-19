@@ -4,15 +4,14 @@ import { Box, Button, CircularProgress, Grid, Tab, useTheme } from '@mui/materia
 import { AxiosError } from 'axios';
 import { Form, Formik } from 'formik';
 import i18next from 'i18next';
-import React, { CSSProperties, useEffect, useRef, useState } from 'react';
+import React, { CSSProperties, useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { useLocation, useParams } from 'wouter';
-import { EntitiesTableOfTemplateRef } from '../../../common/EntitiesTableOfTemplate';
 import { ErrorToast } from '../../../common/ErrorToast';
 import { EntitiesTable } from '../../../common/wizards/loadEntities/EntitiesTable';
 import { IBasicChart, IChart } from '../../../interfaces/charts';
-import { IEntity, IGraphFilterBodyBatch } from '../../../interfaces/entities';
+import { IGraphFilterBodyBatch } from '../../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { createChart, deleteChart, editChart, getChartById } from '../../../services/chartsService';
 import { useUserStore } from '../../../stores/user';
@@ -27,37 +26,38 @@ import { ChartTopBar } from './TopBar';
 
 const ChartPage: React.FC = () => {
     const { templateId, chartId } = useParams<{ templateId: string; chartId?: string }>();
-
+    const [_, navigate] = useLocation();
+    const queryClient = useQueryClient();
     const { data: chart, isLoading } = useQuery(['getChart', chartId], () => getChartById(chartId!), {
         enabled: !!chartId,
     });
-    const theme = useTheme();
-    const entitiesTableRef = useRef<EntitiesTableOfTemplateRef<IEntity>>(null);
-    const bgColor: CSSProperties['backgroundColor'] = theme.palette.mode === 'dark' ? '#131313' : '#fcfeff';
 
-    const queryClient = useQueryClient();
+    const theme = useTheme();
+    const bgColor: CSSProperties['backgroundColor'] = theme.palette.mode === 'dark' ? '#131313' : '#fcfeff';
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const currentUser = useUserStore((state) => state.user);
-
     const template = entityTemplates.get(templateId as string) as IMongoEntityTemplatePopulated;
-
     const initialValues = chartId && chart ? chart : defaultInitialValues;
 
     const [filterRecord, setFilterRecord] = useState<IGraphFilterBodyBatch>({});
+    const [filters, setFilters] = useState<number[]>([]);
+    const [edit, setEdit] = useState(!!chartId);
+    const [readonly, setReadonly] = useState(!!chartId);
+    const [tabValue, setTabValue] = useState('generalDetails');
 
     useEffect(() => {
-        if (chart && chart?.filter) {
-            const parsedFilter = JSON.parse(chart?.filter);
+        if (chart?.filter) {
+            const parsedFilter = JSON.parse(chart.filter);
             const formattedFilter = FilterOfGraphToFilterRecord(parsedFilter, template);
             setFilterRecord(formattedFilter);
+            setFilters(Object.keys(formattedFilter).map(Number));
         }
     }, [chart, template]);
 
-    const [_, navigate] = useLocation();
-
-    const [edit, setEdit] = useState(!!chartId);
-    const [readonly, setReadonly] = useState(!!chartId);
-    const [tabValue, setTabValue] = React.useState('generalDetails');
+    const memoizedFilter = useMemo(
+        () => (filterRecord && Object.keys(filterRecord).length > 0 ? filterModelToFilterOfGraph(filterRecord)[templateId].filter : undefined),
+        [filterRecord, templateId],
+    );
 
     const { mutateAsync: createChartMutateAsync } = useMutation(
         (newChart: IBasicChart) =>
@@ -131,13 +131,14 @@ const ChartPage: React.FC = () => {
                 <Form>
                     <ChartTopBar
                         edit={edit}
-                        onEdit={() => setReadonly(false)}
                         isLoading={false}
                         onDelete={() => deleteChartMutateAsync(chartId as string)}
                         readonly={readonly}
                         setReadOnly={setReadonly}
                         formik={formik}
                         template={template}
+                        setFilterRecord={setFilterRecord}
+                        setFilters={setFilters}
                     />
                     <Grid container flexWrap="nowrap" height="94.5vh" justifyContent="space-evenly">
                         <Grid container item flexDirection="column" flexWrap="nowrap" height="100%" alignItems="center">
@@ -156,7 +157,6 @@ const ChartPage: React.FC = () => {
                                     formikValues={formik.values}
                                     template={template}
                                     entityTemplate={template}
-                                    entitiesTableRef={entitiesTableRef}
                                     filterRecord={filterRecord}
                                 />
                             </Grid>
@@ -166,11 +166,9 @@ const ChartPage: React.FC = () => {
                                     template={template}
                                     defaultExpanded={false}
                                     title={i18next.t('charts.viewData')}
-                                    defaultFilter={
-                                        filterRecord && Object.keys(filterRecord).length > 0
-                                            ? filterModelToFilterOfGraph(filterRecord)[templateId].filter
-                                            : undefined
-                                    }
+                                    defaultFilter={memoizedFilter}
+                                    infiniteModeWithoutExpand
+                                    disableFilter
                                     overrideSx={{
                                         '&.MuiPaper-root': {
                                             boxShadow: '0px -2px 10.15px 0px #1E277533',
@@ -245,8 +243,9 @@ const ChartPage: React.FC = () => {
                                             templateId={template._id}
                                             filterRecord={filterRecord}
                                             setFilterRecord={setFilterRecord}
+                                            filters={filters}
+                                            setFilters={setFilters}
                                             readonly={readonly}
-                                            template={template}
                                         />
                                     </TabPanel>
                                 </Grid>

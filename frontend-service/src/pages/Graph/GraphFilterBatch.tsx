@@ -1,6 +1,5 @@
 /* eslint-disable react/no-array-index-key */
 import { Box } from '@mui/material';
-import { isEqual } from 'lodash';
 import React from 'react';
 import { IGraphFilterBodyBatch } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
@@ -13,7 +12,7 @@ interface GraphFilterBatchProps {
     filters: number[];
     setFilters: React.Dispatch<React.SetStateAction<number[]>>;
     filterRecord: IGraphFilterBodyBatch;
-    onFilter: () => void;
+    onFilter?: () => void;
     entityFilter: boolean;
     readonly?: boolean;
     selectedEntityTemplate?: IMongoEntityTemplatePopulated | null;
@@ -42,7 +41,7 @@ const GraphFilterBatch: React.FC<GraphFilterBatchProps> = React.memo(
                 const { [filterKey]: deletedFilter, ...restFilters } = prev;
                 return restFilters;
             });
-            onFilter();
+            onFilter?.();
         };
 
         return (
@@ -69,9 +68,6 @@ const GraphFilterBatch: React.FC<GraphFilterBatchProps> = React.memo(
                 </Box>
             </Box>
         );
-    },
-    (prevProps, nextProps) => {
-        return isEqual(prevProps.filters, nextProps.filters);
     },
 );
 

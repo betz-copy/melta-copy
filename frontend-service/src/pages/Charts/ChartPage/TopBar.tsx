@@ -12,19 +12,22 @@ import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplat
 import { useUserStore } from '../../../stores/user';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { isWorkspaceAdmin } from '../../../utils/permissions/instancePermissions';
+import { IGraphFilterBodyBatch } from '../../../interfaces/entities';
+import { FilterOfGraphToFilterRecord } from '../../Graph/GraphFilterToBackend';
 
 interface IChartTopBar {
     edit: boolean;
     readonly: boolean;
-    onEdit: () => void;
     onDelete: () => void;
     isLoading: boolean;
     setReadOnly: React.Dispatch<React.SetStateAction<boolean>>;
     formik: FormikProps<IBasicChart>;
     template: IMongoEntityTemplatePopulated;
+    setFilterRecord: React.Dispatch<React.SetStateAction<IGraphFilterBodyBatch>>;
+    setFilters: React.Dispatch<React.SetStateAction<number[]>>;
 }
 
-const ChartTopBar: React.FC<IChartTopBar> = ({ edit, onEdit, onDelete, isLoading, readonly, setReadOnly, formik, template }) => {
+const ChartTopBar: React.FC<IChartTopBar> = ({ edit, onDelete, isLoading, readonly, setReadOnly, formik, template, setFilterRecord, setFilters }) => {
     const theme = useTheme();
     const currentUser = useUserStore();
     const workspace = useWorkspaceStore((state) => state.workspace);
@@ -71,6 +74,12 @@ const ChartTopBar: React.FC<IChartTopBar> = ({ edit, onEdit, onDelete, isLoading
                                                 type="reset"
                                                 onClick={() => {
                                                     formik.resetForm();
+                                                    if (edit && formik.values.filter) {
+                                                        const parsedFilter = JSON.parse(formik.values.filter);
+                                                        const translatedFilter = FilterOfGraphToFilterRecord(parsedFilter, template);
+                                                        setFilterRecord({ ...translatedFilter });
+                                                        setFilters(Object.keys(translatedFilter).map(Number));
+                                                    }
                                                     setReadOnly(true);
                                                 }}
                                                 sx={{ color: theme.palette.primary.main }}

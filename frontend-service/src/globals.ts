@@ -224,6 +224,7 @@ export const environment = {
     agGrid: {
         rowCount: 5,
         defaultExpandedRowCount: 13,
+        rowCountInfiniteModeWithoutExpand: 6,
         defaultRowHeight: 50,
         defaultFontSize: 14,
         cacheBlockSize: 5,

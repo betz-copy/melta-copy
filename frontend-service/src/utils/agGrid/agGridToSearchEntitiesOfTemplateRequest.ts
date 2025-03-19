@@ -191,10 +191,6 @@ export const filterModelToFilterOfTemplate = (
         switch (fieldFilter.filterType) {
             case 'text':
                 if (fieldTemplate.format === 'fileId') return textFilterOfFileToFilterTemplate(field, fieldFilter);
-
-                if (fieldTemplate.type === 'array' && fieldTemplate.items?.format === 'user')
-                    return textFilterOfFileToFilterTemplate(field, fieldFilter);
-
                 return textFilterToFilterOfTemplate(field, fieldFilter);
             case 'number':
                 return numberFilterToFilterOfTemplate(field, fieldFilter);

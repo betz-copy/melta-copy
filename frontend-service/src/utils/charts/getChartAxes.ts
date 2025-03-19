@@ -109,29 +109,23 @@ const INUmberMetaDataSchema = Yup.object({
     accumulator: aggregationSchema.required(i18next.t('validation.required')),
 });
 
+const getMetaDataSchema = (type: IChartType) => {
+    const schemaMap: Record<IChartType, Yup.AnySchema> = {
+        [IChartType.Column]: IBarOrLineMetaDataSchema.required('MetaData is required for Column chart'),
+        [IChartType.Line]: IBarOrLineMetaDataSchema.required('MetaData is required for Line chart'),
+        [IChartType.Number]: INUmberMetaDataSchema.required('MetaData is required for Number chart'),
+        [IChartType.Pie]: IPieMetaDataSchema.required('MetaData is required for Pie chart'),
+    };
+
+    return schemaMap[type];
+};
+
 export const chartValidationSchema = Yup.object({
     name: Yup.string().min(2, i18next.t('validation.variableName')).required(i18next.t('validation.required')),
     description: Yup.string().min(2, i18next.t('validation.variableName')),
     type: Yup.mixed<IChartType>().oneOf(Object.values(IChartType)).required(i18next.t('validation.required')),
-    /// cleaner code
-    metaData: Yup.mixed<IChartTypeMetaData>()
-        .when('type', {
-            is: IChartType.Column,
-            then: IBarOrLineMetaDataSchema.required('MetaData is required for Bar chart'),
-            otherwise: Yup.mixed<IChartTypeMetaData>().when('type', {
-                is: IChartType.Line,
-                then: IBarOrLineMetaDataSchema.required('MetaData is required for Line chart'),
-                otherwise: Yup.mixed<IChartTypeMetaData>().when('type', {
-                    is: IChartType.Number,
-                    then: INUmberMetaDataSchema.required('MetaData is required for Number chart'),
-                    otherwise: Yup.mixed<IChartTypeMetaData>().when('type', {
-                        is: IChartType.Pie,
-                        then: IPieMetaDataSchema.required('MetaData is required for Pie chart'),
-                        otherwise: Yup.mixed().notRequired(),
-                    }),
-                }),
-            }),
-        })
-        .required('MetaData is required'),
+    metaData: Yup.mixed()
+        .when('type', (type: IChartType, schema) => schema.concat(getMetaDataSchema(type)))
+        .required('metaData is required'),
     permission: Yup.mixed<IPermission>().oneOf(Object.values(IPermission)).required(i18next.t('validation.required')),
 });
