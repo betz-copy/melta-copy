@@ -80,7 +80,8 @@ const addFieldsSchema = Yup.object({
         .test(i18next.t('validation.mapSearchPropertiesLimit', { limit: mapSearchPropertiesLimit }), (value) => {
             if (!value) return true;
             const mapSearchCount = value.filter((obj) => obj.mapSearch === true).length;
-            if (mapSearchCount > mapSearchPropertiesLimit) toast.error(i18next.t('validation.mapSearchPropertiesLimit', {limit: mapSearchPropertiesLimit}));
+            if (mapSearchCount > mapSearchPropertiesLimit)
+                toast.error(i18next.t('validation.mapSearchPropertiesLimit', { limit: mapSearchPropertiesLimit }));
             return mapSearchCount <= mapSearchPropertiesLimit;
         }),
     attachmentProperties: Yup.array().of(
@@ -101,9 +102,9 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
     setBlock,
 }) => {
     const hasActions = Boolean(initialValues?.actions);
-    const countMapSearchProperties = Object.values(values.properties).filter(property => property.mapSearch).length;
+    const countMapSearchProperties = Object.values(values.properties).filter((property) => property.mapSearch).length;
 
-    if(countMapSearchProperties > mapSearchPropertiesLimit) setBlock(true);
+    if (countMapSearchProperties > mapSearchPropertiesLimit) setBlock(true);
 
     const { data: areThereInstancesByTemplateIdResponse } = useQuery(
         ['areThereInstancesByTemplateId', (values as EntityTemplateWizardValues & { _id: string })._id],
@@ -143,7 +144,7 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
         };
 
         return titles[itemId] || '';
-    };    
+    };
 
     return (
         <DragDropContext onDragEnd={onDragEnd}>
@@ -208,9 +209,11 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
                                             hasActions={hasActions}
                                             draggable={{ isDraggable: true, dragHandleProps: draggableProvided.dragHandleProps }}
                                             locationSearchFields={{
-                                                show: Object.values(values.properties).some(property => property.type === 'location'), 
-                                                disabled: countMapSearchProperties >= 2, 
+                                                show: Object.values(values.properties).some((property) => property.type === 'location'),
+                                                disabled: countMapSearchProperties >= 2,
                                             }}
+                                            supportIdentifier
+                                            hasIdentifier={Object.values(values.properties).some((value) => value.identifier)}
                                         />
                                     </Grid>
                                 )}

@@ -10,9 +10,10 @@ const {
 export interface IEntitySingleProperty {
     title: string;
     type: 'string' | 'number' | 'boolean' | 'array';
-    format?: 'date' | 'date-time' | 'email' | 'fileId' | 'text-area' | 'relationshipReference' | 'location' | 'user';
+    format?: 'date' | 'date-time' | 'email' | 'fileId' | 'text-area' | 'relationshipReference' | 'location' | 'user' | 'signature';
     enum?: string[];
     readOnly?: true;
+    identifier?: true;
     items?: {
         type: 'string';
         enum?: string[];

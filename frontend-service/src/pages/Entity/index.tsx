@@ -235,7 +235,12 @@ const ConnectionsTable: React.FC<{
                         }}
                         icon={<AddCircle fontSize="small" sx={{ opacity: isEditButtonsDisabled ? 0.3 : 1 }} />}
                         text={i18next.t('entitiesTableOfTemplate.addRelationshipTitle')}
-                        disableButton={isEditButtonsDisabled || relationshipTemplate.isProperty}
+                        disableButton={
+                            isEditButtonsDisabled ||
+                            relationshipTemplate.isProperty ||
+                            relationshipTemplate.destinationEntity.disabled ||
+                            relationshipTemplate.sourceEntity.disabled
+                        }
                     />
                 </Grid>
             </Grid>
@@ -271,11 +276,7 @@ const ConnectionsTable: React.FC<{
                         );
                         return foundConnection ? foundConnection.relationship.properties._id : (connection as IEntity).properties._id;
                     }}
-                    getEntityPropertiesData={(
-                        connection:
-                            | IEntity
-                            | IConnection,
-                    ) => {
+                    getEntityPropertiesData={(connection: IEntity | IConnection) => {
                         if ('relationship' in connection) {
                             if (expandedEntity.entity.properties._id === connection.destinationEntity.properties._id)
                                 return connection.sourceEntity.properties;
@@ -542,7 +543,6 @@ const Entity: React.FC = () => {
                                             <TabPanel key={_id} value={String(index)}>
                                                 {connectionsTemplatesOfCategory.map((connectionTemplate, connectedRelationshipTemplateIndex) => {
                                                     const relationship = connectionTemplate.relationshipTemplate;
-
                                                     const relatedTemplate =
                                                         relationship.destinationEntity._id !== currentEntityTemplate._id
                                                             ? relationship.destinationEntity

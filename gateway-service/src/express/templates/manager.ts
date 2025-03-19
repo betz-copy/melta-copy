@@ -393,6 +393,21 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         return searchResults.filter((rule) => allowedEntityTemplatesIds.includes(rule.entityTemplateId));
     }
 
+    validateConstraintsProperties = (properties: Record<string, IEntitySingleProperty>, requiredConstraints: string[]) => {
+        let identifier;
+        Object.entries(properties).forEach(([key, value]) => {
+            if (value.readOnly && requiredConstraints.includes(key)) throw new BadRequestError(`${key} property can't be both readOnly and required`);
+            if (value.archive && requiredConstraints.includes(key)) throw new BadRequestError(`${key} property can't be both archive and required`);
+            if (value.identifier) {
+                if (identifier) throw new BadRequestError(`can't be more than one identifier: ${key}, ${identifier}`);
+                identifier = key;
+                if (!requiredConstraints.includes(key)) throw new BadRequestError(`${key} property identifier has to be required`);
+            }
+            if (value.serialCurrent && !requiredConstraints.includes(key))
+                throw new BadRequestError(`${key} property serial number has to be required`);
+        });
+    };
+
     async createEntityTemplate(
         templateData: Omit<IEntityTemplateWithConstraints, 'iconFileId' | 'documentTemplatesIds'>,
         { file, files }: { file?: [UploadedFile]; files?: UploadedFile[] },
@@ -406,6 +421,8 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
         const { uniqueConstraints, properties, ...restOfTemplateData } = templateData;
         const { required: requiredConstraints, ...restOfTemplatePropertiesObject } = properties;
+
+        this.validateConstraintsProperties(restOfTemplatePropertiesObject.properties, requiredConstraints);
 
         const entityTemplate = await this.entityTemplateService.createEntityTemplate({
             ...restOfTemplateData,
@@ -712,9 +729,14 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
         const { count } = await this.instancesService.searchEntitiesOfTemplateRequest(id, { limit: 1 });
         const currTemplate = await this.entityTemplateService.getEntityTemplateById(id);
+        const { uniqueConstraints: currUnique } = await this.instancesService.getConstraintsOfTemplate(id);
 
         const populatedTemplates = await this.getAndPopulateAllTemplatesConstraints([currTemplate]);
         const [populatedCurrTemplate] = populatedTemplates;
+
+        const { required, ...currProperties } = populatedCurrTemplate.properties;
+
+        this.validateConstraintsProperties(currProperties.properties, required);
 
         if (currTemplate.disabled === true) throw new BadRequestError('can not update disabled template');
 
@@ -726,7 +748,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         );
 
         if (removeRequiredProperties.length > 0)
-            this.isPropertyInUsedAsRelatedFieldInRelationshipReference(currTemplate._id, removeRequiredProperties, false);
+            await this.isPropertyInUsedAsRelatedFieldInRelationshipReference(currTemplate._id, removeRequiredProperties, false);
 
         const removedProperties: string[] = [];
         const archiveProperties: string[] = [];
@@ -743,6 +765,11 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
                         (value.format === 'fileId' && newValue.items?.format === 'fileId') || (value.enum && newValue.items?.enum);
 
                     if (value.serialCurrent !== undefined) updatedTemplateData.properties.properties[key].serialCurrent = value.serialCurrent;
+                    if (
+                        !currUnique.some((uniqueConstraint) => uniqueConstraint.properties.includes(key)) &&
+                        updatedTemplateData.uniqueConstraints.some((uniqueConstraint) => uniqueConstraint.properties.includes(key))
+                    )
+                        throw new BadRequestError('can`t add unique constraints to property that already used');
 
                     if (value.type !== newValue.type && !isSingularToPlural) throw new BadRequestError('can not change property type');
 
@@ -764,6 +791,14 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
                     if (isSingularToPlural) propertiesKeysToPluralize.push(key);
                 }
             });
+
+            const newProperties = Object.keys(updatedTemplateData.properties.properties).filter(
+                (property) => !currProperties.properties[property] && !removedProperties.includes(property),
+            );
+
+            const updatedProperties = updatedTemplateData.properties.properties;
+            if (newProperties.some((property) => updatedProperties[property].identifier && updatedProperties[property].serialStarter === undefined))
+                throw new BadRequestError('can not add identifier fields because there are existing instances');
         }
 
         await this.checkIfPropertyInUsedBeforeDeleteOrArchive(id, removedProperties, false);

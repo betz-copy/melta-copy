@@ -1,12 +1,12 @@
 /* eslint-disable no-param-reassign */
-import Excel from 'exceljs';
+import Excel, { Cell } from 'exceljs';
 import { v4 as uuidv4 } from 'uuid';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../externalServices/templates/entityTemplateService';
 import { IEntity } from '../../externalServices/instanceService/interfaces/entities';
 import config from '../../config/index';
 import { excelConfig } from './excelConfig';
 import { hexToARGB } from './colors';
-import { isIncludedColumn } from './getFunctions';
+import { isIncludedColumn, isIncludedEditColumn } from './getFunctions';
 
 interface IExcelStyle {
     columnHeader: {
@@ -151,6 +151,11 @@ const createWorksheet = async (
             const type = TypesToHebrew(Object.values(properties).find((propertyTemplate) => propertyTemplate.title === cell.value)!);
             cell.note = type;
         }
+        cell.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FFA7C7E7' },
+        };
     });
     return worksheet;
 };
@@ -182,16 +187,25 @@ const fixComplexProperties = (
 ) => {
     const isFileArray = value.type === 'array' && value.items?.format === 'fileId';
     const isSingleFile = value.format === 'fileId';
+    const isSignature = value.format === 'signature';
 
     if (value.format === 'relationshipReference') {
         relationshipRefCell(cell, [key, value], row, workspace.path);
         return true;
     }
-    if (isSingleFile || isFileArray) {
+    if (isSingleFile || isFileArray || isSignature) {
         filesCell(cell, isFileArray, rowIndex, row[key], workspace.id);
         return true;
     }
     return false;
+};
+
+const readOnlyCell = (cell: Cell) => {
+    cell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FFD3D3D3' },
+    };
 };
 
 const styleAWorksheet = (
@@ -210,7 +224,7 @@ const styleAWorksheet = (
     const { properties } = template.properties;
     const { createdAt, updatedAt, disabled } = template;
 
-    const allProperties: Record<string, any> = Object.entries({ ...properties, disabled, createdAt, updatedAt })
+    const allProperties: Record<string, IEntitySingleProperty> = Object.entries({ ...properties, disabled, createdAt, updatedAt })
         .filter(([key]) => displayColumns?.includes(key))
         .reduce((acc, [key, value]) => {
             acc[key] = value;
@@ -221,6 +235,7 @@ const styleAWorksheet = (
         rows.forEach((row, index) => {
             const rowIndex = index + skip;
             const cell = worksheet.getCell(`${indexToExcelColumn(columnIndex + 1)}${rowIndex + SKIP_ROW_HEADER}`);
+            if (!isIncludedEditColumn(value, row.disabled, disabled)) readOnlyCell(cell);
             if (row[key] !== undefined && value !== undefined) {
                 cell.alignment = excelStyle.cell.alignment;
                 cell.font = excelStyle.cell.font;
@@ -231,6 +246,12 @@ const styleAWorksheet = (
 
                     if (typeof cell.value === 'boolean') {
                         cell.value = cell.value ? excelConfig.TRUE_TO_HEBREW : excelConfig.FALSE_TO_HEBREW;
+                    }
+                    if (value.format === 'user') {
+                        cell.value = JSON.parse(cell.value as string).fullName;
+                    }
+                    if (value.items?.format === 'user') {
+                        cell.value = (cell.value as any).map((stringUser) => JSON.parse(stringUser).fullName).join(', ');
                     }
                     // Check if value is date
                     if (cell.value && typeof cell.value === 'string') {
@@ -253,21 +274,24 @@ const styleAWorksheet = (
                         cell.value = String(cell.value).replace(/<[^>]*>/g, '');
                         cell.alignment = { vertical: 'top' };
                     }
+                    if (value.type === 'number') cell.value = row[key].toString();
 
-                    // Check if value is simple list
-                    if (!headersOnly)
+                    if (!headersOnly) {
+                        // Check if value is simple list
                         if (value.type === 'string' && value.enum) {
                             if (template?.enumPropertiesColors?.[key]?.[row?.[key]])
                                 cell.font = { ...excelStyle.cell.font, color: { argb: hexToARGB(template.enumPropertiesColors[key][row[key]]) } };
                         }
-
-                    // Check if value is multiple list
-                    if (!headersOnly)
+                        // Check if value is multiple list
                         if (value.type === 'array' && value.items?.type === 'string' && value.items.enum) cell.value = row[key].join(', ');
+                    }
                 }
             }
         });
     });
+    Object.entries(allProperties).forEach(([_key, value], columnIndex) => {
+        if (value.archive) worksheet.getColumn(columnIndex + 1).hidden = true;
+    });
 };
 
-export { createWorkbook, createWorksheet, styleAWorksheet, fixComplexProperties };
+export { createWorkbook, createWorksheet, styleAWorksheet };

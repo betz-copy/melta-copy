@@ -13,9 +13,9 @@ export interface BackendConfigState {
     mapLayers: Record<string, string>;
     textLayers: Record<string, string>;
     deleteEntitiesLimit: number;
-    crsType: string;
     meltaUpdates: Record<string, string>;
     meltaUpdatesDescription: string;
+    isOutsideDevelopment: boolean;
 }
 
 export const getBackendConfigRequest = async () => {

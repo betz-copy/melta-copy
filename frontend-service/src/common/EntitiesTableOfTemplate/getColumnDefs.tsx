@@ -81,6 +81,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
 }: IGetColumnDefsOptions<Data>): ColDef[] => {
     const invisibleColumnsAmount = Object.values(defaultVisibleColumns).filter((value) => value === false).length;
     const lastColumnIndex = Object.keys(defaultColumnsOrder).length - invisibleColumnsAmount - 2;
+    const firstTwoPropsOrder = template.propertiesOrder.slice(0, 2);
 
     const columnDefs = template.propertiesOrder.map((property) => {
         const propertyTemplate = { ...template.properties.properties[property] };
@@ -95,10 +96,12 @@ export const getColumnDefs = <Data extends any = EntityData>({
         const entityGetter: ValueGetterFunc = ({ data }) => (data ? getEntityPropertiesData(data) : undefined);
 
         const hideColumn =
-            archive ||
-            (defaultVisibleColumns[property] !== undefined
-                ? !defaultVisibleColumns[property]
-                : hideNonPreview && !template.propertiesPreview.includes(property));
+            template.propertiesPreview.length === 0 && hideNonPreview
+                ? !firstTwoPropsOrder.find((propOrder) => propOrder === property)
+                : archive ||
+                  (defaultVisibleColumns[property] !== undefined
+                      ? !defaultVisibleColumns[property]
+                      : hideNonPreview && !template.propertiesPreview.includes(property));
 
         if (propertyTemplate.archive) propertyTemplate.title = `${propertyTemplate.title} ${i18next.t('entitiesTableOfTemplate.archiveTitle')}`;
 
@@ -145,7 +148,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
                 searchValue,
                 editable,
             );
-        if (format === 'fileId')
+        if (format === 'fileId' || format === 'signature')
             return fileColDef(
                 property,
                 valueGetter,
@@ -375,20 +378,25 @@ export const getColumnDefs = <Data extends any = EntityData>({
                         {editRowButtonProps && (
                             <Grid item>
                                 <IconButtonWithPopover
-                                    popoverText={disabledEntity ? i18next.t('entityPage.disabledEntity') : editRowButtonProps.popoverText}
+                                    popoverText={
+                                        disabledEntity || template.disabled ? i18next.t('entityPage.disabledEntity') : editRowButtonProps.popoverText
+                                    }
                                     iconButtonProps={{
                                         onClick: () => editRowButtonProps.onClick(data),
                                     }}
-                                    disabled={editRowButtonProps.disabledButton || disabledEntity}
+                                    disabled={editRowButtonProps.disabledButton || disabledEntity || template.disabled}
                                 >
-                                    <ImageWithDisable srcPath="/icons/edit-icon.svg" disabled={editRowButtonProps.disabledButton || disabledEntity} />
+                                    <ImageWithDisable
+                                        srcPath="/icons/edit-icon.svg"
+                                        disabled={editRowButtonProps.disabledButton || disabledEntity || template.disabled}
+                                    />
                                 </IconButtonWithPopover>
                             </Grid>
                         )}
                         {onNavigateToRow && (
                             <Grid item>
                                 <Link
-                                    href={`/entity/${getRowId(data)}/graph`}
+                                    href={`/entity/${getEntityPropertiesData(data)._id}/graph`}
                                     onClick={(e) => {
                                         if (disabledEntity) e.preventDefault();
                                     }}
@@ -408,7 +416,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
                             </Grid>
                         )}
 
-                        {menuRowButtonProps && (
+                        {menuRowButtonProps && !template?.disabled && (
                             <Grid item>
                                 <CardMenu
                                     onDuplicateClick={() => {

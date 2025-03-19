@@ -268,9 +268,11 @@ export const environment = {
         polygon: { polygonPrefix: 'POLYGON((', polygonSuffix: '))' },
         mapSearchPropertiesLimit: 2,
     },
+    signaturePrefix: 'data:image/png;base64,',
     meltaUpdatesShown: 'meltaUpdatesShown',
     profileIconsCount: 19,
     avatarIconPath: '/icons/profileAvatar/',
+    uuidFormat: /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{8}/,
     fileExtensions: {
         image: ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'webp', 'ico', 'psd', 'raw', 'heif', 'indd', 'ai', 'eps'],
         imageToManipulate: ['png', 'jpg', 'jpeg', 'svg'] as string[],

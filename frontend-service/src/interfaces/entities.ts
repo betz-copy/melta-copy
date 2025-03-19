@@ -1,9 +1,9 @@
 import { Readable } from 'stream';
-import { IFailedEntity } from '../common/wizards/loadEntities';
 import { IMongoEntityTemplatePopulated } from './entityTemplates';
 import { IMongoRelationshipTemplate } from './relationshipTemplates';
 import { IRelationship } from './relationships';
 import { ISemanticSearchResult } from './semanticSearch';
+import { IFailedEntity } from './excel';
 import { IBrokenRule } from './ruleBreaches/ruleBreach';
 import { ICreateEntityMetadata } from './ruleBreaches/actionMetadata';
 import { IAGGridTextFilter, IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter } from '../utils/agGrid/interfaces';

@@ -4,9 +4,10 @@ import { IMongoCategory } from '../category/interface';
 export interface IEntitySingleProperty {
     title: string;
     type: 'string' | 'number' | 'boolean' | 'array';
-    format?: 'date' | 'date-time' | 'email' | 'fileId' | 'text-area' | 'relationshipReference' | 'location' | 'user';
+    format?: 'date' | 'date-time' | 'email' | 'fileId' | 'text-area' | 'relationshipReference' | 'location' | 'user' | 'signature';
     enum?: string[];
     readOnly?: true;
+    identifier?: true;
     pattern?: string;
     patternCustomErrorMessage?: string;
     dateNotification?: number;

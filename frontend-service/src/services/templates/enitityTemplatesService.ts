@@ -15,7 +15,7 @@ import { CommonFormInputProperties } from '../../common/wizards/entityTemplate/c
 
 const { entityTemplates } = environment.api;
 export const basePropertyTypes = ['string', 'number', 'boolean'];
-export const stringFormats = ['date', 'date-time', 'email', 'fileId', 'text-area', 'relationshipReference', 'location', 'user'];
+export const stringFormats = ['date', 'date-time', 'email', 'fileId', 'text-area', 'relationshipReference', 'location', 'user', 'signature'];
 export const arrayTypes = ['multipleFiles', 'enumArray', 'users'];
 
 const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTemplatePopulated | null): EntityTemplateWizardValues | undefined => {
@@ -31,7 +31,7 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
         propertiesTypeOrder,
         mapSearchProperties,
         ...restOfEntityTemplate
-    } = entityTemplate;    
+    } = entityTemplate;
 
     const propertiesArray: EntityTemplateFormInputProperties[] = [];
     const attachmentProperties: EntityTemplateFormInputProperties[] = [];
@@ -74,6 +74,7 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
             serialStarter: value.serialStarter,
             relationshipReference: value.relationshipReference || undefined,
             archive: value.archive || undefined,
+            identifier: value.identifier || undefined,
             mapSearch: mapSearchProperties?.includes(key) || undefined,
         };
 
@@ -154,6 +155,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
             readOnly,
             relationshipReference,
             archive,
+            identifier,
             mapSearch,
         }) => {
             if (deleted) return;
@@ -186,16 +188,17 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                     | 'date-time'
                     | 'email'
                     | 'fileId'
+                    | 'signature'
                     | 'text-area'
                     | 'relationshipReference'
                     | 'user'
                     | undefined,
                 enum: type === 'enum' ? options : undefined,
-                items:
-                    type === 'enumArray' ? { type: 'string', enum: options } : type === 'users' ? { type: 'string', format: 'user' } : undefined,
+                items: type === 'enumArray' ? { type: 'string', enum: options } : type === 'users' ? { type: 'string', format: 'user' } : undefined,
                 minItems: type === 'enumArray' || type === 'users' ? 1 : undefined,
                 readOnly,
                 archive,
+                identifier,
                 uniqueItems: type === 'enumArray' || type === 'users' ? true : undefined,
                 pattern: type === 'pattern' ? pattern : undefined,
                 patternCustomErrorMessage: type === 'pattern' ? patternCustomErrorMessage : undefined,
@@ -220,7 +223,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                     isNewPropNameEqualDeletedPropName: properties.some((property) => property.id !== id && property.name === name),
                 };
             }
-            
+
             propertiesOrder.push(name);
 
             if (required) schema.required.push(name);
@@ -234,8 +237,8 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                     if (!enumPropertiesColors) enumPropertiesColors = {};
                     if (!enumPropertiesColors[name]) enumPropertiesColors[name] = {};
                     enumPropertiesColors[name][option] = color;
-                    });
-                }
+                });
+            }
         },
     );
 
@@ -259,11 +262,12 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
             hide,
             deleted,
             readOnly,
+            identifier,
             relationshipReference,
             archive,
             mapSearch,
         }) => {
-            if (deleted) return; 
+            if (deleted) return;
 
             let propertyType: IEntitySingleProperty['type'];
             switch (type) {
@@ -291,6 +295,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                 minItems: type === 'enumArray' ? 1 : undefined,
                 readOnly,
                 archive,
+                identifier,
                 uniqueItems: type === 'enumArray' || type === 'users' ? true : undefined,
                 pattern: type === 'pattern' ? pattern : undefined,
                 patternCustomErrorMessage: type === 'pattern' ? patternCustomErrorMessage : undefined,
@@ -318,7 +323,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
             }
 
             propertiesOrder.push(name);
-            
+
             if (required) schema.required.push(name);
             if (hide) schema.hide.push(name);
             if (preview) propertiesPreview.push(name);
@@ -337,7 +342,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
 
     attachmentProperties.forEach(({ id, name, title, required, type, deleted }) => {
         if (deleted) return;
-        
+
         if (type === 'multipleFiles') {
             schema.properties[name] = {
                 title,
@@ -355,14 +360,14 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                 format: 'fileId',
             };
         }
-        
+
         if (isEditMode) {
             schema.properties[name] = {
                 ...schema.properties[name],
                 isNewPropNameEqualDeletedPropName: attachmentProperties.some((property) => property.id !== id && property.name === name),
             };
         }
-        
+
         attachmentPropertiesOrder.push(name);
         if (required) schema.required.push(name);
     });
@@ -409,8 +414,7 @@ const createEntityTemplateRequest = async (newEntityTemplate: EntityTemplateWiza
         entityTemplate.propertiesTypeOrder = entityTemplate.propertiesTypeOrder.filter((str) => str !== 'archiveProperties');
     }
 
-    if (entityTemplate.mapSearchProperties)
-        formData.append('mapSearchProperties', JSON.stringify(entityTemplate.mapSearchProperties));
+    if (entityTemplate.mapSearchProperties) formData.append('mapSearchProperties', JSON.stringify(entityTemplate.mapSearchProperties));
 
     formData.append('displayName', entityTemplate.displayName);
     formData.append('name', entityTemplate.name);
@@ -462,8 +466,7 @@ const updateEntityTemplateRequest = async (entityTemplateId: string, updatedEnti
         entityTemplate.propertiesTypeOrder = entityTemplate.propertiesTypeOrder.filter((str) => str !== 'archiveProperties');
     }
 
-    if (entityTemplate.mapSearchProperties)
-        formData.append('mapSearchProperties', JSON.stringify(entityTemplate.mapSearchProperties));
+    if (entityTemplate.mapSearchProperties) formData.append('mapSearchProperties', JSON.stringify(entityTemplate.mapSearchProperties));
 
     formData.append('displayName', entityTemplate.displayName);
     formData.append('name', entityTemplate.name);

@@ -20,17 +20,20 @@ import { useEntityWithLocationFields } from '../../../utils/hooks/useLocation';
 import MapPageEntityDialog from './EntityMapDialog';
 import { MeltaCoordinate, MeltaPolygon } from '../LocationPreview';
 import { BaseLayers } from '../BaseLayers';
+import { BackendConfigState } from '../../../services/backendConfigService';
 
 const { maxRadius } = environment.map;
 
 const MapPage = () => {
     const queryClient = useQueryClient();
+    const config = queryClient.getQueryData<BackendConfigState>('getBackendConfig');
     const entityTemplateMap = queryClient.getQueryData<IEntityTemplateMap>(['getEntityTemplates']);
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
     const viewerRef = useRef<any>(null);
 
     const [drawingMode, setDrawingMode] = useState<'circle' | 'line' | null>(null);
+    const [drawingCircle, setDrawingCircle] = useState(false);
     const [circleData, setCircleData] = useState<{ center: Cartesian3 | null; radius: number | null; mouseRadius: number | null }>({
         center: null,
         radius: null,
@@ -39,17 +42,17 @@ const MapPage = () => {
     const [lineData, setLineData] = useState<Cartesian3[]>([]);
 
     const [selectedTemplates, setSelectedTemplates] = useState<IMongoEntityTemplatePopulated[]>([]);
-    
+
     const [searchedEntity, setSearchedEntity] = useState<IEntity | undefined>(undefined);
     const [searchedEntityTemplate, setSearchedEntityTemplate] = useState<IMongoEntityTemplatePopulated | undefined>(undefined);
-    const [selectedEntity, setSelectedEntity] = useState<{ matchingField: string; node: IEntity; } | null>(null);
+    const [selectedEntity, setSelectedEntity] = useState<{ matchingField: string; node: IEntity } | null>(null);
 
     const [searchedPolygons, setSearchedPolygons] = useState<{ key: string; name: string; node: IEntity; position: Cartesian3[] }[]>([]);
     const [searchedMarkers, setSearchedMarkers] = useState<{ key: string; name: string; node: IEntity; position: Cartesian3 }[]>([]);
 
     const [cameraFocus, setCameraFocus] = useState<'search' | 'circle'>();
 
-    const filteredTemplatesIds = useMemo(() => selectedTemplates.map(({ _id }) => _id), [selectedTemplates]);    
+    const filteredTemplatesIds = useMemo(() => selectedTemplates.map(({ _id }) => _id), [selectedTemplates]);
 
     const {
         bounds: searchedEntityBounds,
@@ -57,7 +60,7 @@ const MapPage = () => {
         polygons: searchedEntityPolygons,
         propertyDefinitions: searchedPropertyDefinitions,
     } = useEntityWithLocationFields({ entityTemplate: searchedEntityTemplate, entityProperties: searchedEntity?.properties });
-   
+
     useEffect(() => {
         const animateCamera = () => {
             const viewer = viewerRef.current?.cesiumElement;
@@ -71,30 +74,22 @@ const MapPage = () => {
                 });
             }
 
-            if(cameraFocus === 'search'){
-            if (searchedEntityPolygons.length > 0 || searchedEntityMarkers.length > 0) {
-                if (searchedEntityBounds?.center && searchedEntityBounds?.radius) {
-                    const boundingSphere = new Cesium.BoundingSphere(searchedEntityBounds.center, searchedEntityBounds.radius);
-    
-                    camera.flyToBoundingSphere(boundingSphere, {
-                        duration: 1.5,
-                        offset: new Cesium.HeadingPitchRange(0, -Cesium.Math.toRadians(90), searchedEntityBounds.radius * 5),
-                    });
+            if (cameraFocus === 'search') {
+                if (searchedEntityPolygons.length > 0 || searchedEntityMarkers.length > 0) {
+                    if (searchedEntityBounds?.center && searchedEntityBounds?.radius) {
+                        const boundingSphere = new Cesium.BoundingSphere(searchedEntityBounds.center, searchedEntityBounds.radius);
+
+                        camera.flyToBoundingSphere(boundingSphere, {
+                            duration: 1.5,
+                            offset: new Cesium.HeadingPitchRange(0, -Cesium.Math.toRadians(90), searchedEntityBounds.radius * 5),
+                        });
+                    }
                 }
-            }}
-            else {
-                if(circleData.center && !circleData.radius) { 
-                    const boundingSphere = new Cesium.BoundingSphere(circleData.center, circleData.mouseRadius || 500);
-        
-                    camera.flyToBoundingSphere(boundingSphere, {
-                        duration: 1.5,
-                        offset: new Cesium.HeadingPitchRange(0, -Cesium.Math.toRadians(90), (circleData.mouseRadius || 1000) * 5 ),
-                    });
-                }
-    
+            } else {
+                // eslint-disable-next-line no-lonely-if
                 if (circleData.center && circleData.radius) {
                     const boundingSphere = new Cesium.BoundingSphere(circleData.center, circleData.radius);
-        
+
                     camera.flyToBoundingSphere(boundingSphere, {
                         duration: 1.5,
                         offset: new Cesium.HeadingPitchRange(0, -Cesium.Math.toRadians(90), circleData.radius * 5),
@@ -102,7 +97,7 @@ const MapPage = () => {
                 }
             }
         };
-    
+
         const animationFrameId = requestAnimationFrame(animateCamera);
         return () => cancelAnimationFrame(animationFrameId);
     }, [circleData, searchedEntityPolygons, searchedEntityMarkers]);
@@ -112,53 +107,93 @@ const MapPage = () => {
             setSearchedEntityTemplate(entityTemplateMap.get(searchedEntity.templateId)!);
         }
     }, [searchedEntity, entityTemplateMap]);
-    
 
     const handleViewerClick = useCallback(
         (clickEvent: CesiumMovementEvent) => {
-            if (drawingMode === null || !clickEvent.position) return;
-    
+            if (drawingMode !== 'line' || !clickEvent.position) return;
+
             const viewer = viewerRef.current?.cesiumElement;
-    
+
             if (!viewer) return;
             const { scene } = viewer;
             const cartesian: Cartesian3 = scene.camera.pickEllipsoid(clickEvent.position, scene.globe.ellipsoid);
-    
-            if (cartesian) {
-                if (drawingMode === 'circle') {
-                    setCameraFocus('circle');
-                    if (circleData.center === null || (circleData.center !== null && circleData.radius !== null)) {
-                        setCircleData({ center: cartesian, radius: null, mouseRadius: null });
-                    } else {
-                        const radius = Cartesian3.distance(circleData.center, cartesian);
-                        if (radius > maxRadius) toast.warn(i18next.t('location.radiusMaxLimit'));
-                        setCircleData({ center: circleData.center, radius: radius > maxRadius ? maxRadius : radius, mouseRadius: null });
-                        setDrawingMode(null);
-                    }
-                } else if (drawingMode === 'line') {
-                    setLineData((prev) => [...prev, cartesian]);
-                }
-            }
+
+            if (!cartesian) return;
+            setLineData((prev) => [...prev, cartesian]);
         },
-        [drawingMode, viewerRef, circleData, maxRadius, setCircleData, setDrawingMode, setLineData]
+        [drawingMode, viewerRef, setLineData],
+    );
+
+    const handleMouseDown = useCallback(
+        (clickEvent) => {
+            if (drawingMode !== 'circle' || !clickEvent.position) return;
+            setSearchedMarkers([]);
+            setSearchedPolygons([]);
+
+            const viewer = viewerRef.current?.cesiumElement;
+            if (!viewer) return;
+
+            const { scene } = viewer;
+            const cartesian: Cartesian3 = scene.camera.pickEllipsoid(clickEvent.position, scene.globe.ellipsoid);
+
+            if (!cartesian) return;
+            setCircleData({ center: cartesian, radius: null, mouseRadius: null });
+            setDrawingCircle(true);
+
+            scene.screenSpaceCameraController.enableRotate = false;
+        },
+        [drawingMode, viewerRef, setCircleData, setDrawingCircle],
     );
 
     const handleMouseMove = useCallback(
         (moveEvent: CesiumMovementEvent) => {
-            if (drawingMode === 'circle' && circleData.center !== null && circleData.radius === null) {
-                const viewer = viewerRef.current?.cesiumElement;
-                if (!viewer) return;
-    
-                const { scene } = viewer;
-                const cartesian = scene.camera.pickEllipsoid(moveEvent.endPosition, scene.globe.ellipsoid);
-    
-                if (cartesian) {
-                    const radius = Cartesian3.distance(circleData.center, cartesian);
-                    setCircleData({ center: circleData.center, radius: null, mouseRadius: radius });
-                }
+            if (!drawingCircle || drawingMode !== 'circle' || circleData.center === null || circleData.radius !== null) {
+                return;
             }
+
+            const viewer = viewerRef.current?.cesiumElement;
+            if (!viewer) return;
+
+            const { scene } = viewer;
+            const cartesian = scene.camera.pickEllipsoid(moveEvent.endPosition, scene.globe.ellipsoid);
+
+            if (!cartesian) return;
+
+            const radius = Cartesian3.distance(circleData.center, cartesian);
+            if (radius > maxRadius) return;
+            setCircleData((prev) => ({
+                ...prev,
+                mouseRadius: radius,
+            }));
         },
-        [drawingMode, circleData, viewerRef, setCircleData]
+        [drawingMode, drawingCircle, circleData, viewerRef, setCircleData],
+    );
+
+    const handleMouseUp = useCallback(
+        (clickEvent) => {
+            if (drawingMode !== 'circle' || circleData.center === null || circleData.radius !== null) return;
+
+            const viewer = viewerRef.current?.cesiumElement;
+            if (!viewer) return;
+
+            const { scene } = viewer;
+            const cartesian = scene.camera.pickEllipsoid(clickEvent.position, scene.globe.ellipsoid);
+
+            if (!cartesian) return;
+            const radius = Cartesian3.distance(circleData.center, cartesian);
+            if (radius > maxRadius) toast.warn(i18next.t('location.radiusMaxLimit'));
+
+            setDrawingCircle(false);
+            setCircleData({
+                center: circleData.center,
+                radius: radius > maxRadius ? maxRadius : radius,
+                mouseRadius: null,
+            });
+
+            viewer.scene.screenSpaceCameraController.enableRotate = true;
+            setDrawingMode(null);
+        },
+        [drawingMode, viewerRef, circleData, setDrawingCircle, setCircleData],
     );
 
     const { mutateAsync } = useMutation(getEntitiesByLocation, {
@@ -215,7 +250,7 @@ const MapPage = () => {
     const clearAutocompleteSearch = () => {
         setSearchedEntity(undefined);
         setSearchedEntityTemplate(undefined);
-    }
+    };
 
     const onClear = () => {
         setCircleData({ center: null, radius: null, mouseRadius: null });
@@ -231,19 +266,22 @@ const MapPage = () => {
 
     return (
         <div style={{ height: '100vh', width: '100%' }}>
-         <Viewer
-            full
-            ref={viewerRef}
-            onClick={handleViewerClick}
-            onMouseMove={handleMouseMove}
-            baseLayerPicker={false}
-            animation={false}
-            timeline={false}
-            geocoder={false}
-            homeButton={false}
-            sceneModePicker={false}
-            vrButton={false}
-            fullscreenButton={false}
+            <Viewer
+                full
+                ref={viewerRef}
+                onClick={handleViewerClick}
+                onMouseDown={handleMouseDown}
+                onMouseUp={handleMouseUp}
+                onMouseMove={handleMouseMove}
+                baseLayerPicker={false}
+                animation={false}
+                timeline={false}
+                geocoder={false}
+                homeButton={false}
+                sceneModePicker={false}
+                vrButton={false}
+                fullscreenButton={false}
+                navigationHelpButton={false}
             >
                 {circleData.center && (circleData.radius || circleData.mouseRadius) && (
                     <Entity
@@ -257,7 +295,7 @@ const MapPage = () => {
                             fill={false}
                             outline
                             outlineColor={Color.fromAlpha(Color.RED, 0.7)}
-                            outlineWidth={10}
+                            outlineWidth={15}
                         />
                         {circleData.mouseRadius && <PointGraphics color={Color.RED} pixelSize={10} />}
                     </Entity>
@@ -322,46 +360,51 @@ const MapPage = () => {
                         }}
                     />
                 ))}
+
+                <div style={{ position: 'absolute', top: '10px', left: '10px', display: 'flex', gap: '15px' }}>
+                    <MapFilters
+                        selectedTemplates={selectedTemplates}
+                        setSelectedTemplates={setSelectedTemplates}
+                        moveToEntityLocations={(entity: IEntity) => {
+                            setSearchedEntity(entity);
+                            setCameraFocus('search');
+                        }}
+                        entityTemplateMap={entityTemplateMap!}
+                        onClear={onClear}
+                        darkMode={darkMode}
+                        clearAutocompleteSearch={clearAutocompleteSearch}
+                    />
+
+                    <ToggleButtonGroup
+                        value={drawingMode}
+                        exclusive
+                        onChange={handleDrawType}
+                        size="small"
+                        style={{ background: darkMode ? '#121212' : 'white', height: '35px' }}
+                    >
+                        <MeltaTooltip title={i18next.t('location.circle')}>
+                            <ToggleButton value="circle">
+                                <Circle sx={{ width: '20px', height: '20px', color: darkMode ? '#9398c2' : '#787c9e' }} />
+                            </ToggleButton>
+                        </MeltaTooltip>
+                        <MeltaTooltip title={i18next.t('location.line')}>
+                            <ToggleButton value="line">
+                                <LinearScale sx={{ width: '20px', height: '20px', color: darkMode ? '#9398c2' : '#787c9e' }} />
+                            </ToggleButton>
+                        </MeltaTooltip>
+                    </ToggleButtonGroup>
+
+                    {config && <BaseLayers viewerRef={viewerRef} config={config} />}
+                </div>
+                {selectedEntity && (
+                    <MapPageEntityDialog
+                        open={!!selectedEntity}
+                        entityWithMatchingField={selectedEntity}
+                        onClose={() => setSelectedEntity(null)}
+                        key={selectedEntity.matchingField}
+                    />
+                )}
             </Viewer>
-
-            <div style={{ position: 'absolute', top: '10px', left: '10px', display: 'flex', gap: '15px' }}>
-                <MapFilters
-                    selectedTemplates={selectedTemplates}
-                    setSelectedTemplates={setSelectedTemplates}
-                    moveToEntityLocations={(entity: IEntity) => {
-                        setSearchedEntity(entity);
-                        setCameraFocus('search');
-                    }}
-                    entityTemplateMap={entityTemplateMap!}
-                    onClear={onClear}
-                    darkMode={darkMode}
-                    clearAutocompleteSearch={clearAutocompleteSearch}
-                />
-
-                <ToggleButtonGroup
-                    value={drawingMode}
-                    exclusive
-                    onChange={handleDrawType}
-                    size="small"
-                    style={{ background: darkMode ? '#121212' : 'white', height: '35px' }}
-                >
-                    <MeltaTooltip title={i18next.t('location.circle')}>
-                        <ToggleButton value="circle">
-                            <Circle sx={{ width: '20px', height: '20px', color: darkMode ? '#9398c2' : '#787c9e'  }}  />
-                        </ToggleButton>
-                    </MeltaTooltip>
-                    <MeltaTooltip title={i18next.t('location.line')}>
-                        <ToggleButton value="line">
-                            <LinearScale sx={{ width: '20px', height: '20px',color: darkMode ? '#9398c2' : '#787c9e' }} />
-                        </ToggleButton>
-                    </MeltaTooltip>
-                </ToggleButtonGroup>
-
-                <BaseLayers viewerRef={viewerRef} />
-            </div>
-            {selectedEntity && (
-                <MapPageEntityDialog open={!!selectedEntity} entityWithMatchingField={selectedEntity} onClose={() => setSelectedEntity(null)} key={selectedEntity.matchingField}/>
-            )}
         </div>
     );
 };

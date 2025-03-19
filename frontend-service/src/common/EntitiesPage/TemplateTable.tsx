@@ -8,6 +8,7 @@ import {
     BarChart,
     LibraryAddCheckOutlined as SelectMultipleIcon,
     Upload,
+    EditNote,
 } from '@mui/icons-material';
 import { Box, CircularProgress, Dialog, Grid, useTheme } from '@mui/material';
 import i18next from 'i18next';
@@ -34,11 +35,12 @@ import { CreateOrEditEntityDetails, ICreateOrUpdateWithRuleBreachDialogState } f
 import EntitiesTableOfTemplate, { EntitiesTableOfTemplateRef } from '../EntitiesTableOfTemplate';
 import { EntityTemplateColor } from '../EntityTemplateColor';
 import { TableButton } from '../TableButton';
-import { AddEntityButton } from './AddEntityButton';
 import { DraftCard } from './DraftCard';
 import { ResetFilterButton } from './ResetFilterButton';
+import { LoadExcelButton } from './Buttons/LoadExcel';
+import { AddEntityButton } from './Buttons/AddEntity';
+import { EditExcelButton } from './Buttons/EditExcel';
 import { useWorkspaceStore } from '../../stores/workspace';
-import { LoadExcelButton } from './LoadExcelButton';
 
 const {
     loadExcel: { excelExtension },
@@ -154,7 +156,7 @@ const TemplateTable = forwardRef<
         });
     };
 
-    const checkIfLoadEntityIsDisabled = () => {
+    const checkIfLoadExcelIsDisabled = () => {
         const { properties } = template.properties;
         const requiredProperties = new Set(template.properties.required);
 
@@ -163,9 +165,19 @@ const TemplateTable = forwardRef<
         });
     };
 
-    const isLoadExcelDisabled = !userHasWritePermissions || checkIfLoadEntityIsDisabled();
-    const getLoadExcelTooltip = isLoadExcelDisabled
+    const isLoadExcelDisabled = !userHasWritePermissions || checkIfLoadExcelIsDisabled();
+    const loadExcelTooltip = isLoadExcelDisabled
         ? i18next.t(!userHasWritePermissions ? 'permissions.dontHaveWritePermissionsToTemplate' : 'wizard.entity.loadEntities.tableCantLoadEntities')
+        : undefined;
+
+    const checkIfEditExcelIsDisabled = () => {
+        const { properties } = template.properties;
+        return Object.values(properties).some((property) => property.identifier);
+    };
+
+    const isEditExcelDisabled = !userHasWritePermissions || !checkIfEditExcelIsDisabled();
+    const editExcelTooltip = isEditExcelDisabled
+        ? i18next.t(!userHasWritePermissions ? 'permissions.dontHaveWritePermissionsToTemplate' : 'wizard.entity.loadEntities.tableCantEditExcel')
         : undefined;
 
     return (
@@ -283,18 +295,26 @@ const TemplateTable = forwardRef<
                 </Grid>
 
                 <Grid container item flexGrow={1} width={0} justifyContent="flex-end" alignItems="center">
+                    <EditExcelButton
+                        disabled={isEditExcelDisabled}
+                        initialValues={{ template, properties: { disabled: false }, attachmentsProperties: {} }}
+                        onSuccessCreate={() => entitiesTableRef.current?.refreshServerSide()}
+                        popoverText={editExcelTooltip}
+                    >
+                        <EditNote
+                            fontSize="small"
+                            sx={{
+                                opacity: isEditExcelDisabled ? 0.3 : 1,
+                                pointerEvents: isEditExcelDisabled ? 'none' : 'auto',
+                            }}
+                        />
+                        {i18next.t('entitiesTableOfTemplate.editExcelTitle')}
+                    </EditExcelButton>
                     <LoadExcelButton
                         disabled={isLoadExcelDisabled}
                         initialValues={{ template, properties: { disabled: false }, attachmentsProperties: {} }}
-                        style={{
-                            display: 'flex',
-                            gap: '0.25rem',
-                            borderRadius: '5px',
-                            fontSize: '0.75rem',
-                            color: theme.palette.primary.main,
-                        }}
                         onSuccessCreate={() => entitiesTableRef.current?.refreshServerSide()}
-                        popoverText={getLoadExcelTooltip}
+                        popoverText={loadExcelTooltip}
                     >
                         <Upload
                             fontSize="small"
@@ -307,7 +327,7 @@ const TemplateTable = forwardRef<
                     </LoadExcelButton>
                     <AddEntityButton
                         initialStep={1}
-                        disabled={!userHasWritePermissions}
+                        disabled={!userHasWritePermissions || template.disabled}
                         initialValues={{ template, properties: { disabled: false }, attachmentsProperties: {} }}
                         style={{
                             display: 'flex',
@@ -316,6 +336,7 @@ const TemplateTable = forwardRef<
                             fontSize: '0.75rem',
                             color: theme.palette.primary.main,
                         }}
+                        popoverText={template.disabled ? i18next.t('permissions.EntityTemplateDisplay') : undefined}
                         onSuccessCreate={() => {
                             entitiesTableRef.current?.refreshServerSide();
 

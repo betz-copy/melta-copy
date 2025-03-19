@@ -6,7 +6,7 @@ import { ProcessPropertyFormats } from '../express/templates/processes/interface
 import ajv from './ajv';
 
 const stringFormats = Object.values(ProcessPropertyFormats);
-const allowedJSONSchemaTypes = ['string', 'number', 'boolean', 'array'];
+const allowedJSONSchemaTypes = ['string', 'number', 'boolean', 'array', 'signature'];
 
 const defaultValidationOptions: Joi.ValidationOptions = {
     abortEarly: false,
@@ -79,8 +79,7 @@ const propertiesArraySchema = Joi.array()
                     then: Joi.required(), // If type is array, enum must be included
                     otherwise: Joi.forbidden(), // If type is not array, enum is forbidden
                 }),
-            })
-            .xor('format', 'enum'),    
+            }).xor('format', 'enum'),
         }).nand('pattern', 'enum'),
     )
     .unique((a, b) => a.title === b.title);

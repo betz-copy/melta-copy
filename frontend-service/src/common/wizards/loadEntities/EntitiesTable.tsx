@@ -3,9 +3,9 @@ import { Accordion, AccordionDetails, AccordionSummary, CircularProgress, Grid, 
 import i18next from 'i18next';
 import React, { useRef } from 'react';
 import { v4 as uuid } from 'uuid';
-import { IFailedEntity } from '.';
 import { IEntity, ISearchFilter } from '../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IFailedEntity } from '../../../interfaces/excel';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import EntitiesTableOfTemplate, { EntitiesTableOfTemplateRef } from '../../EntitiesTableOfTemplate';
 import { TableButton } from '../../TableButton';

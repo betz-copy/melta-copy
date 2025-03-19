@@ -33,6 +33,7 @@ const { neo4j, ajvCustomFormats } = config;
 const ajv = new Ajv();
 
 ajv.addFormat('fileId', ajvCustomFormats.fileIdFieldRegex);
+ajv.addFormat('signature', ajvCustomFormats.signatureFieldRegex);
 ajv.addFormat('user', {
     type: 'string',
     validate: (user) => {
@@ -54,6 +55,7 @@ ajv.addKeyword({ keyword: 'calculateTime', type: 'boolean' });
 ajv.addKeyword({ keyword: 'isDailyAlert', type: 'boolean' });
 ajv.addKeyword({ keyword: 'isDatePastAlert', type: 'boolean' });
 ajv.addKeyword({ keyword: 'archive', type: 'boolean' });
+ajv.addKeyword({ keyword: 'identifier', type: 'boolean' });
 ajv.addKeyword({
     keyword: 'serialStarter',
     type: 'number',
@@ -489,7 +491,7 @@ export const addStringFieldsAndNormalizeSpecialStringValues = (
             normalizedEntity[`${key}${neo4j.filePropertySuffix}`] = propertyValue.map((fileId: string) => getFileName(fileId));
         }
 
-        if (type === 'string' && format === 'fileId') {
+        if (type === 'string' && (format === 'fileId' || format === 'signature')) {
             normalizedEntity[`${key}${neo4j.filePropertySuffix}`] = getFileName(propertyValue);
         }
 

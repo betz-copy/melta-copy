@@ -37,7 +37,15 @@ type Props = {
     clearAutocompleteSearch: () => void;
 };
 
-const MapFilters = ({ selectedTemplates, setSelectedTemplates, moveToEntityLocations, entityTemplateMap, onClear, darkMode, clearAutocompleteSearch }: Props) => {
+const MapFilters = ({
+    selectedTemplates,
+    setSelectedTemplates,
+    moveToEntityLocations,
+    entityTemplateMap,
+    onClear,
+    darkMode,
+    clearAutocompleteSearch,
+}: Props) => {
     const templatesWithLocationField = Array.from(entityTemplateMap.values()).filter((key) =>
         Object.values(key.properties.properties).some((obj) => obj.format === 'location'),
     );
@@ -65,7 +73,11 @@ const MapFilters = ({ selectedTemplates, setSelectedTemplates, moveToEntityLocat
                 />
             </Grid>
             <Grid item>
-                <SearchAutoComplete selectedTemplates={selectedTemplates} handleEntityClick={moveToEntityLocations} onClear={clearAutocompleteSearch} />
+                <SearchAutoComplete
+                    selectedTemplates={selectedTemplates}
+                    handleEntityClick={moveToEntityLocations}
+                    onClear={clearAutocompleteSearch}
+                />
             </Grid>
 
             <Grid item>

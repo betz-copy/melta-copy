@@ -1,3 +1,4 @@
+/* eslint-disable react/no-array-index-key */
 /* eslint-disable no-param-reassign */
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useCallback, useEffect, useRef, useState } from 'react';
@@ -140,12 +141,12 @@ const SearchAutoComplete = ({ selectedTemplates, handleEntityClick, onClear }: p
     );
 
     useEffect(() => {
-        if (data) {            
+        if (data) {
             setSearchResults(
                 data.pages
                     .flatMap(({ entities }) => entities.map(({ entity }) => entity))
-                    .filter((entity) => 
-                     Object.values(getLocationProperties(entity, selectedTemplates).locationProperties || {}).some((value) => value !== undefined)
+                    .filter((entity) =>
+                        Object.values(getLocationProperties(entity, selectedTemplates).locationProperties || {}).some((value) => value !== undefined),
                     ),
             );
         }
@@ -173,7 +174,7 @@ const SearchAutoComplete = ({ selectedTemplates, handleEntityClick, onClear }: p
             onInputChange={(event, _newInputValue, reason) => {
                 if (reason === 'reset') {
                     setInputValue('');
-                } else if(reason === 'clear') {
+                } else if (reason === 'clear') {
                     onClear();
                 } else debouncedSearch((event.target as HTMLInputElement).value);
             }}
@@ -185,14 +186,14 @@ const SearchAutoComplete = ({ selectedTemplates, handleEntityClick, onClear }: p
                         width: 400,
                         borderRadius: '10px',
                     }}
-                    label={i18next.t('globalSearch.searchInPage')}
+                    placeholder={i18next.t('globalSearch.searchInPage')}
                     size="small"
                     variant="outlined"
                 />
             )}
             renderOption={(props, option) => {
-               const {template, locationTemplateProperties, locationProperties} = getLocationProperties(option, selectedTemplates);
-               if(!template) return false;
+                const { template, locationTemplateProperties, locationProperties } = getLocationProperties(option, selectedTemplates);
+                if (!template) return false;
 
                 return (
                     <li {...props} ref={props['data-option-index'] === searchResults.length - 1 ? lastElementRef : null}>
@@ -222,23 +223,21 @@ const SearchAutoComplete = ({ selectedTemplates, handleEntityClick, onClear }: p
                                     </Grid>
                                 </Grid>
                                 <Grid item container direction="column" spacing={1}>
-                                    {template.mapSearchProperties ? (
-                                        template.mapSearchProperties.map((key, index) => (
-                                            <LocationAutoCompleteOption
-                                                key={`${key}-${index}`}
-                                                title={template.properties.properties[key].title}
-                                                value={option.properties[key]}
-                                            />
-                                        ))
-                                    ) : (
-                                        Object.entries(locationProperties).map(([key, value], index) => (
-                                            <LocationAutoCompleteOption
-                                                key={`${key}-${index}`}
-                                                title={locationTemplateProperties[key].title}
-                                                value={value}
-                                            />
-                                        ))
-                                    )}
+                                    {template.mapSearchProperties
+                                        ? template.mapSearchProperties.map((key, index) => (
+                                              <LocationAutoCompleteOption
+                                                  key={`${key}-${index}`}
+                                                  title={template.properties.properties[key].title}
+                                                  value={option.properties[key]}
+                                              />
+                                          ))
+                                        : Object.entries(locationProperties).map(([key, value], index) => (
+                                              <LocationAutoCompleteOption
+                                                  key={`${key}-${index}`}
+                                                  title={locationTemplateProperties[key].title}
+                                                  value={value}
+                                              />
+                                          ))}
                                 </Grid>
                             </Grid>
                         </Grid>

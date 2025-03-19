@@ -26,7 +26,7 @@ const ProcessInstancesPage: React.FC = () => {
     const [endDateInput, setEndDateInput] = useState<Date | null>(null);
 
     const [statusFilter, setStatusFilter] = useState<'all' | Status | 'archived'>('all');
-    const [isWaitingForMeFilterOn, setIsWaitingForMeFilterOn] = useState<boolean>(false);
+    const [isWaitingForMeFilterOn, setIsWaitingForMeFilterOn] = useState<boolean>(true);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
     const onSearch = useCallback(
@@ -77,7 +77,7 @@ const ProcessInstancesPage: React.FC = () => {
                         flexDirection: 'column',
                         width: '13%',
                         minWidth: '250px',
-                        height: '800px',
+                        height: '610px',
                         alignItems: 'center',
                     }}
                 >
@@ -85,7 +85,7 @@ const ProcessInstancesPage: React.FC = () => {
                         <Grid container item alignItems="center" justifyContent="space-between" alignContent="center">
                             <Grid container item alignItems="center" width="100px">
                                 <IconButton disabled>
-                                    <FilterListIcon />
+                                    <FilterListIcon color="primary" />
                                 </IconButton>
                                 <BlueTitle
                                     component="h4"

@@ -59,6 +59,7 @@ export default {
         addRelationship: 'הוסף קשר',
         addEntityTitle: 'יישות חדשה',
         loadEntitiesTitle: 'טעינה מקבצים',
+        editExcelTitle: 'עריכת טבלה',
         addEntity: 'הוסף ישות',
         selectEntity: 'בחר ישות',
         deleteEntity: 'מחק ישות',
@@ -79,11 +80,12 @@ export default {
     noSearchLeft: 'אין עוד תוצאות',
     failedToLoadResults: 'נכשל לטעון תוצאות',
     actions: {
+        save: 'שמירה',
+        clean: 'ניקוי',
         edit: 'עריכה',
         editment: 'עריכת',
         createment: 'יצירת',
         delete: 'מחיקה',
-        save: 'שמירה',
         cancel: 'ביטול',
         graph: 'גרף',
         disable: 'השבתה',
@@ -272,7 +274,7 @@ export default {
         destinationTemplates: 'תבניות יעד',
         cannotDeleteWithEntities: 'לא ניתן למחוק תבנית זאת, קיימות תחתיה ישויות',
         cannotDeleteWithRelationship: 'לא ניתן למחוק קשר זה, קיימים תחתיו קשרים',
-        cannotEditEntityDisabled: 'לא ניתן לערוך קשר זה, מכיל ישות מושבתת',
+        cannotPerformActionEntityDisabled: 'לא ניתן לבצע פעולה זו, מכיל ישות מושבתת',
         disabledEntityTemplate: 'תבנית מושבתת',
         disabledEntity: 'ישות מושבתת',
         disabledRule: 'חוק מושבת',
@@ -385,6 +387,7 @@ export default {
         failedToLoadAllPermissions: 'נכשל לטעון את כל ההרשאות',
         dontHavePermissionsToCategory: 'אין הרשאות לקטגוריה',
         dontHaveWritePermissionsToTemplate: 'אין הרשאות עריכה לתבנית',
+        EntityTemplateDisplay: 'תבנית ישות מושבתת',
         dontHavePermissionToEntityPage: 'אין לך הרשאות לגשת לעמוד פרט של ישות זו',
         dontHaveWritePermissions: 'אין לך הרשאות עריכה',
         permissionsOfUserDialog: {
@@ -659,6 +662,7 @@ export default {
                 required: 'ליישות חסרה שדה חובה',
                 createdSuccessfully: 'ישויות נוצרו בהצלחה',
                 tableCantLoadEntities: 'טבלה זו לא תומכת בטעינה מקבצים',
+                tableCantEditExcel: 'טבלה זו לא תומכת בעריכת טבלה, נא להוסיף שדה מזהה ייחודי',
                 limitNumberFiles: 'מספר קבצים שניתן להעלות: ',
                 limitNumberEntities: 'מספר ישויות שניתן להעלות בתוך קובץ הוא: ',
                 emptyExcel: 'יש להעלות קבצים עם יישויות',
@@ -667,6 +671,7 @@ export default {
                 wrongFileType: 'חלק מקבצים אלו לא קבצי אקסל',
                 notValid: 'שדה חייב להיות מסוג',
             },
+            editExcel: { title: 'עריכת טבלה מתוך קובץ', failedReadExcel: 'קריאת קובץ נכשלה' },
         },
         rule: {
             createTitle: 'יצירת חוק',
@@ -791,6 +796,7 @@ export default {
         hide: 'הסתר',
         unique: 'ייחודי',
         readOnly: 'לקריאה בלבד',
+        identifier: 'מזהה ייחודי',
         incoming: 'משויך מ',
         outgoing: 'משויך ל',
         relatedDirection: 'כיוון שיוך',
@@ -821,6 +827,7 @@ export default {
         attachmentFieldTitleExists: 'קיים שם קובץ לתצוגה זהה',
         stepNameExists: 'קיים שלב עם שם באנגלית זהה',
         stepDisplayNameExists: 'קיים שלב עם שם לתצוגה זהה',
+        fileslimit: 'מספר קבצים מוגבל ל{{limit}}',
         mapSearchPropertiesLimit: 'מספר השדות המקסימלי בחיפוש עמוד מפות הוא: {{limit}}',
     },
     propertyTypes: {
@@ -845,6 +852,7 @@ export default {
         location: 'מיקום',
         user: 'משתמש',
         users: 'משתמשים',
+        signature: 'חתימה',
     },
     input: {
         imagePicker: {
