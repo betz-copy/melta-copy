@@ -282,6 +282,7 @@ const MapPage = () => {
                 sceneModePicker={false}
                 vrButton={false}
                 fullscreenButton={false}
+                navigationHelpButton={false}
             >
                 {circleData.center && (circleData.radius || circleData.mouseRadius) && (
                     <Entity

@@ -6,7 +6,7 @@ import { IEntity } from '../../externalServices/instanceService/interfaces/entit
 import config from '../../config/index';
 import { excelConfig } from './excelConfig';
 import { hexToARGB } from './colors';
-import { isIncludedColumn } from './getFunctions';
+import { isIncludedColumn, isIncludedEditColumn } from './getFunctions';
 import { locationConverterToString } from './map';
 
 interface IExcelStyle {
@@ -188,20 +188,20 @@ const fixComplexProperties = (
 ) => {
     const isFileArray = value.type === 'array' && value.items?.format === 'fileId';
     const isSingleFile = value.format === 'fileId';
+    const isSignature = value.format === 'signature';
 
     if (value.format === 'relationshipReference') {
         relationshipRefCell(cell, [key, value], row, workspace.path);
         return true;
     }
-    if (isSingleFile || isFileArray) {
+    if (isSingleFile || isFileArray || isSignature) {
         filesCell(cell, isFileArray, rowIndex, row[key], workspace.id);
         return true;
     }
     return false;
 };
 
-const readOnlyCell = (cell: Cell, edit: boolean = true) => {
-    cell.protection = { locked: edit };
+const readOnlyCell = (cell: Cell) => {
     cell.fill = {
         type: 'pattern',
         pattern: 'solid',
@@ -221,7 +221,6 @@ const styleAWorksheet = (
     worksheet.getRow(1).eachCell((cell) => {
         cell.font = excelStyle.columnHeader.font;
         cell.alignment = excelStyle.columnHeader.alignment;
-        cell.protection = { locked: true };
     });
     const { properties } = template.properties;
     const { createdAt, updatedAt, disabled } = template;
@@ -237,9 +236,7 @@ const styleAWorksheet = (
         rows.forEach((row, index) => {
             const rowIndex = index + skip;
             const cell = worksheet.getCell(`${indexToExcelColumn(columnIndex + 1)}${rowIndex + SKIP_ROW_HEADER}`);
-            if (value.readOnly || value.identifier || value.serialStarter || row.disabled || disabled || !isIncludedColumn(value)) {
-                readOnlyCell(cell);
-            } else cell.protection = { locked: false };
+            if (!isIncludedEditColumn(value, row.disabled, disabled)) readOnlyCell(cell);
             if (row[key] !== undefined && value !== undefined) {
                 cell.alignment = excelStyle.cell.alignment;
                 cell.font = excelStyle.cell.font;
@@ -298,25 +295,6 @@ const styleAWorksheet = (
     Object.entries(allProperties).forEach(([_key, value], columnIndex) => {
         if (value.archive) worksheet.getColumn(columnIndex + 1).hidden = true;
     });
-
-    worksheet
-        .protect('mypassword', {
-            selectLockedCells: true,
-            selectUnlockedCells: true,
-            formatCells: false,
-            formatColumns: false,
-            formatRows: false,
-            insertColumns: false,
-            insertRows: false,
-            deleteColumns: false,
-            deleteRows: false,
-        })
-        .then(() => {
-            console.log('Worksheet is protected');
-        })
-        .catch((error) => {
-            console.error('Error protecting worksheet:', error);
-        });
 };
 
 export { createWorkbook, createWorksheet, styleAWorksheet };

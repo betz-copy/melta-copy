@@ -84,6 +84,7 @@ const LocationPreview = ({ entityProperties, entityTemplate }: Props) => {
                 sceneModePicker={false}
                 vrButton={false}
                 fullscreenButton={false}
+                navigationHelpButton={false}
             >
                 {polygons.map(({ key, position: polygon }) => (
                     <MeltaPolygon key={key} name={propertyDefinitions[key].title} polygon={polygon} />

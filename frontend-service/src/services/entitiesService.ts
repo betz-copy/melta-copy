@@ -19,11 +19,13 @@ import {
 import { EntityWizardValues } from '../common/dialogs/entity';
 import { IRuleBreach } from '../interfaces/ruleBreaches/ruleBreach';
 import { filterModelToFilterOfGraph } from '../pages/Graph/GraphFilterToBackend';
+import urlToFile from '../common/fileConversions';
 import { IEditReadExcel, ITablesResults } from '../interfaces/excel';
 import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { locationConverterToString } from '../utils/map/convert';
 
 const { entities, relationships } = environment.api;
+const { uuidFormat } = environment;
 
 export const exportEntitiesRequest = async (body: IExportEntitiesBody) => {
     const { data } = await axios.post(`${entities}/export`, body, { responseType: 'blob' });
@@ -144,8 +146,10 @@ export const getRelationshipInstancesCountByTemplateIdRequest = async (templateI
 
 export const createEntityRequest = async (entity: EntityWizardValues, ignoredRules?: IRuleBreach['brokenRules']) => {
     const formData = new FormData();
-
+    const templateProperties = entity.template.properties.properties;
     const filesToUpload: any = [];
+    const fileUploadPromises: Promise<[string, File]>[] = [];
+
     Object.entries(entity.attachmentsProperties).forEach(([key, value]: [string, any]) => {
         if (Array.isArray(value)) {
             value.forEach((file, index) => {
@@ -159,6 +163,13 @@ export const createEntityRequest = async (entity: EntityWizardValues, ignoredRul
             filesToUpload.push([`${key}`, value]);
         }
     });
+
+    Object.entries(entity.properties).forEach(([key, value]: [string, any]) => {
+        if (templateProperties[key]?.format === 'signature' && value)
+            fileUploadPromises.push(urlToFile(value, templateProperties[key]!.title).then((file) => [key, file]));
+    });
+    filesToUpload.push(...(await Promise.all(fileUploadPromises)));
+
     filesToUpload.forEach(([key, value]) => {
         formData.append(key, value as Blob);
     });
@@ -174,6 +185,8 @@ export const createEntityRequest = async (entity: EntityWizardValues, ignoredRul
                             return JSON.stringify({ location: locationConverterToString(property.location), unit: property.unit });
                         return JSON.stringify(property);
                     }
+                    case 'signature':
+                        return undefined;
                     default:
                         return property;
                 }
@@ -200,15 +213,20 @@ export const updateEntityRequestForMultiple = async (
     newEntityData: EntityWizardValues,
     ignoredRules?: IRuleBreach['brokenRules'],
 ) => {
+    const isUUID = (str: string) => uuidFormat.test(str);
     const formData = new FormData();
 
     const filesToUpload: any = [];
     const unchangedFiles: any = []; /// //send single file as array to the back
 
+    const properties = Object.entries(newEntityData.properties);
+    const templateProperties = newEntityData.template.properties.properties;
+    const fileUploadPromises: Promise<[string, File]>[] = [];
+
     Object.entries(newEntityData.attachmentsProperties).forEach(([key, value]: [string, any]) => {
         if (Array.isArray(value) && value) {
             value.forEach((file, index) => {
-                if (file instanceof File && newEntityData.template.properties.properties[key].items) {
+                if (file instanceof File && templateProperties[key].items) {
                     filesToUpload.push([`${key}.${index}`, file]);
                 } else if (file instanceof File) {
                     filesToUpload.push([`${key}`, file]);
@@ -224,6 +242,18 @@ export const updateEntityRequestForMultiple = async (
             }
         }
     });
+
+    for (const [key, value] of properties) {
+        if (templateProperties[key]?.format === 'signature') {
+            if (value && isUUID(value)) {
+                unchangedFiles.push([key, { name: value }]);
+            } else if (value) {
+                fileUploadPromises.push(urlToFile(value, templateProperties[key]!.title).then((file) => [key, file]));
+            }
+        }
+    }
+    filesToUpload.push(...(await Promise.all(fileUploadPromises)));
+
     filesToUpload.forEach(([key, value]) => {
         formData.append(key, value);
     });
@@ -246,6 +276,7 @@ export const updateEntityRequestForMultiple = async (
     formData.append(
         'properties',
         JSON.stringify(
+            // eslint-disable-next-line consistent-return
             mapValues(newEntityData.properties, (property, key) => {
                 switch (newEntityData.template.properties.properties[key]?.format) {
                     case 'relationshipReference':
@@ -254,6 +285,10 @@ export const updateEntityRequestForMultiple = async (
                         if (property.unit === 'UTM')
                             return JSON.stringify({ location: locationConverterToString(property.location), unit: property.unit });
                         return JSON.stringify(property);
+                    }
+                    case 'signature': {
+                        if (!isUUID(property)) return undefined;
+                        break;
                     }
                     default:
                         return property;

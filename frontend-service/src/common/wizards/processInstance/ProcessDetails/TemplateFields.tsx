@@ -28,6 +28,7 @@ export const TemplateFields = ({
                     item
                     sx={{
                         overflowY: 'auto',
+                        width: '100%',
                     }}
                 >
                     {Object.keys(pickProcessFieldsPropertiesSchema(values.template?.details)?.properties).length !== 0 && (

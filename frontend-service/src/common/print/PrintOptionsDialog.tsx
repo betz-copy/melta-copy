@@ -231,7 +231,7 @@ const PrintOptionsDialog: React.FC<{
                                 selectedOptions={entityConnections.selectedConnections}
                                 setSelectedOptions={entityConnections.setSelectedConnections}
                                 getOptionId={({ relationshipTemplate, isExpandedEntityRelationshipSource }) =>
-                                    `${relationshipTemplate._id}${isExpandedEntityRelationshipSource}`
+                                    `${relationshipTemplate?._id}${isExpandedEntityRelationshipSource}`
                                 }
                                 getOptionLabel={({
                                     relationshipTemplate: {

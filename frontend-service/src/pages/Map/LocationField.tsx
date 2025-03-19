@@ -146,6 +146,7 @@ const LocationField = ({ defaultLocation, field, updateValue }: Props) => {
                 sceneModePicker={false}
                 vrButton={false}
                 fullscreenButton={false}
+                navigationHelpButton={false}
             >
                 {polygonPosition.length > 0 && <MeltaPolygon name={field} polygon={polygonPosition} />}
                 {markerPosition && <MeltaCoordinate name={field} position={markerPosition} />}

@@ -18,7 +18,7 @@ export const SchemaForm = ({ viewMode, values, errors, touched, setFieldValue, s
         }));
 
     return (
-        <Box paddingTop={0.5} paddingLeft={1}>
+        <Box paddingTop={0.5} paddingLeft={1} width="100%">
             {!viewMode && (
                 <BlueTitle
                     title={i18next.t('wizard.entityTemplate.properties')}
