@@ -106,7 +106,7 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
 
         if (this.hasRelationshipsProperties(templateData)) {
             entityTemplate = await withTransaction(async (session: ClientSession) => {
-                const [newEntityTemplate] = await this.model.create([templateData], { session });
+                const [newEntityTemplate] = await this.model.create([this.convertExpendedUserFields(templateData)], { session });
 
                 const fixedEntityTemplate = await this.upsertRelationshipsProperties(newEntityTemplate, session);
 
@@ -122,7 +122,7 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
                     .exec();
             });
         } else {
-            const createdEntityTemplate = await this.model.create(templateData);
+            const createdEntityTemplate = await this.model.create(this.convertExpendedUserFields(templateData));
             entityTemplate = await createdEntityTemplate.populate<Pick<IEntityTemplatePopulated, 'category'>>('category');
         }
 
@@ -224,18 +224,21 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
     convertExpendedUserFields(templateData: Omit<IEntityTemplate, 'disabled'>): Omit<IEntityTemplate, 'disabled'> {
         const convertedProperties = templateData.properties.properties;
         const updatedPropertiesOrder = templateData.propertiesOrder;
-        Object.entries(templateData.properties.properties).forEach(([key, value]) => { // TODO: run only on regular keys - without the special user prefix
+        Object.entries(templateData.properties.properties).forEach(([key, value]) => {
             if(value.expandedUserFields) {
                 const { expandedUserFields, ...restOfTheValue } = value;
                 convertedProperties[key] = restOfTheValue;
-                expandedUserFields.forEach((userFieldToAdd) => {
+
+                const indexOfKeyInOrder = updatedPropertiesOrder.findIndex((el)=> el === key);
+
+                expandedUserFields.forEach((userFieldToAdd, index) => {
                     convertedProperties[`userprefix_${key}_${userFieldToAdd}`] = {
                         title: `${value.title}_${userFieldToAdd}`,
                         type: 'string',
                         readOnly: true,
                     };
 
-                    updatedPropertiesOrder.push(`userprefix_${key}_${userFieldToAdd}`);
+                    updatedPropertiesOrder.splice(indexOfKeyInOrder + index + 1, 0, `userprefix_${key}_${userFieldToAdd}`);
                 });
             }
         });

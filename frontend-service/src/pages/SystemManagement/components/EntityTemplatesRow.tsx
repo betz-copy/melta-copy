@@ -245,7 +245,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                     </MeltaTooltip>
                                 </Grid>
                                 <Grid item color={theme.palette.primary.main} fontWeight="400" sx={{ opacity: 0.75 }}>
-                                    {i18next.t(`propertyTypes.${value.type}`)}
+                                    {value.format === 'user' ? i18next.t(`propertyTypes.${value.format}`) : i18next.t(`propertyTypes.${value.type}`)}
                                 </Grid>
                             </Grid>
                         ))}

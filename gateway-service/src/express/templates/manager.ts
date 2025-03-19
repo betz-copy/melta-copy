@@ -750,7 +750,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         if (removeRequiredProperties.length > 0)
             await this.isPropertyInUsedAsRelatedFieldInRelationshipReference(currTemplate._id, removeRequiredProperties, false);
 
-        const removedProperties: string[] = [];
+        let removedProperties: string[] = [];
         const archiveProperties: string[] = [];
         const propertiesKeysToPluralize: string[] = [];
 
@@ -792,6 +792,16 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
                     if (!value.archive && newValue.archive && !currTemplate.actions) archiveProperties.push(key);
                     if (isSingularToPlural) propertiesKeysToPluralize.push(key);
                 }
+            });
+
+            removedProperties = removedProperties.filter((removedProperty) => {
+                if (removedProperty.startsWith('userprefix')) {
+                    const originalUserField = removedProperty.split('_')[1];
+                    const expandedUserKey = removedProperty.split('_')[2];
+                    return !updatedTemplateData.properties.properties[originalUserField].expandedUserFields?.includes(expandedUserKey);
+                }
+
+                return true;
             });
 
             const newProperties = Object.keys(updatedTemplateData.properties.properties).filter(

@@ -8,7 +8,6 @@ const RjfsUserWidget = ({
     disabled,
     label,
     value,
-    onChange,
     rawErrors = [],
     onBlur,
     onFocus,
@@ -18,34 +17,19 @@ const RjfsUserWidget = ({
 
     ...textFieldProps
 }: WidgetProps) => {
-    // const { updateExpandedUserFields } = options;
-    // TODO: lir
-    const onC = options.updateExpandedUserFields as (user: IKartoffelUser | null) => void;
+    const handleOnChange = options.updateExpandedUserFields as (user: IKartoffelUser | null) => void;
 
     const [currentUser, setCurrentUser] = React.useState(value ? JSON.parse(value) : undefined);
     if (!currentUser) {
-        console.log('updatee!!3');
-        if (onC) onC(null);
-        onChange(undefined);
+        if (handleOnChange) handleOnChange(null);
     }
 
     function handleUserChange(_event: React.SyntheticEvent, chosenUser: IKartoffelUser | null) {
-        console.log('updatee!!2', { chosenUser });
-        if (onC) onC(chosenUser);
+        if (handleOnChange) handleOnChange(chosenUser);
         if (!chosenUser) {
             setCurrentUser(undefined);
             return;
         }
-        onChange(
-            JSON.stringify({
-                _id: chosenUser?._id || chosenUser?.id,
-                fullName: chosenUser?.fullName,
-                jobTitle: chosenUser?.jobTitle,
-                hierarchy: chosenUser?.hierarchy,
-                mail: chosenUser?.mail,
-            }),
-            // chosenUser,
-        );
 
         setCurrentUser(chosenUser);
     }
@@ -54,7 +38,6 @@ const RjfsUserWidget = ({
         <Grid>
             <UserAutocomplete
                 mode="kartoffel"
-                // mode="external"
                 value={
                     currentUser
                         ? { _id: currentUser._id, displayName: `${currentUser.fullName} - ${currentUser.hierarchy}`, ...currentUser }
@@ -70,7 +53,7 @@ const RjfsUserWidget = ({
                 enableClear
                 onDisplayValueChange={(_, newDisplayValue) => {
                     if (newDisplayValue === '') {
-                        onChange(undefined);
+                        handleOnChange(null);
                         setCurrentUser(undefined);
                     }
                 }}

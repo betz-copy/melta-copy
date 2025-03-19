@@ -199,28 +199,31 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                     return {
                         'ui:widget': 'UserWidget',
                         'ui:options': {
-                            // TODO: lir
                             updateExpandedUserFields: (user: IKartoffelUser | null) => {
-                                // updateExpandedUserFields: (key: string, user: IKartoffelUser) => {
-                                console.log('updatee!!', { user, propertyKey, schema });
                                 const userFieldsToUpdate = Object.keys(schema.properties).filter((key) =>
                                     key.startsWith(`userprefix_${propertyKey}`),
                                 );
 
-                                console.log({ userFieldsToUpdate, values });
-
                                 const propertiesToUpdate = values.properties;
-                                console.log({ propertiesToUpdateBefore: propertiesToUpdate });
 
                                 userFieldsToUpdate.forEach((userField) => {
                                     const fieldKey = userField.split('_')[2];
-                                    console.log({ fieldKey });
                                     propertiesToUpdate[userField] = user ? user[fieldKey] : undefined;
                                 });
 
-                                console.log({ propertiesToUpdateAfter: propertiesToUpdate });
-                                setValues({ ...propertiesToUpdate });
-                                console.log('set values 1');
+                                propertiesToUpdate[propertyKey] = user
+                                    ? JSON.stringify({
+                                          _id: user?._id || user?.id,
+                                          fullName: user?.fullName,
+                                          jobTitle: user?.jobTitle,
+                                          hierarchy: user?.hierarchy,
+                                          mail: user?.mail,
+                                      })
+                                    : undefined;
+
+                                setValues({
+                                    ...propertiesToUpdate,
+                                });
                             },
                         },
                     };
@@ -242,21 +245,13 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                 return {};
             })}
             onChange={({ formData }) => {
-                console.log({ formData });
                 Object.entries(formData).forEach(([key, value]) => {
                     if (JSON.stringify(value) === JSON.stringify([undefined]) || JSON.stringify(value) === JSON.stringify([null])) {
                         // eslint-disable-next-line no-param-reassign
                         formData[key] = undefined;
                     }
                 });
-                // TODO: lir
-                const valuesToUpdate = { ...formData };
-                Object.keys(valuesToUpdate).forEach((key) => {
-                    if (key.startsWith('userprefix_')) delete valuesToUpdate[key];
-                });
-                console.log({ valuesToUpdate });
-                setValues(valuesToUpdate);
-                console.log('set values 2');
+                setValues(formData);
             }}
             formData={values.properties}
             showErrorList={false}
