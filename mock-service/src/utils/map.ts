@@ -9,7 +9,7 @@ export const generateRandomLocation = () => {
     const lat = (Math.random() * (gazaBounds[1][0] - gazaBounds[2][0]) + gazaBounds[2][0]).toFixed(5);
     const lng = (Math.random() * (gazaBounds[1][1] - gazaBounds[0][1]) + gazaBounds[0][1]).toFixed(5);
 
-    return `${lat}, ${lng}`;
+    return { location: `${lat}, ${lng}`, unit: 'WGS84' };
 };
 
 export const generateRandomPolygon = () => {
@@ -47,5 +47,5 @@ export const generateRandomPolygon = () => {
 
     points.push(points[0]);
 
-    return `POLYGON((${points.join(',')}))`;
+    return { location: `POLYGON((${points.join(',')}))`, unit: 'WGS84' };
 };
