@@ -6,17 +6,17 @@ import { SelectCheckbox } from '../SelectCheckBox';
 import { MeltaCheckbox } from '../MeltaCheckbox';
 import { IFile } from '../../interfaces/preview';
 import { getFile } from '../../utils/getFileType';
-import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IEntityTemplate, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IMongoProcessInstancePopulated, InstanceProperties } from '../../interfaces/processes/processInstance';
 import { IMongoProcessTemplatePopulated, IProcessSingleProperty } from '../../interfaces/processes/processTemplate';
-import { IEntityExpanded } from '../../interfaces/entities';
+import { IEntity, IEntityExpanded } from '../../interfaces/entities';
 import {
     IConnectionExpanded,
     IConnectionTemplateExpanded,
     IEntityExpandedWithRelatedRelationships,
     ISelectRelationshipTemplates,
 } from '../../pages/Entity/components/print';
-import MuiTreeSelection, { TreeNode } from '../../pages/Entity/components/print/RelationshipSelection';
+import RelationshipSelect, { TreeNode } from '../../pages/Entity/components/print/RelationshipSelection';
 import { IConnectionTemplateOfExpandedEntity } from '../../pages/Entity';
 
 type IOption = {
@@ -26,18 +26,9 @@ type IOption = {
 };
 
 const getFilesFromTemplate = (
-    instanceProperties:
-        | {
-              properties: {
-                  _id: string;
-                  createdAt: string;
-                  updatedAt: string;
-                  disabled: boolean;
-              } & Record<string, any>;
-          }
-        | InstanceProperties,
+    instanceProperties: IEntity | InstanceProperties,
     templateProperties:
-        | { type: 'object'; properties: Record<string, IEntitySingleProperty>; required: string[]; hide: string[] }
+        | IEntityTemplate['properties']
         | {
               type: 'object';
               properties: Record<string, IProcessSingleProperty>;
@@ -253,7 +244,14 @@ const PrintOptionsDialog: React.FC<{
             <DialogContent style={{ width: '500px' }}>
                 <Grid container direction="column" spacing={1} alignItems="center">
                     <Grid item>
-                        {entityConnections && allRelevantConnections.length > 0 && <MuiTreeSelection treeData={allRelevantConnections} />}
+                        {entityConnections && allRelevantConnections.length > 0 && (
+                            <RelationshipSelect
+                                options={allRelevantConnections}
+                                selectedOptions={entityConnections.selectedConnections}
+                                setSelectedOptions={entityConnections.setSelectedConnections}
+                                title={i18next.t('entityPage.print.chooseRelationship')}
+                            />
+                        )}
                         {files.length !== 0 && (
                             <SelectCheckbox
                                 title={i18next.t('entityPage.print.chooseFiles')}
