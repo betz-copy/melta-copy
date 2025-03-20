@@ -3,9 +3,6 @@ import { Dialog, DialogTitle, DialogContent, Grid, Button, FormControlLabel, Dia
 import { PrintOutlined, CloseOutlined } from '@mui/icons-material';
 import i18next from 'i18next';
 import { SelectCheckbox } from '../SelectCheckBox';
-import { IMongoRelationshipTemplatePopulated } from '../../interfaces/relationshipTemplates';
-import { IMongoCategory } from '../../interfaces/categories';
-import { IConnectionTemplateOfExpandedEntity } from '../../pages/Entity';
 import { MeltaCheckbox } from '../MeltaCheckbox';
 import { IFile } from '../../interfaces/preview';
 import { getFile } from '../../utils/getFileType';
@@ -13,7 +10,14 @@ import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../inte
 import { IMongoProcessInstancePopulated, InstanceProperties } from '../../interfaces/processes/processInstance';
 import { IMongoProcessTemplatePopulated, IProcessSingleProperty } from '../../interfaces/processes/processTemplate';
 import { IEntityExpanded } from '../../interfaces/entities';
-import { IExpandedRelationshipTemplateWithRelated } from '../../pages/Entity/components/print';
+import {
+    IConnectionExpanded,
+    IConnectionTemplateExpanded,
+    IEntityExpandedWithRelatedRelationships,
+    ISelectRelationshipTemplates,
+} from '../../pages/Entity/components/print';
+import MuiTreeSelection, { TreeNode } from '../../pages/Entity/components/print/RelationshipSelection';
+import { IConnectionTemplateOfExpandedEntity } from '../../pages/Entity';
 
 type IOption = {
     show: boolean;
@@ -59,7 +63,7 @@ const PrintOptionsDialog: React.FC<{
     open: boolean;
     handleClose: () => void;
     template: IMongoEntityTemplatePopulated | IMongoProcessTemplatePopulated;
-    instance: IEntityExpanded | IMongoProcessInstancePopulated;
+    instance: IEntityExpandedWithRelatedRelationships | IMongoProcessInstancePopulated;
     files: IFile[];
     setFiles: React.Dispatch<React.SetStateAction<IFile[]>>;
     selectedFiles: IFile[];
@@ -68,16 +72,10 @@ const PrintOptionsDialog: React.FC<{
     setFilesLoadingStatus: React.Dispatch<React.SetStateAction<{}>>;
     entityConnections?: {
         connectionsTemplates: IConnectionTemplateOfExpandedEntity[];
-        selectedConnections: IConnectionTemplateOfExpandedEntity[];
-        setSelectedConnections: React.Dispatch<React.SetStateAction<IConnectionTemplateOfExpandedEntity[]>>;
-        categoriesWithConnectionsTemplates: {
-            category: IMongoCategory;
-            connectionsTemplates: {
-                relationshipTemplate: IMongoRelationshipTemplatePopulated;
-                isExpandedEntityRelationshipSource: boolean;
-            }[];
-        }[];
-        expandedRelationshipTemplates: IExpandedRelationshipTemplateWithRelated[];
+        expandedRelationshipsTemplates: IConnectionTemplateExpanded[];
+        expandedRelationships: IConnectionExpanded[];
+        selectedConnections: ISelectRelationshipTemplates[];
+        setSelectedConnections: React.Dispatch<React.SetStateAction<ISelectRelationshipTemplates[]>>;
     };
     options: {
         date?: IOption;
@@ -164,19 +162,12 @@ const PrintOptionsDialog: React.FC<{
         setIsLoading(Object.values(filesLoadingStatus).some((loading) => loading));
     }, [filesLoadingStatus]);
 
-    const allRelevantConnections: string[] = [];
-
-    // let filteredCategoriesWithConnectionsTemplates: {
-    //     category: IMongoCategory;
-    //     connectionsTemplates: {
-    //         relationshipTemplate: IMongoRelationshipTemplatePopulated;
-    //         isExpandedEntityRelationshipSource: boolean;
-    //     }[];
-    // }[] = [];
+    const allRelevantConnections: TreeNode[] = [];
 
     if (entityConnections) {
-        const { connectionsTemplates, categoriesWithConnectionsTemplates, expandedRelationshipTemplates } = entityConnections;
-        connectionsTemplates.map(({ relationshipTemplate: { _id }, isExpandedEntityRelationshipSource }) => {
+        const { connectionsTemplates, expandedRelationshipsTemplates, expandedRelationships } = entityConnections;
+
+        const relevantParents = connectionsTemplates.filter(({ relationshipTemplate: { _id }, isExpandedEntityRelationshipSource }) => {
             const relevantConnections = (instance as IEntityExpanded).connections.filter((connection) => {
                 if (isExpandedEntityRelationshipSource) {
                     return (
@@ -191,22 +182,60 @@ const PrintOptionsDialog: React.FC<{
                 );
             });
 
-            if (relevantConnections.length > 0) allRelevantConnections.push(_id);
-            return relevantConnections;
+            return relevantConnections.length > 0;
         });
 
-        // filteredCategoriesWithConnectionsTemplates = categoriesWithConnectionsTemplates
-        //     .map((categoryWithConnection) => {
-        //         const filteredConnectionsTemplates = categoryWithConnection.connectionsTemplates.filter((connection) =>
-        //             allRelevantConnections.includes(connection.relationshipTemplate._id),
-        //         );
+        const relevantChildren = expandedRelationshipsTemplates.filter(
+            ({ relationshipTemplate: { _id }, isExpandedEntityRelationshipSource, parentRelationship }) => {
+                const relevantParentRelationship = relevantParents.find(
+                    (relevantParent) => relevantParent.relationshipTemplate._id === parentRelationship.relationshipTemplate._id,
+                );
 
-        //         return {
-        //             ...categoryWithConnection,
-        //             connectionsTemplates: filteredConnectionsTemplates,
-        //         };
-        //     })
-        //     .filter((categoryWithConnection) => categoryWithConnection.connectionsTemplates.length > 0);
+                if (!relevantParentRelationship) return false;
+                const parentInstance = (instance as IEntityExpanded).connections.find(
+                    (connection) => relevantParentRelationship.relationshipTemplate._id === connection.relationship.templateId,
+                );
+                const entityId = relevantParentRelationship.isExpandedEntityRelationshipSource
+                    ? parentInstance?.destinationEntity.properties._id
+                    : parentInstance?.sourceEntity.properties._id;
+
+                const relevantConnections = expandedRelationships.filter((connection) => {
+                    if (isExpandedEntityRelationshipSource)
+                        return connection.relationship.templateId === _id && connection.destinationEntity.properties._id === entityId;
+
+                    return connection.relationship.templateId === _id && connection.sourceEntity.properties._id === entityId;
+                });
+
+                return relevantConnections.length > 0;
+            },
+        );
+
+        const relationshipMap = new Map<string, TreeNode>();
+
+        relevantParents.forEach((relevantParent) => {
+            const parentId = relevantParent.relationshipTemplate._id;
+
+            if (!relationshipMap.has(parentId)) {
+                relationshipMap.set(parentId, {
+                    id: parentId,
+                    label: `${relevantParent.relationshipTemplate.displayName} (${relevantParent.relationshipTemplate.sourceEntity.displayName} > ${relevantParent.relationshipTemplate.destinationEntity.displayName})`,
+                    children: [],
+                });
+            }
+        });
+
+        relevantChildren.forEach((relevantChild) => {
+            const parentId = relevantChild.parentRelationship.relationshipTemplate._id;
+            const childNode: TreeNode = {
+                id: relevantChild.relationshipTemplate._id,
+                label: `${relevantChild.relationshipTemplate.displayName} (${relevantChild.relationshipTemplate.sourceEntity.displayName} > ${relevantChild.relationshipTemplate.destinationEntity.displayName})`,
+            };
+
+            const parentNode = relationshipMap.get(parentId);
+            if (parentNode) parentNode.children?.push(childNode);
+        });
+
+        allRelevantConnections.push(...relationshipMap.values());
     }
 
     return (
@@ -224,57 +253,7 @@ const PrintOptionsDialog: React.FC<{
             <DialogContent style={{ width: '500px' }}>
                 <Grid container direction="column" spacing={1} alignItems="center">
                     <Grid item>
-                        {entityConnections && allRelevantConnections.length > 0 && (
-                            <SelectCheckbox<IExpandedRelationshipTemplateWithRelated, IConnectionTemplateOfExpandedEntity>
-                                title={i18next.t('entityPage.print.chooseRelationship')}
-                                options={entityConnections.expandedRelationshipTemplates}
-                                isDraggableDisabled
-                                selectedOptions={entityConnections.selectedConnections}
-                                setSelectedOptions={entityConnections.setSelectedConnections}
-                                getOptionId={({ relationshipTemplate, isExpandedEntityRelationshipSource }) =>
-                                    `${relationshipTemplate?._id}${isExpandedEntityRelationshipSource}`
-                                }
-                                getOptionLabel={({
-                                    relationshipTemplate: {
-                                        displayName,
-                                        sourceEntity: { displayName: sourceEntityDisplayName },
-                                        destinationEntity: { _id: destinationEntityId, displayName: destinationEntityDisplayName },
-                                    },
-                                    isExpandedEntityRelationshipSource,
-                                }) => {
-                                    if (
-                                        !isExpandedEntityRelationshipSource &&
-                                        destinationEntityId === (instance as IEntityExpanded).entity.templateId
-                                    ) {
-                                        // special case to differentiate between outgoing/incoming relationships of relationshipTemplate that is of format expandedEntityTemplate -> expandedEntityTemplate
-                                        return `${displayName} (${sourceEntityDisplayName} < ${destinationEntityDisplayName})`;
-                                    }
-
-                                    return `${displayName} (${sourceEntityDisplayName} > ${destinationEntityDisplayName})`;
-                                }}
-                                // groupsProps={{
-                                //     useGroups: true,
-                                //     groups: filteredCategoriesWithConnectionsTemplates,
-                                //     getGroupId: ({ category: { _id } }) => _id,
-                                //     getGroupLabel: ({ category: { displayName } }) => displayName,
-                                //     getGroupOfOption: (option, groups) =>
-                                //         groups.find((group) =>
-                                //             group.connectionsTemplates.find(
-                                //                 ({ relationshipTemplate }) => relationshipTemplate._id === option.relationshipTemplate._id,
-                                //             ),
-                                //         )!,
-                                // }}
-                                groupsProps={{
-                                    useGroups: true,
-                                    groups: entityConnections.connectionsTemplates,
-                                    getGroupId: ({ relationshipTemplate: { _id } }) => _id,
-                                    getGroupLabel: ({ relationshipTemplate: { displayName } }) => displayName,
-                                    getGroupOfOption: (relationshipTemplate) => relationshipTemplate.relatedTemplate,
-                                }}
-                                dynamicWidth={275}
-                                allowOnlyParents
-                            />
-                        )}
+                        {entityConnections && allRelevantConnections.length > 0 && <MuiTreeSelection treeData={allRelevantConnections} />}
                         {files.length !== 0 && (
                             <SelectCheckbox
                                 title={i18next.t('entityPage.print.chooseFiles')}
