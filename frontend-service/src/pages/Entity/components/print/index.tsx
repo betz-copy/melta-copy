@@ -18,7 +18,7 @@ import { getExpandedEntityByIdRequest } from '../../../../services/entitiesServi
 import { IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '../../../../interfaces/relationshipTemplates';
 
 export interface ISelectRelationshipTemplates extends IConnectionTemplateOfExpandedEntity {
-    extendedRelationships?: IConnectionTemplateOfExpandedEntity[];
+    children?: IConnectionTemplateExpanded[];
 }
 export interface ConnectionWithExtendedRelationship extends IConnection {
     extendedRelationships?: IConnection[];
@@ -33,7 +33,7 @@ export interface IConnectionExpanded extends IConnection {
 }
 
 export interface IConnectionTemplateExpanded extends IConnectionTemplateOfExpandedEntity {
-    parentRelationship: IConnectionTemplateOfExpandedEntity;
+    parentRelationship?: IConnectionTemplateOfExpandedEntity;
 }
 
 const Print: React.FC<{
@@ -176,6 +176,7 @@ const Print: React.FC<{
                         entityTemplate={entityTemplate}
                         expandedEntity={expandedEntity}
                         connectionsTemplatesToPrint={selectedConnections}
+                        expandedRelationships={expandedRelationships}
                         filesToPrint={selectedFiles}
                         setSelectedFiles={setSelectedFiles}
                         setFilesLoadingStatus={setFilesLoadingStatus}

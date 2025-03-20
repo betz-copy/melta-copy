@@ -7,42 +7,43 @@ import { IEntity } from '../../../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { EntityDisableCheckbox } from '../EntityDisableCheckbox';
 import { EntityDates } from '../EntityDates';
-import { IExpandedRelationship } from '.';
 import { BlueTitle } from '../../../../common/BlueTitle';
-import { IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '../../../../interfaces/relationshipTemplates';
+import { IMongoRelationshipTemplatePopulated } from '../../../../interfaces/relationshipTemplates';
+import { ConnectionWithExtendedRelationship, IConnectionTemplateExpanded } from '.';
 
 interface RelationshipPrintTitleProps {
     relationshipTemplate: IMongoRelationshipTemplatePopulated;
     isExpandedEntityRelationshipSource: boolean;
     fontSize?: string;
+    index?: number;
+    sxOverride?;
 }
 
 export const RelationshipPrintTitle: React.FC<RelationshipPrintTitleProps> = ({
     relationshipTemplate,
     isExpandedEntityRelationshipSource,
     fontSize,
+    index,
+    sxOverride,
 }) => {
     const { destinationEntity, sourceEntity, displayName } = relationshipTemplate;
 
     return (
-        <Box display="flex" alignItems="center" marginTop="2rem" marginBottom="0.5rem">
-            <Typography variant="h4" fontSize={fontSize ?? '26px'} color="gray" fontWeight={isExpandedEntityRelationshipSource ? '900' : undefined}>
+        <Box display="flex" alignItems="center" sx={{ sxOverride, gap: '7px' }}>
+            {index && (
+                <Typography variant="h6" fontSize={fontSize ?? '26px'} color="gray">
+                    {`${index}.`}
+                </Typography>
+            )}
+            <Typography variant="h6" fontSize={fontSize ?? '26px'} color="gray" fontWeight={isExpandedEntityRelationshipSource ? '900' : undefined}>
                 {sourceEntity.displayName}
             </Typography>
 
-            <Typography
-                paddingRight="7px"
-                paddingLeft="7px"
-                fontWeight="800"
-                color="primary"
-                component="h5"
-                variant="h5"
-                fontSize={fontSize ?? '26px'}
-            >
+            <Typography fontWeight="800" color="primary" component="h5" variant="h6" fontSize={fontSize ?? '26px'}>
                 {displayName}
             </Typography>
 
-            <Typography variant="h4" fontSize={fontSize ?? '26px'} color="gray" fontWeight={isExpandedEntityRelationshipSource ? undefined : '900'}>
+            <Typography variant="h6" fontSize={fontSize ?? '26px'} color="gray" fontWeight={isExpandedEntityRelationshipSource ? undefined : '900'}>
                 {destinationEntity.displayName}
             </Typography>
         </Box>
@@ -54,11 +55,12 @@ const EntityComponentToPrint: React.FC<{
     entity: IEntity;
     options?: { showDates?: boolean };
     showPreviewPropertiesOnly?: boolean;
-    expandedRelationships?: IExpandedRelationship[];
+    expandedRelationships?: { instances: ConnectionWithExtendedRelationship[]; templates: IConnectionTemplateExpanded[] };
 }> = ({ entityTemplate, entity, options = { showDates: true }, showPreviewPropertiesOnly, expandedRelationships }) => {
+    console.log({ expandedRelationships });
+
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const relationshipTemplates = queryClient.getQueryData<IRelationshipTemplateMap>('getRelationshipTemplates')!;
 
     const theme = useTheme();
 
@@ -80,26 +82,32 @@ const EntityComponentToPrint: React.FC<{
 
             {options.showDates && <EntityDates createdAt={entity.properties.createdAt} updatedAt={entity.properties.updatedAt} toPrint />}
 
-            {expandedRelationships && expandedRelationships.length > 0 && (
-                <>
-                    <BlueTitle title={i18next.t('entityPage.print.relationships')} component="p" variant="subtitle1" />
-                    {expandedRelationships.map((expandedRelationship, index) => {
-                        const relatedEntity = expandedRelationship.isMainEntityIsRelationshipSource
-                            ? expandedRelationship.destinationEntity
-                            : expandedRelationship.sourceEntity;
+            {expandedRelationships && expandedRelationships.templates.length > 0 && (
+                <div>
+                    <BlueTitle title={i18next.t('entityPage.print.relationships')} component="p" variant="h6" style={{ marginTop: '5px' }} />
+                    {expandedRelationships.templates.map((expandedTemplate, index) => {
+                        const expandedRelationship = expandedRelationships.instances.find(
+                            (instance) => expandedTemplate.relationshipTemplate._id === instance.relationship.templateId,
+                        );
+                        if (!expandedRelationship) return <div key={expandedTemplate.relationshipTemplate._id} />;
+
+                        const relatedEntity = expandedTemplate.isExpandedEntityRelationshipSource
+                            ? expandedRelationship.sourceEntity
+                            : expandedRelationship.destinationEntity;
+
                         return (
-                            <>
-                                <Grid>
-                                    {`${index + 1}.`}
-                                    <RelationshipPrintTitle
-                                        relationshipTemplate={relationshipTemplates[expandedRelationship.relationship.templateId]}
-                                        isExpandedEntityRelationshipSource={expandedRelationship.isMainEntityIsRelationshipSource}
-                                    />
-                                </Grid>
-                                <Box padding="0.2rem">
+                            <div key={relatedEntity.properties._id}>
+                                <RelationshipPrintTitle
+                                    relationshipTemplate={expandedTemplate.relationshipTemplate}
+                                    isExpandedEntityRelationshipSource={expandedTemplate.isExpandedEntityRelationshipSource}
+                                    fontSize="17px"
+                                    index={index + 1}
+                                    sxOverride={{ marginTop: '0.5rem' }}
+                                />
+                                <Box>
                                     <EntityPropertiesInternal
                                         properties={relatedEntity.properties}
-                                        entityTemplate={entityTemplates[relatedEntity.templateId]}
+                                        entityTemplate={entityTemplates.get(relatedEntity.templateId)!}
                                         darkMode={false}
                                         showPreviewPropertiesOnly={showPreviewPropertiesOnly}
                                         mode="normal"
@@ -107,10 +115,10 @@ const EntityComponentToPrint: React.FC<{
                                         isPrintingMode
                                     />
                                 </Box>
-                            </>
+                            </div>
                         );
                     })}
-                </>
+                </div>
             )}
         </Box>
     );

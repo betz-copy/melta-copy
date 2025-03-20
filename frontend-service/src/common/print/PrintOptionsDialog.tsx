@@ -16,7 +16,7 @@ import {
     IEntityExpandedWithRelatedRelationships,
     ISelectRelationshipTemplates,
 } from '../../pages/Entity/components/print';
-import RelationshipSelect, { TreeNode } from '../../pages/Entity/components/print/RelationshipSelection';
+import RelationshipSelect from '../../pages/Entity/components/print/RelationshipSelection';
 import { IConnectionTemplateOfExpandedEntity } from '../../pages/Entity';
 
 type IOption = {
@@ -153,7 +153,7 @@ const PrintOptionsDialog: React.FC<{
         setIsLoading(Object.values(filesLoadingStatus).some((loading) => loading));
     }, [filesLoadingStatus]);
 
-    const allRelevantConnections: TreeNode[] = [];
+    const allRelevantConnections: ISelectRelationshipTemplates[] = [];
 
     if (entityConnections) {
         const { connectionsTemplates, expandedRelationshipsTemplates, expandedRelationships } = entityConnections;
@@ -179,7 +179,7 @@ const PrintOptionsDialog: React.FC<{
         const relevantChildren = expandedRelationshipsTemplates.filter(
             ({ relationshipTemplate: { _id }, isExpandedEntityRelationshipSource, parentRelationship }) => {
                 const relevantParentRelationship = relevantParents.find(
-                    (relevantParent) => relevantParent.relationshipTemplate._id === parentRelationship.relationshipTemplate._id,
+                    (relevantParent) => relevantParent.relationshipTemplate._id === parentRelationship!.relationshipTemplate._id,
                 );
 
                 if (!relevantParentRelationship) return false;
@@ -201,29 +201,24 @@ const PrintOptionsDialog: React.FC<{
             },
         );
 
-        const relationshipMap = new Map<string, TreeNode>();
+        const relationshipMap = new Map<string, ISelectRelationshipTemplates>();
 
         relevantParents.forEach((relevantParent) => {
             const parentId = relevantParent.relationshipTemplate._id;
 
             if (!relationshipMap.has(parentId)) {
                 relationshipMap.set(parentId, {
-                    id: parentId,
-                    label: `${relevantParent.relationshipTemplate.displayName} (${relevantParent.relationshipTemplate.sourceEntity.displayName} > ${relevantParent.relationshipTemplate.destinationEntity.displayName})`,
+                    ...relevantParent,
                     children: [],
                 });
             }
         });
 
         relevantChildren.forEach((relevantChild) => {
-            const parentId = relevantChild.parentRelationship.relationshipTemplate._id;
-            const childNode: TreeNode = {
-                id: relevantChild.relationshipTemplate._id,
-                label: `${relevantChild.relationshipTemplate.displayName} (${relevantChild.relationshipTemplate.sourceEntity.displayName} > ${relevantChild.relationshipTemplate.destinationEntity.displayName})`,
-            };
+            const parentId = relevantChild.parentRelationship!.relationshipTemplate._id;
 
             const parentNode = relationshipMap.get(parentId);
-            if (parentNode) parentNode.children?.push(childNode);
+            if (parentNode) parentNode.children?.push(relevantChild);
         });
 
         allRelevantConnections.push(...relationshipMap.values());

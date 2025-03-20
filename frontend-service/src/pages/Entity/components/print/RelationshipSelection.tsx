@@ -2,33 +2,29 @@
 import React, { Dispatch, PropsWithChildren, SetStateAction, useCallback, useState } from 'react';
 import { RichTreeViewPro, TreeItem2Props } from '@mui/x-tree-view-pro';
 import { ChevronLeft, ExpandLess } from '@mui/icons-material';
-import { Box, FormControl, Select } from '@mui/material';
+import { Box, FormControl, Select, useTheme } from '@mui/material';
 import TreeItem from '../../../../common/Tree/TreeItem';
+import { ISelectRelationshipTemplates } from '.';
+import { CustomExpandMore } from '../../../../common/SelectCheckBox';
+import { useDarkModeStore } from '../../../../stores/darkMode';
 
-export interface TreeNode {
-    id: string;
-    label: string;
-    children?: TreeNode[];
-}
-
-const getItemId = (item: TreeNode) => item.id;
-const getItemLabel = (item: TreeNode) => item.label;
+const getItemId = (item: ISelectRelationshipTemplates) => item.relationshipTemplate._id;
+const getItemLabel = (item: ISelectRelationshipTemplates) =>
+    `${item.relationshipTemplate.displayName} (${item.relationshipTemplate.sourceEntity.displayName} > ${item.relationshipTemplate.destinationEntity.displayName})`;
 
 const RelationshipSelection: React.FC<{
-    treeData: RelationshipSelectProps['options'];
+    options: RelationshipSelectProps['options'];
     selectedOptions: RelationshipSelectProps['selectedOptions'];
     setSelectedOptions: RelationshipSelectProps['setSelectedOptions'];
-    isOpen: boolean;
-}> = ({ treeData, selectedOptions, setSelectedOptions, isOpen }) => {
-    const [selectedItemsIds, setSelectedItemsIds] = useState<string[]>([]);
+}> = ({ options, selectedOptions, setSelectedOptions }) => {
     const [expandedItemsIds, setExpandedItemsIds] = useState<string[]>([]);
-    console.log({ selectedItemsIds, expandedItemsIds });
 
-    const findNodeById = (nodes: TreeNode[], id: string): TreeNode | null => {
+    const findNodeById = (nodes: ISelectRelationshipTemplates[], id: string): ISelectRelationshipTemplates | null => {
         for (const node of nodes) {
-            if (node.id === id) return node;
+            if (getItemId(node) === id) return node;
             if (node.children) {
                 const found = findNodeById(node.children, id);
+
                 if (found) return found;
             }
         }
@@ -36,13 +32,12 @@ const RelationshipSelection: React.FC<{
     };
 
     const handleSelectedItemsChange = (itemIds: string[]) => {
-        console.log({ itemIds });
+        const selectedNodes = new Set<ISelectRelationshipTemplates>();
+        const selectedParentsWithChildren: ISelectRelationshipTemplates[] = [];
 
-        const selectedNodes = new Set<TreeNode>();
-
-        const findParent = (nodes: TreeNode[], childId: string): TreeNode | null => {
+        const findParent = (nodes: ISelectRelationshipTemplates[], childId: string): ISelectRelationshipTemplates | null => {
             for (const node of nodes) {
-                if (node.children?.some((child) => child.id === childId)) return node;
+                if (node.children?.some((child) => child.relationshipTemplate._id === childId)) return node;
                 if (node.children) {
                     const found = findParent(node.children, childId);
                     if (found) return found;
@@ -52,19 +47,23 @@ const RelationshipSelection: React.FC<{
         };
 
         itemIds.forEach((id) => {
-            const node = findNodeById(treeData, id);
+            const node = findNodeById(options, id);
             if (node) {
                 selectedNodes.add(node);
-                const parent = findParent(treeData, id);
+                const parent = findParent(options, id);
                 if (parent) {
                     selectedNodes.add(parent);
-                }
+                    const selectedParent = selectedParentsWithChildren.find(
+                        (selectedParentWithChild) => selectedParentWithChild.relationshipTemplate._id === parent.relationshipTemplate._id,
+                    );
+                    if (selectedParent) selectedParent.children = [...(selectedParent.children ?? []), node];
+                    else selectedParentsWithChildren.push({ ...parent, children: [node] });
+                } else selectedParentsWithChildren.push({ ...node, children: [] });
             }
         });
-        console.log({ selectedNodes });
 
-        setSelectedOptions(Array.from(selectedNodes));
-        return Array.from(selectedNodes).map((node) => node.id);
+        setSelectedOptions(selectedParentsWithChildren);
+        return Array.from(selectedNodes).map((node) => node.relationshipTemplate._id);
     };
 
     const TreeItemWrapper = useCallback((props: TreeItem2Props) => <TreeItem {...props} showIcon={false} />, []);
@@ -74,11 +73,11 @@ const RelationshipSelection: React.FC<{
             style={{ direction: 'rtl' }}
             checkboxSelection
             multiSelect
-            items={treeData}
+            items={options}
             getItemId={getItemId}
             getItemLabel={getItemLabel}
-            selectedItems={selectedOptions.map((option) => option.id)}
-            onSelectedItemsChange={(_, itemIds) => setSelectedItemsIds(handleSelectedItemsChange(itemIds))}
+            selectedItems={selectedOptions.map((option) => option.relationshipTemplate._id)}
+            onSelectedItemsChange={(_, itemIds) => handleSelectedItemsChange(itemIds)}
             onExpandedItemsChange={(_, itemIds) => setExpandedItemsIds(itemIds)}
             expandedItems={expandedItemsIds}
             expansionTrigger="iconContainer"
@@ -94,9 +93,9 @@ const RelationshipSelection: React.FC<{
 
 type RelationshipSelectProps = PropsWithChildren<{
     title: string;
-    options: TreeNode[];
-    selectedOptions: TreeNode[];
-    setSelectedOptions: Dispatch<SetStateAction<TreeNode[]>>;
+    options: ISelectRelationshipTemplates[];
+    selectedOptions: ISelectRelationshipTemplates[];
+    setSelectedOptions: Dispatch<SetStateAction<ISelectRelationshipTemplates[]>>;
     size?: 'small' | 'medium';
     overrideSx?: object;
     isSelectDisabled?: boolean;
@@ -111,7 +110,8 @@ const RelationshipSelect = ({
     overrideSx,
     isSelectDisabled = false,
 }: RelationshipSelectProps) => {
-    const [isOpen, setIsOpen] = useState(false);
+    const darkMode = useDarkModeStore((state) => state.darkMode);
+    const theme = useTheme();
 
     return (
         <FormControl>
@@ -125,16 +125,28 @@ const RelationshipSelect = ({
                             height: '333px',
                             minWidth: '219px',
                             width: '300px',
-                            backgroundColor: '#FFFFFF',
-                            borderRadius: '10px',
-                            padding: '10px',
+                            ...(darkMode ? {} : { backgroundColor: '#FFFFFF' }),
+                            borderRadius: overrideSx ? '10px' : '20px 0px 20px 20px',
+                            padding: '10px, 10px, 5px, 10px',
                             boxShadow: '-2px 2px 6px 0px #1E27754D',
+                            top: '39px',
+                            gap: '15px',
+                            marginTop: '5px',
+                            border: darkMode ? `solid 2px ${theme.palette.primary.main}` : 'none',
+                        },
+                        sx: {
+                            overflowY: 'overlay',
+                            '::-webkit-scrollbar-track': {
+                                marginY: '1rem',
+                                bgcolor: '#FFFFFF',
+                                borderRadius: '5px',
+                            },
+                            '::-webkit-scrollbar-thumb': { background: '#EBEFFA' },
                         },
                     },
                 }}
+                IconComponent={(params) => CustomExpandMore({ undefined, ...params })}
                 size={size}
-                onOpen={() => setIsOpen(true)}
-                onClose={() => setIsOpen(false)}
                 sx={{
                     ...overrideSx,
                     fontFamily: 'Rubik',
@@ -143,7 +155,7 @@ const RelationshipSelect = ({
                     borderRadius: '8px',
                 }}
             >
-                <RelationshipSelection treeData={options} selectedOptions={selectedOptions} setSelectedOptions={setSelectedOptions} isOpen={isOpen} />
+                <RelationshipSelection options={options} selectedOptions={selectedOptions} setSelectedOptions={setSelectedOptions} />
             </Select>
         </FormControl>
     );
