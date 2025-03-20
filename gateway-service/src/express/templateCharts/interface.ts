@@ -1,4 +1,3 @@
-
 export enum IChartType {
     Column = 'column',
     Line = 'line',
@@ -73,7 +72,7 @@ export interface IChartBody {
     filter: string;
 }
 
-type GeneratorChart = { x: any; y: any }[];
+type GeneratorChart = { x: any; y: number }[];
 
 export interface ChartsAndGenerator extends IChartDocument {
     chart: GeneratorChart;

@@ -22,9 +22,9 @@ export const NumberChartGenerator: React.FC<{
         <Box
             sx={{
                 bgcolor: darkMode ? '#131313' : '#fcfeff',
-                minWidth: enableResize ? undefined : '500px',
-                height: enableResize ? '100%' : 400,
-                borderRadius: enableResize ? undefined : '5%',
+                width: enableResize ? '100%' : '75%',
+                height: enableResize ? '100%' : '50%',
+                borderRadius: enableResize ? undefined : '15px',
                 p: 2,
                 boxShadow: darkMode ? '0.5px #444' : '4px #0000000D',
                 overflow: 'hidden',

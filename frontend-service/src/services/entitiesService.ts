@@ -374,7 +374,7 @@ export const getChartOfTemplate = async (
     templateId: string,
     filter?: ISearchFilter<Record<string, any>>,
 ) => {
-    const { data } = await axios.post<{ x: any; y: any }[][]>(`${entities}/chart/${templateId}`, [{ xAxis, yAxis, filter }]);
+    const { data } = await axios.post<{ x: any; y: number }[][]>(`${entities}/chart/${templateId}`, [{ xAxis, yAxis, filter }]);
 
     return data;
 };

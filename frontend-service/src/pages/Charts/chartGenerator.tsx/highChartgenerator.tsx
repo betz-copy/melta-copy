@@ -128,7 +128,7 @@ const HiighchartGenerator: React.FC<HighchartGeneratorProps> = ({
         <Box
             ref={containerRef}
             sx={{
-                width: '100%%',
+                width: enableResize ? '100%' : '75%',
                 height: enableResize ? '100%' : '50%',
                 margin: '0 auto',
                 alignContent: 'center',

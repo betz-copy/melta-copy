@@ -9,7 +9,6 @@ import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { useLocation, useParams } from 'wouter';
 import { ErrorToast } from '../../../common/ErrorToast';
-import { EntitiesTable } from '../../../common/wizards/loadEntities/EntitiesTable';
 import { IBasicChart, IChart } from '../../../interfaces/charts';
 import { IGraphFilterBodyBatch } from '../../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
@@ -23,6 +22,7 @@ import { ChartGenerator } from '../chartGenerator.tsx';
 import { ChartSideBar } from './ChartSideBar';
 import { FilterSideBar } from './filterSideBar';
 import { ChartTopBar } from './TopBar';
+import { EntitiesTable } from '../../../common/wizards/excel/excelSteps/EntitiesTable';
 
 const ChartPage: React.FC = () => {
     const { templateId, chartId } = useParams<{ templateId: string; chartId?: string }>();
