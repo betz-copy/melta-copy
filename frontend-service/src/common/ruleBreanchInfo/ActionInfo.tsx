@@ -24,6 +24,8 @@ import { IEntityForBrokenRules } from '../../interfaces/ruleBreaches/ruleBreach'
 import { IMongoRule } from '../../interfaces/rules';
 import { EntityPropertiesInternal } from '../EntityProperties';
 import { environment } from '../../globals';
+import { useUserStore } from '../../stores/user';
+import { getAllAllowedEntities, getAllAllowedRelationships } from '../../utils/permissions/templatePermissions';
 
 interface EntityInfoProps {
     entity: IEntity | string | null;
@@ -189,18 +191,23 @@ const CreateOrDeleteRelActionInfo: React.FC<{
     failedProperties: string[];
 }> = ({ actionType, actionMetadata, actions, failedProperties }) => {
     const queryClient = useQueryClient();
+    const currentUser = useUserStore((state) => state.user);
 
     const { sourceEntity, destinationEntity, relationshipTemplateId } = actionMetadata;
 
     const relationshipTemplates = queryClient.getQueryData<IRelationshipTemplateMap>('getRelationshipTemplates')!;
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
 
-    const relationshipTemplate = relationshipTemplates.get(relationshipTemplateId)!;
-    const relationshipTemplatePopulated = populateRelationshipTemplate(relationshipTemplate, entityTemplates);
+    const allowedEntityTemplates: IMongoEntityTemplatePopulated[] = getAllAllowedEntities(Array.from(entityTemplates.values()), currentUser);
+    const allowedEntityTemplatesIds: string[] = allowedEntityTemplates.map((entity) => entity._id);
+    const allowedRelationships = getAllAllowedRelationships(Array.from(relationshipTemplates.values()), allowedEntityTemplatesIds);
+
+    const relationshipTemplate = allowedRelationships.find((relationship) => relationship._id === relationshipTemplateId)!;
+    const relationshipTemplatePopulated = populateRelationshipTemplate(relationshipTemplate, allowedEntityTemplates);
 
     return (
         <Typography component="p" variant="body1">
-            <Box component="span">{`${i18next.t(`ruleBreachInfo.relActionInfo.${actionType}`)} `}</Box>
+            <Box component="span">{`${i18next.t(`ruleBreachInfo.relActionInfo.${actionType}`)} sfcdvsdvfdsvs `}</Box>
             <RelationshipInfo
                 relationshipTemplatePopulated={relationshipTemplatePopulated}
                 sourceEntity={sourceEntity}

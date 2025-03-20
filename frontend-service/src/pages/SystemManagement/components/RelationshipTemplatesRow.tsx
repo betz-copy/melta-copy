@@ -36,7 +36,7 @@ import { IRelationshipReference } from '../../../common/wizards/entityTemplate/c
 import { checkUserTemplatePermission } from '../../../utils/permissions/instancePermissions';
 import { useUserStore } from '../../../stores/user';
 import { PermissionScope } from '../../../interfaces/permissions';
-import { getAllAllowedEntities } from '../../../utils/permissions/templatePermissions';
+import { getAllAllowedEntities, getAllAllowedRelationships } from '../../../utils/permissions/templatePermissions';
 
 const { infiniteScrollPageCount } = environment.processInstances;
 
@@ -194,6 +194,8 @@ const RelationshipTemplatesRow: React.FC = () => {
     const categoriesArray = Array.from(categories.values());
     const entityTemplatesArray = Array.from(entityTemplates.values());
     const allowedEntityTemplates = getAllAllowedEntities(entityTemplatesArray, currentUser);
+    const allowedEntityTemplatesIds = allowedEntityTemplates.map((entity) => entity._id);
+    const allowedRelationships = getAllAllowedRelationships(Array.from(relationshipTemplates.values()), allowedEntityTemplatesIds);
 
     const [sourceEntityTemplatesToShow, setSourceEntityTemplatesToShow] = useState<IMongoEntityTemplatePopulated[]>(allowedEntityTemplates);
     const [destinationEntityTemplatesToShow, setDestinationEntityTemplatesToShow] = useState<IMongoEntityTemplatePopulated[]>(allowedEntityTemplates);
@@ -399,8 +401,8 @@ const RelationshipTemplatesRow: React.FC = () => {
                     queryFunction={({ pageParam }) => {
                         return getRelationshipGroupedByEntitiesTemplate(
                             filterRelationships({
-                                relationshipTemplates: Array.from(relationshipTemplates.values()).map((relationshipTemplate) =>
-                                    populateRelationshipTemplate(relationshipTemplate, entityTemplates),
+                                relationshipTemplates: allowedRelationships.map((relationshipTemplate) =>
+                                    populateRelationshipTemplate(relationshipTemplate, allowedEntityTemplates),
                                 ),
                                 destinationEntityTemplatesToShow,
                                 sourceEntityTemplatesToShow,

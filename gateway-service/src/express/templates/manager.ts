@@ -17,6 +17,7 @@ import {
     IEntitySingleProperty,
     IEntityTemplate,
     IEntityTemplatePopulated,
+    IMongoCategory,
     IMongoEntityTemplatePopulated,
     ISearchEntityTemplatesBody,
 } from '../../externalServices/templates/entityTemplateService';
@@ -255,7 +256,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         };
     }
 
-    async getAllRelationshipTemplates(permissionsOfUserId: RequestWithPermissionsOfUserId['permissionsOfUserId'], userId: string) {
+    async getAllAllowedRelationshipTemplates(permissionsOfUserId: RequestWithPermissionsOfUserId['permissionsOfUserId'], userId: string) {
         const allowedEntityTemplates = await this.getAllowedEntitiesTemplates(permissionsOfUserId, userId);
         const allowedEntityTemplatesIds = allowedEntityTemplates.map((entityTemplate) => entityTemplate._id);
 
@@ -288,6 +289,24 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
     }
 
     // categories
+    private async updateNewCategoryScope(category: IMongoCategory, permissionsOfUserId: ISubCompactPermissions, userId: string) {
+        const updatedPermissions = permissionsOfUserId.admin
+            ? permissionsOfUserId
+            : {
+                  ...permissionsOfUserId,
+                  instances: {
+                      categories: {
+                          ...permissionsOfUserId.instances?.categories,
+                          [category._id]: { scope: PermissionScope.write, entityTemplates: {} },
+                      },
+                  },
+              };
+
+        await UsersManager.syncUserPermissions(userId, {
+            [this.workspaceId]: updatedPermissions,
+        });
+    }
+
     async getAllAllowedCategories(permissionsOfUserId: RequestWithPermissionsOfUserId['permissionsOfUserId']) {
         return this.entityTemplateService.searchCategories(permissionsOfUserId);
     }
@@ -301,23 +320,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         const iconFileId = file ? await this.storageService.uploadFile(file) : null;
 
         const newCategory = await this.entityTemplateService.createCategory({ ...categoryData, iconFileId });
-
-        const updatedPermissions = permissionsOfUserId.admin
-            ? permissionsOfUserId
-            : {
-                  ...permissionsOfUserId,
-                  instances: {
-                      categories: {
-                          ...permissionsOfUserId.instances?.categories,
-                          [newCategory._id]: { scope: PermissionScope.write, entityTemplates: {} },
-                      },
-                  },
-              };
-
-        await UsersManager.syncUserPermissions(userId, {
-            [this.workspaceId]: updatedPermissions,
-        });
-
+        await this.updateNewCategoryScope(newCategory, permissionsOfUserId, userId);
         return newCategory;
     }
 
@@ -394,6 +397,38 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         });
 
         return entityTemplatesWithConstraints;
+    }
+
+    private async updateNewEntityTemplateScope(
+        entityTemplate: IMongoEntityTemplatePopulated,
+        permissionsOfUserId: ISubCompactPermissions,
+        userId: string,
+    ) {
+        const categoryScope = permissionsOfUserId.instances?.categories[entityTemplate.category._id]?.scope ?? undefined;
+        const categoryId = entityTemplate.category._id;
+
+        const updatedPermissions =
+            permissionsOfUserId.admin || categoryScope === PermissionScope.write
+                ? permissionsOfUserId
+                : ({
+                      ...permissionsOfUserId,
+                      instances: {
+                          categories: {
+                              ...permissionsOfUserId.instances?.categories,
+                              [categoryId]: {
+                                  scope: categoryScope,
+                                  entityTemplates: {
+                                      ...permissionsOfUserId.instances?.categories?.[categoryId]?.entityTemplates,
+                                      [entityTemplate._id]: { scope: PermissionScope.write, fields: {} },
+                                  },
+                              },
+                          },
+                      },
+                  } as ISubCompactPermissions);
+
+        await UsersManager.syncUserPermissions(userId, {
+            [this.workspaceId]: updatedPermissions,
+        });
     }
 
     async searchEntityTemplates(
@@ -476,31 +511,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
         await this.instancesService.updateConstraintsOfTemplate(entityTemplate._id, { requiredConstraints, uniqueConstraints });
 
-        const categoryScope = permissionsOfUserId.instances?.categories[entityTemplate.category._id]?.scope ?? undefined;
-        const categoryId = entityTemplate.category._id;
-
-        const updatedPermissions =
-            permissionsOfUserId.admin || categoryScope === PermissionScope.write
-                ? permissionsOfUserId
-                : ({
-                      ...permissionsOfUserId,
-                      instances: {
-                          categories: {
-                              ...permissionsOfUserId.instances?.categories,
-                              [categoryId]: {
-                                  scope: categoryScope,
-                                  entityTemplates: {
-                                      ...permissionsOfUserId.instances?.categories?.[categoryId]?.entityTemplates,
-                                      [entityTemplate._id]: { scope: PermissionScope.write, fields: {} },
-                                  },
-                              },
-                          },
-                      },
-                  } as ISubCompactPermissions);
-
-        await UsersManager.syncUserPermissions(userId, {
-            [this.workspaceId]: updatedPermissions,
-        });
+        await this.updateNewEntityTemplateScope(entityTemplate, permissionsOfUserId, userId);
 
         return this.populateTemplateConstraints(entityTemplate, requiredConstraints, uniqueConstraints);
     }

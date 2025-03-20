@@ -91,6 +91,7 @@ interface EntityTemplateCardProps {
         },
         unknown
     >;
+    entityHasWritePermission: boolean;
 }
 
 const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
@@ -99,16 +100,9 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
     setDeleteEntityTemplateDialogState,
     setAddActionsDialogState,
     updateEntityTemplateStatusAsync,
+    entityHasWritePermission,
 }) => {
     const workspace = useWorkspaceStore((state) => state.workspace);
-    const currentUser = useUserStore((state) => state.user);
-
-    const entityHasWritePermission = checkUserTemplatePermission(
-        currentUser.currentWorkspacePermissions,
-        entityTemplate.category,
-        entityTemplate._id,
-        PermissionScope.write,
-    );
 
     const [isHoverOnCard, setIsHoverOnCard] = useState(false);
     const theme = useTheme();
@@ -376,6 +370,7 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
     loadedEntityTemplateId,
 }) => {
     const workspace = useWorkspaceStore((state) => state.workspace);
+    const currentUser = useUserStore((state) => state.user);
 
     const [isHoverOnBox, setIsHoverOnBox] = useState(false);
     const [isEditableCategory, setIsEditableCategory] = useState(false);
@@ -458,29 +453,44 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                         onHover={(isHover: boolean) => setIsHoverOnBox(isHover)}
                     >
                         {!!entityTemplatesWithCategory.entityTemplates.length &&
-                            entityTemplatesWithCategory.entityTemplates.map((entityTemplate, index) => (
-                                <Draggable draggableId={entityTemplate._id} key={entityTemplate._id} index={index}>
-                                    {(draggableProvided) => (
-                                        <Grid
-                                            ref={draggableProvided.innerRef}
-                                            {...draggableProvided.draggableProps}
-                                            {...draggableProvided.dragHandleProps}
-                                        >
-                                            {loadedEntityTemplateId === entityTemplate._id ? (
-                                                <Skeleton variant="rounded" height="50px" />
-                                            ) : (
-                                                <EntityTemplateCard
-                                                    entityTemplate={entityTemplate}
-                                                    setDeleteEntityTemplateDialogState={setDeleteEntityTemplateDialogState}
-                                                    setEntityTemplateWizardDialogState={setEntityTemplateWizardDialogState}
-                                                    setAddActionsDialogState={setAddActionsDialogState}
-                                                    updateEntityTemplateStatusAsync={updateEntityTemplateStatusAsync}
-                                                />
-                                            )}
-                                        </Grid>
-                                    )}
-                                </Draggable>
-                            ))}
+                            entityTemplatesWithCategory.entityTemplates.map((entityTemplate, index) => {
+                                const entityHasWritePermission = checkUserTemplatePermission(
+                                    currentUser.currentWorkspacePermissions,
+                                    entityTemplate.category,
+                                    entityTemplate._id,
+                                    PermissionScope.write,
+                                );
+
+                                return (
+                                    <Draggable
+                                        draggableId={entityTemplate._id}
+                                        key={entityTemplate._id}
+                                        index={index}
+                                        isDragDisabled={!entityHasWritePermission}
+                                    >
+                                        {(draggableProvided) => (
+                                            <Grid
+                                                ref={draggableProvided.innerRef}
+                                                {...draggableProvided.draggableProps}
+                                                {...draggableProvided.dragHandleProps}
+                                            >
+                                                {loadedEntityTemplateId === entityTemplate._id ? (
+                                                    <Skeleton variant="rounded" height="50px" />
+                                                ) : (
+                                                    <EntityTemplateCard
+                                                        entityTemplate={entityTemplate}
+                                                        setDeleteEntityTemplateDialogState={setDeleteEntityTemplateDialogState}
+                                                        setEntityTemplateWizardDialogState={setEntityTemplateWizardDialogState}
+                                                        setAddActionsDialogState={setAddActionsDialogState}
+                                                        updateEntityTemplateStatusAsync={updateEntityTemplateStatusAsync}
+                                                        entityHasWritePermission={entityHasWritePermission}
+                                                    />
+                                                )}
+                                            </Grid>
+                                        )}
+                                    </Draggable>
+                                );
+                            })}
                     </Box>
                 </Grid>
             )}

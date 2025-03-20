@@ -8,6 +8,11 @@ import {
     RequestWithSearchRelationshipTemplateBody,
     RequestWithSearchRuleTemplateBody,
 } from '../../externalServices/templates/relationshipsTemplateService';
+import config from '../../config';
+
+const {
+    templateService: { userDoesntExistUnderReq },
+} = config;
 
 export default class TemplatesController extends DefaultController<TemplatesManager> {
     constructor(workspaceId: string) {
@@ -18,7 +23,7 @@ export default class TemplatesController extends DefaultController<TemplatesMana
     async getAllAllowedTemplates(req: Request, res: Response) {
         const { user, permissionsOfUserId } = req as RequestWithPermissionsOfUserId;
 
-        assert(user, 'User doesnt exists under request');
+        assert(user, userDoesntExistUnderReq);
 
         res.json(await this.manager.getAllAllowedTemplates(user.id, permissionsOfUserId));
     }
@@ -31,7 +36,7 @@ export default class TemplatesController extends DefaultController<TemplatesMana
 
     async createCategory(req: Request, res: Response) {
         const { user, permissionsOfUserId } = req as RequestWithPermissionsOfUserId;
-        assert(user, 'User doesnt exists under request');
+        assert(user, userDoesntExistUnderReq);
 
         res.json(await this.manager.createCategory(req.body, permissionsOfUserId, user!.id, req.file));
     }
@@ -47,7 +52,7 @@ export default class TemplatesController extends DefaultController<TemplatesMana
     async searchCategories(req: Request, res: Response) {
         const { user, permissionsOfUserId } = req as RequestWithPermissionsOfUserId;
 
-        assert(user, 'User doesnt exists under request');
+        assert(user, userDoesntExistUnderReq);
 
         res.json(await this.manager.getAllAllowedCategories(permissionsOfUserId));
     }
@@ -55,7 +60,7 @@ export default class TemplatesController extends DefaultController<TemplatesMana
     // entityTemplates
     async createEntityTemplate(req: Request, res: Response) {
         const { user, permissionsOfUserId } = req as RequestWithPermissionsOfUserId;
-        assert(user, 'User doesnt exists under request');
+        assert(user, userDoesntExistUnderReq);
 
         res.json(
             await this.manager.createEntityTemplate(req.body, permissionsOfUserId, user!.id, {
@@ -94,7 +99,7 @@ export default class TemplatesController extends DefaultController<TemplatesMana
 
     async searchEntityTemplates(req: Request, res: Response) {
         const { user, permissionsOfUserId, searchQuery } = req as RequestWithSearchEntityTemplateBody;
-        assert(user, 'User doesnt exists under request');
+        assert(user, userDoesntExistUnderReq);
 
         res.json(await this.manager.searchEntityTemplates(permissionsOfUserId, searchQuery, user.id));
     }
@@ -118,13 +123,13 @@ export default class TemplatesController extends DefaultController<TemplatesMana
 
     async getAllRelationshipTemplates(req: Request, res: Response) {
         const { user, permissionsOfUserId } = req as RequestWithSearchRelationshipTemplateBody;
-        assert(user, 'User doesnt exists under request');
-        res.json(await this.manager.getAllRelationshipTemplates(permissionsOfUserId, user!.id));
+        assert(user, userDoesntExistUnderReq);
+        res.json(await this.manager.getAllAllowedRelationshipTemplates(permissionsOfUserId, user!.id));
     }
 
     async searchRelationshipTemplates(req: Request, res: Response) {
         const { user, permissionsOfUserId, searchBody } = req as RequestWithSearchRelationshipTemplateBody;
-        assert(user, 'User doesnt exists under request');
+        assert(user, userDoesntExistUnderReq);
 
         res.json(await this.manager.searchRelationshipTemplates(permissionsOfUserId, searchBody, user.id));
     }
@@ -140,14 +145,14 @@ export default class TemplatesController extends DefaultController<TemplatesMana
 
     async searchRulesTemplates(req: Request, res: Response) {
         const { user, permissionsOfUserId, searchBody } = req as RequestWithSearchRuleTemplateBody;
-        assert(user, 'User doesnt exists under request');
+        assert(user, userDoesntExistUnderReq);
 
         res.json(await this.manager.searchRulesTemplates(permissionsOfUserId, searchBody, req.user!.id));
     }
 
     async getManyRulesByIds(req: Request, res: Response) {
         const { user, permissionsOfUserId } = req as RequestWithSearchRuleTemplateBody;
-        assert(user, 'User doesnt exists under request');
+        assert(user, userDoesntExistUnderReq);
 
         res.json(await this.manager.getManyRulesByIds(req.body.rulesIds, permissionsOfUserId, user!.id));
     }

@@ -2,8 +2,10 @@ import { PermissionScope } from '../../interfaces/permissions';
 import { ICategoryMap, IMongoCategory } from '../../interfaces/categories';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IMongoRule } from '../../interfaces/rules';
+import { ICurrentUser } from '../../interfaces/users';
+import { IMongoRelationshipTemplate } from '../../interfaces/relationshipTemplates';
 
-export const allowedCategories = (categories: ICategoryMap, currentUser) => {
+export const allowedCategories = (categories: ICategoryMap, currentUser: ICurrentUser) => {
     const allowedCategoriesToShow = currentUser.currentWorkspacePermissions?.admin
         ? Array.from(categories.keys())
         : Object.keys(currentUser.currentWorkspacePermissions?.instances?.categories ?? {});
@@ -11,14 +13,19 @@ export const allowedCategories = (categories: ICategoryMap, currentUser) => {
     return allowedCategoriesToShow.map((categoryId) => categories?.get(categoryId)).filter((category) => category !== undefined);
 };
 
-export const allowedEntitiesOfCategory = (relatedEntityTemplatesToShow: IMongoEntityTemplatePopulated[], category: IMongoCategory, currentUser) => {
+export const allowedEntitiesOfCategory = (
+    relatedEntityTemplatesToShow: IMongoEntityTemplatePopulated[],
+    category: IMongoCategory,
+    currentUser: ICurrentUser,
+) => {
     if (currentUser.currentWorkspacePermissions.admin || currentUser.currentWorkspacePermissions.instances?.categories[category._id].scope)
         return relatedEntityTemplatesToShow;
-    const entitiesKeys = Object.keys(currentUser.currentWorkspacePermissions.instances?.categories[category._id].entityTemplates);
+    const entityTemplates = currentUser.currentWorkspacePermissions.instances?.categories[category._id].entityTemplates;
+    const entitiesKeys = Object.keys(entityTemplates ?? []);
     return relatedEntityTemplatesToShow.filter((entity) => entitiesKeys.includes(entity._id));
 };
 
-export const getAllAllowedEntities = (allEntityTemplates: IMongoEntityTemplatePopulated[], currentUser) => {
+export const getAllAllowedEntities = (allEntityTemplates: IMongoEntityTemplatePopulated[], currentUser: ICurrentUser) => {
     return currentUser.currentWorkspacePermissions.admin
         ? allEntityTemplates
         : allEntityTemplates.filter((entity) => {
@@ -29,7 +36,7 @@ export const getAllAllowedEntities = (allEntityTemplates: IMongoEntityTemplatePo
           });
 };
 
-export const getAllWritePermissionEntityTemplates = (allEntityTemplates: IMongoEntityTemplatePopulated[], currentUser) => {
+export const getAllWritePermissionEntityTemplates = (allEntityTemplates: IMongoEntityTemplatePopulated[], currentUser: ICurrentUser) => {
     return currentUser.currentWorkspacePermissions.admin
         ? allEntityTemplates
         : allEntityTemplates.filter((entity) => {
@@ -41,8 +48,12 @@ export const getAllWritePermissionEntityTemplates = (allEntityTemplates: IMongoE
           });
 };
 
-export const getAllAllowedRulesAndWriteEntities = (rules: IMongoRule[], entityTemplates: IMongoEntityTemplatePopulated[], currentUser) => {
-    if (currentUser.currentWorkspacePermissions.admin) return { allowedEntityTemplates: entityTemplates, allowedRules: rules }; // Add default structure for non-admin
+export const getAllAllowedRulesAndWriteEntities = (
+    rules: IMongoRule[],
+    entityTemplates: IMongoEntityTemplatePopulated[],
+    currentUser: ICurrentUser,
+) => {
+    if (currentUser.currentWorkspacePermissions.admin) return { allowedEntityTemplates: entityTemplates, allowedRules: rules };
 
     const allowedEntityTemplates = getAllAllowedEntities(entityTemplates, currentUser);
     const entityTemplatesIds = allowedEntityTemplates.map((entity) => entity._id);
@@ -50,4 +61,11 @@ export const getAllAllowedRulesAndWriteEntities = (rules: IMongoRule[], entityTe
         allowedEntityTemplates,
         allowedRules: rules.filter((rule) => entityTemplatesIds.includes(rule.entityTemplateId)),
     };
+};
+
+export const getAllAllowedRelationships = (allRelationshipTemplates: IMongoRelationshipTemplate[], allowedEntityIds: string[]) => {
+    return allRelationshipTemplates.filter(
+        (relationshipTemplate) =>
+            allowedEntityIds.includes(relationshipTemplate.sourceEntityId) && allowedEntityIds.includes(relationshipTemplate.destinationEntityId),
+    );
 };

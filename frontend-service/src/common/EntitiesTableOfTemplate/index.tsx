@@ -194,7 +194,6 @@ export type EntitiesTableOfTemplateProps<Data> = {
         shouldSaveScrollPosition: boolean;
         pageType?: string;
     };
-    onFilter?: () => void;
     mainEntity?: IEntityExpanded;
     ignoreType?: boolean;
     refetch?: () => void;
@@ -235,7 +234,6 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             fontSize,
             hideNonPreview,
             saveStorageProps,
-            onFilter,
             hasPermissionToTemplate,
             ignoreType,
             refetch,
