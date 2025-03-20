@@ -167,6 +167,12 @@ export class InstancesValidator extends DefaultController {
         await this.validateUserPermissionForEntityInstance(req, templateId, PermissionScope.read);
     }
 
+    async validateUserCanGetChart(req: Request) {
+        const { templateId } = req.params;
+
+        await this.validateUserPermissionForEntityInstance(req, templateId, PermissionScope.read);
+    }
+
     async validateUserCanGetExpandedEntity(req: Request) {
         const {
             body: { templateIds },

@@ -38,7 +38,9 @@ export class ChartsValidator extends DefaultController {
             this.authorizer.getWorkspacePermissions(req.user!.id),
         ]);
 
-        if (!userPermissions.admin?.scope && !Object.keys(userPermissions.instances?.categories ?? {}).includes(categoryId))
+        const categoryPermissions = userPermissions.instances?.categories?.[categoryId];
+
+        if (!userPermissions.admin?.scope && !categoryPermissions?.scope && !categoryPermissions?.entityTemplates?.[templateId]?.scope)
             throw new ForbiddenError('user not authorized', { metadata: `user does not have write permission on category ${categoryId}` });
     }
 

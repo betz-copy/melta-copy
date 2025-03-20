@@ -137,7 +137,10 @@ export class InstancesService extends DefaultExternalServiceApi {
     }
 
     getChartsOfTemplate = async (templateId: string, chartsData: IChartBody[]) => {
-        const { data } = await this.api.post<{ _id: string; chart: { x: any; y: any }[] }[]>(`${baseEntitiesRoute}/chart/${templateId}`, chartsData);
+        const { data } = await this.api.post<{ _id: string; chart: { x: any; y: number }[] }[]>(
+            `${baseEntitiesRoute}/chart/${templateId}`,
+            chartsData,
+        );
 
         return data;
     };

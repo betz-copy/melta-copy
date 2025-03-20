@@ -17,6 +17,7 @@ import { useUserStore } from '../../stores/user';
 import { LocalStorage } from '../../utils/localStorage';
 import {
     CategoryProtectedRoute,
+    ChartsProtectedRoute,
     EntityProtectedRoute,
     PermissionsManagementProtectedRoute,
     SystemManagementProtectedRoute,
@@ -199,11 +200,15 @@ export const MeltaRoutesInner: React.FC = () => {
                             </Route>
 
                             <Route path="/charts/:templateId/:chartId?/chart">
-                                <ChartPage />
+                                <ChartsProtectedRoute permissions={currentUser.currentWorkspacePermissions}>
+                                    <ChartPage />
+                                </ChartsProtectedRoute>
                             </Route>
 
                             <Route path="/charts/:templateId">
-                                <Charts setTitle={setTitle} />
+                                <ChartsProtectedRoute permissions={currentUser.currentWorkspacePermissions}>
+                                    <Charts setTitle={setTitle} />
+                                </ChartsProtectedRoute>
                             </Route>
 
                             <Route path="/gantts">
