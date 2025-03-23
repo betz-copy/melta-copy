@@ -71,9 +71,9 @@ const getZoneAndHemi = (longitude: number, latitude: number): { epsgCode: string
     if (latitude >= 56 && latitude < 64 && longitude >= 3 && longitude < 12) zoneNumber = 32;
     else if (latitude >= 72 && latitude < 84) {
         if (longitude >= 0 && longitude < 9) zoneNumber = 31;
-        else if (longitude >= 9 && longitude < 21) zoneNumber = 33;
-        else if (longitude >= 21 && longitude < 33) zoneNumber = 35;
-        else if (longitude >= 33 && longitude < 42) zoneNumber = 37;
+        else if (longitude < 21) zoneNumber = 33;
+        else if (longitude < 33) zoneNumber = 35;
+        else if (longitude < 42) zoneNumber = 37;
         else zoneNumber = Math.floor((longitude + 180) / 6) + 1;
     } else zoneNumber = Math.floor((longitude + 180) / 6) + 1;
 

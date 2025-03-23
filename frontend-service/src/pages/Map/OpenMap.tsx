@@ -32,6 +32,7 @@ const OpenMap: React.FC<{
                         e.stopPropagation();
                         handleButtonClick?.();
                     }}
+                    disableRipple={disableOpenMap}
                 >
                     <LocationOn style={{ height: '18px' }} />
                     {showText && (

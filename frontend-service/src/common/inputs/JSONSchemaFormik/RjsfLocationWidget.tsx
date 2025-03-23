@@ -12,6 +12,7 @@ import LocationField from '../../../pages/Map/LocationField';
 import { stringToCoordinates } from '../../../utils/map';
 import { extractUtmLocation, isValidUTM, isValidWGS84, locationConverterToString } from '../../../utils/map/convert';
 import { MeltaTooltip } from '../../MeltaTooltip';
+import { SplitBy } from '../../../interfaces/entities';
 
 const { polygonPrefix, polygonSuffix } = environment.map.polygon;
 
@@ -22,11 +23,6 @@ export enum CoordinateSystem {
 export interface LocationData {
     location: string;
     coordinateSystem: CoordinateSystem;
-}
-
-export enum SplitBy {
-    space = ' ',
-    comma = ',',
 }
 
 const validatePoint = (point: LocationData, splitBy: SplitBy, schemaValidation?: boolean) => {

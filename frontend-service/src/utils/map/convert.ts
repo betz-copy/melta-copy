@@ -53,7 +53,7 @@ export const convertWGS94ToECEF = (location: Cartesian3 | Cartesian3[]) =>
 export const convertECEFToWGS84 = (point: Cartesian3): { longitude: number; latitude: number } => {
     const cartographic = Cesium.Ellipsoid.WGS84.cartesianToCartographic(point);
 
-    if (!cartographic) console.error('Invalid Point');
+    if (!cartographic) throw new Error('Invalid Point');
 
     const longitude = Cesium.Math.toDegrees(cartographic.longitude);
     const latitude = Cesium.Math.toDegrees(cartographic.latitude);
@@ -67,9 +67,9 @@ const getZoneAndHemi = (longitude: number, latitude: number): { epsgCode: string
     if (latitude >= 56 && latitude < 64 && longitude >= 3 && longitude < 12) zoneNumber = 32;
     else if (latitude >= 72 && latitude < 84) {
         if (longitude >= 0 && longitude < 9) zoneNumber = 31;
-        else if (longitude >= 9 && longitude < 21) zoneNumber = 33;
-        else if (longitude >= 21 && longitude < 33) zoneNumber = 35;
-        else if (longitude >= 33 && longitude < 42) zoneNumber = 37;
+        else if (longitude < 21) zoneNumber = 33;
+        else if (longitude < 33) zoneNumber = 35;
+        else if (longitude < 42) zoneNumber = 37;
         else zoneNumber = Math.floor((longitude + 180) / 6) + 1;
     } else zoneNumber = Math.floor((longitude + 180) / 6) + 1;
 

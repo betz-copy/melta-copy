@@ -2,9 +2,8 @@
 import { Cartesian3 } from 'cesium';
 import { environment } from '../../globals';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { IEntity } from '../../interfaces/entities';
+import { IEntity, SplitBy } from '../../interfaces/entities';
 import { convertECEFToWGS84, convertWGS94ToECEF, isValidWGS84 } from './convert';
-import { SplitBy } from '../../common/inputs/JSONSchemaFormik/RjsfLocationWidget';
 
 const {
     polygon: { polygonPrefix, polygonSuffix },
