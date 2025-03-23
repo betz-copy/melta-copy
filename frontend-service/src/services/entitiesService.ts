@@ -23,6 +23,7 @@ import urlToFile from '../common/fileConversions';
 import { IEditReadExcel, ITablesResults } from '../interfaces/excel';
 import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { locationConverterToString } from '../utils/map/convert';
+import { CoordinateSystem } from '../common/inputs/JSONSchemaFormik/RjsfLocationWidget';
 
 const { entities, relationships } = environment.api;
 const { uuidFormat } = environment;
@@ -55,10 +56,16 @@ export const loadEntitiesRequest = async (
                             case 'relationshipReference':
                                 return property?.properties._id;
                             case 'location': {
-                                if (property.unit === 'UTM')
-                                    return JSON.stringify({ location: locationConverterToString(property.location), unit: property.unit });
+                                if (!property) return undefined;
+                                if (property.coordinateSystem === CoordinateSystem.UTM)
+                                    return JSON.stringify({
+                                        location: locationConverterToString(property.location),
+                                        coordinateSystem: property.coordinateSystem,
+                                    });
                                 return JSON.stringify(property);
                             }
+                            case 'signature':
+                                return undefined;
                             default:
                                 return property;
                         }
@@ -94,6 +101,7 @@ export const editManyEntitiesByExcelRequest = async (
     entitiesToUpdate: IEntityWithIgnoredRules[],
 ): Promise<ITablesResults> => {
     const formData = new FormData();
+    const isUUID = (str: string) => uuidFormat.test(str);
 
     formData.append('templateId', template._id);
 
@@ -104,7 +112,12 @@ export const editManyEntitiesByExcelRequest = async (
                 case 'relationshipReference':
                     return property?.properties._id;
                 case 'location': {
+                    if (!property) return undefined;
                     return JSON.stringify(property);
+                }
+                case 'signature': {
+                    if (!isUUID(property)) return undefined;
+                    return property;
                 }
                 default:
                     return property;
@@ -181,8 +194,12 @@ export const createEntityRequest = async (entity: EntityWizardValues, ignoredRul
                     case 'relationshipReference':
                         return property?.properties._id;
                     case 'location': {
-                        if (property.unit === 'UTM')
-                            return JSON.stringify({ location: locationConverterToString(property.location), unit: property.unit });
+                        if (!property) return undefined;
+                        if (property.coordinateSystem === CoordinateSystem.UTM)
+                            return JSON.stringify({
+                                location: locationConverterToString(property.location),
+                                coordinateSystem: property.coordinateSystem,
+                            });
                         return JSON.stringify(property);
                     }
                     case 'signature':
@@ -282,8 +299,12 @@ export const updateEntityRequestForMultiple = async (
                     case 'relationshipReference':
                         return property?.properties._id;
                     case 'location': {
-                        if (property.unit === 'UTM')
-                            return JSON.stringify({ location: locationConverterToString(property.location), unit: property.unit });
+                        if (!property) return undefined;
+                        if (property.coordinateSystem === CoordinateSystem.UTM)
+                            return JSON.stringify({
+                                location: locationConverterToString(property.location),
+                                coordinateSystem: property.coordinateSystem,
+                            });
                         return JSON.stringify(property);
                     }
                     case 'signature': {
@@ -362,10 +383,16 @@ export const duplicateEntityRequest = async (entityId: string, newEntityData: En
                     case 'relationshipReference':
                         return property?.properties._id;
                     case 'location': {
-                        if (property.unit === 'UTM')
-                            return JSON.stringify({ location: locationConverterToString(property.location), unit: property.unit });
+                        if (!property) return undefined;
+                        if (property.coordinateSystem === CoordinateSystem.UTM)
+                            return JSON.stringify({
+                                location: locationConverterToString(property.location),
+                                coordinateSystem: property.coordinateSystem,
+                            });
                         return JSON.stringify(property);
                     }
+                    case 'signature':
+                        return undefined;
                     default:
                         return property;
                 }

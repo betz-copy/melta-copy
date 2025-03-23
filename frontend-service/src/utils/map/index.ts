@@ -4,6 +4,7 @@ import { environment } from '../../globals';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IEntity } from '../../interfaces/entities';
 import { convertECEFToWGS84, convertWGS94ToECEF, isValidWGS84 } from './convert';
+import { SplitBy } from '../../common/inputs/JSONSchemaFormik/RjsfLocationWidget';
 
 const {
     polygon: { polygonPrefix, polygonSuffix },
@@ -29,7 +30,7 @@ export const parsePolygon = (polygonStr: string, toECEF: boolean = true): Cartes
     }
 
     const coordsStr = polygonStr.slice(polygonPrefix.length, -polygonSuffix.length).trim();
-    const coordPairs = coordsStr.split(',').map((pair) => pair.trim());
+    const coordPairs = coordsStr.split(SplitBy.comma).map((pair) => pair.trim());
 
     const coordinates: Cartesian3[] = coordPairs
         .map((pair) => {
@@ -53,7 +54,7 @@ export const stringToCoordinates = (strCoords: string, toECEF?: boolean): Coordi
     const polygon = parsePolygon(strCoords, toECEF);
     if (polygon) return { type: 'polygon', value: polygon };
 
-    const formatted = strCoords.split(',').map((val) => +val);
+    const formatted = strCoords.includes(SplitBy.comma) ? strCoords.split(SplitBy.comma).map(Number) : strCoords.split(SplitBy.space).map(Number);
     return { type: 'marker', value: { x: formatted[0], y: formatted[1] } as Cartesian3 };
 
     // TODO: add validation to format
@@ -69,7 +70,7 @@ export const locationToWGS84String = (cartesian3: Cartesian3 | Cartesian3[], inc
         const { longitude, latitude } = convertECEFToWGS84(point);
         return `${longitude} ${latitude}`;
     });
-    return includePolygon ? `${polygonPrefix}${points.join(',')}${polygonSuffix}` : points.join(',');
+    return includePolygon ? `${polygonPrefix}${points.join(SplitBy.comma)}${polygonSuffix}` : points.join(SplitBy.comma);
 };
 
 export const calculateCenterOfPolygon = (coordinates: Cartesian3[]): Cartesian3 => {

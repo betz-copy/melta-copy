@@ -27,7 +27,15 @@ import {
 } from '../../externalServices/ruleBreachService/interfaces/populated';
 import config from '../../config';
 import { UploadedFile } from '../busboy/interface';
-import { extractUtmLocation, getUnit, isValidUTM, isValidWGS84, locationConverterToString, stringToCoordinates } from './map';
+import {
+    CoordinateSystem,
+    extractUtmLocation,
+    getCoordinateSystem,
+    isValidUTM,
+    isValidWGS84,
+    locationConverterToString,
+    stringToCoordinates,
+} from './map';
 
 const { invalidDate, invalidTime } = config.loadExcel;
 
@@ -49,18 +57,18 @@ const formatExcel = (value: Excel.CellValue | string, propertyTemplate: IEntityS
             if (format === 'fileId') return (value as CellModel).text;
             if (format === 'location') {
                 const locationString = value as string;
-                const unit = getUnit(locationString);
+                const coordinateSystem = getCoordinateSystem(locationString);
 
-                if (unit === 'WGS84') {
+                if (coordinateSystem === CoordinateSystem.WGS84) {
                     const wgs84Location = stringToCoordinates(locationString).value;
                     if (!isValidWGS84(wgs84Location)) throw new BadRequestError(locationFormatError);
-                    const location = { location: wgs84Location, unit };
+                    const location = { location: wgs84Location, coordinateSystem };
                     return isEditMode ? location : JSON.stringify(location);
                 }
                 const utmLocation = extractUtmLocation(locationString);
 
                 if (!isValidUTM(utmLocation)) throw new BadRequestError(locationFormatError);
-                const location = { location: locationConverterToString(locationString), unit };
+                const location = { location: locationConverterToString(locationString), coordinateSystem };
                 return isEditMode ? location : JSON.stringify(location);
             }
             return value?.toString();

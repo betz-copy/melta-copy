@@ -30,6 +30,11 @@ import { ActionErrors } from '../bulkActions/interface';
 
 const { neo4j, ajvCustomFormats } = config;
 
+enum CoordinateSystem {
+    UTM = 'UTM',
+    WGS84 = 'WGS84',
+}
+
 const ajv = new Ajv();
 
 ajv.addFormat('fileId', ajvCustomFormats.fileIdFieldRegex);
@@ -47,7 +52,9 @@ ajv.addFormat('location', {
     type: 'string',
     validate: (location) => {
         const locationObj = JSON.parse(location);
-        return locationObj.location && (locationObj.unit === 'UTM' || locationObj.unit === 'WGS84');
+        return (
+            locationObj.location && (locationObj.coordinateSystem === CoordinateSystem.UTM || locationObj.coordinateSystem === CoordinateSystem.WGS84)
+        );
     },
 });
 
@@ -525,7 +532,7 @@ export const addStringFieldsAndNormalizeSpecialStringValues = (
             const location = JSON.parse(propertyValue);
             normalizedEntity[key] = getNeo4jLocation(location.location, entityProperties, key);
             normalizedEntity[`${key}${neo4j.stringPropertySuffix}`] = location.location;
-            normalizedEntity[`${key}${neo4j.locationUnitPropertySuffix}`] = location.unit;
+            normalizedEntity[`${key}${neo4j.locationCoordinateSystemSuffix}`] = location.coordinateSystem;
 
             return;
         }

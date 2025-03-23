@@ -5,11 +5,16 @@ const gazaBounds = [
     [31.322554, 34.223785],
 ];
 
+enum CoordinateSystem {
+    UTM = 'UTM',
+    WGS84 = 'WGS84',
+}
+
 export const generateRandomLocation = () => {
     const lat = (Math.random() * (gazaBounds[1][0] - gazaBounds[2][0]) + gazaBounds[2][0]).toFixed(5);
     const lng = (Math.random() * (gazaBounds[1][1] - gazaBounds[0][1]) + gazaBounds[0][1]).toFixed(5);
 
-    return { location: `${lat}, ${lng}`, unit: 'WGS84' };
+    return JSON.stringify({ location: `${lat}, ${lng}`, coordinateSystem: CoordinateSystem.WGS84 });
 };
 
 export const generateRandomPolygon = () => {
@@ -47,5 +52,5 @@ export const generateRandomPolygon = () => {
 
     points.push(points[0]);
 
-    return { location: `POLYGON((${points.join(',')}))`, unit: 'WGS84' };
+    return JSON.stringify({ location: `POLYGON((${points.join(',')}))`, coordinateSystem: CoordinateSystem.WGS84 });
 };

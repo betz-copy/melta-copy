@@ -35,7 +35,7 @@ const normalizeFields = (properties: Record<string, any>): Record<string, any> =
             key.endsWith(config.neo4j.stringPropertySuffix) ||
             key.endsWith(config.neo4j.booleanPropertySuffix) ||
             key.endsWith(config.neo4j.filePropertySuffix) ||
-            key.endsWith(config.neo4j.locationUnitPropertySuffix)
+            key.endsWith(config.neo4j.locationCoordinateSystemSuffix)
         ) {
             return;
         }
@@ -63,7 +63,7 @@ const normalizeFields = (properties: Record<string, any>): Record<string, any> =
         }
 
         if (value instanceof neo4j.types.Point) {
-            props[key] = { location: `${value.x}, ${value.y}`, unit: properties[`${key}${config.neo4j.locationUnitPropertySuffix}`] };
+            props[key] = { location: `${value.x}, ${value.y}`, coordinateSystem: properties[`${key}${config.neo4j.locationCoordinateSystemSuffix}`] };
 
             return;
         }
@@ -71,7 +71,7 @@ const normalizeFields = (properties: Record<string, any>): Record<string, any> =
             const points = value.map((point) => `${point.x} ${point.y}`);
             props[key] = {
                 location: `${polygonPrefix}${points.join(',')}${polygonSuffix}`,
-                unit: properties[`${key}${config.neo4j.locationUnitPropertySuffix}`],
+                coordinateSystem: properties[`${key}${config.neo4j.locationCoordinateSystemSuffix}`],
             };
 
             return;

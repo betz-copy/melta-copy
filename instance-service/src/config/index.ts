@@ -18,7 +18,7 @@ const config = {
         globalSearchIndexPrefix: env.get('NEO4J_GLOBAL_SEARCH_INDEX').default('globalSearch').asString(),
         templateSearchIndexPrefix: env.get('NEO4J_TEMPLATE_SEARCH_INDEX_PREFIX').default('templateSearch_').asString(),
         stringPropertySuffix: env.get('STRING_PROPERTY_SUFFIX').default('_tostring').asString(),
-        locationUnitPropertySuffix: env.get('LOCATION_UNIT_PROPERTY_SUFFIX').default('_unit').asString(),
+        locationCoordinateSystemSuffix: env.get('LOCATION_COORDINATE_SYSTEM_SUFFIX').default('_coordinateSystem').asString(),
         booleanPropertySuffix: env.get('BOOLEAN_PROPERTY_SUFFIX').default('_toheboolean').asString(),
         booleanHeYesValue: env.get('BOOLEAN_HE_YES_VALUE').default('כן').asString(),
         booleanHeNoValue: env.get('BOOLEAN_HE_NO_VALUE').default('לא').asString(),

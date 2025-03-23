@@ -266,6 +266,20 @@ const config = {
             southHemiUTM: env.get('SOUTH_HEMI_UTM').default('327').asString(),
             northHemiUTM: env.get('NORTH_HEMI_UTM').default('326').asString(),
         },
+        utm: {
+            utmRegex: env.get('UTM_REGEX').default('/\b([1-9]|[1-5][0-9]|60)([C-HJ-NP-X])s([0-9]+(?:.[0-9]+)?)s([0-9]+(?:.[0-9]+)?)\b/').asRegExp(),
+            utmPolygonRegex: env
+                .get('UTM_POLYGON_REGEX')
+                .default('/\b([1-9]|[1-5][0-9]|60)([C-HJ-NP-X])s([0-9]+(?:.[0-9]+)?)s([0-9]+(?:.[0-9]+)?)\b/g')
+                .asRegExp(),
+            minZone: env.get('MIN_ZONE').default(1).asInt(),
+            maxZone: env.get('MAX_ZONE').default(60).asInt(),
+            minEasting: env.get('MIN_EASTING').default(160000).asInt(),
+            maxEasting: env.get('MAX_EASTING').default(834000).asInt(),
+            minNorthing: env.get('MIN_NORTHING').default(0).asInt(),
+            maxNorthing: env.get('MAX_NORTHING').default(10000000).asInt(),
+        },
+        wgs84: { maxLongitude: env.get('MAX_LONGITUDE').default(180).asInt(), maxLatitude: env.get('MAX_LATITUDE').default(90).asInt() },
     },
 };
 

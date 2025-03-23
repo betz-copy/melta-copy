@@ -3,26 +3,34 @@ import proj4 from 'proj4';
 import { Cartesian3 } from 'cesium';
 import { stringToCoordinates } from '.';
 import { environment } from '../../globals';
+import { CoordinateSystem } from '../../common/inputs/JSONSchemaFormik/RjsfLocationWidget';
 
 const {
     polygon: { polygonPrefix, polygonSuffix },
     epsgCode: { wgs84, epsg, southHemiUTM, northHemiUTM },
 } = environment.map;
 
+enum Hemisphere {
+    N = 'N',
+    S = 'S',
+}
+
 export type UTM = {
     zone: number; // UTM Zone (1-60)
-    hemi: 'N' | 'S'; // Hemisphere (North or South)
+    hemi: Hemisphere; // Hemisphere (North or South)
     east: number; // Easting (6-digit)
     north: number; // Northing (7-digit)
 };
 
-const utm = (zone: UTM['zone'], hemi: UTM['hemi']) => `${epsg}:${hemi === 'N' ? northHemiUTM : southHemiUTM}${zone}`;
+const utm = (zone: UTM['zone'], hemi: Hemisphere) => `${epsg}:${hemi === Hemisphere.N ? northHemiUTM : southHemiUTM}${zone}`;
 
 const validateUTM = ({ zone, hemi, east, north }: UTM): boolean => {
-    if (zone < 1 || zone > 60) return false;
-    if (!['N', 'S'].includes(hemi)) return false;
-    if (east < 160000 || east > 834000) return false;
-    if (north < 0 || north > 10000000) return false;
+    const { minZone, maxZone, minEasting, maxEasting, minNorthing, maxNorthing } = environment.map.utm;
+
+    if (zone < minZone || zone > maxZone) return false;
+    if (!Object.values(Hemisphere).includes(hemi as Hemisphere)) return false;
+    if (east < minEasting || east > maxEasting) return false;
+    if (north < minNorthing || north > maxNorthing) return false;
     return true;
 };
 
@@ -31,10 +39,13 @@ export const isValidUTM = (location: UTM | UTM[]): boolean => {
     return !Array.isArray(location) ? validateUTM(location) : location.every((point) => validateUTM(point));
 };
 
-export const isValidWGS84 = (location: Cartesian3 | Cartesian3[]) =>
-    !Array.isArray(location)
-        ? Math.abs(location.x) < 180 && Math.abs(location.y) < 90
-        : location.every((point) => Math.abs(point.x) < 180 && Math.abs(point.y) < 90);
+export const isValidWGS84 = (location: Cartesian3 | Cartesian3[]) => {
+    const { maxLongitude, maxLatitude } = environment.map.wgs84;
+
+    return !Array.isArray(location)
+        ? Math.abs(location.x) < maxLongitude && Math.abs(location.y) < maxLatitude
+        : location.every((point) => Math.abs(point.x) < maxLongitude && Math.abs(point.y) < maxLatitude);
+};
 
 export const convertWGS94ToECEF = (location: Cartesian3 | Cartesian3[]) =>
     !Array.isArray(location) ? Cartesian3.fromDegrees(location.x, location.y) : location.map((point) => Cartesian3.fromDegrees(point.x, point.y));
@@ -50,7 +61,7 @@ export const convertECEFToWGS84 = (point: Cartesian3): { longitude: number; lati
     return { longitude, latitude };
 };
 
-const getZoneAndHemi = (longitude: number, latitude: number): { epsgCode: string; zone: number; hemi: 'N' | 'S' } => {
+const getZoneAndHemi = (longitude: number, latitude: number): { epsgCode: string; zone: number; hemi: Hemisphere } => {
     let zoneNumber: number;
 
     if (latitude >= 56 && latitude < 64 && longitude >= 3 && longitude < 12) zoneNumber = 32;
@@ -67,7 +78,7 @@ const getZoneAndHemi = (longitude: number, latitude: number): { epsgCode: string
             ? `${epsg}:${northHemiUTM}${zoneNumber.toString().padStart(2, '0')}`
             : `${epsg}:${southHemiUTM}${zoneNumber.toString().padStart(2, '0')}`;
 
-    return { epsgCode, zone: zoneNumber, hemi: latitude >= 0 ? 'N' : 'S' };
+    return { epsgCode, zone: zoneNumber, hemi: latitude >= 0 ? Hemisphere.N : Hemisphere.S };
 };
 
 export const convertWGS84ToUTM = (wgs84Location: Cartesian3 | Cartesian3[]): UTM | UTM[] => {
@@ -100,7 +111,7 @@ const extractUtmPoint = (utmMatchRegex: RegExpMatchArray | null): UTM | undefine
     }
 
     const zone = parseInt(utmMatchRegex[1], 10);
-    const hemi = utmMatchRegex[2] >= 'N' ? 'N' : 'S';
+    const hemi = utmMatchRegex[2] >= Hemisphere.N ? Hemisphere.N : Hemisphere.S;
     const east = parseInt(utmMatchRegex[3], 10);
     const north = parseInt(utmMatchRegex[4], 10);
 
@@ -108,8 +119,7 @@ const extractUtmPoint = (utmMatchRegex: RegExpMatchArray | null): UTM | undefine
 };
 
 export const extractUtmLocation = (utmString: string): UTM | UTM[] | undefined => {
-    const utmRegex = /\b([1-9]|[1-5][0-9]|60)([C-HJ-NP-X])\s([0-9]+(?:\.[0-9]+)?)\s([0-9]+(?:\.[0-9]+)?)\b/;
-    const utmPolygonRegex = /\b([1-9]|[1-5][0-9]|60)([C-HJ-NP-X])\s([0-9]+(?:\.[0-9]+)?)\s([0-9]+(?:\.[0-9]+)?)\b/g;
+    const { utmRegex, utmPolygonRegex } = environment.map.utm;
 
     if (utmString.startsWith(polygonPrefix)) {
         const polygonString = utmString.slice(9, -2);
@@ -130,13 +140,13 @@ export const extractUtmLocation = (utmString: string): UTM | UTM[] | undefined =
 
 export const locationConverterToString = (
     location?: string,
-    unitToConvertFrom: 'WGS84' | 'UTM' = 'UTM',
-    unitToConvertTo: 'WGS84' | 'UTM' = 'WGS84',
+    unitToConvertFrom: CoordinateSystem.WGS84 | CoordinateSystem.UTM = CoordinateSystem.UTM,
+    unitToConvertTo: CoordinateSystem.WGS84 | CoordinateSystem.UTM = CoordinateSystem.WGS84,
 ) => {
     if (!location) return undefined;
     if (unitToConvertFrom === unitToConvertTo) return location;
 
-    if (unitToConvertTo === 'WGS84') {
+    if (unitToConvertTo === CoordinateSystem.WGS84) {
         const utmLocation = extractUtmLocation(location);
         if (!utmLocation) return undefined;
         const wgs84Location = convertUTMToWGS84(utmLocation);
@@ -148,10 +158,9 @@ export const locationConverterToString = (
         });
         return `${polygonPrefix}${points.join(',')}${polygonSuffix}`;
     }
+
     const wgs84Location = stringToCoordinates(location, false);
-
     const utmLocation = convertWGS84ToUTM(wgs84Location.value);
-
     if (!Array.isArray(utmLocation)) return `${utmLocation.zone}${utmLocation.hemi} ${utmLocation.east} ${utmLocation.north}`;
 
     const points = utmLocation.map((point) => {

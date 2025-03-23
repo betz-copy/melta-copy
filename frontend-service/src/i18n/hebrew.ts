@@ -1306,9 +1306,7 @@ export default {
             noLayers: 'לא נמצאו שכבות',
             overlay: 'שכבות מיפוי',
         },
-        unit: 'קואורדינטות',
-        UTM: 'UTM',
-        WGS84: 'WGS84',
+        coordinateSystem: 'קואורדינטות',
     },
     DynamicsConfigs: {
         isDrawerOpen: 'תפריט צד פתוח',
