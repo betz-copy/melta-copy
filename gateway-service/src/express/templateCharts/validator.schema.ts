@@ -36,7 +36,7 @@ const aggregationSchema = Joi.object({
     type: Joi.string()
         .valid(...Object.values(IAggregationType))
         .required(),
-    byField: Joi.string().optional(),
+    byField: Joi.string().optional().allow(''),
 });
 
 const axisSchema = Joi.object({

@@ -81,8 +81,10 @@ export class ChartManager extends DefaultManagerMongo<IChartDocument> {
     }
 
     async updateChart(chartId: string, updatedChart: IChart) {
+        const existingChart = await this.model.findById(chartId);
+
         return this.model
-            .findOneAndReplace({ _id: chartId }, updatedChart, { new: true })
+            .findOneAndReplace({ _id: chartId }, { ...updatedChart, createdAt: existingChart?.createdAt }, { new: true })
             .orFail(new ServiceError(StatusCodes.NOT_FOUND, 'chart not found'))
             .lean()
             .exec();

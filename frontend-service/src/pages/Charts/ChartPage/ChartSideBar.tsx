@@ -1,5 +1,5 @@
 import { Group as AllUsers, PermIdentity as PersonalIcon } from '@mui/icons-material';
-import { Grid, TextField, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
+import { Box, Grid, TextField, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
 import { FormikProps } from 'formik';
 import i18next from 'i18next';
 import React from 'react';
@@ -94,16 +94,20 @@ const ChartSideBar: React.FC<{
                                 (formik.values.createdBy !== currentUser.user._id || !isWorkspaceAdmin(currentUser.user.currentWorkspacePermissions)))
                         }
                     >
-                        <ToggleButton value={IPermission.Private}>
-                            <MeltaTooltip title={i18next.t('charts.personal')}>
-                                <PersonalIcon />
-                            </MeltaTooltip>
-                        </ToggleButton>
-                        <ToggleButton value={IPermission.Protected}>
-                            <MeltaTooltip title={i18next.t('charts.protected')}>
-                                <AllUsers />
-                            </MeltaTooltip>
-                        </ToggleButton>
+                        <MeltaTooltip title={i18next.t('charts.personal')}>
+                            <Box>
+                                <ToggleButton value={IPermission.Private}>
+                                    <PersonalIcon />
+                                </ToggleButton>
+                            </Box>
+                        </MeltaTooltip>
+                        <MeltaTooltip title={i18next.t('charts.protected')}>
+                            <Box>
+                                <ToggleButton value={IPermission.Protected}>
+                                    <AllUsers />
+                                </ToggleButton>
+                            </Box>
+                        </MeltaTooltip>
                     </ToggleButtonGroup>
                 </Grid>
             </Grid>
