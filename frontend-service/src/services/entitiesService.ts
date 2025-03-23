@@ -57,12 +57,14 @@ export const loadEntitiesRequest = async (
                                 return property?.properties._id;
                             case 'location': {
                                 if (!property) return undefined;
-                                if (property.coordinateSystem === CoordinateSystem.UTM)
+                                const location = JSON.parse(property);
+
+                                if (location.coordinateSystem === CoordinateSystem.UTM)
                                     return JSON.stringify({
-                                        location: locationConverterToString(property.location),
-                                        coordinateSystem: property.coordinateSystem,
+                                        location: locationConverterToString(location.location),
+                                        coordinateSystem: location.coordinateSystem,
                                     });
-                                return JSON.stringify(property);
+                                return JSON.stringify(location);
                             }
                             case 'signature':
                                 return undefined;
@@ -195,12 +197,14 @@ export const createEntityRequest = async (entity: EntityWizardValues, ignoredRul
                         return property?.properties._id;
                     case 'location': {
                         if (!property) return undefined;
-                        if (property.coordinateSystem === CoordinateSystem.UTM)
+                        const location = JSON.parse(property);
+
+                        if (location.coordinateSystem === CoordinateSystem.UTM)
                             return JSON.stringify({
-                                location: locationConverterToString(property.location),
-                                coordinateSystem: property.coordinateSystem,
+                                location: locationConverterToString(location.location),
+                                coordinateSystem: location.coordinateSystem,
                             });
-                        return JSON.stringify(property);
+                        return JSON.stringify(location);
                     }
                     case 'signature':
                         return undefined;
@@ -300,12 +304,14 @@ export const updateEntityRequestForMultiple = async (
                         return property?.properties._id;
                     case 'location': {
                         if (!property) return undefined;
-                        if (property.coordinateSystem === CoordinateSystem.UTM)
+                        const location = JSON.parse(property);
+
+                        if (location.coordinateSystem === CoordinateSystem.UTM)
                             return JSON.stringify({
-                                location: locationConverterToString(property.location),
-                                coordinateSystem: property.coordinateSystem,
+                                location: locationConverterToString(location.location),
+                                coordinateSystem: location.coordinateSystem,
                             });
-                        return JSON.stringify(property);
+                        return JSON.stringify(location);
                     }
                     case 'signature': {
                         if (!isUUID(property)) return undefined;
@@ -384,12 +390,14 @@ export const duplicateEntityRequest = async (entityId: string, newEntityData: En
                         return property?.properties._id;
                     case 'location': {
                         if (!property) return undefined;
-                        if (property.coordinateSystem === CoordinateSystem.UTM)
+                        const location = JSON.parse(property);
+
+                        if (location.coordinateSystem === CoordinateSystem.UTM)
                             return JSON.stringify({
-                                location: locationConverterToString(property.location),
-                                coordinateSystem: property.coordinateSystem,
+                                location: locationConverterToString(location.location),
+                                coordinateSystem: location.coordinateSystem,
                             });
-                        return JSON.stringify(property);
+                        return JSON.stringify(location);
                     }
                     case 'signature':
                         return undefined;

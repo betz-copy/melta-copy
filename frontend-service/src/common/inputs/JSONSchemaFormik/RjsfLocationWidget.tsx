@@ -96,7 +96,7 @@ const RjsfLocationWidget = ({
 }: WidgetProps) => {
     const getInitialLocation = (location: string | LocationData | undefined) => {
         if (!location) return undefined;
-        if (typeof location === 'string') return value;
+        if (typeof location === 'string') return location.includes('location') ? JSON.parse(value).location : value;
         return location?.coordinateSystem === CoordinateSystem.UTM
             ? locationConverterToString(location.location, CoordinateSystem.WGS84, CoordinateSystem.UTM)
             : value.location;
@@ -110,7 +110,11 @@ const RjsfLocationWidget = ({
         setNewLocationValue(getInitialLocation(value));
     }, []);
 
-    const [coordinateSystem, setCoordinateSystem] = useState<CoordinateSystem>(value?.coordinateSystem || CoordinateSystem.WGS84);
+    const [coordinateSystem, setCoordinateSystem] = useState<CoordinateSystem>(
+        typeof value === 'string' && value.includes('coordinateSystem')
+            ? JSON.parse(value).coordinateSystem
+            : value?.coordinateSystem || CoordinateSystem.WGS84,
+    );
 
     const displayLabel = getDisplayLabel(validator, schema, uiSchema, registry.rootSchema);
     const inputType = (type || schema.type) === 'string' ? 'text' : `${type || schema.type}`;
@@ -120,7 +124,7 @@ const RjsfLocationWidget = ({
         setError(hasError);
 
         const locationObj = newValue.toString().trim() ? { location: newValue, coordinateSystem } : undefined;
-        onChange(locationObj || undefined);
+        onChange(JSON.stringify(locationObj) || undefined);
         setNewLocationValue(newValue);
     };
 
@@ -138,7 +142,9 @@ const RjsfLocationWidget = ({
             : newLocationValue;
 
         setNewLocationValue(convertedLocation);
-        onChange(newLocationValue?.toString().trim() ? { location: convertedLocation, coordinateSystem: newCoordinateSystem } : undefined);
+        onChange(
+            newLocationValue?.toString().trim() ? JSON.stringify({ location: convertedLocation, coordinateSystem: newCoordinateSystem }) : undefined,
+        );
     };
 
     const _onBlur = ({ target: { value: newValue } }: React.FocusEvent<HTMLInputElement>) => onBlur(id, { location: newValue, coordinateSystem });
@@ -147,7 +153,7 @@ const RjsfLocationWidget = ({
     const variant = readonly && !schema.readOnly ? 'standard' : 'outlined';
 
     const handleCloseDialog = () => {
-        onChange({ location: newLocationValue, coordinateSystem });
+        onChange(JSON.stringify({ location: newLocationValue, coordinateSystem }));
         setMapOpen(false);
     };
 
