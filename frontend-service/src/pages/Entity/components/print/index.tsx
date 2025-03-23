@@ -51,8 +51,6 @@ const Print: React.FC<{
 
     const [openModal, setOpenModal] = React.useState(false);
 
-    const handleClose = () => setOpenModal(false);
-
     const componentRef = React.useRef(null);
 
     const [files, setFiles] = React.useState<IFile[]>([]);
@@ -67,6 +65,11 @@ const Print: React.FC<{
     const [showDisabled, setShowDisabled] = React.useState(true);
     const [showEntityDates, setShowEntityDates] = React.useState(true);
     const [showPreviewPropertiesOnly, setShowPreviewPropertiesOnly] = React.useState(false);
+
+    const handleClose = () => {
+        setOpenModal(false);
+        setSelectedConnections([]);
+    };
 
     const { refetch: getExpandedData } = useQuery<IEntityExpanded>(
         ['getExpandedEntity', expandedEntity.entity.properties._id, { templateIds: Object.keys(entityTemplates) }],

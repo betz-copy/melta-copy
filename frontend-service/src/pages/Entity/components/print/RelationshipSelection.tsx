@@ -152,7 +152,21 @@ const RelationshipSelect = ({
                     fontFamily: 'Rubik',
                     fontSize: '14px',
                     fontWeight: 400,
+                    boxShadow: 'none',
                     borderRadius: '8px',
+                    ...(darkMode
+                        ? {
+                              color: theme.palette.primary.main,
+                              '& .MuiOutlinedInput-notchedOutline': { borderColor: '#d2d3e3' },
+                          }
+                        : {
+                              '& .MuiOutlinedInput-notchedOutline': { display: 'none' },
+                              background: '#FFFFFF',
+                              color: '#787C9E',
+                          }),
+                    maxWidth: !overrideSx ? '131px' : undefined,
+                    maxHeight: '34px',
+                    padding: '0px, 8px',
                 }}
             >
                 <RelationshipSelection options={options} selectedOptions={selectedOptions} setSelectedOptions={setSelectedOptions} />

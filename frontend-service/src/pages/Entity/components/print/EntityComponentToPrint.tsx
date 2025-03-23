@@ -57,8 +57,6 @@ const EntityComponentToPrint: React.FC<{
     showPreviewPropertiesOnly?: boolean;
     expandedRelationships?: { instances: ConnectionWithExtendedRelationship[]; templates: IConnectionTemplateExpanded[] };
 }> = ({ entityTemplate, entity, options = { showDates: true }, showPreviewPropertiesOnly, expandedRelationships }) => {
-    console.log({ expandedRelationships });
-
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
 
