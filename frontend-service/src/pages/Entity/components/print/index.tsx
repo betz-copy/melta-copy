@@ -68,7 +68,6 @@ const Print: React.FC<{
 
     const handleClose = () => {
         setOpenModal(false);
-        setSelectedConnections([]);
     };
 
     const { refetch: getExpandedData } = useQuery<IEntityExpanded>(
@@ -151,6 +150,7 @@ const Print: React.FC<{
     );
 
     const handleOpen = async () => {
+        setSelectedConnections([]);
         setOpenModal(true);
         await getExpandedData();
     };

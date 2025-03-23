@@ -33,7 +33,7 @@ const RelationshipSelection: React.FC<{
 
     const handleSelectedItemsChange = (itemIds: string[]) => {
         const selectedNodes = new Set<ISelectRelationshipTemplates>();
-        const selectedParentsWithChildren: ISelectRelationshipTemplates[] = [];
+        const selectedParentsWithChildren: ISelectRelationshipTemplates[] = [...selectedOptions];
 
         const findParent = (nodes: ISelectRelationshipTemplates[], childId: string): ISelectRelationshipTemplates | null => {
             for (const node of nodes) {
@@ -56,13 +56,16 @@ const RelationshipSelection: React.FC<{
                     const selectedParent = selectedParentsWithChildren.find(
                         (selectedParentWithChild) => selectedParentWithChild.relationshipTemplate._id === parent.relationshipTemplate._id,
                     );
-                    if (selectedParent) selectedParent.children = [...(selectedParent.children ?? []), node];
-                    else selectedParentsWithChildren.push({ ...parent, children: [node] });
-                } else selectedParentsWithChildren.push({ ...node, children: [] });
+                    if (selectedParent) {
+                        if (!selectedParent.children?.some((child) => child.relationshipTemplate._id === node.relationshipTemplate._id))
+                            selectedParent.children = [...(selectedParent.children ?? []), node];
+                    } else selectedParentsWithChildren.push({ ...parent, children: [node] });
+                } else if (!selectedParentsWithChildren.find((selectedParentWithChild) => selectedParentWithChild.relationshipTemplate._id === id))
+                    selectedParentsWithChildren.push({ ...node, children: [] });
             }
         });
 
-        setSelectedOptions(selectedParentsWithChildren);
+        setSelectedOptions([...selectedParentsWithChildren]);
         return Array.from(selectedNodes).map((node) => node.relationshipTemplate._id);
     };
 
