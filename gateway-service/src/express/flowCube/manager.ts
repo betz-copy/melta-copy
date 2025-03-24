@@ -95,9 +95,11 @@ export class FlowCubeManager extends DefaultManagerProxy<null> {
         const workspaces = await WorkspaceService.getWorkspaces(searchBody);
         const filteredWorkspaces = await this.filterWorkspacesByPermissions(workspaces, usersPermissions);
 
-        return filteredWorkspaces.map(({ _id, displayName }) => {
-            return { Value: _id, Name: displayName };
-        });
+        return filteredWorkspaces
+            .filter(({ metadata }) => metadata?.flowCube)
+            .map(({ _id, displayName }) => {
+                return { Value: _id, Name: displayName };
+            });
     }
 
     static async filterWorkspacesByPermissions(workspaces: IWorkspace[], usersPermissions: ICompactPermissions): Promise<IWorkspace[]> {
