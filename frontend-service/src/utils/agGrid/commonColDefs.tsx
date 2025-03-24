@@ -12,6 +12,7 @@ import React from 'react';
 import Chip from '@mui/material/Chip';
 import { Box, Tooltip, tooltipClasses, Grid } from '@mui/material';
 import { PriorityHigh } from '@mui/icons-material';
+import { useQueryClient } from 'react-query';
 import OpenPreview from '../../common/FilePreview/OpenPreview';
 import RelationshipReferenceView from '../../common/RelationshipReferenceView';
 import { EntityData, IEntity, IRequiredConstraint, IUniqueConstraint } from '../../interfaces/entities';
@@ -21,7 +22,7 @@ import { agGridLocaleText } from './agGridLocaleText';
 import OverflowWrapper from './OverflowWrapper';
 import { Value } from './Value';
 import OpenMap from '../../pages/Map/OpenMap';
-import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IUser } from '../../interfaces/users';
 import { MeltaTooltip } from '../../common/MeltaTooltip';
 import UserAvatar from '../../common/UserAvatar';
@@ -284,6 +285,10 @@ export const relatedTemplateColDef = <Data extends any = EntityData>(
     searchValue: string | undefined = undefined,
     editable: (data: any) => boolean = () => false,
 ): ColDef => {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    const queryClient = useQueryClient();
+    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+    const relatedEntityTemplate: IMongoEntityTemplatePopulated = entityTemplates.get(relatedTemplateId!)!;
     return {
         field,
         headerName: value.title,
@@ -301,7 +306,7 @@ export const relatedTemplateColDef = <Data extends any = EntityData>(
         width: hardcodedWidth,
         flex: isLastColumn ? 1 : 0,
         hide: hideColumn,
-        editable: (params) => editable(params.data) ?? false,
+        editable: (params) => !!(relatedEntityTemplate && editable(params.data)),
         cellEditor: RelationshipRefCellEditor,
         cellEditorParams: {
             relatedTemplateId,

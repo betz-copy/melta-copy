@@ -11,7 +11,6 @@ import {
 } from '../templates';
 import { IVariable } from '../../interfaces/rules/formula/argument';
 import { getAggVariablesInTree } from './getAggVariablesInTree';
-import { useUserStore } from '../../stores/user';
 import { ICurrentUser } from '../../interfaces/users';
 import { getAllAllowedEntities, getAllAllowedRelationships } from '../permissions/templatePermissions';
 
