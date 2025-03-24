@@ -295,6 +295,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             : {
                   ...permissionsOfUserId,
                   instances: {
+                      ...permissionsOfUserId.instances,
                       categories: {
                           ...permissionsOfUserId.instances?.categories,
                           [category._id]: { scope: PermissionScope.write, entityTemplates: {} },
@@ -413,6 +414,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
                 : ({
                       ...permissionsOfUserId,
                       instances: {
+                          ...permissionsOfUserId.instances,
                           categories: {
                               ...permissionsOfUserId.instances?.categories,
                               [categoryId]: {

@@ -5,12 +5,12 @@ import { IMongoRule } from '../../interfaces/rules';
 import { ICurrentUser } from '../../interfaces/users';
 import { IMongoRelationshipTemplate } from '../../interfaces/relationshipTemplates';
 
-export const allowedCategories = (categories: ICategoryMap, currentUser: ICurrentUser) => {
+export const allowedCategories = (categories: ICategoryMap, currentUser: ICurrentUser): IMongoCategory[] => {
     const allowedCategoriesToShow = currentUser.currentWorkspacePermissions?.admin
         ? Array.from(categories.keys())
         : Object.keys(currentUser.currentWorkspacePermissions?.instances?.categories ?? {});
 
-    return allowedCategoriesToShow.map((categoryId) => categories?.get(categoryId)).filter((category) => category !== undefined);
+    return allowedCategoriesToShow.map((categoryId) => categories?.get(categoryId)!).filter((category) => category !== undefined);
 };
 
 export const allowedEntitiesOfCategory = (
