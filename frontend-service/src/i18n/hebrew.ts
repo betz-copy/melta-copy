@@ -1310,6 +1310,7 @@ export default {
     DynamicsConfigs: {
         isDrawerOpen: 'תפריט צד פתוח',
         shouldNavigateToEntityPage: 'עבור לעמוד פרט בעת יצירת/עריכת ישות',
+        flowCube: 'קוביה ב-FLOW',
         agGrid: {
             rowCount: 'מספר שורות להצגה בטבלה במצב סגור',
             defaultExpandedRowCount: 'מספר שורות להצגה בטבלה במצב פתוח',
