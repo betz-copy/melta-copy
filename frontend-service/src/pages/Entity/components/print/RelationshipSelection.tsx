@@ -74,17 +74,17 @@ const RelationshipSelection: React.FC<{
                         );
                         if (childIndex !== -1) {
                             // if the child is selected
+                            selectedNodes.splice(parentIndex, 1);
                             selectedNodes = [
-                                ...selectedNodes.splice(parentIndex, 1),
                                 {
                                     ...parent,
-                                    children: parent.children?.splice(childIndex || 0, 1),
+                                    children: parent.children?.splice(childIndex ?? 0, 1),
                                 },
                             ];
                         } else {
                             // if the child is not selected
+                            selectedNodes.splice(parentIndex, 1);
                             selectedNodes = [
-                                ...selectedNodes.splice(parentIndex, 1),
                                 {
                                     ...parent,
                                     children: [...(parent.children ?? []), node],
@@ -108,7 +108,7 @@ const RelationshipSelection: React.FC<{
 
                     if (parentIndex !== -1) {
                         // if the parent is selected
-                        selectedNodes = selectedNodes.splice(parentIndex, 1);
+                        selectedNodes.splice(parentIndex, 1);
                     } else {
                         // if the parent is not selected
                         selectedNodes.push({ ...node, children: [] });

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Grid, SxProps, Typography, useTheme } from '@mui/material';
+import { Box, SxProps, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import { useQueryClient } from 'react-query';
 import { EntityPropertiesInternal } from '../../../../common/EntityProperties';
@@ -75,49 +75,62 @@ const EntityComponentToPrint: React.FC<{
                     isPrintingMode
                 />
             </Box>
-
             <EntityDisableCheckbox isEntityDisabled={entity.properties.disabled} />
-
             {options.showDates && <EntityDates createdAt={entity.properties.createdAt} updatedAt={entity.properties.updatedAt} toPrint />}
 
-            {expandedRelationships && expandedRelationships.templates.length > 0 && (
-                <div>
-                    <BlueTitle title={i18next.t('entityPage.print.relationships')} component="p" variant="h6" style={{ marginTop: '5px' }} />
-                    {expandedRelationships.templates.map((expandedTemplate, index) => {
+            {expandedRelationships &&
+                expandedRelationships.instances.some((_outerInstance) =>
+                    expandedRelationships.templates.some((expandedTemplate) => {
                         const expandedRelationship = expandedRelationships.instances.find(
-                            (instance) => expandedTemplate.relationshipTemplate._id === instance.relationship.templateId,
+                            (innerInstance) =>
+                                (expandedTemplate.relationshipTemplate._id === innerInstance.relationship.templateId &&
+                                    entity.properties._id === innerInstance.sourceEntity.properties._id) ||
+                                entity.properties._id === innerInstance.destinationEntity.properties._id,
                         );
-                        if (!expandedRelationship) return <div key={expandedTemplate.relationshipTemplate._id} />;
+                        return expandedRelationship !== undefined;
+                    }),
+                ) && (
+                    <div>
+                        <BlueTitle title={i18next.t('entityPage.print.relationships')} component="p" variant="h6" style={{ marginTop: '5px' }} />
+                        {expandedRelationships.templates.map((expandedTemplate, index) => {
+                            const expandedRelationship = expandedRelationships.instances.find(
+                                (instance) =>
+                                    (expandedTemplate.relationshipTemplate._id === instance.relationship.templateId &&
+                                        entity.properties._id === instance.sourceEntity.properties._id) ||
+                                    entity.properties._id === instance.destinationEntity.properties._id,
+                            );
 
-                        const relatedEntity = expandedTemplate.isExpandedEntityRelationshipSource
-                            ? expandedRelationship.sourceEntity
-                            : expandedRelationship.destinationEntity;
+                            if (!expandedRelationship) return <div key={expandedTemplate.relationshipTemplate._id} />;
 
-                        return (
-                            <div key={relatedEntity.properties._id}>
-                                <RelationshipPrintTitle
-                                    relationshipTemplate={expandedTemplate.relationshipTemplate}
-                                    isExpandedEntityRelationshipSource={expandedTemplate.isExpandedEntityRelationshipSource}
-                                    fontSize="17px"
-                                    index={index + 1}
-                                    sxOverride={{ marginTop: '0.5rem' }}
-                                />
-                                <Box>
-                                    <EntityPropertiesInternal
-                                        properties={relatedEntity.properties}
-                                        entityTemplate={entityTemplates.get(relatedEntity.templateId)!}
-                                        darkMode={false}
-                                        showPreviewPropertiesOnly={showPreviewPropertiesOnly}
-                                        mode="normal"
-                                        textWrap
-                                        isPrintingMode
+                            const relatedEntity = expandedTemplate.isExpandedEntityRelationshipSource
+                                ? expandedRelationship.sourceEntity
+                                : expandedRelationship.destinationEntity;
+
+                            return (
+                                <div key={relatedEntity.properties._id}>
+                                    <RelationshipPrintTitle
+                                        relationshipTemplate={expandedTemplate.relationshipTemplate}
+                                        isExpandedEntityRelationshipSource={expandedTemplate.isExpandedEntityRelationshipSource}
+                                        fontSize="17px"
+                                        index={index + 1}
+                                        sxOverride={{ marginTop: '0.5rem' }}
                                     />
-                                </Box>
-                            </div>
-                        );
-                    })}
-                </div>
-            )}
+                                    <Box>
+                                        <EntityPropertiesInternal
+                                            properties={relatedEntity.properties}
+                                            entityTemplate={entityTemplates.get(relatedEntity.templateId)!}
+                                            darkMode={false}
+                                            showPreviewPropertiesOnly={showPreviewPropertiesOnly}
+                                            mode="normal"
+                                            textWrap
+                                            isPrintingMode
+                                        />
+                                    </Box>
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
         </Box>
     );
 };
