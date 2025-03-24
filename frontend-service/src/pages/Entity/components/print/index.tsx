@@ -7,7 +7,6 @@ import { useQuery, useQueryClient } from 'react-query';
 import { IConnectionTemplateOfExpandedEntity } from '../..';
 import { MeltaTooltip } from '../../../../common/MeltaTooltip';
 import { PrintOptionsDialog } from '../../../../common/print/PrintOptionsDialog';
-import { IMongoCategory } from '../../../../interfaces/categories';
 import { IConnection, IEntity, IEntityExpanded } from '../../../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { IFile } from '../../../../interfaces/preview';
@@ -40,11 +39,7 @@ const Print: React.FC<{
     entityTemplate: IMongoEntityTemplatePopulated;
     expandedEntity: IEntityExpanded;
     connectionsTemplates: IConnectionTemplateOfExpandedEntity[];
-    categoriesWithConnectionsTemplates: {
-        category: IMongoCategory;
-        connectionsTemplates: IConnectionTemplateOfExpandedEntity[];
-    }[];
-}> = ({ entityTemplate, expandedEntity, categoriesWithConnectionsTemplates, connectionsTemplates }) => {
+}> = ({ entityTemplate, expandedEntity, connectionsTemplates }) => {
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const relationshipTemplates = queryClient.getQueryData<IRelationshipTemplateMap>('getRelationshipTemplates')!;
@@ -67,6 +62,7 @@ const Print: React.FC<{
     const [showPreviewPropertiesOnly, setShowPreviewPropertiesOnly] = React.useState(false);
 
     const handleClose = () => {
+        setSelectedConnections([]);
         setOpenModal(false);
     };
 

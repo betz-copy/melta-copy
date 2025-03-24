@@ -277,7 +277,6 @@ const SelectCheckbox = <Option extends {}, Group extends any = Option>({
                     }}
                     showIcon={showIcon}
                     parentInfersChildren={!allowOnlyParents}
-                    allowOnlyParents={allowOnlyParents}
                 />
             </Select>
         </FormControl>

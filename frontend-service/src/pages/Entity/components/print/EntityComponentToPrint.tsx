@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Grid, Typography, useTheme } from '@mui/material';
+import { Box, Grid, SxProps, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import { useQueryClient } from 'react-query';
 import { EntityPropertiesInternal } from '../../../../common/EntityProperties';
@@ -16,7 +16,7 @@ interface RelationshipPrintTitleProps {
     isExpandedEntityRelationshipSource: boolean;
     fontSize?: string;
     index?: number;
-    sxOverride?;
+    sxOverride?: SxProps;
 }
 
 export const RelationshipPrintTitle: React.FC<RelationshipPrintTitleProps> = ({
@@ -29,7 +29,7 @@ export const RelationshipPrintTitle: React.FC<RelationshipPrintTitleProps> = ({
     const { destinationEntity, sourceEntity, displayName } = relationshipTemplate;
 
     return (
-        <Box display="flex" alignItems="center" sx={{ sxOverride, gap: '7px' }}>
+        <Box display="flex" alignItems="center" sx={{ ...sxOverride, gap: '7px' }}>
             {index && (
                 <Typography variant="h6" fontSize={fontSize ?? '26px'} color="gray">
                     {`${index}.`}

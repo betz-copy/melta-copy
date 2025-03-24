@@ -25,7 +25,6 @@ interface TreeProps<T extends {}> {
     showIcon?: boolean;
     // If true parents only represent the state of their children.
     parentInfersChildren?: boolean;
-    allowOnlyParents?: boolean;
 }
 
 const Tree = <T extends {}>({
@@ -45,10 +44,9 @@ const Tree = <T extends {}>({
     parentInfersChildren = true,
     onDragEnd,
     showIcon,
-    allowOnlyParents,
 }: TreeProps<T>): React.ReactElement => {
     const { handleSelectedItemsChange, selectedItemsIds, setSelectedItemsIds, getSelectedLeafIds, selectParentIfAllChildrenAreSelected } =
-        useTreeUtils(getItemId, parentInfersChildren, allowOnlyParents, treeItems);
+        useTreeUtils(getItemId, parentInfersChildren, treeItems);
 
     const isFirstRender = useRef<boolean>(true);
 

@@ -39,39 +39,6 @@ const initialSelectParentIfAllChildrenAreSelected = <T extends {}>(
     return Array.from(updatedSet);
 };
 
-const initialSelectParentIfSomeChildrenAreSelected = <T extends {}>(
-    treeItems: TreeViewBaseItem<T>[],
-    getItemId: (item: T) => string,
-    selectedItemsIds?: string[],
-): string[] => {
-    if (!selectedItemsIds?.length) return [];
-
-    // Create a Set for faster lookups and add existing selected items
-    const updatedSet = new Set(selectedItemsIds);
-
-    const markParentIfAllChildrenSelected = (item: TreeViewBaseItem<T>) => {
-        if (item?.children) {
-            // Recursively process child items first
-            item.children.forEach((child) => markParentIfAllChildrenSelected(child));
-
-            const someChildrenSelected = item.children.some((child) => updatedSet.has(getItemId(child)));
-            const itemId = getItemId(item);
-
-            if (someChildrenSelected && !updatedSet.has(itemId)) {
-                updatedSet.add(itemId);
-            } else if (!someChildrenSelected) {
-                updatedSet.delete(itemId);
-            }
-        }
-    };
-
-    // Process the tree items
-    treeItems.forEach(markParentIfAllChildrenSelected);
-
-    // Convert the Set back to an array before returning
-    return Array.from(updatedSet);
-};
-
 export const groupTemplatesByCategory = (
     categories: IMongoCategory[],
     templates: IMongoEntityTemplatePopulated[],
@@ -113,12 +80,7 @@ export const flattenTree = <T extends {}>(treeItems: TreeViewBaseItem<T>[], getI
     return revertedTemplates;
 };
 
-export const useTreeUtils = <T extends {}>(
-    getItemId: (item: T) => string,
-    parentInfersChildren?: boolean,
-    allowOnlyParents?: boolean,
-    treeItems: TreeViewBaseItem<T>[] = [],
-) => {
+export const useTreeUtils = <T extends {}>(getItemId: (item: T) => string, parentInfersChildren?: boolean, treeItems: TreeViewBaseItem<T>[] = []) => {
     const [selectedItemsIds, setSelectedItemsIds] = useState<string[]>([]);
 
     const getParentNode = (items: TreeViewBaseItem<T>[], id: string): TreeViewBaseItem<T> | undefined => {
@@ -236,9 +198,7 @@ export const useTreeUtils = <T extends {}>(
         handleSelectedItemsChange,
         selectedItemsIds,
         setSelectedItemsIds,
-        selectParentIfAllChildrenAreSelected: allowOnlyParents
-            ? initialSelectParentIfSomeChildrenAreSelected
-            : initialSelectParentIfAllChildrenAreSelected,
+        selectParentIfAllChildrenAreSelected: initialSelectParentIfAllChildrenAreSelected,
         getSelectedLeafIds,
     };
 };
