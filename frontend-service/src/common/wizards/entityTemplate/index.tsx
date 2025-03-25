@@ -7,9 +7,8 @@ import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { environment } from '../../../globals';
 import { IConstraint, IUniqueConstraintOfTemplate } from '../../../interfaces/entities';
-import { IEntityTemplateMap, IEntityTemplatePopulated, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IEntityTemplateMap, IEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import fileDetails from '../../../interfaces/fileDetails';
-import { PermissionScope } from '../../../interfaces/permissions';
 import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
 import { createEntityTemplateRequest, formToJSONSchema, updateEntityTemplateRequest } from '../../../services/templates/enitityTemplatesService';
 import { getAllRelationshipTemplatesRequest } from '../../../services/templates/relationshipTemplatesService';
@@ -23,6 +22,7 @@ import { ChooseCategory, chooseCategorySchema } from './ChooseCategory';
 import { ChooseIcon } from './ChooseIcon';
 import { CreateTemplateName, useCreateOrEditTemplateNameSchema } from './CreateTemplateName';
 import { UploadExportFormats } from './UploadExportFormats';
+import { updateUserPermissionForEntityTemplate } from '../../../utils/permissions/templatePermissions';
 
 const { errorCodes } = environment;
 
@@ -100,33 +100,6 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
 
     const createTemplateNameSchema = useCreateOrEditTemplateNameSchema(templates, currentTemplateId);
 
-    const updateUserPermissionForEntityTemplate = (newEntityTemplate: IMongoEntityTemplatePopulated) => {
-        const permissionsOfUserId = currentUser.currentWorkspacePermissions;
-        const categoryScope = permissionsOfUserId.instances?.categories[newEntityTemplate.category._id]?.scope ?? undefined;
-        const categoryId = newEntityTemplate.category._id;
-
-        const updatedPermissions =
-            permissionsOfUserId.admin || categoryScope === PermissionScope.write
-                ? permissionsOfUserId
-                : {
-                      ...permissionsOfUserId,
-                      instances: {
-                          ...permissionsOfUserId.instances,
-                          categories: {
-                              ...permissionsOfUserId.instances?.categories,
-                              [categoryId]: {
-                                  scope: categoryScope,
-                                  entityTemplates: {
-                                      ...permissionsOfUserId.instances?.categories?.[categoryId]?.entityTemplates,
-                                      [newEntityTemplate._id]: { scope: PermissionScope.write, fields: {} },
-                                  },
-                              },
-                          },
-                      },
-                  };
-        setUser({ ...currentUser, permissions: { ...currentUser.permissions, [currentWorkspace._id]: updatedPermissions } });
-    };
-
     const { isLoading, mutateAsync } = useMutation(
         (entityTemplate: EntityTemplateWizardValues) =>
             isEditMode
@@ -148,7 +121,8 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
                 } catch (error) {
                     toast.error(i18next.t('wizard.failedToUpdateSystemData'));
                 }
-                updateUserPermissionForEntityTemplate(data);
+                const updatedUserPermissions = updateUserPermissionForEntityTemplate(data, currentUser, currentWorkspace._id);
+                setUser(updatedUserPermissions);
                 handleClose();
             },
             onError: (error: AxiosError, entityTemplateValues) => {

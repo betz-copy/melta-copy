@@ -75,11 +75,18 @@ export default class TemplatesController extends DefaultController<TemplatesMana
     }
 
     async updateEntityTemplate(req: Request, res: Response) {
+        const { permissionsOfUserId } = req as RequestWithPermissionsOfUserId;
         res.json(
-            await this.manager.updateEntityTemplate(req.params.id, req.user!.id, req.body, {
-                files: req.files,
-                file: req.file ? [req.file] : undefined,
-            }),
+            await this.manager.updateEntityTemplate(
+                req.params.id,
+                req.user!.id,
+                req.body,
+                {
+                    files: req.files,
+                    file: req.file ? [req.file] : undefined,
+                },
+                permissionsOfUserId,
+            ),
         );
     }
 

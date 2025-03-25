@@ -69,3 +69,52 @@ export const getAllAllowedRelationships = (allRelationshipTemplates: IMongoRelat
             allowedEntityIds.includes(relationshipTemplate.sourceEntityId) && allowedEntityIds.includes(relationshipTemplate.destinationEntityId),
     );
 };
+
+export const updateUserPermissionForEntityTemplate = (
+    newEntityTemplate: IMongoEntityTemplatePopulated,
+    currentUser: ICurrentUser,
+    workspaceId: string,
+) => {
+    const permissionsOfUserId = currentUser.currentWorkspacePermissions;
+    const categoryScope = permissionsOfUserId.instances?.categories[newEntityTemplate.category._id]?.scope ?? undefined;
+    const categoryId = newEntityTemplate.category._id;
+
+    const updatedPermissions =
+        permissionsOfUserId.admin || categoryScope === PermissionScope.write
+            ? permissionsOfUserId
+            : {
+                  ...permissionsOfUserId,
+                  instances: {
+                      ...permissionsOfUserId.instances,
+                      categories: {
+                          ...permissionsOfUserId.instances?.categories,
+                          [categoryId]: {
+                              scope: categoryScope,
+                              entityTemplates: {
+                                  ...permissionsOfUserId.instances?.categories?.[categoryId]?.entityTemplates,
+                                  [newEntityTemplate._id]: { scope: PermissionScope.write, fields: {} },
+                              },
+                          },
+                      },
+                  },
+              };
+    return { ...currentUser, permissions: { ...currentUser.permissions, [workspaceId]: updatedPermissions } };
+};
+
+export const updateUserPermissionForCategory = (newCategory: IMongoCategory, currentUser: ICurrentUser, workspaceId: string) => {
+    const permissionsOfUserId = currentUser.currentWorkspacePermissions;
+    const updatedPermissions = permissionsOfUserId.admin
+        ? permissionsOfUserId
+        : {
+              ...permissionsOfUserId,
+              instances: {
+                  ...permissionsOfUserId.instances,
+                  categories: {
+                      ...permissionsOfUserId.instances?.categories,
+                      [newCategory._id]: { scope: PermissionScope.write, entityTemplates: {} },
+                  },
+              },
+          };
+
+    return { ...currentUser, permissions: { ...currentUser.permissions, [workspaceId]: updatedPermissions } };
+};

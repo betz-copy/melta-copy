@@ -110,6 +110,7 @@ templatesRouter.put(
     '/entities/:id',
     busboyMiddleware,
     ValidateRequest(updateEntityTemplateSchema),
+    AuthorizerControllerMiddleware.userCanWriteTemplates,
     templatesValidatorMiddleware.validateUserCanUpdateOrDeleteEntityTemplate,
     templatesControllerMiddleware.updateEntityTemplate,
 );

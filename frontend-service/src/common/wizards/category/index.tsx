@@ -4,9 +4,8 @@ import i18next from 'i18next';
 import React from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import { ICategory, ICategoryMap, IMongoCategory } from '../../../interfaces/categories';
+import { ICategory, ICategoryMap } from '../../../interfaces/categories';
 import fileDetails from '../../../interfaces/fileDetails';
-import { PermissionScope } from '../../../interfaces/permissions';
 import { createCategoryRequest, updateCategoryRequest } from '../../../services/templates/categoriesService';
 import { useUserStore } from '../../../stores/user';
 import { useWorkspaceStore } from '../../../stores/workspace';
@@ -15,6 +14,7 @@ import { StepType, Wizard, WizardBaseType } from '../index';
 import { ChooseColor, chooseColorSchema } from './ChooseColor';
 import { ChooseIcon } from './ChooseIcon';
 import { CreateCategoryName, useCreateCategoryNameSchema } from './CreateCategoryName';
+import { updateUserPermissionForCategory } from '../../../utils/permissions/templatePermissions';
 
 export interface CategoryWizardValues extends Omit<ICategory, 'iconFileId'> {
     icon?: fileDetails;
@@ -33,22 +33,7 @@ const CategoryWizard: React.FC<WizardBaseType<CategoryWizardValues>> = ({
     const currentWorkspace = useWorkspaceStore((state) => state.workspace);
 
     const currentCategoryId = isEditMode ? (initialValues as CategoryWizardValues & { _id: string })._id : undefined;
-    const updateUserPermissionForCategory = (newCategory: IMongoCategory) => {
-        const permissionsOfUserId = currentUser.currentWorkspacePermissions;
-        const updatedPermissions = permissionsOfUserId.admin
-            ? permissionsOfUserId
-            : {
-                  ...permissionsOfUserId,
-                  instances: {
-                      ...permissionsOfUserId.instances,
-                      categories: {
-                          ...permissionsOfUserId.instances?.categories,
-                          [newCategory._id]: { scope: PermissionScope.write, entityTemplates: {} },
-                      },
-                  },
-              };
-        setUser({ ...currentUser, permissions: { ...currentUser.permissions, [currentWorkspace._id]: updatedPermissions } });
-    };
+
     const { isLoading, mutateAsync } = useMutation(
         (category: CategoryWizardValues) =>
             isEditMode === true
@@ -57,7 +42,8 @@ const CategoryWizard: React.FC<WizardBaseType<CategoryWizardValues>> = ({
         {
             onSuccess: (data) => {
                 queryClient.setQueryData<ICategoryMap>('getCategories', (categories) => categories!.set(data._id, data));
-                updateUserPermissionForCategory(data);
+                const updatedUserPermissions = updateUserPermissionForCategory(data, currentUser, currentWorkspace._id);
+                setUser(updatedUserPermissions);
                 toast.success(i18next.t(isEditMode ? 'wizard.category.editedSuccessfully' : 'wizard.category.createdSuccessfully'));
                 handleClose();
             },

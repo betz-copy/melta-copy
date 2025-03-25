@@ -400,7 +400,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         return entityTemplatesWithConstraints;
     }
 
-    private async updateNewEntityTemplateScope(
+    private async updateEntityTemplateScope(
         entityTemplate: IMongoEntityTemplatePopulated,
         permissionsOfUserId: ISubCompactPermissions,
         userId: string,
@@ -513,7 +513,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
         await this.instancesService.updateConstraintsOfTemplate(entityTemplate._id, { requiredConstraints, uniqueConstraints });
 
-        await this.updateNewEntityTemplateScope(entityTemplate, permissionsOfUserId, userId);
+        await this.updateEntityTemplateScope(entityTemplate, permissionsOfUserId, userId);
 
         return this.populateTemplateConstraints(entityTemplate, requiredConstraints, uniqueConstraints);
     }
@@ -807,6 +807,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         userId: string,
         updatedTemplateData: Omit<IEntityTemplateWithConstraints, 'disabled'> & { file?: string },
         { file, files }: { file?: [UploadedFile]; files?: UploadedFile[] },
+        permissionsOfUserId: RequestWithPermissionsOfUserId['permissionsOfUserId'],
     ): Promise<IMongoEntityTemplateWithConstraintsPopulated> {
         await this.entityTemplateService.getCategoryById(updatedTemplateData.category);
 
@@ -925,6 +926,8 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             uniqueConstraints,
             requiredConstraints,
         });
+        if (updatedTemplate.category._id !== currTemplate.category._id)
+            await this.updateEntityTemplateScope(updatedTemplate, permissionsOfUserId, userId);
 
         return this.populateTemplateConstraints(updatedTemplate, requiredConstraints, uniqueConstraints);
     }

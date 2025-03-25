@@ -41,7 +41,7 @@ import { environment } from '../../../globals';
 import { checkUserTemplatePermission } from '../../../utils/permissions/instancePermissions';
 import { useUserStore } from '../../../stores/user';
 import { PermissionScope } from '../../../interfaces/permissions';
-import { allowedCategories, allowedEntitiesOfCategory } from '../../../utils/permissions/templatePermissions';
+import { allowedCategories, allowedEntitiesOfCategory, updateUserPermissionForEntityTemplate } from '../../../utils/permissions/templatePermissions';
 
 const { infiniteScrollPageCount } = environment.processInstances;
 
@@ -501,6 +501,9 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
 const EntityTemplatesRow: React.FC = () => {
     const queryClient = useQueryClient();
     const currentUser = useUserStore((state) => state.user);
+    const setUser = useUserStore((state) => state.setUser);
+    const currentWorkspace = useWorkspaceStore((state) => state.workspace);
+
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
 
@@ -610,6 +613,8 @@ const EntityTemplatesRow: React.FC = () => {
             onSuccess(data) {
                 queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) => entityTemplateMap!.set(data._id, data));
                 queryClient.invalidateQueries(['searchEntityTemplates', searchText, categoriesToShow]);
+                const updatedUserPermissions = updateUserPermissionForEntityTemplate(data, currentUser, currentWorkspace._id);
+                setUser(updatedUserPermissions);
                 setLoadedEntityTemplateId('');
             },
             onError(error: AxiosError) {
