@@ -7,7 +7,7 @@ export interface FlowParameters {
     Name: string;
     DisplayName: string;
     Type: string;
-    OntologyType: string;
+    OntologyType: string | null;
     isRequired?: string;
     Description?: string;
     IsSingleValue?: string;
@@ -18,5 +18,5 @@ export interface FlowFields {
     Name: string;
     DisplayName: string;
     Type: string;
-    OntologyType: string;
+    OntologyType: string | null;
 }

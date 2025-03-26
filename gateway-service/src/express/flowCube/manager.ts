@@ -72,10 +72,17 @@ export class FlowCubeManager extends DefaultManagerProxy<null> {
         return { filter, limit: config.instanceService.searchEntitiesFlowMaxLimit };
     }
 
-    async searchFlowCube(templateId: string, searchBody: Record<string, any>) {
+    async searchFlowCube(workspaceId: string, templateId: string, searchBody: Record<string, any>) {
         const convertedSearchBody: ISearchEntitiesOfTemplateBody = await this.convertFlowToNeoSearch(templateId, searchBody);
         const res = await this.instancesService.searchEntitiesOfTemplateRequest(templateId, convertedSearchBody);
-        const convertToFlow = res.entities.map((entity) => entity.entity.properties);
+        const workspace = await WorkspaceService.getById(workspaceId);
+        const { path, name, type } = workspace;
+        const workspacePath = `${path}/${name}${type}`;
+        const convertToFlow = res.entities.map((entity) => ({
+            ...entity.entity.properties,
+            meltaLink: this.makeLinkClickable(`${config.service.meltaBaseUrl}${workspacePath}/entity/${entity.entity.properties._id}`),
+        }));
+
         return convertToFlow;
     }
 
@@ -186,8 +193,10 @@ export class FlowCubeManager extends DefaultManagerProxy<null> {
         );
 
         const additionalFields = this.getAdditionalFields();
+        const [firstAdditionalField, ...restAdditionalFields] = additionalFields;
 
         const parameters: FlowParameters[] = [
+            firstAdditionalField,
             ...filteredProperties.map(([key, value]) => ({
                 Name: key,
                 Type: this.convertTypeToFlowType(value),
@@ -196,24 +205,26 @@ export class FlowCubeManager extends DefaultManagerProxy<null> {
                 IsSingleValue: value.uniqueItems ? String(value.uniqueItems) : undefined,
                 Options: value.enum ? this.convertArrayToFlowOptions(value.enum) : undefined,
             })),
-            ...additionalFields,
+            ...restAdditionalFields,
         ];
 
         const fields: FlowFields[] = [
+            firstAdditionalField,
             ...filteredProperties.map(([key, value]) => ({
                 Name: key,
                 Type: this.convertTypeToFlowType(value),
                 DisplayName: value.title,
                 OntologyType: this.getOntologyTypeByProperty(value),
             })),
-            ...additionalFields,
+            ...restAdditionalFields,
         ];
 
         return { parameters, fields };
     }
 
-    private getAdditionalFields(): { Name: string; Type: string; DisplayName: string; OntologyType: string }[] {
+    private getAdditionalFields(): { Name: string; Type: string; DisplayName: string; OntologyType: string | null }[] {
         return [
+            { Name: 'meltaLink', Type: 'string', DisplayName: 'פתח במלתעות', OntologyType: null },
             { Name: 'createdAt', Type: 'DateTime', DisplayName: 'תאריך יצירה', OntologyType: 'TIME' },
             { Name: 'updatedAt', Type: 'DateTime', DisplayName: 'תאריך עדכון', OntologyType: 'TIME' },
         ];
@@ -281,7 +292,11 @@ export class FlowCubeManager extends DefaultManagerProxy<null> {
     }
 
     async searchEntitiesByTemplate(flowParameters: any) {
-        const { TemplateType } = flowParameters;
-        return this.searchFlowCube(TemplateType, flowParameters);
+        const { TemplateType, WorkspaceId } = flowParameters;
+        return this.searchFlowCube(WorkspaceId, TemplateType, flowParameters);
+    }
+
+    private makeLinkClickable(link: string): string {
+        return `<a target="_blank" href=${link}>עמוד פרט</a>`;
     }
 }
