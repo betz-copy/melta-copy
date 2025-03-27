@@ -64,6 +64,7 @@ import { RabbitManager } from '../../utils/rabbit';
 import { UsersManager } from '../users/manager';
 import { WorkspaceManager } from '../workspaces/manager';
 import { UploadedFile } from '../../utils/busboy/interface';
+import TemplatesManager from '../templates/manager';
 
 const { errorCodes, ruleBreachService } = config;
 
@@ -619,14 +620,37 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
         }
     }
 
+    async getAllowedRuleBreaches(result: IAgGridResult<IRuleBreachRequest | IRuleBreachAlert>, user: Express.User) {
+        const usersPermissions = await this.authorizer.getWorkspacePermissions(user.id);
+        const templateManager = new TemplatesManager(this.workspaceId);
+
+        const allowedEntityTemplateIds = await templateManager.getAllowedEntityTemplateIds(usersPermissions, user.id);
+        return result.rows.filter((row) =>
+            row.actions.every((action) => {
+                let entityTemplateId = '-';
+
+                if (action.actionType === ActionTypes.CreateEntity) {
+                    entityTemplateId = (action.actionMetadata as ICreateEntityMetadataPopulated).templateId;
+                } else if (action.actionType === ActionTypes.DuplicateEntity) {
+                    entityTemplateId = (action.actionMetadata as IDuplicateEntityMetadataPopulated).templateId;
+                } else if (action.actionType === ActionTypes.UpdateEntity) {
+                    entityTemplateId = (action.actionMetadata as unknown as IUpdateEntityMetadataPopulated)?.entity?.templateId || '-';
+                }
+                return allowedEntityTemplateIds.includes(entityTemplateId);
+            }),
+        );
+    }
+
     async searchRuleBreachRequests(agGridRequest: IAgGridRequest, user: Express.User): Promise<IAgGridResult<IRuleBreachRequestPopulated>> {
         const updatedAgGridRequest = await this.agGridSearchRuleBreachesOfUser(agGridRequest, user);
 
         const result = await this.service.searchRuleBreachRequests(updatedAgGridRequest);
 
+        const allowedRows = await this.getAllowedRuleBreaches(result, user);
+
         return {
-            ...result,
-            rows: await this.populateRulesBreachRequests(result.rows),
+            rows: await this.populateRulesBreachRequests(allowedRows as IRuleBreachRequest[]),
+            lastRowIndex: allowedRows.length,
         };
     }
 
@@ -635,9 +659,11 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
 
         const result = await this.service.searchRuleBreachAlerts(updatedAgGridRequest);
 
+        const allowedRows = await this.getAllowedRuleBreaches(result, user);
+
         return {
-            ...result,
-            rows: await this.populateRulesBreachAlerts(result.rows),
+            rows: await this.populateRulesBreachAlerts(allowedRows as IRuleBreachAlert[]),
+            lastRowIndex: allowedRows.length,
         };
     }
 

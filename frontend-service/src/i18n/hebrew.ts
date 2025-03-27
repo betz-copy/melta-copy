@@ -331,7 +331,7 @@ export default {
         loading: 'טוען...',
         noOptions: 'אין תוצאות',
         noPreviewFields: 'אין שדות לתצוגה מקדימה',
-        noWritePermissions: 'אין הרשאות לתבנית',
+        noWritePermissions: 'אין הרשאות לתבנית בשדה קשר',
         failedToSearchEntities: 'נכשל בחיפוש ישויות',
     },
     userAutocomplete: {
