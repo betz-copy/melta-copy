@@ -63,7 +63,7 @@ const PrintOptionsDialog: React.FC<{
     setFilesLoadingStatus: React.Dispatch<React.SetStateAction<{}>>;
     entityConnections?: {
         connectionsTemplates: IConnectionTemplateOfExpandedEntity[];
-        expandedRelationshipsTemplates: IConnectionTemplateExpanded[];
+        expandedRelationshipTemplates: IConnectionTemplateExpanded[];
         expandedRelationships: IConnectionExpanded[];
         selectedConnections: ISelectRelationshipTemplates[];
         setSelectedConnections: React.Dispatch<React.SetStateAction<ISelectRelationshipTemplates[]>>;
@@ -156,27 +156,19 @@ const PrintOptionsDialog: React.FC<{
     const allRelevantConnections: ISelectRelationshipTemplates[] = [];
 
     if (entityConnections) {
-        const { connectionsTemplates, expandedRelationshipsTemplates, expandedRelationships } = entityConnections;
+        const { connectionsTemplates, expandedRelationshipTemplates, expandedRelationships } = entityConnections;
+        const entity = instance as IEntityExpanded;
 
         const relevantParents = connectionsTemplates.filter(({ relationshipTemplate: { _id }, isExpandedEntityRelationshipSource }) => {
-            const relevantConnections = (instance as IEntityExpanded).connections.filter((connection) => {
-                if (isExpandedEntityRelationshipSource) {
-                    return (
-                        connection.relationship.templateId === _id &&
-                        connection.sourceEntity.properties._id === (instance as IEntityExpanded).entity.properties._id
-                    );
-                }
-
-                return (
-                    connection.relationship.templateId === _id &&
-                    connection.destinationEntity.properties._id === (instance as IEntityExpanded).entity.properties._id
-                );
-            });
+            const entityType = isExpandedEntityRelationshipSource ? 'destinationEntity' : 'sourceEntity';
+            const relevantConnections = expandedRelationships.filter(
+                (connection) => connection.relationship.templateId === _id && connection[entityType].properties._id === entity.entity.properties._id,
+            );
 
             return relevantConnections.length > 0;
         });
 
-        const relevantChildren = expandedRelationshipsTemplates.filter(
+        const relevantChildren = expandedRelationshipTemplates.filter(
             ({ relationshipTemplate: { _id }, isExpandedEntityRelationshipSource, parentRelationship }) => {
                 const relevantParentRelationship = relevantParents.find(
                     (relevantParent) => relevantParent.relationshipTemplate._id === parentRelationship!.relationshipTemplate._id,
@@ -190,12 +182,10 @@ const PrintOptionsDialog: React.FC<{
                     ? parentInstance?.destinationEntity.properties._id
                     : parentInstance?.sourceEntity.properties._id;
 
-                const relevantConnections = expandedRelationships.filter((connection) => {
-                    if (isExpandedEntityRelationshipSource)
-                        return connection.relationship.templateId === _id && connection.destinationEntity.properties._id === entityId;
-
-                    return connection.relationship.templateId === _id && connection.sourceEntity.properties._id === entityId;
-                });
+                const entityType = isExpandedEntityRelationshipSource ? 'sourceEntity' : 'destinationEntity';
+                const relevantConnections = expandedRelationships.filter(
+                    (connection) => connection.relationship.templateId === _id && connection[entityType].properties._id === entityId,
+                );
 
                 return relevantConnections.length > 0;
             },

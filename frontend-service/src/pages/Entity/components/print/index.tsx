@@ -14,7 +14,8 @@ import { lightTheme } from '../../../../theme';
 import { ComponentToPrint } from './ComponentToPrint';
 import './print.css';
 import { getExpandedEntityByIdRequest } from '../../../../services/entitiesService';
-import { IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '../../../../interfaces/relationshipTemplates';
+import { IRelationshipTemplateMap } from '../../../../interfaces/relationshipTemplates';
+import { handleExpandedRelationships } from '../../../../utils/expandedRelationships';
 
 export interface ISelectRelationshipTemplates extends IConnectionTemplateOfExpandedEntity {
     children?: IConnectionTemplateExpanded[];
@@ -53,7 +54,7 @@ const Print: React.FC<{
     const [filesLoadingStatus, setFilesLoadingStatus] = React.useState({});
 
     const [selectedConnections, setSelectedConnections] = React.useState<ISelectRelationshipTemplates[]>([]);
-    const [expandedRelationshipsTemplates, setExpandedRelationshipsTemplates] = React.useState<IConnectionTemplateExpanded[]>([]);
+    const [expandedRelationshipTemplates, setExpandedRelationshipTemplates] = React.useState<IConnectionTemplateExpanded[]>([]);
     const [expandedRelationships, setExpandedRelationships] = React.useState<IConnectionExpanded[]>([]);
 
     const [showDate, setShowDate] = React.useState(true);
@@ -66,8 +67,9 @@ const Print: React.FC<{
         setOpenModal(false);
     };
 
+    const templateIds = Object.keys(entityTemplates);
     const { refetch: getExpandedData } = useQuery<IEntityExpanded>(
-        ['getExpandedEntity', expandedEntity.entity.properties._id, { templateIds: Object.keys(entityTemplates) }],
+        ['getExpandedEntity', expandedEntity.entity.properties._id, { templateIds }],
         () =>
             getExpandedEntityByIdRequest(
                 expandedEntity.entity.properties._id,
@@ -77,69 +79,15 @@ const Print: React.FC<{
         {
             enabled: false,
             onSuccess: (data) => {
-                const extendedRelationships = data?.connections.filter(
-                    (connection) =>
-                        !expandedEntity.connections.some(
-                            (currentConnection) => currentConnection.relationship.properties._id === connection.relationship.properties._id,
-                        ),
+                const { extendedRelationshipsTemplates, currentExtendedRelationships } = handleExpandedRelationships(
+                    data,
+                    expandedEntity,
+                    connectionsTemplates,
+                    relationshipTemplates,
+                    entityTemplates,
                 );
 
-                const relatedEntities = expandedEntity.connections.map((connection) => {
-                    const relationshipTemplate = connectionsTemplates.find(
-                        (connectionsTemplate) => connectionsTemplate.relationshipTemplate._id === connection.relationship.templateId,
-                    );
-                    return {
-                        relationshipId: connection.relationship.properties._id,
-                        relationshipTemplate: connection.relationship,
-                        entityId: relationshipTemplate?.isExpandedEntityRelationshipSource
-                            ? connection.destinationEntity.properties._id
-                            : connection.sourceEntity.properties._id,
-                    };
-                });
-
-                const extendedRelationshipsTemplates: IConnectionTemplateExpanded[] = [];
-                const currentExtendedRelationships: IConnectionExpanded[] = [];
-
-                extendedRelationships.forEach((extendedRelationship) => {
-                    const connectedRelationship = relatedEntities.find(
-                        (relatedEntity) =>
-                            relatedEntity.entityId === extendedRelationship.destinationEntity.properties._id ||
-                            relatedEntity.entityId === extendedRelationship.sourceEntity.properties._id,
-                    );
-                    if (!connectedRelationship) return;
-
-                    const parentRelationshipInstance = expandedEntity.connections.find(
-                        (connection) => connection.relationship.properties._id === connectedRelationship?.relationshipId,
-                    )!;
-
-                    const fullParentRelationshipTemplate = connectionsTemplates.find(
-                        (connectionsTemplate) =>
-                            connectedRelationship?.relationshipTemplate.templateId === connectionsTemplate.relationshipTemplate._id,
-                    )!;
-
-                    const parentTemplate = relationshipTemplates.get(extendedRelationship.relationship.templateId)!;
-                    const { sourceEntityId, destinationEntityId, ...parentTemplateProperties } = parentTemplate;
-                    const parentTemplatePopulated: IMongoRelationshipTemplatePopulated = {
-                        ...parentTemplateProperties,
-                        sourceEntity: entityTemplates.get(sourceEntityId)!,
-                        destinationEntity: entityTemplates.get(destinationEntityId)!,
-                    };
-
-                    const relationshipTemplate: IConnectionTemplateOfExpandedEntity = {
-                        relationshipTemplate: parentTemplatePopulated,
-                        isExpandedEntityRelationshipSource: connectedRelationship.entityId === extendedRelationship.destinationEntity.properties._id,
-                    };
-                    if (
-                        !extendedRelationshipsTemplates.some(
-                            (extendedRelationshipsTemplate) =>
-                                relationshipTemplate.relationshipTemplate._id === extendedRelationshipsTemplate.relationshipTemplate._id,
-                        )
-                    )
-                        extendedRelationshipsTemplates.push({ ...relationshipTemplate, parentRelationship: fullParentRelationshipTemplate });
-                    currentExtendedRelationships.push({ ...extendedRelationship, parentRelationship: parentRelationshipInstance });
-                });
-
-                setExpandedRelationshipsTemplates(extendedRelationshipsTemplates);
+                setExpandedRelationshipTemplates(extendedRelationshipsTemplates);
                 setExpandedRelationships(currentExtendedRelationships);
             },
         },
@@ -188,7 +136,7 @@ const Print: React.FC<{
                     open={openModal}
                     entityConnections={{
                         connectionsTemplates,
-                        expandedRelationshipsTemplates,
+                        expandedRelationshipTemplates,
                         expandedRelationships,
                         selectedConnections,
                         setSelectedConnections,

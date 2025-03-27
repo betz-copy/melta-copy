@@ -75,19 +75,12 @@ const ComponentToPrint = React.forwardRef<
                         <BlueTitle title={i18next.t('entityPage.relationshipTitle')} component="h4" variant="h4" style={{ marginTop: '2rem' }} />
 
                         {connectionsTemplatesToPrint.map(({ relationshipTemplate, isExpandedEntityRelationshipSource, children }) => {
-                            const relevantParents = expandedEntity.connections.filter((connection) => {
-                                if (isExpandedEntityRelationshipSource) {
-                                    return (
-                                        connection.relationship.templateId === relationshipTemplate._id &&
-                                        connection.sourceEntity.properties._id === expandedEntity.entity.properties._id
-                                    );
-                                }
-
-                                return (
+                            const entityType = isExpandedEntityRelationshipSource ? 'sourceEntity' : 'destinationEntity';
+                            const relevantParents = expandedRelationships.filter(
+                                (connection) =>
                                     connection.relationship.templateId === relationshipTemplate._id &&
-                                    connection.destinationEntity.properties._id === expandedEntity.entity.properties._id
-                                );
-                            });
+                                    connection[entityType].properties._id === expandedEntity.entity.properties._id,
+                            );
 
                             const relevantChildren = children?.filter(
                                 ({
@@ -107,15 +100,12 @@ const ComponentToPrint = React.forwardRef<
                                         ? parentInstance?.destinationEntity.properties._id
                                         : parentInstance?.sourceEntity.properties._id;
 
-                                    const relevantConnections = expandedRelationships.filter((connection) => {
-                                        if (isExpandedEntityRelationshipSourceChild)
-                                            return (
-                                                connection.relationship.templateId === childId &&
-                                                connection.destinationEntity.properties._id === entityId
-                                            );
-
-                                        return connection.relationship.templateId === childId && connection.sourceEntity.properties._id === entityId;
-                                    });
+                                    const entityRelevantType = isExpandedEntityRelationshipSource ? 'destinationEntity' : 'sourceEntity';
+                                    const relevantConnections = expandedRelationships.filter(
+                                        (connection) =>
+                                            connection.relationship.templateId === childId &&
+                                            connection[entityRelevantType].properties._id === entityId,
+                                    );
 
                                     return relevantConnections.length > 0;
                                 },
