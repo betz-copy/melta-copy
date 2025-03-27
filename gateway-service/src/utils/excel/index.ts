@@ -43,6 +43,19 @@ export const handleExcelErrors = (error: any, failedEntities: IFailedEntity[], e
         if (!error.response) throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, 'no error. response in axiosError', error);
 
         const { data } = error.response;
+        if (typeof data.StatusCodes === 'string')
+            if (data.StatusCodes === 'Neo.ClientError.Schema.ConstraintValidationFailed') {
+                const templateIdMatch = error.message.match(/label `([^`]*)`/);
+                const templateId = templateIdMatch ? templateIdMatch[1] : '';
+
+                const propertiesMatch = error.message.match(/properties \((.*?)\)/);
+                const properties = propertiesMatch ? propertiesMatch[1].replace(/`/g, '').split(', ') : [];
+
+                failedEntities.push({
+                    properties: entity.properties,
+                    errors: [{ type: ActionErrors.unique, metadata: { type: 'UNIQUE', constraintName: '', templateId, properties } }],
+                });
+            }
 
         if (data.metadata && data.metadata.errorCode === errorCodes.failedConstraintsValidation) {
             const { constraint } = data.metadata;
