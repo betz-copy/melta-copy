@@ -57,6 +57,7 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
     ajv.addKeyword({ keyword: 'user', type: 'string' });
     ajv.addFormat('text-area', /.*/);
     ajv.addFormat('location', (value: string) => validateLocation(value));
+    ajv.addFormat('comment', /.*/);
     addFormats(ajv);
     ajv.addVocabulary(['patternCustomErrorMessage', 'hide']);
     ajv.addKeyword({
@@ -75,6 +76,12 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
     });
     ajv.addKeyword({
         keyword: 'serialCurrent',
+    });
+    ajv.addKeyword({
+        keyword: 'comment',
+    });
+    ajv.addKeyword({
+        keyword: 'hideFromDetailsPage',
     });
 
     ajv.addKeyword('identifier', {
@@ -148,7 +155,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
             '#json-schema > .form-group.field.field-object > .MuiFormControl-root > .MuiGrid-root > .MuiGrid-root',
         );
         containerDiv.forEach((innerDiv) => {
-            const biggerFieldCss = innerDiv.querySelector('.text-area') || innerDiv.querySelector('.signature');
+            const biggerFieldCss = innerDiv.querySelector('.text-area') || innerDiv.querySelector('.signature') || innerDiv.querySelector('.comment');
             innerDiv.classList.add(biggerFieldCss ? 'has-bigger-field-child' : 'has-field-child');
         });
     }, [values.template]);

@@ -155,7 +155,6 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                 container: {
                     display: 'flex',
                     flexDirection: 'column-reverse',
-                    width: '100%',
                 },
                 editor: {
                     padding: '20px',
@@ -642,7 +641,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                             label={i18next.t('wizard.entityTemplate.propertyDisplayName')}
                                             id={title}
                                             name={title}
-                                            value={value.title}
+                                            value={isNotComment ? value.title : i18next.t('propertyTypes.comment')}
                                             onChange={onChange}
                                             error={touchedTitle && Boolean(errorTitle)}
                                             helperText={touchedTitle && errorTitle}
@@ -663,7 +662,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                     ...prevValue,
                                                     type: newType,
                                                     required: newType === 'serialNumber' || prevValue.required,
-                                                    title: newType === 'comment' ? i18next.t('propertyTypes.comment') : value.title,
+                                                    title: newType === 'comment' ? value.name : value.title,
                                                 }));
                                             }}
                                             error={touchedType && Boolean(errorType)}
@@ -1258,7 +1257,6 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                     ...prevValue,
                                                                     hideFromDetailsPage: checked,
                                                                 }));
-                                                                if (checked) createEmptyGroup(value.name);
                                                             }}
                                                             checked={value.hideFromDetailsPage ?? false}
                                                         />

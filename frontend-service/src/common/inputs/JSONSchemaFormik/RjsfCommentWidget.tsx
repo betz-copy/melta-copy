@@ -56,7 +56,7 @@ const RjsfCommentWidget = ({ id, options }: WidgetProps) => {
 
     return (
         <ThemeProvider theme={theme}>
-            <Grid position="relative">
+            <Grid position="relative" className="comment">
                 <MUIRichTextEditor
                     id={id}
                     readOnly

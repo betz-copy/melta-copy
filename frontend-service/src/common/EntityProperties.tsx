@@ -161,6 +161,8 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
     showDivider,
     dividerTitle,
 }) => {
+    const getCurrProperty = (propertyKey: string) => entityTemplate.properties.properties[propertyKey];
+
     let propertiesOrderedToShow: string[];
     if (overridePropertiesToShow) {
         propertiesOrderedToShow = entityTemplate.propertiesOrder.filter((propertyKey) => overridePropertiesToShow.includes(propertyKey));
@@ -168,14 +170,14 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
         propertiesOrderedToShow = entityTemplate.propertiesOrder.filter((propertyKey) => entityTemplate.propertiesPreview!.includes(propertyKey));
     } else if (removeFiles) {
         propertiesOrderedToShow = entityTemplate.propertiesOrder.filter(
-            (propertyKey) =>
-                entityTemplate.properties.properties[propertyKey].format !== 'fileId' &&
-                entityTemplate.properties.properties[propertyKey].items?.format !== 'fileId',
+            (propertyKey) => getCurrProperty(propertyKey).format !== 'fileId' && getCurrProperty(propertyKey).items?.format !== 'fileId',
         );
     } else
-        propertiesOrderedToShow = displayArchiveProperties
-            ? entityTemplate.propertiesOrder.filter((propertyKey) => entityTemplate.properties.properties[propertyKey].archive)
-            : entityTemplate.propertiesOrder.filter((propertyKey) => !entityTemplate.properties.properties[propertyKey].archive);
+        propertiesOrderedToShow = entityTemplate.propertiesOrder.filter((propertyKey) =>
+            (getCurrProperty(propertyKey).comment && getCurrProperty(propertyKey).hideFromDetailsPage) || displayArchiveProperties
+                ? getCurrProperty(propertyKey).archive
+                : !getCurrProperty(propertyKey).archive,
+        );
 
     const [hideFieldsToDisplay, setHideFieldsToDisplay] = React.useState(entityTemplate.properties.hide);
 
@@ -185,8 +187,6 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
             <Box sx={{ marginY: '1rem' }}>{dividerTitle && <BlueTitle title={dividerTitle} component="p" variant="subtitle1" />}</Box>
             <Grid container style={{ ...style, alignItems: textWrap ? 'flex-start' : 'center', alignContent: 'center' }}>
                 {propertiesOrderedToShow.map((propertyKey) => {
-                    console.log({ propertyKey });
-
                     const propertySchema = entityTemplate.properties.properties[propertyKey];
                     const propertyValue = propertySchema.comment ?? properties[propertyKey];
                     const hideField = entityTemplate.properties.hide.includes(propertyKey);
@@ -196,7 +196,6 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                         isPrintingMode,
                         pureString,
                     });
-                    console.log({ stringFormatValue, hideField, propertyValue, propertySchema, containsHtmlTags });
 
                     const propertyValueColor = getPropertyColor(
                         propertyKey,
@@ -248,28 +247,30 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                             alignItems={textWrap ? 'flex-start' : 'center'}
                         >
                             <Grid item container width="100%" flexWrap="nowrap" alignItems={textWrap ? 'flex-start' : 'center'}>
-                                <Grid
-                                    item
-                                    style={{
-                                        width: overrideStyleInLongText ? '10%' : '30%',
-                                    }}
-                                >
-                                    <MeltaTooltip disableHoverListener={textWrap} placement="bottom" title={propertySchema.title}>
-                                        <Typography
-                                            style={{
-                                                textOverflow: 'ellipsis',
-                                                whiteSpace: textWrap ? undefined : 'nowrap',
-                                                overflow: 'hidden',
-                                                textAlign: 'right',
-                                            }}
-                                            fontSize="14px"
-                                            color={propertyTitleColor}
-                                            fontWeight={mode === 'white' ? '800' : ''}
-                                        >
-                                            {propertySchema.title}:
-                                        </Typography>
-                                    </MeltaTooltip>
-                                </Grid>
+                                {!propertySchema.comment && (
+                                    <Grid
+                                        item
+                                        style={{
+                                            width: overrideStyleInLongText ? '10%' : '30%',
+                                        }}
+                                    >
+                                        <MeltaTooltip disableHoverListener={textWrap} placement="bottom" title={propertySchema.title}>
+                                            <Typography
+                                                style={{
+                                                    textOverflow: 'ellipsis',
+                                                    whiteSpace: textWrap ? undefined : 'nowrap',
+                                                    overflow: 'hidden',
+                                                    textAlign: 'right',
+                                                }}
+                                                fontSize="14px"
+                                                color={propertyTitleColor}
+                                                fontWeight={mode === 'white' ? '800' : ''}
+                                            >
+                                                {propertySchema.title}:
+                                            </Typography>
+                                        </MeltaTooltip>
+                                    </Grid>
+                                )}
                                 <Grid
                                     item
                                     container
@@ -279,8 +280,10 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                                     style={{
                                         direction: 'rtl',
                                         textAlign: 'right',
-                                        width: overrideStyleInLongText ? '90%' : '70%',
+                                        // eslint-disable-next-line no-nested-ternary
+                                        width: propertySchema.comment ? '100%' : overrideStyleInLongText ? '90%' : '70%',
                                     }}
+                                    xs={propertySchema.comment ? 12 : undefined}
                                 >
                                     <MeltaTooltip
                                         disableHoverListener={propertySchema.format === 'relationshipReference' ? true : textWrap}
