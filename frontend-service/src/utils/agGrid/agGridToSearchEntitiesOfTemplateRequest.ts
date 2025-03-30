@@ -1,7 +1,7 @@
 import { environment } from '../../globals';
-import { ICountSearchResult, IFilterOfTemplate, ISearchEntitiesOfTemplateBody, ISearchFilter } from '../../interfaces/entities';
+import { ICountSearchResult, IFilterOfTemplate, ISearchEntitiesOfTemplateBody } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { getDayStart, getDayEnd } from '../date';
+import { getDayEnd, getDayStart } from '../date';
 import { addDefaultFieldsToTemplate } from '../templates';
 import {
     IAGGidNumberFilter,
@@ -31,7 +31,7 @@ export const textFilterToFilterOfTemplate = (field: string, { type, filter }: IA
         case 'contains':
             return { [field]: { $rgx: `.*${escapeRegExp(filter!)}.*` } };
         case 'notContains':
-            return { [field]: { $not: { $rgx: `${escapeRegExp(filter!)}` } } };
+            return { [field]: { $not: { $rgx: `.*${escapeRegExp(filter!)}.*` } } };
         case 'startsWith':
             return { [field]: { $rgx: `${escapeRegExp(filter!)}.*` } };
         case 'endsWith':

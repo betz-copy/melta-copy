@@ -166,22 +166,25 @@ const filterOfFieldToNeoQuery = (
     fieldTemplate: IEntitySingleProperty,
 ): CypherQueryWithParameters => {
     let filterField = field;
-    if (fieldTemplate.format === 'relationshipReference') {
-        filterField = `\`${field}.properties.${fieldTemplate.relationshipReference!.relatedTemplateField}${
-            config.neo4j.relationshipReferencePropertySuffix
-        }\``;
-    }
-
-    if (fieldTemplate.format === 'user') {
-        filterField = `\`${field}.fullName_userField\``;
-    }
-
-    if (fieldTemplate.type === 'array' && fieldTemplate.items?.format === 'user') {
-        filterField = `\`${field}.fullNames_usersFields\``;
-    }
 
     const queries: CypherQueryWithParameters[] = Object.entries(filterOfField).map(([key, filterRhs]) => {
         const filterType = key as keyof IFilterOfField;
+
+        if (filterType !== '$not') {
+            if (fieldTemplate.format === 'relationshipReference') {
+                filterField = `\`${field}.properties.${fieldTemplate.relationshipReference!.relatedTemplateField}${
+                    config.neo4j.relationshipReferencePropertySuffix
+                }\``;
+            }
+
+            if (fieldTemplate.format === 'user') {
+                filterField = `\`${field}.fullName_userField\``;
+            }
+
+            if (fieldTemplate.type === 'array' && fieldTemplate.items?.format === 'user') {
+                filterField = `\`${field}.fullNames_usersFields\``;
+            }
+        }
 
         let partFilterOfFieldQuery: CypherQueryWithParameters;
         switch (filterType) {
