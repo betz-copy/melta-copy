@@ -792,6 +792,7 @@ export default {
         hide: 'הסתר',
         unique: 'ייחודי',
         readOnly: 'לקריאה בלבד',
+        hideFromDetailsPage: 'הסתר מעמוד פרט',
         identifier: 'מזהה ייחודי',
         incoming: 'משויך מ',
         outgoing: 'משויך ל',
@@ -849,6 +850,7 @@ export default {
         user: 'משתמש',
         users: 'משתמשים',
         signature: 'חתימה',
+        comment: 'הערה',
     },
     input: {
         imagePicker: {

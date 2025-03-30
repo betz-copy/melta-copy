@@ -18,6 +18,8 @@ import {
     Popover,
     Backdrop,
     CircularProgress,
+    ThemeProvider,
+    createTheme,
 } from '@mui/material';
 import {
     Delete as DeleteIcon,
@@ -39,6 +41,9 @@ import isEqual from 'lodash.isequal';
 import EditIcon from '@mui/icons-material/Edit';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
+import MUIRichTextEditor, { TMUIRichTextEditorStyles } from 'mui-rte';
+import { convertToRaw, EditorState } from 'draft-js';
+import { stateToHTML } from 'draft-js-export-html';
 import { dateNotificationTypes, validPropertyTypes } from './AddFields';
 import { CommonFormInputProperties, IRelationshipReference } from './commonInterfaces';
 import { MinimizedColorPicker } from '../../inputs/MinimizedColorPicker';
@@ -50,6 +55,7 @@ import { MeltaTooltip } from '../../MeltaTooltip';
 import { IUniqueConstraintOfTemplate } from '../../../interfaces/entities';
 import RelationshipReferenceField from './RelationshipReferenceField';
 import { environment } from '../../../globals';
+import { getInitialValue } from '../../inputs/JSONSchemaFormik/RjfsTextAreaWidget';
 
 const { mapSearchPropertiesLimit } = environment.map;
 
@@ -136,6 +142,49 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     hasActions,
     supportConvertingToMultipleFields = true,
 }) => {
+    const theme = createTheme();
+    const muiRteTheme: TMUIRichTextEditorStyles = {
+        overrides: {
+            MUIRichTextEditor: {
+                root: {
+                    borderRadius: '10px',
+                    border: '1px solid #CCCFE5',
+                    borderBottom: '1px solid #CCCFE5',
+                    transition: 'border-color 0.3s',
+                },
+                container: {
+                    display: 'flex',
+                    flexDirection: 'column-reverse',
+                    width: '100%',
+                },
+                editor: {
+                    padding: '20px',
+                    height: '150px',
+                    maxHeight: '200px',
+                    overflow: 'auto',
+                },
+                toolbar: {
+                    borderTop: '1px solid gray',
+                    borderRadius: '0px 0px 10px 10px',
+                },
+                placeHolder: {
+                    paddingLeft: 20,
+                    width: 'inherit',
+                    color: '#9398C2',
+                    padding: '8.5px 14px',
+                    display: 'block',
+                    transformOrigin: 'top-right',
+                    whiteSpace: 'nowrap',
+                    position: 'absolute',
+                    right: 0,
+                    top: 0,
+                },
+            },
+        },
+    };
+
+    Object.assign(theme, muiRteTheme);
+
     const isText = value.type === 'string' || value.type === 'text-area';
 
     const name = `properties[${index}].name`;
@@ -177,6 +226,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     const hide = `properties[${index}].hide`;
     const readOnly = `properties[${index}].readOnly`;
     const identifier = `properties[${index}].identifier`;
+    const hideFromDetailsPage = `properties[${index}].hideFromDetailsPage`;
 
     const unique =
         value.type === 'serialNumber' ||
@@ -551,6 +601,10 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
         return i18next.t('wizard.entityTemplate.moveToArchive');
     };
 
+    const isNotComment = value.type !== 'comment';
+
+    console.log({ value });
+
     return (
         <Draggable draggableId={value.id} index={index}>
             {(draggableProvided) => (
@@ -594,7 +648,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                             helperText={touchedTitle && errorTitle}
                                             sx={{ marginRight: '5px' }}
                                             fullWidth
-                                            disabled={value.deleted}
+                                            disabled={value.deleted || value.type === 'comment'}
                                         />
                                         <TextField
                                             select
@@ -604,10 +658,12 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                             name={type}
                                             value={value.type === 'text-area' ? 'string' : value.type}
                                             onChange={(e) => {
+                                                const newType = e.target.value;
                                                 setValues?.((prevValue) => ({
                                                     ...prevValue,
-                                                    type: e.target.value,
-                                                    required: e.target.value === 'serialNumber' || prevValue.required,
+                                                    type: newType,
+                                                    required: newType === 'serialNumber' || prevValue.required,
+                                                    title: newType === 'comment' ? i18next.t('propertyTypes.comment') : value.title,
                                                 }));
                                             }}
                                             error={touchedType && Boolean(errorType)}
@@ -887,6 +943,34 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                 fullWidth
                                             />
                                         )}
+                                        {value.type === 'comment' && (
+                                            <ThemeProvider theme={theme}>
+                                                <Grid position="relative" width="99.5%">
+                                                    <MUIRichTextEditor
+                                                        id={value.id}
+                                                        label={i18next.t('propertyTypes.comment')}
+                                                        controls={[
+                                                            'title',
+                                                            'bold',
+                                                            'italic',
+                                                            'underline',
+                                                            'strikethrough',
+                                                            'numberList',
+                                                            'bulletList',
+                                                        ]}
+                                                        toolbar
+                                                        onChange={(state: EditorState) => {
+                                                            const newValue = state.getCurrentContent().getPlainText();
+                                                            const htmlContent = stateToHTML(state.getCurrentContent());
+                                                            setFieldValue('comment', newValue === '' ? undefined : htmlContent);
+                                                        }}
+                                                        defaultValue={JSON.stringify(
+                                                            convertToRaw(getInitialValue(value.comment).getCurrentContent()),
+                                                        )}
+                                                    />
+                                                </Grid>
+                                            </ThemeProvider>
+                                        )}
                                         {value.type === 'relationshipReference' && supportRelationshipReference && (
                                             <RelationshipReferenceField
                                                 value={value}
@@ -999,7 +1083,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                     </Grid>
                                     <Grid item container justifyContent="space-between">
                                         <Box>
-                                            {value.required !== undefined && setValues && (
+                                            {value.required !== undefined && isNotComment && setValues && (
                                                 <FormControlLabel
                                                     control={
                                                         <Switch
@@ -1046,13 +1130,13 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                 readOnly: checked || undefined,
                                                             }));
                                                         }}
-                                                        disabled={value.required || value.archive}
-                                                        checked={value.readOnly}
+                                                        disabled={value.required || value.archive || !isNotComment}
+                                                        checked={value.readOnly || !isNotComment}
                                                     />
                                                 }
                                                 label={i18next.t('validation.readOnly')}
                                             />
-                                            {value.preview !== undefined && (
+                                            {value.preview !== undefined && isNotComment && (
                                                 <FormControlLabel
                                                     control={
                                                         <Switch
@@ -1080,7 +1164,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                     label={i18next.t('validation.hide')}
                                                 />
                                             )}
-                                            {supportUnique && unique !== undefined && setValues && value.type !== 'signature' && (
+                                            {supportUnique && unique !== undefined && setValues && value.type !== 'signature' && isNotComment && (
                                                 <FormControlLabel
                                                     control={
                                                         <Switch
@@ -1163,11 +1247,31 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                     label={i18next.t('validation.identifier')}
                                                 />
                                             )}
+                                            {!isNotComment && (
+                                                <FormControlLabel
+                                                    control={
+                                                        <Switch
+                                                            id={hideFromDetailsPage}
+                                                            name={hideFromDetailsPage}
+                                                            onChange={(_e, checked) => {
+                                                                setValues?.((prevValue) => ({
+                                                                    ...prevValue,
+                                                                    hideFromDetailsPage: checked,
+                                                                }));
+                                                                if (checked) createEmptyGroup(value.name);
+                                                            }}
+                                                            checked={value.hideFromDetailsPage ?? false}
+                                                        />
+                                                    }
+                                                    label={i18next.t('validation.hideFromDetailsPage')}
+                                                />
+                                            )}
                                         </Box>
                                         <Grid display="flex">
                                             {locationSearchFields?.show &&
                                                 value.type !== 'fileId' &&
                                                 value.type !== 'relationshipReference' &&
+                                                isNotComment &&
                                                 !arrayTypes.includes(value.type) && (
                                                     <MeltaTooltip
                                                         title={i18next.t(

@@ -10,6 +10,7 @@ const { notifications, ajvCustomFormats } = config;
 const ajv = new Ajv();
 ajv.addFormat('fileId', /.*/);
 ajv.addFormat('signature', /.*/);
+ajv.addFormat('comment', /.*/);
 ajv.addFormat('user', {
     type: 'string',
     validate: (user) => {
@@ -44,8 +45,10 @@ ajv.addKeyword({ keyword: 'isDailyAlert', type: 'boolean' });
 ajv.addKeyword({ keyword: 'isDatePastAlert', type: 'boolean' });
 ajv.addKeyword({ keyword: 'archive', type: 'boolean' });
 ajv.addKeyword({ keyword: 'identifier', type: 'boolean' });
+ajv.addKeyword({ keyword: 'hideFromDetailsPage', type: 'boolean' });
+ajv.addKeyword({ keyword: 'comment', type: 'string' });
 
-const stringFormats = ['date', 'date-time', 'email', 'fileId', 'text-area', 'relationshipReference', 'location', 'user', 'signature'];
+const stringFormats = ['date', 'date-time', 'email', 'fileId', 'text-area', 'relationshipReference', 'location', 'user', 'signature', 'comment'];
 const allowedJSONSchemaTypes = ['string', 'number', 'boolean', 'array'];
 
 const propertiesArraySchema = Joi.array()
@@ -108,6 +111,8 @@ const propertiesArraySchema = Joi.array()
             calculateTime: Joi.boolean().when('format', { not: Joi.valid('date', 'date-time'), then: Joi.forbidden() }),
             serialStarter: Joi.number().when('type', { not: 'number', then: Joi.forbidden() }),
             serialCurrent: Joi.number().when('type', { not: 'number', then: Joi.forbidden() }),
+            comment: Joi.string().when('type', { not: 'string', then: Joi.forbidden() }),
+            hideFromDetailsPage: Joi.valid(true),
         }).nand('pattern', 'enum'),
     )
     .unique((a, b) => a.title === b.title);

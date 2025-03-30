@@ -4,7 +4,7 @@ import { IMongoCategory } from '../category/interface';
 export interface IEntitySingleProperty {
     title: string;
     type: 'string' | 'number' | 'boolean' | 'array';
-    format?: 'date' | 'date-time' | 'email' | 'fileId' | 'text-area' | 'relationshipReference' | 'location' | 'user' | 'signature';
+    format?: 'date' | 'date-time' | 'email' | 'fileId' | 'text-area' | 'relationshipReference' | 'location' | 'user' | 'signature' | 'comment';
     enum?: string[];
     readOnly?: true;
     identifier?: true;
@@ -30,6 +30,8 @@ export interface IEntitySingleProperty {
     minItems?: 1;
     uniqueItems?: true;
     archive?: boolean;
+    comment?: string;
+    hideFromDetailsPage?: boolean;
 }
 
 export interface IProperties {

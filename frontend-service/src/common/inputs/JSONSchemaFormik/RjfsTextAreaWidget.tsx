@@ -8,24 +8,26 @@ import React, { useEffect, useState } from 'react';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { containsHTMLTags } from '../../../utils/HtmlTagsStringValue';
 
+export const getInitialValue = (value) => {
+    console.log({ value });
+
+    if (value) {
+        const checkHasHTMLTags = containsHTMLTags(value);
+        if (checkHasHTMLTags) {
+            const contentBlock = convertFromHTML(value);
+            const contentState = ContentState.createFromBlockArray(contentBlock.contentBlocks);
+            return EditorState.createWithContent(contentState);
+        }
+        const contentState = ContentState.createFromText(value);
+        return EditorState.createWithContent(contentState);
+    }
+    return EditorState.createEmpty();
+};
+
 const RjfsTextAreaWidget = ({ id, value, label, readonly, onChange, options }: WidgetProps) => {
     const { toPrint } = options;
 
-    const initialValue = () => {
-        if (value) {
-            const checkHasHTMLTags = containsHTMLTags(value);
-            if (checkHasHTMLTags) {
-                const contentBlock = convertFromHTML(value);
-                const contentState = ContentState.createFromBlockArray(contentBlock.contentBlocks);
-                return EditorState.createWithContent(contentState);
-            }
-            const contentState = ContentState.createFromText(value);
-            return EditorState.createWithContent(contentState);
-        }
-        return EditorState.createEmpty();
-    };
-
-    const [editorValue, setEditorValue] = useState(initialValue());
+    const [editorValue, setEditorValue] = useState(getInitialValue(value));
     const [showLabel, setShowLabel] = useState(false);
     const [rawContentState, setRawContentState] = useState('');
 

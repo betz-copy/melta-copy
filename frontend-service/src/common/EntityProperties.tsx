@@ -43,6 +43,7 @@ export const formatToString = (value: any, property: IEntitySingleProperty, opti
     if (valueType === 'string') {
         if (format === 'date') return new Date(value).toLocaleDateString('en-uk');
         if (format === 'date-time') return new Date(value).toLocaleString('en-uk');
+        if (format === 'comment') return property.hideFromDetailsPage ? '' : property.comment;
         if (format === 'fileId' || format === 'signature') return <OpenPreview fileId={value} download={isPrintingMode} />;
         if (format === 'relationshipReference') {
             return pureString ? (
@@ -184,8 +185,10 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
             <Box sx={{ marginY: '1rem' }}>{dividerTitle && <BlueTitle title={dividerTitle} component="p" variant="subtitle1" />}</Box>
             <Grid container style={{ ...style, alignItems: textWrap ? 'flex-start' : 'center', alignContent: 'center' }}>
                 {propertiesOrderedToShow.map((propertyKey) => {
+                    console.log({ propertyKey });
+
                     const propertySchema = entityTemplate.properties.properties[propertyKey];
-                    const propertyValue = properties[propertyKey];
+                    const propertyValue = propertySchema.comment ?? properties[propertyKey];
                     const hideField = entityTemplate.properties.hide.includes(propertyKey);
                     const containsHtmlTags = containsHTMLTags(propertyValue);
                     const stringFormatValue = formatToString(propertyValue, propertySchema, {
@@ -193,6 +196,8 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                         isPrintingMode,
                         pureString,
                     });
+                    console.log({ stringFormatValue, hideField, propertyValue, propertySchema, containsHtmlTags });
+
                     const propertyValueColor = getPropertyColor(
                         propertyKey,
                         propertiesToHighlight,

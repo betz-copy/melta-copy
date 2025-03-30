@@ -22,6 +22,8 @@ interface IEntitySingleProperty {
         relatedTemplateId: string;
         relatedTemplateField: string;
     };
+    comment?: string;
+    hideFromDetailsPage?: boolean;
 }
 
 interface IJSONSchema {

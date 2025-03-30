@@ -32,6 +32,8 @@ export interface IEntitySingleProperty {
         relatedTemplateField: string;
     };
     archive?: boolean;
+    hideFromDetailsPage?: boolean;
+    comment?: string;
 }
 
 export interface IEntityTemplate {

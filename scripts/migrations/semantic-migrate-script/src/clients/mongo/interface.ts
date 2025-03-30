@@ -3,7 +3,7 @@ import { Document } from 'mongoose';
 export interface IEntitySingleProperty {
     title: string;
     type: 'string' | 'number' | 'boolean' | 'array';
-    format?: 'date' | 'date-time' | 'email' | 'fileId' | 'text-area' | 'relationshipReference'| 'signature';
+    format?: 'date' | 'date-time' | 'email' | 'fileId' | 'text-area' | 'relationshipReference'| 'signature' | 'comment';
     enum?: string[];
     readOnly?: true;
     identifier?: true;
@@ -28,6 +28,8 @@ export interface IEntitySingleProperty {
     };
     minItems?: 1;
     uniqueItems?: true;
+    comment?: string;
+    hideFromDetailsPage?: boolean;
 }
 
 export interface IProperties {

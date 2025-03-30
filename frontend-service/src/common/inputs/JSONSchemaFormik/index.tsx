@@ -20,6 +20,7 @@ import RjsfLocationWidget, { validateLocation } from './RjsfLocationWidget';
 import RjfsUserWidget from './RjfsUserWidget';
 import RjfsUserArrayWidget from './RjfsUserArrayWidget';
 import RjfsSignatureWidget from './RjfsSignatureWidgets';
+import RjsfCommentWidget from './RjsfCommentWidget';
 
 const ajvErrorsToFormikErrors = (schema: IMongoEntityTemplatePopulated['properties'], ajvErrors: ErrorObject[]): FormikErrors<any> => {
     const formikErrorsEntries = ajvErrors.map((ajvError) => {
@@ -165,6 +166,13 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
             schema={schema}
             uiSchema={mapValues(schema.properties, (propertySchema, propertyKey): UiSchema => {
                 if (propertySchema.archive) return {};
+                if (propertySchema.format === 'comment')
+                    return {
+                        'ui:options': {
+                            comment: propertySchema.comment,
+                        },
+                        'ui:widget': 'CommentWidget',
+                    };
                 if (propertySchema.format === 'signature')
                     return {
                         'ui:widget': 'SignatureWidget',
@@ -245,6 +253,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
             tagName="div"
             readonly={readonly}
             widgets={{
+                CommentWidget: RjsfCommentWidget,
                 SelectWidget: RjfsSelectWidget,
                 DateWidget: RjfsDateWidget,
                 DateTimeWidget: RjfsDateTimeWidget,

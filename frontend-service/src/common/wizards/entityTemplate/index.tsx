@@ -53,6 +53,8 @@ export interface EntityTemplateFormInputProperties {
     };
     archive?: boolean;
     mapSearch?: boolean;
+    hideFromDetailsPage?: boolean;
+    comment?: string;
 }
 export interface EntityTemplateWizardValues
     extends Omit<

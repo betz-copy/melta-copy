@@ -15,7 +15,18 @@ import { CommonFormInputProperties } from '../../common/wizards/entityTemplate/c
 
 const { entityTemplates } = environment.api;
 export const basePropertyTypes = ['string', 'number', 'boolean'];
-export const stringFormats = ['date', 'date-time', 'email', 'fileId', 'text-area', 'relationshipReference', 'location', 'user', 'signature'];
+export const stringFormats = [
+    'date',
+    'date-time',
+    'email',
+    'fileId',
+    'text-area',
+    'relationshipReference',
+    'location',
+    'user',
+    'signature',
+    'comment',
+];
 export const arrayTypes = ['multipleFiles', 'enumArray', 'users'];
 
 const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTemplatePopulated | null): EntityTemplateWizardValues | undefined => {
@@ -51,6 +62,7 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
         else if (value.items?.format === 'fileId') type = 'multipleFiles';
         else if (value.items?.format === 'user') type = 'users';
         else if (value.items?.format === 'text-area') type = 'text-area';
+        else if (value.format && value.format === 'comment') type = 'comment';
 
         const property: EntityTemplateFormInputProperties = {
             id: uuid(),
@@ -76,6 +88,8 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
             archive: value.archive || undefined,
             identifier: value.identifier || undefined,
             mapSearch: mapSearchProperties?.includes(key) || undefined,
+            hideFromDetailsPage: value.hideFromDetailsPage || undefined,
+            comment: value.comment,
         };
 
         if (value.format === 'fileId' || value.items?.format === 'fileId') {
@@ -157,6 +171,8 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
             archive,
             identifier,
             mapSearch,
+            hideFromDetailsPage,
+            comment,
         }) => {
             if (deleted) return;
 
@@ -192,6 +208,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                     | 'text-area'
                     | 'relationshipReference'
                     | 'user'
+                    | 'comment'
                     | undefined,
                 enum: type === 'enum' ? options : undefined,
                 items: type === 'enumArray' ? { type: 'string', enum: options } : type === 'users' ? { type: 'string', format: 'user' } : undefined,
@@ -199,6 +216,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                 readOnly,
                 archive,
                 identifier,
+                hideFromDetailsPage,
                 uniqueItems: type === 'enumArray' || type === 'users' ? true : undefined,
                 pattern: type === 'pattern' ? pattern : undefined,
                 patternCustomErrorMessage: type === 'pattern' ? patternCustomErrorMessage : undefined,
@@ -216,6 +234,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                           relatedTemplateField: relationshipReference!.relatedTemplateField,
                       }
                     : undefined,
+                comment,
             };
             if (isEditMode) {
                 schema.properties[name] = {
@@ -266,6 +285,8 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
             relationshipReference,
             archive,
             mapSearch,
+            hideFromDetailsPage,
+            comment,
         }) => {
             if (deleted) return;
 
@@ -296,6 +317,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                 readOnly,
                 archive,
                 identifier,
+                hideFromDetailsPage,
                 uniqueItems: type === 'enumArray' || type === 'users' ? true : undefined,
                 pattern: type === 'pattern' ? pattern : undefined,
                 patternCustomErrorMessage: type === 'pattern' ? patternCustomErrorMessage : undefined,
@@ -313,6 +335,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                           relatedTemplateField: relationshipReference!.relatedTemplateField,
                       }
                     : undefined,
+                comment,
             };
 
             if (isEditMode) {
