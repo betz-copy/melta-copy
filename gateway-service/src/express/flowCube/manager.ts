@@ -6,7 +6,6 @@ import { UserService } from '../../externalServices/userService';
 import { ICompactPermissions, ISubCompactPermissions } from '../../externalServices/userService/interfaces/permissions/permissions';
 import { Authorizer } from '../../utils/authorizer';
 import DefaultManagerProxy from '../../utils/express/manager';
-import { escapeRegExp } from '../../utils/regex';
 import TemplatesManager from '../templates/manager';
 import { IWorkspace } from '../workspaces/interface';
 import { WorkspaceService } from '../workspaces/service';
@@ -40,9 +39,7 @@ export class FlowCubeManager extends DefaultManagerProxy<null> {
             }
 
             if (template.properties.properties[field]) {
-                const filterCondition = Array.isArray(filterValue)
-                    ? { $in: filterValue.map((val) => new RegExp(escapeRegExp(val))) }
-                    : { $eq: filterValue };
+                const filterCondition = Array.isArray(filterValue) ? { $in: filterValue } : { $eq: filterValue };
 
                 filterAnd.push({ [field]: filterCondition });
             } else if (field.endsWith('From') || field.endsWith('To')) {
