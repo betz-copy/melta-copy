@@ -228,6 +228,7 @@ services:
       ELASTIC_APM_ACTIVE: ${ELASTIC_APM_ACTIVE}
       WORKSPACE_ID_HEADER_NAME: ${WORKSPACE_ID_HEADER_NAME}
       DISPLAY_CRON_DATES: ${DISPLAY_CRON_DATES}
+      KARTOFFEL_BASE_URL: ${KARTOFFEL_BASE_URL}
 
   semantic-service:
     build: ./semantic-service

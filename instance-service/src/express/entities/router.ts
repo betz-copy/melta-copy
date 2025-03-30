@@ -67,7 +67,7 @@ entityRouter.post(
     entityValidatorController.validateSearchBatchBody,
     entityController.searchEntitiesBatch,
 );
-
+entityRouter.post('/searchByUserField', entityController.searchEntitiesByUserField);
 entityRouter.post('/search/location', ValidateRequest(searchEntitiesByLocation), entityController.searchEntitiesByLocation);
 
 entityRouter.put('/update-enum-field/:id', ValidateRequest(updateEnumFieldRequestSchema), entityController.updateEnumFieldValue);
