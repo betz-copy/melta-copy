@@ -30,7 +30,6 @@ export const filterRelationships = (filterData: {
     destinationEntityTemplatesToShow: IMongoEntityTemplatePopulated[];
 }) => {
     const { relationshipTemplates, searchText, sourceEntityTemplatesToShow, destinationEntityTemplatesToShow } = filterData;
-
     return relationshipTemplates.filter(
         (relationshipTemplate) =>
             isRelationshipMatchSourceAndDestTemplate(relationshipTemplate, sourceEntityTemplatesToShow, destinationEntityTemplatesToShow) &&
