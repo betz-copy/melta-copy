@@ -359,6 +359,7 @@ export default {
             general: 'כללי',
         },
         processDeleted: 'תהליך זה נמחק',
+        noPermissionsToTemplate: 'אין הרשאות לתבנית',
         stepDeleted: 'שלב זה נמחק',
         unknown: 'לא ידוע',
         displayNames: {

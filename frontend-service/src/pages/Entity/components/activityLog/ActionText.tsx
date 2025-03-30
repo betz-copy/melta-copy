@@ -182,32 +182,25 @@ const UpdateTextValue: React.FC<{
         return content;
     };
 
-    return (
+    return value && typeof innerContent === 'string' ? (
         <MeltaTooltip
             PopperProps={popperProps}
             disableHoverListener={!innerContent}
-            title={
-                <Grid style={{ maxHeight: '500px', overflowY: 'auto' }}>
-                    {value
-                        ? typeof innerContent === 'string'
-                            ? contentDisplayNameByTemplate(innerContent)
-                            : innerContent
-                        : i18next.t('entityPage.activityLog.emptyField')}
-                </Grid>
-            }
+            title={<Grid style={{ maxHeight: '500px', overflowY: 'auto' }}>{contentDisplayNameByTemplate(innerContent)}</Grid>}
             placement="top-start"
         >
             <Grid>
                 <StyledTypography variant="body2" style={ellipsisStyle}>
                     {old ? i18next.t('entityPage.activityLog.from') : i18next.t('entityPage.activityLog.to')}{' '}
-                    {value
-                        ? typeof innerContent === 'string'
-                            ? contentDisplayNameByTemplate(innerContent)
-                            : innerContent
-                        : i18next.t('entityPage.activityLog.emptyField')}
+                    {contentDisplayNameByTemplate(innerContent)}
                 </StyledTypography>
             </Grid>
         </MeltaTooltip>
+    ) : (
+        <StyledTypography variant="body2" style={{ ...ellipsisStyle, display: 'flex' }}>
+            {old ? i18next.t('entityPage.activityLog.from') : i18next.t('entityPage.activityLog.to')}{' '}
+            {value ? innerContent : i18next.t('entityPage.activityLog.emptyField')}
+        </StyledTypography>
     );
 };
 

@@ -26,6 +26,7 @@ import { EntityPropertiesInternal } from '../EntityProperties';
 import { environment } from '../../globals';
 import { useUserStore } from '../../stores/user';
 import { getAllAllowedEntities, getAllAllowedRelationships } from '../../utils/permissions/templatePermissions';
+import { MeltaTooltip } from '../MeltaTooltip';
 
 interface EntityInfoProps {
     entity: IEntity | string | null;
@@ -207,7 +208,7 @@ const CreateOrDeleteRelActionInfo: React.FC<{
 
     return (
         <Typography component="p" variant="body1">
-            <Box component="span">{`${i18next.t(`ruleBreachInfo.relActionInfo.${actionType}`)} sfcdvsdvfdsvs `}</Box>
+            <Box component="span">{`${i18next.t(`ruleBreachInfo.relActionInfo.${actionType}`)} `}</Box>
             <RelationshipInfo
                 relationshipTemplatePopulated={relationshipTemplatePopulated}
                 sourceEntity={sourceEntity}
@@ -244,7 +245,7 @@ const CreateOrDuplicateEntityActionInfo: React.FC<{
     };
 
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const entityTemplate = entityTemplates.get(templateId)!;
+    const entityTemplate = entityTemplates.get(templateId);
 
     return (
         <Grid container direction="column">
@@ -255,17 +256,25 @@ const CreateOrDuplicateEntityActionInfo: React.FC<{
                         {actionType === ActionTypes.DuplicateEntity &&
                             i18next.t('ruleBreachInfo.createOrDuplicateEntityActionInfo.duplicatingEntity')}
                     </Box>{' '}
-                    <EntityLink
-                        entity={entity}
-                        entityTemplate={entityTemplate}
-                        linkable={entity.properties._id ? !entity.properties._id.startsWith(environment.brokenRulesFakeEntityIdPrefix) : false}
-                        entityPropertiesToHighlightTooltip={failedProperties}
-                        entityPropertiesToHighlightColor="red"
-                    />
+                    {entityTemplate ? (
+                        <EntityLink
+                            entity={entity}
+                            entityTemplate={entityTemplate}
+                            linkable={entity.properties._id ? !entity.properties._id.startsWith(environment.brokenRulesFakeEntityIdPrefix) : false}
+                            entityPropertiesToHighlightTooltip={failedProperties}
+                            entityPropertiesToHighlightColor="red"
+                        />
+                    ) : (
+                        <MeltaTooltip title={i18next.t('notifications.noPermissionsToTemplate')}>
+                            <Typography display="inline" fontWeight="bold">
+                                {i18next.t('ruleBreachInfo.updateEntityActionInfo.unknownEntity')}
+                            </Typography>
+                        </MeltaTooltip>
+                    )}
                     {!isCompact ? ':' : ''}
                 </Typography>
             </Grid>
-            {!isCompact && (
+            {!isCompact && entityTemplate && (
                 <Grid item alignItems="center" alignSelf="center" border="1px solid" padding="10px" borderRadius="5px">
                     <EntityPropertiesInternal properties={entity.properties} entityTemplate={entityTemplate} mode="normal" />
                 </Grid>
@@ -284,7 +293,7 @@ const UpdateEntityActionInfo: React.FC<{
     const { entity } = actionMetadata;
 
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const entityTemplate = !entity ? entityTemplates.get(actionMetadata.updatedFields.templateId) : entityTemplates.get(entity.templateId)!;
+    const entityTemplate = !entity ? entityTemplates.get(actionMetadata.updatedFields.templateId) : entityTemplates.get(entity.templateId);
 
     const { templateId, ...restFields } = actionMetadata.updatedFields;
     // TODO get properties of causes
@@ -294,13 +303,21 @@ const UpdateEntityActionInfo: React.FC<{
             <Grid item>
                 <Typography component="p" variant="body1">
                     <Box component="span">{i18next.t('ruleBreachInfo.updateEntityActionInfo.updatingEntity')}</Box>{' '}
-                    <EntityLink
-                        entityPropertiesToHighlightTooltip={failedProperties}
-                        entityPropertiesToHighlightColor="red"
-                        entity={entity ? { ...(entity as IEntity), properties: { ...(entity as IEntity).properties, ...restFields } } : null}
-                        entityTemplate={entityTemplate || null}
-                        linkable={!!entity?.properties._id && !entity?.properties._id.startsWith(environment.brokenRulesFakeEntityIdPrefix)}
-                    />
+                    {entityTemplate ? (
+                        <EntityLink
+                            entityPropertiesToHighlightTooltip={failedProperties}
+                            entityPropertiesToHighlightColor="red"
+                            entity={entity ? { ...(entity as IEntity), properties: { ...(entity as IEntity).properties, ...restFields } } : null}
+                            entityTemplate={entityTemplate || null}
+                            linkable={!!entity?.properties._id && !entity?.properties._id.startsWith(environment.brokenRulesFakeEntityIdPrefix)}
+                        />
+                    ) : (
+                        <MeltaTooltip title={i18next.t('notifications.noPermissionsToTemplate')}>
+                            <Typography display="inline" fontWeight="bold">
+                                {i18next.t('ruleBreachInfo.updateEntityActionInfo.unknownEntity')}
+                            </Typography>
+                        </MeltaTooltip>
+                    )}
                     {!isCompact && entityTemplate ? ':' : ''}
                 </Typography>
             </Grid>
@@ -322,17 +339,25 @@ const UpdateEntityStatusActionInfo: React.FC<{
     const { entity, disabled } = actionMetadata;
 
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const entityTemplate = !entity ? null : entityTemplates.get(entity.templateId)!;
+    const entityTemplate = !entity ? null : entityTemplates.get(entity.templateId);
     return (
         <Typography component="p" variant="body1">
             <Box component="span">{i18next.t('ruleBreachInfo.updateEntityStatusActionInfo.updatingStatus')}</Box>{' '}
-            <EntityLink
-                entity={entity}
-                entityTemplate={entityTemplate}
-                entityPropertiesToHighlightColor="red"
-                entityPropertiesToHighlightTooltip={failedProperties}
-                linkable={!!entity?.properties._id && !entity?.properties._id.startsWith(environment.brokenRulesFakeEntityIdPrefix)}
-            />{' '}
+            {entityTemplate ? (
+                <EntityLink
+                    entity={entity}
+                    entityTemplate={entityTemplate}
+                    entityPropertiesToHighlightColor="red"
+                    entityPropertiesToHighlightTooltip={failedProperties}
+                    linkable={!!entity?.properties._id && !entity?.properties._id.startsWith(environment.brokenRulesFakeEntityIdPrefix)}
+                />
+            ) : (
+                <MeltaTooltip title={i18next.t('notifications.noPermissionsToTemplate')}>
+                    <Typography display="inline" fontWeight="bold">
+                        {i18next.t('ruleBreachInfo.updateEntityActionInfo.unknownEntity')}
+                    </Typography>
+                </MeltaTooltip>
+            )}{' '}
             <Box component="span" fontWeight="bold">
                 {disabled
                     ? i18next.t('ruleBreachInfo.updateEntityStatusActionInfo.toDisabled')
