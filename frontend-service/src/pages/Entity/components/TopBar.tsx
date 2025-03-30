@@ -5,7 +5,6 @@ import { Link } from 'wouter';
 import { IConnectionTemplateOfExpandedEntity } from '..';
 import { CustomIcon } from '../../../common/CustomIcon';
 import { EntityTemplateColor } from '../../../common/EntityTemplateColor';
-import { IMongoCategory } from '../../../interfaces/categories';
 import { IEntityExpanded } from '../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { useDarkModeStore } from '../../../stores/darkMode';
@@ -17,11 +16,7 @@ const EntityTopBar: React.FC<{
     entityTemplate: IMongoEntityTemplatePopulated;
     expandedEntity: IEntityExpanded;
     connectionsTemplates: IConnectionTemplateOfExpandedEntity[];
-    categoriesWithConnectionsTemplates: {
-        category: IMongoCategory;
-        connectionsTemplates: IConnectionTemplateOfExpandedEntity[];
-    }[];
-}> = ({ entityTemplate, expandedEntity, categoriesWithConnectionsTemplates, connectionsTemplates }) => {
+}> = ({ entityTemplate, expandedEntity, connectionsTemplates }) => {
     const theme = useTheme();
 
     const darkMode = useDarkModeStore((state) => state.darkMode);
@@ -72,12 +67,7 @@ const EntityTopBar: React.FC<{
                 </Grid>
             </Box>
             <Box>
-                <Print
-                    entityTemplate={entityTemplate}
-                    expandedEntity={expandedEntity}
-                    categoriesWithConnectionsTemplates={categoriesWithConnectionsTemplates}
-                    connectionsTemplates={connectionsTemplates}
-                />
+                <Print entityTemplate={entityTemplate} expandedEntity={expandedEntity} connectionsTemplates={connectionsTemplates} />
                 <ActivityLog entityTemplate={entityTemplate} expandedEntity={expandedEntity} />
             </Box>
         </Box>

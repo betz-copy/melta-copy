@@ -57,6 +57,7 @@ const GraphNodeMenu: React.FC<{
             },
         },
     );
+
     return (
         <MuiMenu
             open

@@ -436,12 +436,7 @@ const Entity: React.FC = () => {
 
     return (
         <>
-            <EntityTopBar
-                entityTemplate={currentEntityTemplate}
-                expandedEntity={expandedEntity}
-                connectionsTemplates={connectionsTemplates}
-                categoriesWithConnectionsTemplates={categoriesWithConnectionsTemplates}
-            />
+            <EntityTopBar entityTemplate={currentEntityTemplate} expandedEntity={expandedEntity} connectionsTemplates={connectionsTemplates} />
             <Grid className="pageMargin">
                 <Grid item marginTop="20px" data-tour="entity-details">
                     <EntityDetails entityTemplate={currentEntityTemplate} expandedEntity={expandedEntity} />
