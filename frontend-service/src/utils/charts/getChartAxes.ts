@@ -10,11 +10,12 @@ import {
     INUmberMetaData,
     IPermission,
     IPieMetaData,
+    IAxis,
 } from '../../interfaces/charts';
 
 export const getChartAxes = (type: IChartType, metaData: IChartTypeMetaData, includeTitle: boolean = false) => {
-    let xAxis;
-    let yAxis;
+    let xAxis: IAxis | IAxisField;
+    let yAxis: IAxis | IAxisField | undefined;
 
     switch (type) {
         case IChartType.Column:
@@ -87,7 +88,7 @@ const aggregationSchema = Yup.object({
 const axisSchema = Yup.object({
     title: Yup.string().min(2, i18next.t('validation.variableName')),
     field: Yup.mixed<IAxisField>()
-        .test('is-valid-field', 'Invalid field type', (value) => {
+        .test('is-valid-field', i18next.t('validation.required'), (value) => {
             if (typeof value === 'string') return true;
             if (typeof value === 'object' && value !== null && 'type' in value) return aggregationSchema.isValidSync(value);
             return false;
@@ -125,7 +126,7 @@ export const chartValidationSchema = Yup.object({
     description: Yup.string().min(2, i18next.t('validation.variableName')),
     type: Yup.mixed<IChartType>().oneOf(Object.values(IChartType)).required(i18next.t('validation.required')),
     metaData: Yup.mixed()
-        .when('type', (type: IChartType, schema) => schema.concat(getMetaDataSchema(type)))
+        .when('type', (type: IChartType, schema: Yup.AnySchema) => schema.concat(getMetaDataSchema(type)))
         .required('metaData is required'),
     permission: Yup.mixed<IPermission>().oneOf(Object.values(IPermission)).required(i18next.t('validation.required')),
 });

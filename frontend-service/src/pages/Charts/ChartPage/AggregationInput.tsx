@@ -93,8 +93,8 @@ const AxisInput: React.FC<AxisInputProps> = ({
                     multiple={false}
                     onChange={(newValue) => {
                         if (newValue && typeof newValue === 'string' && aggregationOptions.includes(newValue as IAggregation['type']))
-                            formik.setFieldValue(`${formikField}`, { type: newValue, byField: '' } as IAggregation);
-                        else formik.setFieldValue(`${formikField}`, (newValue as string) ?? '');
+                            formik.setFieldValue(formikField, { type: newValue, byField: '' } as IAggregation);
+                        else formik.setFieldValue(formikField, (newValue as string) ?? '');
                     }}
                     style={{ width: '100%' }}
                     readonly={readonly}
@@ -113,9 +113,7 @@ const AxisInput: React.FC<AxisInputProps> = ({
                         label={`${i18next.t('charts.byField')}`}
                         getOptionLabel={(option) => getOptionLabel(option)}
                         multiple={false}
-                        style={{
-                            width: '100%',
-                        }}
+                        style={{ width: '100%' }}
                         readonly={readonly}
                     />
                 </Grid>

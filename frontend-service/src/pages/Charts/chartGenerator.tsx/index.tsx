@@ -8,7 +8,7 @@ import { getChartOfTemplate } from '../../../services/entitiesService';
 import { getChartAxes } from '../../../utils/charts/getChartAxes';
 import { filterModelToFilterOfGraph } from '../../Graph/GraphFilterToBackend';
 import { NumberChartGenerator } from './NumberChartGenerator';
-import { HiighchartGenerator } from './highChartgenerator';
+import { HiighchartGenerator } from './HighChartgenerator';
 
 interface IChartGeneratorProps {
     formikValues: IBasicChart;
@@ -27,19 +27,21 @@ const ChartGenerator: React.FC<IChartGeneratorProps> = ({ template, formikValues
     };
 
     const { xAxis, yAxis } = getChartAxes(type, metaData);
+    const xAxisField = xAxis as IAxisField;
+    const yAxisField = yAxis as IAxisField | undefined;
 
-    const isQueryEnabled = type === IChartType.Number ? isAggregationValid(xAxis) : isAggregationValid(xAxis) && isAggregationValid(yAxis);
+    const isQueryEnabled =
+        type === IChartType.Number ? isAggregationValid(xAxisField) : isAggregationValid(xAxisField) && isAggregationValid(yAxisField as IAxisField);
 
     const { data, isLoading } = useQuery(
         ['chart', template._id, xAxis, yAxis, filterRecord],
         () => {
-            const yAxisField = type === IChartType.Number ? undefined : yAxis;
             const filter =
                 filterRecord && Object.keys(filterRecord).length > 0
                     ? filterModelToFilterOfGraph(filterRecord)[entityTemplate._id].filter
                     : undefined;
 
-            return getChartOfTemplate(xAxis, yAxisField, template._id, filter);
+            return getChartOfTemplate(xAxisField, yAxisField, template._id, filter);
         },
         {
             enabled: Boolean(isQueryEnabled),

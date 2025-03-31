@@ -16,9 +16,7 @@ const ChartTypeButton: React.FC<{
     return (
         <IconButtonWithPopover
             iconButtonProps={{
-                onClick: () => {
-                    handleClick(buttonId);
-                },
+                onClick: () => handleClick(buttonId),
             }}
             style={{
                 color: selectedButton === buttonId ? theme.palette.secondary.main : theme.palette.primary.main,

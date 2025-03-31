@@ -6,7 +6,6 @@ import { MenuModule } from '@ag-grid-enterprise/menu';
 import { ServerSideRowModelModule } from '@ag-grid-enterprise/server-side-row-model';
 import { SetFilterModule } from '@ag-grid-enterprise/set-filter';
 import { StatusBarModule } from '@ag-grid-enterprise/status-bar';
-import { GridChartsModule } from '@ag-grid-enterprise/charts';
 
 import '@ag-grid-community/styles/ag-grid.css';
 import '@ag-grid-community/styles/ag-theme-material.css';
@@ -18,7 +17,6 @@ ModuleRegistry.registerModules([
     ColumnsToolPanelModule,
     SetFilterModule,
     StatusBarModule,
-    GridChartsModule,
 ]);
 
 LicenseManager.setLicenseKey('foo');

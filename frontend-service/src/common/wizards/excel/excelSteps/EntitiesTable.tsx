@@ -18,14 +18,14 @@ export const EntitiesTable: React.FC<{
     icon?: React.JSX.Element;
     title: string;
     description?: string;
-    download?: { onDownload: (brokenRulesEntities?: boolean) => Promise<any>; isLoading: boolean; defaultFilter };
+    download?: { onDownload: (brokenRulesEntities?: boolean) => Promise<any>; isLoading: boolean };
     defaultFilter?: ISearchFilter;
     overrideSx?: object;
     infiniteModeWithoutExpand?: boolean;
     disableFilter?: boolean;
 }> = ({
     rowData,
-    rowModelType,
+    rowModelType = 'clientSide',
     template,
     defaultExpanded,
     icon,

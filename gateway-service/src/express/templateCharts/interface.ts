@@ -56,7 +56,6 @@ export interface IChart {
     filter: string;
     createdBy: string;
     permission: IPermission;
-    color?: string;
 }
 
 export interface IChartDocument extends IChart {

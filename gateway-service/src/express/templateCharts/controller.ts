@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
 import DefaultController from '../../utils/express/controller';
 import { ChartManager } from './manager';
-import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
 
 export class ChartController extends DefaultController<ChartManager> {
     constructor(workspaceId: string) {
@@ -13,9 +12,7 @@ export class ChartController extends DefaultController<ChartManager> {
     }
 
     async getChartsByTemplateId(req: Request, res: Response) {
-        const { params, permissionsOfUserId } = req as RequestWithPermissionsOfUserId;
-
-        res.json(await this.manager.getChartsOfTemplateId(params.templateId, permissionsOfUserId, req.user?.id!, req.body.textSearch));
+        res.json(await this.manager.getChartsOfTemplateId(req.params.templateId, req.user?.id!, req.body.textSearch));
     }
 
     async createChart(req: Request, res: Response) {

@@ -3,11 +3,11 @@ import { Box, useTheme } from '@mui/material';
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
 import React, { useEffect, useRef } from 'react';
-import { HighchartType, IChartType, IChartTypeMetaData } from '../../../interfaces/charts';
+import { HighchartType, IAxis, IChartType, IChartTypeMetaData } from '../../../interfaces/charts';
 import { getChartAxes } from '../../../utils/charts/getChartAxes';
 
 interface HighchartGeneratorProps {
-    data: { x: any; y: any }[] | undefined;
+    data: { x: any; y: number }[] | undefined;
     isLoading: boolean;
     name: string;
     description: string;
@@ -45,10 +45,9 @@ const HiighchartGenerator: React.FC<HighchartGeneratorProps> = ({
     const seriesData = data.map(({ x, y }) => ({ name: x, y }));
 
     const resizeChart = () => {
-        if (chartRef.current && containerRef.current) {
-            const newHeight = enableResize ? containerRef.current.offsetHeight : undefined;
-            chartRef.current.chart.setSize(undefined, newHeight);
-        }
+        if (!chartRef.current || !containerRef.current) return;
+        const newHeight = enableResize ? containerRef.current.offsetHeight : undefined;
+        chartRef.current.chart.setSize(undefined, newHeight);
     };
 
     useEffect(() => {
@@ -76,14 +75,15 @@ const HiighchartGenerator: React.FC<HighchartGeneratorProps> = ({
             gridLineColor,
             lineColor: gridLineColor,
             tickColor: gridLineColor,
-            title: { text: xAxis.title, style: { color: labelsColor } },
+            title: { text: (xAxis as IAxis).title, style: { color: labelsColor } },
+            labels: { style: { color: labelsColor } },
         },
         yAxis: {
             gridLineColor,
             labels: { style: { color: labelsColor } },
             lineColor: gridLineColor,
             tickColor: gridLineColor,
-            title: { text: yAxis.title, style: { color: labelsColor } },
+            title: { text: (yAxis as IAxis).title, style: { color: labelsColor } },
         },
         legend: {
             itemStyle: { color: labelsColor },

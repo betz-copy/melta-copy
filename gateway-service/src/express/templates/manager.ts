@@ -651,7 +651,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             (acc, propertyToRemove) => {
                 const { format, items } = currentTemplate.properties.properties[propertyToRemove];
 
-                if (format === 'fileId' || items?.format === 'fileId') {
+                if (format === 'fileId' || items?.format === 'fileId' || format === 'signature') {
                     acc[propertyToRemove] = items?.format === 'fileId';
                 }
 

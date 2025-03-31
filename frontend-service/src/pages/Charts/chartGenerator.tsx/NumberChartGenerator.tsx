@@ -5,7 +5,7 @@ export const NumberChartGenerator: React.FC<{
     data:
         | {
               x: any;
-              y: any;
+              y: number;
           }[]
         | undefined;
     name: string;
@@ -16,7 +16,7 @@ export const NumberChartGenerator: React.FC<{
 
     const darkMode = theme.palette.mode === 'dark';
 
-    if (data?.[0]?.x === undefined || data?.[0]?.x === null) return null;
+    if (!data?.[0]?.x && data?.[0]?.x !== 0) return null;
 
     return (
         <Box

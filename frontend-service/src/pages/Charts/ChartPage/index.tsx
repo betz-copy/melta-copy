@@ -38,6 +38,10 @@ const ChartPage: React.FC = () => {
     const currentUser = useUserStore((state) => state.user);
     const template = entityTemplates.get(templateId as string) as IMongoEntityTemplatePopulated;
     const initialValues = chartId && chart ? chart : defaultInitialValues;
+    const sideBarTabs = [
+        { name: 'generalDetails', labelKey: 'generalDetails', icon: <Settings fontSize="small" /> },
+        { name: 'filterDetails', labelKey: 'filterDetails', icon: <FilterList fontSize="small" /> },
+    ];
 
     const [filterRecord, setFilterRecord] = useState<IGraphFilterBodyBatch>({});
     const [filters, setFilters] = useState<number[]>([]);
@@ -59,7 +63,7 @@ const ChartPage: React.FC = () => {
         [filterRecord, templateId],
     );
 
-    const { mutateAsync: createChartMutateAsync } = useMutation(
+    const { mutateAsync: createChartMutateAsync, isLoading: isCreateLoading } = useMutation(
         (newChart: IBasicChart) =>
             createChart({
                 ...newChart,
@@ -81,7 +85,7 @@ const ChartPage: React.FC = () => {
         },
     );
 
-    const { mutateAsync: editChartMutateAsync } = useMutation(
+    const { mutateAsync: editChartMutateAsync, isLoading: isUpdateLoading } = useMutation(
         (updatedChart: IBasicChart) =>
             editChart(chartId!, {
                 ...updatedChart,
@@ -129,12 +133,13 @@ const ChartPage: React.FC = () => {
                 <Form>
                     <ChartTopBar
                         edit={edit}
-                        isLoading={false}
+                        isLoading={isCreateLoading || isUpdateLoading}
                         onDelete={() => deleteChartMutateAsync(chartId as string)}
                         readonly={readonly}
                         setReadOnly={setReadonly}
                         formik={formik}
                         template={template}
+                        filterRecord={filterRecord}
                         setFilterRecord={setFilterRecord}
                         setFilters={setFilters}
                     />
@@ -147,7 +152,7 @@ const ChartPage: React.FC = () => {
                                     startIcon={<ArrowForwardIosOutlined sx={{ width: '12px', height: '12px' }} />}
                                     onClick={() => navigate(`/charts/${templateId}`)}
                                 >
-                                    {i18next.t('charts.back')}
+                                    {i18next.t('charts.actions.back')}
                                 </Button>
                             </Grid>
                             <Grid container item height="100%" alignItems="center" justifyContent="center">
@@ -206,21 +211,21 @@ const ChartPage: React.FC = () => {
                                             borderBottom: '1px solid #E0E0E0',
                                         }}
                                     >
-                                        {['generalDetails', 'filterDetails'].map((tabName) => (
+                                        {sideBarTabs.map(({ name, icon, labelKey }) => (
                                             <Tab
-                                                key={tabName}
+                                                key={name}
                                                 iconPosition="start"
                                                 label={
                                                     <Box sx={{ display: 'flex', alignItems: 'center', whiteSpace: 'nowrap' }}>
-                                                        {i18next.t(`charts.${tabName}`)}
+                                                        {i18next.t(`charts.${labelKey}`)}
                                                     </Box>
                                                 }
-                                                icon={tabName === 'generalDetails' ? <Settings fontSize="small" /> : <FilterList fontSize="small" />}
-                                                value={tabName}
+                                                icon={icon}
+                                                value={name}
                                                 wrapped
                                                 sx={{
                                                     minHeight: '44px',
-                                                    fontWeight: tabValue === tabName ? '600' : '400',
+                                                    fontWeight: tabValue === name ? '600' : '400',
                                                     fontSize: '14px',
                                                     fontFamily: 'Rubik',
                                                     width: '50%',
@@ -233,19 +238,22 @@ const ChartPage: React.FC = () => {
                                     </TabList>
                                 </Grid>
                                 <Grid item sx={{ width: '100%', padding: '20px' }}>
-                                    <TabPanel key="generalDetails" value="generalDetails" sx={{ padding: 0 }}>
-                                        <ChartSideBar formik={formik} entityTemplate={template} readonly={readonly} edit={edit} />
-                                    </TabPanel>
-                                    <TabPanel key="filterDetails" value="filterDetails" sx={{ padding: 0 }}>
-                                        <FilterSideBar
-                                            templateId={template._id}
-                                            filterRecord={filterRecord}
-                                            setFilterRecord={setFilterRecord}
-                                            filters={filters}
-                                            setFilters={setFilters}
-                                            readonly={readonly}
-                                        />
-                                    </TabPanel>
+                                    {sideBarTabs.map(({ name }) => (
+                                        <TabPanel key={name} value={name} sx={{ padding: 0 }}>
+                                            {name === 'generalDetails' ? (
+                                                <ChartSideBar formik={formik} entityTemplate={template} readonly={readonly} edit={edit} />
+                                            ) : (
+                                                <FilterSideBar
+                                                    templateId={template._id}
+                                                    filterRecord={filterRecord}
+                                                    setFilterRecord={setFilterRecord}
+                                                    filters={filters}
+                                                    setFilters={setFilters}
+                                                    readonly={readonly}
+                                                />
+                                            )}
+                                        </TabPanel>
+                                    ))}
                                 </Grid>
                             </Grid>
                         </TabContext>

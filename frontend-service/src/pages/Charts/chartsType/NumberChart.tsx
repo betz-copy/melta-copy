@@ -19,7 +19,7 @@ const NumberChart: React.FC<{
                 formik={formik}
                 entityTemplate={entityTemplate}
                 formikValues={formikValues}
-                label={`${i18next.t('charts.AccumulateAccordingTo')}`}
+                label={`${i18next.t('charts.accumulateAccordingTo')}`}
                 optionsType={OptionsType.Aggregation}
                 readonly={disabled}
             />

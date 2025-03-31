@@ -7,7 +7,6 @@ import debounce from 'lodash/debounce';
 import React, { useCallback, useState } from 'react';
 import { IoIosArrowDown } from 'react-icons/io';
 import { CustomIcon } from '../../common/CustomIcon';
-import { BooleanFilterInput } from '../../common/inputs/FilterInputs/BooleanFilterInput';
 import { DateFilterInput } from '../../common/inputs/FilterInputs/DateFilterInput';
 import { MultipleSelectFilterInput } from '../../common/inputs/FilterInputs/MultipleSelectFilterInput';
 import { MultipleUserFilterInput } from '../../common/inputs/FilterInputs/MultipleUserFilterInput';
@@ -22,7 +21,7 @@ import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter, IAGGridTextFil
 interface GraphFilterProps {
     templateOptions: IMongoEntityTemplatePopulated[];
     graphEntityTemplateIds: string[];
-    deleteFilter: React.Dispatch<React.SetStateAction<number>>;
+    deleteFilter: (value: number) => void;
     setFilterRecord: React.Dispatch<React.SetStateAction<IGraphFilterBodyBatch>>;
     filterKey: number;
     removeFilterFromFilterList: (filterKey: number) => void;
@@ -118,11 +117,10 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
     const handleFilterFieldChange = (value: IGraphFilterBody['filterField'], condition: boolean = true) => {
         setFilterField(value);
 
-        if (value?.filterType === 'number' || value?.filterType === 'text')
-            if (!value.filter) {
-                removeFilterFromFilterList(filterKey);
-                return;
-            }
+        if ((value?.filterType === 'number' || value?.filterType === 'text') && !value.filter) {
+            removeFilterFromFilterList(filterKey);
+            return;
+        }
 
         handleSetFilterRecord(value, condition);
     };
@@ -144,7 +142,7 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
             } as IAGGridDateFilter,
             Boolean(
                 isStartDate
-                    ? filterField?.filterType === 'date' && (filterField.type !== 'inRange' || filterField.dateTo)
+                    ? filterField?.filterType === 'date' && newValue && (filterField.type !== 'inRange' || filterField.dateTo)
                     : newValue && filterField?.filterType === 'date' && filterField.type === 'inRange' && filterField.dateFrom,
             ),
         );
@@ -164,9 +162,7 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
     const handleFilterTypeChange = (
         newTypeFilter: IAGGridDateFilter['type'] | IAGGridTextFilter['type'] | IAGGidNumberFilter['type'],
         condition: boolean = true,
-    ) => {
-        handleFilterFieldChange({ ...filterField, type: newTypeFilter } as IAGGridDateFilter | IAGGridTextFilter | IAGGidNumberFilter, condition);
-    };
+    ) => handleFilterFieldChange({ ...filterField, type: newTypeFilter } as IAGGridDateFilter | IAGGridTextFilter | IAGGidNumberFilter, condition);
 
     const handleFilterErasion = () => {
         removeFilterFromFilterList(filterKey);
@@ -177,7 +173,7 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
         if (!(selectedProperty && selectedTemplate)) return null;
         const { format, enum: propEnum, type, items } = selectedTemplate.properties.properties[selectedProperty];
         // no files in graph filter
-        if (items?.format === 'fileId' || format === 'fileId') return null;
+        if (items?.format === 'fileId' || format === 'fileId' || format === 'signature') return null;
 
         if (propEnum)
             return (
@@ -202,8 +198,9 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
 
         if (type === 'boolean')
             return (
-                <BooleanFilterInput
+                <SelectFilterInput
                     filterField={filterField?.filterType === 'text' ? (filterField as IAGGridTextFilter) : undefined}
+                    isBooleanSelect
                     handleFilterFieldChange={handleFilterFieldChange}
                     readOnly={readOnly}
                 />
@@ -229,6 +226,7 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
                     readOnly={readOnly}
                 />
             );
+
         return (
             <TextFilterInput
                 entityFilter={entityFilter}
@@ -249,9 +247,16 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
         <>
             <Grid
                 sx={{
-                    // eslint-disable-next-line no-nested-ternary
-                    backgroundColor: darkMode ? '#121212' : entityFilter ? '#EBEFFA33' : 'white',
-                    ...(entityFilter ? {} : { borderRadius: '10px', boxShadow: '0px 2px 1px -1px rgba(0,0,0,0.2)', marginBottom: '5px' }),
+                    borderRadius: '10px',
+                    ...(entityFilter
+                        ? {
+                              backgroundColor: darkMode ? '#17171a33' : '#EBEFFA33',
+                          }
+                        : {
+                              boxShadow: '0px 2px 1px -1px  #1E27754D',
+                              marginBottom: '5px',
+                              backgroundColor: darkMode ? '#121212' : 'white',
+                          }),
                 }}
             >
                 {!entityFilter && (
@@ -264,17 +269,18 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
                                     fontSize: '14px',
                                     padding: '15px',
                                     marginRight: '7px',
+                                    color: theme.palette.primary.main,
                                 }}
                                 variant="body1"
                             >
                                 {i18next.t('graph.filterEntity')}
                             </Typography>
                             <Grid>
-                                <IconButton onClick={() => setFullView(!fullView)}>
+                                <IconButton onClick={() => setFullView(!fullView)} sx={{ color: theme.palette.primary.main }}>
                                     {fullView ? <KeyboardArrowDown fontSize="small" /> : <KeyboardArrowUp fontSize="small" />}
                                 </IconButton>
 
-                                <IconButton onClick={handleFilterErasion}>
+                                <IconButton onClick={handleFilterErasion} sx={{ color: theme.palette.primary.main }}>
                                     <CloseIcon fontSize="small" />
                                 </IconButton>
                             </Grid>
@@ -282,7 +288,7 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
                         <Grid display={fullView ? undefined : 'none'}>
                             {!selectedTemplate && (
                                 <Autocomplete
-                                    popupIcon={<IoIosArrowDown size="20px" />}
+                                    popupIcon={<IoIosArrowDown fontSize="small" />}
                                     size="small"
                                     style={{ width: '90%', margin: 'auto', paddingBottom: '10px' }}
                                     value={null}
@@ -296,15 +302,28 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
                                 <Grid container justifyContent="space-around" alignItems="center">
                                     <Grid item>
                                         {selectedTemplate.iconFileId && (
-                                            <CustomIcon iconUrl={selectedTemplate.iconFileId} height="24px" width="24px" />
+                                            <CustomIcon
+                                                iconUrl={selectedTemplate.iconFileId}
+                                                height="24px"
+                                                width="24px"
+                                                color={theme.palette.primary.main}
+                                            />
                                         )}
                                     </Grid>
                                     <Grid item>
-                                        <Typography variant="subtitle1">{selectedTemplate.displayName}</Typography>
+                                        <Typography
+                                            style={{
+                                                fontWeight: '400',
+                                                fontSize: '14px',
+                                            }}
+                                            variant="subtitle1"
+                                        >
+                                            {selectedTemplate.displayName}
+                                        </Typography>
                                     </Grid>
                                     <Grid item>
                                         <IconButton onClick={() => handleSelectTemplate(null)}>
-                                            <ClearIcon fontSize="small" />
+                                            <ClearIcon sx={{ fontSize: '1.1rem' }} />
                                         </IconButton>
                                     </Grid>
                                 </Grid>
@@ -365,7 +384,7 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
                     )}
                 </Grid>
             </Grid>
-            {entityFilter && <Divider sx={{ width: '100%', margin: '8px', border: '1px 0px 0px 0px', color: '#EBEFFA' }} />}{' '}
+            {entityFilter && <Divider sx={{ width: '100%', margin: '8px', border: '1px 0px 0px 0px', color: '#EBEFFA' }} />}
         </>
     );
 };

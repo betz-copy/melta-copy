@@ -10,11 +10,11 @@ import ForceGraph, { ForceGraphMethods, ForceGraphProps, GraphData, NodeObject }
 import ForceGraph3D, { ForceGraphMethods as ForceGraphMethods3D, ForceGraphProps as ForceGraphProps3D } from 'react-force-graph-3d';
 import { BsFillPlusCircleFill } from 'react-icons/bs';
 import { useQuery, useQueryClient } from 'react-query';
-import { useParams } from 'wouter';
 import { toast } from 'react-toastify';
+import { useParams } from 'wouter';
 import { environment } from '../../globals';
 import { ICategoryMap, IMongoCategory } from '../../interfaces/categories';
-import { IEntityExpanded, IGraphFilterBody, IGraphFilterBodyBatch } from '../../interfaces/entities';
+import { IEntityExpanded, IGraphFilterBodyBatch } from '../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
 import { getExpandedEntityByIdRequest } from '../../services/entitiesService';
@@ -406,7 +406,6 @@ const Graph: React.FC = () => {
                             setFilters={setFilters}
                             graphEntityTemplateIds={graphEntityTemplateIds}
                             onFilter={() => resetGraph(undefined, true)}
-                            entityFilter={false}
                         />
                     </Box>
                 )}

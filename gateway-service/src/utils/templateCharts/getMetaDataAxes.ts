@@ -46,5 +46,5 @@ export const getMetaDataAxes = (type: IChartType, metaData: IChartTypeMetaData, 
               ],
           };
 
-    return { xAxis, yAxis: yAxis || undefined, filter: appliedFilter };
+    return { xAxis, yAxis, filter: appliedFilter };
 };

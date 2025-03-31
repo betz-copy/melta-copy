@@ -1,13 +1,11 @@
-import { Grid, MenuItem } from '@mui/material';
-import i18next from 'i18next';
+import { CalendarToday } from '@mui/icons-material';
+import { Grid } from '@mui/material';
 import React from 'react';
-import { IoIosArrowDown } from 'react-icons/io';
+import { useDarkModeStore } from '../../../stores/darkMode';
 import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridTextFilter } from '../../../utils/agGrid/interfaces';
+import DatePickerWrapper from '../DatePickerWrapper';
 import DateRange from '../DateRange';
-import { StyledFilterInput } from './StyledFilterInput';
-import { environment } from '../../../globals';
-
-const { filterOptions } = environment;
+import { TypeSelectFilter } from './TypeSelectFilter';
 
 interface DateFilterInputProps {
     filterField: IAGGridDateFilter | undefined;
@@ -21,49 +19,55 @@ interface DateFilterInputProps {
 }
 
 const DateFilterInput: React.FC<DateFilterInputProps> = ({ filterField, handleFilterTypeChange, handleDateChange, entityFilter, readOnly }) => {
+    const darkMode = useDarkModeStore((state) => state.darkMode);
+    const isInRangeType = filterField?.type === 'inRange';
+
+    const inputStyle = darkMode
+        ? undefined
+        : {
+              '& input': { backgroundColor: '#FFFF', fontSize: '14px' },
+              spacing: 0,
+          };
+
     return (
-        <Grid container justifyContent="center">
-            <StyledFilterInput
-                fullWidth
-                select
-                size="small"
-                value={(filterField as IAGGridDateFilter).type || ''}
-                inputProps={{
-                    readOnly,
-                    style: {
-                        textOverflow: 'ellipsis',
-                    },
-                }}
-                onChange={(e) =>
-                    handleFilterTypeChange(e.target.value as IAGGridDateFilter['type'], Boolean((filterField as IAGGridDateFilter).dateFrom))
-                }
-                SelectProps={{
-                    IconComponent: IoIosArrowDown,
-                }}
-                sx={{ mb: 4 }}
-            >
-                {filterOptions.number.map((option, index) => (
-                    // eslint-disable-next-line react/no-array-index-key
-                    <MenuItem key={index} value={option}>
-                        {i18next.t(`filters.${option}`)}
-                    </MenuItem>
-                ))}
-            </StyledFilterInput>
-            <DateRange
-                onStartDateChange={(newValue) => handleDateChange(newValue, true)}
-                onEndDateChange={(newValue) => handleDateChange(newValue, false)}
-                startDateInput={filterField?.dateFrom ?? null}
-                endDateInput={filterField?.dateTo ?? null}
-                maxEndDate={new Date()}
-                maxStartDate={new Date()}
-                directionIsRow={entityFilter}
-                overrideSx={{
-                    '& input': {
-                        backgroundColor: '#FFFF',
-                    },
-                    spacing: 0,
-                }}
-            />
+        <Grid container justifyContent="center" direction={isInRangeType || !entityFilter ? 'column' : 'row'} spacing={2}>
+            <Grid item xs={isInRangeType ? 12 : 5}>
+                <TypeSelectFilter
+                    filterField={filterField as IAGGridDateFilter}
+                    handleFilterTypeChange={handleFilterTypeChange}
+                    readOnly={readOnly}
+                    type="date"
+                />
+            </Grid>
+
+            <Grid item xs={isInRangeType ? 12 : 7}>
+                {isInRangeType ? (
+                    <DateRange
+                        onStartDateChange={(newValue) => handleDateChange(newValue, true)}
+                        onEndDateChange={(newValue) => handleDateChange(newValue, false)}
+                        startDateInput={filterField?.dateFrom ?? null}
+                        endDateInput={filterField?.dateTo ?? null}
+                        maxEndDate={new Date()}
+                        maxStartDate={new Date()}
+                        directionIsRow={entityFilter}
+                        overrideSx={inputStyle}
+                        readOnly={readOnly}
+                    />
+                ) : (
+                    <DatePickerWrapper
+                        value={filterField?.dateFrom}
+                        onChange={(newValue) => handleDateChange(newValue, true)}
+                        components={{
+                            // eslint-disable-next-line react/no-unstable-nested-components
+                            OpenPickerIcon: () => <CalendarToday color="primary" fontSize="small" />,
+                        }}
+                        sx={inputStyle}
+                        isStartDate
+                        directionIsRow={false}
+                        readOnly={readOnly}
+                    />
+                )}
+            </Grid>
         </Grid>
     );
 };

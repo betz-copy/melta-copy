@@ -19,7 +19,6 @@ const MultipleSelectFilterInput: React.FC<MultipleSelectFilterInputProps> = ({ f
                 size="small"
                 fullWidth
                 value={filterField?.values ? filterField.values : []}
-                onChange={() => {}}
                 inputProps={{
                     readOnly,
                     style: {

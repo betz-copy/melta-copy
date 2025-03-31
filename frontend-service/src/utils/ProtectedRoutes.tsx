@@ -67,7 +67,7 @@ export const ChartsProtectedRoute: React.FC<{ permissions: ISubCompactPermission
     const queryClient = useQueryClient();
     const { templateId } = useParams<{ templateId: string }>();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const { category } = entityTemplates.get(templateId as string) as IMongoEntityTemplatePopulated;
+    const { category } = entityTemplates.get(templateId) as IMongoEntityTemplatePopulated;
 
     const categoryPermissions = permissions.instances?.categories?.[category?._id];
 

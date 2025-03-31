@@ -2,9 +2,8 @@ import { StatusCodes } from 'http-status-codes';
 import { FilterQuery } from 'mongoose';
 import config from '../../config';
 import { InstancesService } from '../../externalServices/instanceService';
-import { ISubCompactPermissions } from '../../externalServices/userService/interfaces/permissions/permissions';
-import { getMetaDataAxes } from '../../utils/templateCharts/getMetaDataAxes';
 import { DefaultManagerMongo } from '../../utils/mongo/manager';
+import { getMetaDataAxes } from '../../utils/templateCharts/getMetaDataAxes';
 import { ServiceError } from '../error';
 import { ChartsAndGenerator, IChart, IChartBody, IChartDocument, IPermission } from './interface';
 import ChartSchema from './model';
@@ -31,7 +30,7 @@ export class ChartManager extends DefaultManagerMongo<IChartDocument> {
         return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
     }
 
-    async getChartsByTemplateId(templateId: string, permissionsOfUserId: ISubCompactPermissions, userId: string, textSearch?: string) {
+    async getChartsByTemplateId(templateId: string, userId: string, textSearch?: string) {
         const query: FilterQuery<IChartDocument> = {
             templateId,
             ...(textSearch && {
@@ -44,16 +43,11 @@ export class ChartManager extends DefaultManagerMongo<IChartDocument> {
 
         const allChartsOfTemplateId = await this.model.find(query).lean().exec();
 
-        return permissionsOfUserId.admin?.scope ? allChartsOfTemplateId : this.getChartsWithPermissions(allChartsOfTemplateId, userId);
+        return this.getChartsWithPermissions(allChartsOfTemplateId, userId);
     }
 
-    async getChartsOfTemplateId(
-        templateId: string,
-        permissionsOfUserId: ISubCompactPermissions,
-        userId: string,
-        textSearch?: string,
-    ): Promise<ChartsAndGenerator[]> {
-        const charts = await this.getChartsByTemplateId(templateId, permissionsOfUserId, userId, textSearch);
+    async getChartsOfTemplateId(templateId: string, userId: string, textSearch?: string): Promise<ChartsAndGenerator[]> {
+        const charts = await this.getChartsByTemplateId(templateId, userId, textSearch);
 
         const chartsData: IChartBody[] = charts.map(({ _id, type, metaData, filter }) => ({
             _id,

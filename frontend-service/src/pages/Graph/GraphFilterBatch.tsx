@@ -13,7 +13,7 @@ interface GraphFilterBatchProps {
     setFilters: React.Dispatch<React.SetStateAction<number[]>>;
     filterRecord: IGraphFilterBodyBatch;
     onFilter?: () => void;
-    entityFilter: boolean;
+    entityFilter?: boolean;
     readonly?: boolean;
     selectedEntityTemplate?: IMongoEntityTemplatePopulated | null;
 }
@@ -27,12 +27,11 @@ const GraphFilterBatch: React.FC<GraphFilterBatchProps> = React.memo(
         filterRecord,
         graphEntityTemplateIds,
         onFilter,
-        entityFilter,
         readonly,
         selectedEntityTemplate,
+        entityFilter = false,
     }) => {
-        // deletes filter box from screen
-        const deleteFilter = (value) => {
+        const deleteFilter = (value: number) => {
             setFilters((prevFilters) => prevFilters.filter((item) => item !== value));
         };
 

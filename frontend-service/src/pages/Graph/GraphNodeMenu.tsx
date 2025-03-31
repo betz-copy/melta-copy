@@ -1,11 +1,11 @@
 /* eslint-disable no-param-reassign */
-import { Menu as MuiMenu, MenuItem } from '@mui/material';
+import { MenuItem, Menu as MuiMenu } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
 import { GraphData, NodeObject } from 'react-force-graph-2d';
 import { useQuery } from 'react-query';
 import { useLocation } from 'wouter';
-import { IEntityExpanded, IGraphFilterBody, IGraphFilterBodyBatch } from '../../interfaces/entities';
+import { IEntityExpanded, IGraphFilterBodyBatch } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { getExpandedEntityByIdRequest } from '../../services/entitiesService';
 import { highlightNode } from '../../utils/graph';

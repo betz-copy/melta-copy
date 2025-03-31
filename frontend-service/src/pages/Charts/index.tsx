@@ -11,11 +11,7 @@ import { generateLayoutDetails } from '../../utils/charts/defaultChartSizes';
 import { ChartHeader } from './ChartHeader';
 import { TemplateTableCharts } from './templateTableCharts';
 
-interface IChartsPageProps {
-    setTitle: React.Dispatch<React.SetStateAction<string>>;
-}
-
-const ChartsPage: React.FC<IChartsPageProps> = () => {
+const ChartsPage: React.FC = () => {
     const { templateId } = useParams();
     const queryClient = useQueryClient();
     const [textSearch, setTextSearch] = useState<string>();

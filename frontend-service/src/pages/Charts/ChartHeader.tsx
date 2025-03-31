@@ -1,6 +1,6 @@
-import { AddCircle as AddCircleIcon } from '@mui/icons-material';
+import { Add as AddIcon } from '@mui/icons-material';
 import FilterAltOffIcon from '@mui/icons-material/FilterAltOff';
-import { Grid, IconButton } from '@mui/material';
+import { Grid, IconButton, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
 import { useLocation } from 'wouter';
@@ -10,6 +10,7 @@ import { MeltaTooltip } from '../../common/MeltaTooltip';
 import { TopBarGrid } from '../../common/TopBar';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { useWorkspaceStore } from '../../stores/workspace';
+import IconButtonWithPopover from '../../common/IconButtonWithPopover';
 
 const ChartHeader: React.FC<{
     template: IMongoEntityTemplatePopulated;
@@ -17,6 +18,7 @@ const ChartHeader: React.FC<{
     resetLayout: () => void;
 }> = ({ template, setTextSearch, resetLayout }) => {
     const workspace = useWorkspaceStore((state) => state.workspace);
+    const theme = useTheme();
 
     const [currentLocation, navigate] = useLocation();
 
@@ -52,9 +54,18 @@ const ChartHeader: React.FC<{
             </Grid>
 
             <Grid item>
-                <IconButton onClick={() => navigate(`${currentLocation}/chart`)}>
-                    <AddCircleIcon color="primary" fontSize="large" />
-                </IconButton>
+                <IconButtonWithPopover
+                    popoverText={i18next.t('charts.actions.addChart')}
+                    iconButtonProps={{
+                        onClick: () => navigate(`${currentLocation}/chart`),
+                    }}
+                    style={{ background: theme.palette.primary.main, borderRadius: '7px', width: '150px', height: '35px' }}
+                >
+                    <AddIcon htmlColor="white" />
+                    <Typography fontSize={13} style={{ fontWeight: '400', padding: '0 5px', color: 'white' }}>
+                        {i18next.t('charts.actions.addChart')}
+                    </Typography>
+                </IconButtonWithPopover>
             </Grid>
         </TopBarGrid>
     );

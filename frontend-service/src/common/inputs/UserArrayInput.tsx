@@ -1,6 +1,5 @@
 import { Box, Grid } from '@mui/material';
 import React from 'react';
-import { v4 as uuid } from 'uuid';
 import CreateUserCard from '../wizards/processTemplate/ApproverCard';
 import UserAutocomplete, { IUserAutocomplete } from './UserAutocomplete';
 
@@ -45,14 +44,7 @@ const UserArrayInput: React.FC<UserArrayInputProps> = ({
             </Grid>
             <Grid container spacing={1}>
                 {currentUsers.map((user, index) => (
-                    <CreateUserCard
-                        // eslint-disable-next-line react/no-array-index-key
-                        key={uuid()}
-                        userName={user}
-                        userIndex={index}
-                        remove={() => onRemove?.(index)}
-                        readOnly={readOnly}
-                    />
+                    <CreateUserCard key={user} userName={user} userIndex={index} remove={() => onRemove?.(index)} readOnly={readOnly} />
                 ))}
             </Grid>
         </Box>

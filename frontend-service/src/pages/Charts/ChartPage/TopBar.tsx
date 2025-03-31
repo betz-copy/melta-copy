@@ -1,18 +1,18 @@
 import { Close as CancelIcon, Delete, Edit as EditIcon, Check as SaveIcon } from '@mui/icons-material';
-import { Box, CircularProgress, Grid, IconButton, useTheme } from '@mui/material';
+import { Box, CircularProgress, Grid, useTheme } from '@mui/material';
 import { FormikProps } from 'formik';
 import i18next from 'i18next';
 import React, { useState } from 'react';
 import { BlueTitle } from '../../../common/BlueTitle';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
-import { MeltaTooltip } from '../../../common/MeltaTooltip';
+import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
 import { TopBarGrid } from '../../../common/TopBar';
 import { IBasicChart } from '../../../interfaces/charts';
+import { IGraphFilterBodyBatch } from '../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { useUserStore } from '../../../stores/user';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { isWorkspaceAdmin } from '../../../utils/permissions/instancePermissions';
-import { IGraphFilterBodyBatch } from '../../../interfaces/entities';
 import { FilterOfGraphToFilterRecord } from '../../Graph/GraphFilterToBackend';
 
 interface IChartTopBar {
@@ -23,16 +23,31 @@ interface IChartTopBar {
     setReadOnly: React.Dispatch<React.SetStateAction<boolean>>;
     formik: FormikProps<IBasicChart>;
     template: IMongoEntityTemplatePopulated;
+    filterRecord: IGraphFilterBodyBatch;
     setFilterRecord: React.Dispatch<React.SetStateAction<IGraphFilterBodyBatch>>;
     setFilters: React.Dispatch<React.SetStateAction<number[]>>;
 }
 
-const ChartTopBar: React.FC<IChartTopBar> = ({ edit, onDelete, isLoading, readonly, setReadOnly, formik, template, setFilterRecord, setFilters }) => {
+const ChartTopBar: React.FC<IChartTopBar> = ({
+    edit,
+    onDelete,
+    isLoading,
+    readonly,
+    setReadOnly,
+    formik,
+    template,
+    filterRecord,
+    setFilterRecord,
+    setFilters,
+}) => {
     const theme = useTheme();
     const currentUser = useUserStore();
     const workspace = useWorkspaceStore((state) => state.workspace);
 
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+
+    const hasEditAndDeletePermission =
+        formik.values.createdBy === currentUser.user._id || isWorkspaceAdmin(currentUser.user.currentWorkspacePermissions);
 
     return (
         <Box>
@@ -55,11 +70,14 @@ const ChartTopBar: React.FC<IChartTopBar> = ({ edit, onDelete, isLoading, readon
 
                 <Grid item container wrap="nowrap" flexDirection="row-reverse" marginLeft="auto">
                     {readonly ? (
-                        <MeltaTooltip title={i18next.t('actions.edit')}>
-                            <IconButton onClick={() => setReadOnly(false)} sx={{ color: theme.palette.primary.main }}>
-                                <EditIcon />
-                            </IconButton>
-                        </MeltaTooltip>
+                        <IconButtonWithPopover
+                            popoverText={hasEditAndDeletePermission ? i18next.t('actions.edit') : i18next.t('charts.dontHavePermissionToEditChart')}
+                            disabled={!hasEditAndDeletePermission}
+                            iconButtonProps={{ onClick: () => setReadOnly(false) }}
+                            buttonStyle={{ color: theme.palette.primary.main }}
+                        >
+                            <EditIcon />
+                        </IconButtonWithPopover>
                     ) : (
                         <Grid container justifyContent="space-between" alignItems="center" width="fit-content" wrap="nowrap">
                             {isLoading ? (
@@ -69,10 +87,10 @@ const ChartTopBar: React.FC<IChartTopBar> = ({ edit, onDelete, isLoading, readon
                             ) : (
                                 <Grid item container>
                                     {edit && (
-                                        <MeltaTooltip title={i18next.t('actions.cancel')}>
-                                            <IconButton
-                                                type="reset"
-                                                onClick={() => {
+                                        <IconButtonWithPopover
+                                            popoverText={i18next.t('actions.cancel')}
+                                            iconButtonProps={{
+                                                onClick: () => {
                                                     formik.resetForm();
                                                     if (edit && formik.values.filter) {
                                                         const parsedFilter = JSON.parse(formik.values.filter);
@@ -81,30 +99,37 @@ const ChartTopBar: React.FC<IChartTopBar> = ({ edit, onDelete, isLoading, readon
                                                         setFilters(Object.keys(translatedFilter).map(Number));
                                                     }
                                                     setReadOnly(true);
-                                                }}
-                                                sx={{ color: theme.palette.primary.main }}
-                                                disabled={!edit}
-                                            >
-                                                <CancelIcon />
-                                            </IconButton>
-                                        </MeltaTooltip>
+                                                },
+                                                type: 'reset',
+                                            }}
+                                            buttonStyle={{ color: theme.palette.primary.main }}
+                                        >
+                                            <CancelIcon />
+                                        </IconButtonWithPopover>
                                     )}
-                                    <MeltaTooltip title={i18next.t('actions.save')}>
-                                        <IconButton type="submit" sx={{ color: theme.palette.primary.main }}>
-                                            <SaveIcon />
-                                        </IconButton>
-                                    </MeltaTooltip>
+                                    <IconButtonWithPopover
+                                        popoverText={i18next.t('actions.save')}
+                                        iconButtonProps={{
+                                            onClick: () => setFilters((prevFilters) => prevFilters.filter((filter) => filter in filterRecord)),
+                                            type: 'submit',
+                                        }}
+                                        buttonStyle={{ color: theme.palette.primary.main }}
+                                    >
+                                        <SaveIcon />
+                                    </IconButtonWithPopover>
                                 </Grid>
                             )}
                         </Grid>
                     )}
 
-                    {edit && (formik.values.createdBy === currentUser.user._id || isWorkspaceAdmin(currentUser.user.currentWorkspacePermissions)) && (
-                        <MeltaTooltip title={i18next.t('actions.delete')}>
-                            <IconButton onClick={() => setDeleteDialogOpen(true)} sx={{ color: theme.palette.primary.main }}>
-                                <Delete />
-                            </IconButton>
-                        </MeltaTooltip>
+                    {edit && hasEditAndDeletePermission && (
+                        <IconButtonWithPopover
+                            popoverText={i18next.t('actions.delete')}
+                            iconButtonProps={{ onClick: () => setDeleteDialogOpen(true) }}
+                            buttonStyle={{ color: theme.palette.primary.main }}
+                        >
+                            <Delete />
+                        </IconButtonWithPopover>
                     )}
                 </Grid>
             </TopBarGrid>

@@ -3,9 +3,7 @@ import { environment } from '../../globals';
 import { ChartsAndGenerator } from '../../interfaces/charts';
 import { LocalStorage } from '../localStorage';
 
-const {
-    charts: { defaultColumnSizes },
-} = environment;
+const { defaultColumnSizes, chartsOrderKey } = environment.charts;
 
 export const generateLayoutDetails = (charts: ChartsAndGenerator[]) =>
     Object.keys(defaultColumnSizes).reduce((acc, col) => {
@@ -16,12 +14,14 @@ export const generateLayoutDetails = (charts: ChartsAndGenerator[]) =>
             y: Math.floor(index / 3) * 3,
             w: 4,
             h: 11,
+            minH: 7,
+            minW: 3,
         }));
         return acc;
     }, {} as Layouts);
 
 export const generateNewItemSizes = (templateId: string, chartId: string) => {
-    const savedLayout: LayoutItem[] = LocalStorage.get(`chartsOrder_${templateId}`) || [];
+    const savedLayout: LayoutItem[] = LocalStorage.get(`${chartsOrderKey}${templateId}`) || [];
 
     const maxY = savedLayout.length ? Math.max(...savedLayout.map((item) => item.y)) : 0;
     const lastRowItems = savedLayout.filter((item) => item.y === maxY);
@@ -44,7 +44,9 @@ export const generateNewItemSizes = (templateId: string, chartId: string) => {
         y: availableY,
         w: itemWidth,
         h: 11,
+        minH: 7,
+        minW: 3,
     };
 
-    LocalStorage.set(`chartsOrder_${templateId}`, [...savedLayout, newItem]);
+    LocalStorage.set(`${chartsOrderKey}${templateId}`, [...savedLayout, newItem]);
 };

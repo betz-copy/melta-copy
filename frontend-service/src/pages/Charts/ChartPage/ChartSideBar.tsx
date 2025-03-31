@@ -56,13 +56,11 @@ const ChartSideBar: React.FC<{
                             error={formik.touched.description && Boolean(formik.errors.description)}
                             helperText={formik.touched.description && formik.errors.description}
                             variant={readonly ? 'standard' : 'outlined'}
-                            rows={formik.values.description || !readonly ? 4 : 1}
+                            maxRows={4}
                             sx={{ width: '100%' }}
                             inputProps={{
                                 readOnly: readonly,
-                                style: {
-                                    textOverflow: 'ellipsis',
-                                },
+                                style: { textOverflow: 'ellipsis' },
                             }}
                         />
                     </Grid>
@@ -85,13 +83,12 @@ const ChartSideBar: React.FC<{
                         size="small"
                         sx={{ height: '35px' }}
                         value={formik.values.permission}
-                        onChange={(_event: React.MouseEvent<HTMLElement>, permission: IPermission) => {
-                            formik.setFieldValue('permission', permission);
-                        }}
+                        onChange={(_event: React.MouseEvent<HTMLElement>, permission: IPermission) => formik.setFieldValue('permission', permission)}
                         disabled={
                             readonly ||
                             (edit &&
-                                (formik.values.createdBy !== currentUser.user._id || !isWorkspaceAdmin(currentUser.user.currentWorkspacePermissions)))
+                                formik.values.createdBy !== currentUser.user._id &&
+                                !isWorkspaceAdmin(currentUser.user.currentWorkspacePermissions))
                         }
                     >
                         <MeltaTooltip title={i18next.t('charts.personal')}>

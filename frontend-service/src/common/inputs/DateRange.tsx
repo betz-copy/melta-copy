@@ -13,7 +13,18 @@ const DateRange: React.FC<{
     overrideSx?: object;
     maxEndDate?: Date;
     maxStartDate?: Date;
-}> = ({ onStartDateChange, onEndDateChange, startDateInput, endDateInput, overrideSx, directionIsRow, maxEndDate, maxStartDate }) => {
+    readOnly?: boolean;
+}> = ({
+    onStartDateChange,
+    onEndDateChange,
+    startDateInput,
+    endDateInput,
+    overrideSx,
+    directionIsRow,
+    maxEndDate,
+    maxStartDate,
+    readOnly = false,
+}) => {
     return (
         <Grid
             container
@@ -31,7 +42,6 @@ const DateRange: React.FC<{
                     value={startDateInput}
                     onChange={onStartDateChange}
                     maxDate={endDateInput ?? maxStartDate}
-                    minDate={undefined}
                     sx={overrideSx}
                     components={
                         overrideSx && {
@@ -41,6 +51,7 @@ const DateRange: React.FC<{
                     }
                     isStartDate
                     directionIsRow={directionIsRow}
+                    readOnly={readOnly}
                 />
             </Grid>
             <Grid item className="processList-dateContainer">
@@ -58,6 +69,7 @@ const DateRange: React.FC<{
                         }
                     }
                     directionIsRow={directionIsRow}
+                    readOnly={readOnly}
                 />
             </Grid>
         </Grid>

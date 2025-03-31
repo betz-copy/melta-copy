@@ -26,10 +26,10 @@ const charts: Record<IChartType, React.FC<ChartProps>> = {
 };
 
 const chartTypeButtons = [
-    { icon: NumberChartIcon, type: IChartType.Number, label: i18next.t('charts.numberChart') },
-    { icon: BarChartIcon, type: IChartType.Column, label: i18next.t('charts.barChart') },
-    { icon: PieChartIcon, type: IChartType.Pie, label: i18next.t('charts.pieChart') },
-    { icon: ShowChartIcon, type: IChartType.Line, label: i18next.t('charts.lineChart') },
+    { icon: NumberChartIcon, type: IChartType.Number, label: i18next.t('charts.types.numberChart') },
+    { icon: BarChartIcon, type: IChartType.Column, label: i18next.t('charts.types.barChart') },
+    { icon: PieChartIcon, type: IChartType.Pie, label: i18next.t('charts.types.pieChart') },
+    { icon: ShowChartIcon, type: IChartType.Line, label: i18next.t('charts.types.lineChart') },
 ];
 
 const ChartTypesEdit: React.FC<ChartProps> = ({ formik, formikValues, entityTemplate, disabled }) => {

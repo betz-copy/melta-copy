@@ -1,13 +1,9 @@
-import { Grid, MenuItem } from '@mui/material';
-import i18next from 'i18next';
+import { Grid } from '@mui/material';
 import React from 'react';
-import { IoIosArrowDown } from 'react-icons/io';
 import { IGraphFilterBody } from '../../../interfaces/entities';
 import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridTextFilter } from '../../../utils/agGrid/interfaces';
 import { StyledFilterInput } from './StyledFilterInput';
-import { environment } from '../../../globals';
-
-const { filterOptions } = environment;
+import { TypeSelectFilter } from './TypeSelectFilter';
 
 interface TextFilterProps {
     entityFilter: boolean;
@@ -32,32 +28,12 @@ const TextFilterInput: React.FC<TextFilterProps> = ({
     return (
         <Grid container justifyContent="center" direction={entityFilter ? 'row' : 'column'} spacing={2}>
             <Grid item xs={entityFilter ? 5 : 12}>
-                {/* TODO : same height after defining fontsize */}
-                <StyledFilterInput
-                    fullWidth
-                    select
-                    size="small"
-                    value={filterField?.type || ''}
-                    inputProps={{
-                        readOnly,
-                        style: {
-                            textOverflow: 'ellipsis',
-                        },
-                    }}
-                    onChange={(e) =>
-                        handleFilterTypeChange(e.target.value as IAGGidNumberFilter['type'] | IAGGridTextFilter['type'], Boolean(filterField?.filter))
-                    }
-                    SelectProps={{
-                        IconComponent: IoIosArrowDown,
-                    }}
-                >
-                    {filterOptions[type].map((option, index) => (
-                        // eslint-disable-next-line react/no-array-index-key
-                        <MenuItem key={index} value={option}>
-                            {i18next.t(`filters.${option}`)}
-                        </MenuItem>
-                    ))}
-                </StyledFilterInput>
+                <TypeSelectFilter
+                    filterField={filterField as IAGGidNumberFilter | IAGGridTextFilter}
+                    handleFilterTypeChange={handleFilterTypeChange}
+                    readOnly={readOnly}
+                    type={type}
+                />
             </Grid>
 
             <Grid item xs={entityFilter ? 7 : 12}>

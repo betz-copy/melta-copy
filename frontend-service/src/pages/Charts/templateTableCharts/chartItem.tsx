@@ -7,7 +7,8 @@ import { GripVertical } from '../../../utils/icons/fontAwesome';
 import { isWorkspaceAdmin } from '../../../utils/permissions/instancePermissions';
 import { CardMenu } from '../../SystemManagement/components/CardMenu';
 import { NumberChartGenerator } from '../chartGenerator.tsx/NumberChartGenerator';
-import { HiighchartGenerator } from '../chartGenerator.tsx/highChartgenerator';
+import { HiighchartGenerator } from '../chartGenerator.tsx/HighChartgenerator';
+import { useDarkModeStore } from '../../../stores/darkMode';
 
 interface ChartItemProps {
     chartDetails: ChartsAndGenerator;
@@ -22,6 +23,7 @@ const ChartItem: React.FC<ChartItemProps> = ({
     indexInGrid,
     onDelete,
 }) => {
+    const darkMode = useDarkModeStore((state) => state.darkMode);
     const currentUser = useUserStore();
     const [currentLocation, navigate] = useLocation();
 
@@ -35,13 +37,12 @@ const ChartItem: React.FC<ChartItemProps> = ({
                     right: 10,
                     zIndex: 10,
                     cursor: 'grab',
-                    backgroundColor: 'rgba(255,255,255,0.8)',
                     padding: '4px',
                     borderRadius: '4px',
                 }}
                 onClick={(e) => e.stopPropagation()}
             >
-                <GripVertical color="grey" size={16} />
+                <GripVertical color={darkMode ? '#ccc' : 'grey'} size={16} />
             </Box>
 
             {isHoverOnCard === indexInGrid && (
@@ -58,7 +59,7 @@ const ChartItem: React.FC<ChartItemProps> = ({
                     <CardMenu
                         onDeleteClick={onDelete}
                         disabledProps={{
-                            isDeleteDisabled: createdBy !== currentUser.user._id || !isWorkspaceAdmin(currentUser.user.currentWorkspacePermissions),
+                            isDeleteDisabled: createdBy !== currentUser.user._id && !isWorkspaceAdmin(currentUser.user.currentWorkspacePermissions),
                             isEditDisabled: false,
                             tooltipTitle: '',
                         }}
