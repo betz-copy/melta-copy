@@ -268,6 +268,9 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         const [selectedRow, setSelectedRow] = useState('');
         const [currEntity, setCurrEntity] = useState<IEntity>();
         const [currEditingCell, setCurrEditingCell] = useState<any>();
+        const filteredColumns = Object.keys(
+            Object.fromEntries(Object.entries(template.properties.properties).filter(([_key, property]) => property.comment === undefined)),
+        );
 
         const [updateWithRuleBreachDialogState, setUpdateWithRuleBreachDialogState] = useState<{
             isOpen: boolean;
@@ -382,15 +385,11 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                 }
             },
             getDisplayColumns: () => {
-                const validKeys = Object.keys(
-                    Object.fromEntries(Object.entries(template.properties.properties).filter(([_key, property]) => property.comment === undefined)),
-                );
-
                 return (
                     gridRef.current?.api
                         .getAllDisplayedColumns()
                         .map((column) => column.getColId())
-                        .filter((colId) => validKeys.includes(colId)) || []
+                        .filter((colId) => filteredColumns.includes(colId)) || []
                 );
             },
         }));
@@ -516,15 +515,12 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             const { api } = params;
 
             const hasActions = visibleKeys.some((key) => key.startsWith(actionPrefix));
-            const templateKeys = Object.keys(
-                Object.fromEntries(Object.entries(template.properties.properties).filter(([_key, property]) => property.comment === undefined)),
-            );
 
             const uniqKeys = ['disabled', 'createdAt', 'updatedAt'];
             const defaultKeys = Object.keys(defaultColumnWidths).filter((key) => !key.includes(actionPrefix) && !uniqKeys.includes(key));
-            const isRemovedFields = defaultKeys.some((key) => !templateKeys.includes(key));
+            const isRemovedFields = defaultKeys.some((key) => !filteredColumns.includes(key));
 
-            if (templateKeys.length === defaultKeys.length && templateKeys.every((key, index) => key === defaultKeys[index])) return;
+            if (filteredColumns.length === defaultKeys.length && filteredColumns.every((key, index) => key === defaultKeys[index])) return;
 
             handleColumnsOrder(params);
 
@@ -535,15 +531,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             api.refreshHeader();
             api.sizeColumnsToFit();
             // eslint-disable-next-line no-unused-expressions
-            Object.keys(defaultColumnWidths).length > 0
-                ? api.autoSizeColumns(columnsKeys)
-                : api.autoSizeColumns(
-                      Object.keys(
-                          Object.fromEntries(
-                              Object.entries(template.properties.properties).filter(([_key, property]) => property.comment === undefined),
-                          ),
-                      ),
-                  );
+            Object.keys(defaultColumnWidths).length > 0 ? api.autoSizeColumns(columnsKeys) : api.autoSizeColumns(filteredColumns);
 
             const columnStates = api.getColumnState().filter((col) => columnsKeys.includes(col.colId));
 
