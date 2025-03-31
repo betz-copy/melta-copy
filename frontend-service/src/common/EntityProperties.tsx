@@ -292,7 +292,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                                     >
                                         <Typography
                                             fontSize="14px"
-                                            color={propertyValueColor}
+                                            color={propertySchema.color ?? propertyValueColor}
                                             style={{
                                                 textOverflow: 'ellipsis',
                                                 whiteSpace: textWrap ? undefined : 'nowrap',

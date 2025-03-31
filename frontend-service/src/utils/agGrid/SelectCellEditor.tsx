@@ -9,9 +9,10 @@ interface SelectCellEditorProps {
     onValueChange: (newValue: string | string[] | null) => void;
     multiple?: boolean;
     colorsOptions?: Record<string, string>;
+    overrideSx?: object;
 }
 
-const SelectCellEditor: React.FC<SelectCellEditorProps> = ({ values, value, onValueChange, multiple = false, colorsOptions }) => {
+const SelectCellEditor: React.FC<SelectCellEditorProps> = ({ values, value, onValueChange, multiple = false, colorsOptions, overrideSx }) => {
     const [selectedValues, setSelectedValues] = useState<string | string[] | undefined>(value);
 
     useEffect(() => {
@@ -32,7 +33,7 @@ const SelectCellEditor: React.FC<SelectCellEditorProps> = ({ values, value, onVa
     };
 
     return (
-        <FormControl fullWidth>
+        <FormControl fullWidth={!!(overrideSx && 'width' in overrideSx && overrideSx.width === '100%')}>
             {multiple ? (
                 /** MULTIPLE SELECTION MODE (via <Select>) * */
                 <Select
@@ -47,7 +48,7 @@ const SelectCellEditor: React.FC<SelectCellEditorProps> = ({ values, value, onVa
                             ))}
                         </Box>
                     )}
-                    style={{ width: '100%', height: '100%' }}
+                    style={{ ...overrideSx }}
                 >
                     {values.map((option) => (
                         <MenuItem key={option} value={option} style={{ height: '40px' }}>

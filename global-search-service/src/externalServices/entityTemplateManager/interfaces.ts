@@ -24,6 +24,7 @@ interface IEntitySingleProperty {
     };
     comment?: string;
     hideFromDetailsPage?: boolean;
+    color?: string;
 }
 
 interface IJSONSchema {

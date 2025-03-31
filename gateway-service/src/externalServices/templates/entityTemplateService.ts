@@ -60,6 +60,7 @@ export interface IEntitySingleProperty {
     };
     archive?: boolean;
     comment?: string;
+    color?: string;
     hideFromDetailsPage?: boolean;
 }
 

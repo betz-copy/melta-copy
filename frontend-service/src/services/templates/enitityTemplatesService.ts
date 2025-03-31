@@ -90,6 +90,7 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
             mapSearch: mapSearchProperties?.includes(key) || undefined,
             hideFromDetailsPage: value.hideFromDetailsPage || undefined,
             comment: value.comment,
+            color: value.color,
         };
 
         if (value.format === 'fileId' || value.items?.format === 'fileId') {
@@ -172,6 +173,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
             identifier,
             mapSearch,
             hideFromDetailsPage,
+            color,
             comment,
         }) => {
             if (deleted) return;
@@ -217,6 +219,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                 archive,
                 identifier,
                 hideFromDetailsPage,
+                color,
                 uniqueItems: type === 'enumArray' || type === 'users' ? true : undefined,
                 pattern: type === 'pattern' ? pattern : undefined,
                 patternCustomErrorMessage: type === 'pattern' ? patternCustomErrorMessage : undefined,
@@ -251,11 +254,11 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
             if (mapSearch) mapSearchProperties.push(name);
             if (type === 'serialNumber') serialsUniqueConstraints.push([name]);
             if (type === 'enum' || type === 'enumArray') {
-                Object.entries(optionColors).forEach(([option, color]) => {
-                    if (!color) return;
+                Object.entries(optionColors).forEach(([option, enumColor]) => {
+                    if (!enumColor) return;
                     if (!enumPropertiesColors) enumPropertiesColors = {};
                     if (!enumPropertiesColors[name]) enumPropertiesColors[name] = {};
-                    enumPropertiesColors[name][option] = color;
+                    enumPropertiesColors[name][option] = enumColor;
                 });
             }
         },
@@ -286,6 +289,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
             archive,
             mapSearch,
             hideFromDetailsPage,
+            color,
             comment,
         }) => {
             if (deleted) return;
@@ -318,6 +322,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                 archive,
                 identifier,
                 hideFromDetailsPage,
+                color,
                 uniqueItems: type === 'enumArray' || type === 'users' ? true : undefined,
                 pattern: type === 'pattern' ? pattern : undefined,
                 patternCustomErrorMessage: type === 'pattern' ? patternCustomErrorMessage : undefined,
@@ -353,11 +358,11 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
             if (mapSearch) mapSearchProperties.push(name);
             if (type === 'serialNumber') serialsUniqueConstraints.push([name]);
             if (type === 'enum' || type === 'enumArray') {
-                Object.entries(optionColors).forEach(([option, color]) => {
-                    if (!color) return;
+                Object.entries(optionColors).forEach(([option, enumColor]) => {
+                    if (!enumColor) return;
                     if (!enumPropertiesColors) enumPropertiesColors = {};
                     if (!enumPropertiesColors[name]) enumPropertiesColors[name] = {};
-                    enumPropertiesColors[name][option] = color;
+                    enumPropertiesColors[name][option] = enumColor;
                 });
             }
         },

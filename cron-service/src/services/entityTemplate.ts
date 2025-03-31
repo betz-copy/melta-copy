@@ -51,6 +51,7 @@ export interface IEntitySingleProperty {
     };
     archive?: boolean;
     comment?: string;
+    color?: string;
 }
 
 export interface IEntityTemplate {

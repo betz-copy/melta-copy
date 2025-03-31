@@ -34,6 +34,7 @@ export interface IEntitySingleProperty {
     archive?: boolean;
     hideFromDetailsPage?: boolean;
     comment?: string;
+    color?: string;
 }
 
 export interface IEntityTemplate {

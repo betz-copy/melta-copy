@@ -29,6 +29,7 @@ export interface IEntitySingleProperty {
     minItems?: 1;
     uniqueItems?: true;
     comment?: string;
+    color?: string;
     hideFromDetailsPage?: boolean;
 }
 

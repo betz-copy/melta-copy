@@ -6,6 +6,8 @@ import { FieldArray, FormikErrors, FormikHelpers, FormikTouched } from 'formik';
 import i18next from 'i18next';
 import { DragHandle as DragHandleIcon, ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
 import _debounce from 'lodash.debounce';
+import { EditorState } from 'draft-js';
+import { stateToHTML } from 'draft-js-export-html';
 import { FieldEditCardProps, MemoFieldEditCard } from './FieldEditCard';
 import { MemoAttachmentEditCard } from './AttachmentEditCard';
 import { StepComponentHelpers } from '..';
@@ -202,6 +204,21 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
     const setDisplayValueWrapper = (index: number) => (value: SetStateAction<CommonFormInputProperties>) => setDisplayValue(index, value);
     const isFieldBlockError = Boolean(touched?.[propertiesType]) && Boolean(errors?.[propertiesType]);
 
+    // const handleEditorChange = useCallback(
+    //     _debounce((state: EditorState) => {
+    //         const newValue = state.getCurrentContent().getPlainText();
+    //         const htmlContent = stateToHTML(state.getCurrentContent());
+    //         setFieldValue('comment', newValue === '' ? undefined : htmlContent);
+    //     }, 500),
+    //     [setFieldValue],
+    // );
+
+    const handleCommentChange = (state: EditorState) => {
+        const newValue = state.getCurrentContent().getPlainText();
+        const htmlContent = stateToHTML(state.getCurrentContent());
+        setFieldValue('comment', newValue === '' ? undefined : htmlContent);
+    };
+
     return (
         <FieldBlockAccordion style={{ border: isFieldBlockError ? '1px solid red' : '' }}>
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
@@ -257,6 +274,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
                                                 locationSearchFields,
                                                 hasActions,
                                                 supportConvertingToMultipleFields,
+                                                handleCommentChange,
                                             };
 
                                             if (

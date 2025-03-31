@@ -9,8 +9,6 @@ import { useDarkModeStore } from '../../../stores/darkMode';
 import { containsHTMLTags } from '../../../utils/HtmlTagsStringValue';
 
 export const getInitialValue = (value) => {
-    console.log({ value });
-
     if (value) {
         const checkHasHTMLTags = containsHTMLTags(value);
         if (checkHasHTMLTags) {

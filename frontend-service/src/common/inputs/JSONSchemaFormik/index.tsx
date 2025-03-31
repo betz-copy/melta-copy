@@ -177,7 +177,9 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                     return {
                         'ui:options': {
                             comment: propertySchema.comment,
+                            color: propertySchema.color,
                         },
+                        'ui:classNames': 'comment',
                         'ui:widget': 'CommentWidget',
                     };
                 if (propertySchema.format === 'signature')

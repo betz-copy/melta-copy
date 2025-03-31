@@ -19,7 +19,7 @@ export const ColoredEnumChip: React.FC<ColoredEnumChipProps> = ({ label, color, 
 
     const shouldHighlight = Boolean(searchValue && label?.toString().includes(searchValue));
     // eslint-disable-next-line no-nested-ternary
-    const textColor = color === 'default' ? (isDarkMode ? '#fff' : '#000') : color;
+    const textColor = isDarkMode ? '#fff' : '#000';
 
     let backgroundColor: string;
     if (color !== 'default' && color) {

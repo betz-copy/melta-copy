@@ -401,6 +401,7 @@ export const enumColDef = <Data extends any = EntityData>(
             values,
             multiple: false,
             colorsOptions: enumColorOptions,
+            overrideSx: { width: '100%', height: '100%' },
         },
     };
 };
@@ -458,6 +459,7 @@ export const enumArrayColDef = <Data extends any = EntityData>(
             values,
             multiple: true,
             colorsOptions: enumColorOptions,
+            overrideSx: { width: '100%', height: '100%' },
         },
     };
 };

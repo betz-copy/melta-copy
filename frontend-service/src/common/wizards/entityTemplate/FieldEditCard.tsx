@@ -1,4 +1,4 @@
-import React, { memo, SetStateAction, useEffect, useRef, useState } from 'react';
+import React, { memo, SetStateAction, useCallback, useEffect, useRef, useState } from 'react';
 import { FormikErrors, FormikTouched } from 'formik';
 import {
     TextField,
@@ -34,6 +34,7 @@ import {
     AddLocationAlt,
     WrongLocation,
 } from '@mui/icons-material';
+import _debounce from 'lodash.debounce';
 import AddIcon from '@mui/icons-material/Add';
 import { Draggable } from 'react-beautiful-dnd';
 import i18next from 'i18next';
@@ -56,6 +57,8 @@ import { IUniqueConstraintOfTemplate } from '../../../interfaces/entities';
 import RelationshipReferenceField from './RelationshipReferenceField';
 import { environment } from '../../../globals';
 import { getInitialValue } from '../../inputs/JSONSchemaFormik/RjfsTextAreaWidget';
+import SelectCellEditor from '../../../utils/agGrid/SelectCellEditor';
+import { commentColors } from '../../inputs/JSONSchemaFormik/RjsfCommentWidget';
 
 const { mapSearchPropertiesLimit } = environment.map;
 
@@ -107,6 +110,7 @@ export interface FieldEditCardProps {
     locationSearchFields?: { show: boolean; disabled: boolean };
     hasActions?: boolean;
     supportConvertingToMultipleFields?: boolean;
+    handleCommentChange: (state: EditorState) => void;
 }
 
 export const FieldEditCard: React.FC<FieldEditCardProps> = ({
@@ -141,6 +145,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     locationSearchFields,
     hasActions,
     supportConvertingToMultipleFields = true,
+    handleCommentChange,
 }) => {
     const theme = createTheme();
     const muiRteTheme: TMUIRichTextEditorStyles = {
@@ -454,9 +459,9 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                 queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) => {
                     const newOptionColors = { ...fieldValue.optionColors };
                     if (fieldValue.optionColors && Object.keys(fieldValue.optionColors).length > 0 && editIndex != null) {
-                        const color = fieldValue.optionColors[fieldValue.options[editIndex]];
+                        const newColor = fieldValue.optionColors[fieldValue.options[editIndex]];
                         delete newOptionColors[fieldValue.options[editIndex]];
-                        newOptionColors[option] = color;
+                        newOptionColors[option] = newColor;
                     }
                     setValues?.((prev) => ({
                         ...prev,
@@ -601,8 +606,6 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     };
 
     const isNotComment = value.type !== 'comment';
-
-    console.log({ value });
 
     return (
         <Draggable draggableId={value.id} index={index}>
@@ -755,10 +758,10 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                     {value.optionColors && (
                                                                         <MinimizedColorPicker
                                                                             color={value.optionColors[option]}
-                                                                            onColorChange={(color) => {
+                                                                            onColorChange={(newColor) => {
                                                                                 setFieldValue('optionColors', {
                                                                                     ...value.optionColors,
-                                                                                    [option]: color,
+                                                                                    [option]: newColor,
                                                                                 });
                                                                             }}
                                                                             circleSize="1.6rem"
@@ -958,11 +961,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                             'bulletList',
                                                         ]}
                                                         toolbar
-                                                        onChange={(state: EditorState) => {
-                                                            const newValue = state.getCurrentContent().getPlainText();
-                                                            const htmlContent = stateToHTML(state.getCurrentContent());
-                                                            setFieldValue('comment', newValue === '' ? undefined : htmlContent);
-                                                        }}
+                                                        onChange={handleCommentChange}
                                                         defaultValue={JSON.stringify(
                                                             convertToRaw(getInitialValue(value.comment).getCurrentContent()),
                                                         )}
@@ -1262,6 +1261,19 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                         />
                                                     }
                                                     label={i18next.t('validation.hideFromDetailsPage')}
+                                                />
+                                            )}
+                                            {!isNotComment && (
+                                                <SelectCellEditor
+                                                    values={Object.keys(commentColors)}
+                                                    value={value.color ?? i18next.t('validation.colors.blue')}
+                                                    onValueChange={(newValue) => {
+                                                        setValues?.((prevValue) => ({
+                                                            ...prevValue,
+                                                            color: newValue as string,
+                                                        }));
+                                                    }}
+                                                    colorsOptions={commentColors}
                                                 />
                                             )}
                                         </Box>

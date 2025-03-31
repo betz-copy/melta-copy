@@ -47,6 +47,7 @@ ajv.addKeyword({ keyword: 'archive', type: 'boolean' });
 ajv.addKeyword({ keyword: 'identifier', type: 'boolean' });
 ajv.addKeyword({ keyword: 'hideFromDetailsPage', type: 'boolean' });
 ajv.addKeyword({ keyword: 'comment', type: 'string' });
+ajv.addKeyword({ keyword: 'color', type: 'string' });
 
 const stringFormats = ['date', 'date-time', 'email', 'fileId', 'text-area', 'relationshipReference', 'location', 'user', 'signature', 'comment'];
 const allowedJSONSchemaTypes = ['string', 'number', 'boolean', 'array'];
@@ -112,6 +113,7 @@ const propertiesArraySchema = Joi.array()
             serialStarter: Joi.number().when('type', { not: 'number', then: Joi.forbidden() }),
             serialCurrent: Joi.number().when('type', { not: 'number', then: Joi.forbidden() }),
             comment: Joi.string().when('type', { not: 'string', then: Joi.forbidden() }),
+            color: Joi.string().when('type', { not: 'string', then: Joi.forbidden() }),
             hideFromDetailsPage: Joi.boolean(),
         }).nand('pattern', 'enum'),
     )

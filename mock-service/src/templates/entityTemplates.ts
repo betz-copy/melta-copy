@@ -36,6 +36,7 @@ export interface IEntitySingleProperty {
         relatedTemplateField: string;
     };
     comment?: string;
+    color?: string;
     hideFromDetailsPage?: boolean;
 }
 
