@@ -1,5 +1,5 @@
 /* eslint-disable no-param-reassign */
-import _ from 'lodash';
+import _, { groupBy } from 'lodash';
 import { AxiosError, AxiosResponse } from 'axios';
 import _isEqual from 'lodash.isequal';
 import lodashUniqby from 'lodash.uniqby';
@@ -7,7 +7,7 @@ import { StatusCodes } from 'http-status-codes';
 import { logger } from 'elastic-apm-node';
 import config from '../../config';
 import { InstancesService } from '../../externalServices/instanceService';
-import { IConstraintsOfTemplate, IUniqueConstraintOfTemplate } from '../../externalServices/instanceService/interfaces/entities';
+import { IConstraintsOfTemplate, IEntity, IUniqueConstraintOfTemplate } from '../../externalServices/instanceService/interfaces/entities';
 import { ProcessService } from '../../externalServices/processService';
 import { RuleBreachService } from '../../externalServices/ruleBreachService';
 import { StorageService } from '../../externalServices/storageService';
@@ -48,6 +48,8 @@ import { checkPropertyInUsedFromFormula } from './rules/checkIfPropertyInUsed';
 import { UploadedFile } from '../../utils/busboy/interface';
 import { IRelationship } from '../../externalServices/instanceService/interfaces/relationships';
 import { buildNewRelationshipField, validateNoDependentRules, validateRequiredConstraints, validateUniqueRelationships } from '../../utils/templates';
+import { InstancesManager } from '../instances/manager';
+import { Kartoffel } from '../../externalServices/kartoffel';
 
 const {
     categoryHasTemplates,
@@ -74,6 +76,8 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
     private processManager: ProcessTemplatesManager;
 
+    private instanceManager: InstancesManager;
+
     private ruleBreachService: RuleBreachService;
 
     private ganttService: GanttsService;
@@ -86,6 +90,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         this.instancesService = new InstancesService(workspaceId);
         this.processService = new ProcessService(workspaceId);
         this.processManager = new ProcessTemplatesManager(workspaceId);
+        this.instanceManager = new InstancesManager(workspaceId);
         this.ruleBreachService = new RuleBreachService(workspaceId);
         this.ganttService = new GanttsService(workspaceId);
     }
@@ -720,11 +725,89 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         };
     }
 
+    private async updateInstancesWithUserFields(templateId: string, newExpandedUserFields: string[]) {
+        const entities = await this.instanceManager.getAllTemplateEntities(templateId);
+
+        const usersKeys = groupBy(newExpandedUserFields, (userField) => userField.split('_')[1]);
+        const usersIds = new Set<string>();
+        entities.forEach((entity) => {
+            Object.keys(usersKeys).forEach((userKey) => {
+                if (JSON.parse(entity.entity.properties[userKey])._id) {
+                    usersIds.add(JSON.parse(entity.entity.properties[userKey])._id);
+                }
+            });
+        });
+
+        const kartoffelUsers = await Promise.all(Array.from(usersIds).map((userId) => Kartoffel.getUserById(userId)));
+        const kartoffelUsersMapById = groupBy(kartoffelUsers, (user) => user._id);
+        const entitiesToUpdate: IEntity[] = [];
+
+        entities.forEach((entity) => {
+            let wasEntityChange = false;
+            const entityToUpdate = entity.entity;
+            Object.entries(usersKeys).forEach(([userKey, expandedFields]) => {
+                const userId = JSON.parse(entity.entity.properties[userKey])._id;
+                if (userId) {
+                    const kartoffelUser = kartoffelUsersMapById[userId] ? kartoffelUsersMapById[userId][0] : undefined;
+                    if (kartoffelUser) {
+                        expandedFields.forEach((expandedField) => {
+                            if (kartoffelUser[expandedField.split('_')[2]]) {
+                                wasEntityChange = true;
+                                entityToUpdate.properties[expandedField] = kartoffelUser[expandedField.split('_')[2]].toString();
+                            }
+                        });
+                    }
+                }
+            });
+
+            if (wasEntityChange) entitiesToUpdate.push(entityToUpdate);
+        });
+
+        await Promise.all(
+            entitiesToUpdate.map((entityToUpdate) =>
+                this.instancesService.updateEntityInstance(entityToUpdate.properties._id, entityToUpdate, [], 'aa'),
+            ),
+        );
+    }
+
+    convertExpendedUserFields(templateData: Omit<IEntityTemplate, 'disabled'>): Omit<IEntityTemplate, 'disabled'> {
+        const convertedProperties = templateData.properties.properties;
+        const updatedPropertiesOrder = templateData.propertiesOrder;
+        Object.entries(templateData.properties.properties).forEach(([key, value]) => {
+            if (value.expandedUserFields) {
+                const { expandedUserFields, ...restOfTheValue } = value;
+                convertedProperties[key] = restOfTheValue;
+
+                const indexOfKeyInOrder = updatedPropertiesOrder.findIndex((el) => el === key);
+
+                expandedUserFields.forEach((userFieldToAdd, index) => {
+                    convertedProperties[`userprefix_${key}_${userFieldToAdd}`] = {
+                        title: `${value.title}_${userFieldToAdd}`,
+                        type: 'string',
+                        readOnly: true,
+                    };
+
+                    updatedPropertiesOrder.splice(indexOfKeyInOrder + index + 1, 0, `userprefix_${key}_${userFieldToAdd}`);
+                });
+            }
+        });
+
+        return {
+            ...templateData,
+            properties: {
+                ...templateData.properties,
+                properties: convertedProperties,
+            },
+            propertiesOrder: updatedPropertiesOrder,
+        };
+    }
+
     async updateEntityTemplate(
         id: string,
         updatedTemplateData: Omit<IEntityTemplateWithConstraints, 'disabled'> & { file?: string },
         { file, files }: { file?: [UploadedFile]; files?: UploadedFile[] },
     ): Promise<IMongoEntityTemplateWithConstraintsPopulated> {
+        let newExpandedUserFields: string[] = [];
         await this.entityTemplateService.getCategoryById(updatedTemplateData.category);
 
         const { count } = await this.instancesService.searchEntitiesOfTemplateRequest(id, { limit: 1 });
@@ -758,7 +841,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             if (updatedTemplateData.name !== currTemplate.name) throw new BadRequestError('can not change template name');
 
             Object.entries(currTemplate.properties.properties).forEach(([key, value]) => {
-                const newValue = updatedTemplateData.properties.properties[key];
+                const newValue = this.convertExpendedUserFields(updatedTemplateData).properties.properties[key];
                 if ((!newValue || newValue?.isNewPropNameEqualDeletedPropName) && !currTemplate.actions) removedProperties.push(key);
                 else {
                     const isSingularToPlural =
@@ -796,6 +879,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             removedProperties = removedProperties.filter((removedProperty) => {
                 if (removedProperty.startsWith('userprefix')) {
                     const originalUserField = removedProperty.split('_')[1];
+                    if (!updatedTemplateData.properties.properties[originalUserField]) return true;
                     const expandedUserKey = removedProperty.split('_')[2];
                     return !updatedTemplateData.properties.properties[originalUserField].expandedUserFields?.includes(expandedUserKey);
                 }
@@ -803,9 +887,20 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
                 return true;
             });
 
-            const newProperties = Object.keys(updatedTemplateData.properties.properties).filter(
+            const convertedUpdatedData = this.convertExpendedUserFields(updatedTemplateData);
+
+            const newProperties = Object.keys(convertedUpdatedData.properties.properties).filter(
                 (property) => !currProperties.properties[property] && !removedProperties.includes(property),
             );
+
+            newExpandedUserFields = newProperties.filter((property) => {
+                if (property.startsWith('userprefix')) {
+                    const userKey = property.split('_')[1];
+                    if (!newProperties.includes(userKey)) return true;
+                }
+
+                return false;
+            });
 
             const updatedProperties = updatedTemplateData.properties.properties;
             if (newProperties.some((property) => updatedProperties[property].identifier && updatedProperties[property].serialStarter === undefined))
@@ -839,6 +934,10 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         });
 
         await this.deletePropertyOfEntityTemplate(id, count, removedProperties, currTemplate);
+
+        if (newExpandedUserFields.length) {
+            await this.updateInstancesWithUserFields(id, newExpandedUserFields);
+        }
 
         try {
             if (propertiesKeysToPluralize.length > 0) await this.instancesService.convertFieldsToPlural(id, propertiesKeysToPluralize);
