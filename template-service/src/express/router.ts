@@ -3,6 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 import relationshipTemplateRouter from './relationshipTemplate/router';
 import ruleRouter from './rule/router';
 import entityTemplateRouter from './entityTemplate/router';
+import entityChildTemplateRouter from './entityChildTemplate/router';
 import categoryRouter from './category/router';
 
 const appRouter = Router();
@@ -10,6 +11,7 @@ const appRouter = Router();
 appRouter.use('/api/templates/relationships', relationshipTemplateRouter);
 appRouter.use('/api/templates/rules', ruleRouter);
 appRouter.use('/api/templates/entities', entityTemplateRouter);
+appRouter.use('/api/templates/entityChildren', entityChildTemplateRouter);
 appRouter.use('/api/templates/categories', categoryRouter);
 
 appRouter.use('/isAlive', (_req, res) => {
