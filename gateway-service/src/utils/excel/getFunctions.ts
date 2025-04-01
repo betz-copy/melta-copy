@@ -161,7 +161,6 @@ const readExcelFile = async (
     oldEntities: IEntityWithDirectRelationships[] = [],
 ) => {
     const isEditMode = oldEntities.length > 0;
-    console.log({ isEditMode });
 
     const entities: IEntityWithIgnoredRules[] = [];
     const columns = Object.fromEntries(

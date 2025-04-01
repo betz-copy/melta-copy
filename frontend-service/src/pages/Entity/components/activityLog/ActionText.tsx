@@ -241,8 +241,6 @@ const UpdateEntityMetadataActionText: React.FC<{
             {actionMetadata.updatedFields.map((field) => {
                 const { oldValue, newValue, fieldName } = field;
 
-                console.log({ field });
-
                 const deleted = entityTemplateProperties[fieldName];
                 const isDeleted = deleted === undefined;
 

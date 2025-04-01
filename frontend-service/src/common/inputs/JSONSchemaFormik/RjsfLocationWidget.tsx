@@ -137,7 +137,7 @@ const RjsfLocationWidget = ({
     return (
         <Box width="100%">
             <Grid container justifyContent="space-between" alignItems="center" width="100%">
-                <Grid item xs={8.5}>
+                <Grid item xs={8.25}>
                     <MeltaTooltip title={newLocationValue}>
                         <TextField
                             {...textFieldProps}
@@ -173,7 +173,7 @@ const RjsfLocationWidget = ({
                         />
                     </MeltaTooltip>
                 </Grid>
-                <Grid item xs={3.25}>
+                <Grid item xs={3.5}>
                     <Autocomplete
                         value={coordinateSystem}
                         onChange={(_, newValue: CoordinateSystem) => {
