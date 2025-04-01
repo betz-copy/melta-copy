@@ -178,6 +178,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                         'ui:options': {
                             comment: propertySchema.comment,
                             color: propertySchema.color,
+                            hide: schema.hide.includes(propertyKey),
                         },
                         'ui:classNames': 'comment',
                         'ui:widget': 'CommentWidget',

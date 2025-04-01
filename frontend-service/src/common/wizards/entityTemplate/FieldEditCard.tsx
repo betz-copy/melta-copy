@@ -1,4 +1,4 @@
-import React, { memo, SetStateAction, useCallback, useEffect, useRef, useState } from 'react';
+import React, { memo, SetStateAction, useEffect, useRef, useState } from 'react';
 import { FormikErrors, FormikTouched } from 'formik';
 import {
     TextField,
@@ -44,7 +44,6 @@ import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import MUIRichTextEditor, { TMUIRichTextEditorStyles } from 'mui-rte';
 import { convertToRaw, EditorState } from 'draft-js';
-import { stateToHTML } from 'draft-js-export-html';
 import { dateNotificationTypes, validPropertyTypes } from './AddFields';
 import { CommonFormInputProperties, IRelationshipReference } from './commonInterfaces';
 import { MinimizedColorPicker } from '../../inputs/MinimizedColorPicker';
@@ -111,6 +110,7 @@ export interface FieldEditCardProps {
     hasActions?: boolean;
     supportConvertingToMultipleFields?: boolean;
     handleCommentChange: (state: EditorState) => void;
+    supportComment?: boolean;
 }
 
 export const FieldEditCard: React.FC<FieldEditCardProps> = ({
@@ -146,6 +146,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     hasActions,
     supportConvertingToMultipleFields = true,
     handleCommentChange,
+    supportComment,
 }) => {
     const theme = createTheme();
     const muiRteTheme: TMUIRichTextEditorStyles = {
@@ -690,6 +691,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                     if (validPropertyType === 'relationshipReference') return supportRelationshipReference;
                                                     if (validPropertyType === 'fileId' || validPropertyType === 'multipleFiles') return false; // TODO: support file inputs
                                                     if (validPropertyType === 'user' || validPropertyType === 'users') return supportUserType;
+                                                    if (validPropertyType === 'comment') return supportComment;
                                                     return true;
                                                 })
                                                 .map((validType) => {

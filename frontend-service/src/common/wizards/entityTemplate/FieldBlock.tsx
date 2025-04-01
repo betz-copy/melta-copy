@@ -55,6 +55,7 @@ interface FieldBlockProps<PropertiesType extends string, Values extends Record<P
     supportConvertingToMultipleFields?: boolean;
     supportIdentifier?: boolean;
     hasIdentifier?: boolean;
+    supportComment?: boolean;
 }
 
 const FieldBlock = <PropertiesType extends string, Values extends Record<PropertiesType, CommonFormInputProperties[]>>({
@@ -109,6 +110,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
         mapSearch: false,
     },
     supportConvertingToMultipleFields = true,
+    supportComment,
 }: React.PropsWithChildren<FieldBlockProps<PropertiesType, Values>>) => {
     // copy of values of formik in order to show changes on inputs fast (formik rerenders are slow)
     const [displayValues, setDisplayValues] = React.useState(values[propertiesType]);
@@ -266,6 +268,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
                                                 hasActions,
                                                 supportConvertingToMultipleFields,
                                                 handleCommentChange,
+                                                supportComment,
                                             };
 
                                             if (

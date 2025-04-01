@@ -13,8 +13,9 @@ export const commentColors = {
 };
 
 const RjsfCommentWidget = ({ options }: WidgetProps) => {
-    const { comment, color } = options;
+    const { comment, color, hide } = options;
 
+    if (hide) return <div />;
     return (
         <Grid>
             <Typography color={commentColors[color as string] ?? '#4752B6'} fontSize="14px">

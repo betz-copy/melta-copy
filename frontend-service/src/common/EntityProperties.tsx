@@ -30,7 +30,7 @@ interface FormatOptions {
     pureString?: boolean;
 }
 
-export const formatToString = (value: any, property: IEntitySingleProperty, options: FormatOptions = {}) => {
+export const formatToString = (value: any, property: IEntitySingleProperty, key?: string, options: FormatOptions = {}, hideProps: string[] = []) => {
     const { format, type: valueType } = property;
     const { keyEnumColors, isPrintingMode, pureString } = options;
 
@@ -43,7 +43,7 @@ export const formatToString = (value: any, property: IEntitySingleProperty, opti
     if (valueType === 'string') {
         if (format === 'date') return new Date(value).toLocaleDateString('en-uk');
         if (format === 'date-time') return new Date(value).toLocaleString('en-uk');
-        if (format === 'comment') return property.hideFromDetailsPage ? '' : property.comment;
+        if (format === 'comment') return property.hideFromDetailsPage || (key && hideProps.includes(key)) ? '' : property.comment;
         if (format === 'fileId' || format === 'signature') return <OpenPreview fileId={value} download={isPrintingMode} />;
         if (format === 'relationshipReference') {
             return pureString ? (
@@ -191,11 +191,17 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                     const propertyValue = propertySchema.comment ?? properties[propertyKey];
                     const hideField = entityTemplate.properties.hide.includes(propertyKey);
                     const containsHtmlTags = containsHTMLTags(propertyValue);
-                    const stringFormatValue = formatToString(propertyValue, propertySchema, {
-                        keyEnumColors: (propertySchema.enum || propertySchema.items?.enum) && entityTemplate.enumPropertiesColors?.[propertyKey],
-                        isPrintingMode,
-                        pureString,
-                    });
+                    const stringFormatValue = formatToString(
+                        propertyValue,
+                        propertySchema,
+                        propertyKey,
+                        {
+                            keyEnumColors: (propertySchema.enum || propertySchema.items?.enum) && entityTemplate.enumPropertiesColors?.[propertyKey],
+                            isPrintingMode,
+                            pureString,
+                        },
+                        entityTemplate.properties.hide,
+                    );
 
                     const propertyValueColor = getPropertyColor(
                         propertyKey,
