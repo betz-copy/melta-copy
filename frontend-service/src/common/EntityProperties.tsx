@@ -19,6 +19,8 @@ import { HighlightText } from '../utils/HighlightText';
 import { BlueTitle } from './BlueTitle';
 import UserAvatar from './UserAvatar';
 import OverflowWrapper from '../utils/agGrid/OverflowWrapper';
+import { locationConverterToString } from '../utils/map/convert';
+import { CoordinateSystem } from './inputs/JSONSchemaFormik/RjsfLocationWidget';
 
 const { maxNumOfCharactersNotInFullWidth } = environment.entitiesProperties;
 
@@ -67,6 +69,10 @@ export const formatToString = (value: any, property: IEntitySingleProperty, opti
             );
         }
     }
+    if (format === 'location')
+        return value.coordinateSystem === CoordinateSystem.UTM
+            ? locationConverterToString(value.location, CoordinateSystem.WGS84, CoordinateSystem.UTM)
+            : value.location;
     if (keyEnumColors?.[value] && valueType === 'string') return pureString ? value : <ColoredEnumChip label={value} color={keyEnumColors[value]} />;
     if (valueType === 'array') {
         if (property.items?.format === 'fileId') {
@@ -237,6 +243,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                         propertySchema.format !== 'fileId' &&
                         propertySchema.format !== 'relationshipReference' &&
                         propertySchema.format !== 'user' &&
+                        propertySchema.format !== 'location' &&
                         propertySchema.format !== 'signature'
                             ? getTextDirection(propertyValue, {
                                   type: propertySchema.type,

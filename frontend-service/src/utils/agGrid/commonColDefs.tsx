@@ -264,7 +264,15 @@ export const locationColDef = <Data extends any = EntityData>(
             const error = isPropertyInvalid(props, field, ignoreType);
 
             if (error) return errorColDef(props, error, value);
-            return <OpenMap field={value.title!} entityProperties={entityGetter(props as any)} entityTemplate={template} searchValue={searchValue} />;
+            return (
+                <OpenMap
+                    field={value.title!}
+                    entityProperties={entityGetter(props as any)}
+                    entityTemplate={template}
+                    searchValue={searchValue}
+                    disableOpenMap={ignoreType}
+                />
+            );
         },
         filter: 'agTextColumnFilter',
         width: hardcodedWidth,

@@ -214,3 +214,8 @@ export type EntityData = IEntity | IFailedEntity;
 export interface IEntityWithIgnoredRules extends ICreateEntityMetadata {
     ignoredRules: IBrokenRule[];
 }
+
+export enum SplitBy {
+    space = ' ',
+    comma = ',',
+}
