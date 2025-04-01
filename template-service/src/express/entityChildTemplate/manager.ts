@@ -12,7 +12,14 @@ export class EntityChildTemplateManager extends DefaultManagerMongo<IMongoEntity
         super(workspaceId, config.mongo.entityTemplatesCollectionName, EntityChildTemplateSchema);
     }
 
-    getChildTemplates(searchQuery: { search?: string; ids?: string[]; categoryIds?: string[]; limit: number; skip: number }) {
+    getChildTemplates(searchQuery: {
+        search?: string;
+        ids?: string[];
+        categoryIds?: string[];
+        fatherTemplatesIds?: string[];
+        limit: number;
+        skip: number;
+    }) {
         const { search: displayName, ids, categoryIds, limit, skip } = searchQuery;
         const query: FilterQuery<IEntityChildTemplate> = {};
 

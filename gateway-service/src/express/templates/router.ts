@@ -9,6 +9,7 @@ import { TemplatesValidator } from './middlewares';
 import {
     convertToRelationshipFieldRequestSchema,
     createCategorySchema,
+    createEntityChildTemplateSchema,
     createEntityTemplateSchema,
     createRelationshipTemplateSchema,
     deleteCategorySchema,
@@ -16,7 +17,9 @@ import {
     deleteFieldValueSchema,
     deleteRelationshipTemplateSchema,
     deleteRuleByIdRequestSchema,
+    getAllChildTemplatesSchema,
     getCategoriesSchema,
+    searchEntityChildTemplatesSchema,
     searchEntityTemplatesOfUserFromParamsSchema,
     searchEntityTemplatesSchema,
     searchRulesRequestSchema,
@@ -198,6 +201,28 @@ templatesRouter.post(
     ValidateRequest(searchRulesRequestSchema),
     AuthorizerControllerMiddleware.userHasSomePermissions,
     templatesControllerMiddleware.searchRulesTemplates,
+);
+
+templatesRouter.post(
+    '/entities/child',
+    busboyMiddleware,
+    ValidateRequest(createEntityChildTemplateSchema),
+    templatesValidatorMiddleware.validateUserCanCreateEntityTemplateUnderCategory,
+    TemplatesServiceProxy,
+);
+
+templatesRouter.post(
+    '/entities/child/search',
+    ValidateRequest(searchEntityChildTemplatesSchema),
+    AuthorizerControllerMiddleware.userHasSomePermissions,
+    TemplatesServiceProxy,
+);
+
+templatesRouter.get(
+    '/entities/child',
+    ValidateRequest(getAllChildTemplatesSchema),
+    AuthorizerControllerMiddleware.userHasSomePermissions,
+    TemplatesServiceProxy,
 );
 
 export default templatesRouter;

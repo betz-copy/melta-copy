@@ -29,7 +29,8 @@ const searchFilterSchema = Joi.object({
     $and: Joi.alternatives(filterOfTemplateSchema, Joi.array().items(filterOfTemplateSchema).min(1)),
     $or: Joi.array().items(filterOfTemplateSchema).min(1),
 }).min(1);
-// POST /api/entities/templates/child/search
+
+// POST /api/templates/entities/child/search
 export const searchEntityChildTemplatesSchema = Joi.object({
     query: {},
     body: {
@@ -38,19 +39,19 @@ export const searchEntityChildTemplatesSchema = Joi.object({
         categoryIds: Joi.array().items(MongoIdSchema),
         limit: Joi.number().integer().min(0).default(0),
         skip: Joi.number().integer().min(0).default(0),
-        fatherTemplate: MongoIdSchema.required(),
+        fatherTemplatesIds: Joi.array().items(MongoIdSchema),
     },
     params: {},
 });
 
-// GET /api/entities/templates/child
+// GET /api/templates/entities/child
 export const getAllChildTemplatesSchema = Joi.object({
     query: {},
     body: {},
     params: {},
 });
 
-// POST /api/entities/templates/child
+// POST /api/templates/entities/child
 export const createEntityChildTemplateSchema = Joi.object({
     body: {
         name: variableNameValidation.required(),
