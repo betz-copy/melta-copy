@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { getDisplayLabel, WidgetProps } from '@rjsf/utils';
 import validator from '@rjsf/validator-ajv8';
 import { Cartesian3 } from 'cesium';
-import { Box, Dialog, FormControl, Grid, InputAdornment, InputLabel, MenuItem, Select, TextField } from '@mui/material';
+import { Autocomplete, Box, Dialog, Grid, InputAdornment, TextField } from '@mui/material';
 import MapIcon from '@mui/icons-material/Map';
 import i18next from 'i18next';
 import { environment } from '../../../globals';
@@ -124,25 +124,6 @@ const RjsfLocationWidget = ({
         setNewLocationValue(newValue);
     };
 
-    const onChangeCoordinateSystem = ({ target: { value: newCoordinateSystem } }) => {
-        setCoordinateSystem(newCoordinateSystem);
-        if (!newLocationValue) return;
-
-        const hasError = validateLocation({ location: newLocationValue, coordinateSystem: newCoordinateSystem }) === false;
-        console.log({ hasError });
-
-        setError(hasError);
-
-        const convertedLocation = validateLocation({ location: newLocationValue, coordinateSystem }, true)
-            ? locationConverterToString(newLocationValue, coordinateSystem, newCoordinateSystem)
-            : newLocationValue;
-
-        setNewLocationValue(convertedLocation);
-        onChange(
-            newLocationValue?.toString().trim() ? JSON.stringify({ location: convertedLocation, coordinateSystem: newCoordinateSystem }) : undefined,
-        );
-    };
-
     const _onBlur = ({ target: { value: newValue } }: React.FocusEvent<HTMLInputElement>) => onBlur(id, { location: newValue, coordinateSystem });
     const _onFocus = ({ target: { value: newValue } }: React.FocusEvent<HTMLInputElement>) => onFocus(id, { location: newValue, coordinateSystem });
 
@@ -193,17 +174,31 @@ const RjsfLocationWidget = ({
                     </MeltaTooltip>
                 </Grid>
                 <Grid item xs={3.25}>
-                    <FormControl fullWidth variant={variant}>
-                        <InputLabel sx={{ color: '#787C9E' }}>{i18next.t('location.coordinateSystem')}</InputLabel>
-                        <Select
-                            value={coordinateSystem}
-                            onChange={onChangeCoordinateSystem}
-                            sx={{ height: '40px', borderRadius: '10px', borderColor: '#787C9E' }}
-                        >
-                            <MenuItem value={CoordinateSystem.WGS84}>{CoordinateSystem.WGS84}</MenuItem>
-                            <MenuItem value={CoordinateSystem.UTM}>{CoordinateSystem.UTM}</MenuItem>
-                        </Select>
-                    </FormControl>
+                    <Autocomplete
+                        value={coordinateSystem}
+                        onChange={(_, newValue: CoordinateSystem) => {
+                            setCoordinateSystem(newValue);
+                            if (!newLocationValue) return;
+
+                            const hasError = validateLocation({ location: newLocationValue, coordinateSystem: newValue }) === false;
+                            setError(hasError);
+
+                            const convertedLocation = validateLocation({ location: newLocationValue, coordinateSystem }, true)
+                                ? locationConverterToString(newLocationValue, coordinateSystem, newValue)
+                                : newLocationValue;
+
+                            setNewLocationValue(convertedLocation);
+                            onChange(
+                                newLocationValue?.toString().trim()
+                                    ? JSON.stringify({ location: convertedLocation, coordinateSystem: newValue })
+                                    : undefined,
+                            );
+                        }}
+                        options={[CoordinateSystem.WGS84, CoordinateSystem.UTM]}
+                        renderInput={(params) => <TextField {...params} label={i18next.t('location.coordinateSystem')} variant={variant} />}
+                        disableClearable
+                        sx={{ borderRadius: '10px', borderColor: '#787C9E', height: '40px' }}
+                    />
                 </Grid>
             </Grid>
             <Dialog open={mapOpen} onClose={handleCloseDialog}>

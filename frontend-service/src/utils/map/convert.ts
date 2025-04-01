@@ -148,7 +148,7 @@ export const locationConverterToString = (
 
     if (unitToConvertTo === CoordinateSystem.WGS84) {
         const utmLocation = extractUtmLocation(location);
-        if (!utmLocation) return undefined;
+        if (!utmLocation) return location;
         const wgs84Location = convertUTMToWGS84(utmLocation);
 
         if (!Array.isArray(wgs84Location)) return `${wgs84Location.x}, ${wgs84Location.y}`;

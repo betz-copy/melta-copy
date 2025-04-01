@@ -267,11 +267,16 @@ const config = {
             northHemiUTM: env.get('NORTH_HEMI_UTM').default('326').asString(),
         },
         utm: {
-            utmRegex: env.get('UTM_REGEX').default('/\b([1-9]|[1-5][0-9]|60)([C-HJ-NP-X])s([0-9]+(?:.[0-9]+)?)s([0-9]+(?:.[0-9]+)?)\b/').asRegExp(),
+            utmRegex: env
+                .get('UTM_REGEX')
+                .default('\\b([1-9]|[1-5][0-9]|60)([C-HJ-NP-X])\\s([0-9]+(?:\\.[0-9]+)?)\\s([0-9]+(?:\\.[0-9]+)?)\\b')
+                .asRegExp(),
+
             utmPolygonRegex: env
                 .get('UTM_POLYGON_REGEX')
-                .default('/\b([1-9]|[1-5][0-9]|60)([C-HJ-NP-X])s([0-9]+(?:.[0-9]+)?)s([0-9]+(?:.[0-9]+)?)\b/g')
-                .asRegExp(),
+                .default('\\b([1-9]|[1-5][0-9]|60)([C-HJ-NP-X])\\s([0-9]+(?:\\.[0-9]+)?)\\s([0-9]+(?:\\.[0-9]+)?)\\b')
+                .asRegExp('g'),
+
             minZone: env.get('MIN_ZONE').default(1).asInt(),
             maxZone: env.get('MAX_ZONE').default(60).asInt(),
             minEasting: env.get('MIN_EASTING').default(160000).asInt(),

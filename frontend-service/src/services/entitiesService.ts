@@ -304,7 +304,7 @@ export const updateEntityRequestForMultiple = async (
                         return property?.properties._id;
                     case 'location': {
                         if (!property) return undefined;
-                        const location = JSON.parse(property);
+                        const location = typeof property === 'string' && property.includes('location') ? JSON.parse(property) : property;
 
                         if (location.coordinateSystem === CoordinateSystem.UTM)
                             return JSON.stringify({
@@ -390,7 +390,7 @@ export const duplicateEntityRequest = async (entityId: string, newEntityData: En
                         return property?.properties._id;
                     case 'location': {
                         if (!property) return undefined;
-                        const location = JSON.parse(property);
+                        const location = typeof property === 'string' && property.includes('location') ? JSON.parse(property) : property;
 
                         if (location.coordinateSystem === CoordinateSystem.UTM)
                             return JSON.stringify({

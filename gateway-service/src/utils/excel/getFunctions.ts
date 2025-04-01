@@ -62,7 +62,7 @@ const formatExcel = (value: Excel.CellValue | string, propertyTemplate: IEntityS
                 if (coordinateSystem === CoordinateSystem.WGS84) {
                     const wgs84Location = stringToCoordinates(locationString).value;
                     if (!isValidWGS84(wgs84Location)) throw new BadRequestError(locationFormatError);
-                    const location = { location: wgs84Location, coordinateSystem };
+                    const location = { location: locationString, coordinateSystem };
                     return isEditMode ? location : JSON.stringify(location);
                 }
                 const utmLocation = extractUtmLocation(locationString);
@@ -161,6 +161,8 @@ const readExcelFile = async (
     oldEntities: IEntityWithDirectRelationships[] = [],
 ) => {
     const isEditMode = oldEntities.length > 0;
+    console.log({ isEditMode });
+
     const entities: IEntityWithIgnoredRules[] = [];
     const columns = Object.fromEntries(
         Object.entries(template.properties.properties).filter(([_propertyKey, propertyTemplate]) => isEditMode || isIncludedColumn(propertyTemplate)),
