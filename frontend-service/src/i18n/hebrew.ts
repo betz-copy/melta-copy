@@ -171,6 +171,7 @@ export default {
             chooseFiles: 'בחירת קבצים',
             printOptions: 'הגדרות הדפסה',
             accompanyingFiles: 'קבצים נלווים',
+            relationships: 'קשרים',
         },
         previewRefetch: 'קובץ בתהליך עיבוד, נסה שוב מאוחר יותר',
     },

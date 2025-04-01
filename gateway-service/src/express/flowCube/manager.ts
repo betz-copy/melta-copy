@@ -1,21 +1,23 @@
 import config from '../../config';
 import { InstancesService } from '../../externalServices/instanceService';
 import { IFilterOfTemplate, ISearchEntitiesOfTemplateBody } from '../../externalServices/instanceService/interfaces/entities';
-import {
-    EntityTemplateService,
-    IEntitySingleProperty,
-    IMongoCategory,
-    ISearchEntityTemplatesBody,
-} from '../../externalServices/templates/entityTemplateService';
+import { EntityTemplateService, ISearchEntityTemplatesBody } from '../../externalServices/templates/entityTemplateService';
 import { UserService } from '../../externalServices/userService';
-import { ICompactPermissions, ISubCompactPermissions } from '../../externalServices/userService/interfaces/permissions/permissions';
 import { Authorizer } from '../../utils/authorizer';
 import DefaultManagerProxy from '../../utils/express/manager';
-import { escapeRegExp } from '../../utils/regex';
 import TemplatesManager from '../templates/manager';
-import { IWorkspace } from '../workspaces/interface';
 import { WorkspaceService } from '../workspaces/service';
 import { FlowFields, FlowParameters, IFlowAutoComplete } from './interfaces';
+import {
+    convertArrayToFlowOptions,
+    convertTypeToFlowType,
+    filterCategoriesByPermissions,
+    filterWorkspacesByPermissions,
+    getAdditionalFields,
+    getEntityTemplatesPermissionsByCategory,
+    getOntologyTypeByProperty,
+    makeLinkClickable,
+} from './utils';
 
 export class FlowCubeManager extends DefaultManagerProxy<null> {
     private instancesService: InstancesService;
@@ -45,9 +47,7 @@ export class FlowCubeManager extends DefaultManagerProxy<null> {
             }
 
             if (template.properties.properties[field]) {
-                const filterCondition = Array.isArray(filterValue)
-                    ? { $in: filterValue.map((val) => new RegExp(escapeRegExp(val))) }
-                    : { $eq: filterValue };
+                const filterCondition = Array.isArray(filterValue) ? { $in: filterValue } : { $eq: filterValue };
 
                 filterAnd.push({ [field]: filterCondition });
             } else if (field.endsWith('From') || field.endsWith('To')) {
@@ -75,10 +75,17 @@ export class FlowCubeManager extends DefaultManagerProxy<null> {
         return { filter, limit: config.instanceService.searchEntitiesFlowMaxLimit };
     }
 
-    async searchFlowCube(templateId: string, searchBody: Record<string, any>) {
+    async searchFlowCube(workspaceId: string, templateId: string, searchBody: Record<string, any>) {
         const convertedSearchBody: ISearchEntitiesOfTemplateBody = await this.convertFlowToNeoSearch(templateId, searchBody);
         const res = await this.instancesService.searchEntitiesOfTemplateRequest(templateId, convertedSearchBody);
-        const convertToFlow = res.entities.map((entity) => entity.entity.properties);
+        const workspace = await WorkspaceService.getById(workspaceId);
+        const { path, name, type } = workspace;
+        const workspacePath = `${path}/${name}${type}`;
+        const convertToFlow = res.entities.map((entity) => ({
+            meltaLink: makeLinkClickable(`${config.service.meltaBaseUrl}${workspacePath}/entity/${entity.entity.properties._id}`),
+            ...entity.entity.properties,
+        }));
+
         return convertToFlow;
     }
 
@@ -93,21 +100,13 @@ export class FlowCubeManager extends DefaultManagerProxy<null> {
 
         const usersPermissions = await UserService.getUserPermissions(userId);
         const workspaces = await WorkspaceService.getWorkspaces(searchBody);
-        const filteredWorkspaces = await this.filterWorkspacesByPermissions(workspaces, usersPermissions);
+        const filteredWorkspaces = await filterWorkspacesByPermissions(workspaces, usersPermissions);
 
         return filteredWorkspaces
             .filter(({ metadata }) => metadata?.flowCube)
             .map(({ _id, displayName }) => {
                 return { Value: _id, Name: displayName };
             });
-    }
-
-    static async filterWorkspacesByPermissions(workspaces: IWorkspace[], usersPermissions: ICompactPermissions): Promise<IWorkspace[]> {
-        return (
-            await Promise.all(
-                workspaces.map(async (workspace) => ({ ...workspace, hierarchyIds: await WorkspaceService.getWorkspaceHierarchyIds(workspace._id) })),
-            )
-        ).filter(({ hierarchyIds }) => hierarchyIds.some((id) => Boolean(usersPermissions[id])));
     }
 
     async searchCategory(body: any, userId: string | undefined): Promise<IFlowAutoComplete[]> {
@@ -121,19 +120,11 @@ export class FlowCubeManager extends DefaultManagerProxy<null> {
 
         const usersPermissions = await this.authorizer.getWorkspacePermissions(userId);
         const categories = await this.entityTemplateService.searchCategories(searchInput);
-        const filteredCategories = usersPermissions.admin ? categories : this.filterCategoriesByPermissions(categories, usersPermissions);
+        const filteredCategories = usersPermissions.admin ? categories : filterCategoriesByPermissions(categories, usersPermissions);
 
         return filteredCategories.map(({ _id, displayName }) => {
             return { Value: _id, Name: displayName };
         });
-    }
-
-    filterCategoriesByPermissions(categories: IMongoCategory[], usersPermissions: ISubCompactPermissions): IMongoCategory[] {
-        if (!usersPermissions.instances) {
-            return [] as IMongoCategory[];
-        }
-
-        return categories.filter(({ _id }) => usersPermissions.instances?.categories[_id]);
     }
 
     async searchEntityTemplate(body: any, userId: string | undefined): Promise<IFlowAutoComplete[]> {
@@ -151,7 +142,7 @@ export class FlowCubeManager extends DefaultManagerProxy<null> {
 
         const usersPermissions = await this.authorizer.getWorkspacePermissions(userId);
         const entityTemplates = await this.templatesManager.searchEntityTemplates(usersPermissions, searchEntityTemplatesBody);
-        const userPermissionsByCategory = this.getEntityTemplatesPermissionsByCategory(usersPermissions);
+        const userPermissionsByCategory = getEntityTemplatesPermissionsByCategory(usersPermissions);
         const allowedEntityTemplates = usersPermissions.admin
             ? entityTemplates
             : entityTemplates.filter(
@@ -168,20 +159,6 @@ export class FlowCubeManager extends DefaultManagerProxy<null> {
         });
     }
 
-    getEntityTemplatesPermissionsByCategory(usersPermissions: ISubCompactPermissions): Record<string, string[]> {
-        if (!usersPermissions.instances) return {};
-
-        return Object.entries(usersPermissions.instances.categories).reduce(
-            (acc, [categoryId, category]) => {
-                const templateIds = category.entityTemplates ? Object.keys(category.entityTemplates) : [];
-                acc[categoryId] = templateIds;
-
-                return acc;
-            },
-            {} as Record<string, string[]>,
-        );
-    }
-
     async getEntityTemplateById(templateId: string[]): Promise<{ parameters: FlowParameters[]; fields: FlowFields[] }> {
         const template = await this.entityTemplateService.getEntityTemplateById(templateId[0]);
         const { properties } = template;
@@ -190,103 +167,38 @@ export class FlowCubeManager extends DefaultManagerProxy<null> {
             ([_key, value]) => value.format !== 'fileId' && value.format !== 'relationshipReference',
         );
 
-        const additionalFields = this.getAdditionalFields();
+        const additionalFields = getAdditionalFields();
+        const [firstAdditionalField, ...restAdditionalFields] = additionalFields;
 
         const parameters: FlowParameters[] = [
+            firstAdditionalField,
             ...filteredProperties.map(([key, value]) => ({
                 Name: key,
-                Type: this.convertTypeToFlowType(value),
+                Type: convertTypeToFlowType(value),
                 DisplayName: value.title,
-                OntologyType: this.getOntologyTypeByProperty(value),
+                OntologyType: getOntologyTypeByProperty(value),
                 IsSingleValue: value.uniqueItems ? String(value.uniqueItems) : undefined,
-                Options: value.enum ? this.convertArrayToFlowOptions(value.enum) : undefined,
+                Options: value.enum ? convertArrayToFlowOptions(value.enum) : undefined,
             })),
-            ...additionalFields,
+            ...restAdditionalFields,
         ];
 
         const fields: FlowFields[] = [
+            firstAdditionalField,
             ...filteredProperties.map(([key, value]) => ({
                 Name: key,
-                Type: this.convertTypeToFlowType(value),
+                Type: convertTypeToFlowType(value),
                 DisplayName: value.title,
-                OntologyType: this.getOntologyTypeByProperty(value),
+                OntologyType: getOntologyTypeByProperty(value),
             })),
-            ...additionalFields,
+            ...restAdditionalFields,
         ];
 
         return { parameters, fields };
     }
 
-    private getAdditionalFields(): { Name: string; Type: string; DisplayName: string; OntologyType: string }[] {
-        return [
-            { Name: 'createdAt', Type: 'DateTime', DisplayName: 'תאריך יצירה', OntologyType: 'TIME' },
-            { Name: 'updatedAt', Type: 'DateTime', DisplayName: 'תאריך עדכון', OntologyType: 'TIME' },
-        ];
-    }
-
-    convertTypeToFlowType(property: IEntitySingleProperty): string {
-        let flowType = 'String';
-
-        switch (property.type) {
-            case 'string':
-                if (property.format === 'date' || property.format === 'date-time') {
-                    flowType = 'DateTime';
-                } else if (property.format === 'fileId') {
-                    flowType = 'File';
-                } else {
-                    flowType = 'String';
-                }
-                break;
-            case 'number':
-                flowType = 'Double';
-                break;
-            case 'boolean':
-                flowType = 'Boolean';
-                break;
-            default:
-                flowType = 'String';
-                break;
-        }
-
-        return flowType;
-    }
-
-    getOntologyTypeByProperty(property: IEntitySingleProperty) {
-        let ontologyType = 'TEXT';
-
-        switch (property.type) {
-            case 'string':
-                if (property.format === 'date' || property.format === 'date-time') {
-                    ontologyType = 'TIME';
-                } else if (property.format === 'email') {
-                    ontologyType = 'EMAIL';
-                } else {
-                    ontologyType = 'TEXT';
-                }
-
-                break;
-            case 'number':
-                ontologyType = 'INTEGER';
-
-                break;
-            default:
-                ontologyType = 'TEXT';
-
-                break;
-        }
-
-        return ontologyType;
-    }
-
-    convertArrayToFlowOptions(arr: string[]) {
-        return arr.map((item) => ({
-            Name: item,
-            Value: item,
-        }));
-    }
-
     async searchEntitiesByTemplate(flowParameters: any) {
-        const { TemplateType } = flowParameters;
-        return this.searchFlowCube(TemplateType, flowParameters);
+        const { TemplateType, WorkspaceId } = flowParameters;
+        return this.searchFlowCube(WorkspaceId, TemplateType, flowParameters);
     }
 }
