@@ -36,8 +36,8 @@ export const getEntityTemplatesPermissionsByCategory = (usersPermissions: ISubCo
 export const getAdditionalFields = (): { Name: string; Type: string; DisplayName: string; OntologyType: string | null }[] => {
     return [
         { Name: 'meltaLink', Type: 'string', DisplayName: 'פתח במלתעות', OntologyType: null },
-        { Name: 'createdAt', Type: 'DateTime', DisplayName: 'תאריך יצירה', OntologyType: 'TIME' },
-        { Name: 'updatedAt', Type: 'DateTime', DisplayName: 'תאריך עדכון', OntologyType: 'TIME' },
+        { Name: 'createdAt', Type: 'DateTime', DisplayName: 'תאריך יצירה', OntologyType: null },
+        { Name: 'updatedAt', Type: 'DateTime', DisplayName: 'תאריך עדכון', OntologyType: null },
     ];
 };
 
