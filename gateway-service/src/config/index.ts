@@ -250,6 +250,8 @@ const config = {
         filesLimit: env.get('FILES_LIMIT').default(5).asIntPositive(),
         invalidDate: env.get('INVALID_DATE').default('Invalid Date').asString(),
         invalidTime: env.get('INVALID_TIME').default('Invalid time value').asString(),
+        templateIdRegex: env.get('TEMPLATE_ID_REGEX').default('label `([^`]*)`').asRegExp(),
+        propertiesRegex: env.get('PROPERTIES_REGEX').default('properties \\((.*?)\\)').asRegExp(),
     },
     flowCube: {
         flowRequestHostName: env.get('REQUEST_HOST_NAME').default('host-name').required().asString(),
