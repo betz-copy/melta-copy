@@ -77,7 +77,6 @@ const ChartPage: React.FC = () => {
                 navigate(`/charts/${templateId}/${data._id}/chart`);
                 setReadonly(true);
                 setEdit(true);
-                generateNewItemSizes(templateId, data._id);
             },
             onError: (error: AxiosError) => {
                 toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('charts.actions.failedToCreate')} />);

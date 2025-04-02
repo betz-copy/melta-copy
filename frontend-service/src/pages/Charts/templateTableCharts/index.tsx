@@ -15,13 +15,11 @@ import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import { environment } from '../../../globals';
 import { ChartsAndGenerator } from '../../../interfaces/charts';
 import { deleteChart } from '../../../services/chartsService';
-import { generateLayoutDetails } from '../../../utils/charts/defaultChartSizes';
+import { generateLayoutDetails, generateNewItemSizes } from '../../../utils/charts/defaultChartSizes';
 import { LocalStorage } from '../../../utils/localStorage';
 import ChartItem from './chartItem';
 
-const {
-    charts: { chartsOrderKey, defaultColumnSizes },
-} = environment;
+const { chartsOrderKey, defaultColumnSizes } = environment.charts;
 
 const TemplateTableCharts: React.FC<{
     templatesChart: ChartsAndGenerator[];
@@ -52,10 +50,18 @@ const TemplateTableCharts: React.FC<{
 
     useEffect(() => {
         const savedLayout = getSavedLayout();
-        if (savedLayout.length) {
-            const filteredLayout = textSearch ? savedLayout.filter((l) => templatesChart.some((chart) => chart._id === l.i)) : savedLayout;
-            setLayout(filteredLayout);
+
+        if (templatesChart.length > savedLayout.length) {
+            const updatedLayout = [...savedLayout];
+
+            templatesChart.forEach((chart) => {
+                if (!updatedLayout.some((item) => item.i === chart._id)) updatedLayout.push(generateNewItemSizes(templateId!, chart._id));
+            });
+
+            setLayout(updatedLayout);
         }
+
+        if (textSearch) savedLayout.filter((l) => templatesChart.some((chart) => chart._id === l.i));
     }, [templatesChart, textSearch]);
 
     const { mutateAsync: deleteChartMutateAsync, isLoading: isDeleteChartLoading } = useMutation((id: string) => deleteChart(id), {
@@ -63,14 +69,9 @@ const TemplateTableCharts: React.FC<{
             toast.success(i18next.t('charts.actions.deletedSuccessfully'));
             setDeleteChartDialogState({ isDialogOpen: false, chartId: null });
 
-            const savedLayout = getSavedLayout();
-
-            LocalStorage.set(
-                `${chartsOrderKey}${templateId}`,
-                savedLayout?.filter((layoutItem) => layoutItem.i !== data._id),
-            );
-
-            setLayout(layout.filter((layoutItem) => layoutItem.i !== data._id));
+            const updatedLayout = layout.filter((item) => item.i !== data._id);
+            LocalStorage.set(`${chartsOrderKey}${templateId}`, updatedLayout);
+            setLayout(updatedLayout);
 
             queryClient.invalidateQueries({ queryKey: ['getCharts', templateId, textSearch] });
         },

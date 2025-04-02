@@ -49,4 +49,6 @@ export const generateNewItemSizes = (templateId: string, chartId: string) => {
     };
 
     LocalStorage.set(`${chartsOrderKey}${templateId}`, [...savedLayout, newItem]);
+
+    return newItem;
 };
