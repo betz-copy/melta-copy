@@ -46,7 +46,7 @@ const entityTemplateToFieldsConfig = (
             ]);
         }
 
-        if (value.format !== 'relationshipReference' && value.format !== 'user' && value.format !== 'signature') {
+        if (value.format !== 'user' && value.format !== 'signature') {
             fieldEntries.push([
                 `${keyPrefix}${entityTemplate._id}${keySuffix}-${key}`,
                 {
@@ -173,6 +173,7 @@ export const getFieldsConfigOfRule = (
     const entityTemplate = entityTemplates.get(entityTemplateId)!;
 
     const fieldsOfEntityTemplate = entityTemplateToFieldsConfig(entityTemplate, {});
+    console.log({ fieldsOfEntityTemplate });
 
     const connectedTemplatesWithRelationship = Array.from(relationshipTemplates.values())
         .map((relationshipTemplate) => populateRelationshipTemplate(relationshipTemplate, entityTemplates))

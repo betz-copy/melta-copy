@@ -159,9 +159,9 @@ export class RuleValidator extends DefaultController<IMongoRelationshipTemplate,
                     // todo: block in UI too, or support it
                     throw new Error('array not supported in formulas! sorry!');
                 }
-                if (format === 'relationshipReference') {
-                    throw new Error('relationshipReference not supported in formulas! sorry!');
-                }
+                // if (format === 'relationshipReference') {
+                //     throw new Error('relationshipReference not supported in formulas! sorry!');
+                // }
                 return type;
         }
     }
@@ -406,9 +406,7 @@ export class RuleValidator extends DefaultController<IMongoRelationshipTemplate,
 
         if (formulaData.isEquation) this.validateEquation(formulaData, relevantTemplates, aggregationGroupsContext);
         if (formulaData.isGroup) this.validateGroup(formulaData, relevantTemplates, aggregationGroupsContext);
-        if (formulaData.isAggregationGroup) {
-            this.validateAggregationGroup(formulaData, relevantTemplates, aggregationGroupsContext);
-        }
+        if (formulaData.isAggregationGroup) this.validateAggregationGroup(formulaData, relevantTemplates, aggregationGroupsContext);
     }
 
     private async validateAndGetRelevantTemplates(rule: IRule): Promise<IRelevantTemplates> {

@@ -109,12 +109,16 @@ export const throwIfActionCausedRuleFailures = (
     actionsResults: { createdRelationshipId?: string; createdEntityId?: string; updatedEntityId?: string }[],
     actions?: IAction[],
 ) => {
+    console.dir({ ignoredRules, ruleFailuresBeforeAction, ruleFailuresAfterAction, actionsResults, actions }, { depth: null });
+
     const ruleFailuresWithNewCauses = filteredMap(ruleFailuresAfterAction, (ruleFailureAfterAction) => {
         const ruleFailureBeforeAction = ruleFailuresBeforeAction.find(({ rule, entityId }) => {
             return rule._id === ruleFailureAfterAction.rule._id && entityId === ruleFailureAfterAction.entityId;
         });
+        console.log({ ruleFailureBeforeAction });
 
         const causes = getCausesOfRuleFailure(ruleFailureAfterAction, ruleFailureBeforeAction, ruleFailureAfterAction.rule.formula);
+        console.log({ causes });
 
         if (causes.length === 0) {
             return undefined;
@@ -125,6 +129,7 @@ export const throwIfActionCausedRuleFailures = (
             value: { ruleId: ruleFailureAfterAction.rule._id, entityId: ruleFailureAfterAction.entityId, causes },
         };
     });
+    console.dir({ ruleFailuresWithNewCauses }, { depth: null });
 
     const ruleFailuresWithNewCausesPerRuleId = _groupBy(ruleFailuresWithNewCauses, ({ ruleId }) => ruleId);
     const brokenRules: IBrokenRule[] = Object.entries(ruleFailuresWithNewCausesPerRuleId)
@@ -133,6 +138,8 @@ export const throwIfActionCausedRuleFailures = (
             failures: ruleFailuresOfRuleId.map(({ entityId, causes }) => ({ entityId, causes })),
         }))
         .map((brokenRule) => getBrokenRuleFormatted(brokenRule, actionsResults));
+
+    console.dir({ brokenRules, ruleFailuresWithNewCausesPerRuleId }, { depth: null });
 
     if (!areAllBrokenRulesIgnored(brokenRules, ignoredRules)) {
         throw new BadRequestError(`[NEO4J] action is blocked by rules.`, {

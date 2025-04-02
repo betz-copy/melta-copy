@@ -40,6 +40,9 @@ export class RuleManager extends DefaultManagerMongo<IMongoRule> {
 
     async createRule(rule: Omit<IRule, 'disabled'>) {
         // todo: (extra feature) ignoring possible breaches in existing entities. make sure client know (popup)
+        console.log('manager');
+        console.dir({ rule }, { depth: null });
+
         return this.model.create({ ...rule, disabled: false });
     }
 
