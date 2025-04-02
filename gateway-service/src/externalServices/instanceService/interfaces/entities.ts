@@ -161,24 +161,25 @@ export interface ICountSearchResult {
     entitiesWithFiles: Record<string, string[]>; // { entityId: minioFileIds:[] }
 }
 
-export interface IDeleteBodyBase {
-    selectAll: boolean;
-    templateId: string;
-    deleteAllRelationships?: boolean;
-}
-
 export interface IEntityWithIgnoredRules extends ICreateEntityMetadata {
     ignoredRules: IBrokenRule[];
 }
 
-export type IDeleteBody<T extends boolean = boolean> = IDeleteBodyBase & {
+export interface IDeleteEntityBodyBase {
+    templateId: string;
+    deleteAllRelationships?: boolean;
+}
+
+export type IMultipleSelect<T extends boolean = boolean> = {
     selectAll: T;
 } & (T extends true
-        ? {
-              idsToExclude?: string[];
-              filter?: ISearchEntitiesOfTemplateBody['filter'];
-              textSearch?: string;
-          }
-        : {
-              idsToInclude: string[];
-          });
+    ? {
+          idsToExclude?: string[];
+          filter?: ISearchEntitiesOfTemplateBody['filter'];
+          textSearch?: string;
+      }
+    : {
+          idsToInclude: string[];
+      });
+
+export type IDeleteBody<T extends boolean = boolean> = IDeleteEntityBodyBase & IMultipleSelect<T>;

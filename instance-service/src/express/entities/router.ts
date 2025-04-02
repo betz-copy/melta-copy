@@ -26,6 +26,7 @@ import {
     updateEntityByIdRequestSchema,
     getDependentRulesRequestSchema,
     convertToRelationshipFieldRequestSchema,
+    getEntitiesSearchBodyRequestSchema,
 } from './validator.schema';
 import { EntityValidator } from './validator.template';
 
@@ -88,6 +89,15 @@ entityRouter.get('/:id', ValidateRequest(getEntityByIdRequestSchema), entityCont
 entityRouter.post('/ids', ValidateRequest(getEntitiesByIdsRequestSchema), entityController.getEntitiesByIds);
 entityRouter.delete('/', ValidateRequest(deleteEntitiesByTemplateIdRequestSchema), entityController.deleteEntitiesByTemplateId);
 entityRouter.post('/delete/bulk', ValidateRequest(deleteEntitiesByIdsRequestSchema), entityController.deleteEntityInstances);
+//-------------------------------------------------------------------------------------
+entityRouter.post(
+    '/get/multiple-select',
+    ValidateRequest(getEntitiesSearchBodyRequestSchema),
+    entityValidatorController.validateTemplateExistence,
+    entityController.getEntitiesMultipleSelect,
+);
+//-------------------------------------------------------------------------------------
+
 entityRouter.put(
     '/:id',
     ValidateRequest(updateEntityByIdRequestSchema),

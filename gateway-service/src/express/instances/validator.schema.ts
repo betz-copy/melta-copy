@@ -33,6 +33,19 @@ export const updateEntityInstanceSchema = Joi.object({
     files: Joi.array().items(fileSchema),
 });
 
+// PUT /api/instances/entities/bulk
+export const updateEntityInstancesSchema = Joi.object({
+    body: Joi.object({
+        templateId: Joi.string().required(),
+        properties: ExtendedJoi.stringToObject(), // properties is json string (because of form data)
+        ignoredRules: ExtendedJoi.stringToArray().items(brokenRuleSchema).default([]),
+        entitiesToUpdate: ExtendedJoi.stringToObject(),
+    }).unknown(true),
+    query: {},
+    params: {},
+    files: Joi.array().items(fileSchema),
+});
+
 // PATCH /api/instances/entities/:id/status
 export const updateEntityStatusSchema = Joi.object({
     body: Joi.object({

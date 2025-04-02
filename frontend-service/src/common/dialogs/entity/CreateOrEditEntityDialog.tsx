@@ -14,7 +14,7 @@ import { useLocation } from 'wouter';
 import { cloneDeep } from 'lodash';
 import { StatusCodes } from 'http-status-codes';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { IEntity, IUniqueConstraint } from '../../../interfaces/entities';
+import { IEntity, IMultipleSelect, IUniqueConstraint } from '../../../interfaces/entities';
 import { createEntityRequest, updateEntityRequestForMultiple, updateMultEntitiesRequestForMultiple } from '../../../services/entitiesService';
 import { EntityWizardValues } from '.';
 import { environment } from '../../../globals';
@@ -86,7 +86,7 @@ const CreateOrEditEntityDetails: React.FC<{
     entityTemplate: IMongoEntityTemplatePopulated;
     initialCurrValues?: EntityWizardValues;
     entityToUpdate?: IEntity;
-    entitiesToUpdate?: string[];
+    entitiesToUpdate?: IMultipleSelect<boolean>;
     onSuccessUpdate?: (entity: IEntity) => void;
     onSuccessCreate?: (entity: IEntity) => void;
     handleClose: () => void;
@@ -588,7 +588,7 @@ const CreateOrEditEntityDetails: React.FC<{
                                                     )}
                                                 </Box>
                                                 <Box width="95%" maxWidth="95%" paddingLeft="20px">
-                                                    <Grid marginTop="20px" style={{ overflowY: 'auto', maxHeight: '37rem' }}>
+                                                    <Grid marginTop="20px" style={{ overflowY: 'auto', maxHeight: '24rem' }}>
                                                         {isPropertiesFirst ? propertiesComp : propertiesFilesComp}
                                                     </Grid>
                                                     {templateFileKeys.length > 0 && (

@@ -6,7 +6,7 @@ import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import { IDeleteEntityBody } from '../../interfaces/entities';
+import { IDeleteEntityBody, IMultipleSelect } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { BackendConfigState } from '../../services/backendConfigService';
 import { deleteEntityRequest } from '../../services/entitiesService';
@@ -75,7 +75,7 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
 
     const getSelectedEntities = () => {
         const { selectAll, toggledNodes } = api.getServerSideSelectionState() as IServerSideSelectionState;
-        let selectedEntities: IDeleteEntityBody<boolean>;
+        let selectedEntities: IMultipleSelect<boolean>;
 
         if (selectAll) {
             selectedEntities = {
@@ -83,41 +83,25 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
                 idsToExclude: toggledNodes,
                 filter: filterModelToFilterOfTemplate(api.getFilterModel(), template),
                 textSearch: quickFilterText,
-            } as IDeleteEntityBody<true>;
+            };
         } else {
             const selectedRowsIds = api.getSelectedRows().map((row) => row.properties._id);
             selectedEntities = {
                 selectAll: false,
                 idsToInclude: selectedRowsIds,
-            } as IDeleteEntityBody<false>;
+            };
         }
 
         return selectedEntities;
     };
 
     const handleMultipleDelete = (deleteAllRelationships = false) => {
-        const { selectAll, toggledNodes } = api.getServerSideSelectionState() as IServerSideSelectionState;
         const { _id: templateId } = template;
-        let deleteBody: IDeleteEntityBody<boolean>;
-
-        if (selectAll) {
-            deleteBody = {
-                selectAll: true,
-                idsToExclude: toggledNodes,
-                deleteAllRelationships,
-                templateId,
-                filter: filterModelToFilterOfTemplate(api.getFilterModel(), template),
-                textSearch: quickFilterText,
-            } as IDeleteEntityBody<true>;
-        } else {
-            const selectedRowsIds = api.getSelectedRows().map((row) => row.properties._id);
-            deleteBody = {
-                selectAll: false,
-                idsToInclude: selectedRowsIds,
-                deleteAllRelationships,
-                templateId,
-            } as IDeleteEntityBody<false>;
-        }
+        const deleteBody: IDeleteEntityBody<boolean> = {
+            ...getSelectedEntities(),
+            deleteAllRelationships,
+            templateId,
+        };
 
         deleteMutation(deleteBody);
         setOpenDeleteDialog(false);
@@ -201,24 +185,17 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
                     onSuccessUpdate={() => {
                         setOpenEditDialog((prev) => !prev);
                         setExternalErrors({ files: false, unique: {}, action: '' });
-                        // refetchQuery?.();
+                        api.refreshServerSide();
                     }}
                     handleClose={() => {
                         setOpenEditDialog((prev) => !prev);
                     }}
-                    onError={
-                        // (currEntityValues) => {}
-                        // setEditDialog({
-                        //     isOpen: true,
-                        //     wizardValues: currEntityValues,
-                        // })
-                        () => setOpenEditDialog(true)
-                    }
+                    onError={() => setOpenEditDialog(true)}
                     externalErrors={externalErrors}
                     setExternalErrors={setExternalErrors}
                     createOrUpdateWithRuleBreachDialogState={createOrUpdateWithRuleBreachDialogState}
                     setCreateOrUpdateWithRuleBreachDialogState={setCreateOrUpdateWithRuleBreachDialogState}
-                    entitiesToUpdate={[]}
+                    entitiesToUpdate={getSelectedEntities()}
                 />
             </Dialog>
         </Grid>

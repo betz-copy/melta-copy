@@ -121,7 +121,7 @@ export class InstancesValidator extends DefaultController {
         await this.validateUserPermissionForEntityInstance(req, templateId, PermissionScope.write);
     }
 
-    async validateUserCanDeleteEntityInstances(req: Request) {
+    async validateUserCanWriteBulkEntityInstances(req: Request) {
         const { templateId } = req.body;
 
         await this.validateUserPermissionForEntityInstance(req, templateId, PermissionScope.write);
@@ -224,6 +224,7 @@ export class InstancesValidator extends DefaultController {
     // rules
     async validateUserCanIgnoreRules(req: Request) {
         const { ignoredRules } = req.body;
+        console.log('ignoredRules', ignoredRules);
         const { user } = req;
 
         if (!user) throw new ServiceError(undefined, 'req.user is undefined');

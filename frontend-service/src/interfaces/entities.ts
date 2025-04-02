@@ -190,26 +190,9 @@ export interface IGraphFilterBodyBatch {
 }
 
 export interface IDeleteEntityBodyBase {
-    selectAll: boolean;
     templateId: string;
     deleteAllRelationships?: boolean;
 }
-
-export interface IBulkUpdateBodyBase {
-    selectAll: boolean;
-}
-
-export type IDeleteEntityBody<T extends boolean = boolean> = (IDeleteEntityBodyBase | IBulkUpdateBodyBase) & {
-    selectAll: T;
-} & (T extends true
-        ? {
-              idsToExclude?: string[];
-              filter?: ISearchEntitiesOfTemplateBody['filter'];
-              textSearch?: string;
-          }
-        : {
-              idsToInclude: string[];
-          });
 
 export type IMultipleSelect<T extends boolean = boolean> = {
     selectAll: T;
@@ -222,6 +205,8 @@ export type IMultipleSelect<T extends boolean = boolean> = {
     : {
           idsToInclude: string[];
       });
+
+export type IDeleteEntityBody<T extends boolean = boolean> = IDeleteEntityBodyBase & IMultipleSelect<T>;
 
 export type EntityData = IEntity | IFailedEntity;
 

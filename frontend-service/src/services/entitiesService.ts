@@ -15,6 +15,7 @@ import {
     IDeleteEntityBody,
     ICountSearchResult,
     IEntityWithIgnoredRules,
+    IMultipleSelect,
 } from '../interfaces/entities';
 import { EntityWizardValues } from '../common/dialogs/entity';
 import { IRuleBreach } from '../interfaces/ruleBreaches/ruleBreach';
@@ -88,7 +89,7 @@ export const editManyEntitiesByExcelRequest = async (
     }));
     formData.append('entities', JSON.stringify(entitiesArray));
 
-    const { data } = await axios.post(`${entities}/editManyEntitiesByExcel`, formData);
+    const { data } = await axios.put(`${entities}/editManyEntitiesByExcel`, formData);
 
     return data;
 };
@@ -184,6 +185,8 @@ const getBodyForUpdateRequest = async (newEntityData: EntityWizardValues, ignore
     const templateProperties = newEntityData.template.properties.properties;
     const fileUploadPromises: Promise<[string, File]>[] = [];
 
+    console.log({ ignoredRules }, 1);
+
     Object.entries(newEntityData.attachmentsProperties).forEach(([key, value]: [string, any]) => {
         if (Array.isArray(value) && value) {
             value.forEach((file, index) => {
@@ -198,11 +201,14 @@ const getBodyForUpdateRequest = async (newEntityData: EntityWizardValues, ignore
         } else if (value) {
             if (value instanceof File) {
                 filesToUpload.push([`${key}`, value]);
+                // unchangedFiles.push([`${key}`, undefined]);
             } else {
                 unchangedFiles.push([`${key}`, value]);
             }
         }
     });
+
+    console.log({ unchangedFiles }, 2);
 
     for (const [key, value] of properties) {
         if (templateProperties[key]?.format === 'signature') {
@@ -213,6 +219,9 @@ const getBodyForUpdateRequest = async (newEntityData: EntityWizardValues, ignore
             }
         }
     }
+
+    console.log({ unchangedFiles }, 3);
+
     filesToUpload.push(...(await Promise.all(fileUploadPromises)));
 
     filesToUpload.forEach(([key, value]) => {
@@ -223,6 +232,8 @@ const getBodyForUpdateRequest = async (newEntityData: EntityWizardValues, ignore
     });
     unchangedFiles.forEach(([key, value]) => {
         if (!newEntityData.template.properties.properties[key].items) {
+            console.log(key, value);
+
             newEntityData.properties[key] = value.name;
         } else {
             if (!newEntityData.properties[key]) {
@@ -234,6 +245,17 @@ const getBodyForUpdateRequest = async (newEntityData: EntityWizardValues, ignore
         }
     });
 
+    console.log({ unchangedFiles }, 3);
+
+    console.log(
+        mapValues(newEntityData.properties, (property, key) => {
+            const format = newEntityData.template.properties.properties[key]?.format;
+            if (format === 'signature' && !isUUID(property)) return undefined;
+            if (format === 'relationshipReference') return property?.properties?._id;
+            return property;
+        }),
+        1,
+    );
     formData.append(
         'properties',
         JSON.stringify(
@@ -260,7 +282,11 @@ export const updateEntityRequestForMultiple = async (
     newEntityData: EntityWizardValues,
     ignoredRules?: IRuleBreach['brokenRules'],
 ) => {
+    console.log({ ignoredRules, newEntityData });
+
     const formData = await getBodyForUpdateRequest(newEntityData, ignoredRules);
+
+    console.log(formData.values().forEach((prop) => console.log(prop)));
 
     const { data } = await axios.put<IEntity>(`${entities}/${entityId}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
@@ -270,7 +296,7 @@ export const updateEntityRequestForMultiple = async (
 };
 
 export const updateMultEntitiesRequestForMultiple = async (
-    entitiesToUpdate: string[],
+    entitiesToUpdate: IMultipleSelect<boolean>,
     newEntityData: EntityWizardValues,
     ignoredRules?: IRuleBreach['brokenRules'],
 ) => {
@@ -278,13 +304,16 @@ export const updateMultEntitiesRequestForMultiple = async (
 
     const formData = await getBodyForUpdateRequest(newEntityData, ignoredRules);
 
-    // const { data } = await axios.put<IEntity>(`${entities}/${entityId}`, formData, {
-    //     headers: { 'Content-Type': 'multipart/form-data' },
-    // });
+    formData.append('entitiesToUpdate', JSON.stringify(entitiesToUpdate));
 
+    const { data } = await axios.put<IEntity>(`${entities}/bulk`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+    });
+
+    console.log({ data });
     console.log(formData.values().forEach((prop) => console.log(prop)));
 
-    return 'yayayayaya';
+    return data;
 };
 
 export const duplicateEntityRequest = async (entityId: string, newEntityData: EntityWizardValues, ignoredRules?: IRuleBreach['brokenRules']) => {

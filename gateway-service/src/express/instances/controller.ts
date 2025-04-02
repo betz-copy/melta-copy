@@ -43,8 +43,30 @@ export class InstancesController extends DefaultController<InstancesManager> {
         res.json(await this.manager.editManyEntitiesByExcel(req.body.entities, req.user!.id));
     }
 
+    async updateEntities(req: Request, res: Response) {
+        const { ignoredRules, entitiesToUpdate, ...instanceData } = req.body;
+        // console.dir(req.body, { depth: null });
+        // console.dir(req.params, { depth: null });
+        console.log('req.file');
+        console.dir(req.file, { depth: null });
+        console.log('req.files');
+        console.dir(req.files, { depth: null });
+        // console.dir(req.user, { depth: null });
+        // instanceData, req.files || (req.file ? [req.file] : []), ignoredRules, req.user!.id
+        console.dir(
+            await this.manager.updateEntities(instanceData, entitiesToUpdate, req.files || (req.file ? [req.file] : []), ignoredRules, req.user!.id),
+            {
+                depth: null,
+            },
+        );
+
+        res.json('here');
+    }
+
     async updateEntityInstance(req: Request, res: Response) {
         const { ignoredRules, ...instanceData } = req.body;
+        console.log('updateEntityInstance', req.body);
+
         res.json(
             await this.manager.updateEntityInstance(
                 req.params.id,

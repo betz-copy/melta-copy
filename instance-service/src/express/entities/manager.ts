@@ -66,6 +66,7 @@ import {
     IUniqueConstraintOfTemplate,
     RunRuleReason,
     ISearchEntitiesByLocationBody,
+    IMultipleSelect,
 } from './interface';
 import { addStringFieldsAndNormalizeSpecialStringValues } from './validator.template';
 
@@ -970,31 +971,33 @@ export class EntityManager extends DefaultManagerNeo4j {
         return this.relationshipManager.deleteRelationshipByIdInTransaction(relationshipToDelete.properties._id, [], transaction);
     }
 
-    async getEntitiesWithDirectRelationshipsToDelete(
-        deleteBody: IDeleteBody,
+    async getEntitiesMultipleSelect(
+        searchBody: IMultipleSelect<boolean>,
         entityTemplate: IMongoEntityTemplate,
+        showRelationships: boolean = true,
     ): Promise<IEntityWithDirectRelationships[]> {
-        const entitiesWithDirectRelationships: IEntityWithDirectRelationships[] = [];
+        const fullEntities: IEntityWithDirectRelationships[] = [];
 
-        if (deleteBody.selectAll) {
-            const { idsToExclude, filter, textSearch = '' } = deleteBody as IDeleteBody<true>;
+        if (searchBody.selectAll) {
+            const { idsToExclude, filter, textSearch = '' } = searchBody as IMultipleSelect<true>;
+
             const { entities } = await this.searchEntitiesOfTemplate(
-                { limit: deleteEntitiesMaxLimit, skip: 0, filter, showRelationships: true, textSearch, entityIdsToExclude: idsToExclude },
+                { limit: deleteEntitiesMaxLimit, skip: 0, filter, showRelationships, textSearch, entityIdsToExclude: idsToExclude },
                 entityTemplate,
             );
-            entitiesWithDirectRelationships.push(...entities);
+            fullEntities.push(...entities);
         } else {
-            const { idsToInclude } = deleteBody as IDeleteBody<false>;
+            const { idsToInclude } = searchBody as IMultipleSelect<false>;
             const { entities } = await this.searchEntitiesOfTemplate(
-                { limit: deleteEntitiesMaxLimit, skip: 0, showRelationships: true, entityIdsToInclude: idsToInclude },
+                { limit: deleteEntitiesMaxLimit, skip: 0, showRelationships, entityIdsToInclude: idsToInclude },
                 entityTemplate,
             );
 
             const filteredEntities = entities.filter(({ entity }) => idsToInclude.includes(entity.properties._id));
-            entitiesWithDirectRelationships.push(...filteredEntities);
+            fullEntities.push(...filteredEntities);
         }
 
-        return entitiesWithDirectRelationships;
+        return fullEntities;
     }
 
     async getEntitiesToDeleteWithoutRelationships(
@@ -1113,10 +1116,16 @@ export class EntityManager extends DefaultManagerNeo4j {
         let entityIdsToDelete: string[] = [];
         const { deleteAllRelationships, templateId } = deleteBody;
 
+        console.log('propbklem');
+
         try {
             return await this.neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
                 const entityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(templateId);
-                const entitiesToDelete = await this.getEntitiesWithDirectRelationshipsToDelete(deleteBody, entityTemplate);
+                console.log('propbklem1');
+
+                const entitiesToDelete = await this.getEntitiesMultipleSelect(deleteBody, entityTemplate);
+
+                console.log('entitiesToDelete', entitiesToDelete);
 
                 const allowedEntitiesToDelete = await this.getEntitiesToDeleteWithoutRelationships(
                     entitiesToDelete,
@@ -1124,9 +1133,17 @@ export class EntityManager extends DefaultManagerNeo4j {
                     transaction,
                     deleteAllRelationships,
                 );
+                console.log('allowedEntitiesToDelete', allowedEntitiesToDelete);
+
+                console.log('propbklem2');
 
                 this.handleDeleteErrors(allowedEntitiesToDelete, deleteAllRelationships);
+
+                console.log('propbklem3');
+
                 entityIdsToDelete = allowedEntitiesToDelete.map(({ properties: { _id } }) => _id);
+                console.log('propbklem4');
+
                 await this.deleteEntityInstancesInTransaction(transaction, entityIdsToDelete, templateId, deleteAllRelationships);
 
                 return this.getFilesOfEntities(allowedEntitiesToDelete, entityTemplate);

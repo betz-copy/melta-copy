@@ -56,7 +56,7 @@ import { UploadedFile } from '../../utils/busboy/interface';
 import { createTextsFromEntitiesWithFiles, formatEntitiesBulkSearch, sortEntities } from '../../utils/semantic';
 import { ISemanticSearchResult } from '../../externalServices/semanticSearch/interface';
 import { convertIdOfBrokenRules, readExcelFile } from '../../utils/excel/getFunctions';
-import { generateSerialNumbers, getAllEntitiesFromExcel, getSerialStarters, handleExcelErrors } from '../../utils/excel';
+import { generateSerialNumbers, getAllEntitiesFromExcel, getSerialStarters, classifyEntityErrors } from '../../utils/excel';
 
 const { errorCodes, rabbit, ruleBreachService } = config;
 
@@ -87,10 +87,10 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         files: UploadedFile[],
         props: TProps = {} as TProps,
     ): Promise<{ props: TProps; files: Record<string, any> }> {
+        console.dir({ noaaaaaaaaaaaaaaa: files, props }, { depth: null });
         if (files.length === 0) {
             return { props, files: {} };
         }
-
         const fileIds = await this.storageService.uploadFiles(files);
         const filePropertiesEntries = files.map((file, index) => {
             return [file.fieldname, fileIds[index]];
@@ -111,16 +111,25 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
             }
         });
 
+        // if (props)
         Object.keys(filesToUpload).forEach((key) => {
             if (props?.[key] !== undefined) {
                 if (Array.isArray(props[key])) {
                     props[key] = [...props[key], ...filesToUpload[key]];
                 } else {
-                    props[key] = [props[key], ...filesToUpload[key]];
+                    console.dir({ thisIs: [props[key], ...filesToUpload[key]] });
+                    props[key] = filesToUpload[key];
                 }
             } else if (props) {
                 props[key] = filesToUpload[key];
             }
+
+            // if (Array.isArray(props[key])) {
+            //     props[key] = [...props[key], ...filesToUpload[key]];
+            // } else {
+            //     console.dir({ thisIs: [props[key], ...filesToUpload[key]] });
+            //     props[key] = filesToUpload[key];
+            // }
         });
 
         return { props, files: filesToUpload };
@@ -300,7 +309,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
                 succeededEntities.push(result);
             } catch (error) {
-                handleExcelErrors(error, failedEntities, entity, allBrokenRulesEntities);
+                classifyEntityErrors(error, failedEntities, entity, allBrokenRulesEntities);
             }
         };
 
@@ -347,11 +356,44 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 const result = await this.updateEntityInstance(entity.properties._id, entity, [], entity.ignoredRules || [], userId, true, true);
                 results.push(result);
             } catch (error) {
-                handleExcelErrors(error, failedEntities, entity, allBrokenRulesEntities);
+                classifyEntityErrors(error, failedEntities, entity, allBrokenRulesEntities);
             }
         };
 
         await Promise.all(entities!.map(async (entity) => handleUpdateEntity(entity)));
+
+        succeededEntities.push(...results);
+
+        const brokenRulesEntities = await convertIdOfBrokenRules(allBrokenRulesEntities);
+
+        return { succeededEntities, failedEntities, brokenRulesEntities };
+    }
+
+    async updateEntities(updatedInstanceData: IEntity, entitiesToUpdate, files: UploadedFile[], ignoredRules: IBrokenRule[], userId: string) {
+        const failedEntities: IFailedEntity[] = [];
+        const succeededEntities: IEntity[] = [];
+        const allBrokenRulesEntities: IBrokenRuleEntity[] = [];
+        const results: IEntity[] = [];
+
+        const { templateId, properties } = updatedInstanceData;
+        console.dir('bbbbbbbbbbbbbbbbbbbbbbbbbbbb', { depth: null });
+
+        const data = await this.service.getEntitiesWithDirectRelationships(entitiesToUpdate, templateId);
+        console.dir({ aaaaaaaaaaaaaa: data }, { depth: null });
+
+        const handleUpdateEntity = async (entity: IEntity) => {
+            const newEntity = { ...entity, properties: { ...entity.properties, ...properties } };
+            console.log(newEntity, 'newEntity');
+
+            try {
+                const result = await this.updateEntityInstance(entity.properties._id, newEntity, files, ignoredRules, userId, true, true);
+                results.push(result);
+            } catch (error) {
+                classifyEntityErrors(error, failedEntities, newEntity, allBrokenRulesEntities);
+            }
+        };
+
+        await Promise.all(data!.map(async ({ entity }) => handleUpdateEntity(entity)));
 
         succeededEntities.push(...results);
 
@@ -693,6 +735,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         isEditExcel: boolean = false,
     ) {
         const { props: uploadedFilesAndProperties, files: updatedFiles } = await this.uploadInstanceFiles(files, updatedInstanceData.properties);
+        console.dir({ uploadedFilesAndProperties, updatedFiles }, { depth: null });
         const currentEntity = await this.service.getEntityInstanceById(id);
         const entityTemplate = await this.entityTemplateService.getEntityTemplateById(currentEntity.templateId);
         if (!isEditExcel) {
