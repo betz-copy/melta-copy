@@ -1033,8 +1033,8 @@ export class EntityManager extends DefaultManagerNeo4j {
 
                     relationshipReferencesToDelete.push({
                         relationshipReference: relationshipReference!,
-                        originalEntityId: sourceEntityId,
-                        relatedEntityId: destinationEntityId,
+                        originalEntityId: relationshipReference!.relationshipTemplateDirection === 'incoming' ? destinationEntityId : sourceEntityId,
+                        relatedEntityId: relationshipReference!.relationshipTemplateDirection === 'incoming' ? sourceEntityId : destinationEntityId,
                     });
                 } else if (!deleteAllRelationships) {
                     entityCanDelete = false;
