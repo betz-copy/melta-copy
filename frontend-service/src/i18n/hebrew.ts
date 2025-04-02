@@ -80,6 +80,8 @@ export default {
     noSearchLeft: 'אין עוד תוצאות',
     failedToLoadResults: 'נכשל לטעון תוצאות',
     actions: {
+        save: 'שמירה',
+        clean: 'ניקוי',
         edit: 'עריכה',
         editment: 'עריכת',
         createment: 'יצירת',
@@ -169,6 +171,7 @@ export default {
             chooseFiles: 'בחירת קבצים',
             printOptions: 'הגדרות הדפסה',
             accompanyingFiles: 'קבצים נלווים',
+            relationships: 'קשרים',
         },
         previewRefetch: 'קובץ בתהליך עיבוד, נסה שוב מאוחר יותר',
     },
@@ -849,6 +852,7 @@ export default {
         location: 'מיקום',
         user: 'משתמש',
         users: 'משתמשים',
+        signature: 'חתימה',
     },
     input: {
         imagePicker: {
@@ -1306,10 +1310,12 @@ export default {
             noLayers: 'לא נמצאו שכבות',
             overlay: 'שכבות מיפוי',
         },
+        coordinateSystem: 'קואורדינטות',
     },
     DynamicsConfigs: {
         isDrawerOpen: 'תפריט צד פתוח',
         shouldNavigateToEntityPage: 'עבור לעמוד פרט בעת יצירת/עריכת ישות',
+        flowCube: 'אפשר התממשקות קוביה ל-FLOW',
         agGrid: {
             rowCount: 'מספר שורות להצגה בטבלה במצב סגור',
             defaultExpandedRowCount: 'מספר שורות להצגה בטבלה במצב פתוח',
@@ -1319,19 +1325,6 @@ export default {
         },
         mainFontSizes: {
             headlineTitleFontSize: 'גודל גופן כותרת ראשית',
-            location: {
-                polygon: 'פוליגון',
-                coordinate: 'נקודת ציון',
-                circle: 'חיפוש בעזרת מעגל',
-                line: 'קו למדידת מרחק',
-                clear: 'ניקוי תוצאות',
-                radiusMaxLimit: `חיפוש מוגבל עד ${environment.map.maxRadius / 1000} ק"מ`,
-                layers: {
-                    map: 'שכבות מפה',
-                    noLayers: 'לא נמצאו שכבות',
-                    overlay: 'שכבות מיפוי',
-                },
-            },
             entityTemplateTitleFontSize: 'גודל גופן כותרת טבלה',
             headlineSubTitleFontSize: 'גודל גופן כותרת משנית',
         },

@@ -14,6 +14,8 @@ import { getFilesName } from '../../../../utils/getFileName';
 import { IProcessDetails, IProcessSingleProperty } from '../../../../interfaces/processes/processTemplate';
 import { IMongoStepTemplatePopulated } from '../../../../interfaces/processes/stepTemplate';
 import { StatusDisplay } from '../../../../common/wizards/processInstance/ProcessSummaryStep/ProcessStatus';
+import { CoordinateSystem, LocationData } from '../../../../common/inputs/JSONSchemaFormik/RjsfLocationWidget';
+import { locationConverterToString } from '../../../../utils/map/convert';
 
 const StyledTypography = styled(Typography)(({ theme }) => ({
     fontFamily: 'Rubik',
@@ -135,14 +137,26 @@ const popperProps = {
     ],
 };
 
+const isLocationData = (value: any): value is LocationData => {
+    return value && typeof value === 'object' && 'location' in value && 'coordinateSystem' in value;
+};
+
 const UpdateTextValue: React.FC<{
     value: string;
     old: boolean;
     fieldName: string;
     entityTemplateProperties: Record<string, IEntitySingleProperty> | Record<string, IProcessSingleProperty>;
 }> = ({ value, old, fieldName, entityTemplateProperties }) => {
-    const containsHtmlTags = containsHTMLTags(value);
-    let innerContent: React.ReactNode = containsHtmlTags ? `"${getFirstLine(value)}${getNumLines(value) > 1 ? '...' : ''}"` : `"${value}"`;
+    let innerContent: React.ReactNode;
+    if (isLocationData(value))
+        innerContent =
+            value.coordinateSystem === CoordinateSystem.UTM
+                ? locationConverterToString(value.location, CoordinateSystem.WGS84, CoordinateSystem.UTM)
+                : value.location;
+    else {
+        const containsHtmlTags = containsHTMLTags(value);
+        innerContent = containsHtmlTags ? `"${getFirstLine(value)}${getNumLines(value) > 1 ? '...' : ''}"` : `"${value}"`;
+    }
     const entityTemplateUpdatedField = entityTemplateProperties[fieldName];
 
     if (entityTemplateUpdatedField && entityTemplateUpdatedField.format === 'relationshipReference') {
@@ -237,15 +251,17 @@ const UpdateEntityMetadataActionText: React.FC<{
                                 ? `${fieldName} (${i18next.t('entityPage.activityLog.wasDeleted')})`
                                 : entityTemplateProperties[fieldName].title}
                         </StyledTypography>
-                        {[oldValue, newValue].map((value, index) => (
-                            <UpdateTextValue
-                                key={value}
-                                value={value}
-                                old={index === 0}
-                                fieldName={field.fieldName}
-                                entityTemplateProperties={entityTemplateProperties}
-                            />
-                        ))}
+                        {[oldValue, newValue].map((value, index) => {
+                            return (
+                                <UpdateTextValue
+                                    key={value}
+                                    value={value}
+                                    old={index === 0}
+                                    fieldName={field.fieldName}
+                                    entityTemplateProperties={entityTemplateProperties}
+                                />
+                            );
+                        })}
                     </Grid>
                 );
             })}

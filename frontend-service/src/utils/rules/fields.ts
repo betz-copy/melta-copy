@@ -46,7 +46,7 @@ const entityTemplateToFieldsConfig = (
             ]);
         }
 
-        if (value.format !== 'relationshipReference' && value.format !== 'user' && !key.startsWith('userprefix_')) {
+        if (value.format !== 'relationshipReference' && value.format !== 'user' && value.format !== 'signature' && !key.startsWith('userprefix_')) {
             fieldEntries.push([
                 `${keyPrefix}${entityTemplate._id}${keySuffix}-${key}`,
                 {

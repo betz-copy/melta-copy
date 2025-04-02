@@ -9,6 +9,7 @@ const { notifications, ajvCustomFormats } = config;
 
 const ajv = new Ajv();
 ajv.addFormat('fileId', /.*/);
+ajv.addFormat('signature', /.*/);
 ajv.addFormat('user', {
     type: 'string',
     validate: (user) => {
@@ -45,7 +46,7 @@ ajv.addKeyword({ keyword: 'archive', type: 'boolean' });
 ajv.addKeyword({ keyword: 'identifier', type: 'boolean' });
 ajv.addKeyword({ keyword: 'expandedUserFields', type: 'array' });
 
-const stringFormats = ['date', 'date-time', 'email', 'fileId', 'text-area', 'relationshipReference', 'location', 'user'];
+const stringFormats = ['date', 'date-time', 'email', 'fileId', 'text-area', 'relationshipReference', 'location', 'user', 'signature'];
 const allowedJSONSchemaTypes = ['string', 'number', 'boolean', 'array'];
 
 const propertiesArraySchema = Joi.array()

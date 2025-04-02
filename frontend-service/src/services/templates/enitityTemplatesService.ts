@@ -15,7 +15,7 @@ import { CommonFormInputProperties } from '../../common/wizards/entityTemplate/c
 
 const { entityTemplates } = environment.api;
 export const basePropertyTypes = ['string', 'number', 'boolean'];
-export const stringFormats = ['date', 'date-time', 'email', 'fileId', 'text-area', 'relationshipReference', 'location', 'user'];
+export const stringFormats = ['date', 'date-time', 'email', 'fileId', 'text-area', 'relationshipReference', 'location', 'user', 'signature'];
 export const arrayTypes = ['multipleFiles', 'enumArray', 'users'];
 
 const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTemplatePopulated | null): EntityTemplateWizardValues | undefined => {
@@ -207,6 +207,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                     | 'date-time'
                     | 'email'
                     | 'fileId'
+                    | 'signature'
                     | 'text-area'
                     | 'relationshipReference'
                     | 'user'

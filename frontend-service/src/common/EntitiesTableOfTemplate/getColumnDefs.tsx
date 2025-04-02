@@ -148,7 +148,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
                 searchValue,
                 editable,
             );
-        if (format === 'fileId')
+        if (format === 'fileId' || format === 'signature')
             return fileColDef(
                 property,
                 valueGetter,
@@ -396,7 +396,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
                         {onNavigateToRow && (
                             <Grid item>
                                 <Link
-                                    href={`/entity/${getRowId(data)}/graph`}
+                                    href={`/entity/${getEntityPropertiesData(data)._id}/graph`}
                                     onClick={(e) => {
                                         if (disabledEntity) e.preventDefault();
                                     }}

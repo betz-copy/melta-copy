@@ -49,8 +49,6 @@ import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { MeltaTooltip } from '../../MeltaTooltip';
 import { IUniqueConstraintOfTemplate } from '../../../interfaces/entities';
 import RelationshipReferenceField from './RelationshipReferenceField';
-import { PermissionScope } from '../../../interfaces/permissions';
-import { useUserStore } from '../../../stores/user';
 import { SelectCheckbox } from '../../SelectCheckBox';
 import { environment } from '../../../globals';
 
@@ -139,8 +137,6 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     hasActions,
     supportConvertingToMultipleFields = true,
 }) => {
-    const currentUser = useUserStore((state) => state.user);
-
     const isText = value.type === 'string' || value.type === 'text-area';
 
     const name = `properties[${index}].name`;
@@ -1113,7 +1109,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                     label={i18next.t('validation.hide')}
                                                 />
                                             )}
-                                            {supportUnique && unique !== undefined && setValues && (
+                                            {supportUnique && unique !== undefined && setValues && value.type !== 'signature' && (
                                                 <FormControlLabel
                                                     control={
                                                         <Switch

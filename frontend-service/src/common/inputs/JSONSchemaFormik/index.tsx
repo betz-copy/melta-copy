@@ -20,6 +20,7 @@ import RjsfLocationWidget, { validateLocation } from './RjsfLocationWidget';
 import RjfsUserWidget from './RjfsUserWidget';
 import RjfsUserArrayWidget from './RjfsUserArrayWidget';
 import { IKartoffelUser } from '../../../interfaces/users';
+import RjfsSignatureWidget from './RjfsSignatureWidgets';
 
 const ajvErrorsToFormikErrors = (schema: IMongoEntityTemplatePopulated['properties'], ajvErrors: ErrorObject[]): FormikErrors<any> => {
     const formikErrorsEntries = ajvErrors.map((ajvError) => {
@@ -45,6 +46,7 @@ const ajvErrorsToFormikErrors = (schema: IMongoEntityTemplatePopulated['properti
 export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'], data: any): FormikErrors<any> => {
     const ajv = new Ajv({ allErrors: true });
     ajv.addFormat('fileId', /.*/);
+    ajv.addFormat('signature', /.*/);
     ajv.addFormat('user', {
         type: 'string',
         validate: (user) => {
@@ -54,7 +56,7 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
     });
     ajv.addKeyword({ keyword: 'user', type: 'string' });
     ajv.addFormat('text-area', /.*/);
-    ajv.addFormat('location', (value: string) => validateLocation(value));
+    ajv.addFormat('location', (value: string) => validateLocation(JSON.parse(value), true) === false);
     addFormats(ajv);
     ajv.addVocabulary(['patternCustomErrorMessage', 'hide']);
     ajv.addKeyword({
@@ -85,7 +87,7 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
 
     const schemaToValidate = {
         ...schema,
-        properties: pickBy(schema.properties, (value) => value.format !== 'relationshipReference'),
+        properties: pickBy(schema.properties, (value) => value.format !== 'relationshipReference' && value.format !== 'location'),
     };
 
     const validateFunction = ajv.compile(schemaToValidate);
@@ -146,8 +148,8 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
             '#json-schema > .form-group.field.field-object > .MuiFormControl-root > .MuiGrid-root > .MuiGrid-root',
         );
         containerDiv.forEach((innerDiv) => {
-            const hasTextAreaField = innerDiv.querySelector('.text-area');
-            innerDiv.classList.add(hasTextAreaField ? 'has-text-area-child' : 'has-other-field-child');
+            const biggerFieldCss = innerDiv.querySelector('.text-area') || innerDiv.querySelector('.signature');
+            innerDiv.classList.add(biggerFieldCss ? 'has-bigger-field-child' : 'has-field-child');
         });
     }, [values.template]);
 
@@ -164,6 +166,10 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
             schema={schema}
             uiSchema={mapValues(schema.properties, (propertySchema, propertyKey): UiSchema => {
                 if (propertySchema.archive) return {};
+                if (propertySchema.format === 'signature')
+                    return {
+                        'ui:widget': 'SignatureWidget',
+                    };
                 if (propertySchema.readOnly)
                     return {
                         'ui:options': {
@@ -278,6 +284,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                 LocationWidget: RjsfLocationWidget,
                 UserWidget: RjfsUserWidget,
                 UserArrayWidget: RjfsUserArrayWidget,
+                SignatureWidget: RjfsSignatureWidget,
             }}
         >
             <div /> {/* remove the built in submit button */}

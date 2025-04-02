@@ -17,13 +17,15 @@ export interface IEntity {
     } & Record<string, any>;
 }
 
+export type IConnection = {
+    relationship: Pick<IRelationship, 'templateId' | 'properties'>;
+    sourceEntity: IEntity;
+    destinationEntity: IEntity;
+};
+
 export interface IEntityExpanded {
     entity: IEntity;
-    connections: {
-        relationship: Pick<IRelationship, 'templateId' | 'properties'>;
-        sourceEntity: IEntity;
-        destinationEntity: IEntity;
-    }[];
+    connections: IConnection[];
 }
 
 export interface IUniqueConstraint {
@@ -211,4 +213,9 @@ export type EntityData = IEntity | IFailedEntity;
 
 export interface IEntityWithIgnoredRules extends ICreateEntityMetadata {
     ignoredRules: IBrokenRule[];
+}
+
+export enum SplitBy {
+    space = ' ',
+    comma = ',',
 }
