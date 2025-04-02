@@ -100,6 +100,7 @@ export default {
         expansion: 'הרחבה',
         favorites: 'מועדפים',
         addActions: 'הוספת פעולות',
+        addChildTemplate: 'הוספת תצוגת בן',
         convertToRelationShipFieldClick: 'המרה לשדה קשר',
     },
     entityPage: {

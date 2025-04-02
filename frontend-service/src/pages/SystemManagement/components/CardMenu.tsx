@@ -9,6 +9,7 @@ import {
     DoNotDisturbOffOutlined as DoNotDisturbOffOutlinedIcon,
     ContentCopy as DuplicateIcon,
     ControlPoint as AddIcon,
+    Add,
 } from '@mui/icons-material';
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
 import { MenuButton } from '../../../common/MenuButton';
@@ -30,6 +31,7 @@ export const CardMenu: React.FC<{
     onDisableClick?: MouseEventHandler;
     onDuplicateClick?: MouseEventHandler;
     onAddActionsClick?: MouseEventHandler;
+    onAddChildTemplateClick?: MouseEventHandler;
     onConvertToRelationShipFieldClick?: MouseEventHandler;
     onOptionsIconClick?: () => Promise<void>;
 }> = ({
@@ -40,6 +42,7 @@ export const CardMenu: React.FC<{
     onDisableClick,
     onDuplicateClick,
     onAddActionsClick,
+    onAddChildTemplateClick,
     onConvertToRelationShipFieldClick,
     onOptionsIconClick,
 }) => {
@@ -125,6 +128,26 @@ export const CardMenu: React.FC<{
                                 text={i18next.t('actions.addActions')}
                                 disabled={disabledProps?.isDisabled}
                                 icon={<AddIcon color="action" />}
+                            />
+                        </Grid>
+                    </MeltaTooltip>
+                )}
+
+                {onAddChildTemplateClick && currentUser.isRoot && (
+                    <MeltaTooltip
+                        placement="left"
+                        title={disabledProps?.isDisabled && disabledProps?.tooltipTitle}
+                        disableHoverListener={!disabledProps?.isEditDisabled}
+                    >
+                        <Grid>
+                            <MenuButton
+                                onClick={(e) => {
+                                    onAddChildTemplateClick(e);
+                                    handleClose(e);
+                                }}
+                                text={i18next.t('actions.addChildTemplate')}
+                                disabled={disabledProps?.isDisabled}
+                                icon={<Add color="action" />}
                             />
                         </Grid>
                     </MeltaTooltip>
