@@ -157,12 +157,14 @@ const PrintOptionsDialog: React.FC<{
 
     if (entityConnections) {
         const { connectionsTemplates, expandedRelationshipTemplates, expandedRelationships } = entityConnections;
-        const entity = instance as IEntityExpanded;
+        const entityExpanded = instance as IEntityExpanded;
 
         const relevantParents = connectionsTemplates.filter(({ relationshipTemplate: { _id }, isExpandedEntityRelationshipSource }) => {
-            const entityType = isExpandedEntityRelationshipSource ? 'destinationEntity' : 'sourceEntity';
-            const relevantConnections = expandedRelationships.filter(
-                (connection) => connection.relationship.templateId === _id && connection[entityType].properties._id === entity.entity.properties._id,
+            const entityType = isExpandedEntityRelationshipSource ? 'sourceEntity' : 'destinationEntity';
+
+            const relevantConnections = entityExpanded.connections.filter(
+                (connection) =>
+                    connection.relationship.templateId === _id && connection[entityType].properties._id === entityExpanded.entity.properties._id,
             );
 
             return relevantConnections.length > 0;
@@ -182,7 +184,7 @@ const PrintOptionsDialog: React.FC<{
                     ? parentInstance?.destinationEntity.properties._id
                     : parentInstance?.sourceEntity.properties._id;
 
-                const entityType = isExpandedEntityRelationshipSource ? 'sourceEntity' : 'destinationEntity';
+                const entityType = isExpandedEntityRelationshipSource ? 'destinationEntity' : 'sourceEntity';
                 const relevantConnections = expandedRelationships.filter(
                     (connection) => connection.relationship.templateId === _id && connection[entityType].properties._id === entityId,
                 );
