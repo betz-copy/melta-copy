@@ -10,6 +10,7 @@ export interface WorkspaceState {
 export const defaultMetadata = {
     shouldNavigateToEntityPage: false,
     isDrawerOpen: false,
+    flowCube: false,
     agGrid: {
         rowCount: 5,
         defaultExpandedRowCount: 13,

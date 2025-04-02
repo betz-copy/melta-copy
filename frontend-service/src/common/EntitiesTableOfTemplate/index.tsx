@@ -746,7 +746,6 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                         rowStyle={onRowSelected ? { cursor: 'pointer' } : undefined}
                         suppressCellFocus
                         onFilterChanged={(params) => {
-                            onFilter?.();
                             if (saveStorageProps.shouldSaveFilter) {
                                 const filterModel = params.api.getFilterModel();
                                 if (isEqual(filterModel, defaultFilterModel)) {

@@ -30,6 +30,11 @@ import { ActionErrors } from '../bulkActions/interface';
 
 const { neo4j, ajvCustomFormats } = config;
 
+enum CoordinateSystem {
+    UTM = 'UTM',
+    WGS84 = 'WGS84',
+}
+
 const ajv = new Ajv();
 
 ajv.addFormat('fileId', ajvCustomFormats.fileIdFieldRegex);
@@ -43,7 +48,15 @@ ajv.addFormat('user', {
 });
 ajv.addFormat('text-area', ajvCustomFormats.textAreaFieldRegex);
 ajv.addFormat('relationshipReference', ajvCustomFormats.relationshipReferenceFieldRegex);
-ajv.addFormat('location', ajvCustomFormats.locationFieldRegex);
+ajv.addFormat('location', {
+    type: 'string',
+    validate: (location) => {
+        const locationObj = JSON.parse(location);
+        return (
+            locationObj.location && (locationObj.coordinateSystem === CoordinateSystem.UTM || locationObj.coordinateSystem === CoordinateSystem.WGS84)
+        );
+    },
+});
 
 addFormats(ajv);
 ajv.addVocabulary(['patternCustomErrorMessage', 'hide']);
@@ -521,8 +534,10 @@ export const addStringFieldsAndNormalizeSpecialStringValues = (
             return;
         }
         if (type === 'string' && format === 'location') {
-            normalizedEntity[key] = getNeo4jLocation(propertyValue, entityProperties, key);
-            normalizedEntity[`${key}${neo4j.stringPropertySuffix}`] = propertyValue;
+            const location = JSON.parse(propertyValue);
+            normalizedEntity[key] = getNeo4jLocation(location.location, entityProperties, key);
+            normalizedEntity[`${key}${neo4j.stringPropertySuffix}`] = location.location;
+            normalizedEntity[`${key}${neo4j.locationCoordinateSystemSuffix}`] = location.coordinateSystem;
 
             return;
         }
