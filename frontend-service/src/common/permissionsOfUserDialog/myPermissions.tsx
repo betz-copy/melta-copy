@@ -154,14 +154,15 @@ const MyPermissions: React.FC<{
                 const currentPermissions = formikProps.values.permissions[workspace._id];
                 const categoriesPermissions = currentPermissions?.instances?.categories ?? {};
 
-                const handleManagementPermissionCheck = (path: string, checked: boolean) => {
+                const handleManagementPermissionCheck = (path: string, checked: boolean, permissionsManagement?: boolean) => {
                     formikProps.setFieldValue(path, checked ? { scope: PermissionScope.write } : null);
-                    formikProps.setFieldValue(
-                        `${permissionsPath}.instances.categories`,
-                        checked
-                            ? Object.fromEntries(Array.from(categories.keys()).map((categoryId) => [categoryId, { scope: PermissionScope.write }]))
-                            : Object.fromEntries(Array.from(categories.keys()).map((categoryId) => [categoryId, { scope: undefined }])),
-                    );
+                    if (permissionsManagement)
+                        formikProps.setFieldValue(
+                            `${permissionsPath}.instances.categories`,
+                            Object.fromEntries(
+                                checked ? Array.from(categories.keys()).map((categoryId) => [categoryId, { scope: PermissionScope.write }]) : [],
+                            ),
+                        );
                 };
 
                 return (
@@ -203,7 +204,8 @@ const MyPermissions: React.FC<{
                                             onChange:
                                                 mode === 'view'
                                                     ? () => {}
-                                                    : (_e, checked) => handleManagementPermissionCheck(`${permissionsPath}.permissions`, checked),
+                                                    : (_e, checked) =>
+                                                          handleManagementPermissionCheck(`${permissionsPath}.permissions`, checked, true),
                                             disabled: formikProps.isSubmitting || currentPermissions?.admin?.scope === PermissionScope.write,
                                             viewMode: mode === 'view',
                                         }}

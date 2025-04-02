@@ -197,7 +197,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                     const propertyValue = properties[propertyKey];
                     const hideField = entityTemplate.properties.hide.includes(propertyKey);
                     const containsHtmlTags = containsHTMLTags(propertyValue);
-                    let relatedEntityAllowed;
+                    let relatedEntityAllowed: IMongoEntityTemplatePopulated | undefined;
                     if (propertySchema.format === 'relationshipReference') {
                         const relatedTemplateId = propertySchema.relationshipReference?.relatedTemplateId!;
                         relatedEntityAllowed = entityTemplates?.get(relatedTemplateId);

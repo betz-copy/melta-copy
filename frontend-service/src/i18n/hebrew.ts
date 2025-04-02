@@ -332,7 +332,7 @@ export default {
         loading: 'טוען...',
         noOptions: 'אין תוצאות',
         noPreviewFields: 'אין שדות לתצוגה מקדימה',
-        noWritePermissions: 'אין הרשאות לתבנית בשדה קשר',
+        noWritePermissions: 'אין הרשאות לתבנית בשדה הקשר',
         failedToSearchEntities: 'נכשל בחיפוש ישויות',
     },
     userAutocomplete: {
@@ -917,7 +917,7 @@ export default {
         },
         updateEntityActionInfo: {
             updatingEntity: 'עדכון ישות',
-            unknownEntity: 'לא ידוע',
+            unknownEntity: 'לא ידועה',
             entityBeforeUnknown: 'לא ידוע ישות לפני',
             entityBefore: 'ישות לפני',
             entityAfterUnknown: 'לא ידוע ישות אחרי',

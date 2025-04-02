@@ -74,47 +74,70 @@ export const updateUserPermissionForEntityTemplate = (
     newEntityTemplate: IMongoEntityTemplatePopulated,
     currentUser: ICurrentUser,
     workspaceId: string,
-) => {
-    const permissionsOfUserId = currentUser.currentWorkspacePermissions;
-    const categoryScope = permissionsOfUserId.instances?.categories[newEntityTemplate.category._id]?.scope ?? undefined;
+): ICurrentUser => {
+    const { currentWorkspacePermissions } = currentUser;
+    const { admin, instances } = currentWorkspacePermissions;
     const categoryId = newEntityTemplate.category._id;
+    const categoryScope = instances?.categories?.[categoryId]?.scope;
 
-    const updatedPermissions =
-        permissionsOfUserId.admin || categoryScope === PermissionScope.write
-            ? permissionsOfUserId
-            : {
-                  ...permissionsOfUserId,
-                  instances: {
-                      ...permissionsOfUserId.instances,
-                      categories: {
-                          ...permissionsOfUserId.instances?.categories,
-                          [categoryId]: {
-                              scope: categoryScope,
-                              entityTemplates: {
-                                  ...permissionsOfUserId.instances?.categories?.[categoryId]?.entityTemplates,
-                                  [newEntityTemplate._id]: { scope: PermissionScope.write, fields: {} },
-                              },
-                          },
-                      },
-                  },
-              };
-    return { ...currentUser, permissions: { ...currentUser.permissions, [workspaceId]: updatedPermissions } };
+    if (admin || categoryScope === PermissionScope.write) {
+        return currentUser;
+    }
+
+    const updatedEntityTemplates = {
+        ...instances?.categories?.[categoryId]?.entityTemplates,
+        [newEntityTemplate._id]: { scope: PermissionScope.write, fields: {} },
+    };
+
+    const updatedCategories = {
+        ...instances?.categories,
+        [categoryId]: {
+            scope: categoryScope,
+            entityTemplates: updatedEntityTemplates,
+        },
+    };
+
+    const updatedPermissions = {
+        ...currentWorkspacePermissions,
+        instances: {
+            ...instances,
+            categories: updatedCategories,
+        },
+    };
+
+    return {
+        ...currentUser,
+        permissions: {
+            ...currentUser.permissions,
+            [workspaceId]: updatedPermissions,
+        },
+    };
 };
 
-export const updateUserPermissionForCategory = (newCategory: IMongoCategory, currentUser: ICurrentUser, workspaceId: string) => {
-    const permissionsOfUserId = currentUser.currentWorkspacePermissions;
-    const updatedPermissions = permissionsOfUserId.admin
-        ? permissionsOfUserId
-        : {
-              ...permissionsOfUserId,
-              instances: {
-                  ...permissionsOfUserId.instances,
-                  categories: {
-                      ...permissionsOfUserId.instances?.categories,
-                      [newCategory._id]: { scope: PermissionScope.write, entityTemplates: {} },
-                  },
-              },
-          };
+export const updateUserPermissionForCategory = (newCategory: IMongoCategory, currentUser: ICurrentUser, workspaceId: string): ICurrentUser => {
+    const { currentWorkspacePermissions } = currentUser;
+    const { admin, instances } = currentWorkspacePermissions;
 
-    return { ...currentUser, permissions: { ...currentUser.permissions, [workspaceId]: updatedPermissions } };
+    if (admin) return currentUser;
+
+    const updatedCategories = {
+        ...instances?.categories,
+        [newCategory._id]: { scope: PermissionScope.write, entityTemplates: {} },
+    };
+
+    const updatedPermissions = {
+        ...currentWorkspacePermissions,
+        instances: {
+            ...instances,
+            categories: updatedCategories,
+        },
+    };
+
+    return {
+        ...currentUser,
+        permissions: {
+            ...currentUser.permissions,
+            [workspaceId]: updatedPermissions,
+        },
+    };
 };

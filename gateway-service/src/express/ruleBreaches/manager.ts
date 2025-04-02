@@ -625,20 +625,39 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
         const templateManager = new TemplatesManager(this.workspaceId);
 
         const allowedEntityTemplateIds = await templateManager.getAllowedEntityTemplateIds(usersPermissions, user.id);
-        return result.rows.filter((row) =>
-            row.actions.every((action) => {
-                let entityTemplateId = '-';
 
-                if (action.actionType === ActionTypes.CreateEntity) {
-                    entityTemplateId = (action.actionMetadata as ICreateEntityMetadataPopulated).templateId;
-                } else if (action.actionType === ActionTypes.DuplicateEntity) {
-                    entityTemplateId = (action.actionMetadata as IDuplicateEntityMetadataPopulated).templateId;
-                } else if (action.actionType === ActionTypes.UpdateEntity) {
-                    entityTemplateId = (action.actionMetadata as unknown as IUpdateEntityMetadataPopulated)?.entity?.templateId || '-';
-                }
-                return allowedEntityTemplateIds.includes(entityTemplateId);
+        const res = await Promise.all(
+            result.rows.map(async (row) => {
+                const isRowAllowed = await Promise.all(
+                    row.actions.map(async (action) => {
+                        let entityTemplateId = '-';
+
+                        switch (action.actionType) {
+                            case ActionTypes.CreateEntity:
+                                entityTemplateId = (action.actionMetadata as ICreateEntityMetadataPopulated).templateId;
+                                break;
+                            case ActionTypes.DuplicateEntity:
+                                entityTemplateId = (action.actionMetadata as IDuplicateEntityMetadataPopulated).templateId;
+                                break;
+                            case ActionTypes.UpdateEntity: {
+                                const actionMetadata = action.actionMetadata as unknown as IUpdateEntityMetadata;
+                                const entity = await this.instancesService.getEntityInstanceById(actionMetadata.entityId);
+                                entityTemplateId = entity.templateId || '-';
+                                break;
+                            }
+                            default:
+                                entityTemplateId = '-';
+                        }
+
+                        return allowedEntityTemplateIds.includes(entityTemplateId);
+                    }),
+                );
+
+                return isRowAllowed.every(Boolean);
             }),
         );
+
+        return result.rows.filter((_row, index) => res[index]);
     }
 
     async searchRuleBreachRequests(agGridRequest: IAgGridRequest, user: Express.User): Promise<IAgGridResult<IRuleBreachRequestPopulated>> {

@@ -141,6 +141,7 @@ const TemplatesSelectGrid: React.FC<{
 
     const firstTree = getTreeOnSplittedTemplates(firstSplittedTemplates, miniFilterValue);
     const secondTree = getTreeOnSplittedTemplates(secondSplittedTemplates, miniFilterValue);
+    const hasFirstTree = firstTree?.filteredTree?.length;
 
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const { trackEvent } = useMatomo();
@@ -232,15 +233,19 @@ const TemplatesSelectGrid: React.FC<{
                     </Box>
                 )}
             </Grid>
-            {secondTree?.filteredTree?.length && (
+            {!!secondTree?.filteredTree?.length && (
                 <Grid item>
                     <Box style={{ marginTop: '4.4rem' }}>
                         {openFilter && showAll && (
                             <Box sx={{ zIndex: '100', position: 'absolute', width: '235px', ...floatingBoxStyle }}>
                                 <Box style={{ width: '100%', maxHeight: '28rem', overflowY: 'auto', paddingBottom: '4px' }}>
-                                    {firstTree?.filteredTree?.length
-                                        ? singleTree(secondTree, firstTree, selectedTemplates, setSelectedTemplates, onClick)
-                                        : singleTree(firstTree, secondTree, selectedTemplates, setSelectedTemplates, onClick)}
+                                    {singleTree(
+                                        hasFirstTree ? secondTree : firstTree,
+                                        hasFirstTree ? firstTree : secondTree,
+                                        selectedTemplates,
+                                        setSelectedTemplates,
+                                        onClick,
+                                    )}
                                 </Box>
                             </Box>
                         )}

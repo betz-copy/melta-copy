@@ -10,9 +10,7 @@ import {
 } from '../../externalServices/templates/relationshipsTemplateService';
 import config from '../../config';
 
-const {
-    templateService: { userDoesntExistUnderReq },
-} = config;
+const { userDoesntExistUnderReq } = config.templateService;
 
 export default class TemplatesController extends DefaultController<TemplatesManager> {
     constructor(workspaceId: string) {

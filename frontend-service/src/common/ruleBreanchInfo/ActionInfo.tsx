@@ -19,7 +19,7 @@ import {
 import { populateRelationshipTemplate } from '../../utils/templates';
 import { UpdatedFieldsDiff } from './UpdatedFieldsDiff';
 import { IUser } from '../../interfaces/users';
-import { EntityLink } from '../EntityLink';
+import { EntityLink, EntityLinkProps } from '../EntityLink';
 import { IEntityForBrokenRules } from '../../interfaces/ruleBreaches/ruleBreach';
 import { IMongoRule } from '../../interfaces/rules';
 import { EntityPropertiesInternal } from '../EntityProperties';
@@ -220,6 +220,34 @@ const CreateOrDeleteRelActionInfo: React.FC<{
     );
 };
 
+const EntityInstanceLink: React.FC<EntityLinkProps> = ({
+    entity,
+    entityTemplate,
+    entityPropertiesToHighlightTooltip,
+    linkable,
+    entityPropertiesToHighlightColor = 'red',
+}) => {
+    return (
+        <>
+            {entityTemplate ? (
+                <EntityLink
+                    entity={entity}
+                    entityTemplate={entityTemplate}
+                    entityPropertiesToHighlightColor={entityPropertiesToHighlightColor}
+                    entityPropertiesToHighlightTooltip={entityPropertiesToHighlightTooltip}
+                    linkable={linkable}
+                />
+            ) : (
+                <MeltaTooltip title={i18next.t('notifications.noPermissionsToTemplate')}>
+                    <Typography display="inline" fontWeight="bold">
+                        {i18next.t('ruleBreachInfo.updateEntityActionInfo.unknownEntity')}
+                    </Typography>
+                </MeltaTooltip>
+            )}{' '}
+        </>
+    );
+};
+
 const CreateOrDuplicateEntityActionInfo: React.FC<{
     actionType: ActionTypes.CreateEntity | ActionTypes.DuplicateEntity;
     actionMetadata: ICreateEntityMetadataPopulated | IDuplicateEntityMetadataPopulated;
@@ -256,21 +284,12 @@ const CreateOrDuplicateEntityActionInfo: React.FC<{
                         {actionType === ActionTypes.DuplicateEntity &&
                             i18next.t('ruleBreachInfo.createOrDuplicateEntityActionInfo.duplicatingEntity')}
                     </Box>{' '}
-                    {entityTemplate ? (
-                        <EntityLink
-                            entity={entity}
-                            entityTemplate={entityTemplate}
-                            linkable={entity.properties._id ? !entity.properties._id.startsWith(environment.brokenRulesFakeEntityIdPrefix) : false}
-                            entityPropertiesToHighlightTooltip={failedProperties}
-                            entityPropertiesToHighlightColor="red"
-                        />
-                    ) : (
-                        <MeltaTooltip title={i18next.t('notifications.noPermissionsToTemplate')}>
-                            <Typography display="inline" fontWeight="bold">
-                                {i18next.t('ruleBreachInfo.updateEntityActionInfo.unknownEntity')}
-                            </Typography>
-                        </MeltaTooltip>
-                    )}
+                    <EntityInstanceLink
+                        entity={entity}
+                        entityTemplate={entityTemplate || null}
+                        linkable={entity.properties._id ? !entity.properties._id.startsWith(environment.brokenRulesFakeEntityIdPrefix) : false}
+                        entityPropertiesToHighlightTooltip={failedProperties}
+                    />
                     {!isCompact ? ':' : ''}
                 </Typography>
             </Grid>
@@ -303,21 +322,12 @@ const UpdateEntityActionInfo: React.FC<{
             <Grid item>
                 <Typography component="p" variant="body1">
                     <Box component="span">{i18next.t('ruleBreachInfo.updateEntityActionInfo.updatingEntity')}</Box>{' '}
-                    {entityTemplate ? (
-                        <EntityLink
-                            entityPropertiesToHighlightTooltip={failedProperties}
-                            entityPropertiesToHighlightColor="red"
-                            entity={entity ? { ...(entity as IEntity), properties: { ...(entity as IEntity).properties, ...restFields } } : null}
-                            entityTemplate={entityTemplate || null}
-                            linkable={!!entity?.properties._id && !entity?.properties._id.startsWith(environment.brokenRulesFakeEntityIdPrefix)}
-                        />
-                    ) : (
-                        <MeltaTooltip title={i18next.t('notifications.noPermissionsToTemplate')}>
-                            <Typography display="inline" fontWeight="bold">
-                                {i18next.t('ruleBreachInfo.updateEntityActionInfo.unknownEntity')}
-                            </Typography>
-                        </MeltaTooltip>
-                    )}
+                    <EntityInstanceLink
+                        entityPropertiesToHighlightTooltip={failedProperties}
+                        entity={entity ? { ...(entity as IEntity), properties: { ...(entity as IEntity).properties, ...restFields } } : null}
+                        entityTemplate={entityTemplate || null}
+                        linkable={!!entity?.properties._id && !entity?.properties._id.startsWith(environment.brokenRulesFakeEntityIdPrefix)}
+                    />
                     {!isCompact && entityTemplate ? ':' : ''}
                 </Typography>
             </Grid>
@@ -343,21 +353,12 @@ const UpdateEntityStatusActionInfo: React.FC<{
     return (
         <Typography component="p" variant="body1">
             <Box component="span">{i18next.t('ruleBreachInfo.updateEntityStatusActionInfo.updatingStatus')}</Box>{' '}
-            {entityTemplate ? (
-                <EntityLink
-                    entity={entity}
-                    entityTemplate={entityTemplate}
-                    entityPropertiesToHighlightColor="red"
-                    entityPropertiesToHighlightTooltip={failedProperties}
-                    linkable={!!entity?.properties._id && !entity?.properties._id.startsWith(environment.brokenRulesFakeEntityIdPrefix)}
-                />
-            ) : (
-                <MeltaTooltip title={i18next.t('notifications.noPermissionsToTemplate')}>
-                    <Typography display="inline" fontWeight="bold">
-                        {i18next.t('ruleBreachInfo.updateEntityActionInfo.unknownEntity')}
-                    </Typography>
-                </MeltaTooltip>
-            )}{' '}
+            <EntityInstanceLink
+                entity={entity}
+                entityTemplate={entityTemplate || null}
+                entityPropertiesToHighlightTooltip={failedProperties}
+                linkable={!!entity?.properties._id && !entity?.properties._id.startsWith(environment.brokenRulesFakeEntityIdPrefix)}
+            />
             <Box component="span" fontWeight="bold">
                 {disabled
                     ? i18next.t('ruleBreachInfo.updateEntityStatusActionInfo.toDisabled')

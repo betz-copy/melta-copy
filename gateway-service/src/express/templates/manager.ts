@@ -405,32 +405,35 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         permissionsOfUserId: ISubCompactPermissions,
         userId: string,
     ) {
-        const categoryScope = permissionsOfUserId.instances?.categories[entityTemplate.category._id]?.scope ?? undefined;
+        const { admin, instances } = permissionsOfUserId;
         const categoryId = entityTemplate.category._id;
+        const categoryScope = instances?.categories?.[categoryId]?.scope;
 
-        const updatedPermissions =
-            permissionsOfUserId.admin || categoryScope === PermissionScope.write
-                ? permissionsOfUserId
-                : ({
-                      ...permissionsOfUserId,
-                      instances: {
-                          ...permissionsOfUserId.instances,
-                          categories: {
-                              ...permissionsOfUserId.instances?.categories,
-                              [categoryId]: {
-                                  scope: categoryScope,
-                                  entityTemplates: {
-                                      ...permissionsOfUserId.instances?.categories?.[categoryId]?.entityTemplates,
-                                      [entityTemplate._id]: { scope: PermissionScope.write, fields: {} },
-                                  },
-                              },
-                          },
-                      },
-                  } as ISubCompactPermissions);
+        if (admin || categoryScope === PermissionScope.write) {
+            await UsersManager.syncUserPermissions(userId, { [this.workspaceId]: permissionsOfUserId });
+            return;
+        }
 
-        await UsersManager.syncUserPermissions(userId, {
-            [this.workspaceId]: updatedPermissions,
-        });
+        const updatedCategories = {
+            ...instances?.categories,
+            [categoryId]: {
+                scope: categoryScope,
+                entityTemplates: {
+                    ...instances?.categories?.[categoryId]?.entityTemplates,
+                    [entityTemplate._id]: { scope: PermissionScope.write, fields: {} },
+                },
+            },
+        };
+
+        const updatedPermissions: ISubCompactPermissions = {
+            ...permissionsOfUserId,
+            instances: {
+                ...instances,
+                categories: updatedCategories,
+            },
+        };
+
+        await UsersManager.syncUserPermissions(userId, { [this.workspaceId]: updatedPermissions });
     }
 
     async searchEntityTemplates(

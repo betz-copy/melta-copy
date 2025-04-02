@@ -289,14 +289,12 @@ export const relatedTemplateColDef = <Data extends any = EntityData>(
     relatedTemplateId: string,
     relatedTemplateField: string,
     isLastColumn: boolean,
+    entityTemplates: IEntityTemplateMap,
     hideColumn = false,
     searchValue: string | undefined = undefined,
     editable: (data: any) => boolean = () => false,
 ): ColDef => {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    const queryClient = useQueryClient();
-    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const relatedEntityTemplate: IMongoEntityTemplatePopulated = entityTemplates.get(relatedTemplateId!)!;
+    const relatedEntityTemplate = entityTemplates.get(relatedTemplateId!)!;
     return {
         field,
         headerName: value.title,

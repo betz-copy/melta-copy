@@ -40,7 +40,6 @@ class ElasticSearchManager extends DefaultManagerElastic {
                     name: process.name,
                     processTextChain: valuesString.trim(),
                 },
-                timeout: '1s',
             });
         } catch (error) {
             logger.error({ error });

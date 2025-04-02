@@ -173,7 +173,7 @@ export const getFieldsConfigOfRule = (
     formula: ImmutableTree,
     currentUser: ICurrentUser,
 ): Fields => {
-    const allowedEntityTemplates: IMongoEntityTemplatePopulated[] = getAllAllowedEntities(Array.from(entityTemplates.values()), currentUser);
+    const allowedEntityTemplates = getAllAllowedEntities(Array.from(entityTemplates.values()), currentUser);
     const entityTemplate = allowedEntityTemplates.find((entity) => entity._id === entityTemplateId);
     if (!entityTemplate) throw new Error('entity template doesnt exist');
 

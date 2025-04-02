@@ -35,7 +35,6 @@ export const ColoredEnumChip: React.FC<ColoredEnumChipProps> = ({ label, color, 
 
     return (
         <Chip
-            disabled
             icon={icon}
             label={label}
             variant="outlined"
