@@ -88,7 +88,7 @@ const errorColDef = <Data extends any = EntityData>(
 
     return (
         <Box display="flex" justifyContent="center" alignItems="center" gap={1} width="100%">
-            <Value hideValue={false} value={props.value.toString() ?? i18next.t('validation.required')} color="#A40000" />
+            <Value hideValue={false} value={props.value ?? i18next.t('validation.required')} color="#A40000" />
             <Tooltip
                 title={message}
                 placement="top"
