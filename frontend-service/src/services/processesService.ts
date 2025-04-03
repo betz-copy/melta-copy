@@ -33,11 +33,15 @@ export const createProcessRequest = async (process: ProcessDetailsValues) => {
     const filesToUpload: any = [];
 
     const filePropertiesToUpload = await Promise.all(
-        Object.entries(process.details).map(async ([key, value]) => {
-            const templatePropertyTitle = process.template!.details.properties.properties[key].title;
-            const file = await urlToFile(value, templatePropertyTitle);
-            return { key, file };
-        }),
+        Object.entries(process.details)
+            .filter(([_key, value]) => {
+                return value.format === 'signature' && value;
+            })
+            .map(async ([key, value]) => {
+                const templatePropertyTitle = process.template!.details.properties.properties[key].title;
+                const file = await urlToFile(value, templatePropertyTitle);
+                return { key, file };
+            }),
     );
     filePropertiesToUpload.forEach(({ key, file }) => {
         filesToUpload.push([`${key}`, file]);

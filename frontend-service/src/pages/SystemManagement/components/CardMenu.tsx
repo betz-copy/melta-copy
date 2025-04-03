@@ -26,6 +26,7 @@ export const CardMenu: React.FC<{
         isDeleteDisabled?: boolean;
         tooltipTitle: string;
         editTooltipTitle?: string;
+        disableForReadPermissions?: boolean;
     };
     onDisableClick?: MouseEventHandler;
     onDuplicateClick?: MouseEventHandler;
@@ -149,7 +150,7 @@ export const CardMenu: React.FC<{
                     </MeltaTooltip>
                 )}
                 {onConvertToRelationShipFieldClick && (
-                    <MeltaTooltip placement="top" title={editTooltipTitle} disableHoverListener={!disabledProps?.isEditDisabled}>
+                    <MeltaTooltip placement="left" title={editTooltipTitle} disableHoverListener={!disabledProps?.isEditDisabled}>
                         <Grid>
                             <MenuButton
                                 onClick={(e) => {
@@ -165,16 +166,25 @@ export const CardMenu: React.FC<{
                 )}
 
                 {onDisableClick && (
-                    <MenuButton
-                        onClick={(e) => {
-                            onDisableClick(e);
-                            handleClose(e);
-                        }}
-                        text={disabledProps?.isDisabled ? i18next.t('actions.activate') : i18next.t('actions.disable')}
-                        icon={
-                            disabledProps?.isDisabled ? <DoNotDisturbOffOutlinedIcon color="action" /> : <DoNotDisturbOnOutlinedIcon color="action" />
-                        }
-                    />
+                    <MeltaTooltip placement="left" title={editTooltipTitle} disableHoverListener={!disabledProps?.disableForReadPermissions}>
+                        <Grid>
+                            <MenuButton
+                                onClick={(e) => {
+                                    onDisableClick(e);
+                                    handleClose(e);
+                                }}
+                                text={disabledProps?.isDisabled ? i18next.t('actions.activate') : i18next.t('actions.disable')}
+                                icon={
+                                    disabledProps?.isDisabled ? (
+                                        <DoNotDisturbOffOutlinedIcon color="action" />
+                                    ) : (
+                                        <DoNotDisturbOnOutlinedIcon color="action" />
+                                    )
+                                }
+                                disabled={disabledProps?.disableForReadPermissions}
+                            />
+                        </Grid>
+                    </MeltaTooltip>
                 )}
             </Menu>
         </>

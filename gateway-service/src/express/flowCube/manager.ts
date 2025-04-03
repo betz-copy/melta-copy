@@ -119,7 +119,7 @@ export class FlowCubeManager extends DefaultManagerProxy<null> {
         }
 
         const usersPermissions = await this.authorizer.getWorkspacePermissions(userId);
-        const categories = await this.entityTemplateService.searchCategories(searchInput);
+        const categories = await this.entityTemplateService.searchCategories(usersPermissions, searchInput);
         const filteredCategories = usersPermissions.admin ? categories : filterCategoriesByPermissions(categories, usersPermissions);
 
         return filteredCategories.map(({ _id, displayName }) => {
@@ -141,7 +141,7 @@ export class FlowCubeManager extends DefaultManagerProxy<null> {
         }
 
         const usersPermissions = await this.authorizer.getWorkspacePermissions(userId);
-        const entityTemplates = await this.templatesManager.searchEntityTemplates(usersPermissions, searchEntityTemplatesBody);
+        const entityTemplates = await this.templatesManager.searchEntityTemplates(usersPermissions, searchEntityTemplatesBody, userId);
         const userPermissionsByCategory = getEntityTemplatesPermissionsByCategory(usersPermissions);
         const allowedEntityTemplates = usersPermissions.admin
             ? entityTemplates

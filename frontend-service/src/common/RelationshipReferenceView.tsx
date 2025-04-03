@@ -4,6 +4,7 @@ import { useQueryClient } from 'react-query';
 import { AppRegistration as DefaultEntityTemplateIcon } from '@mui/icons-material';
 import { Link } from 'wouter';
 import i18next from 'i18next';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import { MeltaTooltip } from './MeltaTooltip';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { EntityPropertiesInternal } from './EntityProperties';
@@ -24,13 +25,39 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({ e
     const workspace = useWorkspaceStore((state) => state.workspace);
     const { height, width } = workspace.metadata.iconSize;
     const queryClient = useQueryClient();
-
     const theme = useTheme();
 
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
 
     const relatedEntityTemplate: IMongoEntityTemplatePopulated = entityTemplates.get(relatedTemplateId!)!;
-    const entityTemplateColor = getEntityTemplateColor(relatedEntityTemplate);
+    const entityTemplateColor = relatedEntityTemplate ? getEntityTemplateColor(relatedEntityTemplate) : undefined;
+
+    if (!relatedEntityTemplate) {
+        return (
+            <MeltaTooltip
+                PopperProps={{
+                    sx: {
+                        [`& .${tooltipClasses.tooltip}`]: {
+                            fontSize: '1rem',
+                            color: '#F2F4FA',
+                            backgroundColor: '#F2F4FA !important',
+                            boxShadow: 10,
+                        },
+                    },
+                }}
+                slotProps={{
+                    arrow: { style: { color: '#F2F4FA' } },
+                }}
+                arrow
+                placement="top"
+                title={<Typography color="primary">{i18next.t('templateEntitiesAutocomplete.noWritePermissions')}</Typography>}
+            >
+                <Grid display="inline-block">
+                    <VisibilityOffIcon sx={{ height, width, color: theme.palette.action.disabled }} />
+                </Grid>
+            </MeltaTooltip>
+        );
+    }
 
     if (typeof entity === 'string') {
         return (
