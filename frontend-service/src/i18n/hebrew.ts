@@ -93,7 +93,7 @@ export default {
         deleteOrArcivhed: 'מחיקה או שליחה לארכיון',
         unArchived: 'הוצא מארכיון',
         archived: 'הכנס לארכיון',
-        create: 'יוצר',
+        create: 'יצירה',
         update: 'מעדכן',
         print: 'הדפסה',
         viewMore: 'הצג עוד...',
@@ -102,6 +102,7 @@ export default {
         addActions: 'הוספת פעולות',
         addChildTemplate: 'הוספת תצוגת בן',
         convertToRelationShipFieldClick: 'המרה לשדה קשר',
+        cancel: 'ביטול',
     },
     entityPage: {
         deleteRelationshipPopoverText: 'מחק קשר',
@@ -1348,6 +1349,33 @@ export default {
         searchLimits: {
             // table: 'כמות ישויות למשיכה בתצוגה טבלאית', // comment out  waiting for Itay
             bulk: 'כמות ישויות למשיכה בתצוגת כרטיסיות',
+        },
+    },
+    createChildTemplateDialog: {
+        title: 'תואנה',
+        templateName: 'שם תצוגת תבנית בן',
+        templateDetails: 'תיאור תבנית בן (יוצג במסכי הרשאות)',
+        status: {
+            regularPage: 'מצב בעמוד קטגוריה',
+            specialPage: 'מצב בעמוד לקוח',
+        },
+        userType: {
+            regularUser: 'סינון עפ״י משתמש מחובר',
+            specialUser: 'סינון עפ״י יחידת המשתמש',
+            relatedToLabel: 'שיוך לעמוד לקוח',
+        },
+        categoryType: {
+            relatedToLabel: 'שיוך לקטגוריה',
+        },
+        columns: {
+            title: 'עמודות להצגה',
+            nameCol: 'עמודה',
+            filterCol: 'סינון תצוגה',
+            defaultCol: 'עמודה ברירת מחדל בהוספה',
+        },
+        fieldFilterDialog: {
+            title: 'סינון שדה',
+            addFilter: 'הוספה',
         },
     },
 };

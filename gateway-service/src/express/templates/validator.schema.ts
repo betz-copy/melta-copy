@@ -275,7 +275,6 @@ export const searchRulesRequestSchema = Joi.object({
     params: {},
 });
 
-
 // POST /api/templates/entities/child/search
 export const searchEntityChildTemplatesSchema = Joi.object({
     body: {
@@ -284,7 +283,7 @@ export const searchEntityChildTemplatesSchema = Joi.object({
         categoryIds: Joi.array().items(MongoIdSchema),
         limit: Joi.number().integer().min(0).default(0),
         skip: Joi.number().integer().min(0).default(0),
-        fatherTemplatesIds: Joi.array().items(MongoIdSchema)
+        fatherTemplatesIds: Joi.array().items(MongoIdSchema),
     },
     query: {},
     params: {},
@@ -305,9 +304,11 @@ export const createEntityChildTemplateSchema = Joi.object({
         description: Joi.string(),
         fatherTemplate: MongoIdSchema.required(),
         categories: Joi.array().items(MongoIdSchema).required(),
-        propertiesFilters: Joi.object().pattern(Joi.string(), {
-            filter: searchFilterSchema,
-        }).default({}),
+        propertiesFilters: Joi.object()
+            .pattern(Joi.string(), {
+                filter: searchFilterSchema,
+            })
+            .default({}),
         disabled: Joi.boolean().default(false),
         actions: Joi.string(),
         viewType: Joi.string().valid('categoryPage', 'userPage').required(),
