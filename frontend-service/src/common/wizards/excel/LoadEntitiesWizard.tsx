@@ -50,7 +50,7 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
 
     const { isLoading: isLoadingExcelEntities, mutateAsync: loadEntities } = useMutation(
         async (files: Record<string, File>) => {
-            return loadEntitiesRequest(template!._id, files);
+            return loadEntitiesRequest(template!, files);
         },
         {
             async onSuccess(data) {
@@ -66,7 +66,7 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
 
     const { isLoading: isLoadingRules, mutateAsync: loadRules } = useMutation(
         async (insertBrokenEntities: IEntityWithIgnoredRules[]) => {
-            return loadEntitiesRequest(template!._id, undefined, insertBrokenEntities);
+            return loadEntitiesRequest(template!, undefined, insertBrokenEntities);
         },
         {
             async onSuccess(data) {

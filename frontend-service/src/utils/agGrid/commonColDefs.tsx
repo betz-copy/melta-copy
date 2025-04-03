@@ -88,7 +88,7 @@ const errorColDef = <Data extends any = EntityData>(
 
     return (
         <Box display="flex" justifyContent="center" alignItems="center" gap={1} width="100%">
-            <Value hideValue={false} value={props.value.toString() ?? i18next.t('validation.required')} color="#A40000" />
+            <Value hideValue={false} value={props.value ?? i18next.t('validation.required')} color="#A40000" />
             <Tooltip
                 title={message}
                 placement="top"
@@ -263,7 +263,15 @@ export const locationColDef = <Data extends any = EntityData>(
             const error = isPropertyInvalid(props, field, ignoreType);
 
             if (error) return errorColDef(props, error, value);
-            return <OpenMap field={value.title!} entityProperties={entityGetter(props as any)} entityTemplate={template} searchValue={searchValue} />;
+            return (
+                <OpenMap
+                    field={value.title!}
+                    entityProperties={entityGetter(props as any)}
+                    entityTemplate={template}
+                    searchValue={searchValue}
+                    disableOpenMap={ignoreType}
+                />
+            );
         },
         filter: 'agTextColumnFilter',
         width: hardcodedWidth,

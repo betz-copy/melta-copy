@@ -50,12 +50,12 @@ export const useEntityWithLocationFields = ({ entityTemplate, entityProperties }
 
         Object.entries(propertyDefinitions).forEach(([key, definition]) => {
             if (definition.format === 'location' && properties[key]) {
-                const parsedPolygon = parsePolygon(properties[key]);
+                const parsedPolygon = parsePolygon(properties[key].location);
                 if (parsedPolygon) {
                     polygonList.push({ key, position: parsedPolygon });
                     coordinatesList.push(...parsedPolygon);
                 } else {
-                    const position = stringToCoordinates(properties[key]);
+                    const position = stringToCoordinates(properties[key].location);
                     const markerPosition = position.value as Cartesian3;
                     markerList.push({ key, position: markerPosition });
                     coordinatesList.push(...createSquareAroundPoint(markerPosition, squareLength));

@@ -77,7 +77,7 @@ export const getOptionsAndGroupsMiniFiltered = <Option extends {}, Group extends
     return { optionsFiltered, groupsFiltered };
 };
 
-const CustomExpandMore = ({ filterIcon, ...rest }) => {
+export const CustomExpandMore = ({ filterIcon, ...rest }) => {
     return <Box sx={{ gap: '10px', marginRight: '14px' }}>{filterIcon ? <FilterList {...rest} /> : <ExpandMore {...rest} />}</Box>;
 };
 

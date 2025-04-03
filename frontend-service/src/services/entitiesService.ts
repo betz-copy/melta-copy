@@ -24,6 +24,8 @@ import { filterModelToFilterOfGraph } from '../pages/Graph/GraphFilterToBackend'
 import urlToFile from '../common/fileConversions';
 import { IEditReadExcel, ITablesResults } from '../interfaces/excel';
 import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
+import { locationConverterToString } from '../utils/map/convert';
+import { CoordinateSystem } from '../common/inputs/JSONSchemaFormik/RjsfLocationWidget';
 
 const { entities, relationships } = environment.api;
 const { uuidFormat } = environment;
@@ -34,7 +36,7 @@ export const exportEntitiesRequest = async (body: IExportEntitiesBody) => {
 };
 
 export const loadEntitiesRequest = async (
-    templateId: string,
+    template: IMongoEntityTemplatePopulated,
     files?: Record<string, File>,
     insertBrokenEntities?: IEntityWithIgnoredRules[],
 ): Promise<ITablesResults> => {
@@ -43,12 +45,37 @@ export const loadEntitiesRequest = async (
         Object.entries(files).forEach(([key, value]) => {
             formData.append(key, value as Blob);
         });
-    formData.append('templateId', templateId);
+    formData.append('templateId', template._id);
 
     if (insertBrokenEntities) {
         const formattedInsertBrokenEntities = insertBrokenEntities.map((entity) => ({
             templateId: entity.templateId,
-            properties: mapValues(entity.properties, (property) => property),
+            properties: formData.append(
+                'properties',
+                JSON.stringify(
+                    mapValues(entity.properties, (property, key) => {
+                        switch (template.properties.properties[key]?.format) {
+                            case 'relationshipReference':
+                                return property?.properties._id;
+                            case 'location': {
+                                if (!property) return undefined;
+                                const location = JSON.parse(property);
+
+                                if (location.coordinateSystem === CoordinateSystem.UTM)
+                                    return JSON.stringify({
+                                        location: locationConverterToString(location.location),
+                                        coordinateSystem: location.coordinateSystem,
+                                    });
+                                return JSON.stringify(location);
+                            }
+                            case 'signature':
+                                return undefined;
+                            default:
+                                return property;
+                        }
+                    }),
+                ),
+            ),
             ignoredRules: entity.ignoredRules,
         }));
 
@@ -78,14 +105,28 @@ export const editManyEntitiesByExcelRequest = async (
     entitiesToUpdate: IEntityWithIgnoredRules[],
 ): Promise<ITablesResults> => {
     const formData = new FormData();
+    const isUUID = (str: string) => uuidFormat.test(str);
 
     formData.append('templateId', template._id);
 
     const entitiesArray = entitiesToUpdate.map((entity) => ({
         templateId: entity.templateId,
-        properties: mapValues(entity.properties, (property, key) =>
-            template.properties.properties[key]?.format === 'relationshipReference' ? property?.properties._id : property,
-        ),
+        properties: mapValues(entity.properties, (property, key) => {
+            switch (template.properties.properties[key]?.format) {
+                case 'relationshipReference':
+                    return property?.properties._id;
+                case 'location': {
+                    if (!property) return undefined;
+                    return JSON.stringify(property);
+                }
+                case 'signature': {
+                    if (!isUUID(property)) return undefined;
+                    return property;
+                }
+                default:
+                    return property;
+            }
+        }),
         ignoredRules: entity.ignoredRules,
     }));
     formData.append('entities', JSON.stringify(entitiesArray));
@@ -153,10 +194,25 @@ export const createEntityRequest = async (entity: EntityWizardValues, ignoredRul
         'properties',
         JSON.stringify(
             mapValues(entity.properties, (property, key) => {
-                const format = entity.template.properties.properties[key]?.format;
-                if (format === 'signature') return undefined;
-                if (format === 'relationshipReference') return property?.properties?._id;
-                return property;
+                switch (entity.template.properties.properties[key]?.format) {
+                    case 'relationshipReference':
+                        return property?.properties._id;
+                    case 'location': {
+                        if (!property) return undefined;
+                        const location = JSON.parse(property);
+
+                        if (location.coordinateSystem === CoordinateSystem.UTM)
+                            return JSON.stringify({
+                                location: locationConverterToString(location.location),
+                                coordinateSystem: location.coordinateSystem,
+                            });
+                        return JSON.stringify(location);
+                    }
+                    case 'signature':
+                        return undefined;
+                    default:
+                        return property;
+                }
             }),
         ),
     );
@@ -243,11 +299,29 @@ export const updateEntityRequestForMultiple = async (
     formData.append(
         'properties',
         JSON.stringify(
+            // eslint-disable-next-line consistent-return
             mapValues(newEntityData.properties, (property, key) => {
-                const format = newEntityData.template.properties.properties[key]?.format;
-                if (format === 'signature' && !isUUID(property)) return undefined;
-                if (format === 'relationshipReference') return property?.properties?._id;
-                return property;
+                switch (newEntityData.template.properties.properties[key]?.format) {
+                    case 'relationshipReference':
+                        return property?.properties._id;
+                    case 'location': {
+                        if (!property) return undefined;
+                        const location = typeof property === 'string' && property.includes('location') ? JSON.parse(property) : property;
+
+                        if (location.coordinateSystem === CoordinateSystem.UTM)
+                            return JSON.stringify({
+                                location: locationConverterToString(location.location),
+                                coordinateSystem: location.coordinateSystem,
+                            });
+                        return JSON.stringify(location);
+                    }
+                    case 'signature': {
+                        if (!isUUID(property)) return undefined;
+                        break;
+                    }
+                    default:
+                        return property;
+                }
             }),
         ),
     );
@@ -312,11 +386,30 @@ export const duplicateEntityRequest = async (entityId: string, newEntityData: En
     formData.append(
         'properties',
         JSON.stringify(
-            mapValues(newEntityData.properties, (property, key) =>
-                newEntityData.template.properties.properties[key].format === 'relationshipReference' ? property?.properties._id : property,
-            ),
+            mapValues(newEntityData.properties, (property, key) => {
+                switch (newEntityData.template.properties.properties[key]?.format) {
+                    case 'relationshipReference':
+                        return property?.properties._id;
+                    case 'location': {
+                        if (!property) return undefined;
+                        const location = typeof property === 'string' && property.includes('location') ? JSON.parse(property) : property;
+
+                        if (location.coordinateSystem === CoordinateSystem.UTM)
+                            return JSON.stringify({
+                                location: locationConverterToString(location.location),
+                                coordinateSystem: location.coordinateSystem,
+                            });
+                        return JSON.stringify(location);
+                    }
+                    case 'signature':
+                        return undefined;
+                    default:
+                        return property;
+                }
+            }),
         ),
     );
+
     formData.append('templateId', newEntityData.template._id);
 
     if (ignoredRules) {
