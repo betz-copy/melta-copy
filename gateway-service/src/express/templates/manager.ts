@@ -48,6 +48,8 @@ import { checkPropertyInUsedFromFormula } from './rules/checkIfPropertyInUsed';
 import { UploadedFile } from '../../utils/busboy/interface';
 import { IRelationship } from '../../externalServices/instanceService/interfaces/relationships';
 import { buildNewRelationshipField, validateNoDependentRules, validateRequiredConstraints, validateUniqueRelationships } from '../../utils/templates';
+import { ChartManager } from '../templateCharts/manager';
+import { IAxisField, IChartType, IColumnOrLineMetaData, INUmberMetaData, IPieMetaData } from '../templateCharts/interface';
 
 const {
     categoryHasTemplates,
@@ -78,6 +80,8 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
     private ganttService: GanttsService;
 
+    private chartsManager: ChartManager;
+
     constructor(private workspaceId: string) {
         super(new EntityTemplateService(workspaceId));
         this.storageService = new StorageService(workspaceId);
@@ -88,6 +92,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         this.processManager = new ProcessTemplatesManager(workspaceId);
         this.ruleBreachService = new RuleBreachService(workspaceId);
         this.ganttService = new GanttsService(workspaceId);
+        this.chartsManager = new ChartManager(workspaceId);
     }
 
     async getAllowedEntityTemplateIds(permissionsOfUserId: RequestWithPermissionsOfUserId['permissionsOfUserId'], searchBody?: any) {
@@ -575,12 +580,57 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         });
     }
 
+    private async isPropertyOfTemplateInUsedInCharts(templateId: string, properties: string[], archive: boolean): Promise<void> {
+        const allChartsOfTemplate = await this.chartsManager.getChartsByTemplateId(templateId, this.workspaceId);
+
+        const isPropertyUsed = (field: IAxisField): string | null => {
+            if (typeof field === 'string') return properties.includes(field) ? field : null;
+            return field.byField && properties.includes(field.byField) ? field.byField : null;
+        };
+
+        for (const chart of allChartsOfTemplate) {
+            let foundProperty: string | null = null;
+
+            switch (chart.type) {
+                case IChartType.Column:
+                case IChartType.Line: {
+                    const { xAxis, yAxis } = chart.metaData as IColumnOrLineMetaData;
+                    foundProperty = isPropertyUsed(xAxis.field) || isPropertyUsed(yAxis.field);
+                    break;
+                }
+
+                case IChartType.Pie: {
+                    const { aggregationType, dividedByField } = chart.metaData as IPieMetaData;
+                    foundProperty = isPropertyUsed(dividedByField) || isPropertyUsed(aggregationType);
+                    break;
+                }
+
+                case IChartType.Number: {
+                    const { accumulator } = chart.metaData as INUmberMetaData;
+                    foundProperty = isPropertyUsed(accumulator);
+                    break;
+                }
+
+                default:
+                    break;
+            }
+
+            if (foundProperty)
+                throw new BadRequestError(`Cannot delete field '${foundProperty}' because it is used in chart '${chart._id}'`, {
+                    errorCode: archive ? config.errorCodes.failedToArchiveField : config.errorCodes.failedToDeleteField,
+                    type: 'charts',
+                    property: foundProperty,
+                });
+        }
+    }
+
     private async checkIfPropertyInUsedBeforeDeleteOrArchive(templateId: string, properties: string[], archive: boolean) {
         if (properties.length)
             await Promise.all([
                 this.isPropertyOfTemplateInUsedInGantts(templateId, properties, archive),
                 this.isPropertyOfTemplateInUsedInRules(templateId, properties, archive),
                 this.isPropertyInUsedAsRelatedFieldInRelationshipReference(templateId, properties, archive),
+                this.isPropertyOfTemplateInUsedInCharts(templateId, properties, archive),
             ]);
     }
 

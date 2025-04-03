@@ -47,8 +47,6 @@ const DateFilterInput: React.FC<DateFilterInputProps> = ({ filterField, handleFi
                         onEndDateChange={(newValue) => handleDateChange(newValue, false)}
                         startDateInput={filterField?.dateFrom ?? null}
                         endDateInput={filterField?.dateTo ?? null}
-                        maxEndDate={new Date()}
-                        maxStartDate={new Date()}
                         directionIsRow={entityFilter}
                         overrideSx={inputStyle}
                         readOnly={readOnly}

@@ -250,7 +250,7 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
                     borderRadius: '10px',
                     ...(entityFilter
                         ? {
-                              backgroundColor: darkMode ? '#17171a33' : '#EBEFFA33',
+                              backgroundColor: darkMode ? '#4a4a5033' : '#EBEFFA33',
                           }
                         : {
                               boxShadow: '0px 2px 1px -1px  #1E27754D',
