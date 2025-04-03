@@ -173,7 +173,6 @@ export const getFieldsConfigOfRule = (
     const entityTemplate = entityTemplates.get(entityTemplateId)!;
 
     const fieldsOfEntityTemplate = entityTemplateToFieldsConfig(entityTemplate, {});
-    console.log({ fieldsOfEntityTemplate });
 
     const connectedTemplatesWithRelationship = Array.from(relationshipTemplates.values())
         .map((relationshipTemplate) => populateRelationshipTemplate(relationshipTemplate, entityTemplates))

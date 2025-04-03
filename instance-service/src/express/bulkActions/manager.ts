@@ -480,7 +480,6 @@ export class BulkActionManager extends DefaultManagerNeo4j {
                     });
 
                     const rulesByEntityTemplateIds = groupBy(rulesOfEntities, (rule) => rule.entityTemplateId);
-                    console.dir({ rulesByEntityTemplateIds }, { depth: null });
 
                     const [ruleFailuresBeforeAll, { results, allActivityLogsToCreate }] = await Promise.all([
                         this.entityManager.runRulesOnEntitiesWithRuleReasons(
@@ -490,7 +489,6 @@ export class BulkActionManager extends DefaultManagerNeo4j {
                         ),
                         this.runBulkOfActionsInTransaction(transaction, actions, entitiesTemplatesByIds, userId),
                     ]);
-                    console.dir({ ruleFailuresBeforeAll, results, allActivityLogsToCreate }, { depth: null });
 
                     const entitiesIdsRulesReasonsMapAfterRunActions = await this.getEntitiesIdsRulesReasonsAfter(
                         actions,
@@ -499,14 +497,11 @@ export class BulkActionManager extends DefaultManagerNeo4j {
                         transaction,
                     );
 
-                    console.dir({ entitiesIdsRulesReasonsMapAfterRunActions }, { depth: null });
-
                     const ruleFailuresAfterAll = await this.entityManager.runRulesOnEntitiesWithRuleReasons(
                         transaction,
                         entitiesIdsRulesReasonsMapAfterRunActions,
                         rulesByEntityTemplateIds,
                     );
-                    console.dir({ ruleFailuresAfterAll }, { depth: null });
 
                     throwIfActionCausedRuleFailures(
                         ignoredRules,

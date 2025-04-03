@@ -29,8 +29,6 @@ class RuleController extends DefaultController<IMongoRule, RuleManager> {
     }
 
     async createRule(req: Request, res: Response) {
-        console.log('controller');
-
         res.json(await this.manager.createRule(req.body));
     }
 

@@ -159,9 +159,6 @@ export class RuleValidator extends DefaultController<IMongoRelationshipTemplate,
                     // todo: block in UI too, or support it
                     throw new Error('array not supported in formulas! sorry!');
                 }
-                // if (format === 'relationshipReference') {
-                //     throw new Error('relationshipReference not supported in formulas! sorry!');
-                // }
                 return type;
         }
     }
