@@ -156,13 +156,13 @@ const MyPermissions: React.FC<{
 
                 const handleManagementPermissionCheck = (path: string, checked: boolean, permissionsManagement?: boolean) => {
                     formikProps.setFieldValue(path, checked ? { scope: PermissionScope.write } : null);
-                    if (permissionsManagement)
-                        formikProps.setFieldValue(
-                            `${permissionsPath}.instances.categories`,
-                            Object.fromEntries(
-                                checked ? Array.from(categories.keys()).map((categoryId) => [categoryId, { scope: PermissionScope.write }]) : [],
-                            ),
-                        );
+                    if (!permissionsManagement) return;
+                    formikProps.setFieldValue(
+                        `${permissionsPath}.instances.categories`,
+                        Object.fromEntries(
+                            checked ? Array.from(categories.keys()).map((categoryId) => [categoryId, { scope: PermissionScope.write }]) : [],
+                        ),
+                    );
                 };
 
                 return (

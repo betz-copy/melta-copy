@@ -12,7 +12,6 @@ import React from 'react';
 import Chip from '@mui/material/Chip';
 import { Box, Tooltip, tooltipClasses, Grid } from '@mui/material';
 import { PriorityHigh } from '@mui/icons-material';
-import { useQueryClient } from 'react-query';
 import OpenPreview from '../../common/FilePreview/OpenPreview';
 import RelationshipReferenceView from '../../common/RelationshipReferenceView';
 import { EntityData, IEntity, IRequiredConstraint, IUniqueConstraint } from '../../interfaces/entities';
