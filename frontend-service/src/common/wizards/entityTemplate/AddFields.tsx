@@ -18,7 +18,7 @@ import { environment } from '../../../globals';
 const { mapSearchPropertiesLimit } = environment.map;
 
 const processStringFormats = [...stringFormats, 'entityReference'];
-const validPropertyTypes = [...basePropertyTypes, ...processStringFormats, ...arrayTypes, 'enum', 'serialNumber', 'pattern'];
+const validPropertyTypes = [...basePropertyTypes, ...processStringFormats, ...arrayTypes, 'enum', 'serialNumber', 'pattern', 'kartoffelUserField'];
 const dateNotificationTypes: string[] = ['day', 'week', 'twoWeeks', 'month', 'threeMonths', 'halfYear'];
 export const propertiesBaseSchema = Yup.object({
     name: Yup.string()

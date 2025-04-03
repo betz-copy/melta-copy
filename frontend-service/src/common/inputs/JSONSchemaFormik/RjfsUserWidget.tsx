@@ -17,7 +17,9 @@ const RjfsUserWidget = ({
 
     ...textFieldProps
 }: WidgetProps) => {
-    const handleOnChange = options.updateExpandedUserFields as (user: IKartoffelUser | null) => void;
+    const handleOnChange = options.updateExpandedUserFields as (
+        user: (Omit<IKartoffelUser, 'mobilePhone' | 'phone'> & { mobilePhone?: string; phone?: string }) | null,
+    ) => void;
 
     const [currentUser, setCurrentUser] = React.useState(value ? JSON.parse(value) : undefined);
     if (!currentUser) {
@@ -25,13 +27,18 @@ const RjfsUserWidget = ({
     }
 
     function handleUserChange(_event: React.SyntheticEvent, chosenUser: IKartoffelUser | null) {
-        if (handleOnChange) handleOnChange(chosenUser);
         if (!chosenUser) {
             setCurrentUser(undefined);
             return;
         }
+        const formattedUser: Omit<IKartoffelUser, 'mobilePhone' | 'phone'> & { mobilePhone?: string; phone?: string } = {
+            ...chosenUser,
+            mobilePhone: chosenUser.mobilePhone?.join(''),
+            phone: chosenUser.phone?.join(''),
+        };
+        if (handleOnChange) handleOnChange(formattedUser);
 
-        setCurrentUser(chosenUser);
+        setCurrentUser(formattedUser);
     }
 
     return (

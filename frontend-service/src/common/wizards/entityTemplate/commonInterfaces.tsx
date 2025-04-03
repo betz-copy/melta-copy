@@ -26,7 +26,10 @@ export interface CommonFormInputProperties {
     deleted?: boolean;
     readOnly?: boolean;
     uniqueCheckbox?: boolean;
-    expandedUserFields?: string[];
+    expandedUserField?: {
+        relatedUserField: string;
+        kartoffelField: string;
+    };
     groupName?: string;
     archive?: boolean;
     identifier?: boolean;

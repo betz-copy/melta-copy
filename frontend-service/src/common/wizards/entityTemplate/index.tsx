@@ -45,12 +45,15 @@ export interface EntityTemplateFormInputProperties {
     calculateTime: boolean | null | undefined;
     serialStarter: number | undefined;
     deleted?: boolean | undefined;
-    expandedUserFields?: string[];
     relationshipReference?: {
         relationshipTemplateId?: string;
         relationshipTemplateDirection: 'outgoing' | 'incoming';
         relatedTemplateId: string;
         relatedTemplateField: string;
+    };
+    expandedUserField?: {
+        relatedUserField: string;
+        kartoffelField: string;
     };
     archive?: boolean;
     mapSearch?: boolean;

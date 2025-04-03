@@ -1,6 +1,6 @@
 import config from '../config';
 import { WorkspaceTypes } from '../workspaces/inteface';
-import { InstancesService } from '../services/instance';
+import { InstanceService } from '../services/instance';
 import { WorkspaceManager } from '../workspaces/manager';
 import logger from '../utils/logger/logsLogger';
 import * as schedule from 'node-schedule';
@@ -8,43 +8,60 @@ import { groupBy, Dictionary } from 'lodash';
 import { Kartoffel } from '../services/kartoffel';
 import { IEntity } from '../instance/entity/interface';
 import { IKartoffelUser } from '../services/kartoffel/interface';
+import { EntityTemplateService, IMongoEntityTemplatePopulated } from '../services/entityTemplate';
 
 const { userFieldsSync } = config;
 
-const checkForEntityToUpdate = (entity: IEntity, kartoffelUsersMapById: Dictionary<IKartoffelUser[]>) => {
-    const expandedUsersFields: Record<string, string[]> = {};
+const checkForEntityToUpdate = (
+    entity: IEntity,
+    entityTemplate: IMongoEntityTemplatePopulated,
+    kartoffelUsersMapById: Dictionary<IKartoffelUser[]>,
+) => {
+    const userKeysKartoffelIdsMap: Record<string, string> = {};
     // const userDefaultFields = userFieldsSync.userOriginalAndSuffixFieldsMap; // TODO: sync also those fields?
     const propertiesToUpdate = {};
 
-    Object.entries(entity.properties).forEach(([key, value]) => {
-        if (key.includes('id_userField')) {
-            expandedUsersFields[`${key.split('.')[0]}_${value}`] = [];
+    Object.entries(entityTemplate.properties.properties).forEach(([key, value]) => {
+        if (value.format === 'user' && entity.properties[key]) userKeysKartoffelIdsMap[key] = JSON.parse(entity.properties[key])._id;
+    });
+
+    if (Object.keys(userKeysKartoffelIdsMap).length === 0) return {};
+
+    Object.entries(entityTemplate.properties.properties).forEach(([key, value]) => {
+        if (value.format === 'kartoffelUserField') {
+            const kartoffelId = userKeysKartoffelIdsMap[value.expandedUserField?.relatedUserField || ''];
+
+            console.log({ kartoffelId });
+
+            if (kartoffelId) {
+                const kartoffelUser = kartoffelUsersMapById[kartoffelId][0];
+                const kartoffelFieldValue = kartoffelUser[value.expandedUserField?.kartoffelField || ''];
+                if (entity.properties[key] !== kartoffelFieldValue) {
+                    propertiesToUpdate[key] = kartoffelFieldValue;
+                }
+            }
         }
     });
 
-    Object.keys(expandedUsersFields).forEach((userFieldKeyAndId) => {
-        const userFieldKey = userFieldKeyAndId.split('_')[0];
-        console.log({ userFieldKey });
-        expandedUsersFields[userFieldKeyAndId] = Object.keys(entity.properties).filter((key) => key.startsWith(`userprefix_${userFieldKey}_`));
-    });
-
-    Object.entries(expandedUsersFields).forEach(([userFieldKey, expandedFields]) => {
-        expandedFields.forEach((expandedField) => {
-            const userId = userFieldKey.split('_')[1];
-            const updatedKartoffelUserField = kartoffelUsersMapById[userId][0][expandedField.split('_')[2]];
-            console.log({
-                updatedKartoffelUserField,
-                expandedField,
-                splitedExpandedField: expandedField.split('_')[2],
-                kartoffelUser: kartoffelUsersMapById[userId],
-            });
-            if (updatedKartoffelUserField !== entity.properties[expandedField]) {
-                propertiesToUpdate[expandedField] = updatedKartoffelUserField;
-            }
-        });
-    });
-
     return propertiesToUpdate;
+};
+
+const getAllEntitiesOffTemplates = async (templates: IMongoEntityTemplatePopulated[], instanceService: InstanceService) => {
+    const entitiesArrays = await Promise.all(
+        templates.map(async (template) => {
+            const { count } = await instanceService.searchEntitiesOfTemplateRequest(template._id, { limit: 1 });
+
+            if (count === 0) return [];
+
+            const { entities: instances } = await instanceService.searchEntitiesOfTemplateRequest(template._id, {
+                limit: count,
+            });
+
+            return instances;
+        }),
+    );
+
+    return entitiesArrays.flat();
 };
 
 export const checkForUsersToSync = async () => {
@@ -55,45 +72,55 @@ export const checkForUsersToSync = async () => {
 
         await Promise.all(
             workspaceIds.map(async (workspaceId) => {
-                const instancesService = new InstancesService(workspaceId);
+                const instanceService = new InstanceService(workspaceId);
+                const templateService = new EntityTemplateService(workspaceId);
                 const usersIds = new Set<string>();
 
                 try {
-                    // get all the entity instances that have user field
-                    const instances = await instancesService.searchEntitiesWithUserFields();
-                    console.log({ instances, workspaceId });
+                    // get all the entity templates that have kartoffelUserField
+                    const templates = await templateService.searchEntityTemplatesIncludesFormat('kartoffelUserField');
+                    const templatesMapById = groupBy(templates, (template) => template._id);
+
+                    console.log({ templatesCount: templates.length });
+
+                    // get all the instances by the templates
+                    const instances = await getAllEntitiesOffTemplates(templates, instanceService);
+
+                   console.log({ instances, workspaceId });
 
                     // collect all the users ids from the instances
                     const entitiesIds: string[] = [];
                     instances.forEach((entity) => {
-                        entitiesIds.push(entity.properties._id);
-                        Object.entries(entity.properties).forEach(([key, value]) => {
-                            if (key.includes('id_userField')) usersIds.add(value);
+                        const entityTemplate = templatesMapById[entity.entity.templateId][0];
+                        entitiesIds.push(entity.entity.properties._id);
+                        Object.entries(entityTemplate.properties.properties).forEach(([key, value]) => {
+                            if (value.format === 'user' && entity.entity.properties[key]) usersIds.add(JSON.parse(entity.entity.properties[key])._id);
                         });
                     });
 
                     const kartoffelUsers = await Promise.all(Array.from(usersIds).map((userId) => Kartoffel.getUserById(userId)));
                     const kartoffelUsersMapById = groupBy(kartoffelUsers, (user) => user._id);
-                    const formatedEntities = await instancesService.getEntityInstancesByIds(entitiesIds);
+                    const formatedEntities = await instanceService.getEntityInstancesByIds(entitiesIds);
                     const formatedEntitiesMapById = groupBy(formatedEntities, (entity) => entity.properties._id);
 
                     const updatedEntities = await Promise.all(
                         instances.map((entity) => {
-                            const updatedProperies = checkForEntityToUpdate(entity, kartoffelUsersMapById);
+                            const entityTemplate = templatesMapById[entity.entity.templateId][0];
+                            const updatedProperies = checkForEntityToUpdate(entity.entity, entityTemplate, kartoffelUsersMapById);
                             console.log({ updatedProperies });
                             if (Object.keys(updatedProperies).length === 0) {
                                 console.log('nothing to update');
                                 return;
                             }
 
-                            return instancesService.updateEntityInstance(
-                                entity.properties._id,
+                            return instanceService.updateEntityInstance(
+                                entity.entity.properties._id,
                                 {
-                                    ...formatedEntitiesMapById[entity.properties._id][0],
-                                    properties: { ...formatedEntitiesMapById[entity.properties._id][0].properties, ...updatedProperies },
+                                    ...formatedEntitiesMapById[entity.entity.properties._id][0],
+                                    properties: { ...formatedEntitiesMapById[entity.entity.properties._id][0].properties, ...updatedProperies },
                                 },
                                 [],
-                                'aa',
+                                'systemUser',
                             );
                         }),
                     );
@@ -103,11 +130,9 @@ export const checkForUsersToSync = async () => {
                     // for each user field in each instance, check if the user from kartoffel is different in one of the fields of the user in the instance
                     // update the user fields if needed
                 } catch (error) {
-                    logger.error('Error checking date notifications:', { error });
+                    logger.error('Error syncing kartoffel users:', { error });
                 }
             }),
         );
     });
 };
-
-// TODO: lir - handle delete user field

@@ -47,6 +47,7 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
     const ajv = new Ajv({ allErrors: true });
     ajv.addFormat('fileId', /.*/);
     ajv.addFormat('signature', /.*/);
+    ajv.addFormat('kartoffelUserField', /.*/);
     ajv.addFormat('user', {
         type: 'string',
         validate: (user) => {
@@ -71,6 +72,10 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
     });
     ajv.addKeyword({
         keyword: 'relationshipReference',
+        type: 'string',
+    });
+    ajv.addKeyword({
+        keyword: 'expandedUserField',
         type: 'string',
     });
     ajv.addKeyword({

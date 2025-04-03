@@ -15,7 +15,18 @@ import { CommonFormInputProperties } from '../../common/wizards/entityTemplate/c
 
 const { entityTemplates } = environment.api;
 export const basePropertyTypes = ['string', 'number', 'boolean'];
-export const stringFormats = ['date', 'date-time', 'email', 'fileId', 'text-area', 'relationshipReference', 'location', 'user', 'signature'];
+export const stringFormats = [
+    'date',
+    'date-time',
+    'email',
+    'fileId',
+    'text-area',
+    'relationshipReference',
+    'location',
+    'user',
+    'signature',
+    'kartoffelUserField',
+];
 export const arrayTypes = ['multipleFiles', 'enumArray', 'users'];
 
 const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTemplatePopulated | null): EntityTemplateWizardValues | undefined => {
@@ -76,7 +87,7 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
                 preview: propertiesPreview.includes(key),
                 hide: properties.hide.includes(key),
                 readOnly: value.readOnly || undefined,
-                expandedUserFields: expandedUsersFields[key] || [],
+                expandedUserField: value.expandedUserField,
                 uniqueCheckbox: uniqueConstraints.some((constraint) => constraint.properties.includes(key) && constraint.groupName !== ''),
                 groupName: uniqueConstraints.find((constraint) => constraint.properties.includes(key) && constraint.groupName !== '')?.groupName,
                 calculateTime: value.calculateTime ?? undefined,
@@ -140,7 +151,6 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
     const propertiesOrder: string[] = [];
     const attachmentPropertiesOrder: string[] = [];
     const propertiesPreview: string[] = [];
-    const expandedUsersFields: Record<string, string[]> = {};
     const mapSearchProperties: string[] = [];
     const schema: IEntityTemplate['properties'] = {
         type: 'object',
@@ -175,7 +185,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
             archive,
             identifier,
             mapSearch,
-            expandedUserFields,
+            expandedUserField,
         }) => {
             if (deleted) return;
 
@@ -211,6 +221,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                     | 'text-area'
                     | 'relationshipReference'
                     | 'user'
+                    | 'kartoffelUserField'
                     | undefined,
                 enum: type === 'enum' ? options : undefined,
                 items: type === 'enumArray' ? { type: 'string', enum: options } : type === 'users' ? { type: 'string', format: 'user' } : undefined,
@@ -235,6 +246,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                           relatedTemplateField: relationshipReference!.relatedTemplateField,
                       }
                     : undefined,
+                expandedUserField,
             };
             if (isEditMode) {
                 schema.properties[name] = {
@@ -242,13 +254,6 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                     isNewPropNameEqualDeletedPropName: properties.some((property) => property.id !== id && property.name === name),
                 };
             }
-            if (expandedUserFields && expandedUserFields.length) {
-                schema.properties[name] = {
-                    ...schema.properties[name],
-                    expandedUserFields,
-                };
-            }
-
             propertiesOrder.push(name);
 
             if (required) schema.required.push(name);
@@ -264,7 +269,6 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                     enumPropertiesColors[name][option] = color;
                 });
             }
-            if (expandedUserFields && expandedUserFields.length) expandedUsersFields[name] = expandedUserFields;
         },
     );
 

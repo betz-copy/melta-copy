@@ -31,7 +31,10 @@ export interface IEntitySingleProperty {
         relatedTemplateId: string;
         relatedTemplateField: string;
     };
-    expandedUserFields?: string[];
+    expandedUserField?: {
+        relatedUserField: string;
+        kartoffelField: string;
+    };
     archive?: boolean;
 }
 

@@ -22,6 +22,15 @@ const entityTemplateSchema = {
     mapSearchProperties: Joi.array().items(Joi.string()),
 };
 
+// POST /api/entities/templates/searchByFormat
+export const searchEntityTemplatesByFormatSchema = Joi.object({
+    query: {},
+    body: {
+        format: Joi.string().required(),
+    },
+    params: {},
+});
+
 // POST /api/entities/templates/search
 export const searchEntityTemplatesSchema = Joi.object({
     query: {},
