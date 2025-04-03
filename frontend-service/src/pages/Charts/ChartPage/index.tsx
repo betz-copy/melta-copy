@@ -14,7 +14,6 @@ import { IGraphFilterBodyBatch } from '../../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { createChart, deleteChart, editChart, getChartById } from '../../../services/chartsService';
 import { useUserStore } from '../../../stores/user';
-import { generateNewItemSizes } from '../../../utils/charts/defaultChartSizes';
 import { chartValidationSchema, initialValues as defaultInitialValues } from '../../../utils/charts/getChartAxes';
 import { markTouched } from '../../../utils/charts/markTouchedRecursive';
 import { FilterOfGraphToFilterRecord, filterModelToFilterOfGraph } from '../../Graph/GraphFilterToBackend';

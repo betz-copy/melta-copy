@@ -207,7 +207,7 @@ export const MeltaRoutesInner: React.FC = () => {
 
                             <Route path="/charts/:templateId">
                                 <ChartsProtectedRoute permissions={currentUser.currentWorkspacePermissions}>
-                                    <Charts setTitle={setTitle} />
+                                    <Charts />
                                 </ChartsProtectedRoute>
                             </Route>
 

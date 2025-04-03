@@ -6,13 +6,13 @@ import { v4 as uuid } from 'uuid';
 import EntitiesTableOfTemplate, { EntitiesTableOfTemplateRef } from '../../../EntitiesTableOfTemplate';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { TableButton } from '../../../TableButton';
-import { IEntity, ISearchFilter } from '../../../../interfaces/entities';
+import { EntityData, IEntity, ISearchFilter } from '../../../../interfaces/entities';
 import { useWorkspaceStore } from '../../../../stores/workspace';
 import { IFailedEntity } from '../../../../interfaces/excel';
 
 export const EntitiesTable: React.FC<{
     rowData?: IEntity[] | IFailedEntity[];
-    rowModelType: 'serverSide' | 'clientSide' | 'infinite';
+    rowModelType?: 'serverSide' | 'clientSide' | 'infinite';
     template: IMongoEntityTemplatePopulated;
     defaultExpanded: boolean;
     icon?: React.JSX.Element;
@@ -38,7 +38,7 @@ export const EntitiesTable: React.FC<{
     disableFilter,
 }) => {
     const theme = useTheme();
-    const entitiesTableRef = useRef<EntitiesTableOfTemplateRef<IEntity>>(null);
+    const entitiesTableRef = useRef<EntitiesTableOfTemplateRef<EntityData>>(null);
     const workspace = useWorkspaceStore((state) => state.workspace);
     const { defaultRowHeight, defaultFontSize } = workspace.metadata.agGrid;
 
