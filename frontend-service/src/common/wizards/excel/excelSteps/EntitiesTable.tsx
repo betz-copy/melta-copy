@@ -38,7 +38,6 @@ export const EntitiesTable: React.FC<{
     disableFilter,
 }) => {
     const theme = useTheme();
-    const entitiesTableRef = useRef<EntitiesTableOfTemplateRef<EntityData>>(null);
     const workspace = useWorkspaceStore((state) => state.workspace);
     const { defaultRowHeight, defaultFontSize } = workspace.metadata.agGrid;
 
@@ -100,7 +99,6 @@ export const EntitiesTable: React.FC<{
             </AccordionSummary>
             <AccordionDetails>
                 <EntitiesTableOfTemplate
-                    ref={entitiesTableRef}
                     template={template}
                     getRowId={(currentEntity) => currentEntity.properties._id || uuid()}
                     getEntityPropertiesData={(currentEntity) => currentEntity.properties}
