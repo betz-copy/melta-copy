@@ -30,7 +30,7 @@ export class ChartManager extends DefaultManagerMongo<IChartDocument> {
         return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
     }
 
-    async getChartsByTemplateId(templateId: string, userId: string, textSearch?: string) {
+    async getChartsByTemplateId(templateId: string, textSearch?: string) {
         const query: FilterQuery<IChartDocument> = {
             templateId,
             ...(textSearch && {
@@ -41,15 +41,15 @@ export class ChartManager extends DefaultManagerMongo<IChartDocument> {
             }),
         };
 
-        const allChartsOfTemplateId = await this.model.find(query).lean().exec();
-
-        return this.getChartsWithPermissions(allChartsOfTemplateId, userId);
+        return this.model.find(query).lean().exec();
     }
 
     async getChartsOfTemplateId(templateId: string, userId: string, textSearch?: string): Promise<ChartsAndGenerator[]> {
-        const charts = await this.getChartsByTemplateId(templateId, userId, textSearch);
+        const charts = await this.getChartsByTemplateId(templateId, textSearch);
 
-        const chartsData: IChartBody[] = charts.map(({ _id, type, metaData, filter }) => ({
+        const allowedCharts = this.getChartsWithPermissions(charts, userId);
+
+        const chartsData: IChartBody[] = allowedCharts.map(({ _id, type, metaData, filter }) => ({
             _id,
             ...getMetaDataAxes(type, metaData, filter),
         }));
@@ -58,7 +58,7 @@ export class ChartManager extends DefaultManagerMongo<IChartDocument> {
 
         const generatedChartsMap = new Map(generatedCharts.map(({ _id, chart }) => [_id, chart]));
 
-        const GeneratedAndDataCharts: ChartsAndGenerator[] = charts.map((chart) => ({
+        const GeneratedAndDataCharts: ChartsAndGenerator[] = allowedCharts.map((chart) => ({
             ...chart,
             chart: generatedChartsMap.get(chart._id.toString())!,
         }));

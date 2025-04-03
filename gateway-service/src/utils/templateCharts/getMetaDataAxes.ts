@@ -7,7 +7,7 @@ import {
     IPieMetaData,
 } from '../../express/templateCharts/interface';
 
-export const getMetaDataAxes = (type: IChartType, metaData: IChartTypeMetaData, filter: string) => {
+export const getMetaDataAxes = (type: IChartType, metaData: IChartTypeMetaData, filter?: string) => {
     let xAxis: IAxisField;
     let yAxis: IAxisField | undefined;
 

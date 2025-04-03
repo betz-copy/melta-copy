@@ -6,10 +6,13 @@ import { getFileName, getFilesName } from '../../express/entities/validator.temp
 import { IMongoEntityTemplate } from '../../externalServices/templates/interfaces/entityTemplates';
 import { formatDate } from '../neo4j/lib';
 import { EntityManager } from '../../express/entities/manager';
+import { CoordinateSystem, locationConverterToString } from '../map';
 
 const {
     neo4j: { userFieldPropertySuffix, usersFieldsPropertySuffix, relationshipReferencePropertySuffix },
-    map: { polygonPrefix, polygonSuffix },
+    map: {
+        polygon: { polygonPrefix, polygonSuffix },
+    },
 } = config;
 
 export const handleChartPropertiesTemplate = (entityTemplate: IMongoEntityTemplate) => {
@@ -34,10 +37,10 @@ const getRelatedEntityName = async (workspaceId: string, id: string, relatedTemp
     return relatedEntity?.properties?.[relatedTemplateField] ?? id;
 };
 
-const getAggregation = (axis: IAxisField, specialProperties: Record<string, string>): IAggregation => {
+const getAggregation = (axis: IAxisField, specialProperties: Record<string, string>, unitAgg?: boolean): IAggregation => {
     if (typeof axis === 'string') {
         const byField = specialProperties[axis] ?? axis;
-        return { type: 'none', byField: `\`${byField}\`` };
+        return { type: 'none', byField: !unitAgg ? `\`${byField}\`` : `\`${byField}_coordinateSystem\`` };
     }
 
     if (axis.type === 'countAll') {
@@ -49,6 +52,18 @@ const getAggregation = (axis: IAxisField, specialProperties: Record<string, stri
     }
 
     return axis;
+};
+
+const getEntityTemplateProperty = (entityTemplate: IMongoEntityTemplate, axis: IAxisField) => {
+    if (typeof axis === 'string') {
+        return entityTemplate.properties.properties[axis];
+    }
+
+    if (axis.byField) {
+        return entityTemplate.properties.properties[axis.byField];
+    }
+
+    return undefined;
 };
 
 const generateAggregation = (agg: IAggregation, alias: string): string => {
@@ -76,13 +91,17 @@ export const buildChartAggregationQuery = (
     xAxis: IAxisField,
     yAxis: IAxisField | undefined,
     specialProperties: Record<string, string>,
+    entityTemplate: IMongoEntityTemplate,
     filterQuery?: string,
 ) => {
     const xAgg = getAggregation(xAxis, specialProperties);
     const yAgg = yAxis ? getAggregation(yAxis, specialProperties) : undefined;
+    const unitAgg =
+        getEntityTemplateProperty(entityTemplate, xAxis)?.format === 'location' ? getAggregation(xAxis, specialProperties, true) : undefined;
 
     const xAggregation = generateAggregation(xAgg, 'x');
     const yAggregation = yAgg ? generateAggregation(yAgg, 'y') : null;
+    const unitAggregation = unitAgg ? generateAggregation(unitAgg, 'unit') : null;
 
     let query = `MATCH (node)
                 WHERE ${filterQuery}
@@ -90,7 +109,7 @@ export const buildChartAggregationQuery = (
 
     if (yAggregation)
         query += `
-          RETURN ${xAggregation}, ${yAggregation}
+          RETURN ${xAggregation}, ${yAggregation} ${unitAggregation ? `, ${unitAggregation}` : ''}
           ORDER BY y
         `;
     else
@@ -101,9 +120,12 @@ export const buildChartAggregationQuery = (
     return query;
 };
 
+const getLocation = ({ x, y }: InstanceType<typeof neo4j.types.Point>, unit?: string) =>
+    unit === CoordinateSystem.UTM ? locationConverterToString(`${x}, ${y}`, CoordinateSystem.WGS84, CoordinateSystem.UTM) : `${x}, ${y}`;
+
 export const manipulateReturnedChart = async (
     xAxis: IAxisField,
-    chart: { x: any; y: number }[],
+    chart: { x: any; y: number; unit?: string }[],
     entityTemplate: IMongoEntityTemplate,
     workspaceId: string,
 ) => {
@@ -112,7 +134,7 @@ export const manipulateReturnedChart = async (
     const { format, items, relationshipReference } = entityTemplate.properties.properties[xAxis];
 
     return Promise.all(
-        chart.map(async ({ x, y }) => {
+        chart.map(async ({ x, y, unit }) => {
             if (!x) return { x, y };
 
             if (format === 'relationshipReference')
@@ -126,10 +148,10 @@ export const manipulateReturnedChart = async (
 
             if (x instanceof neo4j.types.Date) return { x: formatDate(x.toString()), y };
 
-            if (x instanceof neo4j.types.Point) return { x: `${x.x}, ${x.y}`, y };
+            if (x instanceof neo4j.types.Point) return { x: getLocation(x, unit), y };
 
             if (Array.isArray(x) && x.every((item) => item instanceof neo4j.types.Point)) {
-                const points = x.map((point) => `${point.x} ${point.y}`).join(',');
+                const points = x.map((point) => getLocation(point, unit)).join(',');
                 return { x: `${polygonPrefix}${points}${polygonSuffix}`, y };
             }
 

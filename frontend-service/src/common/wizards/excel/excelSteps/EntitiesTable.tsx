@@ -1,14 +1,14 @@
 import { Download, ExpandMore } from '@mui/icons-material';
 import { Accordion, AccordionDetails, AccordionSummary, CircularProgress, Grid, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
-import React, { useRef } from 'react';
+import React, { useState } from 'react';
 import { v4 as uuid } from 'uuid';
-import EntitiesTableOfTemplate, { EntitiesTableOfTemplateRef } from '../../../EntitiesTableOfTemplate';
+import { IEntity, ISearchFilter } from '../../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
-import { TableButton } from '../../../TableButton';
-import { EntityData, IEntity, ISearchFilter } from '../../../../interfaces/entities';
-import { useWorkspaceStore } from '../../../../stores/workspace';
 import { IFailedEntity } from '../../../../interfaces/excel';
+import { useWorkspaceStore } from '../../../../stores/workspace';
+import EntitiesTableOfTemplate from '../../../EntitiesTableOfTemplate';
+import { TableButton } from '../../../TableButton';
 
 export const EntitiesTable: React.FC<{
     rowData?: IEntity[] | IFailedEntity[];
@@ -40,6 +40,7 @@ export const EntitiesTable: React.FC<{
     const theme = useTheme();
     const workspace = useWorkspaceStore((state) => state.workspace);
     const { defaultRowHeight, defaultFontSize } = workspace.metadata.agGrid;
+    const [expanded, setExpanded] = useState(defaultExpanded);
 
     return (
         <Accordion
@@ -53,7 +54,8 @@ export const EntitiesTable: React.FC<{
                 },
                 ...overrideSx,
             }}
-            defaultExpanded={defaultExpanded}
+            expanded={expanded}
+            onChange={() => setExpanded((prev) => !prev)}
         >
             <AccordionSummary
                 sx={{
@@ -97,7 +99,7 @@ export const EntitiesTable: React.FC<{
                     )}
                 </Grid>
             </AccordionSummary>
-            <AccordionDetails>
+            <AccordionDetails sx={{ display: expanded ? 'block' : 'none' }}>
                 <EntitiesTableOfTemplate
                     template={template}
                     getRowId={(currentEntity) => currentEntity.properties._id || uuid()}

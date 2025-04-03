@@ -53,7 +53,7 @@ export interface IChart {
     templateId: string;
     type: IChartType;
     metaData: IChartTypeMetaData;
-    filter: string;
+    filter?: string;
     createdBy: string;
     permission: IPermission;
 }

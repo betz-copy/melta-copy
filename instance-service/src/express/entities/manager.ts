@@ -2067,7 +2067,7 @@ export class EntityManager extends DefaultManagerNeo4j {
             const templatesFilter = { [templateId]: { filter, showRelationships: false } };
             const { cypherQuery: filterQuery, parameters } = templatesFilterToNeoQuery(templatesFilter, entityTemplatesMap);
 
-            const query = buildChartAggregationQuery(xAxis, yAxis, specialProperties, filterQuery);
+            const query = buildChartAggregationQuery(xAxis, yAxis, specialProperties, entityTemplate, filterQuery);
             const chart = await this.neo4jClient.readTransaction(query, normalizeChartResponse, parameters);
             const manipulatedChart = await manipulateReturnedChart(xAxis, chart, entityTemplate, this.workspaceId);
 
