@@ -83,6 +83,7 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
         errors: false,
         keyword: '',
     });
+    ajv.addKeyword({ keyword: 'filterRelationList', type: 'boolean' });
 
     const schemaToValidate = {
         ...schema,

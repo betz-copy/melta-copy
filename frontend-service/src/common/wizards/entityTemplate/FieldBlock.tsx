@@ -53,6 +53,7 @@ interface FieldBlockProps<PropertiesType extends string, Values extends Record<P
     supportConvertingToMultipleFields?: boolean;
     supportIdentifier?: boolean;
     hasIdentifier?: boolean;
+    supportFilterRelationList?: boolean;
 }
 
 const FieldBlock = <PropertiesType extends string, Values extends Record<PropertiesType, CommonFormInputProperties[]>>({
@@ -83,6 +84,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
     locationSearchFields,
     supportIdentifier,
     hasIdentifier,
+    supportFilterRelationList,
     supportAddFieldButton = true,
     hasActions,
     draggable = { isDraggable: false },
@@ -105,6 +107,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
         serialStarter: 0,
         archive: false,
         mapSearch: false,
+        filterRelationList: false,
     },
     supportConvertingToMultipleFields = true,
 }: React.PropsWithChildren<FieldBlockProps<PropertiesType, Values>>) => {
@@ -254,6 +257,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
                                                 supportArchive,
                                                 supportIdentifier,
                                                 hasIdentifier,
+                                                supportFilterRelationList,
                                                 locationSearchFields,
                                                 hasActions,
                                                 supportConvertingToMultipleFields,

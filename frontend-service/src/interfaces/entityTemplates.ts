@@ -32,6 +32,7 @@ export interface IEntitySingleProperty {
         relatedTemplateField: string;
     };
     archive?: boolean;
+    filterRelationList?: boolean;
 }
 
 export interface IEntityTemplate {

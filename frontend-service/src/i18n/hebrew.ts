@@ -566,6 +566,10 @@ export default {
             cannotArchiveIfRequired: 'לא ניתן להכניס לארכיון שדה חובה',
             cannotArchiveIfUnique: 'לא ניתן להכניס לארכיון שדה מיוחד',
             cannotArchiveIfPreview: 'לא ניתן להכניס לארכיון שדה בתצוגה מצומצמת',
+            filterField: 'שדה לסינון',
+            filterBy: 'סינון על פי',
+            filterValue: 'ערך',
+            addRelationFilter: 'הוספת סינון על רשימת היישויות בקשר',
         },
         relationshipTemplate: {
             createTitle: 'יצירת תבנית קשר',
@@ -838,6 +842,7 @@ export default {
         pattern: 'תבנית (regex)',
         enum: 'רשימה',
         relationshipReference: 'שיוך לקשר',
+        filterRelationList: 'סינון רשימת הקשר',
         dateNotification: 'התראה לפני סיום',
         entityReference: 'שיוך לישות',
         serialNumber: 'מספר סידורי',

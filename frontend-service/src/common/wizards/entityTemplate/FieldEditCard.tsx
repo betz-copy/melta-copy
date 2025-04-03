@@ -48,8 +48,9 @@ import { AreYouSureDialog } from '../../dialogs/AreYouSureDialog';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { MeltaTooltip } from '../../MeltaTooltip';
 import { IUniqueConstraintOfTemplate } from '../../../interfaces/entities';
-import RelationshipReferenceField from './RelationshipReferenceField';
+import RelationshipReferenceField from './RelationshipRefrence/RelationshipReferenceField';
 import { environment } from '../../../globals';
+import { FilterEntitiesByCriteria } from './RelationshipRefrence/filterEntitiesByCriteria';
 
 const { mapSearchPropertiesLimit } = environment.map;
 
@@ -101,6 +102,7 @@ export interface FieldEditCardProps {
     locationSearchFields?: { show: boolean; disabled: boolean };
     hasActions?: boolean;
     supportConvertingToMultipleFields?: boolean;
+    supportFilterRelationList?: boolean;
 }
 
 export const FieldEditCard: React.FC<FieldEditCardProps> = ({
@@ -135,6 +137,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     locationSearchFields,
     hasActions,
     supportConvertingToMultipleFields = true,
+    supportFilterRelationList,
 }) => {
     const isText = value.type === 'string' || value.type === 'text-area';
 
@@ -177,6 +180,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     const hide = `properties[${index}].hide`;
     const readOnly = `properties[${index}].readOnly`;
     const identifier = `properties[${index}].identifier`;
+    const filterRelationList = `properties[${index}].filterRelationList`;
 
     const unique =
         value.type === 'serialNumber' ||
@@ -558,7 +562,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                     <Card
                         elevation={3}
                         sx={{
-                            padding: '0.5rem',
+                            padding: '1rem 0.5rem',
                             ...(value.deleted && {
                                 backgroundColor: 'rgb(224, 225, 237,0.4)',
                             }),
@@ -566,436 +570,452 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                     >
                         <CardContent sx={{ '&:last-child': { padding: 0 } }}>
                             <Grid container justifyContent="space-between" wrap="nowrap" alignItems="center">
-                                <Box {...draggableProvided.dragHandleProps}>
+                                <Box {...draggableProvided.dragHandleProps} margin="0 0.5rem">
                                     <DragHandleIcon fontSize="large" />
                                 </Box>
 
                                 <Grid container direction="column">
-                                    <Grid container wrap="nowrap" marginBottom="0.4rem">
-                                        <TextField
-                                            label={i18next.t('wizard.entityTemplate.propertyName')}
-                                            id={name}
-                                            name={name}
-                                            value={value.name}
-                                            onChange={onChange}
-                                            error={touchedName && Boolean(errorName)}
-                                            helperText={touchedName && errorName}
-                                            disabled={isDisabled || value.deleted}
-                                            sx={{ marginRight: '5px' }}
-                                            fullWidth
-                                        />
-                                        <TextField
-                                            label={i18next.t('wizard.entityTemplate.propertyDisplayName')}
-                                            id={title}
-                                            name={title}
-                                            value={value.title}
-                                            onChange={onChange}
-                                            error={touchedTitle && Boolean(errorTitle)}
-                                            helperText={touchedTitle && errorTitle}
-                                            sx={{ marginRight: '5px' }}
-                                            fullWidth
-                                            disabled={value.deleted}
-                                        />
-                                        <TextField
-                                            select
-                                            type="text"
-                                            label={i18next.t('wizard.entityTemplate.propertyType')}
-                                            id={type}
-                                            name={type}
-                                            value={value.type === 'text-area' ? 'string' : value.type}
-                                            onChange={(e) => {
-                                                setValues?.((prevValue) => ({
-                                                    ...prevValue,
-                                                    type: e.target.value,
-                                                    required: e.target.value === 'serialNumber' || prevValue.required,
-                                                }));
-                                            }}
-                                            error={touchedType && Boolean(errorType)}
-                                            helperText={touchedType && errorType}
-                                            disabled={
-                                                (isDisabled && (initialValue?.type !== 'enum' || !supportConvertingToMultipleFields)) || value.deleted
-                                            }
-                                            sx={{ marginRight: '5px' }}
-                                            fullWidth
+                                    <Grid container direction="column" marginBottom="0.5rem">
+                                        <Grid
+                                            container
+                                            wrap="nowrap"
+                                            marginBottom={value.type === 'relationshipReference' && supportRelationshipReference ? '0.5rem' : '0'}
                                         >
-                                            {validPropertyTypes
-                                                .filter((validPropertyType) => {
-                                                    if (initialValue?.type === 'enum' && areThereAnyInstances && supportConvertingToMultipleFields)
-                                                        return validPropertyType === 'enumArray' || validPropertyType === 'enum';
-                                                    if (validPropertyType === 'entityReference') return supportEntityReferenceType;
-                                                    if (validPropertyType === 'serialNumber') {
-                                                        if (!supportSerialNumberType) return false;
-                                                    }
-                                                    if (validPropertyType === 'location') return supportLocation;
-                                                    if (validPropertyType === 'text-area') return false;
-                                                    if (validPropertyType === 'enumArray') return supportArrayFields;
-                                                    if (validPropertyType === 'relationshipReference') return supportRelationshipReference;
-                                                    if (validPropertyType === 'fileId' || validPropertyType === 'multipleFiles') return false; // TODO: support file inputs
-                                                    if (validPropertyType === 'user' || validPropertyType === 'users') return supportUserType;
-                                                    return true;
-                                                })
-                                                .map((validType) => {
-                                                    return (
-                                                        <MenuItem key={validType} value={validType}>
-                                                            {i18next.t(`propertyTypes.${validType}`)}
-                                                        </MenuItem>
-                                                    );
-                                                })}
-                                        </TextField>
-                                    </Grid>
-                                    <Grid item container justifyContent="space-between" flexWrap="nowrap">
-                                        {(value.type === 'enum' || value.type === 'enumArray') && (
-                                            <Autocomplete
-                                                id={options}
-                                                multiple
-                                                options={value.options}
-                                                freeSolo
-                                                value={value.options}
-                                                onChange={(_e, currValue) => {
-                                                    const lastValue = currValue.pop();
-                                                    const trimmedValue = lastValue ? [...currValue, lastValue.trim()] : [];
-
-                                                    if (isDisabled) {
-                                                        updateOldDisabledEnumVals(trimmedValue);
-                                                    } else {
-                                                        setValues?.((prev) => ({
-                                                            ...prev,
-                                                            options: trimmedValue,
-                                                        }));
-                                                    }
-                                                }}
-                                                isOptionEqualToValue={(option, inputValue) => {
-                                                    return option.trim() === inputValue.trim() || option.trim().length === 0;
-                                                }}
-                                                renderTags={(tagValue, getTagProps) =>
-                                                    tagValue.map((option, tagIndex) => {
-                                                        const chipDisabled = isDisabled && initialOptionArray.length > tagIndex;
-                                                        return (
-                                                            <Box position="relative" key={option}>
-                                                                <>
-                                                                    {chipDisabled ? (
-                                                                        <Chip
-                                                                            variant="outlined"
-                                                                            label={option}
-                                                                            {...getTagProps({ index: tagIndex })}
-                                                                            onDelete={undefined}
-                                                                            icon={value.optionColors && <Box width="1.3rem" />}
-                                                                            sx={{ position: 'relative', pr: supportEditEnum ? '22px' : '3px' }}
-                                                                            ref={(ref) => {
-                                                                                chipRefs.current[tagIndex] = ref;
-                                                                            }}
-                                                                        />
-                                                                    ) : (
-                                                                        <Chip
-                                                                            variant="outlined"
-                                                                            label={option}
-                                                                            {...getTagProps({ index: tagIndex })}
-                                                                            icon={value.optionColors && <Box width="1.3rem" />}
-                                                                            sx={{ position: 'relative', pr: supportEditEnum ? '32px' : '3px' }}
-                                                                            ref={(ref) => {
-                                                                                chipRefs.current[tagIndex] = ref;
-                                                                            }}
-                                                                        />
-                                                                    )}
-                                                                    {value.optionColors && (
-                                                                        <MinimizedColorPicker
-                                                                            color={value.optionColors[option]}
-                                                                            onColorChange={(color) => {
-                                                                                setFieldValue('optionColors', {
-                                                                                    ...value.optionColors,
-                                                                                    [option]: color,
-                                                                                });
-                                                                            }}
-                                                                            circleSize="1.6rem"
-                                                                            style={{
-                                                                                position: 'absolute',
-                                                                                top: 4.5,
-                                                                                left: 4.2,
-                                                                                zIndex: 10000,
-                                                                            }}
-                                                                        />
-                                                                    )}
-                                                                    {supportEditEnum && (
-                                                                        <MemoizedIconButton
-                                                                            onClick={() => {
-                                                                                setEditError('');
-                                                                                setEditIndex(tagIndex);
-                                                                                setLocalOption(value.options[tagIndex]);
-                                                                            }}
-                                                                            sx={{
-                                                                                position: 'absolute',
-                                                                                top: '50%',
-                                                                                right: '8px',
-                                                                                transform: 'translateY(-50%)',
-                                                                                zIndex: 2000,
-                                                                                backgroundColor: 'transparent',
-                                                                                width: '1.6rem',
-                                                                                height: '1.6rem',
-                                                                                padding: 0,
-                                                                            }}
-                                                                        >
-                                                                            <EditIcon />
-                                                                        </MemoizedIconButton>
-                                                                    )}
-                                                                </>
-                                                                <Popover
-                                                                    open={editIndex === tagIndex}
-                                                                    anchorEl={chipRefs.current[tagIndex]}
-                                                                    onClose={() => {
-                                                                        setEditIndex(null);
-                                                                    }}
-                                                                    anchorOrigin={{
-                                                                        vertical: 'bottom',
-                                                                        horizontal: 'center',
-                                                                    }}
-                                                                    transformOrigin={{
-                                                                        vertical: 'top',
-                                                                        horizontal: 'center',
-                                                                    }}
-                                                                    PaperProps={{
-                                                                        style: {
-                                                                            zIndex: 10000,
-                                                                            borderRadius: '10px',
-                                                                        },
-                                                                    }}
-                                                                >
-                                                                    <Box
-                                                                        p={2}
-                                                                        style={{
-                                                                            display: 'flex',
-                                                                            alignItems: 'center',
-                                                                            borderColor: editError !== '' ? 'red' : 'inherit',
-                                                                            borderStyle: editError !== '' ? 'solid' : 'inherit',
-                                                                            borderWidth: '1px',
-                                                                            borderRadius: '10px',
-                                                                        }}
-                                                                    >
-                                                                        <Backdrop
-                                                                            open={isDeleteLoading}
-                                                                            style={{ zIndex: 999, backgroundColor: 'transparent' }}
-                                                                        />
-                                                                        <TextField
-                                                                            key={editIndex}
-                                                                            fullWidth
-                                                                            value={localOption} // changed from local
-                                                                            onChange={(e) => handleEditChange(e, tagIndex)}
-                                                                            onKeyDown={(e) => {
-                                                                                e.stopPropagation();
-                                                                                if (e.key === 'Enter') {
-                                                                                    e.preventDefault();
-                                                                                    const localOptionTrimmed = localOption.trim();
-
-                                                                                    if (
-                                                                                        tagIndex > initialOptionArray.length - 1 ||
-                                                                                        value.options[tagIndex] === localOptionTrimmed ||
-                                                                                        value.options.includes(localOptionTrimmed) ||
-                                                                                        localOptionTrimmed.length === 0
-                                                                                    ) {
-                                                                                        setOpen(false);
-                                                                                        handleSaveEdit(editIndex!);
-                                                                                    } else setOpen(true);
-                                                                                }
-                                                                            }}
-                                                                        />
-                                                                        {chipDisabled && (
-                                                                            <IconButton
-                                                                                size="small"
-                                                                                onClick={() => {
-                                                                                    if (!isDeleteLoading) {
-                                                                                        setOpenDelete(true);
-                                                                                    }
-                                                                                }}
-                                                                                disabled={isDeleteLoading}
-                                                                            >
-                                                                                {isDeleteLoading ? <CircularProgress size={20} /> : <DeleteIcon />}
-                                                                            </IconButton>
-                                                                        )}
-                                                                        {!!editError && (
-                                                                            <Typography variant="body2" color="error">
-                                                                                {i18next.t(editError)}
-                                                                            </Typography>
-                                                                        )}
-                                                                    </Box>
-                                                                </Popover>
-                                                            </Box>
-                                                        );
-                                                    })
-                                                }
-                                                filterSelectedOptions
-                                                renderInput={(params) => (
-                                                    <TextField
-                                                        {...params}
-                                                        label={i18next.t('propertyTypes.enum')}
-                                                        error={(touchedOptions && Boolean(errorOptions)) || Boolean(atLeastOneItem)}
-                                                        helperText={(touchedOptions && errorOptions) || atLeastOneItem}
-                                                    />
-                                                )}
+                                            <TextField
+                                                label={i18next.t('wizard.entityTemplate.propertyName')}
+                                                id={name}
+                                                name={name}
+                                                value={value.name}
+                                                onChange={onChange}
+                                                error={touchedName && Boolean(errorName)}
+                                                helperText={touchedName && errorName}
+                                                disabled={isDisabled || value.deleted}
+                                                sx={{ marginRight: '5px' }}
+                                                fullWidth
+                                            />
+                                            <TextField
+                                                label={i18next.t('wizard.entityTemplate.propertyDisplayName')}
+                                                id={title}
+                                                name={title}
+                                                value={value.title}
+                                                onChange={onChange}
+                                                error={touchedTitle && Boolean(errorTitle)}
+                                                helperText={touchedTitle && errorTitle}
                                                 sx={{ marginRight: '5px' }}
                                                 fullWidth
                                                 disabled={value.deleted}
                                             />
-                                        )}
+                                            <TextField
+                                                select
+                                                type="text"
+                                                label={i18next.t('wizard.entityTemplate.propertyType')}
+                                                id={type}
+                                                name={type}
+                                                value={value.type === 'text-area' ? 'string' : value.type}
+                                                onChange={(e) => {
+                                                    setValues?.((prevValue) => ({
+                                                        ...prevValue,
+                                                        type: e.target.value,
+                                                        required: e.target.value === 'serialNumber' || prevValue.required,
+                                                    }));
+                                                }}
+                                                error={touchedType && Boolean(errorType)}
+                                                helperText={touchedType && errorType}
+                                                disabled={
+                                                    (isDisabled && (initialValue?.type !== 'enum' || !supportConvertingToMultipleFields)) ||
+                                                    value.deleted
+                                                }
+                                                sx={{ marginRight: '5px' }}
+                                                fullWidth
+                                            >
+                                                {validPropertyTypes
+                                                    .filter((validPropertyType) => {
+                                                        if (
+                                                            initialValue?.type === 'enum' &&
+                                                            areThereAnyInstances &&
+                                                            supportConvertingToMultipleFields
+                                                        )
+                                                            return validPropertyType === 'enumArray' || validPropertyType === 'enum';
+                                                        if (validPropertyType === 'entityReference') return supportEntityReferenceType;
+                                                        if (validPropertyType === 'serialNumber') {
+                                                            if (!supportSerialNumberType) return false;
+                                                        }
+                                                        if (validPropertyType === 'location') return supportLocation;
+                                                        if (validPropertyType === 'text-area') return false;
+                                                        if (validPropertyType === 'enumArray') return supportArrayFields;
+                                                        if (validPropertyType === 'relationshipReference') return supportRelationshipReference;
+                                                        if (validPropertyType === 'fileId' || validPropertyType === 'multipleFiles') return false; // TODO: support file inputs
+                                                        if (validPropertyType === 'user' || validPropertyType === 'users') return supportUserType;
+                                                        return true;
+                                                    })
+                                                    .map((validType) => {
+                                                        return (
+                                                            <MenuItem key={validType} value={validType}>
+                                                                {i18next.t(`propertyTypes.${validType}`)}
+                                                            </MenuItem>
+                                                        );
+                                                    })}
+                                            </TextField>
+                                        </Grid>
+                                        <Grid item container justifyContent="space-between" flexWrap="nowrap">
+                                            {(value.type === 'enum' || value.type === 'enumArray') && (
+                                                <Autocomplete
+                                                    id={options}
+                                                    multiple
+                                                    options={value.options}
+                                                    freeSolo
+                                                    value={value.options}
+                                                    onChange={(_e, currValue) => {
+                                                        const lastValue = currValue.pop();
+                                                        const trimmedValue = lastValue ? [...currValue, lastValue.trim()] : [];
 
-                                        {value.type === 'pattern' && (
-                                            <>
+                                                        if (isDisabled) {
+                                                            updateOldDisabledEnumVals(trimmedValue);
+                                                        } else {
+                                                            setValues?.((prev) => ({
+                                                                ...prev,
+                                                                options: trimmedValue,
+                                                            }));
+                                                        }
+                                                    }}
+                                                    isOptionEqualToValue={(option, inputValue) => {
+                                                        return option.trim() === inputValue.trim() || option.trim().length === 0;
+                                                    }}
+                                                    renderTags={(tagValue, getTagProps) =>
+                                                        tagValue.map((option, tagIndex) => {
+                                                            const chipDisabled = isDisabled && initialOptionArray.length > tagIndex;
+                                                            return (
+                                                                <Box position="relative" key={option}>
+                                                                    <>
+                                                                        {chipDisabled ? (
+                                                                            <Chip
+                                                                                variant="outlined"
+                                                                                label={option}
+                                                                                {...getTagProps({ index: tagIndex })}
+                                                                                onDelete={undefined}
+                                                                                icon={value.optionColors && <Box width="1.3rem" />}
+                                                                                sx={{ position: 'relative', pr: supportEditEnum ? '22px' : '3px' }}
+                                                                                ref={(ref) => {
+                                                                                    chipRefs.current[tagIndex] = ref;
+                                                                                }}
+                                                                            />
+                                                                        ) : (
+                                                                            <Chip
+                                                                                variant="outlined"
+                                                                                label={option}
+                                                                                {...getTagProps({ index: tagIndex })}
+                                                                                icon={value.optionColors && <Box width="1.3rem" />}
+                                                                                sx={{ position: 'relative', pr: supportEditEnum ? '32px' : '3px' }}
+                                                                                ref={(ref) => {
+                                                                                    chipRefs.current[tagIndex] = ref;
+                                                                                }}
+                                                                            />
+                                                                        )}
+                                                                        {value.optionColors && (
+                                                                            <MinimizedColorPicker
+                                                                                color={value.optionColors[option]}
+                                                                                onColorChange={(color) => {
+                                                                                    setFieldValue('optionColors', {
+                                                                                        ...value.optionColors,
+                                                                                        [option]: color,
+                                                                                    });
+                                                                                }}
+                                                                                circleSize="1.6rem"
+                                                                                style={{
+                                                                                    position: 'absolute',
+                                                                                    top: 4.5,
+                                                                                    left: 4.2,
+                                                                                    zIndex: 10000,
+                                                                                }}
+                                                                            />
+                                                                        )}
+                                                                        {supportEditEnum && (
+                                                                            <MemoizedIconButton
+                                                                                onClick={() => {
+                                                                                    setEditError('');
+                                                                                    setEditIndex(tagIndex);
+                                                                                    setLocalOption(value.options[tagIndex]);
+                                                                                }}
+                                                                                sx={{
+                                                                                    position: 'absolute',
+                                                                                    top: '50%',
+                                                                                    right: '8px',
+                                                                                    transform: 'translateY(-50%)',
+                                                                                    zIndex: 2000,
+                                                                                    backgroundColor: 'transparent',
+                                                                                    width: '1.6rem',
+                                                                                    height: '1.6rem',
+                                                                                    padding: 0,
+                                                                                }}
+                                                                            >
+                                                                                <EditIcon />
+                                                                            </MemoizedIconButton>
+                                                                        )}
+                                                                    </>
+                                                                    <Popover
+                                                                        open={editIndex === tagIndex}
+                                                                        anchorEl={chipRefs.current[tagIndex]}
+                                                                        onClose={() => {
+                                                                            setEditIndex(null);
+                                                                        }}
+                                                                        anchorOrigin={{
+                                                                            vertical: 'bottom',
+                                                                            horizontal: 'center',
+                                                                        }}
+                                                                        transformOrigin={{
+                                                                            vertical: 'top',
+                                                                            horizontal: 'center',
+                                                                        }}
+                                                                        PaperProps={{
+                                                                            style: {
+                                                                                zIndex: 10000,
+                                                                                borderRadius: '10px',
+                                                                            },
+                                                                        }}
+                                                                    >
+                                                                        <Box
+                                                                            p={2}
+                                                                            style={{
+                                                                                display: 'flex',
+                                                                                alignItems: 'center',
+                                                                                borderColor: editError !== '' ? 'red' : 'inherit',
+                                                                                borderStyle: editError !== '' ? 'solid' : 'inherit',
+                                                                                borderWidth: '1px',
+                                                                                borderRadius: '10px',
+                                                                            }}
+                                                                        >
+                                                                            <Backdrop
+                                                                                open={isDeleteLoading}
+                                                                                style={{ zIndex: 999, backgroundColor: 'transparent' }}
+                                                                            />
+                                                                            <TextField
+                                                                                key={editIndex}
+                                                                                fullWidth
+                                                                                value={localOption} // changed from local
+                                                                                onChange={(e) => handleEditChange(e, tagIndex)}
+                                                                                onKeyDown={(e) => {
+                                                                                    e.stopPropagation();
+                                                                                    if (e.key === 'Enter') {
+                                                                                        e.preventDefault();
+                                                                                        const localOptionTrimmed = localOption.trim();
+
+                                                                                        if (
+                                                                                            tagIndex > initialOptionArray.length - 1 ||
+                                                                                            value.options[tagIndex] === localOptionTrimmed ||
+                                                                                            value.options.includes(localOptionTrimmed) ||
+                                                                                            localOptionTrimmed.length === 0
+                                                                                        ) {
+                                                                                            setOpen(false);
+                                                                                            handleSaveEdit(editIndex!);
+                                                                                        } else setOpen(true);
+                                                                                    }
+                                                                                }}
+                                                                            />
+                                                                            {chipDisabled && (
+                                                                                <IconButton
+                                                                                    size="small"
+                                                                                    onClick={() => {
+                                                                                        if (!isDeleteLoading) {
+                                                                                            setOpenDelete(true);
+                                                                                        }
+                                                                                    }}
+                                                                                    disabled={isDeleteLoading}
+                                                                                >
+                                                                                    {isDeleteLoading ? (
+                                                                                        <CircularProgress size={20} />
+                                                                                    ) : (
+                                                                                        <DeleteIcon />
+                                                                                    )}
+                                                                                </IconButton>
+                                                                            )}
+                                                                            {!!editError && (
+                                                                                <Typography variant="body2" color="error">
+                                                                                    {i18next.t(editError)}
+                                                                                </Typography>
+                                                                            )}
+                                                                        </Box>
+                                                                    </Popover>
+                                                                </Box>
+                                                            );
+                                                        })
+                                                    }
+                                                    filterSelectedOptions
+                                                    renderInput={(params) => (
+                                                        <TextField
+                                                            {...params}
+                                                            label={i18next.t('propertyTypes.enum')}
+                                                            error={(touchedOptions && Boolean(errorOptions)) || Boolean(atLeastOneItem)}
+                                                            helperText={(touchedOptions && errorOptions) || atLeastOneItem}
+                                                        />
+                                                    )}
+                                                    sx={{ marginRight: '5px' }}
+                                                    fullWidth
+                                                    disabled={value.deleted}
+                                                />
+                                            )}
+                                            {value.type === 'pattern' && (
+                                                <>
+                                                    <TextField
+                                                        label={i18next.t('propertyTypes.pattern')}
+                                                        id={pattern}
+                                                        name={pattern}
+                                                        value={value.pattern}
+                                                        onChange={onChange}
+                                                        error={touchedPattern && Boolean(errorPattern)}
+                                                        helperText={touchedPattern && errorPattern}
+                                                        disabled={isDisabled || value.deleted}
+                                                        dir="ltr"
+                                                        sx={{ marginRight: '5px' }}
+                                                        fullWidth
+                                                    />
+                                                    <TextField
+                                                        label={i18next.t('wizard.entityTemplate.customErrorMessage')}
+                                                        id={patternCustomErrorMessage}
+                                                        name={patternCustomErrorMessage}
+                                                        value={value.patternCustomErrorMessage}
+                                                        onChange={onChange}
+                                                        error={touchedPatternCustomErrorMessage && Boolean(errorPatternCustomErrorMessage)}
+                                                        helperText={
+                                                            touchedPatternCustomErrorMessage && errorPatternCustomErrorMessage
+                                                                ? errorPatternCustomErrorMessage
+                                                                : i18next.t('wizard.entityTemplate.customErrorMessageHelperText')
+                                                        }
+                                                        sx={{ marginRight: '5px' }}
+                                                        fullWidth
+                                                        disabled={value.deleted}
+                                                    />
+                                                </>
+                                            )}
+                                            {value.type === 'serialNumber' && (
                                                 <TextField
-                                                    label={i18next.t('propertyTypes.pattern')}
-                                                    id={pattern}
-                                                    name={pattern}
-                                                    value={value.pattern}
-                                                    onChange={onChange}
-                                                    error={touchedPattern && Boolean(errorPattern)}
-                                                    helperText={touchedPattern && errorPattern}
+                                                    label={i18next.t('wizard.entityTemplate.serialStarter')}
+                                                    id={serialStarter}
+                                                    name={serialStarter}
+                                                    value={value.serialStarter}
+                                                    onChange={(e) => {
+                                                        setFieldValue('serialStarter', Number(e.target.value));
+                                                    }}
+                                                    type="number"
+                                                    error={touchedSerialStarter && Boolean(errorSerialStarter)}
+                                                    helperText={touchedSerialStarter && errorSerialStarter}
                                                     disabled={isDisabled || value.deleted}
                                                     dir="ltr"
                                                     sx={{ marginRight: '5px' }}
                                                     fullWidth
                                                 />
-                                                <TextField
-                                                    label={i18next.t('wizard.entityTemplate.customErrorMessage')}
-                                                    id={patternCustomErrorMessage}
-                                                    name={patternCustomErrorMessage}
-                                                    value={value.patternCustomErrorMessage}
-                                                    onChange={onChange}
-                                                    error={touchedPatternCustomErrorMessage && Boolean(errorPatternCustomErrorMessage)}
-                                                    helperText={
-                                                        touchedPatternCustomErrorMessage && errorPatternCustomErrorMessage
-                                                            ? errorPatternCustomErrorMessage
-                                                            : i18next.t('wizard.entityTemplate.customErrorMessageHelperText')
-                                                    }
-                                                    sx={{ marginRight: '5px' }}
-                                                    fullWidth
-                                                    disabled={value.deleted}
+                                            )}
+                                            {value.type === 'relationshipReference' && supportRelationshipReference && (
+                                                <RelationshipReferenceField
+                                                    value={value}
+                                                    index={index}
+                                                    touched={touched}
+                                                    errors={errors}
+                                                    setFieldValue={setFieldValue}
+                                                    isDisabled={isDisabled}
                                                 />
-                                            </>
-                                        )}
-                                        {value.type === 'serialNumber' && (
-                                            <TextField
-                                                label={i18next.t('wizard.entityTemplate.serialStarter')}
-                                                id={serialStarter}
-                                                name={serialStarter}
-                                                value={value.serialStarter}
-                                                onChange={(e) => {
-                                                    setFieldValue('serialStarter', Number(e.target.value));
-                                                }}
-                                                type="number"
-                                                error={touchedSerialStarter && Boolean(errorSerialStarter)}
-                                                helperText={touchedSerialStarter && errorSerialStarter}
-                                                disabled={isDisabled || value.deleted}
-                                                dir="ltr"
-                                                sx={{ marginRight: '5px' }}
-                                                fullWidth
-                                            />
-                                        )}
-                                        {value.type === 'relationshipReference' && supportRelationshipReference && (
-                                            <RelationshipReferenceField
-                                                value={value}
-                                                index={index}
-                                                touched={touched}
-                                                errors={errors}
-                                                setFieldValue={setFieldValue}
-                                                isDisabled={isDisabled}
-                                            />
-                                        )}
-                                        {(value.type === 'date' || value.type === 'date-time') &&
-                                            'dateNotification' in value &&
-                                            (value.dateNotification !== undefined ? (
-                                                <Grid container direction="row">
-                                                    <Grid container item direction="row">
-                                                        <IconButton
-                                                            onClick={() => setFieldValue('dateNotification', undefined)}
-                                                            sx={{ borderRadius: 10 }}
+                                            )}
+                                            {(value.type === 'date' || value.type === 'date-time') &&
+                                                'dateNotification' in value &&
+                                                (value.dateNotification !== undefined ? (
+                                                    <Grid container direction="row">
+                                                        <Grid container item direction="row">
+                                                            <IconButton
+                                                                onClick={() => setFieldValue('dateNotification', undefined)}
+                                                                sx={{ borderRadius: 10 }}
+                                                                disabled={value.deleted}
+                                                            >
+                                                                <NotificationsActiveIcon />
+                                                            </IconButton>
+                                                            <ToggleButtonGroup
+                                                                exclusive
+                                                                id={isDailyAlert}
+                                                                color="primary"
+                                                                size="small"
+                                                                sx={{ height: '35px', marginLeft: '10px' }}
+                                                                value={value.isDailyAlert ?? true}
+                                                                onChange={(_event: React.MouseEvent<HTMLElement>, newIsDailyAlert: boolean) => {
+                                                                    setFieldValue('isDailyAlert', newIsDailyAlert);
+                                                                }}
+                                                            >
+                                                                <ToggleButton value>
+                                                                    <MeltaTooltip title={i18next.t('wizard.entityTemplate.dailyAlert')}>
+                                                                        <DailyAlertIcon />
+                                                                    </MeltaTooltip>
+                                                                </ToggleButton>
+                                                                <ToggleButton value={false}>
+                                                                    <MeltaTooltip
+                                                                        title={TooltipTitleWithLinesSpace('wizard.entityTemplate.customAlert')}
+                                                                    >
+                                                                        <CustomAlertIcon />
+                                                                    </MeltaTooltip>
+                                                                </ToggleButton>
+                                                            </ToggleButtonGroup>
+                                                            <FormControlLabel
+                                                                control={
+                                                                    <MeltaCheckbox
+                                                                        checked={value.isDatePastAlert ?? true}
+                                                                        onChange={(_e, checked) => {
+                                                                            setValues?.((prevValue) => ({
+                                                                                ...prevValue,
+                                                                                isDatePastAlert: checked,
+                                                                            }));
+                                                                        }}
+                                                                    />
+                                                                }
+                                                                style={{
+                                                                    display: 'flex',
+                                                                    justifyContent: 'center',
+                                                                    marginRight: 'auto',
+                                                                    marginLeft: 10,
+                                                                }}
+                                                                label={i18next.t('wizard.entityTemplate.datePastNotification')}
+                                                            />
+                                                        </Grid>
+                                                        <TextField
+                                                            select
+                                                            label={i18next.t('wizard.entityTemplate.dateNotification')}
+                                                            id={dateNotification}
+                                                            name={dateNotification}
+                                                            value={value.dateNotification ?? ''}
+                                                            onChange={onChange}
+                                                            error={touchedDateNotification && Boolean(errorDateNotification)}
+                                                            helperText={touchedDateNotification && errorDateNotification}
+                                                            sx={{ marginRight: '5px', marginTop: '5px' }}
+                                                            fullWidth
                                                             disabled={value.deleted}
                                                         >
-                                                            <NotificationsActiveIcon />
-                                                        </IconButton>
-                                                        <ToggleButtonGroup
-                                                            exclusive
-                                                            id={isDailyAlert}
-                                                            color="primary"
-                                                            size="small"
-                                                            sx={{ height: '35px', marginLeft: '10px' }}
-                                                            value={value.isDailyAlert ?? true}
-                                                            onChange={(_event: React.MouseEvent<HTMLElement>, newIsDailyAlert: boolean) => {
-                                                                setFieldValue('isDailyAlert', newIsDailyAlert);
-                                                            }}
-                                                        >
-                                                            <ToggleButton value>
-                                                                <MeltaTooltip title={i18next.t('wizard.entityTemplate.dailyAlert')}>
-                                                                    <DailyAlertIcon />
-                                                                </MeltaTooltip>
-                                                            </ToggleButton>
-                                                            <ToggleButton value={false}>
-                                                                <MeltaTooltip title={TooltipTitleWithLinesSpace('wizard.entityTemplate.customAlert')}>
-                                                                    <CustomAlertIcon />
-                                                                </MeltaTooltip>
-                                                            </ToggleButton>
-                                                        </ToggleButtonGroup>
-                                                        <FormControlLabel
-                                                            control={
-                                                                <MeltaCheckbox
-                                                                    checked={value.isDatePastAlert ?? true}
-                                                                    onChange={(_e, checked) => {
-                                                                        setValues?.((prevValue) => ({
-                                                                            ...prevValue,
-                                                                            isDatePastAlert: checked,
-                                                                        }));
-                                                                    }}
-                                                                />
-                                                            }
-                                                            style={{
-                                                                display: 'flex',
-                                                                justifyContent: 'center',
-                                                                marginRight: 'auto',
-                                                                marginLeft: 10,
-                                                            }}
-                                                            label={i18next.t('wizard.entityTemplate.datePastNotification')}
-                                                        />
+                                                            {dateNotificationTypes.map((notificationType) => (
+                                                                <MenuItem key={notificationType} value={dateNotificationOptions[notificationType]}>
+                                                                    {i18next.t(`wizard.entityTemplate.dateNotificationTypes.${notificationType}`)}
+                                                                </MenuItem>
+                                                            ))}
+                                                        </TextField>
                                                     </Grid>
-                                                    <TextField
-                                                        select
-                                                        label={i18next.t('wizard.entityTemplate.dateNotification')}
-                                                        id={dateNotification}
-                                                        name={dateNotification}
-                                                        value={value.dateNotification ?? ''}
-                                                        onChange={onChange}
-                                                        error={touchedDateNotification && Boolean(errorDateNotification)}
-                                                        helperText={touchedDateNotification && errorDateNotification}
-                                                        sx={{ marginRight: '5px', marginTop: '5px' }}
-                                                        fullWidth
+                                                ) : (
+                                                    <IconButton
+                                                        onClick={() => setFieldValue('dateNotification', null)}
+                                                        sx={{ borderRadius: 10 }}
                                                         disabled={value.deleted}
                                                     >
-                                                        {dateNotificationTypes.map((notificationType) => (
-                                                            <MenuItem key={notificationType} value={dateNotificationOptions[notificationType]}>
-                                                                {i18next.t(`wizard.entityTemplate.dateNotificationTypes.${notificationType}`)}
-                                                            </MenuItem>
-                                                        ))}
-                                                    </TextField>
-                                                </Grid>
-                                            ) : (
-                                                <IconButton
-                                                    onClick={() => setFieldValue('dateNotification', null)}
-                                                    sx={{ borderRadius: 10 }}
-                                                    disabled={value.deleted}
-                                                >
-                                                    <NotificationsOffIcon />
-                                                </IconButton>
-                                            ))}
-                                        <AreYouSureDialog
-                                            open={open || openDelete}
-                                            handleClose={() => {
-                                                setOpenDelete(false);
-                                                setOpen(false);
-                                            }}
-                                            onYes={() => {
-                                                if (openDelete) handleDelete(editIndex!);
-                                                else {
-                                                    handleSaveEdit(editIndex!);
-                                                }
-                                            }}
-                                            isLoading={isLoading}
-                                            body={`${i18next.t('areYouSureDialog.enumChangeDisclaimer')} ${entity}`}
-                                        />
+                                                        <NotificationsOffIcon />
+                                                    </IconButton>
+                                                ))}
+                                            <AreYouSureDialog
+                                                open={open || openDelete}
+                                                handleClose={() => {
+                                                    setOpenDelete(false);
+                                                    setOpen(false);
+                                                }}
+                                                onYes={() => {
+                                                    if (openDelete) handleDelete(editIndex!);
+                                                    else {
+                                                        handleSaveEdit(editIndex!);
+                                                    }
+                                                }}
+                                                isLoading={isLoading}
+                                                body={`${i18next.t('areYouSureDialog.enumChangeDisclaimer')} ${entity}`}
+                                            />
+                                        </Grid>
                                     </Grid>
                                     <Grid item container justifyContent="space-between">
                                         <Box>
@@ -1161,6 +1181,24 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                         />
                                                     }
                                                     label={i18next.t('validation.identifier')}
+                                                />
+                                            )}
+                                            {value.type === 'relationshipReference' && supportRelationshipReference && supportFilterRelationList && (
+                                                <FormControlLabel
+                                                    control={
+                                                        <Switch
+                                                            id={filterRelationList}
+                                                            name={filterRelationList}
+                                                            onChange={(_e, checked) => {
+                                                                setValues?.((prevValue) => ({
+                                                                    ...prevValue,
+                                                                    filterRelationList: checked || undefined,
+                                                                }));
+                                                            }}
+                                                            checked={value.filterRelationList}
+                                                        />
+                                                    }
+                                                    label={i18next.t('propertyTypes.filterRelationList')}
                                                 />
                                             )}
                                         </Box>
@@ -1345,6 +1383,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                             </Grid>
                                         )}
                                     </Grid>
+                                    {value.filterRelationList && <FilterEntitiesByCriteria values={value.relationshipReference?.filters ?? {}} />}
                                 </Grid>
                             </Grid>
                         </CardContent>

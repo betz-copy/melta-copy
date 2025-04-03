@@ -29,6 +29,7 @@ export interface IEntitySingleProperty {
     minItems?: 1;
     uniqueItems?: true;
     archive?: boolean;
+    filterRelationList?: boolean;
 }
 
 export interface IEntityTemplate {

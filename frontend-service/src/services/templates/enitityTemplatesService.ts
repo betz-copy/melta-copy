@@ -76,6 +76,7 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
             archive: value.archive || undefined,
             identifier: value.identifier || undefined,
             mapSearch: mapSearchProperties?.includes(key) || undefined,
+            filterRelationList: value.filterRelationList || undefined,
         };
 
         if (value.format === 'fileId' || value.items?.format === 'fileId') {
@@ -157,6 +158,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
             archive,
             identifier,
             mapSearch,
+            filterRelationList,
         }) => {
             if (deleted) return;
 
@@ -216,6 +218,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                           relatedTemplateField: relationshipReference!.relatedTemplateField,
                       }
                     : undefined,
+                filterRelationList,
             };
             if (isEditMode) {
                 schema.properties[name] = {
@@ -266,6 +269,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
             relationshipReference,
             archive,
             mapSearch,
+            filterRelationList,
         }) => {
             if (deleted) return;
 
@@ -313,6 +317,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                           relatedTemplateField: relationshipReference!.relatedTemplateField,
                       }
                     : undefined,
+                filterRelationList,
             };
 
             if (isEditMode) {

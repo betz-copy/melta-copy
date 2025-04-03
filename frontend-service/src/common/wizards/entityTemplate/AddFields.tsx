@@ -214,6 +214,7 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
                                             }}
                                             supportIdentifier
                                             hasIdentifier={Object.values(values.properties).some((value) => value.identifier)}
+                                            supportFilterRelationList
                                         />
                                     </Grid>
                                 )}

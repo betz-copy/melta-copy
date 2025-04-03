@@ -3,6 +3,7 @@ export interface IRelationshipReference {
     relationshipTemplateDirection: 'outgoing' | 'incoming';
     relatedTemplateId: string;
     relatedTemplateField: string;
+    filters?: Record<string, IFilterRelationReference>;
 }
 
 export interface CommonFormInputProperties {
@@ -30,6 +31,7 @@ export interface CommonFormInputProperties {
     archive?: boolean;
     identifier?: boolean;
     mapSearch?: boolean;
+    filterRelationList?: boolean;
 }
 
 export interface ConvertToRelationshipFieldFormInputProperties {
@@ -40,4 +42,10 @@ export interface ConvertToRelationshipFieldFormInputProperties {
         relatedTemplateId: string;
         relatedTemplateField: string;
     };
+}
+
+export interface IFilterRelationReference {
+    relatedTemplateFilterField: string;
+    filterBy: 'bigger then' | 'smaller then' | 'from' | 'until' | 'equals';
+    filterValue: number | string;
 }

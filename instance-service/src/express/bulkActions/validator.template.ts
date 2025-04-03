@@ -52,6 +52,7 @@ ajv.addKeyword({
     keyword: 'serialCurrent',
     type: 'number',
 });
+ajv.addKeyword({ keyword: 'filterRelationList', type: 'boolean' });
 
 export class BulkActionValidator extends DefaultController {
     private entityManager: EntityManager;
