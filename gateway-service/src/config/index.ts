@@ -97,6 +97,7 @@ const config = {
                 .asString(),
         },
         requestTimeout: env.get('ENTITY_TEMPLATE_SERVICE_REQUEST_TIMEOUT').default(10000).asIntPositive(),
+        userDoesntExistUnderReq: env.get('USER_NOT_EXIST_UNDER_REQUEST').default(`User doesn't exists under request`).asString(),
     },
     storageService: {
         url: env.get('STORAGE_SERVICE_URL').required().asString(),

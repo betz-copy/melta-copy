@@ -16,6 +16,8 @@ import './print.css';
 import { getExpandedEntityByIdRequest } from '../../../../services/entitiesService';
 import { IRelationshipTemplateMap } from '../../../../interfaces/relationshipTemplates';
 import { handleExpandedRelationships } from '../../../../utils/expandedRelationships';
+import { getAllAllowedEntities } from '../../../../utils/permissions/templatePermissions';
+import { useUserStore } from '../../../../stores/user';
 
 export interface ISelectRelationshipTemplates extends IConnectionTemplateOfExpandedEntity {
     children?: IConnectionTemplateExpanded[];
@@ -42,7 +44,11 @@ const Print: React.FC<{
     connectionsTemplates: IConnectionTemplateOfExpandedEntity[];
 }> = ({ entityTemplate, expandedEntity, connectionsTemplates }) => {
     const queryClient = useQueryClient();
+    const currentUser = useUserStore((state) => state.user);
+
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+    const allowedEntityTemplates: IMongoEntityTemplatePopulated[] = getAllAllowedEntities(Array.from(entityTemplates.values()), currentUser);
+    const allowedEntityTemplatesIds = allowedEntityTemplates.map((entity) => entity._id);
     const relationshipTemplates = queryClient.getQueryData<IRelationshipTemplateMap>('getRelationshipTemplates')!;
 
     const [openModal, setOpenModal] = React.useState(false);
@@ -74,7 +80,7 @@ const Print: React.FC<{
             getExpandedEntityByIdRequest(
                 expandedEntity.entity.properties._id,
                 { [expandedEntity.entity.properties._id]: 2 },
-                { disabled: false, templateIds: Object.keys(entityTemplates) },
+                { disabled: false, templateIds: allowedEntityTemplatesIds },
             ),
         {
             enabled: false,

@@ -17,6 +17,7 @@ import {
     IEntitySingleProperty,
     IEntityTemplate,
     IEntityTemplatePopulated,
+    IMongoCategory,
     IMongoEntityTemplatePopulated,
     ISearchEntityTemplatesBody,
 } from '../../externalServices/templates/entityTemplateService';
@@ -27,7 +28,7 @@ import {
     ISearchRulesBody,
     RelationshipsTemplateService,
 } from '../../externalServices/templates/relationshipsTemplateService';
-import { PermissionType } from '../../externalServices/userService/interfaces/permissions';
+import { PermissionScope, PermissionType } from '../../externalServices/userService/interfaces/permissions';
 import { trycatch } from '../../utils';
 import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
 import DefaultManagerProxy from '../../utils/express/manager';
@@ -50,6 +51,7 @@ import { IRelationship } from '../../externalServices/instanceService/interfaces
 import { buildNewRelationshipField, validateNoDependentRules, validateRequiredConstraints, validateUniqueRelationships } from '../../utils/templates';
 import { ChartManager } from '../templateCharts/manager';
 import { IAxisField, IChartDocument, IChartType, IColumnOrLineMetaData, INUmberMetaData, IPieMetaData } from '../templateCharts/interface';
+import { ISubCompactPermissions } from '../../externalServices/userService/interfaces/permissions/permissions';
 
 const {
     categoryHasTemplates,
@@ -95,8 +97,8 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         this.chartsManager = new ChartManager(workspaceId);
     }
 
-    async getAllowedEntityTemplateIds(permissionsOfUserId: RequestWithPermissionsOfUserId['permissionsOfUserId'], searchBody?: any) {
-        const allowedEntityTemplates = await this.getAllowedEntitiesTemplates(permissionsOfUserId, searchBody);
+    async getAllowedEntityTemplateIds(permissionsOfUserId: RequestWithPermissionsOfUserId['permissionsOfUserId'], userId: string, searchBody?: any) {
+        const allowedEntityTemplates = await this.getAllowedEntitiesTemplates(permissionsOfUserId, userId, searchBody);
         return allowedEntityTemplates.map((entityTemplate) => entityTemplate._id);
     }
 
@@ -109,7 +111,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         return lodashUniqby([...bySource, ...byDestination], '_id');
     }
 
-    async getAllowedTemplatesAndRules(entityTemplateIds: string[], relationshipTemplates: IRelationshipTemplate[]) {
+    async getAllowedTemplatesAndRules(entityTemplateIds: string[], relationshipTemplates: IRelationshipTemplate[], userId: string) {
         const allowedEntityTemplatesIdsByOneRelationship = this.getAllEntityTemplateThatAreOneRelationshipAwayFromUsersPermissions(
             relationshipTemplates,
             relationshipTemplates,
@@ -120,6 +122,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             entityTemplateIds,
             relationshipTemplates,
             allowedEntityTemplatesIdsByOneRelationship,
+            userId,
         );
 
         return { allowedRelationshipTemplatesBecauseOfRules, allowedEntityTemplatesIdsByOneRelationship };
@@ -156,6 +159,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         allowedEntityTemplatesIds: string[],
         allowedRelationshipsTemplates: IRelationshipTemplate[],
         allowedEntityTemplatesIdsByOneRelationship: string[],
+        userId: string,
     ) {
         const allowedRelationshipsTemplatesIds = allowedRelationshipsTemplates.map(({ _id }) => _id);
 
@@ -203,7 +207,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             )
             .map(({ variable }) => variable.aggregatedRelationship!.otherEntityTemplateId);
 
-        const allowedEntityTemplatesBecauseOfRules = await this.entityTemplateService.searchEntityTemplates({
+        const allowedEntityTemplatesBecauseOfRules = await this.entityTemplateService.searchEntityTemplates(userId, {
             ids: allowedEntityTemplatesIdsBecauseOfRules,
         });
 
@@ -216,9 +220,9 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
     // all
     async getAllAllowedTemplates(userId: string, permissionsOfUserId: RequestWithPermissionsOfUserId['permissionsOfUserId']) {
-        const [allCategories, allowedEntityTemplates] = await Promise.all([
-            this.getAllCategories(),
-            this.getAllowedEntitiesTemplates(permissionsOfUserId),
+        const [allAllowedCategories, allowedEntityTemplates] = await Promise.all([
+            this.getAllAllowedCategories(permissionsOfUserId),
+            this.getAllowedEntitiesTemplates(permissionsOfUserId, userId),
         ]);
 
         const allowedEntityTemplatesIds = allowedEntityTemplates.map((entityTemplate) => entityTemplate._id);
@@ -227,12 +231,13 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         const { allowedRelationshipTemplatesBecauseOfRules, allowedEntityTemplatesIdsByOneRelationship } = await this.getAllowedTemplatesAndRules(
             allowedEntityTemplatesIds,
             allowedRelationshipsTemplates,
+            userId,
         );
 
         const [allowedEntityTemplatesByOneRelationship, { allowedRules, allowedEntityTemplatesBecauseOfRules }, processTemplatesBeforePopulate] =
             await Promise.all([
-                this.entityTemplateService.searchEntityTemplates({ ids: allowedEntityTemplatesIdsByOneRelationship }),
-                this.getAllowedRules(allowedEntityTemplatesIds, allowedRelationshipsTemplates, allowedEntityTemplatesIdsByOneRelationship),
+                this.entityTemplateService.searchEntityTemplates(userId, { ids: allowedEntityTemplatesIdsByOneRelationship }),
+                this.getAllowedRules(allowedEntityTemplatesIds, allowedRelationshipsTemplates, allowedEntityTemplatesIdsByOneRelationship, userId),
                 this.processService.searchProcessTemplates(permissionsOfUserId.admin || permissionsOfUserId.processes ? {} : { reviewerId: userId }),
             ]);
 
@@ -248,7 +253,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         ]);
 
         return {
-            categories: allCategories,
+            categories: allAllowedCategories,
             entityTemplates: allAllowedEntityTemplatesWithConstraints,
             relationshipTemplates: [...allowedRelationshipsTemplates, ...allowedRelationshipTemplatesBecauseOfRules],
             rules: allowedRules,
@@ -256,12 +261,18 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         };
     }
 
-    getAllRelationshipTemplates() {
-        return this.relationshipTemplateService.searchRelationshipTemplates();
+    async getAllAllowedRelationshipTemplates(permissionsOfUserId: RequestWithPermissionsOfUserId['permissionsOfUserId'], userId: string) {
+        const allowedEntityTemplates = await this.getAllowedEntitiesTemplates(permissionsOfUserId, userId);
+        const allowedEntityTemplatesIds = allowedEntityTemplates.map((entityTemplate) => entityTemplate._id);
+
+        return this.relationshipTemplateService.searchRelationshipTemplates({
+            sourceEntityIds: allowedEntityTemplatesIds,
+            destinationEntityIds: allowedEntityTemplatesIds,
+        });
     }
 
-    async getAllAllowedEntityTemplates(permissionsOfUserId: RequestWithPermissionsOfUserId['permissionsOfUserId']) {
-        const allowedEntityTemplates = await this.getAllowedEntitiesTemplates(permissionsOfUserId);
+    async getAllAllowedEntityTemplates(permissionsOfUserId: RequestWithPermissionsOfUserId['permissionsOfUserId'], userId: string) {
+        const allowedEntityTemplates = await this.getAllowedEntitiesTemplates(permissionsOfUserId, userId);
         const allowedEntityTemplatesIds = allowedEntityTemplates.map((entityTemplate) => entityTemplate._id);
 
         const [allowedRelationshipsTemplatesBySource, allowedRelationshipsTemplatesByDestination] = await Promise.all([
@@ -275,7 +286,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             allowedEntityTemplatesIds,
         );
 
-        const allowedEntityTemplatesByOneRelationship = await this.entityTemplateService.searchEntityTemplates({
+        const allowedEntityTemplatesByOneRelationship = await this.entityTemplateService.searchEntityTemplates(userId, {
             ids: allowedEntityTemplatesIdsByOneRelationship,
         });
 
@@ -283,22 +294,45 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
     }
 
     // categories
-    async getAllCategories() {
-        return this.entityTemplateService.searchCategories();
+    private async updateNewCategoryScope(category: IMongoCategory, permissionsOfUserId: ISubCompactPermissions, userId: string) {
+        const updatedPermissions = permissionsOfUserId.admin
+            ? permissionsOfUserId
+            : {
+                  ...permissionsOfUserId,
+                  instances: {
+                      ...permissionsOfUserId.instances,
+                      categories: {
+                          ...permissionsOfUserId.instances?.categories,
+                          [category._id]: { scope: PermissionScope.write, entityTemplates: {} },
+                      },
+                  },
+              };
+
+        await UsersManager.syncUserPermissions(userId, {
+            [this.workspaceId]: updatedPermissions,
+        });
     }
 
-    async createCategory(categoryData: Omit<ICategory, 'iconFileId'>, file?: UploadedFile) {
-        if (file) {
-            const newFileId = await this.storageService.uploadFile(file);
-            return this.entityTemplateService.createCategory({ ...categoryData, iconFileId: newFileId });
-        }
+    async getAllAllowedCategories(permissionsOfUserId: RequestWithPermissionsOfUserId['permissionsOfUserId']) {
+        return this.entityTemplateService.searchCategories(permissionsOfUserId);
+    }
 
-        return this.entityTemplateService.createCategory({ ...categoryData, iconFileId: null });
+    async createCategory(
+        categoryData: Omit<ICategory, 'iconFileId'>,
+        permissionsOfUserId: ISubCompactPermissions,
+        userId: string,
+        file?: UploadedFile,
+    ) {
+        const iconFileId = file ? await this.storageService.uploadFile(file) : null;
+
+        const newCategory = await this.entityTemplateService.createCategory({ ...categoryData, iconFileId });
+        await this.updateNewCategoryScope(newCategory, permissionsOfUserId, userId);
+        return newCategory;
     }
 
     // TODO: race condition here
-    async deleteCategory(id: string) {
-        const templates = await this.entityTemplateService.searchEntityTemplates({ categoryIds: [id] });
+    async deleteCategory(id: string, userId: string) {
+        const templates = await this.entityTemplateService.searchEntityTemplates(userId, { categoryIds: [id] });
         if (templates.length > 0) {
             throw new BadRequestError('category still has entity templates', { errorCode: categoryHasTemplates });
         }
@@ -371,28 +405,75 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         return entityTemplatesWithConstraints;
     }
 
-    async searchEntityTemplates(permissionsOfUserId: RequestWithPermissionsOfUserId['permissionsOfUserId'], searchQuery: ISearchEntityTemplatesBody) {
-        const allowedEntityTemplates = await this.getAllowedEntitiesTemplates(permissionsOfUserId, searchQuery);
+    private async updateEntityTemplateScope(
+        entityTemplate: IMongoEntityTemplatePopulated,
+        permissionsOfUserId: ISubCompactPermissions,
+        userId: string,
+    ) {
+        const { admin, instances } = permissionsOfUserId;
+        const categoryId = entityTemplate.category._id;
+        const categoryScope = instances?.categories?.[categoryId]?.scope;
+
+        if (admin || categoryScope === PermissionScope.write) {
+            await UsersManager.syncUserPermissions(userId, { [this.workspaceId]: permissionsOfUserId });
+            return;
+        }
+
+        const updatedCategories = {
+            ...instances?.categories,
+            [categoryId]: {
+                scope: categoryScope,
+                entityTemplates: {
+                    ...instances?.categories?.[categoryId]?.entityTemplates,
+                    [entityTemplate._id]: { scope: PermissionScope.write, fields: {} },
+                },
+            },
+        };
+
+        const updatedPermissions: ISubCompactPermissions = {
+            ...permissionsOfUserId,
+            instances: {
+                ...instances,
+                categories: updatedCategories,
+            },
+        };
+
+        await UsersManager.syncUserPermissions(userId, { [this.workspaceId]: updatedPermissions });
+    }
+
+    async searchEntityTemplates(
+        permissionsOfUserId: RequestWithPermissionsOfUserId['permissionsOfUserId'],
+        searchQuery: ISearchEntityTemplatesBody,
+        userId: string,
+    ) {
+        const allowedEntityTemplates = await this.getAllowedEntitiesTemplates(permissionsOfUserId, userId, searchQuery);
         return this.getAndPopulateAllTemplatesConstraints(allowedEntityTemplates);
     }
 
     async searchRelationshipTemplates(
         permissionsOfUserId: RequestWithPermissionsOfUserId['permissionsOfUserId'],
         searchBody: ISearchRelationshipTemplatesBody,
+        userId: string,
     ) {
-        const allowedEntityTemplatesIds = await this.getAllowedEntityTemplateIds(permissionsOfUserId, searchBody);
+        const allowedEntityTemplatesIds = await this.getAllowedEntityTemplateIds(permissionsOfUserId, userId, searchBody);
+
         const allowedRelationshipsTemplates = await this.getAllowedRelationshipTemplates(allowedEntityTemplatesIds);
 
         const { allowedRelationshipTemplatesBecauseOfRules } = await this.getAllowedTemplatesAndRules(
             allowedEntityTemplatesIds,
             allowedRelationshipsTemplates,
+            userId,
         );
 
         return [...allowedRelationshipsTemplates, ...allowedRelationshipTemplatesBecauseOfRules];
     }
 
-    async searchRulesTemplates(permissionsOfUserId: RequestWithPermissionsOfUserId['permissionsOfUserId'], searchBody: ISearchRulesBody) {
-        const allowedEntityTemplatesIds = await this.getAllowedEntityTemplateIds(permissionsOfUserId);
+    async searchRulesTemplates(
+        permissionsOfUserId: RequestWithPermissionsOfUserId['permissionsOfUserId'],
+        searchBody: ISearchRulesBody,
+        userId: string,
+    ) {
+        const allowedEntityTemplatesIds = await this.getAllowedEntityTemplateIds(permissionsOfUserId, userId);
         const searchResults = await this.relationshipTemplateService.searchRules(searchBody);
 
         return searchResults.filter((rule) => allowedEntityTemplatesIds.includes(rule.entityTemplateId));
@@ -415,6 +496,8 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
     async createEntityTemplate(
         templateData: Omit<IEntityTemplateWithConstraints, 'iconFileId' | 'documentTemplatesIds'>,
+        permissionsOfUserId: ISubCompactPermissions,
+        userId: string,
         { file, files }: { file?: [UploadedFile]; files?: UploadedFile[] },
     ): Promise<IMongoEntityTemplateWithConstraintsPopulated> {
         await this.entityTemplateService.getCategoryById(templateData.category);
@@ -437,6 +520,8 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         });
 
         await this.instancesService.updateConstraintsOfTemplate(entityTemplate._id, { requiredConstraints, uniqueConstraints });
+
+        await this.updateEntityTemplateScope(entityTemplate, permissionsOfUserId, userId);
 
         return this.populateTemplateConstraints(entityTemplate, requiredConstraints, uniqueConstraints);
     }
@@ -624,12 +709,12 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         }
     }
 
-    private async checkIfPropertyInUsedBeforeDeleteOrArchive(templateId: string, properties: string[], archive: boolean) {
+    private async checkIfPropertyInUsedBeforeDeleteOrArchive(templateId: string, properties: string[], archive: boolean, userId: string) {
         if (properties.length)
             await Promise.all([
                 this.isPropertyOfTemplateInUsedInGantts(templateId, properties, archive),
                 this.isPropertyOfTemplateInUsedInRules(templateId, properties, archive),
-                this.isPropertyInUsedAsRelatedFieldInRelationshipReference(templateId, properties, archive),
+                this.isPropertyInUsedAsRelatedFieldInRelationshipReference(templateId, properties, archive, userId),
                 this.isPropertyOfTemplateInUsedInCharts(templateId, properties, archive),
             ]);
     }
@@ -695,8 +780,8 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         await Promise.all(promises);
     }
 
-    private async isPropertyInUsedAsRelatedFieldInRelationshipReference(templateId: string, properties: string[], archive: boolean) {
-        const allEntityTemplates = await this.entityTemplateService.searchEntityTemplates();
+    private async isPropertyInUsedAsRelatedFieldInRelationshipReference(templateId: string, properties: string[], archive: boolean, userId: string) {
+        const allEntityTemplates = await this.entityTemplateService.searchEntityTemplates(userId);
 
         allEntityTemplates.forEach((entityTemplate) => {
             Object.values(entityTemplate.properties.properties).forEach(({ format, relationshipReference }) => {
@@ -801,8 +886,10 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
     async updateEntityTemplate(
         id: string,
+        userId: string,
         updatedTemplateData: Omit<IEntityTemplateWithConstraints, 'disabled'> & { file?: string },
         { file, files }: { file?: [UploadedFile]; files?: UploadedFile[] },
+        permissionsOfUserId: RequestWithPermissionsOfUserId['permissionsOfUserId'],
     ): Promise<IMongoEntityTemplateWithConstraintsPopulated> {
         await this.entityTemplateService.getCategoryById(updatedTemplateData.category);
 
@@ -827,7 +914,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         );
 
         if (removeRequiredProperties.length > 0)
-            await this.isPropertyInUsedAsRelatedFieldInRelationshipReference(currTemplate._id, removeRequiredProperties, false);
+            await this.isPropertyInUsedAsRelatedFieldInRelationshipReference(currTemplate._id, removeRequiredProperties, false, userId);
 
         const removedProperties: string[] = [];
         const archiveProperties: string[] = [];
@@ -880,8 +967,8 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
                 throw new BadRequestError('can not add identifier fields because there are existing instances');
         }
 
-        await this.checkIfPropertyInUsedBeforeDeleteOrArchive(id, removedProperties, false);
-        await this.checkIfPropertyInUsedBeforeDeleteOrArchive(id, archiveProperties, true);
+        await this.checkIfPropertyInUsedBeforeDeleteOrArchive(id, removedProperties, false, userId);
+        await this.checkIfPropertyInUsedBeforeDeleteOrArchive(id, archiveProperties, true, userId);
 
         const { iconFileId, documentTemplatesIds } = await this.handleFiles(updatedTemplateData, currTemplate, { file, files });
 
@@ -921,6 +1008,8 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             uniqueConstraints,
             requiredConstraints,
         });
+        if (updatedTemplate.category._id !== currTemplate.category._id)
+            await this.updateEntityTemplateScope(updatedTemplate, permissionsOfUserId, userId);
 
         return this.populateTemplateConstraints(updatedTemplate, requiredConstraints, uniqueConstraints);
     }
@@ -1276,6 +1365,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
     // entities
     async getAllowedEntitiesTemplates(
         userPermissions: RequestWithPermissionsOfUserId['permissionsOfUserId'],
+        userId: string,
         searchBody?: ISearchEntityTemplatesBody,
     ) {
         const updatedSearchBody: ISearchEntityTemplatesBody = { ...searchBody };
@@ -1284,7 +1374,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             updatedSearchBody.categoryIds = Object.keys(userPermissions.instances.categories);
         }
 
-        return this.entityTemplateService.searchEntityTemplates(updatedSearchBody);
+        return this.entityTemplateService.searchEntityTemplates(userId, updatedSearchBody);
     }
 
     // rules
@@ -1304,6 +1394,12 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             throw new BadRequestError('rules has alerts/requests', { errorCode: ruleHasAlertsOrRequests });
         }
         return this.relationshipTemplateService.deleteRuleById(ruleId);
+    }
+
+    async getManyRulesByIds(rulesIds: string[], permissionsOfUserId: RequestWithPermissionsOfUserId['permissionsOfUserId'], userId: string) {
+        const allowedEntityTemplatesIds = await this.getAllowedEntityTemplateIds(permissionsOfUserId, userId);
+        const rules = await this.relationshipTemplateService.getManyRulesByIds(rulesIds);
+        return rules.filter((rule) => allowedEntityTemplatesIds.includes(rule.entityTemplateId));
     }
 }
 

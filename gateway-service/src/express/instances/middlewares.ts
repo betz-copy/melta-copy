@@ -40,8 +40,8 @@ export class InstancesValidator extends DefaultController {
         return template.category._id;
     }
 
-    private async getCategoryIdsFromTemplateIds(templateIds: string[]) {
-        const templates = await this.entityTemplateService.searchEntityTemplates({ ids: templateIds });
+    private async getCategoryIdsFromTemplateIds(templateIds: string[], userId: string) {
+        const templates = await this.entityTemplateService.searchEntityTemplates(userId, { ids: templateIds });
         return templates.map((template) => template.category._id);
     }
 
@@ -52,14 +52,18 @@ export class InstancesValidator extends DefaultController {
 
     async getAllowedEntityTemplatesForInstances(
         userPermissions: RequestWithPermissionsOfUserId['permissionsOfUserId'],
+        userId: string,
     ): Promise<IMongoEntityTemplatePopulated[]> {
         if (!userPermissions.admin && !userPermissions.instances) return [];
         const allowedCategories = Object.keys(userPermissions.instances?.categories ?? {});
-        return this.entityTemplateService.searchEntityTemplates(userPermissions.admin ? {} : { categoryIds: allowedCategories });
+        return this.entityTemplateService.searchEntityTemplates(userId, userPermissions.admin ? {} : { categoryIds: allowedCategories });
     }
 
     async validateHasPermissionsToEntitiesInTemplates(user: Express.User, templateIds: string[]) {
-        const allowedEntityTemplates = await this.getAllowedEntityTemplatesForInstances(await this.authorizer.getWorkspacePermissions(user.id));
+        const allowedEntityTemplates = await this.getAllowedEntityTemplatesForInstances(
+            await this.authorizer.getWorkspacePermissions(user.id),
+            user.id,
+        );
         const allowedEntityTemplateIds = allowedEntityTemplates.map((entityTemplate) => entityTemplate._id);
 
         const unauthorizedTemplates = templateIds.filter((templateId) => !allowedEntityTemplateIds.includes(templateId));
@@ -127,13 +131,13 @@ export class InstancesValidator extends DefaultController {
         await this.validateUserPermissionForEntityInstance(req, templateId, PermissionScope.write);
     }
 
-    private async getCategoriesIdsByEntitiesAndTemplatesIds(entitiesIds: string[], templateIdsFromReq: string[]) {
+    private async getCategoriesIdsByEntitiesAndTemplatesIds(entitiesIds: string[], templateIdsFromReq: string[], userId: string) {
         const templateIds = new Set<string>([...templateIdsFromReq]);
 
         const entities = await this.instancesService.getEntityInstancesByIds(entitiesIds);
         entities.forEach((entity) => templateIds.add(entity.templateId));
 
-        const categoriesIds = await this.getCategoryIdsFromTemplateIds([...templateIds]);
+        const categoriesIds = await this.getCategoryIdsFromTemplateIds([...templateIds], userId);
 
         return categoriesIds;
     }
@@ -144,7 +148,7 @@ export class InstancesValidator extends DefaultController {
         const { templateIds, entitiesIds } = this.instancesManager.extractEntitiesAndTemplatesIds(actionsGroups as IAction[][]);
 
         const [categoriesIds, userPermissions] = await Promise.all([
-            this.getCategoriesIdsByEntitiesAndTemplatesIds(entitiesIds, templateIds),
+            this.getCategoriesIdsByEntitiesAndTemplatesIds(entitiesIds, templateIds, req.user!.id),
             this.authorizer.getWorkspacePermissions(req.user!.id),
         ]);
 
@@ -182,7 +186,7 @@ export class InstancesValidator extends DefaultController {
 
         const templatesManager = new TemplatesManager(await getWorkspaceId(req));
 
-        const allAllowedEntityTemplates = (await templatesManager.getAllAllowedEntityTemplates(permissionsOfUserId)).map(
+        const allAllowedEntityTemplates = (await templatesManager.getAllAllowedEntityTemplates(permissionsOfUserId, req.user!.id)).map(
             (entityTemplate) => entityTemplate._id,
         );
         const isAllowedAllTemplates = (templateIds as string[]).every((templateId) => allAllowedEntityTemplates.includes(templateId));

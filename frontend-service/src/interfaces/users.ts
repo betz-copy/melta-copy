@@ -44,5 +44,21 @@ export type IUserPreferences = Pick<IBaseUser, 'preferences'>['preferences'] & {
     kartoffelProfile?: boolean;
 };
 
+export interface ICurrentUser extends IUser {
+    id: string;
+    adfsId: string;
+    isRoot: boolean;
+    name: {
+        firstName: string;
+        lastName: string;
+    };
+    displayName: string;
+    unit: string;
+    rank: string;
+    exp: number;
+    iat: number;
+    currentWorkspacePermissions: ISubCompactPermissions;
+}
+
 export type IExternalUser = Omit<IUser, 'fullName' | 'jobTitle' | 'hierarchy' | 'mail'> &
     Partial<Pick<IUser, 'fullName' | 'jobTitle' | 'hierarchy' | 'mail'>>;

@@ -1,4 +1,4 @@
-import { Autocomplete, Grid, MenuItem, TextField } from '@mui/material';
+import { Autocomplete, Grid, MenuItem, TextField, Typography } from '@mui/material';
 import React from 'react';
 import { FormikErrors, FormikTouched } from 'formik';
 import { useQueryClient } from 'react-query';
@@ -62,116 +62,124 @@ const RelationshipReferenceField: React.FC<FieldEditCardProps> = ({
 
     return (
         <Grid item container justifyContent="space-between" flexWrap="nowrap">
-            <Autocomplete
-                id={relatedTemplateId}
-                options={activeEntityTemplatesFiltered}
-                onChange={(_e, relatedTemplateIdValue) => {
-                    const isOriginSrcEntity = relatedTemplateIdValue?._id === convertToRelationshipField?.originSourceEntityId;
-                    const newValue = {
-                        relatedTemplateField: '',
-                        relatedTemplateId: relatedTemplateIdValue?._id || '',
-                        relationshipTemplateDirection: isOriginSrcEntity ? 'incoming' : 'outgoing',
-                    };
-                    convertToRelationshipField?.setRelatedTemplateId(relatedTemplateIdValue?._id || '');
-                    setFieldValue('relationshipReference', newValue);
-                }}
-                sx={{ marginRight: '5px' }}
-                value={selectedTemplate}
-                disabled={isDisabled}
-                getOptionLabel={(option) => option?.displayName ?? ''}
-                renderInput={(params) => (
-                    <TextField
-                        {...params}
-                        size="small"
-                        error={touchedRelationshipReference && Boolean(errorRelationshipReference?.relatedTemplateId)}
-                        fullWidth
-                        sx={{
-                            '& .MuiInputBase-root': {
-                                borderRadius: '10px',
-                                width: convertToRelationshipField ? 220 : 300,
-                            },
-                        }}
-                        helperText={touchedRelationshipReference && errorRelationshipReference?.relatedTemplateId}
-                        name="template"
-                        variant="outlined"
-                        label={i18next.t('entityTemplate')}
-                    />
-                )}
-            />
-            {selectedTemplate &&
-                (convertToRelationshipField ? (
-                    <TextField
-                        id="relationshipTemplateDirection"
-                        name="relationshipTemplateDirection"
-                        label={i18next.t('validation.relatedDirection')}
-                        value={i18next.t(`validation.${value.relationshipReference?.relationshipTemplateDirection}`)}
-                        sx={{ marginRight: '8px', borderRadius: '10px', width: 100 }}
-                        InputProps={{ readOnly: true }}
-                        disabled
-                    />
-                ) : (
-                    <TextField
-                        select
-                        label={i18next.t('validation.relatedDirection')}
-                        id={relationshipTemplateDirection}
-                        name={relationshipTemplateDirection}
-                        value={value.relationshipReference?.relationshipTemplateDirection}
-                        onChange={(e) => {
-                            const newValue = { ...value.relationshipReference, relationshipTemplateDirection: e.target.value };
+            {isDisabled && !entityTemplates.has(value.relationshipReference?.relatedTemplateId || '') ? (
+                <Typography variant="body1" color="error">
+                    {i18next.t('templateEntitiesAutocomplete.noWritePermissions')}
+                </Typography>
+            ) : (
+                <>
+                    <Autocomplete
+                        id={relatedTemplateId}
+                        options={activeEntityTemplatesFiltered}
+                        onChange={(_e, relatedTemplateIdValue) => {
+                            const isOriginSrcEntity = relatedTemplateIdValue?._id === convertToRelationshipField?.originSourceEntityId;
+                            const newValue = {
+                                relatedTemplateField: '',
+                                relatedTemplateId: relatedTemplateIdValue?._id || '',
+                                relationshipTemplateDirection: isOriginSrcEntity ? 'incoming' : 'outgoing',
+                            };
+                            convertToRelationshipField?.setRelatedTemplateId(relatedTemplateIdValue?._id || '');
                             setFieldValue('relationshipReference', newValue);
                         }}
-                        error={touchedRelationshipReference && Boolean(errorRelationshipReference?.relationshipTemplateDirection)}
-                        helperText={errorRelationshipReference?.relationshipTemplateDirection}
                         sx={{ marginRight: '5px' }}
+                        value={selectedTemplate}
                         disabled={isDisabled}
-                        fullWidth
-                    >
-                        {['outgoing', 'incoming'].map((relatedFrom) => (
-                            <MenuItem key={relatedFrom} value={relatedFrom}>
-                                {i18next.t(`validation.${relatedFrom}`)}
-                            </MenuItem>
+                        getOptionLabel={(option) => option?.displayName ?? ''}
+                        renderInput={(params) => (
+                            <TextField
+                                {...params}
+                                size="small"
+                                error={touchedRelationshipReference && Boolean(errorRelationshipReference?.relatedTemplateId)}
+                                fullWidth
+                                sx={{
+                                    '& .MuiInputBase-root': {
+                                        borderRadius: '10px',
+                                        width: convertToRelationshipField ? 220 : 300,
+                                    },
+                                }}
+                                helperText={touchedRelationshipReference && errorRelationshipReference?.relatedTemplateId}
+                                name="template"
+                                variant="outlined"
+                                label={i18next.t('entityTemplate')}
+                            />
+                        )}
+                    />
+                    {selectedTemplate &&
+                        (convertToRelationshipField ? (
+                            <TextField
+                                id="relationshipTemplateDirection"
+                                name="relationshipTemplateDirection"
+                                label={i18next.t('validation.relatedDirection')}
+                                value={i18next.t(`validation.${value.relationshipReference?.relationshipTemplateDirection}`)}
+                                sx={{ marginRight: '8px', borderRadius: '10px', width: 100 }}
+                                InputProps={{ readOnly: true }}
+                                disabled
+                            />
+                        ) : (
+                            <TextField
+                                select
+                                label={i18next.t('validation.relatedDirection')}
+                                id={relationshipTemplateDirection}
+                                name={relationshipTemplateDirection}
+                                value={value.relationshipReference?.relationshipTemplateDirection}
+                                onChange={(e) => {
+                                    const newValue = { ...value.relationshipReference, relationshipTemplateDirection: e.target.value };
+                                    setFieldValue('relationshipReference', newValue);
+                                }}
+                                error={touchedRelationshipReference && Boolean(errorRelationshipReference?.relationshipTemplateDirection)}
+                                helperText={errorRelationshipReference?.relationshipTemplateDirection}
+                                sx={{ marginRight: '5px' }}
+                                disabled={isDisabled}
+                                fullWidth
+                            >
+                                {['outgoing', 'incoming'].map((relatedFrom) => (
+                                    <MenuItem key={relatedFrom} value={relatedFrom}>
+                                        {i18next.t(`validation.${relatedFrom}`)}
+                                    </MenuItem>
+                                ))}
+                            </TextField>
                         ))}
-                    </TextField>
-                ))}
-            {selectedTemplate && (
-                <Autocomplete
-                    id={relatedTemplateField}
-                    options={fixedRelatedTemplateFieldOptions}
-                    onChange={(_e, selectedField) => {
-                        const newValue = { ...value.relationshipReference, relatedTemplateField: selectedField?.key };
-                        setFieldValue('relationshipReference', newValue);
-                    }}
-                    isOptionEqualToValue={(option, val) => option.key === val.key}
-                    sx={{ marginRight: '5px' }}
-                    value={selectedTemplateField}
-                    disabled={isDisabled}
-                    getOptionLabel={(option) => option.title}
-                    renderInput={(params) => (
-                        <TextField
-                            {...params}
-                            size="small"
-                            error={
-                                (touchedRelationshipReference && Boolean(errorRelationshipReference?.relatedTemplateField)) ||
-                                fixedRelatedTemplateFieldOptions.length === 0
-                            }
-                            fullWidth
-                            sx={{
-                                '& .MuiInputBase-root': {
-                                    borderRadius: '10px',
-                                    width: convertToRelationshipField ? 240 : 300,
-                                },
+                    {selectedTemplate && (
+                        <Autocomplete
+                            id={relatedTemplateField}
+                            options={fixedRelatedTemplateFieldOptions}
+                            onChange={(_e, selectedField) => {
+                                const newValue = { ...value.relationshipReference, relatedTemplateField: selectedField?.key };
+                                setFieldValue('relationshipReference', newValue);
                             }}
-                            helperText={
-                                (touchedRelationshipReference && errorRelationshipReference?.relatedTemplateField) ||
-                                (fixedRelatedTemplateFieldOptions.length === 0 &&
-                                    i18next.t('wizard.entityTemplate.relatedTemplateHaveToHadRequiredFields'))
-                            }
-                            name="template"
-                            variant="outlined"
-                            label={i18next.t('wizard.entityTemplate.propertyDisplayName')}
+                            isOptionEqualToValue={(option, val) => option.key === val.key}
+                            sx={{ marginRight: '5px' }}
+                            value={selectedTemplateField}
+                            disabled={isDisabled}
+                            getOptionLabel={(option) => option.title}
+                            renderInput={(params) => (
+                                <TextField
+                                    {...params}
+                                    size="small"
+                                    error={
+                                        (touchedRelationshipReference && Boolean(errorRelationshipReference?.relatedTemplateField)) ||
+                                        fixedRelatedTemplateFieldOptions.length === 0
+                                    }
+                                    fullWidth
+                                    sx={{
+                                        '& .MuiInputBase-root': {
+                                            borderRadius: '10px',
+                                            width: convertToRelationshipField ? 240 : 300,
+                                        },
+                                    }}
+                                    helperText={
+                                        (touchedRelationshipReference && errorRelationshipReference?.relatedTemplateField) ||
+                                        (fixedRelatedTemplateFieldOptions.length === 0 &&
+                                            i18next.t('wizard.entityTemplate.relatedTemplateHaveToHadRequiredFields'))
+                                    }
+                                    name="template"
+                                    variant="outlined"
+                                    label={i18next.t('wizard.entityTemplate.propertyDisplayName')}
+                                />
+                            )}
                         />
                     )}
-                />
+                </>
             )}
         </Grid>
     );

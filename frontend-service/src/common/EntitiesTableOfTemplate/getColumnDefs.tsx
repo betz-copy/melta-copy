@@ -7,7 +7,7 @@ import { AxiosError } from 'axios';
 import { UseMutateAsyncFunction } from 'react-query';
 import { IButtonPopoverProps } from '.';
 import { EntityData, IEntity } from '../../interfaces/entities';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import {
     booleanColDef,
     dateColDef,
@@ -55,6 +55,7 @@ export interface IGetColumnDefsOptions<Data extends any> {
     >;
     searchValue?: string;
     disableEditCell?: boolean;
+    entityTemplates: IEntityTemplateMap;
 }
 
 export const getColumnDefs = <Data extends any = EntityData>({
@@ -78,6 +79,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
     updateEntityStatus,
     searchValue,
     disableEditCell,
+    entityTemplates,
 }: IGetColumnDefsOptions<Data>): ColDef[] => {
     const invisibleColumnsAmount = Object.values(defaultVisibleColumns).filter((value) => value === false).length;
     const lastColumnIndex = Object.keys(defaultColumnsOrder).length - invisibleColumnsAmount - 2;
@@ -181,6 +183,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
                 propertyTemplate.relationshipReference!.relatedTemplateId,
                 propertyTemplate.relationshipReference!.relatedTemplateField,
                 isLastColumn,
+                entityTemplates,
                 hideColumn,
                 searchValue,
                 editable,
