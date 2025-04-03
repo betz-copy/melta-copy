@@ -50,7 +50,7 @@ const TemplateTableCharts: React.FC<{
 
     useEffect(() => {
         const savedLayout = getSavedLayout();
-
+        if (!savedLayout && templatesChart.length > 0) setLayout(generateLayoutDetails(templatesChart as ChartsAndGenerator[]).lg);
         if (templatesChart.length > savedLayout.length) {
             const updatedLayout = [...savedLayout];
 
