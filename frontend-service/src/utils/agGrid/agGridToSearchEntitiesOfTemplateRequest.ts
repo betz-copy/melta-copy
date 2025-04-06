@@ -18,8 +18,6 @@ export const setFilterToFilterOfTemplate = (field: string, { values }: IAGGridSe
 };
 
 export const textFilterToFilterOfTemplate = (field: string, { type, filter }: IAGGridTextFilter): IFilterOfTemplate => {
-    if (!type || !filter) return { [field]: { $rgx: '' } };
-
     const escapeRegExp = (string: string) => {
         return string.replace(/[.*+\-?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
     };
