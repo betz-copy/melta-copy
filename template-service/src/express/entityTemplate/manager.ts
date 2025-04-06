@@ -41,6 +41,36 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
         return this.model.find(query).populate('category').limit(limit).skip(skip).lean().exec();
     }
 
+    getTemplatesByFormat(searchQuery: { format: string }) {
+        const { format } = searchQuery;
+        const query: FilterQuery<IEntityTemplate> = {
+            $expr: {
+              $gt: [
+                {
+                  $size: {
+                    $filter: {
+                      input: {
+                        $objectToArray:
+                          "$properties.properties"
+                      },
+                      as: "item",
+                      cond: {
+                        $eq: [
+                          "$$item.v.format",
+                          format
+                        ]
+                      }
+                    }
+                  }
+                },
+                0
+              ]
+            }
+        };
+
+        return this.model.find(query).lean().exec();
+    }
+
     getAllTemplates() {
         return this.model.find().lean().exec();
     }
@@ -224,24 +254,24 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
     convertExpendedUserFields(templateData: Omit<IEntityTemplate, 'disabled'>): Omit<IEntityTemplate, 'disabled'> {
         const convertedProperties = templateData.properties.properties;
         const updatedPropertiesOrder = templateData.propertiesOrder;
-        Object.entries(templateData.properties.properties).forEach(([key, value]) => {
-            if(value.expandedUserFields) {
-                const { expandedUserFields, ...restOfTheValue } = value;
-                convertedProperties[key] = restOfTheValue;
+        // Object.entries(templateData.properties.properties).forEach(([key, value]) => {
+        //     if(value.expandedUserFields) {
+        //         const { expandedUserFields, ...restOfTheValue } = value;
+        //         convertedProperties[key] = restOfTheValue;
 
-                const indexOfKeyInOrder = updatedPropertiesOrder.findIndex((el)=> el === key);
+        //         const indexOfKeyInOrder = updatedPropertiesOrder.findIndex((el)=> el === key);
 
-                expandedUserFields.forEach((userFieldToAdd, index) => {
-                    convertedProperties[`userprefix_${key}_${userFieldToAdd}`] = {
-                        title: `${value.title}_${userFieldToAdd}`,
-                        type: 'string',
-                        readOnly: true,
-                    };
+        //         expandedUserFields.forEach((userFieldToAdd, index) => {
+        //             convertedProperties[`userprefix_${key}_${userFieldToAdd}`] = {
+        //                 title: `${value.title}_${userFieldToAdd}`,
+        //                 type: 'string',
+        //                 readOnly: true,
+        //             };
 
-                    updatedPropertiesOrder.splice(indexOfKeyInOrder + index + 1, 0, `userprefix_${key}_${userFieldToAdd}`);
-                });
-            }
-        });
+        //             updatedPropertiesOrder.splice(indexOfKeyInOrder + index + 1, 0, `userprefix_${key}_${userFieldToAdd}`);
+        //         });
+        //     }
+        // });
 
         return {
             ...templateData,

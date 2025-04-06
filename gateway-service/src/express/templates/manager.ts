@@ -773,24 +773,24 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
     convertExpendedUserFields(templateData: Omit<IEntityTemplate, 'disabled'>): Omit<IEntityTemplate, 'disabled'> {
         const convertedProperties = templateData.properties.properties;
         const updatedPropertiesOrder = templateData.propertiesOrder;
-        Object.entries(templateData.properties.properties).forEach(([key, value]) => {
-            if (value.expandedUserFields) {
-                const { expandedUserFields, ...restOfTheValue } = value;
-                convertedProperties[key] = restOfTheValue;
+        // Object.entries(templateData.properties.properties).forEach(([key, value]) => {
+        // if (value.expandedUserFields) {
+        //     const { expandedUserFields, ...restOfTheValue } = value;
+        //     convertedProperties[key] = restOfTheValue;
 
-                const indexOfKeyInOrder = updatedPropertiesOrder.findIndex((el) => el === key);
+        //     const indexOfKeyInOrder = updatedPropertiesOrder.findIndex((el) => el === key);
 
-                expandedUserFields.forEach((userFieldToAdd, index) => {
-                    convertedProperties[`userprefix_${key}_${userFieldToAdd}`] = {
-                        title: `${value.title}_${userFieldToAdd}`,
-                        type: 'string',
-                        readOnly: true,
-                    };
+        //     expandedUserFields.forEach((userFieldToAdd, index) => {
+        //         convertedProperties[`userprefix_${key}_${userFieldToAdd}`] = {
+        //             title: `${value.title}_${userFieldToAdd}`,
+        //             type: 'string',
+        //             readOnly: true,
+        //         };
 
-                    updatedPropertiesOrder.splice(indexOfKeyInOrder + index + 1, 0, `userprefix_${key}_${userFieldToAdd}`);
-                });
-            }
-        });
+        //         updatedPropertiesOrder.splice(indexOfKeyInOrder + index + 1, 0, `userprefix_${key}_${userFieldToAdd}`);
+        //     });
+        // }
+        // });
 
         return {
             ...templateData,
@@ -833,7 +833,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         if (removeRequiredProperties.length > 0)
             await this.isPropertyInUsedAsRelatedFieldInRelationshipReference(currTemplate._id, removeRequiredProperties, false);
 
-        let removedProperties: string[] = [];
+        const removedProperties: string[] = [];
         const archiveProperties: string[] = [];
         const propertiesKeysToPluralize: string[] = [];
 
@@ -876,16 +876,16 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
                 }
             });
 
-            removedProperties = removedProperties.filter((removedProperty) => {
-                if (removedProperty.startsWith('userprefix')) {
-                    const originalUserField = removedProperty.split('_')[1];
-                    if (!updatedTemplateData.properties.properties[originalUserField]) return true;
-                    const expandedUserKey = removedProperty.split('_')[2];
-                    return !updatedTemplateData.properties.properties[originalUserField].expandedUserFields?.includes(expandedUserKey);
-                }
+            // removedProperties = removedProperties.filter((removedProperty) => {
+            //     if (removedProperty.startsWith('userprefix')) {
+            //         const originalUserField = removedProperty.split('_')[1];
+            //         if (!updatedTemplateData.properties.properties[originalUserField]) return true;
+            //         // const expandedUserKey = removedProperty.split('_')[2];
+            //         // return !updatedTemplateData.properties.properties[originalUserField].expandedUserFields?.includes(expandedUserKey);
+            //     }
 
-                return true;
-            });
+            //     return true;
+            // });
 
             const convertedUpdatedData = this.convertExpendedUserFields(updatedTemplateData);
 

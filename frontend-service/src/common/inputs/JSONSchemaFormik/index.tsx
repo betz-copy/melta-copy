@@ -9,6 +9,7 @@ import mapValues from 'lodash.mapvalues';
 import pickBy from 'lodash.pickby';
 import validator from '@rjsf/validator-ajv8';
 import { ErrorSchema, UiSchema } from '@rjsf/utils';
+import { cloneDeep } from 'lodash';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { RjfsDateWidget, RjfsDateTimeWidget } from './RjfsDatesWidgets';
 import RjfsSelectWidget from './RjfsSelectWidget';
@@ -165,6 +166,8 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
     const notTouchedUnique: ErrorSchema<{}> = pickBy(rjsfExtraUniqueErrors, (_value, key) => !touched[key]);
     const mergedErrors: ErrorSchema<{}> = mergeErrorSchemas(ajvExtraErrorsOnlyTouched, notTouchedUnique);
 
+    console.log({ values });
+
     return (
         <JSONSchemaForm
             id="json-schema"
@@ -210,16 +213,26 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                     return {
                         'ui:widget': 'UserWidget',
                         'ui:options': {
-                            updateExpandedUserFields: (user: IKartoffelUser | null) => {
-                                const userFieldsToUpdate = Object.keys(schema.properties).filter((key) =>
-                                    key.startsWith(`userprefix_${propertyKey}`),
+                            values,
+                            updateExpandedUserFields: (user: IKartoffelUser | null, curValues: any) => {
+                                console.log({ curValues });
+                                const userFieldsToUpdate = Object.keys(schema.properties).filter(
+                                    (key) => schema.properties[key].expandedUserField?.relatedUserField === propertyKey,
+                                    // key.startsWith(`userprefix_${propertyKey}`),
                                 );
 
-                                const propertiesToUpdate = values.properties;
+                                // const clonedValues = JSON.parse(JSON.stringify(values));
+                                const clonedValues = cloneDeep(curValues);
 
-                                userFieldsToUpdate.forEach((userField) => {
-                                    const fieldKey = userField.split('_')[2];
-                                    propertiesToUpdate[userField] = user ? user[fieldKey] : undefined;
+                                console.log({ userFieldsToUpdate, propertyKey, clonedValues });
+                                // console.log({ propertyKey, values });
+
+                                const propertiesToUpdate = clonedValues.properties;
+
+                                userFieldsToUpdate.forEach((key) => {
+                                    const kartoffelField = schema.properties[key].expandedUserField?.kartoffelField;
+                                    console.log({ kartoffelField, key });
+                                    propertiesToUpdate[key] = user && kartoffelField ? user[kartoffelField] : undefined;
                                 });
 
                                 propertiesToUpdate[propertyKey] = user
@@ -231,6 +244,8 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                                           mail: user?.mail,
                                       })
                                     : undefined;
+
+                                console.log({ propertiesToUpdate }); // TODO - find why the other user field is deleted...
 
                                 setValues({
                                     ...propertiesToUpdate,
@@ -256,6 +271,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                 return {};
             })}
             onChange={({ formData }) => {
+                console.log('changeeee!!!!');
                 Object.entries(formData).forEach(([key, value]) => {
                     if (JSON.stringify(value) === JSON.stringify([undefined]) || JSON.stringify(value) === JSON.stringify([null])) {
                         // eslint-disable-next-line no-param-reassign

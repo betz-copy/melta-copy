@@ -1,4 +1,4 @@
-import React, { SetStateAction, useCallback, useRef, useState } from 'react';
+import React, { SetStateAction, useCallback, useMemo, useRef, useState } from 'react';
 import { Accordion, AccordionDetails, AccordionSummary, Box, Button, Grid, styled, Typography } from '@mui/material';
 import { DragDropContext, DraggableProvided, Droppable } from 'react-beautiful-dnd';
 import { v4 as uuid } from 'uuid';
@@ -202,6 +202,15 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
     const setDisplayValueWrapper = (index: number) => (value: SetStateAction<CommonFormInputProperties>) => setDisplayValue(index, value);
     const isFieldBlockError = Boolean(touched?.[propertiesType]) && Boolean(errors?.[propertiesType]);
 
+    // const userPropertiesInTemplate = (values.properties as unknown as CommonFormInputProperties[]).filter((property) => property.type === 'user');
+
+    // TODO: lir - make sure the users fields list is updating in real time
+    const userPropertiesInTemplate = useMemo(
+        () => values[propertiesType].filter((property) => property.type === 'user').map((userField) => userField.name),
+        [propertiesType, values],
+    );
+    console.log({ values, userPropertiesInTemplate });
+
     return (
         <FieldBlockAccordion style={{ border: isFieldBlockError ? '1px solid red' : '' }}>
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
@@ -257,6 +266,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
                                                 locationSearchFields,
                                                 hasActions,
                                                 supportConvertingToMultipleFields,
+                                                userPropertiesInTemplate,
                                             };
 
                                             if (
