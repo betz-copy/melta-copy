@@ -177,6 +177,7 @@ const ChartPage: React.FC = () => {
                                             borderTopRightRadius: '13px',
                                         },
                                     }}
+                                    ignoreType={false}
                                 />
                             </Grid>
                         </Grid>

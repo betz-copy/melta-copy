@@ -23,6 +23,7 @@ export const EntitiesTable: React.FC<{
     overrideSx?: object;
     infiniteModeWithoutExpand?: boolean;
     disableFilter?: boolean;
+    ignoreType?: boolean;
 }> = ({
     rowData,
     rowModelType = 'clientSide',
@@ -36,6 +37,7 @@ export const EntitiesTable: React.FC<{
     overrideSx,
     infiniteModeWithoutExpand,
     disableFilter,
+    ignoreType = true,
 }) => {
     const theme = useTheme();
     const workspace = useWorkspaceStore((state) => state.workspace);
@@ -117,7 +119,7 @@ export const EntitiesTable: React.FC<{
                         shouldSavePagination: false,
                         shouldSaveScrollPosition: false,
                     }}
-                    ignoreType
+                    ignoreType={ignoreType}
                     showNavigateToRowButton={false}
                     editable={false}
                     infiniteModeWithoutExpand={infiniteModeWithoutExpand}
