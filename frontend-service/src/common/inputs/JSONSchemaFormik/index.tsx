@@ -166,12 +166,13 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
     const notTouchedUnique: ErrorSchema<{}> = pickBy(rjsfExtraUniqueErrors, (_value, key) => !touched[key]);
     const mergedErrors: ErrorSchema<{}> = mergeErrorSchemas(ajvExtraErrorsOnlyTouched, notTouchedUnique);
 
-    console.log({ values });
-
     return (
         <JSONSchemaForm
             id="json-schema"
             schema={schema}
+            formContext={{
+                globalValues: values,
+            }}
             uiSchema={mapValues(schema.properties, (propertySchema, propertyKey): UiSchema => {
                 if (propertySchema.archive) return {};
                 if (propertySchema.format === 'signature')
@@ -213,25 +214,17 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                     return {
                         'ui:widget': 'UserWidget',
                         'ui:options': {
-                            values,
                             updateExpandedUserFields: (user: IKartoffelUser | null, curValues: any) => {
-                                console.log({ curValues });
                                 const userFieldsToUpdate = Object.keys(schema.properties).filter(
                                     (key) => schema.properties[key].expandedUserField?.relatedUserField === propertyKey,
-                                    // key.startsWith(`userprefix_${propertyKey}`),
                                 );
 
-                                // const clonedValues = JSON.parse(JSON.stringify(values));
                                 const clonedValues = cloneDeep(curValues);
-
-                                console.log({ userFieldsToUpdate, propertyKey, clonedValues });
-                                // console.log({ propertyKey, values });
 
                                 const propertiesToUpdate = clonedValues.properties;
 
                                 userFieldsToUpdate.forEach((key) => {
                                     const kartoffelField = schema.properties[key].expandedUserField?.kartoffelField;
-                                    console.log({ kartoffelField, key });
                                     propertiesToUpdate[key] = user && kartoffelField ? user[kartoffelField] : undefined;
                                 });
 
@@ -244,8 +237,6 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                                           mail: user?.mail,
                                       })
                                     : undefined;
-
-                                console.log({ propertiesToUpdate }); // TODO - find why the other user field is deleted...
 
                                 setValues({
                                     ...propertiesToUpdate,
@@ -271,7 +262,6 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                 return {};
             })}
             onChange={({ formData }) => {
-                console.log('changeeee!!!!');
                 Object.entries(formData).forEach(([key, value]) => {
                     if (JSON.stringify(value) === JSON.stringify([undefined]) || JSON.stringify(value) === JSON.stringify([null])) {
                         // eslint-disable-next-line no-param-reassign

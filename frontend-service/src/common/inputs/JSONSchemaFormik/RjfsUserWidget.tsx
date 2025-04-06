@@ -15,6 +15,7 @@ const RjfsUserWidget = ({
     autoFocus,
     options,
     onChange,
+    formContext,
     ...textFieldProps
 }: WidgetProps) => {
     const handleOnChange = options.updateExpandedUserFields as (
@@ -24,7 +25,7 @@ const RjfsUserWidget = ({
 
     const [currentUser, setCurrentUser] = React.useState(value ? JSON.parse(value) : undefined);
     if (!currentUser) {
-        if (handleOnChange) handleOnChange(null, options?.values);
+        if (handleOnChange) handleOnChange(null, formContext.globalValues);
     }
 
     function handleUserChange(_event: React.SyntheticEvent, chosenUser: IKartoffelUser | null) {
@@ -37,7 +38,7 @@ const RjfsUserWidget = ({
             mobilePhone: chosenUser.mobilePhone?.join(''),
             phone: chosenUser.phone?.join(''),
         };
-        if (handleOnChange) handleOnChange(formattedUser, options?.values);
+        if (handleOnChange) handleOnChange(formattedUser, formContext.globalValues);
 
         setCurrentUser(formattedUser);
     }
@@ -61,7 +62,7 @@ const RjfsUserWidget = ({
                 enableClear
                 onDisplayValueChange={(_, newDisplayValue) => {
                     if (newDisplayValue === '') {
-                        handleOnChange(null, options.values);
+                        if (handleOnChange) handleOnChange(null, formContext.globalValues);
                         setCurrentUser(undefined);
                     }
                 }}
