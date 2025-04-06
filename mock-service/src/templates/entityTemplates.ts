@@ -66,15 +66,14 @@ export interface IMongoEntityTemplate extends IEntityTemplate {
 
 export const createEntityTemplates = async (workspaceId: string, entityTemplatesToCreate: IEntityTemplateMock[], categories: IMongoCategory[]) => {
     const axiosInstance = createAxiosInstance(workspaceId);
+    const results: IMongoEntityTemplate[] = [];
 
-    const promises = entityTemplatesToCreate.map((entityTemplate) => {
-        return axiosInstance.post<IMongoEntityTemplate>(url + createEntityTemplateRoute, {
-            ...entityTemplate,
-            category: categories.find((category) => category.name === entityTemplate.category.name)?._id,
-        });
-    });
+    for (const entityTemplate of entityTemplatesToCreate) {
+        const categoryId = categories.find(category => category.name === entityTemplate.category.name)?._id;
+        const response = await axiosInstance.post<IMongoEntityTemplate>(url + createEntityTemplateRoute, {...entityTemplate, category: categoryId})
 
-    const results = await Promise.all(promises);
+        results.push(response.data)
+    }
 
-    return results.map((result) => result.data);
+    return results
 };
