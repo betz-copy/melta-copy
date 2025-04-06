@@ -10,8 +10,8 @@ import ForceGraph, { ForceGraphMethods, ForceGraphProps, GraphData, NodeObject }
 import ForceGraph3D, { ForceGraphMethods as ForceGraphMethods3D, ForceGraphProps as ForceGraphProps3D } from 'react-force-graph-3d';
 import { BsFillPlusCircleFill } from 'react-icons/bs';
 import { useQuery, useQueryClient } from 'react-query';
-import { useParams } from 'wouter';
 import { toast } from 'react-toastify';
+import { useParams } from 'wouter';
 import { environment } from '../../globals';
 import { ICategoryMap, IMongoCategory } from '../../interfaces/categories';
 import { IEntityExpanded, IGraphFilterBodyBatch } from '../../interfaces/entities';
@@ -62,6 +62,9 @@ const Graph: React.FC = () => {
 
     const [nodeMenuState, setNodeMenuState] = useState<genericMenuState>();
     const [graphMenuState, setGraphMenuState] = useState<Omit<genericMenuState, 'node'>>();
+
+    const [filterRecord, setFilterRecord] = useState<IGraphFilterBodyBatch>({});
+    const [filters, setFilters] = useState<number[]>([]);
 
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
@@ -119,9 +122,6 @@ const Graph: React.FC = () => {
             });
         });
     };
-
-    const [filterRecord, setFilterRecord] = useState<IGraphFilterBodyBatch>({});
-    const [filters, setFilters] = useState<number[]>([]);
 
     const expandedParams = {
         [entityId]: 1,
@@ -352,7 +352,6 @@ const Graph: React.FC = () => {
                     setFilteredEntityTemplates(Array.from(entityTemplates.values()));
                     reload();
                     setFilters([]);
-                    setFilterRecord({});
                     resetGraph(undefined, true);
                 }}
                 set3DView={(is3DView) => {

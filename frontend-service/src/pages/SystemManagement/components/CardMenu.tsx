@@ -1,20 +1,20 @@
-import React, { MouseEventHandler, useMemo } from 'react';
-import { Grid, IconButton, Menu } from '@mui/material';
-import i18next from 'i18next';
 import {
-    Edit as EditIcon,
-    Delete as DeleteIcon,
-    MoreVertOutlined as OptionsIcon,
-    DoNotDisturbOnOutlined as DoNotDisturbOnOutlinedIcon,
-    DoNotDisturbOffOutlined as DoNotDisturbOffOutlinedIcon,
-    ContentCopy as DuplicateIcon,
     ControlPoint as AddIcon,
+    Delete as DeleteIcon,
+    DoNotDisturbOffOutlined as DoNotDisturbOffOutlinedIcon,
+    DoNotDisturbOnOutlined as DoNotDisturbOnOutlinedIcon,
+    ContentCopy as DuplicateIcon,
+    Edit as EditIcon,
+    MoreVertOutlined as OptionsIcon,
 } from '@mui/icons-material';
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
-import { MenuButton } from '../../../common/MenuButton';
+import { Grid, IconButton, Menu } from '@mui/material';
+import i18next from 'i18next';
+import React, { MouseEventHandler, useMemo } from 'react';
 import { MeltaTooltip } from '../../../common/MeltaTooltip';
 import { useUserStore } from '../../../stores/user';
 import { useWorkspaceStore } from '../../../stores/workspace';
+import { MenuButton } from '../../../common/MenuButton';
 
 export const CardMenu: React.FC<{
     onOptionsIconClose?: () => void;

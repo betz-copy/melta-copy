@@ -1,13 +1,15 @@
 /* eslint-disable no-param-reassign */
-import _ from 'lodash';
 import { AxiosError, AxiosResponse } from 'axios';
+import { logger } from 'elastic-apm-node';
+import { StatusCodes } from 'http-status-codes';
+import _ from 'lodash';
 import _isEqual from 'lodash.isequal';
 import lodashUniqby from 'lodash.uniqby';
-import { StatusCodes } from 'http-status-codes';
-import { logger } from 'elastic-apm-node';
 import config from '../../config';
+import { GanttsService } from '../../externalServices/ganttsService';
 import { InstancesService } from '../../externalServices/instanceService';
-import { IConstraintsOfTemplate, IUniqueConstraintOfTemplate } from '../../externalServices/instanceService/interfaces/entities';
+import { IConstraintsOfTemplate, ISearchFilter, IUniqueConstraintOfTemplate } from '../../externalServices/instanceService/interfaces/entities';
+import { IRelationship } from '../../externalServices/instanceService/interfaces/relationships';
 import { ProcessService } from '../../externalServices/processService';
 import { RuleBreachService } from '../../externalServices/ruleBreachService';
 import { StorageService } from '../../externalServices/storageService';
@@ -29,11 +31,16 @@ import {
     RelationshipsTemplateService,
 } from '../../externalServices/templates/relationshipsTemplateService';
 import { PermissionScope, PermissionType } from '../../externalServices/userService/interfaces/permissions';
+import { ISubCompactPermissions } from '../../externalServices/userService/interfaces/permissions/permissions';
 import { trycatch } from '../../utils';
 import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
+import { UploadedFile } from '../../utils/busboy/interface';
 import DefaultManagerProxy from '../../utils/express/manager';
+import { buildNewRelationshipField, validateNoDependentRules, validateRequiredConstraints, validateUniqueRelationships } from '../../utils/templates';
 import { BadRequestError, NotFoundError, ServiceError } from '../error';
 import ProcessTemplatesManager from '../processes/processTemplates/manager';
+import { IAxisField, IChartDocument, IChartType, IColumnOrLineMetaData, INUmberMetaData, IPieMetaData } from '../templateCharts/interface';
+import { ChartManager } from '../templateCharts/manager';
 import { UsersManager } from '../users/manager';
 import {
     IEntityTemplateWithConstraints,
@@ -42,14 +49,9 @@ import {
     IUpdateOrDeleteEnumFieldReqData,
 } from './interfaces';
 import { getParametersOfFormula } from './rules';
+import { checkPropertyInUsedFromFormula } from './rules/checkIfPropertyInUsed';
 import { IMongoRule, IRule } from './rules/interfaces';
 import { IFormula } from './rules/interfaces/formula';
-import { GanttsService } from '../../externalServices/ganttsService';
-import { checkPropertyInUsedFromFormula } from './rules/checkIfPropertyInUsed';
-import { UploadedFile } from '../../utils/busboy/interface';
-import { IRelationship } from '../../externalServices/instanceService/interfaces/relationships';
-import { buildNewRelationshipField, validateNoDependentRules, validateRequiredConstraints, validateUniqueRelationships } from '../../utils/templates';
-import { ISubCompactPermissions } from '../../externalServices/userService/interfaces/permissions/permissions';
 
 const {
     categoryHasTemplates,
@@ -660,13 +662,88 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         });
     }
 
+    private async isPropertyOfTemplateInUsedInCharts(templateId: string, properties: string[], archive: boolean): Promise<void> {
+        const chartManager = new ChartManager(this.workspaceId);
+        const allChartsOfTemplate = await chartManager.getChartsByTemplateId(templateId);
+
+        const isPropertyUsed = (field: IAxisField): string | null => {
+            if (typeof field === 'string') return properties.includes(field) ? field : null;
+            return field.byField && properties.includes(field.byField) ? field.byField : null;
+        };
+
+        for (const chart of allChartsOfTemplate) {
+            let foundProperty: string | null = null;
+
+            switch (chart.type) {
+                case IChartType.Column:
+                case IChartType.Line: {
+                    const { xAxis, yAxis } = chart.metaData as IColumnOrLineMetaData;
+                    foundProperty = isPropertyUsed(xAxis.field) || isPropertyUsed(yAxis.field);
+                    break;
+                }
+
+                case IChartType.Pie: {
+                    const { aggregationType, dividedByField } = chart.metaData as IPieMetaData;
+                    foundProperty = isPropertyUsed(dividedByField) || isPropertyUsed(aggregationType);
+                    break;
+                }
+
+                case IChartType.Number: {
+                    const { accumulator } = chart.metaData as INUmberMetaData;
+                    foundProperty = isPropertyUsed(accumulator);
+                    break;
+                }
+
+                default:
+                    break;
+            }
+
+            if (foundProperty)
+                throw new BadRequestError(`Cannot delete field '${foundProperty}' because it is used in chart '${chart._id}'`, {
+                    errorCode: archive ? config.errorCodes.failedToArchiveField : config.errorCodes.failedToDeleteField,
+                    type: 'charts',
+                    property: foundProperty,
+                });
+        }
+    }
+
     private async checkIfPropertyInUsedBeforeDeleteOrArchive(templateId: string, properties: string[], archive: boolean, userId: string) {
         if (properties.length)
             await Promise.all([
                 this.isPropertyOfTemplateInUsedInGantts(templateId, properties, archive),
                 this.isPropertyOfTemplateInUsedInRules(templateId, properties, archive),
                 this.isPropertyInUsedAsRelatedFieldInRelationshipReference(templateId, properties, archive, userId),
+                this.isPropertyOfTemplateInUsedInCharts(templateId, properties, archive),
             ]);
+    }
+
+    private async deletePropertyFromChartFilter(templateId: string, removedProperties: string[]) {
+        const chartManager = new ChartManager(this.workspaceId);
+
+        const allChartsOfTemplate = await chartManager.getChartsByTemplateId(templateId);
+
+        const updatedCharts = allChartsOfTemplate
+            .filter(({ filter }) => filter)
+            .map((chart) => {
+                try {
+                    const parsedFilter: ISearchFilter = JSON.parse(chart.filter!);
+                    parsedFilter.$and = Array.isArray(parsedFilter.$and) ? parsedFilter.$and : [];
+                    parsedFilter.$and = parsedFilter.$and.filter((filterProperty) => {
+                        const propertyKey = Object.keys(filterProperty)[0];
+                        return !removedProperties.includes(propertyKey);
+                    });
+
+                    chart.filter = parsedFilter.$and.length > 0 ? JSON.stringify(parsedFilter) : undefined;
+
+                    return { chartId: chart._id, updatedChart: chart };
+                } catch (error) {
+                    logger.error(`Error parsing filter for chart ${chart._id}:`, error);
+                    return null;
+                }
+            })
+            .filter(Boolean) as { chartId: string; updatedChart: IChartDocument }[];
+
+        await Promise.all(updatedCharts.map(({ chartId, updatedChart }) => chartManager.updateChart(chartId, updatedChart)));
     }
 
     private async deleteFilesOfDeletedProperty(templateId: string, removedFilesProperties: Record<string, boolean>, numOfInstances: number) {
@@ -736,7 +813,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             (acc, propertyToRemove) => {
                 const { format, items } = currentTemplate.properties.properties[propertyToRemove];
 
-                if (format === 'fileId' || items?.format === 'fileId') {
+                if (format === 'fileId' || items?.format === 'fileId' || format === 'signature') {
                     acc[propertyToRemove] = items?.format === 'fileId';
                 }
 
@@ -748,6 +825,8 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         if (Object.keys(removedFilesProperties).length) {
             await this.deleteFilesOfDeletedProperty(id, removedFilesProperties, count);
         }
+
+        await this.deletePropertyFromChartFilter(id, removedProperties);
 
         const { err } = await trycatch(() =>
             this.instancesService.deletePropertiesOfTemplate(id, removedProperties, currentTemplate.properties.properties),

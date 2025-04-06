@@ -506,7 +506,7 @@ export const userColDef = <Data extends any = IUser>(
             );
         },
 
-        filter: 'agSetColumnFilter',
+        filter: 'agTextColumnFilter',
         filterParams,
         width: hardcodedWidth,
         flex: isLastColumn ? 1 : 0,

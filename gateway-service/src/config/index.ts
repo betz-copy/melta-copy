@@ -24,6 +24,11 @@ const config = {
     mongo: {
         url: env.get('MONGO_URL').required().asString(),
         iFramesCollectionName: env.get('MONGO_IFRAMES_COLLECTION_NAME').required().asString(),
+        chartCollectionName: env.get('MONGO_CHARTS_COLLECTION_NAME').required().asString(),
+        connectionOptions: {
+            maxIdleTimeMS: env.get('MONGO_MAX_IDLE_CONNECTION_TIME').default(10000).asIntPositive(),
+            socketTimeoutMS: env.get('MONGO_MAX_IDLE_SOCKET_TIME').default(10000).asIntPositive(),
+        },
     },
 
     frontendConfig: {

@@ -138,6 +138,7 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
                             property,
                             relatedTemplateName,
                         })}`,
+                        charts: `${i18next.t('wizard.entityTemplate.failedToDeleteFieldThatUsedInCharts', { property })}`,
                     };
 
                     toast.error(errorMessages[type]);
