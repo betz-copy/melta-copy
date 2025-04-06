@@ -19,6 +19,7 @@ import { HighlightText } from '../utils/HighlightText';
 import { BlueTitle } from './BlueTitle';
 import UserAvatar from './UserAvatar';
 import OverflowWrapper from '../utils/agGrid/OverflowWrapper';
+import { commentColors } from './inputs/JSONSchemaFormik/RjsfCommentWidget';
 
 const { maxNumOfCharactersNotInFullWidth } = environment.entitiesProperties;
 
@@ -298,7 +299,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                                     >
                                         <Typography
                                             fontSize="14px"
-                                            color={propertySchema.color ?? propertyValueColor}
+                                            color={commentColors[propertySchema.color ?? ''] ?? propertyValueColor}
                                             style={{
                                                 textOverflow: 'ellipsis',
                                                 whiteSpace: textWrap ? undefined : 'nowrap',

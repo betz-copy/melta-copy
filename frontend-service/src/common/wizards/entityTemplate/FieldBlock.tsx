@@ -206,10 +206,11 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
     const setDisplayValueWrapper = (index: number) => (value: SetStateAction<CommonFormInputProperties>) => setDisplayValue(index, value);
     const isFieldBlockError = Boolean(touched?.[propertiesType]) && Boolean(errors?.[propertiesType]);
 
-    const handleCommentChange = (state: EditorState) => {
+    const handleCommentChange = (index: number) => (state: EditorState) => {
         const newValue = state.getCurrentContent().getPlainText();
         const htmlContent = stateToHTML(state.getCurrentContent());
-        setFieldValue('comment', newValue === '' ? undefined : htmlContent);
+
+        setFieldDisplayValue(index, 'comment' as keyof Values, newValue === '' ? undefined : htmlContent);
     };
 
     return (
@@ -267,7 +268,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
                                                 locationSearchFields,
                                                 hasActions,
                                                 supportConvertingToMultipleFields,
-                                                handleCommentChange,
+                                                handleCommentChange: handleCommentChange(index),
                                                 supportComment,
                                             };
 
