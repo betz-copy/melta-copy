@@ -103,7 +103,6 @@ export default {
         addActions: 'הוספת פעולות',
         addChildTemplate: 'הוספת תצוגת בן',
         convertToRelationShipFieldClick: 'המרה לשדה קשר',
-        cancel: 'ביטול',
     },
     entityPage: {
         deleteRelationshipPopoverText: 'מחק קשר',
