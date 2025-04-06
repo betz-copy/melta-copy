@@ -165,7 +165,7 @@ export const normalizeChartResponse = (result: QueryResult) =>
     result.records.map((record) => {
         const x = record.get('x');
         const y = record.has('y') ? record.get('y') : null;
-        const unit = record.has('unit') ? record.get('unit') : null;
+        const unit = record.has('coordinateSystem') ? record.get('coordinateSystem') : null;
 
         return { x, y, unit };
     });

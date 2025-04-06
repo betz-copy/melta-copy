@@ -132,7 +132,7 @@ const parsePolygon = (polygonStr: string): Cartesian3[] | undefined => {
     return coordinates.length > 0 ? coordinates : undefined;
 };
 
-export const stringToCoordinates = (strCoords: string): CoordinatesResult => {
+const stringToCoordinates = (strCoords: string): CoordinatesResult => {
     const polygon = parsePolygon(strCoords);
     if (polygon) return { type: 'polygon', value: polygon };
 

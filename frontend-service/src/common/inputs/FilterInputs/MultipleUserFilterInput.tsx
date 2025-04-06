@@ -41,7 +41,7 @@ const MultipleUserFilterInput: React.FC<MultipleUserFilterInputProps> = ({
                 return undefined;
             }}
             overrideSx={{
-                '& .MuiInputBse-root': {
+                '& .MuiInputBase-root': {
                     borderRadius: '7px',
                     backgroundColor: darkMode ? '#4949499e' : 'white',
                 },

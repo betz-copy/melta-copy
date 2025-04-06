@@ -7,7 +7,7 @@ import { GripVertical } from '../../../utils/icons/fontAwesome';
 import { isWorkspaceAdmin } from '../../../utils/permissions/instancePermissions';
 import { CardMenu } from '../../SystemManagement/components/CardMenu';
 import { NumberChartGenerator } from '../chartGenerator.tsx/NumberChartGenerator';
-import { HiighchartGenerator } from '../chartGenerator.tsx/HighChartgenerator';
+import { HighchartGenerator } from '../chartGenerator.tsx/HighChartgenerator';
 import { useDarkModeStore } from '../../../stores/darkMode';
 
 interface ChartItemProps {
@@ -70,7 +70,7 @@ const ChartItem: React.FC<ChartItemProps> = ({
             {type === IChartType.Number ? (
                 <NumberChartGenerator data={chartData} name={name} description={description} enableResize />
             ) : (
-                <HiighchartGenerator
+                <HighchartGenerator
                     data={chartData}
                     isLoading={false}
                     isQueryEnabled

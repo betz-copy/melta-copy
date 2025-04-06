@@ -56,7 +56,10 @@ const TextFilterInput: React.FC<TextFilterProps> = ({
                                 ? ({ ...filterField, filter: value ? Number(value) : undefined } as IAGGidNumberFilter)
                                 : ({ ...filterField, filter: value } as IAGGridTextFilter);
 
-                        handleFilterFieldChange(updatedFilter, Boolean(filterField && filterField.type && value));
+                        handleFilterFieldChange(
+                            updatedFilter,
+                            Boolean(filterField !== undefined && filterField.type && value !== undefined && value !== ''),
+                        );
                     }}
                 />
             </Grid>

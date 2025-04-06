@@ -17,7 +17,7 @@ interface HighchartGeneratorProps {
     enableResize?: boolean;
 }
 
-const HiighchartGenerator: React.FC<HighchartGeneratorProps> = ({
+const HighchartGenerator: React.FC<HighchartGeneratorProps> = ({
     data = [],
     isLoading,
     isQueryEnabled,
@@ -140,4 +140,4 @@ const HiighchartGenerator: React.FC<HighchartGeneratorProps> = ({
     );
 };
 
-export { HiighchartGenerator };
+export { HighchartGenerator };

@@ -1,13 +1,15 @@
 /* eslint-disable no-param-reassign */
-import _ from 'lodash';
 import { AxiosError, AxiosResponse } from 'axios';
+import { logger } from 'elastic-apm-node';
+import { StatusCodes } from 'http-status-codes';
+import _ from 'lodash';
 import _isEqual from 'lodash.isequal';
 import lodashUniqby from 'lodash.uniqby';
-import { StatusCodes } from 'http-status-codes';
-import { logger } from 'elastic-apm-node';
 import config from '../../config';
+import { GanttsService } from '../../externalServices/ganttsService';
 import { InstancesService } from '../../externalServices/instanceService';
 import { IConstraintsOfTemplate, ISearchFilter, IUniqueConstraintOfTemplate } from '../../externalServices/instanceService/interfaces/entities';
+import { IRelationship } from '../../externalServices/instanceService/interfaces/relationships';
 import { ProcessService } from '../../externalServices/processService';
 import { RuleBreachService } from '../../externalServices/ruleBreachService';
 import { StorageService } from '../../externalServices/storageService';
@@ -29,11 +31,16 @@ import {
     RelationshipsTemplateService,
 } from '../../externalServices/templates/relationshipsTemplateService';
 import { PermissionScope, PermissionType } from '../../externalServices/userService/interfaces/permissions';
+import { ISubCompactPermissions } from '../../externalServices/userService/interfaces/permissions/permissions';
 import { trycatch } from '../../utils';
 import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
+import { UploadedFile } from '../../utils/busboy/interface';
 import DefaultManagerProxy from '../../utils/express/manager';
+import { buildNewRelationshipField, validateNoDependentRules, validateRequiredConstraints, validateUniqueRelationships } from '../../utils/templates';
 import { BadRequestError, NotFoundError, ServiceError } from '../error';
 import ProcessTemplatesManager from '../processes/processTemplates/manager';
+import { IAxisField, IChartDocument, IChartType, IColumnOrLineMetaData, INUmberMetaData, IPieMetaData } from '../templateCharts/interface';
+import { ChartManager } from '../templateCharts/manager';
 import { UsersManager } from '../users/manager';
 import {
     IEntityTemplateWithConstraints,
@@ -42,16 +49,9 @@ import {
     IUpdateOrDeleteEnumFieldReqData,
 } from './interfaces';
 import { getParametersOfFormula } from './rules';
+import { checkPropertyInUsedFromFormula } from './rules/checkIfPropertyInUsed';
 import { IMongoRule, IRule } from './rules/interfaces';
 import { IFormula } from './rules/interfaces/formula';
-import { GanttsService } from '../../externalServices/ganttsService';
-import { checkPropertyInUsedFromFormula } from './rules/checkIfPropertyInUsed';
-import { UploadedFile } from '../../utils/busboy/interface';
-import { IRelationship } from '../../externalServices/instanceService/interfaces/relationships';
-import { buildNewRelationshipField, validateNoDependentRules, validateRequiredConstraints, validateUniqueRelationships } from '../../utils/templates';
-import { ChartManager } from '../templateCharts/manager';
-import { IAxisField, IChartDocument, IChartType, IColumnOrLineMetaData, INUmberMetaData, IPieMetaData } from '../templateCharts/interface';
-import { ISubCompactPermissions } from '../../externalServices/userService/interfaces/permissions/permissions';
 
 const {
     categoryHasTemplates,
@@ -82,8 +82,6 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
     private ganttService: GanttsService;
 
-    private chartsManager: ChartManager;
-
     constructor(private workspaceId: string) {
         super(new EntityTemplateService(workspaceId));
         this.storageService = new StorageService(workspaceId);
@@ -94,7 +92,6 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         this.processManager = new ProcessTemplatesManager(workspaceId);
         this.ruleBreachService = new RuleBreachService(workspaceId);
         this.ganttService = new GanttsService(workspaceId);
-        this.chartsManager = new ChartManager(workspaceId);
     }
 
     async getAllowedEntityTemplateIds(permissionsOfUserId: RequestWithPermissionsOfUserId['permissionsOfUserId'], userId: string, searchBody?: any) {
@@ -666,7 +663,8 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
     }
 
     private async isPropertyOfTemplateInUsedInCharts(templateId: string, properties: string[], archive: boolean): Promise<void> {
-        const allChartsOfTemplate = await this.chartsManager.getChartsByTemplateId(templateId);
+        const chartManager = new ChartManager(this.workspaceId);
+        const allChartsOfTemplate = await chartManager.getChartsByTemplateId(templateId);
 
         const isPropertyUsed = (field: IAxisField): string | null => {
             if (typeof field === 'string') return properties.includes(field) ? field : null;
@@ -720,7 +718,9 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
     }
 
     private async deletePropertyFromChartFilter(templateId: string, removedProperties: string[]) {
-        const allChartsOfTemplate = await this.chartsManager.getChartsByTemplateId(templateId);
+        const chartManager = new ChartManager(this.workspaceId);
+
+        const allChartsOfTemplate = await chartManager.getChartsByTemplateId(templateId);
 
         const updatedCharts = allChartsOfTemplate
             .filter(({ filter }) => filter)
@@ -743,7 +743,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             })
             .filter(Boolean) as { chartId: string; updatedChart: IChartDocument }[];
 
-        await Promise.all(updatedCharts.map(({ chartId, updatedChart }) => this.chartsManager.updateChart(chartId, updatedChart)));
+        await Promise.all(updatedCharts.map(({ chartId, updatedChart }) => chartManager.updateChart(chartId, updatedChart)));
     }
 
     private async deleteFilesOfDeletedProperty(templateId: string, removedFilesProperties: Record<string, boolean>, numOfInstances: number) {

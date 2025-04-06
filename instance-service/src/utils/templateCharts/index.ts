@@ -9,7 +9,7 @@ import { EntityManager } from '../../express/entities/manager';
 import { CoordinateSystem, locationConverterToString } from '../map';
 
 const {
-    neo4j: { userFieldPropertySuffix, usersFieldsPropertySuffix, relationshipReferencePropertySuffix },
+    neo4j: { userFieldPropertySuffix, usersFieldsPropertySuffix, relationshipReferencePropertySuffix, locationCoordinateSystemSuffix },
     map: {
         polygon: { polygonPrefix, polygonSuffix },
     },
@@ -37,10 +37,10 @@ const getRelatedEntityName = async (workspaceId: string, id: string, relatedTemp
     return relatedEntity?.properties?.[relatedTemplateField] ?? id;
 };
 
-const getAggregation = (axis: IAxisField, specialProperties: Record<string, string>, unitAgg?: boolean): IAggregation => {
+const getAggregation = (axis: IAxisField, specialProperties: Record<string, string>, coordinateSystemAgg?: boolean): IAggregation => {
     if (typeof axis === 'string') {
         const byField = specialProperties[axis] ?? axis;
-        return { type: 'none', byField: !unitAgg ? `\`${byField}\`` : `\`${byField}_coordinateSystem\`` };
+        return { type: 'none', byField: !coordinateSystemAgg ? `\`${byField}\`` : `\`${byField}${locationCoordinateSystemSuffix}\`` };
     }
 
     if (axis.type === 'countAll') {
@@ -96,12 +96,12 @@ export const buildChartAggregationQuery = (
 ) => {
     const xAgg = getAggregation(xAxis, specialProperties);
     const yAgg = yAxis ? getAggregation(yAxis, specialProperties) : undefined;
-    const unitAgg =
+    const coordinateSystemAgg =
         getEntityTemplateProperty(entityTemplate, xAxis)?.format === 'location' ? getAggregation(xAxis, specialProperties, true) : undefined;
 
     const xAggregation = generateAggregation(xAgg, 'x');
     const yAggregation = yAgg ? generateAggregation(yAgg, 'y') : null;
-    const unitAggregation = unitAgg ? generateAggregation(unitAgg, 'unit') : null;
+    const coordinateSystemAggregation = coordinateSystemAgg ? generateAggregation(coordinateSystemAgg, 'coordinateSystem') : null;
 
     let query = `MATCH (node)
                 WHERE ${filterQuery}
@@ -109,7 +109,7 @@ export const buildChartAggregationQuery = (
 
     if (yAggregation)
         query += `
-          RETURN ${xAggregation}, ${yAggregation} ${unitAggregation ? `, ${unitAggregation}` : ''}
+          RETURN ${xAggregation}, ${yAggregation} ${coordinateSystemAggregation ? `, ${coordinateSystemAggregation}` : ''}
           ORDER BY y
         `;
     else
@@ -120,12 +120,12 @@ export const buildChartAggregationQuery = (
     return query;
 };
 
-const getLocation = ({ x, y }: InstanceType<typeof neo4j.types.Point>, unit?: string) =>
-    unit === CoordinateSystem.UTM ? locationConverterToString(`${x}, ${y}`, CoordinateSystem.WGS84, CoordinateSystem.UTM) : `${x}, ${y}`;
+const getLocation = ({ x, y }: InstanceType<typeof neo4j.types.Point>, coordinateSystem?: string) =>
+    coordinateSystem === CoordinateSystem.UTM ? locationConverterToString(`${x}, ${y}`, CoordinateSystem.WGS84, CoordinateSystem.UTM) : `${x}, ${y}`;
 
 export const manipulateReturnedChart = async (
     xAxis: IAxisField,
-    chart: { x: any; y: number; unit?: string }[],
+    chart: { x: any; y: number; coordinateSystem?: string }[],
     entityTemplate: IMongoEntityTemplate,
     workspaceId: string,
 ) => {
@@ -134,7 +134,7 @@ export const manipulateReturnedChart = async (
     const { format, items, relationshipReference } = entityTemplate.properties.properties[xAxis];
 
     return Promise.all(
-        chart.map(async ({ x, y, unit }) => {
+        chart.map(async ({ x, y, coordinateSystem }) => {
             if (!x) return { x, y };
 
             if (format === 'relationshipReference')
@@ -148,10 +148,10 @@ export const manipulateReturnedChart = async (
 
             if (x instanceof neo4j.types.Date) return { x: formatDate(x.toString()), y };
 
-            if (x instanceof neo4j.types.Point) return { x: getLocation(x, unit), y };
+            if (x instanceof neo4j.types.Point) return { x: getLocation(x, coordinateSystem), y };
 
             if (Array.isArray(x) && x.every((item) => item instanceof neo4j.types.Point)) {
-                const points = x.map((point) => getLocation(point, unit)).join(',');
+                const points = x.map((point) => getLocation(point, coordinateSystem)).join(',');
                 return { x: `${polygonPrefix}${points}${polygonSuffix}`, y };
             }
 

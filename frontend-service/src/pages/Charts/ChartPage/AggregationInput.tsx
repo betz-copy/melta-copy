@@ -2,8 +2,9 @@ import { Grid, TextField, Typography } from '@mui/material';
 import { FormikProps, getIn } from 'formik';
 import i18next from 'i18next';
 import React from 'react';
+import { useQueryClient } from 'react-query';
 import { IAggregation, IAggregationType, IBasicChart, isAggregation, OptionsType } from '../../../interfaces/charts';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { filteredMap } from '../../../utils/filteredMap';
 import { FormikAutoComplete } from '../../../common/inputs/FormikAutoComplete';
 
@@ -28,6 +29,9 @@ const AxisInput: React.FC<AxisInputProps> = ({
     optionsType,
     readonly,
 }) => {
+    const queryClient = useQueryClient();
+    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+
     const fieldValue = getIn(formikValues, formikField);
     const titleValue = titleFormikField ? getIn(formikValues, titleFormikField) : undefined;
     const titleError = titleFormikField && getIn(formik.touched, titleFormikField) && getIn(formik.errors, titleFormikField);
@@ -98,6 +102,14 @@ const AxisInput: React.FC<AxisInputProps> = ({
                     }}
                     style={{ width: '100%' }}
                     readonly={readonly}
+                    getOptionDisabled={(option) => {
+                        const propertyTemplate = entityTemplate.properties.properties[option];
+                        if (propertyTemplate?.format === 'relationshipReference') {
+                            const relatedTemplateId = propertyTemplate.relationshipReference?.relatedTemplateId!;
+                            return !entityTemplates?.get(relatedTemplateId);
+                        }
+                        return false;
+                    }}
                 />
             </Grid>
             {isAggregation(fieldValue) && fieldValue?.type !== IAggregationType.CountAll && (

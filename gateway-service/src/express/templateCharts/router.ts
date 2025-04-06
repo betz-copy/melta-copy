@@ -42,6 +42,7 @@ ChartsRouter.delete(
 ChartsRouter.put(
     '/:chartId',
     ValidateRequest(updateChartRequestSchema),
+    AuthorizerControllerMiddleware.userHasSomePermissions,
     ChartsValidatorMiddleware.validateUserCanUpdateChart,
     ChartsControllerMiddleware.updateChart,
 );
@@ -49,6 +50,7 @@ ChartsRouter.put(
 ChartsRouter.post(
     '/',
     ValidateRequest(createChartRequestSchema),
+    AuthorizerControllerMiddleware.userHasSomePermissions,
     ChartsValidatorMiddleware.validateUserCanCreateChart,
     ChartsControllerMiddleware.createChart,
 );

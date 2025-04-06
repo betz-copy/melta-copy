@@ -8,7 +8,7 @@ import { getChartOfTemplate } from '../../../services/entitiesService';
 import { getChartAxes } from '../../../utils/charts/getChartAxes';
 import { filterModelToFilterOfGraph } from '../../Graph/GraphFilterToBackend';
 import { NumberChartGenerator } from './NumberChartGenerator';
-import { HiighchartGenerator } from './HighChartgenerator';
+import { HighchartGenerator } from './HighChartgenerator';
 
 interface IChartGeneratorProps {
     formikValues: IBasicChart;
@@ -54,7 +54,7 @@ const ChartGenerator: React.FC<IChartGeneratorProps> = ({ template, formikValues
 
     if (type === IChartType.Number) return <NumberChartGenerator data={data[0]} name={formikValues.name} description={formikValues.description} />;
     return (
-        <HiighchartGenerator
+        <HighchartGenerator
             data={data[0]}
             isLoading={isLoading}
             isQueryEnabled={isQueryEnabled}

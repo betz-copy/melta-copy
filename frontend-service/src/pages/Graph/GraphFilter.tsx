@@ -6,6 +6,7 @@ import i18next from 'i18next';
 import debounce from 'lodash/debounce';
 import React, { useCallback, useState } from 'react';
 import { IoIosArrowDown } from 'react-icons/io';
+import { useQueryClient } from 'react-query';
 import { CustomIcon } from '../../common/CustomIcon';
 import { DateFilterInput } from '../../common/inputs/FilterInputs/DateFilterInput';
 import { MultipleSelectFilterInput } from '../../common/inputs/FilterInputs/MultipleSelectFilterInput';
@@ -14,7 +15,7 @@ import { SelectFilterInput } from '../../common/inputs/FilterInputs/SelectFilter
 import { StyledFilterInput } from '../../common/inputs/FilterInputs/StyledFilterInput';
 import { TextFilterInput } from '../../common/inputs/FilterInputs/TextFilterInput';
 import { IGraphFilterBody, IGraphFilterBodyBatch } from '../../interfaces/entities';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter, IAGGridTextFilter } from '../../utils/agGrid/interfaces';
 
@@ -45,6 +46,9 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
     selectedEntityTemplate,
     readOnly = false,
 }) => {
+    const queryClient = useQueryClient();
+    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const theme = useTheme();
     const [selectedTemplate, setSelectedTemplate] = useState<IMongoEntityTemplatePopulated | null>(
@@ -56,8 +60,14 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
     const [inputValue, setInputValue] = useState<string>('');
     const options = templateOptions.filter((option) => graphEntityTemplateIds.includes(option._id));
     const properties = selectedTemplate?.properties.properties;
-    const propOptionsNotFile = properties
-        ? Object.keys(properties).filter((prop) => properties[prop].format !== 'fileId' && properties[prop].items?.format !== 'fileId')
+    const filterProperties = properties
+        ? Object.keys(properties).filter(
+              (prop) =>
+                  properties[prop].format !== 'fileId' &&
+                  properties[prop].items?.format !== 'fileId' &&
+                  properties[prop].format !== 'signature' &&
+                  properties[prop].format !== 'location',
+          )
         : [];
 
     const debouncedOnFilter = useCallback(
@@ -117,7 +127,7 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
     const handleFilterFieldChange = (value: IGraphFilterBody['filterField'], condition: boolean = true) => {
         setFilterField(value);
 
-        if ((value?.filterType === 'number' || value?.filterType === 'text') && !value.filter) {
+        if ((value?.filterType === 'number' || value?.filterType === 'text') && (value.filter === undefined || value.filter === '')) {
             removeFilterFromFilterList(filterKey);
             return;
         }
@@ -353,7 +363,7 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
                                 }}
                                 value={selectedProperty}
                                 onChange={(_event, newValue) => handleSelectProperty(newValue)}
-                                options={propOptionsNotFile}
+                                options={filterProperties}
                                 getOptionLabel={(option) =>
                                     selectedTemplate?.properties.properties[option] ? selectedTemplate.properties.properties[option].title : ''
                                 }
@@ -366,6 +376,14 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
                                     />
                                 )}
                                 readOnly={readOnly}
+                                getOptionDisabled={(option) => {
+                                    const propertyTemplate = selectedEntityTemplate?.properties.properties[option];
+                                    if (propertyTemplate?.format === 'relationshipReference') {
+                                        const relatedTemplateId = propertyTemplate.relationshipReference?.relatedTemplateId!;
+                                        return !entityTemplates?.get(relatedTemplateId);
+                                    }
+                                    return false;
+                                }}
                             />
                             {entityFilter && !readOnly && (
                                 <IconButton onClick={handleFilterErasion}>
