@@ -34,28 +34,28 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({ e
 
     if (!relatedEntityTemplate) {
         return (
-            <MeltaTooltip
-                PopperProps={{
-                    sx: {
-                        [`& .${tooltipClasses.tooltip}`]: {
-                            fontSize: '1rem',
-                            color: '#F2F4FA',
-                            backgroundColor: '#F2F4FA !important',
-                            boxShadow: 10,
+            <Grid container alignItems="center" justifyContent="flex-start" height="100%" paddingTop={1.5}>
+                <MeltaTooltip
+                    PopperProps={{
+                        sx: {
+                            [`& .${tooltipClasses.tooltip}`]: {
+                                fontSize: '1rem',
+                                color: '#F2F4FA',
+                                backgroundColor: '#F2F4FA !important',
+                                boxShadow: 10,
+                            },
                         },
-                    },
-                }}
-                slotProps={{
-                    arrow: { style: { color: '#F2F4FA' } },
-                }}
-                arrow
-                placement="top"
-                title={<Typography color="primary">{i18next.t('templateEntitiesAutocomplete.noWritePermissions')}</Typography>}
-            >
-                <Grid display="inline-block">
+                    }}
+                    slotProps={{
+                        arrow: { style: { color: '#F2F4FA' } },
+                    }}
+                    arrow
+                    placement="top"
+                    title={<Typography color="primary">{i18next.t('templateEntitiesAutocomplete.noWritePermissions')}</Typography>}
+                >
                     <VisibilityOffIcon sx={{ height, width, color: theme.palette.action.disabled }} />
-                </Grid>
-            </MeltaTooltip>
+                </MeltaTooltip>
+            </Grid>
         );
     }
 
