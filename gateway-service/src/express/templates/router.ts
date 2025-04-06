@@ -55,7 +55,7 @@ const templatesValidatorMiddleware = createWorkspacesController(TemplatesValidat
 templatesRouter.get('/all', AuthorizerControllerMiddleware.userHasSomePermissions, templatesControllerMiddleware.getAllAllowedTemplates);
 
 // categories
-templatesRouter.get('/categories', AuthorizerControllerMiddleware.userHasSomePermissions, TemplatesServiceProxy);
+templatesRouter.get('/categories', AuthorizerControllerMiddleware.userHasSomePermissions, templatesControllerMiddleware.getAllAllowedCategories);
 templatesRouter.post(
     '/categories',
     busboyMiddleware,
@@ -68,12 +68,14 @@ templatesRouter.put(
     busboyMiddleware,
     ValidateRequest(updateCategorySchema),
     AuthorizerControllerMiddleware.userCanWriteTemplates,
+    AuthorizerControllerMiddleware.userCanWriteCategory,
     templatesControllerMiddleware.updateCategory,
 );
 templatesRouter.delete(
     '/categories/:id',
     ValidateRequest(deleteCategorySchema),
     AuthorizerControllerMiddleware.userCanWriteTemplates,
+    AuthorizerControllerMiddleware.userCanWriteCategory,
     templatesControllerMiddleware.deleteCategory,
 );
 
@@ -98,11 +100,12 @@ templatesRouter.patch(
     templatesControllerMiddleware.deleteEntityEnumFieldValue,
 );
 templatesRouter.patch('/entities/:id/actions', AuthorizerControllerMiddleware.userIsRootAdmin, TemplatesServiceProxy);
-templatesRouter.post('/entities/search', AuthorizerControllerMiddleware.userCanReadTemplates, TemplatesServiceProxy);
+templatesRouter.post('/entities/search', AuthorizerControllerMiddleware.userCanReadTemplates, templatesControllerMiddleware.searchEntityTemplates); // todo shirel
 templatesRouter.post(
     '/entities',
     busboyMiddleware,
     ValidateRequest(createEntityTemplateSchema),
+    AuthorizerControllerMiddleware.userCanWriteTemplates,
     templatesValidatorMiddleware.validateUserCanCreateEntityTemplateUnderCategory,
     templatesControllerMiddleware.createEntityTemplate,
 );
@@ -110,12 +113,14 @@ templatesRouter.put(
     '/entities/:id',
     busboyMiddleware,
     ValidateRequest(updateEntityTemplateSchema),
+    AuthorizerControllerMiddleware.userCanWriteTemplates,
     templatesValidatorMiddleware.validateUserCanUpdateOrDeleteEntityTemplate,
     templatesControllerMiddleware.updateEntityTemplate,
 );
 templatesRouter.patch(
     '/entities/:id/status',
     ValidateRequest(updateEntityTemplateStatusSchema),
+    templatesValidatorMiddleware.validateUserCanUpdateOrDeleteEntityTemplate,
     templatesControllerMiddleware.updateEntityTemplateStatus,
 );
 
@@ -177,24 +182,38 @@ templatesRouter.put(
     '/relationships/convertToRelationshipField/:id',
     ValidateRequest(convertToRelationshipFieldRequestSchema),
     AuthorizerControllerMiddleware.userCanWriteTemplates,
+    templatesValidatorMiddleware.validateUserCanUpdateOrDeleteRelationshipTemplate,
     templatesControllerMiddleware.convertToRelationshipField,
 );
 
 // rules (templates)
-templatesRouter.put('/rules/:ruleId', AuthorizerControllerMiddleware.userCanWriteRules, TemplatesServiceProxy);
+templatesRouter.put(
+    '/rules/:ruleId',
+    AuthorizerControllerMiddleware.userCanWriteRules,
+    templatesValidatorMiddleware.validateUserCanUpdateOrDeleteRuleTemplate,
+    TemplatesServiceProxy,
+);
 templatesRouter.patch(
     '/rules/:ruleId/status',
     AuthorizerControllerMiddleware.userCanWriteRules,
+    templatesValidatorMiddleware.validateUserCanUpdateOrDeleteRuleTemplate,
     ValidateRequest(updateRuleStatusByIdRequestSchema),
     templatesControllerMiddleware.updateRuleStatusById,
 );
 templatesRouter.delete(
     '/rules/:ruleId',
     AuthorizerControllerMiddleware.userCanWriteRules,
+    templatesValidatorMiddleware.validateUserCanUpdateOrDeleteRuleTemplate,
     ValidateRequest(deleteRuleByIdRequestSchema),
     templatesControllerMiddleware.deleteRuleById,
 );
-templatesRouter.post(['/rules', '/rules/get-many'], AuthorizerControllerMiddleware.userCanWriteRules, TemplatesServiceProxy);
+templatesRouter.post(
+    '/rules',
+    AuthorizerControllerMiddleware.userCanWriteRules,
+    templatesValidatorMiddleware.validateUserCanCreateRuleTemplate,
+    TemplatesServiceProxy,
+);
+templatesRouter.post('/rules/get-many', AuthorizerControllerMiddleware.userCanWriteRules, templatesControllerMiddleware.getManyRulesByIds);
 
 templatesRouter.post(
     '/rules/search',

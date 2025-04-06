@@ -8,6 +8,8 @@ import { StepComponentProps } from '../index';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { variableNameValidation } from '../../../utils/validation';
 import { getRelationshipInstancesCountByTemplateIdRequest } from '../../../services/entitiesService';
+import { useUserStore } from '../../../stores/user';
+import { getAllWritePermissionEntityTemplates } from '../../../utils/permissions/templatePermissions';
 
 const createRelationshipTemplateNameSchema = {
     name: Yup.string().matches(variableNameValidation, i18next.t('validation.variableName')).required(i18next.t('validation.required')),
@@ -31,9 +33,11 @@ const CreateRelationshipTemplateName: React.FC<StepComponentProps<RelationshipTe
     isEditMode,
 }) => {
     const queryClient = useQueryClient();
+    const currentUser = useUserStore((state) => state.user);
 
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates');
     const entityTemplatesArray = Array.from(entityTemplates!.values());
+    const allowedEntityTemplates = getAllWritePermissionEntityTemplates(entityTemplatesArray, currentUser);
 
     const { data: areThereRelationshipInstancesByTemplateId } = useQuery(
         ['areThereRelationshipInstancesByTemplateId', (values as RelationshipTemplateWizardValues & { _id: string })._id],
@@ -70,7 +74,7 @@ const CreateRelationshipTemplateName: React.FC<StepComponentProps<RelationshipTe
             <Box margin={1}>
                 <Autocomplete
                     id="sourceEntity"
-                    options={entityTemplatesArray}
+                    options={allowedEntityTemplates}
                     onChange={(_e, value) => setFieldValue('sourceEntity', value || '')}
                     value={values.sourceEntity._id ? values.sourceEntity : null}
                     getOptionLabel={(option) => option.displayName}
@@ -92,7 +96,7 @@ const CreateRelationshipTemplateName: React.FC<StepComponentProps<RelationshipTe
             <Box margin={1}>
                 <Autocomplete
                     id="destinationEntity"
-                    options={entityTemplatesArray}
+                    options={allowedEntityTemplates}
                     onChange={(_e, value) => setFieldValue('destinationEntity', value || '')}
                     value={values.destinationEntity._id ? values.destinationEntity : null}
                     disabled={areThereRelationshipInstancesByTemplateId! > 0}

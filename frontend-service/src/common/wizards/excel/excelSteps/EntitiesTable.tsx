@@ -1,27 +1,48 @@
-import { Accordion, AccordionDetails, AccordionSummary, CircularProgress, Grid, Typography, useTheme } from '@mui/material';
-import React from 'react';
 import { Download, ExpandMore } from '@mui/icons-material';
+import { Accordion, AccordionDetails, AccordionSummary, CircularProgress, Grid, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
+import React, { useState } from 'react';
 import { v4 as uuid } from 'uuid';
-import EntitiesTableOfTemplate from '../../../EntitiesTableOfTemplate';
+import { IEntity, ISearchFilter } from '../../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
-import { TableButton } from '../../../TableButton';
-import { IEntity } from '../../../../interfaces/entities';
-import { useWorkspaceStore } from '../../../../stores/workspace';
 import { IFailedEntity } from '../../../../interfaces/excel';
+import { useWorkspaceStore } from '../../../../stores/workspace';
+import EntitiesTableOfTemplate from '../../../EntitiesTableOfTemplate';
+import { TableButton } from '../../../TableButton';
 
 export const EntitiesTable: React.FC<{
     rowData?: IEntity[] | IFailedEntity[];
+    rowModelType?: 'serverSide' | 'clientSide' | 'infinite';
     template: IMongoEntityTemplatePopulated;
     defaultExpanded: boolean;
-    icon: React.JSX.Element;
+    icon?: React.JSX.Element;
     title: string;
     description?: string;
     download?: { onDownload: (brokenRulesEntities?: boolean) => Promise<any>; isLoading: boolean };
-}> = ({ rowData, template, defaultExpanded, icon, title, description, download }) => {
+    defaultFilter?: ISearchFilter;
+    overrideSx?: object;
+    infiniteModeWithoutExpand?: boolean;
+    disableFilter?: boolean;
+    ignoreType?: boolean;
+}> = ({
+    rowData,
+    rowModelType = 'clientSide',
+    template,
+    defaultExpanded,
+    icon,
+    title,
+    description,
+    download,
+    defaultFilter,
+    overrideSx,
+    infiniteModeWithoutExpand,
+    disableFilter,
+    ignoreType = true,
+}) => {
     const theme = useTheme();
     const workspace = useWorkspaceStore((state) => state.workspace);
     const { defaultRowHeight, defaultFontSize } = workspace.metadata.agGrid;
+    const [expanded, setExpanded] = useState(defaultExpanded);
 
     return (
         <Accordion
@@ -33,8 +54,10 @@ export const EntitiesTable: React.FC<{
                 '&:before': {
                     display: 'none',
                 },
+                ...overrideSx,
             }}
-            defaultExpanded={defaultExpanded}
+            expanded={expanded}
+            onChange={() => setExpanded((prev) => !prev)}
         >
             <AccordionSummary
                 sx={{
@@ -52,7 +75,7 @@ export const EntitiesTable: React.FC<{
                 expandIcon={<ExpandMore style={{ color: '#787C9E', width: '20px', height: '20px' }} />}
             >
                 <Grid container direction="row" alignItems="center" gap="10px">
-                    {icon}
+                    {icon && icon}
                     <Typography color={theme.palette.mode === 'dark' ? '#FFFFFF' : '#1E2775'} fontFamily="Rubik" fontWeight={400} fontSize="14px">
                         {title}
                     </Typography>
@@ -78,15 +101,15 @@ export const EntitiesTable: React.FC<{
                     )}
                 </Grid>
             </AccordionSummary>
-            <AccordionDetails>
+            <AccordionDetails sx={{ display: expanded ? 'block' : 'none' }}>
                 <EntitiesTableOfTemplate
                     template={template}
                     getRowId={(currentEntity) => currentEntity.properties._id || uuid()}
                     getEntityPropertiesData={(currentEntity) => currentEntity.properties}
-                    rowModelType="clientSide"
                     rowHeight={defaultRowHeight}
                     fontSize={`${defaultFontSize}px`}
                     rowData={rowData as (IEntity | IFailedEntity)[]}
+                    rowModelType={rowModelType}
                     saveStorageProps={{
                         shouldSaveFilter: false,
                         shouldSaveWidth: false,
@@ -96,9 +119,12 @@ export const EntitiesTable: React.FC<{
                         shouldSavePagination: false,
                         shouldSaveScrollPosition: false,
                     }}
-                    ignoreType
+                    ignoreType={ignoreType}
                     showNavigateToRowButton={false}
                     editable={false}
+                    infiniteModeWithoutExpand={infiniteModeWithoutExpand}
+                    defaultFilter={defaultFilter}
+                    disableFilter={disableFilter}
                 />
             </AccordionDetails>
         </Accordion>
