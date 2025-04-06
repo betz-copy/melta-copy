@@ -60,7 +60,6 @@ export const GlobalSearchBar: React.FC<{
     const boolUrl = convertToBool(urlSemanticSearch!);
 
     const [debouncedSearchValue, setDebouncedSearchValue] = useState(inputValue ?? '');
-    console.log('hihihihihihhi');
 
     const debouncedSearch = useCallback(
         debounce((value: string) => {
