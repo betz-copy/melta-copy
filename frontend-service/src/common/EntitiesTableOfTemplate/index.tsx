@@ -1,6 +1,5 @@
 /* eslint-disable no-param-reassign */
 /* eslint-disable no-case-declarations */
-import React, { ForwardedRef, forwardRef, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import {
     BodyScrollEvent,
     CellEditingStoppedEvent,
@@ -8,6 +7,7 @@ import {
     ColumnResizedEvent,
     ColumnState,
     ColumnVisibleEvent,
+    FilterModel,
     FirstDataRenderedEvent,
     GridApi,
     GridReadyEvent,
@@ -26,17 +26,19 @@ import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import isEqual from 'lodash.isequal';
 import sortBy from 'lodash.sortby';
-import { useMutation } from 'react-query';
+import React, { ForwardedRef, forwardRef, useImperativeHandle, useMemo, useRef, useState } from 'react';
+import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { useLocation } from 'wouter';
 import '../../css/resizeTable.css';
 import '../../css/table.css';
 import { environment } from '../../globals';
-import { EntityData, IDeleteEntityBody, IEntity, IEntityExpanded, IUniqueConstraint } from '../../interfaces/entities';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { EntityData, IDeleteEntityBody, IEntity, IEntityExpanded, ISearchFilter, IUniqueConstraint } from '../../interfaces/entities';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IRelationship } from '../../interfaces/relationships';
 import { ActionTypes, IAction, IActionPopulated } from '../../interfaces/ruleBreaches/actionMetadata';
 import { IBrokenRule, IRuleBreach, IRuleBreachPopulated } from '../../interfaces/ruleBreaches/ruleBreach';
+import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
 import ActionOnEntityWithRuleBreachDialog from '../../pages/Entity/components/ActionOnEntityWithRuleBreachDialog';
 import {
     deleteEntityRequest,
@@ -45,6 +47,7 @@ import {
     updateEntityStatusRequest,
 } from '../../services/entitiesService';
 import { useDarkModeStore } from '../../stores/darkMode';
+import { useWorkspaceStore } from '../../stores/workspace';
 import { agGridLocaleText } from '../../utils/agGrid/agGridLocaleText';
 import { agGridToSearchEntitiesOfTemplateRequest } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 import { DateFilterComponent } from '../../utils/agGrid/DateFilterComponent';
@@ -58,12 +61,10 @@ import { MultiSelectStatusBar } from '../EntitiesPage/MultiSelectStatusBar';
 import { ResizeBox } from '../EntitiesPage/ResizeBox';
 import { RowCountGridStatusBar } from '../EntitiesPage/RowCountGridStatusBar';
 import { ErrorToast } from '../ErrorToast';
-import { useWorkspaceStore } from '../../stores/workspace';
-import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
 import { getColumnDefs, IGetColumnDefsOptions } from './getColumnDefs';
 
 const { errorCodes } = environment;
-const { cacheBlockSize, maxConcurrentDatasourceRequests, actionPrefix, actionsWidth } = environment.agGrid;
+const { cacheBlockSize, maxConcurrentDatasourceRequests, actionPrefix, actionsWidth, rowCountInfiniteModeWithoutExpand } = environment.agGrid;
 const { columnWidths, columnsOrder, visibleColumns } = environment.agGrid.localStorage;
 
 export const defaultFilterModel = {
@@ -90,6 +91,7 @@ export const getDatasource = <Data extends any = EntityData>(
     quickFilterText?: string,
     onFail?: (err: unknown) => void,
     rowData?: IConnection[],
+    defaultFilter?: ISearchFilter,
 ): IServerSideDatasource => {
     return {
         async getRows(params: IServerSideGetRowsParams<Data>) {
@@ -110,6 +112,7 @@ export const getDatasource = <Data extends any = EntityData>(
                         { ...agGridRequest, quickFilter: quickFilterText } as IAGGridRequest,
                         template,
                         // tableCount, // comment out  waiting for Itay
+                        defaultFilter,
                     ),
                 ),
             );
@@ -143,6 +146,7 @@ export const getRowModelProps = <Data extends any = EntityData>(
     quickFilterText?: string,
     datasourceOnFail?: (err: unknown) => void,
     hasInstances?: boolean,
+    defaultFilter?: ISearchFilter,
 ): React.ComponentProps<typeof AgGridReact<Data>> => {
     if (rowModelType === 'clientSide') {
         return {
@@ -155,7 +159,7 @@ export const getRowModelProps = <Data extends any = EntityData>(
 
     return {
         rowModelType: 'serverSide',
-        serverSideDatasource: getDatasource<IConnection>(template, quickFilterText, datasourceOnFail, rowData as IConnection[]),
+        serverSideDatasource: getDatasource<IConnection>(template, quickFilterText, datasourceOnFail, rowData as IConnection[], defaultFilter),
         cacheBlockSize: rowModelType === 'serverSide' ? cacheBlockSize : undefined,
         pagination: rowModelType === 'serverSide',
         paginationPageSize,
@@ -200,7 +204,10 @@ export type EntitiesTableOfTemplateProps<Data> = {
     refetch?: () => void;
     hasInstances?: boolean;
     paginationPageSizeSelector?: boolean | number[];
+    infiniteModeWithoutExpand?: boolean;
     editable?: boolean;
+    defaultFilter?: FilterModel;
+    disableFilter?: boolean;
 };
 
 export type EntitiesTableOfTemplateRef<Data> = {
@@ -242,15 +249,19 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             hasInstances,
             multipleSelect,
             paginationPageSizeSelector = environment.agGrid.paginationPageSizeSelector as unknown as number[],
+            infiniteModeWithoutExpand,
             editable = true,
+            defaultFilter,
+            disableFilter = false,
         }: EntitiesTableOfTemplateProps<Data>,
         ref: ForwardedRef<EntitiesTableOfTemplateRef<Data>>,
     ) => {
+        const queryClient = useQueryClient();
+        const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
         const [_, navigate] = useLocation();
         const darkMode = useDarkModeStore((state) => state.darkMode);
         const savedVisibleColumns = localStorage.getItem(`${visibleColumns}${saveStorageProps.pageType}-${template._id}`);
         const defaultVisibleColumnsRef = useRef<Record<string, boolean>>(savedVisibleColumns ? JSON.parse(savedVisibleColumns) : {});
-
         const workspace = useWorkspaceStore((state) => state.workspace);
         const { rowCount, defaultExpandedRowCount } = workspace.metadata.agGrid;
         // const { table } = workspace.metadata.searchLimits;// comment out  waiting for Itay
@@ -263,7 +274,9 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
 
         const minHeightTable = rowHeight * pageRowCount + rowHeight * 2;
-        const [gridHeight, setGridHeight] = useState<number>(rowHeight * defaultExpandedRowCount);
+        const [gridHeight, setGridHeight] = useState<number>(() =>
+            infiniteModeWithoutExpand ? rowHeight * rowCountInfiniteModeWithoutExpand : rowHeight * defaultExpandedRowCount,
+        );
 
         const [selectedRow, setSelectedRow] = useState('');
         const [currEntity, setCurrEntity] = useState<IEntity>();
@@ -415,6 +428,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             updateEntityStatus,
             searchValue: quickFilterText,
             disableEditCell: !editable || editRowButtonProps?.disabledButton,
+            entityTemplates,
         };
         const columnDefs = useDeepCompareMemo(() => getColumnDefs(columnDefProps), [columnDefProps]);
 
@@ -667,8 +681,8 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         }));
 
         const rowModelProps = useMemo(
-            () => getRowModelProps(rowModelType, template, rowData, pageRowCount!, quickFilterText, datasourceOnFail, hasInstances),
-            [rowModelType, template, rowData, pageRowCount, quickFilterText, hasInstances],
+            () => getRowModelProps(rowModelType, template, rowData, pageRowCount!, quickFilterText, datasourceOnFail, hasInstances, defaultFilter),
+            [rowModelType, template, rowData, pageRowCount, quickFilterText, hasInstances, defaultFilter],
         );
 
         const statusPanels = useMemo(() => {
@@ -738,7 +752,6 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                         onBodyScroll={rowModelType === 'infinite' ? handleBodyScroll : undefined}
                         onSortChanged={handleSortChanged}
                         enableRtl
-                        enableCellTextSelection
                         maintainColumnOrder
                         rowSelection={rowSelection}
                         suppressAggFuncInHeader
@@ -746,6 +759,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                         rowStyle={onRowSelected ? { cursor: 'pointer' } : undefined}
                         suppressCellFocus
                         onFilterChanged={(params) => {
+                            onFilter?.();
                             if (saveStorageProps.shouldSaveFilter) {
                                 const filterModel = params.api.getFilterModel();
                                 if (isEqual(filterModel, defaultFilterModel)) {
@@ -777,6 +791,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                             lockPinned: true,
                             initialWidth: 250,
                             suppressSizeToFit: true,
+                            suppressHeaderFilterButton: disableFilter,
                         }}
                         onGridReady={(params) => {
                             if (saveStorageProps.pageType) {
@@ -846,7 +861,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                             hiddenByDefault: true,
                             position: 'left',
                         }}
-                        statusBar={rowModelType === 'infinite' ? { statusPanels } : undefined}
+                        statusBar={rowModelType === 'infinite' && !infiniteModeWithoutExpand ? { statusPanels } : undefined}
                         localeText={agGridLocaleText}
                         paginationPageSizeSelector={paginationPageSizeSelector}
                         onCellEditingStopped={(params: CellEditingStoppedEvent) => {
@@ -922,7 +937,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             </>
         );
 
-        return rowModelType === 'infinite' ? (
+        return rowModelType === 'infinite' && !infiniteModeWithoutExpand ? (
             <ResizeBox initialHeight={gridHeight} setHeight={setGridHeight} minHeight={minHeightTable} templateId={template._id}>
                 {gridContent}
             </ResizeBox>

@@ -106,4 +106,10 @@ export class RelationshipsTemplateService extends TemplatesManagerService {
 
         return data;
     }
+
+    async getManyRulesByIds(rulesIds: string[]) {
+        const { data } = await this.api.post<IMongoRule[]>(`${baseRulesRoute}/get-many`, { rulesIds });
+
+        return data;
+    }
 }

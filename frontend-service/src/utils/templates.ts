@@ -1,4 +1,4 @@
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
+import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { IMongoRelationshipTemplate, IMongoRelationshipTemplatePopulated } from '../interfaces/relationshipTemplates';
 
 export const templatesCompareFunc = (templateA: IMongoEntityTemplatePopulated, templateB: IMongoEntityTemplatePopulated) => {
@@ -10,13 +10,13 @@ export const templatesCompareFunc = (templateA: IMongoEntityTemplatePopulated, t
 
 export const populateRelationshipTemplate = (
     relationshipTemplate: IMongoRelationshipTemplate,
-    entityTemplates: IEntityTemplateMap,
+    entityTemplates: IMongoEntityTemplatePopulated[],
 ): IMongoRelationshipTemplatePopulated => {
     const { sourceEntityId, destinationEntityId, ...restOfRelationshipTemplate } = relationshipTemplate;
 
     return {
-        sourceEntity: entityTemplates.get(sourceEntityId)!,
-        destinationEntity: entityTemplates.get(destinationEntityId)!,
+        sourceEntity: entityTemplates.find((entity) => entity._id === sourceEntityId)!,
+        destinationEntity: entityTemplates.find((entity) => entity._id === destinationEntityId)!,
         ...restOfRelationshipTemplate,
     };
 };

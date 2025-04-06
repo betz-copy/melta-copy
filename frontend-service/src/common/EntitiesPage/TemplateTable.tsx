@@ -5,6 +5,7 @@ import {
     Download,
     Expand,
     TableRowsOutlined,
+    BarChart,
     LibraryAddCheckOutlined as SelectMultipleIcon,
     Upload,
     EditNote,
@@ -15,6 +16,7 @@ import fileDownload from 'js-file-download';
 import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
+import { useLocation } from 'wouter';
 import { useMatomo } from '@datapunt/matomo-tracker-react';
 import { environment } from '../../globals';
 import { IEntity } from '../../interfaces/entities';
@@ -52,9 +54,10 @@ const TemplateTable = forwardRef<
         template: IMongoEntityTemplatePopulated;
         quickFilterText: string;
         page: string;
-        setUpdatedEntities: React.Dispatch<React.SetStateAction<IEntity[]>>;
+        setUpdatedEntities?: React.Dispatch<React.SetStateAction<IEntity[]>>;
     }
 >(({ template, quickFilterText, page, setUpdatedEntities }, ref) => {
+    const [_, navigate] = useLocation();
     const workspace = useWorkspaceStore((state) => state.workspace);
     const { defaultRowHeight, defaultFontSize, defaultExpandedTableHeight } = workspace.metadata.agGrid;
     const { height, width } = workspace.metadata.iconSize;
@@ -104,7 +107,7 @@ const TemplateTable = forwardRef<
         });
 
         if (multipleSelect) setMultipleSelect(false);
-    }, [template._id, page, multipleSelect]);
+    }, [multipleSelect, template._id, page, defaultExpandedTableHeight]);
 
     const { isLoading: isExportingTableToExcelFile, mutateAsync: exportTemplateToExcel } = useMutation(
         async () => {
@@ -280,6 +283,15 @@ const TemplateTable = forwardRef<
                         text={i18next.t('entitiesTableOfTemplate.multipleSelect')}
                         disableButton={!userHasWritePermissions}
                     />
+
+                    <TableButton
+                        iconButtonWithPopoverProps={{
+                            popoverText: i18next.t('pages.charts'),
+                            iconButtonProps: { onClick: () => navigate(`/charts/${template._id}`) },
+                        }}
+                        icon={<BarChart fontSize="small" />}
+                        text={i18next.t('pages.charts')}
+                    />
                 </Grid>
 
                 <Grid container item flexGrow={1} width={0} justifyContent="flex-end" alignItems="center">
@@ -436,7 +448,7 @@ const TemplateTable = forwardRef<
                     onSuccessUpdate={(entity) => {
                         if (editDialog.isEditMode) {
                             entitiesTableRef.current?.updateRowDataClientSide(entity);
-                            setUpdatedEntities(
+                            setUpdatedEntities?.(
                                 Object.values(entity.properties).filter(
                                     (property): property is IEntity => typeof property === 'object' && 'templateId' in property,
                                 ),

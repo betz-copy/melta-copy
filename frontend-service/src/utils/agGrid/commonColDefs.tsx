@@ -21,7 +21,7 @@ import { agGridLocaleText } from './agGridLocaleText';
 import OverflowWrapper from './OverflowWrapper';
 import { Value } from './Value';
 import OpenMap from '../../pages/Map/OpenMap';
-import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IUser } from '../../interfaces/users';
 import { MeltaTooltip } from '../../common/MeltaTooltip';
 import UserAvatar from '../../common/UserAvatar';
@@ -88,7 +88,7 @@ const errorColDef = <Data extends any = EntityData>(
 
     return (
         <Box display="flex" justifyContent="center" alignItems="center" gap={1} width="100%">
-            <Value hideValue={false} value={props.value.toString() ?? i18next.t('validation.required')} color="#A40000" />
+            <Value hideValue={false} value={props.value ?? i18next.t('validation.required')} color="#A40000" />
             <Tooltip
                 title={message}
                 placement="top"
@@ -263,7 +263,15 @@ export const locationColDef = <Data extends any = EntityData>(
             const error = isPropertyInvalid(props, field, ignoreType);
 
             if (error) return errorColDef(props, error, value);
-            return <OpenMap field={value.title!} entityProperties={entityGetter(props as any)} entityTemplate={template} searchValue={searchValue} />;
+            return (
+                <OpenMap
+                    field={value.title!}
+                    entityProperties={entityGetter(props as any)}
+                    entityTemplate={template}
+                    searchValue={searchValue}
+                    disableOpenMap={ignoreType}
+                />
+            );
         },
         filter: 'agTextColumnFilter',
         width: hardcodedWidth,
@@ -280,10 +288,12 @@ export const relatedTemplateColDef = <Data extends any = EntityData>(
     relatedTemplateId: string,
     relatedTemplateField: string,
     isLastColumn: boolean,
+    entityTemplates: IEntityTemplateMap,
     hideColumn = false,
     searchValue: string | undefined = undefined,
     editable: (data: any) => boolean = () => false,
 ): ColDef => {
+    const relatedEntityTemplate = entityTemplates.get(relatedTemplateId!)!;
     return {
         field,
         headerName: value.title,
@@ -301,7 +311,7 @@ export const relatedTemplateColDef = <Data extends any = EntityData>(
         width: hardcodedWidth,
         flex: isLastColumn ? 1 : 0,
         hide: hideColumn,
-        editable: (params) => editable(params.data) ?? false,
+        editable: (params) => !!(relatedEntityTemplate && editable(params.data)),
         cellEditor: RelationshipRefCellEditor,
         cellEditorParams: {
             relatedTemplateId,
@@ -498,7 +508,7 @@ export const userColDef = <Data extends any = IUser>(
             );
         },
 
-        filter: 'agSetColumnFilter',
+        filter: 'agTextColumnFilter',
         filterParams,
         width: hardcodedWidth,
         flex: isLastColumn ? 1 : 0,

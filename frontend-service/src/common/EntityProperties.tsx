@@ -6,7 +6,7 @@ import React, { CSSProperties } from 'react';
 import { pdfjs } from 'react-pdf';
 import { environment } from '../globals';
 import { IEntity } from '../interfaces/entities';
-import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
+import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { useDarkModeStore } from '../stores/darkMode';
 import { CalculateDateDifference } from '../utils/agGrid/CalculateDateDifference';
 import { containsHTMLTags, getFirstLine, getNumLines, renderHTML } from '../utils/HtmlTagsStringValue';
@@ -20,6 +20,8 @@ import { BlueTitle } from './BlueTitle';
 import UserAvatar from './UserAvatar';
 import OverflowWrapper from '../utils/agGrid/OverflowWrapper';
 import { commentColors } from './inputs/JSONSchemaFormik/RjsfCommentWidget';
+import { locationConverterToString } from '../utils/map/convert';
+import { CoordinateSystem } from './inputs/JSONSchemaFormik/RjsfLocationWidget';
 
 const { maxNumOfCharactersNotInFullWidth } = environment.entitiesProperties;
 
@@ -69,6 +71,10 @@ export const formatToString = (value: any, property: IEntitySingleProperty, key?
             );
         }
     }
+    if (format === 'location')
+        return value.coordinateSystem === CoordinateSystem.UTM
+            ? locationConverterToString(value.location, CoordinateSystem.WGS84, CoordinateSystem.UTM)
+            : value.location;
     if (keyEnumColors?.[value] && valueType === 'string') return pureString ? value : <ColoredEnumChip label={value} color={keyEnumColors[value]} />;
     if (valueType === 'array') {
         if (property.items?.format === 'fileId') {
@@ -125,6 +131,7 @@ interface IEntityPropertiesProps {
     displayArchiveProperties?: boolean;
     showDivider?: boolean;
     dividerTitle?: string;
+    entityTemplates?: IEntityTemplateMap;
 }
 
 export const getPropertyColor = (
@@ -161,6 +168,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
     displayArchiveProperties,
     showDivider,
     dividerTitle,
+    entityTemplates,
 }) => {
     const getCurrProperty = (propertyKey: string) => entityTemplate.properties.properties[propertyKey];
 
@@ -171,7 +179,10 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
         propertiesOrderedToShow = entityTemplate.propertiesOrder.filter((propertyKey) => entityTemplate.propertiesPreview!.includes(propertyKey));
     } else if (removeFiles) {
         propertiesOrderedToShow = entityTemplate.propertiesOrder.filter(
-            (propertyKey) => getCurrProperty(propertyKey).format !== 'fileId' && getCurrProperty(propertyKey).items?.format !== 'fileId',
+            (propertyKey) =>
+                getCurrProperty(propertyKey).format !== 'fileId' &&
+                getCurrProperty(propertyKey).items?.format !== 'fileId' &&
+                getCurrProperty(propertyKey).format !== 'signature',
         );
     } else
         propertiesOrderedToShow = entityTemplate.propertiesOrder.filter((propertyKey) =>
@@ -192,6 +203,12 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                     const propertyValue = propertySchema.comment ?? properties[propertyKey];
                     const hideField = entityTemplate.properties.hide.includes(propertyKey);
                     const containsHtmlTags = containsHTMLTags(propertyValue);
+                    let relatedEntityAllowed: IMongoEntityTemplatePopulated | undefined;
+                    if (propertySchema.format === 'relationshipReference') {
+                        const relatedTemplateId = propertySchema.relationshipReference?.relatedTemplateId!;
+                        relatedEntityAllowed = entityTemplates?.get(relatedTemplateId);
+                    }
+
                     const stringFormatValue = formatToString(
                         propertyValue,
                         propertySchema,
@@ -203,7 +220,6 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                         },
                         entityTemplate.properties.hide,
                     );
-
                     const propertyValueColor = getPropertyColor(
                         propertyKey,
                         propertiesToHighlight,
@@ -221,6 +237,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                     else if (propertyValue && propertySchema.calculateTime)
                         innerContent = <CalculateDateDifference date={stringFormatValue} searchValue={searchedText} />;
                     else if (propertyValue && propertySchema.type === 'number') innerContent = getFixedNumber(propertyValue);
+                    else if (propertySchema.format === 'relationshipReference' && entityTemplates && !relatedEntityAllowed) innerContent = '-';
                     else innerContent = stringFormatValue;
                     let titleContent;
                     if (hideFieldsToDisplay.includes(propertyKey) || propertySchema.format === 'fileId') titleContent = '';
@@ -238,6 +255,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                         propertySchema.format !== 'fileId' &&
                         propertySchema.format !== 'relationshipReference' &&
                         propertySchema.format !== 'user' &&
+                        propertySchema.format !== 'location' &&
                         propertySchema.format !== 'signature'
                             ? getTextDirection(propertyValue, {
                                   type: propertySchema.type,

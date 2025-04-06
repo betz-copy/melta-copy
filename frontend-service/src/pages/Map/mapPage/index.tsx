@@ -13,7 +13,7 @@ import MapFilters from './MapFilters';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IEntity } from '../../../interfaces/entities';
 import { getEntitiesByLocation } from '../../../services/entitiesService';
-import { cartesian3ToString, convertToDegrees, jerusalemCoordinates, stringToCoordinates } from '../../../utils/map';
+import { locationToWGS84String, jerusalemCoordinates, stringToCoordinates, LatLng } from '../../../utils/map';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { environment } from '../../../globals';
 import { useEntityWithLocationFields } from '../../../utils/hooks/useLocation';
@@ -21,6 +21,7 @@ import MapPageEntityDialog from './EntityMapDialog';
 import { MeltaCoordinate, MeltaPolygon } from '../LocationPreview';
 import { BaseLayers } from '../BaseLayers';
 import { BackendConfigState } from '../../../services/backendConfigService';
+import { convertECEFToWGS84, convertWGS94ToECEF } from '../../../utils/map/convert';
 
 const { maxRadius } = environment.map;
 
@@ -230,7 +231,7 @@ const MapPage = () => {
     useEffect(() => {
         const fetchData = async () => {
             if (circleData.center && circleData.radius) {
-                const { longitude, latitude } = convertToDegrees(circleData.center);
+                const { longitude, latitude } = convertECEFToWGS84(circleData.center) as LatLng;
 
                 await Promise.all(
                     filteredTemplatesIds.map(async (templateId) =>
@@ -286,7 +287,7 @@ const MapPage = () => {
                 {circleData.center && (circleData.radius || circleData.mouseRadius) && (
                     <Entity
                         name={i18next.t('location.circle')}
-                        description={`${cartesian3ToString(circleData.center)}, ${circleData.radius}`}
+                        description={`${locationToWGS84String(circleData.center)}, ${circleData.radius}`}
                         position={circleData.center}
                     >
                         <EllipseGraphics
@@ -332,7 +333,7 @@ const MapPage = () => {
                     <MeltaCoordinate
                         key={key}
                         name={searchedPropertyDefinitions[key].title}
-                        position={Cartesian3.fromDegrees(position.x, position.y)}
+                        position={convertWGS94ToECEF(position) as Cartesian3}
                         onClick={() => {
                             setSelectedEntity({ matchingField: `${key}-${searchedEntity!.properties._id}`, node: searchedEntity! });
                         }}
@@ -354,7 +355,7 @@ const MapPage = () => {
                     <MeltaCoordinate
                         key={key}
                         name={name}
-                        position={Cartesian3.fromDegrees(position.x, position.y)}
+                        position={convertWGS94ToECEF(position) as Cartesian3}
                         onClick={() => {
                             setSelectedEntity({ matchingField: `${key}-${node.properties._id}`, node });
                         }}
