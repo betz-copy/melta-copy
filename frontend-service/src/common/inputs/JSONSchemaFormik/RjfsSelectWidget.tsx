@@ -47,6 +47,7 @@ const RjfsSelectWidget = ({
     onFocus,
     rawErrors = [],
     color,
+    formContext,
     ...textFieldProps
 }: WidgetProps) => {
     const { enumOptions: items } = getUiOptions(uiSchema) as {
