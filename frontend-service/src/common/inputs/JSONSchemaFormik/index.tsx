@@ -55,7 +55,7 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
     });
     ajv.addKeyword({ keyword: 'user', type: 'string' });
     ajv.addFormat('text-area', /.*/);
-    ajv.addFormat('location', (value: string) => validateLocation(value));
+    ajv.addFormat('location', (value: string) => validateLocation(JSON.parse(value), true) === false);
     addFormats(ajv);
     ajv.addVocabulary(['patternCustomErrorMessage', 'hide']);
     ajv.addKeyword({
@@ -87,7 +87,7 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
 
     const schemaToValidate = {
         ...schema,
-        properties: pickBy(schema.properties, (value) => value.format !== 'relationshipReference'),
+        properties: pickBy(schema.properties, (value) => value.format !== 'relationshipReference' && value.format !== 'location'),
     };
 
     const validateFunction = ajv.compile(schemaToValidate);
