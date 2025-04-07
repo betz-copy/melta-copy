@@ -18,7 +18,7 @@ import { EntityTemplateWizard } from '../../../common/wizards/entityTemplate';
 import { ICategoryMap, IMongoCategory } from '../../../interfaces/categories';
 import { IEntitySingleProperty, IEntityTemplate, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
-import { updateCategoryRequest } from '../../../services/templates/categoriesService';
+import { updateCategoryRequest, updateCategoryTempOrderRequest } from '../../../services/templates/categoriesService';
 import {
     deleteEntityTemplateRequest,
     entityTemplateObjectToEntityTemplateForm,
@@ -49,7 +49,7 @@ const defaultEntityTemplatePopulated: IMongoEntityTemplatePopulated = {
     uniqueConstraints: [],
     name: '',
     displayName: '',
-    category: { displayName: '', name: '', _id: '', color: '' },
+    category: { displayName: '', name: '', _id: '', color: '', templateOrder: [] },
     disabled: false,
     properties: {
         type: 'object',
@@ -352,6 +352,16 @@ interface CategoryEntitiesBoxProps {
     loadedEntityTemplateId: string;
 }
 
+const orderTemplatesInCategory = (templateOrder: string[], templates: IMongoEntityTemplatePopulated[]): IMongoEntityTemplatePopulated[] => {
+    const idToTemplateMap = new Map<string, IMongoEntityTemplatePopulated>();
+
+    for (const template of templates) {
+        idToTemplateMap.set(template._id.toString(), template);
+    }
+
+    return templateOrder.map((id) => idToTemplateMap.get(id)).filter((template): template is IMongoEntityTemplatePopulated => template !== undefined);
+};
+
 const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
     entityTemplatesWithCategory,
     setEntityTemplateWizardDialogState,
@@ -478,7 +488,6 @@ const EntityTemplatesRow: React.FC = () => {
 
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-
     const categoriesArray = Array.from(categories.values());
     const [categoriesToShow, setCategoriesToShow] = useState<IMongoCategory[]>(categoriesArray);
 
@@ -519,7 +528,10 @@ const EntityTemplatesRow: React.FC = () => {
     ): { category: IMongoCategory; entityTemplates: IMongoEntityTemplatePopulated[] }[] => {
         const categoriesToShowMapEntities: { category: IMongoCategory; entityTemplates: IMongoEntityTemplatePopulated[] }[] = [];
         categoriesToShow.forEach((category) => {
-            const relatedEntityTemplatesToShow = entityTemplatesToShow.filter((entity) => entity.category._id === category._id);
+            const relatedEntityTemplatesToShow = orderTemplatesInCategory(
+                category.templateOrder,
+                entityTemplatesToShow.filter((entity) => entity.category._id === category._id),
+            );
             categoriesToShowMapEntities.push({
                 category,
                 entityTemplates: relatedEntityTemplatesToShow,
@@ -594,22 +606,79 @@ const EntityTemplatesRow: React.FC = () => {
         },
     );
 
+    const { mutateAsync: mutateOrderAsync } = useMutation(
+        ({
+            templateId,
+            newIndex,
+            srcCategoryId,
+            newCategoryId,
+        }: {
+            templateId: string;
+            newIndex: number;
+            srcCategoryId: string;
+            newCategoryId: string;
+        }) => {
+            return updateCategoryTempOrderRequest(templateId, newIndex, srcCategoryId, newCategoryId);
+        },
+        {
+            onSuccess(data) {
+                queryClient.setQueryData<ICategoryMap>('getCategories', (categoryMap) => categoryMap!.set(data.newCategory._id, data.newCategory));
+                setCategoriesToShow(
+                    categoriesToShow.map((category) => {
+                        if (category._id === data.newCategory._id) {
+                            return data.newCategory;
+                        } else if (category._id === data.oldCategory._id) {
+                            return data.oldCategory;
+                        } else {
+                            return category;
+                        }
+                    }),
+                );
+                queryClient.invalidateQueries(['searchEntityTemplates', searchText, categoriesToShow]);
+                setLoadedEntityTemplateId('');
+            },
+            onError(error: AxiosError) {
+                toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.entityTemplate.failedToEdit')} />);
+                setLoadedEntityTemplateId('');
+            },
+        },
+    );
+
     const onDragEnd = (result) => {
         if (!result.destination) {
             return;
         }
 
         if (result.source.droppableId === result.destination.droppableId) {
+            mutateOrderAsync({
+                templateId: result.draggableId,
+                newIndex: result.destination.index,
+                srcCategoryId: result.source.droppableId,
+                newCategoryId: result.destination.droppableId,
+            });
             return;
+        } else {
+            const { category, ...restEntityTemp } = entityTemplates.get(result.draggableId)!;
+
+            mutateAsync({
+                entityTemplateId: result.draggableId,
+                entityTemplate: { ...restEntityTemp, category: category._id },
+                category: categories.get(result.destination.droppableId)!,
+            }).then(() =>
+                mutateOrderAsync({
+                    templateId: result.draggableId,
+                    newIndex: result.destination.index,
+                    srcCategoryId: result.source.droppableId,
+                    newCategoryId: result.destination.droppableId,
+                }),
+            );
         }
-
-        const { category, ...restEntityTemp } = entityTemplates.get(result.draggableId)!;
-
-        mutateAsync({
-            entityTemplateId: result.draggableId,
-            entityTemplate: { ...restEntityTemp, category: category._id },
-            category: categories.get(result.destination.droppableId)!,
-        });
+        // mutateOrderAsync({
+        //     templateId: result.draggableId,
+        //     newIndex: result.destination.index,
+        //     srcCategoryId: result.source.droppableId,
+        //     newCategoryId: result.destination.droppableId,
+        // });
     };
 
     return (
@@ -650,8 +719,8 @@ const EntityTemplatesRow: React.FC = () => {
                         entityTemplates: IMongoEntityTemplatePopulated[];
                     }>
                         queryKey={['searchEntityTemplates', searchText, categoriesToShow]}
-                        queryFunction={({ pageParam }) =>
-                            getEntityTemplatesToShowGroupedByCategories(
+                        queryFunction={({ pageParam }) => {
+                            return getEntityTemplatesToShowGroupedByCategories(
                                 Array.from(entityTemplates.values())
                                     .filter(
                                         (entityTemplate) =>
@@ -663,8 +732,8 @@ const EntityTemplatesRow: React.FC = () => {
                                         if (res === 0) return Number(a.disabled) - Number(b.disabled);
                                         return res;
                                     }),
-                            ).splice(pageParam, infiniteScrollPageCount)
-                        }
+                            ).splice(pageParam, infiniteScrollPageCount);
+                        }}
                         onQueryError={(error) => {
                             // eslint-disable-next-line no-console
                             console.log('failed to search process templates error:', error);

@@ -335,6 +335,10 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         return this.entityTemplateService.updateCategory(id, updatedData);
     }
 
+    async updateCategoryTempOrder(templateId: string, newIndex: number, srcCategoryId: string, newCategoryId: string) {
+        return this.entityTemplateService.updateCategoryTempOrder(templateId, newIndex, srcCategoryId, newCategoryId);
+    }
+
     // entity templates
     private populateTemplateConstraints(
         entityTemplate: IMongoEntityTemplatePopulated,

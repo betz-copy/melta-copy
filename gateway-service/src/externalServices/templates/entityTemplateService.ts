@@ -146,6 +146,15 @@ export class EntityTemplateService extends TemplatesManagerService {
         return data;
     }
 
+    async updateCategoryTempOrder(templateId: string, newIndex: number, srcCategoryId: string, newCategoryId: string) {
+        const { data } = await this.api.patch<{ oldCategory: IMongoCategory; newCategory: IMongoCategory }>(
+            `${baseCategoriesRoute}/changeTemplateOrder`,
+            { templateId, newIndex, srcCategoryId, newCategoryId },
+        );
+
+        return data;
+    }
+
     // entity templates
     async searchEntityTemplates(body: ISearchEntityTemplatesBody = {}) {
         const { data } = await this.api.post<IMongoEntityTemplatePopulated[]>(`${baseEntitiesRoute}/search`, body);

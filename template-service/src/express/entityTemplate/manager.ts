@@ -10,16 +10,21 @@ import { IRelationshipTemplate } from '../relationshipTemplate/interface';
 import RelationshipTemplateManager from '../relationshipTemplate/manager';
 import { IEntitySingleProperty, IEntityTemplate, IEntityTemplatePopulated, IMongoEntityTemplate } from './interface';
 import { EntityTemplateSchema } from './model';
+import CategoryManager from '../category/manager';
+import { IMongoCategory } from '../category/interface';
 
 export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTemplate> {
     private globalSearchIndexCreator: GlobalSearchIndexCreator;
 
     private relationshipTemplateManager: RelationshipTemplateManager;
 
+    private categoryManager: CategoryManager;
+
     constructor(workspaceId: string) {
         super(workspaceId, config.mongo.entityTemplatesCollectionName, EntityTemplateSchema);
         this.globalSearchIndexCreator = new GlobalSearchIndexCreator(workspaceId);
         this.relationshipTemplateManager = new RelationshipTemplateManager(workspaceId);
+        this.categoryManager = new CategoryManager(workspaceId);
     }
 
     getTemplates(searchQuery: { search?: string; ids?: string[]; categoryIds?: string[]; limit: number; skip: number }) {
@@ -126,6 +131,10 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
             entityTemplate = await createdEntityTemplate.populate<Pick<IEntityTemplatePopulated, 'category'>>('category');
         }
 
+        const templateOrder = entityTemplate.category.templateOrder;
+        templateOrder.push(entityTemplate._id.toString());
+        await this.categoryManager.updateCategory(entityTemplate.category._id, { templateOrder: templateOrder });
+
         await this.globalSearchIndexCreator.sendUpdateIndexesOnUpdateTemplate(entityTemplate!._id);
 
         return entityTemplate;
@@ -146,6 +155,15 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
                     }
                 }),
             );
+
+            const category: IMongoCategory = await this.categoryManager.getCategoryById(deletedEntityTemplate.category);
+            const index: number = category.templateOrder.indexOf(id);
+
+            if (index !== -1) {
+                category.templateOrder.splice(index, 1);
+            }
+
+            await this.categoryManager.updateCategory(category._id, { templateOrder: category.templateOrder });
         });
 
         await this.globalSearchIndexCreator.sendUpdateIndexesOnDeleteTemplate(id);
@@ -185,6 +203,19 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
         allowToDeleteRelationshipFields: boolean,
         session?: ClientSession,
     ) {
+        // if (currentEntityTemplate.category._id !== updatedTemplateData.category) {
+        //     const newCategory: IMongoCategory = await this.categoryManager.getCategoryById(updatedTemplateData.category);
+        //     const templateOrder: string[] = newCategory.templateOrder;
+        //     templateOrder.push(currentEntityTemplate._id);
+
+        //     await Promise.all([
+        //         this.categoryManager.updateCategory(currentEntityTemplate.category._id, {
+        //             templateOrder: currentEntityTemplate.category.templateOrder.filter((template) => template !== currentEntityTemplate._id),
+        //         }),
+        //         this.categoryManager.updateCategory(newCategory._id, { templateOrder: templateOrder }),
+        //     ]);
+        // }
+
         let entityTemplateToUpdate = { ...currentEntityTemplate, ...updatedTemplateData };
 
         if (this.hasRelationshipsProperties(entityTemplateToUpdate)) {
@@ -298,6 +329,14 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
         return this.model
             .findByIdAndUpdate(id, { actions }, { new: true })
             .populate('category')
+            .orFail(new NotFoundError('Entity Template not found'))
+            .lean()
+            .exec();
+    }
+
+    async updateEntityTemplateCategory(tempId: string, categoryId: string) {
+        return this.model
+            .findByIdAndUpdate(tempId, { category: categoryId }, { new: true })
             .orFail(new NotFoundError('Entity Template not found'))
             .lean()
             .exec();

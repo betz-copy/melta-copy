@@ -31,6 +31,27 @@ class CategoryManager extends DefaultManagerMongo<IMongoCategory> {
     async updateCategory(id: string, updatedData: Partial<ICategory>) {
         return this.model.findByIdAndUpdate(id, updatedData, { new: true }).orFail(new NotFoundError('Category not found')).lean().exec();
     }
+
+    async updateCategoryTempOrder(
+        templateId: string,
+        newCategoryId: string,
+        srcCategoryId: string,
+        newIndex: number,
+    ): Promise<{ oldCategory: IMongoCategory; newCategory: IMongoCategory }> {
+        const oldCategory: IMongoCategory = await this.model
+            .findByIdAndUpdate(srcCategoryId, { $pullAll: { templateOrder: [templateId.toString()] } }, { new: true })
+            .orFail(new NotFoundError('Category not found'))
+            .lean()
+            .exec();
+
+        const newCategory: IMongoCategory = await this.model
+            .findByIdAndUpdate(newCategoryId, { $push: { templateOrder: { $each: [templateId.toString()], $position: newIndex } } }, { new: true })
+            .orFail(new NotFoundError('Category not found'))
+            .lean()
+            .exec();
+
+        return { oldCategory, newCategory };
+    }
 }
 
 export default CategoryManager;

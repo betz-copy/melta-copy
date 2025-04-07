@@ -29,7 +29,8 @@ const Category: React.FC = () => {
 
     const [categoryTemplatesId, setCategoryTemplatesId] = useLocalStorage<string[]>(
         `tableOrder-${categoryId}`,
-        authorizedTemplates.map((template) => template._id),
+        // authorizedTemplates.map((template) => template._id),
+        category.templateOrder,
     );
 
     const categoryTemplates = categoryTemplatesId

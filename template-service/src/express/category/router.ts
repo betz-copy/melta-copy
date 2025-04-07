@@ -2,7 +2,14 @@ import { Router } from 'express';
 import { createController } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
 import CategoriesController from './controller';
-import { createCategorySchema, deleteCategorySchema, getCategoriesSchema, getCategoryByIdSchema, updateCategorySchema } from './validator.schema';
+import {
+    changeTemplateOrderSchema,
+    createCategorySchema,
+    deleteCategorySchema,
+    getCategoriesSchema,
+    getCategoryByIdSchema,
+    updateCategorySchema,
+} from './validator.schema';
 
 const categoryRouter: Router = Router();
 
@@ -17,5 +24,7 @@ categoryRouter.post('/', ValidateRequest(createCategorySchema), controller.creat
 categoryRouter.delete('/:categoryId', ValidateRequest(deleteCategorySchema), controller.deleteCategory);
 
 categoryRouter.put('/:categoryId', ValidateRequest(updateCategorySchema), controller.updateCategory);
+
+categoryRouter.patch('/changeTemplateOrder', ValidateRequest(changeTemplateOrderSchema), controller.updateCategoryTempOrder);
 
 export default categoryRouter;

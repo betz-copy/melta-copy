@@ -22,6 +22,7 @@ import {
     searchRulesRequestSchema,
     searchTemplatesRequestSchema,
     updateCategorySchema,
+    updateCategoryTempOrderSchema,
     updateEntityTemplateSchema,
     updateEntityTemplateStatusSchema,
     updateFieldValueSchema,
@@ -79,6 +80,13 @@ templatesRouter.post(
     ValidateRequest(getCategoriesSchema),
     AuthorizerControllerMiddleware.userHasSomePermissions,
     templatesControllerMiddleware.searchCategories,
+);
+
+templatesRouter.patch(
+    '/categories/changeTemplateOrder',
+    ValidateRequest(updateCategoryTempOrderSchema),
+    AuthorizerControllerMiddleware.userCanWriteTemplates,
+    templatesControllerMiddleware.updateCategoryTempOrder,
 );
 
 // entities (templates)

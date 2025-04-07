@@ -37,6 +37,18 @@ export const deleteCategorySchema = Joi.object({
     },
 });
 
+// PATCH /api/templates/categories/changeTemplateOrder
+export const updateCategoryTempOrderSchema = Joi.object({
+    query: {},
+    body: {
+        newCategoryId: MongoIdSchema.required(),
+        srcCategoryId: MongoIdSchema.required(),
+        templateId: MongoIdSchema.required(),
+        newIndex: Joi.number().required().min(0),
+    },
+    params: {},
+})
+
 export const getCategoriesSchema = Joi.object({
     query: { search: Joi.string() },
     body: {},
