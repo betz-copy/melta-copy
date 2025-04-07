@@ -22,14 +22,13 @@ import { useQueryClient } from 'react-query';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { ICategoryMap, IMongoCategory } from '../../../interfaces/categories';
 import { ColoredEnumChip } from '../../ColoredEnumChip';
-import AddFieldFilterDialog from './AddFieldFilterDialog';
 import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter, IAGGridTextFilter } from '../../../utils/agGrid/interfaces';
 import FieldsAndFiltersTable from './FieldsAndFiltersTable';
 
-interface IFieldFilter {
+export interface IFieldFilter {
     fieldValue: IEntitySingleProperty;
     selected: boolean;
-    filterField: (IAGGridTextFilter | IAGGidNumberFilter | IAGGridDateFilter | IAGGridSetFilter)[];
+    filterField?: IAGGridTextFilter | IAGGidNumberFilter | IAGGridDateFilter | IAGGridSetFilter;
 }
 
 export enum ViewType {
@@ -72,7 +71,7 @@ const CreateChildTemplateDialog: React.FC<{
     const [childTemplateFilterByUserUnit, setChildTemplateFilterByUserUnit] = useState<boolean>(false);
 
     const [selectedCategories, setSelectedCategories] = useState<IMongoCategory[]>(entityTemplate!.category ? [entityTemplate!.category] : []);
-    const [templateFieldsFilters, setTemplateFieldsFilters] = useState<ITemplateFieldsFilters>();
+    const [templateFieldsFilters, setTemplateFieldsFilters] = useState<ITemplateFieldsFilters>({});
 
     const initFieldFilters = () => {
         const newTemplateFieldsFilters: ITemplateFieldsFilters = {};
@@ -80,7 +79,6 @@ const CreateChildTemplateDialog: React.FC<{
             newTemplateFieldsFilters[fieldName] = {
                 selected: false,
                 fieldValue,
-                filterField: [],
             };
         });
         setTemplateFieldsFilters(newTemplateFieldsFilters);
@@ -281,8 +279,8 @@ const CreateChildTemplateDialog: React.FC<{
                             </Grid>
                             <FieldsAndFiltersTable
                                 entityTemplate={entityTemplate}
-                                setTemplateFieldsFilters={setTemplateFieldsFilters}
                                 templateFieldsFilters={templateFieldsFilters}
+                                setTemplateFieldsFilters={setTemplateFieldsFilters}
                             />
                         </Grid>
                     </Grid>
