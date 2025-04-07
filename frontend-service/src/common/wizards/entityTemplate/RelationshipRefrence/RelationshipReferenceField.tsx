@@ -18,6 +18,7 @@ export interface FieldEditCardProps {
         originSourceEntityId: string;
         setRelatedTemplateId: (id: string) => void;
     };
+    setSelectedEntityTemplateToReference: (selectedEntityTemplateToReference: IMongoEntityTemplatePopulated | null) => void;
 }
 
 const RelationshipReferenceField: React.FC<FieldEditCardProps> = ({
@@ -28,6 +29,7 @@ const RelationshipReferenceField: React.FC<FieldEditCardProps> = ({
     setFieldValue,
     isDisabled,
     convertToRelationshipField,
+    setSelectedEntityTemplateToReference,
 }) => {
     const queryClient = useQueryClient();
 
@@ -39,6 +41,8 @@ const RelationshipReferenceField: React.FC<FieldEditCardProps> = ({
 
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const selectedTemplate = entityTemplates.get(value.relationshipReference?.relatedTemplateId || '') ?? null;
+
+    setSelectedEntityTemplateToReference(selectedTemplate);
 
     const fixedRelatedTemplateFieldOptions = Object.entries(selectedTemplate?.properties?.properties || {})
         .filter(

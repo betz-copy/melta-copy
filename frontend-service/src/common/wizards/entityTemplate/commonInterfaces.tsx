@@ -46,6 +46,6 @@ export interface ConvertToRelationshipFieldFormInputProperties {
 
 export interface IFilterRelationReference {
     relatedTemplateFilterField: string;
-    filterBy: 'bigger then' | 'smaller then' | 'from' | 'until' | 'equals';
+    filterBy: 'bigger then' | 'smaller then' | 'from' | 'until' | 'equals' | '';
     filterValue: number | string;
 }

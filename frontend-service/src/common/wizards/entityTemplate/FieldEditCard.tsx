@@ -45,7 +45,7 @@ import { MinimizedColorPicker } from '../../inputs/MinimizedColorPicker';
 import { MeltaCheckbox } from '../../MeltaCheckbox';
 import { arrayTypes, deleteEnumFieldRequest, updateEnumFieldRequest } from '../../../services/templates/enitityTemplatesService';
 import { AreYouSureDialog } from '../../dialogs/AreYouSureDialog';
-import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { MeltaTooltip } from '../../MeltaTooltip';
 import { IUniqueConstraintOfTemplate } from '../../../interfaces/entities';
 import RelationshipReferenceField from './RelationshipRefrence/RelationshipReferenceField';
@@ -555,6 +555,8 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
         return i18next.t('wizard.entityTemplate.moveToArchive');
     };
 
+    const [selectedEntityTemplateToReference, setSelectedEntityTemplateToReference] = useState<IMongoEntityTemplatePopulated | null>(null);
+
     return (
         <Draggable draggableId={value.id} index={index}>
             {(draggableProvided) => (
@@ -912,6 +914,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                     errors={errors}
                                                     setFieldValue={setFieldValue}
                                                     isDisabled={isDisabled}
+                                                    setSelectedEntityTemplateToReference={setSelectedEntityTemplateToReference}
                                                 />
                                             )}
                                             {(value.type === 'date' || value.type === 'date-time') &&
@@ -1383,7 +1386,12 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                             </Grid>
                                         )}
                                     </Grid>
-                                    {value.filterRelationList && <FilterEntitiesByCriteria values={value.relationshipReference?.filters ?? {}} />}
+                                    {value.filterRelationList && (
+                                        <FilterEntitiesByCriteria
+                                            name={`properties[${index}].relationshipReference.filters`}
+                                            selectedEntityTemplate={selectedEntityTemplateToReference}
+                                        />
+                                    )}
                                 </Grid>
                             </Grid>
                         </CardContent>
