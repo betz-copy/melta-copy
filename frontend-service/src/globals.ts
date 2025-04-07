@@ -17,6 +17,7 @@ export const environment = {
         processes: '/processes/instances',
         gantts: '/gantts',
         iFrames: '/iframes',
+        charts: '/charts',
         storage: '/files',
         preview: '/preview',
         permissions: '/permissions',
@@ -137,6 +138,10 @@ export const environment = {
         sideBarCloseWidth: 140,
         relativeMaxHight: 160,
     },
+    charts: {
+        defaultColumnSizes: { lg: 12, md: 12, sm: 12, xs: 12, xxs: 12 },
+        chartsOrderKey: 'chartsOrder_',
+    },
     notifications: {
         updateInterval: 1000 * 60 * 10,
         infiniteScrollPageCount: 10,
@@ -219,6 +224,7 @@ export const environment = {
     agGrid: {
         rowCount: 5,
         defaultExpandedRowCount: 13,
+        rowCountInfiniteModeWithoutExpand: 6,
         defaultRowHeight: 50,
         defaultFontSize: 14,
         cacheBlockSize: 5,
@@ -234,6 +240,11 @@ export const environment = {
             columnsOrder: 'columnsOrder-',
             columnWidths: 'columnWidths-',
         },
+    },
+    filterOptions: {
+        string: ['contains', 'notContains', 'equals', 'notEqual', 'startsWith', 'endsWith'],
+        number: ['equals', 'notEqual', 'greaterThan', 'greaterThanOrEqual', 'lessThan', 'lessThanOrEqual'],
+        date: ['equals', 'notEqual', 'greaterThan', 'greaterThanOrEqual', 'lessThan', 'lessThanOrEqual', 'inRange'],
     },
     accessTokenName: 'rabaz-access-token',
     brokenRulesFakeEntityIdPrefix: '$',

@@ -10,7 +10,10 @@ import { ValidationError } from '../../express/error';
 import { SplitBy } from '../types';
 import { ActionErrors } from '../../express/bulkActions/interface';
 
-const { polygonPrefix, polygonSuffix, srid } = config.map;
+const {
+    polygon: { polygonPrefix, polygonSuffix },
+    srid,
+} = config.map;
 
 type Node = Neo4jNode<number>;
 type Relationship = Neo4jRelationship<number>;
@@ -159,6 +162,15 @@ export const normalizeSearchByLocationResponse = (result: QueryResult): Array<{ 
 export const normalizeResponseCount = (result: QueryResult): number => {
     return result.records[0].get(0);
 };
+
+export const normalizeChartResponse = (result: QueryResult) =>
+    result.records.map((record) => {
+        const x = record.get('x');
+        const y = record.has('y') ? record.get('y') : null;
+        const coordinateSystem = record.has('coordinateSystem') ? record.get('coordinateSystem') : null;
+
+        return { x, y, coordinateSystem };
+    });
 
 export const normalizeResponseTemplatesCount = (result: QueryResult): { templateId: string; count: number }[] => {
     return result.records.map((record) => ({

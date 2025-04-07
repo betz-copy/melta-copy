@@ -24,6 +24,11 @@ const config = {
     mongo: {
         url: env.get('MONGO_URL').required().asString(),
         iFramesCollectionName: env.get('MONGO_IFRAMES_COLLECTION_NAME').required().asString(),
+        chartCollectionName: env.get('MONGO_CHARTS_COLLECTION_NAME').required().asString(),
+        connectionOptions: {
+            maxIdleTimeMS: env.get('MONGO_MAX_IDLE_CONNECTION_TIME').default(10000).asIntPositive(),
+            socketTimeoutMS: env.get('MONGO_MAX_IDLE_SOCKET_TIME').default(10000).asIntPositive(),
+        },
     },
 
     frontendConfig: {
@@ -92,6 +97,7 @@ const config = {
                 .asString(),
         },
         requestTimeout: env.get('ENTITY_TEMPLATE_SERVICE_REQUEST_TIMEOUT').default(10000).asIntPositive(),
+        userDoesntExistUnderReq: env.get('USER_NOT_EXIST_UNDER_REQUEST').default(`User doesn't exists under request`).asString(),
     },
     storageService: {
         url: env.get('STORAGE_SERVICE_URL').required().asString(),

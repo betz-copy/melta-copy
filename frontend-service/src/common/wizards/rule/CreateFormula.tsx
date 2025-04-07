@@ -27,6 +27,7 @@ import RaqbMuiFieldSelect from './raqb/RaqbMuiFieldSelect';
 import RaqbMuiValueSources from './raqb/RaqbMuiValueSources';
 import { RaqbMuiAutocompeleteAutoWidth } from './raqb/RaqbAutocompleteAutoWidth';
 import { lightTheme } from '../../../theme';
+import { useUserStore } from '../../../stores/user';
 
 const { MuiTextWidget } = MuiWidgets;
 
@@ -69,6 +70,7 @@ const getAddOrSubDateTimeFunc = (isAdd: boolean): Func => ({
 
 const CreateFormula: React.FC<StepComponentProps<RuleWizardValues>> = ({ values, setFieldValue, errors }) => {
     const queryClient = useQueryClient();
+    const currentUser = useUserStore((state) => state.user);
 
     const relationshipTemplates = queryClient.getQueryData<IRelationshipTemplateMap>('getRelationshipTemplates')!;
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
@@ -76,7 +78,7 @@ const CreateFormula: React.FC<StepComponentProps<RuleWizardValues>> = ({ values,
     const { entityTemplateId, formula } = values;
 
     const config = useMemo((): Config => {
-        const fieldsConfig = getFieldsConfigOfRule(entityTemplateId, entityTemplates, relationshipTemplates, formula);
+        const fieldsConfig = getFieldsConfigOfRule(entityTemplateId, entityTemplates, relationshipTemplates, formula, currentUser);
 
         return {
             ...MuiConfig,

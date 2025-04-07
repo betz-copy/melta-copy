@@ -9,7 +9,7 @@ import { searchExternalUsersRequest, searchUsersRequest } from '../../services/u
 import { useWorkspaceStore } from '../../stores/workspace';
 import { MeltaTooltip } from '../MeltaTooltip';
 
-interface IUserAutocomplete<TMode = 'internal' | 'external' | 'kartoffel'> {
+export interface IUserAutocomplete<TMode = 'internal' | 'external' | 'kartoffel'> {
     mode: TMode;
     value: IUser | null;
     displayValue?: string;
@@ -29,6 +29,7 @@ interface IUserAutocomplete<TMode = 'internal' | 'external' | 'kartoffel'> {
     required?: boolean;
     autoFocus?: any;
     textFieldProps?: any;
+    overrideSx?: Object;
 }
 
 const UserAutocomplete: React.FC<IUserAutocomplete> = ({
@@ -51,6 +52,7 @@ const UserAutocomplete: React.FC<IUserAutocomplete> = ({
     required,
     autoFocus,
     textFieldProps,
+    overrideSx,
 }) => {
     const workspace = useWorkspaceStore((state) => state.workspace);
     const [internalDisplayValue, setInputValue] = useState<string>(value?.displayName ?? '');
@@ -140,8 +142,8 @@ const UserAutocomplete: React.FC<IUserAutocomplete> = ({
                                 },
                             }),
                         }}
-                        sx={
-                            readOnly
+                        sx={{
+                            ...(readOnly
                                 ? {
                                       '& .MuiOutlinedInput-root.Mui-focused': {
                                           '& > fieldset': {
@@ -156,8 +158,9 @@ const UserAutocomplete: React.FC<IUserAutocomplete> = ({
                                           },
                                       },
                                   }
-                                : {}
-                        }
+                                : {}),
+                            ...overrideSx,
+                        }}
                     />
                 )}
                 readOnly={readOnly}

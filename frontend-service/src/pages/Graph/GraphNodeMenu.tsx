@@ -1,5 +1,5 @@
 /* eslint-disable no-param-reassign */
-import { Menu as MuiMenu, MenuItem } from '@mui/material';
+import { MenuItem, Menu as MuiMenu } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
 import { GraphData, NodeObject } from 'react-force-graph-2d';

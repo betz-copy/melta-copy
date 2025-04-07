@@ -10,7 +10,7 @@ export const createCategorySchema = Joi.object({
         color: ColorSchema.required(),
     },
     params: {},
-    file: iconFileSchema.required(),
+    file: iconFileSchema,
 });
 
 // PUT /api/templates/categories
