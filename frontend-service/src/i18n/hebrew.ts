@@ -1409,8 +1409,8 @@ export default {
         templateName: 'שם תצוגת תבנית בן',
         templateDetails: 'תיאור תבנית בן (יוצג במסכי הרשאות)',
         status: {
-            regularPage: 'מצב בעמוד קטגוריה',
-            specialPage: 'מצב בעמוד לקוח',
+            categoryPage: 'מצב בעמוד קטגוריה',
+            userPage: 'מצב בעמוד לקוח',
         },
         userType: {
             regularUser: 'סינון עפ״י משתמש מחובר',

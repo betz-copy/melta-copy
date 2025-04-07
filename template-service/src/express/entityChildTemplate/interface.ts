@@ -4,7 +4,7 @@ import { IMongoEntityTemplate } from '../entityTemplate/interface';
 
 export enum ViewType {
     categoryPage = 'categoryPage',
-    userPage = 'categoryPage',
+    userPage = 'userPage',
 }
 
 export interface IEntityChildTemplate {
