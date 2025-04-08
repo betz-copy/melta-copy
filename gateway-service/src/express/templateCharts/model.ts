@@ -39,4 +39,6 @@ export const ChartSchema = new mongoose.Schema(
     { timestamps: true, versionKey: false },
 );
 
-ChartSchema.index({ name: 'text' });
+ChartSchema.index({ templateId: 1 });
+
+export default ChartSchema;
