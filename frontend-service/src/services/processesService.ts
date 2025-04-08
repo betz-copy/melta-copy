@@ -35,7 +35,7 @@ export const createProcessRequest = async (process: ProcessDetailsValues) => {
     const filePropertiesToUpload = await Promise.all(
         Object.entries(process.details)
             .filter(([_key, value]) => {
-                return value.format === 'signature' && value;
+                return value && value.format === 'signature';
             })
             .map(async ([key, value]) => {
                 const templatePropertyTitle = process.template!.details.properties.properties[key].title;
