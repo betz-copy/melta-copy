@@ -1,5 +1,5 @@
 import { IMongoCategory } from './categories';
-import { IUniqueConstraintOfTemplate } from './entities';
+import { IFieldsGroup, IUniqueConstraintOfTemplate } from './entities';
 
 export interface IEntitySingleProperty {
     title: string;
@@ -54,6 +54,7 @@ export interface IEntityTemplate {
     uniqueConstraints: IUniqueConstraintOfTemplate[];
     documentTemplatesIds?: string[];
     mapSearchProperties?: string[];
+    fieldGroups?: IFieldsGroup[];
 }
 
 export interface IEntityTemplatePopulated extends Omit<IEntityTemplate, 'category'> {

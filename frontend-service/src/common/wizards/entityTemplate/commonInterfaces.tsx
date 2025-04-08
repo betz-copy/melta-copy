@@ -30,6 +30,7 @@ export interface CommonFormInputProperties {
     archive?: boolean;
     identifier?: boolean;
     mapSearch?: boolean;
+    fieldGroup?: string;
 }
 
 export interface ConvertToRelationshipFieldFormInputProperties {

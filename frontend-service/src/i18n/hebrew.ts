@@ -527,6 +527,8 @@ export default {
             propertyName: 'שם שדה באנגלית',
             attachmentName: 'שם באנגלית',
             propertyDisplayName: 'שם שדה לתצוגה',
+            groupName: 'שם קבוצה באנגלית',
+            groupDisplayName: 'שם קבוצה לתצוגה',
             relatedTemplateHaveToHadRequiredFields: 'תבנית ישות קשורה חייבת להכיל שדות חובה',
             attachmentDisplayName: 'שם לתצוגה',
             filesArrayOption: 'ריבוי קבצים',

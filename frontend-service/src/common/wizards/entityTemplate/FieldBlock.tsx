@@ -1,10 +1,25 @@
 import React, { SetStateAction, useCallback, useRef, useState } from 'react';
-import { Accordion, AccordionDetails, AccordionSummary, Box, Button, Grid, styled, Typography } from '@mui/material';
-import { DragDropContext, DraggableProvided, Droppable } from 'react-beautiful-dnd';
+import {
+    Accordion,
+    AccordionDetails,
+    AccordionSummary,
+    Box,
+    Button,
+    Card,
+    CardContent,
+    CardHeader,
+    Divider,
+    Grid,
+    IconButton,
+    styled,
+    TextField,
+    Typography,
+} from '@mui/material';
+import { DragDropContext, DraggableProvided, Droppable, Draggable } from 'react-beautiful-dnd';
 import { v4 as uuid } from 'uuid';
 import { FieldArray, FormikErrors, FormikHelpers, FormikTouched } from 'formik';
 import i18next from 'i18next';
-import { DragHandle as DragHandleIcon, ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
+import { Delete, DragHandle as DragHandleIcon, ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
 import _debounce from 'lodash.debounce';
 import { FieldEditCardProps, MemoFieldEditCard } from './FieldEditCard';
 import { MemoAttachmentEditCard } from './AttachmentEditCard';
@@ -110,6 +125,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
 }: React.PropsWithChildren<FieldBlockProps<PropertiesType, Values>>) => {
     // copy of values of formik in order to show changes on inputs fast (formik rerenders are slow)
     const [displayValues, setDisplayValues] = React.useState(values[propertiesType]);
+    // console.log({ displayValues });
 
     const [showAreUSureDialogForRemoveProperty, setShowAreUSureDialogForRemoveProperty] = useState(false);
     const [selectedIndexToRemove, setSelectedIndexForRemove] = useState(-1);
@@ -202,6 +218,134 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
     const setDisplayValueWrapper = (index: number) => (value: SetStateAction<CommonFormInputProperties>) => setDisplayValue(index, value);
     const isFieldBlockError = Boolean(touched?.[propertiesType]) && Boolean(errors?.[propertiesType]);
 
+    const orderDisplayValues = () =>
+        displayValues.reduce((acc: any, field) => {
+            const groupName = field.fieldGroup;
+            if (!groupName) {
+                acc.push({ type: 'field', data: field });
+            } else {
+                const existingGroup = acc.find((item: any) => item.type === 'group' && item.groupName === groupName);
+                if (existingGroup) {
+                    existingGroup.fields.push(field);
+                } else {
+                    acc.push({
+                        type: 'group',
+                        groupName,
+                        fields: [field],
+                    });
+                }
+            }
+            return acc;
+        }, []);
+    const [orderedItems, setOrderedItems] = useState(orderDisplayValues());
+    console.log({ orderedItems });
+
+    const orderedItemsRef = useRef(orderedItems);
+    orderedItemsRef.current = orderedItems;
+
+    const buildProps = (propertyProp, index) => ({
+        entity: (values as any).displayName,
+        value: propertyProp,
+        index,
+        isEditMode,
+        initialValue: initialValues?.[propertiesType].find(({ id }) => propertyProp.id === id),
+        areThereAnyInstances,
+        touched: touched?.[propertiesType]?.[index],
+        errors: errors?.[propertiesType]?.[index] as FormikErrors<CommonFormInputProperties> | undefined,
+        remove,
+        onChange: onChangeWrapper(index),
+        supportSerialNumberType,
+        supportUserType,
+        supportEntityReferenceType,
+        supportChangeToRequiredWithInstances,
+        templateId: (values as any)._id,
+        supportArrayFields,
+        supportDeleteForExistingInstances,
+        supportEditEnum,
+        supportRelationshipReference,
+        supportUnique,
+        supportLocation,
+        supportArchive,
+        supportIdentifier,
+        hasIdentifier,
+        locationSearchFields,
+        hasActions,
+        supportConvertingToMultipleFields,
+    });
+    const addFieldToGroup = (groupName: string) => {
+        const updatedItems = [...displayValues];
+        const newField = { ...initialFieldCardDataOnAdd, id: uuid(), fieldGroup: groupName };
+        updatedItems.push(newField);
+        setDisplayValues(updatedItems as Values[PropertiesType]);
+    };
+    const addGroup = () => {
+        const groupName = prompt('Enter group name:');
+        if (groupName) {
+            const newGroupField = {
+                ...initialFieldCardDataOnAdd,
+                id: uuid(),
+                fieldGroup: groupName,
+            };
+            setDisplayValues([...displayValues, newGroupField] as Values[PropertiesType]);
+        }
+    };
+    const handleEditGroupName = (oldName: string, newName: string) => {
+        const updated = displayValues.map((field) => (field.fieldGroup === oldName ? { ...field, fieldGroup: newName } : field));
+        setDisplayValues(updated as Values[PropertiesType]);
+    };
+
+    // Helper function to move field within the same group
+    const moveWithinGroup = (sourceIndex: number, destinationIndex: number, groupName: string) => {
+        const newOrderedItems = [...orderedItemsRef.current];
+        const groupIndex = newOrderedItems.findIndex((item) => item.type === 'group' && `group-${item.groupName}` === groupName);
+        if (groupIndex === -1) return;
+
+        const group = newOrderedItems[groupIndex];
+        const [movedField] = group.fields.splice(sourceIndex, 1);
+        group.fields.splice(destinationIndex, 0, movedField);
+        setOrderedItems(newOrderedItems);
+        updateFormik();
+    };
+
+    // Helper function to move field from one group to another
+    const moveBetweenGroups = (sourceIndex: number, destinationIndex: number, sourceGroupName: string, destinationGroupName: string) => {
+        const newOrderedItems = [...orderedItemsRef.current];
+        const sourceGroupIndex = newOrderedItems.findIndex((item) => `group-${item.groupName}` === sourceGroupName);
+        const destinationGroupIndex = newOrderedItems.findIndex((item) => `group-${item.groupName}` === destinationGroupName);
+
+        if (sourceGroupIndex === -1 || destinationGroupIndex === -1) return;
+
+        const [movedField] = newOrderedItems[sourceGroupIndex].fields.splice(sourceIndex, 1);
+        newOrderedItems[destinationGroupIndex].fields.splice(destinationIndex, 0, movedField);
+        setOrderedItems(newOrderedItems);
+        updateFormik();
+    };
+
+    // todo shirel
+    const moveToGroup = (sourceIndex: number, destinationGroupName: string) => {
+        const newOrderedItems = [...orderedItemsRef.current];
+        const field = newOrderedItems[sourceIndex];
+        const groupIndex = newOrderedItems.findIndex((item) => item.type === 'group' && `group-${item.groupName}` === destinationGroupName);
+        if (groupIndex === -1) return;
+
+        const group = newOrderedItems[groupIndex];
+        group.fields.push(field.data); // Add the field to the group
+        newOrderedItems.splice(sourceIndex, 1); // Remove from its current position
+        setOrderedItems(newOrderedItems);
+        updateFormik();
+    };
+
+    const moveGroup = (sourceIndex: number, destinationIndex: number) => {
+        console.log('move group ');
+
+        const newOrderedItems = [...orderedItemsRef.current];
+        const [movedGroup] = newOrderedItems.splice(sourceIndex, 1);
+        newOrderedItems.splice(destinationIndex, 0, movedGroup);
+        if (!movedGroup.type) movedGroup.type = 'group';
+
+        setOrderedItems(newOrderedItems);
+        updateFormik();
+    };
     return (
         <FieldBlockAccordion style={{ border: isFieldBlockError ? '1px solid red' : '' }}>
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
@@ -218,86 +362,242 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
             <AccordionDetails>
                 <FieldArray name={propertiesType}>
                     {() => (
-                        <DragDropContext onDragEnd={(result) => result.destination && move(result.source.index, result.destination.index)}>
-                            <Droppable droppableId="fieldArea">
-                                {(droppableProvided) => (
-                                    <Grid
-                                        container
-                                        ref={droppableProvided.innerRef}
-                                        {...droppableProvided.droppableProps}
-                                        direction="column"
-                                        alignItems="center"
-                                    >
-                                        {displayValues.map((property, index) => {
-                                            const props = {
-                                                entity: (values as any).displayName,
-                                                value: property,
-                                                index,
-                                                isEditMode,
-                                                initialValue: initialValues?.[propertiesType].find(({ id }) => property.id === id),
-                                                areThereAnyInstances,
-                                                touched: touched?.[propertiesType]?.[index],
-                                                errors: errors?.[propertiesType]?.[index] as FormikErrors<CommonFormInputProperties> | undefined,
-                                                remove,
-                                                onChange: onChangeWrapper(index),
-                                                supportSerialNumberType,
-                                                supportUserType,
-                                                supportEntityReferenceType,
-                                                supportChangeToRequiredWithInstances,
-                                                templateId: (values as any)._id,
-                                                supportArrayFields,
-                                                supportDeleteForExistingInstances,
-                                                supportEditEnum,
-                                                supportRelationshipReference,
-                                                supportUnique,
-                                                supportLocation,
-                                                supportArchive,
-                                                supportIdentifier,
-                                                hasIdentifier,
-                                                locationSearchFields,
-                                                hasActions,
-                                                supportConvertingToMultipleFields,
-                                            };
+                        <DragDropContext
+                            onDragEnd={(result) => {
+                                const { source, destination } = result;
+                                if (!destination) return;
+                                console.log(source.droppableId, destination.droppableId);
 
+                                // Handling case where field moves from a group to fieldArea (make it a single field)
+                                if (source.droppableId !== 'fieldArea' && destination.droppableId === 'fieldArea') {
+                                    const newOrderedItems = [...orderedItemsRef.current];
+
+                                    const groupIndex = newOrderedItems.findIndex((item) => `group-${item.groupName}` === source.droppableId);
+                                    if (groupIndex === -1) return;
+
+                                    const group = newOrderedItems[groupIndex];
+                                    const [movedField] = group.fields.splice(source.index, 1);
+                                    newOrderedItems.push({ type: 'field', data: movedField });
+                                    setOrderedItems(newOrderedItems);
+                                    updateFormik();
+                                }
+
+                                // Handle moving single field into a group
+                                if (source.droppableId === 'fieldArea' && destination.droppableId !== 'fieldArea') {
+                                    const newOrderedItems = [...orderedItemsRef.current];
+                                    const field = newOrderedItems[source.index];
+                                    const groupIndex = newOrderedItems.findIndex((item) => `group-${item.groupName}` === destination.droppableId);
+                                    if (groupIndex === -1) return;
+
+                                    const group = newOrderedItems[groupIndex];
+                                    group.fields.push(field.data);
+                                    newOrderedItems.splice(source.index, 1);
+                                    setOrderedItems(newOrderedItems);
+                                    updateFormik();
+                                }
+
+                                // Case for moving field within the same group
+                                if (source.droppableId === destination.droppableId && source.droppableId !== 'fieldArea') {
+                                    moveWithinGroup(source.index, destination.index, source.droppableId);
+                                }
+
+                                // Case for moving field between groups
+                                else if (source.droppableId !== destination.droppableId && source.droppableId !== 'fieldArea') {
+                                    moveBetweenGroups(source.index, destination.index, source.droppableId, destination.droppableId);
+                                }
+
+                                // Case for moving a full group (not between groups)
+                                else if (source.droppableId === 'fieldArea' && destination.droppableId === 'fieldArea') {
+                                    moveGroup(source.index, destination.index);
+                                }
+                            }}
+                        >
+                            <Droppable droppableId="fieldArea" type="FIELD">
+                                {(provided) => (
+                                    <Box ref={provided.innerRef} {...provided.droppableProps}>
+                                        {orderedItems.map((item, index) => {
                                             if (
                                                 propertiesType === 'properties' ||
                                                 propertiesType === 'detailsProperties' ||
                                                 propertiesType === 'archiveProperties'
                                             ) {
-                                                return (
-                                                    <MemoFieldEditCard
-                                                        {...props}
-                                                        key={property.id}
-                                                        setFieldValue={setFieldDisplayValueWrapper(index) as FieldEditCardProps['setFieldValue']}
-                                                        setValues={setDisplayValueWrapper(index)}
-                                                        uniqueConstraints={uniqueConstraints}
-                                                        setUniqueConstraints={setUniqueConstraints}
-                                                    />
-                                                );
+                                                if (item.type === 'field') {
+                                                    return (
+                                                        <Draggable draggableId={item.data.id} index={index} key={item.data.id}>
+                                                            {(dragProvided) => (
+                                                                <Box
+                                                                    ref={dragProvided.innerRef}
+                                                                    {...dragProvided.draggableProps}
+                                                                    {...dragProvided.dragHandleProps}
+                                                                >
+                                                                    <MemoFieldEditCard
+                                                                        {...buildProps(item.data, index)}
+                                                                        key={item.data.id}
+                                                                        setFieldValue={
+                                                                            setFieldDisplayValueWrapper(index) as FieldEditCardProps['setFieldValue']
+                                                                        }
+                                                                        setValues={setDisplayValueWrapper(index)}
+                                                                        uniqueConstraints={uniqueConstraints}
+                                                                        setUniqueConstraints={setUniqueConstraints}
+                                                                    />
+                                                                </Box>
+                                                            )}
+                                                        </Draggable>
+                                                    );
+                                                }
+                                                if (item.type === 'group') {
+                                                    return (
+                                                        <Draggable draggableId={`group-${item.groupName}`} index={index} key={item.groupName}>
+                                                            {(dragProvided) => (
+                                                                <Box
+                                                                    ref={dragProvided.innerRef}
+                                                                    {...dragProvided.draggableProps}
+                                                                    {...dragProvided.dragHandleProps}
+                                                                    sx={{ marginTop: 2 }}
+                                                                >
+                                                                    <Card
+                                                                        elevation={3}
+                                                                        sx={{
+                                                                            padding: '1.5rem',
+                                                                            position: 'sticky',
+                                                                            // ...(value.deleted && {
+                                                                            backgroundColor: 'rgb(224, 225, 237,0.4)',
+                                                                            // }),
+                                                                            marginTop: 1.5,
+                                                                            marginBottom: 1.5,
+                                                                        }}
+                                                                    >
+                                                                        <Grid container wrap="nowrap">
+                                                                            {draggable.isDraggable && (
+                                                                                <Box
+                                                                                    {...draggable.dragHandleProps}
+                                                                                    style={{ display: 'flex', alignItems: 'center' }}
+                                                                                >
+                                                                                    <DragHandleIcon fontSize="large" />
+                                                                                </Box>
+                                                                            )}
+                                                                            <TextField
+                                                                                label={i18next.t('wizard.entityTemplate.groupName')}
+                                                                                // id={name}
+                                                                                // name={name}
+                                                                                // value={value.name}
+                                                                                // onChange={onChange}
+                                                                                // error={touchedName && Boolean(errorName)}
+                                                                                // helperText={touchedName && errorName}
+                                                                                // disabled={isDisabled || value.deleted}
+                                                                                sx={{ marginRight: '6px' }}
+                                                                                fullWidth
+                                                                            />
+                                                                            <TextField
+                                                                                label={i18next.t('wizard.entityTemplate.groupDisplayName')}
+                                                                                // id={title}
+                                                                                // name={title}
+                                                                                // value={value.title}
+                                                                                // onChange={onChange}
+                                                                                // error={touchedTitle && Boolean(errorTitle)}
+                                                                                // helperText={touchedTitle && errorTitle}
+                                                                                sx={{ marginRight: '6px' }}
+                                                                                fullWidth
+                                                                                // disabled={value.deleted}
+                                                                            />
+                                                                        </Grid>
+                                                                        <Grid marginTop={2}>
+                                                                            <Divider />
+                                                                        </Grid>
+                                                                        <CardContent>
+                                                                            <Droppable
+                                                                                droppableId={`group-${item.groupName}`}
+                                                                                type="FIELD"
+                                                                                // isCombineEnabled
+                                                                            >
+                                                                                {/* type="FIELD"> */}
+                                                                                {(dropProvided) => (
+                                                                                    <Box ref={dropProvided.innerRef} {...dropProvided.droppableProps}>
+                                                                                        {item.fields.map((field, idx) => (
+                                                                                            <Draggable
+                                                                                                draggableId={field.id}
+                                                                                                index={idx}
+                                                                                                key={field.id}
+                                                                                            >
+                                                                                                {(fieldProvided) => (
+                                                                                                    <Box
+                                                                                                        ref={fieldProvided.innerRef}
+                                                                                                        {...fieldProvided.draggableProps}
+                                                                                                        {...fieldProvided.dragHandleProps}
+                                                                                                    >
+                                                                                                        <MemoFieldEditCard
+                                                                                                            {...buildProps(field, idx)}
+                                                                                                            setFieldValue={
+                                                                                                                setFieldDisplayValueWrapper(
+                                                                                                                    idx,
+                                                                                                                ) as FieldEditCardProps['setFieldValue']
+                                                                                                            }
+                                                                                                            setValues={setDisplayValueWrapper(idx)}
+                                                                                                            uniqueConstraints={uniqueConstraints}
+                                                                                                            setUniqueConstraints={
+                                                                                                                setUniqueConstraints
+                                                                                                            }
+                                                                                                        />
+                                                                                                    </Box>
+                                                                                                )}
+                                                                                            </Draggable>
+                                                                                        ))}
+                                                                                        {dropProvided.placeholder}
+                                                                                        {supportAddFieldButton && (
+                                                                                            <Button
+                                                                                                type="button"
+                                                                                                variant="contained"
+                                                                                                style={{ margin: '8px' }}
+                                                                                                onClick={() => addFieldToGroup(item.groupName)}
+                                                                                            >
+                                                                                                <Typography>{addPropertyButtonLabel}</Typography>
+                                                                                            </Button>
+                                                                                        )}
+                                                                                    </Box>
+                                                                                )}
+                                                                            </Droppable>
+                                                                        </CardContent>
+                                                                    </Card>
+                                                                </Box>
+                                                            )}
+                                                        </Draggable>
+                                                    );
+                                                }
                                             }
 
-                                            // eslint-disable-next-line react/jsx-key
-                                            return <MemoAttachmentEditCard {...props} key={property.id} />;
+                                            // // eslint-disable-next-line react/jsx-key
+                                            // return <MemoAttachmentEditCard {...buildProps(item.data, index)} key={item.data.id} />;
                                         })}
 
-                                        {droppableProvided.placeholder}
-                                        {supportAddFieldButton && (
-                                            <Button
-                                                type="button"
-                                                variant="contained"
-                                                style={{ margin: '8px' }}
-                                                onClick={() => push({ id: uuid(), ...initialFieldCardDataOnAdd })}
-                                            >
-                                                <Typography>{addPropertyButtonLabel}</Typography>
-                                            </Button>
-                                        )}
-
-                                        {errors?.[propertiesType] === i18next.t('validation.oneField') && (
-                                            <div style={{ color: '#d32f2f' }}>{i18next.t('validation.oneField')}</div>
-                                        )}
-                                    </Grid>
+                                        {provided.placeholder}
+                                    </Box>
                                 )}
                             </Droppable>
+                            {supportAddFieldButton && (
+                                <Grid>
+                                    <Button
+                                        type="button"
+                                        variant="contained"
+                                        style={{ margin: '8px' }}
+                                        onClick={() => push({ id: uuid(), ...initialFieldCardDataOnAdd })}
+                                    >
+                                        <Typography>{addPropertyButtonLabel}</Typography>
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        variant="contained"
+                                        style={{ margin: '8px' }}
+                                        // onClick={() => push({ id: uuid(), ...initialFieldCardDataOnAdd })}
+                                    >
+                                        <Typography>הוסף קבוצה</Typography>ן
+                                    </Button>
+                                </Grid>
+                            )}
+
+                            {/* Display error message if necessary */}
+                            {errors?.[propertiesType] === i18next.t('validation.oneField') && (
+                                <div style={{ color: '#d32f2f' }}>{i18next.t('validation.oneField')}</div>
+                            )}
                         </DragDropContext>
                     )}
                 </FieldArray>

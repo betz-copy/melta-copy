@@ -56,6 +56,7 @@ export interface EntityTemplateFormInputProperties {
     };
     archive?: boolean;
     mapSearch?: boolean;
+    fieldGroup?: string;
 }
 export interface EntityTemplateWizardValues
     extends Omit<

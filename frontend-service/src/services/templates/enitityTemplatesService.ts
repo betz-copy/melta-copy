@@ -30,15 +30,24 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
         documentTemplatesIds,
         propertiesTypeOrder,
         mapSearchProperties,
+        fieldGroups,
         ...restOfEntityTemplate
     } = entityTemplate;
 
     const propertiesArray: EntityTemplateFormInputProperties[] = [];
     const attachmentProperties: EntityTemplateFormInputProperties[] = [];
     const archiveProperties: EntityTemplateFormInputProperties[] = [];
+    const fieldToGroupIdMap: Record<string, string> = {};
+
+    fieldGroups?.forEach((group) => {
+        group.fields.forEach((field) => {
+            fieldToGroupIdMap[field] = group.groupId;
+        });
+    });
 
     propertiesOrder.forEach((key) => {
         const value = properties.properties[key];
+        const fieldGroup = fieldToGroupIdMap[key];
 
         let type = value.format || value.type;
         if (value.serialStarter !== undefined) type = 'serialNumber';
@@ -76,6 +85,7 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
             archive: value.archive || undefined,
             identifier: value.identifier || undefined,
             mapSearch: mapSearchProperties?.includes(key) || undefined,
+            fieldGroup,
         };
 
         if (value.format === 'fileId' || value.items?.format === 'fileId') {
