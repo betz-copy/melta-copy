@@ -14,7 +14,6 @@ export class ChartController extends DefaultController<ChartManager> {
 
     async getChartsByTemplateId(req: Request, res: Response) {
         const { body, params, permissionsOfUserId, user } = req as RequestWithPermissionsOfUserId;
-        console.log(1);
 
         res.json(await this.manager.getChartsOfTemplateId(params.templateId, user?.id!, permissionsOfUserId, body.textSearch));
     }
@@ -23,10 +22,6 @@ export class ChartController extends DefaultController<ChartManager> {
         const { body, permissionsOfUserId, user } = req as RequestWithPermissionsOfUserId;
 
         res.json(await this.manager.createChart(body, user?.id!, permissionsOfUserId));
-    }
-
-    async deleteChart(req: Request, res: Response) {
-        res.json(await this.manager.deleteChart(req.params.chartId));
     }
 
     async updateChart(req: Request, res: Response) {

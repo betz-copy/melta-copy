@@ -13,7 +13,7 @@ class ChartController extends DefaultController<IMongoChart, ChartManager> {
     }
 
     async getChartByTemplateId(req: Request, res: Response) {
-        res.json(await this.manager.getChartsByTemplateId(req.params.templateId, req.query.textSearch as string));
+        res.json(await this.manager.getChartsByTemplateId(req.params.templateId, req.body.textSearch));
     }
 
     async createChart(req: Request, res: Response) {

@@ -1,9 +1,10 @@
 import { FilterQuery } from 'mongoose';
+import { StatusCodes } from 'http-status-codes';
 import { IChart, IMongoChart } from './interface';
 import { DefaultManagerMongo } from '../../utils/mongo/manager';
 import ChartSchema from './model';
 import config from '../../config';
-import { NotFoundError } from '../error';
+import { NotFoundError, ServiceError } from '../error';
 
 export class ChartManager extends DefaultManagerMongo<IMongoChart> {
     constructor(workspaceId: string) {
@@ -28,6 +29,7 @@ export class ChartManager extends DefaultManagerMongo<IMongoChart> {
                 ],
             }),
         };
+
         return this.model.find(query).lean().exec();
     }
 
@@ -39,10 +41,12 @@ export class ChartManager extends DefaultManagerMongo<IMongoChart> {
         return this.model.findByIdAndDelete(chartId).orFail(new NotFoundError('Chart not found')).lean().exec();
     }
 
-    async updateChart(chartId: string, chartData: Partial<IChart> & { createdAt?: string }) {
+    async updateChart(chartId: string, updatedChart: IChart) {
+        const existingChart = await this.model.findById(chartId);
+
         return this.model
-            .findByIdAndUpdate(chartId, chartData, { new: true, overwrite: true })
-            .orFail(new NotFoundError('Chart not found'))
+            .findOneAndReplace({ _id: chartId }, { ...updatedChart, createdAt: existingChart?.createdAt }, { new: true })
+            .orFail(new ServiceError(StatusCodes.NOT_FOUND, 'chart not found'))
             .lean()
             .exec();
     }

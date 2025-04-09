@@ -1,16 +1,25 @@
 import { Router } from 'express';
+import { createProxyMiddleware, fixRequestBody } from 'http-proxy-middleware';
 import { ChartController } from './controller';
 import { createWorkspacesController } from '../../utils/express';
 import { ChartsValidator } from './middlewares';
 import ValidateRequest from '../../utils/joi';
-import {
-    createChartRequestSchema,
-    deleteChartRequestSchema,
-    getChartByIdRequestSchema,
-    getChartByTemplateIdRequestSchema,
-    updateChartRequestSchema,
-} from './validator.schema';
+import { createChartRequestSchema, getChartByIdRequestSchema, getChartByTemplateIdRequestSchema, updateChartRequestSchema } from './validator.schema';
 import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
+import config from '../../config';
+
+const {
+    dashboardService: { url, requestTimeout, charts },
+} = config;
+
+const ChartsServiceProxy = createProxyMiddleware({
+    target: `${url}${charts.baseRoute}`,
+    changeOrigin: true,
+    on: {
+        proxyReq: fixRequestBody,
+    },
+    proxyTimeout: requestTimeout,
+});
 
 export const ChartsRouter: Router = Router();
 
@@ -32,12 +41,7 @@ ChartsRouter.post(
     ChartsControllerMiddleware.getChartsByTemplateId,
 );
 
-ChartsRouter.delete(
-    '/:chartId',
-    ValidateRequest(deleteChartRequestSchema),
-    ChartsValidatorMiddleware.validateUserCanDeleteChart,
-    ChartsControllerMiddleware.deleteChart,
-);
+ChartsRouter.delete('/:chartId', ChartsValidatorMiddleware.validateUserCanDeleteChart, ChartsServiceProxy);
 
 ChartsRouter.put(
     '/:chartId',

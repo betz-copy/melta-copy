@@ -126,18 +126,12 @@ export class ChartManager extends DefaultManagerProxy<ChartService> {
         return this.service.createChart(chartData);
     }
 
-    async deleteChart(chartId: string) {
-        return this.service.deleteChart(chartId);
-    }
-
     async updateChart(chartId: string, updatedChart: IChart, userId?: string, permissionsOfUserId?: ISubCompactPermissions) {
         if (userId && permissionsOfUserId) {
             const hasPermissionToRelatedTemplate = await this.validateAllowedRelatedTemplate(userId, permissionsOfUserId, updatedChart);
             if (!hasPermissionToRelatedTemplate) throw new ForbiddenError(`doesn't have permission to related Template`);
         }
 
-        const existingChart = await this.getChartById(chartId);
-
-        return this.service.updateChart(chartId, { ...updatedChart, createdAt: existingChart?.createdAt });
+        return this.service.updateChart(chartId, updatedChart);
     }
 }

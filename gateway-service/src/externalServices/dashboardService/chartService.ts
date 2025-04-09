@@ -104,13 +104,9 @@ export class ChartService extends DefaultExternalServiceApi {
         return data;
     }
 
-    async updateChart(chartId: string, chart: Partial<IChart> & { createdAt?: string }): Promise<IChartDocument> {
+    async updateChart(chartId: string, chart: IChart): Promise<IChartDocument> {
         const { data } = await this.api.put(`/${chartId}`, chart);
         return data;
-    }
-
-    async deleteChart(chartId: string): Promise<void> {
-        await this.api.delete(`/${chartId}`);
     }
 
     async getChartGenerator(chartId: string): Promise<ChartsAndGenerator> {

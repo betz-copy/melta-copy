@@ -75,11 +75,7 @@ const chartSchema = Joi.object({
             ],
         })
         .required(),
-    filter: searchFilterSchema.custom((value) => {
-        // todo: upgrade mongo version up to 5 and then delete that convert
-        if (value) return JSON.stringify(value);
-        return value;
-    }),
+    filter: searchFilterSchema,
     permission: Joi.string()
         .valid(...Object.values(IPermission))
         .required(),
