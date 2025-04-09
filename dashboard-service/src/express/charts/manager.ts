@@ -1,3 +1,4 @@
+import { FilterQuery } from 'mongoose';
 import { IChart, IMongoChart } from './interface';
 import { DefaultManagerMongo } from '../../utils/mongo/manager';
 import ChartSchema from './model';
@@ -13,11 +14,21 @@ export class ChartManager extends DefaultManagerMongo<IMongoChart> {
         return this.model.findById(chartId).orFail(new NotFoundError('Chart not found')).lean().exec();
     }
 
+    escapeRegExp(text: string) {
+        return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+    }
+
     async getChartsByTemplateId(templateId: string, textSearch?: string) {
-        return this.model
-            .find({ templateId, ...(textSearch && { name: { $regex: textSearch, $options: 'i' } }) })
-            .lean()
-            .exec();
+        const query: FilterQuery<IMongoChart> = {
+            templateId,
+            ...(textSearch && {
+                $or: [
+                    { name: { $regex: this.escapeRegExp(textSearch), $options: 'i' } },
+                    { description: { $regex: this.escapeRegExp(textSearch), $options: 'i' } },
+                ],
+            }),
+        };
+        return this.model.find(query).lean().exec();
     }
 
     async createChart(chartData: IChart) {

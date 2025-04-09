@@ -14,6 +14,7 @@ export class ChartController extends DefaultController<ChartManager> {
 
     async getChartsByTemplateId(req: Request, res: Response) {
         const { body, params, permissionsOfUserId, user } = req as RequestWithPermissionsOfUserId;
+        console.log(1);
 
         res.json(await this.manager.getChartsOfTemplateId(params.templateId, user?.id!, permissionsOfUserId, body.textSearch));
     }

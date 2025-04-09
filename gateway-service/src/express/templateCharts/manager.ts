@@ -1,4 +1,3 @@
-import { FilterQuery } from 'mongoose';
 import { InstancesService } from '../../externalServices/instanceService';
 import { getMetaDataAxes } from '../../utils/templateCharts/getMetaDataAxes';
 import { ForbiddenError } from '../error';
@@ -89,22 +88,8 @@ export class ChartManager extends DefaultManagerProxy<ChartService> {
         return chartPermissionChecks.filter((chart): chart is IChartDocument => chart !== null);
     }
 
-    escapeRegExp(text: string) {
-        return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
-    }
-
     async getChartsByTemplateId(templateId: string, textSearch?: string) {
-        const query: FilterQuery<IChartDocument> = {
-            templateId,
-            ...(textSearch && {
-                $or: [
-                    { name: { $regex: this.escapeRegExp(textSearch), $options: 'i' } },
-                    { description: { $regex: this.escapeRegExp(textSearch), $options: 'i' } },
-                ],
-            }),
-        };
-
-        return this.service.getCharts(query);
+        return this.service.getCharts(templateId, textSearch);
     }
 
     async getChartsOfTemplateId(

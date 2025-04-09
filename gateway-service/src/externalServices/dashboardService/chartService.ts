@@ -89,8 +89,8 @@ export class ChartService extends DefaultExternalServiceApi {
         super(workspaceId, { baseURL: `${url}${charts.baseRoute}`, timeout: requestTimeout });
     }
 
-    async getCharts(query: object): Promise<IChartDocument[]> {
-        const { data } = await this.api.get<IChartDocument[]>('/', { params: query });
+    async getCharts(templateId: string, textSearch?: string): Promise<IChartDocument[]> {
+        const { data } = await this.api.post<IChartDocument[]>(`/by-template/${templateId}`, { textSearch });
         return data;
     }
 
