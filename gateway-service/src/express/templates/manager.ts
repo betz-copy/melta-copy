@@ -39,8 +39,6 @@ import DefaultManagerProxy from '../../utils/express/manager';
 import { buildNewRelationshipField, validateNoDependentRules, validateRequiredConstraints, validateUniqueRelationships } from '../../utils/templates';
 import { BadRequestError, NotFoundError, ServiceError } from '../error';
 import ProcessTemplatesManager from '../processes/processTemplates/manager';
-import { IAxisField, IChartDocument, IChartType, IColumnOrLineMetaData, INUmberMetaData, IPieMetaData } from '../templateCharts/interface';
-import { ChartManager } from '../templateCharts/manager';
 import { UsersManager } from '../users/manager';
 import {
     IEntityTemplateWithConstraints,
@@ -52,6 +50,15 @@ import { getParametersOfFormula } from './rules';
 import { checkPropertyInUsedFromFormula } from './rules/checkIfPropertyInUsed';
 import { IMongoRule, IRule } from './rules/interfaces';
 import { IFormula } from './rules/interfaces/formula';
+import {
+    IAxisField,
+    IChartDocument,
+    IChartType,
+    IColumnOrLineMetaData,
+    INUmberMetaData,
+    IPieMetaData,
+} from '../../externalServices/dashboardService/chartService';
+import { ChartManager } from '../templateCharts/manager';
 
 const {
     categoryHasTemplates,

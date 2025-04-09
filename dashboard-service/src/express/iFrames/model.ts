@@ -1,7 +1,7 @@
-import * as mongoose from 'mongoose';
-import { IFrameDocument } from './interface';
+import mongoose from 'mongoose';
+import { IMongoIframe } from './interface';
 
-const IFrameSchema = new mongoose.Schema<IFrameDocument>(
+const IFrameSchema = new mongoose.Schema<IMongoIframe>(
     {
         name: {
             type: String,

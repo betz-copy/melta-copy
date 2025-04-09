@@ -327,6 +327,13 @@ services:
     networks:
       - network
 
+  dashboard-service:
+    ports:
+      - 8016:8000
+    restart: always
+    networks:
+      - network
+
   cron-service:
     ports:
       - 8013:8000

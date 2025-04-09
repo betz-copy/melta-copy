@@ -1,10 +1,7 @@
-import { StatusCodes } from 'http-status-codes';
 import { FilterQuery } from 'mongoose';
-import config from '../../config';
 import { InstancesService } from '../../externalServices/instanceService';
-import { DefaultManagerMongo } from '../../utils/mongo/manager';
 import { getMetaDataAxes } from '../../utils/templateCharts/getMetaDataAxes';
-import { ForbiddenError, ServiceError } from '../error';
+import { ForbiddenError } from '../error';
 import {
     ChartsAndGenerator,
     IAxisField,
@@ -15,25 +12,26 @@ import {
     IColumnOrLineMetaData,
     IPermission,
     IPieMetaData,
-} from './interface';
-import { ChartSchema } from './model';
+    ChartService,
+} from '../../externalServices/dashboardService/chartService';
 import TemplatesManager from '../templates/manager';
 import { ISubCompactPermissions } from '../../externalServices/userService/interfaces/permissions/permissions';
 import { IMongoEntityTemplatePopulated } from '../../externalServices/templates/entityTemplateService';
+import DefaultManagerProxy from '../../utils/express/manager';
 
-export class ChartManager extends DefaultManagerMongo<IChartDocument> {
+export class ChartManager extends DefaultManagerProxy<ChartService> {
     private instanceService: InstancesService;
 
     private templateManager: TemplatesManager;
 
     constructor(workspaceId: string) {
-        super(workspaceId, config.mongo.chartCollectionName, ChartSchema);
+        super(new ChartService(workspaceId));
         this.instanceService = new InstancesService(workspaceId);
         this.templateManager = new TemplatesManager(workspaceId);
     }
 
     async getChartById(chartId: string) {
-        return this.model.findById(chartId).orFail(new ServiceError(StatusCodes.NOT_FOUND, 'chart not found')).lean().exec();
+        return this.service.getChartById(chartId);
     }
 
     hasPermissionToRelatedTemplate(
@@ -106,7 +104,7 @@ export class ChartManager extends DefaultManagerMongo<IChartDocument> {
             }),
         };
 
-        return this.model.find(query).lean().exec();
+        return this.service.getCharts(query);
     }
 
     async getChartsOfTemplateId(
@@ -140,11 +138,11 @@ export class ChartManager extends DefaultManagerMongo<IChartDocument> {
         const hasPermissionToRelatedTemplate = await this.validateAllowedRelatedTemplate(userId, permissionsOfUserId, chartData);
         if (!hasPermissionToRelatedTemplate) throw new ForbiddenError(`doesn't have permission to related Template`);
 
-        return this.model.create(chartData);
+        return this.service.createChart(chartData);
     }
 
     async deleteChart(chartId: string) {
-        return this.model.findByIdAndDelete(chartId).orFail(new ServiceError(StatusCodes.NOT_FOUND, 'chart not found')).lean().exec();
+        return this.service.deleteChart(chartId);
     }
 
     async updateChart(chartId: string, updatedChart: IChart, userId?: string, permissionsOfUserId?: ISubCompactPermissions) {
@@ -153,12 +151,8 @@ export class ChartManager extends DefaultManagerMongo<IChartDocument> {
             if (!hasPermissionToRelatedTemplate) throw new ForbiddenError(`doesn't have permission to related Template`);
         }
 
-        const existingChart = await this.model.findById(chartId);
+        const existingChart = await this.getChartById(chartId);
 
-        return this.model
-            .findOneAndReplace({ _id: chartId }, { ...updatedChart, createdAt: existingChart?.createdAt }, { new: true })
-            .orFail(new ServiceError(StatusCodes.NOT_FOUND, 'chart not found'))
-            .lean()
-            .exec();
+        return this.service.updateChart(chartId, { ...updatedChart, createdAt: existingChart?.createdAt });
     }
 }

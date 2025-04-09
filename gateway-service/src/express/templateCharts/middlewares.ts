@@ -4,7 +4,7 @@ import { Authorizer } from '../../utils/authorizer';
 import { EntityTemplateService } from '../../externalServices/templates/entityTemplateService';
 import { ForbiddenError } from '../error';
 import { ChartManager } from './manager';
-import { IChartDocument, IPermission } from './interface';
+import { IChartDocument, IPermission } from '../../externalServices/dashboardService/chartService';
 
 export class ChartsValidator extends DefaultController {
     private chartManager: ChartManager;

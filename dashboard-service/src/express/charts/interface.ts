@@ -58,7 +58,7 @@ export interface IChart {
     permission: IPermission;
 }
 
-export interface IChartDocument extends IChart {
+export interface IMongoChart extends IChart {
     _id: string;
     createdAt: string;
     updatedAt: string;
@@ -73,6 +73,6 @@ export interface IChartBody {
 
 type GeneratorChart = { x: any; y: number }[];
 
-export interface ChartsAndGenerator extends IChartDocument {
+export interface ChartsAndGenerator extends IMongoChart {
     chart: GeneratorChart;
 }
