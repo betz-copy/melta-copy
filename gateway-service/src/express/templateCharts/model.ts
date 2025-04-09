@@ -1,7 +1,7 @@
-import * as mongoose from 'mongoose';
-import { IChartDocument, IChartType, IPermission } from './interface';
+import mongoose from 'mongoose';
+import { IChartType, IPermission } from './interface';
 
-const ChartSchema = new mongoose.Schema<IChartDocument>(
+export const ChartSchema = new mongoose.Schema(
     {
         name: {
             type: String,
@@ -38,5 +38,7 @@ const ChartSchema = new mongoose.Schema<IChartDocument>(
     },
     { timestamps: true, versionKey: false },
 );
+
+ChartSchema.index({ templateId: 1 });
 
 export default ChartSchema;

@@ -25,4 +25,6 @@ const IFrameSchema = new mongoose.Schema<IFrameDocument>(
     { timestamps: true, versionKey: false },
 );
 
+IFrameSchema.index({ name: 1 });
+
 export default IFrameSchema;

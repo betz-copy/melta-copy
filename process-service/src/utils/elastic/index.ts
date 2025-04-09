@@ -16,7 +16,10 @@ class ElasticClient {
         logger.info('Initializing ElasticSearch client...');
 
         try {
-            ElasticClient.client = new Client({ node: config.elastic.url });
+            ElasticClient.client = new Client({
+                node: config.elastic.url,
+                auth: { username: config.elastic.user, password: config.elastic.password },
+            });
 
             logger.info('ElasticSearch client initialized successfully');
         } catch (error) {

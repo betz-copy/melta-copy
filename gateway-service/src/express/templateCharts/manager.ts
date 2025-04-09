@@ -16,7 +16,7 @@ import {
     IPermission,
     IPieMetaData,
 } from './interface';
-import ChartSchema from './model';
+import { ChartSchema } from './model';
 import TemplatesManager from '../templates/manager';
 import { ISubCompactPermissions } from '../../externalServices/userService/interfaces/permissions/permissions';
 import { IMongoEntityTemplatePopulated } from '../../externalServices/templates/entityTemplateService';
