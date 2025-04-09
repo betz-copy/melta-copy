@@ -183,7 +183,19 @@ export interface IExecutionOutput {
     entityId: string;
     properties: Record<string, any>;
 }
+export interface IAggregation {
+    type: 'countAll' | 'countDistinct' | 'average' | 'sum' | 'maximum' | 'minimum' | 'none';
+    byField?: string;
+}
 
+export type IAxisField = IAggregation | string;
+
+export interface IChartBody {
+    _id?: string;
+    xAxis: IAxisField;
+    yAxis: IAxisField | undefined;
+    filter: ISearchFilter;
+}
 export interface IDeleteEntityBodyBase {
     templateId: string;
     deleteAllRelationships?: boolean;

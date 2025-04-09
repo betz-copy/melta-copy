@@ -6,6 +6,7 @@ import { ISemanticSearchResult } from './semanticSearch';
 import { IFailedEntity } from './excel';
 import { IBrokenRule } from './ruleBreaches/ruleBreach';
 import { ICreateEntityMetadata } from './ruleBreaches/actionMetadata';
+import { IAGGridTextFilter, IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter } from '../utils/agGrid/interfaces';
 
 export interface IEntity {
     templateId: string;
@@ -184,7 +185,7 @@ export interface IExportEntitiesBody {
 export interface IGraphFilterBody {
     selectedTemplate: IMongoEntityTemplatePopulated;
     selectedProperty?: string;
-    filterField?: any;
+    filterField?: IAGGridTextFilter | IAGGidNumberFilter | IAGGridDateFilter | IAGGridSetFilter;
 }
 
 export interface IGraphFilterBodyBatch {

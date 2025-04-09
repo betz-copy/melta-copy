@@ -1,23 +1,25 @@
 /* eslint-disable no-param-reassign */
 import { mapValues } from 'lodash';
 import axios from '../axios';
+import { EntityWizardValues } from '../common/dialogs/entity';
 import { environment } from '../globals';
+import { IAxisField } from '../interfaces/charts';
 import {
+    ICountSearchResult,
+    IDeleteEntityBody,
     IEntity,
     IEntityExpanded,
-    ISearchBatchBody,
-    ISearchResult,
-    ISearchEntitiesOfTemplateBody,
+    IEntityWithIgnoredRules,
     IExportEntitiesBody,
     IGraphFilterBodyBatch,
-    ISearchEntitiesByTemplatesBody,
+    ISearchBatchBody,
     ISearchEntitiesByLocationBody,
-    IDeleteEntityBody,
-    ICountSearchResult,
-    IEntityWithIgnoredRules,
     IMultipleSelect,
+    ISearchEntitiesByTemplatesBody,
+    ISearchEntitiesOfTemplateBody,
+    ISearchFilter,
+    ISearchResult,
 } from '../interfaces/entities';
-import { EntityWizardValues } from '../common/dialogs/entity';
 import { IRuleBreach } from '../interfaces/ruleBreaches/ruleBreach';
 import { filterModelToFilterOfGraph } from '../pages/Graph/GraphFilterToBackend';
 import urlToFile from '../common/fileConversions';
@@ -509,5 +511,16 @@ export const getEntitiesByLocation = async (searchBody: ISearchEntitiesByLocatio
 
 export const exportEntityToDocumentRequest = async (documentTemplateId: string, entityProperties: EntityWizardValues['properties']) => {
     const { data } = await axios.post<Blob>(`${entities}/export/document`, { documentTemplateId, entityProperties }, { responseType: 'blob' });
+    return data;
+};
+
+export const getChartOfTemplate = async (
+    xAxis: IAxisField,
+    yAxis: IAxisField | undefined,
+    templateId: string,
+    filter?: ISearchFilter<Record<string, any>>,
+) => {
+    const { data } = await axios.post<{ x: any; y: number }[][]>(`${entities}/chart/${templateId}`, [{ xAxis, yAxis, filter }]);
+
     return data;
 };

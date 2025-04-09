@@ -38,6 +38,10 @@ import { CreateButton } from './CreateButton';
 import { FilterButton } from './FilterButton';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { environment } from '../../../globals';
+import { checkUserTemplatePermission } from '../../../utils/permissions/instancePermissions';
+import { useUserStore } from '../../../stores/user';
+import { PermissionScope } from '../../../interfaces/permissions';
+import { allowedCategories, allowedEntitiesOfCategory, updateUserPermissionForEntityTemplate } from '../../../utils/permissions/templatePermissions';
 
 const { infiniteScrollPageCount } = environment.processInstances;
 
@@ -87,6 +91,7 @@ interface EntityTemplateCardProps {
         },
         unknown
     >;
+    entityHasWritePermission: boolean;
 }
 
 const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
@@ -95,6 +100,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
     setDeleteEntityTemplateDialogState,
     setAddActionsDialogState,
     updateEntityTemplateStatusAsync,
+    entityHasWritePermission,
 }) => {
     const workspace = useWorkspaceStore((state) => state.workspace);
 
@@ -112,7 +118,14 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
             return count > 0;
         });
 
-        setIsDeleteButtonDisabled(templatesHaveEntities);
+        setIsDeleteButtonDisabled(!entityHasWritePermission || templatesHaveEntities);
+    };
+
+    const entityTemplateCardTooltip = () => {
+        if (!entityHasWritePermission) return i18next.t('systemManagement.entityTemplateEditDisabled');
+        if (entityTemplate.disabled) return i18next.t('systemManagement.disabledEntityTemplate');
+        if (isDeleteButtonDisabled) return i18next.t('systemManagement.cannotDeleteWithEntities');
+        return '';
     };
 
     const isFile = (value: IEntitySingleProperty) => value.format === 'fileId' || value.items?.format === 'fileId';
@@ -192,15 +205,11 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                     setIsHoverOnCard(false);
                                 }}
                                 disabledProps={{
+                                    disableForReadPermissions: !entityHasWritePermission,
                                     isDeleteDisabled: isDeleteButtonDisabled,
                                     isDisabled: entityTemplate.disabled,
-                                    isEditDisabled: entityTemplate.disabled,
-                                    // eslint-disable-next-line no-nested-ternary
-                                    tooltipTitle: entityTemplate.disabled
-                                        ? i18next.t('systemManagement.disabledEntityTemplate')
-                                        : isDeleteButtonDisabled
-                                        ? i18next.t('systemManagement.cannotDeleteWithEntities')
-                                        : '',
+                                    isEditDisabled: entityTemplate.disabled || !entityHasWritePermission,
+                                    tooltipTitle: entityTemplateCardTooltip(),
                                 }}
                             />
                         )}
@@ -361,6 +370,7 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
     loadedEntityTemplateId,
 }) => {
     const workspace = useWorkspaceStore((state) => state.workspace);
+    const currentUser = useUserStore((state) => state.user);
 
     const [isHoverOnBox, setIsHoverOnBox] = useState(false);
     const [isEditableCategory, setIsEditableCategory] = useState(false);
@@ -443,29 +453,44 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                         onHover={(isHover: boolean) => setIsHoverOnBox(isHover)}
                     >
                         {!!entityTemplatesWithCategory.entityTemplates.length &&
-                            entityTemplatesWithCategory.entityTemplates.map((entityTemplate, index) => (
-                                <Draggable draggableId={entityTemplate._id} key={entityTemplate._id} index={index}>
-                                    {(draggableProvided) => (
-                                        <Grid
-                                            ref={draggableProvided.innerRef}
-                                            {...draggableProvided.draggableProps}
-                                            {...draggableProvided.dragHandleProps}
-                                        >
-                                            {loadedEntityTemplateId === entityTemplate._id ? (
-                                                <Skeleton variant="rounded" height="50px" />
-                                            ) : (
-                                                <EntityTemplateCard
-                                                    entityTemplate={entityTemplate}
-                                                    setDeleteEntityTemplateDialogState={setDeleteEntityTemplateDialogState}
-                                                    setEntityTemplateWizardDialogState={setEntityTemplateWizardDialogState}
-                                                    setAddActionsDialogState={setAddActionsDialogState}
-                                                    updateEntityTemplateStatusAsync={updateEntityTemplateStatusAsync}
-                                                />
-                                            )}
-                                        </Grid>
-                                    )}
-                                </Draggable>
-                            ))}
+                            entityTemplatesWithCategory.entityTemplates.map((entityTemplate, index) => {
+                                const entityHasWritePermission = checkUserTemplatePermission(
+                                    currentUser.currentWorkspacePermissions,
+                                    entityTemplate.category,
+                                    entityTemplate._id,
+                                    PermissionScope.write,
+                                );
+
+                                return (
+                                    <Draggable
+                                        draggableId={entityTemplate._id}
+                                        key={entityTemplate._id}
+                                        index={index}
+                                        isDragDisabled={!entityHasWritePermission}
+                                    >
+                                        {(draggableProvided) => (
+                                            <Grid
+                                                ref={draggableProvided.innerRef}
+                                                {...draggableProvided.draggableProps}
+                                                {...draggableProvided.dragHandleProps}
+                                            >
+                                                {loadedEntityTemplateId === entityTemplate._id ? (
+                                                    <Skeleton variant="rounded" height="50px" />
+                                                ) : (
+                                                    <EntityTemplateCard
+                                                        entityTemplate={entityTemplate}
+                                                        setDeleteEntityTemplateDialogState={setDeleteEntityTemplateDialogState}
+                                                        setEntityTemplateWizardDialogState={setEntityTemplateWizardDialogState}
+                                                        setAddActionsDialogState={setAddActionsDialogState}
+                                                        updateEntityTemplateStatusAsync={updateEntityTemplateStatusAsync}
+                                                        entityHasWritePermission={entityHasWritePermission}
+                                                    />
+                                                )}
+                                            </Grid>
+                                        )}
+                                    </Draggable>
+                                );
+                            })}
                     </Box>
                 </Grid>
             )}
@@ -475,19 +500,22 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
 
 const EntityTemplatesRow: React.FC = () => {
     const queryClient = useQueryClient();
+    const currentUser = useUserStore((state) => state.user);
+    const setUser = useUserStore((state) => state.setUser);
+    const currentWorkspace = useWorkspaceStore((state) => state.workspace);
 
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
 
-    const categoriesArray = Array.from(categories.values());
-    const [categoriesToShow, setCategoriesToShow] = useState<IMongoCategory[]>(categoriesArray);
+    const allowedCategoriesToShow = allowedCategories(categories, currentUser);
+    const [categoriesToShow, setCategoriesToShow] = useState<IMongoCategory[]>(allowedCategoriesToShow);
 
     const [searchText, setSearchText] = useState('');
     const [loadedEntityTemplateId, setLoadedEntityTemplateId] = useState('');
 
     const isFilterButtonDisabled = useMemo(
-        () => !(categoriesToShow.length < categoriesArray.length || searchText.length),
-        [categoriesToShow, searchText, categoriesArray],
+        () => !(categoriesToShow.length < allowedCategoriesToShow.length || searchText.length),
+        [categoriesToShow, searchText, allowedCategoriesToShow],
     );
 
     const [deleteEntityTemplateDialogState, setDeleteEntityTemplateDialogState] = useState<{
@@ -522,7 +550,7 @@ const EntityTemplatesRow: React.FC = () => {
             const relatedEntityTemplatesToShow = entityTemplatesToShow.filter((entity) => entity.category._id === category._id);
             categoriesToShowMapEntities.push({
                 category,
-                entityTemplates: relatedEntityTemplatesToShow,
+                entityTemplates: allowedEntitiesOfCategory(relatedEntityTemplatesToShow, category, currentUser),
             });
         });
 
@@ -585,6 +613,8 @@ const EntityTemplatesRow: React.FC = () => {
             onSuccess(data) {
                 queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) => entityTemplateMap!.set(data._id, data));
                 queryClient.invalidateQueries(['searchEntityTemplates', searchText, categoriesToShow]);
+                const updatedUserPermissions = updateUserPermissionForEntityTemplate(data, currentUser, currentWorkspace._id);
+                setUser(updatedUserPermissions);
                 setLoadedEntityTemplateId('');
             },
             onError(error: AxiosError) {
@@ -621,7 +651,7 @@ const EntityTemplatesRow: React.FC = () => {
                 <Grid item>
                     <SelectCheckbox
                         title={i18next.t('categories')}
-                        options={categoriesArray}
+                        options={allowedCategoriesToShow}
                         selectedOptions={categoriesToShow}
                         setSelectedOptions={setCategoriesToShow}
                         getOptionId={(category) => category._id}
@@ -635,7 +665,7 @@ const EntityTemplatesRow: React.FC = () => {
                     <FilterButton
                         onClick={() => {
                             setSearchText('');
-                            setCategoriesToShow(categoriesArray);
+                            setCategoriesToShow(allowedCategoriesToShow);
                         }}
                         text={i18next.t('entitiesTableOfTemplate.resetFilters')}
                         disabled={isFilterButtonDisabled}

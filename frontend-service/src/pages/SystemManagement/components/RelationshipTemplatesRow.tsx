@@ -33,6 +33,10 @@ import { useWorkspaceStore } from '../../../stores/workspace';
 import { environment } from '../../../globals';
 import { ConvertToRelationship } from '../../../common/wizards/relationshipTemplate/convertRelationshipToRelationshipField';
 import { IRelationshipReference } from '../../../common/wizards/entityTemplate/commonInterfaces';
+import { checkUserTemplatePermission } from '../../../utils/permissions/instancePermissions';
+import { useUserStore } from '../../../stores/user';
+import { PermissionScope } from '../../../interfaces/permissions';
+import { getAllAllowedEntities, getAllAllowedRelationships } from '../../../utils/permissions/templatePermissions';
 
 const { infiniteScrollPageCount } = environment.processInstances;
 
@@ -64,18 +68,40 @@ const RelationshipTemplateCard: React.FC<RelationshipTemplateCardProps> = ({
     setDeleteRelationshipTemplateDialogState,
     setConvertToRelationshipFieldDialogState,
 }) => {
+    const currentUser = useUserStore((state) => state.user);
     const [isHoverOnCard, setIsHoverOnCard] = useState(false);
     const [isDeleteButtonDisabled, setIsDeleteButtonDisabled] = useState(false);
+    const [isRelationshipHasWritePermission, setIsRelationshipHasWritePermission] = useState(true);
+    const areEntitiesDisabled = relationshipTemplate.sourceEntity.disabled || relationshipTemplate.destinationEntity.disabled;
 
     const { isProperty } = relationshipTemplate;
 
     const checkRelationshipTemplateHasRelationships = async () => {
+        const isSourceEntityHasWritePermission = checkUserTemplatePermission(
+            currentUser.currentWorkspacePermissions,
+            relationshipTemplate.sourceEntity.category,
+            relationshipTemplate.sourceEntity._id,
+            PermissionScope.write,
+        );
+        const isDestEntityHasWritePermission = checkUserTemplatePermission(
+            currentUser.currentWorkspacePermissions,
+            relationshipTemplate.destinationEntity.category,
+            relationshipTemplate.destinationEntity._id,
+            PermissionScope.write,
+        );
         const relationshipsCountByTemplates = await getRelationshipInstancesCountByTemplateIdRequest(relationshipTemplate._id);
         setIsDeleteButtonDisabled(relationshipsCountByTemplates > 0);
+        setIsRelationshipHasWritePermission(isDestEntityHasWritePermission && isSourceEntityHasWritePermission);
     };
 
     const handleHover = (isHover: boolean) => {
         setIsHoverOnCard(isHover);
+    };
+
+    const relationshipTemplateCardTooltip = () => {
+        if (!isRelationshipHasWritePermission) return i18next.t('systemManagement.cannotEditRelationship');
+        if (isDeleteButtonDisabled) i18next.t('systemManagement.cannotDeleteWithRelationship');
+        return '';
     };
     return (
         <ViewingCard
@@ -129,10 +155,10 @@ const RelationshipTemplateCard: React.FC<RelationshipTemplateCardProps> = ({
                                     });
                                 }}
                                 disabledProps={{
-                                    isDeleteDisabled: isDeleteButtonDisabled,
-                                    tooltipTitle: isDeleteButtonDisabled ? i18next.t('systemManagement.cannotDeleteWithRelationship') : '',
-                                    isEditDisabled: relationshipTemplate.sourceEntity.disabled || relationshipTemplate.destinationEntity.disabled,
-                                    editTooltipTitle: i18next.t('systemManagement.cannotPerformActionEntityDisabled'),
+                                    isDeleteDisabled: !isRelationshipHasWritePermission || isDeleteButtonDisabled,
+                                    tooltipTitle: relationshipTemplateCardTooltip(),
+                                    isEditDisabled: areEntitiesDisabled || !isRelationshipHasWritePermission,
+                                    editTooltipTitle: areEntitiesDisabled ? i18next.t('systemManagement.cannotPerformActionEntityDisabled') : '',
                                 }}
                             />
                         )}
@@ -157,6 +183,7 @@ const defaultRelationshipTemplate: IMongoRelationshipTemplate = {
 const RelationshipTemplatesRow: React.FC = () => {
     const workspace = useWorkspaceStore((state) => state.workspace);
     const config = workspace.metadata;
+    const currentUser = useUserStore((state) => state.user);
 
     const queryClient = useQueryClient();
 
@@ -166,9 +193,12 @@ const RelationshipTemplatesRow: React.FC = () => {
 
     const categoriesArray = Array.from(categories.values());
     const entityTemplatesArray = Array.from(entityTemplates.values());
+    const allowedEntityTemplates = getAllAllowedEntities(entityTemplatesArray, currentUser);
+    const allowedEntityTemplatesIds = allowedEntityTemplates.map((entity) => entity._id);
+    const allowedRelationships = getAllAllowedRelationships(Array.from(relationshipTemplates.values()), allowedEntityTemplatesIds);
 
-    const [sourceEntityTemplatesToShow, setSourceEntityTemplatesToShow] = useState<IMongoEntityTemplatePopulated[]>(entityTemplatesArray);
-    const [destinationEntityTemplatesToShow, setDestinationEntityTemplatesToShow] = useState<IMongoEntityTemplatePopulated[]>(entityTemplatesArray);
+    const [sourceEntityTemplatesToShow, setSourceEntityTemplatesToShow] = useState<IMongoEntityTemplatePopulated[]>(allowedEntityTemplates);
+    const [destinationEntityTemplatesToShow, setDestinationEntityTemplatesToShow] = useState<IMongoEntityTemplatePopulated[]>(allowedEntityTemplates);
 
     const [searchText, setSearchText] = useState('');
 
@@ -177,11 +207,11 @@ const RelationshipTemplatesRow: React.FC = () => {
     const isFilterButtonDisabled = useMemo(
         () =>
             !(
-                sourceEntityTemplatesToShow.length < entityTemplatesArray.length ||
-                destinationEntityTemplatesToShow.length < entityTemplatesArray.length ||
+                sourceEntityTemplatesToShow.length < allowedEntityTemplates.length ||
+                destinationEntityTemplatesToShow.length < allowedEntityTemplates.length ||
                 searchText.length
             ),
-        [destinationEntityTemplatesToShow, entityTemplatesArray, searchText, sourceEntityTemplatesToShow],
+        [destinationEntityTemplatesToShow, allowedEntityTemplates, searchText, sourceEntityTemplatesToShow],
     );
 
     const [deleteRelationshipTemplateDialogState, setDeleteRelationshipTemplateDialogState] = useState<{
@@ -302,7 +332,7 @@ const RelationshipTemplatesRow: React.FC = () => {
                     <Grid item>
                         <TemplatesSelectCheckbox
                             title={i18next.t('systemManagement.sourceTemplates')}
-                            templates={entityTemplatesArray}
+                            templates={allowedEntityTemplates}
                             selectedTemplates={sourceEntityTemplatesToShow}
                             setSelectedTemplates={setSourceEntityTemplatesToShow}
                             categories={categoriesArray}
@@ -313,7 +343,7 @@ const RelationshipTemplatesRow: React.FC = () => {
                     <Grid item>
                         <TemplatesSelectCheckbox
                             title={i18next.t('systemManagement.destinationTemplates')}
-                            templates={entityTemplatesArray}
+                            templates={allowedEntityTemplates}
                             selectedTemplates={destinationEntityTemplatesToShow}
                             setSelectedTemplates={setDestinationEntityTemplatesToShow}
                             categories={categoriesArray}
@@ -325,8 +355,8 @@ const RelationshipTemplatesRow: React.FC = () => {
                         <FilterButton
                             onClick={() => {
                                 setSearchText('');
-                                setSourceEntityTemplatesToShow(entityTemplatesArray);
-                                setDestinationEntityTemplatesToShow(entityTemplatesArray);
+                                setSourceEntityTemplatesToShow(allowedEntityTemplates);
+                                setDestinationEntityTemplatesToShow(allowedEntityTemplates);
                             }}
                             disabled={isFilterButtonDisabled}
                             text={i18next.t('entitiesTableOfTemplate.resetFilters')}
@@ -371,8 +401,8 @@ const RelationshipTemplatesRow: React.FC = () => {
                     queryFunction={({ pageParam }) => {
                         return getRelationshipGroupedByEntitiesTemplate(
                             filterRelationships({
-                                relationshipTemplates: Array.from(relationshipTemplates.values()).map((relationshipTemplate) =>
-                                    populateRelationshipTemplate(relationshipTemplate, entityTemplates),
+                                relationshipTemplates: allowedRelationships.map((relationshipTemplate) =>
+                                    populateRelationshipTemplate(relationshipTemplate, allowedEntityTemplates),
                                 ),
                                 destinationEntityTemplatesToShow,
                                 sourceEntityTemplatesToShow,

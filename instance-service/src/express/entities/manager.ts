@@ -22,11 +22,13 @@ import { IMongoRule } from '../../externalServices/templates/interfaces/rules';
 import { RelationshipsTemplateManagerService } from '../../externalServices/templates/relationshipTemplateManager';
 import { executeActionCodeAndGetEntitiesToUpdate } from '../../utils/actions/executeScript';
 import { isBodyFunctionHasContent } from '../../utils/actions/isBodyFunctionHasContent';
+import { buildChartAggregationQuery, handleChartPropertiesTemplate, manipulateReturnedChart } from '../../utils/templateCharts';
 import { arraysEqualsNonOrdered } from '../../utils/lib';
 import { expandEntityToNeoQuery, getExpandedFilteredGraphRecursively } from '../../utils/neo4j/getExpandedEntityByIdRecursive';
 import {
     generateDefaultProperties,
     getNeo4jDateTime,
+    normalizeChartResponse,
     normalizeGetDbConstraints,
     normalizeNeighborsOfEntityForRule,
     normalizeResponseCount,
@@ -38,7 +40,7 @@ import {
     runInTransactionAndNormalize,
 } from '../../utils/neo4j/lib';
 import DefaultManagerNeo4j from '../../utils/neo4j/manager';
-import { escapeNeo4jQuerySpecialChars, searchWithRelationshipsToNeoQuery } from '../../utils/neo4j/searchBodyToNeoQuery';
+import { escapeNeo4jQuerySpecialChars, searchWithRelationshipsToNeoQuery, templatesFilterToNeoQuery } from '../../utils/neo4j/searchBodyToNeoQuery';
 import { ActionTypes, IAction, ICreateEntityMetadata, IDuplicateEntityMetadata, IUpdateEntityMetadata } from '../bulkActions/interface';
 import BulkActionManager from '../bulkActions/manager';
 import { BadRequestError, NotFoundError, ServiceError, ValidationError } from '../error';
@@ -50,6 +52,7 @@ import { runRulesOnEntity } from '../rules/runRulesOnEntity';
 import { throwIfActionCausedRuleFailures } from '../rules/throwIfActionCausedRuleFailures';
 import {
     EntitiesIdsRulesReasonsMap,
+    IChartBody,
     IConstraint,
     IConstraintsOfTemplate,
     IDeleteBody,
@@ -60,12 +63,12 @@ import {
     IGetExpandedEntityBody,
     IRequiredConstraint,
     ISearchBatchBody,
+    ISearchEntitiesByLocationBody,
     ISearchEntitiesByTemplatesBody,
     ISearchEntitiesOfTemplateBody,
     IUniqueConstraint,
     IUniqueConstraintOfTemplate,
     RunRuleReason,
-    ISearchEntitiesByLocationBody,
     IMultipleSelect,
 } from './interface';
 import { addStringFieldsAndNormalizeSpecialStringValues } from './validator.template';
@@ -2063,5 +2066,24 @@ export class EntityManager extends DefaultManagerNeo4j {
 
     getDependentRules(rules: IMongoRule[], relationshipTemplateId: string) {
         return filterDependentRulesViaAggregation(rules, relationshipTemplateId);
+    }
+
+    async getChart(templateId: string, chartBody: IChartBody[]) {
+        const entityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(templateId);
+        const entityTemplatesMap = new Map([[templateId, entityTemplate]]);
+        const specialProperties = handleChartPropertiesTemplate(entityTemplate);
+
+        const chartPromises = chartBody.map(async ({ filter, xAxis, yAxis, _id }) => {
+            const templatesFilter = { [templateId]: { filter, showRelationships: false } };
+            const { cypherQuery: filterQuery, parameters } = templatesFilterToNeoQuery(templatesFilter, entityTemplatesMap);
+
+            const query = buildChartAggregationQuery(xAxis, yAxis, specialProperties, entityTemplate, filterQuery);
+            const chart = await this.neo4jClient.readTransaction(query, normalizeChartResponse, parameters);
+            const manipulatedChart = await manipulateReturnedChart(xAxis, chart, entityTemplate, this.workspaceId);
+
+            return _id ? { _id, chart: manipulatedChart } : manipulatedChart;
+        });
+
+        return Promise.all(chartPromises);
     }
 }
