@@ -39,7 +39,7 @@ export const getSerialStarters = (template: IMongoEntityTemplatePopulated): Reco
 };
 
 export const classifyEntityErrors = (error: any, failedEntities: IFailedEntity[], entity: IEntity, allBrokenRulesEntities: IBrokenRuleEntity[]) => {
-    console.log('classifyEntityErrors', error, failedEntities, entity, allBrokenRulesEntities);
+    // console.log('classifyEntityErrors', error, failedEntities, entity, allBrokenRulesEntities);
 
     if (error instanceof AxiosError) {
         if (!error.response) throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, 'no error. response in axiosError', error);

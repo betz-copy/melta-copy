@@ -71,11 +71,11 @@ export class WorkspaceManager extends DefaultManagerProxy {
         return this.updateOne(_id, { ...createdWorkspace, ...fileProperties }, []);
     }
 
-    private async deleteFilesWrapper(id: string, deleteFunc: () => Promise<any>) {
+    private async deleteFilesWrapper(_id: string, deleteFunc: () => Promise<any>) {
         try {
             return deleteFunc();
         } catch (error) {
-            console.log(`failed to delete files of workspaceId ${id}`); // eslint-disable-line no-console
+            // console.log(`failed to delete files of workspaceId ${id}`); // eslint-disable-line no-console
             return [];
         }
     }

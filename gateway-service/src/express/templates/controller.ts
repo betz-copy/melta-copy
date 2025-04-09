@@ -73,7 +73,7 @@ export default class TemplatesController extends DefaultController<TemplatesMana
     async searchEntityTemplates(req: Request, res: Response) {
         const { user, permissionsOfUserId, searchQuery } = req as RequestWithSearchEntityTemplateBody;
         assert(user, 'User doesnt exists under request');
-        console.log('searchQuery', searchQuery);
+        // console.log('searchQuery', searchQuery);
 
         res.json(await this.manager.searchEntityTemplates(permissionsOfUserId, searchQuery));
     }

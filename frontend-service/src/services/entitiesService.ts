@@ -380,12 +380,12 @@ export const updateMultEntitiesRequestForMultiple = async (
 
     formData.append('entitiesToUpdate', JSON.stringify(entitiesToUpdate));
 
+    console.log(formData.values().forEach((prop) => console.log(prop)));
     const { data } = await axios.put<IEntity>(`${entities}/bulk`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
     });
 
-    console.log({ data });
-    console.log(formData.values().forEach((prop) => console.log(prop)));
+    // console.log({ data });
 
     return data;
 };

@@ -356,6 +356,7 @@ export const updateEntityByIdRequestSchema = Joi.object({
         ignoredRules: Joi.array().items(brokenRuleSchema).default([]),
         userId: Joi.string().required(),
         convertToRelationshipField: Joi.boolean().default(false),
+        updateOnlyGivenProps: Joi.boolean().default(false),
     },
     query: {},
     params: {

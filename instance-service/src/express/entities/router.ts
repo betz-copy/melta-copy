@@ -89,14 +89,13 @@ entityRouter.get('/:id', ValidateRequest(getEntityByIdRequestSchema), entityCont
 entityRouter.post('/ids', ValidateRequest(getEntitiesByIdsRequestSchema), entityController.getEntitiesByIds);
 entityRouter.delete('/', ValidateRequest(deleteEntitiesByTemplateIdRequestSchema), entityController.deleteEntitiesByTemplateId);
 entityRouter.post('/delete/bulk', ValidateRequest(deleteEntitiesByIdsRequestSchema), entityController.deleteEntityInstances);
-//-------------------------------------------------------------------------------------
+
 entityRouter.post(
     '/get/multiple-select',
     ValidateRequest(getEntitiesSearchBodyRequestSchema),
     entityValidatorController.validateTemplateExistence,
     entityController.getEntitiesMultipleSelect,
 );
-//-------------------------------------------------------------------------------------
 
 entityRouter.put(
     '/:id',
@@ -104,6 +103,7 @@ entityRouter.put(
     entityValidatorController.validateEntityRequest,
     entityController.updateEntityById,
 );
+
 entityRouter.patch(
     '/convertToRelationshipField',
     ValidateRequest(convertToRelationshipFieldRequestSchema),
@@ -115,5 +115,11 @@ entityRouter.patch(
     ValidateRequest(deletePropertiesOfTemplateRequestSchema),
     entityController.deletePropertiesOfTemplate,
 );
+// entityRouter.patch(
+//     '/:id',
+//     // ValidateRequest(updateEntityByIdRequestSchema),
+//     // entityValidatorController.validateEntityRequest,
+//     entityController.updateSelectedPropertiesById,
+// );
 
 export default entityRouter;

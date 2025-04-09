@@ -1116,34 +1116,19 @@ export class EntityManager extends DefaultManagerNeo4j {
         let entityIdsToDelete: string[] = [];
         const { deleteAllRelationships, templateId } = deleteBody;
 
-        console.log('propbklem');
-
         try {
             return await this.neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
                 const entityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(templateId);
-                console.log('propbklem1');
-
                 const entitiesToDelete = await this.getEntitiesMultipleSelect(deleteBody, entityTemplate);
-
-                console.log('entitiesToDelete', entitiesToDelete);
-
                 const allowedEntitiesToDelete = await this.getEntitiesToDeleteWithoutRelationships(
                     entitiesToDelete,
                     entityTemplate,
                     transaction,
                     deleteAllRelationships,
                 );
-                console.log('allowedEntitiesToDelete', allowedEntitiesToDelete);
-
-                console.log('propbklem2');
 
                 this.handleDeleteErrors(allowedEntitiesToDelete, deleteAllRelationships);
-
-                console.log('propbklem3');
-
                 entityIdsToDelete = allowedEntitiesToDelete.map(({ properties: { _id } }) => _id);
-                console.log('propbklem4');
-
                 await this.deleteEntityInstancesInTransaction(transaction, entityIdsToDelete, templateId, deleteAllRelationships);
 
                 return this.getFilesOfEntities(allowedEntitiesToDelete, entityTemplate);
@@ -1428,36 +1413,42 @@ export class EntityManager extends DefaultManagerNeo4j {
         transaction: Transaction,
         userId?: string,
         convertToRelationshipField = false,
+        // updateOnlyGivenProps: boolean = false,
     ) {
         const activityLogUpdatedFields: IUpdatedFields[] = [];
         const activityLogsToCreate: Omit<IActivityLog, '_id'>[] = [];
+        const defaultValues = { updatedAt: new Date().toISOString() };
+        const propertiesToUpdate = { ...entityProperties, ...defaultValues };
 
         const entity = await this.getEntityByIdInTransaction(id, transaction);
         if (entity.properties.disabled) {
             throw new ValidationError(`[NEO4J] cannot update disabled entity.`);
         }
 
-        const updatedProperties = this.getKeysOfUpdatedProperties(
-            entity.properties,
-            { ...entityProperties, updatedAt: new Date().toISOString() },
-            entityTemplate,
-        );
+        // const updatedProperties = updateOnlyGivenProps
+        //     ? Object.keys({ ...propertiesToUpdate })
+        //     : this.getKeysOfUpdatedProperties(entity.properties, { ...propertiesToUpdate }, entityTemplate);
+        const updatedProperties = this.getKeysOfUpdatedProperties(entity.properties, { ...propertiesToUpdate }, entityTemplate);
 
         const { fixedProperties } = await this.handleRelationshipReferenceFieldsChanges(
             entity,
             entityTemplate,
-            entityProperties,
+            propertiesToUpdate,
             updatedProperties,
             transaction,
             userId ?? '',
             convertToRelationshipField,
         );
 
+        // const setPropQuery = updateOnlyGivenProps
+        //     ? Object.keys(fixedProperties).reduce((acc, key) => acc.concat(`SET e.${key} = $props.${key} `), '')
+        //     : `SET e = $props`;
+
         const updatedEntity = await runInTransactionAndNormalize(
-            transaction,
+            transaction, // ${setPropQuery}
             `MATCH (e {_id: '${id}'})
                  WITH e.createdAt AS createdAt, e.disabled AS disabled, e AS e
-                 SET e = $props 
+                 SET e = $props
                  SET e.createdAt = createdAt
                  SET e.disabled = disabled
                  RETURN e`,
@@ -1543,6 +1534,7 @@ export class EntityManager extends DefaultManagerNeo4j {
         ignoredRules: IBrokenRule[],
         userId: string,
         convertToRelationshipField = false,
+        // updateOnlyGivenProps = false,
     ) {
         const entity = await this.getEntityById(id);
         const unPopulatedEntity = this.relationshipReferenceObjectToId(entity, entityTemplate);
@@ -1567,11 +1559,11 @@ export class EntityManager extends DefaultManagerNeo4j {
 
         return this.neo4jClient
             .performComplexTransaction('writeTransaction', async (transaction) => {
-                const updatedProperties = this.getKeysOfUpdatedProperties(
-                    entity.properties,
-                    { ...entityProperties, updatedAt: new Date().toISOString() },
-                    entityTemplate,
-                );
+                // const updatedProperties = updateOnlyGivenProps
+                //     ? Object.keys({ ...entityProperties })
+                //     : this.getKeysOfUpdatedProperties(entity.properties, { ...entityProperties }, entityTemplate);
+                const updatedProperties = this.getKeysOfUpdatedProperties(entity.properties, { ...entityProperties }, entityTemplate);
+
                 const ruleFailuresBeforeAction = await this.runRulesDependOnEntityUpdate(transaction, entity, updatedProperties);
 
                 const { updatedEntity, activityLogsToCreate } = await this.updateEntityByIdInnerTransaction(
@@ -1581,6 +1573,7 @@ export class EntityManager extends DefaultManagerNeo4j {
                     transaction,
                     userId,
                     convertToRelationshipField,
+                    // updateOnlyGivenProps,
                 );
 
                 const ruleFailuresAfterAction = await this.runRulesDependOnEntityUpdate(transaction, updatedEntity, updatedProperties);

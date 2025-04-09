@@ -224,7 +224,7 @@ export class InstancesValidator extends DefaultController {
     // rules
     async validateUserCanIgnoreRules(req: Request) {
         const { ignoredRules } = req.body;
-        console.log('ignoredRules', ignoredRules);
+        // console.log('ignoredRules', ignoredRules);
         const { user } = req;
 
         if (!user) throw new ServiceError(undefined, 'req.user is undefined');
