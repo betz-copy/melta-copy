@@ -5,7 +5,7 @@ import i18next from 'i18next';
 import React, { useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import { ICategoryMap, IMongoCategory } from '../../../interfaces/categories';
+import { ICategory, ICategoryMap, IMongoCategory } from '../../../interfaces/categories';
 import { ViewingCard } from './Card';
 import { CustomIcon } from '../../../common/CustomIcon';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
@@ -16,12 +16,15 @@ import { PermissionScope } from '../../../interfaces/permissions';
 import { ErrorToast } from '../../../common/ErrorToast';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
 import { MeltaTooltip } from '../../../common/MeltaTooltip';
-import { CategoryWizard } from '../../../common/wizards/category';
-import { categoryObjectToCategoryForm, deleteCategoryRequest } from '../../../services/templates/categoriesService';
+import { CategoryWizard, CategoryWizardValues } from '../../../common/wizards/category';
+import { categoryObjectToCategoryForm, deleteCategoryRequest, updateCategoryRequest } from '../../../services/templates/categoriesService';
 import { Box } from './Box';
 import { CardMenu } from './CardMenu';
 import { CreateButton } from './CreateButton';
 import { useWorkspaceStore } from '../../../stores/workspace';
+import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import { generateKeyBetween } from 'fractional-indexing';
+import { categoriesCompareFunc } from '../../../utils/templates';
 
 interface CategoryCardProps {
     category: IMongoCategory;
@@ -130,6 +133,7 @@ const CategoriesRow: React.FC = () => {
 
     const queryClient = useQueryClient();
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
+    const categoriesArray = Array.from(categories.values()).sort((a, b) => categoriesCompareFunc(a, b));
 
     const [deleteCategoryDialogState, setDeleteCategoryDialogState] = useState<{
         isDialogOpen: boolean;
@@ -162,75 +166,138 @@ const CategoriesRow: React.FC = () => {
         },
     });
 
+    const { mutateAsync: reorderAsync } = useMutation(
+        ({ categoryId, category, index }: { categoryId: string; category: ICategory; index: number }) => {
+            const prevIndex: string | null = index > 0 ? categoriesArray[index - 1].fractionalIndex : null;
+            const nextIndex: string | null = categoriesArray[index + 1] ? categoriesArray[index + 1].fractionalIndex : null;
+            const newIndex = generateKeyBetween(prevIndex, nextIndex);
+
+            const categoryForm: CategoryWizardValues | undefined = categoryObjectToCategoryForm({
+                _id: categoryId,
+                ...category,
+                fractionalIndex: newIndex,
+            });
+
+            return updateCategoryRequest(categoryId, categoryForm!);
+        },
+
+        {
+            onSuccess(data) {
+                queryClient.setQueryData<ICategoryMap>('getCategories', (categoryMap) => categoryMap!.set(data._id, data));
+            },
+            onError(error: AxiosError) {
+                toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.category.failedToEdit')} />);
+            },
+        },
+    );
+
+    const onDragEnd = (result) => {
+        const { source, destination, draggableId } = result;
+        if (!destination) {
+            return;
+        } else if (source.droppableId === destination.droppableId && source.index !== destination.index) {
+            const { _id, ...restCategory } = categories.get(draggableId)!;
+            categoriesArray.splice(source.index, 1);
+            categoriesArray.splice(destination.index, 0, { _id, ...restCategory });
+            reorderAsync({
+                categoryId: draggableId,
+                category: restCategory,
+                index: destination.index,
+            });
+
+            return;
+        }
+    };
+
     const [isHoverOnBox, setIsHoverOnBox] = useState(false);
     const theme = useTheme();
 
     return (
-        <Grid item container gap="10px">
-            <Box
-                header={
-                    <Grid item container justifyContent="space-between" alignItems="center" height="40px">
-                        <Typography
-                            style={{
-                                fontSize: headlineSubTitleFontSize,
-                                fontWeight: '400',
-                                color: '#9398C2',
-                            }}
-                        >
-                            {i18next.t('general')}
-                        </Typography>
-                        {isHoverOnBox && (
-                            <IconButton onClick={() => {}}>
-                                <Edit color="primary" />
-                            </IconButton>
-                        )}
+        <DragDropContext onDragEnd={onDragEnd}>
+            <Droppable droppableId={workspace._id}>
+                {(provided) => (
+                    <Grid ref={provided.innerRef} {...provided.droppableProps}>
+                        <Grid item container gap="10px">
+                            <Box
+                                header={
+                                    <Grid item container justifyContent="space-between" alignItems="center" height="40px">
+                                        <Typography
+                                            style={{
+                                                fontSize: headlineSubTitleFontSize,
+                                                fontWeight: '400',
+                                                color: '#9398C2',
+                                            }}
+                                        >
+                                            {i18next.t('general')}
+                                        </Typography>
+                                        {isHoverOnBox && (
+                                            <IconButton onClick={() => {}}>
+                                                <Edit color="primary" />
+                                            </IconButton>
+                                        )}
+                                    </Grid>
+                                }
+                                addingIcon={
+                                    <CreateButton
+                                        onClick={() => setCategoryWizardDialogState({ isWizardOpen: true, category: null })}
+                                        text={i18next.t('systemManagement.newCategory')}
+                                    />
+                                }
+                                onHover={(isHover: boolean) => setIsHoverOnBox(isHover)}
+                            >
+                                {categories &&
+                                    categoriesArray.map((category, index) => {
+                                        return (
+                                            <Draggable draggableId={category._id} key={category._id} index={index}>
+                                                {(draggableProvided) => (
+                                                    <Grid
+                                                        ref={draggableProvided.innerRef}
+                                                        {...draggableProvided.draggableProps}
+                                                        {...draggableProvided.dragHandleProps}
+                                                    >
+                                                        <CategoryCard
+                                                            key={category._id}
+                                                            category={category}
+                                                            setCategoryWizardDialogState={setCategoryWizardDialogState}
+                                                            setDeleteCategoryDialogState={setDeleteCategoryDialogState}
+                                                        />
+                                                    </Grid>
+                                                )}
+                                            </Draggable>
+                                        );
+                                    })}
+                            </Box>
+
+                            {/* TODO - add when category group will be supported */}
+                            <Grid>
+                                <IconButtonWithPopover
+                                    popoverText={i18next.t('soon')}
+                                    style={{ display: 'flex', gap: '0.25rem', height: '40px', borderRadius: '5px', cursor: 'default', opacity: 0.5 }}
+                                >
+                                    <AddCircle color="primary" />
+                                    <Typography color={theme.palette.primary.main} sx={{ fontSize: '0.9rem' }}>
+                                        {i18next.t('systemManagement.newCollection')}
+                                    </Typography>
+                                </IconButtonWithPopover>
+                            </Grid>
+
+                            <CategoryWizard
+                                open={categoryWizardDialogState.isWizardOpen}
+                                handleClose={() => setCategoryWizardDialogState({ isWizardOpen: false, category: null })}
+                                initialValues={categoryObjectToCategoryForm(categoryWizardDialogState.category)}
+                                isEditMode={Boolean(categoryWizardDialogState.category)}
+                            />
+                            <AreYouSureDialog
+                                open={deleteCategoryDialogState.isDialogOpen}
+                                handleClose={() => setDeleteCategoryDialogState({ isDialogOpen: false, categoryId: null })}
+                                onYes={() => mutateAsync(deleteCategoryDialogState.categoryId!)}
+                                isLoading={isLoading}
+                            />
+                        </Grid>
                     </Grid>
-                }
-                addingIcon={
-                    <CreateButton
-                        onClick={() => setCategoryWizardDialogState({ isWizardOpen: true, category: null })}
-                        text={i18next.t('systemManagement.newCategory')}
-                    />
-                }
-                onHover={(isHover: boolean) => setIsHoverOnBox(isHover)}
-            >
-                {categories &&
-                    Array.from(categories.values(), (category) => (
-                        <CategoryCard
-                            key={category._id}
-                            category={category}
-                            setCategoryWizardDialogState={setCategoryWizardDialogState}
-                            setDeleteCategoryDialogState={setDeleteCategoryDialogState}
-                        />
-                    ))}
-            </Box>
-
-            {/* TODO - add when category group will be supported */}
-            <Grid>
-                <IconButtonWithPopover
-                    popoverText={i18next.t('soon')}
-                    style={{ display: 'flex', gap: '0.25rem', height: '40px', borderRadius: '5px', cursor: 'default', opacity: 0.5 }}
-                >
-                    <AddCircle color="primary" />
-                    <Typography color={theme.palette.primary.main} sx={{ fontSize: '0.9rem' }}>
-                        {i18next.t('systemManagement.newCollection')}
-                    </Typography>
-                </IconButtonWithPopover>
-            </Grid>
-
-            <CategoryWizard
-                open={categoryWizardDialogState.isWizardOpen}
-                handleClose={() => setCategoryWizardDialogState({ isWizardOpen: false, category: null })}
-                initialValues={categoryObjectToCategoryForm(categoryWizardDialogState.category)}
-                isEditMode={Boolean(categoryWizardDialogState.category)}
-            />
-            <AreYouSureDialog
-                open={deleteCategoryDialogState.isDialogOpen}
-                handleClose={() => setDeleteCategoryDialogState({ isDialogOpen: false, categoryId: null })}
-                onYes={() => mutateAsync(deleteCategoryDialogState.categoryId!)}
-                isLoading={isLoading}
-            />
-        </Grid>
+                )}
+            </Droppable>
+        </DragDropContext>
     );
 };
 

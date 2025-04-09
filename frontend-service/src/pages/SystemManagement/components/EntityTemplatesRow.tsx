@@ -29,7 +29,7 @@ import { getAllRelationshipTemplatesRequest } from '../../../services/templates/
 import { getEntityTemplateColor } from '../../../utils/colors';
 import { getFileName } from '../../../utils/getFileName';
 import { getCountByTemplateIdsRequest } from '../../../services/entitiesService';
-import { mapTemplates, templatesCompareFunc } from '../../../utils/templates';
+import { categoriesCompareFunc, mapTemplates, templatesCompareFunc } from '../../../utils/templates';
 import { Box } from './Box';
 import { ViewingCard } from './Card';
 import { CardMenu } from './CardMenu';
@@ -49,7 +49,7 @@ const defaultEntityTemplatePopulated: IMongoEntityTemplatePopulated = {
     uniqueConstraints: [],
     name: '',
     displayName: '',
-    category: { displayName: '', name: '', _id: '', color: '', templateOrder: [] },
+    category: { displayName: '', name: '', _id: '', color: '', templateOrder: [], fractionalIndex: '' },
     disabled: false,
     properties: {
         type: 'object',
@@ -488,7 +488,7 @@ const EntityTemplatesRow: React.FC = () => {
 
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const categoriesArray = Array.from(categories.values());
+    const categoriesArray = Array.from(categories.values()).sort((a, b) => categoriesCompareFunc(a, b));
     const [categoriesToShow, setCategoriesToShow] = useState<IMongoCategory[]>(categoriesArray);
 
     const [searchText, setSearchText] = useState('');
@@ -673,13 +673,11 @@ const EntityTemplatesRow: React.FC = () => {
                 }),
             );
         }
-        // mutateOrderAsync({
-        //     templateId: result.draggableId,
-        //     newIndex: result.destination.index,
-        //     srcCategoryId: result.source.droppableId,
-        //     newCategoryId: result.destination.droppableId,
-        // });
     };
+
+    useEffect(() => {
+        setCategoriesToShow(categoriesToShow.map((category) => categories.get(category._id)!));
+    }, [categories]);
 
     return (
         <Grid item container>

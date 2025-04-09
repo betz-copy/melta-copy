@@ -21,6 +21,8 @@ export const updateCategorySchema = Joi.object({
         displayName: Joi.string(),
         iconFileId: Joi.string().allow(null),
         color: ColorSchema,
+        templateOrder: ExtendedJoi.stringToArray(),
+        fractionalIndex: Joi.string(),
     },
     params: {
         id: MongoIdSchema.required(),
@@ -47,7 +49,7 @@ export const updateCategoryTempOrderSchema = Joi.object({
         newIndex: Joi.number().required().min(0),
     },
     params: {},
-})
+});
 
 export const getCategoriesSchema = Joi.object({
     query: { search: Joi.string() },

@@ -1,3 +1,4 @@
+import { IMongoCategory } from '../interfaces/categories';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { IMongoRelationshipTemplate, IMongoRelationshipTemplatePopulated } from '../interfaces/relationshipTemplates';
 
@@ -6,6 +7,20 @@ export const templatesCompareFunc = (templateA: IMongoEntityTemplatePopulated, t
         return templateA.category.displayName.localeCompare(templateB.category.displayName);
     }
     return templateA.displayName.localeCompare(templateB.displayName);
+};
+
+export const categoriesCompareFunc = (categoryA: IMongoCategory, categoryB: IMongoCategory) => {
+    const a = categoryA.fractionalIndex;
+    const b = categoryB.fractionalIndex;
+
+    for (let i = 0; i < Math.max(a.length, b.length); i++) {
+        const aCode = a.charCodeAt(i) || 0;
+        const bCode = b.charCodeAt(i) || 0;
+
+        if (aCode !== bCode) return aCode - bCode;
+    }
+
+    return 0;
 };
 
 export const populateRelationshipTemplate = (

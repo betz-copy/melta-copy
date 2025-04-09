@@ -21,7 +21,12 @@ export const CategorySchema = new mongoose.Schema(
         templateOrder: {
             type: [String],
             default: [],
-        }
+        },
+        fractionalIndex: {
+            type: String,
+            required: true,
+            unique: true,
+        },
     },
     {
         timestamps: true,

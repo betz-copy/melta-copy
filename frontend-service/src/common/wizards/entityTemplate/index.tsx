@@ -20,6 +20,8 @@ import { UploadExportFormats } from './UploadExportFormats';
 import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
 import { getAllRelationshipTemplatesRequest } from '../../../services/templates/relationshipTemplatesService';
 import { mapTemplates } from '../../../utils/templates';
+import { ICategoryMap, IMongoCategory } from '../../../interfaces/categories';
+import { getAllCategoryRequest } from '../../../services/templates/categoriesService';
 
 const { errorCodes } = environment;
 
@@ -103,6 +105,7 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
             onSuccess: async (data) => {
                 queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) => entityTemplateMap!.set(data._id, data));
                 queryClient.invalidateQueries(['searchEntityTemplates']);
+
                 if (isEditMode) {
                     toast.success(i18next.t('wizard.entityTemplate.editedSuccessfully'));
                 } else {
@@ -115,6 +118,14 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
                 } catch (error) {
                     toast.error(i18next.t('wizard.failedToUpdateSystemData'));
                 }
+
+                try {
+                    const categories = await getAllCategoryRequest();
+                    queryClient.setQueryData<ICategoryMap>('getCategories', mapTemplates(categories));
+                } catch (error) {
+                    toast.error(i18next.t('wizard.failedToUpdateSystemData'));
+                }
+
                 handleClose();
             },
             onError: (error: AxiosError, entityTemplateValues) => {

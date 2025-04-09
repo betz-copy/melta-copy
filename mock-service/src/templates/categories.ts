@@ -17,12 +17,20 @@ export interface IMongoCategory extends ICategory {
 
 export const createCategories = async (workspaceId: string, categories: ICategory[]) => {
     const axiosInstance = createAxiosInstance(workspaceId);
+    const results: IMongoCategory[] = [];
 
-    const promises = categories.map((category) => {
-        return axiosInstance.post<IMongoCategory>(url + createCategoryRoute, category);
-    });
+    // const promises = categories.map((category) => {
+    //     return axiosInstance.post<IMongoCategory>(url + createCategoryRoute, category);
+    // });
 
-    const results = await Promise.all(promises);
+    // const results = await Promise.all(promises);
 
-    return results.map((result) => result.data);
+    // return results.map((result) => result.data);
+    for (const category of categories) {
+        const response = await axiosInstance.post<IMongoCategory>(url + createCategoryRoute, category);
+
+        results.push(response.data);
+    }
+
+    return results;
 };

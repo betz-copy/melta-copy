@@ -203,19 +203,6 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
         allowToDeleteRelationshipFields: boolean,
         session?: ClientSession,
     ) {
-        // if (currentEntityTemplate.category._id !== updatedTemplateData.category) {
-        //     const newCategory: IMongoCategory = await this.categoryManager.getCategoryById(updatedTemplateData.category);
-        //     const templateOrder: string[] = newCategory.templateOrder;
-        //     templateOrder.push(currentEntityTemplate._id);
-
-        //     await Promise.all([
-        //         this.categoryManager.updateCategory(currentEntityTemplate.category._id, {
-        //             templateOrder: currentEntityTemplate.category.templateOrder.filter((template) => template !== currentEntityTemplate._id),
-        //         }),
-        //         this.categoryManager.updateCategory(newCategory._id, { templateOrder: templateOrder }),
-        //     ]);
-        // }
-
         let entityTemplateToUpdate = { ...currentEntityTemplate, ...updatedTemplateData };
 
         if (this.hasRelationshipsProperties(entityTemplateToUpdate)) {

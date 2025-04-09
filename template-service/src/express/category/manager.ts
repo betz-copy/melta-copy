@@ -1,3 +1,4 @@
+import { generateKeyBetween } from 'fractional-indexing';
 import config from '../../config';
 import { DefaultManagerMongo } from '../../utils/mongo/manager';
 import { NotFoundError } from '../error';
@@ -12,6 +13,7 @@ class CategoryManager extends DefaultManagerMongo<IMongoCategory> {
     async getCategories(displayName?: string) {
         return this.model
             .find(displayName ? { displayName: { $regex: new RegExp(`.*${displayName}.*`) } } : {})
+            .sort({ fractionalIndex: 1 })
             .lean()
             .exec();
     }
@@ -20,8 +22,11 @@ class CategoryManager extends DefaultManagerMongo<IMongoCategory> {
         return this.model.findById(id).orFail(new NotFoundError('Category not found')).lean().exec();
     }
 
-    async createCategory(categoryData: ICategory) {
-        return this.model.create(categoryData);
+    async createCategory(categoryData: Omit<ICategory, 'fractionalIndex'>) {
+        const lastCategory: IMongoCategory | undefined = (await this.model.find().sort({ fractionalIndex: -1 }).limit(1).lean().exec())[0];
+        const index = generateKeyBetween(lastCategory ? lastCategory.fractionalIndex : null, null);
+
+        return this.model.create({ ...categoryData, fractionalIndex: index });
     }
 
     async deleteCategory(id: string) {

@@ -51,6 +51,7 @@ const updateCategoryRequest = async (categoryId: string, updatedCategory: Catego
     formData.append('displayName', updatedCategory.displayName);
     formData.append('name', updatedCategory.name);
     formData.append('color', updatedCategory.color);
+    formData.append('fractionalIndex', updatedCategory.fractionalIndex);
 
     const { data } = await axios.put<IMongoCategory>(`${categories}/${categoryId}`, formData);
     return data;
@@ -67,4 +68,11 @@ const updateCategoryTempOrderRequest = async (templateId: string, newIndex: numb
     return data;
 };
 
-export { createCategoryRequest, getAllCategoryRequest, updateCategoryRequest, categoryObjectToCategoryForm, deleteCategoryRequest, updateCategoryTempOrderRequest };
+export {
+    createCategoryRequest,
+    getAllCategoryRequest,
+    updateCategoryRequest,
+    categoryObjectToCategoryForm,
+    deleteCategoryRequest,
+    updateCategoryTempOrderRequest,
+};
