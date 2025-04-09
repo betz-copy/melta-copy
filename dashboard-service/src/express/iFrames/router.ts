@@ -1,8 +1,8 @@
 import { Router } from 'express';
 import IFrameController from './controller';
 import { createController } from '../../utils/express';
-import { deleteIFrameSchema, createIFrameSchema, updateIFrameSchema, getIFrameByIdSchema, searchIFramesSchema } from './validator.schema';
 import ValidateRequest from '../../utils/joi';
+import { deleteIFrameSchema, createIFrameSchema, updateIFrameSchema, getIFrameByIdSchema, searchIFramesSchema } from './validator.schema';
 
 const iFramesRouter: Router = Router();
 

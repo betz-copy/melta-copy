@@ -1,13 +1,13 @@
 import { Router } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
-// import iFramesRouter from './iFrames/router';
 import chartsRouter from './charts/router';
+import iFramesRouter from './iFrames/router';
 
 const appRouter = Router();
 
-appRouter.use('/api/dashboards/charts', chartsRouter);
-// appRouter.use('/api/dashboards/iframes', iFramesRouter);
+appRouter.use('/api/dashboard/charts', chartsRouter);
+appRouter.use('/api/dashboard/iframes', iFramesRouter);
 
 appRouter.use('/isAlive', (_req, res) => {
     res.status(StatusCodes.OK).send('alive');

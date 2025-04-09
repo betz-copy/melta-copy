@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { createController } from '../../utils/express';
 import ChartController from './controller';
+import { createController } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
 import {
     createChartRequestSchema,
