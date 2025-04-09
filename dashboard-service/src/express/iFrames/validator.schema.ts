@@ -1,12 +1,12 @@
 import * as Joi from 'joi';
-import { ExtendedJoi, iconFileSchema, MongoIdSchema } from '../../utils/joi';
+import { iconFileSchema, MongoIdSchema } from '../../utils/joi';
 
 const iFrameSchema = Joi.object({
     name: Joi.string().required(),
     url: Joi.string().required(),
-    categoryIds: ExtendedJoi.stringToArray(),
+    categoryIds: Joi.array().items(Joi.string()),
     iconFileId: Joi.string().allow(null),
-    placeInSideBar: ExtendedJoi.boolean(),
+    placeInSideBar: Joi.boolean(),
 });
 
 // GET /api/iframes/:iFrameId
@@ -49,9 +49,7 @@ export const updateIFrameSchema = Joi.object({
 export const searchIFramesSchema = Joi.object({
     query: {},
     body: {
-        query: Joi.object({
-            search: Joi.string(),
-        }),
+        query: Joi.any(), // TODO: fix type
         limit: Joi.number().integer().min(0).default(0),
         skip: Joi.number().integer().min(0).default(0),
         ids: Joi.array().items(Joi.string()),
