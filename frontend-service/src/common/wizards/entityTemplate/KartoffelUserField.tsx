@@ -2,7 +2,7 @@ import { Autocomplete, Grid, MenuItem, TextField } from '@mui/material';
 import React, { useState } from 'react';
 import { FormikErrors, FormikTouched } from 'formik';
 import i18next from 'i18next';
-import { CommonFormInputProperties, IRelationshipReference } from './commonInterfaces';
+import { CommonFormInputProperties } from './commonInterfaces';
 
 export interface FieldEditCardProps {
     value: CommonFormInputProperties;
@@ -11,7 +11,7 @@ export interface FieldEditCardProps {
     errors?: FormikErrors<CommonFormInputProperties>;
     setFieldValue: (field: keyof CommonFormInputProperties, value: any) => void;
     isDisabled?: boolean;
-    userPropertiesInTemplate?: string[];
+    userPropertiesInTemplate?: string[]; // TODO: lir - make sure the users list is updating in realtime...
 }
 
 const KartoffelUserField: React.FC<FieldEditCardProps> = ({
@@ -51,13 +51,15 @@ const KartoffelUserField: React.FC<FieldEditCardProps> = ({
     const relatedUserField = `properties[${index}].relatedUserField`;
     const kartoffelField = `properties[${index}].kartoffel`;
     const touchedExpandedUserField = touched?.expandedUserField;
-    const errorExpandedUserField = errors?.expandedUserField as FormikErrors<IRelationshipReference> | undefined; // TODO: lir -  change type
+    const errorExpandedUserField = errors?.expandedUserField as
+        | FormikErrors<{
+              relatedUserField: string;
+              kartoffelField: string;
+          }>
+        | undefined;
 
-    // TODO: lir - remove expandedUserField
-    // TODO: block the option to select the same kartoffel field to the same user field
-    // TODO: lir - support delete user field
     const [selectedUserField, setSelectedUserField] = useState<string | undefined>(value.expandedUserField?.relatedUserField);
-    console.log({ userPropertiesInTemplate });
+    const [selectedKartoffelField, setSelectedKartoffelField] = useState<string | undefined>(value.expandedUserField?.kartoffelField);
 
     return (
         <Grid item container justifyContent="space-between" flexWrap="nowrap" width="100%">
@@ -65,8 +67,9 @@ const KartoffelUserField: React.FC<FieldEditCardProps> = ({
                 id={relatedUserField}
                 options={userPropertiesInTemplate}
                 onChange={(_e, userField) => {
+                    const newValue = { ...value.expandedUserField, relatedUserField: userField };
                     setSelectedUserField(userField || undefined);
-                    setFieldValue('expandedUserField', { relatedUserField: userField });
+                    setFieldValue('expandedUserField', newValue);
                 }}
                 sx={{ marginRight: '5px', width: '50%' }}
                 value={selectedUserField}
@@ -76,42 +79,49 @@ const KartoffelUserField: React.FC<FieldEditCardProps> = ({
                     <TextField
                         {...params}
                         size="small"
-                        error={touchedExpandedUserField && Boolean(errorExpandedUserField?.relatedTemplateId)}
+                        error={touchedExpandedUserField && Boolean(errorExpandedUserField?.relatedUserField)}
                         fullWidth
                         sx={{
                             '& .MuiInputBase-root': {
                                 borderRadius: '10px',
                             },
                         }}
-                        helperText={touchedExpandedUserField && errorExpandedUserField?.relatedTemplateId}
+                        helperText={
+                            touchedExpandedUserField &&
+                            errorExpandedUserField?.relatedUserField &&
+                            i18next.t('wizard.entityTemplate.relatedUserFieldRequired')
+                        }
                         name="template"
                         variant="outlined"
                         label={i18next.t('wizard.entityTemplate.relatedUser')}
                     />
                 )}
             />
-            <TextField
-                select
-                label={i18next.t('wizard.entityTemplate.fieldDisplay')}
-                id={kartoffelField}
-                name={kartoffelField}
-                value={value.expandedUserField?.kartoffelField}
-                onChange={(e) => {
-                    const newValue = { ...value.expandedUserField, kartoffelField: e.target.value };
-                    setFieldValue('expandedUserField', newValue);
-                }}
-                error={touchedExpandedUserField && Boolean(errorExpandedUserField?.relationshipTemplateDirection)}
-                helperText={errorExpandedUserField?.relationshipTemplateDirection}
-                sx={{ marginRight: '5px', width: '50%' }}
-                disabled={isDisabled}
-                fullWidth
-            >
-                {kartoffelUserFields.map((userField) => (
-                    <MenuItem key={userField} value={userField}>
-                        {i18next.t(`wizard.entityTemplate.kartoffelUserFields.${userField}`)}
-                    </MenuItem>
-                ))}
-            </TextField>
+            {selectedUserField && (
+                <TextField
+                    select
+                    label={i18next.t('wizard.entityTemplate.fieldDisplay')}
+                    id={kartoffelField}
+                    name={kartoffelField}
+                    value={selectedKartoffelField}
+                    onChange={(e) => {
+                        const newValue = { ...value.expandedUserField, kartoffelField: e.target.value };
+                        setSelectedKartoffelField(e.target.value);
+                        setFieldValue('expandedUserField', newValue);
+                    }}
+                    error={touchedExpandedUserField && Boolean(errorExpandedUserField?.kartoffelField)}
+                    helperText={errorExpandedUserField?.kartoffelField && i18next.t('wizard.entityTemplate.kartoffelFieldRequired')}
+                    sx={{ marginRight: '5px', width: '50%' }}
+                    disabled={isDisabled}
+                    fullWidth
+                >
+                    {kartoffelUserFields.map((userField) => (
+                        <MenuItem key={userField} value={userField}>
+                            {i18next.t(`wizard.entityTemplate.kartoffelUserFields.${userField}`)}
+                        </MenuItem>
+                    ))}
+                </TextField>
+            )}
         </Grid>
     );
 };

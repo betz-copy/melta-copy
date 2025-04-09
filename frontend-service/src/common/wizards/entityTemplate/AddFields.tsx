@@ -18,7 +18,7 @@ import { environment } from '../../../globals';
 const { mapSearchPropertiesLimit } = environment.map;
 
 const processStringFormats = [...stringFormats, 'entityReference'];
-const validPropertyTypes = [...basePropertyTypes, ...processStringFormats, ...arrayTypes, 'enum', 'serialNumber', 'pattern', 'kartoffelUserField'];
+const validPropertyTypes = [...basePropertyTypes, ...processStringFormats, ...arrayTypes, 'enum', 'serialNumber', 'pattern'];
 const dateNotificationTypes: string[] = ['day', 'week', 'twoWeeks', 'month', 'threeMonths', 'halfYear'];
 export const propertiesBaseSchema = Yup.object({
     name: Yup.string()
@@ -65,6 +65,13 @@ const addFieldsSchema = Yup.object({
                         relatedTemplateId: Yup.string().required(i18next.t('validation.required')),
                         relatedTemplateField: Yup.string().required(i18next.t('validation.required')),
                         relationshipTemplateDirection: Yup.string().required(i18next.t('validation.required')),
+                    }),
+                }),
+                expandedUserField: Yup.object().when('type', {
+                    is: 'kartoffelUserField',
+                    then: Yup.object({
+                        relatedUserField: Yup.string().required(i18next.t('validation.required')),
+                        kartoffelField: Yup.string().required(i18next.t('validation.required')),
                     }),
                 }),
                 mapSearch: Yup.boolean(),

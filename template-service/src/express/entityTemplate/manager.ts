@@ -136,7 +136,7 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
 
         if (this.hasRelationshipsProperties(templateData)) {
             entityTemplate = await withTransaction(async (session: ClientSession) => {
-                const [newEntityTemplate] = await this.model.create([this.convertExpendedUserFields(templateData)], { session });
+                const [newEntityTemplate] = await this.model.create([templateData], { session });
 
                 const fixedEntityTemplate = await this.upsertRelationshipsProperties(newEntityTemplate, session);
 
@@ -152,7 +152,7 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
                     .exec();
             });
         } else {
-            const createdEntityTemplate = await this.model.create(this.convertExpendedUserFields(templateData));
+            const createdEntityTemplate = await this.model.create(templateData);
             entityTemplate = await createdEntityTemplate.populate<Pick<IEntityTemplatePopulated, 'category'>>('category');
         }
 
@@ -251,38 +251,6 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
         return updatedEntityTemplate;
     }
 
-    convertExpendedUserFields(templateData: Omit<IEntityTemplate, 'disabled'>): Omit<IEntityTemplate, 'disabled'> {
-        const convertedProperties = templateData.properties.properties;
-        const updatedPropertiesOrder = templateData.propertiesOrder;
-        // Object.entries(templateData.properties.properties).forEach(([key, value]) => {
-        //     if(value.expandedUserFields) {
-        //         const { expandedUserFields, ...restOfTheValue } = value;
-        //         convertedProperties[key] = restOfTheValue;
-
-        //         const indexOfKeyInOrder = updatedPropertiesOrder.findIndex((el)=> el === key);
-
-        //         expandedUserFields.forEach((userFieldToAdd, index) => {
-        //             convertedProperties[`userprefix_${key}_${userFieldToAdd}`] = {
-        //                 title: `${value.title}_${userFieldToAdd}`,
-        //                 type: 'string',
-        //                 readOnly: true,
-        //             };
-
-        //             updatedPropertiesOrder.splice(indexOfKeyInOrder + index + 1, 0, `userprefix_${key}_${userFieldToAdd}`);
-        //         });
-        //     }
-        // });
-
-        return {
-            ...templateData,
-            properties: {
-                ...templateData.properties,
-                properties: convertedProperties
-            },
-            propertiesOrder: updatedPropertiesOrder,
-        }
-    }
-
     async updateEntityTemplate(
         id: string,
         updatedTemplateData: Omit<IEntityTemplate, 'disabled'>,
@@ -291,12 +259,11 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
     ) {
         const currentEntityTemplate = await this.getTemplateById(id);
 
-        const convertedTemplateDataToUpdate = this.convertExpendedUserFields(updatedTemplateData);
 
         const newEntityTemplate = session
-            ? await this.updateEntityTemplateInTransaction(id, currentEntityTemplate, convertedTemplateDataToUpdate, allowToDeleteRelationshipFields, session)
+            ? await this.updateEntityTemplateInTransaction(id, currentEntityTemplate, updatedTemplateData, allowToDeleteRelationshipFields, session)
             : await withTransaction(async (newSession: ClientSession) =>
-                  this.updateEntityTemplateInTransaction(id, currentEntityTemplate, convertedTemplateDataToUpdate, allowToDeleteRelationshipFields, newSession),
+                  this.updateEntityTemplateInTransaction(id, currentEntityTemplate, updatedTemplateData, allowToDeleteRelationshipFields, newSession),
               );
 
         const propertyTypeWithToString = ['number', 'boolean', 'date', 'date-time'];

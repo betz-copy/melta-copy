@@ -894,14 +894,20 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         };
     }
 
-    private async updateInstancesWithUserFields(templateId: string, newExpandedUserFields: string[]) {
+    private async updateInstancesWithUserFields(
+        templateId: string,
+        newExpandedUserFields: string[],
+        updatedTemplateData: Omit<IEntityTemplateWithConstraints, 'disabled'> & {
+            file?: string;
+        },
+    ) {
         const entities = await this.instanceManager.getAllTemplateEntities(templateId);
 
-        const usersKeys = groupBy(newExpandedUserFields, (userField) => userField.split('_')[1]);
         const usersIds = new Set<string>();
         entities.forEach((entity) => {
-            Object.keys(usersKeys).forEach((userKey) => {
-                if (JSON.parse(entity.entity.properties[userKey])._id) {
+            newExpandedUserFields.forEach((expandedUserFieldKey) => {
+                const userKey = updatedTemplateData.properties.properties[expandedUserFieldKey].expandedUserField?.relatedUserField;
+                if (userKey && entity.entity.properties[userKey] && JSON.parse(entity.entity.properties[userKey])._id) {
                     usersIds.add(JSON.parse(entity.entity.properties[userKey])._id);
                 }
             });
@@ -914,17 +920,16 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         entities.forEach((entity) => {
             let wasEntityChange = false;
             const entityToUpdate = entity.entity;
-            Object.entries(usersKeys).forEach(([userKey, expandedFields]) => {
-                const userId = JSON.parse(entity.entity.properties[userKey])._id;
-                if (userId) {
+            newExpandedUserFields.forEach((expandedUserFieldKey) => {
+                const expandedUserFieldValue = updatedTemplateData.properties.properties[expandedUserFieldKey];
+                const userKey = expandedUserFieldValue.expandedUserField?.relatedUserField;
+                const userId = userKey && entity.entity.properties[userKey] ? JSON.parse(entity.entity.properties[userKey])._id : undefined;
+                if (userId && userKey) {
                     const kartoffelUser = kartoffelUsersMapById[userId] ? kartoffelUsersMapById[userId][0] : undefined;
-                    if (kartoffelUser) {
-                        expandedFields.forEach((expandedField) => {
-                            if (kartoffelUser[expandedField.split('_')[2]]) {
-                                wasEntityChange = true;
-                                entityToUpdate.properties[expandedField] = kartoffelUser[expandedField.split('_')[2]].toString();
-                            }
-                        });
+                    if (kartoffelUser && kartoffelUser[expandedUserFieldValue.expandedUserField?.kartoffelField || '']) {
+                        wasEntityChange = true;
+                        entityToUpdate.properties[expandedUserFieldKey] =
+                            kartoffelUser[expandedUserFieldValue.expandedUserField?.kartoffelField || ''].toString();
                     }
                 }
             });
@@ -939,38 +944,6 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         );
     }
 
-    convertExpendedUserFields(templateData: Omit<IEntityTemplate, 'disabled'>): Omit<IEntityTemplate, 'disabled'> {
-        const convertedProperties = templateData.properties.properties;
-        const updatedPropertiesOrder = templateData.propertiesOrder;
-        // Object.entries(templateData.properties.properties).forEach(([key, value]) => {
-        // if (value.expandedUserFields) {
-        //     const { expandedUserFields, ...restOfTheValue } = value;
-        //     convertedProperties[key] = restOfTheValue;
-
-        //     const indexOfKeyInOrder = updatedPropertiesOrder.findIndex((el) => el === key);
-
-        //     expandedUserFields.forEach((userFieldToAdd, index) => {
-        //         convertedProperties[`userprefix_${key}_${userFieldToAdd}`] = {
-        //             title: `${value.title}_${userFieldToAdd}`,
-        //             type: 'string',
-        //             readOnly: true,
-        //         };
-
-        //         updatedPropertiesOrder.splice(indexOfKeyInOrder + index + 1, 0, `userprefix_${key}_${userFieldToAdd}`);
-        //     });
-        // }
-        // });
-
-        return {
-            ...templateData,
-            properties: {
-                ...templateData.properties,
-                properties: convertedProperties,
-            },
-            propertiesOrder: updatedPropertiesOrder,
-        };
-    }
-
     async updateEntityTemplate(
         id: string,
         userId: string,
@@ -978,7 +951,6 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         { file, files }: { file?: [UploadedFile]; files?: UploadedFile[] },
         permissionsOfUserId: RequestWithPermissionsOfUserId['permissionsOfUserId'],
     ): Promise<IMongoEntityTemplateWithConstraintsPopulated> {
-        let newExpandedUserFields: string[] = [];
         await this.entityTemplateService.getCategoryById(updatedTemplateData.category);
 
         const { count } = await this.instancesService.searchEntitiesOfTemplateRequest(id, { limit: 1 });
@@ -1007,12 +979,13 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         const removedProperties: string[] = [];
         const archiveProperties: string[] = [];
         const propertiesKeysToPluralize: string[] = [];
+        let newExpandedUserFields: string[] = [];
 
         if (count > 0) {
             if (updatedTemplateData.name !== currTemplate.name) throw new BadRequestError('can not change template name');
 
             Object.entries(currTemplate.properties.properties).forEach(([key, value]) => {
-                const newValue = this.convertExpendedUserFields(updatedTemplateData).properties.properties[key];
+                const newValue = updatedTemplateData.properties.properties[key];
                 if ((!newValue || newValue?.isNewPropNameEqualDeletedPropName) && !currTemplate.actions) removedProperties.push(key);
                 else {
                     const isSingularToPlural =
@@ -1047,30 +1020,12 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
                 }
             });
 
-            // removedProperties = removedProperties.filter((removedProperty) => {
-            //     if (removedProperty.startsWith('userprefix')) {
-            //         const originalUserField = removedProperty.split('_')[1];
-            //         if (!updatedTemplateData.properties.properties[originalUserField]) return true;
-            //         // const expandedUserKey = removedProperty.split('_')[2];
-            //         // return !updatedTemplateData.properties.properties[originalUserField].expandedUserFields?.includes(expandedUserKey);
-            //     }
-
-            //     return true;
-            // });
-
-            const convertedUpdatedData = this.convertExpendedUserFields(updatedTemplateData);
-
-            const newProperties = Object.keys(convertedUpdatedData.properties.properties).filter(
+            const newProperties = Object.keys(updatedTemplateData.properties.properties).filter(
                 (property) => !currProperties.properties[property] && !removedProperties.includes(property),
             );
 
             newExpandedUserFields = newProperties.filter((property) => {
-                if (property.startsWith('userprefix')) {
-                    const userKey = property.split('_')[1];
-                    if (!newProperties.includes(userKey)) return true;
-                }
-
-                return false;
+                return updatedTemplateData.properties.properties[property].format === 'kartoffelUserField';
             });
 
             const updatedProperties = updatedTemplateData.properties.properties;
@@ -1107,7 +1062,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         await this.deletePropertyOfEntityTemplate(id, count, removedProperties, currTemplate);
 
         if (newExpandedUserFields.length) {
-            await this.updateInstancesWithUserFields(id, newExpandedUserFields);
+            await this.updateInstancesWithUserFields(id, newExpandedUserFields, updatedTemplateData);
         }
 
         try {

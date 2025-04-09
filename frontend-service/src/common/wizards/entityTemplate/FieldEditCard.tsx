@@ -19,6 +19,7 @@ import {
     Backdrop,
     CircularProgress,
 } from '@mui/material';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import {
     Delete as DeleteIcon,
     DeleteForever as DeleteOff,
@@ -103,6 +104,7 @@ export interface FieldEditCardProps {
     hasActions?: boolean;
     supportConvertingToMultipleFields?: boolean;
     userPropertiesInTemplate?: string[];
+    onDuplicateKartoffelField?: (fieldIndex: number) => void;
 }
 
 export const FieldEditCard: React.FC<FieldEditCardProps> = ({
@@ -138,6 +140,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     hasActions,
     supportConvertingToMultipleFields = true,
     userPropertiesInTemplate = [],
+    onDuplicateKartoffelField,
 }) => {
     const isText = value.type === 'string' || value.type === 'text-area';
 
@@ -373,31 +376,6 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     const MemoizedIconButton = React.memo(IconButton);
 
     const [initialOptionArray, setInitialOptionArray] = useState<string[]>(initialValue?.options || []);
-
-    const userFields: string[] = [
-        'displayName',
-        'identityCard',
-        'personalNumber',
-        'goalUserId',
-        'employeeNumber',
-        'employeeId',
-        'organization',
-        'serviceType',
-        'firstName',
-        'lastName',
-        'akaUnit',
-        'rank',
-        'mail',
-        'jobTitle',
-        'phone',
-        'mobilePhone',
-        'address',
-        'fullClearance',
-        'sex',
-        'birthDate',
-        'directGroup',
-        'hierarchy',
-    ];
 
     const handleEditChange = (e, _tagIndex) => {
         e.preventDefault();
@@ -1234,6 +1212,18 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                         </Box>
                                                     </MeltaTooltip>
                                                 )}
+                                            {value.type === 'kartoffelUserField' && (
+                                                <MeltaTooltip title={i18next.t('wizard.entityTemplate.duplicateField')} placement="right">
+                                                    <Box>
+                                                        <IconButton
+                                                            onClick={() => (onDuplicateKartoffelField ? onDuplicateKartoffelField(index) : {})}
+                                                            disabled={value.required || value.uniqueCheckbox || value.preview}
+                                                        >
+                                                            <ContentCopyIcon />
+                                                        </IconButton>
+                                                    </Box>
+                                                </MeltaTooltip>
+                                            )}
                                             {supportArchive && isEditMode && (
                                                 <MeltaTooltip title={archiveButtonTooltip()} placement="right">
                                                     <Box>
