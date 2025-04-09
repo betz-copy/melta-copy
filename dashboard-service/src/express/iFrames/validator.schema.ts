@@ -49,7 +49,9 @@ export const updateIFrameSchema = Joi.object({
 export const searchIFramesSchema = Joi.object({
     query: {},
     body: {
-        search: Joi.string(),
+        query: Joi.object({
+            search: Joi.string(),
+        }),
         limit: Joi.number().integer().min(0).default(0),
         skip: Joi.number().integer().min(0).default(0),
         ids: Joi.array().items(Joi.string()),

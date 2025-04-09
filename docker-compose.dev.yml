@@ -329,7 +329,7 @@ services:
 
   dashboard-service:
     ports:
-      - 8016:8000
+      - 8017:8000
     restart: always
     networks:
       - network
