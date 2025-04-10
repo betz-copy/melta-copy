@@ -29,17 +29,6 @@ export class NotFoundError extends ServiceError {
     }
 }
 
-export class ForbiddenError extends ServiceError {
-    constructor(
-        message: string,
-        public metadata: object = {},
-    ) {
-        super(StatusCodes.FORBIDDEN, message);
-        this.name = 'Forbidden';
-        this.metadata = metadata;
-    }
-}
-
 export class BadRequestError extends ServiceError {
     constructor(
         message: string,
@@ -47,17 +36,6 @@ export class BadRequestError extends ServiceError {
     ) {
         super(StatusCodes.BAD_REQUEST, message);
         this.name = 'badRequest';
-        this.metadata = metadata;
-    }
-}
-
-export class UnauthorizedError extends ServiceError {
-    constructor(
-        message: string,
-        public metadata: object = {},
-    ) {
-        super(StatusCodes.UNAUTHORIZED, message);
-        this.name = 'unauthorized';
         this.metadata = metadata;
     }
 }
@@ -99,11 +77,6 @@ export const errorMiddleware = (error: Error, req: express.Request, res: express
         case ServiceError:
             statusCode = (error as ServiceError).code;
             errorResponse = errorResponseBuilder(error as ServiceError);
-            break;
-
-        case UnauthorizedError:
-            statusCode = (error as UnauthorizedError).code;
-            errorResponse = errorResponseBuilder(error as UnauthorizedError);
             break;
 
         default:

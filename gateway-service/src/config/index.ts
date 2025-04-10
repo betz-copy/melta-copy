@@ -183,15 +183,12 @@ const config = {
     },
     dashboardService: {
         url: env.get('DASHBOARD_SERVICE_URL').required().asString(),
-        baseRoute: env.get('DASHBOARD_SERVICE_BASE_ROUTE').default('/api/dashboard').asString(),
         requestTimeout: env.get('DASHBOARD_SERVICE_REQUEST_TIMEOUT').default(10000).asIntPositive(),
         charts: {
             baseRoute: env.get('DASHBOARD_SERVICE_CHARTS_BASE_ROUTE').default('/api/dashboard/charts').asString(),
-            requestTimeout: env.get('DASHBOARD_SERVICE_CHARTS_REQUEST_TIMEOUT').default(10000).asIntPositive(),
         },
         iframes: {
             baseRoute: env.get('DASHBOARD_SERVICE_IFRAMES_BASE_ROUTE').default('/api/dashboard/iframes').asString(),
-            requestTimeout: env.get('DASHBOARD_SERVICE_IFRAMES_REQUEST_TIMEOUT').default(10000).asIntPositive(),
         },
     },
     getUsersLimitForPermissionsOfUsers: env.get('GET_USERS_LIMIT_FOR_PERMISSIONS_OF_USERS').default(20).asIntPositive(),
