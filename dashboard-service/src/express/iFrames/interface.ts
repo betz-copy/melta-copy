@@ -1,3 +1,5 @@
+import { Document } from 'mongoose';
+
 export interface IFrame {
     name: string;
     url: string;
@@ -6,12 +8,13 @@ export interface IFrame {
     placeInSideBar?: boolean;
 }
 
-export interface IFrameDocument extends IFrame {
+export interface IMongoIframe extends IFrame, Document<string> {
     _id: string;
 }
 
 export interface ISearchIFramesBody {
     search?: string;
     limit: number;
-    step: number;
+    skip: number;
+    ids?: string[];
 }

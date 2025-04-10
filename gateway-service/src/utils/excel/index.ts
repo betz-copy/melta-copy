@@ -9,7 +9,7 @@ import { UploadedFile } from '../busboy/interface';
 import { getValidationErrorEntities, readExcelFile } from './getFunctions';
 import { IBrokenRulesError, IEntity } from '../../externalServices/instanceService/interfaces/entities';
 
-const { errorCodes } = config;
+const { errorCodes, loadExcel } = config;
 
 export const getAllEntitiesFromExcel = async (
     files: UploadedFile[],
@@ -19,7 +19,7 @@ export const getAllEntitiesFromExcel = async (
 ) => {
     const workspaceFilesLimit = workspace.metadata?.excel?.filesLimit;
 
-    const effectiveFilesLimit = workspaceFilesLimit ?? config.loadExcel.filesLimit;
+    const effectiveFilesLimit = workspaceFilesLimit ?? loadExcel.filesLimit;
     if (files.length > effectiveFilesLimit) throw new BadRequestError(`files limit: more than ${effectiveFilesLimit} files`, {});
 
     const fileEntities = await readExcelFile(files, template, failedEntities, workspace.metadata?.excel?.entitiesFileLimit);
@@ -43,6 +43,19 @@ export const handleExcelErrors = (error: any, failedEntities: IFailedEntity[], e
         if (!error.response) throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, 'no error. response in axiosError', error);
 
         const { data } = error.response;
+        if (typeof data.StatusCodes === 'string')
+            if (data.StatusCodes === 'Neo.ClientError.Schema.ConstraintValidationFailed') {
+                const templateIdMatch = error.message.match(loadExcel.templateIdRegex);
+                const templateId = templateIdMatch ? templateIdMatch[1] : '';
+
+                const propertiesMatch = error.message.match(loadExcel.propertiesRegex);
+                const properties = propertiesMatch ? propertiesMatch[1].replace(/`/g, '').split(', ') : [];
+
+                failedEntities.push({
+                    properties: entity.properties,
+                    errors: [{ type: ActionErrors.unique, metadata: { type: ActionErrors.unique, constraintName: '', templateId, properties } }],
+                });
+            }
 
         if (data.metadata && data.metadata.errorCode === errorCodes.failedConstraintsValidation) {
             const { constraint } = data.metadata;

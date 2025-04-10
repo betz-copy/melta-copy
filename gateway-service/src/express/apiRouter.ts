@@ -13,6 +13,7 @@ import RulesBreachesRouter from './ruleBreaches/router';
 import templatesRouter from './templates/router';
 import { usersRouter } from './users/router';
 import { workspaceRouter } from './workspaces/router';
+import { ChartsRouter } from './templateCharts/router';
 
 const apiRouter = Router();
 
@@ -70,6 +71,8 @@ apiRouter.use('/rule-breaches', RulesBreachesRouter);
 apiRouter.use('/gantts', GanttsRouter);
 
 apiRouter.use('/iframes', iFramesRouter);
+
+apiRouter.use('/charts', ChartsRouter);
 
 apiRouter.use('/workspaces', workspaceRouter);
 

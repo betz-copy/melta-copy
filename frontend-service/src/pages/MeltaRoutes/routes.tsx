@@ -17,6 +17,7 @@ import { useUserStore } from '../../stores/user';
 import { LocalStorage } from '../../utils/localStorage';
 import {
     CategoryProtectedRoute,
+    ChartsProtectedRoute,
     EntityProtectedRoute,
     PermissionsManagementProtectedRoute,
     SystemManagementProtectedRoute,
@@ -31,6 +32,8 @@ const Category = lazy(() => import('../Category'));
 const SystemManagement = lazy(() => import('../SystemManagement'));
 const PermissionsManagement = lazy(() => import('../PermissionsManagement'));
 const RuleManagement = lazy(() => import('../RuleManagement'));
+const Charts = lazy(() => import('../Charts'));
+const ChartPage = lazy(() => import('../Charts/ChartPage'));
 const Gantts = lazy(() => import('../Gantts'));
 const GanttPage = lazy(() => import('../Gantts/GanttPage'));
 const IFrames = lazy(() => import('../IFrames'));
@@ -194,6 +197,18 @@ export const MeltaRoutesInner: React.FC = () => {
 
                             <Route path="/map">
                                 <Map />
+                            </Route>
+
+                            <Route path="/charts/:templateId/:chartId?/chart">
+                                <ChartsProtectedRoute permissions={currentUser.currentWorkspacePermissions}>
+                                    <ChartPage />
+                                </ChartsProtectedRoute>
+                            </Route>
+
+                            <Route path="/charts/:templateId">
+                                <ChartsProtectedRoute permissions={currentUser.currentWorkspacePermissions}>
+                                    <Charts />
+                                </ChartsProtectedRoute>
                             </Route>
 
                             <Route path="/gantts">

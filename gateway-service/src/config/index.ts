@@ -21,11 +21,6 @@ const config = {
             },
         }).asJsonObject,
     },
-    mongo: {
-        url: env.get('MONGO_URL').required().asString(),
-        iFramesCollectionName: env.get('MONGO_IFRAMES_COLLECTION_NAME').required().asString(),
-    },
-
     frontendConfig: {
         matotmo: {
             baseUrl: env.get('FRONTEND_CONFIG_MATOMO_BASE_URL').default('http://localhost:8016').required().asString(),
@@ -92,6 +87,7 @@ const config = {
                 .asString(),
         },
         requestTimeout: env.get('ENTITY_TEMPLATE_SERVICE_REQUEST_TIMEOUT').default(10000).asIntPositive(),
+        userDoesntExistUnderReq: env.get('USER_NOT_EXIST_UNDER_REQUEST').default(`User doesn't exists under request`).asString(),
     },
     storageService: {
         url: env.get('STORAGE_SERVICE_URL').required().asString(),
@@ -175,6 +171,17 @@ const config = {
         baseRoute: env.get('WORKSPACES_SERVICE_BASE_ROUTE').default('/api/workspaces').asString(),
         requestTimeout: env.get('WORKSPACES_SERVICE_REQUEST_TIMEOUT').default(10000).asIntPositive(),
     },
+    dashboardService: {
+        url: env.get('DASHBOARD_SERVICE_URL').required().asString(),
+        requestTimeout: env.get('DASHBOARD_SERVICE_REQUEST_TIMEOUT').default(10000).asIntPositive(),
+        baseRoute: env.get('DASHBOARD_SERVICE_BASE_ROUTE').default('/api/dashboard').asString(),
+        charts: {
+            baseRoute: env.get('DASHBOARD_SERVICE_CHARTS_ROUTE').default('/charts').asString(),
+        },
+        iframes: {
+            baseRoute: env.get('DASHBOARD_SERVICE_IFRAMES_ROUTE').default('/iframes').asString(),
+        },
+    },
     getUsersLimitForPermissionsOfUsers: env.get('GET_USERS_LIMIT_FOR_PERMISSIONS_OF_USERS').default(20).asIntPositive(),
     kartoffel: {
         url: env.get('KARTOFFEL_BASE_URL').required().asString(),
@@ -250,10 +257,43 @@ const config = {
         filesLimit: env.get('FILES_LIMIT').default(5).asIntPositive(),
         invalidDate: env.get('INVALID_DATE').default('Invalid Date').asString(),
         invalidTime: env.get('INVALID_TIME').default('Invalid time value').asString(),
+        templateIdRegex: env.get('TEMPLATE_ID_REGEX').default('label `([^`]*)`').asRegExp(),
+        propertiesRegex: env.get('PROPERTIES_REGEX').default('properties \\((.*?)\\)').asRegExp(),
     },
     flowCube: {
         flowRequestHostName: env.get('REQUEST_HOST_NAME').default('host-name').required().asString(),
         flowSystemName: env.get('FLOW_SYSTEM_NAME').default('system-name').required().asString(),
+    },
+    map: {
+        polygon: {
+            polygonPrefix: env.get('POLYGON_PREFIX').default('POLYGON((').asString(),
+            polygonSuffix: env.get('POLYGON_SUFFIX').default('))').asString(),
+        },
+        epsgCode: {
+            epsg: env.get('EPSG').default('EPSG').asString(),
+            wgs84: env.get('WGS84').default('EPSG:4326').asString(),
+            southHemiUTM: env.get('SOUTH_HEMI_UTM').default('327').asString(),
+            northHemiUTM: env.get('NORTH_HEMI_UTM').default('326').asString(),
+        },
+        utm: {
+            utmRegex: env
+                .get('UTM_REGEX')
+                .default('\\b([1-9]|[1-5][0-9]|60)([C-HJ-NP-X])\\s([0-9]+(?:\\.[0-9]+)?)\\s([0-9]+(?:\\.[0-9]+)?)\\b')
+                .asRegExp(),
+
+            utmPolygonRegex: env
+                .get('UTM_POLYGON_REGEX')
+                .default('\\b([1-9]|[1-5][0-9]|60)([C-HJ-NP-X])\\s([0-9]+(?:\\.[0-9]+)?)\\s([0-9]+(?:\\.[0-9]+)?)\\b')
+                .asRegExp('g'),
+
+            minZone: env.get('MIN_ZONE').default(1).asInt(),
+            maxZone: env.get('MAX_ZONE').default(60).asInt(),
+            minEasting: env.get('MIN_EASTING').default(160000).asInt(),
+            maxEasting: env.get('MAX_EASTING').default(834000).asInt(),
+            minNorthing: env.get('MIN_NORTHING').default(0).asInt(),
+            maxNorthing: env.get('MAX_NORTHING').default(10000000).asInt(),
+        },
+        wgs84: { maxLongitude: env.get('MAX_LONGITUDE').default(180).asInt(), maxLatitude: env.get('MAX_LATITUDE').default(90).asInt() },
     },
 };
 

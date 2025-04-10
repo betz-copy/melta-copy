@@ -11,9 +11,8 @@ import { MeltaTooltip } from '../../common/MeltaTooltip';
 import { useDarkModeStore } from '../../stores/darkMode';
 import {
     calculateCenterOfPolygon,
-    cartesian3ToString,
+    locationToWGS84String,
     getPolygonFarthestPoint,
-    isCartesian3,
     isValidPolygonPoint,
     jerusalemCoordinates,
     stringToCoordinates,
@@ -22,6 +21,7 @@ import { MeltaCoordinate, MeltaPolygon } from './LocationPreview';
 import { DeleteMapDataBtn } from './mapPage/MapFilters';
 import { BaseLayers } from './BaseLayers';
 import { BackendConfigState } from '../../services/backendConfigService';
+import { convertWGS94ToECEF, isValidWGS84 } from '../../utils/map/convert';
 
 type Props = {
     defaultLocation?: string;
@@ -43,15 +43,15 @@ const LocationField = ({ defaultLocation, field, updateValue }: Props) => {
 
     useEffect(() => {
         const initialCoordinates = defaultLocation ? stringToCoordinates(defaultLocation) : null;
+
         if (initialCoordinates?.type === 'marker') {
             const { value } = initialCoordinates;
-            setMarkerPosition(
-                !isCartesian3(value) ? Cartesian3.fromDegrees((value as Cartesian3).x, (value as Cartesian3).y) : ({ ...value } as Cartesian3),
-            );
+            setMarkerPosition(isValidWGS84(value as Cartesian3) ? (convertWGS94ToECEF(value) as Cartesian3) : ({ ...value } as Cartesian3));
         }
+
         if (initialCoordinates?.type === 'polygon') {
             const positions = (initialCoordinates.value as Cartesian3[]).map((position) =>
-                !isCartesian3(position) ? Cartesian3.fromDegrees(position.x, position.y) : position,
+                isValidWGS84(position) ? (convertWGS94ToECEF(position) as Cartesian3) : position,
             );
             setPolygonPosition(positions);
         }
@@ -102,19 +102,19 @@ const LocationField = ({ defaultLocation, field, updateValue }: Props) => {
             if (!viewer) return;
 
             const { scene } = viewer;
-            const cartesian = scene.camera.pickEllipsoid(clickEvent.position, scene.globe.ellipsoid);
+            const cartesian: Cartesian3 = scene.camera.pickEllipsoid(clickEvent.position, scene.globe.ellipsoid);
 
             if (cartesian) {
                 if (drawingMode === 'polygon') {
                     if (isValidPolygonPoint(polygonPosition, cartesian)) {
                         setPolygonPosition((prev) => [...prev, cartesian]);
                         const newPolygon = [...polygonPosition, cartesian];
-                        updateValue(cartesian3ToString(newPolygon));
+                        updateValue(locationToWGS84String(newPolygon));
                     }
                 } else if (drawingMode === 'coordinate') {
                     setMarkerPosition(cartesian);
                     setDrawingMode(null);
-                    updateValue(cartesian3ToString(cartesian));
+                    updateValue(locationToWGS84String(cartesian));
                 }
             }
         },

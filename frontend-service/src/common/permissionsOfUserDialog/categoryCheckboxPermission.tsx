@@ -57,7 +57,7 @@ const CategoryCheckboxPermission: React.FC<{
                     indeterminate={
                         !categoryPermissions.scope &&
                         Object.keys(templatesPermissions ?? {}).length > 0 &&
-                        Object.keys(templatesPermissions ?? {}).length < entityTemplates.length
+                        Object.keys(templatesPermissions ?? {}).length <= entityTemplates.length
                     }
                 />
             </Grid>
@@ -72,7 +72,7 @@ const CategoryCheckboxPermission: React.FC<{
                         Object.values(templatesPermissions ?? {}).filter((templatePermission) => templatePermission.scope === PermissionScope.write)
                             .length > 0 &&
                         Object.values(templatesPermissions ?? {}).filter((templatePermission) => templatePermission.scope === PermissionScope.write)
-                            .length < entityTemplates.length
+                            .length <= entityTemplates.length
                     }
                 />
             </Grid>

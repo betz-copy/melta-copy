@@ -1,24 +1,35 @@
 /* eslint-disable no-param-reassign */
-import { Cartesian3, Ellipsoid, Math as CesiumMath } from 'cesium';
-import { environment } from '../globals';
-import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
-import { IEntity } from '../interfaces/entities';
+import { Cartesian3 } from 'cesium';
+import { environment } from '../../globals';
+import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IEntity, SplitBy } from '../../interfaces/entities';
+import { convertECEFToWGS84, convertWGS94ToECEF, isValidWGS84 } from './convert';
 
 const {
     polygon: { polygonPrefix, polygonSuffix },
 } = environment.map;
 
+export type LatLng = {
+    latitude: number;
+    longitude: number;
+};
+
+type CoordinatesResult = {
+    type: 'polygon' | 'marker';
+    value: Cartesian3 | Cartesian3[];
+};
+
 export const zoomNumber = 300000;
 
 export const jerusalemCoordinates: Cartesian3 = Cartesian3.fromDegrees(35.2137, 31.7683, zoomNumber);
 
-export const parsePolygon = (polygonStr: string): Cartesian3[] | undefined => {
+export const parsePolygon = (polygonStr: string, toECEF: boolean = true): Cartesian3[] | undefined => {
     if (!polygonStr.startsWith(polygonPrefix) || !polygonStr.endsWith(polygonSuffix)) {
         return undefined;
     }
 
     const coordsStr = polygonStr.slice(polygonPrefix.length, -polygonSuffix.length).trim();
-    const coordPairs = coordsStr.split(',').map((pair) => pair.trim());
+    const coordPairs = coordsStr.split(SplitBy.comma).map((pair) => pair.trim());
 
     const coordinates: Cartesian3[] = coordPairs
         .map((pair) => {
@@ -31,29 +42,35 @@ export const parsePolygon = (polygonStr: string): Cartesian3[] | undefined => {
                 return null;
             }
 
-            return Cartesian3.fromDegrees(longitude, latitude);
+            return toECEF ? Cartesian3.fromDegrees(longitude, latitude) : { x: longitude, y: latitude };
         })
         .filter((coord): coord is Cartesian3 => coord !== null);
 
     return coordinates.length > 0 ? coordinates : undefined;
 };
 
-type CoordinatesResult = {
-    type: 'polygon' | 'marker';
-    value: Cartesian3 | Cartesian3[];
-};
-
-export const stringToCoordinates = (strCoords: string): CoordinatesResult => {
-    const polygon = parsePolygon(strCoords);
+export const stringToCoordinates = (strCoords: string, toECEF?: boolean): CoordinatesResult => {
+    const polygon = parsePolygon(strCoords, toECEF);
     if (polygon) return { type: 'polygon', value: polygon };
 
-    const formatted = strCoords.split(',').map((val) => +val);
+    const formatted = strCoords.includes(SplitBy.comma) ? strCoords.split(SplitBy.comma).map(Number) : strCoords.split(SplitBy.space).map(Number);
     return { type: 'marker', value: { x: formatted[0], y: formatted[1] } as Cartesian3 };
 
     // TODO: add validation to format
 };
 
-export const isCartesian3 = (coordinates: any) => Math.abs(coordinates.x) > 180 || Math.abs(coordinates.y) > 90;
+export const locationToWGS84String = (cartesian3: Cartesian3 | Cartesian3[], includePolygon = true): string => {
+    if (!Array.isArray(cartesian3)) {
+        const { longitude, latitude } = convertECEFToWGS84(cartesian3);
+        return `${longitude}, ${latitude}`;
+    }
+
+    const points = cartesian3.map((point) => {
+        const { longitude, latitude } = convertECEFToWGS84(point);
+        return `${longitude} ${latitude}`;
+    });
+    return includePolygon ? `${polygonPrefix}${points.join(SplitBy.comma)}${polygonSuffix}` : points.join(SplitBy.comma);
+};
 
 export const calculateCenterOfPolygon = (coordinates: Cartesian3[]): Cartesian3 => {
     if (coordinates.length === 0) return jerusalemCoordinates;
@@ -63,7 +80,7 @@ export const calculateCenterOfPolygon = (coordinates: Cartesian3[]): Cartesian3 
     let sumZ = 0;
 
     coordinates.forEach((coordinate) => {
-        const newCoordinate = !isCartesian3(coordinate) ? Cartesian3.fromDegrees(coordinate.x, coordinate.y, zoomNumber) : coordinate;
+        const newCoordinate = isValidWGS84(coordinate) ? (convertWGS94ToECEF(coordinate) as Cartesian3) : coordinate;
         sumX += newCoordinate.x;
         sumY += newCoordinate.y;
         sumZ += newCoordinate.z;
@@ -84,33 +101,7 @@ export const getPolygonFarthestPoint = (polygonCenter: Cartesian3, polygon: Cart
     return longestDistance;
 };
 
-export const convertToDegrees = (point: Cartesian3): { longitude: number; latitude: number } => {
-    const cartographic = Ellipsoid.WGS84.cartesianToCartographic(point);
-
-    if (!cartographic) {
-        console.error('Invalid Point');
-    }
-
-    const longitude = CesiumMath.toDegrees(cartographic.longitude);
-    const latitude = CesiumMath.toDegrees(cartographic.latitude);
-
-    return { longitude, latitude };
-};
-
-export const cartesian3ToString = (cartesian3: Cartesian3 | Cartesian3[], includePolygon = true): string => {
-    if (!Array.isArray(cartesian3)) {
-        const { longitude, latitude } = convertToDegrees(cartesian3);
-        return `${longitude}, ${latitude}`;
-    }
-
-    const points = cartesian3.map((point) => {
-        const { longitude, latitude } = convertToDegrees(point);
-        return `${longitude} ${latitude}`;
-    });
-    return includePolygon ? `${polygonPrefix}${points.join(',')}${polygonSuffix}` : points.join(',');
-};
-
-export const isValidPolygonPoint = (polygonPoints, newPoint) => {
+export const isValidPolygonPoint = (polygonPoints: Cartesian3[], newPoint: Cartesian3) => {
     if (polygonPoints.length < 2) return true;
 
     const points = [...polygonPoints, newPoint];

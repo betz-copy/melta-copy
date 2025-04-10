@@ -31,6 +31,7 @@ import { EntityTopBar } from './components/TopBar';
 import DeleteRelationshipDialog from './DeleteRelationshipDialog';
 import { RelationshipIcon } from './RelationshipIcon';
 import { useWorkspaceStore } from '../../stores/workspace';
+import { getAllAllowedEntities, getAllAllowedRelationships } from '../../utils/permissions/templatePermissions';
 
 export const getButtonState = (
     isEntityDisabled: boolean,
@@ -354,6 +355,10 @@ const Entity: React.FC = () => {
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const relationshipTemplates = queryClient.getQueryData<IRelationshipTemplateMap>('getRelationshipTemplates')!;
 
+    const allowedEntityTemplates: IMongoEntityTemplatePopulated[] = getAllAllowedEntities(Array.from(entityTemplates.values()), currentUser);
+    const allowedEntityTemplatesIds: string[] = allowedEntityTemplates.map((entity) => entity._id);
+    const allowedRelationships = getAllAllowedRelationships(Array.from(relationshipTemplates.values()), allowedEntityTemplatesIds);
+
     const templateIds = Array.from(entityTemplates.keys());
 
     const expanded = entityId ? { [entityId]: 1 } : {};
@@ -381,8 +386,8 @@ const Entity: React.FC = () => {
         currentEntityTemplate._id,
         PermissionScope.write,
     );
-    const populatedRelationshipTemplates = Array.from(relationshipTemplates.values(), (currRelationshipTemplate) =>
-        populateRelationshipTemplate(currRelationshipTemplate, entityTemplates),
+    const populatedRelationshipTemplates = allowedRelationships.map((currRelationshipTemplate) =>
+        populateRelationshipTemplate(currRelationshipTemplate, allowedEntityTemplates),
     );
     const connectionsTemplates: IConnectionTemplateOfExpandedEntity[] = [];
 
@@ -431,12 +436,7 @@ const Entity: React.FC = () => {
 
     return (
         <>
-            <EntityTopBar
-                entityTemplate={currentEntityTemplate}
-                expandedEntity={expandedEntity}
-                connectionsTemplates={connectionsTemplates}
-                categoriesWithConnectionsTemplates={categoriesWithConnectionsTemplates}
-            />
+            <EntityTopBar entityTemplate={currentEntityTemplate} expandedEntity={expandedEntity} connectionsTemplates={connectionsTemplates} />
             <Grid className="pageMargin">
                 <Grid item marginTop="20px" data-tour="entity-details">
                     <EntityDetails entityTemplate={currentEntityTemplate} expandedEntity={expandedEntity} />
