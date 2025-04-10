@@ -5,6 +5,7 @@ import { DefaultManagerMongo } from '../../utils/mongo/manager';
 import ChartSchema from './model';
 import config from '../../config';
 import { NotFoundError, ServiceError } from '../error';
+import { escapeRegExp } from '../../utils';
 
 export class ChartManager extends DefaultManagerMongo<IMongoChart> {
     constructor(workspaceId: string) {
@@ -15,17 +16,13 @@ export class ChartManager extends DefaultManagerMongo<IMongoChart> {
         return this.model.findById(chartId).orFail(new NotFoundError('Chart not found')).lean().exec();
     }
 
-    escapeRegExp(text: string) {
-        return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
-    }
-
     async getChartsByTemplateId(templateId: string, textSearch?: string) {
         const query: FilterQuery<IMongoChart> = {
             templateId,
             ...(textSearch && {
                 $or: [
-                    { name: { $regex: this.escapeRegExp(textSearch), $options: 'i' } },
-                    { description: { $regex: this.escapeRegExp(textSearch), $options: 'i' } },
+                    { name: { $regex: escapeRegExp(textSearch), $options: 'i' } },
+                    { description: { $regex: escapeRegExp(textSearch), $options: 'i' } },
                 ],
             }),
         };
