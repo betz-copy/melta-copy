@@ -44,11 +44,7 @@ usersRouter.get(
     wrapController(UsersController.getKartoffelUserProfile),
 );
 
-usersRouter.get(
-    '/kartoffelUser/:kartoffelId',
-    ValidateRequest(getKartoffelUserByIdSchema),
-    wrapController(UsersController.getKartoffelUserByIdSchema),
-);
+usersRouter.get('/kartoffelUser/:kartoffelId', ValidateRequest(getKartoffelUserByIdSchema), wrapController(UsersController.getKartoffelUserById));
 
 usersRouter.get('/user-profile/:userId', ValidateRequest(getUserProfileRequestSchema), wrapController(UsersController.getUserProfile));
 

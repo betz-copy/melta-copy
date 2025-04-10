@@ -31,8 +31,6 @@ const checkForEntityToUpdate = (
         if (value.format === 'kartoffelUserField') {
             const kartoffelId = userKeysKartoffelIdsMap[value.expandedUserField?.relatedUserField || ''];
 
-            console.log({ kartoffelId });
-
             if (kartoffelId) {
                 const kartoffelUser = kartoffelUsersMapById[kartoffelId][0];
                 const kartoffelFieldValue = kartoffelUser[value.expandedUserField?.kartoffelField || ''];
@@ -46,7 +44,7 @@ const checkForEntityToUpdate = (
     return propertiesToUpdate;
 };
 
-const getAllEntitiesOffTemplates = async (templates: IMongoEntityTemplatePopulated[], instanceService: InstanceService) => {
+const getAllEntitiesOfTemplates = async (templates: IMongoEntityTemplatePopulated[], instanceService: InstanceService) => {
     const entitiesArrays = await Promise.all(
         templates.map(async (template) => {
             const { count } = await instanceService.searchEntitiesOfTemplateRequest(template._id, { limit: 1 });
@@ -84,9 +82,7 @@ export const checkForUsersToSync = async () => {
                     console.log({ templatesCount: templates.length });
 
                     // get all the instances by the templates
-                    const instances = await getAllEntitiesOffTemplates(templates, instanceService);
-
-                   console.log({ instances, workspaceId });
+                    const instances = await getAllEntitiesOfTemplates(templates, instanceService);
 
                     // collect all the users ids from the instances
                     const entitiesIds: string[] = [];
@@ -106,8 +102,9 @@ export const checkForUsersToSync = async () => {
                     const updatedEntities = await Promise.all(
                         instances.map((entity) => {
                             const entityTemplate = templatesMapById[entity.entity.templateId][0];
+                            // for each user field in each instance, check if the user from kartoffel is different in one of the fields of the user in the instance
+                            // update the user fields if needed
                             const updatedProperies = checkForEntityToUpdate(entity.entity, entityTemplate, kartoffelUsersMapById);
-                            console.log({ updatedProperies });
                             if (Object.keys(updatedProperies).length === 0) {
                                 console.log('nothing to update');
                                 return;
@@ -127,8 +124,6 @@ export const checkForUsersToSync = async () => {
 
                     logger.debug({ updatedEntities });
 
-                    // for each user field in each instance, check if the user from kartoffel is different in one of the fields of the user in the instance
-                    // update the user fields if needed
                 } catch (error) {
                     logger.error('Error syncing kartoffel users:', { error });
                 }

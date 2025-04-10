@@ -16,8 +16,8 @@ export class UsersController {
         stream.pipe(res);
     }
 
-    static async getKartoffelUserByIdSchema(req: Request, res: Response) {
-        res.json(await UsersManager.getKartoffelUserByIdSchema(req.params.kartoffelId));
+    static async getKartoffelUserById(req: Request, res: Response) {
+        res.json(await UsersManager.getKartoffelUserById(req.params.kartoffelId));
     }
 
     static async getUserProfile(req: Request, res: Response) {

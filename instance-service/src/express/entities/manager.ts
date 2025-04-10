@@ -914,15 +914,6 @@ export class EntityManager extends DefaultManagerNeo4j {
         );
     }
 
-    async getAllEntitiesWithUsersFields() {
-        return this.neo4jClient.readTransaction(
-            `MATCH (a)
-             WHERE any(key IN keys(a) WHERE key CONTAINS "id_userField")
-             RETURN a`,
-            normalizeReturnedEntity('multipleResponses', true),
-        );
-    }
-
     async getExpandedGraphById(id: string, reqBody: IGetExpandedEntityBody, entityTemplatesMap: Map<string, IMongoEntityTemplate>, userId: string) {
         const { disabled, templateIds, expandedParams, filters } = reqBody;
         const fixSearchBody = filters ?? {};

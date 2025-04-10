@@ -35,7 +35,7 @@ const entityTemplateToFieldsConfig = (
             type = 'date';
         } else if (value.format === 'date-time') {
             type = 'datetime';
-        } else if (value.format === 'user' || key.startsWith('userprefix_')) {
+        } else if (value.format === 'user') {
             type = 'user';
             fieldEntries.push([
                 `${keyPrefix}${entityTemplate._id}${keySuffix}-${key}`,
@@ -48,7 +48,7 @@ const entityTemplateToFieldsConfig = (
             ]);
         }
 
-        if (value.format !== 'relationshipReference' && value.format !== 'user' && value.format !== 'signature' && !key.startsWith('userprefix_')) {
+        if (value.format !== 'relationshipReference' && value.format !== 'user' && value.format !== 'signature') {
             fieldEntries.push([
                 `${keyPrefix}${entityTemplate._id}${keySuffix}-${key}`,
                 {

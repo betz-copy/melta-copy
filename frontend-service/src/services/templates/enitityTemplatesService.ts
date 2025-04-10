@@ -48,21 +48,6 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
     const attachmentProperties: EntityTemplateFormInputProperties[] = [];
     const archiveProperties: EntityTemplateFormInputProperties[] = [];
 
-    const expandedUsersFields: Record<string, string[]> = {};
-
-    propertiesOrder.forEach((key) => {
-        if (key.startsWith('userprefix')) {
-            const keySubstrings = key.split('_');
-            const userKeyName = keySubstrings[1];
-            const expandedUserKeyName = keySubstrings[2];
-            if (!expandedUsersFields[userKeyName]) {
-                expandedUsersFields[userKeyName] = [expandedUserKeyName];
-            } else {
-                expandedUsersFields[userKeyName].push(expandedUserKeyName);
-            }
-        }
-    });
-
     propertiesOrder
         .filter((key) => !key.startsWith('userprefix'))
         .forEach((key) => {

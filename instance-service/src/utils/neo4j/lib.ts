@@ -27,7 +27,7 @@ export const formatDate = (date: string) => {
     return date.slice(0, 10);
 };
 
-const normalizeFields = (properties: Record<string, any>, skipUserFields = false): Record<string, any> => {
+const normalizeFields = (properties: Record<string, any>): Record<string, any> => {
     const props = {};
 
     const usersArrayKeys: Set<string> = new Set<string>();
@@ -43,16 +43,14 @@ const normalizeFields = (properties: Record<string, any>, skipUserFields = false
             return;
         }
 
-        if (!skipUserFields) {
-            if (key.includes('.') && key.endsWith(`${config.neo4j.usersFieldsPropertySuffix}`)) {
-                usersArrayKeys.add(key.split('.')[0]);
-                return;
-            }
+        if (key.includes('.') && key.endsWith(`${config.neo4j.usersFieldsPropertySuffix}`)) {
+            usersArrayKeys.add(key.split('.')[0]);
+            return;
+        }
 
-            if (key.includes('.') && key.endsWith(`${config.neo4j.userFieldPropertySuffix}`)) {
-                userKeys.add(key.split('.')[0]);
-                return;
-            }
+        if (key.includes('.') && key.endsWith(`${config.neo4j.userFieldPropertySuffix}`)) {
+            userKeys.add(key.split('.')[0]);
+            return;
         }
 
         if (value instanceof neo4j.types.LocalDateTime) {
@@ -85,7 +83,7 @@ const normalizeFields = (properties: Record<string, any>, skipUserFields = false
         props[key] = value;
     });
 
-    if (usersArrayKeys.size && !skipUserFields) {
+    if (usersArrayKeys.size) {
         usersArrayKeys.forEach((userKey) => {
             props[userKey] = properties[
                 `${userKey}${config.neo4j.usersArrayOriginalAndSuffixFieldsMap[0].suffixFieldName}${config.neo4j.usersFieldsPropertySuffix}`
@@ -104,7 +102,7 @@ const normalizeFields = (properties: Record<string, any>, skipUserFields = false
         });
     }
 
-    if (userKeys.size && !skipUserFields) {
+    if (userKeys.size) {
         userKeys.forEach((userKey) => {
             const objToReturn: any = {};
 
@@ -131,19 +129,19 @@ type Response<ResType extends ResponseType, Data> = ResType extends 'singleRespo
     ? Data[]
     : never;
 
-const nodeToEntity = (node: Node, skipUserFields = false): IEntity => {
+const nodeToEntity = (node: Node): IEntity => {
     const entity = {
         templateId: node.labels[0],
-        properties: normalizeFields(node.properties, skipUserFields),
+        properties: normalizeFields(node.properties),
     };
 
     return EntityManager.fixReturnedEntityReferencesFields(entity);
 };
 
 export const normalizeReturnedEntity =
-    <T extends ResponseType>(response: T, skipUserFields = false) =>
+    <T extends ResponseType>(response: T) =>
     (result: QueryResult): Response<T, IEntity> => {
-        const entities = result.records.map((record) => nodeToEntity(record.get(0) as Node, skipUserFields));
+        const entities = result.records.map((record) => nodeToEntity(record.get(0) as Node));
 
         if (response === 'singleResponse' || response === 'singleResponseNotNullable') {
             return (entities.length > 0 ? entities[0] : null) as Response<T, IEntity>;

@@ -33,9 +33,8 @@ export class UsersManager {
         return Kartoffel.getUserProfile(kartoffelId);
     }
 
-    static async getKartoffelUserByIdSchema(kartoffelId: string) {
+    static async getKartoffelUserById(kartoffelId: string) {
         const kartoffelUser = await Kartoffel.getUserById(kartoffelId);
-        console.log({ kartoffelUser });
         return kartoffelUser;
     }
 

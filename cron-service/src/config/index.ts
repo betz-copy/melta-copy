@@ -68,7 +68,7 @@ const config = {
         displayCronDates: env.get('DISPLAY_CRON_DATES').default('true').asString(),
     },
     userFieldsSync: {
-        usersSyncTime: env.get('USERS_SYNC_TIME').default('* * * * *').asString(),
+        usersSyncTime: env.get('USERS_SYNC_TIME').default('0 */12 * * *').asString(),
         isSyncingUsers: env.get('IS_SYNCING_USERS').default('true').asString(),
         userOriginalAndSuffixFieldsMap: env
         .get('USER_ORIGINAL_AND_SUFFIX_FIELDS_MAP')

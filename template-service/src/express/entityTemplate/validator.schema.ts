@@ -6,6 +6,7 @@ import {
     orderPropertiesSchema,
     previewPropertiesSchema,
     orderPropertiesTypeSchema,
+    stringFormats,
 } from './joi.helper';
 
 const entityTemplateSchema = {
@@ -26,7 +27,7 @@ const entityTemplateSchema = {
 export const searchEntityTemplatesByFormatSchema = Joi.object({
     query: {},
     body: {
-        format: Joi.string().required(),
+        format: Joi.string().valid(...stringFormats).required(),
     },
     params: {},
 });

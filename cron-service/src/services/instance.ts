@@ -35,12 +35,6 @@ export class InstanceService extends DefaultExternalServiceApi {
         return data;
     }
 
-    async searchEntitiesWithUserFields() {
-        const { data } = await this.api.post<IEntity[]>(`${baseEntitiesRoute}/searchByUserField`);
-
-        return data;
-    }
-
     async updateEntityInstance(id: string, entity: IEntity, ignoredRules: IBrokenRule[], userId: string, convertToRelationshipField = false) {
         const { data } = await this.api.put<{ updatedEntity: IEntity; actions?: IAction[] }>(`${baseEntitiesRoute}/${id}`, {
             ...entity,
