@@ -1,9 +1,11 @@
+import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter, IAGGridTextFilter } from '../../../utils/agGrid/interfaces';
+
 export interface IRelationshipReference {
     relationshipTemplateId?: string;
     relationshipTemplateDirection: 'outgoing' | 'incoming';
     relatedTemplateId: string;
     relatedTemplateField: string;
-    filters?: Record<string, IFilterRelationReference>;
+    filters?: IFilterRelationReference[];
 }
 
 export interface CommonFormInputProperties {
@@ -45,7 +47,8 @@ export interface ConvertToRelationshipFieldFormInputProperties {
 }
 
 export interface IFilterRelationReference {
-    relatedTemplateFilterField: string;
-    filterBy: 'bigger then' | 'smaller then' | 'from' | 'until' | 'equals' | '';
-    filterValue: number | string;
+    filterProperty: string;
+    filterField?: IAGGridFilter;
 }
+
+export type IAGGridFilter = IAGGridTextFilter | IAGGidNumberFilter | IAGGridDateFilter | IAGGridSetFilter;
