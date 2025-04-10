@@ -82,7 +82,18 @@ export const initialValues: IBasicChart = {
 
 const aggregationSchema = Yup.object({
     type: Yup.mixed<IAggregationType>().oneOf(Object.values(IAggregationType)).required('validation.required'),
-    byField: Yup.string().optional(),
+    byField: Yup.string().when('type', {
+        is: (type: IAggregationType) =>
+            [
+                IAggregationType.CountDistinct,
+                IAggregationType.Average,
+                IAggregationType.Sum,
+                IAggregationType.Maximum,
+                IAggregationType.Minimum,
+            ].includes(type),
+        then: Yup.string().required('validation.required'),
+        otherwise: Yup.string().optional(),
+    }),
 });
 
 const axisSchema = Yup.object({
