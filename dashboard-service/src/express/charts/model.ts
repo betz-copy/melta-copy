@@ -40,5 +40,6 @@ export const ChartSchema = new mongoose.Schema(
 );
 
 ChartSchema.index({ templateId: 1 });
+ChartSchema.index({ templateId: 1, name: 1, description: 1 });
 
 export default ChartSchema;

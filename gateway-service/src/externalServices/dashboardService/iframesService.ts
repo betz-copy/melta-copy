@@ -13,7 +13,7 @@ export interface IFrame {
     placeInSideBar?: boolean;
 }
 
-export interface IFrameDocument extends IFrame {
+export interface IMongoIframe extends IFrame {
     _id: string;
 }
 
@@ -29,17 +29,17 @@ export class IFramesService extends DefaultExternalServiceApi {
         super(workspaceId, { baseURL: `${url}${baseRoute}${iframes.baseRoute}`, timeout: requestTimeout });
     }
 
-    async searchIFrames({ search, limit, skip, ids }: ISearchIFramesBody): Promise<IFrameDocument[]> {
-        const { data } = await this.api.post<IFrameDocument[]>('/search', { search, limit, skip, ids });
+    async searchIFrames({ search, limit, skip, ids }: ISearchIFramesBody): Promise<IMongoIframe[]> {
+        const { data } = await this.api.post<IMongoIframe[]>('/search', { search, limit, skip, ids });
         return data;
     }
 
-    async getIFrameById(iframeId: string): Promise<IFrameDocument> {
-        const { data } = await this.api.get<IFrameDocument>(`/${iframeId}`);
+    async getIFrameById(iframeId: string): Promise<IMongoIframe> {
+        const { data } = await this.api.get<IMongoIframe>(`/${iframeId}`);
         return data;
     }
 
-    async createIFrame(iframe: IFrame): Promise<IFrameDocument> {
+    async createIFrame(iframe: IFrame): Promise<IMongoIframe> {
         const { data } = await this.api.post('/', iframe);
         return data;
     }
@@ -49,7 +49,7 @@ export class IFramesService extends DefaultExternalServiceApi {
         iframe: Partial<IFrame> & {
             file?: string;
         },
-    ): Promise<IFrameDocument> {
+    ): Promise<IMongoIframe> {
         const { data } = await this.api.put(`/${iframeId}`, iframe);
         return data;
     }

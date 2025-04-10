@@ -2,7 +2,7 @@ import { StorageService } from '../../externalServices/storageService';
 import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
 import { UploadedFile } from '../../utils/busboy/interface';
 import DefaultManagerProxy from '../../utils/express/manager';
-import { IFrame, IFrameDocument, IFramesService, ISearchIFramesBody } from '../../externalServices/dashboardService/iframesService';
+import { IFrame, IMongoIframe, IFramesService, ISearchIFramesBody } from '../../externalServices/dashboardService/iframesService';
 
 export class IFrameManager extends DefaultManagerProxy<IFramesService> {
     private storageService: StorageService;
@@ -12,7 +12,7 @@ export class IFrameManager extends DefaultManagerProxy<IFramesService> {
         this.storageService = new StorageService(workspaceId);
     }
 
-    private filterIFramesWithPermissions(allIFrames: IFrameDocument[], allowedCategories: string[]) {
+    private filterIFramesWithPermissions(allIFrames: IMongoIframe[], allowedCategories: string[]) {
         return allIFrames.filter((iFrame) => iFrame.categoryIds.every((categoryId) => allowedCategories.includes(categoryId)));
     }
 

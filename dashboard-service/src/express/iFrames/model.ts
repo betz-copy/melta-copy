@@ -25,6 +25,6 @@ const IFrameSchema = new mongoose.Schema<IMongoIframe>(
     { timestamps: true, versionKey: false },
 );
 
-IFrameSchema.index({ name: 1 });
+IFrameSchema.index({ name: 1, url: 1 });
 
 export default IFrameSchema;
