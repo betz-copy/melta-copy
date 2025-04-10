@@ -10,11 +10,11 @@ import { busboyMiddleware } from '../../utils/busboy/busboyMiddleware';
 import config from '../../config';
 
 const {
-    dashboardService: { url, requestTimeout, iframes },
+    dashboardService: { url, baseRoute, requestTimeout, iframes },
 } = config;
 
 const IframesServiceProxy = createProxyMiddleware({
-    target: `${url}${iframes.baseRoute}`,
+    target: `${url}${baseRoute}${iframes.baseRoute}`,
     changeOrigin: true,
     on: {
         proxyReq: fixRequestBody,

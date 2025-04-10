@@ -86,7 +86,7 @@ const chartSchema = Joi.object({
     createdBy: Joi.string().required(),
 });
 
-// GET /api/charts/:chartId
+// GET /api/dashboard/charts/:chartId
 export const getChartByIdRequestSchema = Joi.object({
     body: {},
     query: {},
@@ -95,7 +95,7 @@ export const getChartByIdRequestSchema = Joi.object({
     },
 });
 
-// GET /api/charts/by-template/:templateId
+// GET /api/dashboard/charts/by-template/:templateId
 export const getChartByTemplateIdRequestSchema = Joi.object({
     body: {
         textSearch: Joi.string().allow(''),
@@ -106,14 +106,14 @@ export const getChartByTemplateIdRequestSchema = Joi.object({
     },
 });
 
-// POST /api/charts
+// POST /api/dashboard/charts
 export const createChartRequestSchema = Joi.object({
     body: chartSchema.required(),
     query: {},
     params: {},
 });
 
-// PUT /api/charts/:chartId
+// PUT /api/dashboard/charts/:chartId
 export const updateChartRequestSchema = Joi.object({
     body: chartSchema.required(),
     query: {},
@@ -122,7 +122,7 @@ export const updateChartRequestSchema = Joi.object({
     },
 });
 
-// DELETE /api/charts/:chartId
+// DELETE /api/dashboard/charts/:chartId
 export const deleteChartRequestSchema = Joi.object({
     body: {},
     query: {},

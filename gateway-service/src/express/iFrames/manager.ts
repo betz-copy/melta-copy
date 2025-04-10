@@ -1,9 +1,6 @@
-import { FilterQuery, Types } from 'mongoose';
-
 import { StorageService } from '../../externalServices/storageService';
 import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
 import { UploadedFile } from '../../utils/busboy/interface';
-import { escapeRegExp } from '../../utils/regex';
 import DefaultManagerProxy from '../../utils/express/manager';
 import { IFrame, IFrameDocument, IFramesService, ISearchIFramesBody } from '../../externalServices/dashboardService/iframesService';
 
@@ -25,13 +22,7 @@ export class IFrameManager extends DefaultManagerProxy<IFramesService> {
     ) {
         const allowedCategories = Object.keys(permissionsOfUserId.instances?.categories ?? {});
 
-        const query: FilterQuery<IFrameDocument> = {};
-        if (search) {
-            const searchRegex = { $regex: escapeRegExp(search), $options: 'i' };
-            query.$or = [{ name: searchRegex }, { url: searchRegex }];
-        }
-        if (ids) query._id = { $in: ids.map((id) => new Types.ObjectId(id)) };
-        const iFrames = await this.service.searchIFrames(query, limit, skip, ids);
+        const iFrames = await this.service.searchIFrames({ search, limit, skip, ids });
 
         const filteredIFrames = permissionsOfUserId.admin?.scope ? iFrames : this.filterIFramesWithPermissions(iFrames, allowedCategories);
 

@@ -52,7 +52,7 @@ import { IMongoRule, IRule } from './rules/interfaces';
 import { IFormula } from './rules/interfaces/formula';
 import {
     IAxisField,
-    IChartDocument,
+    IMongoChart,
     IChartType,
     IColumnOrLineMetaData,
     INUmberMetaData,
@@ -748,7 +748,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
                     return null;
                 }
             })
-            .filter(Boolean) as { chartId: string; updatedChart: IChartDocument }[];
+            .filter(Boolean) as { chartId: string; updatedChart: IMongoChart }[];
 
         await Promise.all(updatedCharts.map(({ chartId, updatedChart }) => chartManager.updateChart(chartId, updatedChart)));
     }

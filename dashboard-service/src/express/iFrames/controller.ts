@@ -10,9 +10,9 @@ class IFrameController extends DefaultController<IMongoIframe, IFrameManager> {
     }
 
     async searchIFrames(req: Request, res: Response) {
-        const { query, limit, skip, ids } = req.body;
+        const { search, limit, skip, ids } = req.body;
 
-        res.json(await this.manager.searchIFrames(query, limit, skip, ids));
+        res.json(await this.manager.searchIFrames({ search, limit, skip, ids }));
     }
 
     async getIFrameById(req: Request, res: Response) {

@@ -1,9 +1,8 @@
-import { FilterQuery } from 'mongoose';
 import config from '../../config';
 import DefaultExternalServiceApi from '../../utils/express/externalService';
 
 const {
-    dashboardService: { url, requestTimeout, iframes },
+    dashboardService: { url, baseRoute, requestTimeout, iframes },
 } = config;
 
 export interface IFrame {
@@ -27,11 +26,11 @@ export interface ISearchIFramesBody {
 
 export class IFramesService extends DefaultExternalServiceApi {
     constructor(workspaceId: string) {
-        super(workspaceId, { baseURL: `${url}${iframes.baseRoute}`, timeout: requestTimeout });
+        super(workspaceId, { baseURL: `${url}${baseRoute}${iframes.baseRoute}`, timeout: requestTimeout });
     }
 
-    async searchIFrames(query: FilterQuery<IFrameDocument>, limit: number, skip: number, ids?: string[]): Promise<IFrameDocument[]> {
-        const { data } = await this.api.post<IFrameDocument[]>('/search', { query, limit, skip, ids });
+    async searchIFrames({ search, limit, skip, ids }: ISearchIFramesBody): Promise<IFrameDocument[]> {
+        const { data } = await this.api.post<IFrameDocument[]>('/search', { search, limit, skip, ids });
         return data;
     }
 
@@ -45,7 +44,12 @@ export class IFramesService extends DefaultExternalServiceApi {
         return data;
     }
 
-    async updateIFrame(iframeId: string, iframe: Partial<IFrame>): Promise<IFrameDocument> {
+    async updateIFrame(
+        iframeId: string,
+        iframe: Partial<IFrame> & {
+            file?: string;
+        },
+    ): Promise<IFrameDocument> {
         const { data } = await this.api.put(`/${iframeId}`, iframe);
         return data;
     }

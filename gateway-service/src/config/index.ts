@@ -21,16 +21,6 @@ const config = {
             },
         }).asJsonObject,
     },
-    mongo: {
-        url: env.get('MONGO_URL').required().asString(),
-        iFramesCollectionName: env.get('MONGO_IFRAMES_COLLECTION_NAME').required().asString(),
-        chartCollectionName: env.get('MONGO_CHARTS_COLLECTION_NAME').required().asString(),
-        connectionOptions: {
-            maxIdleTimeMS: env.get('MONGO_MAX_IDLE_CONNECTION_TIME').default(20000).asIntPositive(),
-            socketTimeoutMS: env.get('MONGO_MAX_IDLE_SOCKET_TIME').default(20000).asIntPositive(),
-        },
-    },
-
     frontendConfig: {
         matotmo: {
             baseUrl: env.get('FRONTEND_CONFIG_MATOMO_BASE_URL').default('http://localhost:8016').required().asString(),
@@ -184,11 +174,12 @@ const config = {
     dashboardService: {
         url: env.get('DASHBOARD_SERVICE_URL').required().asString(),
         requestTimeout: env.get('DASHBOARD_SERVICE_REQUEST_TIMEOUT').default(10000).asIntPositive(),
+        baseRoute: env.get('DASHBOARD_SERVICE_BASE_ROUTE').default('/api/dashboard').asString(),
         charts: {
-            baseRoute: env.get('DASHBOARD_SERVICE_CHARTS_BASE_ROUTE').default('/api/dashboard/charts').asString(),
+            baseRoute: env.get('DASHBOARD_SERVICE_CHARTS_ROUTE').default('/charts').asString(),
         },
         iframes: {
-            baseRoute: env.get('DASHBOARD_SERVICE_IFRAMES_BASE_ROUTE').default('/api/dashboard/iframes').asString(),
+            baseRoute: env.get('DASHBOARD_SERVICE_IFRAMES_ROUTE').default('/iframes').asString(),
         },
     },
     getUsersLimitForPermissionsOfUsers: env.get('GET_USERS_LIMIT_FOR_PERMISSIONS_OF_USERS').default(20).asIntPositive(),

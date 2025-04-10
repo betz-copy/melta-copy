@@ -1,12 +1,11 @@
 import { InstancesService } from '../../externalServices/instanceService';
 import { getMetaDataAxes } from '../../utils/templateCharts/getMetaDataAxes';
-import { ForbiddenError } from '../error';
 import {
     ChartsAndGenerator,
     IAxisField,
     IChart,
     IChartBody,
-    IChartDocument,
+    IMongoChart,
     IChartType,
     IColumnOrLineMetaData,
     IPermission,
@@ -36,10 +35,10 @@ export class ChartManager extends DefaultManagerProxy<ChartService> {
     hasPermissionToRelatedTemplate(
         field: IAxisField,
         allowedEntityTemplates: IMongoEntityTemplatePopulated[],
-        chartTemplate?: IMongoEntityTemplatePopulated,
+        chartEntityTemplate?: IMongoEntityTemplatePopulated,
     ) {
         if (typeof field === 'string') {
-            const propertyTemplate = chartTemplate?.properties.properties[field];
+            const propertyTemplate = chartEntityTemplate?.properties.properties[field];
             if (propertyTemplate?.format === 'relationshipReference') {
                 const relatedTemplateId = propertyTemplate.relationshipReference?.relatedTemplateId!;
                 return allowedEntityTemplates?.some((allowedEntityTemplate) => allowedEntityTemplate._id === relatedTemplateId);
@@ -51,7 +50,7 @@ export class ChartManager extends DefaultManagerProxy<ChartService> {
 
     async validateAllowedRelatedTemplate(userId: string, permissionsOfUserId: ISubCompactPermissions, { type, metaData, templateId }: IChart) {
         const allowedEntityTemplates = await this.templateManager.getAllAllowedEntityTemplates(permissionsOfUserId, userId);
-        const chartTemplate = allowedEntityTemplates.find((template) => template._id === templateId);
+        const chartEntityTemplate = allowedEntityTemplates.find((template) => template._id === templateId);
 
         switch (type) {
             case IChartType.Column:
@@ -60,12 +59,12 @@ export class ChartManager extends DefaultManagerProxy<ChartService> {
                     xAxis: { field },
                 } = metaData as IColumnOrLineMetaData;
 
-                return this.hasPermissionToRelatedTemplate(field, allowedEntityTemplates, chartTemplate);
+                return this.hasPermissionToRelatedTemplate(field, allowedEntityTemplates, chartEntityTemplate);
             }
             case IChartType.Pie: {
                 const { dividedByField } = metaData as IPieMetaData;
 
-                return this.hasPermissionToRelatedTemplate(dividedByField, allowedEntityTemplates, chartTemplate);
+                return this.hasPermissionToRelatedTemplate(dividedByField, allowedEntityTemplates, chartEntityTemplate);
             }
 
             default:
@@ -73,7 +72,7 @@ export class ChartManager extends DefaultManagerProxy<ChartService> {
         }
     }
 
-    async getChartsWithPermissions(charts: IChartDocument[], userId: string, permissionsOfUserId: ISubCompactPermissions) {
+    async getChartsWithPermissions(charts: IMongoChart[], userId: string, permissionsOfUserId: ISubCompactPermissions) {
         const chartPermissionChecks = await Promise.all(
             charts.map(async (chart) => {
                 const hasPermission =
@@ -85,11 +84,11 @@ export class ChartManager extends DefaultManagerProxy<ChartService> {
             }),
         );
 
-        return chartPermissionChecks.filter((chart): chart is IChartDocument => chart !== null);
+        return chartPermissionChecks.filter((chart): chart is IMongoChart => chart !== null);
     }
 
     async getChartsByTemplateId(templateId: string, textSearch?: string) {
-        return this.service.getCharts(templateId, textSearch);
+        return this.service.getChartsByTemplateId(templateId, textSearch);
     }
 
     async getChartsOfTemplateId(
@@ -119,19 +118,15 @@ export class ChartManager extends DefaultManagerProxy<ChartService> {
         return GeneratedAndDataCharts.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
     }
 
-    async createChart(chartData: IChart, userId: string, permissionsOfUserId: ISubCompactPermissions) {
-        const hasPermissionToRelatedTemplate = await this.validateAllowedRelatedTemplate(userId, permissionsOfUserId, chartData);
-        if (!hasPermissionToRelatedTemplate) throw new ForbiddenError(`doesn't have permission to related Template`);
-
+    async createChart(chartData: IChart) {
         return this.service.createChart(chartData);
     }
 
-    async updateChart(chartId: string, updatedChart: IChart, userId?: string, permissionsOfUserId?: ISubCompactPermissions) {
-        if (userId && permissionsOfUserId) {
-            const hasPermissionToRelatedTemplate = await this.validateAllowedRelatedTemplate(userId, permissionsOfUserId, updatedChart);
-            if (!hasPermissionToRelatedTemplate) throw new ForbiddenError(`doesn't have permission to related Template`);
-        }
-
+    async updateChart(chartId: string, updatedChart: IChart) {
         return this.service.updateChart(chartId, updatedChart);
+    }
+
+    async deleteChart(chartId: string) {
+        return this.service.deleteChart(chartId);
     }
 }

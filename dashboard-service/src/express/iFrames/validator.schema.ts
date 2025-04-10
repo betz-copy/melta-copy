@@ -9,7 +9,7 @@ const iFrameSchema = Joi.object({
     placeInSideBar: Joi.boolean(),
 });
 
-// GET /api/iframes/:iFrameId
+// GET /api/dashboard/iframes/:iFrameId
 export const getIFrameByIdSchema = Joi.object({
     query: {},
     body: {},
@@ -18,7 +18,7 @@ export const getIFrameByIdSchema = Joi.object({
     },
 });
 
-// POST /api/iframes
+// POST /api/dashboard/iframes
 export const createIFrameSchema = Joi.object({
     query: {},
     body: iFrameSchema,
@@ -26,7 +26,7 @@ export const createIFrameSchema = Joi.object({
     file: iconFileSchema,
 });
 
-// DELETE /api/iframes/:iFrameId
+// DELETE /api/dashboard/iframes/:iFrameId
 export const deleteIFrameSchema = Joi.object({
     query: {},
     body: {},
@@ -35,7 +35,7 @@ export const deleteIFrameSchema = Joi.object({
     },
 });
 
-// PUT /api/iframes
+// PUT /api/dashboard/iframes/:iFrameId
 export const updateIFrameSchema = Joi.object({
     query: {},
     body: iFrameSchema,
@@ -45,11 +45,11 @@ export const updateIFrameSchema = Joi.object({
     file: iconFileSchema,
 });
 
-// POST /api/iframes/search
+// POST /api/dashboard/iframes/search
 export const searchIFramesSchema = Joi.object({
     query: {},
     body: {
-        query: Joi.any(), // TODO: fix type
+        search: Joi.string(),
         limit: Joi.number().integer().min(0).default(0),
         skip: Joi.number().integer().min(0).default(0),
         ids: Joi.array().items(Joi.string()),

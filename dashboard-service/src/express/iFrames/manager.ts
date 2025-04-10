@@ -1,16 +1,25 @@
-import { FilterQuery } from 'mongoose';
+import { FilterQuery, Types } from 'mongoose';
 import config from '../../config';
 import { DefaultManagerMongo } from '../../utils/mongo/manager';
 import { NotFoundError } from '../error';
-import { IFrame, IMongoIframe } from './interface';
+import { IFrame, IMongoIframe, ISearchIFramesBody } from './interface';
 import IFrameSchema from './model';
+import { escapeRegExp } from '../../utils';
 
 export class IFrameManager extends DefaultManagerMongo<IMongoIframe> {
     constructor(workspaceId: string) {
         super(workspaceId, config.mongo.iFramesCollectionName, IFrameSchema);
     }
 
-    async searchIFrames(query: FilterQuery<IMongoIframe>, limit: number, skip: number, ids?: string[]) {
+    async searchIFrames({ search, limit, skip, ids }: ISearchIFramesBody) {
+        const query: FilterQuery<IMongoIframe> = {};
+
+        if (search) {
+            const searchRegex = { $regex: escapeRegExp(search), $options: 'i' };
+            query.$or = [{ name: searchRegex }, { url: searchRegex }];
+        }
+        if (ids) query._id = { $in: ids.map((id) => new Types.ObjectId(id)) };
+
         const iFrames = await this.model
             .find(query, {}, { limit, skip, sort: ids ? {} : { createdAt: -1 } })
             .lean()

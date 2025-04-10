@@ -5,3 +5,7 @@ export const trycatch = async <Func extends (...args: any[]) => any>(func: Func,
         return { err };
     }
 };
+
+export const escapeRegExp = (text: string) => {
+    return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+};

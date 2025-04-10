@@ -19,14 +19,14 @@ export class ChartController extends DefaultController<ChartManager> {
     }
 
     async createChart(req: Request, res: Response) {
-        const { body, permissionsOfUserId, user } = req as RequestWithPermissionsOfUserId;
-
-        res.json(await this.manager.createChart(body, user?.id!, permissionsOfUserId));
+        res.json(await this.manager.createChart(req.body));
     }
 
     async updateChart(req: Request, res: Response) {
-        const { body, params, permissionsOfUserId, user } = req as RequestWithPermissionsOfUserId;
+        res.json(await this.manager.updateChart(req.params.chartId, req.body));
+    }
 
-        res.json(await this.manager.updateChart(params.chartId, body, user?.id, permissionsOfUserId));
+    async deleteChart(req: Request, res: Response) {
+        res.json(await this.manager.deleteChart(req.params.chartId));
     }
 }
