@@ -44,14 +44,14 @@ const filterFieldToValue: Record<keyof IFilterOfField, string> = {
     $eqi: 'equals',
 };
 
-const handleRegexFilter = (filterValue: string): IAGGridTextFilter | null => {
+const handleRegexFilter = (filterValue: string, not: boolean = false): IAGGridTextFilter | null => {
     const startsWith = filterValue.startsWith('.*');
     const endsWith = filterValue.endsWith('.*');
 
     if (startsWith && endsWith)
         return {
             filterType: 'text',
-            type: 'contains',
+            type: not ? 'notContains' : 'contains',
             filter: filterValue.slice(2, -2),
         } as IAGGridTextFilter;
 
@@ -107,6 +107,16 @@ const translateFieldFilter = (fieldFilter: IFilterOfField, { type, format }: IEn
             if (filterKey === '$rgx' && typeof filterValue === 'string') {
                 const regexFilter = handleRegexFilter(filterValue);
                 if (regexFilter) return regexFilter;
+            }
+            if (filterKey === '$not' && typeof filterValue === 'object') {
+                const notFilter = filterValue as IFilterOfField;
+                if ('$rgx' in notFilter) {
+                    return {
+                        filterType: 'text',
+                        type: 'notContains',
+                        filter: handleRegexFilter(notFilter.$rgx as string)!.filter,
+                    } as IAGGridTextFilter;
+                }
             }
 
             return {
