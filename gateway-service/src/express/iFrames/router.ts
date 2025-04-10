@@ -1,11 +1,26 @@
 import { Router } from 'express';
+import { createProxyMiddleware, fixRequestBody } from 'http-proxy-middleware';
 import IFramesController from './controller';
 import { createWorkspacesController } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
-import { createIFrameSchema, deleteIFrameSchema, getIFrameByIdSchema, searchIFramesSchema, updateIFrameSchema } from './validator.schema';
+import { createIFrameSchema, searchIFramesSchema, updateIFrameSchema } from './validator.schema';
 import { IFramesValidator } from './middlewares';
 import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
 import { busboyMiddleware } from '../../utils/busboy/busboyMiddleware';
+import config from '../../config';
+
+const {
+    dashboardService: { url, baseRoute, requestTimeout, iframes },
+} = config;
+
+const IframesServiceProxy = createProxyMiddleware({
+    target: `${url}${baseRoute}${iframes.baseRoute}`,
+    changeOrigin: true,
+    on: {
+        proxyReq: fixRequestBody,
+    },
+    proxyTimeout: requestTimeout,
+});
 
 export const iFramesRouter: Router = Router();
 const IFramesControllerMiddleware = createWorkspacesController(IFramesController);
@@ -13,10 +28,9 @@ const IFramesValidatorMiddleware = createWorkspacesController(IFramesValidator, 
 
 iFramesRouter.get(
     '/:iFrameId',
-    ValidateRequest(getIFrameByIdSchema),
     AuthorizerControllerMiddleware.userHasSomePermissions,
     IFramesValidatorMiddleware.validateUserCanGetIFrame,
-    IFramesControllerMiddleware.getIFrameById,
+    IframesServiceProxy,
 );
 
 iFramesRouter.post(
@@ -38,10 +52,9 @@ iFramesRouter.put(
 );
 iFramesRouter.delete(
     '/:iFrameId',
-    ValidateRequest(deleteIFrameSchema),
     AuthorizerControllerMiddleware.userCanWriteTemplates,
     IFramesValidatorMiddleware.validateUserCanDeleteIFrame,
-    IFramesControllerMiddleware.deleteIFrame,
+    IframesServiceProxy,
 );
 
 iFramesRouter.post(

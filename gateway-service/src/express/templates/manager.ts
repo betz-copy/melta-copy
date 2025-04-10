@@ -44,8 +44,6 @@ import DefaultManagerProxy from '../../utils/express/manager';
 import { buildNewRelationshipField, validateNoDependentRules, validateRequiredConstraints, validateUniqueRelationships } from '../../utils/templates';
 import { BadRequestError, NotFoundError, ServiceError } from '../error';
 import ProcessTemplatesManager from '../processes/processTemplates/manager';
-import { IAxisField, IChartDocument, IChartType, IColumnOrLineMetaData, INUmberMetaData, IPieMetaData } from '../templateCharts/interface';
-import { ChartManager } from '../templateCharts/manager';
 import { UsersManager } from '../users/manager';
 import {
     IEntityTemplateWithConstraints,
@@ -59,6 +57,15 @@ import { IMongoRule, IRule } from './rules/interfaces';
 import { IFormula } from './rules/interfaces/formula';
 import { InstancesManager } from '../instances/manager';
 import { Kartoffel } from '../../externalServices/kartoffel';
+import {
+    IAxisField,
+    IMongoChart,
+    IChartType,
+    IColumnOrLineMetaData,
+    INUmberMetaData,
+    IPieMetaData,
+} from '../../externalServices/dashboardService/chartService';
+import { ChartManager } from '../templateCharts/manager';
 
 const {
     categoryHasTemplates,
@@ -751,7 +758,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
                     return null;
                 }
             })
-            .filter(Boolean) as { chartId: string; updatedChart: IChartDocument }[];
+            .filter(Boolean) as { chartId: string; updatedChart: IMongoChart }[];
 
         await Promise.all(updatedCharts.map(({ chartId, updatedChart }) => chartManager.updateChart(chartId, updatedChart)));
     }

@@ -12,7 +12,6 @@
 **/*.dbmdl
 **/*.jfm
 **/azds.yaml
-**/charts
 **/docker-compose*
 **/Dockerfile*
 **/node_modules
