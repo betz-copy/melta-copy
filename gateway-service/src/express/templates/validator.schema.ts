@@ -60,7 +60,8 @@ export const createEntityTemplateSchema = Joi.object({
     },
     query: {},
     params: {},
-    files: { file: Joi.array().items(iconFileSchema).length(1), files: Joi.array().items(fileSchema) },
+    file: iconFileSchema,
+    files: Joi.array().items(fileSchema),
 });
 
 // PUT /api/templates/entities/update-enum-field/:id
@@ -108,7 +109,8 @@ export const updateEntityTemplateSchema = Joi.object({
     params: {
         id: MongoIdSchema.required(),
     },
-    files: { file: Joi.array().items(iconFileSchema).length(1), files: Joi.array().items(fileSchema) },
+    file: iconFileSchema,
+    files: Joi.array().items(fileSchema),
 });
 
 // PATCH /api/templates/entities/:id/status

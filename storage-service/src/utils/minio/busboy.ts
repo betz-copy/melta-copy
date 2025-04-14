@@ -12,6 +12,8 @@ export const busboyMiddleware = (req: Request, _res: Response, next: NextFunctio
     const fields: Record<string, unknown> = {};
     const files: UploadedFile[] = [];
 
+    let iconFile: UploadedFile | null = null;
+
     busboy.on('file', (fieldname: string, file: Readable, { encoding, filename, mimeType }) => {
         let fileSize = 0;
         const copiedFileStream = new ReadableStreamClone(file);
@@ -28,19 +30,24 @@ export const busboyMiddleware = (req: Request, _res: Response, next: NextFunctio
                 stream: copiedFileStream,
                 size: fileSize,
             };
-            files.push(fileData);
+
+            if (fieldname === 'file') {
+                iconFile = fileData;
+            } else if (fieldname === 'files') {
+                files.push(fileData);
+            }
         });
     });
 
-    busboy.on('field', (fieldname: string, val: string) => {
+    busboy.on('field', (fieldname, val) => {
         fields[fieldname] = val;
     });
 
     busboy.on('finish', () => {
         req.body = fields;
 
-        if (files?.length > 1) req.files = files;
-        else req.file = files?.[0];
+        if (iconFile) req.file = iconFile;
+        if (files.length) req.files = files;
 
         next();
     });
