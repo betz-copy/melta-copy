@@ -5,13 +5,28 @@ TODAY=$(date +'%d-%m')
 FOLDER_NAME="halbana-${TODAY}"
 SEVEN_Z_FILE="${FOLDER_NAME}.7z"
 
-# Check for --build argument
+# Initialize variables
 BUILD_IMAGES=false
-for arg in "$@"; do
-  if [ "$arg" == "--build" ]; then
-    BUILD_IMAGES=true
-    break
-  fi
+SPECIFIC_SERVICES=()
+
+# Parse arguments
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --build)
+      BUILD_IMAGES=true
+      shift
+      ;;
+    --services)
+      shift
+      while [[ $# -gt 0 && ! $1 =~ ^-- ]]; do
+        SPECIFIC_SERVICES+=("$1")
+        shift
+      done
+      ;;
+    *)
+      shift
+      ;;
+  esac
 done
 
 # Build images if needed
@@ -30,7 +45,23 @@ mkdir "$FOLDER_NAME"
 echo "The new folder $FOLDER_NAME just created."
 
 # List images
-IMAGES=$(cat docker-compose.yml | grep "build:" | awk '{print $2}' | grep -v -F -f ./scripts/forbidden-images.txt | sed -e 's|^\./||' -e 's/^/melta-/' -e '/^melta_build:/d')
+IMAGES=$(cat docker-compose.yml | grep -A1 "build:" | grep -E "build:|context:" | awk '{print $2}' | grep -v -F -f ./scripts/forbidden-images.txt | sed -e 's|^\./||' -e 's/^/melta-/' -e '/^melta_build:/d' -e 's/\/$//' -e 's/-service$/-service/')
+
+# Filter images if specific services are provided
+if [ ${#SPECIFIC_SERVICES[@]} -gt 0 ]; then
+  echo "Processing only specified services: ${SPECIFIC_SERVICES[*]}"
+  FILTERED_IMAGES=""
+  for service in "${SPECIFIC_SERVICES[@]}"; do
+    SERVICE_IMAGE=$(echo "$IMAGES" | grep "melta-$service")
+    if [ ! -z "$SERVICE_IMAGE" ]; then
+      FILTERED_IMAGES="$FILTERED_IMAGES $SERVICE_IMAGE"
+    else
+      echo "Warning: Service '$service' not found in available images"
+    fi
+  done
+  IMAGES="$FILTERED_IMAGES"
+fi
+
 echo -e "\nImages list:\n$IMAGES"
 
 # Save Docker images and compress each to .7z
