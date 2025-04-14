@@ -529,6 +529,7 @@ export default {
             attachmentName: 'שם באנגלית',
             propertyDisplayName: 'שם שדה לתצוגה',
             relatedTemplateHaveToHadRequiredFields: 'תבנית ישות קשורה חייבת להכיל שדות חובה',
+            userFieldNotFound: 'לא נמצא שדה משתמש תואם',
             relatedUserFieldRequired: 'יש לקשר שדה משתמש',
             kartoffelFieldRequired: 'יש לבחור שדה קרטופלי',
             attachmentDisplayName: 'שם לתצוגה',

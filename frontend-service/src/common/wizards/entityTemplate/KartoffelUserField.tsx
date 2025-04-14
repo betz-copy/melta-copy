@@ -61,6 +61,11 @@ const KartoffelUserField: React.FC<FieldEditCardProps> = ({
     const [selectedUserField, setSelectedUserField] = useState<string | undefined>(value.expandedUserField?.relatedUserField);
     const [selectedKartoffelField, setSelectedKartoffelField] = useState<string | undefined>(value.expandedUserField?.kartoffelField);
 
+    let relatedUserHelperText = '';
+    if (touchedExpandedUserField && !selectedUserField) relatedUserHelperText = i18next.t('wizard.entityTemplate.relatedUserFieldRequired');
+    if (touchedExpandedUserField && errorExpandedUserField?.relatedUserField)
+        relatedUserHelperText = i18next.t(errorExpandedUserField?.relatedUserField);
+
     return (
         <Grid item container justifyContent="space-between" flexWrap="nowrap" width="100%">
             <Autocomplete
@@ -86,11 +91,7 @@ const KartoffelUserField: React.FC<FieldEditCardProps> = ({
                                 borderRadius: '10px',
                             },
                         }}
-                        helperText={
-                            touchedExpandedUserField &&
-                            errorExpandedUserField?.relatedUserField &&
-                            i18next.t('wizard.entityTemplate.relatedUserFieldRequired')
-                        }
+                        helperText={relatedUserHelperText}
                         name="template"
                         variant="outlined"
                         label={i18next.t('wizard.entityTemplate.relatedUser')}
