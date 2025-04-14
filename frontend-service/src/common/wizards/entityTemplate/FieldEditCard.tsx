@@ -49,8 +49,6 @@ import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { MeltaTooltip } from '../../MeltaTooltip';
 import { IUniqueConstraintOfTemplate } from '../../../interfaces/entities';
 import RelationshipReferenceField from './RelationshipReferenceField';
-import { PermissionScope } from '../../../interfaces/permissions';
-import { useUserStore } from '../../../stores/user';
 import { environment } from '../../../globals';
 
 const { mapSearchPropertiesLimit } = environment.map;
@@ -138,8 +136,6 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     hasActions,
     supportConvertingToMultipleFields = true,
 }) => {
-    const currentUser = useUserStore((state) => state.user);
-
     const isText = value.type === 'string' || value.type === 'text-area';
 
     const name = `properties[${index}].name`;
@@ -1084,7 +1080,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                     label={i18next.t('validation.hide')}
                                                 />
                                             )}
-                                            {supportUnique && unique !== undefined && setValues && (
+                                            {supportUnique && unique !== undefined && setValues && value.type !== 'signature' && (
                                                 <FormControlLabel
                                                     control={
                                                         <Switch
@@ -1211,12 +1207,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                 <Box>
                                                     <IconButton
                                                         onClick={() => remove(index, isNewProperty)}
-                                                        disabled={
-                                                            !supportDeleteForExistingInstances ||
-                                                            initialValue?.required ||
-                                                            currentUser.currentWorkspacePermissions.admin?.scope !== PermissionScope.write ||
-                                                            hasActions
-                                                        }
+                                                        disabled={!supportDeleteForExistingInstances || initialValue?.required || hasActions}
                                                     >
                                                         {value.deleted ? <DeleteOff /> : <DeleteIcon />}
                                                     </IconButton>

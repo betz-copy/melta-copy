@@ -3,8 +3,13 @@ import config from '../../config';
 import { BadRequestError, ForbiddenError } from '../error';
 import { UserService } from '../../externalServices/userService';
 
-const validateFlowHeaders = async (req: Request, _res: Response, next: NextFunction) => {
+const validateFlowHeaders = async (req: Request, res: Response, next: NextFunction) => {
     try {
+        if (!req.path.includes('/workspaces/search') && !req.body.WorkspaceId) {
+            res.json([]);
+            return;
+        }
+
         const expectedHeaders = {
             requestHostName: config.flowCube.flowRequestHostName,
             system: config.flowCube.flowSystemName,
@@ -25,7 +30,12 @@ const validateFlowHeaders = async (req: Request, _res: Response, next: NextFunct
         const userT = userMail.substring(0, userMail.indexOf('@'));
         const targetUser = await UserService.searchUsers({ search: userT, limit: 1 });
 
-        req.user = targetUser.users[0] ? { id: targetUser.users[0]?._id } : ({} as any);
+        if (!targetUser || !targetUser.users[0] || targetUser.count === 0) {
+            res.json([]);
+            return;
+        }
+
+        req.user = { id: targetUser.users[0]._id };
 
         next();
     } catch (error) {

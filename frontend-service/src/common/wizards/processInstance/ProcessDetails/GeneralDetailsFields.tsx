@@ -54,6 +54,7 @@ export const GeneralDetailsFields = ({
                         options={Array.from(processTemplatesMap.values())}
                         onChange={(_e, newValue) => {
                             setFieldValue('template', newValue);
+                            setFieldValue('details', {});
                         }}
                         value={values.template ?? null}
                         disabled={Boolean(isEditMode && processInstance)}
