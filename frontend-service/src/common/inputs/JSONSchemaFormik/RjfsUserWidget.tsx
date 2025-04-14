@@ -35,8 +35,8 @@ const RjfsUserWidget = ({
         }
         const formattedUser: Omit<IKartoffelUser, 'mobilePhone' | 'phone'> & { mobilePhone?: string; phone?: string } = {
             ...chosenUser,
-            mobilePhone: chosenUser.mobilePhone?.join(''),
-            phone: chosenUser.phone?.join(''),
+            mobilePhone: chosenUser.mobilePhone?.join(','),
+            phone: chosenUser.phone?.join(','),
         };
         if (handleOnChange) handleOnChange(formattedUser, formContext.globalValues);
 

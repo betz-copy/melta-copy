@@ -27,7 +27,6 @@ const KartoffelUserField: React.FC<FieldEditCardProps> = ({
         'displayName',
         'identityCard',
         'personalNumber',
-        'goalUserId',
         'employeeNumber',
         'employeeId',
         'organization',
