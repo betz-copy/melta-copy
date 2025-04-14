@@ -51,4 +51,4 @@ export interface IFilterRelationReference {
     filterField?: IAGGridFilter;
 }
 
-export type IAGGridFilter = IAGGridTextFilter | IAGGidNumberFilter | IAGGridDateFilter | IAGGridSetFilter;
+export type IAGGridFilter = IAGGridTextFilter | IAGGidNumberFilter | IAGGridDateFilter;

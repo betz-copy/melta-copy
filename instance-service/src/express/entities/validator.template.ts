@@ -82,6 +82,7 @@ ajv.addKeyword({
     keyword: 'serialCurrent',
     type: 'number',
 });
+ajv.addKeyword({ keyword: 'filterRelationList', type: 'boolean' });
 
 export class EntityValidator extends DefaultController {
     private entityTemplateManagerService: EntityTemplateManagerService;
