@@ -202,7 +202,14 @@ const Steps: React.FC<IStepsProp> = ({
                                                         </Grid>
                                                     }
                                                 >
-                                                    <Grid container flexDirection="column" justifyContent="center" width="100%" gap="10px">
+                                                    <Grid
+                                                        container
+                                                        flexDirection="column"
+                                                        justifyContent="center"
+                                                        alignItems="center"
+                                                        width="100%"
+                                                        gap="10px"
+                                                    >
                                                         <StepIcon
                                                             iconColor={currStepInstance?._id === stepInstance._id ? '#1E2775' : '#9398C2'}
                                                             step={stepInstance}
