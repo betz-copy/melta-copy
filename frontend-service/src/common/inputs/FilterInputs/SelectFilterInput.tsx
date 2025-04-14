@@ -8,38 +8,19 @@ import { IAGGridFilter, IFilterRelationReference } from '../../wizards/entityTem
 
 interface SelectFilterInputProps {
     filterField: IAGGridTextFilter | undefined;
-    handleFilterFieldChange?: (value: IGraphFilterBody['filterField'], condition?: boolean) => void;
+    handleFilterFieldChange: (value: IGraphFilterBody['filterField'], condition?: boolean) => void;
     readOnly: boolean;
     isBooleanSelect?: boolean;
     enumOptions?: string[];
-    index?: number;
-    field?: keyof IFilterRelationReference;
-    handleFilterFieldChangeByIndex?: (index: number, field: keyof IFilterRelationReference, value: IAGGridFilter) => void;
 }
 
-const SelectFilterInput: React.FC<SelectFilterInputProps> = ({
-    filterField,
-    handleFilterFieldChange,
-    enumOptions,
-    readOnly,
-    isBooleanSelect,
-    index,
-    field,
-    handleFilterFieldChangeByIndex,
-}) => {
+const SelectFilterInput: React.FC<SelectFilterInputProps> = ({ filterField, handleFilterFieldChange, enumOptions, readOnly, isBooleanSelect }) => {
     const options = isBooleanSelect
         ? [
               { option: true, label: i18next.t('booleanOptions.yes') },
               { option: false, label: i18next.t('booleanOptions.no') },
           ]
         : enumOptions?.map((option) => ({ option, label: option }));
-
-    const handleFilterFieldChangeByValues = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        if (index && field && handleFilterFieldChangeByIndex)
-            handleFilterFieldChangeByIndex(index, field, { filterType: 'text', type: 'equals', filter: e.target.value } as IAGGridTextFilter);
-        else if (handleFilterFieldChange)
-            handleFilterFieldChange({ filterType: 'text', type: 'equals', filter: e.target.value } as IAGGridTextFilter);
-    };
 
     return (
         <Grid container justifyContent="center">
@@ -48,7 +29,7 @@ const SelectFilterInput: React.FC<SelectFilterInputProps> = ({
                 size="small"
                 fullWidth
                 value={filterField?.filter ?? ''}
-                onChange={(e) => handleFilterFieldChangeByValues(e)}
+                onChange={(e) => handleFilterFieldChange({ filterType: 'text', type: 'equals', filter: e.target.value } as IAGGridTextFilter)}
                 inputProps={{
                     readOnly,
                     style: {
