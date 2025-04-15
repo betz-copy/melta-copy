@@ -9,7 +9,15 @@ export default class ActivityLogManager extends DefaultManagerMongo<IActivityLog
         super(workspaceId, config.mongo.activitiesCollectionName, ActivityLogSchema);
     }
 
-    async getActivity(entityId: string, limit: number, skip: number, actions?: string[], searchText?: string) {
+    async getActivity(
+        entityId: string,
+        limit: number,
+        skip: number,
+        actions?: string[],
+        searchText?: string,
+        startDateRange?: Date,
+        endDateRange?: Date,
+    ) {
         const regActions = actions?.map((action) => new RegExp(action));
         const searchRegex = { $regex: searchText, $options: 'i' };
         const query: FilterQuery<IActivityLog> = {};
@@ -24,6 +32,12 @@ export default class ActivityLogManager extends DefaultManagerMongo<IActivityLog
                     $or: [{ fieldName: searchRegex }, { oldValue: searchRegex }, { newValue: searchRegex }],
                 },
             };
+        }
+        if (startDateRange && endDateRange) {
+            query.timestamp = { $gte: startDateRange, $lte: endDateRange };
+        } else {
+            if (startDateRange) query.timestamp = { $gte: startDateRange };
+            if (endDateRange) query.timestamp = { $lte: endDateRange };
         }
 
         return this.model

@@ -1,8 +1,7 @@
-import { Box, Divider, Grid, IconButton, useTheme } from '@mui/material';
+import { Grid, TextField } from '@mui/material';
 import i18next from 'i18next';
 import React, { useState } from 'react';
 import { toast } from 'react-toastify';
-import { Search } from '@mui/icons-material';
 import { InfiniteScroll } from '../../../../common/InfiniteScroll';
 import { environment } from '../../../../globals';
 import { IEntityExpanded } from '../../../../interfaces/entities';
@@ -11,7 +10,8 @@ import { getActivityLogRequest, IActivityLog } from '../../../../services/activi
 import ActivityLogRow from './ActivityLogRow';
 import { IProcessDetails } from '../../../../interfaces/processes/processTemplate';
 import { IMongoStepTemplatePopulated } from '../../../../interfaces/processes/stepTemplate';
-import SearchInput from '../../../../common/inputs/SearchInput';
+import DateRange from '../../../../common/inputs/DateRange';
+import MultipleSelect from '../../../../common/inputs/MultipleSelect';
 
 const { infiniteScrollPageCount } = environment.activityLog;
 
@@ -41,39 +41,90 @@ const ActivitiesContent: React.FC<{
     const entityId = expandedEntity?.entity.properties._id || activityEntityId || '';
 
     const [searchInput, setSearchInput] = useState('');
+    const [startDateInput, setStartDateInput] = useState<Date | null>(null);
+    const [endDateInput, setEndDateInput] = useState<Date | null>(null);
+    const [activitiesFilterValue, setActivitiesFilterValue] = useState<string[] | null>([]);
+
+    const items = [
+        { label: i18next.t('entityPage.activityLog.titles.deleteRelationship'), value: 'DELETE_RELATIONSHIP' },
+        { label: i18next.t('entityPage.activityLog.titles.createRelationship'), value: 'CREATE_RELATIONSHIP' },
+        { label: i18next.t('entityPage.activityLog.titles.updateFields'), value: 'UPDATE_FIELDS' },
+        { label: i18next.t('entityPage.activityLog.titles.createEntity'), value: 'CREATE_ENTITY' },
+        { label: i18next.t('entityPage.activityLog.titles.createProcess'), value: 'CREATE_PROCESS' },
     const theme = useTheme();
+        { label: i18next.t('entityPage.activityLog.titles.disableEntity'), value: 'DISABLE_ENTITY' },
+        { label: i18next.t('entityPage.activityLog.titles.enableEntity'), value: 'ACTIVATE_ENTITY' },
+    ];
+
+    let selectedValue: (typeof items)[number] | (typeof items)[number][] | null;
+
+    if (Array.isArray(activitiesFilterValue)) {
+        selectedValue = items.filter((opt) => activitiesFilterValue.includes(opt.value));
+    } else {
+        selectedValue = [];
+    }
 
     return (
         <>
-            <Grid
-                item
-                sx={{
-                    borderRadius: '7px',
-                    width: 'fit-content',
-                    border: `${theme.palette.primary.main} 1px solid`,
-                    marginBottom: '20px',
-                    alignSelf: 'center',
-                }}
-            >
-                <SearchInput
-                    onChange={setSearchInput}
-                    borderRadius="7px"
-                    placeholder={i18next.t('globalSearch.searchInHistory')}
-                    value={searchInput}
-                    endAdornmentChildren={
-                        <Box>
-                            <IconButton sx={{ color: theme.palette.primary.main, padding: 0 }} disableRipple>
-                                <Search sx={{ fontSize: '1.25rem' }} />
-                            </IconButton>
-                        </Box>
-                    }
-                    toTopBar={false}
-                />
+            <Grid container flexDirection="column" alignItems="center" marginBottom="20px">
+                <Grid
+                    item
+                    sx={{
+                        marginBottom: '20px',
+                    }}
+                >
+                    <TextField
+                        onChange={(e) => {
+                            setSearchInput(e.target.value);
+                        }}
+                        sx={{ borderRadius: '7px', width: '275px' }}
+                        placeholder={i18next.t('globalSearch.searchInHistory')}
+                        value={searchInput}
+                    />
+                </Grid>
+                <Grid item width="275px" marginBottom="20px">
+                    <MultipleSelect
+                        items={items}
+                        id="1"
+                        disabled={false}
+                        readonly={false}
+                        multiple
+                        selectedValue={selectedValue}
+                        onChange={(_event, newVal) => {
+                            setActivitiesFilterValue(newVal.map((val) => val.value));
+                        }}
+                        textFieldProps={{}}
+                        required={false}
+                        onBlur={() => {}}
+                        onFocus={() => {}}
+                        variant="outlined"
+                        rawErrors={[]}
+                        label={i18next.t('entityPage.activityLog.activityType')}
+                        value={activitiesFilterValue}
+                    />
+                </Grid>
+                <Grid item width="275px">
+                    <DateRange
+                        onStartDateChange={setStartDateInput}
+                        onEndDateChange={setEndDateInput}
+                        startDateInput={startDateInput}
+                        endDateInput={endDateInput}
+                        directionIsRow
+                    />
+                </Grid>
             </Grid>
             <InfiniteScroll<IActivityLog>
-                queryKey={['getActivityLogRequest', entityId, searchInput]}
+                queryKey={['getActivityLogRequest', entityId, searchInput, activitiesFilterValue, startDateInput, endDateInput]}
                 queryFunction={({ pageParam }) =>
-                    getActivityLogRequest(entityId, infiniteScrollPageCount, pageParam, ACTIVITY_TYPES, searchInput.trim())
+                    getActivityLogRequest(
+                        entityId,
+                        infiniteScrollPageCount,
+                        pageParam,
+                        activitiesFilterValue && activitiesFilterValue.length ? activitiesFilterValue : ACTIVITY_TYPES,
+                        searchInput.trim(),
+                        startDateInput || undefined,
+                        endDateInput || undefined,
+                    )
                 }
                 onQueryError={(error) => {
                     // eslint-disable-next-line no-console
@@ -84,10 +135,11 @@ const ActivitiesContent: React.FC<{
                 endText={i18next.t('entityPage.activityLog.noSearchLeft')}
             >
                 {(activityLog) => (
-                    <>
-                        <ActivityLogRow log={activityLog} entityTemplate={entityTemplate} />
-                        <Divider variant="middle" style={{ marginTop: '7px' }} />
-                    </>
+                    <Grid key={activityLog._id} padding="15px">
+                        <Grid sx={{ borderRadius: '20px', boxShadow: '-2px 2px 6px 0px rgba(30, 39, 117, 0.30)' }}>
+                            <ActivityLogRow log={activityLog} entityTemplate={entityTemplate} />
+                        </Grid>
+                    </Grid>
                 )}
             </InfiniteScroll>
         </>

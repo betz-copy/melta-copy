@@ -38,8 +38,28 @@ export interface IUpdateProcessStepMetadata extends IBaseActivityLog {
 
 export type IActivityLog = IEmptyMetadata | IRelationshipMetadata | IDuplicateEntityMetadata | IUpdateEntityMetadata | IUpdateProcessStepMetadata;
 
-const getActivityLogRequest = async (entityId: string, limit: number, skip: number, actions?: string[], searchText?: string) => {
-    const params: Partial<{ limit: number; skip: number; actions: string[]; searchText: string }> = { limit, skip, actions };
+const getActivityLogRequest = async (
+    entityId: string,
+    limit: number,
+    skip: number,
+    actions?: string[],
+    searchText?: string,
+    startDateRange?: Date,
+    endDateRange?: Date,
+) => {
+    let actionsToFilter = actions;
+    if (actions?.includes('UPDATE_FIELDS')) {
+        actionsToFilter = actions.filter((action) => action !== 'UPDATE_FIELDS');
+        actionsToFilter.push(...['UPDATE_ENTITY', 'UPDATE_PROCESS', 'UPDATE_PROCESS_STEP']);
+    }
+
+    const params: Partial<{ limit: number; skip: number; actions: string[]; searchText: string; startDateRange: Date; endDateRange: Date }> = {
+        limit,
+        skip,
+        actions: actionsToFilter,
+        startDateRange,
+        endDateRange,
+    };
 
     if (searchText) params.searchText = searchText;
 

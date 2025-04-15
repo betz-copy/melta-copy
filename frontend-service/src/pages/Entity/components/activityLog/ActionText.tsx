@@ -16,6 +16,66 @@ import { IMongoStepTemplatePopulated } from '../../../../interfaces/processes/st
 import { StatusDisplay } from '../../../../common/wizards/processInstance/ProcessSummaryStep/ProcessStatus';
 import { CoordinateSystem, LocationData } from '../../../../common/inputs/JSONSchemaFormik/RjsfLocationWidget';
 import { locationConverterToString } from '../../../../utils/map/convert';
+import { NotificationColor } from '../../../../common/notificationColor';
+
+const logTitles = {
+    ACTIVATE_ENTITY: (
+        <Grid item container marginBottom="10px">
+            <NotificationColor color="#C5FF7B" />
+            <Typography variant="subtitle1" color="primary" fontWeight="400" fontSize="15px" paddingLeft="10px">
+                {i18next.t('entityPage.activityLog.titles.enableEntity')}
+            </Typography>
+        </Grid>
+    ),
+    DISABLE_ENTITY: (
+        <Grid item container marginBottom="10px">
+            <NotificationColor color="#B7B8B9" />
+            <Typography variant="subtitle1" color="primary" fontWeight="400" fontSize="15px" paddingLeft="10px">
+                {i18next.t('entityPage.activityLog.titles.disableEntity')}
+            </Typography>
+        </Grid>
+    ),
+    CREATE_ENTITY: (
+        <Grid item container marginBottom="10px">
+            <NotificationColor color="#84FF90" />
+            <Typography variant="subtitle1" color="primary" fontWeight="400" fontSize="15px" paddingLeft="10px">
+                {i18next.t('entityPage.activityLog.titles.createEntity')}
+            </Typography>
+        </Grid>
+    ),
+    CREATE_PROCESS: (
+        <Grid item container marginBottom="10px">
+            <NotificationColor color="#84FF90" />
+            <Typography variant="subtitle1" color="primary" fontWeight="400" fontSize="15px" paddingLeft="10px">
+                {i18next.t('entityPage.activityLog.titles.createProcess')}
+            </Typography>
+        </Grid>
+    ),
+    UPDATE_FIELDS: (
+        <Grid item container marginBottom="10px">
+            <NotificationColor color="#8CCFFF" />
+            <Typography variant="subtitle1" color="primary" fontWeight="400" fontSize="15px" paddingLeft="10px">
+                {i18next.t('entityPage.activityLog.titles.updateFields')}
+            </Typography>
+        </Grid>
+    ),
+    DELETE_RELATIONSHIP: (
+        <Grid item container marginBottom="10px">
+            <NotificationColor color="#FF7979" />
+            <Typography variant="subtitle1" color="primary" fontWeight="400" fontSize="15px" paddingLeft="10px">
+                {i18next.t('entityPage.activityLog.titles.deleteRelationship')}
+            </Typography>
+        </Grid>
+    ),
+    CREATE_RELATIONSHIP: (
+        <Grid item container marginBottom="10px">
+            <NotificationColor color="#FFD18C" />
+            <Typography variant="subtitle1" color="primary" fontWeight="400" fontSize="15px" paddingLeft="10px">
+                {i18next.t('entityPage.activityLog.titles.createRelationship')}
+            </Typography>
+        </Grid>
+    ),
+};
 
 const StyledTypography = styled(Typography)(({ theme }) => ({
     fontFamily: 'Rubik',
@@ -36,6 +96,7 @@ const EmptyMetadataActionText: React.FC<{
 
     return (
         <Grid item minWidth="190px">
+            {logTitles[action]}
             <StyledTypography variant="body2">{logTexts[action]}</StyledTypography>
         </Grid>
     );
@@ -64,6 +125,7 @@ const RelationshipMetadataActionText: React.FC<{
 
     return (
         <Grid item container>
+            {logTitles[action]}
             <StyledTypography variant="body2" component="span">
                 {action === 'CREATE_RELATIONSHIP'
                     ? i18next.t('entityPage.activityLog.createRelationship')
@@ -203,7 +265,7 @@ const UpdateTextValue: React.FC<{
             title={<Grid style={{ maxHeight: '500px', overflowY: 'auto' }}>{contentDisplayNameByTemplate(innerContent)}</Grid>}
             placement="top-start"
         >
-            <Grid>
+            <Grid item>
                 <StyledTypography variant="body2" style={ellipsisStyle}>
                     {old ? i18next.t('entityPage.activityLog.from') : i18next.t('entityPage.activityLog.to')}{' '}
                     {contentDisplayNameByTemplate(innerContent)}
@@ -224,40 +286,47 @@ const UpdateEntityMetadataActionText: React.FC<{
 }> = ({ actionMetadata, entityTemplateProperties }) => {
     const theme = useTheme();
     return (
-        <Grid item minWidth="190px">
-            <StyledTypography variant="body2" marginBottom="5px">
-                {actionMetadata.updatedFields.length === 1
-                    ? i18next.t('entityPage.activityLog.updateField')
-                    : i18next.t('entityPage.activityLog.updateFields')}{' '}
-            </StyledTypography>
+        <Grid item container flexDirection="column">
+            {logTitles.UPDATE_FIELDS}
+            <Grid item minWidth="190px">
+                <StyledTypography variant="body2" marginBottom="5px">
+                    {actionMetadata.updatedFields.length === 1
+                        ? i18next.t('entityPage.activityLog.updateField')
+                        : i18next.t('entityPage.activityLog.updateFields')}{' '}
+                </StyledTypography>
 
-            {actionMetadata.updatedFields.map((field) => {
-                const { oldValue, newValue, fieldName } = field;
+                {actionMetadata.updatedFields.map((field) => {
+                    const { oldValue, newValue, fieldName } = field;
 
-                const deleted = entityTemplateProperties[fieldName];
-                const isDeleted = deleted === undefined;
+                    const deleted = entityTemplateProperties[fieldName];
+                    const isDeleted = deleted === undefined;
 
-                return (
-                    <Grid key={fieldName} style={{ marginBottom: '10px' }}>
-                        <StyledTypography key={fieldName} variant="body2" style={{ ...ellipsisStyle, color: theme.palette.primary.main }}>
-                            {isDeleted
-                                ? `${fieldName} (${i18next.t('entityPage.activityLog.wasDeleted')})`
-                                : entityTemplateProperties[fieldName].title}
-                        </StyledTypography>
-                        {[oldValue, newValue].map((value, index) => {
-                            return (
-                                <UpdateTextValue
-                                    key={value}
-                                    value={value}
-                                    old={index === 0}
-                                    fieldName={field.fieldName}
-                                    entityTemplateProperties={entityTemplateProperties}
-                                />
-                            );
-                        })}
-                    </Grid>
-                );
-            })}
+                    return (
+                        <Grid key={fieldName} style={{ marginBottom: '10px' }}>
+                            <StyledTypography
+                                key={fieldName}
+                                variant="body2"
+                                style={{ ...ellipsisStyle, color: theme.palette.primary.main, fontWeight: '500' }}
+                            >
+                                {isDeleted
+                                    ? `${fieldName} (${i18next.t('entityPage.activityLog.wasDeleted')})`
+                                    : entityTemplateProperties[fieldName].title}
+                            </StyledTypography>
+                            {[oldValue, newValue].map((value, index) => {
+                                return (
+                                    <UpdateTextValue
+                                        key={value}
+                                        value={value}
+                                        old={index === 0}
+                                        fieldName={field.fieldName}
+                                        entityTemplateProperties={entityTemplateProperties}
+                                    />
+                                );
+                            })}
+                        </Grid>
+                    );
+                })}
+            </Grid>
         </Grid>
     );
 };
