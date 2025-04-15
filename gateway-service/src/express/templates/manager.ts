@@ -505,11 +505,15 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         { file, files }: { file?: [UploadedFile]; files?: UploadedFile[] },
     ): Promise<IMongoEntityTemplateWithConstraintsPopulated> {
         await this.entityTemplateService.getCategoryById(templateData.category);
-        let iconFileId: string | null;
+        let iconFileId: string | null = null;
 
-        if (file) {
-            iconFileId = await this.storageService.uploadFile(file[0]);
-        } else iconFileId = null;
+        if (file?.[0]) {
+            [iconFileId] = await this.storageService.uploadFiles([file[0]]);
+        }
+
+        const documentFiles = (files ?? []).filter((f) => f.fieldname.toLowerCase() !== 'file' && f.fieldname.toLowerCase() !== 'icon');
+
+        const uploadedDocumentTemplates = documentFiles.length ? await this.storageService.uploadFiles(documentFiles) : [];
 
         const { uniqueConstraints, properties, ...restOfTemplateData } = templateData;
         const { required: requiredConstraints, ...restOfTemplatePropertiesObject } = properties;
@@ -520,10 +524,13 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             ...restOfTemplateData,
             properties: restOfTemplatePropertiesObject,
             iconFileId,
-            documentTemplatesIds: files ? await this.storageService.uploadFiles(files) : undefined,
+            documentTemplatesIds: uploadedDocumentTemplates,
         });
 
-        await this.instancesService.updateConstraintsOfTemplate(entityTemplate._id, { requiredConstraints, uniqueConstraints });
+        await this.instancesService.updateConstraintsOfTemplate(entityTemplate._id, {
+            requiredConstraints,
+            uniqueConstraints,
+        });
 
         await this.updateEntityTemplateScope(entityTemplate, permissionsOfUserId, userId);
 
@@ -866,13 +873,19 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
     ) {
         let iconFileId: string | null;
 
-        if (file) {
-            if (currTemplate.iconFileId) await this.storageService.deleteFile(currTemplate.iconFileId);
+        if (file?.[0]) {
+            if (currTemplate.iconFileId) {
+                await this.storageService.deleteFile(currTemplate.iconFileId);
+            }
             iconFileId = await this.storageService.uploadFile(file[0]);
         } else if (currTemplate.iconFileId && !updatedTemplateData.iconFileId) {
             await this.storageService.deleteFile(currTemplate.iconFileId);
             iconFileId = null;
-        } else iconFileId = currTemplate.iconFileId;
+        } else {
+            iconFileId = currTemplate.iconFileId;
+        }
+
+        const documentFiles = files?.filter((f) => f.fieldname !== 'file') ?? [];
 
         const { documentTemplatesIdsToKeep = [], documentTemplatesIdsToDelete = [] } = _.groupBy(
             currTemplate.documentTemplatesIds,
@@ -883,11 +896,15 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             },
         );
 
-        if (documentTemplatesIdsToDelete.length) await this.storageService.deleteFiles(documentTemplatesIdsToDelete);
+        if (documentTemplatesIdsToDelete.length) {
+            await this.storageService.deleteFiles(documentTemplatesIdsToDelete);
+        }
+
+        const uploadedDocumentTemplates = documentFiles.length > 0 ? await this.storageService.uploadFiles(documentFiles) : [];
 
         return {
             iconFileId,
-            documentTemplatesIds: [...documentTemplatesIdsToKeep, ...(files ? await this.storageService.uploadFiles(files) : [])],
+            documentTemplatesIds: [...documentTemplatesIdsToKeep, ...uploadedDocumentTemplates],
         };
     }
 
