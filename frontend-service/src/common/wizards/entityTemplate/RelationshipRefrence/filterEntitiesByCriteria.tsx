@@ -4,8 +4,10 @@ import { Grid, TextField, Button, Typography, IconButton, Autocomplete, MenuItem
 import { Add, Clear } from '@mui/icons-material';
 import i18next from 'i18next';
 import { IAGGridFilter, IFilterRelationReference } from '../commonInterfaces';
-import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
+import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridTextFilter } from '../../../../utils/agGrid/interfaces';
+import { DateFilterInput } from '../../../inputs/FilterInputs/DateFilterInput';
+import { TextFilterInput } from '../../../inputs/FilterInputs/TextFilterInput';
 
 interface FilterEntitiesByCriteriaProps {
     name: string; // e.g. "properties[0].relationshipReference.filters"
@@ -34,12 +36,12 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
     };
 
     const filterTypeOptions = {
-        text: ['contains', 'notContains', 'equals', 'notEqual', 'startsWith', 'endsWith', 'blank', 'notBlank'],
-        number: ['equals', 'notEqual', 'lessThan', 'lessThanOrEqual', 'greaterThan', 'greaterThanOrEqual', 'inRange', 'blank', 'notBlank'],
-        date: ['equals', 'notEqual', 'lessThan', 'greaterThan', 'inRange', 'blank', 'notBlank'],
+        text: ['contains', 'notContains', 'equals', 'notEqual', 'startsWith', 'endsWith'],
+        number: ['equals', 'notEqual', 'lessThan', 'lessThanOrEqual', 'greaterThan', 'greaterThanOrEqual', 'inRange'],
+        date: ['equals', 'notEqual', 'lessThan', 'greaterThan', 'inRange'],
     };
 
-    const handleFilterFieldChange = (index: number, updatedFields: Partial<IAGGridFilter>) => {
+    const handleFilterFieldChange = (index: number, updatedFields: Partial<IAGGridFilter>, _condition: boolean = true) => {
         const current = filters[index]?.filterField;
         const filterType = current?.filterType || updatedFields.filterType || 'text';
 
@@ -96,87 +98,57 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
         boolean: { filterType: 'text', type: 'equals' },
     };
 
-    const renderFilterField = (filter: IFilterRelationReference, index: number) => {
+    const handleTypedFilterTypeChange = (filterType: IAGGridFilter['filterType'], index: number, newType: string, field: IAGGridFilter) => {
+        if (filterType === 'text') {
+            handleFilterFieldChange(index, {
+                ...(field as IAGGridTextFilter),
+                type: newType as IAGGridTextFilter['type'],
+            } as Partial<IAGGridTextFilter>);
+        } else if (filterType === 'number') {
+            handleFilterFieldChange(index, {
+                ...(field as IAGGidNumberFilter),
+                type: newType as IAGGidNumberFilter['type'],
+            } as Partial<IAGGidNumberFilter>);
+        } else if (filterType === 'date') {
+            handleFilterFieldChange(index, {
+                ...(field as IAGGridDateFilter),
+                type: newType as IAGGridDateFilter['type'],
+            } as Partial<IAGGridDateFilter>);
+        }
+    };
+
+    const renderFilterField = (filter: IFilterRelationReference, index: number, _property: IEntitySingleProperty, isNewProperty: boolean) => {
         const field = filter.filterField;
         if (!field?.filterType || !field.type) return null;
 
-        const isInRange = field.type === 'inRange';
-
         switch (field.filterType) {
             case 'text':
-                return (
-                    <TextField
-                        label={i18next.t('wizard.entityTemplate.filterValue')}
-                        value={field.filter || ''}
-                        onChange={(e) => handleFilterFieldChange(index, { filter: e.target.value })}
-                        fullWidth
-                    />
-                );
-
             case 'number':
-                return isInRange ? (
-                    <Grid container spacing={1}>
-                        <Grid item xs={6}>
-                            <TextField
-                                type="number"
-                                label={i18next.t('wizard.entityTemplate.from')}
-                                value={(field as IAGGidNumberFilter).filter || ''}
-                                onChange={(e) => handleFilterFieldChange(index, { filter: Number(e.target.value) })}
-                                fullWidth
-                            />
-                        </Grid>
-                        <Grid item xs={6}>
-                            <TextField
-                                type="number"
-                                label={i18next.t('wizard.entityTemplate.to')}
-                                value={(field as IAGGidNumberFilter).filterTo || ''}
-                                onChange={(e) => handleFilterFieldChange(index, { filterTo: Number(e.target.value) })}
-                                fullWidth
-                            />
-                        </Grid>
-                    </Grid>
-                ) : (
-                    <TextField
-                        type="number"
-                        label={i18next.t('wizard.entityTemplate.filterValue')}
-                        value={(field as IAGGidNumberFilter).filter || ''}
-                        onChange={(e) => handleFilterFieldChange(index, { filter: Number(e.target.value) })}
-                        fullWidth
+                return (
+                    <TextFilterInput
+                        filterField={field as IAGGidNumberFilter | IAGGridTextFilter}
+                        handleFilterFieldChange={(updatedField, condition) => {
+                            if (updatedField && (updatedField.filterType === 'text' || updatedField.filterType === 'number')) {
+                                handleFilterFieldChange(index, updatedField, condition);
+                            }
+                        }}
+                        handleFilterTypeChange={(newType) => handleTypedFilterTypeChange(field.filterType, index, newType, field)}
+                        readOnly={isNewProperty}
+                        entityFilter={false}
+                        type={field.filterType}
                     />
                 );
 
             case 'date':
-                return isInRange ? (
-                    <Grid container spacing={1}>
-                        <Grid item xs={6}>
-                            <TextField
-                                type="date"
-                                label={i18next.t('wizard.entityTemplate.dateFrom')}
-                                value={field.dateFrom || ''}
-                                onChange={(e) => handleFilterFieldChange(index, { dateFrom: e.target.value })}
-                                InputLabelProps={{ shrink: true }}
-                                fullWidth
-                            />
-                        </Grid>
-                        <Grid item xs={6}>
-                            <TextField
-                                type="date"
-                                label={i18next.t('wizard.entityTemplate.dateTo')}
-                                value={field.dateTo || ''}
-                                onChange={(e) => handleFilterFieldChange(index, { dateTo: e.target.value })}
-                                InputLabelProps={{ shrink: true }}
-                                fullWidth
-                            />
-                        </Grid>
-                    </Grid>
-                ) : (
-                    <TextField
-                        type="date"
-                        label={i18next.t('wizard.entityTemplate.date')}
-                        value={field.dateFrom || ''}
-                        onChange={(e) => handleFilterFieldChange(index, { dateFrom: e.target.value })}
-                        InputLabelProps={{ shrink: true }}
-                        fullWidth
+                return (
+                    <DateFilterInput
+                        filterField={field}
+                        handleFilterTypeChange={(newType) => handleTypedFilterTypeChange('date', index, newType, field)}
+                        handleDateChange={(newValue, isStart) => {
+                            setFieldValue(isStart ? `filters.${index}.dateFrom` : `filters.${index}.dateTo`, newValue);
+                        }}
+                        entityFilter={false}
+                        readOnly={isNewProperty}
                     />
                 );
 
@@ -186,13 +158,11 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
     };
 
     return (
-        <Grid container direction="column" gap="0.8rem">
+        <Grid container direction="column" marginTop="0.5rem">
             {selectedEntityTemplate && (
-                <Grid container direction="column" gap="0.4rem">
+                <Grid container direction="column" gap="0.6rem">
                     {filters.map((filter, index) => {
-                        const isNewProperty = !filter.filterProperty;
-                        const isDisabled = !isNewProperty;
-
+                        const isNewProperty = JSON.stringify(filter) === JSON.stringify(filterInitialValues);
                         const getSelectedFilterPropTitle =
                             selectedEntityTemplate &&
                             filter.filterProperty !== '' &&
@@ -205,6 +175,10 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
 
                         const filterType = filter.filterField?.filterType;
                         const selectedType = filter.filterField?.type;
+                        const selectedProperty =
+                            selectedEntityTemplate && filter.filterProperty !== ''
+                                ? selectedEntityTemplate.properties.properties[filter.filterProperty]
+                                : ({} as IEntitySingleProperty);
 
                         return (
                             <Grid container wrap="nowrap" direction="row" gap="0.4rem" key={filter.filterProperty || index}>
@@ -227,7 +201,6 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
                                     }}
                                     isOptionEqualToValue={(option, val) => option.key === val.key}
                                     value={getSelectedFilterPropTitle}
-                                    disabled={isDisabled}
                                     getOptionLabel={(option) => option.title || ''}
                                     fullWidth
                                     renderInput={(params) => (
@@ -240,7 +213,7 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
                                         />
                                     )}
                                 />
-                                {filterType && (
+                                {/* {filterType && (
                                     <TextField
                                         select
                                         fullWidth
@@ -258,9 +231,9 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
                                             </MenuItem>
                                         ))}
                                     </TextField>
-                                )}
+                                )} */}
 
-                                {renderFilterField(filter, index)}
+                                {filterType && renderFilterField(filter, index, selectedProperty, isNewProperty)}
 
                                 <Grid item>
                                     <IconButton onClick={() => handleRemoveFilter(index)}>

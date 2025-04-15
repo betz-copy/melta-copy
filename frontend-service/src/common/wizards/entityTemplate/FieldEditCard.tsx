@@ -659,7 +659,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                     })}
                                             </TextField>
                                         </Grid>
-                                        <Grid item container justifyContent="space-between" flexWrap="nowrap">
+                                        <Grid item container justifyContent="space-between" flexWrap="nowrap" marginTop="0.5rem">
                                             {(value.type === 'enum' || value.type === 'enumArray') && (
                                                 <Autocomplete
                                                     id={options}

@@ -26,7 +26,7 @@ const TextFilterInput: React.FC<TextFilterProps> = ({
     handleFilterFieldChange,
 }) => {
     return (
-        <Grid container justifyContent="center" direction={entityFilter ? 'row' : 'column'} spacing={2}>
+        <Grid container justifyContent="center" direction={entityFilter ? 'row' : 'column'} gap="0.4rem">
             <Grid item xs={entityFilter ? 5 : 12}>
                 <TypeSelectFilter
                     filterField={filterField as IAGGidNumberFilter | IAGGridTextFilter}

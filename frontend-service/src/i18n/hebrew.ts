@@ -579,6 +579,11 @@ export default {
             filterBy: 'סינון על פי',
             filterValue: 'ערך',
             addRelationFilter: 'הוספת סינון על רשימת היישויות בקשר',
+            from: 'החל מ-',
+            to: 'עד',
+            dateFrom: 'החל מ',
+            dateTo: 'עד',
+            filterType: '',
         },
         relationshipTemplate: {
             createTitle: 'יצירת תבנית קשר',
