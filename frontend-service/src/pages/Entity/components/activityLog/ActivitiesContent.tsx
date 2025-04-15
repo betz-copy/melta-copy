@@ -1,4 +1,4 @@
-import { Grid, TextField } from '@mui/material';
+import { Grid, Paper, TextField } from '@mui/material';
 import i18next from 'i18next';
 import React, { useState } from 'react';
 import { toast } from 'react-toastify';
@@ -136,9 +136,9 @@ const ActivitiesContent: React.FC<{
             >
                 {(activityLog) => (
                     <Grid key={activityLog._id} padding="15px">
-                        <Grid sx={{ borderRadius: '20px', boxShadow: '-2px 2px 6px 0px rgba(30, 39, 117, 0.30)' }}>
+                        <Paper sx={{ borderRadius: '20px', boxShadow: '-2px 2px 6px 0px rgba(30, 39, 117, 0.30)' }}>
                             <ActivityLogRow log={activityLog} entityTemplate={entityTemplate} />
-                        </Grid>
+                        </Paper>
                     </Grid>
                 )}
             </InfiniteScroll>
