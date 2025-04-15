@@ -9,20 +9,6 @@ export const templatesCompareFunc = (templateA: IMongoEntityTemplatePopulated, t
     return templateA.displayName.localeCompare(templateB.displayName);
 };
 
-export const categoriesCompareFunc = (categoryA: IMongoCategory, categoryB: IMongoCategory) => {
-    const a = categoryA.fractionalIndex;
-    const b = categoryB.fractionalIndex;
-
-    for (let i = 0; i < Math.max(a.length, b.length); i++) {
-        const aCode = a.charCodeAt(i) || 0;
-        const bCode = b.charCodeAt(i) || 0;
-
-        if (aCode !== bCode) return aCode - bCode;
-    }
-
-    return 0;
-};
-
 export const populateRelationshipTemplate = (
     relationshipTemplate: IMongoRelationshipTemplate,
     entityTemplates: IEntityTemplateMap,
@@ -56,6 +42,18 @@ export const mapTemplates = <T extends Record<string, any> & { _id: string }>(te
 
     sortedTemplates.forEach((template) => {
         map.set(template._id, template);
+    });
+
+    return map;
+};
+
+export const mapCategories = (categories: IMongoCategory[], order: string[]): Map<string, IMongoCategory> => {
+    const map: Map<string, IMongoCategory> = new Map();
+
+    const sortedCategories = categories.sort((a, b) => order.indexOf(a._id) - order.indexOf(b._id));
+
+    sortedCategories.forEach((category) => {
+        map.set(category._id, category);
     });
 
     return map;

@@ -51,7 +51,6 @@ const updateCategoryRequest = async (categoryId: string, updatedCategory: Catego
     formData.append('displayName', updatedCategory.displayName);
     formData.append('name', updatedCategory.name);
     formData.append('color', updatedCategory.color);
-    formData.append('fractionalIndex', updatedCategory.fractionalIndex);
 
     const { data } = await axios.put<IMongoCategory>(`${categories}/${categoryId}`, formData);
     return data;

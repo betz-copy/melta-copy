@@ -1,35 +1,53 @@
-import { generateKeyBetween } from 'fractional-indexing';
 import config from '../../config';
 import { DefaultManagerMongo } from '../../utils/mongo/manager';
 import { NotFoundError } from '../error';
 import { ICategory, IMongoCategory } from './interface';
 import { CategorySchema } from './model';
+import ConfigManager from '../config/manager';
 
 class CategoryManager extends DefaultManagerMongo<IMongoCategory> {
+    private configManager: ConfigManager;
+
     constructor(workspaceId: string) {
         super(workspaceId, config.mongo.categoriesCollectionName, CategorySchema);
+        this.configManager = new ConfigManager(workspaceId);
     }
 
     async getCategories(displayName?: string) {
-        return this.model
+        const categories = await this.model
             .find(displayName ? { displayName: { $regex: new RegExp(`.*${displayName}.*`) } } : {})
-            .sort({ fractionalIndex: 1 })
             .lean()
             .exec();
+
+        const categoryOrder = await this.configManager.getOrderConfigByName('categoryOrder');
+
+        return categories.sort((a, b) => categoryOrder.order.indexOf(a._id) - categoryOrder.order.indexOf(b._id));
     }
 
     async getCategoryById(id: string) {
         return this.model.findById(id).orFail(new NotFoundError('Category not found')).lean().exec();
     }
 
-    async createCategory(categoryData: Omit<ICategory, 'fractionalIndex'>) {
-        const lastCategory: IMongoCategory | undefined = (await this.model.find().sort({ fractionalIndex: -1 }).limit(1).lean().exec())[0];
-        const index = generateKeyBetween(lastCategory ? lastCategory.fractionalIndex : null, null);
+    async createCategory(categoryData: ICategory) {
+        const category = await this.model.create(categoryData);
 
-        return this.model.create({ ...categoryData, fractionalIndex: index });
+        const categoryOrder = await this.configManager.getOrderConfigByName('categoryOrder');
+        const order = categoryOrder.order;
+        order.push(category._id);
+        this.configManager.updateOrder(categoryOrder._id, { order: order });
+
+        return category;
     }
 
     async deleteCategory(id: string) {
+        const categoryOrder = await this.configManager.getOrderConfigByName('categoryOrder');
+        const order = categoryOrder.order;
+        const index = order.indexOf(id);
+        if (index > -1) {
+            order.splice(index, 1);
+            this.configManager.updateOrder(categoryOrder._id, { order: order });
+        }
+
         return this.model.findByIdAndDelete(id).orFail(new NotFoundError('Category not found')).lean().exec();
     }
 

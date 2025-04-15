@@ -9,6 +9,7 @@ export const environment = {
         getAllTemplates: '/templates/all',
         categories: '/templates/categories',
         entityTemplates: '/templates/entities',
+        templatesConfig: '/templates/config',
         relationshipTemplates: '/templates/relationships',
         rules: '/templates/rules',
         entities: '/instances/entities',

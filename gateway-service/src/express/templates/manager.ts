@@ -17,7 +17,10 @@ import {
     IEntitySingleProperty,
     IEntityTemplate,
     IEntityTemplatePopulated,
+    IMongoBaseConfig,
     IMongoEntityTemplatePopulated,
+    IMongoOrderConfig,
+    IOrderConfig,
     ISearchEntityTemplatesBody,
 } from '../../externalServices/templates/entityTemplateService';
 import {
@@ -242,8 +245,11 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             ...processTemplatesBeforePopulate.map((processTemplate) => this.processManager.getTemplateWithPopulatedStepReviewers(processTemplate)),
         ]);
 
+        const categoryOrder = await this.getOrderConfigByName('categoryOrder');
+
         return {
             categories: allCategories,
+            categoryOrder: categoryOrder,
             entityTemplates: allAllowedEntityTemplatesWithConstraints,
             relationshipTemplates: [...allowedRelationshipsTemplates, ...allowedRelationshipTemplatesBecauseOfRules],
             rules: allowedRules,
@@ -337,6 +343,24 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
     async updateCategoryTempOrder(templateId: string, newIndex: number, srcCategoryId: string, newCategoryId: string) {
         return this.entityTemplateService.updateCategoryTempOrder(templateId, newIndex, srcCategoryId, newCategoryId);
+    }
+
+    //config
+    async getAllConfigs(): Promise<IMongoBaseConfig[]> {
+        return this.entityTemplateService.getConfigs();
+    }
+
+    async getOrderConfigByName(name: string): Promise<IMongoOrderConfig> {
+        console.log('aaaaaaaa')
+        return this.entityTemplateService.getOrderConfigByName(name);
+    }
+
+    async updateOrderConfig(configId: string, configData: Partial<IOrderConfig>): Promise<IMongoOrderConfig> {
+        return this.entityTemplateService.updateOrderConfig(configId, configData);
+    }
+
+    async createOrderConfig(configData: IOrderConfig): Promise<IMongoOrderConfig> {
+        return this.entityTemplateService.createOrderConfig(configData);
     }
 
     // entity templates

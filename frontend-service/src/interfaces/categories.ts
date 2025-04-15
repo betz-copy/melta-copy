@@ -4,7 +4,6 @@ export interface ICategory {
     iconFileId?: string;
     color: string;
     templateOrder: string[];
-    fractionalIndex: string;
 }
 
 export interface IMongoCategory extends ICategory {

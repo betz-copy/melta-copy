@@ -6,7 +6,7 @@ import { IMongoRelationshipTemplate } from './relationshipsTemplateService';
 const {
     templateService: {
         baseRoute,
-        entities: { baseEntitiesRoute, baseCategoriesRoute },
+        entities: { baseEntitiesRoute, baseCategoriesRoute, baseConfigRoute },
     },
 } = config;
 
@@ -16,7 +16,6 @@ export interface ICategory {
     iconFileId: string | null;
     color: string;
     templateOrder: string[];
-    fractionalIndex: string;
 }
 
 export interface IMongoCategory extends ICategory {
@@ -112,6 +111,32 @@ export interface ISearchEntityTemplatesBody extends ISearchBody {
 
 export interface RequestWithSearchEntityTemplateBody extends RequestWithPermissionsOfUserId {
     searchQuery: ISearchEntityTemplatesBody;
+}
+
+export enum ConfigTypes {
+    BASE = 'base',
+    ORDER = 'order',
+}
+
+export interface IBaseConfig {
+    name: string;
+    type: ConfigTypes;
+}
+
+export interface IMongoBaseConfig extends IBaseConfig {
+    _id: string;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface IOrderConfig extends IBaseConfig {
+    order: string[];
+}
+
+export interface IMongoOrderConfig extends IOrderConfig {
+    _id: string;
+    createdAt: string;
+    updatedAt: string;
 }
 
 export class EntityTemplateService extends TemplatesManagerService {
@@ -214,6 +239,31 @@ export class EntityTemplateService extends TemplatesManagerService {
 
     async deleteEntityTemplate(entityTemplateId: string) {
         const { data } = await this.api.delete<IMongoEntityTemplate>(`${baseEntitiesRoute}/${entityTemplateId}`);
+
+        return data;
+    }
+
+    //config
+    async getConfigs() {
+        const { data } = await this.api.get<IMongoBaseConfig[]>(`${baseConfigRoute}/all`);
+
+        return data;
+    }
+
+    async getOrderConfigByName(configName: string) {
+        const { data } = await this.api.get<IMongoOrderConfig>(`${baseConfigRoute}/${ConfigTypes.ORDER}/${configName}`);
+
+        return data;
+    }
+
+    async updateOrderConfig(configId: string, configData: Partial<IOrderConfig>) {
+        const { data } = await this.api.put<IMongoOrderConfig>(`${baseConfigRoute}/${ConfigTypes.ORDER}/${configId}`, configData);
+
+        return data;
+    }
+
+    async createOrderConfig(configData: IOrderConfig) {
+        const { data } = await this.api.post<IMongoOrderConfig>(`${baseConfigRoute}/${ConfigTypes.ORDER}`, configData);
 
         return data;
     }

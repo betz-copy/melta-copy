@@ -38,7 +38,6 @@ import { NotificationsScreen } from './notifications/NotificationsScreen';
 import { ProfileButton } from './ProfileButton';
 import { Drawer, DrawerDivider } from './SideBar.styled';
 import { CloseDrawerButton, OpenDrawerButton } from './ToggleDrawerButtons';
-import { categoriesCompareFunc } from '../../utils/templates';
 
 interface SideBarProps {
     toggleDrawer: () => any;
@@ -251,50 +250,48 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                         marginTop: isDrawerOpen ? '0.5rem' : '0.25rem',
                     }}
                 >
-                    {Array.from(categories.values())
-                        .sort((a, b) => categoriesCompareFunc(a, b))
-                        .map(
-                            (category) =>
-                                Boolean(
-                                    currentUser.currentWorkspacePermissions.admin ||
-                                        currentUser.currentWorkspacePermissions.instances?.categories[category._id],
-                                ) && (
-                                    <NavButton
-                                        key={category._id}
-                                        to={`/category/${category._id}`}
-                                        text={category.displayName}
-                                        isDrawerOpen={isDrawerOpen}
-                                        onChangeToActive={(isActive) => {
-                                            handleChangeActiveButton(isActive, category._id);
+                    {Array.from(categories.values()).map(
+                        (category) =>
+                            Boolean(
+                                currentUser.currentWorkspacePermissions.admin ||
+                                    currentUser.currentWorkspacePermissions.instances?.categories[category._id],
+                            ) && (
+                                <NavButton
+                                    key={category._id}
+                                    to={`/category/${category._id}`}
+                                    text={category.displayName}
+                                    isDrawerOpen={isDrawerOpen}
+                                    onChangeToActive={(isActive) => {
+                                        handleChangeActiveButton(isActive, category._id);
 
-                                            if (isActive) {
-                                                trackPageView({
-                                                    documentTitle: `Category page - ${category.displayName}`,
-                                                    href: window.location.href,
-                                                });
-                                            }
-                                        }}
-                                        isActiveButton={activeButton === category._id}
-                                    >
-                                        {category.iconFileId ? (
-                                            <CustomIcon
-                                                iconUrl={category.iconFileId}
-                                                height="24px"
-                                                width="24px"
-                                                color={activeButton === category._id ? '#545eb9' : '#FFFFFF'}
-                                            />
-                                        ) : (
-                                            <HiveIcon
-                                                fontSize="large"
-                                                sx={{
-                                                    color: activeButton === category._id ? '#545eb9' : 'white',
-                                                    ...iconSize,
-                                                }}
-                                            />
-                                        )}
-                                    </NavButton>
-                                ),
-                        )}
+                                        if (isActive) {
+                                            trackPageView({
+                                                documentTitle: `Category page - ${category.displayName}`,
+                                                href: window.location.href,
+                                            });
+                                        }
+                                    }}
+                                    isActiveButton={activeButton === category._id}
+                                >
+                                    {category.iconFileId ? (
+                                        <CustomIcon
+                                            iconUrl={category.iconFileId}
+                                            height="24px"
+                                            width="24px"
+                                            color={activeButton === category._id ? '#545eb9' : '#FFFFFF'}
+                                        />
+                                    ) : (
+                                        <HiveIcon
+                                            fontSize="large"
+                                            sx={{
+                                                color: activeButton === category._id ? '#545eb9' : 'white',
+                                                ...iconSize,
+                                            }}
+                                        />
+                                    )}
+                                </NavButton>
+                            ),
+                    )}
                 </Grid>
                 <DrawerDivider />
                 <Grid item container direction="column" paddingY="0.5rem">

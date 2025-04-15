@@ -29,7 +29,7 @@ import { getAllRelationshipTemplatesRequest } from '../../../services/templates/
 import { getEntityTemplateColor } from '../../../utils/colors';
 import { getFileName } from '../../../utils/getFileName';
 import { getCountByTemplateIdsRequest } from '../../../services/entitiesService';
-import { categoriesCompareFunc, mapTemplates, templatesCompareFunc } from '../../../utils/templates';
+import { mapTemplates, templatesCompareFunc } from '../../../utils/templates';
 import { Box } from './Box';
 import { ViewingCard } from './Card';
 import { CardMenu } from './CardMenu';
@@ -49,7 +49,7 @@ const defaultEntityTemplatePopulated: IMongoEntityTemplatePopulated = {
     uniqueConstraints: [],
     name: '',
     displayName: '',
-    category: { displayName: '', name: '', _id: '', color: '', templateOrder: [], fractionalIndex: '' },
+    category: { displayName: '', name: '', _id: '', color: '', templateOrder: [] },
     disabled: false,
     properties: {
         type: 'object',
@@ -488,7 +488,7 @@ const EntityTemplatesRow: React.FC = () => {
 
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const categoriesArray = Array.from(categories.values()).sort((a, b) => categoriesCompareFunc(a, b));
+    const categoriesArray = Array.from(categories.values());
     const [categoriesToShow, setCategoriesToShow] = useState<IMongoCategory[]>(categoriesArray);
 
     const [searchText, setSearchText] = useState('');

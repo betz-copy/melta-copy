@@ -14,9 +14,10 @@ import { getFile } from '../../services/workspacesService';
 import { useUserStore } from '../../stores/user';
 import { defaultMetadata, useWorkspaceStore } from '../../stores/workspace';
 import { handleWorkspace } from '../../utils/permissions';
-import { mapTemplates } from '../../utils/templates';
+import { mapCategories, mapTemplates } from '../../utils/templates';
 import ErrorPage from '../ErrorPage';
 import { MeltaRoutesInner } from './routes';
+import { IMongoOrderConfig } from '../../interfaces/config';
 
 interface IMeltaRoutesProps {
     path: string;
@@ -30,6 +31,7 @@ export const MeltaRoutes: React.FC<IMeltaRoutesProps> = ({ path }) => {
 
     // use queries enabled false, setting query data by hand "queryClient.setQueryData" (setting from getAllTemplates)
     useQuery('getCategories', () => undefined, { enabled: false });
+    useQuery('getCategoryOrder', () => undefined, { enabled: false });
     useQuery('getEntityTemplates', () => undefined, { enabled: false });
     useQuery('getRelationshipTemplates', () => undefined, { enabled: false });
     useQuery('getRules', () => undefined, { enabled: false });
@@ -50,8 +52,9 @@ export const MeltaRoutes: React.FC<IMeltaRoutesProps> = ({ path }) => {
             // eslint-disable-next-line no-console
             console.log('failed to get templates error:', error);
         },
-        onSuccess: ({ categories, entityTemplates, relationshipTemplates, processTemplates, rules }) => {
-            queryClient.setQueryData<ICategoryMap>('getCategories', mapTemplates(categories));
+        onSuccess: ({ categories, categoryOrder, entityTemplates, relationshipTemplates, processTemplates, rules }) => {
+            queryClient.setQueryData<ICategoryMap>('getCategories', mapCategories(categories, categoryOrder.order));
+            queryClient.setQueryData<IMongoOrderConfig>('getCategoryConfig', categoryOrder);
             queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', mapTemplates(entityTemplates));
             queryClient.setQueryData<IRelationshipTemplateMap>('getRelationshipTemplates', mapTemplates(relationshipTemplates));
             queryClient.setQueryData<IProcessTemplateMap>('getProcessTemplates', mapTemplates(processTemplates));

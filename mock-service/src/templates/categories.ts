@@ -19,13 +19,6 @@ export const createCategories = async (workspaceId: string, categories: ICategor
     const axiosInstance = createAxiosInstance(workspaceId);
     const results: IMongoCategory[] = [];
 
-    // const promises = categories.map((category) => {
-    //     return axiosInstance.post<IMongoCategory>(url + createCategoryRoute, category);
-    // });
-
-    // const results = await Promise.all(promises);
-
-    // return results.map((result) => result.data);
     for (const category of categories) {
         const response = await axiosInstance.post<IMongoCategory>(url + createCategoryRoute, category);
 

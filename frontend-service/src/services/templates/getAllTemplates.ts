@@ -5,11 +5,13 @@ import { IMongoRelationshipTemplate } from '../../interfaces/relationshipTemplat
 import { IMongoCategory } from '../../interfaces/categories';
 import { IMongoRule } from '../../interfaces/rules';
 import { IMongoProcessTemplatePopulated } from '../../interfaces/processes/processTemplate';
+import { IMongoOrderConfig } from '../../interfaces/config';
 
 const { getAllTemplates: getAllTemplatesRoute } = environment.api;
 
 export type GetAllTemplatesType = {
     categories: IMongoCategory[];
+    categoryOrder: IMongoOrderConfig;
     entityTemplates: IMongoEntityTemplatePopulated[];
     relationshipTemplates: IMongoRelationshipTemplate[];
     processTemplates: IMongoProcessTemplatePopulated[];
@@ -18,6 +20,7 @@ export type GetAllTemplatesType = {
 
 const getAllTemplates = async () => {
     const { data } = await axios.get<GetAllTemplatesType>(getAllTemplatesRoute);
+    
     return data;
 };
 

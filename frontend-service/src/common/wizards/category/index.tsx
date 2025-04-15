@@ -12,6 +12,7 @@ import { ChooseIcon } from './ChooseIcon';
 import { ChooseColor, chooseColorSchema } from './ChooseColor';
 import fileDetails from '../../../interfaces/fileDetails';
 import { ErrorToast } from '../../ErrorToast';
+import { IMongoOrderConfig } from '../../../interfaces/config';
 
 export interface CategoryWizardValues extends Omit<ICategory, 'iconFileId'> {
     icon?: fileDetails;
@@ -36,6 +37,12 @@ const CategoryWizard: React.FC<WizardBaseType<CategoryWizardValues>> = ({
         {
             onSuccess: (data) => {
                 queryClient.setQueryData<ICategoryMap>('getCategories', (categories) => categories!.set(data._id, data));
+                queryClient.setQueryData<IMongoOrderConfig>('getCategoryConfig', (categoryConfig) => {
+                    const order = categoryConfig!.order;
+                    order.push(data._id);
+
+                    return { ...categoryConfig!, order: order };
+                });
 
                 toast.success(i18next.t(isEditMode ? 'wizard.category.editedSuccessfully' : 'wizard.category.createdSuccessfully'));
                 handleClose();

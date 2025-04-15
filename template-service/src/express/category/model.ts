@@ -22,11 +22,6 @@ export const CategorySchema = new mongoose.Schema(
             type: [String],
             default: [],
         },
-        fractionalIndex: {
-            type: String,
-            required: true,
-            unique: true,
-        },
     },
     {
         timestamps: true,

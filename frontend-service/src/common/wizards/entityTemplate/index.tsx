@@ -19,9 +19,10 @@ import { IConstraint, IUniqueConstraintOfTemplate } from '../../../interfaces/en
 import { UploadExportFormats } from './UploadExportFormats';
 import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
 import { getAllRelationshipTemplatesRequest } from '../../../services/templates/relationshipTemplatesService';
-import { mapTemplates } from '../../../utils/templates';
-import { ICategoryMap, IMongoCategory } from '../../../interfaces/categories';
+import { mapCategories, mapTemplates } from '../../../utils/templates';
+import { ICategoryMap } from '../../../interfaces/categories';
 import { getAllCategoryRequest } from '../../../services/templates/categoriesService';
+import { getOrderConfigByNameRequest } from '../../../services/templates/configService';
 
 const { errorCodes } = environment;
 
@@ -121,7 +122,8 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
 
                 try {
                     const categories = await getAllCategoryRequest();
-                    queryClient.setQueryData<ICategoryMap>('getCategories', mapTemplates(categories));
+                    const categoryOrder = await getOrderConfigByNameRequest('categoryOrder');
+                    queryClient.setQueryData<ICategoryMap>('getCategories', mapCategories(categories, categoryOrder.order));
                 } catch (error) {
                     toast.error(i18next.t('wizard.failedToUpdateSystemData'));
                 }

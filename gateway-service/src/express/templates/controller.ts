@@ -52,6 +52,23 @@ export default class TemplatesController extends DefaultController<TemplatesMana
         res.json(await this.manager.updateCategoryTempOrder(templateId, newIndex, srcCategoryId, newCategoryId));
     }
 
+    //config
+    async getAllConfigs(_req: Request, res: Response) {
+        res.json(await this.manager.getAllConfigs());
+    }
+
+    async getOrderConfigByName(req: Request, res: Response) {
+        res.json(await this.manager.getOrderConfigByName(req.params.configName));
+    }
+
+    async updateOrderConfig(req: Request, res: Response) {
+        res.json(await this.manager.updateOrderConfig(req.params.configId, req.body));
+    }
+
+    async createOrderConfig(req: Request, res: Response) {
+        res.json(await this.manager.createOrderConfig(req.body));
+    }
+
     // entityTemplates
     async createEntityTemplate(req: Request, res: Response) {
         res.json(await this.manager.createEntityTemplate(req.body, { files: req.files, file: req.file ? [req.file] : undefined }));

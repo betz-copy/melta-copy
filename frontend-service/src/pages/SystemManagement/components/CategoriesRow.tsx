@@ -5,7 +5,7 @@ import i18next from 'i18next';
 import React, { useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import { ICategory, ICategoryMap, IMongoCategory } from '../../../interfaces/categories';
+import { ICategoryMap, IMongoCategory } from '../../../interfaces/categories';
 import { ViewingCard } from './Card';
 import { CustomIcon } from '../../../common/CustomIcon';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
@@ -16,15 +16,16 @@ import { PermissionScope } from '../../../interfaces/permissions';
 import { ErrorToast } from '../../../common/ErrorToast';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
 import { MeltaTooltip } from '../../../common/MeltaTooltip';
-import { CategoryWizard, CategoryWizardValues } from '../../../common/wizards/category';
-import { categoryObjectToCategoryForm, deleteCategoryRequest, updateCategoryRequest } from '../../../services/templates/categoriesService';
+import { CategoryWizard } from '../../../common/wizards/category';
+import { categoryObjectToCategoryForm, deleteCategoryRequest } from '../../../services/templates/categoriesService';
 import { Box } from './Box';
 import { CardMenu } from './CardMenu';
 import { CreateButton } from './CreateButton';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
-import { generateKeyBetween } from 'fractional-indexing';
-import { categoriesCompareFunc } from '../../../utils/templates';
+import { updateConfigOrderRequest } from '../../../services/templates/configService';
+import { IMongoOrderConfig } from '../../../interfaces/config';
+import { mapCategories } from '../../../utils/templates';
 
 interface CategoryCardProps {
     category: IMongoCategory;
@@ -133,7 +134,8 @@ const CategoriesRow: React.FC = () => {
 
     const queryClient = useQueryClient();
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
-    const categoriesArray = Array.from(categories.values()).sort((a, b) => categoriesCompareFunc(a, b));
+    const categoryOrder = queryClient.getQueryData<IMongoOrderConfig>('getCategoryConfig');
+    const categoriesArray = Array.from(categories.values());
 
     const [deleteCategoryDialogState, setDeleteCategoryDialogState] = useState<{
         isDialogOpen: boolean;
@@ -158,6 +160,17 @@ const CategoriesRow: React.FC = () => {
                 return data!;
             });
 
+            queryClient.setQueryData<IMongoOrderConfig>('getCategoryConfig', (categoryConfig) => {
+                const order = categoryConfig!.order;
+                const index = order.indexOf(id);
+
+                if (index > -1) {
+                    order.splice(index, 1);
+                }
+
+                return { ...categoryConfig!, order: order };
+            });
+
             setDeleteCategoryDialogState({ isDialogOpen: false, categoryId: null });
             toast.success(i18next.t('wizard.category.deletedSuccessfully'));
         },
@@ -166,24 +179,14 @@ const CategoriesRow: React.FC = () => {
         },
     });
 
-    const { mutateAsync: reorderAsync } = useMutation(
-        ({ categoryId, category, index }: { categoryId: string; category: ICategory; index: number }) => {
-            const prevIndex: string | null = index > 0 ? categoriesArray[index - 1].fractionalIndex : null;
-            const nextIndex: string | null = categoriesArray[index + 1] ? categoriesArray[index + 1].fractionalIndex : null;
-            const newIndex = generateKeyBetween(prevIndex, nextIndex);
-
-            const categoryForm: CategoryWizardValues | undefined = categoryObjectToCategoryForm({
-                _id: categoryId,
-                ...category,
-                fractionalIndex: newIndex,
-            });
-
-            return updateCategoryRequest(categoryId, categoryForm!);
+    const { mutateAsync: changeOrder } = useMutation(
+        () => {
+            return updateConfigOrderRequest(categoryOrder!._id, { order: categoriesArray.map((category) => category._id) });
         },
-
         {
             onSuccess(data) {
-                queryClient.setQueryData<ICategoryMap>('getCategories', (categoryMap) => categoryMap!.set(data._id, data));
+                queryClient.setQueryData<IMongoOrderConfig>('getCategoryConfig', data);
+                queryClient.setQueryData<ICategoryMap>('getCategories', mapCategories(categoriesArray, data.order));
             },
             onError(error: AxiosError) {
                 toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.category.failedToEdit')} />);
@@ -199,11 +202,7 @@ const CategoriesRow: React.FC = () => {
             const { _id, ...restCategory } = categories.get(draggableId)!;
             categoriesArray.splice(source.index, 1);
             categoriesArray.splice(destination.index, 0, { _id, ...restCategory });
-            reorderAsync({
-                categoryId: draggableId,
-                category: restCategory,
-                index: destination.index,
-            });
+            changeOrder();
 
             return;
         }

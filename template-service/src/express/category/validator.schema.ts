@@ -47,7 +47,6 @@ export const updateCategorySchema = Joi.object({
         displayName: Joi.string(),
         color: ColorSchema,
         iconFileId: Joi.string().allow(null),
-        fractionalIndex: Joi.string()
     },
     params: {
         categoryId: MongoIdSchema.required(),
