@@ -466,14 +466,16 @@ const updateEntityTemplateRequest = async (entityTemplateId: string, updatedEnti
         }
     }
 
-    updatedEntityTemplate.documentTemplatesIds
-        ?.filter((item): item is File => item instanceof File)
+    ((updatedEntityTemplate.documentTemplatesIds as (File | string | { name: string })[]) ?? [])
+        .filter((item): item is File => item instanceof File)
         .forEach((file) => formData.append('files', file));
-    const docTemplateIds = updatedEntityTemplate.documentTemplatesIds
-        ?.filter((item): item is any | { name: string } => {
+
+    const docTemplateIds = ((updatedEntityTemplate.documentTemplatesIds as (File | string | { name: string })[]) ?? [])
+        .filter((item): item is string | { name: string } => {
             return typeof item === 'string' || ('name' in item && !(item instanceof File));
         })
         .map((item) => (typeof item === 'string' ? item : item.name));
+
     if (docTemplateIds?.length) {
         formData.append('documentTemplatesIds', JSON.stringify(docTemplateIds));
     }
