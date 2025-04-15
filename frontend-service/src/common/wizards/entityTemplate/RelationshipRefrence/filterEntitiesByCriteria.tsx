@@ -40,30 +40,31 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
     };
 
     const handleFilterFieldChange = (index: number, updatedFields: Partial<IAGGridFilter>) => {
-        const current = filters[index].filterField;
+        const current = filters[index]?.filterField;
+        const filterType = current?.filterType || updatedFields.filterType || 'text';
 
         let newFilterField: IAGGridFilter;
 
-        if (updatedFields.filterType === 'text') {
+        if (filterType === 'text') {
             newFilterField = {
                 ...(current as IAGGridTextFilter),
-                ...updatedFields,
+                ...(updatedFields as Partial<IAGGridTextFilter>),
                 filterType: 'text',
             };
-        } else if (updatedFields.filterType === 'number') {
+        } else if (filterType === 'number') {
             newFilterField = {
                 ...(current as IAGGidNumberFilter),
-                ...updatedFields,
+                ...(updatedFields as Partial<IAGGidNumberFilter>),
                 filterType: 'number',
             };
-        } else if (updatedFields.filterType === 'date') {
+        } else if (filterType === 'date') {
             newFilterField = {
                 ...(current as IAGGridDateFilter),
-                ...updatedFields,
+                ...(updatedFields as Partial<IAGGridDateFilter>),
                 filterType: 'date',
             };
         } else {
-            throw new Error(`Unsupported filterType: ${updatedFields.filterType}`);
+            throw new Error(`Unsupported filterType: ${filterType}`);
         }
 
         const updatedFilter: IFilterRelationReference = {
@@ -187,7 +188,7 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
     return (
         <Grid container direction="column" gap="0.8rem">
             {selectedEntityTemplate && (
-                <Grid container direction="column">
+                <Grid container direction="column" gap="0.4rem">
                     {filters.map((filter, index) => {
                         const isNewProperty = !filter.filterProperty;
                         const isDisabled = !isNewProperty;
@@ -206,69 +207,60 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
                         const selectedType = filter.filterField?.type;
 
                         return (
-                            <Grid container wrap="nowrap" direction="row" alignItems="flex-start" key={filter.filterProperty || index} spacing={1}>
-                                <Grid item xs={3}>
-                                    <Autocomplete
-                                        id={`autocomplete-${index}`}
-                                        options={selectedEntityTemplatePropOptions}
-                                        onChange={(_e, selectedField) => {
-                                            const selectedKey = selectedField?.key || '';
-                                            const selectedProp = selectedEntityTemplate?.properties.properties[selectedKey];
-                                            const { format, type } = selectedProp || {};
-                                            const newFilterField =
-                                                (format && initializedFilterField[format]) || (type && initializedFilterField[type]);
+                            <Grid container wrap="nowrap" direction="row" gap="0.4rem" key={filter.filterProperty || index}>
+                                <Autocomplete
+                                    id={`autocomplete-${index}`}
+                                    options={selectedEntityTemplatePropOptions}
+                                    onChange={(_e, selectedField) => {
+                                        const selectedKey = selectedField?.key || '';
+                                        const selectedProp = selectedEntityTemplate?.properties.properties[selectedKey];
+                                        const { format, type } = selectedProp || {};
+                                        const newFilterField = (format && initializedFilterField[format]) || (type && initializedFilterField[type]);
 
-                                            const newFiltersArray = [...filters];
-                                            newFiltersArray[index] = {
-                                                filterProperty: selectedKey,
-                                                filterField: newFilterField,
-                                            };
+                                        const newFiltersArray = [...filters];
+                                        newFiltersArray[index] = {
+                                            filterProperty: selectedKey,
+                                            filterField: newFilterField,
+                                        };
 
-                                            setFieldValue(name, newFiltersArray);
-                                        }}
-                                        isOptionEqualToValue={(option, val) => option.key === val.key}
-                                        sx={{ marginRight: '5px' }}
-                                        value={getSelectedFilterPropTitle}
-                                        disabled={isDisabled}
-                                        getOptionLabel={(option) => option.title || ''}
-                                        fullWidth
-                                        renderInput={(params) => (
-                                            <TextField
-                                                {...params}
-                                                fullWidth
-                                                sx={{ '& .MuiInputBase-root': { borderRadius: '10px' } }}
-                                                variant="outlined"
-                                                label={i18next.t('wizard.entityTemplate.filterField')}
-                                            />
-                                        )}
-                                    />
-                                </Grid>
-
-                                {filterType && (
-                                    <Grid item xs={3}>
+                                        setFieldValue(name, newFiltersArray);
+                                    }}
+                                    isOptionEqualToValue={(option, val) => option.key === val.key}
+                                    value={getSelectedFilterPropTitle}
+                                    disabled={isDisabled}
+                                    getOptionLabel={(option) => option.title || ''}
+                                    fullWidth
+                                    renderInput={(params) => (
                                         <TextField
-                                            select
+                                            {...params}
                                             fullWidth
-                                            value={selectedType || ''}
-                                            onChange={(e) =>
-                                                handleFilterFieldChange(index, {
-                                                    type: e.target.value as IAGGridFilter['type'],
-                                                })
-                                            }
-                                            label={i18next.t('wizard.entityTemplate.filterType')}
-                                        >
-                                            {filterTypeOptions[filterType].map((option) => (
-                                                <MenuItem key={option} value={option}>
-                                                    {option}
-                                                </MenuItem>
-                                            ))}
-                                        </TextField>
-                                    </Grid>
+                                            sx={{ '& .MuiInputBase-root': { borderRadius: '10px' } }}
+                                            variant="outlined"
+                                            label={i18next.t('wizard.entityTemplate.filterField')}
+                                        />
+                                    )}
+                                />
+                                {filterType && (
+                                    <TextField
+                                        select
+                                        fullWidth
+                                        value={selectedType || ''}
+                                        onChange={(e) =>
+                                            handleFilterFieldChange(index, {
+                                                type: e.target.value as IAGGridFilter['type'],
+                                            })
+                                        }
+                                        label={i18next.t('wizard.entityTemplate.filterType')}
+                                    >
+                                        {filterTypeOptions[filterType].map((option) => (
+                                            <MenuItem key={option} value={option}>
+                                                {option}
+                                            </MenuItem>
+                                        ))}
+                                    </TextField>
                                 )}
 
-                                <Grid item xs={4}>
-                                    {renderFilterField(filter, index)}
-                                </Grid>
+                                {renderFilterField(filter, index)}
 
                                 <Grid item>
                                     <IconButton onClick={() => handleRemoveFilter(index)}>
