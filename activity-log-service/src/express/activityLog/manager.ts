@@ -13,6 +13,7 @@ export default class ActivityLogManager extends DefaultManagerMongo<IActivityLog
         entityId: string,
         limit: number,
         skip: number,
+        fieldsSearch: string[],
         actions?: string[],
         searchText?: string,
         startDateRange?: Date,
@@ -33,6 +34,19 @@ export default class ActivityLogManager extends DefaultManagerMongo<IActivityLog
                 },
             };
         }
+
+        if (fieldsSearch.length) {
+            if (query['metadata.updatedFields']) {
+                query['metadata.updatedFields'].$elemMatch.$or.push({ fieldName: { $in: fieldsSearch } });
+            } else {
+                query['metadata.updatedFields'] = {
+                    $elemMatch: {
+                        fieldName: { $in: fieldsSearch },
+                    },
+                };
+            }
+        }
+
         if (startDateRange && endDateRange) {
             query.timestamp = { $gte: startDateRange, $lte: endDateRange };
         } else {

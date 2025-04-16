@@ -42,6 +42,7 @@ const getActivityLogRequest = async (
     entityId: string,
     limit: number,
     skip: number,
+    fieldsSearch: string[],
     actions?: string[],
     searchText?: string,
     startDateRange?: Date,
@@ -53,10 +54,19 @@ const getActivityLogRequest = async (
         actionsToFilter.push(...['UPDATE_ENTITY', 'UPDATE_PROCESS', 'UPDATE_PROCESS_STEP']);
     }
 
-    const params: Partial<{ limit: number; skip: number; actions: string[]; searchText: string; startDateRange: Date; endDateRange: Date }> = {
+    const params: Partial<{
+        limit: number;
+        skip: number;
+        actions: string[];
+        searchText: string;
+        fieldsSearch: string[];
+        startDateRange: Date;
+        endDateRange: Date;
+    }> = {
         limit,
         skip,
         actions: actionsToFilter,
+        fieldsSearch,
         startDateRange,
         endDateRange,
     };

@@ -1,6 +1,6 @@
 import { Grid, Paper, TextField } from '@mui/material';
 import i18next from 'i18next';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import { InfiniteScroll } from '../../../../common/InfiniteScroll';
 import { environment } from '../../../../globals';
@@ -41,6 +41,7 @@ const ActivitiesContent: React.FC<{
     const entityId = expandedEntity?.entity.properties._id || activityEntityId || '';
 
     const [searchInput, setSearchInput] = useState('');
+    const [fieldsSearch, setFieldsSearch] = useState<string[]>([]);
     const [startDateInput, setStartDateInput] = useState<Date | null>(null);
     const [endDateInput, setEndDateInput] = useState<Date | null>(null);
     const [activitiesFilterValue, setActivitiesFilterValue] = useState<string[] | null>([]);
@@ -57,6 +58,18 @@ const ActivitiesContent: React.FC<{
     ];
 
     let selectedValue: (typeof items)[number] | (typeof items)[number][] | null;
+
+    useEffect(() => {
+        if (searchInput.trim() !== '') {
+            const fieldsKeysToSearch = Object.keys(entityTemplate.properties.properties).filter((key) =>
+                entityTemplate.properties.properties[key].title.includes(searchInput.trim()),
+            );
+
+            setFieldsSearch(fieldsKeysToSearch);
+        } else {
+            setFieldsSearch([]);
+        }
+    }, [entityTemplate.properties.properties, searchInput]);
 
     if (Array.isArray(activitiesFilterValue)) {
         selectedValue = items.filter((opt) => activitiesFilterValue.includes(opt.value));
@@ -77,12 +90,12 @@ const ActivitiesContent: React.FC<{
                         onChange={(e) => {
                             setSearchInput(e.target.value);
                         }}
-                        sx={{ borderRadius: '7px', width: '275px' }}
+                        sx={{ borderRadius: '7px', width: '300px' }}
                         placeholder={i18next.t('globalSearch.searchInHistory')}
                         value={searchInput}
                     />
                 </Grid>
-                <Grid item width="275px" marginBottom="20px">
+                <Grid item width="300px" marginBottom="20px">
                     <MultipleSelect
                         items={items}
                         id="1"
@@ -103,7 +116,7 @@ const ActivitiesContent: React.FC<{
                         value={activitiesFilterValue}
                     />
                 </Grid>
-                <Grid item width="275px">
+                <Grid item width="300px">
                     <DateRange
                         onStartDateChange={setStartDateInput}
                         onEndDateChange={setEndDateInput}
@@ -114,12 +127,13 @@ const ActivitiesContent: React.FC<{
                 </Grid>
             </Grid>
             <InfiniteScroll<IActivityLog>
-                queryKey={['getActivityLogRequest', entityId, searchInput, activitiesFilterValue, startDateInput, endDateInput]}
+                queryKey={['getActivityLogRequest', entityId, searchInput, fieldsSearch, activitiesFilterValue, startDateInput, endDateInput]}
                 queryFunction={({ pageParam }) =>
                     getActivityLogRequest(
                         entityId,
                         infiniteScrollPageCount,
                         pageParam,
+                        fieldsSearch,
                         activitiesFilterValue && activitiesFilterValue.length ? activitiesFilterValue : ACTIVITY_TYPES,
                         searchInput.trim(),
                         startDateInput || undefined,

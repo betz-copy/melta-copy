@@ -9,7 +9,7 @@ export default class ActivityLogController extends DefaultController<IActivityLo
     }
 
     async getActivity(req: Request, res: Response) {
-        const { limit, skip, actions, searchText, startDateRange, endDateRange } = req.query;
+        const { limit, skip, actions, searchText, fieldsSearch, startDateRange, endDateRange } = req.query;
         const { entityId } = req.params;
 
         res.json(
@@ -17,6 +17,7 @@ export default class ActivityLogController extends DefaultController<IActivityLo
                 entityId,
                 Number(limit),
                 Number(skip),
+                fieldsSearch as string[],
                 actions as string[],
                 searchText as string | undefined,
                 startDateRange as Date | undefined,

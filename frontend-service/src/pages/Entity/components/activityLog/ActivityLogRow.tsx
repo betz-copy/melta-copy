@@ -29,7 +29,7 @@ const ActivityLogRow: React.FC<{
             <Grid item container flexWrap="nowrap" justifyContent="space-between" alignItems="center" marginTop="10px">
                 <Grid item container spacing="5px">
                     <Grid item>
-                        <Typography variant="subtitle1" fontSize="15px" fontFamily="Rubik" fontWeight="400" color="#5A6173">
+                        <Typography variant="subtitle1" fontSize="12px" fontFamily="Rubik" fontWeight="400" color="#5A6173">
                             {i18next.t('entityPage.activityLog.by')}
                         </Typography>
                     </Grid>
@@ -37,17 +37,17 @@ const ActivityLogRow: React.FC<{
                         {isLoading ? (
                             <Skeleton variant="text" width="7vw" />
                         ) : (
-                            <Typography variant="subtitle1" fontSize="15px" fontFamily="Rubik" fontWeight="400" color="primary">
+                            <Typography variant="subtitle1" fontSize="12px" fontFamily="Rubik" fontWeight="400" color="primary">
                                 {user?.fullName}
                             </Typography>
                         )}
                     </Grid>
                 </Grid>
-                <Grid item width="200px">
+                <Grid item width="120px">
                     {isLoading ? (
                         <Skeleton variant="text" width="5vw" />
                     ) : (
-                        <Typography variant="subtitle1" color={darkMode ? 'lightgray' : '#5A6173'} fontFamily="Rubik" fontSize="15px">
+                        <Typography variant="subtitle1" color={darkMode ? 'lightgray' : '#5A6173'} fontFamily="Rubik" fontSize="11px">
                             {getShortDate(log.timestamp)}
                         </Typography>
                     )}

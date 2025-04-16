@@ -1,5 +1,5 @@
 /* eslint-disable no-nested-ternary */
-import { Grid, styled, Typography, useTheme } from '@mui/material';
+import { Chip, Grid, styled, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
 import { useQueryClient } from 'react-query';
@@ -17,6 +17,7 @@ import { StatusDisplay } from '../../../../common/wizards/processInstance/Proces
 import { CoordinateSystem, LocationData } from '../../../../common/inputs/JSONSchemaFormik/RjsfLocationWidget';
 import { locationConverterToString } from '../../../../utils/map/convert';
 import { NotificationColor } from '../../../../common/notificationColor';
+import UserAvatar from '../../../../common/UserAvatar';
 
 const logTitles = {
     ACTIVATE_ENTITY: (
@@ -256,7 +257,25 @@ const UpdateTextValue: React.FC<{
         return type === 'array' && items?.type === 'string' && items.format === 'fileId';
     };
 
+    const isUserField = (): boolean => {
+        if (!entityTemplateProperties[fieldName]) return false;
+
+        const { type, format } = entityTemplateProperties[fieldName];
+
+        return type === 'string' && format === 'user';
+    };
+
     const contentDisplayNameByTemplate = (content: string) => {
+        if (isUserField()) {
+            return (
+                <Chip
+                    sx={{ marginLeft: '5px' }}
+                    size="small"
+                    avatar={<UserAvatar user={JSON.parse(value)} size={23} bgColor="1E2775" />}
+                    label={JSON.parse(value).fullName}
+                />
+            );
+        }
         if (isFileIdFormat()) {
             return getFilesName(content);
         }
@@ -274,7 +293,7 @@ const UpdateTextValue: React.FC<{
             title={<Grid style={{ maxHeight: '500px', overflowY: 'auto' }}>{contentDisplayNameByTemplate(innerContent)}</Grid>}
             placement="top-start"
         >
-            <Grid item>
+            <Grid item marginBottom="5px">
                 <StyledTypography variant="body2" style={ellipsisStyle}>
                     {old ? i18next.t('entityPage.activityLog.from') : i18next.t('entityPage.activityLog.to')}{' '}
                     {contentDisplayNameByTemplate(innerContent)}
