@@ -43,6 +43,14 @@ const logTitles = {
             </Typography>
         </Grid>
     ),
+    DUPLICATE_ENTITY: (
+        <Grid item container marginBottom="10px">
+            <NotificationColor color="#ffc4e9" />
+            <Typography variant="subtitle1" color="primary" fontWeight="400" fontSize="15px" paddingLeft="10px">
+                {i18next.t('entityPage.activityLog.titles.duplicateEntity')}
+            </Typography>
+        </Grid>
+    ),
     CREATE_PROCESS: (
         <Grid item container marginBottom="10px">
             <NotificationColor color="#84FF90" />
@@ -163,6 +171,7 @@ const DuplicateEntityMetadataActionText: React.FC<{
 
     return (
         <Grid item minWidth="190px">
+            {logTitles.DUPLICATE_ENTITY}
             <StyledTypography variant="body2" component="span">
                 {i18next.t('entityPage.activityLog.duplicateEntityFrom')}
                 <StyledTypography

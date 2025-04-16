@@ -51,7 +51,7 @@ const ActivitiesContent: React.FC<{
         { label: i18next.t('entityPage.activityLog.titles.updateFields'), value: 'UPDATE_FIELDS' },
         { label: i18next.t('entityPage.activityLog.titles.createEntity'), value: 'CREATE_ENTITY' },
         { label: i18next.t('entityPage.activityLog.titles.createProcess'), value: 'CREATE_PROCESS' },
-    const theme = useTheme();
+        { label: i18next.t('entityPage.activityLog.titles.duplicateEntity'), value: 'DUPLICATE_ENTITY' },
         { label: i18next.t('entityPage.activityLog.titles.disableEntity'), value: 'DISABLE_ENTITY' },
         { label: i18next.t('entityPage.activityLog.titles.enableEntity'), value: 'ACTIVATE_ENTITY' },
     ];
