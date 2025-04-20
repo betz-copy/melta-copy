@@ -62,42 +62,7 @@ const HighchartGenerator: React.FC<HighchartGeneratorProps> = ({
     }, []);
 
     const chartOptions: Highcharts.Options = {
-        chart: {
-            type,
-            backgroundColor,
-            events: {
-                load() {
-                    const chart = this;
-
-                    // Example: Sum of values
-                    const total = chart.series[0].data.reduce((sum, point) => sum + point.y, 0);
-                    const displayText = `Total: ${total}`;
-
-                    const centerX = chart.plotLeft + chart.plotWidth / 2;
-                    const centerY = chart.plotTop + chart.plotHeight / 2;
-
-                    const text = chart.renderer
-                        .text(displayText, centerX, centerY)
-                        .css({
-                            color: '#000',
-                            fontSize: '18px',
-                            fontWeight: 'bold',
-                            textAlign: 'center',
-                        })
-                        .attr({
-                            align: 'center',
-                        })
-                        .add();
-
-                    // Center the text manually
-                    const bbox = text.getBBox();
-                    text.attr({
-                        x: centerX - bbox.width / 2,
-                        y: centerY + bbox.height / 4,
-                    });
-                },
-            },
-        },
+        chart: { type, backgroundColor },
         title: {
             text: name,
             style: {
@@ -120,44 +85,34 @@ const HighchartGenerator: React.FC<HighchartGeneratorProps> = ({
             tickColor: gridLineColor,
             title: { text: (yAxis as IAxis).title, style: { color: labelsColor } },
         },
-        // legend: {
-        //     itemStyle: { color: labelsColor },
-        //     // enabled: type === IChartType.Pie,
-        //     layout: 'vertical',
-        //     align: 'left',
-        //     verticalAlign: 'middle',
-        //     labelFormatter() {
-        //         const point = this as Highcharts.Point;
-        //         const pointName = point.name ?? '-';
-        //         const percentage = point.percentage != null ? `${point.percentage.toFixed(1)}%` : '-';
-        //         return `${pointName}: ${percentage}`;
-        //     },
-        // },
+        legend: {
+            itemStyle: { color: labelsColor },
+            enabled: type === IChartType.Pie,
+            layout: 'vertical',
+            align: 'left',
+            verticalAlign: 'middle',
+            labelFormatter() {
+                const point = this as Highcharts.Point;
+                const pointName = point.name ?? '-';
+                const percentage = point.percentage != null ? `${point.percentage.toFixed(1)}%` : '-';
+                return `${pointName}: ${percentage}`;
+            },
+        },
         credits: {
             enabled: false,
         },
         tooltip: {
-            pointFormat:
-                type === IChartType.Pie ? '{point.name}<br/>Value: <b>{point.y}</b><br/>Percent: <b>{point.percentage:.1f}%</b>' : '<b>{point.y}</b>',
+            pointFormat: type === IChartType.Pie ? '{series.name}: <b>{point.percentage:.1f}%</b>' : '<b>{point.y}</b>',
         },
         plotOptions: {
             pie: {
-                // allowPointSelect: true,
-                // cursor: 'pointer',
+                allowPointSelect: true,
+                cursor: 'pointer',
                 dataLabels: {
-                    enabled: true, // <- turn them ON
-
-                    format: '<b>{point.name}</b>: {point.y}', // or use {point.percentage:.1f}% if preferred
-                    style: {
-                        color: 'contrast', // ensures it’s readable regardless of slice color
-                        textOutline: 'none', // cleaner text
-                        fontSize: '18px',
-                        fontWeight: 'bold',
-                    },
+                    enabled: false,
                 },
 
-                // showInLegend: true,
-                innerSize: '50%', // <- 👈 This makes it a donut!
+                showInLegend: true,
             },
         },
         series: [

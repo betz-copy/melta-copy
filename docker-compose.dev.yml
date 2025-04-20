@@ -179,6 +179,7 @@ services:
       STORAGE_SERVICE_URL: ${STORAGE_SERVICE_URL}
       GANTT_SERVICE_URL: ${GANTT_SERVICE_URL}
       WORKSPACES_SERVICE_URL: ${WORKSPACE_SERVICE_URL}
+      DASHBOARD_SERVICE_URL: ${DASHBOARD_SERVICE_URL}
       USER_SERVICE_MANAGERS_KARTOFFEL_IDS: 5e5688324203fc40043591aa,61d37cb5e4de0300121e31ef
       WORKSPACE_ID_HEADER_NAME: ${WORKSPACE_ID_HEADER_NAME}
     depends_on:
@@ -190,6 +191,7 @@ services:
       - process-service
       - gantt-service
       - workspace-service
+      - dashboard-service
     restart: on-failure
     networks:
       - network
