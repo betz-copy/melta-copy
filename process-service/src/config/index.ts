@@ -64,6 +64,9 @@ const config = {
         url: env.get('ELASTIC_CLIENT_URL').default('http://elastic:9200').asUrlString(),
         index: env.get('ELASTIC_PROCESS_SEARCH_INDEX').default('process-global-search').asString(),
         excludedKeys: env.get('EXCLUDED_KEYS').default('_id,templateId,reviewers').asArray(','),
+        user: env.get('ELASTIC_USER').default('elastic').asString(),
+        password: env.get('ELASTIC_PASSWORD').default('elastic').asString(),
+        tlsRejectUnauthorized: env.get('ELASTIC_TLS_REJECT_UNAUTHORIZED').default('false').asBool(),
     },
 };
 

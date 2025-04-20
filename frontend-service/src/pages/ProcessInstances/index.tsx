@@ -1,4 +1,4 @@
-import { Box, Checkbox, FormControl, FormControlLabel, Grid, IconButton, Paper, Radio, RadioGroup, useTheme } from '@mui/material';
+import { Box, FormControl, FormControlLabel, Grid, IconButton, Paper, Radio, RadioGroup, useTheme } from '@mui/material';
 import React, { useState, useCallback } from 'react';
 import { useQueryClient } from 'react-query';
 import debounce from 'lodash/debounce';
@@ -13,6 +13,7 @@ import DateRange from '../../common/inputs/DateRange';
 import { Status } from '../../interfaces/processes/processInstance';
 import { BlueTitle } from '../../common/BlueTitle';
 import SearchInput from '../../common/inputs/SearchInput';
+import { MeltaCheckbox } from '../../common/MeltaCheckbox';
 
 const ProcessInstancesPage: React.FC = () => {
     const queryClient = useQueryClient();
@@ -134,7 +135,7 @@ const ProcessInstancesPage: React.FC = () => {
                         </Grid>
                         <Grid container item alignItems="center">
                             <Grid item>
-                                <Checkbox checked={isWaitingForMeFilterOn} onChange={(_e, checked) => setIsWaitingForMeFilterOn(checked)} />
+                                <MeltaCheckbox checked={isWaitingForMeFilterOn} onChange={(_e, checked) => setIsWaitingForMeFilterOn(checked)} />
                             </Grid>
                             <Grid item>
                                 <BlueTitle

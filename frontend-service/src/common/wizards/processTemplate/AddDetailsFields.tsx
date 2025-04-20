@@ -90,7 +90,7 @@ const AddDetailsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues,
                     supportChangeToRequiredWithInstances={false}
                     supportArrayFields={false}
                     supportDeleteForExistingInstances
-                    supportRelationshipReference={false}
+                    supportRelationshipReference
                     supportUserType={false}
                     supportConvertingToMultipleFields={false}
                     locationSearchFields={{ show: false, disabled: false }}
