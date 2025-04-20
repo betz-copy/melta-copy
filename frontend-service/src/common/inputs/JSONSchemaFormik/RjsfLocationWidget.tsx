@@ -1,39 +1,70 @@
-/* eslint-disable import/no-extraneous-dependencies */
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-underscore-dangle */
 import React, { useEffect, useState } from 'react';
 import { getDisplayLabel, WidgetProps } from '@rjsf/utils';
 import validator from '@rjsf/validator-ajv8';
-import { Box, Dialog, InputAdornment, TextField } from '@mui/material';
+import { Cartesian3 } from 'cesium';
+import { Autocomplete, Box, Dialog, Grid, InputAdornment, TextField } from '@mui/material';
 import MapIcon from '@mui/icons-material/Map';
-import { getTextDirection } from '../../../utils/stringValues';
+import i18next from 'i18next';
 import { environment } from '../../../globals';
 import LocationField from '../../../pages/Map/LocationField';
+import { stringToCoordinates } from '../../../utils/map';
+import { extractUtmLocation, isValidUTM, isValidWGS84, locationConverterToString } from '../../../utils/map/convert';
+import { MeltaTooltip } from '../../MeltaTooltip';
+import { SplitBy } from '../../../interfaces/entities';
 
 const { polygonPrefix, polygonSuffix } = environment.map.polygon;
 
-export enum SplitBy {
-    space = ' ',
-    comma = ',',
+export enum CoordinateSystem {
+    UTM = 'UTM',
+    WGS84 = 'WGS84',
+}
+export interface LocationData {
+    location: string;
+    coordinateSystem: CoordinateSystem;
 }
 
-const validatePoint = (pointString: string, splitBy: SplitBy) => {
-    const [longitude, latitude] = pointString.split(splitBy).map(Number);
-    if (Number.isNaN(longitude) || Number.isNaN(latitude)) {
-        return false;
+const validatePoint = (point: LocationData, splitBy: SplitBy, schemaValidation?: boolean) => {
+    if (!schemaValidation) return true;
+
+    switch (point.coordinateSystem) {
+        case CoordinateSystem.WGS84: {
+            const parts = point.location.split(splitBy).map(Number);
+            if (parts.length !== 2) return false;
+
+            const [longitude, latitude] = parts;
+            if (Number.isNaN(longitude) || Number.isNaN(latitude)) return false;
+
+            const wgs84Location = stringToCoordinates(point.location).value as Cartesian3;
+            return isValidWGS84(wgs84Location);
+        }
+        case CoordinateSystem.UTM: {
+            const [_zoneHemi, east, north] = point.location.split(splitBy).map(Number);
+            if (Number.isNaN(east) || Number.isNaN(north)) return false;
+
+            const utmLocation = extractUtmLocation(point.location);
+            if (!utmLocation) return false;
+            return isValidUTM(utmLocation);
+        }
+        default:
+            return true;
     }
-    return true;
 };
 
-export const validateLocation = (value: string) => {
-    if (value === '') return true;
-    if (!value.startsWith(polygonPrefix)) return validatePoint(value, SplitBy.comma);
+export const validateLocation = (value: LocationData, schemaValidation?: boolean) => {
+    if (value.location === '') return true;
+    if (!value.location.startsWith(polygonPrefix))
+        return validatePoint(value, value.coordinateSystem === CoordinateSystem.UTM ? SplitBy.space : SplitBy.comma, schemaValidation);
 
-    if (!value.startsWith(polygonPrefix) || !value.endsWith(polygonSuffix)) {
-        return false;
-    }
+    if (!value.location.startsWith(polygonPrefix) || !value.location.endsWith(polygonSuffix)) return false;
 
-    const coordsStr = value.slice(polygonPrefix.length, -polygonSuffix.length);
-    return coordsStr.split(SplitBy.comma).every((stringedLocation: string) => validatePoint(stringedLocation, SplitBy.space));
+    return value.location
+        .slice(polygonPrefix.length, -polygonSuffix.length)
+        .split(SplitBy.comma)
+        .every((stringedLocation: string) =>
+            validatePoint({ location: stringedLocation, coordinateSystem: value.coordinateSystem }, SplitBy.space, schemaValidation),
+        );
 };
 
 const RjsfLocationWidget = ({
@@ -59,77 +90,133 @@ const RjsfLocationWidget = ({
     propertyReadOnly,
     ...textFieldProps
 }: WidgetProps) => {
+    const getInitialLocation = (location: string | LocationData | undefined) => {
+        if (!location) return undefined;
+        if (typeof location === 'string') return location.includes('location') ? JSON.parse(value).location : value;
+        return location?.coordinateSystem === CoordinateSystem.UTM
+            ? locationConverterToString(location.location, CoordinateSystem.WGS84, CoordinateSystem.UTM)
+            : value.location;
+    };
+
     const [error, setError] = useState(false);
     const [mapOpen, setMapOpen] = useState(false);
-    const [newLocationValue, setNewLocationValue] = useState<string | undefined>(value);
+    const [newLocationValue, setNewLocationValue] = useState<string | undefined>('');
+
+    useEffect(() => {
+        setNewLocationValue(getInitialLocation(value));
+    }, []);
+
+    const [coordinateSystem, setCoordinateSystem] = useState<CoordinateSystem>(
+        typeof value === 'string' && value.includes('coordinateSystem')
+            ? JSON.parse(value).coordinateSystem
+            : value?.coordinateSystem || CoordinateSystem.WGS84,
+    );
 
     const displayLabel = getDisplayLabel(validator, schema, uiSchema, registry.rootSchema);
     const inputType = (type || schema.type) === 'string' ? 'text' : `${type || schema.type}`;
 
     const _onChange = ({ target: { value: newValue } }: React.ChangeEvent<HTMLInputElement>) => {
-        const hasError = validateLocation(newValue) === false;
+        const hasError = validateLocation({ location: newValue, coordinateSystem }) === false;
         setError(hasError);
-        onChange(newValue === '' ? options.emptyValue : newValue);
+
+        const locationObj = newValue.toString().trim() ? { location: newValue, coordinateSystem } : undefined;
+        onChange(JSON.stringify(locationObj) || undefined);
+        setNewLocationValue(newValue);
     };
 
-    const _onBlur = ({ target: { value: newValue } }: React.FocusEvent<HTMLInputElement>) => onBlur(id, newValue);
-    const _onFocus = ({ target: { value: newValue } }: React.FocusEvent<HTMLInputElement>) => onFocus(id, newValue);
+    const _onBlur = ({ target: { value: newValue } }: React.FocusEvent<HTMLInputElement>) => onBlur(id, { location: newValue, coordinateSystem });
+    const _onFocus = ({ target: { value: newValue } }: React.FocusEvent<HTMLInputElement>) => onFocus(id, { location: newValue, coordinateSystem });
 
     const variant = readonly && !schema.readOnly ? 'standard' : 'outlined';
 
     const handleCloseDialog = () => {
-        onChange(newLocationValue);
+        onChange(JSON.stringify({ location: newLocationValue, coordinateSystem }));
         setMapOpen(false);
     };
 
-    useEffect(() => {
-        setNewLocationValue(value);
-    }, [value]);
-
     return (
-        <Box>
-            <TextField
-                {...textFieldProps}
-                color="primary"
-                variant={variant}
-                fullWidth
-                id={id}
-                placeholder={placeholder}
-                label={displayLabel ? label || schema.title : false}
-                autoFocus={autofocus}
-                required={required}
-                disabled={disabled}
-                InputLabelProps={{
-                    shrink: readonly || undefined,
-                }}
-                InputProps={{
-                    [value === undefined ? 'endAdornment' : 'startAdornment']: (
-                        <InputAdornment
-                            position={value === undefined ? 'end' : 'start'}
-                            onClick={() => (error ? '' : setMapOpen(true))}
-                            style={{ cursor: 'pointer' }}
-                        >
-                            <MapIcon color={error ? 'disabled' : 'action'} />
-                        </InputAdornment>
-                    ),
-                }}
-                type={(options.inputType ?? inputType) as string}
-                value={newLocationValue}
-                error={error || rawErrors.length > 0}
-                onChange={_onChange}
-                onBlur={_onBlur}
-                onFocus={_onFocus}
-                onWheel={(e) => {
-                    if (inputType === 'number') (e.target as HTMLElement).blur(); // disable number input scroll to change value when focused, but blurring it
-                }}
-                dir={getTextDirection(value, schema)}
-            />
+        <Box width="100%">
+            <Grid container justifyContent="space-between" alignItems="center" width="100%">
+                <Grid item xs={8.25}>
+                    <MeltaTooltip title={newLocationValue}>
+                        <TextField
+                            {...textFieldProps}
+                            color="primary"
+                            variant={variant}
+                            fullWidth
+                            id={id}
+                            placeholder={placeholder}
+                            label={displayLabel ? label || schema.title : false}
+                            autoFocus={autofocus}
+                            required={required}
+                            disabled={disabled}
+                            InputLabelProps={{
+                                shrink: readonly || undefined,
+                            }}
+                            InputProps={{
+                                startAdornment: (
+                                    <InputAdornment position="start" onClick={() => (error ? '' : setMapOpen(true))} style={{ cursor: 'pointer' }}>
+                                        <MapIcon color={readonly || error ? 'disabled' : 'action'} />
+                                    </InputAdornment>
+                                ),
+                            }}
+                            type={(options.inputType ?? inputType) as string}
+                            value={newLocationValue}
+                            error={error || rawErrors.length > 0}
+                            onChange={_onChange}
+                            onBlur={_onBlur}
+                            onFocus={_onFocus}
+                            onWheel={(e) => {
+                                if (inputType === 'number') (e.target as HTMLElement).blur();
+                            }}
+                            dir="ltr"
+                        />
+                    </MeltaTooltip>
+                </Grid>
+                <Grid item xs={3.5}>
+                    <Autocomplete
+                        value={coordinateSystem}
+                        onChange={(_, newValue: CoordinateSystem) => {
+                            setCoordinateSystem(newValue);
+                            if (!newLocationValue) return;
 
+                            const hasError = validateLocation({ location: newLocationValue, coordinateSystem: newValue }) === false;
+                            setError(hasError);
+
+                            const convertedLocation = validateLocation({ location: newLocationValue, coordinateSystem }, true)
+                                ? locationConverterToString(newLocationValue, coordinateSystem, newValue)
+                                : newLocationValue;
+
+                            setNewLocationValue(convertedLocation);
+                            onChange(
+                                newLocationValue?.toString().trim()
+                                    ? JSON.stringify({ location: convertedLocation, coordinateSystem: newValue })
+                                    : undefined,
+                            );
+                        }}
+                        options={[CoordinateSystem.WGS84, CoordinateSystem.UTM]}
+                        renderInput={(params) => <TextField {...params} label={i18next.t('location.coordinateSystem')} variant={variant} />}
+                        disableClearable
+                        sx={{ borderRadius: '10px', borderColor: '#787C9E', height: '40px' }}
+                    />
+                </Grid>
+            </Grid>
             <Dialog open={mapOpen} onClose={handleCloseDialog}>
                 <LocationField
-                    defaultLocation={newLocationValue}
+                    defaultLocation={
+                        newLocationValue && coordinateSystem === CoordinateSystem.UTM ? locationConverterToString(newLocationValue) : newLocationValue
+                    }
                     field={label}
-                    updateValue={(newVal: string | undefined) => setNewLocationValue(newVal)}
+                    updateValue={(newVal: string | undefined) => {
+                        if (!newVal) {
+                            setNewLocationValue('');
+                            return;
+                        }
+
+                        if (coordinateSystem === CoordinateSystem.UTM && newVal)
+                            setNewLocationValue(locationConverterToString(newVal, CoordinateSystem.WGS84, coordinateSystem));
+                        else setNewLocationValue(newVal);
+                    }}
                 />
             </Dialog>
         </Box>

@@ -7,7 +7,7 @@ import { AxiosError } from 'axios';
 import { UseMutateAsyncFunction } from 'react-query';
 import { IButtonPopoverProps } from '.';
 import { EntityData, IEntity } from '../../interfaces/entities';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import {
     booleanColDef,
     dateColDef,
@@ -55,6 +55,7 @@ export interface IGetColumnDefsOptions<Data extends any> {
     >;
     searchValue?: string;
     disableEditCell?: boolean;
+    entityTemplates: IEntityTemplateMap;
 }
 
 export const getColumnDefs = <Data extends any = EntityData>({
@@ -78,6 +79,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
     updateEntityStatus,
     searchValue,
     disableEditCell,
+    entityTemplates,
 }: IGetColumnDefsOptions<Data>): ColDef[] => {
     const invisibleColumnsAmount = Object.values(defaultVisibleColumns).filter((value) => value === false).length;
     const lastColumnIndex = Object.keys(defaultColumnsOrder).length - invisibleColumnsAmount - 2;
@@ -148,7 +150,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
                 searchValue,
                 editable,
             );
-        if (format === 'fileId')
+        if (format === 'fileId' || format === 'signature')
             return fileColDef(
                 property,
                 valueGetter,
@@ -181,6 +183,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
                 propertyTemplate.relationshipReference!.relatedTemplateId,
                 propertyTemplate.relationshipReference!.relatedTemplateField,
                 isLastColumn,
+                entityTemplates,
                 hideColumn,
                 searchValue,
                 editable,
@@ -378,20 +381,25 @@ export const getColumnDefs = <Data extends any = EntityData>({
                         {editRowButtonProps && (
                             <Grid item>
                                 <IconButtonWithPopover
-                                    popoverText={disabledEntity ? i18next.t('entityPage.disabledEntity') : editRowButtonProps.popoverText}
+                                    popoverText={
+                                        disabledEntity || template.disabled ? i18next.t('entityPage.disabledEntity') : editRowButtonProps.popoverText
+                                    }
                                     iconButtonProps={{
                                         onClick: () => editRowButtonProps.onClick(data),
                                     }}
-                                    disabled={editRowButtonProps.disabledButton || disabledEntity}
+                                    disabled={editRowButtonProps.disabledButton || disabledEntity || template.disabled}
                                 >
-                                    <ImageWithDisable srcPath="/icons/edit-icon.svg" disabled={editRowButtonProps.disabledButton || disabledEntity} />
+                                    <ImageWithDisable
+                                        srcPath="/icons/edit-icon.svg"
+                                        disabled={editRowButtonProps.disabledButton || disabledEntity || template.disabled}
+                                    />
                                 </IconButtonWithPopover>
                             </Grid>
                         )}
                         {onNavigateToRow && (
                             <Grid item>
                                 <Link
-                                    href={`/entity/${getRowId(data)}/graph`}
+                                    href={`/entity/${getEntityPropertiesData(data)._id}/graph`}
                                     onClick={(e) => {
                                         if (disabledEntity) e.preventDefault();
                                     }}
@@ -411,7 +419,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
                             </Grid>
                         )}
 
-                        {menuRowButtonProps && (
+                        {menuRowButtonProps && !template?.disabled && (
                             <Grid item>
                                 <CardMenu
                                     onDuplicateClick={() => {

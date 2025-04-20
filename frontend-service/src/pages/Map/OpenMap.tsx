@@ -13,7 +13,8 @@ const OpenMap: React.FC<{
     entityTemplate: IMongoEntityTemplatePopulated;
     showText?: boolean;
     searchValue?: string;
-}> = ({ field, entityProperties, entityTemplate, showText = true, searchValue }) => {
+    disableOpenMap?: boolean;
+}> = ({ field, entityProperties, entityTemplate, showText = true, searchValue, disableOpenMap }) => {
     const [open, setOpen] = useState(false);
     const workspace = useWorkspaceStore((state) => state.workspace);
     const { headlineSubTitleFontSize } = workspace.metadata.mainFontSizes;
@@ -27,9 +28,11 @@ const OpenMap: React.FC<{
                 <IconButton
                     sx={{ borderRadius: 10, maxWidth: '100%' }}
                     onClick={(e) => {
+                        if (disableOpenMap) return;
                         e.stopPropagation();
                         handleButtonClick?.();
                     }}
+                    disableRipple={disableOpenMap}
                 >
                     <LocationOn style={{ height: '18px' }} />
                     {showText && (

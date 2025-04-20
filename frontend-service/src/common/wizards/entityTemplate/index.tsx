@@ -1,25 +1,28 @@
 /* eslint-disable @typescript-eslint/no-shadow */
 /* eslint-disable react/no-unstable-nested-components */
-import React from 'react';
-import { toast } from 'react-toastify';
-import i18next from 'i18next';
-import { useMutation, useQueryClient } from 'react-query';
 import { AxiosError } from 'axios';
-import { StepType, Wizard, WizardBaseType } from '../index';
-import { ChooseCategory, chooseCategorySchema } from './ChooseCategory';
-import { CreateTemplateName, useCreateOrEditTemplateNameSchema } from './CreateTemplateName';
-import { AddFields, addFieldsSchema } from './AddFields';
-import { createEntityTemplateRequest, formToJSONSchema, updateEntityTemplateRequest } from '../../../services/templates/enitityTemplatesService';
-import { IEntityTemplateMap, IEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { ChooseIcon } from './ChooseIcon';
-import fileDetails from '../../../interfaces/fileDetails';
-import { ErrorToast } from '../../ErrorToast';
+import i18next from 'i18next';
+import React from 'react';
+import { useMutation, useQueryClient } from 'react-query';
+import { toast } from 'react-toastify';
 import { environment } from '../../../globals';
 import { IConstraint, IUniqueConstraintOfTemplate } from '../../../interfaces/entities';
-import { UploadExportFormats } from './UploadExportFormats';
+import { IEntityTemplateMap, IEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import fileDetails from '../../../interfaces/fileDetails';
 import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
+import { createEntityTemplateRequest, formToJSONSchema, updateEntityTemplateRequest } from '../../../services/templates/enitityTemplatesService';
 import { getAllRelationshipTemplatesRequest } from '../../../services/templates/relationshipTemplatesService';
+import { useUserStore } from '../../../stores/user';
+import { useWorkspaceStore } from '../../../stores/workspace';
 import { mapTemplates } from '../../../utils/templates';
+import { ErrorToast } from '../../ErrorToast';
+import { StepType, Wizard, WizardBaseType } from '../index';
+import { AddFields, addFieldsSchema } from './AddFields';
+import { ChooseCategory, chooseCategorySchema } from './ChooseCategory';
+import { ChooseIcon } from './ChooseIcon';
+import { CreateTemplateName, useCreateOrEditTemplateNameSchema } from './CreateTemplateName';
+import { UploadExportFormats } from './UploadExportFormats';
+import { updateUserPermissionForEntityTemplate } from '../../../utils/permissions/templatePermissions';
 
 const { errorCodes } = environment;
 
@@ -88,6 +91,9 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
     isEditMode = false,
 }) => {
     const queryClient = useQueryClient();
+    const currentUser = useUserStore((state) => state.user);
+    const setUser = useUserStore((state) => state.setUser);
+    const currentWorkspace = useWorkspaceStore((state) => state.workspace);
 
     const currentTemplateId = isEditMode ? (initialValues as EntityTemplateWizardValues & { _id: string })._id : undefined;
     const templates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates') || new Map();
@@ -115,6 +121,8 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
                 } catch (error) {
                     toast.error(i18next.t('wizard.failedToUpdateSystemData'));
                 }
+                const updatedUserPermissions = updateUserPermissionForEntityTemplate(data, currentUser, currentWorkspace._id);
+                setUser(updatedUserPermissions);
                 handleClose();
             },
             onError: (error: AxiosError, entityTemplateValues) => {
@@ -130,6 +138,7 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
                             property,
                             relatedTemplateName,
                         })}`,
+                        charts: `${i18next.t('wizard.entityTemplate.failedToDeleteFieldThatUsedInCharts', { property })}`,
                     };
 
                     toast.error(errorMessages[type]);

@@ -1,17 +1,11 @@
 version: '3.4'
 
 services:
-  mongo:
-    image: mongo
-    ports:
-      - 27017:27017
-
   gateway-service:
     build: .
     environment:
       PORT: 8000
-      MONGO_URL: mongodb://mongo
-      MONGO_IFRAMES_COLLECTION_NAME: iFrames
+      DASHBOARD_SERVICE_URL: http://dashboard-service:8000
       TOKEN_SECRET: secret
       ENTITY_TEMPLATE_SERVICE_URL: http://entity-template-service:8000
       STORAGE_SERVICE_URL: http://storage-service:8000
@@ -25,3 +19,9 @@ services:
       SYSTEM_UNAVAILABLE_URL: /unavailable
       SYSTEM_MELTA_BASE_URL: http://localhost
       PREVIEW_SERVICE_URL: http://preview-service:8000
+      RABBIT_URL: amqp://rabbitmq:5672
+      RABBIT_NOTIFICATION_QUEUE: notification
+      RABBIT_MAIL_NOTIFICATION_QUEUE: mail-notification
+      RABBIT_DELETE_UNUSED_FILES_QUEUE: delete-unused-files
+      RABBIT_INSERT_DOCS_SEMANTIC_QUEUE: insert-docs-semantic
+      RABBIT_DELETE_DOCS_SEMANTIC_QUEUE: delete-docs-semantic

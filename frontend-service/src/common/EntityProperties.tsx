@@ -6,7 +6,7 @@ import React, { CSSProperties } from 'react';
 import { pdfjs } from 'react-pdf';
 import { environment } from '../globals';
 import { IEntity } from '../interfaces/entities';
-import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
+import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { useDarkModeStore } from '../stores/darkMode';
 import { CalculateDateDifference } from '../utils/agGrid/CalculateDateDifference';
 import { containsHTMLTags, getFirstLine, getNumLines, renderHTML } from '../utils/HtmlTagsStringValue';
@@ -19,6 +19,8 @@ import { HighlightText } from '../utils/HighlightText';
 import { BlueTitle } from './BlueTitle';
 import UserAvatar from './UserAvatar';
 import OverflowWrapper from '../utils/agGrid/OverflowWrapper';
+import { locationConverterToString } from '../utils/map/convert';
+import { CoordinateSystem } from './inputs/JSONSchemaFormik/RjsfLocationWidget';
 
 const { maxNumOfCharactersNotInFullWidth } = environment.entitiesProperties;
 
@@ -43,7 +45,7 @@ export const formatToString = (value: any, property: IEntitySingleProperty, opti
     if (valueType === 'string') {
         if (format === 'date') return new Date(value).toLocaleDateString('en-uk');
         if (format === 'date-time') return new Date(value).toLocaleString('en-uk');
-        if (format === 'fileId') return <OpenPreview fileId={value} download={isPrintingMode} />;
+        if (format === 'fileId' || format === 'signature') return <OpenPreview fileId={value} download={isPrintingMode} />;
         if (format === 'relationshipReference') {
             return pureString ? (
                 value.properties[property.relationshipReference!.relatedTemplateField!]
@@ -67,6 +69,10 @@ export const formatToString = (value: any, property: IEntitySingleProperty, opti
             );
         }
     }
+    if (format === 'location')
+        return value.coordinateSystem === CoordinateSystem.UTM
+            ? locationConverterToString(value.location, CoordinateSystem.WGS84, CoordinateSystem.UTM)
+            : value.location;
     if (keyEnumColors?.[value] && valueType === 'string') return pureString ? value : <ColoredEnumChip label={value} color={keyEnumColors[value]} />;
     if (valueType === 'array') {
         if (property.items?.format === 'fileId') {
@@ -123,6 +129,7 @@ interface IEntityPropertiesProps {
     displayArchiveProperties?: boolean;
     showDivider?: boolean;
     dividerTitle?: string;
+    entityTemplates?: IEntityTemplateMap;
 }
 
 export const getPropertyColor = (
@@ -159,6 +166,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
     displayArchiveProperties,
     showDivider,
     dividerTitle,
+    entityTemplates,
 }) => {
     let propertiesOrderedToShow: string[];
     if (overridePropertiesToShow) {
@@ -169,7 +177,8 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
         propertiesOrderedToShow = entityTemplate.propertiesOrder.filter(
             (propertyKey) =>
                 entityTemplate.properties.properties[propertyKey].format !== 'fileId' &&
-                entityTemplate.properties.properties[propertyKey].items?.format !== 'fileId',
+                entityTemplate.properties.properties[propertyKey].items?.format !== 'fileId' &&
+                entityTemplate.properties.properties[propertyKey].format !== 'signature',
         );
     } else
         propertiesOrderedToShow = displayArchiveProperties
@@ -188,6 +197,12 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                     const propertyValue = properties[propertyKey];
                     const hideField = entityTemplate.properties.hide.includes(propertyKey);
                     const containsHtmlTags = containsHTMLTags(propertyValue);
+                    let relatedEntityAllowed: IMongoEntityTemplatePopulated | undefined;
+                    if (propertySchema.format === 'relationshipReference') {
+                        const relatedTemplateId = propertySchema.relationshipReference?.relatedTemplateId!;
+                        relatedEntityAllowed = entityTemplates?.get(relatedTemplateId);
+                    }
+
                     const stringFormatValue = formatToString(propertyValue, propertySchema, {
                         keyEnumColors: (propertySchema.enum || propertySchema.items?.enum) && entityTemplate.enumPropertiesColors?.[propertyKey],
                         isPrintingMode,
@@ -210,6 +225,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                     else if (propertyValue && propertySchema.calculateTime)
                         innerContent = <CalculateDateDifference date={stringFormatValue} searchValue={searchedText} />;
                     else if (propertyValue && propertySchema.type === 'number') innerContent = getFixedNumber(propertyValue);
+                    else if (propertySchema.format === 'relationshipReference' && entityTemplates && !relatedEntityAllowed) innerContent = '-';
                     else innerContent = stringFormatValue;
                     let titleContent;
                     if (hideFieldsToDisplay.includes(propertyKey) || propertySchema.format === 'fileId') titleContent = '';
@@ -226,7 +242,9 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                         propertySchema.format !== 'text-area' &&
                         propertySchema.format !== 'fileId' &&
                         propertySchema.format !== 'relationshipReference' &&
-                        propertySchema.format !== 'user'
+                        propertySchema.format !== 'user' &&
+                        propertySchema.format !== 'location' &&
+                        propertySchema.format !== 'signature'
                             ? getTextDirection(propertyValue, {
                                   type: propertySchema.type,
                                   serialCurrent: propertySchema.serialCurrent,
