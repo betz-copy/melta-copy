@@ -1,5 +1,5 @@
 import config from '../../config';
-import { IChartBody } from '../../express/templateCharts/interface';
+import { IChartBody } from '../dashboardService/chartService';
 import { IMongoRule } from '../../express/templates/rules/interfaces';
 import DefaultExternalServiceApi from '../../utils/express/externalService';
 import { IAction, IBrokenRule } from '../ruleBreachService/interfaces';

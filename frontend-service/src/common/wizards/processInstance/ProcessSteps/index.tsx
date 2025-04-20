@@ -132,9 +132,9 @@ const Steps: React.FC<IStepsProp> = ({
         <Grid
             container
             flexDirection="column"
-            alignItems="flex-start"
-            gap="35px"
             marginTop="15px"
+            flexWrap="nowrap"
+            gap="35px"
             sx={{
                 width: '100%',
                 height: '100%',
@@ -142,165 +142,217 @@ const Steps: React.FC<IStepsProp> = ({
                 paddingLeft: '30px',
             }}
         >
-            <Grid container item width="100%" justifyContent="space-between" alignItems="center" flexWrap="nowrap">
-                <Grid item container width="70%" minWidth="680px">
-                    <Grid item width="20px">
-                        {!scrollRightDisabled && (
-                            <a
-                                onClick={() => {
-                                    handleScroll(stepperWidth / 2);
-                                }}
-                                style={{ cursor: !isStepEditMode ? 'pointer' : undefined }}
-                            >
-                                <ArrowForwardIosIcon
-                                    sx={{ color: darkMode ? '#9398c2' : '#1E2775', marginTop: '10px', width: '18px', height: '25px' }}
-                                />
-                            </a>
-                        )}
-                    </Grid>
-                    <Grid
-                        item
-                        ref={containerRef}
-                        className="scrollable-container"
-                        style={{
-                            width: `${stepperWidth}px`,
-                            height: '90px',
-                            overflowX: 'auto',
-                            scrollBehavior: 'smooth',
-                        }}
-                        paddingTop="5px"
-                    >
-                        <Stepper sx={{ display: 'flex', alignItems: 'center' }} connector={<StepperConnector />} alternativeLabel>
-                            {processInstance.steps.map((stepInstance, index) => (
-                                <Step sx={{ minWidth: '100px' }} key={stepInstance._id} active>
-                                    <Grid>
-                                        <Grid container flexDirection="column" justifyContent="center" width="100%" alignSelf="center" gap="10px">
-                                            <Grid container flexDirection="column" justifyContent="center" width="100%" gap="10px">
-                                                <StepIcon
-                                                    iconColor={currStepInstance?._id === stepInstance._id ? '#1E2775' : '#9398C2'}
-                                                    step={stepInstance}
-                                                    stepTemplate={processTemplate.steps[index]}
-                                                    setOpen={() => {
-                                                        if (!isStepEditMode) {
-                                                            setCurrStepInstance(stepInstance);
-                                                            setCurrStepInstanceIndex(index);
-                                                        }
+            <Grid
+                container
+                item
+                flexDirection="column"
+                alignItems="flex-start"
+                gap="35px"
+                flexWrap="nowrap"
+                sx={{
+                    width: '100%',
+                }}
+            >
+                <Grid container item width="100%" justifyContent="space-between" alignItems="center" flexWrap="nowrap">
+                    <Grid item container width="70%" minWidth="680px">
+                        <Grid item width="20px">
+                            {!scrollRightDisabled && (
+                                <a
+                                    onClick={() => {
+                                        handleScroll(stepperWidth / 2);
+                                    }}
+                                    style={{ cursor: !isStepEditMode ? 'pointer' : undefined }}
+                                >
+                                    <ArrowForwardIosIcon
+                                        sx={{ color: darkMode ? '#9398c2' : '#1E2775', marginTop: '10px', width: '18px', height: '25px' }}
+                                    />
+                                </a>
+                            )}
+                        </Grid>
+                        <Grid
+                            item
+                            ref={containerRef}
+                            className="scrollable-container"
+                            style={{
+                                width: `${stepperWidth}px`,
+                                height: '90px',
+                                overflowX: 'auto',
+                                scrollBehavior: 'smooth',
+                            }}
+                            paddingTop="5px"
+                        >
+                            <Stepper sx={{ display: 'flex', alignItems: 'center' }} connector={<StepperConnector />} alternativeLabel>
+                                {processInstance.steps.map((stepInstance, index) => (
+                                    <Step sx={{ minWidth: '100px' }} key={stepInstance._id} active>
+                                        <Grid>
+                                            <Grid container flexDirection="column" justifyContent="center" width="100%" alignSelf="center" gap="10px">
+                                                <MeltaTooltip
+                                                    componentsProps={{
+                                                        tooltip: {
+                                                            sx: {
+                                                                bgcolor: 'rgba(181, 181, 181, 0.9)',
+                                                            },
+                                                        },
                                                     }}
-                                                    displayTitle={false}
-                                                />
-
-                                                <Typography
-                                                    color={
-                                                        // eslint-disable-next-line no-nested-ternary
-                                                        currStepInstance?._id === stepInstance._id ? (darkMode ? '#b7bef7' : '#1E2775') : '#9398C2'
+                                                    title={
+                                                        <Grid container direction="column" alignItems="flex-start">
+                                                            <Typography>
+                                                                {getStepTemplateByStepInstance(stepInstance, processTemplate).displayName}
+                                                            </Typography>
+                                                        </Grid>
                                                     }
-                                                    fontSize={currStepInstance?._id === stepInstance._id ? '14px' : '12px'}
-                                                    fontWeight={currStepInstance?._id === stepInstance._id ? '600' : '400'}
-                                                    textAlign="center"
                                                 >
-                                                    {getStepTemplateByStepInstance(stepInstance, processTemplate).displayName}
-                                                </Typography>
+                                                    <Grid
+                                                        container
+                                                        flexDirection="column"
+                                                        justifyContent="center"
+                                                        alignItems="center"
+                                                        width="100%"
+                                                        gap="10px"
+                                                    >
+                                                        <StepIcon
+                                                            iconColor={currStepInstance?._id === stepInstance._id ? '#1E2775' : '#9398C2'}
+                                                            step={stepInstance}
+                                                            stepTemplate={processTemplate.steps[index]}
+                                                            setOpen={() => {
+                                                                if (!isStepEditMode) {
+                                                                    setCurrStepInstance(stepInstance);
+                                                                    setCurrStepInstanceIndex(index);
+                                                                }
+                                                            }}
+                                                            displayTitle={false}
+                                                        />
+
+                                                        <Typography
+                                                            color={
+                                                                // eslint-disable-next-line no-nested-ternary
+                                                                currStepInstance?._id === stepInstance._id
+                                                                    ? darkMode
+                                                                        ? '#b7bef7'
+                                                                        : '#1E2775'
+                                                                    : '#9398C2'
+                                                            }
+                                                            noWrap
+                                                            sx={{ maxWidth: '70px', textOverflow: 'ellipsis' }}
+                                                            fontSize={currStepInstance?._id === stepInstance._id ? '14px' : '12px'}
+                                                            fontWeight={currStepInstance?._id === stepInstance._id ? '600' : '400'}
+                                                            textAlign="center"
+                                                        >
+                                                            {getStepTemplateByStepInstance(stepInstance, processTemplate).displayName}
+                                                        </Typography>
+                                                    </Grid>
+                                                </MeltaTooltip>
                                             </Grid>
                                         </Grid>
-                                    </Grid>
-                                </Step>
-                            ))}
-                        </Stepper>
+                                    </Step>
+                                ))}
+                            </Stepper>
+                        </Grid>
+                        <Grid item width="20px">
+                            {!scrollLeftDisabled && (
+                                <a
+                                    onClick={() => {
+                                        handleScroll((-1 * stepperWidth) / 2);
+                                    }}
+                                    style={{ cursor: !isStepEditMode ? 'pointer' : undefined }}
+                                >
+                                    <ArrowBackIosIcon
+                                        sx={{ color: darkMode ? '#9398c2' : '#1E2775', marginTop: '10px', width: '18px', height: '25px' }}
+                                    />
+                                </a>
+                            )}
+                        </Grid>
                     </Grid>
-                    <Grid item width="20px">
-                        {!scrollLeftDisabled && (
-                            <a
-                                onClick={() => {
-                                    handleScroll((-1 * stepperWidth) / 2);
-                                }}
-                                style={{ cursor: !isStepEditMode ? 'pointer' : undefined }}
-                            >
-                                <ArrowBackIosIcon
-                                    sx={{ color: darkMode ? '#9398c2' : '#1E2775', marginTop: '10px', width: '18px', height: '25px' }}
+                    <Grid item container justifyContent="flex-end" alignItems="flex-start">
+                        <Grid item container flexDirection="column" width="120px" alignItems="center" gap="10px">
+                            <Grid item>
+                                <Box
+                                    sx={{
+                                        borderRadius: '50%',
+                                        backgroundColor: '#E0E1ED',
+                                        display: 'flex',
+                                        justifyContent: 'center',
+                                        alignItems: 'center',
+                                        width: '40px',
+                                        height: '40px',
+                                        ':hover': { transform: !isStepEditMode ? 'scale(1.1)' : undefined },
+                                        cursor: !isStepEditMode ? 'pointer' : undefined,
+                                    }}
+                                    onClick={(_e) => {
+                                        if (!isStepEditMode) setActiveStep(0);
+                                    }}
+                                >
+                                    <TocIcon sx={{ color: '#1E2775' }} />
+                                </Box>
+                            </Grid>
+                            <Grid item>
+                                <BlueTitle
+                                    style={{ fontSize: '12px', fontWeight: '500', textAlign: 'center' }}
+                                    title={`${i18next.t('wizard.processInstance.nextToSummaryDetails')}`}
+                                    component="h4"
+                                    variant="h6"
                                 />
-                            </a>
-                        )}
-                    </Grid>
-                </Grid>
-                <Grid item container justifyContent="flex-end" alignItems="flex-start">
-                    <Grid item container flexDirection="column" width="120px" alignItems="center" gap="10px">
-                        <Grid item>
-                            <Box
-                                sx={{
-                                    borderRadius: '50%',
-                                    backgroundColor: '#E0E1ED',
-                                    display: 'flex',
-                                    justifyContent: 'center',
-                                    alignItems: 'center',
-                                    width: '40px',
-                                    height: '40px',
-                                    ':hover': { transform: !isStepEditMode ? 'scale(1.1)' : undefined },
-                                    cursor: !isStepEditMode ? 'pointer' : undefined,
-                                }}
-                                onClick={(_e) => {
-                                    if (!isStepEditMode) setActiveStep(0);
-                                }}
-                            >
-                                <TocIcon sx={{ color: '#1E2775' }} />
-                            </Box>
+                            </Grid>
                         </Grid>
-                        <Grid item>
-                            <BlueTitle
-                                style={{ fontSize: '12px', fontWeight: '500', textAlign: 'center' }}
-                                title={`${i18next.t('wizard.processInstance.nextToSummaryDetails')}`}
-                                component="h4"
-                                variant="h6"
-                            />
+                        <Grid item alignSelf="flex-start" width="120px" marginTop="2px">
+                            <MeltaTooltip
+                                title={
+                                    openActivityPopper ? i18next.t('wizard.processInstance.backTo') : i18next.t('entityPage.activityLog.stepHeader')
+                                }
+                            >
+                                <Button
+                                    variant="outlined"
+                                    startIcon={<History />}
+                                    onClick={() => setOpenActivityPopper((previousOpen) => !previousOpen)}
+                                    sx={{ marginLeft: '1rem', width: '100px', alignSelf: 'flex-end' }}
+                                >
+                                    {openActivityPopper ? i18next.t('wizard.processInstance.backTo') : i18next.t('entityPage.activityLog.header')}
+                                </Button>
+                            </MeltaTooltip>
                         </Grid>
                     </Grid>
-                    <Grid item alignSelf="flex-start" width="120px" marginTop="2px">
-                        <MeltaTooltip
-                            title={openActivityPopper ? i18next.t('wizard.processInstance.backTo') : i18next.t('entityPage.activityLog.stepHeader')}
-                        >
-                            <Button
-                                variant="outlined"
-                                startIcon={<History />}
-                                onClick={() => setOpenActivityPopper((previousOpen) => !previousOpen)}
-                                sx={{ marginLeft: '1rem', width: '100px', alignSelf: 'flex-end' }}
-                            >
-                                {openActivityPopper ? i18next.t('wizard.processInstance.backTo') : i18next.t('entityPage.activityLog.header')}
-                            </Button>
-                        </MeltaTooltip>
-                    </Grid>
                 </Grid>
+                <Divider variant="middle" sx={{ width: '100%' }} />
             </Grid>
-            <Divider variant="middle" sx={{ width: '100%' }} />
-            {currStepInstance && !openActivityPopper && (
-                <ProcessStep
-                    onStepUpdateSuccess={(stepInstance: IMongoStepInstancePopulated) => {
-                        setCurrStepInstance(stepInstance);
-                        onStepUpdateSuccess(stepInstance);
-                    }}
-                    processInstance={processInstance}
-                    stepInstance={currStepInstance}
-                    stepTemplate={getStepTemplateByStepInstance(currStepInstance, processTemplate)}
-                    isStepEditMode={isStepEditMode}
-                    setIsStepEditMode={setIsStepEditMode}
-                    isThereNextStep={currStepInstanceIndex < processInstance.steps.length - 1}
-                    isTherePrevStep={currStepInstanceIndex > 0}
-                    onSetNextStep={() => {
-                        setCurrStepInstance(processInstance.steps[currStepInstanceIndex + 1]);
-                        setCurrStepInstanceIndex(currStepInstanceIndex + 1);
-                    }}
-                    onSetPrevStep={() => {
-                        setCurrStepInstance(processInstance.steps[currStepInstanceIndex - 1]);
-                        setCurrStepInstanceIndex(currStepInstanceIndex - 1);
-                    }}
-                />
-            )}
-            {currStepInstance && openActivityPopper && (
-                <Grid item container direction="column" wrap="nowrap" overflow="none" height="65vh" style={{ overflowY: 'auto' }} padding="20px">
-                    <ActivitiesContent
-                        activityEntityId={currStepInstance._id}
-                        entityTemplate={getStepTemplateByStepInstance(currStepInstance, processTemplate)}
+            <Grid
+                item
+                height="100%"
+                sx={{
+                    overflowY: 'auto',
+                }}
+            >
+                {currStepInstance && !openActivityPopper && (
+                    <ProcessStep
+                        onStepUpdateSuccess={(stepInstance: IMongoStepInstancePopulated) => {
+                            setCurrStepInstance(stepInstance);
+                            onStepUpdateSuccess(stepInstance);
+                        }}
+                        processInstance={processInstance}
+                        stepInstance={currStepInstance}
+                        stepTemplate={getStepTemplateByStepInstance(currStepInstance, processTemplate)}
+                        isStepEditMode={isStepEditMode}
+                        setIsStepEditMode={setIsStepEditMode}
+                        isThereNextStep={currStepInstanceIndex < processInstance.steps.length - 1}
+                        isTherePrevStep={currStepInstanceIndex > 0}
+                        onSetNextStep={() => {
+                            setCurrStepInstance(processInstance.steps[currStepInstanceIndex + 1]);
+                            setCurrStepInstanceIndex(currStepInstanceIndex + 1);
+                        }}
+                        onSetPrevStep={() => {
+                            setCurrStepInstance(processInstance.steps[currStepInstanceIndex - 1]);
+                            setCurrStepInstanceIndex(currStepInstanceIndex - 1);
+                        }}
                     />
-                </Grid>
-            )}
+                )}
+                {currStepInstance && openActivityPopper && (
+                    <Grid item container direction="column" wrap="nowrap" overflow="none" height="65vh" style={{ overflowY: 'auto' }} padding="20px">
+                        <ActivitiesContent
+                            activityEntityId={currStepInstance._id}
+                            entityTemplate={getStepTemplateByStepInstance(currStepInstance, processTemplate)}
+                        />
+                    </Grid>
+                )}
+            </Grid>
         </Grid>
     );
 };

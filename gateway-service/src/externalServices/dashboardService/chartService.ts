@@ -1,3 +1,10 @@
+import config from '../../config';
+import DefaultExternalServiceApi from '../../utils/express/externalService';
+
+const {
+    dashboardService: { url, baseRoute, requestTimeout, charts },
+} = config;
+
 export enum IChartType {
     Column = 'column',
     Line = 'line',
@@ -58,7 +65,7 @@ export interface IChart {
     permission: IPermission;
 }
 
-export interface IChartDocument extends IChart {
+export interface IMongoChart extends IChart {
     _id: string;
     createdAt: string;
     updatedAt: string;
@@ -73,6 +80,37 @@ export interface IChartBody {
 
 type GeneratorChart = { x: any; y: number }[];
 
-export interface ChartsAndGenerator extends IChartDocument {
+export interface ChartsAndGenerator extends IMongoChart {
     chart: GeneratorChart;
+}
+
+export class ChartService extends DefaultExternalServiceApi {
+    constructor(workspaceId: string) {
+        super(workspaceId, { baseURL: `${url}${baseRoute}${charts.baseRoute}`, timeout: requestTimeout });
+    }
+
+    async getChartsByTemplateId(templateId: string, textSearch?: string): Promise<IMongoChart[]> {
+        const { data } = await this.api.post<IMongoChart[]>(`/by-template/${templateId}`, { textSearch });
+        return data;
+    }
+
+    async getChartById(chartId: string): Promise<IMongoChart> {
+        const { data } = await this.api.get<IMongoChart>(`/${chartId}`);
+        return data;
+    }
+
+    async createChart(chart: IChart): Promise<IMongoChart> {
+        const { data } = await this.api.post('/', chart);
+        return data;
+    }
+
+    async updateChart(chartId: string, chart: IChart): Promise<IMongoChart> {
+        const { data } = await this.api.put(`/${chartId}`, chart);
+        return data;
+    }
+
+    async deleteChart(chartId: string): Promise<IMongoChart> {
+        const { data } = await this.api.delete(`/${chartId}`);
+        return data;
+    }
 }
