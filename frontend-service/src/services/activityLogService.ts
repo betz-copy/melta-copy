@@ -1,6 +1,8 @@
 import axios from '../axios';
 import { environment } from '../globals';
+import { IEntitySingleProperty } from '../interfaces/entityTemplates';
 import { Status } from '../interfaces/processes/processInstance';
+import { IProcessSingleProperty } from '../interfaces/processes/processTemplate';
 
 const { activityLog } = environment.api;
 
@@ -42,7 +44,7 @@ const getActivityLogRequest = async (
     entityId: string,
     limit: number,
     skip: number,
-    fieldsSearch: string[],
+    entityTemplateProperties: Record<string, IEntitySingleProperty> | Record<string, IProcessSingleProperty>,
     actions?: string[],
     searchText?: string,
     startDateRange?: Date,
@@ -66,12 +68,20 @@ const getActivityLogRequest = async (
         limit,
         skip,
         actions: actionsToFilter,
-        fieldsSearch,
         startDateRange,
         endDateRange,
     };
 
-    if (searchText) params.searchText = searchText;
+    if (searchText) {
+        params.searchText = searchText;
+        if (searchText.trim() !== '') {
+            const fieldsKeysToSearch = Object.keys(entityTemplateProperties).filter((key) =>
+                entityTemplateProperties[key].title.includes(searchText.trim()),
+            );
+
+            params.fieldsSearch = fieldsKeysToSearch;
+        }
+    }
 
     const { data } = await axios.get<IActivityLog[]>(`${activityLog}/${entityId}`, { params });
     return data;

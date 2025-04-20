@@ -9,6 +9,7 @@ export const getActivitySchema = Joi.object({
         actions: Joi.array().items(Joi.string()).default([]),
         searchText: Joi.string().default(''),
         fieldsSearch: Joi.array().items(Joi.string()).default([]),
+        usersSearch: Joi.array().items(Joi.string()).default([]),
         startDateRange: Joi.date(),
         endDateRange: Joi.date(),
     },

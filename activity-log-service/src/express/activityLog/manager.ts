@@ -14,6 +14,7 @@ export default class ActivityLogManager extends DefaultManagerMongo<IActivityLog
         limit: number,
         skip: number,
         fieldsSearch: string[],
+        usersSearch: string[],
         actions?: string[],
         searchText?: string,
         startDateRange?: Date,
@@ -27,24 +28,34 @@ export default class ActivityLogManager extends DefaultManagerMongo<IActivityLog
             query.action = { $in: regActions };
         }
 
+        if ((searchText && searchText !== '') || fieldsSearch.length || usersSearch.length) query.$or = [];
+
         if (searchText && searchText !== '') {
-            query['metadata.updatedFields'] = {
-                $elemMatch: {
-                    $or: [{ fieldName: searchRegex }, { oldValue: searchRegex }, { newValue: searchRegex }],
+            query.$or!.push({
+                'metadata.updatedFields': {
+                    $elemMatch: {
+                        $or: [{ fieldName: searchRegex }, { oldValue: searchRegex }, { newValue: searchRegex }],
+                    },
                 },
-            };
+            });
         }
 
         if (fieldsSearch.length) {
-            if (query['metadata.updatedFields']) {
-                query['metadata.updatedFields'].$elemMatch.$or.push({ fieldName: { $in: fieldsSearch } });
+            if (query.$or![0] && query.$or![0]['metadata.updatedFields']) {
+                query.$or![0]['metadata.updatedFields'].$elemMatch.$or.push({ fieldName: { $in: fieldsSearch } });
             } else {
-                query['metadata.updatedFields'] = {
-                    $elemMatch: {
-                        fieldName: { $in: fieldsSearch },
+                query.$or!.push({
+                    'metadata.updatedFields': {
+                        $elemMatch: {
+                            fieldName: { $in: fieldsSearch },
+                        },
                     },
-                };
+                });
             }
+        }
+
+        if (usersSearch.length) {
+            query.$or!.push({ userId: { $in: usersSearch } });
         }
 
         if (startDateRange && endDateRange) {
