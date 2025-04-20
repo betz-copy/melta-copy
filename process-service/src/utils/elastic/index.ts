@@ -3,6 +3,9 @@ import type { DeleteRequest, ExistsRequest, IndexRequest, SearchRequest, UpdateR
 import config from '../../config';
 import logger from '../logger/logsLogger';
 
+const {
+    elastic: { index, url, user, password, tlsRejectUnauthorized },
+} = config;
 class ElasticClient {
     static client: Client | null;
 
@@ -17,8 +20,11 @@ class ElasticClient {
 
         try {
             ElasticClient.client = new Client({
-                node: config.elastic.url,
-                auth: { username: config.elastic.user, password: config.elastic.password },
+                node: url,
+                auth: { username: user, password },
+                tls: {
+                    rejectUnauthorized: tlsRejectUnauthorized,
+                },
             });
 
             logger.info('ElasticSearch client initialized successfully');
@@ -30,35 +36,35 @@ class ElasticClient {
 
     index(params: Omit<IndexRequest<unknown>, 'index'>) {
         return ElasticClient.client!.index({
-            index: `${config.elastic.index}-${this.workspaceId}`,
+            index: `${index}-${this.workspaceId}`,
             ...params,
         });
     }
 
     exists(params: Omit<ExistsRequest, 'index'>) {
         return ElasticClient.client!.exists({
-            index: `${config.elastic.index}-${this.workspaceId}`,
+            index: `${index}-${this.workspaceId}`,
             ...params,
         });
     }
 
     update(params: Omit<UpdateRequest<unknown, unknown>, 'index'>) {
         return ElasticClient.client!.update({
-            index: `${config.elastic.index}-${this.workspaceId}`,
+            index: `${index}-${this.workspaceId}`,
             ...params,
         });
     }
 
     delete(params: Omit<DeleteRequest, 'index'>) {
         return ElasticClient.client!.delete({
-            index: `${config.elastic.index}-${this.workspaceId}`,
+            index: `${index}-${this.workspaceId}`,
             ...params,
         });
     }
 
     search(params: Omit<SearchRequest, 'index'>) {
         return ElasticClient.client!.search({
-            index: `${config.elastic.index}-${this.workspaceId}`,
+            index: `${index}-${this.workspaceId}`,
             ...params,
         });
     }

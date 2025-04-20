@@ -66,6 +66,7 @@ const config = {
         excludedKeys: env.get('EXCLUDED_KEYS').default('_id,templateId,reviewers').asArray(','),
         user: env.get('ELASTIC_USER').default('elastic').asString(),
         password: env.get('ELASTIC_PASSWORD').default('elastic').asString(),
+        tlsRejectUnauthorized: env.get('ELASTIC_TLS_REJECT_UNAUTHORIZED').default('false').asBool(),
     },
 };
 

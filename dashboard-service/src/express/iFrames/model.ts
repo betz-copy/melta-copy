@@ -1,7 +1,7 @@
-import * as mongoose from 'mongoose';
-import { IFrameDocument } from './interface';
+import mongoose from 'mongoose';
+import { IMongoIframe } from './interface';
 
-const IFrameSchema = new mongoose.Schema<IFrameDocument>(
+const IFrameSchema = new mongoose.Schema<IMongoIframe>(
     {
         name: {
             type: String,
@@ -25,6 +25,6 @@ const IFrameSchema = new mongoose.Schema<IFrameDocument>(
     { timestamps: true, versionKey: false },
 );
 
-IFrameSchema.index({ name: 1 });
+IFrameSchema.index({ name: 1, url: 1 });
 
 export default IFrameSchema;
