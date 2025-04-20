@@ -1401,5 +1401,6 @@ export const MemoFieldEditCard = memo(
         isEqual(prev.errors, next.errors) &&
         isEqual(prev.uniqueConstraints, next.uniqueConstraints) &&
         isEqual(prev.locationSearchFields, next.locationSearchFields) &&
-        isEqual(prev.hasIdentifier, next.hasIdentifier),
+        isEqual(prev.hasIdentifier, next.hasIdentifier) &&
+        isEqual(prev.userPropertiesInTemplate, next.userPropertiesInTemplate),
 );
