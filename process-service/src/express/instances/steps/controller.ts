@@ -17,6 +17,8 @@ export default class StepInstanceController extends DefaultController<IStepInsta
     }
 
     async updateStep(req: Request, res: Response) {
-        res.json(await this.manager.updateStep(req.params.id, req.body));
+        const { userId, ...updatedFields } = req.body;
+
+        res.json(await this.manager.updateStep(req.params.id, updatedFields, userId));
     }
 }

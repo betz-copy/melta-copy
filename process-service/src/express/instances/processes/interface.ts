@@ -46,6 +46,9 @@ export interface IProcessInstanceSearchProperties extends IBaseSearchProperties 
     endDate?: Date;
     status?: Status[];
     archived?: boolean;
+    isWaitingForMeFilterOn?: boolean;
+    isStepStatusPendeing?: boolean;
+    userId?: string;
 }
 
 export interface ProcessInstanceDocument extends IProcessInstance {

@@ -1,17 +1,21 @@
 /* eslint-disable no-param-reassign */
 /* eslint-disable no-case-declarations */
-import React, { ForwardedRef, forwardRef, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import {
     BodyScrollEvent,
     CellEditingStoppedEvent,
     ColumnMovedEvent,
     ColumnResizedEvent,
+    ColumnState,
     ColumnVisibleEvent,
+    FilterModel,
+    FirstDataRenderedEvent,
     GridApi,
+    GridReadyEvent,
     IServerSideDatasource,
     IServerSideGetRowsParams,
     IServerSideGetRowsRequest,
     PaginationChangedEvent,
+    RowDataUpdatedEvent,
     RowSelectionOptions,
     RowStyle,
     StatusPanelDef,
@@ -22,18 +26,19 @@ import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import isEqual from 'lodash.isequal';
 import sortBy from 'lodash.sortby';
-import { useMutation } from 'react-query';
+import React, { ForwardedRef, forwardRef, useImperativeHandle, useMemo, useRef, useState } from 'react';
+import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { useLocation } from 'wouter';
 import '../../css/resizeTable.css';
 import '../../css/table.css';
-
 import { environment } from '../../globals';
-import { EntityData, IDeleteEntityBody, IEntity, IEntityExpanded, IUniqueConstraint } from '../../interfaces/entities';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { EntityData, IDeleteEntityBody, IEntity, IEntityExpanded, ISearchFilter, IUniqueConstraint } from '../../interfaces/entities';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IRelationship } from '../../interfaces/relationships';
 import { ActionTypes, IAction, IActionPopulated } from '../../interfaces/ruleBreaches/actionMetadata';
 import { IBrokenRule, IRuleBreach, IRuleBreachPopulated } from '../../interfaces/ruleBreaches/ruleBreach';
+import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
 import ActionOnEntityWithRuleBreachDialog from '../../pages/Entity/components/ActionOnEntityWithRuleBreachDialog';
 import {
     deleteEntityRequest,
@@ -42,6 +47,7 @@ import {
     updateEntityStatusRequest,
 } from '../../services/entitiesService';
 import { useDarkModeStore } from '../../stores/darkMode';
+import { useWorkspaceStore } from '../../stores/workspace';
 import { agGridLocaleText } from '../../utils/agGrid/agGridLocaleText';
 import { agGridToSearchEntitiesOfTemplateRequest } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 import { DateFilterComponent } from '../../utils/agGrid/DateFilterComponent';
@@ -55,11 +61,11 @@ import { MultiSelectStatusBar } from '../EntitiesPage/MultiSelectStatusBar';
 import { ResizeBox } from '../EntitiesPage/ResizeBox';
 import { RowCountGridStatusBar } from '../EntitiesPage/RowCountGridStatusBar';
 import { ErrorToast } from '../ErrorToast';
-import { useWorkspaceStore } from '../../stores/workspace';
-import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
 import { getColumnDefs, IGetColumnDefsOptions } from './getColumnDefs';
 
 const { errorCodes } = environment;
+const { cacheBlockSize, maxConcurrentDatasourceRequests, actionPrefix, actionsWidth, rowCountInfiniteModeWithoutExpand } = environment.agGrid;
+const { columnWidths, columnsOrder, visibleColumns } = environment.agGrid.localStorage;
 
 export const defaultFilterModel = {
     disabled: {
@@ -85,6 +91,7 @@ export const getDatasource = <Data extends any = EntityData>(
     quickFilterText?: string,
     onFail?: (err: unknown) => void,
     rowData?: IConnection[],
+    defaultFilter?: ISearchFilter,
 ): IServerSideDatasource => {
     return {
         async getRows(params: IServerSideGetRowsParams<Data>) {
@@ -105,6 +112,7 @@ export const getDatasource = <Data extends any = EntityData>(
                         { ...agGridRequest, quickFilter: quickFilterText } as IAGGridRequest,
                         template,
                         // tableCount, // comment out  waiting for Itay
+                        defaultFilter,
                     ),
                 ),
             );
@@ -138,6 +146,7 @@ export const getRowModelProps = <Data extends any = EntityData>(
     quickFilterText?: string,
     datasourceOnFail?: (err: unknown) => void,
     hasInstances?: boolean,
+    defaultFilter?: ISearchFilter,
 ): React.ComponentProps<typeof AgGridReact<Data>> => {
     if (rowModelType === 'clientSide') {
         return {
@@ -148,11 +157,9 @@ export const getRowModelProps = <Data extends any = EntityData>(
         };
     }
 
-    const { cacheBlockSize, maxConcurrentDatasourceRequests } = environment.agGrid;
-
     return {
         rowModelType: 'serverSide',
-        serverSideDatasource: getDatasource<IConnection>(template, quickFilterText, datasourceOnFail, rowData as IConnection[]),
+        serverSideDatasource: getDatasource<IConnection>(template, quickFilterText, datasourceOnFail, rowData as IConnection[], defaultFilter),
         cacheBlockSize: rowModelType === 'serverSide' ? cacheBlockSize : undefined,
         pagination: rowModelType === 'serverSide',
         paginationPageSize,
@@ -170,7 +177,7 @@ export type EntitiesTableOfTemplateProps<Data> = {
     deleteRowButtonProps?: IButtonPopoverProps<Data>;
     editRowButtonProps?: IButtonPopoverProps<Data>;
     menuRowButtonProps?: boolean;
-    hasPermissionToCategory?: boolean;
+    hasPermissionToTemplate?: boolean;
     getRowId: (data: Data) => string;
     getEntityPropertiesData: (data: Data) => Partial<IEntity['properties']>;
     rowModelType: 'serverSide' | 'clientSide' | 'infinite';
@@ -197,7 +204,10 @@ export type EntitiesTableOfTemplateProps<Data> = {
     refetch?: () => void;
     hasInstances?: boolean;
     paginationPageSizeSelector?: boolean | number[];
+    infiniteModeWithoutExpand?: boolean;
     editable?: boolean;
+    defaultFilter?: FilterModel;
+    disableFilter?: boolean;
 };
 
 export type EntitiesTableOfTemplateRef<Data> = {
@@ -233,18 +243,25 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             hideNonPreview,
             saveStorageProps,
             onFilter,
-            hasPermissionToCategory,
+            hasPermissionToTemplate,
             ignoreType,
             refetch,
             hasInstances,
             multipleSelect,
             paginationPageSizeSelector = environment.agGrid.paginationPageSizeSelector as unknown as number[],
+            infiniteModeWithoutExpand,
             editable = true,
+            defaultFilter,
+            disableFilter = false,
         }: EntitiesTableOfTemplateProps<Data>,
         ref: ForwardedRef<EntitiesTableOfTemplateRef<Data>>,
     ) => {
+        const queryClient = useQueryClient();
+        const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
         const [_, navigate] = useLocation();
         const darkMode = useDarkModeStore((state) => state.darkMode);
+        const savedVisibleColumns = localStorage.getItem(`${visibleColumns}${saveStorageProps.pageType}-${template._id}`);
+        const defaultVisibleColumnsRef = useRef<Record<string, boolean>>(savedVisibleColumns ? JSON.parse(savedVisibleColumns) : {});
         const workspace = useWorkspaceStore((state) => state.workspace);
         const { rowCount, defaultExpandedRowCount } = workspace.metadata.agGrid;
         // const { table } = workspace.metadata.searchLimits;// comment out  waiting for Itay
@@ -257,9 +274,9 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
 
         const minHeightTable = rowHeight * pageRowCount + rowHeight * 2;
-        const [gridHeight, setGridHeight] = useState<number>(rowHeight * defaultExpandedRowCount);
-        console.log({ defaultExpandedRowCount });
-        console.log({ gridHeight, minHeightTable });
+        const [gridHeight, setGridHeight] = useState<number>(() =>
+            infiniteModeWithoutExpand ? rowHeight * rowCountInfiniteModeWithoutExpand : rowHeight * defaultExpandedRowCount,
+        );
 
         const [selectedRow, setSelectedRow] = useState('');
         const [currEntity, setCurrEntity] = useState<IEntity>();
@@ -274,14 +291,13 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             rawActions?: IAction[];
         }>({ isOpen: false });
 
-        const savedVisibleColumns = localStorage.getItem(`visibleColumns-${saveStorageProps.pageType}-${template._id}`);
-        const defaultVisibleColumns = savedVisibleColumns ? JSON.parse(savedVisibleColumns) : {};
+        const savedColumnsOrder = localStorage.getItem(`${columnsOrder}${saveStorageProps.pageType}-${template._id}`);
+        const [defaultColumnsOrder, setDefaultColumnsOrder] = useState(savedColumnsOrder ? JSON.parse(savedColumnsOrder) : {});
 
-        const savedColumnsOrder = localStorage.getItem(`columnsOrder-${saveStorageProps.pageType}-${template._id}`);
-        const defaultColumnsOrder = savedColumnsOrder ? JSON.parse(savedColumnsOrder) : {};
-
-        const savedColumnWidths = localStorage.getItem(`columnWidths-${saveStorageProps.pageType}-${template._id}`);
-        const defaultColumnWidths = savedColumnWidths ? JSON.parse(savedColumnWidths) : {};
+        const savedColumnWidths = localStorage.getItem(`${columnWidths}${saveStorageProps.pageType}-${template._id}`);
+        const [defaultColumnWidths, setDefaultColumnWidths] = useState<Record<string, number>>(
+            savedColumnWidths ? JSON.parse(savedColumnWidths) : {},
+        );
 
         const { isLoading: isDeleteLoading, mutateAsync: deleteMutation } = useMutation(
             (id: string) =>
@@ -398,8 +414,8 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             menuRowButtonProps,
             hideNonPreview,
             editRowButtonProps,
-            hasPermissionToCategory,
-            defaultVisibleColumns,
+            hasPermissionToTemplate,
+            defaultVisibleColumns: defaultVisibleColumnsRef.current,
             defaultColumnsOrder,
             defaultColumnWidths,
             rowHeight,
@@ -410,6 +426,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             updateEntityStatus,
             searchValue: quickFilterText,
             disableEditCell: !editable || editRowButtonProps?.disabledButton,
+            entityTemplates,
         };
         const columnDefs = useDeepCompareMemo(() => getColumnDefs(columnDefProps), [columnDefProps]);
 
@@ -434,6 +451,20 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             },
         };
 
+        const updateVisibleColumns = (params: ColumnVisibleEvent<Data, any> | GridReadyEvent<Data, any>) => {
+            const columnState = params.api.getColumnState();
+
+            const updatedVisibleColumns = columnState.reduce<Record<string, boolean>>((acc, col) => {
+                acc[col.colId] = !col.hide;
+                return acc;
+            }, {});
+
+            localStorage.setItem(`${visibleColumns}${saveStorageProps.pageType}-${template._id}`, JSON.stringify(updatedVisibleColumns));
+            defaultVisibleColumnsRef.current = updatedVisibleColumns;
+
+            return updatedVisibleColumns;
+        };
+
         const handleColumnVisible = (params: ColumnVisibleEvent<Data>) => {
             if (!saveStorageProps.shouldSaveVisibleColumns) return;
             if (params?.column?.getColId() && params.column.getColId() === 'disabled') {
@@ -441,28 +472,102 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                 const filterModel = params.column.isVisible() ? params.api.getFilterModel() : { ...rest, ...defaultFilterModel };
                 params.api.setFilterModel(filterModel);
             }
-            const columnState = params.api.getColumnState();
-            const updatedVisibleColumns = columnState.reduce<Record<string, boolean>>((acc, col) => {
-                acc[col.colId] = !col.hide;
-                return acc;
-            }, {});
-            localStorage.setItem(`visibleColumns-${saveStorageProps.pageType}-${template._id}`, JSON.stringify(updatedVisibleColumns));
+
+            updateVisibleColumns(params);
         };
 
-        const handleColumnMoved = (params: ColumnMovedEvent<Data>) => {
+        const handleColumnsOrder = (
+            params: ColumnMovedEvent<Data> | GridReadyEvent<Data, any> | FirstDataRenderedEvent<Data, any> | RowDataUpdatedEvent<Data, any>,
+        ) => {
             if (!saveStorageProps.shouldSaveColumnOrder) return;
             const columnState = params.api.getColumnState();
             const newColumnsOrder = columnState.reduce<Record<string, { order: number }>>((acc, column, index) => {
                 acc[column.colId] = { order: index };
                 return acc;
             }, {});
-            localStorage.setItem(`columnsOrder-${saveStorageProps.pageType}-${template._id}`, JSON.stringify(newColumnsOrder));
+            localStorage.setItem(`${columnsOrder}${saveStorageProps.pageType}-${template._id}`, JSON.stringify(newColumnsOrder));
+            setDefaultColumnsOrder(newColumnsOrder);
+        };
+
+        const handleColumnResized = (params: ColumnResizedEvent<Data>) => {
+            if (params.finished && params.column && ['autosizeColumns', 'uiColumnDragged', 'uiColumnResized'].includes(params.source)) {
+                const currColumnWidths = localStorage.getItem(`${columnWidths}${saveStorageProps.pageType}-${template._id}`);
+                const currColumnWidthsParsed = currColumnWidths ? JSON.parse(currColumnWidths) : {};
+                localStorage.setItem(
+                    `${columnWidths}${saveStorageProps.pageType}-${template._id}`,
+                    JSON.stringify({
+                        ...currColumnWidthsParsed,
+                        [params.column.getColId()]: params.column.getActualWidth(),
+                    }),
+                );
+            }
         };
 
         const handleSortChanged = () => {
             if (!saveStorageProps.shouldSaveSorting) return;
             const sortModel = getSortModel();
             localStorage.setItem(`sortModel-${saveStorageProps.pageType}-${template._id}`, JSON.stringify(sortModel));
+        };
+
+        const handlePaginationChanged = (params: PaginationChangedEvent<Data>) => {
+            if (!saveStorageProps.shouldSavePagination) return;
+            if (params.api && params.newPage) {
+                const currentPage = params.api.paginationGetCurrentPage();
+                sessionStorage.setItem(`currentPage-${saveStorageProps.pageType}-${template._id}`, JSON.stringify(currentPage));
+            }
+        };
+
+        const calculateRemainingWidth = (columnStates: ColumnState[], hasActions: boolean, isRemovedFields: boolean): number => {
+            const usedWidth: number = isRemovedFields ? 0 : Object.values(defaultColumnWidths).reduce((sum, width) => sum + width, 0);
+            const totalGridWidth: number = tableRef.current?.offsetWidth!;
+            const widthConsumed: number = columnStates.reduce((sum, col) => sum + col.width!, 0);
+            return totalGridWidth - usedWidth - widthConsumed - (hasActions ? actionsWidth : 0);
+        };
+
+        const autoSizeAll = (params: GridReadyEvent<Data, any> | RowDataUpdatedEvent<Data, any>, visibleKeys: string[]) => {
+            const { api } = params;
+
+            const hasActions = visibleKeys.some((key) => key.startsWith(actionPrefix));
+            const templateKeys = Object.keys(template.properties.properties);
+            const uniqKeys = ['disabled', 'createdAt', 'updatedAt'];
+            const defaultKeys = Object.keys(defaultColumnWidths).filter((key) => !key.includes(actionPrefix) && !uniqKeys.includes(key));
+            const isRemovedFields = defaultKeys.some((key) => !templateKeys.includes(key));
+
+            if (templateKeys.length === defaultKeys.length && templateKeys.every((key, index) => key === defaultKeys[index])) return;
+
+            handleColumnsOrder(params);
+
+            const shouldIncludeKey = (key) => key !== `${actionPrefix}${template._id}` && (isRemovedFields || !defaultColumnWidths[key]);
+            const columnsKeys = visibleKeys.filter(shouldIncludeKey);
+            if (columnsKeys.length === 0) return;
+
+            api.refreshHeader();
+            api.sizeColumnsToFit();
+            // eslint-disable-next-line no-unused-expressions
+            Object.keys(defaultColumnWidths).length > 0
+                ? api.autoSizeColumns(columnsKeys)
+                : api.autoSizeColumns(Object.keys(template.properties.properties));
+
+            const columnStates = api.getColumnState().filter((col) => columnsKeys.includes(col.colId));
+
+            const remainingWidth = calculateRemainingWidth(columnStates, hasActions, isRemovedFields);
+
+            const columnsWidth: Record<string, number> = columnStates.reduce(
+                (acc, col, index) => {
+                    const newWidth = index === columnStates.length - 1 ? col.width! + Math.max(remainingWidth, 0) : col.width!;
+                    acc[col.colId] = newWidth;
+                    return acc;
+                },
+                { [`${actionPrefix}${template._id}`]: 200 },
+            );
+
+            api.setColumnWidths(Object.entries(columnsWidth).map(([key, newWidth]) => ({ key, newWidth })));
+
+            if (Object.keys(columnsWidth).length > 0) {
+                const updatedWidths = isRemovedFields ? columnsWidth : { ...defaultColumnWidths, ...columnsWidth };
+                localStorage.setItem(`${columnWidths}${saveStorageProps.pageType}-${template._id}`, JSON.stringify(updatedWidths));
+                setDefaultColumnWidths(updatedWidths);
+            }
         };
 
         const handleBodyScroll = debounce((params: BodyScrollEvent<Data>) => {
@@ -577,33 +682,9 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         }));
 
         const rowModelProps = useMemo(
-            () => getRowModelProps(rowModelType, template, rowData, pageRowCount!, quickFilterText, datasourceOnFail, hasInstances),
-            [rowModelType, template, rowData, pageRowCount, quickFilterText, hasInstances],
+            () => getRowModelProps(rowModelType, template, rowData, pageRowCount!, quickFilterText, datasourceOnFail, hasInstances, defaultFilter),
+            [rowModelType, template, rowData, pageRowCount, quickFilterText, hasInstances, defaultFilter],
         );
-
-        const handleColumnResized = (params: ColumnResizedEvent<Data>) => {
-            if (params.finished && params.column && ['autosizeColumns', 'uiColumnDragged', 'uiColumnResized'].includes(params.source)) {
-                const currColumnWidths = localStorage.getItem(`columnWidths-${saveStorageProps.pageType}-${template._id}`);
-                const currColumnWidthsParsed = currColumnWidths ? JSON.parse(currColumnWidths) : {};
-                localStorage.setItem(
-                    `columnWidths-${saveStorageProps.pageType}-${template._id}`,
-                    JSON.stringify({
-                        ...currColumnWidthsParsed,
-                        [params.column.getColId()]: params.column.getActualWidth(),
-                    }),
-                );
-            }
-        };
-
-        const handlePaginationChanged = (params: PaginationChangedEvent<Data>) => {
-            const { api, newPage } = params;
-
-            if (!saveStorageProps.shouldSavePagination) return;
-            if (api && newPage) {
-                const currentPage = api.paginationGetCurrentPage();
-                sessionStorage.setItem(`currentPage-${saveStorageProps.pageType}-${template._id}`, JSON.stringify(currentPage));
-            }
-        };
 
         const statusPanels = useMemo(() => {
             const panels: StatusPanelDef[] = [{ statusPanel: RowCountGridStatusBar, align: 'right' }];
@@ -666,13 +747,12 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                             agDateInput: DateFilterComponent,
                         }}
                         onColumnVisible={handleColumnVisible}
-                        onColumnMoved={handleColumnMoved}
+                        onColumnMoved={handleColumnsOrder}
                         onColumnResized={handleColumnResized}
                         onPaginationChanged={handlePaginationChanged}
                         onBodyScroll={rowModelType === 'infinite' ? handleBodyScroll : undefined}
                         onSortChanged={handleSortChanged}
                         enableRtl
-                        enableCellTextSelection
                         maintainColumnOrder
                         rowSelection={rowSelection}
                         suppressAggFuncInHeader
@@ -700,7 +780,27 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                             const isSideBarOpen = gridApi.isToolPanelShowing();
                             gridApi.setSideBarVisible(isSideBarOpen);
                         }}
+                        defaultColDef={{
+                            filterParams: {
+                                maxNumConditions: 1,
+                                buttons: ['reset'],
+                            },
+                            sortable: true,
+                            menuTabs: ['filterMenuTab'],
+                            minWidth: 120,
+                            resizable: true,
+                            lockPinned: true,
+                            initialWidth: 250,
+                            suppressSizeToFit: true,
+                            suppressHeaderFilterButton: disableFilter,
+                        }}
                         onGridReady={(params) => {
+                            if (saveStorageProps.pageType) {
+                                const updatedVisibleColumns = updateVisibleColumns(params);
+                                const visibleKeys = Object.keys(updatedVisibleColumns).filter((key) => updatedVisibleColumns[key] === true);
+                                autoSizeAll(params, visibleKeys);
+                            }
+
                             const savedSortModel = localStorage.getItem(`sortModel-${saveStorageProps.pageType}-${template._id}`);
                             if (savedSortModel) {
                                 const sortModel: IServerSideGetRowsRequest['sortModel'] = JSON.parse(savedSortModel);
@@ -709,7 +809,6 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                                     defaultState: { sort: null },
                                 });
                             }
-
                             const savedFilterModel = LocalStorage.get(`tableFilter-${saveStorageProps.pageType}-${template._id}`);
                             if (savedFilterModel) params.api.setFilterModel({ ...savedFilterModel });
                             else if (rowModelType !== 'clientSide') params.api.setFilterModel(defaultFilterModel);
@@ -745,18 +844,6 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                                 }
                             }
                         }}
-                        defaultColDef={{
-                            filterParams: {
-                                maxNumConditions: 1,
-                                buttons: ['reset'],
-                            },
-                            sortable: true,
-                            menuTabs: ['filterMenuTab'],
-                            minWidth: 120,
-                            resizable: true,
-                            lockPinned: true,
-                            initialWidth: 250,
-                        }}
                         sideBar={{
                             toolPanels: [
                                 {
@@ -775,7 +862,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                             hiddenByDefault: true,
                             position: 'left',
                         }}
-                        statusBar={rowModelType === 'infinite' ? { statusPanels } : undefined}
+                        statusBar={rowModelType === 'infinite' && !infiniteModeWithoutExpand ? { statusPanels } : undefined}
                         localeText={agGridLocaleText}
                         paginationPageSizeSelector={paginationPageSizeSelector}
                         onCellEditingStopped={(params: CellEditingStoppedEvent) => {
@@ -821,6 +908,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                         isLoading={isDeleteLoading}
                     />
                 </Box>
+
                 {updateWithRuleBreachDialogState.isOpen && (
                     <ActionOnEntityWithRuleBreachDialog
                         isLoadingActionOnEntity={isUpdateLoading}
@@ -850,7 +938,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             </>
         );
 
-        return rowModelType === 'infinite' ? (
+        return rowModelType === 'infinite' && !infiniteModeWithoutExpand ? (
             <ResizeBox initialHeight={gridHeight} setHeight={setGridHeight} minHeight={minHeightTable} templateId={template._id}>
                 {gridContent}
             </ResizeBox>

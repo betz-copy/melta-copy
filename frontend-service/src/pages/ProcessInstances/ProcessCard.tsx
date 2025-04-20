@@ -1,7 +1,21 @@
-/* eslint-disable no-console */
-import React, { CSSProperties, useState } from 'react';
-import { Box, Card, CardContent, Grid, Typography, styled, IconButton, Menu, Skeleton } from '@mui/material';
-import { ScatterPlotOutlined as HiveIcon, FiberManualRecordOutlined as StatusIcon, Unarchive } from '@mui/icons-material';
+import React, { useState } from 'react';
+import {
+    Box,
+    Card,
+    CardContent,
+    Grid,
+    Typography,
+    styled,
+    IconButton,
+    Menu,
+    Skeleton,
+    Stepper,
+    Step,
+    StepConnector,
+    stepConnectorClasses,
+    useTheme,
+} from '@mui/material';
+import { Edit, ScatterPlotOutlined as HiveIcon, Unarchive } from '@mui/icons-material';
 import { useMutation, useQueryClient } from 'react-query';
 import DeleteIcon from '@mui/icons-material/Delete';
 import MoreVertSharpIcon from '@mui/icons-material/MoreVertSharp';
@@ -12,7 +26,7 @@ import { AxiosError } from 'axios';
 import { toast } from 'react-toastify';
 import { CustomIcon } from '../../common/CustomIcon';
 import { IMongoStepTemplatePopulated } from '../../interfaces/processes/stepTemplate';
-import { IMongoProcessInstancePopulated, Status } from '../../interfaces/processes/processInstance';
+import { IMongoProcessInstancePopulated, Status, StatusColors, StatusColorsNames } from '../../interfaces/processes/processInstance';
 import { IMongoStepInstancePopulated } from '../../interfaces/processes/stepInstance';
 import { IProcessTemplateMap } from '../../interfaces/processes/processTemplate';
 import ProcessInstanceWizard from '../../common/wizards/processInstance';
@@ -23,20 +37,9 @@ import { MeltaTooltip } from '../../common/MeltaTooltip';
 import { Print } from './print';
 import { ProcessDetailsValues } from '../../common/wizards/processInstance/ProcessDetails';
 import { ErrorToast } from '../../common/ErrorToast';
+import { getFontColor } from '../../common/wizards/processInstance/ProcessSummaryStep/ProcessStatus';
+import CreateOrEditProcess from '../../common/wizards/processInstance/CreateOrEditProcessDialog';
 
-export enum StatusColors {
-    Pending = '#ff8f00',
-    Approved = '#2e7d32',
-    Rejected = '#d32f2f',
-    Archived = '#B0B0B0',
-    All = '#0288d1',
-}
-export enum StatusColorsNames {
-    Pending = 'warning',
-    Approved = 'success',
-    Rejected = 'error',
-    Archived = 'disabled',
-}
 export const StyledCard = styled(Card)(({ theme }) => ({
     background: theme.palette.mode === 'light' ? '#FFFFFF 0% 0% no-repeat padding-box' : undefined,
     boxShadow: '0px 3px 6px #00000029',
@@ -78,7 +81,7 @@ const statusColorName = (status: Status, isArchived?: boolean): StatusColorsName
     }
 };
 
-const StepIcon: React.FC<{
+export const StepIcon: React.FC<{
     step: IMongoStepInstancePopulated;
     stepTemplate: IMongoStepTemplatePopulated;
     iconColor: string;
@@ -88,10 +91,8 @@ const StepIcon: React.FC<{
             defaultStepTemplate?: IMongoStepTemplatePopulated | undefined;
         }>
     >;
-}> = ({ step, stepTemplate, iconColor, setOpen }) => {
-    const color = getStatusColor(step.status);
-    const border: CSSProperties['border'] = `2px solid ${color}`;
-
+    displayTitle?: boolean;
+}> = ({ step, stepTemplate, iconColor, setOpen, displayTitle = true }) => {
     const stageNameRef = React.useRef<any>(null);
     const [isOverflowing, setIsOverflowing] = React.useState(false);
 
@@ -125,12 +126,12 @@ const StepIcon: React.FC<{
                 <Box
                     sx={{
                         borderRadius: '50%',
-                        border,
+                        backgroundColor: '#E6E8F5',
                         display: 'flex',
                         justifyContent: 'center',
                         alignItems: 'center',
-                        width: '60px',
-                        height: '60px',
+                        width: '40px',
+                        height: '40px',
                         ':hover': { transform: 'scale(1.1)' },
                         cursor: 'pointer',
                     }}
@@ -140,18 +141,45 @@ const StepIcon: React.FC<{
                     }}
                 >
                     {stepTemplate.iconFileId ? (
-                        <CustomIcon color={iconColor} iconUrl={stepTemplate.iconFileId} width="40px" height="40px" />
+                        <CustomIcon color={iconColor} iconUrl={stepTemplate.iconFileId} width="25px" height="25px" />
                     ) : (
-                        <HiveIcon sx={{ color: iconColor }} fontSize="large" />
+                        <HiveIcon sx={{ color: iconColor }} width="25px" height="25px" />
                     )}
                 </Box>
-                <Typography ref={stageNameRef} noWrap sx={{ maxWidth: '8em', textOverflow: 'ellipsis' }} variant="caption">
-                    {stepTemplate.displayName}
-                </Typography>
+                {step.status === Status.Approved && (
+                    <img src="/icons/check-icon.svg" style={{ marginRight: '35px', marginTop: '35px', position: 'absolute' }} />
+                )}
+                {step.status === Status.Rejected && (
+                    <img src="/icons/uncheck-icon.svg" style={{ marginRight: '35px', marginTop: '35px', position: 'absolute' }} />
+                )}
+                {displayTitle && (
+                    <Typography ref={stageNameRef} noWrap sx={{ maxWidth: '70px', textOverflow: 'ellipsis' }} variant="caption" color="#787C9E">
+                        {stepTemplate.displayName}
+                    </Typography>
+                )}
             </Grid>
         </MeltaTooltip>
     );
 };
+
+const StepIconComponent = (
+    stepInstance: IMongoStepInstancePopulated,
+    stepTemplate: IMongoStepTemplatePopulated,
+    setOpen: (x: any) => any,
+    stepStatus: Status,
+    stepId: string,
+) => (
+    <Grid container flexDirection="column" justifyContent="center" width="100%" gap="10px">
+        <Grid item key={stepId}>
+            <StepIcon
+                step={stepInstance}
+                stepTemplate={stepTemplate}
+                iconColor={stepStatus === Status.Pending ? getStatusColor(stepStatus) : '#787C9E'}
+                setOpen={setOpen}
+            />
+        </Grid>
+    </Grid>
+);
 
 const ProcessCard: React.FC<{
     processInstance: IMongoProcessInstancePopulated;
@@ -195,6 +223,7 @@ const ProcessCard: React.FC<{
                 setIsProcessChanged(true);
                 setIsEditMode(false);
                 setCurrProcessInstance(processNewData);
+                queryClient.resetQueries({ queryKey: ['searchProcesses'] });
             },
             onError: (error: AxiosError) => {
                 toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.processInstance.failedToEdit')} />);
@@ -238,22 +267,45 @@ const ProcessCard: React.FC<{
         },
     );
 
+    const StepperConnector = styled(StepConnector)(({ theme }) => ({
+        [`& .${stepConnectorClasses.line}`]: {
+            marginTop: 7,
+            height: 2,
+            border: 0,
+            backgroundColor: getFontColor(currProcessInstance.status),
+            borderRadius: 1,
+            ...theme.applyStyles('dark', {
+                backgroundColor: theme.palette.grey[800],
+            }),
+        },
+    }));
+
+    const theme = useTheme();
+
     return (
         <div>
             <StyledCard onClick={() => setOpen({ isOpen: true })}>
                 {!isLoading ? (
                     <CardContent>
-                        <Grid container direction="column" alignItems="center" justifyContent="center" spacing={2}>
-                            <Grid item container direction="row" justifyContent="center" alignItems="center" spacing={1}>
-                                <Grid item>
-                                    <StatusIcon fontSize="medium" color={statusColorName(processInstance.status, processInstance.archived)} />
+                        <Grid container direction="column" alignItems="center" justifyContent="center" spacing={1}>
+                            <Grid item container direction="row" justifyContent="space-between" alignItems="center" wrap="nowrap" spacing={1}>
+                                <Grid container item alignItems="center">
+                                    <Grid
+                                        item
+                                        sx={{
+                                            height: '20px',
+                                            width: '3px',
+                                            backgroundColor: statusColorName(currProcessInstance.status, currProcessInstance.archived),
+                                            borderRadius: '20px',
+                                        }}
+                                    />
+                                    <Grid item sx={{ paddingLeft: '5px' }}>
+                                        <Typography component="h6" variant="h6" noWrap color={theme.palette.primary.main}>
+                                            {currProcessInstance.name}
+                                        </Typography>
+                                    </Grid>
                                 </Grid>
                                 <Grid item>
-                                    <Typography component="h6" variant="h6" noWrap>
-                                        {processInstance.name}
-                                    </Typography>
-                                </Grid>
-                                <Grid>
                                     {isEditMode && (
                                         <>
                                             <IconButton onClick={handleClick}>
@@ -261,6 +313,15 @@ const ProcessCard: React.FC<{
                                             </IconButton>
 
                                             <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleCloseMenu}>
+                                                <MenuButton
+                                                    onClick={(e) => {
+                                                        setIsEditMode(true);
+                                                        e.stopPropagation();
+                                                        handleCloseMenu(e);
+                                                    }}
+                                                    text={i18next.t('actions.edit')}
+                                                    icon={<Edit color="action" />}
+                                                />
                                                 <MenuButton
                                                     onClick={async (e: React.MouseEvent<HTMLLIElement, MouseEvent>) => {
                                                         e.stopPropagation();
@@ -272,23 +333,25 @@ const ProcessCard: React.FC<{
                                                 <MenuButton
                                                     onClick={async (e: React.MouseEvent<HTMLLIElement, MouseEvent>) => {
                                                         e.stopPropagation();
-                                                        await archiveProcessMutate(processInstance);
-                                                        onChangedProcessDialogClose(processInstance._id);
+                                                        await archiveProcessMutate(currProcessInstance);
+                                                        onChangedProcessDialogClose(currProcessInstance._id);
                                                         handleCloseMenu(e);
                                                     }}
-                                                    text={processInstance.archived ? i18next.t('actions.unArchived') : i18next.t('actions.archived')}
+                                                    text={
+                                                        currProcessInstance.archived ? i18next.t('actions.unArchived') : i18next.t('actions.archived')
+                                                    }
                                                     icon={
                                                         // eslint-disable-next-line no-nested-ternary
                                                         isLodingArchiveProcess ? (
                                                             <CircularProgress size={20} />
-                                                        ) : processInstance.archived ? (
+                                                        ) : currProcessInstance.archived ? (
                                                             <Unarchive color="action" />
                                                         ) : (
                                                             <ArchiveIcon color="action" />
                                                         )
                                                     }
                                                 />
-                                                {!processInstance.archived && (
+                                                {!currProcessInstance.archived && (
                                                     <Print
                                                         processInstance={currProcessInstance}
                                                         processTemplate={processTemplatesMap.get(currProcessInstance.templateId)!}
@@ -303,27 +366,69 @@ const ProcessCard: React.FC<{
                                     )}
                                 </Grid>
                             </Grid>
-                            <Grid item container justifyContent="center" spacing={4}>
-                                {processInstance.steps.map((step, index) => {
-                                    const stepTemplate = processTemplate.steps[index];
-                                    return (
-                                        <Grid item key={stepTemplate.name}>
-                                            <StepIcon
-                                                step={step}
-                                                stepTemplate={stepTemplate}
-                                                iconColor={getStatusColor(step.status)}
-                                                setOpen={setOpen}
-                                            />
-                                        </Grid>
-                                    );
-                                })}
+                            <Grid item container justifyContent="space-between">
+                                <Grid item>
+                                    <Typography fontSize="12px" sx={{ color: '#787C9E' }} noWrap>
+                                        {`${i18next.t('processInstancesPage.process')}: ${
+                                            processTemplatesMap.get(currProcessInstance.templateId)!.displayName
+                                        }`}
+                                    </Typography>
+                                </Grid>
+                                <Grid item>
+                                    <Typography fontSize="12px" sx={{ color: '#787C9E' }} noWrap>
+                                        {`${new Date(currProcessInstance.startDate).toLocaleDateString('he-IL', {
+                                            year: '2-digit',
+                                            month: '2-digit',
+                                            day: '2-digit',
+                                        })} - ${new Date(currProcessInstance.endDate).toLocaleDateString('he-IL', {
+                                            year: '2-digit',
+                                            month: '2-digit',
+                                            day: '2-digit',
+                                        })}`}
+                                    </Typography>
+                                </Grid>
+                            </Grid>
+                            <Grid item justifyContent="center">
+                                <Stepper sx={{ flexWrap: 'wrap' }} connector={<StepperConnector />} alternativeLabel>
+                                    {currProcessInstance.steps.map((step, index) => {
+                                        const stepTemplate = processTemplate.steps[index];
+                                        return (
+                                            <Step sx={{ display: 'flex', alignItems: 'center', width: '85px' }} key={step._id}>
+                                                <Grid
+                                                    container
+                                                    flexDirection="column"
+                                                    justifyContent="center"
+                                                    width="100%"
+                                                    alignSelf="center"
+                                                    gap="10px"
+                                                >
+                                                    <Grid item>{StepIconComponent(step, stepTemplate, setOpen, step.status, step._id)}</Grid>
+                                                </Grid>
+                                            </Step>
+                                        );
+                                    })}
+                                </Stepper>
+                            </Grid>
+                            <Grid item container justifyContent="space-between">
+                                <Grid item />
+                                <Grid item>
+                                    <Typography fontSize="12px" sx={{ color: '#787C9E' }} noWrap>
+                                        {`${i18next.t('processInstancesPage.createdAt')}: ${new Date(processInstance.createdAt).toLocaleDateString(
+                                            'he-IL',
+                                            {
+                                                year: '2-digit',
+                                                month: '2-digit',
+                                                day: '2-digit',
+                                            },
+                                        )}`}
+                                    </Typography>
+                                </Grid>
                             </Grid>
                         </Grid>
                     </CardContent>
                 ) : (
                     <CardContent>
                         <Grid container direction="column" alignItems="center" justifyContent="center" spacing={2}>
-                            {/* Status & Process Name */}
                             <Grid item container direction="row" justifyContent="center" alignItems="center" spacing={1}>
                                 <Grid item>
                                     <Skeleton variant="circular" width={15} height={15} />
@@ -334,7 +439,7 @@ const ProcessCard: React.FC<{
                             </Grid>
 
                             <Grid item container flexWrap="nowrap" justifyContent="center" spacing={4} paddingTop={1} paddingBottom={1}>
-                                {processInstance.steps.map(({ _id }) => (
+                                {currProcessInstance.steps.map(({ _id }) => (
                                     <Grid container item key={_id} alignItems="center" direction="column" spacing={1}>
                                         <Grid item>
                                             <Skeleton variant="circular" width={60} height={60} />
@@ -354,7 +459,7 @@ const ProcessCard: React.FC<{
                 open={deleteDialogState}
                 handleClose={() => setDeleteDialogState(false)}
                 onYes={async () => {
-                    await deleteProcessMutate(processInstance._id);
+                    await deleteProcessMutate(currProcessInstance._id);
                     onChangedProcessDialogClose(null);
                     setDeleteDialogState(false);
                 }}
@@ -374,6 +479,15 @@ const ProcessCard: React.FC<{
                     setIsProcessChanged={setIsProcessChanged}
                     isEditMode={isEditModeProcess}
                     setIsEditMode={setIsEditMode}
+                />
+            )}
+            {isEditModeProcess && processInstance && (
+                <CreateOrEditProcess
+                    open={isEditModeProcess}
+                    onClose={() => setIsEditMode(false)}
+                    processInstance={currProcessInstance}
+                    mutateAsync={mutateAsync}
+                    isEditMode
                 />
             )}
         </div>

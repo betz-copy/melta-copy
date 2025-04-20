@@ -2,18 +2,19 @@ import { Dialog, Grid, IconButton, Typography } from '@mui/material';
 import React, { useState } from 'react';
 import { LocationOn } from '@mui/icons-material';
 import { HighlightText } from '../../utils/HighlightText';
-import EntityWithLocationFields from './LocationPreview';
 import { IEntity } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { useWorkspaceStore } from '../../stores/workspace';
+import LocationPreview from './LocationPreview';
 
 const OpenMap: React.FC<{
     field: string;
-    entity: IEntity;
+    entityProperties: IEntity['properties'];
     entityTemplate: IMongoEntityTemplatePopulated;
     showText?: boolean;
     searchValue?: string;
-}> = ({ field, entity, entityTemplate, showText = true, searchValue }) => {
+    disableOpenMap?: boolean;
+}> = ({ field, entityProperties, entityTemplate, showText = true, searchValue, disableOpenMap }) => {
     const [open, setOpen] = useState(false);
     const workspace = useWorkspaceStore((state) => state.workspace);
     const { headlineSubTitleFontSize } = workspace.metadata.mainFontSizes;
@@ -27,9 +28,11 @@ const OpenMap: React.FC<{
                 <IconButton
                     sx={{ borderRadius: 10, maxWidth: '100%' }}
                     onClick={(e) => {
+                        if (disableOpenMap) return;
                         e.stopPropagation();
                         handleButtonClick?.();
                     }}
+                    disableRipple={disableOpenMap}
                 >
                     <LocationOn style={{ height: '18px' }} />
                     {showText && (
@@ -50,7 +53,7 @@ const OpenMap: React.FC<{
             </Grid>
             {open && (
                 <Dialog open={open} onClose={() => setOpen(false)}>
-                    <EntityWithLocationFields entity={entity} entityTemplate={entityTemplate} styles={{ height: '800px', width: '600px' }} />
+                    <LocationPreview entityProperties={entityProperties} entityTemplate={entityTemplate} />
                 </Dialog>
             )}
         </Grid>

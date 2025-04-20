@@ -3,16 +3,21 @@ import { Dialog, DialogTitle, DialogContent, Grid, Button, FormControlLabel, Dia
 import { PrintOutlined, CloseOutlined } from '@mui/icons-material';
 import i18next from 'i18next';
 import { SelectCheckbox } from '../SelectCheckBox';
-import { IMongoRelationshipTemplatePopulated } from '../../interfaces/relationshipTemplates';
-import { IMongoCategory } from '../../interfaces/categories';
-import { IConnectionTemplateOfExpandedEntity } from '../../pages/Entity';
 import { MeltaCheckbox } from '../MeltaCheckbox';
 import { IFile } from '../../interfaces/preview';
 import { getFile } from '../../utils/getFileType';
-import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IEntityTemplate, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IMongoProcessInstancePopulated, InstanceProperties } from '../../interfaces/processes/processInstance';
 import { IMongoProcessTemplatePopulated, IProcessSingleProperty } from '../../interfaces/processes/processTemplate';
-import { IEntityExpanded } from '../../interfaces/entities';
+import { IEntity, IEntityExpanded } from '../../interfaces/entities';
+import {
+    IConnectionExpanded,
+    IConnectionTemplateExpanded,
+    IEntityExpandedWithRelatedRelationships,
+    ISelectRelationshipTemplates,
+} from '../../pages/Entity/components/print';
+import RelationshipSelect from '../../pages/Entity/components/print/RelationshipSelection';
+import { IConnectionTemplateOfExpandedEntity } from '../../pages/Entity';
 
 type IOption = {
     show: boolean;
@@ -21,18 +26,9 @@ type IOption = {
 };
 
 const getFilesFromTemplate = (
-    instanceProperties:
-        | {
-              properties: {
-                  _id: string;
-                  createdAt: string;
-                  updatedAt: string;
-                  disabled: boolean;
-              } & Record<string, any>;
-          }
-        | InstanceProperties,
+    instanceProperties: IEntity | InstanceProperties,
     templateProperties:
-        | { type: 'object'; properties: Record<string, IEntitySingleProperty>; required: string[]; hide: string[] }
+        | IEntityTemplate['properties']
         | {
               type: 'object';
               properties: Record<string, IProcessSingleProperty>;
@@ -58,7 +54,7 @@ const PrintOptionsDialog: React.FC<{
     open: boolean;
     handleClose: () => void;
     template: IMongoEntityTemplatePopulated | IMongoProcessTemplatePopulated;
-    instance: IEntityExpanded | IMongoProcessInstancePopulated;
+    instance: IEntityExpandedWithRelatedRelationships | IMongoProcessInstancePopulated;
     files: IFile[];
     setFiles: React.Dispatch<React.SetStateAction<IFile[]>>;
     selectedFiles: IFile[];
@@ -67,15 +63,10 @@ const PrintOptionsDialog: React.FC<{
     setFilesLoadingStatus: React.Dispatch<React.SetStateAction<{}>>;
     entityConnections?: {
         connectionsTemplates: IConnectionTemplateOfExpandedEntity[];
-        selectedConnections: IConnectionTemplateOfExpandedEntity[];
-        setSelectedConnections: React.Dispatch<React.SetStateAction<IConnectionTemplateOfExpandedEntity[]>>;
-        categoriesWithConnectionsTemplates: {
-            category: IMongoCategory;
-            connectionsTemplates: {
-                relationshipTemplate: IMongoRelationshipTemplatePopulated;
-                isExpandedEntityRelationshipSource: boolean;
-            }[];
-        }[];
+        expandedRelationshipTemplates: IConnectionTemplateExpanded[];
+        expandedRelationships: IConnectionExpanded[];
+        selectedConnections: ISelectRelationshipTemplates[];
+        setSelectedConnections: React.Dispatch<React.SetStateAction<ISelectRelationshipTemplates[]>>;
     };
     options: {
         date?: IOption;
@@ -163,48 +154,67 @@ const PrintOptionsDialog: React.FC<{
         setIsLoading(Object.values(filesLoadingStatus).some((loading) => loading));
     }, [filesLoadingStatus]);
 
-    const allRelevantConnections: string[] = [];
-
-    let filteredCategoriesWithConnectionsTemplates: {
-        category: IMongoCategory;
-        connectionsTemplates: {
-            relationshipTemplate: IMongoRelationshipTemplatePopulated;
-            isExpandedEntityRelationshipSource: boolean;
-        }[];
-    }[] = [];
+    const allRelevantConnections: ISelectRelationshipTemplates[] = [];
 
     if (entityConnections) {
-        entityConnections.connectionsTemplates.map(({ relationshipTemplate: { _id }, isExpandedEntityRelationshipSource }) => {
-            const relevantConnections = (instance as IEntityExpanded).connections.filter((connection) => {
-                if (isExpandedEntityRelationshipSource) {
-                    return (
-                        connection.relationship.templateId === _id &&
-                        connection.sourceEntity.properties._id === (instance as IEntityExpanded).entity.properties._id
-                    );
-                }
+        const { connectionsTemplates, expandedRelationshipTemplates, expandedRelationships } = entityConnections;
+        const entityExpanded = instance as IEntityExpanded;
 
-                return (
-                    connection.relationship.templateId === _id &&
-                    connection.destinationEntity.properties._id === (instance as IEntityExpanded).entity.properties._id
-                );
-            });
+        const relevantParents = connectionsTemplates.filter(({ relationshipTemplate: { _id }, isExpandedEntityRelationshipSource }) => {
+            const entityType = isExpandedEntityRelationshipSource ? 'sourceEntity' : 'destinationEntity';
 
-            if (relevantConnections.length > 0) allRelevantConnections.push(_id);
-            return relevantConnections;
+            const relevantConnections = entityExpanded.connections.filter(
+                (connection) =>
+                    connection.relationship.templateId === _id && connection[entityType].properties._id === entityExpanded.entity.properties._id,
+            );
+
+            return relevantConnections.length > 0;
         });
 
-        filteredCategoriesWithConnectionsTemplates = entityConnections.categoriesWithConnectionsTemplates
-            .map((categoryWithConnection) => {
-                const filteredConnectionsTemplates = categoryWithConnection.connectionsTemplates.filter((connection) =>
-                    allRelevantConnections.includes(connection.relationshipTemplate._id),
+        const relevantChildren = expandedRelationshipTemplates.filter(
+            ({ relationshipTemplate: { _id }, isExpandedEntityRelationshipSource, parentRelationship }) => {
+                const relevantParentRelationship = relevantParents.find(
+                    (relevantParent) => relevantParent.relationshipTemplate._id === parentRelationship!.relationshipTemplate._id,
                 );
 
-                return {
-                    ...categoryWithConnection,
-                    connectionsTemplates: filteredConnectionsTemplates,
-                };
-            })
-            .filter((categoryWithConnection) => categoryWithConnection.connectionsTemplates.length > 0);
+                if (!relevantParentRelationship) return false;
+                const parentInstance = (instance as IEntityExpanded).connections.find(
+                    (connection) => relevantParentRelationship.relationshipTemplate._id === connection.relationship.templateId,
+                );
+                const entityId = relevantParentRelationship.isExpandedEntityRelationshipSource
+                    ? parentInstance?.destinationEntity.properties._id
+                    : parentInstance?.sourceEntity.properties._id;
+
+                const entityType = isExpandedEntityRelationshipSource ? 'destinationEntity' : 'sourceEntity';
+                const relevantConnections = expandedRelationships.filter(
+                    (connection) => connection.relationship.templateId === _id && connection[entityType].properties._id === entityId,
+                );
+
+                return relevantConnections.length > 0;
+            },
+        );
+
+        const relationshipMap = new Map<string, ISelectRelationshipTemplates>();
+
+        relevantParents.forEach((relevantParent) => {
+            const parentId = relevantParent.relationshipTemplate._id;
+
+            if (!relationshipMap.has(parentId)) {
+                relationshipMap.set(parentId, {
+                    ...relevantParent,
+                    children: [],
+                });
+            }
+        });
+
+        relevantChildren.forEach((relevantChild) => {
+            const parentId = relevantChild.parentRelationship!.relationshipTemplate._id;
+
+            const parentNode = relationshipMap.get(parentId);
+            if (parentNode) parentNode.children?.push(relevantChild);
+        });
+
+        allRelevantConnections.push(...relationshipMap.values());
     }
 
     return (
@@ -219,51 +229,15 @@ const PrintOptionsDialog: React.FC<{
                     </Grid>
                 </Grid>
             </DialogTitle>
-            <DialogContent style={{ width: '500px', height: '240px' }}>
+            <DialogContent style={{ width: '500px' }}>
                 <Grid container direction="column" spacing={1} alignItems="center">
                     <Grid item>
                         {entityConnections && allRelevantConnections.length > 0 && (
-                            <SelectCheckbox
-                                title={i18next.t('entityPage.print.chooseRelationship')}
-                                options={entityConnections.connectionsTemplates.filter((connection) =>
-                                    allRelevantConnections.some((key) => key === connection.relationshipTemplate._id),
-                                )}
-                                isDraggableDisabled
+                            <RelationshipSelect
+                                options={allRelevantConnections}
                                 selectedOptions={entityConnections.selectedConnections}
                                 setSelectedOptions={entityConnections.setSelectedConnections}
-                                getOptionId={({ relationshipTemplate, isExpandedEntityRelationshipSource }) =>
-                                    `${relationshipTemplate._id}${isExpandedEntityRelationshipSource}`
-                                }
-                                getOptionLabel={({
-                                    relationshipTemplate: {
-                                        displayName,
-                                        sourceEntity: { displayName: sourceEntityDisplayName },
-                                        destinationEntity: { _id: destinationEntityId, displayName: destinationEntityDisplayName },
-                                    },
-                                    isExpandedEntityRelationshipSource,
-                                }) => {
-                                    if (
-                                        !isExpandedEntityRelationshipSource &&
-                                        destinationEntityId === (instance as IEntityExpanded).entity.templateId
-                                    ) {
-                                        // special case to differentiate between outgoing/incoming relationships of relationshipTemplate that is of format expandedEntityTemplate -> expandedEntityTemplate
-                                        return `${displayName} (${sourceEntityDisplayName} < ${destinationEntityDisplayName})`;
-                                    }
-
-                                    return `${displayName} (${sourceEntityDisplayName} > ${destinationEntityDisplayName})`;
-                                }}
-                                groupsProps={{
-                                    useGroups: true,
-                                    groups: filteredCategoriesWithConnectionsTemplates,
-                                    getGroupId: ({ category: { _id } }) => _id,
-                                    getGroupLabel: ({ category: { displayName } }) => displayName,
-                                    getGroupOfOption: (option, groups) =>
-                                        groups.find((group) =>
-                                            group.connectionsTemplates.find(
-                                                ({ relationshipTemplate }) => relationshipTemplate._id === option.relationshipTemplate._id,
-                                            ),
-                                        )!,
-                                }}
+                                title={i18next.t('entityPage.print.chooseRelationship')}
                             />
                         )}
                         {files.length !== 0 && (

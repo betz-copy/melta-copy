@@ -29,6 +29,8 @@ import {
     Update as DailyAlertIcon,
     Archive,
     Unarchive,
+    AddLocationAlt,
+    WrongLocation,
 } from '@mui/icons-material';
 import AddIcon from '@mui/icons-material/Add';
 import { Draggable } from 'react-beautiful-dnd';
@@ -41,14 +43,15 @@ import { dateNotificationTypes, validPropertyTypes } from './AddFields';
 import { CommonFormInputProperties, IRelationshipReference } from './commonInterfaces';
 import { MinimizedColorPicker } from '../../inputs/MinimizedColorPicker';
 import { MeltaCheckbox } from '../../MeltaCheckbox';
-import { deleteEnumFieldRequest, updateEnumFieldRequest } from '../../../services/templates/enitityTemplatesService';
+import { arrayTypes, deleteEnumFieldRequest, updateEnumFieldRequest } from '../../../services/templates/enitityTemplatesService';
 import { AreYouSureDialog } from '../../dialogs/AreYouSureDialog';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { MeltaTooltip } from '../../MeltaTooltip';
 import { IUniqueConstraintOfTemplate } from '../../../interfaces/entities';
 import RelationshipReferenceField from './RelationshipReferenceField';
-import { PermissionScope } from '../../../interfaces/permissions';
-import { useUserStore } from '../../../stores/user';
+import { environment } from '../../../globals';
+
+const { mapSearchPropertiesLimit } = environment.map;
 
 enum dateNotificationOptions {
     day = 1,
@@ -86,14 +89,18 @@ export interface FieldEditCardProps {
     supportArrayFields: boolean;
     supportDeleteForExistingInstances: boolean;
     supportRelationshipReference: boolean;
+    supportUserType: boolean;
     uniqueConstraints?: IUniqueConstraintOfTemplate[];
     setUniqueConstraints?: (uniqueConstraints: SetStateAction<IUniqueConstraintOfTemplate[]>) => void;
     supportEditEnum?: boolean;
     supportUnique?: boolean;
     supportLocation?: boolean;
     supportArchive?: boolean;
+    supportIdentifier?: boolean;
+    hasIdentifier?: boolean;
+    locationSearchFields?: { show: boolean; disabled: boolean };
     hasActions?: boolean;
-    displayValues: CommonFormInputProperties[];
+    supportConvertingToMultipleFields?: boolean;
 }
 
 export const FieldEditCard: React.FC<FieldEditCardProps> = ({
@@ -112,6 +119,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     onChange,
     remove,
     supportSerialNumberType,
+    supportUserType,
     supportEntityReferenceType,
     supportChangeToRequiredWithInstances,
     templateId,
@@ -121,12 +129,13 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     supportEditEnum,
     supportUnique,
     supportLocation,
+    supportIdentifier,
+    hasIdentifier,
     supportArchive,
+    locationSearchFields,
     hasActions,
-    displayValues,
+    supportConvertingToMultipleFields = true,
 }) => {
-    const currentUser = useUserStore((state) => state.user);
-
     const isText = value.type === 'string' || value.type === 'text-area';
 
     const name = `properties[${index}].name`;
@@ -170,9 +179,8 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     const identifier = `properties[${index}].identifier`;
 
     const unique =
-        value.type !== 'serialNumber' &&
-        uniqueConstraints &&
-        uniqueConstraints.filter((constraints) => constraints.properties.includes(value.name)).length > 0;
+        value.type === 'serialNumber' ||
+        (uniqueConstraints && uniqueConstraints.filter((constraints) => constraints.properties.includes(value.name)).length > 0);
     const uniqueConstraintGroupName = uniqueConstraints
         ? uniqueConstraints.find((constraint) => constraint.properties.includes(value.name))?.groupName
         : '';
@@ -181,7 +189,8 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     const errorUniqueGroupName = errors?.groupName;
 
     const isIdentifierAble = isText || value.type === 'number' || value.type === 'pattern' || value.type === 'serialNumber';
-    const currentIdentifier = displayValues.find((displayValue) => displayValue.identifier);
+
+    const mapSearchDisabled = !value.mapSearch && locationSearchFields?.disabled;
 
     const createNewUniqueGroup = (groupName) => {
         if (groupName) {
@@ -598,17 +607,21 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                 setValues?.((prevValue) => ({
                                                     ...prevValue,
                                                     type: e.target.value,
-                                                    required: e.target.value === 'serialNumber',
+                                                    required: e.target.value === 'serialNumber' || prevValue.required,
                                                 }));
                                             }}
                                             error={touchedType && Boolean(errorType)}
                                             helperText={touchedType && errorType}
-                                            disabled={isDisabled || value.deleted}
+                                            disabled={
+                                                (isDisabled && (initialValue?.type !== 'enum' || !supportConvertingToMultipleFields)) || value.deleted
+                                            }
                                             sx={{ marginRight: '5px' }}
                                             fullWidth
                                         >
                                             {validPropertyTypes
                                                 .filter((validPropertyType) => {
+                                                    if (initialValue?.type === 'enum' && areThereAnyInstances && supportConvertingToMultipleFields)
+                                                        return validPropertyType === 'enumArray' || validPropertyType === 'enum';
                                                     if (validPropertyType === 'entityReference') return supportEntityReferenceType;
                                                     if (validPropertyType === 'serialNumber') {
                                                         if (!supportSerialNumberType) return false;
@@ -618,6 +631,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                     if (validPropertyType === 'enumArray') return supportArrayFields;
                                                     if (validPropertyType === 'relationshipReference') return supportRelationshipReference;
                                                     if (validPropertyType === 'fileId' || validPropertyType === 'multipleFiles') return false; // TODO: support file inputs
+                                                    if (validPropertyType === 'user' || validPropertyType === 'users') return supportUserType;
                                                     return true;
                                                 })
                                                 .map((validType) => {
@@ -995,6 +1009,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                 setValues((prevValue) => ({
                                                                     ...prevValue,
                                                                     required: checked,
+                                                                    identifier: !checked ? undefined : prevValue.identifier,
                                                                 }));
                                                                 // unique is allowed only if required=true, automatic uncheck 'unique' too
                                                                 if (!checked && unique) {
@@ -1065,18 +1080,19 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                     label={i18next.t('validation.hide')}
                                                 />
                                             )}
-                                            {supportUnique && unique !== undefined && setValues && value.type !== 'serialNumber' && (
+                                            {supportUnique && unique !== undefined && setValues && value.type !== 'signature' && (
                                                 <FormControlLabel
                                                     control={
                                                         <Switch
                                                             id={String(unique)}
                                                             name={String(unique)}
                                                             checked={unique}
-                                                            disabled={value.archive}
+                                                            disabled={value.archive || value.type === 'serialNumber'}
                                                             onChange={(_e, checked) => {
                                                                 setValues((prevValue) => ({
                                                                     ...prevValue,
                                                                     required: checked ? true : prevValue.required,
+                                                                    identifier: !checked ? undefined : prevValue.identifier,
                                                                     groupName: undefined,
                                                                     uniqueCheckbox: false,
                                                                 }));
@@ -1124,7 +1140,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                     label={i18next.t('propertyTypes.text-area')}
                                                 />
                                             )}
-                                            {isIdentifierAble && (
+                                            {isIdentifierAble && supportIdentifier && (
                                                 <FormControlLabel
                                                     control={
                                                         <Switch
@@ -1139,10 +1155,9 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                     uniqueCheckbox: false,
                                                                 }));
                                                                 if (checked) createEmptyGroup(value.name);
-                                                                else deletePropFromUniqueConstraints(uniqueConstraintGroupName, value.name);
                                                             }}
-                                                            disabled={currentIdentifier !== undefined && currentIdentifier !== value}
-                                                            checked={value.identifier}
+                                                            disabled={hasIdentifier && !value.identifier}
+                                                            checked={value.identifier ?? false}
                                                         />
                                                     }
                                                     label={i18next.t('validation.identifier')}
@@ -1150,6 +1165,29 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                             )}
                                         </Box>
                                         <Grid display="flex">
+                                            {locationSearchFields?.show &&
+                                                value.type !== 'fileId' &&
+                                                value.type !== 'relationshipReference' &&
+                                                !arrayTypes.includes(value.type) && (
+                                                    <MeltaTooltip
+                                                        title={i18next.t(
+                                                            mapSearchDisabled
+                                                                ? 'validation.mapSearchPropertiesLimit'
+                                                                : 'wizard.entityTemplate.searchLocation',
+                                                            { limit: mapSearchPropertiesLimit },
+                                                        )}
+                                                        placement="right"
+                                                    >
+                                                        <Box>
+                                                            <IconButton
+                                                                onClick={() => setFieldValue('mapSearch', !value.mapSearch)}
+                                                                disabled={mapSearchDisabled}
+                                                            >
+                                                                {value.mapSearch ? <WrongLocation color="primary" /> : <AddLocationAlt />}
+                                                            </IconButton>
+                                                        </Box>
+                                                    </MeltaTooltip>
+                                                )}
                                             {supportArchive && isEditMode && (
                                                 <MeltaTooltip title={archiveButtonTooltip()} placement="right">
                                                     <Box>
@@ -1169,12 +1207,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                 <Box>
                                                     <IconButton
                                                         onClick={() => remove(index, isNewProperty)}
-                                                        disabled={
-                                                            !supportDeleteForExistingInstances ||
-                                                            initialValue?.required ||
-                                                            currentUser.currentWorkspacePermissions.admin?.scope !== PermissionScope.write ||
-                                                            hasActions
-                                                        }
+                                                        disabled={!supportDeleteForExistingInstances || initialValue?.required || hasActions}
                                                     >
                                                         {value.deleted ? <DeleteOff /> : <DeleteIcon />}
                                                     </IconButton>
@@ -1183,7 +1216,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                         </Grid>
                                     </Grid>
                                     <Grid item container justifyContent="space-between" alignItems="center" flexWrap="nowrap">
-                                        {unique && !isIdentifierAble && value.type !== 'serialNumber' && (
+                                        {unique && !value.identifier && value.type !== 'serialNumber' && (
                                             <Grid container direction="row">
                                                 <Grid item container alignItems="center" flexWrap="nowrap">
                                                     <MeltaTooltip title={i18next.t('validation.uniqueTooltipTitle')}>
@@ -1330,5 +1363,7 @@ export const MemoFieldEditCard = memo(
         isEqual(prev.value, next.value) &&
         isEqual(prev.touched, next.touched) &&
         isEqual(prev.errors, next.errors) &&
-        isEqual(prev.uniqueConstraints, next.uniqueConstraints),
+        isEqual(prev.uniqueConstraints, next.uniqueConstraints) &&
+        isEqual(prev.locationSearchFields, next.locationSearchFields) &&
+        isEqual(prev.hasIdentifier, next.hasIdentifier),
 );

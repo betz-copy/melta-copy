@@ -1,26 +1,33 @@
-import React, { MouseEventHandler, useMemo } from 'react';
-import { Grid, IconButton, Menu } from '@mui/material';
-import i18next from 'i18next';
 import {
-    Edit as EditIcon,
-    Delete as DeleteIcon,
-    MoreVertOutlined as OptionsIcon,
-    DoNotDisturbOnOutlined as DoNotDisturbOnOutlinedIcon,
-    DoNotDisturbOffOutlined as DoNotDisturbOffOutlinedIcon,
-    ContentCopy as DuplicateIcon,
     ControlPoint as AddIcon,
+    Delete as DeleteIcon,
+    DoNotDisturbOffOutlined as DoNotDisturbOffOutlinedIcon,
+    DoNotDisturbOnOutlined as DoNotDisturbOnOutlinedIcon,
+    ContentCopy as DuplicateIcon,
+    Edit as EditIcon,
+    MoreVertOutlined as OptionsIcon,
 } from '@mui/icons-material';
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
-import { MenuButton } from '../../../common/MenuButton';
+import { Grid, IconButton, Menu } from '@mui/material';
+import i18next from 'i18next';
+import React, { MouseEventHandler, useMemo } from 'react';
 import { MeltaTooltip } from '../../../common/MeltaTooltip';
 import { useUserStore } from '../../../stores/user';
 import { useWorkspaceStore } from '../../../stores/workspace';
+import { MenuButton } from '../../../common/MenuButton';
 
 export const CardMenu: React.FC<{
     onOptionsIconClose?: () => void;
     onEditClick?: MouseEventHandler;
     onDeleteClick?: MouseEventHandler;
-    disabledProps?: { isDisabled?: boolean; isEditDisabled: boolean; isDeleteDisabled?: boolean; tooltipTitle: string; editTooltipTitle?: string };
+    disabledProps?: {
+        isDisabled?: boolean;
+        isEditDisabled: boolean;
+        isDeleteDisabled?: boolean;
+        tooltipTitle: string;
+        editTooltipTitle?: string;
+        disableForReadPermissions?: boolean;
+    };
     onDisableClick?: MouseEventHandler;
     onDuplicateClick?: MouseEventHandler;
     onAddActionsClick?: MouseEventHandler;
@@ -69,7 +76,7 @@ export const CardMenu: React.FC<{
             </IconButton>
             <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
                 {onEditClick && (
-                    <MeltaTooltip placement="top" title={editTooltipTitle} disableHoverListener={!disabledProps?.isEditDisabled}>
+                    <MeltaTooltip placement="left" title={editTooltipTitle} disableHoverListener={!disabledProps?.isEditDisabled}>
                         <Grid>
                             <MenuButton
                                 onClick={(e) => {
@@ -85,29 +92,50 @@ export const CardMenu: React.FC<{
                 )}
 
                 {onDuplicateClick && (
-                    <MenuButton
-                        onClick={(e) => {
-                            onDuplicateClick(e);
-                            handleClose(e);
-                        }}
-                        text={i18next.t('actions.duplicate')}
-                        icon={<DuplicateIcon color="action" />}
-                    />
+                    <MeltaTooltip
+                        placement="left"
+                        title={disabledProps?.isDisabled && disabledProps?.tooltipTitle}
+                        disableHoverListener={!disabledProps?.isEditDisabled}
+                    >
+                        <Grid>
+                            <MenuButton
+                                onClick={(e) => {
+                                    onDuplicateClick(e);
+                                    handleClose(e);
+                                }}
+                                text={i18next.t('actions.duplicate')}
+                                icon={<DuplicateIcon color="action" />}
+                                disabled={disabledProps?.isDisabled}
+                            />
+                        </Grid>
+                    </MeltaTooltip>
                 )}
 
                 {onAddActionsClick && currentUser.isRoot && (
-                    <MenuButton
-                        onClick={(e) => {
-                            onAddActionsClick(e);
-                            handleClose(e);
-                        }}
-                        text={i18next.t('actions.addActions')}
-                        icon={<AddIcon color="action" />}
-                    />
+                    <MeltaTooltip
+                        placement="left"
+                        title={disabledProps?.isDisabled && disabledProps?.tooltipTitle}
+                        disableHoverListener={!disabledProps?.isEditDisabled}
+                    >
+                        <Grid>
+                            <MenuButton
+                                onClick={(e) => {
+                                    onAddActionsClick(e);
+                                    handleClose(e);
+                                }}
+                                text={i18next.t('actions.addActions')}
+                                disabled={disabledProps?.isDisabled}
+                                icon={<AddIcon color="action" />}
+                            />
+                        </Grid>
+                    </MeltaTooltip>
                 )}
 
                 {onDeleteClick && (
-                    <MeltaTooltip placement="left" title={disabledProps?.tooltipTitle}>
+                    <MeltaTooltip
+                        placement="left"
+                        title={disabledProps?.isDisabled || disabledProps?.isDeleteDisabled ? disabledProps?.tooltipTitle : ''}
+                    >
                         <Grid>
                             <MenuButton
                                 onClick={(e) => {
@@ -121,29 +149,42 @@ export const CardMenu: React.FC<{
                         </Grid>
                     </MeltaTooltip>
                 )}
-
                 {onConvertToRelationShipFieldClick && (
-                    <MenuButton
-                        onClick={(e) => {
-                            onConvertToRelationShipFieldClick(e);
-                            handleClose(e);
-                        }}
-                        text={i18next.t('actions.convertToRelationShipFieldClick')}
-                        icon={<CompareArrowsIcon color="action" />}
-                    />
+                    <MeltaTooltip placement="left" title={editTooltipTitle} disableHoverListener={!disabledProps?.isEditDisabled}>
+                        <Grid>
+                            <MenuButton
+                                onClick={(e) => {
+                                    onConvertToRelationShipFieldClick(e);
+                                    handleClose(e);
+                                }}
+                                text={i18next.t('actions.convertToRelationShipFieldClick')}
+                                icon={<CompareArrowsIcon color="action" />}
+                                disabled={disabledProps?.isEditDisabled}
+                            />
+                        </Grid>
+                    </MeltaTooltip>
                 )}
 
                 {onDisableClick && (
-                    <MenuButton
-                        onClick={(e) => {
-                            onDisableClick(e);
-                            handleClose(e);
-                        }}
-                        text={disabledProps?.isDisabled ? i18next.t('actions.activate') : i18next.t('actions.disable')}
-                        icon={
-                            disabledProps?.isDisabled ? <DoNotDisturbOffOutlinedIcon color="action" /> : <DoNotDisturbOnOutlinedIcon color="action" />
-                        }
-                    />
+                    <MeltaTooltip placement="left" title={editTooltipTitle} disableHoverListener={!disabledProps?.disableForReadPermissions}>
+                        <Grid>
+                            <MenuButton
+                                onClick={(e) => {
+                                    onDisableClick(e);
+                                    handleClose(e);
+                                }}
+                                text={disabledProps?.isDisabled ? i18next.t('actions.activate') : i18next.t('actions.disable')}
+                                icon={
+                                    disabledProps?.isDisabled ? (
+                                        <DoNotDisturbOffOutlinedIcon color="action" />
+                                    ) : (
+                                        <DoNotDisturbOnOutlinedIcon color="action" />
+                                    )
+                                }
+                                disabled={disabledProps?.disableForReadPermissions}
+                            />
+                        </Grid>
+                    </MeltaTooltip>
                 )}
             </Menu>
         </>

@@ -24,6 +24,7 @@ export const excelConfig = {
         multiEnum: 'רשימה מרובה',
         enum: 'רשימה',
         regex: 'תבנית (regex)',
+        location: 'מיקום: x,y / POLYGON(( x y, x y....))/ zoneHemi x y / POLYGON((zoneHemi x y, zoneHemi x y))',
     },
     formulae: {
         errorTitle: 'אופציה לא תקינה',

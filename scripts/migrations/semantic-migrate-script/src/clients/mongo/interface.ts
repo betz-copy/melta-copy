@@ -3,7 +3,7 @@ import { Document } from 'mongoose';
 export interface IEntitySingleProperty {
     title: string;
     type: 'string' | 'number' | 'boolean' | 'array';
-    format?: 'date' | 'date-time' | 'email' | 'fileId' | 'text-area' | 'relationshipReference';
+    format?: 'date' | 'date-time' | 'email' | 'fileId' | 'text-area' | 'relationshipReference'| 'signature';
     enum?: string[];
     readOnly?: true;
     identifier?: true;
@@ -51,6 +51,7 @@ export interface IEntityTemplate {
     iconFileId: string | null;
     actions?: string;
     documentTemplatesIds?: string[];
+    mapSearchProperties?: string[];
 }
 
 export interface IMongoEntityTemplate extends IEntityTemplate, Document<string> {

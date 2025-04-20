@@ -1,9 +1,12 @@
 import { Readable } from 'stream';
-import { IFailedEntity } from '../common/wizards/loadEntities';
 import { IMongoEntityTemplatePopulated } from './entityTemplates';
 import { IMongoRelationshipTemplate } from './relationshipTemplates';
 import { IRelationship } from './relationships';
 import { ISemanticSearchResult } from './semanticSearch';
+import { IFailedEntity } from './excel';
+import { IBrokenRule } from './ruleBreaches/ruleBreach';
+import { ICreateEntityMetadata } from './ruleBreaches/actionMetadata';
+import { IAGGridTextFilter, IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter } from '../utils/agGrid/interfaces';
 
 export interface IEntity {
     templateId: string;
@@ -15,13 +18,15 @@ export interface IEntity {
     } & Record<string, any>;
 }
 
+export type IConnection = {
+    relationship: Pick<IRelationship, 'templateId' | 'properties'>;
+    sourceEntity: IEntity;
+    destinationEntity: IEntity;
+};
+
 export interface IEntityExpanded {
     entity: IEntity;
-    connections: {
-        relationship: Pick<IRelationship, 'templateId' | 'properties'>;
-        sourceEntity: IEntity;
-        destinationEntity: IEntity;
-    }[];
+    connections: IConnection[];
 }
 
 export interface IUniqueConstraint {
@@ -130,7 +135,7 @@ export interface UploadedFile {
 
 type Coordinate = [number, number];
 export interface Circle {
-    coordinate: Coordinate; // [latitude, longitude]
+    coordinate: Coordinate; // [x, y]
     radius: number; // Positive number
 }
 
@@ -173,7 +178,6 @@ export interface IExportEntitiesBody {
             displayColumns?: string[];
             headersOnly?: boolean;
             insertEntities?: Record<string, any>[];
-            edit?: boolean;
         };
     };
 }
@@ -181,7 +185,7 @@ export interface IExportEntitiesBody {
 export interface IGraphFilterBody {
     selectedTemplate: IMongoEntityTemplatePopulated;
     selectedProperty?: string;
-    filterField?: any;
+    filterField?: IAGGridTextFilter | IAGGidNumberFilter | IAGGridDateFilter | IAGGridSetFilter;
 }
 
 export interface IGraphFilterBodyBatch {
@@ -207,3 +211,12 @@ export type IDeleteEntityBody<T extends boolean = boolean> = IDeleteEntityBodyBa
           });
 
 export type EntityData = IEntity | IFailedEntity;
+
+export interface IEntityWithIgnoredRules extends ICreateEntityMetadata {
+    ignoredRules: IBrokenRule[];
+}
+
+export enum SplitBy {
+    space = ' ',
+    comma = ',',
+}
