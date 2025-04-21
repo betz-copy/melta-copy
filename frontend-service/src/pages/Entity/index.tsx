@@ -366,7 +366,7 @@ const Entity: React.FC = () => {
         getExpandedEntityByIdRequest(entityId!, expanded, { templateIds }),
     );
 
-    const [value, setValue] = useState('0');
+    const [selectedTabId, setSelectedTabId] = useState<string | null>(null);
 
     useEffect(() => {
         if (!expandedEntity) return;
@@ -420,6 +420,25 @@ const Entity: React.FC = () => {
         }
     });
 
+    const calculateEntityRelatedConnections = (_id: string): number => {
+        // calculate the amount of the related connections of each entity
+        return expandedEntity.connections.filter((connection) => {
+            const connectionRelationshipTemplate = relationshipTemplates.get(connection.relationship.templateId)!;
+
+            if (
+                connectionRelationshipTemplate.isProperty &&
+                currentEntityTemplate.properties.properties[connectionRelationshipTemplate.name]?.relationshipReference?.relationshipTemplateId ===
+                    connectionRelationshipTemplate._id
+            )
+                return false;
+
+            if (expandedEntity.entity.properties._id === connection.destinationEntity.properties._id)
+                return entityTemplates.get(connection.sourceEntity.templateId)!.category._id === _id;
+
+            return entityTemplates.get(connection.destinationEntity.templateId)!.category._id === _id;
+        }).length;
+    };
+
     const categoriesWithConnectionsTemplates = Array.from(categories.values(), (category) => {
         return {
             category,
@@ -432,7 +451,15 @@ const Entity: React.FC = () => {
                 })
                 .sort((a, b) => Number(b.hasInstances) - Number(a.hasInstances)),
         };
-    }).filter((currCategory) => currCategory.connectionsTemplates?.length > 0);
+    })
+        .filter((currCategory) => currCategory.connectionsTemplates?.length > 0)
+        .sort((a, b) => calculateEntityRelatedConnections(b.category._id) - calculateEntityRelatedConnections(a.category._id));
+
+    useEffect(() => {
+        if (categoriesWithConnectionsTemplates.length > 0 && selectedTabId === null) {
+            setSelectedTabId(categoriesWithConnectionsTemplates[0].category._id);
+        }
+    }, [categoriesWithConnectionsTemplates, selectedTabId]);
 
     return (
         <>
@@ -457,10 +484,15 @@ const Entity: React.FC = () => {
                             </Grid>
                         </Grid>
                         <Grid item>
-                            <TabContext value={value}>
+                            <TabContext value={selectedTabId ?? categoriesWithConnectionsTemplates[0]?.category._id}>
                                 <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                                    <TabList style={{ height: '60px' }} onChange={(_event, newValue) => setValue(newValue)}>
-                                        {categoriesWithConnectionsTemplates.map(({ category: { _id, displayName, iconFileId } }, index) => (
+                                    <TabList
+                                        style={{ height: '60px' }}
+                                        variant="scrollable"
+                                        scrollButtons="auto"
+                                        onChange={(_event, newValue) => setSelectedTabId(newValue)}
+                                    >
+                                        {categoriesWithConnectionsTemplates.map(({ category: { _id, displayName, iconFileId } }) => (
                                             <Tab
                                                 style={{
                                                     display: 'flex',
@@ -473,60 +505,28 @@ const Entity: React.FC = () => {
                                                 label={
                                                     <Grid container flexDirection="row" alignItems="center" flexWrap="nowrap" gap="10px">
                                                         <Typography
-                                                            color={value === String(index) ? theme.palette.primary.main : '#787C9E'}
+                                                            color={selectedTabId === _id ? theme.palette.primary.main : '#787C9E'}
                                                             style={{ fontWeight: '500', fontSize: '16px' }}
                                                         >
                                                             {displayName}
                                                         </Typography>
-                                                        <Typography color="#787C9E">
-                                                            {
-                                                                // calculate the amount of the related connections of each entity
-                                                                expandedEntity.connections.filter((connection) => {
-                                                                    const connectionRelationshipTemplate = relationshipTemplates.get(
-                                                                        connection.relationship.templateId,
-                                                                    )!;
-
-                                                                    if (
-                                                                        connectionRelationshipTemplate.isProperty &&
-                                                                        currentEntityTemplate.properties.properties[
-                                                                            connectionRelationshipTemplate.name
-                                                                        ]?.relationshipReference?.relationshipTemplateId ===
-                                                                            connectionRelationshipTemplate._id
-                                                                    )
-                                                                        return false;
-
-                                                                    if (
-                                                                        expandedEntity.entity.properties._id ===
-                                                                        connection.destinationEntity.properties._id
-                                                                    )
-                                                                        return (
-                                                                            entityTemplates.get(connection.sourceEntity.templateId)!.category._id ===
-                                                                            _id
-                                                                        );
-
-                                                                    return (
-                                                                        entityTemplates.get(connection.destinationEntity.templateId)!.category._id ===
-                                                                        _id
-                                                                    );
-                                                                }).length
-                                                            }
-                                                        </Typography>
+                                                        <Typography color="#787C9E">{calculateEntityRelatedConnections(_id)}</Typography>
                                                     </Grid>
                                                 }
-                                                value={String(index)}
+                                                value={_id}
                                                 icon={
                                                     iconFileId ? (
                                                         <CustomIcon
                                                             iconUrl={iconFileId}
                                                             height="24px"
                                                             width="24px"
-                                                            color={value === String(index) ? theme.palette.primary.main : '#787C9E'}
+                                                            color={selectedTabId === _id ? theme.palette.primary.main : '#787C9E'}
                                                         />
                                                     ) : (
                                                         <HiveIcon
                                                             fontSize="medium"
                                                             sx={{
-                                                                color: value === String(index) ? theme.palette.primary.main : '#787C9E',
+                                                                color: selectedTabId === _id ? theme.palette.primary.main : '#787C9E',
                                                             }}
                                                         />
                                                     )
@@ -536,11 +536,11 @@ const Entity: React.FC = () => {
                                     </TabList>
                                 </Box>
                                 {categoriesWithConnectionsTemplates.map(
-                                    ({ category: { _id }, connectionsTemplates: connectionsTemplatesOfCategory }, index) => {
+                                    ({ category: { _id }, connectionsTemplates: connectionsTemplatesOfCategory }, _index) => {
                                         const isAdmin = Boolean(currentUser.currentWorkspacePermissions?.admin) || false;
 
                                         return (
-                                            <TabPanel key={_id} value={String(index)}>
+                                            <TabPanel key={_id} value={_id}>
                                                 {connectionsTemplatesOfCategory.map((connectionTemplate, connectedRelationshipTemplateIndex) => {
                                                     const relationship = connectionTemplate.relationshipTemplate;
                                                     const relatedTemplate =
