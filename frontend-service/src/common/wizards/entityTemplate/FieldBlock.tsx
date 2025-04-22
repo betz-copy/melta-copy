@@ -6,8 +6,6 @@ import { FieldArray, FormikErrors, FormikHelpers, FormikTouched } from 'formik';
 import i18next from 'i18next';
 import { DragHandle as DragHandleIcon, ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
 import _debounce from 'lodash.debounce';
-import { EditorState } from 'draft-js';
-import { stateToHTML } from 'draft-js-export-html';
 import { FieldEditCardProps, MemoFieldEditCard } from './FieldEditCard';
 import { MemoAttachmentEditCard } from './AttachmentEditCard';
 import { StepComponentHelpers } from '..';
@@ -144,8 +142,9 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
 
     const setFieldDisplayValue = (index: number, field: keyof Values, value: any) => {
         const displayValuesCopy = [...displayValuesRef.current] as Values[PropertiesType];
+        const titleObj = field === 'name' && displayValuesCopy[index].type === 'comment' ? { title: i18next.t('propertyTypes.comment') } : {};
 
-        displayValuesCopy[index] = { ...displayValuesCopy[index], [field]: value };
+        displayValuesCopy[index] = { ...displayValuesCopy[index], [field]: value, ...titleObj };
 
         setDisplayValues(displayValuesCopy);
         updateFormik();

@@ -1,5 +1,6 @@
 /* eslint-disable no-nested-ternary */
 import { v4 as uuid } from 'uuid';
+import i18next from 'i18next';
 import axios from '../../axios';
 import { EntityTemplateFormInputProperties, EntityTemplateWizardValues } from '../../common/wizards/entityTemplate';
 import { environment } from '../../globals';
@@ -177,6 +178,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
             comment,
         }) => {
             if (deleted) return;
+            if (type === 'comment' && !comment) return;
 
             let propertyType: IEntitySingleProperty['type'];
             switch (type) {
@@ -219,7 +221,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                 archive,
                 identifier,
                 hideFromDetailsPage,
-                color,
+                color: comment && !color ? i18next.t('validation.colors.blue') : color,
                 uniqueItems: type === 'enumArray' || type === 'users' ? true : undefined,
                 pattern: type === 'pattern' ? pattern : undefined,
                 patternCustomErrorMessage: type === 'pattern' ? patternCustomErrorMessage : undefined,
@@ -293,6 +295,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
             comment,
         }) => {
             if (deleted) return;
+            if (type === 'comment' && !comment) return;
 
             let propertyType: IEntitySingleProperty['type'];
             switch (type) {
@@ -322,7 +325,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                 archive,
                 identifier,
                 hideFromDetailsPage,
-                color,
+                color: comment && !color ? '#4752B6' : color,
                 uniqueItems: type === 'enumArray' || type === 'users' ? true : undefined,
                 pattern: type === 'pattern' ? pattern : undefined,
                 patternCustomErrorMessage: type === 'pattern' ? patternCustomErrorMessage : undefined,

@@ -10,9 +10,18 @@ interface SelectCellEditorProps {
     multiple?: boolean;
     colorsOptions?: Record<string, string>;
     overrideSx?: object;
+    disableClearable?: boolean;
 }
 
-const SelectCellEditor: React.FC<SelectCellEditorProps> = ({ values, value, onValueChange, multiple = false, colorsOptions, overrideSx }) => {
+const SelectCellEditor: React.FC<SelectCellEditorProps> = ({
+    values,
+    value,
+    onValueChange,
+    multiple = false,
+    colorsOptions,
+    overrideSx,
+    disableClearable,
+}) => {
     const [selectedValues, setSelectedValues] = useState<string | string[] | undefined>(value);
 
     useEffect(() => {
@@ -62,7 +71,7 @@ const SelectCellEditor: React.FC<SelectCellEditorProps> = ({ values, value, onVa
                     ))}
                 </Select>
             ) : (
-                <Autocomplete<string, boolean>
+                <Autocomplete<string, boolean, boolean, false>
                     multiple={multiple}
                     value={selectedValues}
                     onChange={(_, newValue) => handleAutocompleteChange(newValue as string | string[] | null)}
@@ -88,6 +97,7 @@ const SelectCellEditor: React.FC<SelectCellEditorProps> = ({ values, value, onVa
                     }
                     options={values.map((option) => option).sort()}
                     getOptionDisabled={(option) => (multiple ? Boolean(value?.includes(option as string)) : false)}
+                    disableClearable={disableClearable}
                 />
             )}
         </FormControl>

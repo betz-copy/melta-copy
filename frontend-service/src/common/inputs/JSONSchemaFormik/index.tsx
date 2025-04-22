@@ -83,6 +83,9 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
     ajv.addKeyword({
         keyword: 'hideFromDetailsPage',
     });
+    ajv.addKeyword({
+        keyword: 'color',
+    });
 
     ajv.addKeyword('identifier', {
         modifying: true,

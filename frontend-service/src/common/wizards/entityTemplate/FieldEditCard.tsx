@@ -651,7 +651,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                             label={i18next.t('wizard.entityTemplate.propertyDisplayName')}
                                             id={title}
                                             name={title}
-                                            value={isNotComment ? value.title : i18next.t('propertyTypes.comment')}
+                                            value={value.title}
                                             onChange={onChange}
                                             error={touchedTitle && Boolean(errorTitle)}
                                             helperText={touchedTitle && errorTitle}
@@ -1286,6 +1286,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                         }));
                                                     }}
                                                     colorsOptions={commentColors}
+                                                    disableClearable
                                                 />
                                             )}
                                         </Box>
