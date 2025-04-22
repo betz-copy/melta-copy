@@ -33,7 +33,7 @@ export const FormikAutoComplete = <T,>({
     style,
     readonly = false,
 }: IFormikAutoCompleteProps<T>) => {
-    const error = getIn(touched, formikField) && getIn(errors, formikField);
+    const error = Boolean(getIn(touched, formikField)) && getIn(errors, formikField);
 
     return (
         <Autocomplete

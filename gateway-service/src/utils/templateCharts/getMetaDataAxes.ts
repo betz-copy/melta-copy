@@ -5,7 +5,7 @@ import {
     IColumnOrLineMetaData,
     INUmberMetaData,
     IPieMetaData,
-} from '../../express/templateCharts/interface';
+} from '../../externalServices/dashboardService/chartService';
 
 export const getMetaDataAxes = (type: IChartType, metaData: IChartTypeMetaData, filter?: string) => {
     let xAxis: IAxisField;

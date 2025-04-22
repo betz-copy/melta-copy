@@ -27,8 +27,8 @@ export enum IAggregationType {
     CountDistinct = 'countDistinct',
     Average = 'average',
     Sum = 'sum',
-    Maximum = 'maximum',
     Minimum = 'minimum',
+    Maximum = 'maximum',
 }
 
 export interface IAggregation {

@@ -427,12 +427,24 @@ const createEntityTemplateRequest = async (newEntityTemplate: EntityTemplateWiza
     const entityTemplate = formToJSONSchema(newEntityTemplate, false);
 
     if (newEntityTemplate.icon) {
-        formData.append('file', newEntityTemplate.icon.file as File);
+        if (newEntityTemplate.icon.file instanceof File) {
+            formData.append('file', newEntityTemplate.icon.file);
+        } else if (newEntityTemplate.icon.file?.name) {
+            formData.append('iconFileId', newEntityTemplate.icon.file.name);
+        }
     }
 
-    newEntityTemplate.documentTemplatesIds?.forEach((documentTemplateId) => {
-        formData.append('files', documentTemplateId);
-    });
+    newEntityTemplate.documentTemplatesIds?.filter((item): item is File => item instanceof File).forEach((file) => formData.append('files', file));
+
+    const docTemplateIds = newEntityTemplate.documentTemplatesIds
+        ?.filter((item): item is any | { name: string } => {
+            return typeof item === 'string' || ('name' in item && !(item instanceof File));
+        })
+        .map((item) => (typeof item === 'string' ? item : item.name));
+
+    if (docTemplateIds?.length) {
+        formData.append('documentTemplatesIds', JSON.stringify(docTemplateIds));
+    }
 
     if (entityTemplate.enumPropertiesColors) {
         formData.append('enumPropertiesColors', JSON.stringify(entityTemplate.enumPropertiesColors));
@@ -442,7 +454,9 @@ const createEntityTemplateRequest = async (newEntityTemplate: EntityTemplateWiza
         entityTemplate.propertiesTypeOrder = entityTemplate.propertiesTypeOrder.filter((str) => str !== 'archiveProperties');
     }
 
-    if (entityTemplate.mapSearchProperties) formData.append('mapSearchProperties', JSON.stringify(entityTemplate.mapSearchProperties));
+    if (entityTemplate.mapSearchProperties) {
+        formData.append('mapSearchProperties', JSON.stringify(entityTemplate.mapSearchProperties));
+    }
 
     formData.append('displayName', entityTemplate.displayName);
     formData.append('name', entityTemplate.name);
@@ -468,22 +482,30 @@ const updateEntityTemplateStatusRequest = async (entityTemplateId: string, disab
 const updateEntityTemplateRequest = async (entityTemplateId: string, updatedEntityTemplate: IEntityTemplate | EntityTemplateWizardValues) => {
     const formData = new FormData();
     const entityTemplate: IEntityTemplate =
-        'attachmentProperties' in updatedEntityTemplate // its type is - EntityTemplateWizardValues
+        'attachmentProperties' in updatedEntityTemplate
             ? formToJSONSchema(updatedEntityTemplate as EntityTemplateWizardValues, true)
             : updatedEntityTemplate;
 
     if ('attachmentProperties' in updatedEntityTemplate && updatedEntityTemplate.icon) {
         if (updatedEntityTemplate.icon.file instanceof File) {
             formData.append('file', updatedEntityTemplate.icon.file);
-        } else {
-            formData.append('iconFileId', updatedEntityTemplate.icon.file.name!);
+        } else if (updatedEntityTemplate.icon.file?.name) {
+            formData.append('iconFileId', updatedEntityTemplate.icon.file.name);
         }
     }
 
-    if (updatedEntityTemplate.documentTemplatesIds) {
-        updatedEntityTemplate.documentTemplatesIds.forEach((documentTemplateId) => {
-            if (documentTemplateId instanceof File) formData.append('files', documentTemplateId);
-        });
+    ((updatedEntityTemplate.documentTemplatesIds as (File | string | { name: string })[]) ?? [])
+        .filter((item): item is File => item instanceof File)
+        .forEach((file) => formData.append('files', file));
+
+    const docTemplateIds = ((updatedEntityTemplate.documentTemplatesIds as (File | string | { name: string })[]) ?? [])
+        .filter((item): item is string | { name: string } => {
+            return typeof item === 'string' || ('name' in item && !(item instanceof File));
+        })
+        .map((item) => (typeof item === 'string' ? item : item.name));
+
+    if (docTemplateIds?.length) {
+        formData.append('documentTemplatesIds', JSON.stringify(docTemplateIds));
     }
 
     if (entityTemplate.enumPropertiesColors) {
@@ -494,7 +516,9 @@ const updateEntityTemplateRequest = async (entityTemplateId: string, updatedEnti
         entityTemplate.propertiesTypeOrder = entityTemplate.propertiesTypeOrder.filter((str) => str !== 'archiveProperties');
     }
 
-    if (entityTemplate.mapSearchProperties) formData.append('mapSearchProperties', JSON.stringify(entityTemplate.mapSearchProperties));
+    if (entityTemplate.mapSearchProperties) {
+        formData.append('mapSearchProperties', JSON.stringify(entityTemplate.mapSearchProperties));
+    }
 
     formData.append('displayName', entityTemplate.displayName);
     formData.append('name', entityTemplate.name);
@@ -504,15 +528,6 @@ const updateEntityTemplateRequest = async (entityTemplateId: string, updatedEnti
     formData.append('propertiesTypeOrder', JSON.stringify(entityTemplate.propertiesTypeOrder));
     formData.append('propertiesPreview', JSON.stringify(entityTemplate.propertiesPreview));
     formData.append('uniqueConstraints', JSON.stringify(entityTemplate.uniqueConstraints));
-    if (updatedEntityTemplate.documentTemplatesIds)
-        formData.append(
-            'documentTemplatesIds',
-            JSON.stringify(
-                [...updatedEntityTemplate.documentTemplatesIds]
-                    .filter((fileTemplate) => !(fileTemplate instanceof File))
-                    .map((fileTemplate: string | { name: string }) => (typeof fileTemplate === 'string' ? fileTemplate : fileTemplate.name)),
-            ),
-        );
     const { data } = await axios.put<IMongoEntityTemplatePopulated>(`${entityTemplates}/${entityTemplateId}`, formData);
     return data;
 };
