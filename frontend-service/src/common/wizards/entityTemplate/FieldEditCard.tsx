@@ -42,6 +42,7 @@ import isEqual from 'lodash.isequal';
 import EditIcon from '@mui/icons-material/Edit';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
+import { stateToHTML } from 'draft-js-export-html';
 import MUIRichTextEditor, { TMUIRichTextEditorStyles } from 'mui-rte';
 import { convertToRaw, EditorState } from 'draft-js';
 import { dateNotificationTypes, validPropertyTypes } from './AddFields';
@@ -109,7 +110,6 @@ export interface FieldEditCardProps {
     locationSearchFields?: { show: boolean; disabled: boolean };
     hasActions?: boolean;
     supportConvertingToMultipleFields?: boolean;
-    handleCommentChange: (state: EditorState) => void;
     supportComment?: boolean;
 }
 
@@ -145,7 +145,6 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     locationSearchFields,
     hasActions,
     supportConvertingToMultipleFields = true,
-    handleCommentChange,
     supportComment,
 }) => {
     const theme = createTheme();
@@ -396,6 +395,13 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     const isDisabled = Boolean(isEditMode && !isNewProperty && areThereAnyInstances);
 
     const [editIndex, setEditIndex] = useState<number | null>(null);
+    const [editorValue, setEditorValue] = useState(getInitialValue(value.comment));
+
+    const [rawContentState, setRawContentState] = useState('');
+
+    useEffect(() => {
+        setRawContentState(JSON.stringify(convertToRaw(editorValue.getCurrentContent())));
+    }, []);
 
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
@@ -963,10 +969,14 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                             'bulletList',
                                                         ]}
                                                         toolbar
-                                                        onChange={handleCommentChange}
-                                                        defaultValue={JSON.stringify(
-                                                            convertToRaw(getInitialValue(value.comment).getCurrentContent()),
-                                                        )}
+                                                        onChange={(state: EditorState) => {
+                                                            setEditorValue(state);
+                                                            const newValue = state.getCurrentContent().getPlainText();
+                                                            const htmlContent = stateToHTML(state.getCurrentContent());
+
+                                                            setFieldValue('comment', newValue === '' ? '' : htmlContent);
+                                                        }}
+                                                        defaultValue={rawContentState}
                                                     />
                                                 </Grid>
                                             </ThemeProvider>

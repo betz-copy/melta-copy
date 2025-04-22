@@ -9,17 +9,19 @@ import { useDarkModeStore } from '../../../stores/darkMode';
 import { containsHTMLTags } from '../../../utils/HtmlTagsStringValue';
 
 export const getInitialValue = (value) => {
-    if (value) {
-        const checkHasHTMLTags = containsHTMLTags(value);
-        if (checkHasHTMLTags) {
-            const contentBlock = convertFromHTML(value);
-            const contentState = ContentState.createFromBlockArray(contentBlock.contentBlocks);
-            return EditorState.createWithContent(contentState);
-        }
-        const contentState = ContentState.createFromText(value);
+    if (!value) return EditorState.createEmpty();
+
+    const checkHasHTMLTags = containsHTMLTags(value);
+
+    if (checkHasHTMLTags) {
+        const contentBlock = convertFromHTML(value);
+        const contentState = ContentState.createFromBlockArray(contentBlock.contentBlocks);
+
         return EditorState.createWithContent(contentState);
     }
-    return EditorState.createEmpty();
+
+    const contentState = ContentState.createFromText(value);
+    return EditorState.createWithContent(contentState);
 };
 
 const RjfsTextAreaWidget = ({ id, value, label, readonly, onChange, options }: WidgetProps) => {

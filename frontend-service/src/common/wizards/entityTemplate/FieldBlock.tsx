@@ -206,13 +206,6 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
     const setDisplayValueWrapper = (index: number) => (value: SetStateAction<CommonFormInputProperties>) => setDisplayValue(index, value);
     const isFieldBlockError = Boolean(touched?.[propertiesType]) && Boolean(errors?.[propertiesType]);
 
-    const handleCommentChange = (index: number) => (state: EditorState) => {
-        const newValue = state.getCurrentContent().getPlainText();
-        const htmlContent = stateToHTML(state.getCurrentContent());
-
-        setFieldDisplayValue(index, 'comment' as keyof Values, newValue === '' ? undefined : htmlContent);
-    };
-
     return (
         <FieldBlockAccordion style={{ border: isFieldBlockError ? '1px solid red' : '' }}>
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
@@ -268,7 +261,6 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
                                                 locationSearchFields,
                                                 hasActions,
                                                 supportConvertingToMultipleFields,
-                                                handleCommentChange: handleCommentChange(index),
                                                 supportComment,
                                             };
 
