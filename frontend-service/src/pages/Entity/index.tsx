@@ -420,25 +420,6 @@ const Entity: React.FC = () => {
         }
     });
 
-    const calculateEntityRelatedConnections = (_id: string): number => {
-        // calculate the amount of the related connections of each entity
-        return expandedEntity.connections.filter((connection) => {
-            const connectionRelationshipTemplate = relationshipTemplates.get(connection.relationship.templateId)!;
-
-            if (
-                connectionRelationshipTemplate.isProperty &&
-                currentEntityTemplate.properties.properties[connectionRelationshipTemplate.name]?.relationshipReference?.relationshipTemplateId ===
-                    connectionRelationshipTemplate._id
-            )
-                return false;
-
-            if (expandedEntity.entity.properties._id === connection.destinationEntity.properties._id)
-                return entityTemplates.get(connection.sourceEntity.templateId)!.category._id === _id;
-
-            return entityTemplates.get(connection.destinationEntity.templateId)!.category._id === _id;
-        }).length;
-    };
-
     const categoriesWithConnectionsTemplates = Array.from(categories.values(), (category) => {
         return {
             category,
@@ -450,10 +431,27 @@ const Entity: React.FC = () => {
                     return otherEntityTemplate.category._id === category._id;
                 })
                 .sort((a, b) => Number(b.hasInstances) - Number(a.hasInstances)),
+            relationshipCount:
+                // calculate the amount of the related connections of each entity
+                expandedEntity.connections.filter((connection) => {
+                    const connectionRelationshipTemplate = relationshipTemplates.get(connection.relationship.templateId)!;
+
+                    if (
+                        connectionRelationshipTemplate.isProperty &&
+                        currentEntityTemplate.properties.properties[connectionRelationshipTemplate.name]?.relationshipReference
+                            ?.relationshipTemplateId === connectionRelationshipTemplate._id
+                    )
+                        return false;
+
+                    if (expandedEntity.entity.properties._id === connection.destinationEntity.properties._id)
+                        return entityTemplates.get(connection.sourceEntity.templateId)!.category._id === category._id;
+
+                    return entityTemplates.get(connection.destinationEntity.templateId)!.category._id === category._id;
+                }).length,
         };
     })
         .filter((currCategory) => currCategory.connectionsTemplates?.length > 0)
-        .sort((a, b) => calculateEntityRelatedConnections(b.category._id) - calculateEntityRelatedConnections(a.category._id));
+        .sort((a, b) => b.relationshipCount - a.relationshipCount);
 
     useEffect(() => {
         if (categoriesWithConnectionsTemplates.length > 0 && selectedTabId === null) {
@@ -492,47 +490,49 @@ const Entity: React.FC = () => {
                                         scrollButtons="auto"
                                         onChange={(_event, newValue) => setSelectedTabId(newValue)}
                                     >
-                                        {categoriesWithConnectionsTemplates.map(({ category: { _id, displayName, iconFileId } }) => (
-                                            <Tab
-                                                style={{
-                                                    display: 'flex',
-                                                    flexDirection: 'row',
-                                                    gap: '15px',
-                                                    height: '20px',
-                                                    alignItems: 'center',
-                                                }}
-                                                key={_id}
-                                                label={
-                                                    <Grid container flexDirection="row" alignItems="center" flexWrap="nowrap" gap="10px">
-                                                        <Typography
-                                                            color={selectedTabId === _id ? theme.palette.primary.main : '#787C9E'}
-                                                            style={{ fontWeight: '500', fontSize: '16px' }}
-                                                        >
-                                                            {displayName}
-                                                        </Typography>
-                                                        <Typography color="#787C9E">{calculateEntityRelatedConnections(_id)}</Typography>
-                                                    </Grid>
-                                                }
-                                                value={_id}
-                                                icon={
-                                                    iconFileId ? (
-                                                        <CustomIcon
-                                                            iconUrl={iconFileId}
-                                                            height="24px"
-                                                            width="24px"
-                                                            color={selectedTabId === _id ? theme.palette.primary.main : '#787C9E'}
-                                                        />
-                                                    ) : (
-                                                        <HiveIcon
-                                                            fontSize="medium"
-                                                            sx={{
-                                                                color: selectedTabId === _id ? theme.palette.primary.main : '#787C9E',
-                                                            }}
-                                                        />
-                                                    )
-                                                }
-                                            />
-                                        ))}
+                                        {categoriesWithConnectionsTemplates.map(
+                                            ({ category: { _id, displayName, iconFileId }, relationshipCount }) => (
+                                                <Tab
+                                                    style={{
+                                                        display: 'flex',
+                                                        flexDirection: 'row',
+                                                        gap: '15px',
+                                                        height: '20px',
+                                                        alignItems: 'center',
+                                                    }}
+                                                    key={_id}
+                                                    label={
+                                                        <Grid container flexDirection="row" alignItems="center" flexWrap="nowrap" gap="10px">
+                                                            <Typography
+                                                                color={selectedTabId === _id ? theme.palette.primary.main : '#787C9E'}
+                                                                style={{ fontWeight: '500', fontSize: '16px' }}
+                                                            >
+                                                                {displayName}
+                                                            </Typography>
+                                                            <Typography color="#787C9E">{relationshipCount}</Typography>
+                                                        </Grid>
+                                                    }
+                                                    value={_id}
+                                                    icon={
+                                                        iconFileId ? (
+                                                            <CustomIcon
+                                                                iconUrl={iconFileId}
+                                                                height="24px"
+                                                                width="24px"
+                                                                color={selectedTabId === _id ? theme.palette.primary.main : '#787C9E'}
+                                                            />
+                                                        ) : (
+                                                            <HiveIcon
+                                                                fontSize="medium"
+                                                                sx={{
+                                                                    color: selectedTabId === _id ? theme.palette.primary.main : '#787C9E',
+                                                                }}
+                                                            />
+                                                        )
+                                                    }
+                                                />
+                                            ),
+                                        )}
                                     </TabList>
                                 </Box>
                                 {categoriesWithConnectionsTemplates.map(
