@@ -26,6 +26,7 @@ import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { updateConfigOrderRequest } from '../../../services/templates/configService';
 import { IMongoOrderConfig } from '../../../interfaces/config';
 import { mapCategories } from '../../../utils/templates';
+import { allowedCategories } from '../../../utils/permissions/templatePermissions';
 
 interface CategoryCardProps {
     category: IMongoCategory;
@@ -57,8 +58,9 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, setDeleteCategory
     const currentUser = useUserStore((state) => state.user);
 
     const canEdit =
-        currentUser.currentWorkspacePermissions.templates?.scope === PermissionScope.write ||
-        currentUser.currentWorkspacePermissions.admin?.scope === PermissionScope.write;
+        currentUser.currentWorkspacePermissions.admin?.scope === PermissionScope.write ||
+        (currentUser.currentWorkspacePermissions.templates?.scope === PermissionScope.write &&
+            currentUser.currentWorkspacePermissions?.instances?.categories[category._id].scope === 'write');
 
     const checkCategoryHasTemplates = (categoryId: string) => {
         const hasTemplates = Array.from(templates!.values()).some((template) => template.category._id === categoryId);
@@ -70,6 +72,12 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, setDeleteCategory
         if (isHover) {
             checkCategoryHasTemplates(category._id);
         }
+    };
+
+    const categoryCardTooltip = () => {
+        if (!canEdit) return i18next.t('wizard.entity.editDisabledDueToTemplates');
+        if (isDeleteButtonDisabled) return i18next.t('wizard.entity.deleteDisabledDueToTemplates');
+        return '';
     };
 
     return (
@@ -116,7 +124,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, setDeleteCategory
                                 disabledProps={{
                                     isDeleteDisabled: isDeleteButtonDisabled,
                                     isEditDisabled: !canEdit,
-                                    tooltipTitle: isDeleteButtonDisabled ? i18next.t('wizard.entity.deleteDisabledDueToTemplates') : '',
+                                    tooltipTitle: categoryCardTooltip(),
                                 }}
                             />
                         )}
@@ -130,12 +138,15 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, setDeleteCategory
 
 const CategoriesRow: React.FC = () => {
     const workspace = useWorkspaceStore((state) => state.workspace);
-    const { headlineSubTitleFontSize } = workspace.metadata.mainFontSizes;
-
     const queryClient = useQueryClient();
+    const currentUser = useUserStore((state) => state.user);
+
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
     const categoryOrder = queryClient.getQueryData<IMongoOrderConfig>('getCategoryConfig');
-    const categoriesArray = Array.from(categories.values());
+    // const categoriesArray = Array.from(categories.values());
+    const allowedCategoriesToShow = allowedCategories(categories, currentUser);
+
+    const { headlineSubTitleFontSize } = workspace.metadata.mainFontSizes;
 
     const [deleteCategoryDialogState, setDeleteCategoryDialogState] = useState<{
         isDialogOpen: boolean;
@@ -181,12 +192,12 @@ const CategoriesRow: React.FC = () => {
 
     const { mutateAsync: changeOrder } = useMutation(
         () => {
-            return updateConfigOrderRequest(categoryOrder!._id, { order: categoriesArray.map((category) => category._id) });
+            return updateConfigOrderRequest(categoryOrder!._id, { order: allowedCategoriesToShow.map((category) => category._id) });
         },
         {
             onSuccess(data) {
                 queryClient.setQueryData<IMongoOrderConfig>('getCategoryConfig', data);
-                queryClient.setQueryData<ICategoryMap>('getCategories', mapCategories(categoriesArray, data.order));
+                queryClient.setQueryData<ICategoryMap>('getCategories', mapCategories(allowedCategoriesToShow, data.order));
             },
             onError(error: AxiosError) {
                 toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.category.failedToEdit')} />);
@@ -200,8 +211,8 @@ const CategoriesRow: React.FC = () => {
             return;
         } else if (source.droppableId === destination.droppableId && source.index !== destination.index) {
             const { _id, ...restCategory } = categories.get(draggableId)!;
-            categoriesArray.splice(source.index, 1);
-            categoriesArray.splice(destination.index, 0, { _id, ...restCategory });
+            allowedCategoriesToShow.splice(source.index, 1);
+            allowedCategoriesToShow.splice(destination.index, 0, { _id, ...restCategory });
             changeOrder();
 
             return;
@@ -245,7 +256,7 @@ const CategoriesRow: React.FC = () => {
                                 onHover={(isHover: boolean) => setIsHoverOnBox(isHover)}
                             >
                                 {categories &&
-                                    categoriesArray.map((category, index) => {
+                                    allowedCategoriesToShow.map((category, index) => {
                                         return (
                                             <Draggable draggableId={category._id} key={category._id} index={index}>
                                                 {(draggableProvided) => (

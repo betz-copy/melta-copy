@@ -112,6 +112,10 @@ class EntityController extends DefaultController<EntityManager> {
         res.json(await this.manager.getAllConstraints());
     }
 
+    async getChartOfTemplate(req: Request, res: Response) {
+        res.json(await this.manager.getChart(req.params.templateId, req.body));
+    }
+
     async updateConstraintsOfTemplate(req: Request, res: Response) {
         const entityTemplate = fetchPropertyFromRequest<IMongoEntityTemplate>(req, 'entityTemplate');
 

@@ -390,7 +390,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
 
                     <NavButton
                         to="/map"
-                        text="עמוד מפה"
+                        text={i18next.t('pages.map')}
                         isDrawerOpen={isDrawerOpen}
                         onChangeToActive={(isActive) => handleChangeActiveButton(isActive, 'map')}
                         isActiveButton={activeButton === 'map'}

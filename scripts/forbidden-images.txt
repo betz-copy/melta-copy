@@ -9,3 +9,4 @@ logstash
 elastic
 apm-server
 filebeat
+mock-model-api

@@ -910,14 +910,14 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         return Promise.all(entitiesNewPropertiesPromises);
     }
 
-    async getAllActionsTemplatesByIds(actionsGroups: IAction[][]) {
+    async getAllActionsTemplatesByIds(actionsGroups: IAction[][], userId: string) {
         const { templateIds: templateIdsFromReq, entitiesIds } = this.extractEntitiesAndTemplatesIds(actionsGroups as IAction[][]);
         const templateIds = new Set<string>([...templateIdsFromReq]);
 
         const entities = await this.service.getEntityInstancesByIds(entitiesIds);
         entities.forEach((entity) => templateIds.add(entity.templateId));
 
-        const templates = await this.entityTemplateService.searchEntityTemplates({ ids: [...templateIds] });
+        const templates = await this.entityTemplateService.searchEntityTemplates(userId, { ids: [...templateIds] });
 
         return {
             templatesByIds: groupBy(templates, (template) => template._id),
@@ -926,7 +926,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
     }
 
     async runBulkOfActions(actionsGroups: IAction[][], dryRun: boolean, userId: string, ignoredRules: IBrokenRule[] = []) {
-        const { templatesByIds, entitiesByIds } = await this.getAllActionsTemplatesByIds(actionsGroups);
+        const { templatesByIds, entitiesByIds } = await this.getAllActionsTemplatesByIds(actionsGroups, userId);
         const entitiesToCreate: IEntity[] = [];
 
         actionsGroups.forEach((actionGroup) =>
@@ -966,8 +966,8 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         return this.service.runBulkOfActions(newActionsGroups, dryRun, userId, ignoredRules);
     }
 
-    async searchEntitiesByLocation(reqBody: ISearchEntitiesByLocationBody) {
-        const entityTemplates = await this.entityTemplateService.searchEntityTemplates({ ids: Object.keys(reqBody.templates) });
+    async searchEntitiesByLocation(reqBody: ISearchEntitiesByLocationBody, userId: string) {
+        const entityTemplates = await this.entityTemplateService.searchEntityTemplates(userId, { ids: Object.keys(reqBody.templates) });
 
         const locationFieldsMap = entityTemplates.reduce((acc, entityTemplate) => {
             const { _id, properties } = entityTemplate;
