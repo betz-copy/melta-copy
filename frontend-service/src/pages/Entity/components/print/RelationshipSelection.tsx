@@ -1,5 +1,5 @@
 /* eslint-disable react/no-unstable-nested-components */
-import React, { Dispatch, PropsWithChildren, SetStateAction, useCallback, useState } from 'react';
+import React, { Dispatch, PropsWithChildren, SetStateAction, useCallback, useMemo, useState } from 'react';
 import { RichTreeViewPro, TreeItem2Props } from '@mui/x-tree-view-pro';
 import { ChevronLeft, ExpandLess } from '@mui/icons-material';
 import { Box, FormControl, Select, useTheme } from '@mui/material';
@@ -8,7 +8,9 @@ import { IConnectionTemplateExpanded, ISelectRelationshipTemplates } from '.';
 import { CustomExpandMore } from '../../../../common/SelectCheckBox';
 import { useDarkModeStore } from '../../../../stores/darkMode';
 
-const getItemId = (item: ISelectRelationshipTemplates | IConnectionTemplateExpanded) => item.relationshipTemplate._id;
+const getItemId = (item: ISelectRelationshipTemplates | IConnectionTemplateExpanded) =>
+    `${item.relationshipTemplate._id}${'parentRelationship' in item ? `-${item.parentRelationship?.relationshipTemplate._id}` : ''}`;
+
 const getItemLabel = (item: ISelectRelationshipTemplates) =>
     `${item.relationshipTemplate.displayName} (${item.relationshipTemplate.sourceEntity.displayName} > ${item.relationshipTemplate.destinationEntity.displayName})`;
 
@@ -18,39 +20,48 @@ const RelationshipSelection: React.FC<{
     setSelectedOptions: RelationshipSelectProps['setSelectedOptions'];
 }> = ({ options, selectedOptions, setSelectedOptions }) => {
     const [expandedItemsIds, setExpandedItemsIds] = useState<string[]>([]);
-    const [selectedItemsIds, setSelectedItemsIds] = useState<string[]>(
-        [
-            ...selectedOptions.map((parent) => parent.children?.map((child) => child.relationshipTemplate._id)).flat(),
-            ...selectedOptions.map((parent) => parent.relationshipTemplate._id),
-        ].filter((id): id is string => id !== undefined),
-    );
 
-    const findNodeById = (nodes: ISelectRelationshipTemplates[], id: string): ISelectRelationshipTemplates | IConnectionTemplateExpanded | null => {
-        for (const node of nodes) {
-            if (getItemId(node) === id) return node;
-            if (node.children) {
-                const found = findNodeById(node.children, id);
+    const flattenSelectedIds = useMemo(() => {
+        return selectedOptions.flatMap((parent) => [
+            parent.relationshipTemplate._id,
+            ...(parent.children?.map((child) => child.relationshipTemplate._id) || []),
+        ]);
+    }, [selectedOptions]);
 
-                if (found) return found;
-            }
-        }
-        return null;
-    };
+    const [selectedItemsIds, setSelectedItemsIds] = useState<string[]>(flattenSelectedIds);
 
-    const handleSelectedItemsChange = (itemIds: string[]) => {
-        const currentSelectedNodesIds = new Set<string>();
-        let currentSelectedNodes: ISelectRelationshipTemplates[] = [...selectedOptions];
-
-        const findParent = (nodes: ISelectRelationshipTemplates[], childId: string): ISelectRelationshipTemplates | null => {
+    const findNodeById = useCallback(
+        (nodes: ISelectRelationshipTemplates[], id: string): ISelectRelationshipTemplates | IConnectionTemplateExpanded | null => {
             for (const node of nodes) {
-                if (node.children?.some((child) => child.relationshipTemplate._id === childId)) return node;
+                if (id.startsWith(node.relationshipTemplate._id)) {
+                    if (!node.children || !id.includes('-')) return node;
+                }
+
                 if (node.children) {
-                    const found = findParent(node.children, childId);
+                    const found = findNodeById(node.children, id);
                     if (found) return found;
                 }
             }
             return null;
-        };
+        },
+        [],
+    );
+
+    const findParent = useCallback((nodes: ISelectRelationshipTemplates[], id: string): ISelectRelationshipTemplates | null => {
+        const childId = id.includes('-') ? id.split('-')[0] : id;
+        for (const node of nodes) {
+            if (node.children?.some((child) => child.relationshipTemplate._id === childId)) return node;
+            if (node.children) {
+                const found = findParent(node.children, childId);
+                if (found) return found;
+            }
+        }
+        return null;
+    }, []);
+
+    const handleSelectedItemsChange = (itemIds: string[]) => {
+        const currentSelectedNodesIds = new Set<string>();
+        let currentSelectedNodes: ISelectRelationshipTemplates[] = [...selectedOptions];
 
         const changedIds = [
             ...itemIds.filter((itemId) => !selectedItemsIds.includes(itemId)),
@@ -59,65 +70,71 @@ const RelationshipSelection: React.FC<{
 
         changedIds.forEach((id) => {
             const currentNode = findNodeById(options, id);
-            if (currentNode) {
-                if ('parentRelationship' in currentNode) {
-                    // handle a child
-                    const parentIndex = currentSelectedNodes.findIndex(
-                        (selectedNode) => currentNode.parentRelationship?.relationshipTemplate._id === selectedNode.relationshipTemplate._id,
-                    );
 
-                    if (parentIndex !== -1) {
-                        // if the parent is selected
-                        const parent = currentSelectedNodes[parentIndex];
-                        const childIndex = parent.children?.findIndex(
-                            (selectedNode) => currentNode.relationshipTemplate._id === selectedNode.relationshipTemplate._id,
-                        );
-                        if (childIndex !== -1) {
-                            // If the child is already selected, remove it
-                            currentSelectedNodes.splice(parentIndex, 1);
-                            currentSelectedNodes = [
-                                {
-                                    ...parent,
-                                    children: parent.children?.splice(childIndex ?? 0, 1),
-                                },
-                            ];
-                        } else {
-                            // If the child is not selected, add it
-                            currentSelectedNodes.splice(parentIndex, 1);
-                            currentSelectedNodes = [
-                                {
-                                    ...parent,
-                                    children: [...(parent.children ?? []), currentNode],
-                                },
-                            ];
-                        }
-                    } else {
-                        // if the parent isn't selected
-                        const parent = findParent(options, id);
-                        if (!parent) throw new Error('child has to have a parent');
-                        currentSelectedNodes.push({
-                            ...parent,
-                            children: [currentNode],
-                        });
-                    }
-                } else {
-                    // if it's a parent
-                    const parentIndex = currentSelectedNodes.findIndex(
+            if (!currentNode) return;
+
+            if ('parentRelationship' in currentNode) {
+                // handle a child
+                const parentIndex = currentSelectedNodes.findIndex(
+                    (selectedNode) => currentNode.parentRelationship?.relationshipTemplate._id === selectedNode.relationshipTemplate._id,
+                );
+
+                if (parentIndex !== -1) {
+                    // if the parent is selected
+                    const parent = currentSelectedNodes[parentIndex];
+
+                    const childIndex = parent.children?.findIndex(
                         (selectedNode) => currentNode.relationshipTemplate._id === selectedNode.relationshipTemplate._id,
                     );
-
-                    if (parentIndex !== -1) {
-                        // If the parent is selected, remove it
+                    if (childIndex !== -1) {
+                        // If the child is already selected, remove it
                         currentSelectedNodes.splice(parentIndex, 1);
+                        currentSelectedNodes = [
+                            {
+                                ...parent,
+                                children: parent.children?.splice(childIndex ?? 0, 1),
+                            },
+                        ];
                     } else {
-                        // If the parent is not selected, add it
-                        currentSelectedNodes.push({ ...currentNode, children: [] });
+                        // If the child is not selected, add it
+                        currentSelectedNodes.splice(parentIndex, 1);
+                        currentSelectedNodes = [
+                            {
+                                ...parent,
+                                children: [...(parent.children ?? []), currentNode],
+                            },
+                        ];
                     }
+                } else {
+                    // if the parent isn't selected
+                    const parent = findParent(options, id);
+                    if (!parent) throw new Error('child has to have a parent');
+                    currentSelectedNodes.push({
+                        ...parent,
+                        children: [currentNode],
+                    });
+                }
+            } else {
+                // if it's a parent
+                const parentIndex = currentSelectedNodes.findIndex(
+                    (selectedNode) => currentNode.relationshipTemplate._id === selectedNode.relationshipTemplate._id,
+                );
+
+                if (parentIndex !== -1) {
+                    // If the parent is selected, remove it
+                    currentSelectedNodes.splice(parentIndex, 1);
+                } else {
+                    // If the parent is not selected, add it
+                    currentSelectedNodes.push({ ...currentNode, children: [] });
                 }
             }
         });
 
-        currentSelectedNodes.map((parent) => parent.children?.map((child) => currentSelectedNodesIds.add(child.relationshipTemplate._id)));
+        currentSelectedNodes.map((parent) =>
+            parent.children?.map((child) =>
+                currentSelectedNodesIds.add(`${child.relationshipTemplate._id}-${child.parentRelationship?.relationshipTemplate._id}`),
+            ),
+        );
         currentSelectedNodes.map((parent) => currentSelectedNodesIds.add(parent.relationshipTemplate._id));
 
         setSelectedOptions(currentSelectedNodes);
@@ -136,7 +153,14 @@ const RelationshipSelection: React.FC<{
             getItemLabel={getItemLabel}
             selectedItems={selectedItemsIds}
             onSelectedItemsChange={(_, itemIds) => setSelectedItemsIds(handleSelectedItemsChange(itemIds))}
-            onExpandedItemsChange={(_, itemIds) => setExpandedItemsIds(itemIds)}
+            onExpandedItemsChange={(_, itemIds) => {
+                const ids = itemIds
+                    .map((itemId) => findNodeById(options, itemId))
+                    .filter((item): item is ISelectRelationshipTemplates | IConnectionTemplateExpanded => item !== null)
+                    .map((item) => getItemId(item));
+
+                setExpandedItemsIds(ids);
+            }}
             expandedItems={expandedItemsIds}
             expansionTrigger="iconContainer"
             slots={{
