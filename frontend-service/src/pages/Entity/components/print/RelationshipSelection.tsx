@@ -86,24 +86,31 @@ const RelationshipSelection: React.FC<{
                     const childIndex = parent.children?.findIndex(
                         (selectedNode) => currentNode.relationshipTemplate._id === selectedNode.relationshipTemplate._id,
                     );
-                    if (childIndex !== -1) {
+                    if (childIndex !== -1 && childIndex !== undefined) {
                         // If the child is already selected, remove it
-                        currentSelectedNodes.splice(parentIndex, 1);
-                        currentSelectedNodes = [
-                            {
-                                ...parent,
-                                children: parent.children?.splice(childIndex ?? 0, 1),
-                            },
-                        ];
+                        const updatedChildren = [...(parent.children ?? [])];
+                        updatedChildren.splice(childIndex, 1);
+
+                        currentSelectedNodes = currentSelectedNodes.map((node) => {
+                            if (node.relationshipTemplate._id === parent.relationshipTemplate._id) {
+                                return {
+                                    ...node,
+                                    children: updatedChildren,
+                                };
+                            }
+                            return node;
+                        });
                     } else {
                         // If the child is not selected, add it
-                        currentSelectedNodes.splice(parentIndex, 1);
-                        currentSelectedNodes = [
-                            {
-                                ...parent,
-                                children: [...(parent.children ?? []), currentNode],
-                            },
-                        ];
+                        currentSelectedNodes = currentSelectedNodes.map((node) => {
+                            if (node.relationshipTemplate._id === parent.relationshipTemplate._id) {
+                                return {
+                                    ...node,
+                                    children: [...(node.children ?? []), currentNode],
+                                };
+                            }
+                            return node;
+                        });
                     }
                 } else {
                     // if the parent isn't selected
