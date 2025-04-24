@@ -8,6 +8,7 @@ import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../../.
 import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridTextFilter } from '../../../../utils/agGrid/interfaces';
 import { DateFilterInput } from '../../../inputs/FilterInputs/DateFilterInput';
 import { TextFilterInput } from '../../../inputs/FilterInputs/TextFilterInput';
+import { SelectFilterInput } from '../../../inputs/FilterInputs/SelectFilterInput';
 
 interface FilterEntitiesByCriteriaProps {
     name: string; // e.g. "properties[0].relationshipReference.filters"
@@ -117,44 +118,109 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
         }
     };
 
-    const renderFilterField = (filter: IFilterRelationReference, index: number, _property: IEntitySingleProperty, isNewProperty: boolean) => {
+    console.log({ values });
+
+    const renderFilterField = (filter: IFilterRelationReference, index: number, property: IEntitySingleProperty, isNewProperty: boolean) => {
         const field = filter.filterField;
         if (!field?.filterType || !field.type) return null;
 
-        switch (field.filterType) {
-            case 'text':
-            case 'number':
-                return (
-                    <TextFilterInput
-                        filterField={field as IAGGidNumberFilter | IAGGridTextFilter}
-                        handleFilterFieldChange={(updatedField, condition) => {
-                            if (updatedField && (updatedField.filterType === 'text' || updatedField.filterType === 'number')) {
-                                handleFilterFieldChange(index, updatedField, condition);
-                            }
-                        }}
-                        handleFilterTypeChange={(newType) => handleTypedFilterTypeChange(field.filterType, index, newType, field)}
-                        readOnly={isNewProperty}
-                        entityFilter={false}
-                        type={field.filterType}
-                    />
-                );
+        const { format, enum: propEnum, type, items } = property;
 
-            case 'date':
-                return (
-                    <DateFilterInput
-                        filterField={field}
-                        handleFilterTypeChange={(newType) => handleTypedFilterTypeChange('date', index, newType, field)}
-                        handleDateChange={(newValue, isStart) => {
-                            setFieldValue(isStart ? `filters.${index}.dateFrom` : `filters.${index}.dateTo`, newValue);
-                        }}
-                        entityFilter={false}
-                        readOnly={isNewProperty}
-                    />
-                );
+        if (items?.format === 'fileId' || format === 'fileId' || format === 'signature') return null;
 
-            default:
-                return null;
+        if (propEnum) {
+            return (
+                <SelectFilterInput
+                    filterField={field?.filterType === 'text' ? (field as IAGGridTextFilter) : undefined}
+                    enumOptions={propEnum}
+                    handleFilterFieldChange={(updatedField, condition) => {
+                        if (updatedField && (updatedField.filterType === 'text' || updatedField.filterType === 'number')) {
+                            handleFilterFieldChange(index, updatedField, condition);
+                        }
+                    }}
+                    readOnly={isNewProperty}
+                />
+            );
         }
+
+        if (format === 'date-time' || format === 'date') {
+            return (
+                <DateFilterInput
+                    filterField={field?.filterType === 'date' ? (field as IAGGridDateFilter) : undefined}
+                    handleFilterTypeChange={(newType) => handleTypedFilterTypeChange('date', index, newType, field)}
+                    handleDateChange={(newValue, isStart) => {
+                        setFieldValue(isStart ? `filters.${index}.dateFrom` : `filters.${index}.dateTo`, newValue);
+                    }}
+                    entityFilter
+                    readOnly={isNewProperty}
+                />
+            );
+        }
+
+        if (type === 'boolean') {
+            return (
+                <SelectFilterInput
+                    filterField={field?.filterType === 'text' ? (field as IAGGridTextFilter) : undefined}
+                    isBooleanSelect
+                    handleFilterFieldChange={(updatedField, condition) => {
+                        if (updatedField && (updatedField.filterType === 'text' || updatedField.filterType === 'number')) {
+                            handleFilterFieldChange(index, updatedField, condition);
+                        }
+                    }}
+                    readOnly={isNewProperty}
+                />
+            );
+        }
+
+        return (
+            <TextFilterInput
+                filterField={field as IAGGidNumberFilter | IAGGridTextFilter}
+                handleFilterFieldChange={(updatedField, condition) => {
+                    if (updatedField && (updatedField.filterType === 'text' || updatedField.filterType === 'number')) {
+                        handleFilterFieldChange(index, updatedField, condition);
+                    }
+                }}
+                handleFilterTypeChange={(newType) => handleTypedFilterTypeChange(field.filterType, index, newType, field)}
+                readOnly={isNewProperty}
+                entityFilter
+                type={field.filterType}
+            />
+        );
+
+        // switch (field.filterType) {
+        //     case 'text':
+        //     case 'number':
+        //         return (
+        //             <TextFilterInput
+        //                 filterField={field as IAGGidNumberFilter | IAGGridTextFilter}
+        //                 handleFilterFieldChange={(updatedField, condition) => {
+        //                     if (updatedField && (updatedField.filterType === 'text' || updatedField.filterType === 'number')) {
+        //                         handleFilterFieldChange(index, updatedField, condition);
+        //                     }
+        //                 }}
+        //                 handleFilterTypeChange={(newType) => handleTypedFilterTypeChange(field.filterType, index, newType, field)}
+        //                 readOnly={isNewProperty}
+        //                 entityFilter={false}
+        //                 type={field.filterType}
+        //             />
+        //         );
+
+        //     case 'date':
+        //         return (
+        //             <DateFilterInput
+        //                 filterField={field}
+        //                 handleFilterTypeChange={(newType) => handleTypedFilterTypeChange('date', index, newType, field)}
+        //                 handleDateChange={(newValue, isStart) => {
+        //                     setFieldValue(isStart ? `filters.${index}.dateFrom` : `filters.${index}.dateTo`, newValue);
+        //                 }}
+        //                 entityFilter
+        //                 readOnly={isNewProperty}
+        //             />
+        //         );
+
+        //     default:
+        //         return null;
+        // }
     };
 
     return (
