@@ -130,3 +130,5 @@ export type IKartoffelUser = {
     };
     digitalIdentities?: IKartoffelUserDigitalIdentity[];
 };
+
+export type IKartoffelUserStringFields = Omit<IKartoffelUser, 'mobilePhone' | 'phone'> & { mobilePhone?: string; phone?: string };

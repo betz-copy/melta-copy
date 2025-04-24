@@ -19,11 +19,6 @@ export const getUserByIdRequest = async (userId: string) => {
     return data;
 };
 
-export const getKartoffelUserRequest = async (kartoffelId: string) => {
-    const { data } = await axios.get<IKartoffelUser>(`${users}/kartoffelUser/${kartoffelId}`);
-    return data;
-};
-
 export const getKartoffelUserProfileRequest = async (kartoffelId: string) => {
     const { data } = await axios.get(`${users}/kartoffelUserProfile/${kartoffelId}`, { responseType: 'blob' });
     return URL.createObjectURL(data);

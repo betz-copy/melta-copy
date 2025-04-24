@@ -18,11 +18,11 @@ const checkForEntityToUpdate = (
     kartoffelUsersMapById: Dictionary<IKartoffelUser[]>,
 ) => {
     const userKeysKartoffelIdsMap: Record<string, string> = {};
-    // const userDefaultFields = userFieldsSync.userOriginalAndSuffixFieldsMap; // TODO: sync also those fields?
     const propertiesToUpdate = {};
 
     Object.entries(entityTemplate.properties.properties).forEach(([key, value]) => {
-        if (value.format === 'user' && entity.properties[key]) userKeysKartoffelIdsMap[key] = JSON.parse(entity.properties[key])._id;
+        const fieldValue = entity.properties[key];
+        if (value.format === 'user' && fieldValue) userKeysKartoffelIdsMap[key] = JSON.parse(fieldValue)._id;
     });
 
     if (Object.keys(userKeysKartoffelIdsMap).length === 0) return {};
@@ -62,11 +62,11 @@ const getAllEntitiesOfTemplates = async (templates: IMongoEntityTemplatePopulate
     return entitiesArrays.flat();
 };
 
-export const checkForUsersToSync = async () => {
+export const updateKartoffelFields = async () => {
     schedule.scheduleJob(userFieldsSync.usersSyncTime, async () => {
         logger.info('Checking for users to sync...');
         const workspaceIds = await WorkspaceManager.getWorkspaceIds(WorkspaceTypes.mlt);
-        console.log({ workspaceIdsCount: workspaceIds.length });
+        logger.debug({ workspaceIdsCount: workspaceIds.length });
 
         await Promise.all(
             workspaceIds.map(async (workspaceId) => {
@@ -79,7 +79,7 @@ export const checkForUsersToSync = async () => {
                     const templates = await templateService.searchEntityTemplatesIncludesFormat('kartoffelUserField');
                     const templatesMapById = groupBy(templates, (template) => template._id);
 
-                    console.log({ templatesCount: templates.length });
+                    logger.debug({ templatesCount: templates.length });
 
                     // get all the instances by the templates
                     const instances = await getAllEntitiesOfTemplates(templates, instanceService);
@@ -90,7 +90,8 @@ export const checkForUsersToSync = async () => {
                         const entityTemplate = templatesMapById[entity.entity.templateId][0];
                         entitiesIds.push(entity.entity.properties._id);
                         Object.entries(entityTemplate.properties.properties).forEach(([key, value]) => {
-                            if (value.format === 'user' && entity.entity.properties[key]) usersIds.add(JSON.parse(entity.entity.properties[key])._id);
+                            const fieldValue = entity.entity.properties[key];
+                            if (value.format === 'user' && fieldValue) usersIds.add(JSON.parse(fieldValue)._id);
                         });
                     });
 
@@ -105,10 +106,7 @@ export const checkForUsersToSync = async () => {
                             // for each user field in each instance, check if the user from kartoffel is different in one of the fields of the user in the instance
                             // update the user fields if needed
                             const updatedProperies = checkForEntityToUpdate(entity.entity, entityTemplate, kartoffelUsersMapById);
-                            if (Object.keys(updatedProperies).length === 0) {
-                                console.log('nothing to update');
-                                return;
-                            }
+                            if (Object.keys(updatedProperies).length === 0) return;
 
                             return instanceService.updateEntityInstance(
                                 entity.entity.properties._id,
@@ -117,13 +115,11 @@ export const checkForUsersToSync = async () => {
                                     properties: { ...formatedEntitiesMapById[entity.entity.properties._id][0].properties, ...updatedProperies },
                                 },
                                 [],
-                                'systemUser',
                             );
                         }),
                     );
 
                     logger.debug({ updatedEntities });
-
                 } catch (error) {
                     logger.error('Error syncing kartoffel users:', { error });
                 }

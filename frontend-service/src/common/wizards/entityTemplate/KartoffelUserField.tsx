@@ -1,5 +1,5 @@
 import { Autocomplete, Grid, MenuItem, TextField } from '@mui/material';
-import React, { useState } from 'react';
+import React from 'react';
 import { FormikErrors, FormikTouched } from 'formik';
 import i18next from 'i18next';
 import { CommonFormInputProperties } from './commonInterfaces';
@@ -11,7 +11,7 @@ export interface FieldEditCardProps {
     errors?: FormikErrors<CommonFormInputProperties>;
     setFieldValue: (field: keyof CommonFormInputProperties, value: any) => void;
     isDisabled?: boolean;
-    userPropertiesInTemplate?: string[]; // TODO: lir - make sure the users list is updating in realtime...
+    userPropertiesInTemplate?: string[];
 }
 
 const KartoffelUserField: React.FC<FieldEditCardProps> = ({
@@ -57,11 +57,9 @@ const KartoffelUserField: React.FC<FieldEditCardProps> = ({
           }>
         | undefined;
 
-    const [selectedUserField, setSelectedUserField] = useState<string | undefined>(value.expandedUserField?.relatedUserField);
-    const [selectedKartoffelField, setSelectedKartoffelField] = useState<string | undefined>(value.expandedUserField?.kartoffelField);
-
     let relatedUserHelperText = '';
-    if (touchedExpandedUserField && !selectedUserField) relatedUserHelperText = i18next.t('wizard.entityTemplate.relatedUserFieldRequired');
+    if (touchedExpandedUserField && !value.expandedUserField?.relatedUserField)
+        relatedUserHelperText = i18next.t('wizard.entityTemplate.relatedUserFieldRequired');
     if (touchedExpandedUserField && errorExpandedUserField?.relatedUserField)
         relatedUserHelperText = i18next.t(errorExpandedUserField?.relatedUserField);
 
@@ -72,11 +70,10 @@ const KartoffelUserField: React.FC<FieldEditCardProps> = ({
                 options={userPropertiesInTemplate}
                 onChange={(_e, userField) => {
                     const newValue = { ...value.expandedUserField, relatedUserField: userField };
-                    setSelectedUserField(userField || undefined);
                     setFieldValue('expandedUserField', newValue);
                 }}
                 sx={{ marginRight: '5px', width: '50%' }}
-                value={selectedUserField}
+                value={value.expandedUserField?.relatedUserField}
                 disabled={isDisabled}
                 getOptionLabel={(option) => option}
                 renderInput={(params) => (
@@ -97,16 +94,15 @@ const KartoffelUserField: React.FC<FieldEditCardProps> = ({
                     />
                 )}
             />
-            {selectedUserField && (
+            {value.expandedUserField?.relatedUserField && (
                 <TextField
                     select
                     label={i18next.t('wizard.entityTemplate.fieldDisplay')}
                     id={kartoffelField}
                     name={kartoffelField}
-                    value={selectedKartoffelField}
+                    value={value.expandedUserField?.kartoffelField}
                     onChange={(e) => {
                         const newValue = { ...value.expandedUserField, kartoffelField: e.target.value };
-                        setSelectedKartoffelField(e.target.value);
                         setFieldValue('expandedUserField', newValue);
                     }}
                     error={touchedExpandedUserField && Boolean(errorExpandedUserField?.kartoffelField)}

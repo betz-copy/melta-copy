@@ -930,7 +930,9 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             newExpandedUserFields.forEach((expandedUserFieldKey) => {
                 const expandedUserFieldValue = updatedTemplateData.properties.properties[expandedUserFieldKey];
                 const userKey = expandedUserFieldValue.expandedUserField?.relatedUserField;
-                const userId = userKey && entity.entity.properties[userKey] ? JSON.parse(entity.entity.properties[userKey])._id : undefined;
+                const userFieldValue = userKey ? entity.entity.properties[userKey] : undefined;
+                const userId = userFieldValue ? JSON.parse(userFieldValue)._id : undefined;
+
                 if (userId && userKey) {
                     const kartoffelUser = kartoffelUsersMapById[userId] ? kartoffelUsersMapById[userId][0] : undefined;
                     if (kartoffelUser && kartoffelUser[expandedUserFieldValue.expandedUserField?.kartoffelField || '']) {
@@ -945,9 +947,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         });
 
         await Promise.all(
-            entitiesToUpdate.map((entityToUpdate) =>
-                this.instancesService.updateEntityInstance(entityToUpdate.properties._id, entityToUpdate, [], 'aa'),
-            ),
+            entitiesToUpdate.map((entityToUpdate) => this.instancesService.updateEntityInstance(entityToUpdate.properties._id, entityToUpdate, [])),
         );
     }
 

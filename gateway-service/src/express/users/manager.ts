@@ -154,7 +154,6 @@ export class UsersManager {
     static async searchExternalUsers(search: string, isKartoffelUser: boolean, workspaceId?: string): Promise<IExternalUser[] | IKartoffelUser[]> {
         const kartoffelUsers: IKartoffelUser[] = await Kartoffel.searchUsers(search);
 
-        // TODO - check the permissions
         if (isKartoffelUser) return kartoffelUsers;
 
         const normalizedKartoffelUsers = await Promise.all(kartoffelUsers.flatMap((kartoffelUser) => this.kartoffelUserToUser(kartoffelUser)));

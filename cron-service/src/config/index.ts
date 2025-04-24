@@ -70,23 +70,10 @@ const config = {
     userFieldsSync: {
         usersSyncTime: env.get('USERS_SYNC_TIME').default('0 */12 * * *').asString(),
         isSyncingUsers: env.get('IS_SYNCING_USERS').default('true').asString(),
-        userOriginalAndSuffixFieldsMap: env
-        .get('USER_ORIGINAL_AND_SUFFIX_FIELDS_MAP')
-        .default([
-            { originalFieldName: '_id', suffixFieldName: '.id' },
-            { originalFieldName: 'fullName', suffixFieldName: '.fullName' },
-            { originalFieldName: 'jobTitle', suffixFieldName: '.jobTitle' },
-            { originalFieldName: 'hierarchy', suffixFieldName: '.hierarchy' },
-            { originalFieldName: 'mail', suffixFieldName: '.mail' },
-        ])
-        .required()
-        .asJsonArray() as Array<{ originalFieldName: string; suffixFieldName: string }>,
     },
     kartoffel: {
         url: env.get('KARTOFFEL_BASE_URL').required().asString(),
         baseEntitiesRoute: env.get('KARTOFFEL_BASE_ENTITIES_ROUTE').default('/api/entities').asString(),
-        searchRoute: env.get('KARTOFFEL_SEARCH_ROUTE').default('/search').asString(),
-        fieldToSearch: env.get('KARTOFFEL_FIELDS_TO_SEARCH').default('fullName,uniqueId,personalNumber,identityCard').asString(),
         requestTimeout: env.get('KARTOFFEL_REQUEST_TIMEOUT').default(10000).asIntPositive(),
         getByIdRoute: env.get('KARTOFFEL_FIND_USER_BY_ID_ROUTE').default('').asString(),
     },

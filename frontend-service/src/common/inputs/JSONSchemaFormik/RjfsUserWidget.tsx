@@ -2,7 +2,7 @@ import React from 'react';
 import { WidgetProps } from '@rjsf/utils';
 import { Grid } from '@mui/material';
 import UserAutocomplete from '../UserAutocomplete';
-import { IKartoffelUser, IUser } from '../../../interfaces/users';
+import { IKartoffelUser, IKartoffelUserStringFields, IUser } from '../../../interfaces/users';
 
 const RjfsUserWidget = ({
     disabled,
@@ -15,17 +15,12 @@ const RjfsUserWidget = ({
     autoFocus,
     options,
     onChange,
-    formContext,
     ...textFieldProps
 }: WidgetProps) => {
-    const handleOnChange = options.updateExpandedUserFields as (
-        user: (Omit<IKartoffelUser, 'mobilePhone' | 'phone'> & { mobilePhone?: string; phone?: string }) | null,
-        values: any,
-    ) => void;
-
+    const handleOnChange = options.updateExpandedUserFields as (user: IKartoffelUserStringFields | null, values: any) => void;
     const [currentUser, setCurrentUser] = React.useState(value ? JSON.parse(value) : undefined);
     if (!currentUser) {
-        if (handleOnChange) handleOnChange(null, formContext.globalValues);
+        if (handleOnChange) handleOnChange(null, options.globalValues);
     }
 
     function handleUserChange(_event: React.SyntheticEvent, chosenUser: IKartoffelUser | null) {
@@ -38,7 +33,7 @@ const RjfsUserWidget = ({
             mobilePhone: chosenUser.mobilePhone?.join(','),
             phone: chosenUser.phone?.join(','),
         };
-        if (handleOnChange) handleOnChange(formattedUser, formContext.globalValues);
+        if (handleOnChange) handleOnChange(formattedUser, options.globalValues);
 
         setCurrentUser(formattedUser);
     }
@@ -62,7 +57,7 @@ const RjfsUserWidget = ({
                 enableClear
                 onDisplayValueChange={(_, newDisplayValue) => {
                     if (newDisplayValue === '') {
-                        if (handleOnChange) handleOnChange(null, formContext.globalValues);
+                        if (handleOnChange) handleOnChange(null, options.globalValues);
                         setCurrentUser(undefined);
                     }
                 }}

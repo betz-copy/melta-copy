@@ -48,57 +48,55 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
     const attachmentProperties: EntityTemplateFormInputProperties[] = [];
     const archiveProperties: EntityTemplateFormInputProperties[] = [];
 
-    propertiesOrder
-        .filter((key) => !key.startsWith('userprefix'))
-        .forEach((key) => {
-            const value = properties.properties[key];
+    propertiesOrder.forEach((key) => {
+        const value = properties.properties[key];
 
-            let type = value.format || value.type;
-            if (value.serialStarter !== undefined) type = 'serialNumber';
-            else if (value.enum) type = 'enum';
-            else if (value.pattern) type = 'pattern';
-            else if (value.format && value.format === 'text-area') type = 'text-area';
-            else if (value.format && value.format === 'location') type = 'location';
-            else if (value.items?.enum) type = 'enumArray';
-            else if (value.items?.format === 'fileId') type = 'multipleFiles';
-            else if (value.items?.format === 'user') type = 'users';
-            else if (value.items?.format === 'text-area') type = 'text-area';
+        let type = value.format || value.type;
+        if (value.serialStarter !== undefined) type = 'serialNumber';
+        else if (value.enum) type = 'enum';
+        else if (value.pattern) type = 'pattern';
+        else if (value.format && value.format === 'text-area') type = 'text-area';
+        else if (value.format && value.format === 'location') type = 'location';
+        else if (value.items?.enum) type = 'enumArray';
+        else if (value.items?.format === 'fileId') type = 'multipleFiles';
+        else if (value.items?.format === 'user') type = 'users';
+        else if (value.items?.format === 'text-area') type = 'text-area';
 
-            const property: EntityTemplateFormInputProperties = {
-                id: uuid(),
-                name: key,
-                title: value.title,
-                required: properties.required.includes(key),
-                preview: propertiesPreview.includes(key),
-                hide: properties.hide.includes(key),
-                readOnly: value.readOnly || undefined,
-                expandedUserField: value.expandedUserField,
-                uniqueCheckbox: uniqueConstraints.some((constraint) => constraint.properties.includes(key) && constraint.groupName !== ''),
-                groupName: uniqueConstraints.find((constraint) => constraint.properties.includes(key) && constraint.groupName !== '')?.groupName,
-                calculateTime: value.calculateTime ?? undefined,
-                type,
-                options: value.enum || value.items?.enum || [],
-                optionColors: enumPropertiesColors?.[key] ? enumPropertiesColors[key] : {},
-                pattern: value.pattern || '',
-                patternCustomErrorMessage: value.patternCustomErrorMessage || '',
-                dateNotification: value.dateNotification,
-                isDailyAlert: value.isDailyAlert ?? undefined,
-                isDatePastAlert: value.isDatePastAlert ?? undefined,
-                serialStarter: value.serialStarter,
-                relationshipReference: value.relationshipReference || undefined,
-                archive: value.archive || undefined,
-                identifier: value.identifier || undefined,
-                mapSearch: mapSearchProperties?.includes(key) || undefined,
-            };
+        const property: EntityTemplateFormInputProperties = {
+            id: uuid(),
+            name: key,
+            title: value.title,
+            required: properties.required.includes(key),
+            preview: propertiesPreview.includes(key),
+            hide: properties.hide.includes(key),
+            readOnly: value.readOnly || undefined,
+            expandedUserField: value.expandedUserField,
+            uniqueCheckbox: uniqueConstraints.some((constraint) => constraint.properties.includes(key) && constraint.groupName !== ''),
+            groupName: uniqueConstraints.find((constraint) => constraint.properties.includes(key) && constraint.groupName !== '')?.groupName,
+            calculateTime: value.calculateTime ?? undefined,
+            type,
+            options: value.enum || value.items?.enum || [],
+            optionColors: enumPropertiesColors?.[key] ? enumPropertiesColors[key] : {},
+            pattern: value.pattern || '',
+            patternCustomErrorMessage: value.patternCustomErrorMessage || '',
+            dateNotification: value.dateNotification,
+            isDailyAlert: value.isDailyAlert ?? undefined,
+            isDatePastAlert: value.isDatePastAlert ?? undefined,
+            serialStarter: value.serialStarter,
+            relationshipReference: value.relationshipReference || undefined,
+            archive: value.archive || undefined,
+            identifier: value.identifier || undefined,
+            mapSearch: mapSearchProperties?.includes(key) || undefined,
+        };
 
-            if (value.format === 'fileId' || value.items?.format === 'fileId') {
-                attachmentProperties.push(property);
-            } else if (value.archive) {
-                archiveProperties.push(property);
-            } else {
-                propertiesArray.push(property);
-            }
-        });
+        if (value.format === 'fileId' || value.items?.format === 'fileId') {
+            attachmentProperties.push(property);
+        } else if (value.archive) {
+            archiveProperties.push(property);
+        } else {
+            propertiesArray.push(property);
+        }
+    });
 
     if (archiveProperties.length !== 0 && !propertiesTypeOrder.includes('archiveProperties')) propertiesTypeOrder.push('archiveProperties');
 

@@ -3,7 +3,7 @@ import menash from 'menashmq';
 import config from './config';
 import logger from './utils/logger/logsLogger';
 import { checkForDateNotifications } from './cron/dateNotificationsCheck';
-import { checkForUsersToSync } from './cron/usersSyncing';
+import { updateKartoffelFields } from './cron/usersSyncing';
 
 const { service, rabbit, notifications, userFieldsSync } = config;
 
@@ -21,7 +21,7 @@ const initializeRabbit = async () => {
 
 const main = async () => {
     await initializeRabbit();
-    if (userFieldsSync.isSyncingUsers) await checkForUsersToSync();
+    if (userFieldsSync.isSyncingUsers) await updateKartoffelFields();
     if (notifications.displayCronDates) await checkForDateNotifications();
 
     logger.info(`Server started on port: ${service.port}`);

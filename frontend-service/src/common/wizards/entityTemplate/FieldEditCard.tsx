@@ -19,7 +19,6 @@ import {
     Backdrop,
     CircularProgress,
 } from '@mui/material';
-import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import {
     Delete as DeleteIcon,
     DeleteForever as DeleteOff,
@@ -52,6 +51,7 @@ import { IUniqueConstraintOfTemplate } from '../../../interfaces/entities';
 import RelationshipReferenceField from './RelationshipReferenceField';
 import { environment } from '../../../globals';
 import KartoffelUserField from './KartoffelUserField';
+import { ImageWithDisable } from '../../ImageWithDisable';
 
 const { mapSearchPropertiesLimit } = environment.map;
 
@@ -1215,11 +1215,11 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                             {value.type === 'kartoffelUserField' && (
                                                 <MeltaTooltip title={i18next.t('wizard.entityTemplate.duplicateField')} placement="right">
                                                     <Box>
-                                                        <IconButton
-                                                            onClick={() => (onDuplicateKartoffelField ? onDuplicateKartoffelField(index) : {})}
-                                                            disabled={value.required || value.uniqueCheckbox || value.preview}
-                                                        >
-                                                            <ContentCopyIcon />
+                                                        <IconButton onClick={() => onDuplicateKartoffelField?.(index)}>
+                                                            <ImageWithDisable
+                                                                srcPath="/icons/duplicate.svg"
+                                                                style={{ width: '22px', height: '22px' }}
+                                                            />
                                                         </IconButton>
                                                     </Box>
                                                 </MeltaTooltip>

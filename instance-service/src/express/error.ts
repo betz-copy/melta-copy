@@ -7,11 +7,7 @@ import logger from '../utils/logger/logsLogger';
 export class ServiceError extends Error {
     public code: number;
 
-    constructor(
-        code: number | undefined,
-        message: string,
-        public metadata: object = {},
-    ) {
+    constructor(code: number | undefined, message: string, public metadata: object = {}) {
         super(message);
         this.code = code || StatusCodes.INTERNAL_SERVER_ERROR;
         this.metadata = metadata;
@@ -19,10 +15,7 @@ export class ServiceError extends Error {
 }
 
 export class NotFoundError extends ServiceError {
-    constructor(
-        message: string,
-        public metadata: object = {},
-    ) {
+    constructor(message: string, public metadata: object = {}) {
         super(StatusCodes.NOT_FOUND, message);
         this.name = 'NotFound';
         this.metadata = metadata;
@@ -30,10 +23,7 @@ export class NotFoundError extends ServiceError {
 }
 
 export class ForbiddenError extends ServiceError {
-    constructor(
-        message: string,
-        public metadata: object = {},
-    ) {
+    constructor(message: string, public metadata: object = {}) {
         super(StatusCodes.FORBIDDEN, message);
         this.name = 'Forbidden';
         this.metadata = metadata;
@@ -41,10 +31,7 @@ export class ForbiddenError extends ServiceError {
 }
 
 export class BadRequestError extends ServiceError {
-    constructor(
-        message: string,
-        public metadata: object = {},
-    ) {
+    constructor(message: string, public metadata: object = {}) {
         super(StatusCodes.BAD_REQUEST, message);
         this.name = 'badRequest';
         this.metadata = metadata;
@@ -52,10 +39,7 @@ export class BadRequestError extends ServiceError {
 }
 
 export class UnauthorizedError extends ServiceError {
-    constructor(
-        message: string,
-        public metadata: object = {},
-    ) {
+    constructor(message: string, public metadata: object = {}) {
         super(StatusCodes.UNAUTHORIZED, message);
         this.name = 'unauthorized';
         this.metadata = metadata;
@@ -63,10 +47,7 @@ export class UnauthorizedError extends ServiceError {
 }
 
 export class ValidationError extends ServiceError {
-    constructor(
-        message: string,
-        public metadata: object = {},
-    ) {
+    constructor(message: string, public metadata: object = {}) {
         super(StatusCodes.BAD_REQUEST, message, metadata);
         this.name = 'TemplateValidationError';
     }

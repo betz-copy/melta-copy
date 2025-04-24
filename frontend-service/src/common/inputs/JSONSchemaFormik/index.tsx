@@ -170,9 +170,6 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
         <JSONSchemaForm
             id="json-schema"
             schema={schema}
-            formContext={{
-                globalValues: values,
-            }}
             uiSchema={mapValues(schema.properties, (propertySchema, propertyKey): UiSchema => {
                 if (propertySchema.archive) return {};
                 if (propertySchema.format === 'signature')
@@ -214,6 +211,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                     return {
                         'ui:widget': 'UserWidget',
                         'ui:options': {
+                            globalValues: values,
                             updateExpandedUserFields: (user: IKartoffelUser | null, curValues: any) => {
                                 const userFieldsToUpdate = Object.keys(schema.properties).filter(
                                     (key) => schema.properties[key].expandedUserField?.relatedUserField === propertyKey,

@@ -141,8 +141,8 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
     const setFieldDisplayValue = (indexes: number[], field: keyof Values, value: any) => {
         const displayValuesCopy = [...displayValuesRef.current] as Values[PropertiesType];
 
-        indexes.forEach((index1) => {
-            displayValuesCopy[index1] = { ...displayValuesCopy[index1], [field]: value };
+        indexes.forEach((index) => {
+            displayValuesCopy[index] = { ...displayValuesCopy[index], [field]: value };
         });
 
         setDisplayValues(displayValuesCopy);
@@ -164,7 +164,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
             const indexesToUpdate = [index];
 
             if (removedProperty.type === 'kartoffelUserField') {
-                const userFieldIndex = displayValues.findIndex(
+                const userFieldIndex = displayValuesCopy.findIndex(
                     (property) =>
                         property.type === 'user' && removedProperty.expandedUserField?.relatedUserField === property.name && property.deleted,
                 );
@@ -177,7 +177,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
             setShowAreUSureDialogForRemoveProperty(true);
             const indexesToUpdate = [index];
             if (removedProperty.type === 'user') {
-                displayValues.forEach((property, propIndex) => {
+                displayValuesCopy.forEach((property, propIndex) => {
                     if (property.type === 'kartoffelUserField' && property.expandedUserField?.relatedUserField === removedProperty.name) {
                         indexesToUpdate.push(propIndex);
                     }
@@ -233,11 +233,26 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
     const setDisplayValueWrapper = (index: number) => (value: SetStateAction<CommonFormInputProperties>) => setDisplayValue(index, value);
     const isFieldBlockError = Boolean(touched?.[propertiesType]) && Boolean(errors?.[propertiesType]);
 
-    // TODO: lir - make sure the users fields list is updating in real time
     const userPropertiesInTemplate = useMemo(
-        () => values[propertiesType].filter((property) => property.type === 'user').map((userField) => userField.name),
+        () => values[propertiesType].filter((property) => property.type === 'user' && !property.deleted).map((userField) => userField.name),
         [propertiesType, values],
     );
+
+    const onDuplicateKartoffelField = (fieldIndex: number) => {
+        const displayValuesCopy = [...displayValuesRef.current] as Values[PropertiesType];
+        displayValuesCopy.splice(fieldIndex + 1, 0, {
+            id: uuid(),
+            ...initialFieldCardDataOnAdd,
+            type: 'kartoffelUserField',
+            readOnly: true,
+            expandedUserField: {
+                relatedUserField: displayValues[fieldIndex].expandedUserField?.relatedUserField || '',
+                kartoffelField: '',
+            },
+        });
+
+        setDisplayValues(displayValuesCopy);
+    };
 
     return (
         <FieldBlockAccordion style={{ border: isFieldBlockError ? '1px solid red' : '' }}>
@@ -295,20 +310,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
                                                 hasActions,
                                                 supportConvertingToMultipleFields,
                                                 userPropertiesInTemplate,
-                                                onDuplicateKartoffelField: (fieldIndex: number) => {
-                                                    const displayValuesCopy = [...displayValuesRef.current] as Values[PropertiesType];
-                                                    displayValuesCopy.splice(fieldIndex + 1, 0, {
-                                                        id: uuid(),
-                                                        ...initialFieldCardDataOnAdd,
-                                                        type: 'kartoffelUserField',
-                                                        expandedUserField: {
-                                                            relatedUserField: displayValues[fieldIndex].expandedUserField?.relatedUserField || '',
-                                                            kartoffelField: '',
-                                                        },
-                                                    });
-
-                                                    setDisplayValues(displayValuesCopy);
-                                                },
+                                                onDuplicateKartoffelField,
                                             };
 
                                             if (
