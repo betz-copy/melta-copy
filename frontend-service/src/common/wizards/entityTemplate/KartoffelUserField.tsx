@@ -69,7 +69,7 @@ const KartoffelUserField: React.FC<FieldEditCardProps> = ({
                 id={relatedUserField}
                 options={userPropertiesInTemplate}
                 onChange={(_e, userField) => {
-                    const newValue = { ...value.expandedUserField, relatedUserField: userField };
+                    const newValue = { ...value.expandedUserField, relatedUserField: userField || undefined };
                     setFieldValue('expandedUserField', newValue);
                 }}
                 sx={{ marginRight: '5px', width: '50%' }}
@@ -87,7 +87,7 @@ const KartoffelUserField: React.FC<FieldEditCardProps> = ({
                                 borderRadius: '10px',
                             },
                         }}
-                        helperText={relatedUserHelperText}
+                        helperText={touchedExpandedUserField && errorExpandedUserField?.relatedUserField}
                         name="template"
                         variant="outlined"
                         label={i18next.t('wizard.entityTemplate.relatedUser')}

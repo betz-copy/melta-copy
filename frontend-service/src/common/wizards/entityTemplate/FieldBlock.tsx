@@ -102,6 +102,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
         dateNotification: undefined,
         calculateTime: undefined,
         relationshipReference: undefined,
+        expandedUserField: undefined,
         serialStarter: 0,
         archive: false,
         mapSearch: false,
@@ -234,7 +235,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
     const isFieldBlockError = Boolean(touched?.[propertiesType]) && Boolean(errors?.[propertiesType]);
 
     const userPropertiesInTemplate = useMemo(
-        () => values[propertiesType].filter((property) => property.type === 'user' && !property.deleted).map((userField) => userField.name),
+        () => values[propertiesType].filter(({ type, deleted }) => type === 'user' && !deleted).map(({ name }) => name),
         [propertiesType, values],
     );
 

@@ -639,7 +639,11 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                     if (validPropertyType === 'relationshipReference') return supportRelationshipReference;
                                                     if (validPropertyType === 'fileId' || validPropertyType === 'multipleFiles') return false; // TODO: support file inputs
                                                     if (validPropertyType === 'user' || validPropertyType === 'users') return supportUserType;
-                                                    if (validPropertyType === 'kartoffelUserField' && userPropertiesInTemplate.length === 0)
+                                                    if (
+                                                        validPropertyType === 'kartoffelUserField' &&
+                                                        userPropertiesInTemplate.length === 0 &&
+                                                        !value.deleted
+                                                    )
                                                         return false;
                                                     return true;
                                                 })
