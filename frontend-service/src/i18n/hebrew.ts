@@ -1221,8 +1221,8 @@ export default {
             countDistinct: 'כמות רשומות ללא כפולים',
             average: 'ממוצע',
             sum: 'סכום',
-            maximum: 'מינימום',
-            minimum: 'מקסימום',
+            minimum: 'מינימום',
+            maximum: 'מקסימום',
         },
     },
     workspaces: {
