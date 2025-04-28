@@ -34,7 +34,17 @@ export interface ISearchCategoriesBody {
 export interface IEntitySingleProperty {
     title: string;
     type: 'string' | 'number' | 'boolean' | 'array';
-    format?: 'date' | 'date-time' | 'email' | 'fileId' | 'text-area' | 'relationshipReference' | 'location' | 'user' | 'signature';
+    format?:
+        | 'date'
+        | 'date-time'
+        | 'email'
+        | 'fileId'
+        | 'text-area'
+        | 'relationshipReference'
+        | 'location'
+        | 'user'
+        | 'signature'
+        | 'kartoffelUserField';
     enum?: string[];
     readOnly?: true;
     identifier?: true;
@@ -53,6 +63,10 @@ export interface IEntitySingleProperty {
     calculateTime?: boolean;
     serialStarter?: number;
     serialCurrent?: number;
+    expandedUserField?: {
+        relatedUserField: string;
+        kartoffelField: string;
+    };
     isNewPropNameEqualDeletedPropName?: boolean;
     relationshipReference?: {
         relationshipTemplateId?: string;

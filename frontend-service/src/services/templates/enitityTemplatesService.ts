@@ -15,7 +15,18 @@ import { CommonFormInputProperties } from '../../common/wizards/entityTemplate/c
 
 const { entityTemplates } = environment.api;
 export const basePropertyTypes = ['string', 'number', 'boolean'];
-export const stringFormats = ['date', 'date-time', 'email', 'fileId', 'text-area', 'relationshipReference', 'location', 'user', 'signature'];
+export const stringFormats = [
+    'date',
+    'date-time',
+    'email',
+    'fileId',
+    'text-area',
+    'relationshipReference',
+    'location',
+    'user',
+    'signature',
+    'kartoffelUserField',
+];
 export const arrayTypes = ['multipleFiles', 'enumArray', 'users'];
 
 const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTemplatePopulated | null): EntityTemplateWizardValues | undefined => {
@@ -42,7 +53,6 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
 
         let type = value.format || value.type;
         if (value.serialStarter !== undefined) type = 'serialNumber';
-        // else if (value.items?.format === 'user') type = 'users'; // TODO
         else if (value.enum) type = 'enum';
         else if (value.pattern) type = 'pattern';
         else if (value.format && value.format === 'text-area') type = 'text-area';
@@ -60,6 +70,7 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
             preview: propertiesPreview.includes(key),
             hide: properties.hide.includes(key),
             readOnly: value.readOnly || undefined,
+            expandedUserField: value.expandedUserField,
             uniqueCheckbox: uniqueConstraints.some((constraint) => constraint.properties.includes(key) && constraint.groupName !== ''),
             groupName: uniqueConstraints.find((constraint) => constraint.properties.includes(key) && constraint.groupName !== '')?.groupName,
             calculateTime: value.calculateTime ?? undefined,
@@ -157,6 +168,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
             archive,
             identifier,
             mapSearch,
+            expandedUserField,
         }) => {
             if (deleted) return;
 
@@ -192,6 +204,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                     | 'text-area'
                     | 'relationshipReference'
                     | 'user'
+                    | 'kartoffelUserField'
                     | undefined,
                 enum: type === 'enum' ? options : undefined,
                 items: type === 'enumArray' ? { type: 'string', enum: options } : type === 'users' ? { type: 'string', format: 'user' } : undefined,
@@ -216,6 +229,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                           relatedTemplateField: relationshipReference!.relatedTemplateField,
                       }
                     : undefined,
+                expandedUserField,
             };
             if (isEditMode) {
                 schema.properties[name] = {
@@ -223,7 +237,6 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                     isNewPropNameEqualDeletedPropName: properties.some((property) => property.id !== id && property.name === name),
                 };
             }
-
             propertiesOrder.push(name);
 
             if (required) schema.required.push(name);

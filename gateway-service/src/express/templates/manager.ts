@@ -1,14 +1,19 @@
 /* eslint-disable no-param-reassign */
+import _, { groupBy } from 'lodash';
 import { AxiosError, AxiosResponse } from 'axios';
 import { logger } from 'elastic-apm-node';
 import { StatusCodes } from 'http-status-codes';
-import _ from 'lodash';
 import _isEqual from 'lodash.isequal';
 import lodashUniqby from 'lodash.uniqby';
 import config from '../../config';
 import { GanttsService } from '../../externalServices/ganttsService';
 import { InstancesService } from '../../externalServices/instanceService';
-import { IConstraintsOfTemplate, ISearchFilter, IUniqueConstraintOfTemplate } from '../../externalServices/instanceService/interfaces/entities';
+import {
+    IConstraintsOfTemplate,
+    IEntity,
+    IUniqueConstraintOfTemplate,
+    ISearchFilter,
+} from '../../externalServices/instanceService/interfaces/entities';
 import { IRelationship } from '../../externalServices/instanceService/interfaces/relationships';
 import { ProcessService } from '../../externalServices/processService';
 import { RuleBreachService } from '../../externalServices/ruleBreachService';
@@ -50,6 +55,8 @@ import { getParametersOfFormula } from './rules';
 import { checkPropertyInUsedFromFormula } from './rules/checkIfPropertyInUsed';
 import { IMongoRule, IRule } from './rules/interfaces';
 import { IFormula } from './rules/interfaces/formula';
+import { InstancesManager } from '../instances/manager';
+import { Kartoffel } from '../../externalServices/kartoffel';
 import {
     IAxisField,
     IMongoChart,
@@ -85,6 +92,8 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
     private processManager: ProcessTemplatesManager;
 
+    private instanceManager: InstancesManager;
+
     private ruleBreachService: RuleBreachService;
 
     private ganttService: GanttsService;
@@ -97,6 +106,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         this.instancesService = new InstancesService(workspaceId);
         this.processService = new ProcessService(workspaceId);
         this.processManager = new ProcessTemplatesManager(workspaceId);
+        this.instanceManager = new InstancesManager(workspaceId);
         this.ruleBreachService = new RuleBreachService(workspaceId);
         this.ganttService = new GanttsService(workspaceId);
     }
@@ -908,6 +918,56 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         };
     }
 
+    private async updateInstancesWithUserFields(
+        templateId: string,
+        newExpandedUserFields: string[],
+        updatedTemplateData: Omit<IEntityTemplateWithConstraints, 'disabled'> & {
+            file?: string;
+        },
+    ) {
+        const entities = await this.instanceManager.getAllTemplateEntities(templateId);
+
+        const usersIds = new Set<string>();
+        entities.forEach((entity) => {
+            newExpandedUserFields.forEach((expandedUserFieldKey) => {
+                const userKey = updatedTemplateData.properties.properties[expandedUserFieldKey].expandedUserField?.relatedUserField;
+                if (userKey && entity.entity.properties[userKey] && JSON.parse(entity.entity.properties[userKey])._id) {
+                    usersIds.add(JSON.parse(entity.entity.properties[userKey])._id);
+                }
+            });
+        });
+
+        const kartoffelUsers = await Promise.all(Array.from(usersIds).map((userId) => Kartoffel.getUserById(userId)));
+        const kartoffelUsersMapById = groupBy(kartoffelUsers, (user) => user._id);
+        const entitiesToUpdate: IEntity[] = [];
+
+        entities.forEach((entity) => {
+            let wasEntityChange = false;
+            const entityToUpdate = entity.entity;
+            newExpandedUserFields.forEach((expandedUserFieldKey) => {
+                const expandedUserFieldValue = updatedTemplateData.properties.properties[expandedUserFieldKey];
+                const userKey = expandedUserFieldValue.expandedUserField?.relatedUserField;
+                const userFieldValue = userKey ? entity.entity.properties[userKey] : undefined;
+                const userId = userFieldValue ? JSON.parse(userFieldValue)._id : undefined;
+
+                if (userId && userKey) {
+                    const kartoffelUser = kartoffelUsersMapById[userId] ? kartoffelUsersMapById[userId][0] : undefined;
+                    if (kartoffelUser && kartoffelUser[expandedUserFieldValue.expandedUserField?.kartoffelField || '']) {
+                        wasEntityChange = true;
+                        entityToUpdate.properties[expandedUserFieldKey] =
+                            kartoffelUser[expandedUserFieldValue.expandedUserField?.kartoffelField || ''].toString();
+                    }
+                }
+            });
+
+            if (wasEntityChange) entitiesToUpdate.push(entityToUpdate);
+        });
+
+        await Promise.all(
+            entitiesToUpdate.map((entityToUpdate) => this.instancesService.updateEntityInstance(entityToUpdate.properties._id, entityToUpdate, [])),
+        );
+    }
+
     async updateEntityTemplate(
         id: string,
         userId: string,
@@ -943,6 +1003,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         const removedProperties: string[] = [];
         const archiveProperties: string[] = [];
         const propertiesKeysToPluralize: string[] = [];
+        let newExpandedUserFields: string[] = [];
 
         if (count > 0) {
             if (updatedTemplateData.name !== currTemplate.name) throw new BadRequestError('can not change template name');
@@ -970,8 +1031,9 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
                             value.format === newValue.format ||
                             isSingularToPlural
                         )
-                    )
+                    ) {
                         throw new BadRequestError('can not change property format');
+                    }
                     if (value.enum && newValue.enum && !value.enum?.every((val) => newValue.enum?.includes(val)))
                         throw new BadRequestError('can not remove options from enum');
                     if (value.serialStarter !== newValue.serialStarter) throw new BadRequestError('can not change property serial starter');
@@ -985,6 +1047,10 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             const newProperties = Object.keys(updatedTemplateData.properties.properties).filter(
                 (property) => !currProperties.properties[property] && !removedProperties.includes(property),
             );
+
+            newExpandedUserFields = newProperties.filter((property) => {
+                return updatedTemplateData.properties.properties[property].format === 'kartoffelUserField';
+            });
 
             const updatedProperties = updatedTemplateData.properties.properties;
             if (newProperties.some((property) => updatedProperties[property].identifier && updatedProperties[property].serialStarter === undefined))
@@ -1018,6 +1084,10 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         });
 
         await this.deletePropertyOfEntityTemplate(id, count, removedProperties, currTemplate);
+
+        if (newExpandedUserFields.length) {
+            await this.updateInstancesWithUserFields(id, newExpandedUserFields, updatedTemplateData);
+        }
 
         try {
             if (propertiesKeysToPluralize.length > 0) await this.instancesService.convertFieldsToPlural(id, propertiesKeysToPluralize);
