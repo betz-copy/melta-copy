@@ -349,6 +349,7 @@ export class EntityManager extends DefaultManagerNeo4j {
         const relatedEntity = await this.getEntityByIdInTransaction(relatedEntityId, transaction);
         const relatedEntityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(relatedEntity.templateId);
         const relatedEntityFixProperties = addStringFieldsAndNormalizeSpecialStringValues(relatedEntity.properties, relatedEntityTemplate, true);
+        
         return {
             fixedField: {
                 ...relatedEntityFixProperties,
