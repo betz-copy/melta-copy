@@ -12,6 +12,7 @@ import { IProcessDetails } from '../../../../interfaces/processes/processTemplat
 import { IMongoStepTemplatePopulated } from '../../../../interfaces/processes/stepTemplate';
 import DateRange from '../../../../common/inputs/DateRange';
 import MultipleSelect from '../../../../common/inputs/MultipleSelect';
+import { FilterButton } from '../../../SystemManagement/components/FilterButton';
 
 const { infiniteScrollPageCount } = environment.activityLog;
 
@@ -58,15 +59,27 @@ const ActivitiesContent: React.FC<{
 
     let selectedValue: (typeof items)[number] | (typeof items)[number][] | null;
 
-    if (Array.isArray(activitiesFilterValue)) {
-        selectedValue = items.filter((opt) => activitiesFilterValue.includes(opt.value));
-    } else {
+    if (!activitiesFilterValue) {
         selectedValue = [];
+    } else {
+        selectedValue = items.filter((opt) => activitiesFilterValue.includes(opt.value));
     }
 
     return (
         <>
             <Grid container flexDirection="column" alignItems="center" marginBottom="20px">
+                <Grid item alignSelf="flex-start" marginLeft="25px" marginBottom="10px">
+                    <FilterButton
+                        disabled={!searchInput && !startDateInput && !endDateInput && (!activitiesFilterValue || !activitiesFilterValue.length)}
+                        onClick={() => {
+                            setSearchInput('');
+                            setStartDateInput(null);
+                            setEndDateInput(null);
+                            setActivitiesFilterValue(null);
+                        }}
+                        text={i18next.t('entitiesTableOfTemplate.resetFilters')}
+                    />
+                </Grid>
                 <Grid
                     item
                     sx={{

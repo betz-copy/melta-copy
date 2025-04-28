@@ -72,15 +72,16 @@ const getActivityLogRequest = async (
         endDateRange,
     };
 
-    if (searchText) {
-        params.searchText = searchText;
-        if (searchText.trim() !== '') {
-            const fieldsKeysToSearch = Object.keys(entityTemplateProperties).filter((key) =>
-                entityTemplateProperties[key].title.includes(searchText.trim()),
-            );
+    const trimmedSearchText = searchText?.trim();
 
-            params.fieldsSearch = fieldsKeysToSearch;
-        }
+    if (trimmedSearchText && trimmedSearchText !== '') {
+        params.searchText = searchText;
+
+        const fieldsKeysToSearch = Object.keys(entityTemplateProperties).filter((key) =>
+            entityTemplateProperties[key].title.includes(trimmedSearchText),
+        );
+
+        params.fieldsSearch = fieldsKeysToSearch;
     }
 
     const { data } = await axios.get<IActivityLog[]>(`${activityLog}/${entityId}`, { params });

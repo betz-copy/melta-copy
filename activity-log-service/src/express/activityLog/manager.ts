@@ -23,14 +23,15 @@ export default class ActivityLogManager extends DefaultManagerMongo<IActivityLog
         const regActions = actions?.map((action) => new RegExp(action));
         const searchRegex = { $regex: searchText, $options: 'i' };
         const query: FilterQuery<IActivityLog> = {};
+        const isSearchTextNotEmpty = searchText && searchText !== '';
 
         if (actions) {
             query.action = { $in: regActions };
         }
 
-        if ((searchText && searchText !== '') || fieldsSearch.length || usersSearch.length) query.$or = [];
+        if (isSearchTextNotEmpty || fieldsSearch.length || usersSearch.length) query.$or = [];
 
-        if (searchText && searchText !== '') {
+        if (isSearchTextNotEmpty) {
             query.$or!.push({
                 'metadata.updatedFields': {
                     $elemMatch: {
@@ -41,14 +42,14 @@ export default class ActivityLogManager extends DefaultManagerMongo<IActivityLog
         }
 
         if (fieldsSearch.length) {
+            const elemMatch = { fieldName: { $in: fieldsSearch } };
+
             if (query.$or![0] && query.$or![0]['metadata.updatedFields']) {
-                query.$or![0]['metadata.updatedFields'].$elemMatch.$or.push({ fieldName: { $in: fieldsSearch } });
+                query.$or![0]['metadata.updatedFields'].$elemMatch.$or.push(elemMatch);
             } else {
                 query.$or!.push({
                     'metadata.updatedFields': {
-                        $elemMatch: {
-                            fieldName: { $in: fieldsSearch },
-                        },
+                        $elemMatch: elemMatch,
                     },
                 });
             }

@@ -19,72 +19,36 @@ import { locationConverterToString } from '../../../../utils/map/convert';
 import { NotificationColor } from '../../../../common/notificationColor';
 import UserAvatar from '../../../../common/UserAvatar';
 
-const logTitles = {
-    ACTIVATE_ENTITY: (
-        <Grid item container marginBottom="10px">
-            <NotificationColor color="#C5FF7B" />
-            <Typography variant="subtitle1" color="primary" fontWeight="400" fontSize="15px" paddingLeft="10px">
-                {i18next.t('entityPage.activityLog.titles.enableEntity')}
-            </Typography>
-        </Grid>
-    ),
-    DISABLE_ENTITY: (
-        <Grid item container marginBottom="10px">
-            <NotificationColor color="#B7B8B9" />
-            <Typography variant="subtitle1" color="primary" fontWeight="400" fontSize="15px" paddingLeft="10px">
-                {i18next.t('entityPage.activityLog.titles.disableEntity')}
-            </Typography>
-        </Grid>
-    ),
-    CREATE_ENTITY: (
-        <Grid item container marginBottom="10px">
-            <NotificationColor color="#84FF90" />
-            <Typography variant="subtitle1" color="primary" fontWeight="400" fontSize="15px" paddingLeft="10px">
-                {i18next.t('entityPage.activityLog.titles.createEntity')}
-            </Typography>
-        </Grid>
-    ),
-    DUPLICATE_ENTITY: (
-        <Grid item container marginBottom="10px">
-            <NotificationColor color="#ffc4e9" />
-            <Typography variant="subtitle1" color="primary" fontWeight="400" fontSize="15px" paddingLeft="10px">
-                {i18next.t('entityPage.activityLog.titles.duplicateEntity')}
-            </Typography>
-        </Grid>
-    ),
-    CREATE_PROCESS: (
-        <Grid item container marginBottom="10px">
-            <NotificationColor color="#84FF90" />
-            <Typography variant="subtitle1" color="primary" fontWeight="400" fontSize="15px" paddingLeft="10px">
-                {i18next.t('entityPage.activityLog.titles.createProcess')}
-            </Typography>
-        </Grid>
-    ),
-    UPDATE_FIELDS: (
-        <Grid item container marginBottom="10px">
-            <NotificationColor color="#8CCFFF" />
-            <Typography variant="subtitle1" color="primary" fontWeight="400" fontSize="15px" paddingLeft="10px">
-                {i18next.t('entityPage.activityLog.titles.updateFields')}
-            </Typography>
-        </Grid>
-    ),
-    DELETE_RELATIONSHIP: (
-        <Grid item container marginBottom="10px">
-            <NotificationColor color="#FF7979" />
-            <Typography variant="subtitle1" color="primary" fontWeight="400" fontSize="15px" paddingLeft="10px">
-                {i18next.t('entityPage.activityLog.titles.deleteRelationship')}
-            </Typography>
-        </Grid>
-    ),
-    CREATE_RELATIONSHIP: (
-        <Grid item container marginBottom="10px">
-            <NotificationColor color="#FFD18C" />
-            <Typography variant="subtitle1" color="primary" fontWeight="400" fontSize="15px" paddingLeft="10px">
-                {i18next.t('entityPage.activityLog.titles.createRelationship')}
-            </Typography>
-        </Grid>
-    ),
+const logColors = {
+    ACTIVATE_ENTITY: '#C5FF7B',
+    DISABLE_ENTITY: '#B7B8B9',
+    CREATE_ENTITY: '#84FF90',
+    DUPLICATE_ENTITY: '#ffc4e9',
+    CREATE_PROCESS: '#84FF90',
+    UPDATE_FIELDS: '#8CCFFF',
+    DELETE_RELATIONSHIP: '#FF7979',
+    CREATE_RELATIONSHIP: '#FFD18C',
 };
+
+const logTitles = {
+    ACTIVATE_ENTITY: i18next.t('entityPage.activityLog.titles.enableEntity'),
+    DISABLE_ENTITY: i18next.t('entityPage.activityLog.titles.disableEntity'),
+    CREATE_ENTITY: i18next.t('entityPage.activityLog.titles.createEntity'),
+    DUPLICATE_ENTITY: i18next.t('entityPage.activityLog.titles.duplicateEntity'),
+    CREATE_PROCESS: i18next.t('entityPage.activityLog.titles.createProcess'),
+    UPDATE_FIELDS: i18next.t('entityPage.activityLog.titles.updateFields'),
+    DELETE_RELATIONSHIP: i18next.t('entityPage.activityLog.titles.deleteRelationship'),
+    CREATE_RELATIONSHIP: i18next.t('entityPage.activityLog.titles.createRelationship'),
+};
+
+const TitleWithIcon = (action: string) => (
+    <Grid item container marginBottom="10px">
+        <NotificationColor color={logColors[action]} />
+        <Typography variant="subtitle1" color="primary" fontWeight="400" fontSize="15px" paddingLeft="10px">
+            {logTitles[action]}
+        </Typography>
+    </Grid>
+);
 
 const StyledTypography = styled(Typography)(({ theme }) => ({
     fontFamily: 'Rubik',
@@ -105,7 +69,7 @@ const EmptyMetadataActionText: React.FC<{
 
     return (
         <Grid item minWidth="190px">
-            {logTitles[action]}
+            {TitleWithIcon(action)}
             <StyledTypography variant="body2">{logTexts[action]}</StyledTypography>
         </Grid>
     );
@@ -134,7 +98,7 @@ const RelationshipMetadataActionText: React.FC<{
 
     return (
         <Grid item container>
-            {logTitles[action]}
+            {TitleWithIcon(action)}
             <StyledTypography variant="body2" component="span">
                 {action === 'CREATE_RELATIONSHIP'
                     ? i18next.t('entityPage.activityLog.createRelationship')
@@ -172,7 +136,7 @@ const DuplicateEntityMetadataActionText: React.FC<{
 
     return (
         <Grid item minWidth="190px">
-            {logTitles.DUPLICATE_ENTITY}
+            {TitleWithIcon('DUPLICATE_ENTITY')}
             <StyledTypography variant="body2" component="span">
                 {i18next.t('entityPage.activityLog.duplicateEntityFrom')}
                 <StyledTypography
@@ -315,7 +279,7 @@ const UpdateEntityMetadataActionText: React.FC<{
     const theme = useTheme();
     return (
         <Grid item container flexDirection="column">
-            {logTitles.UPDATE_FIELDS}
+            {TitleWithIcon('UPDATE_FIELDS')}
             <Grid item minWidth="190px">
                 <StyledTypography variant="body2" marginBottom="5px">
                     {actionMetadata.updatedFields.length === 1

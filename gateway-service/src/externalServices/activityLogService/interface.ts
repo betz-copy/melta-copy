@@ -37,3 +37,13 @@ export interface IUpdateProcessStepMetadata extends IBaseActivityLog {
 }
 
 export type IActivityLog = IEmptyMetadata | IRelationshipMetadata | IDuplicateEntityMetadata | IUpdateEntityMetadata | IUpdateProcessStepMetadata;
+
+export type SearchParams = Partial<{
+    limit: number;
+    skip: number;
+    actions: string[];
+    searchText: string;
+    fieldsSearch: string[];
+    startDateRange: Date;
+    endDateRange: Date;
+}>;
