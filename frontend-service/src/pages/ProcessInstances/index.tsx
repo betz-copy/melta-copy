@@ -1,4 +1,4 @@
-import { Box, Checkbox, FormControl, FormControlLabel, Grid, IconButton, Paper, Radio, RadioGroup, useTheme } from '@mui/material';
+import { Box, FormControl, FormControlLabel, Grid, IconButton, Paper, Radio, RadioGroup, useTheme } from '@mui/material';
 import React, { useState, useCallback } from 'react';
 import { useQueryClient } from 'react-query';
 import debounce from 'lodash/debounce';

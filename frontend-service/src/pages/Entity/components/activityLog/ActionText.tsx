@@ -229,8 +229,10 @@ const UpdateTextValue: React.FC<{
         return type === 'string' && format === 'user';
     };
 
-    const contentDisplayNameByTemplate = (content: string) => {
+    const contentDisplayNameByTemplate = (content: string, inTooltip = false) => {
         if (isUserField()) {
+            if (inTooltip) return JSON.parse(value).fullName;
+
             return (
                 <Chip
                     sx={{ marginLeft: '5px' }}
@@ -254,7 +256,7 @@ const UpdateTextValue: React.FC<{
         <MeltaTooltip
             PopperProps={popperProps}
             disableHoverListener={!innerContent}
-            title={<Grid style={{ maxHeight: '500px', overflowY: 'auto' }}>{contentDisplayNameByTemplate(innerContent)}</Grid>}
+            title={<Grid style={{ maxHeight: '500px', overflowY: 'auto' }}>{contentDisplayNameByTemplate(innerContent, true)}</Grid>}
             placement="top-start"
         >
             <Grid item marginBottom="5px">

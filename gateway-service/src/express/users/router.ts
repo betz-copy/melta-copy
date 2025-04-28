@@ -17,6 +17,7 @@ import {
     updateUserExternalMetadataRequestSchema,
     updateUserPreferencesMetadataRequestSchema,
     getKartoffelUserProfileRequestSchema,
+    getKartoffelUserByIdSchema,
 } from './validator.schema';
 import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
 import { busboyMiddleware } from '../../utils/busboy/busboyMiddleware';
@@ -42,6 +43,8 @@ usersRouter.get(
     ValidateRequest(getKartoffelUserProfileRequestSchema),
     wrapController(UsersController.getKartoffelUserProfile),
 );
+
+usersRouter.get('/kartoffelUser/:kartoffelId', ValidateRequest(getKartoffelUserByIdSchema), wrapController(UsersController.getKartoffelUserById));
 
 usersRouter.get('/user-profile/:userId', ValidateRequest(getUserProfileRequestSchema), wrapController(UsersController.getUserProfile));
 

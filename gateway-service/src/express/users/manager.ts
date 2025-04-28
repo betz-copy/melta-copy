@@ -33,6 +33,11 @@ export class UsersManager {
         return Kartoffel.getUserProfile(kartoffelId);
     }
 
+    static async getKartoffelUserById(kartoffelId: string) {
+        const kartoffelUser = await Kartoffel.getUserById(kartoffelId);
+        return kartoffelUser;
+    }
+
     static async getUserProfile(userId: string) {
         const user: IUser = await UserService.getUserById(userId);
         const { profilePath } = user.preferences;
@@ -146,11 +151,12 @@ export class UsersManager {
         return UserService.updateUser(userId, digitalIdentity);
     }
 
-    static async searchExternalUsers(search: string, workspaceId?: string): Promise<IExternalUser[]> {
+    static async searchExternalUsers(search: string, isKartoffelUser: boolean, workspaceId?: string): Promise<IExternalUser[] | IKartoffelUser[]> {
         const kartoffelUsers: IKartoffelUser[] = await Kartoffel.searchUsers(search);
 
-        const normalizedKartoffelUsers = await Promise.all(kartoffelUsers.flatMap((kartoffelUser) => this.kartoffelUserToUser(kartoffelUser)));
+        if (isKartoffelUser) return kartoffelUsers;
 
+        const normalizedKartoffelUsers = await Promise.all(kartoffelUsers.flatMap((kartoffelUser) => this.kartoffelUserToUser(kartoffelUser)));
         return normalizedKartoffelUsers.filter(
             (normalizedKartoffelUser) =>
                 !normalizedKartoffelUser.permissions[workspaceId || ''] ||

@@ -2,7 +2,7 @@ import axios from '../axios';
 import { environment } from '../globals';
 import { NotificationType } from '../interfaces/notifications';
 import { ICompactNullablePermissions, ICompactPermissions, IPermission, ISubCompactPermissions } from '../interfaces/permissions/permissions';
-import { IExternalUser, IMongoUser, IUser, IUserPreferences, IUserSearchBody } from '../interfaces/users';
+import { IExternalUser, IKartoffelUser, IMongoUser, IUser, IUserPreferences, IUserSearchBody } from '../interfaces/users';
 import { RecursiveNullable } from '../utils/types';
 
 const {
@@ -65,9 +65,9 @@ export const syncUserPermissionsRequest = async (userId: string, permissions: IC
     return data;
 };
 
-export const searchExternalUsersRequest = async (search: string, workspaceId?: string) => {
+export const searchExternalUsersRequest = async (search: string, workspaceId?: string, isKartoffelUser?: boolean) => {
     if (search.length < 2) return [];
-    const { data } = await axios.get<IExternalUser[]>(`${users}/external`, { params: { search, workspaceId } });
+    const { data } = await axios.get<IExternalUser[] | IKartoffelUser[]>(`${users}/external`, { params: { search, workspaceId, isKartoffelUser } });
     return data;
 };
 
