@@ -28,7 +28,7 @@ const RjfsUserWidget = ({
             setCurrentUser(undefined);
             return;
         }
-        const formattedUser: Omit<IKartoffelUser, 'mobilePhone' | 'phone'> & { mobilePhone?: string; phone?: string } = {
+        const formattedUser: IKartoffelUserStringFields = {
             ...chosenUser,
             mobilePhone: chosenUser.mobilePhone?.join(','),
             phone: chosenUser.phone?.join(','),
