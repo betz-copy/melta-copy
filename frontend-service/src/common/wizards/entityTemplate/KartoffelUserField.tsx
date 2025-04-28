@@ -57,12 +57,6 @@ const KartoffelUserField: React.FC<FieldEditCardProps> = ({
           }>
         | undefined;
 
-    let relatedUserHelperText = '';
-    if (touchedExpandedUserField && !value.expandedUserField?.relatedUserField)
-        relatedUserHelperText = i18next.t('wizard.entityTemplate.relatedUserFieldRequired');
-    if (touchedExpandedUserField && errorExpandedUserField?.relatedUserField)
-        relatedUserHelperText = i18next.t(errorExpandedUserField?.relatedUserField);
-
     return (
         <Grid item container justifyContent="space-between" flexWrap="nowrap" width="100%">
             <Autocomplete

@@ -1,4 +1,4 @@
-import { Dictionary, keyBy } from 'lodash';
+import { keyBy } from 'lodash';
 import * as schedule from 'node-schedule';
 import config from '../config';
 import { IEntity } from '../instance/entity/interface';
@@ -100,7 +100,7 @@ export const updateKartoffelFields = async () => {
                     const kartoffelUsers = await Promise.all(Array.from(usersIds).map((userId) => Kartoffel.getUserById(userId)));
                     const kartoffelUsersMapById = keyBy(kartoffelUsers, '_id');
 
-                    const entitiesMapById: Dictionary<IEntity> = keyBy<IEntity>(instances, (entity) => entity.properties._id);
+                    const entitiesMapById: Record<string, IEntity> = keyBy<IEntity>(instances, (entity) => entity.properties._id);
 
                     const updatedEntities = await Promise.allSettled(
                         instances.map((entity) => {
@@ -110,11 +110,13 @@ export const updateKartoffelFields = async () => {
                             const updatedProperies = checkForEntityToUpdate(entity, entityTemplate, kartoffelUsersMapById);
                             if (Object.keys(updatedProperies).length === 0) return;
 
+                            const entityById = entitiesMapById[entity.properties._id];
+
                             return instanceService.updateEntityInstance(
                                 entity.properties._id,
                                 {
-                                    ...entitiesMapById[entity.properties._id],
-                                    properties: { ...entitiesMapById[entity.properties._id].properties, ...updatedProperies },
+                                    ...entityById,
+                                    properties: { ...entityById.properties, ...updatedProperies },
                                 },
                                 [],
                             );
