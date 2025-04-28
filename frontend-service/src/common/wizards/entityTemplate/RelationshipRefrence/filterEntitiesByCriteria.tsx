@@ -12,7 +12,7 @@ import { SelectFilterInput } from '../../../inputs/FilterInputs/SelectFilterInpu
 
 interface FilterEntitiesByCriteriaProps {
     name: string; // e.g. "properties[0].relationshipReference.filters"
-    selectedEntityTemplate: IMongoEntityTemplatePopulated | null;
+    selectedEntityTemplate: IMongoEntityTemplatePopulated | undefined;
 }
 
 export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> = ({ name, selectedEntityTemplate }) => {
@@ -34,12 +34,6 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
     const filterInitialValues: IFilterRelationReference = {
         filterProperty: '',
         filterField: {} as IAGGridFilter,
-    };
-
-    const filterTypeOptions = {
-        text: ['contains', 'notContains', 'equals', 'notEqual', 'startsWith', 'endsWith'],
-        number: ['equals', 'notEqual', 'lessThan', 'lessThanOrEqual', 'greaterThan', 'greaterThanOrEqual', 'inRange'],
-        date: ['equals', 'notEqual', 'lessThan', 'greaterThan', 'inRange'],
     };
 
     const handleFilterFieldChange = (index: number, updatedFields: Partial<IAGGridFilter>, _condition: boolean = true) => {
@@ -118,7 +112,7 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
         }
     };
 
-    console.log({ values });
+    console.dir(values.properties, { depth: null });
 
     const renderFilterField = (filter: IFilterRelationReference, index: number, property: IEntitySingleProperty, isNewProperty: boolean) => {
         const field = filter.filterField;
@@ -126,7 +120,7 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
 
         const { format, enum: propEnum, type, items } = property;
 
-        if (items?.format === 'fileId' || format === 'fileId' || format === 'signature') return null;
+        if (items?.format === 'fileId' || format === 'fileId' || format === 'signature' || format === 'user' || type === 'array') return null;
 
         if (propEnum) {
             return (
@@ -148,8 +142,21 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
                 <DateFilterInput
                     filterField={field?.filterType === 'date' ? (field as IAGGridDateFilter) : undefined}
                     handleFilterTypeChange={(newType) => handleTypedFilterTypeChange('date', index, newType, field)}
-                    handleDateChange={(newValue, isStart) => {
-                        setFieldValue(isStart ? `filters.${index}.dateFrom` : `filters.${index}.dateTo`, newValue);
+                    handleDateChange={(newValue, isStartDate) => {
+                        if (!newValue && field?.filterType === 'date') {
+                            const isRemovingStart = isStartDate && !field.dateTo;
+                            const isRemovingEnd = !isStartDate && !field.dateFrom;
+                            if (isRemovingStart || isRemovingEnd) {
+                                // remove the whole filter if both dates are empty
+                                handleRemoveFilter(index);
+                                return;
+                            }
+                        }
+
+                        handleFilterFieldChange(index, {
+                            ...field,
+                            ...(isStartDate ? { dateFrom: newValue } : { dateTo: newValue }),
+                        } as IAGGridDateFilter);
                     }}
                     entityFilter
                     readOnly={isNewProperty}
@@ -186,41 +193,6 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
                 type={field.filterType}
             />
         );
-
-        // switch (field.filterType) {
-        //     case 'text':
-        //     case 'number':
-        //         return (
-        //             <TextFilterInput
-        //                 filterField={field as IAGGidNumberFilter | IAGGridTextFilter}
-        //                 handleFilterFieldChange={(updatedField, condition) => {
-        //                     if (updatedField && (updatedField.filterType === 'text' || updatedField.filterType === 'number')) {
-        //                         handleFilterFieldChange(index, updatedField, condition);
-        //                     }
-        //                 }}
-        //                 handleFilterTypeChange={(newType) => handleTypedFilterTypeChange(field.filterType, index, newType, field)}
-        //                 readOnly={isNewProperty}
-        //                 entityFilter={false}
-        //                 type={field.filterType}
-        //             />
-        //         );
-
-        //     case 'date':
-        //         return (
-        //             <DateFilterInput
-        //                 filterField={field}
-        //                 handleFilterTypeChange={(newType) => handleTypedFilterTypeChange('date', index, newType, field)}
-        //                 handleDateChange={(newValue, isStart) => {
-        //                     setFieldValue(isStart ? `filters.${index}.dateFrom` : `filters.${index}.dateTo`, newValue);
-        //                 }}
-        //                 entityFilter
-        //                 readOnly={isNewProperty}
-        //             />
-        //         );
-
-        //     default:
-        //         return null;
-        // }
     };
 
     return (

@@ -23,6 +23,7 @@ import { ChooseIcon } from './ChooseIcon';
 import { CreateTemplateName, useCreateOrEditTemplateNameSchema } from './CreateTemplateName';
 import { UploadExportFormats } from './UploadExportFormats';
 import { updateUserPermissionForEntityTemplate } from '../../../utils/permissions/templatePermissions';
+import { IFilterRelationReference } from './commonInterfaces';
 
 const { errorCodes } = environment;
 
@@ -53,6 +54,7 @@ export interface EntityTemplateFormInputProperties {
         relationshipTemplateDirection: 'outgoing' | 'incoming';
         relatedTemplateId: string;
         relatedTemplateField: string;
+        filters?: IFilterRelationReference[];
     };
     archive?: boolean;
     mapSearch?: boolean;

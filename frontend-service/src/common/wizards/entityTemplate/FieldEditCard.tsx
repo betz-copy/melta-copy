@@ -555,8 +555,6 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
         return i18next.t('wizard.entityTemplate.moveToArchive');
     };
 
-    const [selectedEntityTemplateToReference, setSelectedEntityTemplateToReference] = useState<IMongoEntityTemplatePopulated | null>(null);
-
     return (
         <Draggable draggableId={value.id} index={index}>
             {(draggableProvided) => (
@@ -914,7 +912,6 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                     errors={errors}
                                                     setFieldValue={setFieldValue}
                                                     isDisabled={isDisabled}
-                                                    setSelectedEntityTemplateToReference={setSelectedEntityTemplateToReference}
                                                 />
                                             )}
                                             {(value.type === 'date' || value.type === 'date-time') &&
@@ -1389,7 +1386,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                     {value.filterRelationList && (
                                         <FilterEntitiesByCriteria
                                             name={`properties[${index}].relationshipReference.filters`}
-                                            selectedEntityTemplate={selectedEntityTemplateToReference}
+                                            selectedEntityTemplate={entityTemplates.get(value.relationshipReference?.relatedTemplateId!)}
                                         />
                                     )}
                                 </Grid>
