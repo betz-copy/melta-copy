@@ -535,7 +535,7 @@ export const addStringFieldsAndNormalizeSpecialStringValues = (
             return;
         }
         if (type === 'string' && format === 'location') {
-            const location = JSON.parse(JSON.stringify(propertyValue));
+            const location = JSON.parse(propertyValue);
             normalizedEntity[key] = getNeo4jLocation(location.location, entityProperties, key);
             normalizedEntity[`${key}${neo4j.stringPropertySuffix}`] = location.location;
             normalizedEntity[`${key}${neo4j.locationCoordinateSystemSuffix}`] = location.coordinateSystem;

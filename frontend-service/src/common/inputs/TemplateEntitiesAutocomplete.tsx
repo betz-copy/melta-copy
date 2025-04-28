@@ -158,7 +158,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
                             key={key}
                             entity={property}
                             relatedTemplateId={property.templateId}
-                            relatedTemplateField={showField}
+                            relatedTemplateField={templateProperty.relationshipReference!.relatedTemplateField}
                         />
                     ) : (
                         property
