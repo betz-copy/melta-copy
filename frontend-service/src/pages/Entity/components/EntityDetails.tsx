@@ -82,6 +82,23 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
             : '';
     };
 
+    const formatRelationshipField = (): IEntityExpanded => {
+        const expandedCopy = JSON.parse(JSON.stringify(expandedEntity));
+
+        for (const [fieldKey, field] of Object.entries(entityTemplate.properties.properties)) {
+            if (field?.format === 'relationshipReference' && field?.relationshipReference?.relatedTemplateField) {
+                const relatedField = field.relationshipReference.relatedTemplateField;
+                const relationshipObject = expandedCopy.entity.properties?.[fieldKey];
+
+                if (relationshipObject && typeof relationshipObject === 'object' && relationshipObject.properties) {
+                    expandedCopy.entity.properties[fieldKey] = relationshipObject.properties?.[relatedField];
+                }
+            }
+        }
+
+        return expandedCopy;
+    };
+
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const currentEntityTemplate = entityTemplates.get(expandedEntity?.entity.templateId);
     const templateIds = Array.from(entityTemplates.keys());
@@ -320,7 +337,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                             {entityTemplate.documentTemplatesIds?.length ? (
                                 <Grid item>
                                     <ExportFormats
-                                        properties={expandedEntity.entity.properties}
+                                        properties={formatRelationshipField().entity.properties}
                                         documentTemplateIds={entityTemplate.documentTemplatesIds}
                                         disabled={isEntityDisabled}
                                         justifyContent="flex-end"
