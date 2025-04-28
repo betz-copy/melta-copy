@@ -866,7 +866,7 @@ export default {
         stepDisplayNameExists: 'קיים שלב עם שם לתצוגה זהה',
         fileslimit: 'מספר קבצים מוגבל ל{{limit}}',
         mapSearchPropertiesLimit: 'מספר השדות המקסימלי בחיפוש עמוד מפות הוא: {{limit}}',
-        colors: { red: 'אדום', orange: 'כתום', yellow: 'צהוב', green: 'ירוק', blue: 'כחול' },
+        colors: { colors: 'צבע הערה', red: 'אדום', orange: 'כתום', yellow: 'צהוב', green: 'ירוק', blue: 'כחול', black: 'שחור' },
     },
     propertyTypes: {
         string: 'טקסט',

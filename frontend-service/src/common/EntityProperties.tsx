@@ -270,6 +270,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                             flexDirection="row"
                             style={overrideStyleInLongText ? { width: '100%' } : innerStyle}
                             alignItems={textWrap ? 'flex-start' : 'center'}
+                            xs={propertySchema.comment ? 12 : undefined}
                         >
                             <Grid item container width="100%" flexWrap="nowrap" alignItems={textWrap ? 'flex-start' : 'center'}>
                                 {!propertySchema.comment && (
@@ -308,7 +309,6 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                                         // eslint-disable-next-line no-nested-ternary
                                         width: propertySchema.comment ? '100%' : overrideStyleInLongText ? '90%' : '70%',
                                     }}
-                                    xs={propertySchema.comment ? 12 : undefined}
                                 >
                                     <MeltaTooltip
                                         disableHoverListener={propertySchema.format === 'relationshipReference' ? true : textWrap}

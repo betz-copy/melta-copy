@@ -32,6 +32,7 @@ import { toast } from 'react-toastify';
 import { useLocation } from 'wouter';
 import '../../css/resizeTable.css';
 import '../../css/table.css';
+import { pickBy } from 'lodash';
 import { environment } from '../../globals';
 import { EntityData, IDeleteEntityBody, IEntity, IEntityExpanded, ISearchFilter, IUniqueConstraint } from '../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
@@ -281,9 +282,6 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         const [selectedRow, setSelectedRow] = useState('');
         const [currEntity, setCurrEntity] = useState<IEntity>();
         const [currEditingCell, setCurrEditingCell] = useState<any>();
-        const filteredColumns = Object.keys(
-            Object.fromEntries(Object.entries(template.properties.properties).filter(([_key, property]) => property.comment === undefined)),
-        );
 
         const [updateWithRuleBreachDialogState, setUpdateWithRuleBreachDialogState] = useState<{
             isOpen: boolean;
@@ -293,6 +291,8 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             actions?: IActionPopulated[];
             rawActions?: IAction[];
         }>({ isOpen: false });
+
+        const filteredColumns = Object.keys(pickBy(template.properties.properties, (property) => property.comment === undefined));
 
         const savedColumnsOrder = localStorage.getItem(`${columnsOrder}${saveStorageProps.pageType}-${template._id}`);
         const [defaultColumnsOrder, setDefaultColumnsOrder] = useState(savedColumnsOrder ? JSON.parse(savedColumnsOrder) : {});

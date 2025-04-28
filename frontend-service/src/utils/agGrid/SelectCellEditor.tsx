@@ -11,6 +11,7 @@ interface SelectCellEditorProps {
     colorsOptions?: Record<string, string>;
     overrideSx?: object;
     disableClearable?: boolean;
+    label?: string;
 }
 
 const SelectCellEditor: React.FC<SelectCellEditorProps> = ({
@@ -21,6 +22,7 @@ const SelectCellEditor: React.FC<SelectCellEditorProps> = ({
     colorsOptions,
     overrideSx,
     disableClearable,
+    label,
 }) => {
     const [selectedValues, setSelectedValues] = useState<string | string[] | undefined>(value);
 
@@ -42,7 +44,7 @@ const SelectCellEditor: React.FC<SelectCellEditorProps> = ({
     };
 
     return (
-        <FormControl fullWidth={!!(overrideSx && 'width' in overrideSx && overrideSx.width === '100%')}>
+        <FormControl fullWidth={!disableClearable}>
             {multiple ? (
                 /** MULTIPLE SELECTION MODE (via <Select>) * */
                 <Select
@@ -57,7 +59,8 @@ const SelectCellEditor: React.FC<SelectCellEditorProps> = ({
                             ))}
                         </Box>
                     )}
-                    style={{ ...overrideSx }}
+                    sx={overrideSx}
+                    label={label}
                 >
                     {values.map((option) => (
                         <MenuItem key={option} value={option} style={{ height: '40px' }}>
@@ -77,6 +80,7 @@ const SelectCellEditor: React.FC<SelectCellEditorProps> = ({
                     onChange={(_, newValue) => handleAutocompleteChange(newValue as string | string[] | null)}
                     isOptionEqualToValue={(option, val) => option === val}
                     fullWidth
+                    style={overrideSx}
                     renderInput={(params) => (
                         <TextField
                             {...params}
@@ -84,6 +88,7 @@ const SelectCellEditor: React.FC<SelectCellEditorProps> = ({
                                 ...params.InputProps,
                                 startAdornment: <InputAdornment position="start" />,
                             }}
+                            label={label}
                         />
                     )}
                     renderOption={(props, option) =>

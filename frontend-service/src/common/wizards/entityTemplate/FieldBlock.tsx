@@ -145,8 +145,11 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
         const displayValuesCopy = [...displayValuesRef.current] as Values[PropertiesType];
 
         indexes.forEach((index) => {
-            const titleObj = field === 'name' && displayValuesCopy[index].type === 'comment' ? { title: i18next.t('propertyTypes.comment') } : {};
-            displayValuesCopy[index] = { ...displayValuesCopy[index], [field]: value, ...titleObj };
+            displayValuesCopy[index] = {
+                ...displayValuesCopy[index],
+                [field]: value,
+            };
+            if (field === 'name' && displayValuesCopy[index].type === 'comment') displayValuesCopy[index].title = i18next.t('propertyTypes.comment');
         });
 
         setDisplayValues(displayValuesCopy);

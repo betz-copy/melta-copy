@@ -1,5 +1,5 @@
 import { Grid, InputLabel, ThemeProvider, useTheme } from '@mui/material';
-import { createTheme } from '@mui/material/styles';
+import { createTheme, Theme } from '@mui/material/styles';
 import { WidgetProps } from '@rjsf/utils';
 import { ContentState, convertFromHTML, convertToRaw, EditorState } from 'draft-js';
 import { stateToHTML } from 'draft-js-export-html';
@@ -24,43 +24,16 @@ export const getInitialValue = (value) => {
     return EditorState.createWithContent(contentState);
 };
 
-const RjfsTextAreaWidget = ({ id, value, label, readonly, onChange, options }: WidgetProps) => {
-    const { toPrint } = options;
-
-    const [editorValue, setEditorValue] = useState(getInitialValue(value));
-    const [showLabel, setShowLabel] = useState(false);
-    const [rawContentState, setRawContentState] = useState('');
-
-    useEffect(() => {
-        setRawContentState(JSON.stringify(convertToRaw(editorValue.getCurrentContent())));
-    }, []);
-
-    const handleChange = (state: EditorState) => {
-        setEditorValue(state);
-        const newValue = state.getCurrentContent().getPlainText();
-        const htmlContent = stateToHTML(state.getCurrentContent());
-        onChange(newValue === '' ? options.emptyValue : htmlContent);
-    };
-
-    const handleFocus = () => {
-        setShowLabel(true);
-    };
-
-    const handleBlur = () => {
-        setShowLabel(false);
-    };
-
-    const darkMode = useDarkModeStore((state) => state.darkMode);
-    const globalTheme = useTheme();
-
-    const theme = createTheme();
-    const muiRteTheme: TMUIRichTextEditorStyles = {
+export const useMuiRteTheme = (globalTheme?: Theme, showLabel?: boolean, readonly?: boolean): TMUIRichTextEditorStyles => {
+    return {
         overrides: {
             MUIRichTextEditor: {
                 root: {
                     borderRadius: readonly ? 0 : '10px',
-                    border: readonly ? 'none' : (showLabel && `1px solid ${globalTheme.palette.primary.main}`) || '1px solid #CCCFE5',
-                    borderBottom: readonly ? '1px solid gray' : (showLabel && `1px solid ${globalTheme.palette.primary.main}`) || '1px solid #CCCFE5',
+                    border: readonly ? 'none' : (showLabel && `1px solid ${globalTheme!.palette.primary.main}`) || '1px solid #CCCFE5',
+                    borderBottom: readonly
+                        ? '1px solid gray'
+                        : (showLabel && `1px solid ${globalTheme!.palette.primary.main}`) || '1px solid #CCCFE5',
                     transition: 'border-color 0.3s',
                 },
                 container: {
@@ -92,8 +65,39 @@ const RjfsTextAreaWidget = ({ id, value, label, readonly, onChange, options }: W
             },
         },
     };
+};
 
-    Object.assign(theme, muiRteTheme);
+const RjfsTextAreaWidget = ({ id, value, label, readonly, onChange, options }: WidgetProps) => {
+    const { toPrint } = options;
+
+    const [editorValue, setEditorValue] = useState(getInitialValue(value));
+    const [showLabel, setShowLabel] = useState(false);
+    const [rawContentState, setRawContentState] = useState('');
+
+    useEffect(() => {
+        setRawContentState(JSON.stringify(convertToRaw(editorValue.getCurrentContent())));
+    }, []);
+
+    const handleChange = (state: EditorState) => {
+        setEditorValue(state);
+        const newValue = state.getCurrentContent().getPlainText();
+        const htmlContent = stateToHTML(state.getCurrentContent());
+        onChange(newValue === '' ? options.emptyValue : htmlContent);
+    };
+
+    const handleFocus = () => {
+        setShowLabel(true);
+    };
+
+    const handleBlur = () => {
+        setShowLabel(false);
+    };
+
+    const darkMode = useDarkModeStore((state) => state.darkMode);
+    const globalTheme = useTheme();
+    const theme = createTheme();
+
+    Object.assign(theme, useMuiRteTheme(globalTheme, showLabel, readonly));
 
     if (toPrint) return null;
 
