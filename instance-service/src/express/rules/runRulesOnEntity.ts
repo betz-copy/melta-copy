@@ -12,6 +12,7 @@ export const runRuleOnEntity = async (transaction: Transaction, entityId: string
     const ruleQuery = generateNeo4jRuleQueryOnEntity(rule, entityId);
 
     const ruleResult = await runInTransactionAndNormalize(transaction, ruleQuery.cypherCalculation, normalizeRuleResult, ruleQuery.parameters);
+    console.dir({ ruleQuery, ruleResult }, { depth: null });
 
     return ruleResult;
 };
@@ -23,6 +24,7 @@ export const runRulesOnEntity = async (transaction: Transaction, entityId: strin
         return { rule, ruleResult };
     });
     const ruleResults = await Promise.all(ruleResultsPromises);
+    console.dir({ ruleResults }, { depth: null });
 
     const ruleFailures = ruleResults
         .filter(({ ruleResult: { value } }) => !value)

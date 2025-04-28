@@ -2,7 +2,7 @@ import { IFunction } from './function';
 
 export type IConstant = {
     isConstant: true;
-    type: 'number' | 'string' | 'boolean' | 'date' | 'dateTime' | 'dateDuration' | 'dateTimeDuration';
+    type: 'number' | 'string' | 'boolean' | 'date' | 'dateTime' | 'dateDuration' | 'dateTimeDuration' | 'relationshipReference';
     value: number | string | boolean;
 };
 
@@ -23,6 +23,7 @@ export interface IPropertyOfVariable {
     isPropertyOfVariable: true;
     variable: IVariable;
     property: string;
+    variableNameSuffix?: string;
 }
 
 export const isPropertyOfVariable = (propertyOfVariable: any): propertyOfVariable is IPropertyOfVariable => {

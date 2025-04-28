@@ -57,6 +57,9 @@ const getCausesOfRegularFunction = (
     regularFunctionCausesBeforeAction: IRegularFunctionCauses | undefined,
     regularFunction: IRegularFunction,
 ): { newCauses: ICause[]; oldCauses: ICause[] } => {
+    console.log('getCausesOfRegularFunction');
+    console.dir({ regularFunctionCauses, regularFunctionCausesBeforeAction, regularFunction }, { depth: null });
+
     const argumentsNewCauses = regularFunctionCauses.arguments.map((argumentCauses, index) =>
         // eslint-disable-next-line no-use-before-define
         getNewCausesOfArgument(argumentCauses, regularFunctionCausesBeforeAction?.arguments[index], regularFunction.arguments[index]),
@@ -98,6 +101,7 @@ export const getNewCausesOfArgument = (
     if (isSumAggFunction(argument)) {
         return getCausesOfAggFunction(argumentCauses as ISumAggFunctionCauses, argumentCausesBeforeAction as ISumAggFunctionCauses | undefined);
     }
+    console.log('isRegularFunction(argument)', isRegularFunction(argument));
 
     if (isRegularFunction(argument)) {
         return getCausesOfRegularFunction(
@@ -142,12 +146,17 @@ export const getCausesOfGroup = (
     groupCausesBeforeAction: IGroupCauses | undefined,
     group: IGroup,
 ): { newCauses: ICause[]; oldCauses: ICause[] } => {
+    console.dir({ groupCauses, groupCausesBeforeAction }, { depth: null });
+
     // already filtered in DB, but to make sure. if group is false, then all falsy subFormulas caused it. same goes to true
     const relevantSubFormulasCauses = groupCauses.subFormulas.filter(({ resultValue }) => groupCauses.resultValue === resultValue);
+    console.dir({ relevantSubFormulasCauses }, { depth: null });
+
     const subFormulasNewCauses = relevantSubFormulasCauses.map((subFormulaCauses, index) =>
         // eslint-disable-next-line no-use-before-define
         getCausesOfFormula(subFormulaCauses, groupCausesBeforeAction?.subFormulas[index], group.subFormulas[index]),
     );
+    console.dir({ relevantSubFormulasCauses }, { depth: null });
 
     if (groupCauses.resultValue !== groupCausesBeforeAction?.resultValue) {
         // if resultValue is new, then all causes are new
@@ -201,15 +210,20 @@ export const getCausesOfFormula = (
     formulaCausesBeforeAction: IFormulaCauses | undefined,
     formula: IFormula,
 ): { newCauses: ICause[]; oldCauses: ICause[] } => {
+    console.dir({ formulaCauses, formulaCausesBeforeAction, formula }, { depth: null });
+
     if (isGroup(formula)) {
+        console.log('isGroup(formula)');
         return getCausesOfGroup(formulaCauses as IGroupCauses, formulaCausesBeforeAction as IGroupCauses | undefined, formula);
     }
 
     if (isEquation(formula)) {
+        console.log('isEquation(formula)');
         return getCausesOfEquation(formulaCauses as IEquationCauses, formulaCausesBeforeAction as IEquationCauses | undefined, formula);
     }
 
     if (isAggregationGroup(formula)) {
+        console.log('isAggregationGroup(formula)');
         return getCausesOfAggregationGroup(
             formulaCauses as IAggregationGroupCauses,
             formulaCausesBeforeAction as IAggregationGroupCauses | undefined,
@@ -241,9 +255,13 @@ export const getCausesOfRuleFailure = (
     ruleFailureBeforeAction: IRuleFailure | undefined,
     formula: IFormula,
 ): ICausesOfInstance[] => {
+    console.dir({ ruleFailure }, { depth: null });
+
     const { newCauses } = getCausesOfFormula(ruleFailure.formulaCauses, ruleFailureBeforeAction?.formulaCauses, formula);
+    console.dir({ newCauses }, { depth: null });
 
     const newCausesOfInstances = buildCausesOfInstancesFromArray(newCauses);
+    console.dir({ newCausesOfInstances }, { depth: null });
 
     return newCausesOfInstances;
 };

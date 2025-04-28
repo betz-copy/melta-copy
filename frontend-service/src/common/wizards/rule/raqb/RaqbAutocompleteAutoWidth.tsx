@@ -15,6 +15,7 @@ export const RaqbMuiAutocompeleteAutoWidth: React.FC<FieldProps> = (fieldProps) 
             setInputWidth(inputElement.scrollWidth);
         }
     }, [selectedLabel]);
+    console.log({ fieldProps });
 
     return (
         <MuiFieldAutocomplete
