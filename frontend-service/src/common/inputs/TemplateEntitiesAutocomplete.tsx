@@ -152,9 +152,6 @@ const TemplateEntitiesAutocomplete: React.FC<{
                 const displayOptionValues = displayKeys.map((key) => {
                     const property = option.properties[key];
                     const templateProperty = template.properties.properties[key];
-                    console.log(template);
-                    console.log('temp', templateProperty);
-                    console.log(displayValue);
 
                     return typeof property === 'object' ? (
                         <RelationshipReferenceView
