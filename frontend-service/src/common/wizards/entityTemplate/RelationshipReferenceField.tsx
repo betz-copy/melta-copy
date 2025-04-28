@@ -43,7 +43,9 @@ const RelationshipReferenceField: React.FC<FieldEditCardProps> = ({
     const fixedRelatedTemplateFieldOptions = Object.entries(selectedTemplate?.properties?.properties || {})
         .filter(
             ([key, _property]) =>
-                selectedTemplate?.properties.required.includes(key) && selectedTemplate?.properties?.properties[key].format !== 'signature',
+                selectedTemplate?.properties.required.includes(key) &&
+                selectedTemplate?.properties?.properties[key].format !== 'signature' &&
+                selectedTemplate?.properties?.properties[key].format !== 'location',
         )
         .map(([key, property]) => ({
             key,
