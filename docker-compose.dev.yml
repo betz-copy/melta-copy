@@ -57,7 +57,7 @@ services:
 
   neo4j:
     build:
-      context: ./services/instance-service
+      context: ./instance-service
       dockerfile: Dockerfile-neo4j
     environment:
       - NEO4J_AUTH=neo4j/test1234
@@ -176,7 +176,7 @@ services:
       dockerfile: Dockerfile.base
       args:
         SERVICE_NAME: 'mock-service'
-    command: ['npm', 'run', 'start', '-w', 'services/mock-service']
+    command: ['npm', 'run', 'start', '-w', 'mock-service']
     environment:
       TEMPLATE_SERVICE_URL: ${TEMPLATE_SERVICE_URL}
       INSTANCE_SERVICE_URL: ${INSTANCE_SERVICE_URL}

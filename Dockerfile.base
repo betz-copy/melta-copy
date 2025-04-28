@@ -6,17 +6,17 @@ COPY package*.json ./
 COPY tsconfig.json ./
 
 # Copy shared interfaces
-COPY services/shared-interfaces/package*.json ./services/shared-interfaces/
-COPY services/shared-interfaces/ ./services/shared-interfaces/
+COPY shared-interfaces/package*.json ./shared-interfaces/
+COPY shared-interfaces/ ./shared-interfaces/
 
 # Copy shared
-COPY services/shared/package*.json ./services/shared/
-COPY services/shared/ ./services/shared/
+COPY shared/package*.json ./shared/
+COPY shared/ ./shared/
 
 # Use an ARG to decide which service to build
 ARG SERVICE_NAME
-COPY services/${SERVICE_NAME}/package*.json ./services/${SERVICE_NAME}/
-COPY services/${SERVICE_NAME}/ ./services/${SERVICE_NAME}/
+COPY ${SERVICE_NAME}/package*.json ./${SERVICE_NAME}/
+COPY ${SERVICE_NAME}/ ./${SERVICE_NAME}/
 
 # Install dependencies & build 'shared'
 RUN npm ci --silent
@@ -32,16 +32,16 @@ WORKDIR /usr/src/app
 # Copy final output
 ARG SERVICE_NAME
 COPY --from=builder /usr/src/app/package*.json ./
-COPY --from=builder /usr/src/app/services/shared/package*.json ./services/shared/
-COPY --from=builder /usr/src/app/services/shared-interfaces/package*.json ./services/shared-interfaces/
-COPY --from=builder /usr/src/app/services/${SERVICE_NAME}/package*.json ./services/${SERVICE_NAME}/
+COPY --from=builder /usr/src/app/shared/package*.json ./shared/
+COPY --from=builder /usr/src/app/shared-interfaces/package*.json ./shared-interfaces/
+COPY --from=builder /usr/src/app/${SERVICE_NAME}/package*.json ./${SERVICE_NAME}/
 
 # Install only production dependencies
 RUN npm ci --omit=dev --silent
 
-COPY --from=builder /usr/src/app/services/shared-interfaces/dist ./services/shared-interfaces/dist
-COPY --from=builder /usr/src/app/services/shared/dist ./services/shared/dist
-COPY --from=builder /usr/src/app/services/${SERVICE_NAME}/dist ./services/${SERVICE_NAME}/dist
+COPY --from=builder /usr/src/app/shared-interfaces/dist ./shared-interfaces/dist
+COPY --from=builder /usr/src/app/shared/dist ./shared/dist
+COPY --from=builder /usr/src/app/${SERVICE_NAME}/dist ./${SERVICE_NAME}/dist
 
 EXPOSE 8000
 

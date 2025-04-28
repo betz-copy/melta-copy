@@ -2,20 +2,36 @@
     "name": "melta",
     "version": "1.0.1",
     "description": "",
-    "main": "index.js",
+    "private": true,
     "workspaces": [
-        "services/*"
+        "activiti-log-service",
+        "cron-service",
+        "gantt-service",
+        "gateway-service",
+        "global-search-service",
+        "instance-service",
+        "notification-service",
+        "preview-service",
+        "process-service",
+        "rule-breach-service",
+        "semantic-service",
+        "shared",
+        "shared-interfaces",
+        "storage-service",
+        "template-service",
+        "user-service",
+        "workspace-service"
     ],
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
-        "pre-push": "cd ./services/frontend-service && npm run lint && node --max_old_space_size=16384 npm run build",
+        "pre-push": "cd ./frontend-service && npm run lint && node --max_old_space_size=16384 npm run build",
         "build": "npm run build --workspaces",
         "lint": "npm run lint --workspaces",
         "prettier": "npm run prettier --workspaces",
-        "clean": "rimraf ./services/**/dist && rimraf ./packages/**/dist",
-        "clean:node_modules": "rimraf ./services/**/node_modules && rimraf ./node_modules",
-        "start-ui": "npm run -w services/frontend-service start:docker",
-        "migrate": "rimraf ./*-service && npm run clean && npm run clean:node_modules && npm i && npm run build -w services/shared-interfaces && npm run build -w services/shared && sudo kill $(lsof -t -i:3000) && npm run start-ui"
+        "clean": "rimraf ./**/dist && rimraf ./packages/**/dist",
+        "clean:node_modules": "rimraf ./**/node_modules && rimraf ./node_modules",
+        "start-ui": "npm run -w frontend-service start:docker",
+        "migrate": "rimraf ./*-service && npm run clean && npm run clean:node_modules && npm i && npm run build -w shared-interfaces && npm run build -w shared && sudo kill $(lsof -t -i:3000) && npm run start-ui"
     },
     "repository": {
         "type": "git",
@@ -28,29 +44,9 @@
     },
     "homepage": "https://github.com/melta-team/melta#readme",
     "devDependencies": {
-        "@types/morgan": "^1.9.9",
-        "@types/node": "^22.3.0",
-        "@typescript-eslint/eslint-plugin": "^8.1.0",
-        "@typescript-eslint/parser": "^8.1.0",
-        "eslint": "^8.2.0",
-        "eslint-config-prettier": "^9.1.0",
-        "husky": "^6.0.0",
-        "rimraf": "^5.0.0",
-        "typescript": "^5.5.4"
+        "husky": "^6.0.0"
     },
     "dependencies": {
-        "axios": "^1.7.7",
-        "date-fns": "^2.30.0",
-        "dotenv": "^16.4.5",
-        "elastic-apm-node": "^4.7.3",
-        "env-var": "^7.5.0",
-        "express": "^4.19.2",
-        "helmet": "^7.1.0",
-        "joi": "^17.13.3",
-        "mongoose": "^8.8.1",
-        "morgan": "^1.10.0",
-        "prettier": "^3.3.3",
-        "winston": "^3.14.1",
-        "winston-daily-rotate-file": "^5.0.0"
+        "rimraf": "^5.0.5"
     }
 }

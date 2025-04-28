@@ -1,5 +1,5 @@
 {
-  "name": "files-to-elastic-migration-script",
+  "name": "cron-service",
   "version": "1.0.0",
   "description": "",
   "main": "",
@@ -15,30 +15,31 @@
     "prettier:fix": "prettier --config .prettierrc.js 'src/**/*.ts' --write",
     "clean": "rimraf dist"
   },
-  "author": "Alexander Gurevich",
+  "keywords": [],
+  "author": "",
   "license": "ISC",
   "dependencies": {
+    "@microservices/shared": "^1.0.0",
     "axios": "^1.7.7",
-    "date-fns-tz": "^3.2.0",
     "dotenv": "^16.4.5",
+    "elastic-apm-node": "^4.7.3",
     "env-var": "^7.5.0",
-    "lodash.foreach": "^4.5.0",
+    "lodash": "^4.17.21",
     "menashmq": "^0.1.6",
-    "minio": "^8.0.2",
-    "mongoose": "^8.8.1",
-    "neo4j-driver": "^5.26.0",
-    "ts-retry-promise": "^0.8.1"
+    "node-schedule": "^2.1.1",
+    "winston": "^3.14.1",
+    "winston-daily-rotate-file": "^5.0.0"
   },
   "devDependencies": {
-    "@types/lodash.foreach": "^4.5.9",
+    "@eslint/js": "^9.10.0",
+    "@types/lodash.groupby": "^4.6.9",
+    "@types/node-schedule": "^2.1.7",
     "@typescript-eslint/eslint-plugin": "^8.1.0",
     "@typescript-eslint/parser": "^8.1.0",
-    "eslint": "^8.2.0",
-    "eslint-config-airbnb-base": "^15.0.0",
-    "eslint-config-prettier": "^9.1.0",
-    "eslint-plugin-import": "^2.29.1",
-    "eslint-plugin-prettier": "^5.2.1",
-    "prettier": "^3.3.3",
-    "typescript": "^5.5.4"
+    "eslint": "^9.2.0",
+    "eslint-plugin-react": "^7.36.1",
+    "globals": "^15.9.0",
+    "typescript": "^5.5.4",
+    "typescript-eslint": "^8.6.0"
   }
 }

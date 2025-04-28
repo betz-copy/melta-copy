@@ -108,11 +108,11 @@ This script will use **Docker Compose** to build and start the microservices def
     ```
 2. Build the shared interfaces service:
     ```bash
-    npm run build -w services/shared-interfaces
+    npm run build -w shared-interfaces
     ```
 3. Build the shared service:
     ```bash
-    npm run build -w services/shared
+    npm run build -w shared
     ```
 4. Start the frontend:
     ```bash
@@ -158,7 +158,7 @@ npm run <script-name> -w <workspace-name>
 For example, to start the frontend service directly:
 
 ```bash
-npm run start -w services/frontend-service
+npm run start -w frontend-service
 ```
 
 ---
