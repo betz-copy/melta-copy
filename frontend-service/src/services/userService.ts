@@ -10,6 +10,7 @@ import {
     IUserPreferences,
     NotificationType,
     IMongoUser,
+    IKartoffelUser,
 } from '@microservices/shared-interfaces';
 import axios from '../axios';
 import { environment } from '../globals';
@@ -74,9 +75,9 @@ export const syncUserPermissionsRequest = async (userId: string, permissions: IC
     return data;
 };
 
-export const searchExternalUsersRequest = async (search: string, workspaceId?: string) => {
+export const searchExternalUsersRequest = async (search: string, workspaceId?: string, isKartoffelUser?: boolean) => {
     if (search.length < 2) return [];
-    const { data } = await axios.get<IExternalUser[]>(`${users}/external`, { params: { search, workspaceId } });
+    const { data } = await axios.get<IExternalUser[] | IKartoffelUser[]>(`${users}/external`, { params: { search, workspaceId, isKartoffelUser } });
     return data;
 };
 

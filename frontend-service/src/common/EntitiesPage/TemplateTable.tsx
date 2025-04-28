@@ -5,8 +5,10 @@ import {
     Download,
     Expand,
     TableRowsOutlined,
+    BarChart,
     LibraryAddCheckOutlined as SelectMultipleIcon,
     Upload,
+    EditNote,
 } from '@mui/icons-material';
 import { Box, CircularProgress, Dialog, Grid, useTheme } from '@mui/material';
 import i18next from 'i18next';
@@ -15,6 +17,7 @@ import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useRef,
 import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
 import { IEntity, IMongoEntityTemplateWithConstraintsPopulated, PermissionScope } from '@microservices/shared-interfaces';
+import { useLocation } from 'wouter';
 import { useMatomo } from '@datapunt/matomo-tracker-react';
 import { environment } from '../../globals';
 import { exportEntitiesRequest } from '../../services/entitiesService';
@@ -22,7 +25,7 @@ import { useDraftIdStore, useDraftsStore } from '../../stores/drafts';
 import { useUserStore } from '../../stores/user';
 import { filterModelToFilterOfTemplate, sortModelToSortOfSearchRequest } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 import { getEntityTemplateColor } from '../../utils/colors';
-import { checkUserCategoryPermission } from '../../utils/permissions/instancePermissions';
+import { checkUserTemplatePermission } from '../../utils/permissions/instancePermissions';
 import { BlueTitle } from '../BlueTitle';
 import { CustomIcon } from '../CustomIcon';
 import { EntityWizardValues } from '../dialogs/entity';
@@ -30,11 +33,12 @@ import { CreateOrEditEntityDetails, ICreateOrUpdateWithRuleBreachDialogState } f
 import EntitiesTableOfTemplate, { EntitiesTableOfTemplateRef } from '../EntitiesTableOfTemplate';
 import { EntityTemplateColor } from '../EntityTemplateColor';
 import { TableButton } from '../TableButton';
-import { AddEntityButton } from './AddEntityButton';
 import { DraftCard } from './DraftCard';
 import { ResetFilterButton } from './ResetFilterButton';
+import { LoadExcelButton } from './Buttons/LoadExcel';
+import { AddEntityButton } from './Buttons/AddEntity';
+import { EditExcelButton } from './Buttons/EditExcel';
 import { useWorkspaceStore } from '../../stores/workspace';
-import { LoadExcelButton } from './LoadExcelButton';
 
 const {
     loadExcel: { excelExtension },
@@ -48,9 +52,10 @@ const TemplateTable = forwardRef<
         template: IMongoEntityTemplateWithConstraintsPopulated;
         quickFilterText: string;
         page: string;
-        setUpdatedEntities: React.Dispatch<React.SetStateAction<IEntity[]>>;
+        setUpdatedEntities?: React.Dispatch<React.SetStateAction<IEntity[]>>;
     }
 >(({ template, quickFilterText, page, setUpdatedEntities }, ref) => {
+    const [_, navigate] = useLocation();
     const workspace = useWorkspaceStore((state) => state.workspace);
     const { defaultRowHeight, defaultFontSize, defaultExpandedTableHeight } = workspace.metadata.agGrid;
     const { height, width } = workspace.metadata.iconSize;
@@ -100,7 +105,7 @@ const TemplateTable = forwardRef<
         });
 
         if (multipleSelect) setMultipleSelect(false);
-    }, [template._id, page, multipleSelect]);
+    }, [multipleSelect, template._id, page, defaultExpandedTableHeight]);
 
     const { isLoading: isExportingTableToExcelFile, mutateAsync: exportTemplateToExcel } = useMutation(
         async () => {
@@ -128,7 +133,12 @@ const TemplateTable = forwardRef<
 
     const entityTemplateColor = getEntityTemplateColor(template);
 
-    const userHasWritePermissions = checkUserCategoryPermission(currentUser.currentWorkspacePermissions, template.category, PermissionScope.write);
+    const userHasWritePermissions = checkUserTemplatePermission(
+        currentUser.currentWorkspacePermissions,
+        template.category,
+        template._id,
+        PermissionScope.write,
+    );
 
     useEffect(() => {
         sessionStorage.setItem(`isExpand-${template._id}`, isExpand.toString());
@@ -144,7 +154,7 @@ const TemplateTable = forwardRef<
         });
     };
 
-    const checkIfLoadEntityIsDisabled = () => {
+    const checkIfLoadExcelIsDisabled = () => {
         const { properties } = template.properties;
         const requiredProperties = new Set(template.properties.required);
 
@@ -153,7 +163,21 @@ const TemplateTable = forwardRef<
         });
     };
 
-    const isLoadExcelDisabled = !userHasWritePermissions || checkIfLoadEntityIsDisabled();
+    const isLoadExcelDisabled = !userHasWritePermissions || checkIfLoadExcelIsDisabled();
+    const loadExcelTooltip = isLoadExcelDisabled
+        ? i18next.t(!userHasWritePermissions ? 'permissions.dontHaveWritePermissionsToTemplate' : 'wizard.entity.loadEntities.tableCantLoadEntities')
+        : undefined;
+
+    const checkIfEditExcelIsDisabled = () => {
+        const { properties } = template.properties;
+        return Object.values(properties).some((property) => property.identifier);
+    };
+
+    const isEditExcelDisabled = !userHasWritePermissions || !checkIfEditExcelIsDisabled();
+    const editExcelTooltip = isEditExcelDisabled
+        ? i18next.t(!userHasWritePermissions ? 'permissions.dontHaveWritePermissionsToTemplate' : 'wizard.entity.loadEntities.tableCantEditExcel')
+        : undefined;
+
     return (
         <Grid container minWidth="fit-content">
             <Grid container justifyContent="space-between" width="fit-content" minWidth="fit-content">
@@ -257,21 +281,38 @@ const TemplateTable = forwardRef<
                         text={i18next.t('entitiesTableOfTemplate.multipleSelect')}
                         disableButton={!userHasWritePermissions}
                     />
+
+                    <TableButton
+                        iconButtonWithPopoverProps={{
+                            popoverText: i18next.t('pages.charts'),
+                            iconButtonProps: { onClick: () => navigate(`/charts/${template._id}`) },
+                        }}
+                        icon={<BarChart fontSize="small" />}
+                        text={i18next.t('pages.charts')}
+                    />
                 </Grid>
 
                 <Grid container item flexGrow={1} width={0} justifyContent="flex-end" alignItems="center">
+                    <EditExcelButton
+                        disabled={isEditExcelDisabled}
+                        initialValues={{ template, properties: { disabled: false }, attachmentsProperties: {} }}
+                        onSuccessCreate={() => entitiesTableRef.current?.refreshServerSide()}
+                        popoverText={editExcelTooltip}
+                    >
+                        <EditNote
+                            fontSize="small"
+                            sx={{
+                                opacity: isEditExcelDisabled ? 0.3 : 1,
+                                pointerEvents: isEditExcelDisabled ? 'none' : 'auto',
+                            }}
+                        />
+                        {i18next.t('entitiesTableOfTemplate.editExcelTitle')}
+                    </EditExcelButton>
                     <LoadExcelButton
                         disabled={isLoadExcelDisabled}
                         initialValues={{ template, properties: { disabled: false }, attachmentsProperties: {} }}
-                        style={{
-                            display: 'flex',
-                            gap: '0.25rem',
-                            borderRadius: '5px',
-                            fontSize: '0.75rem',
-                            color: theme.palette.primary.main,
-                        }}
                         onSuccessCreate={() => entitiesTableRef.current?.refreshServerSide()}
-                        popoverText={isLoadExcelDisabled ? i18next.t('wizard.entity.loadEntities.tableCantLoadEntities') : undefined}
+                        popoverText={loadExcelTooltip}
                     >
                         <Upload
                             fontSize="small"
@@ -284,7 +325,7 @@ const TemplateTable = forwardRef<
                     </LoadExcelButton>
                     <AddEntityButton
                         initialStep={1}
-                        disabled={!userHasWritePermissions}
+                        disabled={!userHasWritePermissions || template.disabled}
                         initialValues={{ template, properties: { disabled: false }, attachmentsProperties: {} }}
                         style={{
                             display: 'flex',
@@ -293,6 +334,7 @@ const TemplateTable = forwardRef<
                             fontSize: '0.75rem',
                             color: theme.palette.primary.main,
                         }}
+                        popoverText={template.disabled ? i18next.t('permissions.EntityTemplateDisplay') : undefined}
                         onSuccessCreate={() => {
                             entitiesTableRef.current?.refreshServerSide();
 
@@ -382,7 +424,7 @@ const TemplateTable = forwardRef<
                             toast.dismiss();
                         },
                         popoverText: i18next.t(
-                            !userHasWritePermissions ? 'permissions.dontHaveWritePermissions' : 'entitiesTableOfTemplate.editEntity',
+                            !userHasWritePermissions ? 'permissions.dontHaveWritePermissionsToTemplate' : 'entitiesTableOfTemplate.editEntity',
                         ),
                         disabledButton: !userHasWritePermissions,
                     }}
@@ -404,7 +446,7 @@ const TemplateTable = forwardRef<
                     onSuccessUpdate={(entity) => {
                         if (editDialog.isEditMode) {
                             entitiesTableRef.current?.updateRowDataClientSide(entity);
-                            setUpdatedEntities(
+                            setUpdatedEntities?.(
                                 Object.values(entity.properties).filter(
                                     (property): property is IEntity => typeof property === 'object' && 'templateId' in property,
                                 ),

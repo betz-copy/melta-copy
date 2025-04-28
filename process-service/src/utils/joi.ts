@@ -5,7 +5,7 @@ import config from '../config';
 import ajv from './ajv';
 
 const stringFormats = Object.values(ProcessPropertyFormats);
-const allowedJSONSchemaTypes = ['string', 'number', 'boolean', 'array'];
+const allowedJSONSchemaTypes = ['string', 'number', 'boolean', 'array', 'signature'];
 
 const defaultValidationOptions: Joi.ValidationOptions = {
     abortEarly: false,

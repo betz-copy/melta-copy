@@ -10,6 +10,34 @@ export enum Status {
     Rejected = 'rejected',
 }
 
+export enum StatusColors {
+    Pending = '#ff8f00',
+    Approved = '#2e7d32',
+    Rejected = '#d32f2f',
+    Archived = '#B0B0B0',
+    All = '#0288d1',
+}
+export enum StatusColorsNames {
+    Pending = '#ff8f00',
+    Approved = '#1ABC00',
+    Rejected = '#d32f2f',
+    Archived = '#B0B0B0',
+}
+
+export enum StatusFontColors {
+    Pending = '#FF9900',
+    Approved = '#1ABC00',
+    Rejected = '#FF2E00',
+    Archived = '#B0B0B0',
+}
+
+export enum StatusBackgroundColors {
+    Pending = '#FF99001A',
+    Approved = '#E0F0DD',
+    Rejected = '#F7CDC4',
+    Archived = '#B0B0B0',
+}
+
 export enum ProcessStatus {
     Pending = 'pending',
     Approved = 'approved',
@@ -66,6 +94,20 @@ export interface IProcessInstanceSearchProperties extends IBaseSearchProperties 
     startDate?: Date;
     endDate?: Date;
     archived?: boolean;
+    isWaitingForMeFilterOn?: boolean;
+    isStepStatusPendeing?: boolean;
+    userId?: string;
+}
+
+export interface ISearchProcessInstancesBody extends IBaseSearchProperties {
+    searchText?: string;
+    templateIds?: string[];
+    startDate?: Date;
+    endDate?: Date;
+    status?: Status[];
+    archived?: boolean;
+    isWaitingForMeFilterOn?: boolean;
+    isStepStatusPendeing?: boolean;
 }
 
 export interface ProcessInstanceDocument extends IProcessInstance {

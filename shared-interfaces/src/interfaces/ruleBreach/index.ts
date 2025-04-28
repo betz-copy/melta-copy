@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-empty-object-type */
-import { IRequiredConstraint, IUniqueConstraint, IValidationError } from '../entity';
+import { IEntityWithIgnoredRules, IRequiredConstraint, IUniqueConstraint, IValidationError } from '../entity';
 import { IUser } from '../user';
-import { ActionErrors, ActionTypes, IActionMetadataPopulated } from './actionMetadata';
+import { ActionErrors, ActionTypes, IActionMetadataPopulated, ICreateEntityMetadata } from './actionMetadata';
 import { IAction, IBrokenRule, IBrokenRulePopulated, IRuleBreach, IRuleBreachPopulated } from './ruleBreach';
 
 // Rule Breach Alerts
@@ -29,9 +29,14 @@ export interface IRuleBreachRequestPopulated extends IRuleBreachPopulated {
     status: RuleBreachRequestStatus;
 }
 
+export interface IError {
+    type: ActionErrors;
+    metadata: IValidationError | IUniqueConstraint | IRequiredConstraint;
+}
+
 export type IFailedEntity = {
     properties: Record<string, any>;
-    errors: { type: ActionErrors; metadata: IValidationError | IUniqueConstraint | IRequiredConstraint }[];
+    errors: IError[];
 };
 
 export type IActionPopulated = {
@@ -46,6 +51,29 @@ export type IBrokenRuleEntity = {
     rawActions: IAction[];
     entities: { properties: Record<string, any> }[];
 };
+
+export interface ITablesResults {
+    succeededEntities: ICreateEntityMetadata[];
+    failedEntities: IFailedEntity[];
+    brokenRulesEntities?: IBrokenRuleEntity;
+}
+
+export enum ExcelStepStatus {
+    uploadExcel = 'uploadExcel',
+    previewExcelRows = 'previewExcelRows',
+    excelUploadResult = 'excelUploadResult',
+}
+export interface IExcelSteps {
+    status: ExcelStepStatus;
+    files?: Record<string, File>;
+    data: ITablesResults;
+    entities?: IEntityWithIgnoredRules[];
+}
+
+export interface IEditReadExcel {
+    failedEntities: IFailedEntity[];
+    entities: IEntityWithIgnoredRules[];
+}
 
 export * from './agGrid';
 export * from './ruleBreach';

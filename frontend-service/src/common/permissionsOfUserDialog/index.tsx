@@ -6,10 +6,15 @@ import i18next from 'i18next';
 import React, { ReactElement } from 'react';
 import { useLocation } from 'wouter';
 import { IUser } from '@microservices/shared-interfaces';
+import { useQueryClient } from 'react-query';
 import { useDarkModeStore } from '../../stores/darkMode';
 import MyAccount from './myAccount';
 import MyPermissions from './myPermissions';
 import { AreYouSureDialog } from '../dialogs/AreYouSureDialog';
+import { BackendConfigState } from '../../services/backendConfigService';
+import { LocalStorage } from '../../utils/localStorage';
+import { environment } from '../../globals';
+import { MeltaUpdates } from '../../MeltaUpdates';
 
 const PermissionsOfUserDialog: React.FC<{
     isOpen: boolean;
@@ -28,6 +33,10 @@ const PermissionsOfUserDialog: React.FC<{
     const [isPreferencesUpdated, setIsPreferencesUpdated] = React.useState(false);
     const [isUnsavedChangesDialogOpen, setIsUnsavedChangesDialogOpen] = React.useState(false);
 
+    const [openMeltaUpdates, setOpenMeltaUpdates] = React.useState(false);
+    const queryClient = useQueryClient();
+    const config = queryClient.getQueryData<BackendConfigState>('getBackendConfig');
+
     const tabsComponentsMapping: Record<string, ReactElement> = {
         ...(mode === 'view' && {
             myAccount: (
@@ -41,6 +50,12 @@ const PermissionsOfUserDialog: React.FC<{
         }),
         myPermissions: <MyPermissions handleClose={handleClose} mode={mode} existingUser={existingUser} onSuccess={onSuccess} />,
     };
+
+    const handleCloseMeltaUpdates = () => {
+        setOpenMeltaUpdates(false);
+        LocalStorage.set(environment.meltaUpdatesShown, JSON.stringify(config?.meltaUpdates));
+    };
+
     return (
         <Dialog
             open={isOpen}
@@ -115,6 +130,14 @@ const PermissionsOfUserDialog: React.FC<{
                                 {i18next.t('showTour')}
                             </Button>
                         )}
+                        <Button
+                            onClick={() => {
+                                setOpenMeltaUpdates(true);
+                            }}
+                            disabled={!config?.meltaUpdates}
+                        >
+                            {i18next.t('meltaUpdates.btn')}
+                        </Button>
                     </Grid>
                 </Box>
             )}
@@ -134,6 +157,14 @@ const PermissionsOfUserDialog: React.FC<{
                 }}
                 body={i18next.t('user.areYouSure')}
             />
+            {config?.meltaUpdates && (
+                <MeltaUpdates
+                    open={openMeltaUpdates}
+                    handleClose={handleCloseMeltaUpdates}
+                    meltaUpdates={config?.meltaUpdates}
+                    titleDescription={config?.meltaUpdatesDescription}
+                />
+            )}
         </Dialog>
     );
 };

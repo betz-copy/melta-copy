@@ -47,6 +47,19 @@ export const updateEnumFieldRequestSchema = Joi.object({
 });
 
 /**
+ * PUT /api/instances/entities/convert-fields-to-plural/:id
+ */
+export const convertFieldsToPluralRequestSchema = Joi.object({
+    body: Joi.object({
+        propertiesKeysToPluralize: Joi.array().items(Joi.string()).required(),
+    }),
+    query: {},
+    params: {
+        id: Joi.string().required(),
+    },
+});
+
+/**
  * GET /api/instances/entities/get-is-field-used/:id
  */
 export const getIfValuefieldIsUsedRequestSchema = Joi.object({
@@ -156,6 +169,21 @@ const searchByTemplateSchema = {
         .unique('field')
         .default([]),
 };
+
+export const chartSchema = Joi.object({
+    body: Joi.array().items(
+        Joi.object({
+            _id: Joi.string(),
+            xAxis: Joi.any(),
+            yAxis: Joi.any(),
+            filter: searchFilterSchema,
+        }),
+    ),
+    query: {},
+    params: {
+        templateId: Joi.string().required(),
+    },
+});
 
 /*
  * POST /api/instances/entities/search/template/:templateId
@@ -319,7 +347,7 @@ export const updateEntityByIdRequestSchema = Joi.object({
         properties: Joi.object().required(),
         templateId: Joi.string().required(),
         ignoredRules: Joi.array().items(brokenRuleSchema).default([]),
-        userId: Joi.string().required(),
+        userId: Joi.string(),
         convertToRelationshipField: Joi.boolean().default(false),
     },
     query: {},

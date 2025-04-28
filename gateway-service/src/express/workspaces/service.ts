@@ -48,6 +48,11 @@ class WorkspaceService {
         const { data } = await this.api.delete<IWorkspace>(`/${id}`);
         return data;
     }
+
+    static async getWorkspaces(body: { search: string }) {
+        const { data } = await this.api.post<IWorkspace[]>('/search', body);
+        return data;
+    }
 }
 
 export default WorkspaceService;

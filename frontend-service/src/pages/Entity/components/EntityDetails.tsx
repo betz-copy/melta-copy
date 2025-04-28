@@ -1,11 +1,9 @@
 import { Card, CardContent, Dialog, Grid, IconButton, Menu } from '@mui/material';
 import {
-    AccountTreeOutlined as GraphIcon,
     ContentCopy as DuplicateIcon,
     Delete as DeleteIcon,
     DoNotDisturbOnOutlined as DoNotDisturbOnOutlinedIcon,
     DoNotDisturbOffOutlined as DoNotDisturbOffOutlinedIcon,
-    Edit as EditIcon,
     MoreVertOutlined,
     Unarchive,
     Archive,
@@ -25,6 +23,7 @@ import {
     IRuleBreach,
     IRuleBreachPopulated,
     PermissionScope,
+    IMongoEntityTemplatePopulated,
 } from '@microservices/shared-interfaces';
 import MapIcon from '@mui/icons-material/Map';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
@@ -33,17 +32,16 @@ import { EntityProperties } from '../../../common/EntityProperties';
 import { ErrorToast } from '../../../common/ErrorToast';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
 import { ImageWithDisable } from '../../../common/ImageWithDisable';
-import { MenuButton } from '../../../common/MenuButton';
 import { deleteEntityRequest, updateEntityStatusRequest } from '../../../services/entitiesService';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { useUserStore } from '../../../stores/user';
-import { checkUserCategoryPermission, isWorkspaceAdmin } from '../../../utils/permissions/instancePermissions';
+import { checkUserTemplatePermission, isWorkspaceAdmin } from '../../../utils/permissions/instancePermissions';
 import { EditEntityDetails } from './EditEntityDetails';
 import { EntityDates } from './EntityDates';
 import { EntityDisableCheckbox } from './EntityDisableCheckbox';
 import TooltipMenuButton from './TooltipMenuButton';
 import UpdateStatusWithRuleBreachDialog from './UpdateStatusWithRuleBreachDialog';
-import EntityWithLocationFields from '../../Map/LocationPreview';
+import LocationPreview from '../../Map/LocationPreview';
 
 const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplateWithConstraintsPopulated; expandedEntity: IEntityExpanded }> = ({
     entityTemplate,
@@ -82,13 +80,27 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplateWithConstrai
         setOpenDeleteDialog(false);
     };
 
+    const entityDetailTooltipTitle = (canWriteInstance: boolean, isEntityDisabled: boolean) => {
+        // eslint-disable-next-line no-nested-ternary
+        return !canWriteInstance
+            ? i18next.t('permissions.dontHaveWritePermissionsToTemplate')
+            : isEntityDisabled
+              ? i18next.t('entityPage.disabledEntity')
+              : '';
+    };
+
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const currentEntityTemplate = entityTemplates.get(expandedEntity?.entity.templateId);
     const templateIds = Array.from(entityTemplates.keys());
 
     const workspaceAdmin = isWorkspaceAdmin(currentUser.currentWorkspacePermissions);
-    const canWriteInstance = checkUserCategoryPermission(currentUser.currentWorkspacePermissions, entityTemplate.category, PermissionScope.write);
-    const isEntityDisabled = expandedEntity.entity.properties.disabled;
+    const canWriteInstance = checkUserTemplatePermission(
+        currentUser.currentWorkspacePermissions,
+        entityTemplate.category,
+        entityTemplate._id,
+        PermissionScope.write,
+    );
+    const isEntityDisabled = expandedEntity.entity.properties.disabled || entityTemplate.disabled;
     const includeLocationProperty = Object.entries(entityTemplate.properties.properties).some(
         ([field, property]) => property.format === 'location' && entity.properties[field] !== undefined,
     );
@@ -200,7 +212,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplateWithConstrai
                                         popoverText={
                                             // eslint-disable-next-line no-nested-ternary
                                             !canWriteInstance
-                                                ? i18next.t('permissions.dontHaveWritePermissionsToCategory')
+                                                ? i18next.t('permissions.dontHaveWritePermissionsToTemplate')
                                                 : isEntityDisabled
                                                   ? i18next.t('entityPage.disabledEntity')
                                                   : i18next.t('actions.edit')
@@ -225,38 +237,8 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplateWithConstrai
                                     <MoreVertOutlined sx={{ color: '#787c9e' }} />
                                 </IconButton>
                                 <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
-                                    <Grid>
-                                        <MenuButton
-                                            onClick={() => {
-                                                navigate(`/entity/${entity.properties._id}/graph`);
-                                                handleClose();
-                                            }}
-                                            text={i18next.t('actions.graph')}
-                                            icon={<GraphIcon color="action" />}
-                                        />
-                                    </Grid>
-
                                     <TooltipMenuButton
-                                        tooltipTitle={
-                                            // eslint-disable-next-line no-nested-ternary
-                                            !canWriteInstance
-                                                ? i18next.t('permissions.dontHaveWritePermissionsToCategory')
-                                                : isEntityDisabled
-                                                  ? i18next.t('entityPage.disabledEntity')
-                                                  : ''
-                                        }
-                                        onClick={() => {
-                                            if (!canWriteInstance || isEntityDisabled) return;
-                                            setIsEditMode(true);
-                                            handleClose();
-                                        }}
-                                        disabled={!canWriteInstance || isEntityDisabled}
-                                        icon={EditIcon}
-                                        text={i18next.t('actions.edit')}
-                                    />
-
-                                    <TooltipMenuButton
-                                        tooltipTitle={!canWriteInstance ? i18next.t('permissions.dontHaveWritePermissionsToCategory') : ''}
+                                        tooltipTitle={entityDetailTooltipTitle(canWriteInstance, isEntityDisabled)}
                                         onClick={() => {
                                             if (canWriteInstance && !isEntityDisabled) {
                                                 navigate(`/entity/${entity.properties._id}/duplicate`, {
@@ -265,36 +247,36 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplateWithConstrai
                                             }
                                             handleClose();
                                         }}
-                                        disabled={!canWriteInstance}
+                                        disabled={!canWriteInstance || isEntityDisabled}
                                         icon={DuplicateIcon}
                                         text={i18next.t('actions.duplicate')}
                                     />
 
                                     <TooltipMenuButton
-                                        tooltipTitle={i18next.t('permissions.dontHaveWritePermissionsToCategory')}
+                                        tooltipTitle={entityDetailTooltipTitle(canWriteInstance, isEntityDisabled)}
                                         onClick={() => {
                                             setOpenDeleteDialog(true);
                                             handleClose();
                                         }}
-                                        disabled={!canWriteInstance}
+                                        disabled={!canWriteInstance || entityTemplate.disabled || entity.properties.disabled}
                                         icon={DeleteIcon}
                                         text={i18next.t('actions.delete')}
                                     />
 
                                     <TooltipMenuButton
-                                        tooltipTitle={!canWriteInstance ? i18next.t('permissions.dontHaveWritePermissionsToCategory') : ''}
+                                        tooltipTitle={entityDetailTooltipTitle(canWriteInstance, isEntityDisabled)}
                                         onClick={() => {
                                             if (canWriteInstance) {
                                                 updateEntityStatus({ currEntity: entity, disabled: !entity.properties.disabled });
                                             }
                                             handleClose();
                                         }}
-                                        disabled={!canWriteInstance}
+                                        disabled={!canWriteInstance || entityTemplate.disabled}
                                         icon={isEntityDisabled ? DoNotDisturbOffOutlinedIcon : DoNotDisturbOnOutlinedIcon}
                                         text={isEntityDisabled ? i18next.t('actions.activate') : i18next.t('actions.disable')}
                                     />
                                     <TooltipMenuButton
-                                        tooltipTitle={i18next.t('permissions.dontHaveWritePermissionsToCategory')}
+                                        tooltipTitle={i18next.t('permissions.dontHaveWritePermissionsToTemplate')}
                                         onClick={() => setDisplayArchiveProperties(!displayArchiveProperties)}
                                         disabled={!canWriteInstance}
                                         icon={displayArchiveProperties ? Archive : Unarchive}
@@ -405,7 +387,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplateWithConstrai
             )}
             {mapDialogOpen && (
                 <Dialog open={mapDialogOpen} onClose={() => setMapDialogOpen(false)}>
-                    <EntityWithLocationFields entity={entity} entityTemplate={entityTemplate} styles={{ height: '800px', width: '600px' }} />
+                    <LocationPreview entityProperties={entity.properties} entityTemplate={entityTemplate} />
                 </Dialog>
             )}
         </>

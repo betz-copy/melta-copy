@@ -1,57 +1,72 @@
+/* eslint-disable consistent-return */
 import { Request, Response, NextFunction } from 'express';
 import Busboy from 'busboy';
-import { Readable } from 'stream';
+import { PassThrough } from 'stream';
 import ReadableStreamClone from 'readable-stream-clone';
 import { UploadedFile } from '../../express/files/interface';
 
 const busboyMiddleware = (req: Request, _res: Response, next: NextFunction): void => {
-    if (!req.is('multipart/form-data')) {
-        return next();
-    }
-    const busboy = Busboy({ headers: req.headers, defCharset: 'utf8' });
-    const fields: Record<string, unknown> = {};
-    const files: UploadedFile[] = [];
+    if (!req.is('multipart/form-data')) return next();
 
-    busboy.on('file', (fieldname: string, file: Readable, { encoding, filename, mimeType }) => {
-        let fileSize = 0;
-        const copiedFileStream = new ReadableStreamClone(file);
-        const validFileName = Buffer.from(filename, 'binary').toString('utf8');
+    try {
+        const busboy = Busboy({ headers: req.headers, defCharset: 'utf8' });
+        const fields: Record<string, unknown> = {};
+        const allFiles: UploadedFile[] = [];
 
-        file.on('data', (data) => {
-            fileSize += data.length;
-        }).on('close', () => {
+        let singleFileField: UploadedFile | null = null;
+
+        busboy.on('file', (fieldname, file, { encoding, filename, mimeType }) => {
+            const copiedStream = new ReadableStreamClone(file);
+            const passthrough = new PassThrough();
+            file.pipe(passthrough);
+
+            const validFileName = Buffer.from(filename, 'binary').toString('utf8');
+            let size = 0;
+
             const fileData: UploadedFile = {
                 fieldname,
                 originalname: validFileName,
                 encoding,
                 mimetype: mimeType,
-                stream: copiedFileStream,
-                size: fileSize,
+                stream: copiedStream,
+                size,
             };
-            files.push(fileData);
+
+            file.on('data', (data) => {
+                size += data.length;
+                fileData.size = size;
+            });
+
+            file.on('end', () => {
+                allFiles.push(fileData);
+
+                if (fieldname === 'file') {
+                    singleFileField = fileData;
+                }
+            });
         });
-    });
 
-    busboy.on('field', (fieldname: string, val: string) => {
-        fields[fieldname] = val;
-    });
+        busboy.on('field', (fieldname, val) => {
+            fields[fieldname] = val;
+        });
 
-    busboy.on('finish', () => {
-        req.body = fields;
+        busboy.on('finish', () => {
+            req.body = fields;
 
-        if (files?.length > 1) req.files = files;
-        else req.file = files?.[0];
+            if (singleFileField) req.file = singleFileField;
+            if (allFiles.length) req.files = allFiles;
 
-        next();
-    });
+            next();
+        });
 
-    busboy.on('error', (err: Error) => {
+        busboy.on('error', (err) => {
+            next(err);
+        });
+
+        req.pipe(busboy);
+    } catch (err) {
         next(err);
-    });
-
-    req.pipe(busboy);
-
-    return undefined;
+    }
 };
 
 export default busboyMiddleware;

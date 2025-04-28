@@ -1,151 +1,182 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useEffect, useMemo, useState } from 'react';
-import { MapContainer, LayersControl, LayerGroup, FeatureGroup, Marker, Popup, Polygon } from 'react-leaflet';
-import L, { CRS, LatLng } from 'leaflet';
-import 'leaflet-draw';
-import 'leaflet/dist/leaflet.css';
-import 'leaflet-draw/dist/leaflet.draw.css';
-import { EditControl } from 'react-leaflet-draw';
-import { useQueryClient } from 'react-query';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { Cartesian3 } from 'cesium';
+import { Viewer, CesiumMovementEvent } from 'resium';
+import { ToggleButton, ToggleButtonGroup } from '@mui/material';
+import { Place, Polyline } from '@mui/icons-material';
 import i18next from 'i18next';
-import { bindPopupForMarker, bindPopupForPolygon, jerusalemCoordinates, latLngToString, stringToCoordinates, UpdateMapBounds } from '../../utils/map';
-import { BaseLayers } from './mapPage';
-import { createSquareAroundPoint } from '../../utils/hooks/useLocation';
-import { environment } from '../../globals';
+import * as Cesium from 'cesium';
+import { useQueryClient } from 'react-query';
+import { MeltaTooltip } from '../../common/MeltaTooltip';
+import { useDarkModeStore } from '../../stores/darkMode';
+import {
+    calculateCenterOfPolygon,
+    locationToWGS84String,
+    getPolygonFarthestPoint,
+    isValidPolygonPoint,
+    jerusalemCoordinates,
+    stringToCoordinates,
+} from '../../utils/map';
+import { MeltaCoordinate, MeltaPolygon } from './LocationPreview';
+import { DeleteMapDataBtn } from './mapPage/MapFilters';
+import { BaseLayers } from './BaseLayers';
 import { BackendConfigState } from '../../services/backendConfigService';
-
-const { squareLength } = environment.map;
+import { convertWGS94ToECEF, isValidWGS84 } from '../../utils/map/convert';
 
 type Props = {
     defaultLocation?: string;
-    styles?: React.CSSProperties;
-    updateValue: (newValue: string) => void;
+    field: string;
+    updateValue: (newValue: string | undefined) => void;
 };
 
-const LocationField = ({ defaultLocation, styles, updateValue }: Props) => {
-    const [markerPosition, setMarkerPosition] = useState<LatLng | null>(null);
-    const [polygonPosition, setPolygonPosition] = useState<LatLng[] | null>(null);
+const LocationField = ({ defaultLocation, field, updateValue }: Props) => {
     const queryClient = useQueryClient();
+    const config = queryClient.getQueryData<BackendConfigState>('getBackendConfig');
+
+    const viewerRef = useRef<any>(null);
+
+    const [drawingMode, setDrawingMode] = useState<'polygon' | 'coordinate' | null>(null);
+    const [polygonPosition, setPolygonPosition] = useState<Cartesian3[]>([]);
+    const [markerPosition, setMarkerPosition] = useState<Cartesian3 | null>(null);
+
+    const darkMode = useDarkModeStore((state) => state.darkMode);
 
     useEffect(() => {
         const initialCoordinates = defaultLocation ? stringToCoordinates(defaultLocation) : null;
+
         if (initialCoordinates?.type === 'marker') {
-            setMarkerPosition(initialCoordinates.value as LatLng);
+            const { value } = initialCoordinates;
+            setMarkerPosition(isValidWGS84(value as Cartesian3) ? (convertWGS94ToECEF(value) as Cartesian3) : ({ ...value } as Cartesian3));
         }
+
         if (initialCoordinates?.type === 'polygon') {
-            setPolygonPosition(initialCoordinates.value as LatLng[]);
+            const positions = (initialCoordinates.value as Cartesian3[]).map((position) =>
+                isValidWGS84(position) ? (convertWGS94ToECEF(position) as Cartesian3) : position,
+            );
+            setPolygonPosition(positions);
         }
     }, []);
 
-    const handleLayerCreate = (e: L.DrawEvents.Created) => {
-        const { layer } = e;
-        if (layer instanceof L.Marker) {
-            const latLng = layer.getLatLng();
-            setMarkerPosition(latLng);
-            updateValue(latLngToString(latLng));
-        } else if (layer instanceof L.Polygon) {
-            const latLngs = layer.getLatLngs()[0] as LatLng[];
-            setPolygonPosition(latLngs);
-            updateValue(latLngToString(latLngs));
-        }
-    };
+    useEffect(() => {
+        const animateCamera = () => {
+            const viewer = viewerRef.current?.cesiumElement;
+            if (!viewer) return;
+            const { camera } = viewer;
 
-    const handleLayerDelete = (e: L.DrawEvents.Deleted) => {
-        e.layers.eachLayer((layer) => {
-            let latlng;
-            if (layer instanceof L.Marker) latlng = layer.getLatLng();
-            else if (layer instanceof L.Polygon) {
-                const bounds = layer.getBounds();
-                latlng = [bounds.getCenter().lat, bounds.getCenter().lng];
+            if (markerPosition !== null) {
+                const radius = 30000;
+                const boundingSphere = new Cesium.BoundingSphere(markerPosition, radius);
+
+                camera.flyToBoundingSphere(boundingSphere, {
+                    duration: 1.5,
+                    offset: new Cesium.HeadingPitchRange(0, -Cesium.Math.toRadians(90), radius * 2.5),
+                });
+            } else if (polygonPosition.length > 0) {
+                if (drawingMode == null) {
+                    const center = calculateCenterOfPolygon(polygonPosition);
+                    const radius = getPolygonFarthestPoint(center, polygonPosition);
+                    const boundingSphere = new Cesium.BoundingSphere(center, radius);
+
+                    camera.flyToBoundingSphere(boundingSphere, {
+                        duration: 1.5,
+                        offset: new Cesium.HeadingPitchRange(0, -Cesium.Math.toRadians(90), radius * 2.5),
+                    });
+                }
+            } else {
+                camera.flyTo({
+                    destination: jerusalemCoordinates,
+                    duration: 1.5,
+                });
             }
+        };
 
-            if (markerPosition && latlng.lat === markerPosition.lat && latlng.lng === markerPosition.lng) setMarkerPosition(null);
-            if (polygonPosition && polygonPosition.some((pos) => pos.lat === latlng[0] && pos.lng === latlng[1])) setPolygonPosition(null);
+        const animationFrameId = requestAnimationFrame(animateCamera);
+        return () => cancelAnimationFrame(animationFrameId);
+    }, [markerPosition, polygonPosition]);
 
-            layer.remove();
-        });
-        updateValue('');
-    };
+    const handleViewerClick = useCallback(
+        (clickEvent: CesiumMovementEvent) => {
+            if (drawingMode === null || !clickEvent.position) return;
 
-    const handleLayerEdit = (e: L.DrawEvents.Edited) => {
-        e.layers.eachLayer((layer) => {
-            if (layer instanceof L.Marker) {
-                const latLng = layer.getLatLng();
-                setMarkerPosition(latLng);
-                updateValue(latLngToString(latLng));
-            } else if (layer instanceof L.Polygon) {
-                const latLngs = layer.getLatLngs()[0] as LatLng[];
-                setPolygonPosition(latLngs);
-                updateValue(latLngToString(latLngs));
+            const viewer = viewerRef.current?.cesiumElement;
+            if (!viewer) return;
+
+            const { scene } = viewer;
+            const cartesian: Cartesian3 = scene.camera.pickEllipsoid(clickEvent.position, scene.globe.ellipsoid);
+
+            if (cartesian) {
+                if (drawingMode === 'polygon') {
+                    if (isValidPolygonPoint(polygonPosition, cartesian)) {
+                        setPolygonPosition((prev) => [...prev, cartesian]);
+                        const newPolygon = [...polygonPosition, cartesian];
+                        updateValue(locationToWGS84String(newPolygon));
+                    }
+                } else if (drawingMode === 'coordinate') {
+                    setMarkerPosition(cartesian);
+                    setDrawingMode(null);
+                    updateValue(locationToWGS84String(cartesian));
+                }
             }
-        });
+        },
+        [drawingMode, viewerRef, polygonPosition, setPolygonPosition, setMarkerPosition, setDrawingMode, updateValue],
+    );
+
+    const onClear = () => {
+        setPolygonPosition([]);
+        setMarkerPosition(null);
+        setDrawingMode(null);
+        updateValue(undefined);
     };
 
-    const bounds = useMemo(() => {
-        if (polygonPosition) return L.latLngBounds(polygonPosition);
-        if (markerPosition) return L.latLngBounds(createSquareAroundPoint(markerPosition as L.LatLngExpression, squareLength));
-
-        return null;
-    }, [polygonPosition, markerPosition]);
-
-    const config = queryClient.getQueryData<BackendConfigState>('getBackendConfig');
-    if (!config) return <>{i18next.t('location.noCrsTypes')}</>;
-    const { crsType } = config;
+    const handleDrawType = (_event: React.MouseEvent<HTMLElement>, newShape: 'polygon' | 'coordinate' | null) => {
+        setDrawingMode(newShape);
+    };
 
     return (
-        <MapContainer
-            style={{ width: '100%', height: '100vh', ...styles }}
-            bounds={bounds?.isValid() ? bounds : undefined}
-            center={!bounds?.isValid() ? markerPosition || jerusalemCoordinates : undefined}
-            zoom={!bounds?.isValid() ? 8 : undefined}
-            maxBoundsViscosity={1}
-            maxBounds={[
-                [-90, -180],
-                [90, 180],
-            ]}
-            crs={CRS[crsType]}
-        >
-            <UpdateMapBounds bounds={bounds} />
+        <div style={{ position: 'relative', height: '800px', width: '600px' }}>
+            <Viewer
+                full
+                ref={viewerRef}
+                onClick={handleViewerClick}
+                baseLayerPicker={false}
+                animation={false}
+                timeline={false}
+                geocoder={false}
+                homeButton={false}
+                sceneModePicker={false}
+                vrButton={false}
+                fullscreenButton={false}
+                navigationHelpButton={false}
+            >
+                {polygonPosition.length > 0 && <MeltaPolygon name={field} polygon={polygonPosition} />}
+                {markerPosition && <MeltaCoordinate name={field} position={markerPosition} />}
 
-            <LayersControl position="topright">
-                <BaseLayers />
-                <LayerGroup>
-                    <FeatureGroup>
-                        {markerPosition && (
-                            <Marker position={markerPosition}>
-                                <Popup>{bindPopupForMarker(markerPosition)}</Popup>
-                            </Marker>
-                        )}
+                <div style={{ position: 'absolute', top: '10px', left: '10px', display: 'flex', gap: '10px' }}>
+                    {polygonPosition.length === 0 && markerPosition === null && (
+                        <ToggleButtonGroup
+                            value={drawingMode}
+                            exclusive
+                            onChange={handleDrawType}
+                            style={{ background: darkMode ? '#121212' : 'white', height: '34px' }}
+                        >
+                            <MeltaTooltip title={i18next.t('location.coordinate')}>
+                                <ToggleButton value="coordinate" disabled={polygonPosition.length > 0}>
+                                    <Place sx={{ width: '20px', height: '20px', color: darkMode ? '#9398c2' : '#787c9e' }} />
+                                </ToggleButton>
+                            </MeltaTooltip>
+                            <MeltaTooltip title={i18next.t('location.polygon')}>
+                                <ToggleButton value="polygon" disabled={markerPosition !== null}>
+                                    <Polyline sx={{ width: '20px', height: '20px', color: darkMode ? '#9398c2' : '#787c9e' }} />
+                                </ToggleButton>
+                            </MeltaTooltip>
+                        </ToggleButtonGroup>
+                    )}
+                    <DeleteMapDataBtn onClick={onClear} darkMode={darkMode} />
 
-                        {polygonPosition && (
-                            <Polygon positions={polygonPosition}>
-                                <Popup>{bindPopupForPolygon(polygonPosition)}</Popup>
-                            </Polygon>
-                        )}
-
-                        <EditControl
-                            key={`${markerPosition ? 'marker' : ''}-${polygonPosition ? 'polygon' : ''}`}
-                            position="topright"
-                            draw={{
-                                rectangle: false,
-                                circlemarker: false,
-                                circle: false,
-                                polyline: false,
-                                polygon: !markerPosition && !polygonPosition, // enabling creation of layers only if none exist
-                                marker: !markerPosition && !polygonPosition,
-                            }}
-                            edit={{
-                                edit: defaultLocation ? {} : false, // Enable editing of existing layers only if exist
-                                remove: true,
-                            }}
-                            onCreated={handleLayerCreate}
-                            onEdited={handleLayerEdit}
-                            onDeleted={handleLayerDelete}
-                        />
-                    </FeatureGroup>
-                </LayerGroup>
-            </LayersControl>
-        </MapContainer>
+                    {config && <BaseLayers viewerRef={viewerRef} config={config} />}
+                </div>
+            </Viewer>
+        </div>
     );
 };
 

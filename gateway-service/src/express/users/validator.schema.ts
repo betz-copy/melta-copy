@@ -51,6 +51,15 @@ export const getKartoffelUserProfileRequestSchema = joi.object({
     },
 });
 
+// GET /api/users/kartoffelUser/:kartoffelId
+export const getKartoffelUserByIdSchema = joi.object({
+    query: {},
+    body: {},
+    params: {
+        kartoffelId: MongoIdSchema.required(),
+    },
+});
+
 // GET /api/users/user-profile/:userId
 export const getUserProfileRequestSchema = joi.object({
     query: {},
@@ -139,6 +148,7 @@ export const searchExternalUsersRequestSchema = joi.object({
     query: {
         search: joi.string().required(),
         workspaceId: MongoIdSchema,
+        isKartoffelUser: joi.boolean().default(false),
     },
     body: {},
     params: {},

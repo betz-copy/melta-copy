@@ -12,6 +12,7 @@ export enum WorkspaceTypes {
 export interface IMetadata {
     shouldNavigateToEntityPage: boolean;
     isDrawerOpen: boolean;
+    flowCube: boolean;
     agGrid: {
         rowCount: number;
         defaultExpandedRowCount: number;
@@ -33,7 +34,6 @@ export interface IMetadata {
         filesLimit: number;
     };
     searchLimits: {
-        table: number;
         bulk: number;
     };
 }

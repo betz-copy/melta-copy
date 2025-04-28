@@ -10,9 +10,10 @@ import {
     IAgGridSetFilter,
     IAgGridSort,
     IAgGridTextFilter,
+    IEntitySingleProperty,
 } from '@microservices/shared-interfaces';
 import { environment } from '../../globals';
-import { getDayStart, getDayEnd } from '../date';
+import { getDayEnd, getDayStart } from '../date';
 import { addDefaultFieldsToTemplate } from '../templates';
 
 export const setFilterToFilterOfTemplate = (field: string, { values }: IAgGridSetFilter): IFilterOfTemplate => {
@@ -31,13 +32,14 @@ export const textFilterToFilterOfTemplate = (field: string, { type, filter }: IA
         case 'contains':
             return { [field]: { $rgx: `.*${escapeRegExp(filter!)}.*` } };
         case 'notContains':
-            return { [field]: { $not: { $rgx: `${escapeRegExp(filter!)}` } } };
+            return { [field]: { $not: { $rgx: `.*${escapeRegExp(filter!)}.*` } } };
         case 'startsWith':
             return { [field]: { $rgx: `${escapeRegExp(filter!)}.*` } };
         case 'endsWith':
             return { [field]: { $rgx: `.*${escapeRegExp(filter!)}` } };
-        case 'blank':
+        case 'blank': {
             return { [field]: { $eq: null } };
+        }
         case 'notBlank':
             return { [field]: { $ne: null } };
         default:
@@ -176,6 +178,25 @@ export const dateTimeFilterToFilterOfTemplate = (
     }
 };
 
+export const filterModelToFilterOfTemplatePerField = (fieldTemplate: IEntitySingleProperty, field: string, fieldFilter: IAgGridFilterModel) => {
+    switch (fieldFilter.filterType) {
+        case 'text':
+            if (fieldTemplate.format === 'fileId') return textFilterOfFileToFilterTemplate(field, fieldFilter);
+            return textFilterToFilterOfTemplate(field, fieldFilter);
+        case 'number':
+            return numberFilterToFilterOfTemplate(field, fieldFilter);
+        case 'date':
+            if (fieldTemplate.format === 'date') {
+                return dateFilterToFilterOfTemplate(field, fieldFilter);
+            }
+            return dateTimeFilterToFilterOfTemplate(field, fieldFilter);
+        case 'set':
+            return setFilterToFilterOfTemplate(field, fieldFilter);
+        default:
+            throw new Error('Invalid supported ag-grid filter type');
+    }
+};
+
 export const filterModelToFilterOfTemplate = (
     filterModel: Record<string, IAgGridFilterModel>,
     entityTemplate: IMongoEntityTemplatePopulated,
@@ -187,22 +208,7 @@ export const filterModelToFilterOfTemplate = (
 
         const fieldTemplate = entityTemplateWithDefaultFields.properties.properties[field];
 
-        switch (fieldFilter.filterType) {
-            case 'text':
-                if (fieldTemplate.format === 'fileId') return textFilterOfFileToFilterTemplate(field, fieldFilter);
-                return textFilterToFilterOfTemplate(field, fieldFilter);
-            case 'number':
-                return numberFilterToFilterOfTemplate(field, fieldFilter);
-            case 'date':
-                if (fieldTemplate.format === 'date') {
-                    return dateFilterToFilterOfTemplate(field, fieldFilter);
-                }
-                return dateTimeFilterToFilterOfTemplate(field, fieldFilter);
-            case 'set':
-                return setFilterToFilterOfTemplate(field, fieldFilter);
-            default:
-                throw new Error('Invalid supported ag-grid filter type');
-        }
+        return filterModelToFilterOfTemplatePerField(fieldTemplate, field, fieldFilter);
     });
 
     return queries.length > 0 ? { $and: queries } : undefined;
@@ -215,15 +221,14 @@ export const sortModelToSortOfSearchRequest = (sortModel: IAgGridSort[]): ISearc
 export const agGridToSearchEntitiesOfTemplateRequest = (
     agGridRequest: IAgGridRequest,
     entityTemplate: IMongoEntityTemplatePopulated & { entitiesWithFiles?: ICountSearchResult['entitiesWithFiles'] },
-    tableCount: number,
+    defaultFilter?: ISearchEntitiesOfTemplateBody['filter'],
 ): ISearchEntitiesOfTemplateBody => {
-    const { startRow, filterModel, quickFilter, sortModel } = agGridRequest;
-
+    const { startRow, endRow, filterModel, quickFilter, sortModel } = agGridRequest;
     return {
         skip: startRow,
-        limit: tableCount,
+        limit: endRow - startRow,
         textSearch: quickFilter,
-        filter: filterModelToFilterOfTemplate(filterModel, entityTemplate),
+        filter: defaultFilter ?? filterModelToFilterOfTemplate(filterModel, entityTemplate),
         showRelationships: false,
         sort: sortModelToSortOfSearchRequest(sortModel),
         entitiesWithFiles: entityTemplate.entitiesWithFiles,

@@ -3,10 +3,11 @@ import { TextField, Grid, RadioGroup, Radio, FormControl, FormControlLabel, Form
 import * as Yup from 'yup';
 import i18next from 'i18next';
 import { useQueryClient } from 'react-query';
-import { IEntityTemplateMap } from '@microservices/shared-interfaces';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '@microservices/shared-interfaces';
 import { StepComponentProps } from '../index';
 import { RuleWizardValues } from '.';
-
+import { getAllWritePermissionEntityTemplates } from '../../../utils/permissions/templatePermissions';
+import { useUserStore } from '../../../stores/user';
 const createRuleSchema = {
     name: Yup.string().required(i18next.t('validation.required')),
     description: Yup.string().required(i18next.t('validation.required')),
@@ -24,12 +25,13 @@ const CreateRule: React.FC<StepComponentProps<RuleWizardValues, 'isEditMode'>> =
     isEditMode,
 }) => {
     const queryClient = useQueryClient();
-
+    const currentUser = useUserStore((state) => state.user);
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
 
     const { entityTemplateId } = values;
 
-    const activeEntityTemplatesFiltered = Array.from(entityTemplates.values()).filter(({ disabled }) => !disabled);
+    const activeEntityTemplatesFiltered = Array.from(entityTemplates.values() as IMongoEntityTemplatePopulated[]).filter(({ disabled }) => !disabled);
+    const allowedEntityTemplates = getAllWritePermissionEntityTemplates(activeEntityTemplatesFiltered, currentUser);
 
     const entityTemplate = entityTemplateId ? entityTemplates.get(entityTemplateId)! : null;
 
@@ -68,7 +70,7 @@ const CreateRule: React.FC<StepComponentProps<RuleWizardValues, 'isEditMode'>> =
             </Grid>
             <Grid item width="250px">
                 <Autocomplete
-                    options={activeEntityTemplatesFiltered}
+                    options={allowedEntityTemplates}
                     onChange={(_e, value) => setFieldValue('entityTemplateId', value?._id || '')}
                     value={entityTemplate}
                     getOptionLabel={(option) => option.displayName}

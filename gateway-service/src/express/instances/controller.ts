@@ -35,6 +35,14 @@ class InstancesController extends DefaultController<InstancesManager> {
         );
     }
 
+    async getChangedEntitiesFromExcel(req: Request, res: Response) {
+        res.json(await this.manager.getChangedEntitiesFromExcel(req.body.templateId, req.file!));
+    }
+
+    async editManyEntitiesByExcel(req: Request, res: Response) {
+        res.json(await this.manager.editManyEntitiesByExcel(req.body.entities, req.user!.id));
+    }
+
     async updateEntityInstance(req: Request, res: Response) {
         const { ignoredRules, ...instanceData } = req.body;
         res.json(
@@ -49,7 +57,7 @@ class InstancesController extends DefaultController<InstancesManager> {
     }
 
     async searchEntitiesByLocation(req: Request, res: Response) {
-        res.json(await this.manager.searchEntitiesByLocation(req.body as ISearchEntitiesByLocationBody));
+        res.json(await this.manager.searchEntitiesByLocation(req.body as ISearchEntitiesByLocationBody, req.user!.id));
     }
 
     async searchEntitiesBatch(req: Request, res: Response) {

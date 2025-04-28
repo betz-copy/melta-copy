@@ -31,9 +31,15 @@ import { ValidationError } from '../error';
 
 const { neo4j, ajvCustomFormats } = config;
 
+enum CoordinateSystem {
+    UTM = 'UTM',
+    WGS84 = 'WGS84',
+}
+
 const ajv = new Ajv();
 
 ajv.addFormat('fileId', ajvCustomFormats.fileIdFieldRegex);
+ajv.addFormat('signature', ajvCustomFormats.signatureFieldRegex);
 ajv.addFormat('user', {
     type: 'string',
     validate: (user) => {
@@ -41,9 +47,18 @@ ajv.addFormat('user', {
         return userObj._id && userObj.fullName && userObj.jobTitle && userObj.hierarchy && userObj.mail;
     },
 });
+ajv.addFormat('kartoffelUserField', /.*/);
 ajv.addFormat('text-area', ajvCustomFormats.textAreaFieldRegex);
 ajv.addFormat('relationshipReference', ajvCustomFormats.relationshipReferenceFieldRegex);
-ajv.addFormat('location', ajvCustomFormats.locationFieldRegex);
+ajv.addFormat('location', {
+    type: 'string',
+    validate: (location) => {
+        const locationObj = JSON.parse(location);
+        return (
+            locationObj.location && (locationObj.coordinateSystem === CoordinateSystem.UTM || locationObj.coordinateSystem === CoordinateSystem.WGS84)
+        );
+    },
+});
 
 addFormats(ajv);
 ajv.addVocabulary(['patternCustomErrorMessage', 'hide']);
@@ -55,11 +70,13 @@ ajv.addKeyword({ keyword: 'calculateTime', type: 'boolean' });
 ajv.addKeyword({ keyword: 'isDailyAlert', type: 'boolean' });
 ajv.addKeyword({ keyword: 'isDatePastAlert', type: 'boolean' });
 ajv.addKeyword({ keyword: 'archive', type: 'boolean' });
+ajv.addKeyword({ keyword: 'identifier', type: 'boolean' });
 ajv.addKeyword({
     keyword: 'serialStarter',
     type: 'number',
 });
 ajv.addKeyword({ keyword: 'user', type: 'string' });
+ajv.addKeyword({ keyword: 'expandedUserField', type: 'string' });
 ajv.addKeyword({
     keyword: 'relationshipReference',
     type: 'string',
@@ -430,8 +447,14 @@ const formatDateForFullTextSearch = (date: Date) => {
     return formatFns(date, 'dd/MM/yyyy');
 };
 
-const getFileName = (fileId: string): string => {
+export const getFileName = (fileId: string): string => {
     return fileId.slice(config.fileIdLength);
+};
+
+export const getFilesName = (files: string[]): string => {
+    const fileNames = files.map((fileId: string) => getFileName(fileId));
+
+    return fileNames.join(', ');
 };
 
 export const addStringFieldsAndNormalizeSpecialStringValues = (
@@ -484,7 +507,7 @@ export const addStringFieldsAndNormalizeSpecialStringValues = (
             normalizedEntity[`${key}${neo4j.filePropertySuffix}`] = propertyValue.map((fileId: string) => getFileName(fileId));
         }
 
-        if (type === 'string' && format === 'fileId') {
+        if (type === 'string' && (format === 'fileId' || format === 'signature')) {
             normalizedEntity[`${key}${neo4j.filePropertySuffix}`] = getFileName(propertyValue);
         }
 
@@ -515,8 +538,10 @@ export const addStringFieldsAndNormalizeSpecialStringValues = (
             return;
         }
         if (type === 'string' && format === 'location') {
-            normalizedEntity[key] = getNeo4jLocation(propertyValue);
-            normalizedEntity[`${key}${neo4j.stringPropertySuffix}`] = propertyValue;
+            const location = JSON.parse(propertyValue);
+            normalizedEntity[key] = getNeo4jLocation(location.location, entityProperties, key);
+            normalizedEntity[`${key}${neo4j.stringPropertySuffix}`] = location.location;
+            normalizedEntity[`${key}${neo4j.locationCoordinateSystemSuffix}`] = location.coordinateSystem;
 
             return;
         }

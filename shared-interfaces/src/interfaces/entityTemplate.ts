@@ -11,9 +11,20 @@ export interface IRelationshipReference {
 export interface IEntitySingleProperty {
     title: string;
     type: 'string' | 'number' | 'boolean' | 'array';
-    format?: 'date' | 'date-time' | 'email' | 'fileId' | 'text-area' | 'relationshipReference' | 'location' | 'user';
+    format?:
+        | 'date'
+        | 'date-time'
+        | 'email'
+        | 'fileId'
+        | 'text-area'
+        | 'relationshipReference'
+        | 'location'
+        | 'user'
+        | 'signature'
+        | 'kartoffelUserField';
     enum?: string[];
     readOnly?: true;
+    identifier?: true;
     pattern?: string;
     patternCustomErrorMessage?: string;
     dateNotification?: number;
@@ -23,6 +34,10 @@ export interface IEntitySingleProperty {
     serialStarter?: number;
     serialCurrent?: number;
     isNewPropNameEqualDeletedPropName?: boolean;
+    expandedUserField?: {
+        relatedUserField: string;
+        kartoffelField: string;
+    };
     relationshipReference?: IRelationshipReference;
     items?: {
         type: 'string';
@@ -55,6 +70,7 @@ export interface IEntityTemplate {
     iconFileId: string | null;
     actions?: string;
     documentTemplatesIds?: string[];
+    mapSearchProperties?: string[];
 }
 
 export interface IMongoEntityTemplate extends IEntityTemplate {

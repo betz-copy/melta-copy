@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import _debounce from 'lodash.debounce';
-import { Card, Grid, CardHeader, CardContent, Typography, Fab } from '@mui/material';
+import { Card, Grid, CardHeader, CardContent, Fab } from '@mui/material';
 import { ScatterPlotOutlined as HiveIcon } from '@mui/icons-material';
 import i18next from 'i18next';
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
@@ -10,8 +10,8 @@ import { IDetailsStepProp } from '.';
 import { ReviewerSelector } from './ReviewerSelector';
 import { CustomIcon } from '../../../CustomIcon';
 import { getStepInstanceByStepTemplateId } from '../../../../utils/processWizard/steps';
-import { MeltaTooltip } from '../../../MeltaTooltip';
 import { useDarkModeStore } from '../../../../stores/darkMode';
+import { BlueTitle } from '../../../BlueTitle';
 
 const ReviewCard = ({ stepTemplate, values, setFieldValue, isEditMode, processInstance }) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
@@ -36,33 +36,34 @@ const ReviewCard = ({ stepTemplate, values, setFieldValue, isEditMode, processIn
             <Card
                 ref={cardRef}
                 sx={{
-                    height: isEditMode || !processInstance ? '30vh' : '25vh',
-                    minHeight: '150px',
-                    backgroundColor: darkMode ? '#303030' : 'white',
+                    height: isEditMode || !processInstance ? '250px' : '25vh',
+                    backgroundColor: darkMode ? '#3f3f3f6b' : '#f7f9fc',
+                    boxShadow: 'none',
+                    borderRadius: '20px',
                 }}
             >
                 <CardHeader
                     avatar={
                         stepTemplate.iconFileId ? (
-                            <CustomIcon iconUrl={stepTemplate.iconFileId} width="30px" height="30px" />
+                            <CustomIcon iconUrl={stepTemplate.iconFileId} width="30px" height="30px" color={darkMode ? '#9398c2' : '#1E2775'} />
                         ) : (
                             <HiveIcon fontSize="large" />
                         )
                     }
                     title={
-                        <MeltaTooltip title={stepTemplate.displayName} arrow>
-                            <Typography
-                                variant="h5"
-                                style={{
-                                    whiteSpace: 'nowrap',
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis',
-                                    maxWidth: cardWidth ? `${cardWidth - 75}px` : '200px',
-                                }}
-                            >
-                                {stepTemplate.displayName}
-                            </Typography>
-                        </MeltaTooltip>
+                        <BlueTitle
+                            component="h6"
+                            variant="h4"
+                            style={{
+                                whiteSpace: 'nowrap',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                maxWidth: cardWidth ? `${cardWidth - 75}px` : '200px',
+                                fontSize: '16px',
+                                fontWeight: '600',
+                            }}
+                            title={stepTemplate.displayName}
+                        />
                     }
                 />
                 <CardContent onClick={(e) => e.stopPropagation()}>
@@ -70,7 +71,7 @@ const ReviewCard = ({ stepTemplate, values, setFieldValue, isEditMode, processIn
                         reviewers={
                             processInstance
                                 ? values.steps[getStepInstanceByStepTemplateId(stepTemplate._id, processInstance)!._id]
-                                : values.steps[stepTemplate._id]
+                                : values.steps[stepTemplate._id] || []
                         }
                         forcedReviewers={stepTemplate.reviewers}
                         onAdd={(newReviewer, reviewers) => {
@@ -102,56 +103,95 @@ const ReviewCard = ({ stepTemplate, values, setFieldValue, isEditMode, processIn
         </Grid>
     );
 };
-const StepsReviewers: React.FC<IDetailsStepProp> = ({ detailsFormikData, isEditMode, processInstance, onBack }) => {
-    const { values, setFieldValue, submitForm } = detailsFormikData;
+const StepsReviewers: React.FC<IDetailsStepProp> = ({ detailsFormikData, isEditMode, processInstance, onBack, viewMode = false }) => {
+    const { values, setFieldValue, submitForm, dirty } = detailsFormikData;
 
     return (
-        <Card sx={{ border: 'none', boxShadow: 'none', background: 'transparent' }}>
-            <CardContent
-                sx={{
-                    height: '56vh',
-                    overflowY: 'auto',
-                    '&::-webkit-scrollbar': {
-                        width: '5px',
-                    },
-                }}
-            >
-                <Grid container rowSpacing={3}>
-                    {values.template?.steps.map((stepTemplate: IMongoStepTemplatePopulated) => (
-                        <Grid key={stepTemplate._id} item xs={12} sm={6} md={4}>
-                            <ReviewCard
-                                stepTemplate={stepTemplate}
-                                values={values}
-                                setFieldValue={setFieldValue}
-                                isEditMode={isEditMode}
-                                processInstance={processInstance}
-                            />
+        <Card sx={{ border: 'none', boxShadow: 'none', background: 'transparent', height: '100%', justifyContent: 'space-between', padding: '20px' }}>
+            <Grid container item flexDirection="column" height="100%" sx={{ justifyContent: 'space-between' }}>
+                <Grid item height="90%">
+                    <CardContent
+                        sx={{
+                            height: '100%',
+                            '&::-webkit-scrollbar': {
+                                width: '5px',
+                            },
+                        }}
+                    >
+                        <Grid container rowSpacing={3} flexWrap="wrap" sx={{ overflowY: 'auto' }} height="100%">
+                            {values.template?.steps.map((stepTemplate: IMongoStepTemplatePopulated) => (
+                                <Grid item key={stepTemplate._id} xs={12} sm={6} md={4}>
+                                    <ReviewCard
+                                        stepTemplate={stepTemplate}
+                                        values={values}
+                                        setFieldValue={setFieldValue}
+                                        isEditMode={isEditMode}
+                                        processInstance={processInstance}
+                                    />
+                                </Grid>
+                            ))}
                         </Grid>
-                    ))}
+                    </CardContent>
                 </Grid>
-            </CardContent>
 
-            <Grid item container sx={{ justifyContent: 'space-between', alignItems: 'flex-start', padding: 1 }}>
-                <Grid item>
-                    <Fab onClick={onBack} color="primary" variant="extended">
-                        <NavigateNextIcon />
-                        {i18next.t('wizard.processInstance.backTo')}
-                    </Fab>
-                </Grid>
-                {!processInstance && (
+                <Grid item container sx={{ justifyContent: 'space-between', alignItems: 'flex-start', padding: 1 }}>
                     <Grid item>
-                        <Fab
-                            onClick={() => {
-                                submitForm();
-                            }}
-                            variant="extended"
-                            color="primary"
-                        >
-                            {i18next.t('wizard.processInstance.createProcess')}
-                            <NavigateBeforeIcon />
-                        </Fab>
+                        {!viewMode && (
+                            <Fab
+                                size="small"
+                                onClick={onBack}
+                                style={{
+                                    borderRadius: '7px',
+                                    padding: '10px',
+                                }}
+                                color="primary"
+                                variant="extended"
+                            >
+                                <NavigateNextIcon />
+                                {i18next.t('wizard.processInstance.backTo')}
+                            </Fab>
+                        )}
                     </Grid>
-                )}
+                    {!processInstance && (
+                        <Grid item>
+                            <Fab
+                                size="small"
+                                onClick={() => {
+                                    submitForm();
+                                }}
+                                style={{
+                                    borderRadius: '7px',
+                                    padding: '10px',
+                                }}
+                                variant="extended"
+                                color="primary"
+                            >
+                                {i18next.t('wizard.processInstance.createProcess')}
+                                <NavigateBeforeIcon />
+                            </Fab>
+                        </Grid>
+                    )}
+                    {isEditMode && (
+                        <Grid item>
+                            <Fab
+                                size="small"
+                                onClick={() => {
+                                    submitForm();
+                                }}
+                                style={{
+                                    borderRadius: '7px',
+                                    padding: '10px',
+                                }}
+                                disabled={!dirty}
+                                variant="extended"
+                                color="primary"
+                            >
+                                {i18next.t('wizard.processInstance.saveBth')}
+                                <NavigateBeforeIcon />
+                            </Fab>
+                        </Grid>
+                    )}
+                </Grid>
             </Grid>
         </Card>
     );

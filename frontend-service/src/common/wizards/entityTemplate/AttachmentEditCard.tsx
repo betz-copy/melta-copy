@@ -23,6 +23,7 @@ interface AttachmentEditCardProps {
     supportChangeToRequiredWithInstances: boolean;
     supportDeleteForExistingInstances: boolean;
     hasActions?: boolean;
+    supportConvertingToMultipleFields?: boolean;
 }
 
 export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
@@ -38,6 +39,7 @@ export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
     supportChangeToRequiredWithInstances,
     supportDeleteForExistingInstances,
     hasActions,
+    supportConvertingToMultipleFields = true,
 }) => {
     const currentUser = useUserStore((state) => state.user);
 
@@ -108,7 +110,7 @@ export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
                                             name={type}
                                             value={value.type}
                                             onChange={onChange}
-                                            disabled={isDisabled}
+                                            disabled={isDisabled && (initialValue?.type !== 'fileId' || !supportConvertingToMultipleFields)}
                                             sx={{ marginRight: '5px' }}
                                             fullWidth
                                         >

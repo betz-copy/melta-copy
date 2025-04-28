@@ -22,6 +22,7 @@ export const createInstanceRequestSchema = Joi.object({
         startDate: Joi.date().required(),
         endDate: Joi.date().required(),
         steps: updateAndCreateStepsSchema.required(),
+        userId: Joi.string(),
     },
     query: {},
     params: {},
@@ -35,6 +36,7 @@ export const updateInstanceByIdRequestSchema = Joi.object({
         endDate: Joi.date(),
         name: Joi.string(),
         steps: updateAndCreateStepsSchema,
+        userId: Joi.string(),
     },
     query: {},
     params: {
@@ -61,6 +63,23 @@ export const deleteInstanceByIdRequestSchema = Joi.object({
     },
 });
 
+/*
+ * PATCH /api/processes/instances/deletePropertiesOfTemplate/:templateId
+ */
+export const deletePropertiesOfTemplateRequestSchema = Joi.object({
+    body: {
+        removedProperties: Joi.object({
+            processProperties: Joi.array().items(Joi.string()),
+            stepsProperties: Joi.object(),
+        }),
+        currentTemplate: Joi.object(),
+    },
+    query: {},
+    params: {
+        templateId: Joi.string().required(),
+    },
+});
+
 // POST /api/processes/instances/search
 export const searchInstanceRequestSchema = Joi.object({
     query: {},
@@ -75,6 +94,9 @@ export const searchInstanceRequestSchema = Joi.object({
         limit: Joi.number().integer().min(0).default(0),
         skip: Joi.number().integer().min(0).default(0),
         archived: Joi.boolean(),
+        isWaitingForMeFilterOn: Joi.boolean(),
+        isStepStatusPendeing: Joi.boolean(),
+        userId: Joi.string(),
     },
     params: {},
 });

@@ -104,6 +104,13 @@ export class Authorizer extends DefaultController {
 
         (req as RequestWithPermissionsOfUserId).permissionsOfUserId = rootPermissions;
     }
+
+    async userCanWriteCategory(req: Request) {
+        const userPermissions = await this.getWorkspacePermissions(req.user!.id);
+        if (!userPermissions.admin && !userPermissions.instances?.categories[req.params.id])
+            throw new UserIncorrectScopeError(PermissionScope.write, PermissionScope.read);
+        (req as RequestWithPermissionsOfUserId).permissionsOfUserId = userPermissions;
+    }
 }
 
 export const AuthorizerControllerMiddleware = createController(Authorizer, true);

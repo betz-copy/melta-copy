@@ -1,0 +1,7 @@
+.scrollable-container::-webkit-scrollbar {
+    display: none;
+}
+
+.scrollable-container:hover::-webkit-scrollbar {
+    display: block;
+}

@@ -2,8 +2,15 @@ import React from 'react';
 import { Autocomplete, AutocompleteChangeDetails, AutocompleteProps, TextField } from '@mui/material';
 import { useQueryClient } from 'react-query';
 import i18next from 'i18next';
-import { IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap, IEntityTemplateMap } from '@microservices/shared-interfaces';
+import {
+    IMongoRelationshipTemplatePopulated,
+    IRelationshipTemplateMap,
+    IEntityTemplateMap,
+    IMongoEntityTemplatePopulated,
+} from '@microservices/shared-interfaces';
 import { populateRelationshipTemplate } from '../../utils/templates';
+import { getAllAllowedEntities, getAllAllowedRelationships } from '../../utils/permissions/templatePermissions';
+import { useUserStore } from '../../stores/user';
 
 type PartialByKeys<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 type IMongoRelationshipTemplatePopulatedOption = PartialByKeys<IMongoRelationshipTemplatePopulated, 'sourceEntity' | 'destinationEntity'>;
@@ -35,12 +42,17 @@ const RelationshipTemplateAutocomplete: React.FC<{
     helperText?: string;
 }> = ({ value, onChange, entityTemplatesIdsConstraints = [], onBlur, disabled, isError, helperText }) => {
     const queryClient = useQueryClient();
+    const currentUser = useUserStore((state) => state.user);
 
     const relationshipTemplates = queryClient.getQueryData<IRelationshipTemplateMap>('getRelationshipTemplates')!;
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
 
-    const relationshipTemplatesPopulatedOptions = Array.from(relationshipTemplates.values()).map((relationshipTemplate) =>
-        populateRelationshipTemplate(relationshipTemplate, entityTemplates),
+    const allowedEntityTemplates: IMongoEntityTemplatePopulated[] = getAllAllowedEntities(Array.from(entityTemplates.values()), currentUser);
+    const allowedEntityTemplatesIds: string[] = allowedEntityTemplates.map((entity) => entity._id);
+    const allowedRelationships = getAllAllowedRelationships(Array.from(relationshipTemplates.values()), allowedEntityTemplatesIds);
+
+    const relationshipTemplatesPopulatedOptions = Array.from(allowedRelationships.values()).map((relationshipTemplate) =>
+        populateRelationshipTemplate(relationshipTemplate, allowedEntityTemplates),
     );
 
     const relationshipTemplatesPopulatedConstrainedOptions = getConstrainedOptions(

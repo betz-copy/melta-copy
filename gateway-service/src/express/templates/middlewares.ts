@@ -1,6 +1,5 @@
 import { Request } from 'express';
-import lodashUniqby from 'lodash.uniqby';
-import { ForbiddenError, IMongoRelationshipTemplate, PermissionScope } from '@microservices/shared';
+import { ForbiddenError, PermissionScope } from '@microservices/shared';
 import EntityTemplateService from '../../externalServices/templates/entityTemplateService';
 import RelationshipsTemplateService from '../../externalServices/templates/relationshipsTemplateService';
 import { Authorizer } from '../../utils/authorizer';
@@ -33,55 +32,110 @@ class TemplatesValidator extends DefaultController {
     async validateUserCanUpdateOrDeleteEntityTemplate(req: Request) {
         const templateId = req.params.id;
 
-        const [{ category }, userPermissions] = await Promise.all([
+        const [entityTemplate, userPermissions] = await Promise.all([
             this.entityTemplateService.getEntityTemplateById(templateId),
             this.authorizer.getWorkspacePermissions(req.user!.id),
         ]);
 
-        if (!userPermissions.admin?.scope && !Object.keys(userPermissions.instances?.categories ?? {}).includes(category._id)) {
-            throw new ForbiddenError('user not authorized', { metadata: `user does not have write permission on category ${category}` });
-        }
+        if (
+            !userPermissions.admin?.scope &&
+            userPermissions.instances?.categories[entityTemplate.category._id]?.scope !== PermissionScope.write &&
+            userPermissions.instances?.categories[entityTemplate.category._id]?.entityTemplates[templateId]?.scope !== PermissionScope.write
+        )
+            throw new ForbiddenError('user not authorized', {
+                metadata: `user does not have write permission on entity ${entityTemplate}`,
+            });
     }
 
-    async getRelatedCategoriesFromRelationshipTemplate(relationshipTemplate: IMongoRelationshipTemplate) {
-        const { sourceEntityId, destinationEntityId } = relationshipTemplate;
-
+    async getRelatedCategoriesFromRelationshipTemplate(sourceEntityId: string, destinationEntityId: string) {
         const [{ category: srcCategory }, { category: dstCategory }] = await Promise.all([
             this.entityTemplateService.getEntityTemplateById(sourceEntityId),
             this.entityTemplateService.getEntityTemplateById(destinationEntityId),
         ]);
 
-        return lodashUniqby([srcCategory._id, dstCategory._id], '_id');
+        return [srcCategory._id, dstCategory._id];
     }
 
     async validateUserCanCreateRelationshipTemplateUnderCategory(req: Request) {
+        const { sourceEntityId, destinationEntityId } = req.body;
+
         const [relatedCategories, userPermissions] = await Promise.all([
-            this.getRelatedCategoriesFromRelationshipTemplate(req.body),
+            this.getRelatedCategoriesFromRelationshipTemplate(sourceEntityId, destinationEntityId),
+            this.authorizer.getWorkspacePermissions(req.user!.id),
+        ]);
+        const categoriesOfEntitiesWithWritePermission = relatedCategories.filter(
+            (categoryId) =>
+                userPermissions.admin ||
+                userPermissions.instances?.categories[categoryId].scope === PermissionScope.write ||
+                userPermissions.instances?.categories[categoryId].entityTemplates[sourceEntityId]?.scope === PermissionScope.write ||
+                userPermissions.instances?.categories[categoryId].entityTemplates[destinationEntityId]?.scope === PermissionScope.write,
+        );
+
+        if (categoriesOfEntitiesWithWritePermission.length < 2)
+            throw new ForbiddenError(
+                `user not authorized, does not have ${PermissionScope.write} permission on one of the categories ${relatedCategories}`,
+            );
+    }
+
+    async validateUserCanUpdateOrDeleteRelationshipTemplate(req: Request) {
+        const relationshipTemplate = await this.relationshipsTemplateService.getRelationshipTemplateById(req.params.id);
+
+        const [relatedCategories, userPermissions] = await Promise.all([
+            this.getRelatedCategoriesFromRelationshipTemplate(relationshipTemplate.sourceEntityId, relationshipTemplate.destinationEntityId),
+            this.authorizer.getWorkspacePermissions(req.user!.id),
+        ]);
+
+        const categoriesOfEntitiesWithWritePermission = relatedCategories.filter(
+            (categoryId) =>
+                userPermissions.admin ||
+                userPermissions.instances?.categories[categoryId].scope === PermissionScope.write ||
+                userPermissions.instances?.categories[categoryId].entityTemplates[relationshipTemplate.sourceEntityId]?.scope ===
+                    PermissionScope.write ||
+                userPermissions.instances?.categories[categoryId].entityTemplates[relationshipTemplate.destinationEntityId]?.scope ===
+                    PermissionScope.write,
+        );
+
+        if (categoriesOfEntitiesWithWritePermission.length < 2)
+            throw new ForbiddenError(
+                `user not authorized, does not have ${PermissionScope.write} permission on one of the categories ${relatedCategories}`,
+            );
+    }
+
+    async validateUserCanUpdateOrDeleteRuleTemplate(req: Request) {
+        const ruleTemplateId = req.params.ruleId;
+
+        const [ruleTemplate, userPermissions] = await Promise.all([
+            this.relationshipsTemplateService.getRuleById(ruleTemplateId),
+            this.authorizer.getWorkspacePermissions(req.user!.id),
+        ]);
+
+        const entityTemplate = await this.entityTemplateService.getEntityTemplateById(ruleTemplate.entityTemplateId);
+        if (
+            !userPermissions.admin?.scope &&
+            userPermissions.instances?.categories[entityTemplate.category._id]?.scope !== PermissionScope.write &&
+            userPermissions.instances?.categories[entityTemplate.category._id]?.entityTemplates[entityTemplate._id]?.scope !== PermissionScope.write
+        )
+            throw new ForbiddenError('user not authorized', {
+                metadata: `user does not have write permission on entity ${entityTemplate}`,
+            });
+    }
+
+    async validateUserCanCreateRuleTemplate(req: Request) {
+        const { entityTemplateId } = req.body;
+
+        const [entityTemplate, userPermissions] = await Promise.all([
+            this.entityTemplateService.getEntityTemplateById(entityTemplateId),
             this.authorizer.getWorkspacePermissions(req.user!.id),
         ]);
 
         if (
             !userPermissions.admin?.scope &&
-            !Object.entries(userPermissions.instances?.categories ?? {}).some(
-                ([categoryId, { scope }]) => relatedCategories.includes(categoryId) && scope === PermissionScope.write,
-            )
-        ) {
-            throw new ForbiddenError(`user not authorized, does not have ${PermissionScope.write} permission on categories ${relatedCategories}`);
-        }
-    }
-
-    async validateUserCanUpdateOrDeleteRelationshipTemplate(req: Request) {
-        const relationshipTemplate = await this.relationshipsTemplateService.getRelationshipTemplateById(req.params.id);
-        const relatedCategories = await this.getRelatedCategoriesFromRelationshipTemplate(relationshipTemplate);
-        const userPermissions = await this.authorizer.getWorkspacePermissions(req.user!.id);
-        if (
-            !userPermissions.admin?.scope &&
-            !Object.entries(userPermissions.instances?.categories ?? {}).some(
-                ([categoryId, { scope }]) => relatedCategories.includes(categoryId) && scope === PermissionScope.write,
-            )
-        ) {
-            throw new ForbiddenError(`user not authorized, does not have ${PermissionScope.write} permission on categories ${relatedCategories}`);
-        }
+            userPermissions.instances?.categories[entityTemplate.category._id]?.scope !== PermissionScope.write &&
+            userPermissions.instances?.categories[entityTemplate.category._id]?.entityTemplates[entityTemplate._id]?.scope !== PermissionScope.write
+        )
+            throw new ForbiddenError('user not authorized', {
+                metadata: `user does not have write permission on entity ${entityTemplate}`,
+            });
     }
 }
 

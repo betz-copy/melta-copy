@@ -37,8 +37,8 @@ class UserService {
         return data;
     }
 
-    static async searchUsers(searchBody: IUserSearchBody): Promise<IUser[]> {
-        const { data } = await this.userService.post<IUser[]>(`${usersRoute}/search`, searchBody);
+    static async searchUsers(searchBody: IUserSearchBody): Promise<{ users: IUser[]; count: number }> {
+        const { data } = await this.userService.post<{ users: IUser[]; count: number }>(`${usersRoute}/search`, searchBody);
         return data;
     }
 

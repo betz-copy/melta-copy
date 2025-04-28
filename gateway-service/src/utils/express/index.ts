@@ -80,3 +80,12 @@ export const getWorkspaceId = async (req: Request) => {
 export const translateWorkspaceParameter = async (req: Request) => {
     req.headers[config.service.workspaceIdHeaderName] = req.params.workspaceId;
 };
+
+export const translateWorkspaceParameterFlow = async (req: Request) => {
+    req.headers[config.service.workspaceIdHeaderName] = req.body.WorkspaceId;
+};
+
+export const translateWorkspaceParameterFlowColumns = async (req: Request) => {
+    const [workspaceId] = req.body.WorkspaceId;
+    req.headers[config.service.workspaceIdHeaderName] = workspaceId;
+};

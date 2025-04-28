@@ -1,21 +1,25 @@
 import { Readable } from 'stream';
-import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from './entityTemplate';
+import { IEntitySingleProperty, IMongoEntityTemplatePopulated, IMongoEntityTemplateWithConstraintsPopulated } from './entityTemplate';
 import { IRelationship } from './relationship';
 import { IMongoRelationshipTemplate } from './relationshipTemplate';
 import { IBrokenRule, IBrokenRulePopulated, IActionPopulated, IAction, ActionErrors, IFailedEntity } from './ruleBreach';
+import { ICreateEntityMetadata } from './ruleBreach/actionMetadata';
+import { IAgGridTextFilter, IAgGridNumberFilter, IAgGridDateFilter, IAgGridSetFilter } from './ruleBreach/agGrid';
 
 export interface IEntity {
     templateId: string;
     properties: Record<string, any>;
 }
 
+export type IConnection = {
+    relationship: Pick<IRelationship, 'templateId' | 'properties'>;
+    sourceEntity: IEntity;
+    destinationEntity: IEntity;
+};
+
 export interface IEntityExpanded {
     entity: IEntity;
-    connections: {
-        relationship: Pick<IRelationship, 'templateId' | 'properties'>;
-        sourceEntity: IEntity;
-        destinationEntity: IEntity;
-    }[];
+    connections: IConnection[];
 }
 
 export interface IBrokenRulesError {
@@ -45,7 +49,17 @@ export interface IRequiredConstraint {
     index?: number;
 }
 
-export type IValidationError = { message: string; path: string; schemaPath: string; params: Partial<IEntitySingleProperty> };
+export type IValidationError = {
+    message: string;
+    path: string;
+    schemaPath: string;
+    params: Partial<IEntitySingleProperty> & { allowedValues?: string[] };
+};
+
+export interface EntitiesWizardValues {
+    files?: File[];
+    template?: IMongoEntityTemplateWithConstraintsPopulated;
+}
 
 export interface IValidationErrorData {
     type: string;
@@ -94,7 +108,7 @@ export interface IFilterOfField {
     $gte?: boolean | string | number;
     $lt?: boolean | string | number;
     $lte?: boolean | string | number;
-    $in?: Array<boolean | string | number | null>;
+    $in?: Array<boolean | string | number | RegExp | null>;
     $not?: IFilterOfField;
 }
 
@@ -165,7 +179,7 @@ export interface UploadedFile {
 
 type Coordinate = [number, number];
 export interface Circle {
-    coordinate: Coordinate; // [latitude, longitude]
+    coordinate: Coordinate; // [x, y]
     radius: number; // Positive number
 }
 
@@ -218,7 +232,7 @@ export interface IExportEntitiesBody {
 export interface IGraphFilterBody {
     selectedTemplate: IMongoEntityTemplatePopulated;
     selectedProperty?: string;
-    filterField?: any;
+    filterField?: IAgGridTextFilter | IAgGridNumberFilter | IAgGridDateFilter | IAgGridSetFilter;
 }
 
 export interface IGraphFilterBodyBatch {
@@ -244,3 +258,12 @@ export type IDeleteEntityBody<T extends boolean = boolean> = IDeleteEntityBodyBa
           });
 
 export type EntityData = IEntity | IFailedEntity;
+
+export interface IEntityWithIgnoredRules extends ICreateEntityMetadata {
+    ignoredRules: IBrokenRule[];
+}
+
+export enum SplitBy {
+    space = ' ',
+    comma = ',',
+}

@@ -1,3 +1,4 @@
+/* eslint-disable react/no-array-index-key */
 /* eslint-disable no-param-reassign */
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useCallback, useEffect, useRef, useState } from 'react';
@@ -7,26 +8,65 @@ import { useInfiniteQuery } from 'react-query';
 import { toast } from 'react-toastify';
 import { _debounce } from '@ag-grid-community/core';
 import { InfoOutlined } from '@mui/icons-material';
-import {
-    IMongoEntityTemplatePopulated,
-    IEntity,
-    IEntitySingleProperty,
-    ISearchFilter,
-    IMongoRelationshipTemplate,
-} from '@microservices/shared-interfaces';
+import { IMongoEntityTemplatePopulated, IEntity, ISearchFilter, IMongoRelationshipTemplate } from '@microservices/shared-interfaces';
 import { getEntitiesWithDirectConnections } from '../../../services/entitiesService';
 import { MeltaTooltip } from '../../../common/MeltaTooltip';
 import { EntityPropertiesInternal } from '../../../common/EntityProperties';
 import { useDarkModeStore } from '../../../stores/darkMode';
+import { getLocationProperties } from '../../../utils/map';
+
+interface LocationAutoCompleteOptionProps {
+    title: string;
+    value: string;
+}
+
+const LocationAutoCompleteOption: React.FC<LocationAutoCompleteOptionProps> = ({ title, value }) => {
+    const darkMode = useDarkModeStore((state) => state.darkMode);
+
+    return (
+        <Grid container item alignItems="center" justifyContent="space-between" paddingX="10px">
+            <Typography
+                style={{
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textAlign: 'right',
+                    flex: '1',
+                    marginRight: '8px',
+                }}
+                fontSize="14px"
+                color="#9398C2"
+            >
+                {title}:
+            </Typography>
+            <MeltaTooltip placement="bottom" title={value}>
+                <Typography
+                    style={{
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textAlign: 'left',
+                        flex: '2',
+                        maxWidth: '100%',
+                    }}
+                    fontSize="14px"
+                    color={darkMode ? '#dcdde2' : '#53566E'}
+                >
+                    {value}
+                </Typography>
+            </MeltaTooltip>
+        </Grid>
+    );
+};
 
 type props = {
     selectedTemplates: IMongoEntityTemplatePopulated[];
     handleEntityClick: (entity: IEntity) => void;
+    onClear: () => void;
 };
 
-const SearchAutoComplete = ({ selectedTemplates, handleEntityClick }: props) => {
+const SearchAutoComplete = ({ selectedTemplates, handleEntityClick, onClear }: props) => {
     const theme = useTheme();
-    const darkMode = useDarkModeStore((state) => state.darkMode);
 
     const [inputValue, setInputValue] = useState('');
     const [searchResults, setSearchResults] = useState<IEntity[]>([]);
@@ -105,6 +145,18 @@ const SearchAutoComplete = ({ selectedTemplates, handleEntityClick }: props) => 
         [isLoading, loadMore],
     );
 
+    useEffect(() => {
+        if (data) {
+            setSearchResults(
+                data.pages
+                    .flatMap(({ entities }) => entities.map(({ entity }) => entity))
+                    .filter((entity) =>
+                        Object.values(getLocationProperties(entity, selectedTemplates).locationProperties || {}).some((value) => value !== undefined),
+                    ),
+            );
+        }
+    }, [data, selectedTemplates]);
+
     return (
         <Autocomplete
             options={searchResults}
@@ -127,6 +179,8 @@ const SearchAutoComplete = ({ selectedTemplates, handleEntityClick }: props) => 
             onInputChange={(event, _newInputValue, reason) => {
                 if (reason === 'reset') {
                     setInputValue('');
+                } else if (reason === 'clear') {
+                    onClear();
                 } else debouncedSearch((event.target as HTMLInputElement).value);
             }}
             renderInput={(params) => (
@@ -137,36 +191,14 @@ const SearchAutoComplete = ({ selectedTemplates, handleEntityClick }: props) => 
                         width: 400,
                         borderRadius: '10px',
                     }}
-                    label={i18next.t('globalSearch.searchInPage')}
+                    placeholder={i18next.t('globalSearch.searchInPage')}
                     size="small"
                     variant="outlined"
                 />
             )}
             renderOption={(props, option) => {
-                const template = selectedTemplates.find(({ _id }) => _id === option.templateId);
-
-                // TODO add template name below every item and take care of template not wxist
-                if (!template) return null;
-
-                const locationTemplateProperties = Object.entries(template.properties.properties)
-                    .filter(([_key, value]) => value.format === 'location')
-                    .reduce(
-                        (acc, [key, value]) => {
-                            acc[key] = value;
-                            return acc;
-                        },
-                        {} as { [x: string]: IEntitySingleProperty },
-                    );
-
-                const locationProperties = Object.entries(option.properties)
-                    .filter(([key, _value]) => key in locationTemplateProperties)
-                    .reduce(
-                        (acc, [key, value]) => {
-                            acc[key] = value;
-                            return acc;
-                        },
-                        {} as { [x: string]: any },
-                    );
+                const { template, locationTemplateProperties, locationProperties } = getLocationProperties(option, selectedTemplates);
+                if (!template) return false;
 
                 return (
                     <li {...props} ref={props['data-option-index'] === searchResults.length - 1 ? lastElementRef : null}>
@@ -196,40 +228,21 @@ const SearchAutoComplete = ({ selectedTemplates, handleEntityClick }: props) => 
                                     </Grid>
                                 </Grid>
                                 <Grid item container direction="column" spacing={1}>
-                                    {Object.entries(locationProperties).map(([key, value]) => (
-                                        <Grid key={key} container item alignItems="center" justifyContent="space-between" paddingX="10px">
-                                            <Typography
-                                                style={{
-                                                    textOverflow: 'ellipsis',
-                                                    whiteSpace: 'nowrap',
-                                                    overflow: 'hidden',
-                                                    textAlign: 'right',
-                                                    flex: '1',
-                                                    marginRight: '8px',
-                                                }}
-                                                fontSize="14px"
-                                                color="#9398C2"
-                                            >
-                                                {locationTemplateProperties[key].title}:
-                                            </Typography>
-                                            <MeltaTooltip placement="bottom" title={value}>
-                                                <Typography
-                                                    style={{
-                                                        textOverflow: 'ellipsis',
-                                                        whiteSpace: 'nowrap',
-                                                        overflow: 'hidden',
-                                                        textAlign: 'left',
-                                                        flex: '2',
-                                                        maxWidth: '100%',
-                                                    }}
-                                                    fontSize="14px"
-                                                    color={darkMode ? '#dcdde2' : '#53566E'}
-                                                >
-                                                    {value}
-                                                </Typography>
-                                            </MeltaTooltip>
-                                        </Grid>
-                                    ))}
+                                    {template.mapSearchProperties
+                                        ? template.mapSearchProperties.map((key, index) => (
+                                              <LocationAutoCompleteOption
+                                                  key={`${key}-${index}`}
+                                                  title={template.properties.properties[key].title}
+                                                  value={option.properties[key]}
+                                              />
+                                          ))
+                                        : Object.entries(locationProperties).map(([key, value], index) => (
+                                              <LocationAutoCompleteOption
+                                                  key={`${key}-${index}`}
+                                                  title={locationTemplateProperties[key].title}
+                                                  value={value}
+                                              />
+                                          ))}
                                 </Grid>
                             </Grid>
                         </Grid>

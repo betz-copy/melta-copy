@@ -41,7 +41,7 @@ class StepsInstancesManager extends DefaultManagerProxy<ProcessService> {
         ]);
     }
 
-    async getStepInstanceWithEntitesAndReviewers(step: IMongoStepInstance, userId: string): Promise<IMongoStepInstancePopulated> {
+    async getStepInstanceWithEntitiesAndReviewers(step: IMongoStepInstance, userId: string): Promise<IMongoStepInstancePopulated> {
         const processInstancesManager = new ProcessesInstancesManager(this.workspaceId);
         const stepTemplate = await this.service.getStepTemplateByStepInstanceId(step._id);
         const reviewerPromise = step.reviewerId ? UsersManager.getUserById(step.reviewerId) : Promise.resolve(undefined);
@@ -79,20 +79,24 @@ class StepsInstancesManager extends DefaultManagerProxy<ProcessService> {
 
         if (!files.length) {
             // add remove old files
-            const updatedStep = await this.service.updateStepInstance(stepId, processServiceUpdateData);
+            const updatedStep = await this.service.updateStepInstance(stepId, processServiceUpdateData, userId);
             const updatedProcess = await processInstancesManager.getProcessInstance(processId, userId);
             if (updatedStepStatus) this.handleNotificationsOnUpdateStepInstance(updatedProcess, process, updatedStep);
-            return this.getStepInstanceWithEntitesAndReviewers(updatedStep, userId);
+            return this.getStepInstanceWithEntitiesAndReviewers(updatedStep, userId);
         }
 
         const { props, files: filesToUpload } = await this.instancesManager.uploadInstanceFiles(files, processServiceUpdateData.properties);
         const { properties: oldProperties } = await processInstancesManager.service.getStepInstanceById(stepId);
 
         const updatedStep = await processInstancesManager.service
-            .updateStepInstance(stepId, {
-                ...processServiceUpdateData,
-                properties: props,
-            })
+            .updateStepInstance(
+                stepId,
+                {
+                    ...processServiceUpdateData,
+                    properties: props,
+                },
+                userId,
+            )
             .catch(async (processServiceError) => {
                 await this.storageService.deleteFiles(Object.values(filesToUpload).flat(1) as string[]).catch((deleteFilesError) => {
                     logger.error('failed to delete files error: ', { error: { deleteFilesError, processServiceError } });
@@ -109,7 +113,7 @@ class StepsInstancesManager extends DefaultManagerProxy<ProcessService> {
             this.handleNotificationsOnUpdateStepInstance(updatedProcess, process, updatedStep);
         }
 
-        return this.getStepInstanceWithEntitesAndReviewers(updatedStep, userId);
+        return this.getStepInstanceWithEntitiesAndReviewers(updatedStep, userId);
     }
 }
 

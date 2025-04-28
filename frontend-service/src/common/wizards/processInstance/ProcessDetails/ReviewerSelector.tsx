@@ -3,6 +3,7 @@ import i18next from 'i18next';
 import React from 'react';
 import { IUser } from '@microservices/shared-interfaces';
 import UserAutocomplete from '../../../inputs/UserAutocomplete';
+import { useDarkModeStore } from '../../../../stores/darkMode';
 
 interface ReviewerSelectorProps {
     forcedReviewers?: IUser[];
@@ -14,6 +15,7 @@ interface ReviewerSelectorProps {
 
 export const ReviewerSelector: React.FC<ReviewerSelectorProps> = ({ forcedReviewers = [], reviewers, onAdd, onRemove, isViewMode = false }) => {
     const [displayValue, setDisplayValue] = React.useState('');
+    const darkMode = useDarkModeStore((state) => state.darkMode);
 
     const combinedReviewers = [...forcedReviewers, ...reviewers];
 
@@ -46,7 +48,7 @@ export const ReviewerSelector: React.FC<ReviewerSelectorProps> = ({ forcedReview
                 flexWrap="nowrap"
                 sx={{
                     overflowY: 'auto',
-                    maxHeight: !isViewMode ? '140px' : '160px',
+                    maxHeight: !isViewMode ? '110px' : '130px',
                     '&::-webkit-scrollbar': {
                         width: '3px',
                     },
@@ -54,15 +56,19 @@ export const ReviewerSelector: React.FC<ReviewerSelectorProps> = ({ forcedReview
             >
                 {forcedReviewers?.map((reviewer) => (
                     <Grid item key={reviewer._id}>
-                        <Chip label={reviewer.fullName} variant="outlined" disabled />
+                        <Chip label={reviewer.fullName} sx={{ backgroundColor: darkMode ? '#818181' : '#c5c6d4' }} disabled />
                     </Grid>
                 ))}
                 {reviewers?.map((reviewer) => (
                     <Grid item key={reviewer._id}>
                         {isViewMode ? (
-                            <Chip label={reviewer.fullName} variant="outlined" />
+                            <Chip label={reviewer.fullName} sx={{ backgroundColor: darkMode ? '#818181' : '#E0E1ED' }} />
                         ) : (
-                            <Chip label={reviewer.fullName} variant="outlined" onDelete={() => onRemove(reviewer, reviewers)} />
+                            <Chip
+                                label={reviewer.fullName}
+                                sx={{ backgroundColor: darkMode ? '#818181' : '#E0E1ED' }}
+                                onDelete={() => onRemove(reviewer, reviewers)}
+                            />
                         )}
                     </Grid>
                 ))}

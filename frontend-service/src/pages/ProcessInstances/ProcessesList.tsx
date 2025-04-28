@@ -1,9 +1,7 @@
-import React, { useState } from 'react';
-import { Grid, Typography } from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import { CircularProgress, Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
 import { toast } from 'react-toastify';
-import { FiberManualRecordOutlined as StatusIcon, FiberManualRecord as StatusIconFilled } from '@mui/icons-material';
-import IconButton from '@mui/material/IconButton';
 import { useQueryClient } from 'react-query';
 import {
     Status,
@@ -12,11 +10,13 @@ import {
     IMongoProcessTemplateReviewerPopulated,
 } from '@microservices/shared-interfaces';
 import { ViewingBox } from '../SystemManagement/components/ViewingBox';
-import ProcessCard, { StatusColors } from './ProcessCard';
+import ProcessCard from './ProcessCard';
 import { searchProcessesRequest } from '../../services/processesService';
 import { InfiniteScroll } from '../../common/InfiniteScroll';
 import './ProcessesList.css';
 import { useUserStore } from '../../stores/user';
+import { useDarkModeStore } from '../../stores/darkMode';
+import { BlueTitle } from '../../common/BlueTitle';
 import { environment } from '../../globals';
 
 const { infiniteScrollPageCount } = environment.processInstances;
@@ -28,91 +28,116 @@ const ProcessesList: React.FC<{
     startDateInput: Date | null;
     endDateInput: Date | null;
     templatesToShowCheckbox: IMongoProcessTemplateReviewerPopulated[]; // todo: support in backend
-}> = ({ templatesToShowCheckbox, search, startDateInput, endDateInput }) => {
-    const [statusFilter, setStatusFilter] = useState<'all' | Status | undefined>('all');
-
+    statusFilter: 'all' | Status | 'archived';
+    isWaitingForMeFilterOn: boolean;
+}> = ({ templatesToShowCheckbox, search, startDateInput, endDateInput, statusFilter, isWaitingForMeFilterOn }) => {
     const queryClient = useQueryClient();
 
     const currentUser = useUserStore((state) => state.user);
+
+    const darkMode = useDarkModeStore((state) => state.darkMode);
 
     const hasPermissionsToEditDetails =
         currentUser.currentWorkspacePermissions.processes?.scope === PermissionScope.write ||
         currentUser.currentWorkspacePermissions.admin?.scope === PermissionScope.write;
 
-    const getStatusFilter = (status: Status | 'all' | undefined) => {
+    const getStatusFilter = (status: Status | 'all' | 'archived') => {
         if (status === 'all') return [Status.Approved, Status.Pending, Status.Rejected];
-        if (status !== undefined) return [status];
+        if (status !== 'archived') return [status];
         return undefined;
     };
 
     const [loadingProcesses, setLoadingProcesses] = useState<Record<string, boolean>>({});
+    const [loadingWaitingForMeProcesses, setLoadingWaitingForMeProcesses] = useState<boolean>(false);
+    const [waitingForMeProcesses, setWaitingForMeProcesses] = useState<IMongoProcessInstanceReviewerPopulated[]>([]);
+
+    useEffect(() => {
+        if (isWaitingForMeFilterOn) {
+            setLoadingWaitingForMeProcesses(true);
+            searchProcessesRequest({
+                searchText: search,
+                templateIds: templatesToShowCheckbox.map((template) => template._id),
+                startDate: startDateInput ?? undefined,
+                endDate: endDateInput ?? undefined,
+                skip: 0,
+                limit: 0,
+                archived: false,
+                isWaitingForMeFilterOn: true,
+                isStepStatusPendeing: true,
+            }).then((processes) => {
+                setWaitingForMeProcesses(processes);
+                setLoadingWaitingForMeProcesses(false);
+            });
+        }
+    }, [isWaitingForMeFilterOn, search, templatesToShowCheckbox, startDateInput, endDateInput]);
 
     return (
-        <Grid container direction="column" spacing={2}>
-            <Grid item container id="processesFilter" alignItems="center" spacing={3}>
-                <Grid item>
-                    <Typography variant="h6">{i18next.t('processInstancesPage.filter')}</Typography>
+        <Grid item container direction="column" spacing={2}>
+            {isWaitingForMeFilterOn && (
+                <Grid
+                    item
+                    container
+                    flexDirection="column"
+                    marginTop="15px"
+                    sx={{ backgroundColor: darkMode ? '#434343' : '#CCCFE5', borderRadius: '20px', padding: '15px' }}
+                    rowGap={3}
+                >
+                    <Grid item>
+                        <BlueTitle
+                            component="h4"
+                            variant="h6"
+                            style={{ fontSize: '16px', fontWeight: '600' }}
+                            title={i18next.t('processInstancesPage.waitForMyApprove')}
+                        />
+                    </Grid>
+                    <Grid item>
+                        <ViewingBox minHeight="80vh">
+                            {loadingWaitingForMeProcesses && (
+                                <Grid container width="100%" justifyContent="center">
+                                    <Grid item>
+                                        <CircularProgress sx={{ alignSelf: 'center' }} size="24px" />
+                                    </Grid>
+                                </Grid>
+                            )}
+                            {!loadingWaitingForMeProcesses &&
+                                waitingForMeProcesses.map((process) => (
+                                    <Grid item key={process._id}>
+                                        <ProcessCard
+                                            processInstance={process}
+                                            onChangedProcessDialogClose={(processId: string | null) => {
+                                                if (processId) {
+                                                    setLoadingProcesses((prev) => ({ ...prev, [processId]: true }));
+                                                    queryClient
+                                                        .invalidateQueries(['searchProcesses'])
+                                                        .finally(() => setLoadingProcesses((prev) => ({ ...prev, [processId]: false })));
+                                                } else queryClient.resetQueries({ queryKey: ['searchProcesses'] });
+                                            }}
+                                            isLoading={loadingProcesses[process._id] || false}
+                                            isEditMode={hasPermissionsToEditDetails}
+                                        />
+                                    </Grid>
+                                ))}
+                            {waitingForMeProcesses.length === 0 && !loadingWaitingForMeProcesses && (
+                                <Grid container width="100%" justifyContent="center">
+                                    <Typography>{i18next.t('processInstancesPage.noInstancesFound')}</Typography>
+                                </Grid>
+                            )}
+                        </ViewingBox>
+                    </Grid>
                 </Grid>
-                <Grid item>
-                    <IconButton sx={{ flexDirection: 'column', width: '60px' }} onClick={() => setStatusFilter('all')}>
-                        {statusFilter === 'all' ? (
-                            <StatusIconFilled fontSize="medium" sx={{ color: `${StatusColors.All}` }} />
-                        ) : (
-                            <StatusIcon fontSize="medium" sx={{ color: `${StatusColors.All}` }} />
-                        )}
-
-                        <Typography variant="subtitle2" fontSize="10px">
-                            {i18next.t('processInstancesPage.allProcesses')}
-                        </Typography>
-                    </IconButton>
-                    <IconButton sx={{ flexDirection: 'column', width: '60px' }} onClick={() => setStatusFilter(Status.Pending)}>
-                        {statusFilter === Status.Pending ? (
-                            <StatusIconFilled fontSize="medium" sx={{ color: `${StatusColors.Pending}` }} />
-                        ) : (
-                            <StatusIcon fontSize="medium" sx={{ color: `${StatusColors.Pending}` }} />
-                        )}
-
-                        <Typography variant="subtitle2" fontSize="10px">
-                            {i18next.t('processInstancesPage.pendingProcesses')}
-                        </Typography>
-                    </IconButton>
-                    <IconButton sx={{ flexDirection: 'column', width: '60px' }} onClick={() => setStatusFilter(Status.Approved)}>
-                        {statusFilter === Status.Approved ? (
-                            <StatusIconFilled fontSize="medium" sx={{ color: `${StatusColors.Approved}` }} />
-                        ) : (
-                            <StatusIcon fontSize="medium" sx={{ color: `${StatusColors.Approved}` }} />
-                        )}
-                        <Typography variant="subtitle2" fontSize="10px">
-                            {i18next.t('processInstancesPage.approvedProcesses')}
-                        </Typography>
-                    </IconButton>
-                    <IconButton sx={{ flexDirection: 'column', width: '60px' }} onClick={() => setStatusFilter(Status.Rejected)}>
-                        {statusFilter === Status.Rejected ? (
-                            <StatusIconFilled fontSize="medium" sx={{ color: `${StatusColors.Rejected}` }} />
-                        ) : (
-                            <StatusIcon fontSize="medium" sx={{ color: `${StatusColors.Rejected}` }} />
-                        )}
-                        <Typography variant="subtitle2" fontSize="10px">
-                            {i18next.t('processInstancesPage.rejectedProcesses')}
-                        </Typography>
-                    </IconButton>
-                    <IconButton sx={{ flexDirection: 'column', width: '60px' }} onClick={() => setStatusFilter(undefined)}>
-                        {!statusFilter ? (
-                            <StatusIconFilled fontSize="medium" sx={{ color: `${StatusColors.Archived}` }} />
-                        ) : (
-                            <StatusIcon fontSize="medium" sx={{ color: `${StatusColors.Archived}` }} />
-                        )}
-
-                        <Typography variant="subtitle2" fontSize="10px">
-                            {i18next.t('processInstancesPage.archivedProcesses')}
-                        </Typography>
-                    </IconButton>
-                </Grid>
-            </Grid>
+            )}
             <Grid item>
                 <ViewingBox minHeight="80vh">
                     <InfiniteScroll<IMongoProcessInstanceReviewerPopulated>
-                        queryKey={['searchProcesses', templatesToShowCheckbox, search, startDateInput, endDateInput, statusFilter]}
+                        queryKey={[
+                            'searchProcesses',
+                            templatesToShowCheckbox,
+                            search,
+                            startDateInput,
+                            endDateInput,
+                            statusFilter,
+                            isWaitingForMeFilterOn,
+                        ]}
                         queryFunction={({ pageParam }) => {
                             return searchProcessesRequest({
                                 searchText: search,
@@ -122,7 +147,8 @@ const ProcessesList: React.FC<{
                                 status: getStatusFilter(statusFilter),
                                 skip: pageParam,
                                 limit: infiniteScrollPageCount,
-                                archived: statusFilter === undefined,
+                                archived: statusFilter === 'archived',
+                                isWaitingForMeFilterOn,
                             });
                         }}
                         onQueryError={(error) => {

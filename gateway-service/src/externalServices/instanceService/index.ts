@@ -15,6 +15,7 @@ import {
     IRelationship,
     ISemanticSearchResult,
     ISearchEntitiesByLocationBody,
+    IChartBody,
 } from '@microservices/shared';
 import config from '../../config';
 import DefaultExternalServiceApi from '../../utils/express/externalService';
@@ -75,7 +76,7 @@ class InstancesService extends DefaultExternalServiceApi {
         return data;
     }
 
-    async updateEntityInstance(id: string, entity: IEntity, ignoredRules: IBrokenRule[], userId: string, convertToRelationshipField = false) {
+    async updateEntityInstance(id: string, entity: IEntity, ignoredRules: IBrokenRule[], userId?: string, convertToRelationshipField = false) {
         const { data } = await this.api.put<{ updatedEntity: IEntity; actions?: IAction[] }>(`${baseEntitiesRoute}/${id}`, {
             ...entity,
             ignoredRules,
@@ -136,6 +137,15 @@ class InstancesService extends DefaultExternalServiceApi {
         return data;
     }
 
+    getChartsOfTemplate = async (templateId: string, chartsData: IChartBody[]) => {
+        const { data } = await this.api.post<{ _id: string; chart: { x: any; y: number }[] }[]>(
+            `${baseEntitiesRoute}/chart/${templateId}`,
+            chartsData,
+        );
+
+        return data;
+    };
+
     // relationships instances
     async getRelationshipInstanceById(id: string) {
         const { data } = await this.api.get<IRelationship>(`${baseRelationshipsRoute}/${id}`);
@@ -187,6 +197,12 @@ class InstancesService extends DefaultExternalServiceApi {
 
     async getConstraintsOfTemplate(templateId: string) {
         const { data } = await this.api.get<IConstraintsOfTemplate>(`${baseConstraintsRoute}/${templateId}`);
+        return data;
+    }
+
+    async convertFieldsToPlural(templateId: string, propertiesKeysToPluralize: string[]) {
+        const { data } = await this.api.put(`${baseEntitiesRoute}/convert-fields-to-plural/${templateId}`, { propertiesKeysToPluralize });
+
         return data;
     }
 

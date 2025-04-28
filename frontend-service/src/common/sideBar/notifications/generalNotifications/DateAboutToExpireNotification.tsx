@@ -12,7 +12,7 @@ export const DateAboutToExpireNotification: React.FC<{ notificationMetadata: IDa
 }) => {
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const entityTemplate = entity ? entityTemplates.get(entity.templateId)! : null;
+    const entityTemplate = entity ? entityTemplates.get(entity.templateId) : null;
     const { notificationsMoreData } = environment.notifications;
     const color = notificationsMoreData.general.find((notificationData) => notificationData.type === NotificationType.dateAboutToExpire)?.color;
     const today = new Date();
@@ -36,7 +36,7 @@ export const DateAboutToExpireNotification: React.FC<{ notificationMetadata: IDa
                     {` (${entityTemplate?.properties.properties[propertyName].title}) `}
                 </Typography>
                 <Typography display="inline">{` ${i18next.t('dateAboutToExpireNotification.entityTemplateName')} `} </Typography>
-                <EntityLink entity={entity} entityTemplate={entityTemplate} />
+                <EntityLink entity={entity} entityTemplate={entityTemplate ?? null} />
                 <Typography display="inline">{` ${i18next.t(`dateAboutToExpireNotification.${datePast ? 'past' : 'aboutToExpire'}`)} `}</Typography>
             </Grid>
         </Grid>

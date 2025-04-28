@@ -3,8 +3,8 @@ import * as XLSX from 'xlsx';
 import { toast } from 'react-toastify';
 import i18next from 'i18next';
 import { IMongoEntityTemplatePopulated } from '@microservices/shared-interfaces';
-import { ISteps, StepStatus } from '../../common/wizards/loadEntities';
 import { useWorkspaceStore } from '../../stores/workspace';
+import { IExcelSteps, ExcelStepStatus } from '../../interfaces/excel';
 
 const convertFileDataToRowData = (gridData: any[][], headers: string[], template: IMongoEntityTemplatePopulated) => {
     return gridData
@@ -52,7 +52,7 @@ export const useReadExcel = () => {
     const readFile = async (
         files: File[],
         template: IMongoEntityTemplatePopulated,
-        setStepsData: React.Dispatch<React.SetStateAction<ISteps>>,
+        setStepsData: React.Dispatch<React.SetStateAction<IExcelSteps>>,
     ): Promise<void> => {
         const fileObject = createFileObject(filesLimit, files);
 
@@ -101,7 +101,7 @@ export const useReadExcel = () => {
             }
 
             setRowData(entities);
-            setStepsData((prev) => ({ ...prev, status: StepStatus.previewExcelRows, files: fileObject }));
+            setStepsData((prev) => ({ ...prev, status: ExcelStepStatus.previewExcelRows, files: fileObject }));
         } catch (error) {
             if ((error as Error).message === 'Invalid File Type') toast.error(i18next.t('wizard.entity.loadEntities.wrongFileType'));
             if (files.some((file) => file.name === (error as Error).message))

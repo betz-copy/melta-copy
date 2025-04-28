@@ -1,4 +1,4 @@
-import { IEntityTemplatePopulated, ISearchEntityTemplatesBody } from '@microservices/shared';
+import { IEntityTemplatePopulated, IMongoEntityTemplatePopulated, ISearchEntityTemplatesBody } from '@microservices/shared';
 import config from '../config';
 import TemplatesManagerService from './template';
 
@@ -11,6 +11,12 @@ const {
 class EntityTemplateService extends TemplatesManagerService {
     async searchEntityTemplates(body: ISearchEntityTemplatesBody = {}) {
         const { data } = await this.api.post<IEntityTemplatePopulated[]>(`${baseEntitiesRoute}/search`, body);
+
+        return data;
+    }
+
+    async searchEntityTemplatesIncludesFormat(format: string) {
+        const { data } = await this.api.post<IMongoEntityTemplatePopulated[]>(`${baseEntitiesRoute}/searchByFormat`, { format });
 
         return data;
     }

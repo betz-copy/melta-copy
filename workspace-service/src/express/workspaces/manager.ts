@@ -4,6 +4,7 @@ import { IMetadata, IWorkspace, WorkspaceTypes } from '@microservices/shared';
 import { transaction } from '../../utils/mongoose';
 import { DocumentNotFoundError, PathDoesNotExistError, PathIsNotFolderError, WorkspaceUnderRootMustBeDirError } from '../error';
 import WorkspacesModel from './model';
+import { escapeRegExp } from '../../utils/regex';
 
 class WorkspacesManager {
     static async getWorkspaceIds(type: IWorkspace['type']) {
@@ -146,6 +147,19 @@ class WorkspacesManager {
                 .orFail(new DocumentNotFoundError(id))
                 .exec();
         });
+    }
+
+    static async searchWorkspaces(searchQuery: { search?: string }) {
+        const { search: displayName } = searchQuery;
+        const query: FilterQuery<IWorkspace> = {};
+
+        if (displayName) {
+            query.displayName = { $regex: escapeRegExp(displayName) };
+        }
+
+        query.type = WorkspaceTypes.mlt;
+
+        return WorkspacesModel.find(query).sort({ name: 1 }).lean().exec();
     }
 }
 

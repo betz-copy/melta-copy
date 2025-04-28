@@ -8,10 +8,10 @@ import {
     PermissionType,
     logger,
 } from '@microservices/shared';
+import InstanceService from '../services/instance';
 import * as schedule from 'node-schedule';
 import config from '../config';
 import UsersManager from '../users/manager';
-import InstancesService from '../services/instance';
 import EntityTemplateService from '../services/entityTemplate';
 import WorkspaceManager from '../workspaces/manager';
 import RabbitManager from '../utils/rabbit/rabbit';
@@ -34,7 +34,7 @@ const checkNotificationDateInCustomAlert = (datePropertyValue: Date, dateNotific
 };
 
 const getFilteredInstances = async (
-    instancesService: InstancesService,
+    instancesService: InstanceService,
     entityTemplateId: string,
     propertiesWithDateNotifications: IFilterDatesRange[],
 ) => {
@@ -77,7 +77,7 @@ const getFilteredInstances = async (
 
 const sendNotificationsForEntityTemplate = async (
     workspaceId: string,
-    instancesService: InstancesService,
+    instancesService: InstanceService,
     rabbitManager: RabbitManager,
     entityTemplate: IEntityTemplatePopulated,
 ) => {
@@ -159,7 +159,7 @@ const checkForDateNotifications = async () => {
         await Promise.all(
             workspaceIds.map(async (workspaceId) => {
                 const entityTemplateService = new EntityTemplateService(workspaceId);
-                const instancesService = new InstancesService(workspaceId);
+                const instancesService = new InstanceService(workspaceId);
                 const rabbitManager = new RabbitManager(workspaceId);
 
                 try {

@@ -9,13 +9,13 @@ import {
     IProcessTemplateMap,
     IMongoProcessInstanceReviewerPopulated,
 } from '@microservices/shared-interfaces';
-import GeneralDetails from '../../../common/wizards/processInstance/ProcessDetails/GeneralDetails';
 import { EntityDates } from '../../Entity/components/EntityDates';
 import { CommentsDetails, ProcessStep } from '../../../common/wizards/processInstance/ProcessSteps/processStep';
 import { BlueTitle } from '../../../common/BlueTitle';
 import { getInitialDetailsValues, useProcessDetailsFormik } from '../../../common/wizards/processInstance/ProcessDetails/detailsFormik';
 import { ProcessDetailsValues } from '../../../common/wizards/processInstance/ProcessDetails';
 import { getStepInstanceByStepTemplateId } from '../../../utils/processWizard/steps';
+import GeneralDetails from '../../../common/wizards/processInstance/ProcessDetails/GeneralDetails';
 
 const ProcessComponentToPrint: React.FC<{
     processInstance: IMongoProcessInstanceReviewerPopulated;
@@ -35,6 +35,7 @@ const ProcessComponentToPrint: React.FC<{
                     detailsFormikData={detailsFormikData}
                     processInstance={processInstance}
                     toPrint
+                    isEditMode={false}
                     onNext={() => {}}
                     onBack={() => {}}
                     key={`${processInstance._id}//${processInstance.name}`}

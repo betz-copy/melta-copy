@@ -6,6 +6,7 @@ import {
     IStepInstance,
     IProcessInstance,
     ProcessInstanceDocument,
+    Status
 } from '@microservices/shared';
 import config from '../../config';
 
@@ -182,6 +183,107 @@ export const searchAllowedProcessInstanceForReviewerAggregation = (
     if (limit > 0) {
         aggregationPipeline.push({ $limit: limit });
     }
+    aggregationPipeline.push({ $sort: { createdAt: -1 } });
+
+    return processInstanceModel.aggregate(aggregationPipeline);
+};
+
+export const searchAllowedProcessInstanceWaitForMe = (
+    processInstanceModel: Model<IProcessInstance>,
+    query: FilterQuery<ProcessInstanceDocument>,
+    reviewerId: string,
+) => {
+    const aggregationPipeline: PipelineStage[] = [
+        {
+            $match: {
+                ...query,
+                status: Status.Pending,
+            },
+        },
+        {
+            $lookup: {
+                from: config.mongo.stepInstancesCollectionName,
+                let: { steps: '$steps' },
+                pipeline: [
+                    {
+                        $match: {
+                            $expr: {
+                                $in: [{ $toString: '$_id' }, '$$steps'],
+                            },
+                        },
+                    },
+                ],
+                as: 'steps',
+            },
+        },
+        {
+            $unwind: {
+                path: '$steps',
+            },
+        },
+        {
+            $match: {
+                'steps.status': Status.Pending,
+            },
+        },
+        {
+            $set: {
+                'steps.templateId': {
+                    $toObjectId: '$steps.templateId',
+                },
+            },
+        },
+        {
+            $lookup: {
+                from: config.mongo.stepTemplatesCollectionName,
+                localField: 'steps.templateId',
+                foreignField: '_id',
+                as: 'stepTemplates',
+            },
+        },
+        {
+            $unwind: {
+                path: '$stepTemplates',
+            },
+        },
+        {
+            $match: {
+                $or: [
+                    {
+                        'steps.reviewers': reviewerId,
+                    },
+                    {
+                        'stepTemplates.reviewers': reviewerId,
+                    },
+                ],
+            },
+        },
+        {
+            $group: {
+                _id: '$_id',
+                steps: {
+                    $push: '$steps',
+                },
+                stepTemplates: {
+                    $push: '$stepTemplates',
+                },
+                document: {
+                    $first: '$$ROOT',
+                },
+            },
+        },
+        {
+            $set: {
+                'document.steps': '$steps',
+                'document.stepTemplates': '$stepTemplates',
+            },
+        },
+        {
+            $replaceRoot: {
+                newRoot: '$document',
+            },
+        },
+    ];
     aggregationPipeline.push({ $sort: { createdAt: -1 } });
 
     return processInstanceModel.aggregate(aggregationPipeline);

@@ -14,7 +14,7 @@ import { ProcessTemplateFormInputProperties, ProcessTemplateWizardValues } from 
 
 const { processTemplates } = environment.api;
 export const basePropertyTypes = ['string', 'number', 'boolean', 'array'];
-export const stringFormats = ['date', 'date-time', 'email', 'entityReference', 'fileId', 'text-area'];
+export const stringFormats = ['date', 'date-time', 'email', 'entityReference', 'fileId', 'text-area', 'signature'];
 
 const processTemplateObjectToProcessTemplateForm = (
     processTemplate: IMongoProcessTemplateReviewerPopulated | null,
@@ -49,6 +49,10 @@ const processTemplateObjectToProcessTemplateForm = (
 
         if (value.format === 'fileId') {
             detailsAttachmentProperties.push(property);
+        } else if (value.items?.format === 'fileId') {
+            property.type = 'multipleFiles';
+
+            detailsAttachmentProperties.push(property);
         } else {
             detailsPropertiesArray.push(property);
         }
@@ -80,6 +84,10 @@ const processTemplateObjectToProcessTemplateForm = (
 
             if (value.format === 'fileId') {
                 stepsAttachmentProperties.push(property);
+            } else if (value.items?.format === 'fileId') {
+                property.type = 'multipleFiles';
+
+                stepsAttachmentProperties.push(property);
             } else {
                 stepsPropertiesArray.push(property);
             }
@@ -93,8 +101,8 @@ const processTemplateObjectToProcessTemplateForm = (
             name: step.name,
             displayName: step.displayName,
             icon: {
-                file: { name: step.iconFileId !== null ? step.iconFileId : '' },
-                name: step.iconFileId !== null ? step.iconFileId : '',
+                file: { name: step.iconFileId },
+                name: step.iconFileId,
             } as fileDetails,
             reviewers: step.reviewers,
         });
@@ -130,15 +138,24 @@ const addAttachmentProperties = (
     properties: Record<string, IProcessSingleProperty>,
     propertiesOrder: string[],
     attachmentProperties: ProcessTemplateFormInputProperties[],
+    detailsSchema: {
+        type: 'object';
+        properties: Record<string, IProcessSingleProperty>;
+        required: string[];
+    },
 ) => {
-    attachmentProperties.forEach(({ name, title, type, required }) => {
-        const attachmentProperty = createFileAttachmentProperty(type, required);
-        // eslint-disable-next-line no-param-reassign
-        properties[name] = {
-            title,
-            ...attachmentProperty,
-        };
-        propertiesOrder.push(name);
+    attachmentProperties.forEach(({ name, title, type, required, deleted }) => {
+        if (!deleted) {
+            const { required: requiredFile, ...attachmentProperty } = createFileAttachmentProperty(type, required);
+            // eslint-disable-next-line no-param-reassign
+            properties[name] = {
+                title,
+                ...attachmentProperty,
+            };
+            propertiesOrder.push(name);
+        }
+
+        if (required) detailsSchema.required.push(name);
     });
 };
 
@@ -153,32 +170,9 @@ const formToJSONSchema = (values: ProcessTemplateWizardValues): IProcessTemplate
         required: [],
     };
 
-    detailsProperties.forEach(({ name, title, type, required, options, pattern, patternCustomErrorMessage }) => {
-        detailsSchema.properties[name] = {
-            title,
-            type: basePropertyTypes.includes(type) ? (type as IProcessSingleProperty['type']) : 'string',
-            format: stringFormats.includes(type) ? (type as IProcessSingleProperty['format']) : undefined,
-            enum: type === 'enum' ? options : undefined,
-            pattern: type === 'pattern' ? pattern : undefined,
-            patternCustomErrorMessage: type === 'pattern' ? patternCustomErrorMessage : undefined,
-        };
-
-        detailsPropertiesOrder.push(name);
-
-        if (required) detailsSchema.required.push(name);
-    });
-
-    addAttachmentProperties(detailsSchema.properties, detailsPropertiesOrder, detailsAttachmentProperties);
-
-    steps.forEach((step) => {
-        const stepPropertiesOrder: string[] = [];
-        const stepSchema: IProcessDetails['properties'] = {
-            type: 'object',
-            properties: {},
-            required: [],
-        };
-        step.properties.forEach(({ name, title, type, required, options, pattern, patternCustomErrorMessage }) => {
-            stepSchema.properties[name] = {
+    detailsProperties.forEach(({ name, title, type, required, options, pattern, patternCustomErrorMessage, deleted }) => {
+        if (!deleted) {
+            detailsSchema.properties[name] = {
                 title,
                 type: basePropertyTypes.includes(type) ? (type as IProcessSingleProperty['type']) : 'string',
                 format: stringFormats.includes(type) ? (type as IProcessSingleProperty['format']) : undefined,
@@ -187,12 +181,39 @@ const formToJSONSchema = (values: ProcessTemplateWizardValues): IProcessTemplate
                 patternCustomErrorMessage: type === 'pattern' ? patternCustomErrorMessage : undefined,
             };
 
-            stepPropertiesOrder.push(name);
+            detailsPropertiesOrder.push(name);
 
-            if (required) stepSchema.required.push(name);
+            if (required) detailsSchema.required.push(name);
+        }
+    });
+
+    addAttachmentProperties(detailsSchema.properties, detailsPropertiesOrder, detailsAttachmentProperties, detailsSchema);
+
+    steps.forEach((step) => {
+        const stepPropertiesOrder: string[] = [];
+        const stepSchema: IProcessDetails['properties'] = {
+            type: 'object',
+            properties: {},
+            required: [],
+        };
+        step.properties.forEach(({ name, title, type, required, options, pattern, patternCustomErrorMessage, deleted }) => {
+            if (!deleted) {
+                stepSchema.properties[name] = {
+                    title,
+                    type: basePropertyTypes.includes(type) ? (type as IProcessSingleProperty['type']) : 'string',
+                    format: stringFormats.includes(type) ? (type as IProcessSingleProperty['format']) : undefined,
+                    enum: type === 'enum' ? options : undefined,
+                    pattern: type === 'pattern' ? pattern : undefined,
+                    patternCustomErrorMessage: type === 'pattern' ? patternCustomErrorMessage : undefined,
+                };
+
+                stepPropertiesOrder.push(name);
+
+                if (required) stepSchema.required.push(name);
+            }
         });
 
-        addAttachmentProperties(stepSchema.properties, stepPropertiesOrder, step.attachmentProperties);
+        addAttachmentProperties(stepSchema.properties, stepPropertiesOrder, step.attachmentProperties, stepSchema);
 
         const reviewersIds: string[] = step.reviewers.map((reviewer) => reviewer._id);
         stepTemplates.push({
@@ -201,7 +222,7 @@ const formToJSONSchema = (values: ProcessTemplateWizardValues): IProcessTemplate
             updatedAt: new Date(),
             properties: stepSchema,
             displayName: step.displayName,
-            iconFileId: step.icon!.file instanceof File ? null : step.icon!.file.name!,
+            iconFileId: !step.icon || step.icon!.file instanceof File || step.icon.name === '' ? null : step.icon!.file.name!,
             name: step.name,
             propertiesOrder: stepPropertiesOrder,
             reviewers: reviewersIds,
@@ -216,7 +237,11 @@ const formToJSONSchema = (values: ProcessTemplateWizardValues): IProcessTemplate
 };
 const createProcessTemplateRequest = async (newProcessTemplate: ProcessTemplateWizardValues) => {
     const formData = new FormData();
-    newProcessTemplate.steps.map((step, index) => formData.append(String(index), step.icon!.file as File));
+    newProcessTemplate.steps.forEach((step, index) => {
+        if (step.icon && step.icon!.file && step.icon!.file.name && step.icon!.file.name !== '') {
+            formData.append(String(index), step.icon!.file as File);
+        }
+    });
     const processTemplate = formToJSONSchema(newProcessTemplate);
 
     formData.append('displayName', processTemplate.displayName);
@@ -231,7 +256,7 @@ const createProcessTemplateRequest = async (newProcessTemplate: ProcessTemplateW
 const updateProcessTemplateRequest = async (processTemplateId: string, updatedProcessTemplate: ProcessTemplateWizardValues) => {
     const formData = new FormData();
     updatedProcessTemplate.steps.forEach((step, index) => {
-        if (step.icon!.file instanceof File) {
+        if (step.icon && step.icon!.file && step.icon!.file.name && step.icon!.file.name !== '' && step.icon!.file instanceof File) {
             formData.append(String(index), step.icon!.file as File);
         }
     });

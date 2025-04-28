@@ -2,7 +2,7 @@ import { ICategory } from '@microservices/shared';
 
 const categories: ICategory[] = [
     {
-        name: 'pepole',
+        name: 'people',
         displayName: 'אנשים',
         color: '#B80000',
         iconFileId: null,

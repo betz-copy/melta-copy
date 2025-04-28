@@ -37,7 +37,7 @@ class GanttsValidator extends DefaultController {
             this.authorizer.userCanWriteTemplates(req),
         ]);
 
-        const allowedEntityTemplates = await this.instancesValidator.getAllowedEntityTemplatesForInstances(userPermissions);
+        const allowedEntityTemplates = await this.instancesValidator.getAllowedEntityTemplatesForInstances(userPermissions, req.user!.id);
         const allowedEntityTemplateIds = allowedEntityTemplates.map((entityTemplate) => entityTemplate._id);
 
         if (newGantt) {

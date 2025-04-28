@@ -8,7 +8,7 @@ import { EntityPropertiesInternal } from './EntityProperties';
 import { MeltaTooltip } from './MeltaTooltip';
 import { useWorkspaceStore } from '../stores/workspace';
 
-interface EntityLinkProps {
+export interface EntityLinkProps {
     entity: IEntity | null;
     entityTemplate: IMongoEntityTemplatePopulated | null;
     linkable?: boolean;

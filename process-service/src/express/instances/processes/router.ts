@@ -11,6 +11,7 @@ import {
     updateInstanceByIdRequestSchema,
 } from './validator.schema';
 import ProcessInstanceValidator from './validator.template';
+import { updateTemplateByIdRequestSchema } from '../../templates/processes/validator.schema';
 
 const processInstanceRouter: Router = Router();
 
@@ -26,6 +27,7 @@ processInstanceRouter.post(
 );
 processInstanceRouter.post('/search', ValidateRequest(searchInstanceRequestSchema), processInstanceRouterController.searchProcesses);
 processInstanceRouter.delete('/:id', ValidateRequest(deleteInstanceByIdRequestSchema), processInstanceRouterController.deleteProcess);
+processInstanceRouter.put('/template/:id', ValidateRequest(updateTemplateByIdRequestSchema), processInstanceRouterController.updateTemplate);
 processInstanceRouter.put(
     '/:id',
     ValidateRequest(updateInstanceByIdRequestSchema),

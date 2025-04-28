@@ -21,6 +21,8 @@ import {
     updateEntityStatusByIdRequestSchema,
     updateEnumFieldRequestSchema,
     deletePropertiesOfTemplateRequestSchema,
+    chartSchema,
+    convertFieldsToPluralRequestSchema,
     searchEntitiesByLocation,
     updateEntityByIdRequestSchema,
     getDependentRulesRequestSchema,
@@ -66,10 +68,10 @@ entityRouter.post(
     entityValidatorController.validateSearchBatchBody,
     entityController.searchEntitiesBatch,
 );
-
 entityRouter.post('/search/location', ValidateRequest(searchEntitiesByLocation), entityController.searchEntitiesByLocation);
 
 entityRouter.put('/update-enum-field/:id', ValidateRequest(updateEnumFieldRequestSchema), entityController.updateEnumFieldValue);
+entityRouter.put('/convert-fields-to-plural/:id', ValidateRequest(convertFieldsToPluralRequestSchema), entityController.convertFieldsToPlural);
 entityRouter.get('/get-is-field-used/:id', ValidateRequest(getIfValuefieldIsUsedRequestSchema), entityController.getIsFieldUsed);
 
 entityRouter.post('/rules/dependant', ValidateRequest(getDependentRulesRequestSchema), entityController.getDependentRules);
@@ -80,7 +82,7 @@ entityRouter.post(
     entityValidatorController.validateFilterBatchBody,
     entityController.getExpandedGraphById,
 );
-
+entityRouter.post('/chart/:templateId', ValidateRequest(chartSchema), entityController.getChartOfTemplate);
 entityRouter.post('/', ValidateRequest(createEntityRequestSchema), entityValidatorController.validateEntityRequest, entityController.createEntity);
 entityRouter.get('/:id', ValidateRequest(getEntityByIdRequestSchema), entityController.getEntityById);
 entityRouter.post('/ids', ValidateRequest(getEntitiesByIdsRequestSchema), entityController.getEntitiesByIds);

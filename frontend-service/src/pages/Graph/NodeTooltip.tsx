@@ -2,7 +2,7 @@ import React from 'react';
 import i18next from 'i18next';
 import { Divider, Grid } from '@mui/material';
 import { NodeObject } from 'react-force-graph-2d';
-import { IMongoEntityTemplatePopulated } from '@microservices/shared-interfaces';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '@microservices/shared-interfaces';
 import { LocalStorage } from '../../utils/localStorage';
 import { EntityPropertiesInternal } from '../../common/EntityProperties';
 import { NodeLabelIconsDescription } from './NodeLabelIconsDescription';
@@ -14,9 +14,10 @@ interface NodeTooltipProps {
     node: NodeObject;
     entityTemplate: IMongoEntityTemplatePopulated;
     darkMode: boolean;
+    entityTemplates: IEntityTemplateMap;
 }
 
-export const NodeTooltip: React.FC<NodeTooltipProps> = ({ node, entityTemplate, darkMode }) => {
+export const NodeTooltip: React.FC<NodeTooltipProps> = ({ node, entityTemplate, darkMode, entityTemplates }) => {
     return (
         <Grid
             container
@@ -38,6 +39,7 @@ export const NodeTooltip: React.FC<NodeTooltipProps> = ({ node, entityTemplate, 
                         textWrap
                         viewFirstLineOfLongText
                         pureString
+                        entityTemplates={entityTemplates}
                     />
                 ) : (
                     i18next.t('graph.noPreviewProperties')

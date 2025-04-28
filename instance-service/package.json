@@ -29,7 +29,10 @@
     "menashmq": "^0.1.6",
     "morgan": "^1.10.0",
     "neo4j-driver": "^5.23.0",
+    "proj4": "^2.15.0",
     "ts-retry-promise": "^0.8.1",
+    "typescript-actions": "npm:typescript@^5.5.4",
+    "uuid": "^10.0.0",
     "winston": "^3.14.1",
     "winston-daily-rotate-file": "^5.0.0"
   },

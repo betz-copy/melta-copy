@@ -1,9 +1,5 @@
 /* eslint-disable @typescript-eslint/no-shadow */
 /* eslint-disable react/no-unstable-nested-components */
-import React from 'react';
-import { toast } from 'react-toastify';
-import i18next from 'i18next';
-import { useMutation, useQueryClient } from 'react-query';
 import { AxiosError } from 'axios';
 import {
     IConstraint,
@@ -21,9 +17,16 @@ import { ChooseIcon } from './ChooseIcon';
 import fileDetails from '../../../interfaces/fileDetails';
 import { ErrorToast } from '../../ErrorToast';
 import { environment } from '../../../globals';
-import { UploadExportFormats } from './UploadExportFormats';
+import i18next from 'i18next';
+import React from 'react';
+import { useMutation, useQueryClient } from 'react-query';
+import { toast } from 'react-toastify';
 import { getAllRelationshipTemplatesRequest } from '../../../services/templates/relationshipTemplatesService';
+import { useUserStore } from '../../../stores/user';
+import { useWorkspaceStore } from '../../../stores/workspace';
 import { mapTemplates } from '../../../utils/templates';
+import { UploadExportFormats } from './UploadExportFormats';
+import { updateUserPermissionForEntityTemplate } from '../../../utils/permissions/templatePermissions';
 
 const { errorCodes } = environment;
 
@@ -39,6 +42,7 @@ export interface EntityTemplateFormInputProperties {
     preview: boolean;
     hide: boolean;
     readOnly?: true;
+    identifier?: true;
     uniqueCheckbox?: boolean;
     groupName?: string;
     optionColors: Record<string, string>;
@@ -54,7 +58,12 @@ export interface EntityTemplateFormInputProperties {
         relatedTemplateId: string;
         relatedTemplateField: string;
     };
+    expandedUserField?: {
+        relatedUserField: string;
+        kartoffelField: string;
+    };
     archive?: boolean;
+    mapSearch?: boolean;
 }
 export interface EntityTemplateWizardValues
     extends Omit<
@@ -86,10 +95,14 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
         uniqueConstraints: [],
         documentTemplatesIds: [],
         _id: '',
+        mapSearchProperties: [],
     } as EntityTemplateWizardValues,
     isEditMode = false,
 }) => {
     const queryClient = useQueryClient();
+    const currentUser = useUserStore((state) => state.user);
+    const setUser = useUserStore((state) => state.setUser);
+    const currentWorkspace = useWorkspaceStore((state) => state.workspace);
 
     const currentTemplateId = isEditMode ? (initialValues as EntityTemplateWizardValues & { _id: string })._id : undefined;
     const templates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates') || new Map();
@@ -117,6 +130,8 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
                 } catch {
                     toast.error(i18next.t('wizard.failedToUpdateSystemData'));
                 }
+                const updatedUserPermissions = updateUserPermissionForEntityTemplate(data, currentUser, currentWorkspace._id);
+                setUser(updatedUserPermissions);
                 handleClose();
             },
             onError: (
@@ -137,6 +152,7 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
                             property,
                             relatedTemplateName,
                         })}`,
+                        charts: `${i18next.t('wizard.entityTemplate.failedToDeleteFieldThatUsedInCharts', { property })}`,
                     };
 
                     toast.error(errorMessages[type ?? '']);

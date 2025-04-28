@@ -4,6 +4,7 @@ import { useParams } from 'wouter';
 import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated, ICategoryMap } from '@microservices/shared-interfaces';
 import EntitiesPage from '../../common/EntitiesPage';
 import { useLocalStorage } from '../../utils/hooks/useLocalStorage';
+import { useUserStore } from '../../stores/user';
 
 const Category: React.FC = () => {
     const { categoryId } = useParams<{ categoryId: string }>();
@@ -14,11 +15,20 @@ const Category: React.FC = () => {
 
     const category = categories.get(categoryId!)!;
 
+    const currentUser = useUserStore((state) => state.user);
+
+    const authorizedTemplates = Array.from(entityTemplates.values()).filter(
+        (template) =>
+            !!template &&
+            template.category._id === category._id &&
+            (!!currentUser.currentWorkspacePermissions.instances?.categories?.[category._id]?.entityTemplates?.[template._id] ||
+                !!currentUser.currentWorkspacePermissions.instances?.categories?.[category._id]?.scope ||
+                currentUser.currentWorkspacePermissions?.admin?.scope),
+    );
+
     const [categoryTemplatesId, setCategoryTemplatesId] = useLocalStorage<string[]>(
         `tableOrder-${categoryId}`,
-        Array.from(entityTemplates.values())
-            .filter((template) => template.category._id === category._id)
-            .map((template) => template._id),
+        authorizedTemplates.map((template) => template._id),
     );
 
     const categoryTemplates = categoryTemplatesId
@@ -46,16 +56,15 @@ const Category: React.FC = () => {
 
     useEffect(() => {
         setCategoryTemplatesId((prevCategoryTemplatesId) => {
-            const relevantTemplates = Array.from(entityTemplates.values()).filter((template) => template.category._id === category._id);
-            const entityTemplatesToAddIds = relevantTemplates
+            const entityTemplatesToAddIds = authorizedTemplates
                 .filter((template) => !prevCategoryTemplatesId.includes(template._id))
                 .map((template) => template._id);
             const existingCategoryTemplatesIds = prevCategoryTemplatesId.filter((templateId) =>
-                relevantTemplates.some(({ _id }) => _id === templateId),
+                authorizedTemplates.some(({ _id }) => _id === templateId),
             );
 
             setTemplateIdsToShowCheckbox((prevTemplatesToShowCheckbox) => [
-                ...prevTemplatesToShowCheckbox.filter((templateId) => relevantTemplates.some(({ _id }) => _id === templateId)),
+                ...prevTemplatesToShowCheckbox.filter((templateId) => authorizedTemplates.some(({ _id }) => _id === templateId)),
                 ...entityTemplatesToAddIds,
             ]);
             return [...existingCategoryTemplatesIds, ...entityTemplatesToAddIds];

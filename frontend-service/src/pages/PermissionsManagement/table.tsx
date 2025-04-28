@@ -132,6 +132,7 @@ const columnDefs = (
                 </ScrollContainer>
             );
         },
+        minWidth: 500,
     },
     {
         headerName: '',
@@ -278,18 +279,6 @@ const PermissionsTable = forwardRef<PermissionsTableRef<IUser>, PermissionsTable
                 suppressCsvExport
                 suppressExcelExport
                 suppressContextMenu
-                onFirstDataRendered={(params) => {
-                    params.api.autoSizeColumns([
-                        'actions',
-                        'displayName',
-                        'source',
-                        'permissionsManagement',
-                        'templatesManagement',
-                        'rulesManagement',
-                        'processesManagement',
-                        'categoriesPermissions',
-                    ]);
-                }}
                 sideBar={{
                     toolPanels: [
                         {

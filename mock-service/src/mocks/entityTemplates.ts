@@ -51,7 +51,7 @@ const entityTemplates: IEntityTemplateMock[] = [
         name: 'tourist',
         displayName: 'תייר',
         category: {
-            name: 'pepole',
+            name: 'people',
         },
         properties: {
             type: 'object',
@@ -84,7 +84,7 @@ const entityTemplates: IEntityTemplateMock[] = [
         name: 'travelAgent',
         displayName: 'סוכן נסיעות',
         category: {
-            name: 'pepole',
+            name: 'people',
         },
         properties: {
             type: 'object',
@@ -523,17 +523,16 @@ const entityTemplates: IEntityTemplateMock[] = [
                     type: 'string',
                     enum: ['אא', 'בב', 'גג', 'דד'],
                 },
-                serialNumber: {
-                    title: 'מספר סידורי',
-                    type: 'number',
-                    serialStarter: 0,
-                    serialCurrent: 0,
-                },
                 regex: {
                     title: 'תבנית',
                     type: 'string',
                     pattern: '^0[2-9]\\d-\\d{4}-\\d{3}$',
                     patternCustomErrorMessage: 'יש להזין בפורמט מס טלפון בלבד (050-1234-123)',
+                },
+                location: {
+                    type: 'string',
+                    title: 'מיקום',
+                    format: 'location',
                 },
                 file: {
                     title: 'קובץ יחיד',
@@ -552,7 +551,7 @@ const entityTemplates: IEntityTemplateMock[] = [
             },
             hide: [],
         },
-        propertiesOrder: ['text', 'number', 'boolean', 'date', 'dateTime', 'mail', 'multiEnum', 'enum', 'serialNumber', 'regex', 'file', 'files'],
+        propertiesOrder: ['text', 'number', 'boolean', 'date', 'dateTime', 'mail', 'multiEnum', 'enum', 'location', 'regex', 'file', 'files'],
         propertiesTypeOrder: ['properties', 'attachmentProperties'],
         propertiesPreview: [],
         disabled: false,

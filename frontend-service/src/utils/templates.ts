@@ -1,9 +1,4 @@
-import {
-    IEntityTemplateMap,
-    IMongoEntityTemplatePopulated,
-    IMongoRelationshipTemplate,
-    IMongoRelationshipTemplatePopulated,
-} from '@microservices/shared-interfaces';
+import { IMongoEntityTemplatePopulated, IMongoRelationshipTemplate, IMongoRelationshipTemplatePopulated } from '@microservices/shared-interfaces';
 
 export const templatesCompareFunc = (templateA: IMongoEntityTemplatePopulated, templateB: IMongoEntityTemplatePopulated) => {
     if (templateA.category._id !== templateB.category._id) {
@@ -14,13 +9,13 @@ export const templatesCompareFunc = (templateA: IMongoEntityTemplatePopulated, t
 
 export const populateRelationshipTemplate = (
     relationshipTemplate: IMongoRelationshipTemplate,
-    entityTemplates: IEntityTemplateMap,
+    entityTemplates: IMongoEntityTemplatePopulated[],
 ): IMongoRelationshipTemplatePopulated => {
     const { sourceEntityId, destinationEntityId, ...restOfRelationshipTemplate } = relationshipTemplate;
 
     return {
-        sourceEntity: entityTemplates.get(sourceEntityId)!,
-        destinationEntity: entityTemplates.get(destinationEntityId)!,
+        sourceEntity: entityTemplates.find((entity) => entity._id === sourceEntityId)!,
+        destinationEntity: entityTemplates.find((entity) => entity._id === destinationEntityId)!,
         ...restOfRelationshipTemplate,
     } as IMongoRelationshipTemplatePopulated;
 };

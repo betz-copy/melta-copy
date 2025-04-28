@@ -14,7 +14,8 @@ const TemplatesSelectCheckbox: React.FC<{
     setTemplates?: Dispatch<React.SetStateAction<IMongoEntityTemplateWithConstraintsPopulated[]>>;
     size?: 'small' | 'medium';
     toTopBar?: boolean;
-}> = ({ title, templates, selectedTemplates, setSelectedTemplates, categories, isDraggableDisabled, setTemplates, size, toTopBar }) => {
+    overrideSx?: object;
+}> = ({ title, templates, selectedTemplates, setSelectedTemplates, categories, isDraggableDisabled, setTemplates, size, toTopBar, overrideSx }) => {
     return (
         <SelectCheckbox<IMongoEntityTemplateWithConstraintsPopulated, IMongoCategory>
             treeFunc={categories?.length ? (groupTemplatesByCategory as any) : undefined}
@@ -36,6 +37,7 @@ const TemplatesSelectCheckbox: React.FC<{
                 getGroupLabel: ({ displayName }) => displayName,
                 getGroupOfOption: (entityTemplate, _categories) => entityTemplate.category,
             }}
+            overrideSx={overrideSx}
         />
     );
 };

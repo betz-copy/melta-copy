@@ -5,7 +5,7 @@ import i18next from 'i18next';
 import React, { useState } from 'react';
 import { UseMutateAsyncFunction, useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import { IEntityTemplateMap, IMongoRule, IRuleMap } from '@microservices/shared-interfaces';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated, IMongoRule, IRuleMap, PermissionScope } from '@microservices/shared-interfaces';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import { ErrorToast } from '../../../common/ErrorToast';
 import { InfiniteScroll } from '../../../common/InfiniteScroll';
@@ -16,10 +16,13 @@ import { ViewingCard } from './Card';
 import { CardMenu } from './CardMenu';
 import { CreateButton } from './CreateButton';
 import { useWorkspaceStore } from '../../../stores/workspace';
+import { checkUserTemplatePermission } from '../../../utils/permissions/instancePermissions';
+import { useUserStore } from '../../../stores/user';
+import { getAllAllowedRulesAndWriteEntities } from '../../../utils/permissions/templatePermissions';
 
 export const RuleCard: React.FC<{
     rule: IMongoRule;
-    entityTemplates: IEntityTemplateMap;
+    entityTemplates: IMongoEntityTemplatePopulated[];
     setRuleWizardDialogState: React.Dispatch<
         React.SetStateAction<{
             isWizardOpen: boolean;
@@ -35,10 +38,24 @@ export const RuleCard: React.FC<{
     updateDisabledMutateAsync: UseMutateAsyncFunction<IMongoRule, unknown, IMongoRule, unknown>;
 }> = ({ rule, entityTemplates, setRuleWizardDialogState, setDeleteRuleWizardState, updateDisabledMutateAsync }) => {
     const workspace = useWorkspaceStore((state) => state.workspace);
+    const currentUser = useUserStore((state) => state.user);
     const { headlineSubTitleFontSize } = workspace.metadata.mainFontSizes;
     const theme = useTheme();
     const [isHoverOnCard, setIsHoverOnCard] = useState(false);
+    const entityTemplate = entityTemplates.find((entity) => entity._id === rule.entityTemplateId)!;
 
+    const entityHasWritePermission = checkUserTemplatePermission(
+        currentUser.currentWorkspacePermissions,
+        entityTemplate.category,
+        entityTemplate._id,
+        PermissionScope.write,
+    );
+
+    const ruleCardTooltip = () => {
+        if (!entityHasWritePermission) return i18next.t('systemManagement.ruleTemplateEditDisabled');
+        if (rule.disabled) return i18next.t('systemManagement.disabledRule');
+        return '';
+    };
     return (
         <ViewingCard
             width={250}
@@ -78,10 +95,11 @@ export const RuleCard: React.FC<{
                                     }}
                                     onDisableClick={() => updateDisabledMutateAsync(rule)}
                                     disabledProps={{
-                                        isDisabled: rule.disabled,
-                                        isDeleteDisabled: rule.disabled,
-                                        isEditDisabled: rule.disabled,
-                                        tooltipTitle: rule.disabled ? i18next.t('systemManagement.disabledRule') : '',
+                                        disableForReadPermissions: !entityHasWritePermission,
+                                        isDisabled: rule.disabled || !entityHasWritePermission,
+                                        isDeleteDisabled: rule.disabled || !entityHasWritePermission,
+                                        isEditDisabled: rule.disabled || !entityHasWritePermission,
+                                        tooltipTitle: ruleCardTooltip(),
                                     }}
                                 />
                             )}
@@ -113,7 +131,7 @@ export const RuleCard: React.FC<{
                         </Grid>
                         <Grid item flexBasis="70%">
                             <Typography sx={{ textOverflow: 'ellipsis', whiteSpace: 'nowrap', overflow: 'hidden' }}>
-                                {entityTemplates.get(rule.entityTemplateId)?.displayName}
+                                {entityTemplate?.displayName}
                             </Typography>
                         </Grid>
                     </Grid>
@@ -126,9 +144,14 @@ export const RuleCard: React.FC<{
 
 const RulesRow: React.FC = () => {
     const queryClient = useQueryClient();
+    const currentUser = useUserStore((state) => state.user);
 
     const rules = queryClient.getQueryData<IRuleMap>('getRules')!;
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+
+    const rulesArray = Array.from(rules.values());
+    const entityTemplatesArray = Array.from(entityTemplates.values());
+    const allowedRulesAndEntities = getAllAllowedRulesAndWriteEntities(rulesArray, entityTemplatesArray, currentUser);
 
     const workspace = useWorkspaceStore((state) => state.workspace);
     const { bulk } = workspace.metadata.searchLimits;
@@ -194,7 +217,7 @@ const RulesRow: React.FC = () => {
                 <InfiniteScroll<IMongoRule>
                     queryKey={['searchRulesTemplates', searchText]}
                     queryFunction={({ pageParam }) =>
-                        Array.from(rules.values())
+                        allowedRulesAndEntities.allowedRules
                             .filter(({ name }) => searchText === '' || name.includes(searchText))
                             .splice(pageParam, bulk)
                     }
@@ -215,7 +238,7 @@ const RulesRow: React.FC = () => {
                     {(rule) => (
                         <RuleCard
                             key={rule._id}
-                            entityTemplates={entityTemplates}
+                            entityTemplates={allowedRulesAndEntities.allowedEntityTemplates}
                             rule={rule}
                             setDeleteRuleWizardState={setDeleteRuleWizardState}
                             setRuleWizardDialogState={setRuleWizardDialogState}

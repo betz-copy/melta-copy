@@ -9,7 +9,8 @@ import mapValues from 'lodash.mapvalues';
 import pickBy from 'lodash.pickby';
 import validator from '@rjsf/validator-ajv8';
 import { ErrorSchema, UiSchema } from '@rjsf/utils';
-import { IMongoEntityTemplatePopulated } from '@microservices/shared-interfaces';
+import { IMongoEntityTemplatePopulated, IKartoffelUser } from '@microservices/shared-interfaces';
+import { cloneDeep } from 'lodash';
 import { RjfsDateWidget, RjfsDateTimeWidget } from './RjfsDatesWidgets';
 import RjfsSelectWidget from './RjfsSelectWidget';
 import RjsfTextWidget from './RjsfStringWidget';
@@ -19,6 +20,7 @@ import RjfsTemplateReferenceWidget from './RjfsTemplateReferenceWidget';
 import RjsfLocationWidget, { validateLocation } from './RjsfLocationWidget';
 import RjfsUserWidget from './RjfsUserWidget';
 import RjfsUserArrayWidget from './RjfsUserArrayWidget';
+import RjfsSignatureWidget from './RjfsSignatureWidgets';
 
 const ajvErrorsToFormikErrors = (schema: IMongoEntityTemplatePopulated['properties'], ajvErrors: ErrorObject[]): FormikErrors<any> => {
     const formikErrorsEntries = ajvErrors.map((ajvError) => {
@@ -44,6 +46,8 @@ const ajvErrorsToFormikErrors = (schema: IMongoEntityTemplatePopulated['properti
 export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'], data: any): FormikErrors<any> => {
     const ajv = new Ajv({ allErrors: true });
     ajv.addFormat('fileId', /.*/);
+    ajv.addFormat('signature', /.*/);
+    ajv.addFormat('kartoffelUserField', /.*/);
     ajv.addFormat('user', {
         type: 'string',
         validate: (user) => {
@@ -53,7 +57,7 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
     });
     ajv.addKeyword({ keyword: 'user', type: 'string' });
     ajv.addFormat('text-area', /.*/);
-    ajv.addFormat('location', (value: string) => validateLocation(value));
+    ajv.addFormat('location', (value: string) => validateLocation(JSON.parse(value), true) === false);
     addFormats(ajv);
     ajv.addVocabulary(['patternCustomErrorMessage', 'hide']);
     ajv.addKeyword({
@@ -71,12 +75,24 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
         type: 'string',
     });
     ajv.addKeyword({
+        keyword: 'expandedUserField',
+        type: 'string',
+    });
+    ajv.addKeyword({
         keyword: 'serialCurrent',
+    });
+
+    ajv.addKeyword('identifier', {
+        modifying: true,
+        // eslint-disable-next-line @typescript-eslint/no-shadow
+        validate: (_schema, data) => data !== undefined,
+        errors: false,
+        keyword: '',
     });
 
     const schemaToValidate = {
         ...schema,
-        properties: pickBy(schema.properties, (value) => value.format !== 'relationshipReference'),
+        properties: pickBy(schema.properties, (value) => value.format !== 'relationshipReference' && value.format !== 'location'),
     };
 
     const validateFunction = ajv.compile(schemaToValidate);
@@ -137,8 +153,8 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
             '#json-schema > .form-group.field.field-object > .MuiFormControl-root > .MuiGrid-root > .MuiGrid-root',
         );
         containerDiv.forEach((innerDiv) => {
-            const hasTextAreaField = innerDiv.querySelector('.text-area');
-            innerDiv.classList.add(hasTextAreaField ? 'has-text-area-child' : 'has-other-field-child');
+            const biggerFieldCss = innerDiv.querySelector('.text-area') || innerDiv.querySelector('.signature');
+            innerDiv.classList.add(biggerFieldCss ? 'has-bigger-field-child' : 'has-field-child');
         });
     }, [values.template]);
 
@@ -155,6 +171,10 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
             schema={schema}
             uiSchema={mapValues(schema.properties, (propertySchema, propertyKey): UiSchema => {
                 if (propertySchema.archive) return {};
+                if (propertySchema.format === 'signature')
+                    return {
+                        'ui:widget': 'SignatureWidget',
+                    };
                 if (propertySchema.readOnly)
                     return {
                         'ui:options': {
@@ -176,7 +196,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                             enumOptions: (propertySchema.items?.enum || propertySchema?.enum)!.map((option) => ({
                                 label: option,
                                 value: option,
-                                color: values.template.enumPropertiesColors?.[propertyKey]?.[option],
+                                color: values.template?.enumPropertiesColors?.[propertyKey]?.[option],
                             })),
                         },
                     };
@@ -189,6 +209,37 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                 if (propertySchema.format === 'user') {
                     return {
                         'ui:widget': 'UserWidget',
+                        'ui:options': {
+                            globalValues: values,
+                            updateExpandedUserFields: (user: IKartoffelUser | null, curValues: any) => {
+                                const userFieldsToUpdate = Object.keys(schema.properties).filter(
+                                    (key) => schema.properties[key].expandedUserField?.relatedUserField === propertyKey,
+                                );
+
+                                const clonedValues = cloneDeep(curValues);
+
+                                const propertiesToUpdate = clonedValues.properties;
+
+                                userFieldsToUpdate.forEach((key) => {
+                                    const kartoffelField = schema.properties[key].expandedUserField?.kartoffelField;
+                                    propertiesToUpdate[key] = user && kartoffelField ? user[kartoffelField] : undefined;
+                                });
+
+                                propertiesToUpdate[propertyKey] = user
+                                    ? JSON.stringify({
+                                          _id: user?._id || user?.id,
+                                          fullName: user?.fullName,
+                                          jobTitle: user?.jobTitle,
+                                          hierarchy: user?.hierarchy,
+                                          mail: user?.mail,
+                                      })
+                                    : undefined;
+
+                                setValues({
+                                    ...propertiesToUpdate,
+                                });
+                            },
+                        },
                     };
                 }
                 if (propertySchema.format === 'text-area')
@@ -241,6 +292,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                 LocationWidget: RjsfLocationWidget,
                 UserWidget: RjfsUserWidget,
                 UserArrayWidget: RjfsUserArrayWidget,
+                SignatureWidget: RjfsSignatureWidget,
             }}
         >
             <div /> {/* remove the built in submit button */}

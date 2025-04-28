@@ -24,6 +24,8 @@ const { brokenRulesFakeEntityIdPrefix } = config;
 const ajv = new Ajv({ allErrors: true });
 
 ajv.addFormat('fileId', /.*/);
+ajv.addFormat('signature', /.*/);
+ajv.addFormat('kartoffelUserField', /.*/);
 ajv.addFormat('user', {
     type: 'string',
     validate: (user) => {
@@ -43,11 +45,13 @@ ajv.addKeyword({ keyword: 'calculateTime', type: 'boolean' });
 ajv.addKeyword({ keyword: 'isDailyAlert', type: 'boolean' });
 ajv.addKeyword({ keyword: 'isDatePastAlert', type: 'boolean' });
 ajv.addKeyword({ keyword: 'archive', type: 'boolean' });
+ajv.addKeyword({ keyword: 'identifier', type: 'boolean' });
 ajv.addKeyword({
     keyword: 'serialStarter',
     type: 'number',
 });
 ajv.addKeyword({ keyword: 'user', type: 'string' });
+ajv.addKeyword({ keyword: 'expandedUserField', type: 'string' });
 ajv.addKeyword({
     keyword: 'relationshipReference',
     type: 'string',

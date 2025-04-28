@@ -68,7 +68,7 @@ const FilesInput: React.FC<FilesInputProps> = ({
         borderColor: '#CCCFE5',
         color: '#9398C2',
         width: '100%',
-        height: comment ? '245px' : '220px',
+        height: comment || errorText ? '245px' : '220px',
         display: 'flex',
         cursor: 'pointer',
         overflowY: 'auto',
@@ -80,7 +80,7 @@ const FilesInput: React.FC<FilesInputProps> = ({
         border: isDragActive ? `2px dashed ${theme.palette.primary.main}` : '2px dashed #CCCFE5',
         BorderRadius: '10px',
         padding: '10px',
-        height: '100%',
+        height: errorText ? '200px' : '100%',
         display: 'flex',
         justifyContext: 'center',
         alignItems: 'center',
@@ -97,7 +97,7 @@ const FilesInput: React.FC<FilesInputProps> = ({
 
     const isFileFromInput = (file: FilesInputProps['files'][number]) => file instanceof File;
 
-    if ((isLoading || errorText) && files)
+    if ((isLoading || errorText) && files.length)
         return <LoadingFilesInput files={files} errorText={errorText} setErrorText={setErrorText} inputWidth={inputWidth} isFileFromInput />;
 
     return (
@@ -205,9 +205,11 @@ const FilesInput: React.FC<FilesInputProps> = ({
                 )}
 
                 {errorText && (
-                    <p id="error" style={{ color: '#d32f2f', margin: 0, padding: 0 }}>
-                        {errorText}
-                    </p>
+                    <Grid item>
+                        <p id="error" style={{ color: '#d32f2f', margin: 0, padding: 0 }}>
+                            {errorText}
+                        </p>
+                    </Grid>
                 )}
             </Grid>
         </Grid>

@@ -8,7 +8,7 @@ import * as Yup from 'yup';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated, PermissionScope } from '@microservices/shared-interfaces';
 import { emptyEntityTemplate, EntityWizardValues } from '.';
 import { useUserStore } from '../../../stores/user';
-import { checkUserCategoryPermission } from '../../../utils/permissions/instancePermissions';
+import { checkUserTemplatePermission } from '../../../utils/permissions/instancePermissions';
 
 const chooseTemplateSchema = Yup.object({
     template: Yup.object({
@@ -38,12 +38,12 @@ const ChooseTemplate: React.FC<{
         entityTemplatesFilteredByCategory = Array.from(entityTemplates.values()).filter((entity) => {
             return (
                 entity.category._id === categoryId &&
-                checkUserCategoryPermission(currentUser.currentWorkspacePermissions, entity.category, PermissionScope.write)
+                checkUserTemplatePermission(currentUser.currentWorkspacePermissions, entity.category, entity._id, PermissionScope.write)
             );
         });
     } else {
         entityTemplatesFilteredByCategory = Array.from(entityTemplates.values()).filter((entity) => {
-            return checkUserCategoryPermission(currentUser.currentWorkspacePermissions, entity.category, PermissionScope.write);
+            return checkUserTemplatePermission(currentUser.currentWorkspacePermissions, entity.category, entity._id, PermissionScope.write);
         });
     }
 
@@ -55,7 +55,10 @@ const ChooseTemplate: React.FC<{
         <Autocomplete
             id="template"
             options={activeEntityTemplatesFiltered}
-            onChange={(_e, value) => setFieldValue('template', value || emptyEntityTemplate)}
+            onChange={(_e, value) => {
+                setFieldValue('template', value || emptyEntityTemplate);
+                setFieldValue('properties', {});
+            }}
             value={values.template._id ? values.template : null}
             disabled={disabled}
             getOptionLabel={(option) => option.displayName}

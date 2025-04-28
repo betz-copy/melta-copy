@@ -16,6 +16,10 @@ class UsersController {
         stream.pipe(res);
     }
 
+    static async getKartoffelUserById(req: Request, res: Response) {
+        res.json(await UsersManager.getKartoffelUserById(req.params.kartoffelId));
+    }
+
     static async getUserProfile(req: Request, res: Response) {
         const stream = await UsersManager.getUserProfile(req.params.userId);
         res.setHeader('Content-Type', 'image/*');
@@ -53,7 +57,13 @@ class UsersController {
     }
 
     static async searchExternalUsers(req: Request, res: Response) {
-        res.json(await UsersManager.searchExternalUsers(req.query.search as string, req.query.workspaceId as string));
+        res.json(
+            await UsersManager.searchExternalUsers(
+                req.query.search as string,
+                req.query.isKartoffelUser as unknown as boolean,
+                req.query.workspaceId as string,
+            ),
+        );
     }
 
     static async searchUsersByPermissions(req: Request, res: Response) {

@@ -44,15 +44,15 @@ export class GanttManager extends DefaultManagerProxy<GanttsService> {
         };
     }
 
-    async searchGantts(searchBody: ISearchGanttsBody, permissionsOfUserId: RequestWithPermissionsOfUserId['permissionsOfUserId']) {
-        const allowedEntityTemplates = await this.instancesValidator.getAllowedEntityTemplatesForInstances(permissionsOfUserId);
+    async searchGantts(searchBody: ISearchGanttsBody, permissionsOfUserId: RequestWithPermissionsOfUserId['permissionsOfUserId'], userId: string) {
+        const allowedEntityTemplates = await this.instancesValidator.getAllowedEntityTemplatesForInstances(permissionsOfUserId, userId);
 
         const gantts = await this.service.searchGantts(searchBody);
         return gantts.map((gantt) => this.filterGanttWithPermissions(gantt, allowedEntityTemplates));
     }
 
-    async getGanttById(ganttId: string, permissionsOfUserId: RequestWithPermissionsOfUserId['permissionsOfUserId']) {
-        const allowedEntityTemplates = await this.instancesValidator.getAllowedEntityTemplatesForInstances(permissionsOfUserId);
+    async getGanttById(ganttId: string, permissionsOfUserId: RequestWithPermissionsOfUserId['permissionsOfUserId'], userId: string) {
+        const allowedEntityTemplates = await this.instancesValidator.getAllowedEntityTemplatesForInstances(permissionsOfUserId, userId);
 
         const gantt = await this.service.getGanttById(ganttId);
 
@@ -167,12 +167,12 @@ export class GanttManager extends DefaultManagerProxy<GanttsService> {
         });
     }
 
-    private async validateTemplatesDataOfGantt(gantt: IGantt) {
+    private async validateTemplatesDataOfGantt(gantt: IGantt, userId: string) {
         const entityTemplateIdsOfItems = gantt.items.map(({ entityTemplate: { id } }) => id);
         if (gantt.groupBy) entityTemplateIdsOfItems.push(gantt.groupBy.entityTemplateId);
 
         const entityTemplateIds = [...new Set(entityTemplateIdsOfItems)];
-        const entityTemplates = await this.entityTemplateService.searchEntityTemplates({ ids: entityTemplateIds });
+        const entityTemplates = await this.entityTemplateService.searchEntityTemplates(userId, { ids: entityTemplateIds });
         const entityTemplatesMap = new Map(entityTemplates.map((entityTemplate) => [entityTemplate._id, entityTemplate]));
 
         gantt.items.forEach((ganttItem) => {
@@ -221,7 +221,7 @@ export class GanttManager extends DefaultManagerProxy<GanttsService> {
         });
         const additionalEntityTemplateIds = [...new Set(additionalEntityTemplateIdsFromRelationshipsOfItems)];
 
-        const additionalEntityTemplates = await this.entityTemplateService.searchEntityTemplates({
+        const additionalEntityTemplates = await this.entityTemplateService.searchEntityTemplates(userId, {
             ids: additionalEntityTemplateIds,
         });
         const additionalEntityTemplatesEntries: Array<[string, IMongoEntityTemplatePopulated]> = additionalEntityTemplates.map((entityTemplate) => [
@@ -236,8 +236,8 @@ export class GanttManager extends DefaultManagerProxy<GanttsService> {
         });
     }
 
-    async createGantt(gantt: IGantt) {
-        await this.validateTemplatesDataOfGantt(gantt);
+    async createGantt(gantt: IGantt, userId: string) {
+        await this.validateTemplatesDataOfGantt(gantt, userId);
         return this.service.createGantt(gantt);
     }
 
@@ -245,8 +245,8 @@ export class GanttManager extends DefaultManagerProxy<GanttsService> {
         return this.service.deleteGantt(ganttId);
     }
 
-    async updateGantt(ganttId: string, gantt: IGantt) {
-        await this.validateTemplatesDataOfGantt(gantt);
+    async updateGantt(ganttId: string, gantt: IGantt, userId: string) {
+        await this.validateTemplatesDataOfGantt(gantt, userId);
         return this.service.updateGantt(ganttId, gantt);
     }
 }

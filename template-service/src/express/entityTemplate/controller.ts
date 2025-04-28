@@ -11,6 +11,10 @@ class EntityTemplateController extends DefaultController<IMongoEntityTemplate, E
         res.json(await this.manager.getTemplates(req.body));
     }
 
+    async searchEntityTemplatesIncludesFormat(req: Request, res: Response) {
+        res.json(await this.manager.getTemplatesByFormat(req.body));
+    }
+
     async getEntityTemplateById(req: Request, res: Response) {
         const { templateId: id } = req.params;
         res.json(await this.manager.getTemplateById(id));
@@ -50,6 +54,10 @@ class EntityTemplateController extends DefaultController<IMongoEntityTemplate, E
         const { templateId: id } = req.params;
         const actionToUpsert = fetchPropertyFromRequest<string>(req, 'actions');
         res.json(await this.manager.updateEntityTemplateAction(id, actionToUpsert));
+    }
+
+    async getAllTemplates(_req: Request, res: Response) {
+        res.json(await this.manager.getAllTemplates());
     }
 }
 

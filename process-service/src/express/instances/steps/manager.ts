@@ -1,20 +1,25 @@
 /* eslint-disable class-methods-use-this */
-import { ClientSession } from 'mongoose';
 import { IMongoStepTemplate, IMongoStepInstance, IStepInstance, UpdateStepReqBody, DefaultManagerMongo } from '@microservices/shared';
+import { ClientSession, UpdateQuery, UpdateWithAggregationPipeline } from 'mongoose';
 import config from '../../../config';
 import ElasticSearchManager from '../../../utils/elastic/documentsOnElastic';
 import { getTemplateAggregation, transaction } from '../../../utils/mongo';
 import { InstanceNotFoundError, NotFoundError, ServiceError, StepNotPartOfProcessError, ValidationError } from '../../error';
 import ProcessInstanceManager from '../processes/manager';
 import { StepInstanceSchema } from './model';
+import { ActivityLogProducer } from '../../../externalServices/activityLog/producer';
+import { ActionsLog, IUpdateProcessStepMetadata } from '../../../externalServices/activityLog/interface';
 
 export default class StepInstanceManager extends DefaultManagerMongo<IStepInstance> {
     private elasticSearchManager: ElasticSearchManager;
+
+    private activityLogProducer: ActivityLogProducer;
 
     constructor(workspaceId: string) {
         super(workspaceId, config.mongo.stepInstancesCollectionName, StepInstanceSchema);
         this.workspaceId = workspaceId;
         this.elasticSearchManager = new ElasticSearchManager(workspaceId);
+        this.activityLogProducer = new ActivityLogProducer(workspaceId);
     }
 
     validateStepIds(validStepIds: string[], stepIdsToCheck: string[]) {
@@ -54,13 +59,16 @@ export default class StepInstanceManager extends DefaultManagerMongo<IStepInstan
         await this.model.bulkWrite(bulkWriteOperations, { session });
     }
 
-    async updateStep(id: string, { processId, properties, comments, statusReview }: UpdateStepReqBody) {
+    async updateStep(id: string, { processId, properties, comments, statusReview }: UpdateStepReqBody, userId: string) {
         let updatedStep: IMongoStepInstance;
         const processInstanceManager = new ProcessInstanceManager(this.workspaceId);
         const currProcess = await processInstanceManager.getProcessById(processId, true);
 
         if (!currProcess.steps.find((step) => String(step._id) === id)) throw new StepNotPartOfProcessError(id, processId);
         if (currProcess.archived) throw new ServiceError(undefined, "Can`t edit an archived process's step");
+
+        const currStep = await this.getStepById(id);
+        const currStepTemplate = await this.getStepTemplateByStepInstanceId(id);
 
         if (!statusReview) {
             updatedStep = await this.model
@@ -74,7 +82,6 @@ export default class StepInstanceManager extends DefaultManagerMongo<IStepInstan
                 .orFail(new InstanceNotFoundError('step', id))
                 .lean<IMongoStepInstance>();
         } else {
-            const currStep = await this.getStepById(id);
             const updatedProcessStatus = processInstanceManager.getProcessStatus(currProcess, { ...currStep, status: statusReview.status });
 
             updatedStep = await transaction(async (session) => {
@@ -89,7 +96,39 @@ export default class StepInstanceManager extends DefaultManagerMongo<IStepInstan
         const updatedProcess = await processInstanceManager.getProcessById(processId, true);
         await this.elasticSearchManager.updateDocumentOnElastic(updatedProcess);
 
+        const activityLogMetadata: IUpdateProcessStepMetadata['metadata'] = {};
+
+        if (currStepTemplate.properties.properties) {
+            const updatedFieldsActivityLog = Object.keys(currStepTemplate.properties.properties)
+                .filter((key) => updatedStep.properties?.[key] !== currStep.properties?.[key]) // compare between newValue to oldValue
+                .map((key) => ({
+                    fieldName: key,
+                    oldValue: currStep.properties?.[key] || '',
+                    newValue: updatedStep.properties?.[key] || '',
+                }));
+            if (updatedFieldsActivityLog.length) activityLogMetadata.updatedFields = updatedFieldsActivityLog;
+        }
+
+        if (statusReview?.status && statusReview?.status !== currStep.status) activityLogMetadata.status = statusReview?.status;
+        if (comments !== currStep.comments) activityLogMetadata.comments = comments;
+
+        await this.activityLogProducer.createActivityLog({
+            action: ActionsLog.UPDATE_PROCESS_STEP,
+            entityId: id,
+            timestamp: new Date(),
+            metadata: activityLogMetadata,
+            userId,
+        });
+
         return updatedStep;
+    }
+
+    async updateManySteps(
+        query: Partial<IStepInstance>,
+        stepData: UpdateQuery<IStepInstance> | UpdateWithAggregationPipeline,
+        session?: ClientSession,
+    ) {
+        return this.model.updateMany(query, stepData, { session }).lean();
     }
 
     async deleteStepsByIds(stepIds: string[], session?: ClientSession) {

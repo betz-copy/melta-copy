@@ -1,12 +1,11 @@
 import 'elastic-apm-node/start';
 import menash from 'menashmq';
-import * as mongoose from 'mongoose';
 import axios from 'axios';
 import { logger } from '@microservices/shared';
 import Server from './express/server';
 import config from './config';
 
-const { service, rabbit, mongo } = config;
+const { service, rabbit } = config;
 
 const initializeRabbit = async () => {
     logger.info('Connecting to Rabbit...');
@@ -28,21 +27,7 @@ const initializeRabbit = async () => {
     logger.info('Rabbit initialized');
 };
 
-const initializeMongo = async () => {
-    try {
-        logger.info('Connecting to Mongo...');
-
-        await mongoose.connect(mongo.url);
-
-        logger.info('Mongo connection established');
-    } catch (err) {
-        logger.error('Mongo connection error', { err });
-    }
-};
-
 const main = async () => {
-    await initializeMongo();
-
     await initializeRabbit();
 
     axios.defaults.maxBodyLength = service.maxRequestSize;

@@ -5,6 +5,7 @@ import { AppRegistration as DefaultEntityTemplateIcon } from '@mui/icons-materia
 import { Link } from 'wouter';
 import i18next from 'i18next';
 import { IEntity, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '@microservices/shared-interfaces';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import { MeltaTooltip } from './MeltaTooltip';
 import { EntityPropertiesInternal } from './EntityProperties';
 import { CustomIcon } from './CustomIcon';
@@ -23,13 +24,39 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({ e
     const workspace = useWorkspaceStore((state) => state.workspace);
     const { height, width } = workspace.metadata.iconSize;
     const queryClient = useQueryClient();
-
     const theme = useTheme();
 
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
 
     const relatedEntityTemplate: IMongoEntityTemplatePopulated = entityTemplates.get(relatedTemplateId!)!;
-    const entityTemplateColor = getEntityTemplateColor(relatedEntityTemplate);
+    const entityTemplateColor = relatedEntityTemplate ? getEntityTemplateColor(relatedEntityTemplate) : undefined;
+
+    if (!relatedEntityTemplate) {
+        return (
+            <Grid container alignItems="center" justifyContent="flex-start" height="100%" paddingTop={1.5}>
+                <MeltaTooltip
+                    PopperProps={{
+                        sx: {
+                            [`& .${tooltipClasses.tooltip}`]: {
+                                fontSize: '1rem',
+                                color: '#F2F4FA',
+                                backgroundColor: '#F2F4FA !important',
+                                boxShadow: 10,
+                            },
+                        },
+                    }}
+                    slotProps={{
+                        arrow: { style: { color: '#F2F4FA' } },
+                    }}
+                    arrow
+                    placement="top"
+                    title={<Typography color="primary">{i18next.t('templateEntitiesAutocomplete.noWritePermissions')}</Typography>}
+                >
+                    <VisibilityOffIcon sx={{ height, width, color: theme.palette.action.disabled }} />
+                </MeltaTooltip>
+            </Grid>
+        );
+    }
 
     if (typeof entity === 'string') {
         return (

@@ -17,6 +17,7 @@ export const environment = {
         processes: '/processes/instances',
         gantts: '/gantts',
         iFrames: '/iframes',
+        charts: '/charts',
         storage: '/files',
         preview: '/preview',
         permissions: '/permissions',
@@ -66,6 +67,12 @@ export const environment = {
     mui: {
         activationKey: '8c5d3fd6a4390125cf8590dea55dbb05Tz1HdXksRT0yMDAwMDAwMDAwMDAwLFM9cHJlbWl1bSxMTT1zdWJzY3JpcHRpb24sS1Y9Mg==',
     },
+    cesium: {
+        activationKey:
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJjZWI5M2EyNC1lODE3LTQwYTQtYTUxZi00NDlhODAyZDM0NTMiLCJpZCI6MjcwNDM5LCJpYXQiOjE3Mzc0NDk3MzN9.WLi4Zcm4D_PMstHcM3YNMJsw1xPhiNGuJyizwg_4nbg',
+        cesiumSource: 'node_modules/cesium/Build/Cesium',
+        cesiumBaseUrl: 'cesiumStatic',
+    },
     canvasSettings: {
         heightPaddingMultiplier: 0.3,
         widthPaddingMultiplier: 0.6,
@@ -101,7 +108,13 @@ export const environment = {
         maxNumOfCharactersNotInFullWidth: 700,
         numOfFixedDigits: 18,
     },
+    entitiesCardsView: {
+        infiniteScrollPageCount: 12,
+    },
     permission: {
+        infiniteScrollPageCount: 13,
+    },
+    cardsView: {
         infiniteScrollPageCount: 13,
     },
     activityLog: {
@@ -109,6 +122,10 @@ export const environment = {
     },
     processInstances: {
         infiniteScrollPageCount: 10,
+    },
+    processDetailsContentDisplay: {
+        summary: 'SUMMARY',
+        reviewers: 'REVIEWERS',
     },
     iFrames: {
         iFrameDimensionKey: 'iFrameDimension_',
@@ -120,6 +137,10 @@ export const environment = {
         sideBarOpenWidth: 320,
         sideBarCloseWidth: 140,
         relativeMaxHight: 160,
+    },
+    charts: {
+        defaultColumnSizes: { lg: 12, md: 12, sm: 12, xs: 12, xxs: 12 },
+        chartsOrderKey: 'chartsOrder_',
     },
     notifications: {
         updateInterval: 1000 * 60 * 10,
@@ -200,6 +221,31 @@ export const environment = {
             ],
         },
     },
+    agGrid: {
+        rowCount: 5,
+        defaultExpandedRowCount: 13,
+        rowCountInfiniteModeWithoutExpand: 6,
+        defaultRowHeight: 50,
+        defaultFontSize: 14,
+        cacheBlockSize: 5,
+        maxBlocksInCache: 50,
+        maxConcurrentDatasourceRequests: 1,
+        infiniteInitialRowCount: 1,
+        defaultExpandedTableHeight: 650,
+        paginationPageSizeSelector: [5, 10, 25, 50],
+        actionsWidth: 200,
+        actionPrefix: 'actions-',
+        localStorage: {
+            visibleColumns: 'visibleColumns-',
+            columnsOrder: 'columnsOrder-',
+            columnWidths: 'columnWidths-',
+        },
+    },
+    filterOptions: {
+        string: ['contains', 'notContains', 'equals', 'notEqual', 'startsWith', 'endsWith'],
+        number: ['equals', 'notEqual', 'greaterThan', 'greaterThanOrEqual', 'lessThan', 'lessThanOrEqual'],
+        date: ['equals', 'notEqual', 'greaterThan', 'greaterThanOrEqual', 'lessThan', 'lessThanOrEqual', 'inRange'],
+    },
     accessTokenName: 'rabaz-access-token',
     brokenRulesFakeEntityIdPrefix: '$',
     minimumSupportedChromeVersion: 85,
@@ -215,23 +261,31 @@ export const environment = {
         actionsCustomError: 'ACTIONS_CUSTOM_ERROR',
         entityHasRelationships: 'ENTITY_HAS_RELATIONSHIPS',
     },
-
-    loadExcel: { excelExtension: '.xlsx', acceptedFilesTypes: { 'excel/xlsx': ['.xlsx', '.xls'] } },
-    agGrid: {
-        cacheBlockSize: 5,
-        maxConcurrentDatasourceRequests: 1,
-        paginationPageSizeSelector: [5, 10, 25, 50],
-    },
-
+    loadExcel: { excelExtension: '.xlsx', acceptedFilesTypes: { 'excel/xlsx': ['.xlsx', '.xls'] }, entityId: '$0._id' },
     draftAutoSaveDebounce: 250,
     map: {
         maxRadius: 30000,
-        squareLength: 10,
-        units: { km: 'km', squaredKm: 'km²' },
-        polygon: { polygon: 'POLYGON', polygonPrefix: 'POLYGON((', polygonSuffix: '))' },
+        squareLength: 2500,
+        polygon: { polygonPrefix: 'POLYGON((', polygonSuffix: '))' },
+        mapSearchPropertiesLimit: 2,
+        epsgCode: { epsg: 'EPSG', wgs84: 'EPSG:4326', southHemiUTM: '327', northHemiUTM: '326' },
+        utm: {
+            minZone: 1,
+            maxZone: 60,
+            minEasting: 160000,
+            maxEasting: 834000,
+            minNorthing: 0,
+            maxNorthing: 10000000,
+            utmRegex: /\b([1-9]|[1-5][0-9]|60)([C-HJ-NP-X])\s([0-9]+(?:\.[0-9]+)?)\s([0-9]+(?:\.[0-9]+)?)\b/,
+            utmPolygonRegex: /\b([1-9]|[1-5][0-9]|60)([C-HJ-NP-X])\s([0-9]+(?:\.[0-9]+)?)\s([0-9]+(?:\.[0-9]+)?)\b/g,
+        },
+        wgs84: { maxLongitude: 180, maxLatitude: 90 },
     },
+    signaturePrefix: 'data:image/png;base64,',
+    meltaUpdatesShown: 'meltaUpdatesShown',
     profileIconsCount: 19,
     avatarIconPath: '/icons/profileAvatar/',
+    uuidFormat: /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{8}/,
     fileExtensions: {
         image: ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'webp', 'ico', 'psd', 'raw', 'heif', 'indd', 'ai', 'eps'],
         imageToManipulate: ['png', 'jpg', 'jpeg', 'svg'] as string[],

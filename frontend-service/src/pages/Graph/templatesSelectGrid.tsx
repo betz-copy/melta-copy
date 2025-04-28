@@ -140,6 +140,7 @@ const TemplatesSelectGrid: React.FC<{
 
     const firstTree = getTreeOnSplittedTemplates(firstSplittedTemplates, miniFilterValue);
     const secondTree = getTreeOnSplittedTemplates(secondSplittedTemplates, miniFilterValue);
+    const hasFirstTree = firstTree?.filteredTree?.length;
 
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const { trackEvent } = useMatomo();
@@ -207,41 +208,49 @@ const TemplatesSelectGrid: React.FC<{
                             {firstTree?.filteredTree?.length
                                 ? singleTree(firstTree, secondTree, selectedTemplates, setSelectedTemplates, onClick)
                                 : singleTree(secondTree, firstTree, selectedTemplates, setSelectedTemplates, onClick)}
-                            <Button
-                                style={{
-                                    marginRight: '17px',
-                                    width: '195px',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'start',
-                                    gap: '20px',
-                                }}
-                                onClick={() => {
-                                    setShowAll(!showAll);
-                                }}
-                            >
-                                {showAll ? <IoIosArrowDown /> : <IoIosArrowBack />}
-                                <Typography fontFamily="rubik" fontSize="14px">
-                                    {i18next.t('graph.additionalTemplates')}
-                                </Typography>
-                            </Button>
+                            {!!secondTree?.filteredTree?.length && (
+                                <Button
+                                    style={{
+                                        marginRight: '17px',
+                                        width: '195px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'start',
+                                        gap: '20px',
+                                    }}
+                                    onClick={() => {
+                                        setShowAll(!showAll);
+                                    }}
+                                >
+                                    {showAll ? <IoIosArrowDown /> : <IoIosArrowBack />}
+                                    <Typography fontFamily="rubik" fontSize="14px">
+                                        {i18next.t('graph.additionalTemplates')}
+                                    </Typography>
+                                </Button>
+                            )}
                         </Box>
                     </Box>
                 )}
             </Grid>
-            <Grid item>
-                <Box style={{ marginTop: '4.4rem' }}>
-                    {openFilter && showAll && (
-                        <Box sx={{ zIndex: '100', position: 'absolute', width: '235px', ...floatingBoxStyle }}>
-                            <Box style={{ width: '100%', maxHeight: '28rem', overflowY: 'auto', paddingBottom: '4px' }}>
-                                {firstTree?.filteredTree?.length
-                                    ? singleTree(secondTree, firstTree, selectedTemplates, setSelectedTemplates, onClick)
-                                    : singleTree(firstTree, secondTree, selectedTemplates, setSelectedTemplates, onClick)}
+            {!!secondTree?.filteredTree?.length && (
+                <Grid item>
+                    <Box style={{ marginTop: '4.4rem' }}>
+                        {openFilter && showAll && (
+                            <Box sx={{ zIndex: '100', position: 'absolute', width: '235px', ...floatingBoxStyle }}>
+                                <Box style={{ width: '100%', maxHeight: '28rem', overflowY: 'auto', paddingBottom: '4px' }}>
+                                    {singleTree(
+                                        hasFirstTree ? secondTree : firstTree,
+                                        hasFirstTree ? firstTree : secondTree,
+                                        selectedTemplates,
+                                        setSelectedTemplates,
+                                        onClick,
+                                    )}
+                                </Box>
                             </Box>
-                        </Box>
-                    )}
-                </Box>
-            </Grid>
+                        )}
+                    </Box>
+                </Grid>
+            )}
         </Grid>
     );
 };

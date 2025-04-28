@@ -1,13 +1,16 @@
 import { v4 as uuidv4 } from 'uuid';
 import neo4j, { QueryResult, Node as Neo4jNode, Relationship as Neo4jRelationship, Transaction } from 'neo4j-driver';
 import { fromZonedTime, toZonedTime } from 'date-fns-tz';
-import { IEntity, IEntityExpanded, IEntityWithDirectRelationships, IRelationship, SplitBy } from '@microservices/shared';
+import { ActionErrors, IEntity, IEntityExpanded, IEntityWithDirectRelationships, IRelationship, SplitBy } from '@microservices/shared';
 import config from '../../config';
 import EntityManager from '../../express/entities/manager';
 import { IFormulaCauses } from '../../express/rules/interfaces/formulaWithCauses';
 import { ValidationError } from '../../express/error';
 
-const { polygonPrefix, polygonSuffix, srid } = config.map;
+const {
+    polygon: { polygonPrefix, polygonSuffix },
+    srid,
+} = config.map;
 
 type Node = Neo4jNode<number>;
 type Relationship = Neo4jRelationship<number>;
@@ -31,7 +34,8 @@ const normalizeFields = (properties: Record<string, any>): Record<string, any> =
         if (
             key.endsWith(config.neo4j.stringPropertySuffix) ||
             key.endsWith(config.neo4j.booleanPropertySuffix) ||
-            key.endsWith(config.neo4j.filePropertySuffix)
+            key.endsWith(config.neo4j.filePropertySuffix) ||
+            key.endsWith(config.neo4j.locationCoordinateSystemSuffix)
         ) {
             return;
         }
@@ -59,13 +63,16 @@ const normalizeFields = (properties: Record<string, any>): Record<string, any> =
         }
 
         if (value instanceof neo4j.types.Point) {
-            props[key] = `${value.x}, ${value.y}`;
+            props[key] = { location: `${value.x}, ${value.y}`, coordinateSystem: properties[`${key}${config.neo4j.locationCoordinateSystemSuffix}`] };
 
             return;
         }
         if (Array.isArray(value) && value.every((item) => item instanceof neo4j.types.Point)) {
             const points = value.map((point) => `${point.x} ${point.y}`);
-            props[key] = `${polygonPrefix}${points.join(',')}${polygonSuffix}`;
+            props[key] = {
+                location: `${polygonPrefix}${points.join(',')}${polygonSuffix}`,
+                coordinateSystem: properties[`${key}${config.neo4j.locationCoordinateSystemSuffix}`],
+            };
 
             return;
         }
@@ -150,6 +157,15 @@ export const normalizeSearchByLocationResponse = (result: QueryResult): Array<{ 
 export const normalizeResponseCount = (result: QueryResult): number => {
     return result.records[0].get(0);
 };
+
+export const normalizeChartResponse = (result: QueryResult) =>
+    result.records.map((record) => {
+        const x = record.get('x');
+        const y = record.has('y') ? record.get('y') : null;
+        const coordinateSystem = record.has('coordinateSystem') ? record.get('coordinateSystem') : null;
+
+        return { x, y, coordinateSystem };
+    });
 
 export const normalizeResponseTemplatesCount = (result: QueryResult): { templateId: string; count: number }[] => {
     return result.records.map((record) => ({
@@ -334,23 +350,49 @@ export const generateDefaultProperties = () => {
     };
 };
 
-const getLocationPoint = (pointString: string, splitBy: SplitBy) => {
+const getLocationPoint = (pointString: string, splitBy: SplitBy, entityProperties: Record<string, any>, key: string) => {
     const [longitude, latitude] = pointString.split(splitBy).map(Number);
     if (Number.isNaN(longitude) || Number.isNaN(latitude)) {
-        throw new ValidationError('Invalid format. Expected format: "number, number".');
+        throw new ValidationError('Invalid format. Expected format: "number, number".', {
+            properties: entityProperties,
+            errors: [
+                {
+                    type: ActionErrors.validation,
+                    metadata: {
+                        message: 'must be location, Invalid format. Expected format: "number, number".',
+                        path: `/${key}`,
+                        schemaPath: `#/properties/${key}/format`,
+                        params: { type: 'string', format: 'location' },
+                    },
+                },
+            ],
+        });
     }
 
     return new neo4j.types.Point(srid, longitude, latitude);
 };
 
-export const getNeo4jLocation = (locationString: string) => {
-    if (!locationString.startsWith('POLYGON')) return getLocationPoint(locationString, SplitBy.comma);
+export const getNeo4jLocation = (locationString: string, entityProperties: Record<string, any>, key: string) => {
+    if (!locationString.startsWith('POLYGON')) return getLocationPoint(locationString, SplitBy.comma, entityProperties, key);
 
     if (!locationString.startsWith(polygonPrefix) || !locationString.endsWith(polygonSuffix)) {
-        throw new ValidationError('Invalid format. Expected polygon format: POLYGON((number number, number number, ...))');
+        throw new ValidationError('Invalid format. Expected format: "number, number".', {
+            properties: entityProperties,
+            errors: [
+                {
+                    type: ActionErrors.validation,
+                    metadata: {
+                        message: 'must be location, Invalid format. Expected polygon format: POLYGON((number number, number number, ...))',
+                        path: `/${key}`,
+                        schemaPath: `#/properties/${key}/format`,
+                        params: { type: 'string', format: 'location' },
+                    },
+                },
+            ],
+        });
     }
 
     const coordsStr = locationString.slice(polygonPrefix.length, -polygonSuffix.length);
 
-    return coordsStr.split(SplitBy.comma).map((stringedLocation: string) => getLocationPoint(stringedLocation, SplitBy.space));
+    return coordsStr.split(SplitBy.comma).map((stringedLocation: string) => getLocationPoint(stringedLocation, SplitBy.space, entityProperties, key));
 };

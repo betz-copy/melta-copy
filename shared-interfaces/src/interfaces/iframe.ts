@@ -1,3 +1,5 @@
+import { Document } from 'mongoose';
+
 export interface IFrame {
     name: string;
     url: string;
@@ -6,7 +8,7 @@ export interface IFrame {
     placeInSideBar?: boolean;
 }
 
-export interface IMongoIFrame extends IFrame {
+export interface IMongoIframe extends IFrame, Document<string> {
     _id: string;
     createdAt: Date;
     updatedAt: Date;

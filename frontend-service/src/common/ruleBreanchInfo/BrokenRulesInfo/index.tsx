@@ -14,7 +14,9 @@ export const BrokenRulesInfo: React.FC<{
     const queryClient = useQueryClient();
     const rules = queryClient.getQueryData<IRuleMap>('getRules')!;
     const darkMode = useDarkModeStore((state) => state.darkMode);
+    const allRulesExist = brokenRules.every((brokenRule) => rules.has(brokenRule.ruleId));
 
+    if (!allRulesExist) return null;
     return (
         <Grid container direction="column" spacing={1}>
             <Grid item>

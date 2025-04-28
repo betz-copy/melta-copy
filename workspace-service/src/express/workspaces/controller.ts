@@ -37,6 +37,10 @@ class WorkspacesController {
     static async updateMetadata(req: Request, res: Response) {
         res.json(await WorkspacesManager.updateMetadata(req.params.id, req.body));
     }
+
+    static async getWorkspaces(req: Request, res: Response) {
+        res.json(await WorkspacesManager.searchWorkspaces(req.body));
+    }
 }
 
 export default WorkspacesController;

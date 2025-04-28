@@ -1,4 +1,7 @@
 import { IBrokenRule, IAction, ActionTypes, ICreateEntityMetadata, IUpdateEntityMetadata } from '@microservices/shared-interfaces';
+import { environment } from '../globals';
+
+const { entityId: newEntityId } = environment.loadExcel;
 
 export const groupBrokenRulesByEntity = (brokenRules: IBrokenRule[]): IBrokenRule[][] => {
     const entityMap = new Map<string, IBrokenRule[]>();
@@ -22,19 +25,17 @@ export const groupBrokenRulesByEntity = (brokenRules: IBrokenRule[]): IBrokenRul
         group.map((brokenRule) => ({
             ...brokenRule,
             failures: brokenRule.failures.map((failure) => {
-                const entityId = '$0._id';
-
                 const updatedCauses = failure.causes.map((cause) => ({
                     ...cause,
                     instance: {
-                        entityId,
+                        entityId: newEntityId,
                     },
                 }));
 
                 return {
                     ...failure,
                     causes: updatedCauses,
-                    entityId,
+                    entityId: newEntityId,
                 };
             }),
         })),
@@ -65,7 +66,7 @@ export const groupActionsByEntityId = (actions: IAction[]): IAction[][] => {
                         ...action.actionMetadata,
                         properties: {
                             ...(action.actionMetadata as ICreateEntityMetadata).properties,
-                            _id: '$0._id',
+                            _id: newEntityId,
                         },
                     },
                 };
@@ -75,7 +76,7 @@ export const groupActionsByEntityId = (actions: IAction[]): IAction[][] => {
                     ...action,
                     actionMetadata: {
                         ...action.actionMetadata,
-                        entityId: '$0._id',
+                        entityId: newEntityId,
                     },
                 };
 

@@ -6,6 +6,7 @@ import {
     orderPropertiesSchema,
     previewPropertiesSchema,
     orderPropertiesTypeSchema,
+    stringFormats,
 } from './joi.helper';
 
 const entityTemplateSchema = {
@@ -19,7 +20,17 @@ const entityTemplateSchema = {
     propertiesPreview: previewPropertiesSchema.required(),
     enumPropertiesColors: enumPropertiesColorsSchema,
     documentTemplatesIds: Joi.array().items(Joi.string()),
+    mapSearchProperties: Joi.array().items(Joi.string()),
 };
+
+// POST /api/entities/templates/searchByFormat
+export const searchEntityTemplatesByFormatSchema = Joi.object({
+    query: {},
+    body: {
+        format: Joi.string().valid(...stringFormats).required(),
+    },
+    params: {},
+});
 
 // POST /api/entities/templates/search
 export const searchEntityTemplatesSchema = Joi.object({
@@ -112,4 +123,11 @@ export const updateEntityTemplateActionSchema = Joi.object({
     params: {
         templateId: MongoIdSchema.required(),
     },
+});
+
+// GET /api/entities/templates/
+export const getAllTemplatesSchema = Joi.object({
+    body: {},
+    query: {},
+    params: {},
 });

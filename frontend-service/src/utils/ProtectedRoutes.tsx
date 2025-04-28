@@ -1,10 +1,10 @@
 import { CircularProgress } from '@mui/material';
-import { AxiosError } from 'axios';
 import React, { isValidElement } from 'react';
-import { useQuery } from 'react-query';
+import { useQuery, useQueryClient } from 'react-query';
 import { Redirect, useLocation, useParams } from 'wouter';
 import { StatusCodes } from 'http-status-codes';
-import { IEntityTemplateMap, PermissionScope, ISubCompactPermissions } from '@microservices/shared-interfaces';
+import { AxiosError } from 'axios';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated, PermissionScope, ISubCompactPermissions } from '@microservices/shared-interfaces';
 import { getExpandedEntityByIdRequest } from '../services/entitiesService';
 
 export const protectedRoute = (children: React.ReactNode, isAllowed: boolean) => {
@@ -23,10 +23,7 @@ export const CategoryProtectedRoute: React.FC<{ permissions: ISubCompactPermissi
     const params = useParams<{ categoryId: string }>();
     const { categoryId } = params;
 
-    return protectedRoute(
-        children,
-        permissions.admin?.scope === PermissionScope.write || Boolean(permissions.instances?.categories[categoryId]?.scope),
-    );
+    return protectedRoute(children, permissions.admin?.scope === PermissionScope.write || Boolean(permissions.instances?.categories[categoryId]));
 };
 
 export const EntityProtectedRoute: React.FC<{ permissions: ISubCompactPermissions; entityTemplates: IEntityTemplateMap }> = ({
@@ -61,6 +58,20 @@ export const EntityProtectedRoute: React.FC<{ permissions: ISubCompactPermission
     return protectedRoute(
         children,
         permissions.admin?.scope === PermissionScope.write || Boolean(permissions.instances?.categories[currentEntityTemplate?.category._id ?? '']),
+    );
+};
+
+export const ChartsProtectedRoute: React.FC<{ permissions: ISubCompactPermissions }> = ({ children, permissions }) => {
+    const queryClient = useQueryClient();
+    const { templateId } = useParams<{ templateId: string }>();
+    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+    const { category } = entityTemplates.get(templateId) as IMongoEntityTemplatePopulated;
+
+    const categoryPermissions = permissions.instances?.categories?.[category?._id];
+
+    return protectedRoute(
+        children,
+        Boolean(permissions.admin?.scope || categoryPermissions?.scope || categoryPermissions?.entityTemplates?.[templateId]?.scope),
     );
 };
 

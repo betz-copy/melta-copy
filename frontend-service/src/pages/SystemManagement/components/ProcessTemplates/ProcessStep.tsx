@@ -1,4 +1,4 @@
-import { ChevronLeft, ExpandMore } from '@mui/icons-material';
+import { ChevronLeft, ExpandMore, ScatterPlotOutlined as HiveIcon } from '@mui/icons-material';
 import { Button, Grid, Typography, useTheme } from '@mui/material';
 import React, { useState } from 'react';
 import { IMongoStepTemplatePopulated } from '@microservices/shared-interfaces';
@@ -28,7 +28,11 @@ export const ProcessStep: React.FC<StepProps> = ({ step }) => {
                 >
                     {isOpen ? <ExpandMore fontSize="small" /> : <ChevronLeft fontSize="small" />}
 
-                    {step.iconFileId && <CustomIcon iconUrl={step.iconFileId} height="24px" width="24px" color={theme.palette.primary.main} />}
+                    {step.iconFileId ? (
+                        <CustomIcon iconUrl={step.iconFileId} height="24px" width="24px" color={theme.palette.primary.main} />
+                    ) : (
+                        <HiveIcon sx={{ color: theme.palette.primary.main }} height="24px" width="24px" />
+                    )}
                     <MeltaTooltip title={step.displayName}>
                         <Typography
                             style={{

@@ -4,6 +4,7 @@ import { ProcessPropertyFormats } from '@microservices/shared';
 
 const ajv = new Ajv();
 ajv.addFormat(ProcessPropertyFormats.FileId, /.*/);
+ajv.addFormat(ProcessPropertyFormats.Signature, /.*/);
 ajv.addFormat(ProcessPropertyFormats.EntityReference, /.*/);
 ajv.addFormat('text-area', /.*/);
 addFormats(ajv);

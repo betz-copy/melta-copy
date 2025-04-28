@@ -72,6 +72,8 @@ export const searchProcessInstancesSchema = Joi.object({
         limit: Joi.number().integer().min(0).default(10),
         skip: Joi.number().integer().min(0).default(0),
         archived: Joi.boolean().default(false),
+        isWaitingForMeFilterOn: Joi.boolean(),
+        isStepStatusPendeing: Joi.boolean(),
     },
     params: {},
 });

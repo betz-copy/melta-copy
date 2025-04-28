@@ -20,6 +20,7 @@ import { Box } from './Box';
 import { CardMenu } from './CardMenu';
 import { CreateButton } from './CreateButton';
 import { useWorkspaceStore } from '../../../stores/workspace';
+import { allowedCategories } from '../../../utils/permissions/templatePermissions';
 
 interface CategoryCardProps {
     category: IMongoCategory;
@@ -51,8 +52,9 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, setDeleteCategory
     const currentUser = useUserStore((state) => state.user);
 
     const canEdit =
-        currentUser.currentWorkspacePermissions.templates?.scope === PermissionScope.write ||
-        currentUser.currentWorkspacePermissions.admin?.scope === PermissionScope.write;
+        currentUser.currentWorkspacePermissions.admin?.scope === PermissionScope.write ||
+        (currentUser.currentWorkspacePermissions.templates?.scope === PermissionScope.write &&
+            currentUser.currentWorkspacePermissions?.instances?.categories[category._id].scope === 'write');
 
     const checkCategoryHasTemplates = (categoryId: string) => {
         const hasTemplates = Array.from(templates!.values()).some((template) => template.category._id === categoryId);
@@ -64,6 +66,12 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, setDeleteCategory
         if (isHover) {
             checkCategoryHasTemplates(category._id);
         }
+    };
+
+    const categoryCardTooltip = () => {
+        if (!canEdit) return i18next.t('wizard.entity.editDisabledDueToTemplates');
+        if (isDeleteButtonDisabled) return i18next.t('wizard.entity.deleteDisabledDueToTemplates');
+        return '';
     };
 
     return (
@@ -110,7 +118,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, setDeleteCategory
                                 disabledProps={{
                                     isDeleteDisabled: isDeleteButtonDisabled,
                                     isEditDisabled: !canEdit,
-                                    tooltipTitle: isDeleteButtonDisabled ? i18next.t('wizard.entity.deleteDisabledDueToTemplates') : '',
+                                    tooltipTitle: categoryCardTooltip(),
                                 }}
                             />
                         )}
@@ -124,10 +132,13 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, setDeleteCategory
 
 const CategoriesRow: React.FC = () => {
     const workspace = useWorkspaceStore((state) => state.workspace);
-    const { headlineSubTitleFontSize } = workspace.metadata.mainFontSizes;
-
     const queryClient = useQueryClient();
+    const currentUser = useUserStore((state) => state.user);
+
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
+    const allowedCategoriesToShow = allowedCategories(categories, currentUser);
+
+    const { headlineSubTitleFontSize } = workspace.metadata.mainFontSizes;
 
     const [deleteCategoryDialogState, setDeleteCategoryDialogState] = useState<{
         isDialogOpen: boolean;
@@ -192,8 +203,8 @@ const CategoriesRow: React.FC = () => {
                 }
                 onHover={(isHover: boolean) => setIsHoverOnBox(isHover)}
             >
-                {categories &&
-                    Array.from(categories.values(), (category) => (
+                {allowedCategoriesToShow &&
+                    allowedCategoriesToShow.map((category) => (
                         <CategoryCard
                             key={category._id}
                             category={category}

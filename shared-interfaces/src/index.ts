@@ -16,6 +16,7 @@ export * from './interfaces/gantt';
 export * from './interfaces/ruleBreach/agGrid';
 export * from './interfaces/semanticSearch';
 export * from './interfaces/globalSearch';
+export * from './interfaces/chart';
 
 // Exporting all enums and functions so frontend can use them too
 export {

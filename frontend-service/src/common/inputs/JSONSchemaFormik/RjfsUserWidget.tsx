@@ -1,37 +1,47 @@
 import React from 'react';
 import { WidgetProps } from '@rjsf/utils';
 import { Grid } from '@mui/material';
-import { IUser } from '@microservices/shared-interfaces';
+import { IKartoffelUser, IKartoffelUserStringFields, IUser } from '@microservices/shared-interfaces';
 import UserAutocomplete from '../UserAutocomplete';
 
-const RjfsUserWidget = ({ disabled, label, value, onChange, rawErrors = [], onBlur, onFocus, id, autoFocus, ...textFieldProps }: WidgetProps) => {
+const RjfsUserWidget = ({
+    disabled,
+    label,
+    value,
+    rawErrors = [],
+    onBlur,
+    onFocus,
+    id,
+    autoFocus,
+    options,
+    onChange,
+    ...textFieldProps
+}: WidgetProps) => {
+    const handleOnChange = options.updateExpandedUserFields as (user: IKartoffelUserStringFields | null, values: any) => void;
     const [currentUser, setCurrentUser] = React.useState(value ? JSON.parse(value) : undefined);
     if (!currentUser) {
-        onChange(undefined);
+        if (handleOnChange) handleOnChange(null, options.globalValues);
     }
 
-    function handleUserChange(_event: React.SyntheticEvent, chosenUser: IUser | null) {
+    function handleUserChange(_event: React.SyntheticEvent, chosenUser: IKartoffelUser | null) {
         if (!chosenUser) {
             setCurrentUser(undefined);
             return;
         }
-        onChange(
-            JSON.stringify({
-                _id: chosenUser?._id,
-                fullName: chosenUser?.fullName,
-                jobTitle: chosenUser?.jobTitle,
-                hierarchy: chosenUser?.hierarchy,
-                mail: chosenUser?.mail,
-            }),
-        );
+        const formattedUser: IKartoffelUserStringFields = {
+            ...chosenUser,
+            mobilePhone: chosenUser.mobilePhone?.join(','),
+            phone: chosenUser.phone?.join(','),
+        };
+        if (handleOnChange) handleOnChange(formattedUser, options.globalValues);
 
-        setCurrentUser(chosenUser);
+        setCurrentUser(formattedUser);
     }
 
     return (
         <Grid>
             <UserAutocomplete
-                mode="external"
+                mode="kartoffel"
                 value={
                     currentUser
                         ? { _id: currentUser._id, displayName: `${currentUser.fullName} - ${currentUser.hierarchy}`, ...currentUser }
@@ -47,7 +57,7 @@ const RjfsUserWidget = ({ disabled, label, value, onChange, rawErrors = [], onBl
                 enableClear
                 onDisplayValueChange={(_, newDisplayValue) => {
                     if (newDisplayValue === '') {
-                        onChange(undefined);
+                        if (handleOnChange) handleOnChange(null, options.globalValues);
                         setCurrentUser(undefined);
                     }
                 }}

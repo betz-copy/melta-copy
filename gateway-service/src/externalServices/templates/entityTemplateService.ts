@@ -6,13 +6,16 @@ import {
     IMongoEntityTemplatePopulated,
     ISearchEntityTemplatesBody,
     IMongoRelationshipTemplate,
+    ISubCompactPermissions,
 } from '@microservices/shared';
 import TemplatesManagerService from '.';
 import config from '../../config';
-import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
+import { Authorizer, RequestWithPermissionsOfUserId } from '../../utils/authorizer';
 
 const {
+    service: { workspaceIdHeaderName },
     templateService: {
+        baseRoute,
         entities: { baseEntitiesRoute, baseCategoriesRoute },
     },
 } = config;
@@ -23,10 +26,20 @@ export interface RequestWithSearchEntityTemplateBody extends RequestWithPermissi
 
 class EntityTemplateService extends TemplatesManagerService {
     // categories
-    async getAllCategories() {
-        const { data } = await this.api.get<IMongoCategory[]>(baseCategoriesRoute);
+    filterCategoriesByPermissions(categories: IMongoCategory[], usersPermissions: ISubCompactPermissions): IMongoCategory[] {
+        if (!usersPermissions.instances) {
+            return [] as IMongoCategory[];
+        }
 
-        return data;
+        return categories.filter(({ _id }) => usersPermissions.instances?.categories[_id]);
+    }
+
+    async searchCategories(userPermissions: ISubCompactPermissions, searchInput?: string) {
+        const params: Record<string, string> = searchInput ? { search: searchInput } : {};
+
+        const { data: categories } = await this.api.get<IMongoCategory[]>(baseCategoriesRoute, { params });
+
+        return userPermissions.admin ? categories : this.filterCategoriesByPermissions(categories, userPermissions);
     }
 
     async createCategory(category: ICategory) {
@@ -54,8 +67,23 @@ class EntityTemplateService extends TemplatesManagerService {
     }
 
     // entity templates
-    async searchEntityTemplates(body: ISearchEntityTemplatesBody = {}) {
-        const { data } = await this.api.post<IMongoEntityTemplatePopulated[]>(`${baseEntitiesRoute}/search`, body);
+    async searchEntityTemplates(userId: string, body: ISearchEntityTemplatesBody = {}) {
+        const workspaceId = this.api.defaults.headers[workspaceIdHeaderName]!.toString();
+        const usersPermissions = await new Authorizer(workspaceId).getWorkspacePermissions(userId);
+
+        const { data: entityTemplates } = await this.api.post<IMongoEntityTemplatePopulated[]>(`${baseEntitiesRoute}/search`, body);
+        return usersPermissions.admin
+            ? entityTemplates
+            : entityTemplates.filter((entity) => {
+                  return (
+                      usersPermissions.instances?.categories[entity.category._id]?.scope ||
+                      usersPermissions.instances?.categories[entity.category._id]?.entityTemplates[entity._id]
+                  );
+              });
+    }
+
+    async getAllTemplatesByWorkspaceId(workspaceId: string) {
+        const { data } = await this.api.get<IMongoEntityTemplate[]>(`${baseRoute}/entities/`, { headers: { workspaceId } });
 
         return data;
     }

@@ -51,6 +51,39 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
             .exec() as Promise<IEntityTemplatePopulated[]>;
     }
 
+    getTemplatesByFormat({ format }: { format: string }) {
+        const query: FilterQuery<IEntityTemplate> = {
+            $expr: {
+              $gt: [
+                {
+                  $size: {
+                    $filter: {
+                      input: {
+                        $objectToArray:
+                          "$properties.properties"
+                      },
+                      as: "item",
+                      cond: {
+                        $eq: [
+                          "$$item.v.format",
+                          format
+                        ]
+                      }
+                    }
+                  }
+                },
+                0
+              ]
+            }
+        };
+
+        return this.model.find(query).lean().exec();
+    }
+
+    getAllTemplates() {
+        return this.model.find().lean().exec();
+    }
+
     getTemplateById(id: string): Promise<IEntityTemplatePopulated> {
         return this.model
             .findById<IEntityTemplatePopulated>(id)
@@ -234,6 +267,7 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
         session?: ClientSession,
     ) {
         const currentEntityTemplate = await this.getTemplateById(id);
+
 
         const newEntityTemplate = session
             ? await this.updateEntityTemplateInTransaction(id, currentEntityTemplate, updatedTemplateData, allowToDeleteRelationshipFields, session)
