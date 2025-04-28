@@ -185,7 +185,19 @@ const UpdateTextValue: React.FC<{
         return type === 'array' && items?.type === 'string' && items.format === 'fileId';
     };
 
+    const isUserField = (): boolean => {
+        if (!entityTemplateProperties[fieldName]) return false;
+
+        const { type, format } = entityTemplateProperties[fieldName];
+
+        return type === 'string' && format === 'user';
+    };
+
     const contentDisplayNameByTemplate = (content: string) => {
+        if (isUserField()) {
+            const subContent = content.substring(1, content.length - 1);
+            return JSON.parse(subContent).fullName;
+        }
         if (isFileIdFormat()) {
             return getFilesName(content);
         }

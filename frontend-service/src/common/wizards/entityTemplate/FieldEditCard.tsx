@@ -59,6 +59,8 @@ import { environment } from '../../../globals';
 import { getInitialValue } from '../../inputs/JSONSchemaFormik/RjfsTextAreaWidget';
 import SelectCellEditor from '../../../utils/agGrid/SelectCellEditor';
 import { commentColors } from '../../inputs/JSONSchemaFormik/RjsfCommentWidget';
+import KartoffelUserField from './KartoffelUserField';
+import { ImageWithDisable } from '../../ImageWithDisable';
 
 const { mapSearchPropertiesLimit } = environment.map;
 
@@ -111,6 +113,8 @@ export interface FieldEditCardProps {
     hasActions?: boolean;
     supportConvertingToMultipleFields?: boolean;
     supportComment?: boolean;
+    userPropertiesInTemplate?: string[];
+    onDuplicateKartoffelField?: (fieldIndex: number) => void;
 }
 
 export const FieldEditCard: React.FC<FieldEditCardProps> = ({
@@ -146,6 +150,8 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     hasActions,
     supportConvertingToMultipleFields = true,
     supportComment,
+    userPropertiesInTemplate = [],
+    onDuplicateKartoffelField,
 }) => {
     const theme = createTheme();
     const muiRteTheme: TMUIRichTextEditorStyles = {
@@ -673,6 +679,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                     type: newType,
                                                     required: newType === 'serialNumber' || prevValue.required,
                                                     title: newType === 'comment' ? value.name : value.title,
+                                                    readOnly: e.target.value === 'kartoffelUserField' || prevValue.readOnly,
                                                 }));
                                             }}
                                             error={touchedType && Boolean(errorType)}
@@ -698,6 +705,12 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                     if (validPropertyType === 'fileId' || validPropertyType === 'multipleFiles') return false; // TODO: support file inputs
                                                     if (validPropertyType === 'user' || validPropertyType === 'users') return supportUserType;
                                                     if (validPropertyType === 'comment') return supportComment;
+                                                    if (
+                                                        validPropertyType === 'kartoffelUserField' &&
+                                                        userPropertiesInTemplate.length === 0 &&
+                                                        !value.deleted
+                                                    )
+                                                        return false;
                                                     return true;
                                                 })
                                                 .map((validType) => {
@@ -991,6 +1004,17 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                 isDisabled={isDisabled}
                                             />
                                         )}
+                                        {value.type === 'kartoffelUserField' && (
+                                            <KartoffelUserField
+                                                value={value}
+                                                index={index}
+                                                touched={touched}
+                                                errors={errors}
+                                                setFieldValue={setFieldValue}
+                                                isDisabled={isDisabled}
+                                                userPropertiesInTemplate={userPropertiesInTemplate}
+                                            />
+                                        )}
                                         {(value.type === 'date' || value.type === 'date-time') &&
                                             'dateNotification' in value &&
                                             (value.dateNotification !== undefined ? (
@@ -1093,7 +1117,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                     </Grid>
                                     <Grid item container justifyContent="space-between">
                                         <Box>
-                                            {value.required !== undefined && isNotComment && setValues && (
+                                            {value.required !== undefined && setValues && isNotComment && value.type !== 'kartoffelUserField' && (
                                                 <FormControlLabel
                                                     control={
                                                         <Switch
@@ -1140,7 +1164,9 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                 readOnly: checked || undefined,
                                                             }));
                                                         }}
-                                                        disabled={value.required || value.archive || !isNotComment}
+                                                        disabled={
+                                                            value.required || value.archive || value.type === 'kartoffelUserField' || !isNotComment
+                                                        }
                                                         checked={value.readOnly || !isNotComment}
                                                     />
                                                 }
@@ -1174,33 +1200,38 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                     label={i18next.t('validation.hide')}
                                                 />
                                             )}
-                                            {supportUnique && unique !== undefined && setValues && value.type !== 'signature' && isNotComment && (
-                                                <FormControlLabel
-                                                    control={
-                                                        <Switch
-                                                            id={String(unique)}
-                                                            name={String(unique)}
-                                                            checked={unique}
-                                                            disabled={value.archive || value.type === 'serialNumber'}
-                                                            onChange={(_e, checked) => {
-                                                                setValues((prevValue) => ({
-                                                                    ...prevValue,
-                                                                    required: checked ? true : prevValue.required,
-                                                                    identifier: !checked ? undefined : prevValue.identifier,
-                                                                    groupName: undefined,
-                                                                    uniqueCheckbox: false,
-                                                                }));
-                                                                if (checked) {
-                                                                    createEmptyGroup(value.name);
-                                                                } else {
-                                                                    deletePropFromUniqueConstraints(uniqueConstraintGroupName, value.name);
-                                                                }
-                                                            }}
-                                                        />
-                                                    }
-                                                    label={i18next.t('validation.unique')}
-                                                />
-                                            )}
+                                            {supportUnique &&
+                                                unique !== undefined &&
+                                                setValues &&
+                                                value.type !== 'signature' &&
+                                                value.type !== 'kartoffelUserField' &&
+                                                isNotComment && (
+                                                    <FormControlLabel
+                                                        control={
+                                                            <Switch
+                                                                id={String(unique)}
+                                                                name={String(unique)}
+                                                                checked={unique}
+                                                                disabled={value.archive || value.type === 'serialNumber'}
+                                                                onChange={(_e, checked) => {
+                                                                    setValues((prevValue) => ({
+                                                                        ...prevValue,
+                                                                        required: checked ? true : prevValue.required,
+                                                                        identifier: !checked ? undefined : prevValue.identifier,
+                                                                        groupName: undefined,
+                                                                        uniqueCheckbox: false,
+                                                                    }));
+                                                                    if (checked) {
+                                                                        createEmptyGroup(value.name);
+                                                                    } else {
+                                                                        deletePropFromUniqueConstraints(uniqueConstraintGroupName, value.name);
+                                                                    }
+                                                                }}
+                                                            />
+                                                        }
+                                                        label={i18next.t('validation.unique')}
+                                                    />
+                                                )}
                                             {(value.type === 'date' || value.type === 'date-time') && 'calculateTime' in value && (
                                                 <FormControlLabel
                                                     control={
@@ -1315,6 +1346,18 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                         </Box>
                                                     </MeltaTooltip>
                                                 )}
+                                            {value.type === 'kartoffelUserField' && (
+                                                <MeltaTooltip title={i18next.t('wizard.entityTemplate.duplicateField')} placement="right">
+                                                    <Box>
+                                                        <IconButton onClick={() => onDuplicateKartoffelField?.(index)}>
+                                                            <ImageWithDisable
+                                                                srcPath="/icons/duplicate.svg"
+                                                                style={{ width: '22px', height: '22px' }}
+                                                            />
+                                                        </IconButton>
+                                                    </Box>
+                                                </MeltaTooltip>
+                                            )}
                                             {supportArchive && isEditMode && (
                                                 <MeltaTooltip title={archiveButtonTooltip()} placement="right">
                                                     <Box>
@@ -1492,5 +1535,6 @@ export const MemoFieldEditCard = memo(
         isEqual(prev.errors, next.errors) &&
         isEqual(prev.uniqueConstraints, next.uniqueConstraints) &&
         isEqual(prev.locationSearchFields, next.locationSearchFields) &&
-        isEqual(prev.hasIdentifier, next.hasIdentifier),
+        isEqual(prev.hasIdentifier, next.hasIdentifier) &&
+        isEqual(prev.userPropertiesInTemplate, next.userPropertiesInTemplate),
 );

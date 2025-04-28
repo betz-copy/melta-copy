@@ -67,6 +67,13 @@ const addFieldsSchema = Yup.object({
                         relationshipTemplateDirection: Yup.string().required(i18next.t('validation.required')),
                     }),
                 }),
+                expandedUserField: Yup.object().when('type', {
+                    is: 'kartoffelUserField',
+                    then: Yup.object({
+                        relatedUserField: Yup.string().required(i18next.t('validation.required')),
+                        kartoffelField: Yup.string().required(i18next.t('validation.required')),
+                    }),
+                }),
                 mapSearch: Yup.boolean(),
             }),
         )

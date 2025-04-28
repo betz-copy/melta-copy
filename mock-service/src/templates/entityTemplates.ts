@@ -10,7 +10,18 @@ const {
 export interface IEntitySingleProperty {
     title: string;
     type: 'string' | 'number' | 'boolean' | 'array';
-    format?: 'date' | 'date-time' | 'email' | 'fileId' | 'text-area' | 'relationshipReference' | 'location' | 'user' | 'signature' | 'comment';
+    format?:
+        | 'date'
+        | 'date-time'
+        | 'email'
+        | 'fileId'
+        | 'text-area'
+        | 'relationshipReference'
+        | 'location'
+        | 'user'
+        | 'signature'
+        | 'comment'
+        | 'kartoffelUserField';
     enum?: string[];
     readOnly?: true;
     identifier?: true;
@@ -38,6 +49,10 @@ export interface IEntitySingleProperty {
     comment?: string;
     color?: string;
     hideFromDetailsPage?: boolean;
+    expandedUserField?: {
+        relatedUserField: string;
+        kartoffelField: string;
+    };
 }
 
 export interface IProperties {

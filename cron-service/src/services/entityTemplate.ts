@@ -23,7 +23,7 @@ export interface IMongoCategory extends ICategory {
 export interface IEntitySingleProperty {
     title: string;
     type: 'string' | 'number' | 'boolean' | 'array';
-    format?: 'date' | 'date-time' | 'email' | 'fileId' | 'text-area' | 'relationshipReference' | 'signature' | 'comment';
+    format?: 'date' | 'date-time' | 'email' | 'fileId' | 'text-area' | 'relationshipReference' | 'signature' | 'kartoffelUserField' | 'user' | 'comment';
     enum?: string[];
     readOnly?: true;
     items?: {
@@ -52,6 +52,10 @@ export interface IEntitySingleProperty {
     archive?: boolean;
     comment?: string;
     color?: string;
+    expandedUserField?: {
+        relatedUserField: string;
+        kartoffelField: string;
+    };
 }
 
 export interface IEntityTemplate {
@@ -97,6 +101,12 @@ export interface ISearchEntityTemplatesBody extends ISearchBody {
 export class EntityTemplateService extends TemplatesManagerService {
     async searchEntityTemplates(body: ISearchEntityTemplatesBody = {}) {
         const { data } = await this.api.post<IMongoEntityTemplatePopulated[]>(`${baseEntitiesRoute}/search`, body);
+
+        return data;
+    }
+
+    async searchEntityTemplatesIncludesFormat(format: string) {
+        const { data } = await this.api.post<IMongoEntityTemplatePopulated[]>(`${baseEntitiesRoute}/searchByFormat`, { format });
 
         return data;
     }

@@ -11,6 +11,7 @@ const ajv = new Ajv();
 ajv.addFormat('fileId', /.*/);
 ajv.addFormat('signature', /.*/);
 ajv.addFormat('comment', /.*/);
+ajv.addFormat('kartoffelUserField', /.*/);
 ajv.addFormat('user', {
     type: 'string',
     validate: (user) => {
@@ -40,6 +41,7 @@ ajv.addKeyword({
     type: 'number',
 });
 ajv.addKeyword({ keyword: 'user', type: 'string' });
+ajv.addKeyword({ keyword: 'expandedUserField', type: 'string' });
 ajv.addKeyword({ keyword: 'calculateTime', type: 'boolean' });
 ajv.addKeyword({ keyword: 'isDailyAlert', type: 'boolean' });
 ajv.addKeyword({ keyword: 'isDatePastAlert', type: 'boolean' });
@@ -49,7 +51,19 @@ ajv.addKeyword({ keyword: 'hideFromDetailsPage', type: 'boolean' });
 ajv.addKeyword({ keyword: 'comment', type: 'string' });
 ajv.addKeyword({ keyword: 'color', type: 'string' });
 
-const stringFormats = ['date', 'date-time', 'email', 'fileId', 'text-area', 'relationshipReference', 'location', 'user', 'signature', 'comment'];
+export const stringFormats = [
+    'date',
+    'date-time',
+    'email',
+    'fileId',
+    'text-area',
+    'relationshipReference',
+    'location',
+    'user',
+    'signature',
+    'comment',
+    'kartoffelUserField',
+];
 const allowedJSONSchemaTypes = ['string', 'number', 'boolean', 'array'];
 
 const propertiesArraySchema = Joi.array()
@@ -109,6 +123,10 @@ const propertiesArraySchema = Joi.array()
                 relatedTemplateId: Joi.string().required(),
                 relatedTemplateField: Joi.string().required(),
             }).when('format', { is: 'relationshipReference', then: Joi.required(), otherwise: Joi.forbidden() }),
+            expandedUserField: Joi.object({
+                relatedUserField: Joi.string().required(),
+                kartoffelField: Joi.string().required(),
+            }).when('format', { is: 'kartoffelUserField', then: Joi.required(), otherwise: Joi.forbidden() }),
             calculateTime: Joi.boolean().when('format', { not: Joi.valid('date', 'date-time'), then: Joi.forbidden() }),
             serialStarter: Joi.number().when('type', { not: 'number', then: Joi.forbidden() }),
             serialCurrent: Joi.number().when('type', { not: 'number', then: Joi.forbidden() }),

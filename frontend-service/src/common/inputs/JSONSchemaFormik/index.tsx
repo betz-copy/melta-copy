@@ -9,6 +9,7 @@ import mapValues from 'lodash.mapvalues';
 import pickBy from 'lodash.pickby';
 import validator from '@rjsf/validator-ajv8';
 import { ErrorSchema, UiSchema } from '@rjsf/utils';
+import { cloneDeep } from 'lodash';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { RjfsDateWidget, RjfsDateTimeWidget } from './RjfsDatesWidgets';
 import RjfsSelectWidget from './RjfsSelectWidget';
@@ -19,6 +20,7 @@ import RjfsTemplateReferenceWidget from './RjfsTemplateReferenceWidget';
 import RjsfLocationWidget, { validateLocation } from './RjsfLocationWidget';
 import RjfsUserWidget from './RjfsUserWidget';
 import RjfsUserArrayWidget from './RjfsUserArrayWidget';
+import { IKartoffelUser } from '../../../interfaces/users';
 import RjfsSignatureWidget from './RjfsSignatureWidgets';
 import RjsfCommentWidget from './RjsfCommentWidget';
 
@@ -47,6 +49,7 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
     const ajv = new Ajv({ allErrors: true });
     ajv.addFormat('fileId', /.*/);
     ajv.addFormat('signature', /.*/);
+    ajv.addFormat('kartoffelUserField', /.*/);
     ajv.addFormat('user', {
         type: 'string',
         validate: (user) => {
@@ -72,6 +75,10 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
     });
     ajv.addKeyword({
         keyword: 'relationshipReference',
+        type: 'string',
+    });
+    ajv.addKeyword({
+        keyword: 'expandedUserField',
         type: 'string',
     });
     ajv.addKeyword({
@@ -224,6 +231,37 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                 if (propertySchema.format === 'user') {
                     return {
                         'ui:widget': 'UserWidget',
+                        'ui:options': {
+                            globalValues: values,
+                            updateExpandedUserFields: (user: IKartoffelUser | null, curValues: any) => {
+                                const userFieldsToUpdate = Object.keys(schema.properties).filter(
+                                    (key) => schema.properties[key].expandedUserField?.relatedUserField === propertyKey,
+                                );
+
+                                const clonedValues = cloneDeep(curValues);
+
+                                const propertiesToUpdate = clonedValues.properties;
+
+                                userFieldsToUpdate.forEach((key) => {
+                                    const kartoffelField = schema.properties[key].expandedUserField?.kartoffelField;
+                                    propertiesToUpdate[key] = user && kartoffelField ? user[kartoffelField] : undefined;
+                                });
+
+                                propertiesToUpdate[propertyKey] = user
+                                    ? JSON.stringify({
+                                          _id: user?._id || user?.id,
+                                          fullName: user?.fullName,
+                                          jobTitle: user?.jobTitle,
+                                          hierarchy: user?.hierarchy,
+                                          mail: user?.mail,
+                                      })
+                                    : undefined;
+
+                                setValues({
+                                    ...propertiesToUpdate,
+                                });
+                            },
+                        },
                     };
                 }
                 if (propertySchema.format === 'text-area')
