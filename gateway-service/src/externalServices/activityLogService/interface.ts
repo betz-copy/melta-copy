@@ -1,7 +1,14 @@
 interface IBaseActivityLog {
+    _id: string;
     timestamp: Date;
     entityId: string;
     userId: string;
+}
+
+export enum Status {
+    Pending = 'pending',
+    Approved = 'approved',
+    Rejected = 'rejected',
 }
 
 interface IEmptyMetadata extends IBaseActivityLog {
@@ -24,23 +31,19 @@ interface IUpdateEntityMetadata extends IBaseActivityLog {
     metadata: { updatedFields: [{ fieldName: string; oldValue: any; newValue: any }] };
 }
 
-interface IUpdateProcessStepMetadata extends IBaseActivityLog {
+export interface IUpdateProcessStepMetadata extends IBaseActivityLog {
     action: 'UPDATE_PROCESS_STEP';
-    metadata: { updatedFields?: [{ fieldName: string; oldValue: any; newValue: any }]; comments?: string; status?: string };
-}
-
-export enum Action {
-    'DELETE_RELATIONSHIP',
-    'CREATE_RELATIONSHIP',
-    'UPDATE_ENTITY',
-    'CREATE_ENTITY',
-    'CREATE_PROCESS',
-    'UPDATE_PROCESS',
-    'UPDATE_PROCESS_STEP',
-    'DISABLE_ENTITY',
-    'ACTIVATE_ENTITY',
-    'VIEW_ENTITY',
-    'DUPLICATE_ENTITY',
+    metadata: { updatedFields?: [{ fieldName: string; oldValue: any; newValue: any }]; comments?: string; status?: Status };
 }
 
 export type IActivityLog = IEmptyMetadata | IRelationshipMetadata | IDuplicateEntityMetadata | IUpdateEntityMetadata | IUpdateProcessStepMetadata;
+
+export type SearchParams = Partial<{
+    limit: number;
+    skip: number;
+    actions: string[];
+    searchText: string;
+    fieldsSearch: string[];
+    startDateRange: Date;
+    endDateRange: Date;
+}>;
