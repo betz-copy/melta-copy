@@ -149,7 +149,8 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
                 ...displayValuesCopy[index],
                 [field]: value,
             };
-            if (field === 'name' && displayValuesCopy[index].type === 'comment') displayValuesCopy[index].title = i18next.t('propertyTypes.comment');
+            if (field === 'name' && displayValuesCopy[index].type === 'comment')
+                displayValuesCopy[index].title = `${i18next.t('propertyTypes.comment')}-${value}`;
         });
 
         setDisplayValues(displayValuesCopy);

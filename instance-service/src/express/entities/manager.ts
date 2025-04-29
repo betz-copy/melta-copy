@@ -1059,15 +1059,18 @@ export class EntityManager extends DefaultManagerNeo4j {
     }
 
     getFilesProperties({ properties: { properties } }: IMongoEntityTemplate) {
-        return Object.keys(properties).reduce((acc, propertyToRemove) => {
-            const { format, items } = properties[propertyToRemove];
+        return Object.keys(properties).reduce(
+            (acc, propertyToRemove) => {
+                const { format, items } = properties[propertyToRemove];
 
-            if (format === 'fileId' || items?.format === 'fileId') {
-                acc[propertyToRemove] = items?.format === 'fileId';
-            }
+                if (format === 'fileId' || items?.format === 'fileId') {
+                    acc[propertyToRemove] = items?.format === 'fileId';
+                }
 
-            return acc;
-        }, {} as Record<string, boolean>);
+                return acc;
+            },
+            {} as Record<string, boolean>,
+        );
     }
 
     getFilesOfEntities(entitiesToDelete: IEntity[], entityTemplate: IMongoEntityTemplate) {
@@ -1292,10 +1295,13 @@ export class EntityManager extends DefaultManagerNeo4j {
     private getUpdatedProperties(oldEntity: Record<string, any>, newEntity: Record<string, any>, entityTemplate: IMongoEntityTemplate) {
         const updatedPropertiesNames = this.getKeysOfUpdatedProperties(oldEntity, newEntity, entityTemplate);
 
-        const updatedProperties = updatedPropertiesNames.reduce((acc, property) => {
-            acc[property] = newEntity[property];
-            return acc;
-        }, {} as Record<string, any>);
+        const updatedProperties = updatedPropertiesNames.reduce(
+            (acc, property) => {
+                acc[property] = newEntity[property];
+                return acc;
+            },
+            {} as Record<string, any>,
+        );
 
         return this.removeBasicProperties(updatedProperties);
     }

@@ -19,7 +19,7 @@ const RjsfCommentWidget = ({ options }: WidgetProps) => {
     if (hide) return <div />;
     return (
         <Grid>
-            <Typography color={commentColors[color as string] ?? '#4752B6'} fontSize="14px">
+            <Typography color={(color as string) ?? '#4752B6'} fontSize="14px">
                 {renderHTML(comment as string)}
             </Typography>
         </Grid>

@@ -38,7 +38,8 @@ export const GanttItemEdit: React.FC<IGanttItemEditProps> = ({ ganttItem, index,
     const itemKey = `items[${index}]`;
     const itemEntityTemplateKey = `${itemKey}.entityTemplate`;
 
-    const entityTemplateFields = entityTemplate && Object.keys(entityTemplate.properties.properties);
+    const { properties } = entityTemplate?.properties ?? { properties: {} };
+    const entityTemplateFields = entityTemplate && Object.keys(properties).filter((property) => properties[property].format !== 'comment');
 
     return (
         <Grid

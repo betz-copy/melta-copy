@@ -60,8 +60,10 @@ export const EditConnectedEntityTemplates: React.FC<IEditConnectedEntityTemplate
                                         ? relationshipTemplate.destinationEntityId
                                         : relationshipTemplate.sourceEntityId,
                                 );
+
+                            const { properties } = connectedEntityTemplate?.properties ?? { properties: {} };
                             const connectedEntityTemplateFields =
-                                connectedEntityTemplate && Object.keys(connectedEntityTemplate.properties.properties);
+                                connectedEntityTemplate && Object.keys(properties).filter((property) => properties[property].format !== 'comment');
 
                             return (
                                 <Grid

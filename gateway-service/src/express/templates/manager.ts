@@ -853,6 +853,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             await this.deleteFilesOfDeletedProperty(id, removedFilesProperties, count);
         }
 
+        // if (removedProperties.some((removedProperty) => currentTemplate.properties.properties[removedProperty].format !== 'comment')) {
         await this.deletePropertyFromChartFilter(id, removedProperties);
 
         const { err } = await trycatch(() =>
@@ -877,6 +878,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             await this.entityTemplateService.updateEntityTemplate(id, updatedTemplate);
             throw err;
         }
+        // }
     }
 
     private async handleFiles(

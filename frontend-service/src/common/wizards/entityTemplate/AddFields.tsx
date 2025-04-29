@@ -75,6 +75,10 @@ const addFieldsSchema = Yup.object({
                     }),
                 }),
                 mapSearch: Yup.boolean(),
+                comment: Yup.string().when('type', {
+                    is: 'comment',
+                    then: (schema) => schema.required(i18next.t('validation.required')),
+                }),
             }),
         )
         .min(1, i18next.t('validation.oneField'))

@@ -19,7 +19,6 @@ import { HighlightText } from '../utils/HighlightText';
 import { BlueTitle } from './BlueTitle';
 import UserAvatar from './UserAvatar';
 import OverflowWrapper from '../utils/agGrid/OverflowWrapper';
-import { commentColors } from './inputs/JSONSchemaFormik/RjsfCommentWidget';
 import { locationConverterToString } from '../utils/map/convert';
 import { CoordinateSystem } from './inputs/JSONSchemaFormik/RjsfLocationWidget';
 
@@ -317,7 +316,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                                     >
                                         <Typography
                                             fontSize="14px"
-                                            color={commentColors[propertySchema.color ?? ''] ?? propertyValueColor}
+                                            color={propertySchema.color ?? propertyValueColor}
                                             style={{
                                                 textOverflow: 'ellipsis',
                                                 whiteSpace: textWrap ? undefined : 'nowrap',

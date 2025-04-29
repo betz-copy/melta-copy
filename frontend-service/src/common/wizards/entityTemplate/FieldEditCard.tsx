@@ -1268,18 +1268,18 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                             )}
                                             {isComment && (
                                                 <SelectCellEditor
-                                                    values={Object.keys(commentColors)}
+                                                    options={Object.keys(commentColors)}
                                                     value={value.color ?? i18next.t('validation.colors.blue')}
                                                     onValueChange={(newValue) => {
                                                         setValues?.((prevValue) => ({
                                                             ...prevValue,
-                                                            color: newValue as string,
+                                                            color: commentColors[newValue as string],
                                                         }));
                                                     }}
                                                     colorsOptions={commentColors}
                                                     disableClearable
                                                     label={i18next.t('validation.colors.colors')}
-                                                    overrideSx={{ width: '100px' }}
+                                                    overrideSx={{ width: '150px' }}
                                                 />
                                             )}
                                         </Box>

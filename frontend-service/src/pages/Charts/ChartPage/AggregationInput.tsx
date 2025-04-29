@@ -36,8 +36,9 @@ const AxisInput: React.FC<AxisInputProps> = ({
     const titleValue = titleFormikField ? getIn(formikValues, titleFormikField) : undefined;
     const titleError = titleFormikField && getIn(formik.touched, titleFormikField) && getIn(formik.errors, titleFormikField);
 
-    const entityTemplateFields = entityTemplate && Object.keys(entityTemplate.properties.properties);
-    const entityTemplateNumberFields = filteredMap(Object.entries(entityTemplate.properties.properties), ([property, value]) => ({
+    const { properties } = entityTemplate.properties;
+    const entityTemplateFields = entityTemplate && Object.keys(properties).filter((property) => properties[property].format !== 'comment');
+    const entityTemplateNumberFields = filteredMap(Object.entries(properties), ([property, value]) => ({
         include: value.type === 'number' && !value.serialStarter,
         value: property,
     }));
@@ -103,7 +104,7 @@ const AxisInput: React.FC<AxisInputProps> = ({
                     style={{ width: '100%' }}
                     readonly={readonly}
                     getOptionDisabled={(option) => {
-                        const propertyTemplate = entityTemplate.properties.properties[option];
+                        const propertyTemplate = properties[option];
                         if (propertyTemplate?.format === 'relationshipReference') {
                             const relatedTemplateId = propertyTemplate.relationshipReference?.relatedTemplateId!;
                             return !entityTemplates?.get(relatedTemplateId);
