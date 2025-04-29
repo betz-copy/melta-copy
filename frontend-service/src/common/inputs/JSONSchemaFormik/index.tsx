@@ -165,7 +165,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
             '#json-schema > .form-group.field.field-object > .MuiFormControl-root > .MuiGrid-root > .MuiGrid-root',
         );
         containerDiv.forEach((innerDiv) => {
-            const biggerFieldCss = innerDiv.querySelector('.text-area') || innerDiv.querySelector('.signature') || innerDiv.querySelector('.comment');
+            const biggerFieldCss = innerDiv.querySelector('.fullWidth');
             innerDiv.classList.add(biggerFieldCss ? 'has-bigger-field-child' : 'has-field-child');
         });
     }, [values.template]);
@@ -186,16 +186,15 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                 if (propertySchema.format === 'comment')
                     return {
                         'ui:options': {
-                            comment: propertySchema.comment,
-                            color: propertySchema.color,
                             hide: schema.hide.includes(propertyKey),
                         },
-                        'ui:classNames': 'comment',
+                        'ui:classNames': 'fullWidth',
                         'ui:widget': 'CommentWidget',
                     };
                 if (propertySchema.format === 'signature')
                     return {
                         'ui:widget': 'SignatureWidget',
+                        'ui:classNames': 'fullWidth',
                     };
                 if (propertySchema.readOnly)
                     return {
@@ -267,7 +266,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                 if (propertySchema.format === 'text-area')
                     return {
                         'ui:widget': 'TextAreaWidget',
-                        'ui:classNames': 'text-area',
+                        'ui:classNames': 'fullWidth',
                         'ui:options': { toPrint },
                     };
                 if (propertySchema.format === 'relationshipReference')

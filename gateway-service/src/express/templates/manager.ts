@@ -734,8 +734,15 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         }
     }
 
-    private async checkIfPropertyInUsedBeforeDeleteOrArchive(templateId: string, properties: string[], archive: boolean, userId: string) {
-        if (properties.length)
+    private async checkIfPropertyInUsedBeforeDeleteOrArchive(
+        entityTemplate: IMongoEntityTemplatePopulated,
+        properties: string[],
+        archive: boolean,
+        userId: string,
+    ) {
+        const { _id: templateId } = entityTemplate;
+
+        if (properties.length && properties.some((removedProperty) => entityTemplate.properties.properties[removedProperty].format !== 'comment'))
             await Promise.all([
                 this.isPropertyOfTemplateInUsedInGantts(templateId, properties, archive),
                 this.isPropertyOfTemplateInUsedInRules(templateId, properties, archive),
@@ -853,32 +860,32 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             await this.deleteFilesOfDeletedProperty(id, removedFilesProperties, count);
         }
 
-        // if (removedProperties.some((removedProperty) => currentTemplate.properties.properties[removedProperty].format !== 'comment')) {
-        await this.deletePropertyFromChartFilter(id, removedProperties);
+        if (removedProperties.some((removedProperty) => currentTemplate.properties.properties[removedProperty].format !== 'comment')) {
+            await this.deletePropertyFromChartFilter(id, removedProperties);
 
-        const { err } = await trycatch(() =>
-            this.instancesService.deletePropertiesOfTemplate(id, removedProperties, currentTemplate.properties.properties),
-        );
+            const { err } = await trycatch(() =>
+                this.instancesService.deletePropertiesOfTemplate(id, removedProperties, currentTemplate.properties.properties),
+            );
 
-        if (err) {
-            const manipulatedTemplate = JSON.parse(JSON.stringify(currentTemplate));
+            if (err) {
+                const manipulatedTemplate = JSON.parse(JSON.stringify(currentTemplate));
 
-            Object.entries(currentTemplate.properties.properties).forEach(([name, value]) => {
-                if (value.format === 'relationshipReference' && value.relationshipReference) {
-                    const { relationshipTemplateId, ...restData } = value.relationshipReference;
-                    manipulatedTemplate.properties.properties[name].relationshipReference = restData;
-                }
-            });
+                Object.entries(currentTemplate.properties.properties).forEach(([name, value]) => {
+                    if (value.format === 'relationshipReference' && value.relationshipReference) {
+                        const { relationshipTemplateId, ...restData } = value.relationshipReference;
+                        manipulatedTemplate.properties.properties[name].relationshipReference = restData;
+                    }
+                });
 
-            const updatedTemplate: Omit<IEntityTemplate, 'disabled'> = {
-                ...this.removeBasicFields(manipulatedTemplate),
-                category: currentTemplate.category._id,
-            };
+                const updatedTemplate: Omit<IEntityTemplate, 'disabled'> = {
+                    ...this.removeBasicFields(manipulatedTemplate),
+                    category: currentTemplate.category._id,
+                };
 
-            await this.entityTemplateService.updateEntityTemplate(id, updatedTemplate);
-            throw err;
+                await this.entityTemplateService.updateEntityTemplate(id, updatedTemplate);
+                throw err;
+            }
         }
-        // }
     }
 
     private async handleFiles(
@@ -1062,8 +1069,8 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
                 throw new BadRequestError('can not add identifier fields because there are existing instances');
         }
 
-        await this.checkIfPropertyInUsedBeforeDeleteOrArchive(id, removedProperties, false, userId);
-        await this.checkIfPropertyInUsedBeforeDeleteOrArchive(id, archiveProperties, true, userId);
+        await this.checkIfPropertyInUsedBeforeDeleteOrArchive(currTemplate, removedProperties, false, userId);
+        await this.checkIfPropertyInUsedBeforeDeleteOrArchive(currTemplate, archiveProperties, true, userId);
 
         const { iconFileId, documentTemplatesIds } = await this.handleFiles(updatedTemplateData, currTemplate, { file, files });
 

@@ -13,15 +13,17 @@ export const commentColors = {
     [i18next.t('validation.colors.black')]: '#000000',
 };
 
-const RjsfCommentWidget = ({ options }: WidgetProps) => {
-    const { comment, color, hide } = options;
+const RjsfCommentWidget = ({ options, schema }: WidgetProps) => {
+    const { comment, color } = schema;
+    const { hide } = options;
 
-    if (hide) return <div />;
     return (
         <Grid>
-            <Typography color={(color as string) ?? '#4752B6'} fontSize="14px">
-                {renderHTML(comment as string)}
-            </Typography>
+            {!hide && (
+                <Typography color={(color as string) ?? '#4752B6'} fontSize="14px">
+                    {renderHTML(comment as string)}
+                </Typography>
+            )}
         </Grid>
     );
 };
