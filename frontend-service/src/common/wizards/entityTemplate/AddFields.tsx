@@ -46,6 +46,59 @@ export const attachmentPropertiesBaseSchema = Yup.object({
     title: Yup.string().required(i18next.t('validation.required')),
 });
 
+const agGridTextFilterSchema = Yup.object({
+    filterType: Yup.string().oneOf(['text']).required(),
+    type: Yup.string().oneOf(['contains', 'notContains', 'equals', 'notEqual', 'startsWith', 'endsWith']).required(i18next.t('validation.required')),
+    filter: Yup.mixed().required(i18next.t('validation.required')),
+});
+
+const agGridNumberFilterSchema = Yup.object({
+    filterType: Yup.string().oneOf(['number']).required(),
+    type: Yup.string()
+        .oneOf(['equals', 'notEqual', 'lessThan', 'lessThanOrEqual', 'greaterThan', 'greaterThanOrEqual', 'inRange'])
+        .required(i18next.t('validation.required')),
+    filter: Yup.number().typeError(i18next.t('validation.invalidNumberField')).required(i18next.t('validation.required')),
+    filterTo: Yup.number()
+        .typeError(i18next.t('validation.invalidNumberField'))
+        .when('type', {
+            is: 'inRange',
+            then: (schema) => schema.required(i18next.t('validation.required')),
+            otherwise: (schema) => schema.notRequired(),
+        }),
+});
+
+const agGridDateFilterSchema = Yup.object({
+    filterType: Yup.string().oneOf(['date']).required(),
+    type: Yup.string().oneOf(['equals', 'notEqual', 'greaterThan', 'lessThan', 'inRange']).required(i18next.t('validation.required')),
+    dateFrom: Yup.string().required(i18next.t('validation.required')),
+    dateTo: Yup.string().when('type', {
+        is: 'inRange',
+        then: (schema) => schema.required(i18next.t('validation.required')),
+        otherwise: (schema) => schema.notRequired(),
+    }),
+});
+
+// Dynamic filter field validation based on `filterType`
+const filterFieldSchema = Yup.lazy((value: any) => {
+    switch (value?.filterType) {
+        case 'text':
+            return agGridTextFilterSchema;
+        case 'number':
+            return agGridNumberFilterSchema;
+        case 'date':
+            return agGridDateFilterSchema;
+        default:
+            return Yup.mixed().required(i18next.t('validation.required'));
+    }
+});
+
+const filtersSchema = Yup.array().of(
+    Yup.object({
+        filterProperty: Yup.string().required(i18next.t('validation.required')),
+        filterField: filterFieldSchema,
+    }),
+);
+
 const addFieldsSchema = Yup.object({
     properties: Yup.array()
         .of(
@@ -65,6 +118,7 @@ const addFieldsSchema = Yup.object({
                         relatedTemplateId: Yup.string().required(i18next.t('validation.required')),
                         relatedTemplateField: Yup.string().required(i18next.t('validation.required')),
                         relationshipTemplateDirection: Yup.string().required(i18next.t('validation.required')),
+                        filters: filtersSchema,
                     }),
                 }),
                 mapSearch: Yup.boolean(),

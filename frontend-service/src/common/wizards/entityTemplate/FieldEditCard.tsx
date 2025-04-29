@@ -45,7 +45,7 @@ import { MinimizedColorPicker } from '../../inputs/MinimizedColorPicker';
 import { MeltaCheckbox } from '../../MeltaCheckbox';
 import { arrayTypes, deleteEnumFieldRequest, updateEnumFieldRequest } from '../../../services/templates/enitityTemplatesService';
 import { AreYouSureDialog } from '../../dialogs/AreYouSureDialog';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { MeltaTooltip } from '../../MeltaTooltip';
 import { IUniqueConstraintOfTemplate } from '../../../interfaces/entities';
 import RelationshipReferenceField from './RelationshipRefrence/RelationshipReferenceField';
@@ -1387,6 +1387,8 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                         <FilterEntitiesByCriteria
                                             name={`properties[${index}].relationshipReference.filters`}
                                             selectedEntityTemplate={entityTemplates.get(value.relationshipReference?.relatedTemplateId!)}
+                                            errors={errors}
+                                            touched={touched}
                                         />
                                     )}
                                 </Grid>

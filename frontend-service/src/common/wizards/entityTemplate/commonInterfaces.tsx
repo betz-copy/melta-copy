@@ -43,6 +43,7 @@ export interface ConvertToRelationshipFieldFormInputProperties {
         relationshipTemplateDirection: 'outgoing' | 'incoming';
         relatedTemplateId: string;
         relatedTemplateField: string;
+        filters?: IFilterRelationReference[];
     };
 }
 

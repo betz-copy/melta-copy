@@ -1,9 +1,9 @@
 import React, { useMemo } from 'react';
-import { useFormikContext, getIn } from 'formik';
-import { Grid, TextField, Button, Typography, IconButton, Autocomplete, MenuItem } from '@mui/material';
+import { useFormikContext, getIn, FormikTouched, FormikErrors } from 'formik';
+import { Grid, TextField, Button, Typography, IconButton, Autocomplete } from '@mui/material';
 import { Add, Clear } from '@mui/icons-material';
 import i18next from 'i18next';
-import { IAGGridFilter, IFilterRelationReference } from '../commonInterfaces';
+import { CommonFormInputProperties, IAGGridFilter, IFilterRelationReference, IRelationshipReference } from '../commonInterfaces';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridTextFilter } from '../../../../utils/agGrid/interfaces';
 import { DateFilterInput } from '../../../inputs/FilterInputs/DateFilterInput';
@@ -13,11 +13,16 @@ import { SelectFilterInput } from '../../../inputs/FilterInputs/SelectFilterInpu
 interface FilterEntitiesByCriteriaProps {
     name: string; // e.g. "properties[0].relationshipReference.filters"
     selectedEntityTemplate: IMongoEntityTemplatePopulated | undefined;
+    touched?: FormikTouched<CommonFormInputProperties>;
+    errors?: FormikErrors<CommonFormInputProperties>;
 }
 
-export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> = ({ name, selectedEntityTemplate }) => {
+export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> = ({ name, selectedEntityTemplate, touched, errors }) => {
     const { values, setFieldValue } = useFormikContext<any>();
     const filters: IFilterRelationReference[] = useMemo(() => getIn(values, name) || [], [values, name]);
+
+    // const errorRelationshipReference = errors?.relationshipReference as FormikErrors<IRelationshipReference> | undefined;
+    // const touchedRelationshipReference = touched?.relationshipReference as FormikTouched<IRelationshipReference> | undefined;
 
     const selectedEntityTemplatePropOptions = useMemo(
         () =>
@@ -112,6 +117,7 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
         }
     };
 
+    // eslint-disable-next-line no-console
     console.dir(values.properties, { depth: null });
 
     const renderFilterField = (filter: IFilterRelationReference, index: number, property: IEntitySingleProperty, isNewProperty: boolean) => {
@@ -121,6 +127,9 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
         const { format, enum: propEnum, type, items } = property;
 
         if (items?.format === 'fileId' || format === 'fileId' || format === 'signature' || format === 'user' || type === 'array') return null;
+
+        // const fieldError = errorRelationshipReference?.filters?.[index];
+        // const fieldTouched = touchedRelationshipReference?.filters?.[index];
 
         if (propEnum) {
             return (
@@ -212,11 +221,8 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
                                 : null;
 
                         const filterType = filter.filterField?.filterType;
-                        const selectedType = filter.filterField?.type;
                         const selectedProperty =
-                            selectedEntityTemplate && filter.filterProperty !== ''
-                                ? selectedEntityTemplate.properties.properties[filter.filterProperty]
-                                : ({} as IEntitySingleProperty);
+                            selectedEntityTemplate?.properties.properties[filter.filterProperty] ?? ({} as IEntitySingleProperty);
 
                         return (
                             <Grid container wrap="nowrap" direction="row" gap="0.4rem" key={filter.filterProperty || index}>
@@ -251,25 +257,6 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
                                         />
                                     )}
                                 />
-                                {/* {filterType && (
-                                    <TextField
-                                        select
-                                        fullWidth
-                                        value={selectedType || ''}
-                                        onChange={(e) =>
-                                            handleFilterFieldChange(index, {
-                                                type: e.target.value as IAGGridFilter['type'],
-                                            })
-                                        }
-                                        label={i18next.t('wizard.entityTemplate.filterType')}
-                                    >
-                                        {filterTypeOptions[filterType].map((option) => (
-                                            <MenuItem key={option} value={option}>
-                                                {option}
-                                            </MenuItem>
-                                        ))}
-                                    </TextField>
-                                )} */}
 
                                 {filterType && renderFilterField(filter, index, selectedProperty, isNewProperty)}
 

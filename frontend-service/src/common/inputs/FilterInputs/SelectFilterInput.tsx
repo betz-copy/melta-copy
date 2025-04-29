@@ -4,7 +4,6 @@ import i18next from 'i18next';
 import { IGraphFilterBody } from '../../../interfaces/entities';
 import { IAGGridTextFilter } from '../../../utils/agGrid/interfaces';
 import { StyledFilterInput } from './StyledFilterInput';
-import { IAGGridFilter, IFilterRelationReference } from '../../wizards/entityTemplate/commonInterfaces';
 
 interface SelectFilterInputProps {
     filterField: IAGGridTextFilter | undefined;
@@ -12,6 +11,8 @@ interface SelectFilterInputProps {
     readOnly: boolean;
     isBooleanSelect?: boolean;
     enumOptions?: string[];
+    error?: boolean;
+    helperText?: string | undefined;
 }
 
 const SelectFilterInput: React.FC<SelectFilterInputProps> = ({ filterField, handleFilterFieldChange, enumOptions, readOnly, isBooleanSelect }) => {
