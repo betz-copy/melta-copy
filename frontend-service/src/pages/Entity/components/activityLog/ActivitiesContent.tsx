@@ -1,6 +1,6 @@
-import { Grid, Paper, TextField } from '@mui/material';
+import { Grid, InputAdornment, Paper, TextField } from '@mui/material';
 import i18next from 'i18next';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { toast } from 'react-toastify';
 import { InfiniteScroll } from '../../../../common/InfiniteScroll';
 import { environment } from '../../../../globals';
@@ -81,6 +81,22 @@ const ActivitiesContent: React.FC<{
                         sx={{ borderRadius: '7px', width: '300px' }}
                         placeholder={i18next.t('globalSearch.searchInHistory')}
                         value={searchInput}
+                        InputProps={{
+                            endAdornment: (
+                                <InputAdornment
+                                    position="end"
+                                    sx={{
+                                        fontWeight: '400',
+                                        letterSpacing: '0em',
+                                        lineHeight: '16px',
+                                        gap: '10px',
+                                    }}
+                                >
+                                    <img src="/icons/search-gray.svg" style={{ alignSelf: 'center', height: '18px' }} />
+                                </InputAdornment>
+                            ),
+                            startAdornment: <InputAdornment position="start" />,
+                        }}
                     />
                 </Grid>
                 <Grid item width="300px" marginBottom="20px">
@@ -160,8 +176,8 @@ const ActivitiesContent: React.FC<{
                 endText={i18next.t('entityPage.activityLog.noSearchLeft')}
             >
                 {(activityLog) => (
-                    <Grid key={activityLog._id} padding="15px">
-                        <Paper sx={{ borderRadius: '20px', boxShadow: '-2px 2px 6px 0px rgba(30, 39, 117, 0.30)' }}>
+                    <Grid key={activityLog._id} padding="15px" marginRight="10px" marginLeft="10px">
+                        <Paper sx={{ borderRadius: '20px', boxShadow: '0px 3px 10px 0px rgba(30, 39, 117, 0.1)', width: '300px' }}>
                             <ActivityLogRow log={activityLog} entityTemplate={entityTemplate} />
                         </Paper>
                     </Grid>

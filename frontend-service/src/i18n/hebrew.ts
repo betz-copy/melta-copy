@@ -46,7 +46,7 @@ export default {
         tomorrow: 'מחר',
     },
     entitiesTableOfTemplate: {
-        resetFilters: 'איפוס סינונים',
+        resetFilters: 'ניקוי סינון',
         downloadOneTableTitle: 'הורדה',
         downloadOneTable: 'הורד טבלה',
         expandMoreTitle: 'הגדלה',
