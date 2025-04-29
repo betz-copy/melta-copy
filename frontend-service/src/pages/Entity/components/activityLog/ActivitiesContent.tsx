@@ -68,18 +68,6 @@ const ActivitiesContent: React.FC<{
     return (
         <>
             <Grid container flexDirection="column" alignItems="center" marginBottom="20px">
-                <Grid item alignSelf="flex-start" marginLeft="25px" marginBottom="10px">
-                    <FilterButton
-                        disabled={!searchInput && !startDateInput && !endDateInput && (!activitiesFilterValue || !activitiesFilterValue.length)}
-                        onClick={() => {
-                            setSearchInput('');
-                            setStartDateInput(null);
-                            setEndDateInput(null);
-                            setActivitiesFilterValue(null);
-                        }}
-                        text={i18next.t('entitiesTableOfTemplate.resetFilters')}
-                    />
-                </Grid>
                 <Grid
                     item
                     sx={{
@@ -116,13 +104,28 @@ const ActivitiesContent: React.FC<{
                         value={activitiesFilterValue}
                     />
                 </Grid>
-                <Grid item width="300px">
+                <Grid item width="300px" marginBottom="10px">
                     <DateRange
                         onStartDateChange={setStartDateInput}
                         onEndDateChange={setEndDateInput}
                         startDateInput={startDateInput}
                         endDateInput={endDateInput}
                         directionIsRow
+                        overrideSx={{}}
+                        borderRadius="20px"
+                    />
+                </Grid>
+                <Grid item alignSelf="flex-start" marginLeft="25px">
+                    <FilterButton
+                        displayIcon={false}
+                        disabled={!searchInput && !startDateInput && !endDateInput && (!activitiesFilterValue || !activitiesFilterValue.length)}
+                        onClick={() => {
+                            setSearchInput('');
+                            setStartDateInput(null);
+                            setEndDateInput(null);
+                            setActivitiesFilterValue(null);
+                        }}
+                        text={i18next.t('entitiesTableOfTemplate.resetFilters')}
                     />
                 </Grid>
             </Grid>
