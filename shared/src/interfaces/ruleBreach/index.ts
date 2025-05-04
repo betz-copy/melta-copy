@@ -36,7 +36,7 @@ export interface IError {
 
 export type IFailedEntity = {
     properties: Record<string, any>;
-    errors: IError[];
+    errors: { type: ActionErrors; metadata: IValidationError | IUniqueConstraint | IRequiredConstraint }[];
 };
 
 export type IActionPopulated = {

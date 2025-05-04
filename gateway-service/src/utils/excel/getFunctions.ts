@@ -23,11 +23,6 @@ import {
     ICreateEntityMetadataPopulated,
     IUpdateEntityMetadataPopulated,
     UploadedFile,
-} from '@microservices/shared';
-import excelConfig from './excelConfig';
-
-import config from '../../config';
-import {
     CoordinateSystem,
     extractUtmLocation,
     getCoordinateSystem,
@@ -35,7 +30,10 @@ import {
     isValidWGS84,
     locationConverterToString,
     stringToCoordinates,
-} from './map';
+} from '@microservices/shared';
+import excelConfig from './excelConfig';
+
+import config from '../../config';
 
 const { invalidDate, invalidTime } = config.loadExcel;
 

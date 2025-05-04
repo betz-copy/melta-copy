@@ -1,6 +1,5 @@
 import { Request, Response } from 'express';
-import { IMongoIframe } from '@microservices/shared';
-import DefaultController from '../../utils/express/controller';
+import { DefaultController, IMongoIframe } from '@microservices/shared';
 import { IFrameManager } from './manager';
 
 class IFrameController extends DefaultController<IMongoIframe, IFrameManager> {

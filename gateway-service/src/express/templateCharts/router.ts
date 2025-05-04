@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { ChartController } from './controller';
 import { createWorkspacesController } from '../../utils/express';
 import { ChartsValidator } from './middlewares';
-import ValidateRequest from '../../utils/joi';
+import { ValidateRequest } from '@microservices/shared';
 import {
     createChartRequestSchema,
     deleteChartRequestSchema,

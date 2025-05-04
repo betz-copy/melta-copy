@@ -1,7 +1,6 @@
 import { Router } from 'express';
 import { createProxyMiddleware } from 'http-proxy-middleware';
-import { wrapController } from '../../utils/express';
-import ValidateRequest from '../../utils/joi';
+import { wrapController, ValidateRequest } from '@microservices/shared';
 import UsersController from './controller';
 import config from '../../config';
 import {

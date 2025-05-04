@@ -5,7 +5,7 @@ import { getFileExtension, isFileDocument } from '../../utils/fileHelper';
 import { generate32CharUUID, generatePath } from '../../utils/generatePath';
 import DefaultManagerMinio from '../../utils/minio/manager';
 import { ServiceError } from '../error';
-import { UploadedFile } from './interface';
+import { UploadedFile } from '@microservices/shared';
 
 const {
     rabbit,

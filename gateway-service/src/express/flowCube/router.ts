@@ -1,7 +1,6 @@
 import { Router } from 'express';
-import { createController, wrapMiddleware } from '@microservices/shared';
+import { createController, wrapMiddleware, ValidateRequest } from '@microservices/shared';
 import { translateWorkspaceParameter, translateWorkspaceParameterFlow, translateWorkspaceParameterFlowColumns } from '../../utils/express';
-import ValidateRequest from '../../utils/joi';
 import InstancesValidator from '../instances/middlewares';
 import FlowCubeController from './controller';
 import {

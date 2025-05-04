@@ -1,9 +1,8 @@
 import { FilterQuery } from 'mongoose';
 import { StatusCodes } from 'http-status-codes';
-import { DefaultManagerMongo, IMongoChart, IChart } from '@microservices/shared';
+import { DefaultManagerMongo, IMongoChart, IChart, NotFoundError, ServiceError } from '@microservices/shared';
 import ChartSchema from './model';
 import config from '../../config';
-import { NotFoundError, ServiceError } from '../error';
 import { escapeRegExp } from '../../utils';
 
 export class ChartManager extends DefaultManagerMongo<IMongoChart> {

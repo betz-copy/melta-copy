@@ -37,6 +37,9 @@ export { default as DefaultController } from './utils/express/controller';
 
 export { default as DefaultManagerMongo } from './utils/mongo/manager';
 
+export * from './utils/map';
+export * from './utils/joi';
+export { default as ValidateRequest } from './utils/joi';
 // export {
 //     ActionTypes,
 //     ActionErrors,

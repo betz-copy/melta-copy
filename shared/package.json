@@ -13,10 +13,21 @@
     },
     "dependencies": {
         "http-status-codes": "^2.3.0",
-        "mongoose": "^8.8.1"
+        "mongoose": "^8.8.1",
+        "neo4j-driver": "^5.23.0",
+        "proj4": "^2.15.0",
+        "joi": "^17.13.3",
+        "express": "^4.19.2",
+        "winston": "^3.14.1",
+        "winston-daily-rotate-file": "^5.0.0",
+        "env-var": "^7.5.0",
+        "dotenv": "^16.4.5",
+        "axios": "^1.7.7"
     },
     "devDependencies": {
         "@types/mongoose": "^5.11.96",
-        "rimraf": "^6.0.1"
+        "rimraf": "^6.0.1",
+        "typescript": "^5.5.4",
+        "@types/node": "^22.3.0"
     }
 }

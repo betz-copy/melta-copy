@@ -1,6 +1,5 @@
 import { Router } from 'express';
-import { createController } from '@microservices/shared';
-import ValidateRequest from '../../utils/joi';
+import { ValidateRequest, createController } from '@microservices/shared';
 import BulkActionController from './controller';
 import { runBulkOfActionsInMultipleTransactionsSchema } from './validator.schema';
 import BulkActionValidator from './validator.template';

@@ -1,7 +1,6 @@
 import { Router } from 'express';
-import { createController } from '@microservices/shared';
+import { createController, ValidateRequest } from '@microservices/shared';
 import ProcessTemplatesController from './controller';
-import ValidateRequest from '../../../utils/joi';
 import {
     createProcessTemplateSchema,
     deleteProcessTemplateSchema,

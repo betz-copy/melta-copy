@@ -1,6 +1,5 @@
 import { Router } from 'express';
-import { createController } from '@microservices/shared';
-import ValidateRequest from '../../utils/joi';
+import { createController, ValidateRequest } from '@microservices/shared';
 import EntityTemplateController from './controller';
 import {
     convertToRelationshipFieldRequestSchema,
@@ -22,7 +21,6 @@ const entityTemplateRouter: Router = Router();
 const controller = createController(EntityTemplateController);
 const validatorController = createController(EntityTemplateValidator, true);
 
-
 entityTemplateRouter.post('/searchByFormat', ValidateRequest(searchEntityTemplatesByFormatSchema), controller.searchEntityTemplatesIncludesFormat);
 
 entityTemplateRouter.post('/search', ValidateRequest(searchEntityTemplatesSchema), controller.searchEntityTemplates);
@@ -37,7 +35,12 @@ entityTemplateRouter.get(
     controller.getTemplatesUsingRelationshipReferance,
 );
 
-entityTemplateRouter.post('/', ValidateRequest(createEntityTemplateSchema), validatorController.validateCreateEntityTemplate, controller.createEntityTemplate);
+entityTemplateRouter.post(
+    '/',
+    ValidateRequest(createEntityTemplateSchema),
+    validatorController.validateCreateEntityTemplate,
+    controller.createEntityTemplate,
+);
 
 entityTemplateRouter.delete('/:templateId', ValidateRequest(deleteEntityTemplateSchema), controller.deleteEntityTemplate);
 

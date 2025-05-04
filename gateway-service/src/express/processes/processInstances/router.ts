@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { createController } from '@microservices/shared';
+import { createController, ValidateRequest } from '@microservices/shared';
 
 import InstancesController from './controller';
 import {
@@ -10,7 +10,6 @@ import {
     getProcessInstanceSchema,
     archivedProcessStatusSchema,
 } from './validator.schema';
-import ValidateRequest from '../../../utils/joi';
 import { AuthorizerControllerMiddleware } from '../../../utils/authorizer';
 import busboyMiddleware from '../../../utils/busboy/busboyMiddleware';
 

@@ -18,6 +18,7 @@ import {
     IUniqueConstraintOfTemplate,
     ActionErrors,
     addPropertyToRequest,
+    CoordinateSystem,
 } from '@microservices/shared';
 import { IGetExpandedEntityBody } from './interface';
 import config from '../../config';
@@ -30,11 +31,6 @@ import { getNeo4jDate, getNeo4jDateTime, getNeo4jLocation } from '../../utils/ne
 import { ValidationError } from '../error';
 
 const { neo4j, ajvCustomFormats } = config;
-
-enum CoordinateSystem {
-    UTM = 'UTM',
-    WGS84 = 'WGS84',
-}
 
 const ajv = new Ajv();
 

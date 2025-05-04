@@ -1,7 +1,6 @@
 import { ConsumerMessage } from 'menashmq';
 import { StatusCodes } from 'http-status-codes';
-import { IndexingAction, logger, ServiceError, IUpdateIndexRequest } from '@microservices/shared';
-import { basicValidateRequest } from '../utils/joi';
+import { basicValidateRequest, IndexingAction, logger, ServiceError, IUpdateIndexRequest } from '@microservices/shared';
 import Manager from './manager';
 import { requestSchema } from './validator.schema';
 import config from '../config';

@@ -219,7 +219,12 @@ services:
       ELASTIC_APM_ACTIVE: ${ELASTIC_APM_ACTIVE}
 
   dashboard-service:
-    build: ./dashboard-service
+    build:
+      context: .
+      dockerfile: Dockerfile.base
+      args:
+        SERVICE_NAME: 'dashboard-service'
+    command: ['npm', 'run', 'start', '-w', 'dashboard-service']
     environment:
       PORT: 8000
       MONGO_URL: ${DASHBOARD_SERVICE_MONGO_URL}
@@ -280,7 +285,7 @@ services:
       - ./nginx:/etc/nginx/conf.d
 
   mailer-service:
-    image: registry.gitlab.com/yesodot/rnd/terminal-rabaz/dropbox/micromailer-service:latest
+    image: registry.gitlab.com/yesodot/rnd/terminal-rabaz/dropbox/microservices/mailer-service:latest
     environment:
       PORT: 8000
       MAIL_HOSTS: ${MAIL_HOSTS}

@@ -1,6 +1,5 @@
 import { Router } from 'express';
-import { createController } from '@microservices/shared';
-import ValidateRequest from '../../utils/joi';
+import { createController, ValidateRequest } from '@microservices/shared';
 import CategoriesController from './controller';
 import { createCategorySchema, deleteCategorySchema, getCategoriesSchema, getCategoryByIdSchema, updateCategorySchema } from './validator.schema';
 

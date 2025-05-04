@@ -1,7 +1,6 @@
 import { Router } from 'express';
-import { createController } from '@microservices/shared';
+import { createController, ValidateRequest } from '@microservices/shared';
 import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
-import ValidateRequest from '../../utils/joi';
 import RuleBreachesController from './controller';
 import {
     approveRuleBreachRequestRequestSchema,

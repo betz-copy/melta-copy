@@ -1,12 +1,11 @@
 /* eslint-disable no-param-reassign */
 import Excel, { Cell } from 'exceljs';
 import { v4 as uuidv4 } from 'uuid';
-import { IEntitySingleProperty, IMongoEntityTemplatePopulated, IEntity } from '@microservices/shared';
+import { IEntitySingleProperty, IMongoEntityTemplatePopulated, IEntity, CoordinateSystem, locationConverterToString } from '@microservices/shared';
 import config from '../../config/index';
 import excelConfig from './excelConfig';
 import hexToARGB from './colors';
 import { isIncludedColumn, isIncludedEditColumn } from './getFunctions';
-import { CoordinateSystem, locationConverterToString } from './map';
 
 interface IExcelStyle {
     columnHeader: {

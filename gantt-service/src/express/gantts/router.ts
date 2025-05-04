@@ -1,6 +1,5 @@
 import { Router } from 'express';
-import { createController } from '@microservices/shared';
-import ValidateRequest from '../../utils/joi';
+import { createController, ValidateRequest } from '@microservices/shared';
 import GanttsController from './controller';
 import { createGanttSchema, deleteGanttSchema, getGanttByIdSchema, searchGanttsSchema, updateGanttSchema } from './validator.schema';
 

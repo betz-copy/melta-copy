@@ -1,8 +1,7 @@
 import { Router } from 'express';
-import { createController } from '@microservices/shared';
+import { createController, ValidateRequest } from '@microservices/shared';
 import { createProxyMiddleware, fixRequestBody } from 'http-proxy-middleware';
 import IFramesController from './controller';
-import ValidateRequest from '../../utils/joi';
 import IFramesValidator from './middlewares';
 import { createIFrameSchema, searchIFramesSchema, updateIFrameSchema } from './validator.schema';
 import { AuthorizerControllerMiddleware } from '../../utils/authorizer';

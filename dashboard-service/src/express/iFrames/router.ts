@@ -1,7 +1,6 @@
 import { Router } from 'express';
 import IFrameController from './controller';
-import { createController } from '../../utils/express';
-import ValidateRequest from '../../utils/joi';
+import { createController, ValidateRequest } from '@microservices/shared';
 import { deleteIFrameSchema, createIFrameSchema, updateIFrameSchema, getIFrameByIdSchema, searchIFramesSchema } from './validator.schema';
 
 const iFramesRouter: Router = Router();

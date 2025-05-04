@@ -1,9 +1,8 @@
 import { Router } from 'express';
 import { createProxyMiddleware, fixRequestBody } from 'http-proxy-middleware';
-import { createController } from '@microservices/shared';
+import { createController, ValidateRequest } from '@microservices/shared';
 import config from '../../config';
 import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
-import ValidateRequest from '../../utils/joi';
 import TemplatesController from './controller';
 import TemplatesValidator from './middlewares';
 import {

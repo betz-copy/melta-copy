@@ -1,9 +1,8 @@
 import Joi from 'joi';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
-import { IEntityTemplate, IEnumPropertiesColors, IProperties } from '@microservices/shared';
+import { IEntityTemplate, IEnumPropertiesColors, IProperties, ColorSchema, variableNameValidation } from '@microservices/shared';
 import config from '../../config';
-import { ColorSchema, variableNameValidation } from '../../utils/joi';
 
 const { notifications, ajvCustomFormats } = config;
 
@@ -47,7 +46,18 @@ ajv.addKeyword({ keyword: 'isDatePastAlert', type: 'boolean' });
 ajv.addKeyword({ keyword: 'archive', type: 'boolean' });
 ajv.addKeyword({ keyword: 'identifier', type: 'boolean' });
 
-export const stringFormats = ['date', 'date-time', 'email', 'fileId', 'text-area', 'relationshipReference', 'location', 'user', 'signature', 'kartoffelUserField'];
+export const stringFormats = [
+    'date',
+    'date-time',
+    'email',
+    'fileId',
+    'text-area',
+    'relationshipReference',
+    'location',
+    'user',
+    'signature',
+    'kartoffelUserField',
+];
 const allowedJSONSchemaTypes = ['string', 'number', 'boolean', 'array'];
 
 const propertiesArraySchema = Joi.array()

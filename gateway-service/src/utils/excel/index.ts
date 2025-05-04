@@ -63,7 +63,7 @@ export const handleExcelErrors = (error: any, failedEntities: IFailedEntity[], e
                     errors: [
                         {
                             type: ActionErrors.unique,
-                            metadata: { type: ActionErrors.unique, constraintName: '', templateId, properties },
+                            metadata: { type: ActionErrors.unique, constraintName: '', templateId, properties, uniqueGroupName: '' },
                         },
                     ],
                 });

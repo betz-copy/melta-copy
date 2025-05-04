@@ -1,6 +1,5 @@
 import { Router } from 'express';
-import { wrapController } from '@microservices/shared';
-import { ValidateRequest } from '../../utils/joi';
+import { wrapController, ValidateRequest } from '@microservices/shared';
 import {
     createUserRequestSchema,
     getUserByExternalIdRequestSchema,

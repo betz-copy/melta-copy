@@ -1,7 +1,7 @@
 import * as Joi from 'joi';
 import { Status } from '@microservices/shared';
-import { ExtendedJoi, MongoIdSchema, fileSchema } from '../../../utils/joi';
-
+import { ExtendedJoi } from '../../../utils/joi';
+import { fileSchema, MongoIdSchema } from '@microservices/shared';
 const StatusValues = Object.values(Status);
 // GET /api/processes/instances/:id
 export const getProcessInstanceSchema = Joi.object({

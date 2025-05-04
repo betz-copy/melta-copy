@@ -18,8 +18,9 @@ import {
     ISumAggFunction,
     IAggregationGroup,
     DefaultController,
+    defaultValidationOptions,
 } from '@microservices/shared';
-import { defaultValidationOptions, joiValidate } from '../../utils/joi';
+import { joiValidate } from '../../utils/joi';
 import EntityTemplateManager from '../entityTemplate/manager';
 import { RelationshipTemplateManager } from '../relationshipTemplate/manager';
 

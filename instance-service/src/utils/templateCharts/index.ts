@@ -4,8 +4,7 @@ import config from '../../config';
 import { getFileName, getFilesName } from '../../express/entities/validator.template';
 import { formatDate } from '../neo4j/lib';
 import EntityManager from '../../express/entities/manager';
-import { CoordinateSystem, locationConverterToString } from '../map';
-import { IAggregation, IAggregationType, IAxisField, IMongoEntityTemplate } from '@microservices/shared';
+import { CoordinateSystem, locationConverterToString, IAggregation, IAggregationType, IAxisField, IMongoEntityTemplate } from '@microservices/shared';
 
 const {
     neo4j: { userFieldPropertySuffix, usersFieldsPropertySuffix, relationshipReferencePropertySuffix, locationCoordinateSystemSuffix },

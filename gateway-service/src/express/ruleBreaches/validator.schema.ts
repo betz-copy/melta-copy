@@ -1,5 +1,6 @@
 import joi from 'joi';
-import { ExtendedJoi, fileSchema, MongoIdSchema } from '../../utils/joi';
+import { ExtendedJoi } from '../../utils/joi';
+import { fileSchema, MongoIdSchema } from '@microservices/shared';
 
 const causesOfInstanceSchema = joi.object({
     instance: joi
