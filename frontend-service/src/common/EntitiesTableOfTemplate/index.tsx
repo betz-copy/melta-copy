@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 /* eslint-disable no-case-declarations */
 import {
     BodyScrollEvent,
@@ -20,27 +21,6 @@ import {
     StatusPanelDef,
 } from '@ag-grid-community/core';
 import { AgGridReact } from '@ag-grid-community/react';
-import {
-    ActionTypes,
-    EntityData,
-    IAction,
-    IActionPopulated,
-    IAgGridRequest,
-    IBrokenRule,
-    IConstraint,
-    IDeleteEntityBody,
-    IEntity,
-    IEntityExpanded,
-    IMongoEntityTemplatePopulated,
-    IMongoEntityTemplateWithConstraintsPopulated,
-    IRelationship,
-    IRuleBreach,
-    IRuleBreachPopulated,
-    ISemanticSearchResult,
-    IUniqueConstraint,
-    ISearchFilter,
-    IEntityTemplateMap,
-} from '@microservices/shared-interfaces';
 import { Box, CircularProgress, debounce } from '@mui/material';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
@@ -53,6 +33,12 @@ import { useLocation } from 'wouter';
 import '../../css/resizeTable.css';
 import '../../css/table.css';
 import { environment } from '../../globals';
+import { EntityData, IDeleteEntityBody, IEntity, IEntityExpanded, ISearchFilter, IUniqueConstraint } from '../../interfaces/entities';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IRelationship } from '../../interfaces/relationships';
+import { ActionTypes, IAction, IActionPopulated } from '../../interfaces/ruleBreaches/actionMetadata';
+import { IBrokenRule, IRuleBreach, IRuleBreachPopulated } from '../../interfaces/ruleBreaches/ruleBreach';
+import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
 import ActionOnEntityWithRuleBreachDialog from '../../pages/Entity/components/ActionOnEntityWithRuleBreachDialog';
 import {
     deleteEntityRequest,
@@ -65,6 +51,7 @@ import { useWorkspaceStore } from '../../stores/workspace';
 import { agGridLocaleText } from '../../utils/agGrid/agGridLocaleText';
 import { agGridToSearchEntitiesOfTemplateRequest } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 import { DateFilterComponent } from '../../utils/agGrid/DateFilterComponent';
+import { IAGGridRequest } from '../../utils/agGrid/interfaces';
 import useDeepCompareMemo from '../../utils/hooks/useDeepCompareMemo';
 import { LocalStorage } from '../../utils/localStorage';
 import { trycatch } from '../../utils/trycatch';
@@ -98,14 +85,14 @@ export interface IButtonProps<Data> {
     disabledButton: boolean;
 }
 
-export function getDatasource<Data = EntityData>(
+export const getDatasource = <Data extends any = EntityData>(
     template: IMongoEntityTemplatePopulated,
     // tableCount: number, // comment out  waiting for Itay
     quickFilterText?: string,
     onFail?: (err: unknown) => void,
     rowData?: IConnection[],
     defaultFilter?: ISearchFilter,
-): IServerSideDatasource {
+): IServerSideDatasource => {
     return {
         async getRows(params: IServerSideGetRowsParams<Data>) {
             if (rowData) {
@@ -122,7 +109,7 @@ export function getDatasource<Data = EntityData>(
                 searchEntitiesOfTemplateRequest(
                     template._id,
                     agGridToSearchEntitiesOfTemplateRequest(
-                        { ...agGridRequest, quickFilter: quickFilterText } as IAgGridRequest,
+                        { ...agGridRequest, quickFilter: quickFilterText } as IAGGridRequest,
                         template,
                         // tableCount, // comment out  waiting for Itay
                         defaultFilter,
@@ -142,7 +129,7 @@ export function getDatasource<Data = EntityData>(
             });
         },
     };
-}
+};
 
 export type IConnection = {
     relationship: Pick<IRelationship, 'properties' | 'templateId'>;
@@ -150,7 +137,7 @@ export type IConnection = {
     destinationEntity: IEntity;
 };
 
-export function getRowModelProps<Data = EntityData>(
+export const getRowModelProps = <Data extends any = EntityData>(
     rowModelType: 'serverSide' | 'clientSide' | 'infinite',
     template: IMongoEntityTemplatePopulated,
     rowData: Data[] | undefined,
@@ -160,7 +147,7 @@ export function getRowModelProps<Data = EntityData>(
     datasourceOnFail?: (err: unknown) => void,
     hasInstances?: boolean,
     defaultFilter?: ISearchFilter,
-): React.ComponentProps<typeof AgGridReact<Data>> {
+): React.ComponentProps<typeof AgGridReact<Data>> => {
     if (rowModelType === 'clientSide') {
         return {
             rowModelType,
@@ -178,12 +165,12 @@ export function getRowModelProps<Data = EntityData>(
         paginationPageSize,
         maxConcurrentDatasourceRequests,
     };
-}
+};
 
 const LoadingCellRenderer = () => <CircularProgress size={20} sx={{ marginLeft: 1 }} />;
 
 export type EntitiesTableOfTemplateProps<Data> = {
-    template: IMongoEntityTemplateWithConstraintsPopulated & { entitiesWithFiles?: ISemanticSearchResult[string] };
+    template: IMongoEntityTemplatePopulated & { entitiesWithFiles?: ISemanticSearchResult[string] };
     entities?: Data[];
     onRowSelected?: (data: Data) => void;
     showNavigateToRowButton: boolean;
@@ -237,7 +224,7 @@ export type EntitiesTableOfTemplateRef<Data> = {
 };
 
 const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, EntitiesTableOfTemplateProps<unknown>>(
-    <Data,>(
+    <Data extends any>(
         {
             template,
             onRowSelected,
@@ -279,14 +266,14 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         const { rowCount, defaultExpandedRowCount } = workspace.metadata.agGrid;
         // const { table } = workspace.metadata.searchLimits;// comment out  waiting for Itay
 
-        const effectivePageRowCount = pageRowCount || rowCount;
+        if (!pageRowCount) pageRowCount = rowCount;
 
         const gridRef = useRef<AgGridReact<Data>>(null);
         const tableRef = useRef<HTMLDivElement>(null);
 
         const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
 
-        const minHeightTable = rowHeight * effectivePageRowCount + rowHeight * 2;
+        const minHeightTable = rowHeight * pageRowCount + rowHeight * 2;
         const [gridHeight, setGridHeight] = useState<number>(() =>
             infiniteModeWithoutExpand ? rowHeight * rowCountInfiniteModeWithoutExpand : rowHeight * defaultExpandedRowCount,
         );
@@ -321,7 +308,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                     deleteAllRelationships: false,
                 } as IDeleteEntityBody<false>),
             {
-                onError: (error: AxiosError<{ metadata: { errorCode: string } }>) => {
+                onError: (error: AxiosError) => {
                     toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.entity.failedToDelete')} />);
                 },
                 onSuccess: () => {
@@ -450,7 +437,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
 
         const gridStyles = {
             '.ag-center-cols-viewport': {
-                minHeight: `${rowHeight * (hasInstances === false ? 2 : effectivePageRowCount)}px !important`,
+                minHeight: `${rowHeight * (hasInstances === false ? 2 : pageRowCount)}px !important`,
             },
             '.ag-paging-panel': {
                 height: '45px',
@@ -480,7 +467,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         const handleColumnVisible = (params: ColumnVisibleEvent<Data>) => {
             if (!saveStorageProps.shouldSaveVisibleColumns) return;
             if (params?.column?.getColId() && params.column.getColId() === 'disabled') {
-                const { disabled: _disabled, ...rest } = params.api.getFilterModel();
+                const { disabled, ...rest } = params.api.getFilterModel();
                 const filterModel = params.column.isVisible() ? params.api.getFilterModel() : { ...rest, ...defaultFilterModel };
                 params.api.setFilterModel(filterModel);
             }
@@ -494,7 +481,8 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             if (!saveStorageProps.shouldSaveColumnOrder) return;
             const columnState = params.api.getColumnState();
             const newColumnsOrder = columnState.reduce<Record<string, { order: number }>>((acc, column, index) => {
-                return { ...acc, [column.colId]: { order: index } };
+                acc[column.colId] = { order: index };
+                return acc;
             }, {});
             localStorage.setItem(`${columnsOrder}${saveStorageProps.pageType}-${template._id}`, JSON.stringify(newColumnsOrder));
             setDefaultColumnsOrder(newColumnsOrder);
@@ -597,20 +585,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                     gridRef.current?.api.refreshServerSide();
                     setUpdateWithRuleBreachDialogState({ isOpen: false });
                 },
-                onError: (
-                    err: AxiosError<{
-                        metadata: {
-                            errorCode: string;
-                            constraint: IConstraint;
-                            message: string;
-                            brokenRules: IRuleBreachPopulated['brokenRules'];
-                            rawBrokenRules: IBrokenRule[];
-                            actions: IActionPopulated[];
-                            rawActions: IAction[];
-                        };
-                    }>,
-                    { newEntityData: newEntityDate },
-                ) => {
+                onError: (err: AxiosError, { newEntityData: newEntityDate }) => {
                     const errorMetadata = err.response?.data?.metadata;
 
                     switch (errorMetadata?.errorCode) {

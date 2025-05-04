@@ -4,8 +4,9 @@ import { FormikProps } from 'formik';
 import { useQueryClient } from 'react-query';
 import i18next from 'i18next';
 import lodashIsEqual from 'lodash.isequal';
-import { IEntityTemplateWithConstraintsMap, IGantt, IGanttGroupBy } from '@microservices/shared-interfaces';
+import { IBasicGantt, IGanttGroupBy } from '../../../interfaces/gantts';
 import { FormikAutoComplete } from '../../../common/inputs/FormikAutoComplete';
+import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { RemoveFromArrayButton } from '../GanttItemDisplay/GanttItemEdit/RemoveFromArrayButton';
 import { filteredMap } from '../../../utils/filteredMap';
 import { EntityTemplateDisplay } from '../GanttItemDisplay/EntityTemplateDisplay';
@@ -13,14 +14,14 @@ import { MeltaTooltip } from '../../../common/MeltaTooltip';
 
 interface GroupByDisplayProps {
     groupBy: IGanttGroupBy;
-    formik: FormikProps<IGantt>;
+    formik: FormikProps<IBasicGantt>;
     expanded?: boolean;
     edit?: boolean;
 }
 
 export const GroupByDisplay: React.FC<GroupByDisplayProps> = ({ groupBy, formik, expanded, edit }) => {
     const queryClient = useQueryClient();
-    const entityTemplates = queryClient.getQueryData<IEntityTemplateWithConstraintsMap>('getEntityTemplates')!;
+    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
 
     const groupByEntityTemplate = entityTemplates.get(groupBy.entityTemplateId);
 

@@ -4,7 +4,6 @@ WORKDIR /usr/src/app
 
 COPY package*.json ./
 COPY tsconfig.json ./
-COPY shared-interfaces/package*.json ./shared-interfaces/
 COPY shared/package*.json ./shared/
 COPY gateway-service/package*.json ./gateway-service/
 COPY gateway-service/.npmrc ./gateway-service/.npmrc
@@ -14,11 +13,9 @@ RUN --mount=type=secret,id=npm_token \
     NPM_TOKEN=$(cat /run/secrets/npm_token) \
     npm ci --silent --progress=false
 
-COPY shared-interfaces/ ./shared-interfaces/  
 COPY shared/ ./shared/
 COPY gateway-service ./gateway-service
 
-RUN npm run build -w @microservices/shared-interfaces
 RUN npm run build -w @microservices/shared
 RUN npm run build -w gateway-service
 
@@ -30,7 +27,6 @@ WORKDIR /usr/src/app
 
 COPY package*.json ./
 COPY tsconfig.json ./
-COPY shared-interfaces/package*.json ./shared-interfaces/
 COPY shared/package*.json ./shared/
 COPY gateway-service/package*.json ./gateway-service/
 COPY gateway-service/.npmrc ./gateway-service/.npmrc
@@ -42,7 +38,6 @@ RUN --mount=type=secret,id=npm_token \
 
 RUN rm -f .npmrc
 
-COPY --from=builder /usr/src/app/shared-interfaces/dist ./shared-interfaces/dist
 COPY --from=builder /usr/src/app/shared/dist ./shared/dist
 COPY --from=builder /usr/src/app/gateway-service/dist ./gateway-service/dist
 

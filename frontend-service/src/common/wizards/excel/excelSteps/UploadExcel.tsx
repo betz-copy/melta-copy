@@ -3,14 +3,14 @@ import { FormikProps } from 'formik';
 import i18next from 'i18next';
 import { CircularProgress, Grid, Typography, useTheme } from '@mui/material';
 import { v4 as uuid } from 'uuid';
-import { ExcelStepStatus, IEditReadExcel, IExcelSteps, IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared-interfaces';
+import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import OpenPreview from '../../../FilePreview/OpenPreview';
 import { environment } from '../../../../globals';
 import EntitiesTableOfTemplate from '../../../EntitiesTableOfTemplate';
 import { InstanceFileInput } from '../../../inputs/InstanceFilesInput/InstanceFileInput';
 import { useReadExcel } from '../../../../utils/hooks/useReadExcel';
 import { useWorkspaceStore } from '../../../../stores/workspace';
-import { EntitiesWizardValues } from '../LoadEntitiesWizard';
+import { EntitiesWizardValues, IEditReadExcel, IExcelSteps, ExcelStepStatus } from '../../../../interfaces/excel';
 
 const {
     loadExcel: { excelExtension, acceptedFilesTypes },
@@ -18,7 +18,7 @@ const {
 
 export const UploadExcel: React.FC<{
     formikProps: FormikProps<EntitiesWizardValues>;
-    template: IMongoEntityTemplateWithConstraintsPopulated;
+    template: IMongoEntityTemplatePopulated;
     stepsData: IExcelSteps;
     setStepsData: React.Dispatch<React.SetStateAction<IExcelSteps>>;
     onUploadExcel?: (file: Record<string, File>) => Promise<IEditReadExcel>;

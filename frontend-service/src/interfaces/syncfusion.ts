@@ -1,4 +1,5 @@
-import { IEntityWithDirectRelationships, IGanttItem } from '@microservices/shared-interfaces';
+import { IEntityWithDirectConnections } from './entities';
+import { IGanttItem } from './gantts';
 
 export interface IScheduleComponentResourceData {
     // Fields with uppercase letter at the start are used specificity in the component
@@ -10,7 +11,7 @@ export interface IScheduleComponentResourceData {
 export interface IScheduleComponentData {
     entityTemplateId: string;
     groupedByEntityIds?: string[];
-    entityWithConnections: IEntityWithDirectRelationships;
+    entityWithConnections: IEntityWithDirectConnections;
     ganttItem: IGanttItem;
 
     // Fields with uppercase letter at the start are used specificity in the component

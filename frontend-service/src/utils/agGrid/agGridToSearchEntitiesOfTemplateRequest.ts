@@ -1,26 +1,23 @@
-import {
-    ICountSearchResult,
-    IFilterOfTemplate,
-    ISearchEntitiesOfTemplateBody,
-    IMongoEntityTemplatePopulated,
-    IAgGridNumberFilter,
-    IAgGridDateFilter,
-    IAgGridFilterModel,
-    IAgGridRequest,
-    IAgGridSetFilter,
-    IAgGridSort,
-    IAgGridTextFilter,
-    IEntitySingleProperty,
-} from '@microservices/shared-interfaces';
 import { environment } from '../../globals';
+import { ICountSearchResult, IFilterOfTemplate, ISearchEntitiesOfTemplateBody } from '../../interfaces/entities';
+import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { getDayEnd, getDayStart } from '../date';
 import { addDefaultFieldsToTemplate } from '../templates';
+import {
+    IAGGidNumberFilter,
+    IAGGridDateFilter,
+    IAGGridFilterModel,
+    IAGGridRequest,
+    IAGGridSetFilter,
+    IAGGridSort,
+    IAGGridTextFilter,
+} from './interfaces';
 
-export const setFilterToFilterOfTemplate = (field: string, { values }: IAgGridSetFilter): IFilterOfTemplate => {
+export const setFilterToFilterOfTemplate = (field: string, { values }: IAGGridSetFilter): IFilterOfTemplate => {
     return { [field]: { $in: values } };
 };
 
-export const textFilterToFilterOfTemplate = (field: string, { type, filter }: IAgGridTextFilter): IFilterOfTemplate => {
+export const textFilterToFilterOfTemplate = (field: string, { type, filter }: IAGGridTextFilter): IFilterOfTemplate => {
     const escapeRegExp = (string: string) => {
         return string.replace(/[.*+\-?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
     };
@@ -47,7 +44,7 @@ export const textFilterToFilterOfTemplate = (field: string, { type, filter }: IA
     }
 };
 
-export const textFilterOfFileToFilterTemplate = (field: string, { type, filter }: IAgGridTextFilter): IFilterOfTemplate => {
+export const textFilterOfFileToFilterTemplate = (field: string, { type, filter }: IAGGridTextFilter): IFilterOfTemplate => {
     const escapeRegExp = (string: string) => {
         return string.replace(/[.*+\-?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
     };
@@ -74,7 +71,7 @@ export const textFilterOfFileToFilterTemplate = (field: string, { type, filter }
     }
 };
 
-export const numberFilterToFilterOfTemplate = (field: string, { type, filter, filterTo }: IAgGridNumberFilter): IFilterOfTemplate => {
+export const numberFilterToFilterOfTemplate = (field: string, { type, filter, filterTo }: IAGGidNumberFilter): IFilterOfTemplate => {
     switch (type) {
         case 'equals':
             return { [field]: { $eq: filter } };
@@ -102,7 +99,7 @@ export const numberFilterToFilterOfTemplate = (field: string, { type, filter, fi
 
 export const dateFilterToFilterOfTemplate = (
     field: string,
-    { type, dateFrom: dateFromString, dateTo: dateToString }: IAgGridDateFilter,
+    { type, dateFrom: dateFromString, dateTo: dateToString }: IAGGridDateFilter,
 ): IFilterOfTemplate => {
     if (!dateFromString) {
         switch (type) {
@@ -141,7 +138,7 @@ export const dateFilterToFilterOfTemplate = (
 
 export const dateTimeFilterToFilterOfTemplate = (
     field: string,
-    { type, dateFrom: dateFromString, dateTo: dateToString }: IAgGridDateFilter,
+    { type, dateFrom: dateFromString, dateTo: dateToString }: IAGGridDateFilter,
 ): IFilterOfTemplate => {
     if (!dateFromString) {
         switch (type) {
@@ -178,7 +175,11 @@ export const dateTimeFilterToFilterOfTemplate = (
     }
 };
 
-export const filterModelToFilterOfTemplatePerField = (fieldTemplate: IEntitySingleProperty, field: string, fieldFilter: IAgGridFilterModel) => {
+export const filterModelToFilterOfTemplatePerField = (
+    fieldTemplate: IEntitySingleProperty,
+    field: string,
+    fieldFilter: IAGGridFilterModel[keyof IAGGridFilterModel],
+) => {
     switch (fieldFilter.filterType) {
         case 'text':
             if (fieldTemplate.format === 'fileId') return textFilterOfFileToFilterTemplate(field, fieldFilter);
@@ -198,7 +199,7 @@ export const filterModelToFilterOfTemplatePerField = (fieldTemplate: IEntitySing
 };
 
 export const filterModelToFilterOfTemplate = (
-    filterModel: Record<string, IAgGridFilterModel>,
+    filterModel: IAGGridFilterModel,
     entityTemplate: IMongoEntityTemplatePopulated,
 ): ISearchEntitiesOfTemplateBody['filter'] => {
     const entityTemplateWithDefaultFields = addDefaultFieldsToTemplate(entityTemplate);
@@ -214,12 +215,12 @@ export const filterModelToFilterOfTemplate = (
     return queries.length > 0 ? { $and: queries } : undefined;
 };
 
-export const sortModelToSortOfSearchRequest = (sortModel: IAgGridSort[]): ISearchEntitiesOfTemplateBody['sort'] => {
+export const sortModelToSortOfSearchRequest = (sortModel: IAGGridSort[]): ISearchEntitiesOfTemplateBody['sort'] => {
     return sortModel.map(({ colId, sort }) => ({ field: colId, sort }));
 };
 
 export const agGridToSearchEntitiesOfTemplateRequest = (
-    agGridRequest: IAgGridRequest,
+    agGridRequest: IAGGridRequest,
     entityTemplate: IMongoEntityTemplatePopulated & { entitiesWithFiles?: ICountSearchResult['entitiesWithFiles'] },
     defaultFilter?: ISearchEntitiesOfTemplateBody['filter'],
 ): ISearchEntitiesOfTemplateBody => {

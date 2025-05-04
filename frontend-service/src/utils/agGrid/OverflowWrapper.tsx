@@ -15,7 +15,7 @@ interface IOverflowWrapperProps<T> {
     searchValue?: string;
 }
 
-const OverflowWrapper = <T,>({
+const OverflowWrapper = <T extends any>({
     items,
     renderItem,
     getItemKey,

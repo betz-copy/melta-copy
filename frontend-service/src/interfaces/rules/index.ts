@@ -1,0 +1,24 @@
+import { IFormula } from './formula';
+
+export interface IRule {
+    name: string;
+    description: string;
+    actionOnFail: 'WARNING' | 'ENFORCEMENT';
+    entityTemplateId: string;
+    formula: IFormula;
+    disabled: boolean;
+}
+
+export interface IMongoRule extends IRule {
+    _id: string;
+}
+
+export type IRuleMap = Map<string, IMongoRule>;
+
+export interface ISearchRuleBody {
+    search?: string;
+    entityTemplateIds?: string[];
+    disabled?: boolean;
+    limit: number;
+    skip: number;
+}

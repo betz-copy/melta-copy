@@ -6,8 +6,8 @@ import React, { useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { useLocation } from 'wouter';
-import { IWorkspace } from '@microservices/shared-interfaces';
 import { ErrorToast } from '../../../common/ErrorToast';
+import { IWorkspace } from '../../../interfaces/workspaces';
 import { updateOne } from '../../../services/workspacesService';
 import { workspaceObjectToWorkspaceForm, WorkspaceWizardValues } from '../Wizard';
 
@@ -36,7 +36,7 @@ export const ActionMenu: React.FC<IActionMenuProps> = ({ workspace, openEditWiza
                 setMovedWorkspace(null);
                 toast.success(i18next.t('workspaces.movedSuccessfully'));
             },
-            onError: (error: AxiosError<{ metadata: { errorCode: string } }>) => {
+            onError: (error: AxiosError) => {
                 toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('workspaces.failedToMove')} />);
             },
         },

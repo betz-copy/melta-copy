@@ -3,14 +3,9 @@ import i18next from 'i18next';
 import React from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import {
-    IRuleMap,
-    IRuleBreach,
-    IRuleBreachPopulated,
-    ActionTypes,
-    ICreateRelationshipMetadata,
-    ICreateRelationshipMetadataPopulated,
-} from '@microservices/shared-interfaces';
+import { ActionTypes, ICreateRelationshipMetadata, ICreateRelationshipMetadataPopulated } from '../../../interfaces/ruleBreaches/actionMetadata';
+import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
+import { IRuleMap } from '../../../interfaces/rules';
 import { createRuleBreachRequestRequest } from '../../../services/ruleBreachesService';
 import { ErrorToast } from '../../ErrorToast';
 import ExecWithRuleBreachDialog from '../execWithRuleBreachDialog';
@@ -63,11 +58,7 @@ const CreateWithRuleBreachDialog: React.FC<{
             });
         },
         {
-            onError: (
-                err: AxiosError<{
-                    metadata: { errorCode: string; brokenRules: IRuleBreachPopulated['brokenRules']; rawBrokenRules: IRuleBreach['brokenRules'] };
-                }>,
-            ) => {
+            onError: (err: AxiosError) => {
                 const errorMetadata = err.response?.data?.metadata;
                 if (errorMetadata?.errorCode === errorCodes.ruleBlock) {
                     onUpdatedRuleBlock(errorMetadata.brokenRules, errorMetadata.rawBrokenRules);

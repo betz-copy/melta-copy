@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable import/no-extraneous-dependencies */
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-underscore-dangle */
 import React, { useEffect, useState } from 'react';
@@ -14,7 +12,7 @@ import LocationField from '../../../pages/Map/LocationField';
 import { stringToCoordinates } from '../../../utils/map';
 import { extractUtmLocation, isValidUTM, isValidWGS84, locationConverterToString } from '../../../utils/map/convert';
 import { MeltaTooltip } from '../../MeltaTooltip';
-import { SplitBy } from '@microservices/shared-interfaces';
+import { SplitBy } from '../../../interfaces/entities';
 
 const { polygonPrefix, polygonSuffix } = environment.map.polygon;
 

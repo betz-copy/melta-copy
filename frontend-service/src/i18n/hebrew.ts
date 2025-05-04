@@ -1,5 +1,6 @@
-import { WorkspaceTypes, ActionTypes } from '@microservices/shared-interfaces';
 import { environment } from '../globals';
+import { ActionTypes } from '../interfaces/ruleBreaches/actionMetadata';
+import { WorkspaceTypes } from '../interfaces/workspaces';
 import { muiDatePickersLocaleText } from '../utils/datePickers';
 
 export default {
@@ -45,7 +46,7 @@ export default {
         tomorrow: 'מחר',
     },
     entitiesTableOfTemplate: {
-        resetFilters: 'איפוס סינונים',
+        resetFilters: 'ניקוי סינון',
         downloadOneTableTitle: 'הורדה',
         downloadOneTable: 'הורד טבלה',
         expandMoreTitle: 'הגדלה',
@@ -134,17 +135,17 @@ export default {
         hideArchive: 'הסתר ארכיון',
         archiveTitle: 'שדות ארכיון',
         activityLog: {
-            deleteRelationship: 'מחק קשר מסוג',
-            createRelationship: 'יצר קשר מסוג ',
-            createEntity: 'יצר את הישות',
-            createProcess: 'יצר את התהליך',
-            disableEntity: 'השבית את הישות',
-            activateEntity: 'הפעיל את הישות',
-            duplicateEntityFrom: 'שכפל את הישות מ',
-            updateField: 'עדכן את השדה:',
-            updateFields: 'עדכן את השדות הבאים:',
-            updatedStatus: 'עדכן את הסטטוס ל:',
-            updatedComment: 'עדכן את ההערות ל:',
+            deleteRelationship: 'נמחק קשר מסוג',
+            createRelationship: 'נוצר קשר מסוג ',
+            createEntity: 'היישות נוצרה',
+            createProcess: 'התהליך נוצר',
+            disableEntity: 'היישות הושבתה',
+            activateEntity: 'היישות הופעלה',
+            duplicateEntityFrom: 'היישות שוכפלה מ',
+            updateField: 'עודכן השדה:',
+            updateFields: 'עודכנו השדות הבאים:',
+            updatedStatus: 'הסטטוס עודכן ל:',
+            updatedComment: 'ההערות עודכנו ל:',
             emptyField: 'שדה ריק',
             header: 'היסטוריה',
             processHeader: 'היסטוריית תהליך',
@@ -159,6 +160,18 @@ export default {
             wasDeleted: 'נמחק',
             viewers: 'צפיות',
             actions: 'פעולות',
+            by: 'ע"י',
+            activityType: 'סוג פעולה',
+            titles: {
+                createRelationship: 'יצירת קשר',
+                deleteRelationship: 'מחיקת קשר',
+                updateFields: 'עדכון שדות',
+                disableEntity: 'השבתת יישות',
+                enableEntity: 'הפעלת יישות',
+                createEntity: 'יצירת יישות',
+                duplicateEntity: 'שכפול יישות',
+                createProcess: 'יצירת תהליך',
+            },
         },
         print: {
             header: 'הדפס ישות',
@@ -461,6 +474,7 @@ export default {
         searchInPage: 'חיפוש בעמוד',
         turnOnSemanticSearch: 'חיפוש חכם בתוכן הקבצים כבוי',
         turnOffSemanticSearch: 'חיפוש חכם בתוכן הקבצים דלוק',
+        searchInHistory: 'חיפוש שם שדה, ערכים ועורך היישות',
     },
     wizard: {
         next: 'הבא',

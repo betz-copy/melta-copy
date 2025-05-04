@@ -1,19 +1,9 @@
-import {
-    IExternalUser,
-    IUser,
-    IUserSearchBody,
-    ICompactNullablePermissions,
-    ICompactPermissions,
-    IPermission,
-    ISubCompactPermissions,
-    RecursiveNullable,
-    IUserPreferences,
-    NotificationType,
-    IMongoUser,
-    IKartoffelUser,
-} from '@microservices/shared-interfaces';
 import axios from '../axios';
 import { environment } from '../globals';
+import { NotificationType } from '../interfaces/notifications';
+import { ICompactNullablePermissions, ICompactPermissions, IPermission, ISubCompactPermissions } from '../interfaces/permissions/permissions';
+import { IExternalUser, IKartoffelUser, IMongoUser, IUser, IUserPreferences, IUserSearchBody } from '../interfaces/users';
+import { RecursiveNullable } from '../utils/types';
 
 const {
     api: { users },

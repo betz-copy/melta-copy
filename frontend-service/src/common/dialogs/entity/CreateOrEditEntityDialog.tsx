@@ -13,22 +13,16 @@ import { v4 as uuid } from 'uuid';
 import { useLocation } from 'wouter';
 import { cloneDeep } from 'lodash';
 import { StatusCodes } from 'http-status-codes';
-import {
-    IEntity,
-    IUniqueConstraint,
-    IMongoEntityTemplateWithConstraintsPopulated,
-    IRuleBreach,
-    IRuleBreachPopulated,
-    ActionTypes,
-    IAction,
-    IActionPopulated,
-} from '@microservices/shared-interfaces';
+import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IEntity, IUniqueConstraint } from '../../../interfaces/entities';
 import { createEntityRequest, updateEntityRequestForMultiple } from '../../../services/entitiesService';
 import { EntityWizardValues } from '.';
 import { environment } from '../../../globals';
 import { InstanceFileInput } from '../../inputs/InstanceFilesInput/InstanceFileInput';
 import ActionOnEntityWithRuleBreachDialog from '../../../pages/Entity/components/ActionOnEntityWithRuleBreachDialog';
 import { ChooseTemplate } from './ChooseTemplate';
+import { ActionTypes, IAction, IActionPopulated } from '../../../interfaces/ruleBreaches/actionMetadata';
+import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
 import { filterFieldsFromPropertiesSchema } from '../../../utils/pickFieldsPropertiesSchema';
 import { BlueTitle } from '../../BlueTitle';
 import { ExportFormats } from './ExportFormats';
@@ -49,7 +43,7 @@ export type ICreateOrUpdateWithRuleBreachDialogState = {
     rawActions?: IAction[];
 };
 
-const getEntityTemplateFilesFieldsInfo = (entityTemplate: IMongoEntityTemplateWithConstraintsPopulated) => {
+const getEntityTemplateFilesFieldsInfo = (entityTemplate: IMongoEntityTemplatePopulated) => {
     const templateFilesProperties = pickBy(
         entityTemplate.properties.properties,
         (value) => (value.type === 'array' && value.items?.format === 'fileId') || value.format === 'fileId',
@@ -62,10 +56,10 @@ const getEntityTemplateFilesFieldsInfo = (entityTemplate: IMongoEntityTemplateWi
 
 const convertIEntityToEntityWizardValues = (
     entityToUpdate: IEntity,
-    entityTemplate: IMongoEntityTemplateWithConstraintsPopulated,
+    entityTemplate: IMongoEntityTemplatePopulated,
     initialTemplateFileKeys: string[],
 ): EntityWizardValues => {
-    const { _id, createdAt: _createdAt, updatedAt: _updatedAt, disabled: _disabled, ...entityToUpdateData } = entityToUpdate.properties;
+    const { _id, createdAt, updatedAt, disabled, ...entityToUpdateData } = entityToUpdate.properties;
 
     const fieldProperties = pickBy(entityToUpdateData, (_value, key) => !initialTemplateFileKeys.includes(key));
     const fileIdsProperties = pickBy(entityToUpdateData, (_value, key) => initialTemplateFileKeys.includes(key));
@@ -89,7 +83,7 @@ const convertIEntityToEntityWizardValues = (
 
 const CreateOrEditEntityDetails: React.FC<{
     isEditMode?: boolean;
-    entityTemplate: IMongoEntityTemplateWithConstraintsPopulated;
+    entityTemplate: IMongoEntityTemplatePopulated;
     initialCurrValues?: EntityWizardValues;
     entityToUpdate?: IEntity;
     onSuccessUpdate?: (entity: IEntity) => void;
@@ -98,13 +92,13 @@ const CreateOrEditEntityDetails: React.FC<{
     onError: (entity: EntityWizardValues) => void;
     externalErrors: {
         files: boolean;
-        unique: object;
+        unique: {};
         action: string;
     };
     setExternalErrors: React.Dispatch<
         React.SetStateAction<{
             files: boolean;
-            unique: object;
+            unique: {};
             action: string;
         }>
     >;
@@ -144,21 +138,7 @@ const CreateOrEditEntityDetails: React.FC<{
         };
     }, [entityToUpdate, entityTemplate, initialTemplateFileKeys]);
 
-    const handleMutationError = (
-        err: AxiosError<{
-            metadata: {
-                errorCode: string;
-                constraint?: Omit<IUniqueConstraint, 'constraintName'>;
-                message?: string;
-                brokenRules: IRuleBreachPopulated['brokenRules'];
-                rawBrokenRules: IRuleBreach['brokenRules'];
-                actions: IActionPopulated[];
-                rawActions: IAction[];
-            };
-        }>,
-        template: IMongoEntityTemplateWithConstraintsPopulated,
-        newEntityData?: EntityWizardValues | undefined,
-    ) => {
+    const handleMutationError = (err: AxiosError, template: IMongoEntityTemplatePopulated, newEntityData?: EntityWizardValues | undefined) => {
         if (err.response?.status === StatusCodes.REQUEST_TOO_LONG) setExternalErrors((prev) => ({ ...prev, files: true }));
 
         const errorMetadata = err.response?.data?.metadata;
@@ -186,7 +166,7 @@ const CreateOrEditEntityDetails: React.FC<{
             }
 
             case errorCodes.actionsCustomError:
-                setExternalErrors((prev) => ({ ...prev, action: errorMetadata?.message ?? '' }));
+                setExternalErrors((prev) => ({ ...prev, action: errorMetadata?.message }));
                 break;
 
             case errorCodes.ruleBlock: {
@@ -223,20 +203,7 @@ const CreateOrEditEntityDetails: React.FC<{
                     }
                 }
             },
-            onError: (
-                err: AxiosError<{
-                    metadata: {
-                        errorCode: string;
-                        constraint?: Omit<IUniqueConstraint, 'constraintName'>;
-                        message?: string;
-                        brokenRules: IRuleBreachPopulated['brokenRules'];
-                        rawBrokenRules: IRuleBreach['brokenRules'];
-                        actions: IActionPopulated[];
-                        rawActions: IAction[];
-                    };
-                }>,
-                { newEntityData },
-            ) => {
+            onError: (err: AxiosError, { newEntityData }) => {
                 handleMutationError(err, entityTemplate, newEntityData);
             },
         },
@@ -257,20 +224,7 @@ const CreateOrEditEntityDetails: React.FC<{
                     }
                 }
             },
-            onError: (
-                err: AxiosError<{
-                    metadata: {
-                        errorCode: string;
-                        constraint?: Omit<IUniqueConstraint, 'constraintName'>;
-                        message?: string;
-                        brokenRules: IRuleBreachPopulated['brokenRules'];
-                        rawBrokenRules: IRuleBreach['brokenRules'];
-                        actions: IActionPopulated[];
-                        rawActions: IAction[];
-                    };
-                }>,
-                { newEntityData },
-            ) => {
+            onError: (err: AxiosError, { newEntityData }) => {
                 handleMutationError(err, entityTemplate, newEntityData);
             },
         },

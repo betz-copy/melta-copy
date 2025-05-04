@@ -5,9 +5,10 @@ import { IconButton, ThemeProvider } from '@mui/material';
 import { Print as PrintIcon } from '@mui/icons-material';
 import { AxiosError } from 'axios';
 import { UseMutateAsyncFunction } from 'react-query';
-import { IMongoProcessTemplateReviewerPopulated, IMongoProcessInstanceReviewerPopulated } from '@microservices/shared-interfaces';
 import { ComponentToPrint } from './ComponentToPrint';
+import { IMongoProcessInstancePopulated } from '../../../interfaces/processes/processInstance';
 import { MeltaTooltip } from '../../../common/MeltaTooltip';
+import { IMongoProcessTemplatePopulated } from '../../../interfaces/processes/processTemplate';
 import { ProcessDetailsValues } from '../../../common/wizards/processInstance/ProcessDetails';
 import { IFile } from '../../../interfaces/preview';
 import { MenuButton } from '../../../common/MenuButton';
@@ -16,10 +17,10 @@ import '../../Entity/components/print/print.css';
 import { lightTheme } from '../../../theme';
 
 const Print: React.FC<{
-    processTemplate: IMongoProcessTemplateReviewerPopulated;
-    processInstance: IMongoProcessInstanceReviewerPopulated;
-    mutateAsync: UseMutateAsyncFunction<IMongoProcessInstanceReviewerPopulated, AxiosError<any, any>, ProcessDetailsValues, unknown>;
-    setCurrProcessInstance: React.Dispatch<React.SetStateAction<IMongoProcessInstanceReviewerPopulated>>;
+    processTemplate: IMongoProcessTemplatePopulated;
+    processInstance: IMongoProcessInstancePopulated;
+    mutateAsync: UseMutateAsyncFunction<IMongoProcessInstancePopulated, AxiosError<any, any>, ProcessDetailsValues, unknown>;
+    setCurrProcessInstance: React.Dispatch<React.SetStateAction<IMongoProcessInstancePopulated>>;
     setIsProcessChanged: React.Dispatch<React.SetStateAction<boolean>>;
     isProcessCard?: boolean;
 }> = ({ processTemplate, processInstance, mutateAsync, setCurrProcessInstance, setIsProcessChanged, isProcessCard }) => {

@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
-import { IEntity, IMongoEntityTemplatePopulated, IEntitySingleProperty } from '@microservices/shared-interfaces';
 import { Cartesian3, Math as CesiumMath } from 'cesium';
 import * as Cesium from 'cesium';
 import { useCesium } from 'resium';
 import { parsePolygon, stringToCoordinates } from '../map';
+import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IEntity } from '../../interfaces/entities';
 import { environment } from '../../globals';
 
 const { squareLength } = environment.map;

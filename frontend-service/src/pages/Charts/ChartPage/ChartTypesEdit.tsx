@@ -3,7 +3,7 @@ import { Grid, Typography } from '@mui/material';
 import { FormikProps } from 'formik';
 import i18next from 'i18next';
 import React, { useMemo } from 'react';
-import { IChart, IChartType } from '../../../interfaces/charts';
+import { IBasicChart, IChartType } from '../../../interfaces/charts';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { initializeChartMetaData } from '../../../utils/charts/getChartAxes';
 import { ColumnOrLineChart } from '../chartsType/ColumnOrLineChart';
@@ -12,8 +12,8 @@ import { PieChart } from '../chartsType/PieChart';
 import { ChartTypeButton } from './ChartTypeButton';
 
 interface ChartProps {
-    formik: FormikProps<IChart>;
-    formikValues: IChart;
+    formik: FormikProps<IBasicChart>;
+    formikValues: IBasicChart;
     entityTemplate: IMongoEntityTemplatePopulated;
     disabled: boolean;
 }

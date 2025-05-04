@@ -5,9 +5,6 @@ WORKDIR /usr/src/app
 COPY package*.json ./
 COPY tsconfig.json ./
 
-# Copy shared interfaces
-COPY shared-interfaces/package*.json ./shared-interfaces/
-COPY shared-interfaces/ ./shared-interfaces/
 
 # Copy shared
 COPY shared/package*.json ./shared/
@@ -20,7 +17,6 @@ COPY ${SERVICE_NAME}/ ./${SERVICE_NAME}/
 
 # Install dependencies & build 'shared'
 RUN npm ci --silent
-RUN npm run build -w @microservices/shared-interfaces
 RUN npm run build -w @microservices/shared
 RUN npm run build -w ${SERVICE_NAME}
 
@@ -33,13 +29,11 @@ WORKDIR /usr/src/app
 ARG SERVICE_NAME
 COPY --from=builder /usr/src/app/package*.json ./
 COPY --from=builder /usr/src/app/shared/package*.json ./shared/
-COPY --from=builder /usr/src/app/shared-interfaces/package*.json ./shared-interfaces/
 COPY --from=builder /usr/src/app/${SERVICE_NAME}/package*.json ./${SERVICE_NAME}/
 
 # Install only production dependencies
 RUN npm ci --omit=dev --silent
 
-COPY --from=builder /usr/src/app/shared-interfaces/dist ./shared-interfaces/dist
 COPY --from=builder /usr/src/app/shared/dist ./shared/dist
 COPY --from=builder /usr/src/app/${SERVICE_NAME}/dist ./${SERVICE_NAME}/dist
 

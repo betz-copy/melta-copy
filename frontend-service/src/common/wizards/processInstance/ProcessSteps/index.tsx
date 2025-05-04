@@ -1,14 +1,6 @@
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 /* eslint-disable jsx-a11y/anchor-is-valid */
-import {
-    IMongoProcessTemplateReviewerPopulated,
-    IMongoStepTemplatePopulated,
-    IMongoStepInstancePopulated,
-    IMongoProcessInstanceReviewerPopulated,
-    IReferencedEntityForProcess,
-    ProcessStatus,
-} from '@microservices/shared-interfaces';
 import { Box, Button, Divider, Grid, Step, StepConnector, stepConnectorClasses, Stepper, styled, Typography } from '@mui/material';
 import React, { useEffect, useRef } from 'react';
 import TocIcon from '@mui/icons-material/Toc';
@@ -16,7 +8,11 @@ import i18next from 'i18next';
 import { History } from '@mui/icons-material';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
+import { IMongoProcessTemplatePopulated } from '../../../../interfaces/processes/processTemplate';
+import { IMongoStepTemplatePopulated } from '../../../../interfaces/processes/stepTemplate';
+import { IMongoStepInstancePopulated } from '../../../../interfaces/processes/stepInstance';
 import { ProcessStep } from './processStep';
+import { IMongoProcessInstancePopulated, IReferencedEntityForProcess, Status } from '../../../../interfaces/processes/processInstance';
 import { useDarkModeStore } from '../../../../stores/darkMode';
 import { StepIcon } from '../../../../pages/ProcessInstances/ProcessCard';
 import { BlueTitle } from '../../../BlueTitle';
@@ -28,13 +24,13 @@ export interface ProcessStepValues {
     properties: object;
     attachmentsProperties: object;
     entityReferences: Record<string, IReferencedEntityForProcess>;
-    status: ProcessStatus;
+    status: Status;
     comments: string;
 }
 
 export interface IStepsProp {
-    processTemplate: IMongoProcessTemplateReviewerPopulated;
-    processInstance: IMongoProcessInstanceReviewerPopulated;
+    processTemplate: IMongoProcessTemplatePopulated;
+    processInstance: IMongoProcessInstancePopulated;
     isStepEditMode: boolean;
     setIsStepEditMode: React.Dispatch<React.SetStateAction<boolean>>;
     onStepUpdateSuccess: (stepInstance: IMongoStepInstancePopulated) => void;
@@ -44,7 +40,7 @@ export interface IStepsProp {
 
 const getStepTemplateByStepInstance = (
     stepInstance: IMongoStepInstancePopulated,
-    processTemplate: IMongoProcessTemplateReviewerPopulated,
+    processTemplate: IMongoProcessTemplatePopulated,
 ): IMongoStepTemplatePopulated => {
     return processTemplate.steps.find((step) => stepInstance.templateId === step._id)!;
 };

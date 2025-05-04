@@ -1,11 +1,11 @@
 import { Card, CardHeader } from '@mui/material';
 import React from 'react';
 import { useLocation } from 'wouter';
-import { IMongoGantt } from '@microservices/shared-interfaces';
 import { environment } from '../../globals';
+import { IGantt } from '../../interfaces/gantts';
 
 interface IGanttCardProps {
-    gantt: IMongoGantt;
+    gantt: IGantt;
 }
 const {
     searchParams: { heatmapModeKey },

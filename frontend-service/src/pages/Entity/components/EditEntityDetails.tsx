@@ -8,31 +8,24 @@ import React, { useState } from 'react';
 import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
 import { StatusCodes } from 'http-status-codes';
-import {
-    IEntity,
-    IUniqueConstraint,
-    IBrokenRule,
-    IRuleBreach,
-    IRuleBreachPopulated,
-    ActionTypes,
-    IAction,
-    IActionPopulated,
-    IMongoEntityTemplateWithConstraintsPopulated,
-} from '@microservices/shared-interfaces';
+import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IEntity, IUniqueConstraint } from '../../../interfaces/entities';
 import { updateEntityRequestForMultiple } from '../../../services/entitiesService';
 import { EntityWizardValues } from '../../../common/dialogs/entity';
 import { JSONSchemaFormik, ajvValidate } from '../../../common/inputs/JSONSchemaFormik';
 import { BlueTitle } from '../../../common/BlueTitle';
+import { IBrokenRule, IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
 import { environment } from '../../../globals';
 import { InstanceFileInput } from '../../../common/inputs/InstanceFilesInput/InstanceFileInput';
 import { InstanceSingleFileInput } from '../../../common/inputs/InstanceFilesInput/InstanceSingleFileInput';
+import { ActionTypes, IAction, IActionPopulated } from '../../../interfaces/ruleBreaches/actionMetadata';
 import { filterFieldsFromPropertiesSchema } from '../../../utils/pickFieldsPropertiesSchema';
 import ActionOnEntityWithRuleBreachDialog from './ActionOnEntityWithRuleBreachDialog';
 
 const { errorCodes } = environment;
 
 const EditEntityDetails: React.FC<{
-    entityTemplate: IMongoEntityTemplateWithConstraintsPopulated;
+    entityTemplate: IMongoEntityTemplatePopulated;
     entity: IEntity;
     onSuccessUpdate: (data: IEntity) => void;
     onCancelUpdate: () => void;
@@ -79,20 +72,7 @@ const EditEntityDetails: React.FC<{
                 onSuccessUpdate(data);
                 setExternalErrors({ files: false, unique: {}, action: '' });
             },
-            onError: (
-                err: AxiosError<{
-                    metadata: {
-                        errorCode: string;
-                        constraint: IUniqueConstraint;
-                        message: string;
-                        brokenRules: IRuleBreachPopulated['brokenRules'];
-                        rawBrokenRules: IBrokenRule[];
-                        actions: IActionPopulated[];
-                        rawActions: IAction[];
-                    };
-                }>,
-                { newEntityData: newEntityDate },
-            ) => {
+            onError: (err: AxiosError, { newEntityData: newEntityDate }) => {
                 if (err.response?.status === StatusCodes.REQUEST_TOO_LONG) setExternalErrors((prev) => ({ ...prev, files: true }));
                 const errorMetadata = err.response?.data?.metadata;
 

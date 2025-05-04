@@ -2,19 +2,10 @@
 import i18next from 'i18next';
 import * as Yup from 'yup';
 import cloneDeep from 'lodash.clonedeep';
-import {
-    IEntityWithDirectRelationships,
-    IFilterOfTemplate,
-    ISearchBatchBody,
-    IMongoEntityTemplatePopulated,
-    IRelationshipTemplateMap,
-    IEntityTemplateMap,
-    IGantt,
-    IMongoGantt,
-    IGanttGroupBy,
-    IGanttItem,
-} from '@microservices/shared-interfaces';
-import { IConnectedEntityTemplateDetails, IGanttHeatmapBox } from '../interfaces/gantts';
+import { IEntityWithDirectConnections, IFilterOfTemplate, ISearchBatchBody } from '../interfaces/entities';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
+import { IBasicGantt, IConnectedEntityTemplateDetails, IGantt, IGanttGroupBy, IGanttHeatmapBox, IGanttItem } from '../interfaces/gantts';
+import { IRelationshipTemplateMap } from '../interfaces/relationshipTemplates';
 import { IScheduleComponentData, IScheduleComponentResourceData } from '../interfaces/syncfusion';
 import { getEntityTemplateColor } from './colors';
 import { dateBetween, getDayEnd, getDayStart } from './date';
@@ -93,7 +84,6 @@ export const getEntitiesSearchBody = (
         limit,
         skip,
         templates,
-        sort: [],
     };
 };
 
@@ -105,7 +95,7 @@ const isAllDay = (entityTemplate: IMongoEntityTemplatePopulated, ganttItems: IGa
 };
 
 export const getScheduleComponentData = (
-    entities: IEntityWithDirectRelationships[],
+    entities: IEntityWithDirectConnections[],
     ganttItems: IGanttItem[],
     entityTemplatesMap: IEntityTemplateMap,
 ): IScheduleComponentData[] => {
@@ -169,14 +159,11 @@ export const getScheduleComponentEntityTemplateResourceData = (
 export const getScheduleComponentGroupByEntityResourceData = async (groupBy: IGanttGroupBy): Promise<IScheduleComponentResourceData[]> => {
     const { entities } = await getEntitiesWithDirectConnections({
         limit: groupByEntitiesChunkSize,
-        skip: 0,
         templates: {
             [groupBy.entityTemplateId]: {
                 filter: { $and: { disabled: { $eq: false } } },
-                showRelationships: [],
             },
         },
-        sort: [],
     });
 
     return filteredMap(entities, ({ entity }) => {
@@ -268,8 +255,8 @@ export const getRelationshipString = (
     return `${relationShip.displayName} (${sourceEntityTemplate.displayName} > ${destinationEntityTemplate.displayName})`;
 };
 
-export const formikInitialGanttData = (gantt: IMongoGantt): IGantt => {
-    const items = gantt.items.map<IGantt['items'][number]>((item) => ({ ...cloneDeep(item) }));
+export const formikInitialGanttData = (gantt: IGantt): IBasicGantt => {
+    const items = gantt.items.map<IBasicGantt['items'][number]>((item) => ({ ...cloneDeep(item) }));
 
     return { name: gantt.name, items, groupBy: gantt.groupBy };
 };

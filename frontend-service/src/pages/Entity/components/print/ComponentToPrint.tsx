@@ -3,8 +3,8 @@ import { Box, Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
 import { useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '@microservices/shared-interfaces';
 import { BlueTitle } from '../../../../common/BlueTitle';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { EntityComponentToPrint, RelationshipPrintTitle } from './EntityComponentToPrint';
 import { IFile } from '../../../../interfaces/preview';
 import { FileToPrint } from '../../../../common/print/FileToPrint';
@@ -19,7 +19,7 @@ const ComponentToPrint = React.forwardRef<
         expandedRelationships: IConnectionExpanded[];
         filesToPrint: IFile[];
         setSelectedFiles: React.Dispatch<React.SetStateAction<IFile[]>>;
-        setFilesLoadingStatus: React.Dispatch<React.SetStateAction<object>>;
+        setFilesLoadingStatus: React.Dispatch<React.SetStateAction<{}>>;
         options: {
             showDate: boolean;
             showDisabled: boolean;

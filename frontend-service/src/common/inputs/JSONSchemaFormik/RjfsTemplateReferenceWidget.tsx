@@ -1,20 +1,21 @@
 import React from 'react';
 import { WidgetProps } from '@rjsf/utils';
 import { useQueryClient } from 'react-query';
-import { IEntity, IEntityTemplateMap } from '@microservices/shared-interfaces';
 import { TextField } from '@mui/material';
 import i18next from 'i18next';
 import TemplateEntitiesAutocomplete from '../TemplateEntitiesAutocomplete';
+import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
+import { IEntity } from '../../../interfaces/entities';
 
 const RjfsTemplateReferenceWidget = ({
     id,
-    _required,
+    required,
     disabled,
     label,
     value,
     onChange,
     onBlur,
-    _onFocus,
+    onFocus,
     rawErrors = [],
     schema,
     uiSchema,
@@ -45,7 +46,7 @@ const RjfsTemplateReferenceWidget = ({
                 id={id}
                 placeholder={placeholder}
                 label={schema.title}
-                required={_required}
+                required={required}
                 disabled
                 value={i18next.t('templateEntitiesAutocomplete.noWritePermissions')}
                 error={rawErrors.length > 0}

@@ -1,12 +1,12 @@
 import i18next from 'i18next';
 import React from 'react';
-import { IMongoProcessTemplateReviewerPopulated } from '@microservices/shared-interfaces';
 import { SelectCheckbox } from '../../common/SelectCheckBox';
+import { IMongoProcessTemplatePopulated } from '../../interfaces/processes/processTemplate';
 
 const ProcessTemplatesSelectCheckbox: React.FC<{
-    templates: IMongoProcessTemplateReviewerPopulated[];
-    selectedTemplates: IMongoProcessTemplateReviewerPopulated[];
-    setSelectedTemplates: React.Dispatch<React.SetStateAction<IMongoProcessTemplateReviewerPopulated[]>>;
+    templates: IMongoProcessTemplatePopulated[];
+    selectedTemplates: IMongoProcessTemplatePopulated[];
+    setSelectedTemplates: React.Dispatch<React.SetStateAction<IMongoProcessTemplatePopulated[]>>;
 }> = ({ templates, selectedTemplates, setSelectedTemplates }) => {
     return (
         <SelectCheckbox

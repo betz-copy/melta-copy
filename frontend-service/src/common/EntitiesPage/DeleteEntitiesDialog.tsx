@@ -1,7 +1,7 @@
 import { Grid, TextField, Typography } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
-import { IMongoEntityTemplatePopulated } from '@microservices/shared-interfaces';
+import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { AreYouSureDialog } from '../dialogs/AreYouSureDialog';
 
 interface DeleteEntitiesDialogProps {

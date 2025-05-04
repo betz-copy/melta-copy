@@ -27,10 +27,10 @@ The Melta project is organized into multiple microservices (run via Docker) and 
 
 ## Prerequisites
 
--   **Node.js** (v14 or higher)
--   **npm** (v6 or higher)
--   **Docker** (for running microservices)
--   [**Docker Compose**](https://docs.docker.com/compose/) (if not included with your Docker installation)
+- **Node.js** (v14 or higher)
+- **npm** (v6 or higher)
+- **Docker** (for running microservices)
+- [**Docker Compose**](https://docs.docker.com/compose/) (if not included with your Docker installation)
 
 ---
 
@@ -106,15 +106,11 @@ This script will use **Docker Compose** to build and start the microservices def
     ```bash
     npm install
     ```
-2. Build the shared interfaces service:
-    ```bash
-    npm run build -w shared-interfaces
-    ```
-3. Build the shared service:
+2. Build the shared service:
     ```bash
     npm run build -w shared
     ```
-4. Start the frontend:
+3. Start the frontend:
     ```bash
     npm run start-ui
     ```

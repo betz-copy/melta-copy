@@ -6,12 +6,13 @@ import { FieldArray, FormikErrors, FormikHelpers, FormikTouched } from 'formik';
 import i18next from 'i18next';
 import { DragHandle as DragHandleIcon, ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
 import _debounce from 'lodash.debounce';
-import { IUniqueConstraintOfTemplate, IMongoEntityTemplatePopulated } from '@microservices/shared-interfaces';
 import { FieldEditCardProps, MemoFieldEditCard } from './FieldEditCard';
 import { MemoAttachmentEditCard } from './AttachmentEditCard';
 import { StepComponentHelpers } from '..';
 import { CommonFormInputProperties } from './commonInterfaces';
 import { AreYouSureDialog } from '../../dialogs/AreYouSureDialog';
+import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IUniqueConstraintOfTemplate } from '../../../interfaces/entities';
 
 export const FieldBlockAccordion = styled(Accordion)({
     width: '100%',
@@ -154,7 +155,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
         setFieldDisplayValue(selectedIndexesToRemove, 'deleted' as keyof Values, true);
     };
 
-    const remove = (index: number, isNewProperty: boolean) => {
+    const remove = (index: number, isNewProperty: Boolean) => {
         const displayValuesCopy = [...displayValuesRef.current] as Values[PropertiesType];
         const isDeleted = displayValuesCopy[index].deleted;
 
@@ -363,8 +364,8 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
                 body={`${i18next.t('systemManagement.warningOnDeleteField')}
                     ${selectedIndexesToRemove.length > 0 && displayValuesRef.current[selectedIndexesToRemove[0]].title}
                     ${i18next.t('systemManagement.continueWarningOnDeleteField')} ${
-                        (initialValues as unknown as IMongoEntityTemplatePopulated)?.displayName
-                    }`}
+                    (initialValues as unknown as IMongoEntityTemplatePopulated)?.displayName
+                }`}
                 onYes={onDeleteSure}
             />
         </FieldBlockAccordion>

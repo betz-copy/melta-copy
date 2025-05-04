@@ -3,10 +3,10 @@ import { toast } from 'react-toastify';
 import i18next from 'i18next';
 import { useMutation, useQueryClient } from 'react-query';
 import { AxiosError } from 'axios';
-import { IFrame, IMongoIFrame } from '@microservices/shared-interfaces';
 import { StepType, Wizard, WizardBaseType } from '../index';
 import fileDetails from '../../../interfaces/fileDetails';
 import { ErrorToast } from '../../ErrorToast';
+import { IFrame, IMongoIFrame } from '../../../interfaces/iFrames';
 import { createIFrame, updateIFrame } from '../../../services/iFramesService';
 import { CreateIFrameDetails, createIFrameDetailsSchema } from './CreateIFrameDetails';
 import { settingIFramesPermissionsSchema, SettingIFramesPermissions } from './SettingPermissions';
@@ -86,7 +86,7 @@ const IFrameWizard: React.FC<IFrameWizardBaseType> = ({
                 i18next.t(isEditMode ? 'wizard.iFrame.editedSuccessfully' : 'wizard.iFrame.createdSuccessfully');
                 handleClose();
             },
-            onError: (error: AxiosError<{ metadata: { errorCode: string } }>) => {
+            onError: (error: AxiosError) => {
                 toast.error(
                     <ErrorToast
                         axiosError={error}

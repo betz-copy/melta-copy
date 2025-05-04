@@ -1,5 +1,6 @@
-import { IBrokenRule, IAction, ActionTypes, ICreateEntityMetadata, IUpdateEntityMetadata } from '@microservices/shared-interfaces';
 import { environment } from '../globals';
+import { ActionTypes, IAction, ICreateEntityMetadata, IUpdateEntityMetadata } from '../interfaces/ruleBreaches/actionMetadata';
+import { IBrokenRule } from '../interfaces/ruleBreaches/ruleBreach';
 
 const { entityId: newEntityId } = environment.loadExcel;
 

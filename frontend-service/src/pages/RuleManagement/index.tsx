@@ -3,9 +3,11 @@ import i18next from 'i18next';
 import React, { useEffect, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { useLocation, useParams } from 'wouter';
-import { BreachType, IRuleBreachAlertPopulated, IRuleBreachRequestPopulated } from '@microservices/shared-interfaces';
 import { BlueTitle } from '../../common/BlueTitle';
 import '../../css/pages.css';
+import { BreachType } from '../../interfaces/ruleBreaches/ruleBreach';
+import { IRuleBreachAlertPopulated } from '../../interfaces/ruleBreaches/ruleBreachAlert';
+import { IRuleBreachRequestPopulated } from '../../interfaces/ruleBreaches/ruleBreachRequest';
 import { getBreachAlertById, getBreachRequestById } from '../../services/ruleBreachesService';
 import RuleBreachDialog from './ruleBreachDialog';
 import { RuleBreachTable } from './table';
@@ -65,7 +67,7 @@ export const RuleBreachDialogContainer: React.FC<RuleBreachDialogContainerProps>
             isOpen={isDialogOpen}
             ruleBreach={ruleBreach!}
             breachType={breachType as BreachType}
-            refreshBreaches={ruleBreachRequestsRef.current!.refreshBreaches}
+            refreshBreaches={ruleBreachRequestsRef.current?.refreshBreaches!}
             handleClose={() => {
                 setIsDialogOpen(false);
                 navigate('/rule-management');

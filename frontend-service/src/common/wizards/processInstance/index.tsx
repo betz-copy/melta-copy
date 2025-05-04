@@ -5,20 +5,17 @@ import { makeStyles } from '@mui/styles';
 import { UseMutateAsyncFunction, useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { AxiosError } from 'axios';
-import {
-    IMongoStepTemplatePopulated,
-    IMongoProcessInstanceReviewerPopulated,
-    IMongoProcessTemplateReviewerPopulated,
-    IProcessTemplateMap,
-} from '@microservices/shared-interfaces';
-import { BlueTitle } from '../../BlueTitle';
 import CloseIcon from '@mui/icons-material/Close';
 import { History } from '@mui/icons-material';
+import { BlueTitle } from '../../BlueTitle';
 import { ProcessDetailsValues } from './ProcessDetails';
+import { IMongoProcessInstancePopulated } from '../../../interfaces/processes/processInstance';
+import { IMongoProcessTemplatePopulated, IProcessTemplateMap } from '../../../interfaces/processes/processTemplate';
 import { useProcessDetailsFormik } from './ProcessDetails/detailsFormik';
 import { getProcessByIdRequest, deleteProcessRequest } from '../../../services/processesService';
 import ProcessSummary from './ProcessSummaryStep/index';
 import ProcessStepsStep from './ProcessSteps/index';
+import { IMongoStepTemplatePopulated } from '../../../interfaces/processes/stepTemplate';
 import { AreYouSureDialog } from '../../dialogs/AreYouSureDialog';
 import GeneralDetails from './ProcessDetails/GeneralDetails';
 import StepsReviewers from './ProcessDetails/StepsReviewers';
@@ -30,13 +27,13 @@ import { environment } from '../../../globals';
 interface IProcessInstanceWizard {
     open: boolean;
     onClose: (wasProcessChanged: boolean) => void;
-    processInstance: IMongoProcessInstanceReviewerPopulated;
+    processInstance: IMongoProcessInstancePopulated;
     stepTemplate?: IMongoStepTemplatePopulated;
-    processTemplate: IMongoProcessTemplateReviewerPopulated;
-    currProcessInstance: IMongoProcessInstanceReviewerPopulated;
-    setCurrProcessInstance: React.Dispatch<React.SetStateAction<IMongoProcessInstanceReviewerPopulated>>;
+    processTemplate: IMongoProcessTemplatePopulated;
+    currProcessInstance: IMongoProcessInstancePopulated;
+    setCurrProcessInstance: React.Dispatch<React.SetStateAction<IMongoProcessInstancePopulated>>;
     isLoading: any;
-    mutateAsync: UseMutateAsyncFunction<IMongoProcessInstanceReviewerPopulated, AxiosError<any, any>, ProcessDetailsValues, unknown>;
+    mutateAsync: UseMutateAsyncFunction<IMongoProcessInstancePopulated, AxiosError<any, any>, ProcessDetailsValues, unknown>;
     isProcessChanged: boolean;
     setIsProcessChanged: React.Dispatch<React.SetStateAction<boolean>>;
     isEditMode: boolean;

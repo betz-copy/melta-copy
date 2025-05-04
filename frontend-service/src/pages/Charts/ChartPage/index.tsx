@@ -9,7 +9,7 @@ import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { useLocation, useParams } from 'wouter';
 import { ErrorToast } from '../../../common/ErrorToast';
-import { IChart, IMongoChart } from '../../../interfaces/charts';
+import { IBasicChart, IChart } from '../../../interfaces/charts';
 import { IGraphFilterBodyBatch } from '../../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { createChart, deleteChart, editChart, getChartById } from '../../../services/chartsService';
@@ -63,13 +63,13 @@ const ChartPage: React.FC = () => {
     );
 
     const { mutateAsync: createChartMutateAsync, isLoading: isCreateLoading } = useMutation(
-        (newChart: IChart) =>
+        (newChart: IBasicChart) =>
             createChart({
                 ...newChart,
                 templateId,
                 filter: Object.keys(filterRecord).length > 0 ? filterModelToFilterOfGraph(filterRecord)[templateId].filter : undefined,
                 createdBy: currentUser._id,
-            } as IChart),
+            } as IBasicChart),
         {
             onSuccess: (data) => {
                 toast.success(i18next.t('charts.actions.createdSuccessfully'));
@@ -84,14 +84,14 @@ const ChartPage: React.FC = () => {
     );
 
     const { mutateAsync: editChartMutateAsync, isLoading: isUpdateLoading } = useMutation(
-        (updatedChart: IChart) =>
+        (updatedChart: IBasicChart) =>
             editChart(chartId!, {
                 ...updatedChart,
                 _id: chartId,
-                createdAt: (initialValues as IMongoChart).createdAt,
-                updatedAt: (initialValues as IMongoChart).updatedAt,
+                createdAt: (initialValues as IChart).createdAt,
+                updatedAt: (initialValues as IChart).updatedAt,
                 filter: Object.keys(filterRecord).length > 0 ? filterModelToFilterOfGraph(filterRecord)[templateId].filter : undefined,
-            } as IMongoChart),
+            } as IChart),
         {
             onSuccess: () => {
                 toast.success(i18next.t('charts.actions.editedSuccessfully'));
@@ -117,7 +117,7 @@ const ChartPage: React.FC = () => {
     if (isLoading) return <CircularProgress />;
 
     return (
-        <Formik<IChart>
+        <Formik<IBasicChart>
             initialValues={initialValues}
             onSubmit={async (values, formikHelpers) => {
                 if (edit) await editChartMutateAsync(values);

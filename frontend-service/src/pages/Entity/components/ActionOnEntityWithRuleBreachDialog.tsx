@@ -5,11 +5,11 @@ import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import pickBy from 'lodash.pickby';
 import mapValues from 'lodash.mapvalues';
+import ExecWithRuleBreachDialog from '../../../common/dialogs/execWithRuleBreachDialog';
+import { ErrorToast } from '../../../common/ErrorToast';
+import { EntityWizardValues } from '../../../common/dialogs/entity';
+import { IEntity } from '../../../interfaces/entities';
 import {
-    IEntity,
-    IRuleMap,
-    IRuleBreach,
-    IRuleBreachPopulated,
     ActionTypes,
     IAction,
     IActionPopulated,
@@ -19,14 +19,12 @@ import {
     IDuplicateEntityMetadataPopulated,
     IUpdateEntityMetadata,
     IUpdateEntityMetadataPopulated,
-    IBrokenRule,
-    IRuleBreachRequestPopulated,
-} from '@microservices/shared-interfaces';
-import ExecWithRuleBreachDialog from '../../../common/dialogs/execWithRuleBreachDialog';
-import { ErrorToast } from '../../../common/ErrorToast';
-import { EntityWizardValues } from '../../../common/dialogs/entity';
+} from '../../../interfaces/ruleBreaches/actionMetadata';
+import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
+import { IRuleMap } from '../../../interfaces/rules';
 import { createRuleBreachRequestRequest } from '../../../services/ruleBreachesService';
 import { environment } from '../../../globals';
+import { IRuleBreachRequestPopulated } from '../../../interfaces/ruleBreaches/ruleBreachRequest';
 import { groupActionsByEntityId, groupBrokenRulesByEntity } from '../../../utils/loadEntities';
 
 const { errorCodes } = environment;
@@ -146,7 +144,7 @@ const ActionOnEntityWithRuleBreachDialog: React.FC<IActionOnEntityWithRuleBreach
 
     const { mutateAsync: createRuleBreachRequest, isLoading: isLoadingCreateRuleBreachRequest } = useMutation<
         IRuleBreachRequestPopulated,
-        AxiosError<{ metadata: { errorCode: string; brokenRules: IRuleBreachPopulated['brokenRules']; rawBrokenRules: IBrokenRule[] } }>,
+        AxiosError,
         { overrideActions?: IAction[]; overrideBrokenRules?: IRuleBreach['brokenRules'] }
     >(
         ({ overrideActions, overrideBrokenRules }) =>
@@ -164,11 +162,9 @@ const ActionOnEntityWithRuleBreachDialog: React.FC<IActionOnEntityWithRuleBreach
                 rawActions ? undefined : attachmentsProperties,
             ),
         {
-            onError: (
-                err: AxiosError<{ metadata: { errorCode: string; brokenRules: IRuleBreachPopulated['brokenRules']; rawBrokenRules: IBrokenRule[] } }>,
-            ) => {
+            onError: (err: AxiosError) => {
                 const errorMetadata = err.response?.data?.metadata;
-                if (errorMetadata?.errorCode && errorMetadata.errorCode in errorCodes) {
+                if (errorMetadata?.errorCode === errorCodes) {
                     onUpdatedRuleBlock(errorMetadata.brokenRules, errorMetadata.rawBrokenRules);
                 }
                 console.log('failed to create rule breach request. error:', err);

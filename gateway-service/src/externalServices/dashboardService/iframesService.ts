@@ -1,4 +1,4 @@
-import { IFrame, IMongoIframe, ISearchIFramesBody } from '@microservices/shared-interfaces';
+import { IFrame, IMongoIframe, ISearchIFramesBody } from '@microservices/shared';
 import config from '../../config';
 import DefaultExternalServiceApi from '../../utils/express/externalService';
 

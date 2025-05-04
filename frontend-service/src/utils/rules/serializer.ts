@@ -1,27 +1,12 @@
 import { JsonGroup, JsonItem, JsonRule, JsonRuleGroupExt, RuleProperties } from '@react-awesome-query-builder/mui';
 import { v4 as uuid } from 'uuid';
-import {
-    IEntityTemplateMap,
-    IAggregationGroup,
-    IGroup,
-    isAggregationGroup,
-    isGroup,
-    IFormula,
-    ICountAggFunction,
-    IRegularFunction,
-    isCountAggFunction,
-    isRegularFunction,
-    IEquation,
-    IOperatorBool,
-    isEquation,
-    IArgument,
-    IConstant,
-    IPropertyOfVariable,
-    IVariable,
-    isConstant,
-    isPropertyOfVariable,
-} from '@microservices/shared-interfaces';
+import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
+import { IFormula } from '../../interfaces/rules/formula';
 import { FunctionObject, ValueType } from './interfaces';
+import { IArgument, IConstant, IPropertyOfVariable, IVariable, isConstant, isPropertyOfVariable } from '../../interfaces/rules/formula/argument';
+import { IEquation, IOperatorBool, isEquation } from '../../interfaces/rules/formula/equation';
+import { ICountAggFunction, IRegularFunction, isCountAggFunction, isRegularFunction } from '../../interfaces/rules/formula/function';
+import { IAggregationGroup, IGroup, isAggregationGroup, isGroup } from '../../interfaces/rules/formula/group';
 
 export class RuleSerializer {
     private static entityTemplates: IEntityTemplateMap = new Map();

@@ -1,8 +1,9 @@
 import React, { useEffect } from 'react';
 import { useQueryClient } from 'react-query';
 import { useParams } from 'wouter';
-import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated, ICategoryMap } from '@microservices/shared-interfaces';
 import EntitiesPage from '../../common/EntitiesPage';
+import { ICategoryMap } from '../../interfaces/categories';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { useLocalStorage } from '../../utils/hooks/useLocalStorage';
 import { useUserStore } from '../../stores/user';
 
@@ -33,7 +34,7 @@ const Category: React.FC = () => {
 
     const categoryTemplates = categoryTemplatesId
         .map((id) => entityTemplates.get(id))
-        .filter((template): template is IMongoEntityTemplateWithConstraintsPopulated => !!template);
+        .filter((template): template is IMongoEntityTemplatePopulated => !!template);
 
     const [templateIdsToShowCheckbox, setTemplateIdsToShowCheckbox] = useLocalStorage<string[]>(
         `templatesToShow-${categoryId}`,
@@ -42,13 +43,13 @@ const Category: React.FC = () => {
 
     const templatesToShowCheckbox = templateIdsToShowCheckbox
         .map((id) => entityTemplates.get(id))
-        .filter((template): template is IMongoEntityTemplateWithConstraintsPopulated => !!template);
+        .filter((template): template is IMongoEntityTemplatePopulated => !!template);
 
-    const setTemplatesToShowCheckbox = (newTemplates: React.SetStateAction<IMongoEntityTemplateWithConstraintsPopulated[]>) => {
-        setTemplateIdsToShowCheckbox((prevtemplateIdsToShowCheckbox) => {
-            const prevTemplates = prevtemplateIdsToShowCheckbox
+    const setTemplatesToShowCheckbox = (newTemplates: React.SetStateAction<IMongoEntityTemplatePopulated[]>) => {
+        setTemplateIdsToShowCheckbox((prevTemplateIdsToShowCheckbox) => {
+            const prevTemplates = prevTemplateIdsToShowCheckbox
                 .map((id) => entityTemplates.get(id))
-                .filter((template): template is IMongoEntityTemplateWithConstraintsPopulated => !!template);
+                .filter((template): template is IMongoEntityTemplatePopulated => !!template);
             const updatedTemplates = typeof newTemplates === 'function' ? newTemplates(prevTemplates) : newTemplates;
             return updatedTemplates.map((template) => template._id);
         });
@@ -76,7 +77,7 @@ const Category: React.FC = () => {
             key={category._id}
             templates={categoryTemplates}
             setTemplates={(newTemplates) => {
-                const ids = (newTemplates as IMongoEntityTemplateWithConstraintsPopulated[]).map((template) => template._id);
+                const ids = (newTemplates as IMongoEntityTemplatePopulated[]).map((template) => template._id);
                 setCategoryTemplatesId(ids);
             }}
             templatesToShowCheckbox={templatesToShowCheckbox}

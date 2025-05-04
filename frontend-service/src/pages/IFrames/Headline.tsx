@@ -11,12 +11,12 @@ import React, { useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import Iframe from 'react-iframe';
-import { IMongoIFrame } from '@microservices/shared-interfaces';
 import { CustomIcon } from '../../common/CustomIcon';
 import { ErrorToast } from '../../common/ErrorToast';
 import { MeltaTooltip } from '../../common/MeltaTooltip';
 import { AreYouSureDialog } from '../../common/dialogs/AreYouSureDialog';
 import { IFrameWizard } from '../../common/wizards/iFrame';
+import { IMongoIFrame } from '../../interfaces/iFrames';
 import { deleteIFrame, iFrameObjectToIFrameForm, updateIFrame } from '../../services/iFramesService';
 import { useUserStore } from '../../stores/user';
 import { useDarkModeStore } from '../../stores/darkMode';
@@ -64,7 +64,7 @@ const IFrameHeadline: React.FC<{
             setDeleteIFrameDialogState({ isDialogOpen: false, iFrameId: null });
             toast.success(i18next.t('wizard.iFrame.deletedSuccessfully'));
         },
-        onError: (err: AxiosError<{ metadata: { errorCode: string } }>) => {
+        onError: (err: AxiosError) => {
             toast.error(<ErrorToast axiosError={err} defaultErrorMessage={i18next.t('wizard.iFrame.failedToDelete')} />);
         },
     });

@@ -1,19 +1,15 @@
 import lodashIsEqual from 'lodash.isequal';
 import { Fields, ImmutableTree, SimpleField } from '@react-awesome-query-builder/mui';
 import lodashFindLast from 'lodash.findlast';
-import {
-    IEntityTemplateMap,
-    IMongoEntityTemplatePopulated,
-    IMongoRelationshipTemplatePopulated,
-    IRelationshipTemplateMap,
-    IVariable,
-} from '@microservices/shared-interfaces';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
 import {
     addDefaultFieldsToTemplate,
     getOppositeEntityTemplate,
     isRelationshipConnectedToEntityTemplate,
     populateRelationshipTemplate,
 } from '../templates';
+import { IVariable } from '../../interfaces/rules/formula/argument';
 import { getAggVariablesInTree } from './getAggVariablesInTree';
 import { ICurrentUser } from '../../interfaces/users';
 import { getAllAllowedEntities, getAllAllowedRelationships } from '../permissions/templatePermissions';

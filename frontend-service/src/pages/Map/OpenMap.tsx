@@ -1,8 +1,9 @@
 import { Dialog, Grid, IconButton, Typography } from '@mui/material';
 import React, { useState } from 'react';
 import { LocationOn } from '@mui/icons-material';
-import { IEntity, IMongoEntityTemplatePopulated } from '@microservices/shared-interfaces';
 import { HighlightText } from '../../utils/HighlightText';
+import { IEntity } from '../../interfaces/entities';
+import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { useWorkspaceStore } from '../../stores/workspace';
 import LocationPreview from './LocationPreview';
 

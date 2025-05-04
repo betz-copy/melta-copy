@@ -1,8 +1,8 @@
 import React from 'react';
 import { WidgetProps } from '@rjsf/utils';
 import { Grid } from '@mui/material';
-import { IKartoffelUser, IKartoffelUserStringFields, IUser } from '@microservices/shared-interfaces';
 import UserAutocomplete from '../UserAutocomplete';
+import { IKartoffelUser, IKartoffelUserStringFields, IUser } from '../../../interfaces/users';
 
 const RjfsUserWidget = ({
     disabled,

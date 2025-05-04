@@ -1,5 +1,5 @@
 import { QueryClient } from 'react-query';
-import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '@microservices/shared-interfaces';
+import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 
 const generateFromString = ({ format, relationshipReference, enum: typeEnum }: IEntitySingleProperty, queryClient: QueryClient) => {
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
@@ -8,7 +8,7 @@ const generateFromString = ({ format, relationshipReference, enum: typeEnum }: I
 
     if (format === 'date' || format === 'date-time') return 'Date';
 
-    if (format === 'relationshipReference') return entityTemplates.get(relationshipReference!.relatedTemplateId)!.name;
+    if (format === 'relationshipReference') return entityTemplates.get(relationshipReference?.relatedTemplateId!)!.name;
 
     return 'string';
 };

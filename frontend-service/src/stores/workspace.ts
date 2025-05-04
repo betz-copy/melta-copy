@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { IMetadata, IWorkspace, WorkspaceTypes } from '@microservices/shared-interfaces';
+import { IMetadata, IWorkspace, WorkspaceTypes } from '../interfaces/workspaces';
 
 export interface WorkspaceState {
     workspace: IWorkspace & { metadata: IMetadata };

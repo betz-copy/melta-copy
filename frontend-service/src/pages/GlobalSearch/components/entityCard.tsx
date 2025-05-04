@@ -6,7 +6,6 @@ import i18next from 'i18next';
 import React, { useMemo, useRef, useState } from 'react';
 import { useLocation } from 'wouter';
 import { toast } from 'react-toastify';
-import { IEntity, IMongoEntityTemplateWithConstraintsPopulated, PermissionScope } from '@microservices/shared-interfaces';
 import { BlueTitle } from '../../../common/BlueTitle';
 import { CustomIcon } from '../../../common/CustomIcon';
 import { CreateOrEditEntityDetails, ICreateOrUpdateWithRuleBreachDialogState } from '../../../common/dialogs/entity/CreateOrEditEntityDialog';
@@ -16,6 +15,9 @@ import OpenSmallPreview from '../../../common/FilePreview/OpenSmallPreview';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
 import { ImageWithDisable } from '../../../common/ImageWithDisable';
 import { MeltaTooltip } from '../../../common/MeltaTooltip';
+import { IEntity } from '../../../interfaces/entities';
+import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { PermissionScope } from '../../../interfaces/permissions';
 import { FileExtensions, IFile } from '../../../interfaces/preview';
 import { useUserStore } from '../../../stores/user';
 import { getEntityTemplateColor } from '../../../utils/colors';
@@ -41,7 +43,7 @@ export const StyledCard = styled(Card)(({ theme }) => ({
 
 interface EntityCardProps {
     entity: IEntity;
-    entityTemplate: IMongoEntityTemplateWithConstraintsPopulated;
+    entityTemplate: IMongoEntityTemplatePopulated;
     expandCard?: boolean;
     enableEdit?: boolean;
     customActionButton?: {

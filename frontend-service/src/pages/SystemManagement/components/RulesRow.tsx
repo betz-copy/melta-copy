@@ -5,12 +5,13 @@ import i18next from 'i18next';
 import React, { useState } from 'react';
 import { UseMutateAsyncFunction, useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated, IMongoRule, IRuleMap, PermissionScope } from '@microservices/shared-interfaces';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import { ErrorToast } from '../../../common/ErrorToast';
 import { InfiniteScroll } from '../../../common/InfiniteScroll';
 import SearchInput from '../../../common/inputs/SearchInput';
 import { RuleWizard } from '../../../common/wizards/rule';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IMongoRule, IRuleMap } from '../../../interfaces/rules';
 import { deleteRuleRequest, ruleObjectToRuleForm, updateDisabledRuleRequest } from '../../../services/templates/rulesService';
 import { ViewingCard } from './Card';
 import { CardMenu } from './CardMenu';
@@ -18,6 +19,7 @@ import { CreateButton } from './CreateButton';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { checkUserTemplatePermission } from '../../../utils/permissions/instancePermissions';
 import { useUserStore } from '../../../stores/user';
+import { PermissionScope } from '../../../interfaces/permissions';
 import { getAllAllowedRulesAndWriteEntities } from '../../../utils/permissions/templatePermissions';
 
 export const RuleCard: React.FC<{
@@ -195,7 +197,7 @@ const RulesRow: React.FC = () => {
             setDeleteRuleWizardState({ isWizardOpen: false, ruleId: null });
             toast.success(i18next.t('wizard.rule.deletedSuccessfully'));
         },
-        onError: (error: AxiosError<{ metadata: { errorCode: string } }>) => {
+        onError: (error: AxiosError) => {
             toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.rule.failedToDelete')} />);
         },
     });

@@ -1,10 +1,12 @@
 import { CircularProgress } from '@mui/material';
+import { AxiosError } from 'axios';
 import React, { isValidElement } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { Redirect, useLocation, useParams } from 'wouter';
 import { StatusCodes } from 'http-status-codes';
-import { AxiosError } from 'axios';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated, PermissionScope, ISubCompactPermissions } from '@microservices/shared-interfaces';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
+import { PermissionScope } from '../interfaces/permissions';
+import { ISubCompactPermissions } from '../interfaces/permissions/permissions';
 import { getExpandedEntityByIdRequest } from '../services/entitiesService';
 
 export const protectedRoute = (children: React.ReactNode, isAllowed: boolean) => {

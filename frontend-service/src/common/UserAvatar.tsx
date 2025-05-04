@@ -1,8 +1,8 @@
 import React from 'react';
 import Avatar from '@mui/material/Avatar';
-import { IUser } from '@microservices/shared-interfaces';
 import { useQuery } from 'react-query';
 import { useMatomo } from '@datapunt/matomo-tracker-react';
+import { IUser } from '../interfaces/users';
 import { useDarkModeStore } from '../stores/darkMode';
 import { getNameInitials } from '../utils/userProfile';
 import { getUserProfileRequest } from '../services/userService';

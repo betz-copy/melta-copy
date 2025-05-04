@@ -1,6 +1,6 @@
 import { Grid, IconButton } from '@mui/material';
 import React from 'react';
-import { IUser } from '@microservices/shared-interfaces';
+import { IUser } from '../../interfaces/users';
 import UserAvatar from '../UserAvatar';
 import { MeltaTooltip } from '../MeltaTooltip';
 

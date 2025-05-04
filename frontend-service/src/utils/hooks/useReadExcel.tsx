@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import * as XLSX from 'xlsx';
 import { toast } from 'react-toastify';
 import i18next from 'i18next';
-import { IMongoEntityTemplatePopulated } from '@microservices/shared-interfaces';
+import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { useWorkspaceStore } from '../../stores/workspace';
 import { IExcelSteps, ExcelStepStatus } from '../../interfaces/excel';
 

@@ -1,15 +1,13 @@
-import {
-    IMongoRelationshipTemplate,
-    IRelationshipTemplate,
-    ISearchRelationshipTemplatesBody,
-    IConvertToRelationshipField,
-    IEntityTemplateMap,
-    IMongoEntityTemplateWithConstraintsPopulated,
-    IMongoEntityTemplatePopulated,
-} from '@microservices/shared-interfaces';
 import axios from '../../axios';
 import { RelationshipTemplateWizardValues, defaultInitialValues } from '../../common/wizards/relationshipTemplate';
 import { environment } from '../../globals';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import {
+    IConvertToRelationshipField,
+    IMongoRelationshipTemplate,
+    IRelationshipTemplate,
+    ISearchRelationshipTemplatesBody,
+} from '../../interfaces/relationshipTemplates';
 
 const { relationshipTemplates } = environment.api;
 
@@ -22,14 +20,12 @@ const relationshipTemplateObjectToRelationshipTemplateForm = (
 
     return {
         sourceEntity: entityTemplates.get(sourceEntityId)
-            ? (entityTemplates.get(sourceEntityId) as IMongoEntityTemplateWithConstraintsPopulated)
-            : (defaultInitialValues.sourceEntity as IMongoEntityTemplateWithConstraintsPopulated),
+            ? (entityTemplates.get(sourceEntityId) as IMongoEntityTemplatePopulated)
+            : (defaultInitialValues.sourceEntity as IMongoEntityTemplatePopulated),
         destinationEntity: entityTemplates.get(destinationEntityId)
-            ? (entityTemplates.get(destinationEntityId) as IMongoEntityTemplateWithConstraintsPopulated)
-            : (defaultInitialValues.destinationEntity as IMongoEntityTemplateWithConstraintsPopulated),
+            ? (entityTemplates.get(destinationEntityId) as IMongoEntityTemplatePopulated)
+            : (defaultInitialValues.destinationEntity as IMongoEntityTemplatePopulated),
         ...restOfEntityTemplate,
-        createdAt: relationshipTemplate.createdAt,
-        updatedAt: relationshipTemplate.updatedAt,
     };
 };
 
@@ -41,7 +37,7 @@ const relationshipTemplateFormToRelationshipTemplateObject = (
         ...restOfRelationshipWizardValues,
         sourceEntityId: sourceEntity._id,
         destinationEntityId: destinationEntity._id,
-    } as IRelationshipTemplate | IMongoRelationshipTemplate;
+    };
 };
 
 const createRelationshipTemplateRequest = async (newRelationshipTemplate: IRelationshipTemplate) => {
@@ -49,10 +45,7 @@ const createRelationshipTemplateRequest = async (newRelationshipTemplate: IRelat
     return data;
 };
 
-const updateRelationshipTemplateRequest = async (
-    relationshipTemplateId: string,
-    newRelationshipTemplate: Omit<IRelationshipTemplate, 'isProperty'>,
-) => {
+const updateRelationshipTemplateRequest = async (relationshipTemplateId: string, newRelationshipTemplate: IRelationshipTemplate) => {
     const { data } = await axios.put<IMongoRelationshipTemplate>(`${relationshipTemplates}/${relationshipTemplateId}`, newRelationshipTemplate);
     return data;
 };

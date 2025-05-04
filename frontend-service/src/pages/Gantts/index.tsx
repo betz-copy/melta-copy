@@ -4,15 +4,16 @@ import i18next from 'i18next';
 import { toast } from 'react-toastify';
 import { AddCircle as AddCircleIcon } from '@mui/icons-material';
 import { useQueryClient } from 'react-query';
-import { PermissionScope, IMongoGantt } from '@microservices/shared-interfaces';
 import { ViewingBox } from '../SystemManagement/components/ViewingBox';
 import { InfiniteScroll } from '../../common/InfiniteScroll';
 import { GanttsCard } from './Card';
 import { searchGantts } from '../../services/ganttsService';
+import { IGantt } from '../../interfaces/gantts';
 import { environment } from '../../globals';
 import { GlobalSearchBar } from '../../common/EntitiesPage/Headline';
 import { CreateGanttDialog } from './CreateGanttDialog';
 import { useUserStore } from '../../stores/user';
+import { PermissionScope } from '../../interfaces/permissions';
 
 const { infiniteScrollPageCount } = environment.ganttSettings;
 
@@ -48,7 +49,7 @@ const GanttsPage: React.FC<IGanttsPageProps> = ({ setTitle }) => {
                 </Grid>
 
                 <ViewingBox minHeight="82vh">
-                    <InfiniteScroll<IMongoGantt>
+                    <InfiniteScroll<IGantt>
                         queryKey={queryKey}
                         queryFunction={async ({ pageParam }) => searchGantts({ limit: infiniteScrollPageCount, step: pageParam, search })}
                         onQueryError={(error) => {

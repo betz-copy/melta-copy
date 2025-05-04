@@ -4,11 +4,11 @@ import i18next from 'i18next';
 import React, { useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import { IMongoProcessTemplateReviewerPopulated, IProcessTemplateMap } from '@microservices/shared-interfaces';
 import { AreYouSureDialog } from '../../../../common/dialogs/AreYouSureDialog';
 import { ErrorToast } from '../../../../common/ErrorToast';
 import SearchInput from '../../../../common/inputs/SearchInput';
 import { ProcessTemplateWizard } from '../../../../common/wizards/processTemplate';
+import { IMongoProcessTemplatePopulated, IProcessTemplateMap } from '../../../../interfaces/processes/processTemplate';
 import { deleteProcessTemplateRequest, processTemplateObjectToProcessTemplateForm } from '../../../../services/templates/processTemplatesService';
 import { CreateButton } from '../CreateButton';
 import { ProcessTemplateCard } from './ProcessTemplateCard';
@@ -29,7 +29,7 @@ const ProcessTemplatesRow: React.FC = () => {
 
     const [processTemplateWizardDialogState, setProcessTemplateWizardDialogState] = useState<{
         isWizardOpen: boolean;
-        processTemplate: IMongoProcessTemplateReviewerPopulated | null;
+        processTemplate: IMongoProcessTemplatePopulated | null;
     }>({
         isWizardOpen: false,
         processTemplate: null,
@@ -37,7 +37,7 @@ const ProcessTemplatesRow: React.FC = () => {
 
     const queryClient = useQueryClient();
 
-    const processTemplates = queryClient.getQueryData<IMongoProcessTemplateReviewerPopulated[]>('getProcessTemplates')!;
+    const processTemplates = queryClient.getQueryData<IMongoProcessTemplatePopulated[]>('getProcessTemplates')!;
 
     const { isLoading: deleteTemplateIsLoading, mutateAsync: deleteTemplateMutateAsync } = useMutation(
         (id: string) => deleteProcessTemplateRequest(id),
@@ -51,7 +51,7 @@ const ProcessTemplatesRow: React.FC = () => {
                 queryClient.invalidateQueries(['searchProcessTemplates', searchText]);
                 toast.success(i18next.t('wizard.processTemplate.deletedSuccessfully'));
             },
-            onError: (error: AxiosError<{ metadata: { errorCode: string } }>) => {
+            onError: (error: AxiosError) => {
                 toast.error(
                     <ErrorToast
                         axiosError={error}
@@ -77,7 +77,7 @@ const ProcessTemplatesRow: React.FC = () => {
                     />
                 </Grid>
             </Grid>
-            <InfiniteScroll<IMongoProcessTemplateReviewerPopulated>
+            <InfiniteScroll<IMongoProcessTemplatePopulated>
                 queryKey={['searchProcessTemplates', searchText]}
                 queryFunction={({ pageParam }) =>
                     Array.from(processTemplates.values())

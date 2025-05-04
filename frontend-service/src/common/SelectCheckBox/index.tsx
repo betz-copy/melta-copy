@@ -9,14 +9,14 @@ import { useDarkModeStore } from '../../stores/darkMode';
 import Tree from '../Tree';
 import { Search } from './Search';
 
-export type SelectCheckboxGroupProps<Option extends object, Group = Option> = {
+export type SelectCheckboxGroupProps<Option extends {}, Group extends any = Option> = {
     groups: Group[];
     getGroupOfOption: (option: Option, groups: Group[]) => Group;
     getGroupId: (group: Group) => Key;
     getGroupLabel: (group: Group) => string;
 };
 
-export type SelectCheckboxProps<Option extends object, Group = Option> = PropsWithChildren<{
+export type SelectCheckboxProps<Option extends {}, Group extends any = Option> = PropsWithChildren<{
     title: string;
     filterIcon?: boolean;
     options: Option[];
@@ -42,7 +42,7 @@ export type SelectCheckboxProps<Option extends object, Group = Option> = PropsWi
     treeFunc?: (groups: Group[], options: Option[], getItemId: SelectCheckboxProps<Option>['getOptionId']) => TreeViewBaseItem<Option>[];
 }>;
 
-export const getOptionsAndGroupsMiniFiltered = <Option extends object, Group = Option>(
+export const getOptionsAndGroupsMiniFiltered = <Option extends {}, Group extends any = Option>(
     miniFilterValue: string,
     options: SelectCheckboxProps<Option, Group>['options'],
     getOptionId: SelectCheckboxProps<Option, Group>['getOptionId'],
@@ -81,7 +81,7 @@ export const CustomExpandMore = ({ filterIcon, ...rest }) => {
     return <Box sx={{ gap: '10px', marginRight: '14px' }}>{filterIcon ? <FilterList {...rest} /> : <ExpandMore {...rest} />}</Box>;
 };
 
-const SelectCheckbox = <Option extends object, Group = Option>({
+const SelectCheckbox = <Option extends {}, Group extends any = Option>({
     title,
     filterIcon,
     options,

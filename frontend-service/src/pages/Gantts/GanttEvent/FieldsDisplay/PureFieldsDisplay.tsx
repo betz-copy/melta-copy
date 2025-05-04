@@ -1,6 +1,7 @@
 import { Grid, Typography } from '@mui/material';
 import React, { CSSProperties, Fragment } from 'react';
-import { IEntity, IMongoEntityTemplatePopulated } from '@microservices/shared-interfaces';
+import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
+import { IEntity } from '../../../../interfaces/entities';
 import { environment } from '../../../../globals';
 import { formatToString } from '../../../../common/EntityProperties';
 import { MeltaTooltip } from '../../../../common/MeltaTooltip';

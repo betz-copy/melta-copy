@@ -1,19 +1,21 @@
 import React from 'react';
 import { Grid } from '@mui/material';
 import i18next from 'i18next';
-import { IEntity, IMongoEntityTemplateWithConstraintsPopulated, PermissionScope } from '@microservices/shared-interfaces';
-import { AddEntityButton } from '../../EntitiesPage/AddEntityButton';
+import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IEntity } from '../../../interfaces/entities';
 import { AddIconWithText } from '../../AddIconWithText';
 import IconButtonWithPopover from '../../IconButtonWithPopover';
 import { checkUserTemplatePermission } from '../../../utils/permissions/instancePermissions';
+import { PermissionScope } from '../../../interfaces/permissions';
 import { useUserStore } from '../../../stores/user';
+import { AddEntityButton } from '../../EntitiesPage/Buttons/AddEntity';
 
 const DashedSelectBox: React.FC<{
     text: string;
     checkUsersPermissions: PermissionScope;
     onClick: React.MouseEventHandler<HTMLDivElement>;
     error?: boolean;
-    entityTemplate?: IMongoEntityTemplateWithConstraintsPopulated;
+    entityTemplate?: IMongoEntityTemplatePopulated;
     minHeight: React.CSSProperties['minHeight'];
     onSuccessCreate: (entity: IEntity) => void;
     addNewEntityLabel?: string;
@@ -73,11 +75,7 @@ const DashedSelectBox: React.FC<{
                                 popoverText={popoverText}
                                 initialValues={
                                     entityTemplate
-                                        ? {
-                                              template: entityTemplate,
-                                              properties: { disabled: false },
-                                              attachmentsProperties: {},
-                                          }
+                                        ? { template: entityTemplate, properties: { disabled: false }, attachmentsProperties: {} }
                                         : undefined
                                 }
                                 style={{ borderRadius: '5px' }}

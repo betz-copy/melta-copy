@@ -5,10 +5,11 @@ import { useQuery } from 'react-query';
 import { useTour } from '@reactour/tour';
 import i18next from 'i18next';
 import { toast } from 'react-toastify';
-import { IEntity, IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared-interfaces';
 import { _debounce } from '@ag-grid-community/core';
+import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { TemplateTable, TemplateTableRef } from './TemplateTable';
 import { getCountByTemplateIdsRequest } from '../../services/entitiesService';
+import { IEntity } from '../../interfaces/entities';
 import { environment } from '../../globals';
 
 const { tablesPerLoadingChunkSize } = environment.ganttSettings;
@@ -20,7 +21,7 @@ type TemplateTablesViewResultsRef = {
 const TemplateTablesViewResults = forwardRef<
     TemplateTablesViewResultsRef,
     {
-        templates: IMongoEntityTemplateWithConstraintsPopulated[];
+        templates: IMongoEntityTemplatePopulated[];
         searchInput: string;
         pageSize?: number;
         pageType: string;
@@ -91,7 +92,7 @@ const TemplateTablesViewResults = forwardRef<
 });
 
 const filterEmptyTemplateTablesOnGlobalSearchRequest = async (
-    templates: IMongoEntityTemplateWithConstraintsPopulated[],
+    templates: IMongoEntityTemplatePopulated[],
     searchInput: string,
     semanticSearch: boolean,
 ) => {
@@ -108,7 +109,7 @@ const filterEmptyTemplateTablesOnGlobalSearchRequest = async (
 };
 
 export interface TemplateTablesViewProps {
-    templates: IMongoEntityTemplateWithConstraintsPopulated[];
+    templates: IMongoEntityTemplatePopulated[];
     searchInput: string;
     pageType: string;
     semanticSearch: boolean;

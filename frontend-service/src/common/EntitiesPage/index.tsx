@@ -6,21 +6,23 @@ import mapValues from 'lodash.mapvalues';
 import { useMutation, useQueryClient } from 'react-query';
 import fileDownload from 'js-file-download';
 import { toast } from 'react-toastify';
-import { IEntity, IExportEntitiesBody, IMongoEntityTemplateWithConstraintsPopulated, IMongoCategory } from '@microservices/shared-interfaces';
+import { IMongoCategory } from '../../interfaces/categories';
+import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { EntitiesPageHeadline } from './Headline';
 import TemplateTablesView, { TemplateTablesViewRef } from './TemplateTablesView';
 import { exportEntitiesRequest } from '../../services/entitiesService';
 import CardsView, { CardsViewRef } from './CardsView';
+import { IEntity, IExportEntitiesBody } from '../../interfaces/entities';
 import { filterModelToFilterOfTemplate, sortModelToSortOfSearchRequest } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 import { useSearchParams } from '../../utils/hooks/useSearchParams';
 import { convertToBool } from '../../utils/convertStringToBool';
 import { LocalStorage } from '../../utils/localStorage';
 
 const EntitiesPage: React.FC<{
-    templates: IMongoEntityTemplateWithConstraintsPopulated[];
-    setTemplates?: React.Dispatch<React.SetStateAction<IMongoEntityTemplateWithConstraintsPopulated[]>>;
-    templatesToShowCheckbox: IMongoEntityTemplateWithConstraintsPopulated[];
-    setTemplatesToShowCheckbox: React.Dispatch<React.SetStateAction<IMongoEntityTemplateWithConstraintsPopulated[]>>;
+    templates: IMongoEntityTemplatePopulated[];
+    setTemplates?: React.Dispatch<React.SetStateAction<IMongoEntityTemplatePopulated[]>>;
+    templatesToShowCheckbox: IMongoEntityTemplatePopulated[];
+    setTemplatesToShowCheckbox: React.Dispatch<React.SetStateAction<IMongoEntityTemplatePopulated[]>>;
     isTemplatesCheckboxDraggableDisabled?: boolean;
     categories?: IMongoCategory[];
     excelExportAllTablesFileName: string;

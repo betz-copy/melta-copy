@@ -2,15 +2,10 @@ import React, { CSSProperties, ReactNode } from 'react';
 import { Box, Grid, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import { useQueryClient } from 'react-query';
+import { IEntity } from '../../interfaces/entities';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
 import {
-    IUser,
-    IEntity,
-    IEntityTemplateMap,
-    IMongoEntityTemplatePopulated,
-    IMongoRelationshipTemplatePopulated,
-    IRelationshipTemplateMap,
-    IMongoRule,
-    IEntityForBrokenRules,
     ActionTypes,
     IActionMetadataPopulated,
     IActionPopulated,
@@ -20,10 +15,13 @@ import {
     IDuplicateEntityMetadataPopulated,
     IUpdateEntityMetadataPopulated,
     IUpdateEntityStatusMetadataPopulated,
-} from '@microservices/shared-interfaces';
+} from '../../interfaces/ruleBreaches/actionMetadata';
 import { populateRelationshipTemplate } from '../../utils/templates';
 import { UpdatedFieldsDiff } from './UpdatedFieldsDiff';
+import { IUser } from '../../interfaces/users';
 import { EntityLink, EntityLinkProps } from '../EntityLink';
+import { IEntityForBrokenRules } from '../../interfaces/ruleBreaches/ruleBreach';
+import { IMongoRule } from '../../interfaces/rules';
 import { EntityPropertiesInternal } from '../EntityProperties';
 import { environment } from '../../globals';
 import { useUserStore } from '../../stores/user';
@@ -100,21 +98,18 @@ export const EntityInfo: React.FC<EntityInfoProps> = ({
         );
         linkable = !entityForLink.properties._id.startsWith(environment.brokenRulesFakeEntityIdPrefix);
     } else {
-        const updatedProperties = actions.reduce(
-            (previousUpdatedProperties, currentAction) => {
-                if (
-                    currentAction.actionType === ActionTypes.UpdateEntity &&
-                    (currentAction.actionMetadata as IUpdateEntityMetadataPopulated).entity?.properties._id === (entity as IEntity).properties._id
-                ) {
-                    return {
-                        ...previousUpdatedProperties,
-                        ...(currentAction.actionMetadata as IUpdateEntityMetadataPopulated).updatedFields,
-                    };
-                }
-                return previousUpdatedProperties;
-            },
-            (entity as IEntity).properties,
-        );
+        const updatedProperties = actions.reduce((previousUpdatedProperties, currentAction) => {
+            if (
+                currentAction.actionType === ActionTypes.UpdateEntity &&
+                (currentAction.actionMetadata as IUpdateEntityMetadataPopulated).entity?.properties._id === (entity as IEntity).properties._id
+            ) {
+                return {
+                    ...previousUpdatedProperties,
+                    ...(currentAction.actionMetadata as IUpdateEntityMetadataPopulated).updatedFields,
+                };
+            }
+            return previousUpdatedProperties;
+        }, (entity as IEntity).properties);
 
         entityForLink = {
             templateId: (entity as IEntity).templateId,
@@ -319,7 +314,7 @@ const UpdateEntityActionInfo: React.FC<{
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const entityTemplate = !entity ? entityTemplates.get(actionMetadata.updatedFields.templateId) : entityTemplates.get(entity.templateId);
 
-    const { templateId: _templateId, ...restFields } = actionMetadata.updatedFields;
+    const { templateId, ...restFields } = actionMetadata.updatedFields;
     // TODO get properties of causes
 
     return (

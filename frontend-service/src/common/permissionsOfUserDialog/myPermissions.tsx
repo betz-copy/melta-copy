@@ -7,7 +7,9 @@ import React, { useMemo } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import * as Yup from 'yup';
-import { IUser, ICategoryMap, PermissionScope, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '@microservices/shared-interfaces';
+import { ICategoryMap } from '../../interfaces/categories';
+import { PermissionScope } from '../../interfaces/permissions';
+import { IUser } from '../../interfaces/users';
 import { createUserRequest, syncUserPermissionsRequest } from '../../services/userService';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { useUserStore } from '../../stores/user';
@@ -26,6 +28,7 @@ import {
     entityTemplatePermissionDialog,
     userHasNoPermissions,
 } from '../../utils/permissions/permissionOfUserDialog';
+import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
 
 const MyPermissions: React.FC<{
     handleClose: () => void;
@@ -64,7 +67,7 @@ const MyPermissions: React.FC<{
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const dialogPermissionData: Map<string, CategoryWithTemplates> = new Map();
 
-    Array.from(entityTemplates.values() as IMongoEntityTemplatePopulated[]).forEach((entity) => {
+    Array.from(entityTemplates.values()).forEach((entity) => {
         const category: CategoryWithTemplates = {
             entityTemplates: dialogPermissionData.get(entity.category._id)?.entityTemplates || [],
             ...entity.category,

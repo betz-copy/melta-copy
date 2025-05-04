@@ -1,28 +1,54 @@
 /* eslint-disable no-nested-ternary */
-import { Grid, styled, Typography, useTheme } from '@mui/material';
+import { Chip, Grid, styled, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
 import { useQueryClient } from 'react-query';
 import { useLocation } from 'wouter';
-import {
-    IEntityTemplateMap,
-    IMongoEntityTemplatePopulated,
-    IRelationshipTemplateMap,
-    IActivityLog,
-    IEntitySingleProperty,
-    IUpdateProcessStepMetadata,
-    IUpdatedFields,
-    IMongoStepTemplatePopulated,
-    IProcessSingleProperty,
-    IProcessDetails,
-} from '@microservices/shared-interfaces';
 import { MeltaTooltip } from '../../../../common/MeltaTooltip';
 import RelationshipReferenceView from '../../../../common/RelationshipReferenceView';
+import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
+import { IRelationshipTemplateMap } from '../../../../interfaces/relationshipTemplates';
+import { IActivityLog, IUpdateProcessStepMetadata } from '../../../../services/activityLogService';
 import { containsHTMLTags, getFirstLine, getNumLines } from '../../../../utils/HtmlTagsStringValue';
 import { getFilesName } from '../../../../utils/getFileName';
+import { IProcessDetails, IProcessSingleProperty } from '../../../../interfaces/processes/processTemplate';
+import { IMongoStepTemplatePopulated } from '../../../../interfaces/processes/stepTemplate';
 import { StatusDisplay } from '../../../../common/wizards/processInstance/ProcessSummaryStep/ProcessStatus';
 import { CoordinateSystem, LocationData } from '../../../../common/inputs/JSONSchemaFormik/RjsfLocationWidget';
 import { locationConverterToString } from '../../../../utils/map/convert';
+import { NotificationColor } from '../../../../common/notificationColor';
+import UserAvatar from '../../../../common/UserAvatar';
+
+const logColors = {
+    ACTIVATE_ENTITY: '#C5FF7B',
+    DISABLE_ENTITY: '#B7B8B9',
+    CREATE_ENTITY: '#84FF90',
+    DUPLICATE_ENTITY: '#ffc4e9',
+    CREATE_PROCESS: '#84FF90',
+    UPDATE_FIELDS: '#8CCFFF',
+    DELETE_RELATIONSHIP: '#FF7979',
+    CREATE_RELATIONSHIP: '#FFD18C',
+};
+
+const logTitles = {
+    ACTIVATE_ENTITY: i18next.t('entityPage.activityLog.titles.enableEntity'),
+    DISABLE_ENTITY: i18next.t('entityPage.activityLog.titles.disableEntity'),
+    CREATE_ENTITY: i18next.t('entityPage.activityLog.titles.createEntity'),
+    DUPLICATE_ENTITY: i18next.t('entityPage.activityLog.titles.duplicateEntity'),
+    CREATE_PROCESS: i18next.t('entityPage.activityLog.titles.createProcess'),
+    UPDATE_FIELDS: i18next.t('entityPage.activityLog.titles.updateFields'),
+    DELETE_RELATIONSHIP: i18next.t('entityPage.activityLog.titles.deleteRelationship'),
+    CREATE_RELATIONSHIP: i18next.t('entityPage.activityLog.titles.createRelationship'),
+};
+
+const TitleWithIcon = (action: string) => (
+    <Grid item container marginBottom="10px">
+        <NotificationColor color={logColors[action]} />
+        <Typography variant="subtitle1" color="primary" fontWeight="400" fontSize="15px" paddingLeft="10px">
+            {logTitles[action]}
+        </Typography>
+    </Grid>
+);
 
 const StyledTypography = styled(Typography)(({ theme }) => ({
     fontFamily: 'Rubik',
@@ -43,6 +69,7 @@ const EmptyMetadataActionText: React.FC<{
 
     return (
         <Grid item minWidth="190px">
+            {TitleWithIcon(action)}
             <StyledTypography variant="body2">{logTexts[action]}</StyledTypography>
         </Grid>
     );
@@ -71,13 +98,14 @@ const RelationshipMetadataActionText: React.FC<{
 
     return (
         <Grid item container>
+            {TitleWithIcon(action)}
             <StyledTypography variant="body2" component="span">
                 {action === 'CREATE_RELATIONSHIP'
-                    ? String(i18next.t('entityPage.activityLog.createRelationship'))
-                    : String(i18next.t('entityPage.activityLog.deleteRelationship'))}
+                    ? i18next.t('entityPage.activityLog.createRelationship')
+                    : i18next.t('entityPage.activityLog.deleteRelationship')}
                 <StyledTypography component="span" display="inline" variant="body2" style={{ color: theme.palette.primary.main }}>
                     {' '}
-                    &quot;{relationshipTemplate ? relationshipTemplate.displayName : String(i18next.t('entityPage.activityLog.undefined'))}&quot;{' '}
+                    &quot;{relationshipTemplate ? relationshipTemplate.displayName : i18next.t('entityPage.activityLog.undefined')}&quot;{' '}
                 </StyledTypography>
                 {relationshipTemplate && (
                     <>
@@ -108,8 +136,9 @@ const DuplicateEntityMetadataActionText: React.FC<{
 
     return (
         <Grid item minWidth="190px">
+            {TitleWithIcon('DUPLICATE_ENTITY')}
             <StyledTypography variant="body2" component="span">
-                {String(i18next.t('entityPage.activityLog.duplicateEntityFrom'))}
+                {i18next.t('entityPage.activityLog.duplicateEntityFrom')}
                 <StyledTypography
                     component="span"
                     display="inline"
@@ -200,10 +229,18 @@ const UpdateTextValue: React.FC<{
         return type === 'string' && format === 'user';
     };
 
-    const contentDisplayNameByTemplate = (content: string) => {
+    const contentDisplayNameByTemplate = (content: string, inTooltip = false) => {
         if (isUserField()) {
-            const subContent = content.substring(1, content.length - 1);
-            return JSON.parse(subContent).fullName;
+            if (inTooltip) return JSON.parse(value).fullName;
+
+            return (
+                <Chip
+                    sx={{ marginLeft: '5px' }}
+                    size="small"
+                    avatar={<UserAvatar user={JSON.parse(value)} size={23} bgColor="1E2775" />}
+                    label={JSON.parse(value).fullName}
+                />
+            );
         }
         if (isFileIdFormat()) {
             return getFilesName(content);
@@ -219,10 +256,10 @@ const UpdateTextValue: React.FC<{
         <MeltaTooltip
             PopperProps={popperProps}
             disableHoverListener={!innerContent}
-            title={<Grid style={{ maxHeight: '500px', overflowY: 'auto' }}>{contentDisplayNameByTemplate(innerContent)}</Grid>}
+            title={<Grid style={{ maxHeight: '500px', overflowY: 'auto' }}>{contentDisplayNameByTemplate(innerContent, true)}</Grid>}
             placement="top-start"
         >
-            <Grid>
+            <Grid item marginBottom="5px">
                 <StyledTypography variant="body2" style={ellipsisStyle}>
                     {old ? i18next.t('entityPage.activityLog.from') : i18next.t('entityPage.activityLog.to')}{' '}
                     {contentDisplayNameByTemplate(innerContent)}
@@ -231,52 +268,58 @@ const UpdateTextValue: React.FC<{
         </MeltaTooltip>
     ) : (
         <StyledTypography variant="body2" style={{ ...ellipsisStyle, display: 'flex' }}>
-            {old ? String(i18next.t('entityPage.activityLog.from')) : String(i18next.t('entityPage.activityLog.to'))}{' '}
-            {value ? String(innerContent) : String(i18next.t('entityPage.activityLog.emptyField'))}
+            {old ? i18next.t('entityPage.activityLog.from') : i18next.t('entityPage.activityLog.to')}{' '}
+            {value ? innerContent : i18next.t('entityPage.activityLog.emptyField')}
         </StyledTypography>
     );
 };
 
 const UpdateEntityMetadataActionText: React.FC<{
-    actionMetadata: { updatedFields: IUpdatedFields[] };
+    actionMetadata: { updatedFields: [{ fieldName: string; oldValue: any; newValue: any }] };
     entityTemplateProperties: Record<string, IEntitySingleProperty> | Record<string, IProcessSingleProperty>;
 }> = ({ actionMetadata, entityTemplateProperties }) => {
     const theme = useTheme();
     return (
-        <Grid item minWidth="190px">
-            <StyledTypography variant="body2" marginBottom="5px">
-                {actionMetadata.updatedFields.length === 1
-                    ? String(i18next.t('entityPage.activityLog.updateField'))
-                    : String(i18next.t('entityPage.activityLog.updateFields'))}{' '}
-            </StyledTypography>
+        <Grid item container flexDirection="column">
+            {TitleWithIcon('UPDATE_FIELDS')}
+            <Grid item minWidth="190px">
+                <StyledTypography variant="body2" marginBottom="5px">
+                    {actionMetadata.updatedFields.length === 1
+                        ? i18next.t('entityPage.activityLog.updateField')
+                        : i18next.t('entityPage.activityLog.updateFields')}{' '}
+                </StyledTypography>
 
-            {actionMetadata.updatedFields.map((field) => {
-                const { oldValue, newValue, fieldName } = field;
+                {actionMetadata.updatedFields.map((field) => {
+                    const { oldValue, newValue, fieldName } = field;
 
-                const deleted = entityTemplateProperties[fieldName];
-                const isDeleted = deleted === undefined;
+                    const isDeleted = entityTemplateProperties[fieldName] === undefined;
 
-                return (
-                    <Grid key={fieldName} style={{ marginBottom: '10px' }}>
-                        <StyledTypography key={fieldName} variant="body2" style={{ ...ellipsisStyle, color: theme.palette.primary.main }}>
-                            {isDeleted
-                                ? `${fieldName} (${i18next.t('entityPage.activityLog.wasDeleted')})`
-                                : entityTemplateProperties[fieldName].title}
-                        </StyledTypography>
-                        {[oldValue, newValue].map((value, index) => {
-                            return (
-                                <UpdateTextValue
-                                    key={value}
-                                    value={value}
-                                    old={index === 0}
-                                    fieldName={field.fieldName}
-                                    entityTemplateProperties={entityTemplateProperties}
-                                />
-                            );
-                        })}
-                    </Grid>
-                );
-            })}
+                    return (
+                        <Grid key={fieldName} style={{ marginBottom: '10px' }}>
+                            <StyledTypography
+                                key={fieldName}
+                                variant="body2"
+                                style={{ ...ellipsisStyle, color: theme.palette.primary.main, fontWeight: '500' }}
+                            >
+                                {isDeleted
+                                    ? `${fieldName} (${i18next.t('entityPage.activityLog.wasDeleted')})`
+                                    : entityTemplateProperties[fieldName].title}
+                            </StyledTypography>
+                            {[oldValue, newValue].map((value, index) => {
+                                return (
+                                    <UpdateTextValue
+                                        key={value}
+                                        value={value}
+                                        old={index === 0}
+                                        fieldName={field.fieldName}
+                                        entityTemplateProperties={entityTemplateProperties}
+                                    />
+                                );
+                            })}
+                        </Grid>
+                    );
+                })}
+            </Grid>
         </Grid>
     );
 };
@@ -296,7 +339,7 @@ const UpdateStepProcessMetadataActionText: React.FC<{
             {actionMetadata.status && (
                 <Grid>
                     <StyledTypography variant="body2" marginBottom="5px">
-                        {String(i18next.t('entityPage.activityLog.updatedStatus'))}
+                        {i18next.t('entityPage.activityLog.updatedStatus')}
                     </StyledTypography>
                     <StatusDisplay
                         status={actionMetadata.status}
@@ -308,7 +351,7 @@ const UpdateStepProcessMetadataActionText: React.FC<{
             {actionMetadata.comments && (
                 <Grid>
                     <StyledTypography variant="body2" marginBottom="5px">
-                        {String(i18next.t('entityPage.activityLog.updatedComment'))}
+                        {i18next.t('entityPage.activityLog.updatedComment')}
                     </StyledTypography>
                     <Typography
                         variant="body1"

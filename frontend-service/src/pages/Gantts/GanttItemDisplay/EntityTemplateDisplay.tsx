@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { Grid, Typography } from '@mui/material';
 import { AppRegistration as DefaultEntityTemplateIcon } from '@mui/icons-material';
 import { CSSProperties } from '@mui/styles';
-import { IMongoEntityTemplatePopulated } from '@microservices/shared-interfaces';
+import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { CustomIcon } from '../../../common/CustomIcon';
 import { FieldsDisplay } from './FieldsDisplay';
 import { getEntityTemplateColor } from '../../../utils/colors';

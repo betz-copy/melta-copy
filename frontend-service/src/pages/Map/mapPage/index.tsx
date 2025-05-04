@@ -6,33 +6,29 @@ import * as Cesium from 'cesium';
 import { ToggleButton, ToggleButtonGroup } from '@mui/material';
 import { Circle, LinearScale } from '@mui/icons-material';
 import i18next from 'i18next';
-import {
-    IEntity,
-    IMongoEntityTemplatePopulated,
-    IMongoEntityTemplateWithConstraintsPopulated,
-    IEntityTemplateWithConstraintsMap,
-} from '@microservices/shared-interfaces';
-import MapFilters from './MapFilters';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { MeltaTooltip } from '../../../common/MeltaTooltip';
+import MapFilters from './MapFilters';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IEntity } from '../../../interfaces/entities';
 import { getEntitiesByLocation } from '../../../services/entitiesService';
 import { locationToWGS84String, jerusalemCoordinates, stringToCoordinates, LatLng } from '../../../utils/map';
+import { useDarkModeStore } from '../../../stores/darkMode';
 import { environment } from '../../../globals';
 import { useEntityWithLocationFields } from '../../../utils/hooks/useLocation';
 import MapPageEntityDialog from './EntityMapDialog';
 import { MeltaCoordinate, MeltaPolygon } from '../LocationPreview';
 import { BaseLayers } from '../BaseLayers';
-import { convertECEFToWGS84, convertWGS94ToECEF } from '../../../utils/map/convert';
 import { BackendConfigState } from '../../../services/backendConfigService';
-import { useDarkModeStore } from '../../../stores/darkMode';
+import { convertECEFToWGS84, convertWGS94ToECEF } from '../../../utils/map/convert';
 
 const { maxRadius } = environment.map;
 
 const MapPage = () => {
     const queryClient = useQueryClient();
     const config = queryClient.getQueryData<BackendConfigState>('getBackendConfig');
-    const entityTemplateMap = queryClient.getQueryData<IEntityTemplateWithConstraintsMap>(['getEntityTemplates']);
+    const entityTemplateMap = queryClient.getQueryData<IEntityTemplateMap>(['getEntityTemplates']);
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
     const viewerRef = useRef<any>(null);
@@ -46,7 +42,7 @@ const MapPage = () => {
     });
     const [lineData, setLineData] = useState<Cartesian3[]>([]);
 
-    const [selectedTemplates, setSelectedTemplates] = useState<IMongoEntityTemplateWithConstraintsPopulated[]>([]);
+    const [selectedTemplates, setSelectedTemplates] = useState<IMongoEntityTemplatePopulated[]>([]);
 
     const [searchedEntity, setSearchedEntity] = useState<IEntity | undefined>(undefined);
     const [searchedEntityTemplate, setSearchedEntityTemplate] = useState<IMongoEntityTemplatePopulated | undefined>(undefined);

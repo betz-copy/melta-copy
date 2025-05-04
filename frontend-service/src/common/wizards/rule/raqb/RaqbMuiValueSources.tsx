@@ -24,11 +24,8 @@ export default ({ valueSources, valueSrc, title, setValueSrc }: ValueSourcesProp
     };
 
     const toggleOpenClose = (event) => {
-        if (anchorEl) {
-            handleClose();
-        } else {
-            handleOpen(event);
-        }
+        // eslint-disable-next-line no-unused-expressions
+        anchorEl ? handleClose() : handleOpen(event);
     };
 
     const handleChange = (_e, srcKey) => {

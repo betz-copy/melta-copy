@@ -16,10 +16,12 @@ import fileDownload from 'js-file-download';
 import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
-import { IEntity, IMongoEntityTemplateWithConstraintsPopulated, PermissionScope } from '@microservices/shared-interfaces';
 import { useLocation } from 'wouter';
 import { useMatomo } from '@datapunt/matomo-tracker-react';
 import { environment } from '../../globals';
+import { IEntity } from '../../interfaces/entities';
+import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { PermissionScope } from '../../interfaces/permissions';
 import { exportEntitiesRequest } from '../../services/entitiesService';
 import { useDraftIdStore, useDraftsStore } from '../../stores/drafts';
 import { useUserStore } from '../../stores/user';
@@ -49,7 +51,7 @@ export type TemplateTableRef = EntitiesTableOfTemplateRef<IEntity>;
 const TemplateTable = forwardRef<
     EntitiesTableOfTemplateRef<IEntity>,
     {
-        template: IMongoEntityTemplateWithConstraintsPopulated;
+        template: IMongoEntityTemplatePopulated;
         quickFilterText: string;
         page: string;
         setUpdatedEntities?: React.Dispatch<React.SetStateAction<IEntity[]>>;

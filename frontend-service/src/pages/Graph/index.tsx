@@ -11,17 +11,12 @@ import ForceGraph3D, { ForceGraphMethods as ForceGraphMethods3D, ForceGraphProps
 import { BsFillPlusCircleFill } from 'react-icons/bs';
 import { useQuery, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import {
-    IEntityExpanded,
-    IGraphFilterBodyBatch,
-    IEntityTemplateMap,
-    IMongoEntityTemplatePopulated,
-    IRelationshipTemplateMap,
-    ICategoryMap,
-    IMongoCategory,
-} from '@microservices/shared-interfaces';
 import { useParams } from 'wouter';
 import { environment } from '../../globals';
+import { ICategoryMap, IMongoCategory } from '../../interfaces/categories';
+import { IEntityExpanded, IGraphFilterBodyBatch } from '../../interfaces/entities';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
 import { getExpandedEntityByIdRequest } from '../../services/entitiesService';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { expandedEntityToGraphData, fixHighlighted, getFixedGraphLinks, getGraphDataWithNodeSizes, updateNodeLabelIcons } from '../../utils/graph';

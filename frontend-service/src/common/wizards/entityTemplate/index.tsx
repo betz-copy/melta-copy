@@ -1,30 +1,26 @@
 /* eslint-disable @typescript-eslint/no-shadow */
 /* eslint-disable react/no-unstable-nested-components */
 import { AxiosError } from 'axios';
-import {
-    IConstraint,
-    IUniqueConstraintOfTemplate,
-    IEntityTemplateMap,
-    IEntityTemplatePopulated,
-    IRelationshipTemplateMap,
-} from '@microservices/shared-interfaces';
-import { StepType, Wizard, WizardBaseType } from '../index';
-import { ChooseCategory, chooseCategorySchema } from './ChooseCategory';
-import { CreateTemplateName, useCreateOrEditTemplateNameSchema } from './CreateTemplateName';
-import { AddFields, addFieldsSchema } from './AddFields';
-import { createEntityTemplateRequest, formToJSONSchema, updateEntityTemplateRequest } from '../../../services/templates/enitityTemplatesService';
-import { ChooseIcon } from './ChooseIcon';
-import fileDetails from '../../../interfaces/fileDetails';
-import { ErrorToast } from '../../ErrorToast';
-import { environment } from '../../../globals';
 import i18next from 'i18next';
 import React from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
+import { environment } from '../../../globals';
+import { IConstraint, IUniqueConstraintOfTemplate } from '../../../interfaces/entities';
+import { IEntityTemplateMap, IEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import fileDetails from '../../../interfaces/fileDetails';
+import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
+import { createEntityTemplateRequest, formToJSONSchema, updateEntityTemplateRequest } from '../../../services/templates/enitityTemplatesService';
 import { getAllRelationshipTemplatesRequest } from '../../../services/templates/relationshipTemplatesService';
 import { useUserStore } from '../../../stores/user';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { mapTemplates } from '../../../utils/templates';
+import { ErrorToast } from '../../ErrorToast';
+import { StepType, Wizard, WizardBaseType } from '../index';
+import { AddFields, addFieldsSchema } from './AddFields';
+import { ChooseCategory, chooseCategorySchema } from './ChooseCategory';
+import { ChooseIcon } from './ChooseIcon';
+import { CreateTemplateName, useCreateOrEditTemplateNameSchema } from './CreateTemplateName';
 import { UploadExportFormats } from './UploadExportFormats';
 import { updateUserPermissionForEntityTemplate } from '../../../utils/permissions/templatePermissions';
 
@@ -86,7 +82,7 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
         name: '',
         displayName: '',
         icon: undefined,
-        category: { displayName: '', name: '', _id: '', color: '', iconFileId: '', createdAt: new Date(), updatedAt: new Date() },
+        category: { displayName: '', name: '', _id: '', color: '' },
         disabled: false,
         properties: [],
         archiveProperties: [],
@@ -94,9 +90,8 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
         propertiesTypeOrder: ['properties', 'attachmentProperties'],
         uniqueConstraints: [],
         documentTemplatesIds: [],
-        _id: '',
         mapSearchProperties: [],
-    } as EntityTemplateWizardValues,
+    },
     isEditMode = false,
 }) => {
     const queryClient = useQueryClient();
@@ -127,19 +122,14 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
                 try {
                     const relationshipTemplates = await getAllRelationshipTemplatesRequest();
                     queryClient.setQueryData<IRelationshipTemplateMap>('getRelationshipTemplates', mapTemplates(relationshipTemplates));
-                } catch {
+                } catch (error) {
                     toast.error(i18next.t('wizard.failedToUpdateSystemData'));
                 }
                 const updatedUserPermissions = updateUserPermissionForEntityTemplate(data, currentUser, currentWorkspace._id);
                 setUser(updatedUserPermissions);
                 handleClose();
             },
-            onError: (
-                error: AxiosError<{
-                    metadata: { errorCode: string; type?: string; property?: string; relatedTemplateName?: string; constraint?: IConstraint };
-                }>,
-                entityTemplateValues,
-            ) => {
+            onError: (error: AxiosError, entityTemplateValues) => {
                 const errorMetadata = error.response?.data?.metadata;
 
                 if (isEditMode && errorMetadata?.errorCode === errorCodes.failedToDeleteField) {
@@ -155,11 +145,11 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
                         charts: `${i18next.t('wizard.entityTemplate.failedToDeleteFieldThatUsedInCharts', { property })}`,
                     };
 
-                    toast.error(errorMessages[type ?? '']);
+                    toast.error(errorMessages[type]);
                     return;
                 }
                 if (isEditMode && errorMetadata?.errorCode === errorCodes.failedToCreateConstraints) {
-                    const { constraint }: any = errorMetadata; // TODO: yona - fix
+                    const { constraint }: { constraint: IConstraint } = errorMetadata;
 
                     const newEntityTemplate = formToJSONSchema(entityTemplateValues, false);
 
@@ -222,7 +212,7 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
     ];
 
     return (
-        <Wizard<EntityTemplateWizardValues>
+        <Wizard
             open={open}
             handleClose={handleClose}
             initialValues={initialValues}

@@ -9,8 +9,8 @@ import mapValues from 'lodash.mapvalues';
 import pickBy from 'lodash.pickby';
 import validator from '@rjsf/validator-ajv8';
 import { ErrorSchema, UiSchema } from '@rjsf/utils';
-import { IMongoEntityTemplatePopulated, IKartoffelUser } from '@microservices/shared-interfaces';
 import { cloneDeep } from 'lodash';
+import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { RjfsDateWidget, RjfsDateTimeWidget } from './RjfsDatesWidgets';
 import RjfsSelectWidget from './RjfsSelectWidget';
 import RjsfTextWidget from './RjsfStringWidget';
@@ -20,6 +20,7 @@ import RjfsTemplateReferenceWidget from './RjfsTemplateReferenceWidget';
 import RjsfLocationWidget, { validateLocation } from './RjsfLocationWidget';
 import RjfsUserWidget from './RjfsUserWidget';
 import RjfsUserArrayWidget from './RjfsUserArrayWidget';
+import { IKartoffelUser } from '../../../interfaces/users';
 import RjfsSignatureWidget from './RjfsSignatureWidgets';
 
 const ajvErrorsToFormikErrors = (schema: IMongoEntityTemplatePopulated['properties'], ajvErrors: ErrorObject[]): FormikErrors<any> => {
@@ -102,13 +103,13 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
     return ajvErrorsToFormikErrors(schema, ajvErrors);
 };
 
-const formikErrorsToRjsfExtraErrors = (formikErrors: Record<string, string>): ErrorSchema<object> => {
+const formikErrorsToRjsfExtraErrors = (formikErrors: Record<string, string>): ErrorSchema<{}> => {
     // assuming no complex fields (nested/array). need recursion for nested fields
 
     return mapValues(formikErrors, (errorMessage) => ({ __errors: [errorMessage] }));
 };
 
-const mergeErrorSchemas = (errors1: ErrorSchema<object>, errors2: ErrorSchema<object>) => {
+const mergeErrorSchemas = (errors1: ErrorSchema<{}>, errors2: ErrorSchema<{}>) => {
     const merged = { ...errors1 };
     // eslint-disable-next-line no-restricted-syntax
     for (const key in errors2) {
@@ -159,11 +160,11 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
     }, [values.template]);
 
     const rjsfExtraErrors = formikErrorsToRjsfExtraErrors(errors as Record<string, string>);
-    const ajvExtraErrorsOnlyTouched: ErrorSchema<object> = pickBy(rjsfExtraErrors, (_value, key) => touched[key]);
+    const ajvExtraErrorsOnlyTouched: ErrorSchema<{}> = pickBy(rjsfExtraErrors, (_value, key) => touched[key]);
     const rjsfExtraUniqueErrors = formikErrorsToRjsfExtraErrors(uniqueErrors as Record<string, string>);
 
-    const notTouchedUnique: ErrorSchema<object> = pickBy(rjsfExtraUniqueErrors, (_value, key) => !touched[key]);
-    const mergedErrors: ErrorSchema<object> = mergeErrorSchemas(ajvExtraErrorsOnlyTouched, notTouchedUnique);
+    const notTouchedUnique: ErrorSchema<{}> = pickBy(rjsfExtraUniqueErrors, (_value, key) => !touched[key]);
+    const mergedErrors: ErrorSchema<{}> = mergeErrorSchemas(ajvExtraErrorsOnlyTouched, notTouchedUnique);
 
     return (
         <JSONSchemaForm

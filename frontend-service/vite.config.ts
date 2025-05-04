@@ -1,6 +1,5 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import commonjs from 'vite-plugin-commonjs';
 import cesium from 'vite-plugin-cesium';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
 import { environment } from './src/globals';
@@ -19,16 +18,12 @@ export default defineConfig({
     define: {
         CESIUM_BASE_URL: JSON.stringify(`/${cesiumBaseUrl}`),
     },
-    plugins: [react(), commonjs(), cesium(), viteStaticCopy({ targets: cesiumCopyTargets })],
+    plugins: [react(), cesium(), viteStaticCopy({ targets: cesiumCopyTargets })],
     server: {
         port: 3000,
         host: true,
         hmr: {
             port: 3001,
         },
-    },
-
-    optimizeDeps: {
-        include: ['@microservices/shared-interfaces'],
     },
 });

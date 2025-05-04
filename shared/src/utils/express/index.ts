@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unsafe-function-type */
 import { Request, Response, NextFunction } from 'express';
-import { FunctionKey } from '@microservices/shared-interfaces';
 import DefaultController from './controller';
 import config from '../../config';
 import { BadRequestError } from './error';
+import { FunctionKey } from '../../types';
 
 export type MiddlewareFunction = (req: Request, res: Response, next?: NextFunction) => Promise<void>;
 

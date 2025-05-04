@@ -5,9 +5,9 @@ import { TextField, Box, Grid, Card, CardContent, Switch, FormControlLabel, Icon
 import { Draggable } from 'react-beautiful-dnd';
 import i18next from 'i18next';
 import isEqual from 'lodash.isequal';
-import { PermissionScope } from '@microservices/shared-interfaces';
 import { CommonFormInputProperties } from './commonInterfaces';
 import { MeltaTooltip } from '../../MeltaTooltip';
+import { PermissionScope } from '../../../interfaces/permissions';
 import { useUserStore } from '../../../stores/user';
 
 interface AttachmentEditCardProps {

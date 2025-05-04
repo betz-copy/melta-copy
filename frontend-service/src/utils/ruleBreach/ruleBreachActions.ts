@@ -1,22 +1,18 @@
 import isEqual from 'lodash.isequal';
+import { environment } from '../../globals';
+import { IEntity } from '../../interfaces/entities';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IRelationshipPopulated } from '../../interfaces/relationships';
 import {
-    IRelationshipPopulated,
-    IEntity,
-    IEntityTemplateMap,
-    IRelationshipTemplateMap,
-    ICausesOfInstancePopulated,
-    IEntityForBrokenRules,
-    IRelationshipForBrokenRules,
     ActionTypes,
     IActionPopulated,
     ICreateEntityMetadataPopulated,
     ICreateRelationshipMetadataPopulated,
     IDuplicateEntityMetadataPopulated,
     IUpdateEntityMetadataPopulated,
-    IMongoEntityTemplateWithConstraintsPopulated,
-    IMongoRelationshipTemplatePopulated,
-} from '@microservices/shared-interfaces';
-import { environment } from '../../globals';
+} from '../../interfaces/ruleBreaches/actionMetadata';
+import { ICausesOfInstancePopulated, IEntityForBrokenRules, IRelationshipForBrokenRules } from '../../interfaces/ruleBreaches/ruleBreach';
+import { IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
 
 export const getActionsByFailureOnEntity = (
     failure: { entity: IEntityForBrokenRules; causes: ICausesOfInstancePopulated[] },
@@ -138,21 +134,18 @@ export const getEntityForEntityInfo = (entity: IEntity | string | null, actions:
             },
         };
     }
-    const updatedProperties = actions.reduce(
-        (previousUpdatedProperties, currentAction) => {
-            if (
-                currentAction.actionType === ActionTypes.UpdateEntity &&
-                (currentAction.actionMetadata as IUpdateEntityMetadataPopulated).entity?.properties._id === (entity as IEntity).properties._id
-            ) {
-                return {
-                    ...previousUpdatedProperties,
-                    ...(currentAction.actionMetadata as IUpdateEntityMetadataPopulated).updatedFields,
-                };
-            }
-            return previousUpdatedProperties;
-        },
-        (entity as IEntity).properties,
-    );
+    const updatedProperties = actions.reduce((previousUpdatedProperties, currentAction) => {
+        if (
+            currentAction.actionType === ActionTypes.UpdateEntity &&
+            (currentAction.actionMetadata as IUpdateEntityMetadataPopulated).entity?.properties._id === (entity as IEntity).properties._id
+        ) {
+            return {
+                ...previousUpdatedProperties,
+                ...(currentAction.actionMetadata as IUpdateEntityMetadataPopulated).updatedFields,
+            };
+        }
+        return previousUpdatedProperties;
+    }, (entity as IEntity).properties);
 
     return {
         templateId: (entity as IEntity).templateId,
@@ -165,7 +158,7 @@ export const getEntityForRelationshipInfo = (
     actions: IActionPopulated[],
     entityTemplates: IEntityTemplateMap,
     entityTemplateId: string = '',
-): IMongoEntityTemplateWithConstraintsPopulated => {
+): IMongoEntityTemplatePopulated => {
     if (!entity || (typeof entity === 'string' && !entity.startsWith(environment.brokenRulesFakeEntityIdPrefix))) {
         const entityTemplate = entityTemplates.get(entityTemplateId);
 
@@ -179,7 +172,6 @@ export const getEntityForRelationshipInfo = (
                     required: [],
                     type: 'object',
                 },
-                uniqueConstraints: [],
             };
         }
         return {
@@ -190,15 +182,7 @@ export const getEntityForRelationshipInfo = (
                 required: [],
                 type: 'object',
             },
-            category: {
-                _id: 'empty',
-                color: 'yellow',
-                displayName: 'empty',
-                name: 'empty',
-                iconFileId: null,
-                createdAt: new Date(),
-                updatedAt: new Date(),
-            },
+            category: { _id: 'empty', color: 'yellow', displayName: 'empty', name: 'empty' },
             disabled: false,
             displayName: '---',
             name: '---',
@@ -206,9 +190,6 @@ export const getEntityForRelationshipInfo = (
             propertiesPreview: [],
             propertiesTypeOrder: [],
             uniqueConstraints: [],
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            iconFileId: null,
         };
     }
     if (typeof entity === 'string' && entity.startsWith(environment.brokenRulesFakeEntityIdPrefix)) {
@@ -253,9 +234,6 @@ export const getEntityForRelationshipInfo = (
             propertiesPreview: [],
             propertiesTypeOrder: [],
             uniqueConstraints: [],
-            createdAt: currEntityTemplate.createdAt,
-            updatedAt: currEntityTemplate.updatedAt,
-            iconFileId: currEntityTemplate.iconFileId,
         };
     }
 
@@ -278,9 +256,6 @@ export const getEntityForRelationshipInfo = (
         propertiesPreview: [],
         propertiesTypeOrder: [],
         uniqueConstraints: [],
-        createdAt: currEntityTemplate.createdAt,
-        updatedAt: currEntityTemplate.updatedAt,
-        iconFileId: currEntityTemplate.iconFileId,
     };
 };
 
@@ -289,7 +264,7 @@ export const getRelationshipForRelationshipInfo = (
     actions: IActionPopulated[],
     entityTemplates: IEntityTemplateMap,
     relationshipTemplates: IRelationshipTemplateMap,
-): IMongoRelationshipTemplatePopulated | null => {
+) => {
     let relationshipTemplateId: string | null = null;
 
     if (!relationship) return null;
@@ -320,7 +295,6 @@ export const getRelationshipForRelationshipInfo = (
             displayName: relationshipTemplate.displayName,
             createdAt: relationshipTemplate.createdAt,
             updatedAt: relationshipTemplate.updatedAt,
-            isProperty: relationshipTemplate.isProperty,
         };
     }
 
@@ -342,8 +316,7 @@ export const getRelationshipForRelationshipInfo = (
         ),
         name: relationshipTemplate?.name || '',
         displayName: relationshipTemplate?.displayName || '',
-        createdAt: relationshipTemplate?.createdAt || new Date(),
-        updatedAt: relationshipTemplate?.updatedAt || new Date(),
-        isProperty: relationshipTemplate?.isProperty || false,
+        createdAt: relationshipTemplate?.createdAt || '',
+        updatedAt: relationshipTemplate?.updatedAt || '',
     };
 };

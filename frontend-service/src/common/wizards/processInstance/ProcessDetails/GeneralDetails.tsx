@@ -3,10 +3,10 @@ import { FormikProvider } from 'formik';
 import pickBy from 'lodash.pickby';
 import React, { useEffect, useState } from 'react';
 import { useQueryClient } from 'react-query';
-import { IMongoProcessTemplateReviewerPopulated, IProcessTemplateMap } from '@microservices/shared-interfaces';
 import i18next from 'i18next';
 import Groups2Icon from '@mui/icons-material/Groups2';
 import { IDetailsStepProp } from '.';
+import { IMongoProcessTemplatePopulated, IProcessTemplateMap } from '../../../../interfaces/processes/processTemplate';
 import { setInitialStepsObject } from '../../../../utils/processWizard/steps';
 import { initDetailsValues } from './detailsFormik';
 import { GeneralDetailsFields } from './GeneralDetailsFields';
@@ -23,7 +23,7 @@ const GeneralDetails: React.FC<IDetailsStepProp> = ({
     const { values, touched, errors, setFieldValue, setFieldTouched, handleBlur, resetForm } = detailsFormikData;
     const queryClient = useQueryClient();
     const processTemplatesMap = queryClient.getQueryData<IProcessTemplateMap>('getProcessTemplates')!;
-    const [previousTemplate, setPreviousTemplate] = useState<IMongoProcessTemplateReviewerPopulated>();
+    const [previousTemplate, setPreviousTemplate] = useState<IMongoProcessTemplatePopulated>();
 
     const variant = processInstance ? 'standard' : 'outlined';
     const templateFileProperties = values.template

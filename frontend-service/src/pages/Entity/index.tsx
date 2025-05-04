@@ -6,19 +6,6 @@ import i18next from 'i18next';
 import React, { useEffect, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { useParams } from 'wouter';
-import {
-    IRelationship,
-    IEntity,
-    IEntityExpanded,
-    IMongoRelationshipTemplatePopulated,
-    IRelationshipTemplateMap,
-    ICategoryMap,
-    PermissionScope,
-    ISubCompactPermissions,
-    IEntityTemplateWithConstraintsMap,
-    IMongoEntityTemplatePopulated,
-    IMongoCategory,
-} from '@microservices/shared-interfaces';
 import { BlueTitle } from '../../common/BlueTitle';
 import { CustomIcon } from '../../common/CustomIcon';
 import CreateRelationshipDialog from '../../common/dialogs/createRelationshipDialog';
@@ -28,6 +15,13 @@ import { EntityLink } from '../../common/EntityLink';
 import { EntityTemplateTextComponent, RelationshipTitle } from '../../common/RelationshipTitle';
 import { TableButton } from '../../common/TableButton';
 import '../../css/pages.css';
+import { ICategoryMap } from '../../interfaces/categories';
+import { IEntity, IEntityExpanded } from '../../interfaces/entities';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { PermissionScope } from '../../interfaces/permissions';
+import { ISubCompactPermissions } from '../../interfaces/permissions/permissions';
+import { IRelationship } from '../../interfaces/relationships';
+import { IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
 import { getExpandedEntityByIdRequest } from '../../services/entitiesService';
 import { useUserStore } from '../../stores/user';
 import { checkUserTemplatePermission } from '../../utils/permissions/instancePermissions';
@@ -358,14 +352,14 @@ const Entity: React.FC = () => {
     const currentUser = useUserStore((state) => state.user);
 
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
-    const entityTemplates = queryClient.getQueryData<IEntityTemplateWithConstraintsMap>('getEntityTemplates')!;
+    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const relationshipTemplates = queryClient.getQueryData<IRelationshipTemplateMap>('getRelationshipTemplates')!;
 
     const allowedEntityTemplates: IMongoEntityTemplatePopulated[] = getAllAllowedEntities(Array.from(entityTemplates.values()), currentUser);
     const allowedEntityTemplatesIds: string[] = allowedEntityTemplates.map((entity) => entity._id);
     const allowedRelationships = getAllAllowedRelationships(Array.from(relationshipTemplates.values()), allowedEntityTemplatesIds);
 
-    const templateIds: string[] = Array.from(entityTemplates.keys());
+    const templateIds = Array.from(entityTemplates.keys());
 
     const expanded = entityId ? { [entityId]: 1 } : {};
     const { data: expandedEntity } = useQuery(['getExpandedEntity', entityId, expanded, { templateIds }], () =>
@@ -426,7 +420,7 @@ const Entity: React.FC = () => {
         }
     });
 
-    const categoriesWithConnectionsTemplates = Array.from(categories.values(), (category: IMongoCategory) => {
+    const categoriesWithConnectionsTemplates = Array.from(categories.values(), (category) => {
         return {
             category,
             connectionsTemplates: connectionsTemplates
@@ -464,8 +458,8 @@ const Entity: React.FC = () => {
                         </Grid>
                         <Grid item>
                             <TabContext value={value}>
-                                <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                                    <TabList style={{ height: '60px' }} onChange={(_event, newValue) => setValue(newValue)}>
+                                <Box sx={{ borderBottom: 1, borderColor: 'divider', display: 'flex' }}>
+                                    <TabList style={{ height: '60px' }} onChange={(_event, newValue) => setValue(newValue)} variant="scrollable">
                                         {categoriesWithConnectionsTemplates.map(({ category: { _id, displayName, iconFileId } }, index) => (
                                             <Tab
                                                 style={{

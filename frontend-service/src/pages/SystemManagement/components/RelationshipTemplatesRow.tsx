@@ -5,18 +5,6 @@ import i18next from 'i18next';
 import React, { useMemo, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import {
-    IMongoEntityTemplatePopulated,
-    IMongoRelationshipTemplate,
-    IMongoRelationshipTemplatePopulated,
-    IRelationshipTemplateMap,
-    ICategoryMap,
-    IEntityTemplateWithConstraintsMap,
-    IMongoEntityTemplateWithConstraintsPopulated,
-    IEntityTemplateMap,
-    IMongoCategory,
-    PermissionScope,
-} from '@microservices/shared-interfaces';
 import { CustomIcon } from '../../../common/CustomIcon';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import { ErrorToast } from '../../../common/ErrorToast';
@@ -25,6 +13,9 @@ import SearchInput from '../../../common/inputs/SearchInput';
 import { RelationshipTitle } from '../../../common/RelationshipTitle';
 import TemplatesSelectCheckbox from '../../../common/templatesSelectCheckbox';
 import { RelationshipTemplateWizard } from '../../../common/wizards/relationshipTemplate';
+import { ICategoryMap } from '../../../interfaces/categories';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IMongoRelationshipTemplate, IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
 import {
     convertToRelationshipFieldRequest,
     deleteRelationshipTemplateRequest,
@@ -44,6 +35,7 @@ import { ConvertToRelationship } from '../../../common/wizards/relationshipTempl
 import { IRelationshipReference } from '../../../common/wizards/entityTemplate/commonInterfaces';
 import { checkUserTemplatePermission } from '../../../utils/permissions/instancePermissions';
 import { useUserStore } from '../../../stores/user';
+import { PermissionScope } from '../../../interfaces/permissions';
 import { getAllAllowedEntities, getAllAllowedRelationships } from '../../../utils/permissions/templatePermissions';
 
 const { infiniteScrollPageCount } = environment.processInstances;
@@ -180,13 +172,12 @@ const RelationshipTemplateCard: React.FC<RelationshipTemplateCardProps> = ({
 
 const defaultRelationshipTemplate: IMongoRelationshipTemplate = {
     _id: '',
-    createdAt: new Date(),
+    createdAt: '',
     destinationEntityId: '',
     displayName: '',
-    isProperty: false,
     name: '',
     sourceEntityId: '',
-    updatedAt: new Date(),
+    updatedAt: '',
 };
 
 const RelationshipTemplatesRow: React.FC = () => {
@@ -197,19 +188,17 @@ const RelationshipTemplatesRow: React.FC = () => {
     const queryClient = useQueryClient();
 
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
-    const entityTemplates = queryClient.getQueryData<IEntityTemplateWithConstraintsMap>('getEntityTemplates')!;
+    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const relationshipTemplates = queryClient.getQueryData<IRelationshipTemplateMap>('getRelationshipTemplates')!;
 
-    const categoriesArray: IMongoCategory[] = Array.from(categories.values());
+    const categoriesArray = Array.from(categories.values());
     const entityTemplatesArray = Array.from(entityTemplates.values());
     const allowedEntityTemplates = getAllAllowedEntities(entityTemplatesArray, currentUser);
     const allowedEntityTemplatesIds = allowedEntityTemplates.map((entity) => entity._id);
     const allowedRelationships = getAllAllowedRelationships(Array.from(relationshipTemplates.values()), allowedEntityTemplatesIds);
 
-    const [sourceEntityTemplatesToShow, setSourceEntityTemplatesToShow] =
-        useState<IMongoEntityTemplateWithConstraintsPopulated[]>(allowedEntityTemplates);
-    const [destinationEntityTemplatesToShow, setDestinationEntityTemplatesToShow] =
-        useState<IMongoEntityTemplateWithConstraintsPopulated[]>(allowedEntityTemplates);
+    const [sourceEntityTemplatesToShow, setSourceEntityTemplatesToShow] = useState<IMongoEntityTemplatePopulated[]>(allowedEntityTemplates);
+    const [destinationEntityTemplatesToShow, setDestinationEntityTemplatesToShow] = useState<IMongoEntityTemplatePopulated[]>(allowedEntityTemplates);
 
     const [searchText, setSearchText] = useState('');
 
@@ -259,7 +248,7 @@ const RelationshipTemplatesRow: React.FC = () => {
             queryClient.invalidateQueries(['searchRelationshipTemplates', searchText]);
             toast.success(i18next.t('wizard.relationshipTemplate.deletedSuccessfully'));
         },
-        onError: (error: AxiosError<{ metadata: { errorCode: string } }>) => {
+        onError: (error: AxiosError) => {
             toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.relationshipTemplate.failedToDelete')} />);
         },
     });
@@ -294,7 +283,7 @@ const RelationshipTemplatesRow: React.FC = () => {
 
                 toast.success(i18next.t('wizard.relationshipTemplate.convertToRelationshipFieldSuccessfully'));
             },
-            onError: (error: AxiosError<{ metadata: { errorCode: string } }>) => {
+            onError: (error: AxiosError) => {
                 toast.error(
                     <ErrorToast
                         axiosError={error}
@@ -528,7 +517,7 @@ const RelationshipTemplatesRow: React.FC = () => {
                 handleClose={() => setConvertToRelationshipFieldDialogState({ isDialogOpen: false, relationshipTemplate: null })}
                 onYes={({ fieldName, displayFieldName, relationshipReference }) =>
                     convertRelationshipToRelationShipFieldRequest({
-                        id: convertToRelationshipFieldDialogState.relationshipTemplate!._id,
+                        id: convertToRelationshipFieldDialogState.relationshipTemplate?._id!,
                         fieldName,
                         displayFieldName,
                         relationshipReference,

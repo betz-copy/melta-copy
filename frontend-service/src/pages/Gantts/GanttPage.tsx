@@ -6,9 +6,9 @@ import React, { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { useLocation, useParams } from 'wouter';
-import { IGantt } from '@microservices/shared-interfaces';
 import { ErrorToast } from '../../common/ErrorToast';
 import { environment } from '../../globals';
+import { IBasicGantt } from '../../interfaces/gantts';
 import { deleteGantt, getGanttById, updateGantt } from '../../services/ganttsService';
 import { formikInitialGanttData, ganttValidationSchema } from '../../utils/gantts';
 import { useLocalStorage } from '../../utils/hooks/useLocalStorage';
@@ -39,7 +39,7 @@ const GanttPage: React.FC = () => {
                 setEdit(false);
                 toast.success(i18next.t('gantts.actions.updatedSuccessfully'));
             },
-            onError: (error: AxiosError<{ metadata: { errorCode: string } }>) => {
+            onError: (error: AxiosError) => {
                 toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('gantts.actions.failedToUpdate')} />);
             },
         },
@@ -49,7 +49,7 @@ const GanttPage: React.FC = () => {
             navigate('/gantts');
             toast.success(i18next.t('gantts.actions.deletedSuccessfully'));
         },
-        onError: (error: AxiosError<{ metadata: { errorCode: string } }>) => {
+        onError: (error: AxiosError) => {
             toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('gantts.actions.failedToDelete')} />);
         },
     });
@@ -57,7 +57,7 @@ const GanttPage: React.FC = () => {
     if (!gantt) return <CircularProgress />;
 
     return (
-        <Formik<IGantt>
+        <Formik<IBasicGantt>
             initialValues={formikInitialGanttData(gantt)}
             onSubmit={async (updatedGantt, formikHelpers) => {
                 updateGanttMutateAsync([gantt._id, updatedGantt]);

@@ -3,18 +3,18 @@ import { Box, Button, Grid } from '@mui/material';
 import { Add as AddIcon } from '@mui/icons-material';
 import i18next from 'i18next';
 import { FieldArray, FormikProps } from 'formik';
-import { IGantt, IGanttItem } from '@microservices/shared-interfaces';
 import { Swap } from '../../../common/Swap';
 import { CompactDrawer } from '../../../common/CompactDrawer';
+import { IBasicGantt, IGanttItem } from '../../../interfaces/gantts';
 import { GanttItemsDisplay } from './GanttItemsDisplay';
 import { MeltaTooltip } from '../../../common/MeltaTooltip';
 import { useDarkModeStore } from '../../../stores/darkMode';
 
 interface IGanttSideBarProps {
-    gantt: IGantt;
+    gantt: IBasicGantt;
     open: boolean;
     toggle: () => void;
-    formik: FormikProps<IGantt>;
+    formik: FormikProps<IBasicGantt>;
     edit: boolean;
     isLoading: boolean;
 }

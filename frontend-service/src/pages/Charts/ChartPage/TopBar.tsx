@@ -7,7 +7,7 @@ import { BlueTitle } from '../../../common/BlueTitle';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
 import { TopBarGrid } from '../../../common/TopBar';
-import { IChart } from '../../../interfaces/charts';
+import { IBasicChart } from '../../../interfaces/charts';
 import { IGraphFilterBodyBatch } from '../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { useUserStore } from '../../../stores/user';
@@ -21,7 +21,7 @@ interface IChartTopBar {
     onDelete: () => void;
     isLoading: boolean;
     setReadOnly: React.Dispatch<React.SetStateAction<boolean>>;
-    formik: FormikProps<IChart>;
+    formik: FormikProps<IBasicChart>;
     template: IMongoEntityTemplatePopulated;
     filterRecord: IGraphFilterBodyBatch;
     setFilterRecord: React.Dispatch<React.SetStateAction<IGraphFilterBodyBatch>>;

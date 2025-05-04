@@ -1,23 +1,20 @@
 import { Box, Grid, Step, StepConnector, stepConnectorClasses, Stepper, styled } from '@mui/material';
 import React from 'react';
 import i18next from 'i18next';
-import {
-    Status,
-    IMongoProcessInstanceReviewerPopulated,
-    IMongoProcessTemplateReviewerPopulated,
-    IMongoStepInstancePopulated,
-    IMongoStepTemplatePopulated,
-} from '@microservices/shared-interfaces';
 import ProcessStatus, { ReviewedAtProcessStatus, StatusDisplay } from './ProcessStatus';
+import { IMongoProcessInstancePopulated, Status } from '../../../../interfaces/processes/processInstance';
+import { IMongoProcessTemplatePopulated } from '../../../../interfaces/processes/processTemplate';
 import { getStepTemplateByStepInstance } from '../../../../utils/processWizard/steps';
 import { StepIcon } from '../../../../pages/ProcessInstances/ProcessCard';
+import { IMongoStepInstancePopulated } from '../../../../interfaces/processes/stepInstance';
+import { IMongoStepTemplatePopulated } from '../../../../interfaces/processes/stepTemplate';
 import { CommentsDetails } from '../ProcessSteps/processStep';
 import { MeltaTooltip } from '../../../MeltaTooltip';
 import { BlueTitle } from '../../../BlueTitle';
 
 export interface ProcessSummaryProp {
-    processInstance: IMongoProcessInstanceReviewerPopulated;
-    processTemplate: IMongoProcessTemplateReviewerPopulated;
+    processInstance: IMongoProcessInstancePopulated;
+    processTemplate: IMongoProcessTemplatePopulated;
     isPrinting: boolean;
     setActiveStep: (stepIndex: number) => void;
 }

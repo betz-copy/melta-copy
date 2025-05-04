@@ -3,15 +3,17 @@ import { Button, Grid } from '@mui/material';
 import { FieldArray, FormikProps } from 'formik';
 import { useQueryClient } from 'react-query';
 import i18next from 'i18next';
-import { IEntityTemplateMap, IRelationshipTemplateMap, IGantt, IGanttItem } from '@microservices/shared-interfaces';
+import { IBasicGantt, IGanttItem } from '../../../../interfaces/gantts';
+import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
 import { FormikAutoComplete } from '../../../../common/inputs/FormikAutoComplete';
+import { IRelationshipTemplateMap } from '../../../../interfaces/relationshipTemplates';
 import { ConnectionIcon } from '../ConnectionIcon.styled';
 import { RemoveFromArrayButton } from './RemoveFromArrayButton';
 import { getRelationshipString } from '../../../../utils/gantts';
 import { useDarkModeStore } from '../../../../stores/darkMode';
 
 interface IEditConnectedEntityTemplatesProps {
-    formik: FormikProps<IGantt>;
+    formik: FormikProps<IBasicGantt>;
     ganttItem: IGanttItem;
     itemKey: string;
     relevantRelationshipIds?: string[];

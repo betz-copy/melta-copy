@@ -9,24 +9,16 @@ import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
 import { useLocation } from 'wouter';
 import { StatusCodes } from 'http-status-codes';
-import {
-    IEntity,
-    IEntityExpanded,
-    IUniqueConstraint,
-    IRuleBreach,
-    IRuleBreachPopulated,
-    ActionTypes,
-    IAction,
-    IActionPopulated,
-    IBrokenRule,
-    IMongoEntityTemplateWithConstraintsPopulated,
-} from '@microservices/shared-interfaces';
 import { BlueTitle } from '../../../common/BlueTitle';
 import { EntityWizardValues } from '../../../common/dialogs/entity';
 import { InstanceFileInput } from '../../../common/inputs/InstanceFilesInput/InstanceFileInput';
 import { InstanceSingleFileInput } from '../../../common/inputs/InstanceFilesInput/InstanceSingleFileInput';
 import { ajvValidate, JSONSchemaFormik } from '../../../common/inputs/JSONSchemaFormik';
 import { environment } from '../../../globals';
+import { IEntity, IEntityExpanded, IUniqueConstraint } from '../../../interfaces/entities';
+import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { ActionTypes, IAction, IActionPopulated } from '../../../interfaces/ruleBreaches/actionMetadata';
+import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
 import { duplicateEntityRequest } from '../../../services/entitiesService';
 import { filterFieldsFromPropertiesSchema } from '../../../utils/pickFieldsPropertiesSchema';
 import ActionOnEntityWithRuleBreachDialog from './ActionOnEntityWithRuleBreachDialog';
@@ -34,14 +26,14 @@ import { DuplicateTopBar } from './DuplicateTopBar';
 
 const { errorCodes } = environment;
 
-const DuplicateEntity: React.FC = () => {
+const DuplicateEntity: React.FC<{}> = () => {
     const { state } = window.history;
 
     const {
         entityTemplate,
         expandedEntity: { entity },
     } = state as {
-        entityTemplate: IMongoEntityTemplateWithConstraintsPopulated;
+        entityTemplate: IMongoEntityTemplatePopulated;
         expandedEntity: IEntityExpanded;
     };
 
@@ -69,19 +61,7 @@ const DuplicateEntity: React.FC = () => {
                 navigate(`/entity/${data?.properties._id}`);
                 setExternalErrors({ files: false, unique: {}, action: '' });
             },
-            onError: (
-                err: AxiosError<{
-                    metadata: {
-                        errorCode: string;
-                        constraint: IUniqueConstraint;
-                        message: string;
-                        brokenRules: IRuleBreachPopulated['brokenRules'];
-                        rawBrokenRules: IBrokenRule[];
-                        actions: IActionPopulated[];
-                        rawActions: IAction[];
-                    };
-                }>,
-            ) => {
+            onError: (err: AxiosError) => {
                 if (err.response?.status === StatusCodes.REQUEST_TOO_LONG) setExternalErrors((prev) => ({ ...prev, files: true }));
                 const errorMetadata = err.response?.data?.metadata;
                 if (errorMetadata?.errorCode === errorCodes.failedConstraintsValidation) {
@@ -128,7 +108,7 @@ const DuplicateEntity: React.FC = () => {
     const templateFileKeys = Object.keys(templateFilesProperties);
     const requiredFilesNames = entityTemplate.properties.required.filter((name) => templateFileKeys.includes(name));
 
-    const { _id, createdAt: _createdAt, updatedAt: _updatedAt, disabled: _disabled, ...entityToDuplicateData } = entity.properties;
+    const { _id, createdAt, updatedAt, disabled, ...entityToDuplicateData } = entity.properties;
 
     const fieldProperties = pickBy(entityToDuplicateData, (_value, key) => !templateFileKeys.includes(key)) as IEntity['properties'];
     const fileIdsProperties = pickBy(entityToDuplicateData, (_value, key) => templateFileKeys.includes(key));

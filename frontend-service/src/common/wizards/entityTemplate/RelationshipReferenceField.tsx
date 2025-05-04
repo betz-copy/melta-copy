@@ -3,8 +3,8 @@ import React from 'react';
 import { FormikErrors, FormikTouched } from 'formik';
 import { useQueryClient } from 'react-query';
 import i18next from 'i18next';
-import { IMongoEntityTemplatePopulated, IEntityTemplateWithConstraintsMap } from '@microservices/shared-interfaces';
 import { ConvertToRelationshipFieldFormInputProperties, CommonFormInputProperties, IRelationshipReference } from './commonInterfaces';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 
 export interface FieldEditCardProps {
     value: CommonFormInputProperties | ConvertToRelationshipFieldFormInputProperties;
@@ -37,7 +37,7 @@ const RelationshipReferenceField: React.FC<FieldEditCardProps> = ({
     const touchedRelationshipReference = touched?.relationshipReference;
     const errorRelationshipReference = errors?.relationshipReference as FormikErrors<IRelationshipReference> | undefined;
 
-    const entityTemplates = queryClient.getQueryData<IEntityTemplateWithConstraintsMap>('getEntityTemplates')!;
+    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const selectedTemplate = entityTemplates.get(value.relationshipReference?.relatedTemplateId || '') ?? null;
 
     const fixedRelatedTemplateFieldOptions = Object.entries(selectedTemplate?.properties?.properties || {})

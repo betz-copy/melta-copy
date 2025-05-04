@@ -9,53 +9,52 @@ import { FormikProps } from 'formik';
 import i18next from 'i18next';
 import React from 'react';
 import {
-    IMongoStepInstancePopulated,
-    IMongoProcessInstanceReviewerPopulated,
-    ProcessStatus as ProcessStatusEnum,
+    IMongoProcessInstancePopulated,
+    Status,
+    StatusBackgroundColors,
     StatusColorsNames,
     StatusFontColors,
-    StatusBackgroundColors,
-} from '@microservices/shared-interfaces';
-
+} from '../../../../interfaces/processes/processInstance';
+import { IMongoStepInstancePopulated } from '../../../../interfaces/processes/stepInstance';
 import { useUserStore } from '../../../../stores/user';
 import { getLongDate } from '../../../../utils/date';
 import { BlueTitle } from '../../../BlueTitle';
 import { ProcessStepValues } from '../ProcessSteps/index';
 
 interface StatusDisplayProps {
-    status: ProcessStatusEnum;
+    status: Status;
     text: string;
     fontSize?: number;
     displayIcon?: boolean;
 }
 
-const getColor = (status: ProcessStatusEnum) => {
+const getColor = (status: Status) => {
     switch (status) {
-        case ProcessStatusEnum.Approved:
+        case Status.Approved:
             return StatusColorsNames.Approved;
-        case ProcessStatusEnum.Rejected:
+        case Status.Rejected:
             return StatusColorsNames.Rejected;
         default:
             return StatusColorsNames.Pending;
     }
 };
 
-export const getFontColor = (status: ProcessStatusEnum) => {
+export const getFontColor = (status: Status) => {
     switch (status) {
-        case ProcessStatusEnum.Approved:
+        case Status.Approved:
             return StatusFontColors.Approved;
-        case ProcessStatusEnum.Rejected:
+        case Status.Rejected:
             return StatusFontColors.Rejected;
         default:
             return StatusFontColors.Pending;
     }
 };
 
-const getBackgroundColor = (status: ProcessStatusEnum) => {
+const getBackgroundColor = (status: Status) => {
     switch (status) {
-        case ProcessStatusEnum.Approved:
+        case Status.Approved:
             return StatusBackgroundColors.Approved;
-        case ProcessStatusEnum.Rejected:
+        case Status.Rejected:
             return StatusBackgroundColors.Rejected;
         default:
             return StatusBackgroundColors.Pending;
@@ -63,7 +62,7 @@ const getBackgroundColor = (status: ProcessStatusEnum) => {
 };
 
 interface StatusButtonProps extends StatusDisplayProps {
-    currentStatus: ProcessStatusEnum;
+    currentStatus: Status;
     handleClick: () => void;
     Icon: React.ComponentType<SvgIconProps>;
     IconOutlined: React.ComponentType<SvgIconProps>;
@@ -109,10 +108,10 @@ export const StatusDisplay: React.FC<StatusDisplayProps> = ({ status, text, font
     );
 };
 
-export const ReviewedAtProcessStatus: React.FC<{
-    isPrinting?: boolean;
-    instance: IMongoProcessInstanceReviewerPopulated | IMongoStepInstancePopulated;
-}> = ({ isPrinting, instance }) => {
+export const ReviewedAtProcessStatus: React.FC<{ isPrinting?: boolean; instance: IMongoProcessInstancePopulated | IMongoStepInstancePopulated }> = ({
+    isPrinting,
+    instance,
+}) => {
     const currentUser = useUserStore((state) => state.user);
 
     if (!instance.reviewedAt) return null;
@@ -142,7 +141,7 @@ export const ReviewedAtProcessStatus: React.FC<{
 
 interface ProcessStatusProps {
     title?: string;
-    instance: IMongoProcessInstanceReviewerPopulated | IMongoStepInstancePopulated;
+    instance: IMongoProcessInstancePopulated | IMongoStepInstancePopulated;
     editStatus?: {
         setFieldValue: FormikProps<ProcessStepValues>['setFieldValue'];
         isEditMode: boolean;
@@ -152,8 +151,8 @@ interface ProcessStatusProps {
 }
 
 const ProcessStatus: React.FC<ProcessStatusProps> = ({ title, instance, editStatus, isPrinting }) => {
-    const handleSetStatus = (newStatus: ProcessStatusEnum) => {
-        const newStatusToSet = newStatus !== editStatus!.values.status ? newStatus : ProcessStatusEnum.Pending;
+    const handleSetStatus = (newStatus: Status) => {
+        const newStatusToSet = newStatus !== editStatus!.values.status ? newStatus : Status.Pending;
         editStatus!.setFieldValue('status', newStatusToSet);
     };
 
@@ -189,17 +188,17 @@ const ProcessStatus: React.FC<ProcessStatusProps> = ({ title, instance, editStat
                 {editStatus?.isEditMode ? (
                     <>
                         <StatusButton
-                            status={ProcessStatusEnum.Approved}
+                            status={Status.Approved}
                             currentStatus={editStatus.values.status}
-                            handleClick={() => handleSetStatus(ProcessStatusEnum.Approved)}
+                            handleClick={() => handleSetStatus(Status.Approved)}
                             Icon={CheckCircleIcon}
                             IconOutlined={CheckCircleOutlineIcon}
                             text={i18next.t('wizard.processInstance.summary.chooseProcessComplete')}
                         />
                         <StatusButton
-                            status={ProcessStatusEnum.Rejected}
+                            status={Status.Rejected}
                             currentStatus={editStatus.values.status}
-                            handleClick={() => handleSetStatus(ProcessStatusEnum.Rejected)}
+                            handleClick={() => handleSetStatus(Status.Rejected)}
                             Icon={CancelIcon}
                             IconOutlined={CancelOutlinedIcon}
                             text={i18next.t('wizard.processInstance.summary.choseProcessRejected')}
@@ -208,7 +207,7 @@ const ProcessStatus: React.FC<ProcessStatusProps> = ({ title, instance, editStat
                 ) : (
                     <StatusDisplay
                         text={i18next.t(`wizard.processInstance.summary.processStatuses.${instance.status}`)}
-                        status={instance.status as unknown as ProcessStatusEnum} // TODO: fix this
+                        status={instance.status}
                         fontSize={!editStatus ? 16 : undefined}
                     />
                 )}

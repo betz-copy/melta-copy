@@ -12,10 +12,10 @@ import {
 } from '@mui/icons-material';
 import i18next from 'i18next';
 import { FormikProps } from 'formik';
-import { PermissionScope, IGantt } from '@microservices/shared-interfaces';
 import { Swap } from '../../common/Swap';
 import { BlueTitle } from '../../common/BlueTitle';
 import { TopBarGrid } from '../../common/TopBar';
+import { IBasicGantt } from '../../interfaces/gantts';
 import { CopyUrlButton } from '../../common/CopyUrlButton';
 import { environment } from '../../globals';
 import { AreYouSureDialog } from '../../common/dialogs/AreYouSureDialog';
@@ -23,6 +23,7 @@ import { MeltaTooltip } from '../../common/MeltaTooltip';
 import { useSearchParams } from '../../utils/hooks/useSearchParams';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { useUserStore } from '../../stores/user';
+import { PermissionScope } from '../../interfaces/permissions';
 
 const {
     separators,
@@ -31,7 +32,7 @@ const {
 
 interface IGanttTopBar {
     title: string;
-    formik: FormikProps<IGantt>;
+    formik: FormikProps<IBasicGantt>;
     onEdit: () => void;
     onDelete: () => void;
     onAddGroupBy: () => void;

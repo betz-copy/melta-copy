@@ -4,10 +4,11 @@ import i18next from 'i18next';
 import { UseMutateAsyncFunction } from 'react-query';
 import { AxiosError } from 'axios';
 import { toast } from 'react-toastify';
-import { IMongoProcessInstanceReviewerPopulated, IMongoProcessTemplateReviewerPopulated } from '@microservices/shared-interfaces';
 import { noop } from 'lodash';
 import { BlueTitle } from '../../../common/BlueTitle';
 import { IFile } from '../../../interfaces/preview';
+import { IMongoProcessInstancePopulated } from '../../../interfaces/processes/processInstance';
+import { IMongoProcessTemplatePopulated } from '../../../interfaces/processes/processTemplate';
 import ProcessStatus, { ReviewedAtProcessStatus } from '../../../common/wizards/processInstance/ProcessSummaryStep/ProcessStatus';
 import ProcessSummary from '../../../common/wizards/processInstance/ProcessSummaryStep';
 import { ProcessComponentToPrint, StepComponentToPrint } from './ProcessComponentToPrint';
@@ -20,14 +21,14 @@ import { useUserStore } from '../../../stores/user';
 const ComponentToPrint = React.forwardRef<
     HTMLDivElement,
     {
-        processTemplate: IMongoProcessTemplateReviewerPopulated;
-        processInstance: IMongoProcessInstanceReviewerPopulated;
-        mutateAsync: UseMutateAsyncFunction<IMongoProcessInstanceReviewerPopulated, AxiosError<any, any>, ProcessDetailsValues, unknown>;
-        setCurrProcessInstance: React.Dispatch<React.SetStateAction<IMongoProcessInstanceReviewerPopulated>>;
+        processTemplate: IMongoProcessTemplatePopulated;
+        processInstance: IMongoProcessInstancePopulated;
+        mutateAsync: UseMutateAsyncFunction<IMongoProcessInstancePopulated, AxiosError<any, any>, ProcessDetailsValues, unknown>;
+        setCurrProcessInstance: React.Dispatch<React.SetStateAction<IMongoProcessInstancePopulated>>;
         setIsProcessChanged: React.Dispatch<React.SetStateAction<boolean>>;
         filesToPrint: IFile[];
         setSelectedFiles: React.Dispatch<React.SetStateAction<IFile[]>>;
-        setFilesLoadingStatus: React.Dispatch<React.SetStateAction<object>>;
+        setFilesLoadingStatus: React.Dispatch<React.SetStateAction<{}>>;
         options: {
             showSummary: boolean;
             showFiles: boolean;

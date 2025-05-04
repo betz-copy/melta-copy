@@ -3,7 +3,6 @@ import { toast } from 'react-toastify';
 import i18next from 'i18next';
 import { useMutation, useQueryClient } from 'react-query';
 import { AxiosError } from 'axios';
-import { IMongoEntityTemplateWithConstraintsPopulated, IRelationshipTemplateMap } from '@microservices/shared-interfaces';
 import { StepType, Wizard, WizardBaseType } from '../index';
 import { CreateRelationshipTemplateName, createRelationshipTemplateNameSchema } from './CreateRelationshipTemplate';
 import {
@@ -11,16 +10,18 @@ import {
     updateRelationshipTemplateRequest,
     relationshipTemplateFormToRelationshipTemplateObject,
 } from '../../../services/templates/relationshipTemplatesService';
+import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
 import { ErrorToast } from '../../ErrorToast';
 
 export interface RelationshipTemplateWizardValues {
     _id?: string;
-    createdAt?: Date;
-    updatedAt?: Date;
+    createdAt?: string;
+    updatedAt?: string;
     name: string;
     displayName: string;
-    sourceEntity: IMongoEntityTemplateWithConstraintsPopulated;
-    destinationEntity: IMongoEntityTemplateWithConstraintsPopulated;
+    sourceEntity: IMongoEntityTemplatePopulated;
+    destinationEntity: IMongoEntityTemplatePopulated;
 }
 
 export const defaultInitialValues: RelationshipTemplateWizardValues = {
@@ -36,30 +37,24 @@ export const defaultInitialValues: RelationshipTemplateWizardValues = {
             required: [],
             hide: [],
         },
-        category: { _id: '', displayName: '', name: '', color: '', iconFileId: null, createdAt: new Date(), updatedAt: new Date() },
+        category: { _id: '', displayName: '', name: '', color: '' },
         propertiesOrder: [],
         propertiesTypeOrder: ['properties', 'attachmentProperties'],
         propertiesPreview: [],
         uniqueConstraints: [],
         disabled: false,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        iconFileId: null,
     },
     destinationEntity: {
         _id: '',
         displayName: '',
         name: '',
         properties: { type: 'object', properties: {}, required: [], hide: [] },
-        category: { _id: '', displayName: '', name: '', color: '', iconFileId: null, createdAt: new Date(), updatedAt: new Date() },
+        category: { _id: '', displayName: '', name: '', color: '' },
         propertiesOrder: [],
         propertiesTypeOrder: ['properties', 'attachmentProperties'],
         propertiesPreview: [],
         uniqueConstraints: [],
         disabled: false,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        iconFileId: null,
     },
 };
 
@@ -81,9 +76,9 @@ const RelationshipTemplateWizard: React.FC<WizardBaseType<RelationshipTemplateWi
     const queryClient = useQueryClient();
     const { isLoading, mutateAsync } = useMutation(
         (relationshipTemplateForm: RelationshipTemplateWizardValues) => {
-            const { _id, createdAt: _createdAt, updatedAt: _updatedAt, ...restOfRelationshipTemplateForm } = relationshipTemplateForm;
+            const { _id, createdAt, updatedAt, ...restOfRelationshipTemplateForm } = relationshipTemplateForm;
             const relationshipTemplateBody = relationshipTemplateFormToRelationshipTemplateObject(restOfRelationshipTemplateForm);
-            const { isProperty: _isProperty, ...updatedRelationshipTemplate } = relationshipTemplateBody;
+            const { isProperty, ...updatedRelationshipTemplate } = relationshipTemplateBody;
             if (isEditMode) {
                 return updateRelationshipTemplateRequest(_id!, updatedRelationshipTemplate);
             }
@@ -103,7 +98,7 @@ const RelationshipTemplateWizard: React.FC<WizardBaseType<RelationshipTemplateWi
                 }
                 handleClose();
             },
-            onError: (error: AxiosError<{ metadata: { errorCode: string } }>) => {
+            onError: (error: AxiosError) => {
                 if (isEditMode) {
                     toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.relationshipTemplate.failedToEdit')} />);
                 } else {

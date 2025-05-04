@@ -5,9 +5,10 @@ import { toast } from 'react-toastify';
 import _debounce from 'lodash.debounce';
 import i18next from 'i18next';
 import { InfoOutlined } from '@mui/icons-material';
-import { IEntity, IMongoEntityTemplatePopulated } from '@microservices/shared-interfaces';
 import { MeltaTooltip } from '../MeltaTooltip';
+import { IEntity } from '../../interfaces/entities';
 import { searchEntitiesOfTemplateRequest } from '../../services/entitiesService';
+import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { EntityPropertiesInternal } from '../EntityProperties';
 import RelationshipReferenceView from '../RelationshipReferenceView';
 import { environment } from '../../globals';
@@ -57,8 +58,6 @@ const TemplateEntitiesAutocomplete: React.FC<{
                 limit: cacheBlockSize,
                 filter: { $and: { disabled: { $eq: false } } },
                 textSearch: inputValue,
-                showRelationships: false,
-                sort: [],
             });
         },
         {
@@ -119,7 +118,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
     const displayKeys = [
         showField,
         (template.propertiesPreview[0] === showField
-            ? (template.propertiesPreview[1] ?? template.propertiesOrder[0])
+            ? template.propertiesPreview[1] ?? template.propertiesOrder[0]
             : template.propertiesPreview[0]) ?? template.propertiesOrder[0],
     ];
 

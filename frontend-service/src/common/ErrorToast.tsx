@@ -2,10 +2,7 @@ import React from 'react';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 
-const ErrorToast: React.FC<{ axiosError: AxiosError<{ metadata: { errorCode: string } }>; defaultErrorMessage: string }> = ({
-    axiosError,
-    defaultErrorMessage,
-}) => {
+const ErrorToast: React.FC<{ axiosError: AxiosError; defaultErrorMessage: string }> = ({ axiosError, defaultErrorMessage }) => {
     const errorIdentifier = axiosError.response?.data?.metadata?.errorCode;
 
     if (!errorIdentifier) {

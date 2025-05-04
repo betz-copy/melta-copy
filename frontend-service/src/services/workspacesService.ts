@@ -1,6 +1,6 @@
-import { IMetadata, IWorkspace } from '@microservices/shared-interfaces';
 import axios from '../axios';
 import { environment } from '../globals';
+import { IMetadata, IWorkspace } from '../interfaces/workspaces';
 import { WorkspaceWizardValues } from '../pages/DirView/Wizard';
 
 const {
@@ -52,7 +52,7 @@ export const createOne = async (workspaceValues: WorkspaceWizardValues) => {
 };
 
 export const updateOne = async (id: string, workspaceValues: WorkspaceWizardValues & { path: string }) => {
-    const { icon, logo, metadata: _metadata, ...workspace } = workspaceValues;
+    const { icon, logo, metadata, ...workspace } = workspaceValues;
 
     const formData = generateFormData(workspace, (currentFormData) => {
         if (icon) currentFormData.append('iconFileId', icon.file instanceof File ? icon.file : icon.file.name!);

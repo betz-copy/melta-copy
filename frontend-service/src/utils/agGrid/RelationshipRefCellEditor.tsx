@@ -1,8 +1,9 @@
 import React from 'react';
 import { FormControl } from '@mui/material';
 import { useQueryClient } from 'react-query';
-import { IEntity, IEntitySingleProperty, IEntityTemplateMap } from '@microservices/shared-interfaces';
 import TemplateEntitiesAutocomplete from '../../common/inputs/TemplateEntitiesAutocomplete';
+import { IEntitySingleProperty, IEntityTemplateMap } from '../../interfaces/entityTemplates';
+import { IEntity } from '../../interfaces/entities';
 
 interface RelationshipRefCellEditorProps {
     value?: IEntity | null;

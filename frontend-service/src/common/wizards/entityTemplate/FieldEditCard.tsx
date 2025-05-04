@@ -39,14 +39,15 @@ import isEqual from 'lodash.isequal';
 import EditIcon from '@mui/icons-material/Edit';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import { IUniqueConstraintOfTemplate, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '@microservices/shared-interfaces';
 import { dateNotificationTypes, validPropertyTypes } from './AddFields';
 import { CommonFormInputProperties, IRelationshipReference } from './commonInterfaces';
 import { MinimizedColorPicker } from '../../inputs/MinimizedColorPicker';
 import { MeltaCheckbox } from '../../MeltaCheckbox';
 import { arrayTypes, deleteEnumFieldRequest, updateEnumFieldRequest } from '../../../services/templates/enitityTemplatesService';
 import { AreYouSureDialog } from '../../dialogs/AreYouSureDialog';
+import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { MeltaTooltip } from '../../MeltaTooltip';
+import { IUniqueConstraintOfTemplate } from '../../../interfaces/entities';
 import RelationshipReferenceField from './RelationshipReferenceField';
 import { environment } from '../../../globals';
 import KartoffelUserField from './KartoffelUserField';
@@ -350,20 +351,17 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
 
-    const relationshipRefs = Array.from(entityTemplates.values() as IMongoEntityTemplatePopulated[]).reduce(
-        (acc: IRelationshipReference[], template: IMongoEntityTemplatePopulated) => {
-            const properties = template.properties?.properties || {};
+    const relationshipRefs = Array.from(entityTemplates.values()).reduce((acc: IRelationshipReference[], template) => {
+        const properties = template.properties?.properties || {};
 
-            const references = Object.values(properties).reduce((refAcc: IRelationshipReference[], property) => {
-                if (property.format === 'relationshipReference' && property.relationshipReference) refAcc.push(property.relationshipReference);
+        const references = Object.values(properties).reduce((refAcc: IRelationshipReference[], property) => {
+            if (property.format === 'relationshipReference' && property.relationshipReference) refAcc.push(property.relationshipReference);
 
-                return refAcc;
-            }, []);
+            return refAcc;
+        }, []);
 
-            return acc.concat(references);
-        },
-        [],
-    );
+        return acc.concat(references);
+    }, []);
 
     const disableRemoveRequire = Boolean(
         relationshipRefs.find((ref) => ref.relatedTemplateField === value.name && ref.relatedTemplateId === templateId) !== undefined,

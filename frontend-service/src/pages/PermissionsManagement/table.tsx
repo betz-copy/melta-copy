@@ -6,8 +6,12 @@ import i18next from 'i18next';
 import React, { ForwardedRef, forwardRef, useImperativeHandle, useMemo, useRef } from 'react';
 import ScrollContainer from 'react-indiana-drag-scroll';
 import { toast } from 'react-toastify';
-import { IWorkspace, IUser, IMongoCategory, ICompact, IInstancesPermission, PermissionScope } from '@microservices/shared-interfaces';
 import { environment } from '../../globals';
+import { IMongoCategory } from '../../interfaces/categories';
+import { PermissionScope } from '../../interfaces/permissions';
+import { ICompact, IInstancesPermission } from '../../interfaces/permissions/permissions';
+import { IUser } from '../../interfaces/users';
+import { IWorkspace } from '../../interfaces/workspaces';
 import { searchUsersRequest } from '../../services/userService';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { useWorkspaceStore } from '../../stores/workspace';
@@ -161,7 +165,7 @@ const columnDefs = (
     },
 ];
 
-const getDatasource = <Data = IUser,>(
+const getDatasource = <Data extends any = IUser>(
     { _id }: IWorkspace,
     quickFilter: string | undefined,
     onFail: (err: unknown) => void | undefined,
@@ -194,7 +198,7 @@ const getDatasource = <Data = IUser,>(
     };
 };
 
-const getRowModelProps = <Data = IUser,>(
+const getRowModelProps = <Data extends any = IUser>(
     workspace: IWorkspace,
     paginationPageSize: number,
     quickFilterText: string | undefined,

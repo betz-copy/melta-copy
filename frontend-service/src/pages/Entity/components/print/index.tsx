@@ -3,24 +3,18 @@ import { Button, ThemeProvider } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
 import { useReactToPrint } from 'react-to-print';
-import {
-    IEntityTemplateMap,
-    IMongoEntityTemplatePopulated,
-    IEntityExpanded,
-    IMongoEntityTemplateWithConstraintsPopulated,
-    IConnection,
-    IEntity,
-    IRelationshipTemplateMap,
-} from '@microservices/shared-interfaces';
+import { useQuery, useQueryClient } from 'react-query';
 import { IConnectionTemplateOfExpandedEntity } from '../..';
 import { MeltaTooltip } from '../../../../common/MeltaTooltip';
 import { PrintOptionsDialog } from '../../../../common/print/PrintOptionsDialog';
-import { useQuery, useQueryClient } from 'react-query';
+import { IConnection, IEntity, IEntityExpanded } from '../../../../interfaces/entities';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { IFile } from '../../../../interfaces/preview';
 import { lightTheme } from '../../../../theme';
 import { ComponentToPrint } from './ComponentToPrint';
 import './print.css';
 import { getExpandedEntityByIdRequest } from '../../../../services/entitiesService';
+import { IRelationshipTemplateMap } from '../../../../interfaces/relationshipTemplates';
 import { handleExpandedRelationships } from '../../../../utils/expandedRelationships';
 import { getAllAllowedEntities } from '../../../../utils/permissions/templatePermissions';
 import { useUserStore } from '../../../../stores/user';
@@ -45,7 +39,7 @@ export interface IConnectionTemplateExpanded extends IConnectionTemplateOfExpand
 }
 
 const Print: React.FC<{
-    entityTemplate: IMongoEntityTemplateWithConstraintsPopulated;
+    entityTemplate: IMongoEntityTemplatePopulated;
     expandedEntity: IEntityExpanded;
     connectionsTemplates: IConnectionTemplateOfExpandedEntity[];
 }> = ({ entityTemplate, expandedEntity, connectionsTemplates }) => {

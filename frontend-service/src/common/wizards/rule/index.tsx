@@ -6,10 +6,10 @@ import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import { Utils as QbUtils, ImmutableTree } from '@react-awesome-query-builder/mui';
 
-import { IRule, IRuleMap } from '@microservices/shared-interfaces';
 import { StepType, Wizard, WizardBaseType } from '../index';
 import { CreateRule, createRuleSchema } from './CreateRule';
 import { ErrorToast } from '../../ErrorToast';
+import { IRule, IRuleMap } from '../../../interfaces/rules';
 import { createRuleRequest, updateRuleRequest } from '../../../services/templates/rulesService';
 import { CreateFormula, formulaValidation } from './CreateFormula';
 
@@ -59,7 +59,7 @@ const RuleWizard: React.FC<WizardBaseType<RuleWizardValues>> = ({
                 }
                 handleClose();
             },
-            onError: (error: AxiosError<{ metadata: { errorCode: string } }>) => {
+            onError: (error: AxiosError) => {
                 if (isEditMode) {
                     toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.rule.failedToEdit')} />);
                 } else {

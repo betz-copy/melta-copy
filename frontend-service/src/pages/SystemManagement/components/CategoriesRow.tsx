@@ -5,12 +5,14 @@ import i18next from 'i18next';
 import React, { useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import { ICategoryMap, IEntityTemplateMap, IMongoCategory, PermissionScope } from '@microservices/shared-interfaces';
+import { ICategoryMap, IMongoCategory } from '../../../interfaces/categories';
 import { ViewingCard } from './Card';
 import { CustomIcon } from '../../../common/CustomIcon';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import { EntityTemplateColor } from '../../../common/EntityTemplateColor';
+import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { useUserStore } from '../../../stores/user';
+import { PermissionScope } from '../../../interfaces/permissions';
 import { ErrorToast } from '../../../common/ErrorToast';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
 import { MeltaTooltip } from '../../../common/MeltaTooltip';
@@ -166,7 +168,7 @@ const CategoriesRow: React.FC = () => {
             setDeleteCategoryDialogState({ isDialogOpen: false, categoryId: null });
             toast.success(i18next.t('wizard.category.deletedSuccessfully'));
         },
-        onError: (err: AxiosError<{ metadata: { errorCode: string } }>) => {
+        onError: (err: AxiosError) => {
             toast.error(<ErrorToast axiosError={err} defaultErrorMessage={i18next.t('wizard.category.failedToDelete')} />);
         },
     });

@@ -5,17 +5,20 @@ import { toast } from 'react-toastify';
 import fileDownload from 'js-file-download';
 import { useMutation } from 'react-query';
 import { Grid } from '@mui/material';
-import { ActionTypes, ExcelStepStatus, IExcelSteps, EntitiesWizardValues, IEntityWithIgnoredRules } from '@microservices/shared-interfaces';
 import { StepType, Wizard, WizardBaseType } from '..';
 import OpenPreview from '../../FilePreview/OpenPreview';
 import { exportEntitiesRequest, loadEntitiesRequest } from '../../../services/entitiesService';
 import { attachmentPropertiesBaseSchema } from '../entityTemplate/AddFields';
 import ActionOnEntityWithRuleBreachDialog from '../../../pages/Entity/components/ActionOnEntityWithRuleBreachDialog';
+import { ActionTypes } from '../../../interfaces/ruleBreaches/actionMetadata';
 import { ICreateOrUpdateWithRuleBreachDialogState } from '../../dialogs/entity/CreateOrEditEntityDialog';
 import { environment } from '../../../globals';
 import { UploadExcel } from './excelSteps/UploadExcel';
+import { EntitiesWizardValues, IExcelSteps, ExcelStepStatus } from '../../../interfaces/excel';
 import { LoadEntitiesTables } from './excelSteps/LoadEntitiesTables';
+import { IEntityWithIgnoredRules } from '../../../interfaces/entities';
 import { groupBrokenRulesByEntity } from '../../../utils/loadEntities';
+
 const { excelExtension } = environment.loadExcel;
 
 const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({

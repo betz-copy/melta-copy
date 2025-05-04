@@ -2,7 +2,6 @@ import React, { ReactElement, useEffect } from 'react';
 import { Grid, Box, Tab, useTheme } from '@mui/material';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import i18next from 'i18next';
-import { PermissionScope } from '@microservices/shared-interfaces';
 import { useMatomo } from '@datapunt/matomo-tracker-react';
 import { CategoriesRow } from './components/CategoriesRow';
 import { EntityTemplatesRow } from './components/EntityTemplatesRow';
@@ -11,6 +10,7 @@ import { RulesRow } from './components/RulesRow';
 import { ProcessTemplatesRow } from './components/ProcessTemplates/ProcessTemplatesRow';
 import '../../css/pages.css';
 import { useUserStore } from '../../stores/user';
+import { PermissionScope } from '../../interfaces/permissions';
 import { useSearchParams } from '../../utils/hooks/useSearchParams';
 import { ConfigurationManagement } from './components/ConfigurationManagement';
 

@@ -3,9 +3,10 @@
 
 import { useState } from 'react';
 import { TreeViewBaseItem } from '@mui/x-tree-view-pro';
-import { IMongoCategory, IMongoEntityTemplatePopulated } from '@microservices/shared-interfaces';
+import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IMongoCategory } from '../../interfaces/categories';
 
-const initialSelectParentIfAllChildrenAreSelected = <T extends object>(
+const initialSelectParentIfAllChildrenAreSelected = <T extends {}>(
     treeItems: TreeViewBaseItem<T>[],
     getItemId: (item: T) => string,
     selectedItemsIds?: string[],
@@ -65,11 +66,7 @@ export const groupTemplatesByCategory = (
     });
 };
 
-export const flattenTree = <T extends object>(
-    treeItems: TreeViewBaseItem<T>[],
-    getItemId: (item: T) => string,
-    revertedTemplates: any[] = [],
-): any[] => {
+export const flattenTree = <T extends {}>(treeItems: TreeViewBaseItem<T>[], getItemId: (item: T) => string, revertedTemplates: any[] = []): any[] => {
     treeItems.forEach((categoryWithTemplates) => {
         const { children, ...rest } = categoryWithTemplates;
 
@@ -83,11 +80,7 @@ export const flattenTree = <T extends object>(
     return revertedTemplates;
 };
 
-export const useTreeUtils = <T extends object>(
-    getItemId: (item: T) => string,
-    parentInfersChildren?: boolean,
-    treeItems: TreeViewBaseItem<T>[] = [],
-) => {
+export const useTreeUtils = <T extends {}>(getItemId: (item: T) => string, parentInfersChildren?: boolean, treeItems: TreeViewBaseItem<T>[] = []) => {
     const [selectedItemsIds, setSelectedItemsIds] = useState<string[]>([]);
 
     const getParentNode = (items: TreeViewBaseItem<T>[], id: string): TreeViewBaseItem<T> | undefined => {

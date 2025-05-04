@@ -1,7 +1,7 @@
 import { FormikErrors, FormikTouched } from 'formik';
-import { IUser } from '@microservices/shared-interfaces';
 import { ProcessTemplateWizardValues } from '.';
 import fileDetails from '../../../interfaces/fileDetails';
+import { IUser } from '../../../interfaces/users';
 
 export interface StepsGenericBlockProps {
     values: ProcessTemplateWizardValues;

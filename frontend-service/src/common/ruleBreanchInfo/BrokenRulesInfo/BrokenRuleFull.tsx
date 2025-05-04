@@ -5,12 +5,16 @@ import { useQueryClient } from 'react-query';
 import i18next from 'i18next';
 import { ExpandLess as ExpandLessIcon, ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
 import isEqual from 'lodash.isequal';
-import { IEntityTemplateMap, IRelationshipTemplateMap, IMongoRule, IBrokenRulePopulated, IActionPopulated } from '@microservices/shared-interfaces';
+import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
+import { IActionPopulated } from '../../../interfaces/ruleBreaches/actionMetadata';
+import { IBrokenRulePopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
+import { IMongoRule } from '../../../interfaces/rules';
 import { RuleIcon } from './RuleIcon';
 import { MeltaTooltip } from '../../MeltaTooltip';
 import { EntityInfo } from '../InstanceInfo/EntityInfo';
 import { RelationshipInfo } from '../InstanceInfo/RelationshipInfo';
 import { BrokenRuleActions } from './BrokenRuleActions';
+import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
 import {
     getActionsByFailureOnEntity,
     getActionsByFailureOnRelationship,

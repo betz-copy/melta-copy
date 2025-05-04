@@ -6,7 +6,8 @@ import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import { IDeleteEntityBody, IMongoEntityTemplatePopulated } from '@microservices/shared-interfaces';
+import { IDeleteEntityBody } from '../../interfaces/entities';
+import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { BackendConfigState } from '../../services/backendConfigService';
 import { deleteEntityRequest } from '../../services/entitiesService';
 import { useUserStore } from '../../stores/user';
@@ -35,7 +36,7 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
     const { isLoading: isDeleteLoading, mutateAsync: deleteMutation } = useMutation(
         (deleteBody: IDeleteEntityBody) => deleteEntityRequest(deleteBody),
         {
-            onError: (error: AxiosError<{ metadata: { errorCode: string } }>) => {
+            onError: (error: AxiosError) => {
                 toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.entity.failedToDelete')} />);
             },
             onSuccess: () => {

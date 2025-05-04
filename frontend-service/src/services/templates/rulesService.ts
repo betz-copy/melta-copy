@@ -1,8 +1,9 @@
 import { JsonItem, JsonTree, Utils as QbUtils } from '@react-awesome-query-builder/mui';
-import { IEntityTemplateMap, IMongoRule, IRule, ISearchRulesBody } from '@microservices/shared-interfaces';
 import axios from '../../axios';
 import { RuleWizardValues } from '../../common/wizards/rule';
 import { environment } from '../../globals';
+import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
+import { IMongoRule, IRule, ISearchRuleBody } from '../../interfaces/rules';
 import { RuleParser } from '../../utils/rules/parser';
 import { RuleSerializer } from '../../utils/rules/serializer';
 
@@ -20,7 +21,7 @@ const ruleObjectToRuleForm = (rule: IRule | null, entityTemplates: IEntityTempla
     };
 };
 
-const searchRulesRequest = async (searchBody: ISearchRulesBody) => {
+const searchRulesRequest = async (searchBody: ISearchRuleBody) => {
     const { data } = await axios.post<IMongoRule[]>(`${rules}/search`, searchBody);
     return data;
 };

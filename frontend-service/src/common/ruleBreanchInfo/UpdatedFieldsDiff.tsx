@@ -2,18 +2,14 @@ import { Typography } from '@mui/material';
 import i18next from 'i18next';
 import pickBy from 'lodash.pickby';
 import React from 'react';
-import ReactDiffViewer from 'react-diff-viewer-continued';
-import {
-    IEntitySingleProperty,
-    IEntityTemplateMap,
-    IMongoEntityTemplatePopulated,
-    IUpdateEntityMetadataPopulated,
-} from '@microservices/shared-interfaces';
+import ReactDiffViewer from 'react-diff-viewer';
 import { useQueryClient } from 'react-query';
+import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IUpdateEntityMetadataPopulated } from '../../interfaces/ruleBreaches/actionMetadata';
+import { useDarkModeStore } from '../../stores/darkMode';
 import { getFileName } from '../../utils/getFileName';
 import { containsHTMLTags } from '../../utils/HtmlTagsStringValue';
 import { formatToString } from '../EntityProperties';
-import { useDarkModeStore } from '../../stores/darkMode';
 
 const getEntityPropertyString = (
     value: any,

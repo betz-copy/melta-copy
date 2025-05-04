@@ -1,12 +1,14 @@
 import React from 'react';
-import { IEntity, IEntityTemplateMap, IMongoEntityTemplatePopulated, IMongoRelationshipTemplatePopulated } from '@microservices/shared-interfaces';
-import { EntityPropertiesInternal } from '../../../../common/EntityProperties';
 import { Box, SxProps, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import { useQueryClient } from 'react-query';
+import { EntityPropertiesInternal } from '../../../../common/EntityProperties';
+import { IEntity } from '../../../../interfaces/entities';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { EntityDisableCheckbox } from '../EntityDisableCheckbox';
 import { EntityDates } from '../EntityDates';
 import { BlueTitle } from '../../../../common/BlueTitle';
+import { IMongoRelationshipTemplatePopulated } from '../../../../interfaces/relationshipTemplates';
 import { ConnectionWithExtendedRelationship, IConnectionTemplateExpanded } from '.';
 
 interface RelationshipPrintTitleProps {

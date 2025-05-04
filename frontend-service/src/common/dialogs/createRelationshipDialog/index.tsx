@@ -6,25 +6,21 @@ import { Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, Di
 import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
 import { AxiosError } from 'axios';
-import {
-    IRelationship,
-    IEntity,
-    IMongoRelationshipTemplatePopulated,
-    IRuleBreach,
-    IBrokenRule,
-    IRuleBreachPopulated,
-    ICreateRelationshipMetadataPopulated,
-    PermissionScope,
-} from '@microservices/shared-interfaces';
+import { IEntity } from '../../../interfaces/entities';
+import { IMongoRelationshipTemplatePopulated } from '../../../interfaces/relationshipTemplates';
 import RelationshipTemplateAutocomplete from '../../inputs/RelationshipTemplateAutocomplete';
 import TemplateTableSelect from '../../inputs/TemplateTableSelect';
 import StrechableArrowRight from './strechableArrowRight';
 import { trycatch } from '../../../utils/trycatch';
 import { createRelationshipRequest } from '../../../services/relationshipsService';
+import { IRelationship } from '../../../interfaces/relationships';
 import { ErrorToast } from '../../ErrorToast';
+import { IBrokenRule, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
+import { ICreateRelationshipMetadataPopulated } from '../../../interfaces/ruleBreaches/actionMetadata';
 import CreateWithRuleBreachDialog from './CreateWithRuleBreachDialog';
 import { environment } from '../../../globals';
 import { useDarkModeStore } from '../../../stores/darkMode';
+import { PermissionScope } from '../../../interfaces/permissions';
 
 const { errorCodes } = environment;
 
@@ -197,12 +193,7 @@ const CreateRelationshipDialog: React.FC<{
             });
         },
         {
-            onError: (
-                err: AxiosError<{
-                    metadata: { errorCode: string; brokenRules: IRuleBreachPopulated['brokenRules']; rawBrokenRules: IRuleBreach['brokenRules'] };
-                }>,
-                { relationshipInstancePopulated },
-            ) => {
+            onError: (err: AxiosError, { relationshipInstancePopulated }) => {
                 const errorMetadata = err.response?.data?.metadata;
                 if (errorMetadata?.errorCode === errorCodes.ruleBlock) {
                     setCreateWithRuleBreachDialogState({

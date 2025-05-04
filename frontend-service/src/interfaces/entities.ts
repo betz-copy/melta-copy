@@ -1,14 +1,21 @@
 import { Readable } from 'stream';
-import { IEntitySingleProperty, IMongoEntityTemplatePopulated, IMongoEntityTemplateWithConstraintsPopulated } from './entityTemplate';
-import { IRelationship } from './relationship';
-import { IMongoRelationshipTemplate } from './relationshipTemplate';
-import { IBrokenRule, IBrokenRulePopulated, IActionPopulated, IAction, ActionErrors, IFailedEntity } from './ruleBreach';
-import { ICreateEntityMetadata } from './ruleBreach/actionMetadata';
-import { IAgGridTextFilter, IAgGridNumberFilter, IAgGridDateFilter, IAgGridSetFilter } from './ruleBreach/agGrid';
+import { IMongoEntityTemplatePopulated } from './entityTemplates';
+import { IMongoRelationshipTemplate } from './relationshipTemplates';
+import { IRelationship } from './relationships';
+import { ISemanticSearchResult } from './semanticSearch';
+import { IFailedEntity } from './excel';
+import { IBrokenRule } from './ruleBreaches/ruleBreach';
+import { ICreateEntityMetadata } from './ruleBreaches/actionMetadata';
+import { IAGGridTextFilter, IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter } from '../utils/agGrid/interfaces';
 
 export interface IEntity {
     templateId: string;
-    properties: Record<string, any>;
+    properties: {
+        _id: string;
+        createdAt: string;
+        updatedAt: string;
+        disabled: boolean;
+    } & Record<string, any>;
 }
 
 export type IConnection = {
@@ -22,21 +29,10 @@ export interface IEntityExpanded {
     connections: IConnection[];
 }
 
-export interface IBrokenRulesError {
-    metadata: {
-        errorCode: 'RULE_BLOCK';
-        rawBrokenRules: IBrokenRule[];
-        brokenRules: IBrokenRulePopulated[];
-        actions: IActionPopulated[];
-        rawActions: IAction[];
-    };
-}
-
 export interface IUniqueConstraint {
     type: 'UNIQUE';
     constraintName: string;
     templateId: string;
-    uniqueGroupName: string;
     properties: string[];
     values?: Record<string, any>;
 }
@@ -46,28 +42,6 @@ export interface IRequiredConstraint {
     constraintName: string;
     templateId: string;
     property: string;
-    index?: number;
-}
-
-export type IValidationError = {
-    message: string;
-    path: string;
-    schemaPath: string;
-    params: Partial<IEntitySingleProperty> & { allowedValues?: string[] };
-};
-
-export interface EntitiesWizardValues {
-    files?: File[];
-    template?: IMongoEntityTemplateWithConstraintsPopulated;
-}
-
-export interface IValidationErrorData {
-    type: string;
-    message: string;
-    metadata: {
-        properties: Record<string, any>;
-        errors: { type: ActionErrors.validation; metadata: IValidationError }[];
-    };
 }
 
 export type IConstraint = IRequiredConstraint | IUniqueConstraint;
@@ -91,14 +65,6 @@ export interface IEntityWithDirectConnections {
     }[];
 }
 
-export interface IEntityWithDirectRelationships {
-    entity: IEntity;
-    relationships?: Array<{
-        relationship: IRelationship;
-        otherEntity: IEntity;
-    }>;
-}
-
 export interface IFilterOfField {
     $eq?: boolean | string | number | null;
     $ne?: boolean | string | number | null;
@@ -108,7 +74,7 @@ export interface IFilterOfField {
     $gte?: boolean | string | number;
     $lt?: boolean | string | number;
     $lte?: boolean | string | number;
-    $in?: Array<boolean | string | number | RegExp | null>;
+    $in?: Array<boolean | string | number | null>;
     $not?: IFilterOfField;
 }
 
@@ -126,22 +92,14 @@ export type ISearchSort<T extends Record<string, any> = Record<string, any>> = A
     sort: 'asc' | 'desc';
 }>;
 
-export interface ICountSearchResult {
-    count: number;
-    templateId: string;
-    entitiesWithFiles: Record<string, string[]>; // { entityId: minioFileIds:[] }
-    texts?: string[];
-}
 export interface ISearchEntitiesOfTemplateBody {
-    skip: number;
+    skip?: number;
     limit: number;
     textSearch?: string;
     filter?: ISearchFilter;
-    showRelationships: boolean | Array<IMongoRelationshipTemplate['_id']>;
-    sort: ISearchSort;
+    showRelationships?: boolean | Array<IMongoRelationshipTemplate['_id']>;
+    sort?: ISearchSort;
     entitiesWithFiles?: ICountSearchResult['entitiesWithFiles'];
-    entityIdsToInclude?: string[];
-    entityIdsToExclude?: string[];
 }
 
 export interface ISearchEntitiesByTemplatesBody {
@@ -151,18 +109,16 @@ export interface ISearchEntitiesByTemplatesBody {
 }
 
 export interface ISearchBatchBody {
-    skip: number;
+    skip?: number;
     limit: number;
     textSearch?: string;
-    entityIdsToInclude?: string[];
-    entityIdsToExclude?: string[];
     templates: {
         [templateId: string]: {
             filter?: ISearchFilter;
-            showRelationships: boolean | Array<IMongoRelationshipTemplate['_id']>;
+            showRelationships?: boolean | Array<IMongoRelationshipTemplate['_id']>;
         };
     };
-    sort: ISearchSort;
+    sort?: ISearchSort;
     shouldSemanticSearch?: boolean;
 }
 
@@ -194,25 +150,22 @@ export interface ISearchEntitiesByLocationBody {
     textSearch?: string;
     templates: ISearchEntitiesByLocationTemplatesBody;
     circle: Circle;
-    polygon?: Polygon;
 }
 
 export interface ISearchResult {
     count: number;
-    entities: IEntityWithDirectRelationships[];
+    entities: (IEntityWithDirectConnections & { minioFileIdsWithTexts?: ISemanticSearchResult[string][string] })[];
 }
 
-export interface IFilterDatesRange {
-    propertyName: string;
-    dateNotificationValue: number;
-    isDateTime: boolean;
-    isDailyAlert: boolean;
-    isDatePastAlert: boolean;
+export interface ISearchResultByTemplates {
+    [templateId: string]: ISearchResult;
 }
 
-export interface ITemplateSearchBody {
-    textSearch?: string;
-    templateIds: string[];
+export interface ICountSearchResult {
+    templateId: string;
+    count: number;
+    entitiesWithFiles?: ISemanticSearchResult[string];
+    texts?: string[];
 }
 
 export interface IExportEntitiesBody {
@@ -232,7 +185,7 @@ export interface IExportEntitiesBody {
 export interface IGraphFilterBody {
     selectedTemplate: IMongoEntityTemplatePopulated;
     selectedProperty?: string;
-    filterField?: IAgGridTextFilter | IAgGridNumberFilter | IAgGridDateFilter | IAgGridSetFilter;
+    filterField?: IAGGridTextFilter | IAGGidNumberFilter | IAGGridDateFilter | IAGGridSetFilter;
 }
 
 export interface IGraphFilterBodyBatch {

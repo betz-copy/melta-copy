@@ -4,10 +4,10 @@ import React from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { useLocation } from 'wouter';
-import { IWorkspace, WorkspaceTypes } from '@microservices/shared-interfaces';
 import { ErrorToast } from '../../../common/ErrorToast';
 import { StepType, Wizard, WizardBaseType } from '../../../common/wizards/index';
 import fileDetails from '../../../interfaces/fileDetails';
+import { IWorkspace, WorkspaceTypes } from '../../../interfaces/workspaces';
 import { createOne, updateOne } from '../../../services/workspacesService';
 import { getFileName } from '../../../utils/getFileName';
 // import { ChooseColors, chooseColorsSchema } from './ChooseColors';
@@ -77,7 +77,7 @@ export const WorkspaceWizard: React.FC<WizardBaseType<WorkspaceWizardValues>> = 
                 toast.success(i18next.t(isEditMode ? 'wizard.workspace.editedSuccessfully' : 'wizard.workspace.createdSuccessfully'));
                 handleClose();
             },
-            onError: (error: AxiosError<{ metadata: { errorCode: string } }>) => {
+            onError: (error: AxiosError) => {
                 if (isEditMode) toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.workspace.failedToEdit')} />);
                 else toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.workspace.failedToCreate')} />);
             },

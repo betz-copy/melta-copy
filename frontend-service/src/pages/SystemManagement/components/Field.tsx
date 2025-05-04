@@ -3,10 +3,10 @@ import React, { useState, useEffect } from 'react';
 import { TextField, Switch, InputAdornment } from '@mui/material';
 import i18next from 'i18next';
 import { useQueryClient } from 'react-query';
-import { IMetadata } from '@microservices/shared-interfaces';
 import { updateMetadata } from '../../../services/workspacesService';
 import { deepClone, setNestedValue } from '../../../utils/configs/configsUtils';
 import FieldCard from './FieldCard';
+import { IMetadata } from '../../../interfaces/workspaces';
 import { environment } from '../../../globals';
 import { BackendConfigState } from '../../../services/backendConfigService';
 

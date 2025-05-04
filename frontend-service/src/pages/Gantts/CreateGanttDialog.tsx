@@ -27,7 +27,7 @@ export const CreateGanttDialog: React.FC<ICreateGanttDialogProps> = ({ open, onC
             toast.success(i18next.t('gantts.actions.createdSuccessfully'));
             onCloseWrapper();
         },
-        onError: (error: AxiosError<{ metadata: { errorCode: string } }>) => {
+        onError: (error: AxiosError) => {
             toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('gantts.actions.failedToCreate')} />);
             onCloseWrapper();
         },

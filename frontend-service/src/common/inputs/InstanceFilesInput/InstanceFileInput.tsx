@@ -15,7 +15,7 @@ interface InstanceFileInputProps {
     fieldTemplateTitle: string;
     acceptedFilesTypes?: Accept;
     setFieldValue: (field: string, value: File[]) => void;
-    required: boolean;
+    required: Boolean;
     value: File[] | undefined;
     error: string | undefined;
     setErrorText?: React.Dispatch<React.SetStateAction<string | undefined>>;
@@ -23,7 +23,7 @@ interface InstanceFileInputProps {
     setExternalErrors?: React.Dispatch<
         React.SetStateAction<{
             files: boolean;
-            unique: object;
+            unique: {};
             action: string;
         }>
     >;

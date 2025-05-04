@@ -3,15 +3,12 @@ import React, { useEffect, useMemo } from 'react';
 import i18next from 'i18next';
 import { Grid } from '@mui/material';
 import { Delete } from '@mui/icons-material';
-import {
-    IMongoEntityTemplateWithConstraintsPopulated,
-    IEntity,
-    IEntityTemplateWithConstraintsMap,
-    IMongoCategory,
-} from '@microservices/shared-interfaces';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import TemplatesSelectCheckbox from '../../../common/templatesSelectCheckbox';
 import SearchAutoComplete from './SearchAutoComplete';
+import { IEntity } from '../../../interfaces/entities';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
+import { IMongoCategory } from '../../../interfaces/categories';
 
 export const DeleteMapDataBtn = ({ onClick, darkMode }: { onClick: () => void; darkMode: boolean }) => (
     <IconButtonWithPopover
@@ -31,10 +28,10 @@ export const DeleteMapDataBtn = ({ onClick, darkMode }: { onClick: () => void; d
 );
 
 type Props = {
-    selectedTemplates: IMongoEntityTemplateWithConstraintsPopulated[];
-    setSelectedTemplates: React.Dispatch<React.SetStateAction<IMongoEntityTemplateWithConstraintsPopulated[]>>;
+    selectedTemplates: IMongoEntityTemplatePopulated[];
+    setSelectedTemplates: React.Dispatch<React.SetStateAction<IMongoEntityTemplatePopulated[]>>;
     moveToEntityLocations: (entity: IEntity) => void;
-    entityTemplateMap: IEntityTemplateWithConstraintsMap;
+    entityTemplateMap: IEntityTemplateMap;
     onClear: () => void;
     darkMode: boolean;
     clearAutocompleteSearch: () => void;

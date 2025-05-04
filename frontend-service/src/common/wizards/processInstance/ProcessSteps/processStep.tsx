@@ -8,13 +8,11 @@ import pickBy from 'lodash.pickby';
 import React, { FC } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import {
-    IMongoProcessInstanceReviewerPopulated,
-    IMongoStepInstancePopulated,
-    IMongoStepTemplatePopulated,
-    PermissionScope,
-} from '@microservices/shared-interfaces';
 import { ProcessStepValues } from '.';
+import { PermissionScope } from '../../../../interfaces/permissions';
+import { IMongoProcessInstancePopulated } from '../../../../interfaces/processes/processInstance';
+import { IMongoStepInstancePopulated } from '../../../../interfaces/processes/stepInstance';
+import { IMongoStepTemplatePopulated } from '../../../../interfaces/processes/stepTemplate';
 import { updateStepRequest } from '../../../../services/processesService';
 import { useUserStore } from '../../../../stores/user';
 import { renderHTML } from '../../../../utils/HtmlTagsStringValue';
@@ -112,7 +110,7 @@ export const TextAreaProperty: FC<{
 interface ProcessStepProps {
     stepInstance: IMongoStepInstancePopulated;
     stepTemplate: IMongoStepTemplatePopulated;
-    processInstance: IMongoProcessInstanceReviewerPopulated;
+    processInstance: IMongoProcessInstancePopulated;
     isStepEditMode: boolean;
     setIsStepEditMode: React.Dispatch<React.SetStateAction<boolean>>;
     onStepUpdateSuccess: (stepInstance: IMongoStepInstancePopulated) => void;
@@ -160,7 +158,7 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                 onStepUpdateSuccess(updatedStepInstance);
                 queryClient.invalidateQueries({ queryKey: ['searchProcesses'] });
             },
-            onError: (error: AxiosError<{ metadata: { errorCode: string } }>) => {
+            onError: (error: AxiosError) => {
                 toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.processInstance.step.failedToEdit')} />);
                 console.log('failed to edit step. error', error);
             },

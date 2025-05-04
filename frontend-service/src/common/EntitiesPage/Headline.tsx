@@ -8,14 +8,11 @@ import i18next from 'i18next';
 import React, { Dispatch, SetStateAction, useCallback, useEffect, useRef, useState } from 'react';
 import { debounce } from 'lodash';
 import AutoAwesomeOutlinedIcon from '@mui/icons-material/AutoAwesomeOutlined';
-import {
-    IEntity,
-    IMongoCategory,
-    IMongoEntityTemplatePopulated,
-    IMongoEntityTemplateWithConstraintsPopulated,
-} from '@microservices/shared-interfaces';
 import { useMatomo } from '@datapunt/matomo-tracker-react';
+import { IEntity } from '../../interfaces/entities';
+import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import SearchInput from '../inputs/SearchInput';
+import { IMongoCategory } from '../../interfaces/categories';
 import { useWorkspaceStore } from '../../stores/workspace';
 import TemplatesSelectCheckbox from '../templatesSelectCheckbox';
 import { BlueTitle } from '../BlueTitle';
@@ -161,10 +158,10 @@ const EntitiesPageHeadline: React.FC<{
     onSearch: (value: string) => void;
     entityTemplateSelectCheckboxProps: {
         categories?: IMongoCategory[];
-        templates: IMongoEntityTemplateWithConstraintsPopulated[];
-        setTemplates?: Dispatch<SetStateAction<IMongoEntityTemplateWithConstraintsPopulated[]>>;
-        templatesToShow: IMongoEntityTemplateWithConstraintsPopulated[];
-        setTemplatesToShow: Dispatch<SetStateAction<IMongoEntityTemplateWithConstraintsPopulated[]>>;
+        templates: IMongoEntityTemplatePopulated[];
+        setTemplates?: Dispatch<SetStateAction<IMongoEntityTemplatePopulated[]>>;
+        templatesToShow: IMongoEntityTemplatePopulated[];
+        setTemplatesToShow: Dispatch<SetStateAction<IMongoEntityTemplatePopulated[]>>;
         isDraggableDisabled?: boolean;
     };
     excelExportProps?: {

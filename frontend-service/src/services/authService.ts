@@ -40,7 +40,6 @@ export class AuthService {
         try {
             return jwtDecode(token) as UserState['user'] & {};
         } catch (error) {
-            console.error('Error parsing user token', error);
             return null;
         }
     };

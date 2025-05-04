@@ -14,17 +14,6 @@ import React, { useState } from 'react';
 import { useLocation } from 'wouter';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import {
-    IDeleteEntityBody,
-    IEntity,
-    IEntityExpanded,
-    IEntityTemplateMap,
-    IMongoEntityTemplateWithConstraintsPopulated,
-    IRuleBreach,
-    IRuleBreachPopulated,
-    PermissionScope,
-    IMongoEntityTemplatePopulated,
-} from '@microservices/shared-interfaces';
 import MapIcon from '@mui/icons-material/Map';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import { ExportFormats } from '../../../common/dialogs/entity/ExportFormats';
@@ -32,6 +21,10 @@ import { EntityProperties } from '../../../common/EntityProperties';
 import { ErrorToast } from '../../../common/ErrorToast';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
 import { ImageWithDisable } from '../../../common/ImageWithDisable';
+import { IDeleteEntityBody, IEntity, IEntityExpanded } from '../../../interfaces/entities';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { PermissionScope } from '../../../interfaces/permissions';
+import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
 import { deleteEntityRequest, updateEntityStatusRequest } from '../../../services/entitiesService';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { useUserStore } from '../../../stores/user';
@@ -43,7 +36,7 @@ import TooltipMenuButton from './TooltipMenuButton';
 import UpdateStatusWithRuleBreachDialog from './UpdateStatusWithRuleBreachDialog';
 import LocationPreview from '../../Map/LocationPreview';
 
-const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplateWithConstraintsPopulated; expandedEntity: IEntityExpanded }> = ({
+const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; expandedEntity: IEntityExpanded }> = ({
     entityTemplate,
     expandedEntity,
 }) => {
@@ -85,8 +78,8 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplateWithConstrai
         return !canWriteInstance
             ? i18next.t('permissions.dontHaveWritePermissionsToTemplate')
             : isEntityDisabled
-              ? i18next.t('entityPage.disabledEntity')
-              : '';
+            ? i18next.t('entityPage.disabledEntity')
+            : '';
     };
 
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
@@ -121,12 +114,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplateWithConstrai
                 if (data.properties.disabled) toast.success(i18next.t('entityPage.disabledSuccessfully'));
                 else toast.success(i18next.t('entityPage.activatedSuccessfully'));
             },
-            onError: (
-                err: AxiosError<{
-                    metadata: { errorCode: string; brokenRules: IRuleBreachPopulated['brokenRules']; rawBrokenRules: IRuleBreach['brokenRules'] };
-                }>,
-                { disabled },
-            ) => {
+            onError: (err: AxiosError, { disabled }) => {
                 const errorMetadata = err.response?.data?.metadata;
                 if (errorMetadata?.errorCode === 'RULE_BLOCK') {
                     setUpdateStatusWithRuleBreachDialogState({
@@ -151,7 +139,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplateWithConstrai
                 deleteAllRelationships: expandedEntity.connections.length > 0 && workspaceAdmin,
             } as IDeleteEntityBody<false>),
         {
-            onError: (error: AxiosError<{ metadata: { errorCode: string } }>) => {
+            onError: (error: AxiosError) => {
                 closeDeleteDialog();
                 toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.entity.failedToDelete')} />);
             },
@@ -214,8 +202,8 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplateWithConstrai
                                             !canWriteInstance
                                                 ? i18next.t('permissions.dontHaveWritePermissionsToTemplate')
                                                 : isEntityDisabled
-                                                  ? i18next.t('entityPage.disabledEntity')
-                                                  : i18next.t('actions.edit')
+                                                ? i18next.t('entityPage.disabledEntity')
+                                                : i18next.t('actions.edit')
                                         }
                                         style={{
                                             cursor: !canWriteInstance || isEntityDisabled ? 'default' : 'pointer',

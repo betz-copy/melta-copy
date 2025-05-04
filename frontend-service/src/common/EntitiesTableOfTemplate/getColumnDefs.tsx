@@ -3,17 +3,11 @@ import { Grid } from '@mui/material';
 import i18next from 'i18next';
 import React, { memo } from 'react';
 import { Link } from 'wouter';
-import {
-    IEntity,
-    EntityData,
-    IEntityTemplateMap,
-    IMongoEntityTemplatePopulated,
-    IRuleBreach,
-    ISemanticSearchResult,
-} from '@microservices/shared-interfaces';
 import { AxiosError } from 'axios';
 import { UseMutateAsyncFunction } from 'react-query';
 import { IButtonPopoverProps } from '.';
+import { EntityData, IEntity } from '../../interfaces/entities';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import {
     booleanColDef,
     dateColDef,
@@ -32,8 +26,10 @@ import {
 import IconButtonWithPopover from '../IconButtonWithPopover';
 import { ImageWithDisable } from '../ImageWithDisable';
 import { CardMenu } from '../../pages/SystemManagement/components/CardMenu';
+import { IRuleBreach } from '../../interfaces/ruleBreaches/ruleBreach';
+import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
 
-export interface IGetColumnDefsOptions<Data> {
+export interface IGetColumnDefsOptions<Data extends any> {
     template: IMongoEntityTemplatePopulated & { entitiesWithFiles?: ISemanticSearchResult[string] };
     getRowId: (data: Data) => string;
     getEntityPropertiesData: (data: Data) => Partial<IEntity['properties']>;
@@ -62,7 +58,7 @@ export interface IGetColumnDefsOptions<Data> {
     entityTemplates: IEntityTemplateMap;
 }
 
-export const getColumnDefs = <Data = EntityData,>({
+export const getColumnDefs = <Data extends any = EntityData>({
     template,
     getRowId,
     getEntityPropertiesData,

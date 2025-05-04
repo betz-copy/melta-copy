@@ -1,4 +1,4 @@
-import { IProcessTemplateMap } from '@microservices/shared-interfaces';
+import { IProcessTemplateMap } from '../interfaces/processes/processTemplate';
 
 export const getStepName = (stepTemplateId: string, processTemplatesMap: IProcessTemplateMap) => {
     for (const processTemplate of processTemplatesMap.values()) {

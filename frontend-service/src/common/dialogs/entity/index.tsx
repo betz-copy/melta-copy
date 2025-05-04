@@ -1,6 +1,6 @@
-import { IMongoCategory, IMongoEntityTemplateWithConstraintsPopulated, IProperties } from '@microservices/shared-interfaces';
+import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 
-export const emptyEntityTemplate: IMongoEntityTemplateWithConstraintsPopulated = {
+export const emptyEntityTemplate: IMongoEntityTemplatePopulated = {
     _id: '',
     displayName: '',
     name: '',
@@ -9,25 +9,22 @@ export const emptyEntityTemplate: IMongoEntityTemplateWithConstraintsPopulated =
         name: '',
         displayName: '',
         color: '',
-    } as IMongoCategory,
+    },
     properties: {
         properties: {},
+        required: [],
         type: 'object',
         hide: [],
-        required: [],
-    } as IProperties & { required: string[] },
+    },
     propertiesOrder: [],
     propertiesTypeOrder: ['properties', 'attachmentProperties'],
     propertiesPreview: [],
-    disabled: false,
-    createdAt: new Date(),
-    updatedAt: new Date(),
     uniqueConstraints: [],
-    iconFileId: null,
+    disabled: false,
 };
 
 export interface EntityWizardValues {
-    template: IMongoEntityTemplateWithConstraintsPopulated;
-    properties: Record<string, any>;
+    template: IMongoEntityTemplatePopulated;
+    properties: Record<string, any> & { disabled: boolean };
     attachmentsProperties: Record<string, File[] | File | undefined>;
 }

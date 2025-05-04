@@ -1,19 +1,20 @@
 import i18next from 'i18next';
 import React, { useState } from 'react';
 import { useQueryClient } from 'react-query';
-import { ICategoryMap, IEntityTemplateWithConstraintsMap } from '@microservices/shared-interfaces';
 import EntitiesPage from '../../common/EntitiesPage';
+import { ICategoryMap } from '../../interfaces/categories';
+import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
 import { useUserStore } from '../../stores/user';
 import { useSearchParams } from '../../utils/hooks/useSearchParams';
 import StartPageSearch from './components/StartPageSearch';
 
-const GlobalSearch: React.FC = () => {
+const GlobalSearch: React.FC<{}> = () => {
     const currentUser = useUserStore((state) => state.user);
 
     const queryClient = useQueryClient();
 
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
-    const entityTemplates = queryClient.getQueryData<IEntityTemplateWithConstraintsMap>('getEntityTemplates')!;
+    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
 
     const allowedCategories = currentUser.currentWorkspacePermissions.admin
         ? Array.from(categories.values())

@@ -8,14 +8,15 @@ import * as ts from 'typescript-actions';
 import { useMutation, useQueryClient } from 'react-query';
 import { AxiosError } from 'axios';
 import { toast } from 'react-toastify';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated, IMongoCategory } from '@microservices/shared-interfaces';
 import { ErrorToast } from '../../../../common/ErrorToast';
 import { ActionManagement } from './actionsManagement';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { updateActionToEntity } from '../../../../services/templates/enitityTemplatesService';
 import IconButtonWithPopover from '../../../../common/IconButtonWithPopover';
 import { generateInterfaceWithRelationships } from '../../../../utils/templateActions/interfaceGenerator';
 import { environment } from '../../../../globals';
 import { AreYouSureDialog } from '../../../../common/dialogs/AreYouSureDialog';
+import { IMongoCategory } from '../../../../interfaces/categories';
 import { generateBasicFunctions } from '../../../../utils/templateActions/generateFunctions';
 
 const {
@@ -64,7 +65,7 @@ const CodeEditorDialog: React.FC<{
             return updateActionToEntity(entityTemplate._id, editorValue);
         },
         {
-            onError: (err: AxiosError<{ metadata: { errorCode: string } }>) => {
+            onError: (err: AxiosError) => {
                 toast.error(<ErrorToast axiosError={err} defaultErrorMessage={i18next.t('systemManagement.entityAction.failedUpdateAction')} />);
             },
             onSuccess: (data) => {

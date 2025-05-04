@@ -3,15 +3,15 @@ import { Box, Grid, TextField, ToggleButton, ToggleButtonGroup, Typography } fro
 import { FormikProps } from 'formik';
 import i18next from 'i18next';
 import React from 'react';
-import { IChart, IChartPermission } from '@microservices/shared-interfaces';
 import { MeltaTooltip } from '../../../common/MeltaTooltip';
+import { IBasicChart, IPermission } from '../../../interfaces/charts';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { useUserStore } from '../../../stores/user';
 import { isWorkspaceAdmin } from '../../../utils/permissions/instancePermissions';
 import { ChartTypesEdit } from './ChartTypesEdit';
 
 const ChartSideBar: React.FC<{
-    formik: FormikProps<IChart>;
+    formik: FormikProps<IBasicChart>;
     entityTemplate: IMongoEntityTemplatePopulated;
     edit: boolean;
     readonly: boolean;
@@ -73,7 +73,7 @@ const ChartSideBar: React.FC<{
 
             <Grid container direction="column" marginTop={2} spacing={2}>
                 <Grid item>
-                    <Typography variant="subtitle1">{String(i18next.t('charts.permissions'))}</Typography>
+                    <Typography variant="subtitle1">{i18next.t('charts.permissions')}</Typography>
                 </Grid>
                 <Grid item>
                     <ToggleButtonGroup
@@ -83,7 +83,7 @@ const ChartSideBar: React.FC<{
                         size="small"
                         sx={{ height: '35px' }}
                         value={formik.values.permission}
-                        onChange={(_event: React.MouseEvent<HTMLElement>, permission: IChartPermission) => {
+                        onChange={(_event: React.MouseEvent<HTMLElement>, permission: IPermission) => {
                             if (permission !== null) formik.setFieldValue('permission', permission);
                         }}
                         disabled={
@@ -95,14 +95,14 @@ const ChartSideBar: React.FC<{
                     >
                         <MeltaTooltip title={i18next.t('charts.personal')}>
                             <Box>
-                                <ToggleButton value={IChartPermission.Private}>
+                                <ToggleButton value={IPermission.Private}>
                                     <PersonalIcon />
                                 </ToggleButton>
                             </Box>
                         </MeltaTooltip>
                         <MeltaTooltip title={i18next.t('charts.protected')}>
                             <Box>
-                                <ToggleButton value={IChartPermission.Protected}>
+                                <ToggleButton value={IPermission.Protected}>
                                     <AllUsers />
                                 </ToggleButton>
                             </Box>

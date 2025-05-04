@@ -15,7 +15,7 @@ export interface PureInfiniteScrollProps<T> {
     openIds?: Map<string, boolean>;
 }
 
-export const PureInfiniteScroll = <T,>({
+export const PureInfiniteScroll = <T extends any>({
     children,
     queryKey,
     queryFunction,

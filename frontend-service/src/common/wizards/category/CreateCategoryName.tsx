@@ -3,10 +3,10 @@ import { TextField, Grid } from '@mui/material';
 import * as Yup from 'yup';
 import i18next from 'i18next';
 import { useQueryClient } from 'react-query';
-import { IMongoCategory } from '@microservices/shared-interfaces';
 import { CategoryWizardValues } from './index';
 import { StepComponentProps } from '../index';
 import { variableNameValidation } from '../../../utils/validation';
+import { IMongoCategory } from '../../../interfaces/categories';
 
 export const useCreateCategoryNameSchema = (currentCategoryId?: string) => {
     const queryClient = useQueryClient();

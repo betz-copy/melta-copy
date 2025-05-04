@@ -18,13 +18,12 @@ import {
     ISearchEntitiesOfTemplateBody,
     ISearchFilter,
     ISearchResult,
-    IMongoEntityTemplatePopulated,
-    IEditReadExcel,
-    ITablesResults,
-    IRuleBreach,
-} from '@microservices/shared-interfaces';
+} from '../interfaces/entities';
+import { IRuleBreach } from '../interfaces/ruleBreaches/ruleBreach';
 import { filterModelToFilterOfGraph } from '../pages/Graph/GraphFilterToBackend';
 import urlToFile from '../common/fileConversions';
+import { IEditReadExcel, ITablesResults } from '../interfaces/excel';
+import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { locationConverterToString } from '../utils/map/convert';
 import { CoordinateSystem } from '../common/inputs/JSONSchemaFormik/RjsfLocationWidget';
 

@@ -6,7 +6,6 @@ import i18next from 'i18next';
 import { useMutation, useQueryClient } from 'react-query';
 import { AxiosError } from 'axios';
 import { v4 as uuid } from 'uuid';
-import { IUser, IMongoProcessTemplateReviewerPopulated, IProcessTemplateMap } from '@microservices/shared-interfaces';
 import { StepType, Wizard, WizardBaseType } from '../index';
 import { ErrorToast } from '../../ErrorToast';
 import { addDetailsFieldsSchema, AddDetailsFields } from './AddDetailsFields';
@@ -14,6 +13,8 @@ import { CreateTemplateName, useCreateOrEditTemplateNameSchema } from '../entity
 import { updateProcessTemplateRequest, createProcessTemplateRequest } from '../../../services/templates/processTemplatesService';
 import { AddStepsFields, addStepsFieldsSchema } from './AddStepsFields';
 import fileDetails from '../../../interfaces/fileDetails';
+import { IUser } from '../../../interfaces/users';
+import { IMongoProcessTemplatePopulated, IProcessTemplateMap } from '../../../interfaces/processes/processTemplate';
 
 export interface ProcessTemplateFormInputProperties {
     name: string;
@@ -26,7 +27,7 @@ export interface ProcessTemplateFormInputProperties {
     required: boolean;
     deleted?: boolean | undefined;
 }
-export interface ProcessTemplateWizardValues extends Omit<IMongoProcessTemplateReviewerPopulated, 'details' | 'steps' | 'createdAt' | 'updatedAt'> {
+export interface ProcessTemplateWizardValues extends Omit<IMongoProcessTemplatePopulated, 'details' | 'steps' | 'createdAt' | 'updatedAt'> {
     detailsProperties: ProcessTemplateFormInputProperties[];
     detailsAttachmentProperties: ProcessTemplateFormInputProperties[];
     steps: Array<{
@@ -78,7 +79,7 @@ const ProcessTemplateWizard: React.FC<WizardBaseType<ProcessTemplateWizardValues
                 }
                 handleClose();
             },
-            onError: (error: AxiosError<{ metadata: { errorCode: string } }>) => {
+            onError: (error: AxiosError) => {
                 if (isEditMode) {
                     toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.processTemplate.failedToEdit')} />);
                 } else {

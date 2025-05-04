@@ -1,5 +1,7 @@
-import { IMongoCategory, PermissionScope, ICompact, IInstancesPermission, ISubCompactPermissions } from '@microservices/shared-interfaces';
 import _cloneDeep from 'lodash.clonedeep';
+import { PermissionScope } from '../../interfaces/permissions';
+import { ICompact, IInstancesPermission, ISubCompactPermissions } from '../../interfaces/permissions/permissions';
+import { IMongoCategory } from '../../interfaces/categories';
 import { entityTemplatePermissionDialog } from './permissionOfUserDialog';
 
 export const checkUserCategoryPermission = (
@@ -164,7 +166,7 @@ const handleUncheckCategoryByTemplates = (
                     scope:
                         categoriesPermissions[categoryId]?.scope === PermissionScope.write
                             ? PermissionScope.write
-                            : (categoriesPermissions?.[categoryId]?.entityTemplates?.[entityTemplate.id]?.scope ?? PermissionScope.read),
+                            : categoriesPermissions?.[categoryId]?.entityTemplates?.[entityTemplate.id]?.scope ?? PermissionScope.read,
                     fields: {},
                 };
             }

@@ -7,7 +7,7 @@ import { flattenTree, useTreeUtils } from '../../utils/hooks/useTreeUtils';
 import { SelectAll } from './SelectAll';
 import TreeItem from './TreeItem';
 
-interface TreeProps<T extends object> {
+interface TreeProps<T extends {}> {
     treeItems: TreeViewBaseItem<T>[];
     getItemId: (item: T) => string;
     getItemLabel: (item: T) => string;
@@ -27,7 +27,7 @@ interface TreeProps<T extends object> {
     parentInfersChildren?: boolean;
 }
 
-const Tree = <T extends object>({
+const Tree = <T extends {}>({
     treeItems,
     onSelectItems,
     getItemId,
@@ -58,7 +58,7 @@ const Tree = <T extends object>({
     const TreeItemWrapper = useCallback((props: TreeItem2Props) => <TreeItem {...props} showIcon={showIcon} />, [showIcon]);
 
     useEffect(() => {
-        setSelectedItemsIds(parentInfersChildren ? selectedIdsWithParents : (preSelectedItemsIds ?? []));
+        setSelectedItemsIds(parentInfersChildren ? selectedIdsWithParents : preSelectedItemsIds ?? []);
     }, [JSON.stringify(preSelectedItemsIds), JSON.stringify(selectedIdsWithParents)]);
 
     const [expandedItemsIds, setExpandedItemsIds] = useState<string[]>(preExpandedItemIds ?? []);

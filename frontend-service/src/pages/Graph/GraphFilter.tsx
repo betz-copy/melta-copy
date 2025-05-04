@@ -6,27 +6,18 @@ import i18next from 'i18next';
 import debounce from 'lodash/debounce';
 import React, { useCallback, useState } from 'react';
 import { IoIosArrowDown } from 'react-icons/io';
-import {
-    basicFilterOperationTypes,
-    IAgGridDateFilter,
-    IAgGridNumberFilter,
-    IAgGridSetFilter,
-    IAgGridTextFilter,
-    IEntityTemplateMap,
-    IGraphFilterBody,
-    IGraphFilterBodyBatch,
-    IMongoEntityTemplatePopulated,
-    textFilterOperationTypes,
-} from '@microservices/shared-interfaces';
-import { CustomIcon } from '../../common/CustomIcon';
 import { useQueryClient } from 'react-query';
+import { CustomIcon } from '../../common/CustomIcon';
 import { DateFilterInput } from '../../common/inputs/FilterInputs/DateFilterInput';
 import { MultipleSelectFilterInput } from '../../common/inputs/FilterInputs/MultipleSelectFilterInput';
 import { MultipleUserFilterInput } from '../../common/inputs/FilterInputs/MultipleUserFilterInput';
 import { SelectFilterInput } from '../../common/inputs/FilterInputs/SelectFilterInput';
 import { StyledFilterInput } from '../../common/inputs/FilterInputs/StyledFilterInput';
 import { TextFilterInput } from '../../common/inputs/FilterInputs/TextFilterInput';
+import { IGraphFilterBody, IGraphFilterBodyBatch } from '../../interfaces/entities';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { useDarkModeStore } from '../../stores/darkMode';
+import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter, IAGGridTextFilter } from '../../utils/agGrid/interfaces';
 
 interface GraphFilterProps {
     templateOptions: IMongoEntityTemplatePopulated[];
@@ -116,11 +107,11 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
         const { format, type } = selectedTemplate.properties.properties[newProperty];
 
         const initializedFilterField: Record<string, IGraphFilterBody['filterField']> = {
-            'date-time': { filterType: 'date', type: basicFilterOperationTypes.equals, dateFrom: null, dateTo: null },
-            date: { filterType: 'date', type: basicFilterOperationTypes.equals, dateFrom: null, dateTo: null },
-            number: { filterType: 'number', type: basicFilterOperationTypes.equals },
-            string: { filterType: 'text', type: textFilterOperationTypes.contains },
-            boolean: { filterType: 'text', type: basicFilterOperationTypes.equals },
+            'date-time': { filterType: 'date', type: 'equals', dateFrom: null, dateTo: null },
+            date: { filterType: 'date', type: 'equals', dateFrom: null, dateTo: null },
+            number: { filterType: 'number', type: 'equals' },
+            string: { filterType: 'text', type: 'contains' },
+            boolean: { filterType: 'text', type: 'equals' },
             array: { filterType: 'set', values: [] },
         };
 
@@ -158,7 +149,7 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
             {
                 ...filterField,
                 ...(isStartDate ? { dateFrom: newValue } : { dateTo: newValue }),
-            } as IAgGridDateFilter,
+            } as IAGGridDateFilter,
             Boolean(
                 isStartDate
                     ? filterField?.filterType === 'date' && newValue && (filterField.type !== 'inRange' || filterField.dateTo)
@@ -168,10 +159,10 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
     };
 
     const handleCheckboxChange = (option: string, checked: boolean) => {
-        const { values } = filterField as IAgGridSetFilter;
+        const { values } = filterField as IAGGridSetFilter;
 
         const updatedValues = checked ? [...values, option] : values?.filter((item) => item !== option);
-        const updatedFilterField = { ...filterField, values: updatedValues } as IAgGridSetFilter;
+        const updatedFilterField = { ...filterField, values: updatedValues } as IAGGridSetFilter;
 
         setFilterField(updatedFilterField);
         if (updatedValues.length === 0) removeFilterFromFilterList(filterKey);
@@ -179,9 +170,9 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
     };
 
     const handleFilterTypeChange = (
-        newTypeFilter: IAgGridDateFilter['type'] | IAgGridTextFilter['type'] | IAgGridNumberFilter['type'],
+        newTypeFilter: IAGGridDateFilter['type'] | IAGGridTextFilter['type'] | IAGGidNumberFilter['type'],
         condition: boolean = true,
-    ) => handleFilterFieldChange({ ...filterField, type: newTypeFilter } as IAgGridDateFilter | IAgGridTextFilter | IAgGridNumberFilter, condition);
+    ) => handleFilterFieldChange({ ...filterField, type: newTypeFilter } as IAGGridDateFilter | IAGGridTextFilter | IAGGidNumberFilter, condition);
 
     const handleFilterErasion = () => {
         removeFilterFromFilterList(filterKey);
@@ -197,7 +188,7 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
         if (propEnum)
             return (
                 <SelectFilterInput
-                    filterField={filterField?.filterType === 'text' ? (filterField as IAgGridTextFilter) : undefined}
+                    filterField={filterField?.filterType === 'text' ? (filterField as IAGGridTextFilter) : undefined}
                     enumOptions={propEnum}
                     handleFilterFieldChange={handleFilterFieldChange}
                     readOnly={readOnly}
@@ -207,7 +198,7 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
         if (format === 'date-time' || format === 'date')
             return (
                 <DateFilterInput
-                    filterField={filterField?.filterType === 'date' ? (filterField as IAgGridDateFilter) : undefined}
+                    filterField={filterField?.filterType === 'date' ? (filterField as IAGGridDateFilter) : undefined}
                     handleFilterTypeChange={handleFilterTypeChange}
                     handleDateChange={handleDateChange}
                     readOnly={readOnly}
@@ -218,7 +209,7 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
         if (type === 'boolean')
             return (
                 <SelectFilterInput
-                    filterField={filterField?.filterType === 'text' ? (filterField as IAgGridTextFilter) : undefined}
+                    filterField={filterField?.filterType === 'text' ? (filterField as IAGGridTextFilter) : undefined}
                     isBooleanSelect
                     handleFilterFieldChange={handleFilterFieldChange}
                     readOnly={readOnly}
@@ -228,7 +219,7 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
         if (items && selectedTemplate.properties.properties[selectedProperty].items?.enum)
             return (
                 <MultipleSelectFilterInput
-                    filterField={filterField?.filterType === 'set' ? (filterField as IAgGridSetFilter) : undefined}
+                    filterField={filterField?.filterType === 'set' ? (filterField as IAGGridSetFilter) : undefined}
                     handleCheckboxChange={handleCheckboxChange}
                     enumOptions={items?.enum}
                     readOnly={readOnly}
@@ -238,7 +229,7 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
         if (items?.format === 'user' && type === 'array')
             return (
                 <MultipleUserFilterInput
-                    filterField={filterField?.filterType === 'set' ? (filterField as IAgGridSetFilter) : undefined}
+                    filterField={filterField?.filterType === 'set' ? (filterField as IAGGridSetFilter) : undefined}
                     inputValue={inputValue}
                     setInputValue={setInputValue}
                     handleCheckboxChange={handleCheckboxChange}
@@ -251,7 +242,7 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
                 entityFilter={entityFilter}
                 filterField={
                     filterField?.filterType === 'number' || filterField?.filterType === 'text'
-                        ? (filterField as IAgGridNumberFilter | IAgGridTextFilter)
+                        ? (filterField as IAGGidNumberFilter | IAGGridTextFilter)
                         : undefined
                 }
                 handleFilterFieldChange={handleFilterFieldChange}

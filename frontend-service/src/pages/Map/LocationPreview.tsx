@@ -3,12 +3,13 @@ import { Cartesian3, Color } from 'cesium';
 import { Viewer, Entity, PolygonGraphics, PointGraphics, PolylineGraphics, BillboardGraphics } from 'resium';
 import * as Cesium from 'cesium';
 import { useQueryClient } from 'react-query';
+import { IEntity } from '../../interfaces/entities';
+import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { useEntityWithLocationFields } from '../../utils/hooks/useLocation';
 import { locationToWGS84String, jerusalemCoordinates } from '../../utils/map';
 import { BaseLayers } from './BaseLayers';
 import { BackendConfigState } from '../../services/backendConfigService';
 import { convertWGS94ToECEF } from '../../utils/map/convert';
-import { IEntity, IMongoEntityTemplatePopulated } from '@microservices/shared-interfaces';
 
 export const MeltaPolygon = ({ name, polygon, onClick }: { name: string; polygon: Cartesian3[]; onClick?: () => void }) => (
     <Entity name={name} description={locationToWGS84String(polygon)} onClick={onClick}>

@@ -1,7 +1,8 @@
 /* eslint-disable react/no-array-index-key */
 import { Box } from '@mui/material';
-import { IMongoEntityTemplatePopulated, IGraphFilterBodyBatch } from '@microservices/shared-interfaces';
 import React from 'react';
+import { IGraphFilterBodyBatch } from '../../interfaces/entities';
+import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { GraphFilter } from './GraphFilter';
 
 interface GraphFilterBatchProps {
@@ -36,7 +37,7 @@ const GraphFilterBatch: React.FC<GraphFilterBatchProps> = React.memo(
 
         const removeFilterFromFilterList = (filterKey: number) => {
             setFilterRecord((prev) => {
-                const { [filterKey]: _deletedFilter, ...restFilters } = prev;
+                const { [filterKey]: deletedFilter, ...restFilters } = prev;
                 return restFilters;
             });
             onFilter?.();

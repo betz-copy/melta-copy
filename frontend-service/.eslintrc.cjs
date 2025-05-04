@@ -2,7 +2,7 @@ module.exports = {
     env: {
         browser: true,
     },
-    extends: ['airbnb', 'prettier', 'plugin:prettier/recommended', 'plugin:react-hooks/recommended', "plugin:@typescript-eslint/recommended"],
+    extends: ['airbnb', 'prettier', 'plugin:prettier/recommended', 'plugin:react-hooks/recommended'],
     parser: '@typescript-eslint/parser',
     plugins: ['@typescript-eslint', 'prettier'],
     parserOptions: {
@@ -36,7 +36,6 @@ module.exports = {
         'react/prop-types': 'off',
         'react/no-unused-prop-types': 'off',
         'jsx-a11y/alt-text': 'off',
-        "@typescript-eslint/no-explicit-any": "off", // TODO: Yona - Maybe remove this
         'react/jsx-filename-extension': [
             2,
             {
@@ -55,12 +54,6 @@ module.exports = {
             {
                 props: true,
                 ignorePropertyModificationsFor: ['state'],
-            },
-        ],
-        'import/no-extraneous-dependencies': [
-            'error',
-            {
-                packageDir: [__dirname, `${__dirname}/../..`],
             },
         ],
         'no-shadow': 'off',

@@ -3,15 +3,17 @@ import { Accordion, AccordionDetails, AccordionSummary, CircularProgress, Grid, 
 import i18next from 'i18next';
 import React, { useState } from 'react';
 import { v4 as uuid } from 'uuid';
+import { IEntity, ISearchFilter } from '../../../../interfaces/entities';
+import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
+import { IFailedEntity } from '../../../../interfaces/excel';
 import { useWorkspaceStore } from '../../../../stores/workspace';
 import EntitiesTableOfTemplate from '../../../EntitiesTableOfTemplate';
 import { TableButton } from '../../../TableButton';
-import { IFailedEntity, ISearchFilter, IMongoEntityTemplateWithConstraintsPopulated, IEntity } from '@microservices/shared-interfaces';
 
 export const EntitiesTable: React.FC<{
     rowData?: IEntity[] | IFailedEntity[];
     rowModelType?: 'serverSide' | 'clientSide' | 'infinite';
-    template: IMongoEntityTemplateWithConstraintsPopulated;
+    template: IMongoEntityTemplatePopulated;
     defaultExpanded: boolean;
     icon?: React.JSX.Element;
     title: string;

@@ -2,9 +2,10 @@ import { History } from '@mui/icons-material';
 import { Button } from '@mui/material';
 import i18next from 'i18next';
 import React, { useEffect } from 'react';
-import { IEntityExpanded, IMongoEntityTemplatePopulated } from '@microservices/shared-interfaces';
 import { MeltaTooltip } from '../../../../common/MeltaTooltip';
 import PopperSidebar from '../../../../common/PopperSidebar';
+import { IEntityExpanded } from '../../../../interfaces/entities';
+import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { ActivitiesContent } from './ActivitiesContent';
 
 const ActivityLog: React.FC<{ expandedEntity?: IEntityExpanded; entityTemplate: IMongoEntityTemplatePopulated }> = ({
@@ -19,14 +20,14 @@ const ActivityLog: React.FC<{ expandedEntity?: IEntityExpanded; entityTemplate: 
 
     return (
         <>
-            <MeltaTooltip title={String(i18next.t('entityPage.activityLog.header'))}>
+            <MeltaTooltip title={i18next.t('entityPage.activityLog.header')}>
                 <Button
                     variant="contained"
                     startIcon={<History />}
                     onClick={() => setOpenPopper((previousOpen) => !previousOpen)}
                     sx={{ marginLeft: '1rem' }}
                 >
-                    {String(i18next.t('entityPage.activityLog.header'))}
+                    {i18next.t('entityPage.activityLog.header')}
                 </Button>
             </MeltaTooltip>
 

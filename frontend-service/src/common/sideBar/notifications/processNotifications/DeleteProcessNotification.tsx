@@ -1,7 +1,7 @@
 import React from 'react';
 import { Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
-import { IDeleteProcessNotificationMetadataPopulated, NotificationType } from '@microservices/shared-interfaces';
+import { IDeleteProcessNotificationMetadataPopulated, NotificationType } from '../../../../interfaces/notifications';
 import { environment } from '../../../../globals';
 import { NotificationColor } from '../../../notificationColor';
 

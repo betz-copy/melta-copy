@@ -3,11 +3,12 @@ import { TextField, Grid, RadioGroup, Radio, FormControl, FormControlLabel, Form
 import * as Yup from 'yup';
 import i18next from 'i18next';
 import { useQueryClient } from 'react-query';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '@microservices/shared-interfaces';
 import { StepComponentProps } from '../index';
 import { RuleWizardValues } from '.';
+import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { getAllWritePermissionEntityTemplates } from '../../../utils/permissions/templatePermissions';
 import { useUserStore } from '../../../stores/user';
+
 const createRuleSchema = {
     name: Yup.string().required(i18next.t('validation.required')),
     description: Yup.string().required(i18next.t('validation.required')),
@@ -30,7 +31,7 @@ const CreateRule: React.FC<StepComponentProps<RuleWizardValues, 'isEditMode'>> =
 
     const { entityTemplateId } = values;
 
-    const activeEntityTemplatesFiltered = Array.from(entityTemplates.values() as IMongoEntityTemplatePopulated[]).filter(({ disabled }) => !disabled);
+    const activeEntityTemplatesFiltered = Array.from(entityTemplates.values()).filter(({ disabled }) => !disabled);
     const allowedEntityTemplates = getAllWritePermissionEntityTemplates(activeEntityTemplatesFiltered, currentUser);
 
     const entityTemplate = entityTemplateId ? entityTemplates.get(entityTemplateId)! : null;

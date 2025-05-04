@@ -3,10 +3,10 @@ import { useQueryClient } from 'react-query';
 import i18next from 'i18next';
 import { Card, CardContent, Divider, FormControlLabel, FormGroup, Typography } from '@mui/material';
 import * as Yup from 'yup';
-import { ICategoryMap } from '@microservices/shared-interfaces';
 import { StepComponentProps } from '..';
 import { IFrameWizardValues } from '.';
 import { MeltaCheckbox } from '../../MeltaCheckbox';
+import { ICategoryMap } from '../../../interfaces/categories';
 import { useUserStore } from '../../../stores/user';
 
 const settingIFramesPermissionsSchema = {

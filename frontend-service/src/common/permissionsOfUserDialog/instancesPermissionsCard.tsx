@@ -1,11 +1,12 @@
 import { Card, CardContent, CheckboxProps, Divider, FormControlLabel, Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
-import { IUser, PermissionScope } from '@microservices/shared-interfaces';
 import { FormikProps } from 'formik';
+import { PermissionScope } from '../../interfaces/permissions';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { MeltaCheckbox } from '../MeltaCheckbox';
 import CategoryCheckboxPermission from './categoryCheckboxPermission';
+import { IUser } from '../../interfaces/users';
 import { entityTemplatePermissionDialog } from '../../utils/permissions/permissionOfUserDialog';
 
 type checkboxControlProps = {

@@ -3,21 +3,18 @@ import i18next from 'i18next';
 import React, { forwardRef, useImperativeHandle, useState } from 'react';
 import { useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import {
-    IEntityTemplateWithConstraintsMap,
-    IEntityTemplateMap,
-    IEntityWithDirectConnections,
-    ISemanticSearchResult,
-} from '@microservices/shared-interfaces';
 import { environment } from '../../globals';
+import { IEntityWithDirectConnections } from '../../interfaces/entities';
+import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
 import EntityCard from '../../pages/GlobalSearch/components/entityCard';
 import { getEntitiesWithDirectConnections } from '../../services/entitiesService';
 import { InfiniteScroll } from '../InfiniteScroll';
 import { useSearchParams } from '../../utils/hooks/useSearchParams';
 import { convertToBool } from '../../utils/convertStringToBool';
-import { useWorkspaceStore } from '../../stores/workspace';
+import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
 
 const { infiniteScrollPageCount } = environment.entitiesCardsView;
+
 export interface CardsViewRef {
     refetch: () => void;
 }
@@ -60,7 +57,6 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
 
                             const searchEntitiesResult = await getEntitiesWithDirectConnections({
                                 skip: startRow,
-                                sort: [],
                                 limit: infiniteScrollPageCount,
                                 textSearch: searchInput,
                                 templates: Object.fromEntries(templateIds.map((templateId) => [templateId, { showRelationships: false }])),
@@ -87,8 +83,8 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
                         useContainer={false}
                     >
                         {({ entity, minioFileIdsWithTexts }) => {
-                            const entityTemplates = queryClient.getQueryData<IEntityTemplateWithConstraintsMap>('getEntityTemplates');
-                            const entityTemplate = entityTemplates!.get(entity.templateId)!;
+                            const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates');
+                            const entityTemplate = entityTemplates?.get(entity.templateId)!;
                             return (
                                 <EntityCard
                                     minioFileId={minioFileIdsWithTexts?.[0].minioFileId} // Navigate to the first found file

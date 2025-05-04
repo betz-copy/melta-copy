@@ -1,8 +1,9 @@
 /* eslint-disable no-param-reassign */
 import { Cartesian3 } from 'cesium';
 import { environment } from '../../globals';
+import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IEntity, SplitBy } from '../../interfaces/entities';
 import { convertECEFToWGS84, convertWGS94ToECEF, isValidWGS84 } from './convert';
-import { IEntity, IEntitySingleProperty, IMongoEntityTemplatePopulated, SplitBy } from '@microservices/shared-interfaces';
 
 const {
     polygon: { polygonPrefix, polygonSuffix },
@@ -130,24 +131,18 @@ export const getLocationProperties = (entity: IEntity, selectedTemplates: IMongo
     if (!template) return { template: undefined, locationTemplateProperties: undefined, locationProperties: undefined };
 
     const locationTemplateProperties = Object.entries(template.properties.properties)
-        .filter(([_key, value]: [string, IEntitySingleProperty]) => value.format === 'location')
-        .reduce(
-            (acc, [key, value]) => {
-                acc[key] = value;
-                return acc;
-            },
-            {} as { [x: string]: IEntitySingleProperty },
-        );
+        .filter(([_key, value]) => value.format === 'location')
+        .reduce((acc, [key, value]) => {
+            acc[key] = value;
+            return acc;
+        }, {} as { [x: string]: IEntitySingleProperty });
 
     const locationProperties = Object.entries(entity.properties)
         .filter(([key, _value]) => key in locationTemplateProperties)
-        .reduce(
-            (acc, [key, value]) => {
-                acc[key] = value;
-                return acc;
-            },
-            {} as { [x: string]: any },
-        );
+        .reduce((acc, [key, value]) => {
+            acc[key] = value;
+            return acc;
+        }, {} as { [x: string]: any });
 
     return { template, locationTemplateProperties, locationProperties };
 };

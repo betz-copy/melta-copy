@@ -2,12 +2,13 @@ import React, { Dispatch, SetStateAction } from 'react';
 import { Grid, Typography, useTheme } from '@mui/material';
 import { Add as AddIcon } from '@mui/icons-material';
 import i18next from 'i18next';
-import { IMongoProcessTemplateReviewerPopulated, PermissionScope } from '@microservices/shared-interfaces';
 import { TopBarGrid } from '../../common/TopBar';
 import { BlueTitle } from '../../common/BlueTitle';
 import { AddProcessButton } from './AddProcessButton';
+import { IMongoProcessTemplatePopulated } from '../../interfaces/processes/processTemplate';
 import './ProcessesList.css';
 import { useUserStore } from '../../stores/user';
+import { PermissionScope } from '../../interfaces/permissions';
 import { useWorkspaceStore } from '../../stores/workspace';
 
 const ProcessInstancesHeadline: React.FC<{
@@ -15,9 +16,9 @@ const ProcessInstancesHeadline: React.FC<{
     onSetStartDate: (newStartDateInput: Date | null) => void;
     onSetEndDate: (newEndDateInput: Date | null) => void;
     templatesSelectCheckboxProps: {
-        templates: IMongoProcessTemplateReviewerPopulated[];
-        templatesToShow: IMongoProcessTemplateReviewerPopulated[];
-        setTemplatesToShow: Dispatch<SetStateAction<IMongoProcessTemplateReviewerPopulated[]>>;
+        templates: IMongoProcessTemplatePopulated[];
+        templatesToShow: IMongoProcessTemplatePopulated[];
+        setTemplatesToShow: Dispatch<SetStateAction<IMongoProcessTemplatePopulated[]>>;
     };
     startDateInput: Date | null;
     endDateInput: Date | null;
@@ -50,7 +51,7 @@ const ProcessInstancesHeadline: React.FC<{
                     <AddProcessButton style={{ background: theme.palette.primary.main, borderRadius: '5px', height: '35px' }}>
                         <AddIcon htmlColor="white" />
                         <Typography fontSize={14} style={{ fontWeight: '500', padding: '0 10px', color: 'white' }}>
-                            {String(i18next.t('processInstancesPage.addProcess'))}
+                            {i18next.t('processInstancesPage.addProcess')}
                         </Typography>
                     </AddProcessButton>
                 )}

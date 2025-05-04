@@ -1,19 +1,19 @@
 /* eslint-disable react/no-unstable-nested-components */
 import { AxiosError } from 'axios';
-import { ICategory, ICategoryMap } from '@microservices/shared-interfaces';
-import { StepType, Wizard, WizardBaseType } from '../index';
-import { CreateCategoryName, useCreateCategoryNameSchema } from './CreateCategoryName';
-import { createCategoryRequest, updateCategoryRequest } from '../../../services/templates/categoriesService';
-import { ChooseIcon } from './ChooseIcon';
-import { ChooseColor, chooseColorSchema } from './ChooseColor';
 import i18next from 'i18next';
 import React from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
+import { ICategory, ICategoryMap } from '../../../interfaces/categories';
 import fileDetails from '../../../interfaces/fileDetails';
+import { createCategoryRequest, updateCategoryRequest } from '../../../services/templates/categoriesService';
 import { useUserStore } from '../../../stores/user';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { ErrorToast } from '../../ErrorToast';
+import { StepType, Wizard, WizardBaseType } from '../index';
+import { ChooseColor, chooseColorSchema } from './ChooseColor';
+import { ChooseIcon } from './ChooseIcon';
+import { CreateCategoryName, useCreateCategoryNameSchema } from './CreateCategoryName';
 import { updateUserPermissionForCategory } from '../../../utils/permissions/templatePermissions';
 
 export interface CategoryWizardValues extends Omit<ICategory, 'iconFileId'> {
@@ -47,7 +47,7 @@ const CategoryWizard: React.FC<WizardBaseType<CategoryWizardValues>> = ({
                 toast.success(i18next.t(isEditMode ? 'wizard.category.editedSuccessfully' : 'wizard.category.createdSuccessfully'));
                 handleClose();
             },
-            onError: (error: AxiosError<{ metadata: { errorCode: string } }>) => {
+            onError: (error: AxiosError) => {
                 if (isEditMode) {
                     toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.category.failedToEdit')} />);
                 } else {

@@ -8,10 +8,11 @@ import { useInfiniteQuery } from 'react-query';
 import { toast } from 'react-toastify';
 import { _debounce } from '@ag-grid-community/core';
 import { InfoOutlined } from '@mui/icons-material';
-import { IMongoEntityTemplatePopulated, IEntity, ISearchFilter, IMongoRelationshipTemplate } from '@microservices/shared-interfaces';
 import { getEntitiesWithDirectConnections } from '../../../services/entitiesService';
+import { IEntity } from '../../../interfaces/entities';
 import { MeltaTooltip } from '../../../common/MeltaTooltip';
 import { EntityPropertiesInternal } from '../../../common/EntityProperties';
+import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { getLocationProperties } from '../../../utils/map';
 
@@ -70,12 +71,7 @@ const SearchAutoComplete = ({ selectedTemplates, handleEntityClick, onClear }: p
 
     const [inputValue, setInputValue] = useState('');
     const [searchResults, setSearchResults] = useState<IEntity[]>([]);
-    const [templatesObject, setTemplatesObject] = useState<{
-        [templateId: string]: {
-            filter?: ISearchFilter;
-            showRelationships: boolean | Array<IMongoRelationshipTemplate['_id']>;
-        };
-    }>({});
+    const [templatesObject, setTemplatesObject] = useState<Record<string, {}>>({});
 
     useEffect(() => {
         const updatedTemplatesObject = selectedTemplates.map(({ _id }) => _id).reduce((acc, template) => ({ ...acc, [template]: {} }), {});
@@ -91,7 +87,6 @@ const SearchAutoComplete = ({ selectedTemplates, handleEntityClick, onClear }: p
                 limit: 50,
                 textSearch: inputValue,
                 templates: templatesObject,
-                sort: [],
             });
         },
         {

@@ -1,11 +1,11 @@
 import { Typography } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
-import { IMongoProcessInstanceReviewerPopulated } from '@microservices/shared-interfaces';
+import { IMongoProcessInstancePopulated } from '../../../../interfaces/processes/processInstance';
 import { MeltaTooltip } from '../../../MeltaTooltip';
 
 interface ProcessNameProps {
-    process: IMongoProcessInstanceReviewerPopulated | null;
+    process: IMongoProcessInstancePopulated | null;
 }
 
 export const ProcessName: React.FC<ProcessNameProps> = ({ process }) => {

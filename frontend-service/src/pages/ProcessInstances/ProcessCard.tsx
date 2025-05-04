@@ -24,16 +24,11 @@ import ArchiveIcon from '@mui/icons-material/Archive';
 import CircularProgress from '@mui/material/CircularProgress';
 import { AxiosError } from 'axios';
 import { toast } from 'react-toastify';
-import {
-    IMongoStepTemplatePopulated,
-    IMongoProcessInstanceReviewerPopulated,
-    Status,
-    IMongoStepInstancePopulated,
-    IProcessTemplateMap,
-    StatusColors,
-    StatusColorsNames,
-} from '@microservices/shared-interfaces';
 import { CustomIcon } from '../../common/CustomIcon';
+import { IMongoStepTemplatePopulated } from '../../interfaces/processes/stepTemplate';
+import { IMongoProcessInstancePopulated, Status, StatusColors, StatusColorsNames } from '../../interfaces/processes/processInstance';
+import { IMongoStepInstancePopulated } from '../../interfaces/processes/stepInstance';
+import { IProcessTemplateMap } from '../../interfaces/processes/processTemplate';
 import ProcessInstanceWizard from '../../common/wizards/processInstance';
 import { archiveProcessRequest, deleteProcessRequest, updateProcessRequest } from '../../services/processesService';
 import { MenuButton } from '../../common/MenuButton';
@@ -187,7 +182,7 @@ const StepIconComponent = (
 );
 
 const ProcessCard: React.FC<{
-    processInstance: IMongoProcessInstanceReviewerPopulated;
+    processInstance: IMongoProcessInstancePopulated;
     onChangedProcessDialogClose: (string) => void;
     isEditMode: boolean;
     isLoading?: boolean;
@@ -207,7 +202,7 @@ const ProcessCard: React.FC<{
     };
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
     const [deleteDialogState, setDeleteDialogState] = useState<boolean>(false);
-    const [currProcessInstance, setCurrProcessInstance] = useState<IMongoProcessInstanceReviewerPopulated>(processInstance);
+    const [currProcessInstance, setCurrProcessInstance] = useState<IMongoProcessInstancePopulated>(processInstance);
     const [isProcessChanged, setIsProcessChanged] = useState<boolean>(false);
     const [isEditModeProcess, setIsEditMode] = useState<boolean>(false);
 
@@ -230,7 +225,7 @@ const ProcessCard: React.FC<{
                 setCurrProcessInstance(processNewData);
                 queryClient.resetQueries({ queryKey: ['searchProcesses'] });
             },
-            onError: (error: AxiosError<{ metadata: { errorCode: string } }>) => {
+            onError: (error: AxiosError) => {
                 toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.processInstance.failedToEdit')} />);
                 console.log('failed to update process instance. error', error);
             },
@@ -242,7 +237,7 @@ const ProcessCard: React.FC<{
             return deleteProcessRequest(processId);
         },
         {
-            onError: (error: AxiosError<{ metadata: { errorCode: string } }>) => {
+            onError: (error: AxiosError) => {
                 console.log('failed to delete process. error:', error);
                 toast.error(i18next.t('processInstancesPage.failedToDeleteProcess'));
             },
@@ -252,11 +247,11 @@ const ProcessCard: React.FC<{
         },
     );
     const { mutateAsync: archiveProcessMutate, isLoading: isLodingArchiveProcess } = useMutation(
-        (process: IMongoProcessInstanceReviewerPopulated) => {
+        (process: IMongoProcessInstancePopulated) => {
             return archiveProcessRequest(process._id, !process.archived);
         },
         {
-            onError: (error: AxiosError, process: IMongoProcessInstanceReviewerPopulated) => {
+            onError: (error: AxiosError, process: IMongoProcessInstancePopulated) => {
                 if (process.archived) {
                     console.log('failed to send process to archive. error:', error);
                     toast.success(i18next.t('processInstancesPage.failedToSendProcessToArchive'));
@@ -265,7 +260,7 @@ const ProcessCard: React.FC<{
                     toast.success(i18next.t('processInstancesPage.failedToRemoveProcessFromArchive'));
                 }
             },
-            onSuccess: (process: IMongoProcessInstanceReviewerPopulated) => {
+            onSuccess: (process: IMongoProcessInstancePopulated) => {
                 if (process.archived) toast.success(i18next.t('processInstancesPage.processSendToArchiveSuccessfully'));
                 else toast.success(i18next.t('processInstancesPage.processRemoveFromArchiveSuccessfully'));
             },

@@ -1,23 +1,24 @@
 import i18next from 'i18next';
 import React, { Dispatch } from 'react';
-import { IMongoEntityTemplateWithConstraintsPopulated, IMongoCategory } from '@microservices/shared-interfaces';
+import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { SelectCheckbox } from './SelectCheckBox';
 import { groupTemplatesByCategory } from '../utils/hooks/useTreeUtils';
+import { IMongoCategory } from '../interfaces/categories';
 
 const TemplatesSelectCheckbox: React.FC<{
     title: string;
-    templates: IMongoEntityTemplateWithConstraintsPopulated[];
-    selectedTemplates: IMongoEntityTemplateWithConstraintsPopulated[];
-    setSelectedTemplates: React.Dispatch<React.SetStateAction<IMongoEntityTemplateWithConstraintsPopulated[]>>;
-    categories?: IMongoCategory[];
+    templates: IMongoEntityTemplatePopulated[];
+    selectedTemplates: IMongoEntityTemplatePopulated[];
+    setSelectedTemplates: React.Dispatch<React.SetStateAction<IMongoEntityTemplatePopulated[]>>;
+    categories: IMongoCategory[];
     isDraggableDisabled?: boolean;
-    setTemplates?: Dispatch<React.SetStateAction<IMongoEntityTemplateWithConstraintsPopulated[]>>;
+    setTemplates?: Dispatch<React.SetStateAction<IMongoEntityTemplatePopulated[]>>;
     size?: 'small' | 'medium';
     toTopBar?: boolean;
     overrideSx?: object;
 }> = ({ title, templates, selectedTemplates, setSelectedTemplates, categories, isDraggableDisabled, setTemplates, size, toTopBar, overrideSx }) => {
     return (
-        <SelectCheckbox<IMongoEntityTemplateWithConstraintsPopulated, IMongoCategory>
+        <SelectCheckbox<IMongoEntityTemplatePopulated, IMongoCategory>
             treeFunc={categories?.length ? (groupTemplatesByCategory as any) : undefined}
             title={title}
             filterIcon={title === i18next.t('entityTemplatesCheckboxLabel')}
@@ -32,7 +33,7 @@ const TemplatesSelectCheckbox: React.FC<{
             toTopBar={toTopBar}
             groupsProps={{
                 useGroups: true,
-                groups: categories || [],
+                groups: categories,
                 getGroupId: ({ _id }) => _id,
                 getGroupLabel: ({ displayName }) => displayName,
                 getGroupOfOption: (entityTemplate, _categories) => entityTemplate.category,

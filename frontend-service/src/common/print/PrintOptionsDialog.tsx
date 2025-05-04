@@ -2,21 +2,14 @@ import React from 'react';
 import { Dialog, DialogTitle, DialogContent, Grid, Button, FormControlLabel, DialogActions, IconButton, CircularProgress } from '@mui/material';
 import { PrintOutlined, CloseOutlined } from '@mui/icons-material';
 import i18next from 'i18next';
-import {
-    IEntityExpanded,
-    IMongoProcessInstanceReviewerPopulated,
-    InstanceProperties,
-    IMongoProcessTemplateReviewerPopulated,
-    IProcessSingleProperty,
-    IMongoEntityTemplateWithConstraintsPopulated,
-    IEntity,
-    IEntityTemplate,
-} from '@microservices/shared-interfaces';
 import { SelectCheckbox } from '../SelectCheckBox';
-import { IConnectionTemplateOfExpandedEntity } from '../../pages/Entity';
 import { MeltaCheckbox } from '../MeltaCheckbox';
 import { IFile } from '../../interfaces/preview';
 import { getFile } from '../../utils/getFileType';
+import { IEntityTemplate, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IMongoProcessInstancePopulated, InstanceProperties } from '../../interfaces/processes/processInstance';
+import { IMongoProcessTemplatePopulated, IProcessSingleProperty } from '../../interfaces/processes/processTemplate';
+import { IEntity, IEntityExpanded } from '../../interfaces/entities';
 import {
     IConnectionExpanded,
     IConnectionTemplateExpanded,
@@ -24,6 +17,7 @@ import {
     ISelectRelationshipTemplates,
 } from '../../pages/Entity/components/print';
 import RelationshipSelect from '../../pages/Entity/components/print/RelationshipSelection';
+import { IConnectionTemplateOfExpandedEntity } from '../../pages/Entity';
 
 type IOption = {
     show: boolean;
@@ -59,14 +53,14 @@ const getFilesFromTemplate = (
 const PrintOptionsDialog: React.FC<{
     open: boolean;
     handleClose: () => void;
-    template: IMongoEntityTemplateWithConstraintsPopulated | IMongoProcessTemplateReviewerPopulated;
-    instance: IEntityExpandedWithRelatedRelationships | IMongoProcessInstanceReviewerPopulated;
+    template: IMongoEntityTemplatePopulated | IMongoProcessTemplatePopulated;
+    instance: IEntityExpandedWithRelatedRelationships | IMongoProcessInstancePopulated;
     files: IFile[];
     setFiles: React.Dispatch<React.SetStateAction<IFile[]>>;
     selectedFiles: IFile[];
     setSelectedFiles: React.Dispatch<React.SetStateAction<IFile[]>>;
-    filesLoadingStatus: object;
-    setFilesLoadingStatus: React.Dispatch<React.SetStateAction<object>>;
+    filesLoadingStatus: {};
+    setFilesLoadingStatus: React.Dispatch<React.SetStateAction<{}>>;
     entityConnections?: {
         connectionsTemplates: IConnectionTemplateOfExpandedEntity[];
         expandedRelationshipTemplates: IConnectionTemplateExpanded[];
@@ -102,8 +96,8 @@ const PrintOptionsDialog: React.FC<{
     const getPropertiesFiles = React.useCallback((): IFile[] => {
         if ('category' in template && 'entity' in instance) return getFilesFromTemplate(instance.entity.properties, template.properties);
         return getFilesFromTemplate(
-            (instance as IMongoProcessInstanceReviewerPopulated).details,
-            (template as IMongoProcessTemplateReviewerPopulated).details.properties,
+            (instance as IMongoProcessInstancePopulated).details,
+            (template as IMongoProcessTemplatePopulated).details.properties,
         );
     }, [template, instance]);
 

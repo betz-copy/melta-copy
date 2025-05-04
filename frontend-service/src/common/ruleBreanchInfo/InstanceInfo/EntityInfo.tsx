@@ -2,7 +2,8 @@ import { AppRegistration as AppRegistrationIcon, ExpandLess as ExpandLessIcon, E
 import { Collapse, Divider, Grid, Paper, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import React, { useState } from 'react';
-import { IEntity, IEntityTemplatePopulated } from '@microservices/shared-interfaces';
+import { IEntity } from '../../../interfaces/entities';
+import { IEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { getEntityTemplateColor } from '../../../utils/colors';
 import { CustomIcon } from '../../CustomIcon';
 import { EntityPropertiesInternal } from '../../EntityProperties';

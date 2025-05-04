@@ -2,12 +2,8 @@ import React from 'react';
 import { Autocomplete, AutocompleteChangeDetails, AutocompleteProps, TextField } from '@mui/material';
 import { useQueryClient } from 'react-query';
 import i18next from 'i18next';
-import {
-    IMongoRelationshipTemplatePopulated,
-    IRelationshipTemplateMap,
-    IEntityTemplateMap,
-    IMongoEntityTemplatePopulated,
-} from '@microservices/shared-interfaces';
+import { IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { populateRelationshipTemplate } from '../../utils/templates';
 import { getAllAllowedEntities, getAllAllowedRelationships } from '../../utils/permissions/templatePermissions';
 import { useUserStore } from '../../stores/user';

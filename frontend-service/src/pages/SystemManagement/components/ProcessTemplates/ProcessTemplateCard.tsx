@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { Divider, Grid, Typography, useTheme } from '@mui/material';
 import { ScatterPlotOutlined as HiveIcon } from '@mui/icons-material';
 import i18next from 'i18next';
-import { IMongoProcessTemplateReviewerPopulated } from '@microservices/shared-interfaces';
 import { ViewingCard } from '../Card';
+import { IMongoProcessTemplatePopulated } from '../../../../interfaces/processes/processTemplate';
 import { CardMenu } from '../CardMenu';
 import { CustomIcon } from '../../../../common/CustomIcon';
 import { MeltaTooltip } from '../../../../common/MeltaTooltip';
@@ -12,11 +12,11 @@ import { ProcessStep } from './ProcessStep';
 import { useWorkspaceStore } from '../../../../stores/workspace';
 
 interface ProcessTemplateCardProps {
-    processTemplate: IMongoProcessTemplateReviewerPopulated;
+    processTemplate: IMongoProcessTemplatePopulated;
     setProcessTemplateWizardDialogState: (
         value: React.SetStateAction<{
             isWizardOpen: boolean;
-            processTemplate: IMongoProcessTemplateReviewerPopulated | null;
+            processTemplate: IMongoProcessTemplatePopulated | null;
         }>,
     ) => void;
     setDeleteProcessTemplateDialogState: (
