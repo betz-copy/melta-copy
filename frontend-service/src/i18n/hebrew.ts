@@ -352,7 +352,7 @@ export default {
     },
     userAutocomplete: {
         label: 'משתמש',
-        searchLabel: 'חיפוש משתמש',
+        searchLabel: 'חיפוש משתמש להוספה',
         failedToSearchUsers: 'נכשל לחפש משתמשים',
         loading: 'טוען...',
         noOptions: 'אין תוצאות',

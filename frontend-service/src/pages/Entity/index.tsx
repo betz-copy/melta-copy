@@ -459,7 +459,7 @@ const Entity: React.FC = () => {
                         <Grid item>
                             <TabContext value={value}>
                                 <Box sx={{ borderBottom: 1, borderColor: 'divider', display: 'flex' }}>
-                                    <TabList style={{ height: '60px' }} onChange={(_event, newValue) => setValue(newValue)} variant="scrollable">
+                                    <TabList onChange={(_event, newValue) => setValue(newValue)} variant="scrollable">
                                         {categoriesWithConnectionsTemplates.map(({ category: { _id, displayName, iconFileId } }, index) => (
                                             <Tab
                                                 style={{

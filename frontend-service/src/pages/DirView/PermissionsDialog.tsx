@@ -1,8 +1,21 @@
-import { Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
+import {
+    Box,
+    Button,
+    CircularProgress,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    Grid,
+    IconButton,
+    InputAdornment,
+    TextField,
+} from '@mui/material';
 import i18next from 'i18next';
 import React, { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
+import { AddCircle, RemoveCircle } from '@mui/icons-material';
 import { BlueTitle } from '../../common/BlueTitle';
 import UserAutocomplete from '../../common/inputs/UserAutocomplete';
 import { PermissionScope } from '../../interfaces/permissions';
@@ -11,6 +24,7 @@ import { createUserRequest, searchUsersByPermissions } from '../../services/user
 import { useWorkspaceStore } from '../../stores/workspace';
 import { PermissionsDialogCard } from './permissionsDialogCard';
 import { useUserStore } from '../../stores/user';
+import { MeltaTooltip } from '../../common/MeltaTooltip';
 
 interface IPermissionsDialogProps {
     open: boolean;
@@ -25,9 +39,13 @@ export const PermissionsDialog: React.FC<IPermissionsDialogProps> = ({ open, han
 
     const [searchedUser, setSearchedUser] = useState<IUser | null>(null);
 
-    const usersQueryKey = ['usersByWorkspaceId', workspace._id];
+    const [addUserOpened, setAddUserOpened] = useState<boolean>(false);
 
-    const { data: users = [], isLoading } = useQuery<IMongoUser[]>(usersQueryKey, () => searchUsersByPermissions(workspace._id), {
+    const [searchInput, setSearchInput] = useState('');
+
+    const usersQueryKey = ['usersByWorkspaceId', workspace._id, searchInput];
+
+    const { data: users = [], isLoading } = useQuery<IMongoUser[]>(usersQueryKey, () => searchUsersByPermissions(workspace._id, searchInput), {
         initialData: [] as IMongoUser[],
         enabled: !!workspace._id,
     });
@@ -60,15 +78,34 @@ export const PermissionsDialog: React.FC<IPermissionsDialogProps> = ({ open, han
             scroll="paper"
         >
             <DialogTitle>
-                <BlueTitle
-                    title={`${i18next.t('permissions.dialog.title')} ${
-                        workspace.name === '' && workspace.path === '/' ? i18next.t('permissions.dialog.mainWorkspaceTitle') : workspace.displayName
-                    }`}
-                    component="h4"
-                    variant="h4"
-                />
+                <Grid container>
+                    <Grid item>
+                        <BlueTitle
+                            title={`${i18next.t('permissions.dialog.title')} ${
+                                workspace.name === '' && workspace.path === '/'
+                                    ? i18next.t('permissions.dialog.mainWorkspaceTitle')
+                                    : workspace.displayName
+                            }`}
+                            component="h4"
+                            variant="h4"
+                        />
+                    </Grid>
+                    {hasPermissionsToModify() && (
+                        <Grid item container flex={1} justifyContent="flex-end">
+                            <IconButton onClick={() => setAddUserOpened((prev) => !prev)}>
+                                {addUserOpened ? (
+                                    <RemoveCircle color="primary" fontSize="large" />
+                                ) : (
+                                    <MeltaTooltip title={i18next.t('permissions.permissionsOfUserDialog.createTitle')}>
+                                        <AddCircle color="primary" fontSize="large" />
+                                    </MeltaTooltip>
+                                )}
+                            </IconButton>
+                        </Grid>
+                    )}
+                </Grid>
             </DialogTitle>
-            {hasPermissionsToModify() && (
+            {addUserOpened && (
                 <DialogActions sx={{ paddingX: '1.5rem' }}>
                     <Box display="flex" boxSizing="border-box" width="100%">
                         <Box width="100%">
@@ -105,22 +142,63 @@ export const PermissionsDialog: React.FC<IPermissionsDialogProps> = ({ open, han
                     marginY: '0.5rem',
                 }}
             >
-                {/* eslint-disable-next-line no-nested-ternary */}
-                {isLoading ? (
-                    <CircularProgress size={50} />
-                ) : users.length ? (
-                    users.map((user) => (
-                        <PermissionsDialogCard
-                            key={user._id}
-                            user={user}
-                            workspaceId={workspace._id}
-                            usersQueryKey={usersQueryKey}
-                            canModify={hasPermissionsToModify()}
+                <Grid
+                    item
+                    container
+                    flexDirection="column"
+                    flexWrap="nowrap"
+                    width="100%"
+                    height="100%"
+                    padding="15px"
+                    border="1px solid rgba(0, 0, 0, 0.12)"
+                    borderRadius="10px"
+                >
+                    <Grid item width="100%" marginBottom="15px">
+                        <TextField
+                            onChange={(e) => {
+                                setSearchInput(e.target.value);
+                            }}
+                            sx={{ borderRadius: '7px', width: '100%' }}
+                            placeholder={i18next.t('permissions.searchUser')}
+                            value={searchInput}
+                            InputProps={{
+                                endAdornment: (
+                                    <InputAdornment
+                                        position="end"
+                                        sx={{
+                                            fontWeight: '400',
+                                            letterSpacing: '0em',
+                                            lineHeight: '16px',
+                                            gap: '10px',
+                                        }}
+                                    >
+                                        <img src="/icons/search-gray.svg" style={{ alignSelf: 'center', height: '18px' }} />
+                                    </InputAdornment>
+                                ),
+                                startAdornment: <InputAdornment position="start" />,
+                            }}
                         />
-                    ))
-                ) : (
-                    <BlueTitle title={i18next.t('relationshipTemplateAutocomplete.noOptions')} component="h6" variant="h6" />
-                )}
+                    </Grid>
+                    {/* eslint-disable-next-line no-nested-ternary */}
+                    {isLoading ? (
+                        <CircularProgress size={50} />
+                    ) : users.length ? (
+                        <Grid item container flexDirection="column" height="100%" width="100%" flexWrap="nowrap" overflow="auto" padding="5px">
+                            {users.map((user) => (
+                                <Grid item key={user._id}>
+                                    <PermissionsDialogCard
+                                        user={user}
+                                        workspaceId={workspace._id}
+                                        usersQueryKey={usersQueryKey}
+                                        canModify={hasPermissionsToModify()}
+                                    />
+                                </Grid>
+                            ))}
+                        </Grid>
+                    ) : (
+                        <BlueTitle title={i18next.t('relationshipTemplateAutocomplete.noOptions')} component="h6" variant="h6" />
+                    )}
+                </Grid>
             </DialogContent>
         </Dialog>
     );

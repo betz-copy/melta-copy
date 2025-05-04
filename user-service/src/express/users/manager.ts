@@ -116,10 +116,27 @@ export class UsersManager {
         return Promise.all(users.map((user) => this.baseUserToUser(user)));
     }
 
-    static async searchUsersByPermissions(workspaceId: string, pagination?: { step: number; limit: number }): Promise<IUser[]> {
+    static async searchUsersByPermissions(workspaceId: string, search?: string, pagination?: { step: number; limit: number }): Promise<IUser[]> {
         const permissions = await PermissionsManager.getPermissionsByWorkspaceId(workspaceId, pagination);
 
-        const users = await UsersModel.find({ _id: { $in: permissions.map(({ userId }) => userId) } })
+        const query: FilterQuery<IUser> = {};
+
+        query._id = { $in: permissions.map(({ userId }) => userId) };
+
+        if (search) {
+            const searchRegex = { $regex: new RegExp(search, 'i') };
+            const searchQuery = [
+                { fullName: searchRegex },
+                { jobTitle: searchRegex },
+                { hierarchy: searchRegex },
+                { mail: searchRegex },
+                { 'externalMetadata.kartoffelId': searchRegex },
+            ];
+
+            query.$or = searchQuery;
+        }
+
+        const users = await UsersModel.find(query)
             .lean()
             .exec();
 
