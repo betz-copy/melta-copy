@@ -57,10 +57,10 @@ import { IUniqueConstraintOfTemplate } from '../../../interfaces/entities';
 import RelationshipReferenceField from './RelationshipReferenceField';
 import { environment } from '../../../globals';
 import { getInitialValue, useMuiRteTheme } from '../../inputs/JSONSchemaFormik/RjfsTextAreaWidget';
-import SelectCellEditor from '../../../utils/agGrid/SelectCellEditor';
 import { commentColors } from '../../inputs/JSONSchemaFormik/RjsfCommentWidget';
 import KartoffelUserField from './KartoffelUserField';
 import { ImageWithDisable } from '../../ImageWithDisable';
+import SelectAutocomplete from '../../inputs/SelectAutocomplete';
 
 const { mapSearchPropertiesLimit } = environment.map;
 
@@ -153,8 +153,12 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     userPropertiesInTemplate = [],
     onDuplicateKartoffelField,
 }) => {
+    const [errorComment, setErrorComment] = useState(
+        (typeof errors === 'string' && (errors as string)?.includes('comment')) || Boolean(errors?.comment),
+    );
+
     const theme = createTheme();
-    Object.assign(theme, useMuiRteTheme());
+    Object.assign(theme, useMuiRteTheme(errorComment));
 
     const isText = value.type === 'string' || value.type === 'text-area';
     const isComment = value.type === 'comment';
@@ -371,6 +375,10 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
         setRawCommentContent(JSON.stringify(convertToRaw(commentValue.getCurrentContent())));
     }, []);
 
+    useEffect(() => {
+        setErrorComment((typeof errors === 'string' && (errors as string)?.includes('comment')) || Boolean(errors?.comment));
+    }, [errors]);
+
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
 
@@ -579,6 +587,8 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
         if (value.archive) return i18next.t('wizard.entityTemplate.removeFromArchive');
         return i18next.t('wizard.entityTemplate.moveToArchive');
     };
+
+    const commentColorsObj = Object.entries(commentColors).map(([label, val]) => ({ label, value: val }));
 
     return (
         <Draggable draggableId={value.id} index={index}>
@@ -1267,13 +1277,20 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                 />
                                             )}
                                             {isComment && (
-                                                <SelectCellEditor
-                                                    options={Object.keys(commentColors)}
-                                                    value={value.color ?? commentColors[i18next.t('validation.colors.blue')]}
+                                                <SelectAutocomplete
+                                                    options={commentColorsObj}
+                                                    value={
+                                                        value.color
+                                                            ? {
+                                                                  value: value.color,
+                                                                  label: Object.entries(commentColors).find(([, val]) => val === value.color)?.[0]!,
+                                                              }
+                                                            : commentColorsObj[0]
+                                                    }
                                                     onValueChange={(newValue) => {
                                                         setValues?.((prevValue) => ({
                                                             ...prevValue,
-                                                            color: commentColors[newValue as string],
+                                                            color: newValue as string,
                                                         }));
                                                     }}
                                                     colorsOptions={commentColors}

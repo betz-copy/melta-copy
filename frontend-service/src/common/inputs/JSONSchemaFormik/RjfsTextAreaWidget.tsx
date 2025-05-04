@@ -1,3 +1,4 @@
+/* eslint-disable no-nested-ternary */
 import { Grid, InputLabel, ThemeProvider, useTheme } from '@mui/material';
 import { createTheme, Theme } from '@mui/material/styles';
 import { WidgetProps } from '@rjsf/utils';
@@ -24,14 +25,20 @@ export const getInitialValue = (value) => {
     return EditorState.createWithContent(contentState);
 };
 
-export const useMuiRteTheme = (globalTheme?: Theme, showLabel?: boolean, readonly?: boolean): TMUIRichTextEditorStyles => {
+export const useMuiRteTheme = (error?: boolean, globalTheme?: Theme, showLabel?: boolean, readonly?: boolean): TMUIRichTextEditorStyles => {
     return {
         overrides: {
             MUIRichTextEditor: {
                 root: {
                     borderRadius: readonly ? 0 : '10px',
-                    border: readonly ? 'none' : (showLabel && `1px solid ${globalTheme!.palette.primary.main}`) || '1px solid #CCCFE5',
-                    borderBottom: readonly
+                    border: error
+                        ? '1px solid #FF0000'
+                        : readonly
+                        ? 'none'
+                        : (showLabel && `1px solid ${globalTheme!.palette.primary.main}`) || '1px solid #CCCFE5',
+                    borderBottom: error
+                        ? ' 1px solid #FF0000'
+                        : readonly
                         ? '1px solid gray'
                         : (showLabel && `1px solid ${globalTheme!.palette.primary.main}`) || '1px solid #CCCFE5',
                     transition: 'border-color 0.3s',
@@ -97,7 +104,7 @@ const RjfsTextAreaWidget = ({ id, value, label, readonly, onChange, options }: W
     const globalTheme = useTheme();
     const theme = createTheme();
 
-    Object.assign(theme, useMuiRteTheme(globalTheme, showLabel, readonly));
+    Object.assign(theme, useMuiRteTheme(false, globalTheme, showLabel, readonly));
 
     if (toPrint) return null;
 

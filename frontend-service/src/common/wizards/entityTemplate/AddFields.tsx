@@ -77,7 +77,7 @@ const addFieldsSchema = Yup.object({
                 mapSearch: Yup.boolean(),
                 comment: Yup.string().when('type', {
                     is: 'comment',
-                    then: (schema) => schema.required(i18next.t('validation.required')),
+                    then: Yup.string().required(),
                 }),
             }),
         )
