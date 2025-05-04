@@ -17,6 +17,7 @@
   "author": "Alexander Gurevich",
   "license": "ISC",
   "dependencies": {
+    "@microservices/shared": "^1.0.0",
     "axios": "^1.7.4",
     "dotenv": "^16.4.5",
     "elastic-apm-node": "^4.7.3",

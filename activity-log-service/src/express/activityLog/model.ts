@@ -1,5 +1,5 @@
 import * as mongoose from 'mongoose';
-import { Action } from '@microservices/shared';
+import { ActionsLog } from '@microservices/shared';
 
 const ActivityLogSchema = new mongoose.Schema({
     timestamp: {
@@ -17,7 +17,7 @@ const ActivityLogSchema = new mongoose.Schema({
     action: {
         type: String,
         required: true,
-        enum: Action,
+        enum: ActionsLog,
     },
     metadata: {
         type: Object,

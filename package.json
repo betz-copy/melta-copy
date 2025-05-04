@@ -4,8 +4,9 @@
     "description": "",
     "private": true,
     "workspaces": [
-        "activiti-log-service",
+        "activity-log-service",
         "cron-service",
+        "dashboard-service",
         "gantt-service",
         "gateway-service",
         "global-search-service",

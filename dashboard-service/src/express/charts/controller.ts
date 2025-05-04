@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
+import { IMongoChart } from '@microservices/shared';
 import DefaultController from '../../utils/express/controller';
 import { ChartManager } from './manager';
-import { IMongoChart } from './interface';
 
 class ChartController extends DefaultController<IMongoChart, ChartManager> {
     constructor(workspaceId: string) {

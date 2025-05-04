@@ -1,4 +1,4 @@
-import { Status } from '../../express/instances/processes/interface';
+import { ActionsLog } from '@microservices/shared';
 
 export interface IUpdatedFields {
     fieldName: string;
@@ -11,20 +11,6 @@ interface IBaseActivityLog {
     entityId: string;
     userId: string;
     _id: string;
-}
-
-export enum ActionsLog {
-    CREATE_ENTITY = 'CREATE_ENTITY',
-    DISABLE_ENTITY = 'DISABLE_ENTITY',
-    ACTIVATE_ENTITY = 'ACTIVATE_ENTITY',
-    VIEW_ENTITY = 'VIEW_ENTITY',
-    CREATE_PROCESS = 'CREATE_PROCESS',
-    UPDATE_PROCESS = 'UPDATE_PROCESS',
-    UPDATE_PROCESS_STEP = 'UPDATE_PROCESS_STEP',
-    DELETE_RELATIONSHIP = 'DELETE_RELATIONSHIP',
-    CREATE_RELATIONSHIP = 'CREATE_RELATIONSHIP',
-    DUPLICATE_ENTITY = 'DUPLICATE_ENTITY',
-    UPDATE_ENTITY = 'UPDATE_ENTITY',
 }
 
 interface IEmptyMetadata extends IBaseActivityLog {

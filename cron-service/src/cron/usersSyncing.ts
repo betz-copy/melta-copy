@@ -1,14 +1,12 @@
 import { keyBy } from 'lodash';
 import * as schedule from 'node-schedule';
 import config from '../config';
-import { IEntity } from '../instance/entity/interface';
-import { EntityTemplateService, IMongoEntityTemplatePopulated } from '../services/entityTemplate';
-import { InstanceService } from '../services/instance';
+import { IEntity, IMongoEntityTemplatePopulated, logger, WorkspaceTypes } from '@microservices/shared';
+import EntityTemplateService from '../services/entityTemplate';
+import InstanceService from '../services/instance';
 import { Kartoffel } from '../services/kartoffel';
 import { IKartoffelUser } from '../services/kartoffel/interface';
-import logger from '../utils/logger/logsLogger';
-import { WorkspaceTypes } from '../workspaces/inteface';
-import { WorkspaceManager } from '../workspaces/manager';
+import WorkspaceManager from '../workspaces/manager';
 
 const { userFieldsSync } = config;
 
@@ -46,12 +44,20 @@ const checkForEntityToUpdate = (
 const getAllEntitiesOfTemplates = async (templates: IMongoEntityTemplatePopulated[], instanceService: InstanceService) => {
     const entitiesArrays = await Promise.all(
         templates.map(async (template) => {
-            const { count } = await instanceService.searchEntitiesOfTemplateRequest(template._id, { limit: 1 });
+            const { count } = await instanceService.searchEntitiesOfTemplateRequest(template._id, {
+                limit: 1,
+                skip: 0,
+                showRelationships: false,
+                sort: [],
+            });
 
             if (count === 0) return [];
 
             const { entities: instances } = await instanceService.searchEntitiesOfTemplateRequest(template._id, {
                 limit: count,
+                skip: 0,
+                showRelationships: false,
+                sort: [],
             });
 
             return instances;
