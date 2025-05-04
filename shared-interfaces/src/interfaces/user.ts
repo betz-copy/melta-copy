@@ -1,4 +1,3 @@
-import { AdvancedFilterModel, FilterModel, SortModelItem } from '@ag-grid-community/core';
 import fileDetails from '../types';
 import { NotificationType } from './notification';
 import { ICompactPermissions, ISubCompactPermissions } from './permission';
@@ -30,13 +29,13 @@ export interface IMongoUser extends IUser {
 }
 
 export interface IUserSearchBody {
+    search?: string;
     permissions?: ISubCompactPermissions;
     workspaceIds?: string[];
     limit: number;
     step?: number;
-    search?: string;
-    filterModel?: AdvancedFilterModel | FilterModel | null;
-    sortModel?: SortModelItem[];
+    filterModel?: Record<string, object>;
+    sortModel?: object[];
 }
 
 export type IUserPreferences = Pick<IBaseUser, 'preferences'>['preferences'] & {
