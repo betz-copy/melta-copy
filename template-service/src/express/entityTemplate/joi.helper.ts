@@ -130,9 +130,9 @@ const propertiesArraySchema = Joi.array()
             calculateTime: Joi.boolean().when('format', { not: Joi.valid('date', 'date-time'), then: Joi.forbidden() }),
             serialStarter: Joi.number().when('type', { not: 'number', then: Joi.forbidden() }),
             serialCurrent: Joi.number().when('type', { not: 'number', then: Joi.forbidden() }),
-            comment: Joi.string().when('type', { not: 'string', then: Joi.forbidden() }),
-            color: Joi.string().when('type', { not: 'string', then: Joi.forbidden() }),
-            hideFromDetailsPage: Joi.boolean(),
+            comment: Joi.string().when('format', { not: 'comment', then: Joi.forbidden() }),
+            color: Joi.string().when('format', { not: 'comment', then: Joi.forbidden() }),
+            hideFromDetailsPage: Joi.boolean().when('format', { not: 'comment', then: Joi.forbidden() }),
         }).nand('pattern', 'enum'),
     )
     .unique((a, b) => a.title === b.title);

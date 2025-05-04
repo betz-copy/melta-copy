@@ -3,6 +3,7 @@ import { Grid } from '@mui/material';
 import { FieldArray, FormikProps } from 'formik';
 import { useQueryClient } from 'react-query';
 import i18next from 'i18next';
+import { pickBy } from 'lodash';
 import { IBasicGantt, IGanttItem } from '../../../../interfaces/gantts';
 import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
 import { FormikAutoComplete } from '../../../../common/inputs/FormikAutoComplete';
@@ -38,8 +39,7 @@ export const GanttItemEdit: React.FC<IGanttItemEditProps> = ({ ganttItem, index,
     const itemKey = `items[${index}]`;
     const itemEntityTemplateKey = `${itemKey}.entityTemplate`;
 
-    const { properties } = entityTemplate?.properties ?? { properties: {} };
-    const entityTemplateFields = entityTemplate && Object.keys(properties).filter((property) => properties[property].format !== 'comment');
+    const entityTemplateFields = Object.keys(pickBy(entityTemplate?.properties.properties, ({ format }) => format !== 'comment'));
 
     return (
         <Grid

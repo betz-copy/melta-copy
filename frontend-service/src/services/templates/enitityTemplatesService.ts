@@ -13,6 +13,7 @@ import {
 } from '../../interfaces/entityTemplates';
 import { getFileName } from '../../utils/getFileName';
 import { CommonFormInputProperties } from '../../common/wizards/entityTemplate/commonInterfaces';
+import { commentColors } from '../../common/inputs/JSONSchemaFormik/RjsfCommentWidget';
 
 const { entityTemplates } = environment.api;
 export const basePropertyTypes = ['string', 'number', 'boolean'];
@@ -224,7 +225,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                 archive,
                 identifier,
                 hideFromDetailsPage,
-                color: comment && !color ? i18next.t('validation.colors.blue') : color,
+                color: comment && !color ? commentColors[i18next.t('validation.colors.blue')] : color,
                 uniqueItems: type === 'enumArray' || type === 'users' ? true : undefined,
                 pattern: type === 'pattern' ? pattern : undefined,
                 patternCustomErrorMessage: type === 'pattern' ? patternCustomErrorMessage : undefined,

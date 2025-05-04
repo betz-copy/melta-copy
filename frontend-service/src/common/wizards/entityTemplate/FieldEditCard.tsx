@@ -1077,7 +1077,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                             body={`${i18next.t('areYouSureDialog.enumChangeDisclaimer')} ${entity}`}
                                         />
                                     </Grid>
-                                    <Grid item container justifyContent="space-between">
+                                    <Grid item container justifyContent="space-between" marginTop={value.type === 'comment' ? '5px' : ''}>
                                         <Box>
                                             {value.required !== undefined && setValues && !isComment && value.type !== 'kartoffelUserField' && (
                                                 <FormControlLabel
@@ -1269,7 +1269,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                             {isComment && (
                                                 <SelectCellEditor
                                                     options={Object.keys(commentColors)}
-                                                    value={value.color ?? i18next.t('validation.colors.blue')}
+                                                    value={value.color ?? commentColors[i18next.t('validation.colors.blue')]}
                                                     onValueChange={(newValue) => {
                                                         setValues?.((prevValue) => ({
                                                             ...prevValue,
