@@ -986,7 +986,7 @@ export class EntityManager extends DefaultManagerNeo4j {
 
             const { entities } = await this.searchEntitiesOfTemplate(
                 { limit: deleteEntitiesMaxLimit, skip: 0, filter, showRelationships, textSearch, entityIdsToExclude: idsToExclude },
-                entityTemplate,
+                entityTemplate, // add something for update
             );
             fullEntities.push(...entities);
         } else {

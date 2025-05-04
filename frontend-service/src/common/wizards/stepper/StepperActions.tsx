@@ -26,7 +26,7 @@ const StepperActions = <T extends object>({
     return (
         <Grid container justifyContent="space-between" padding="0px 25px">
             <Grid item>
-                {step.stepperActions?.disable !== 'back' && (
+                {step?.stepperActions?.disable !== 'back' && (
                     <Button
                         variant="outlined"
                         onClick={() => {
@@ -41,20 +41,20 @@ const StepperActions = <T extends object>({
                                 transform: 'scaleX(-1)',
                             }}
                         />
-                        {step.stepperActions?.back?.text ?? i18next.t('wizard.back')}
+                        {step?.stepperActions?.back?.text ?? i18next.t('wizard.back')}
                     </Button>
                 )}
             </Grid>
             <Grid item>
                 {/* type submit for formik goto next step */}
-                {step.stepperActions?.disable !== 'next' && (
+                {step?.stepperActions?.disable !== 'next' && (
                     <Button
                         type="submit"
                         variant="contained"
                         disabled={isLoading || (isLastStep && isSameObject)}
                         style={{ gap: '5px', borderRadius: '7px' }}
                     >
-                        {step.stepperActions?.next?.text ?? i18next.t(isLastStep ? 'wizard.finish' : 'wizard.next')}
+                        {step?.stepperActions?.next?.text ?? i18next.t(isLastStep ? 'wizard.finish' : 'wizard.next')}
                         {isLoading && <CircularProgress size={20} />}
                         {isLastStep ? (
                             <DoneIcon />

@@ -16,7 +16,11 @@ import { isWorkspaceAdmin } from '../../utils/permissions/instancePermissions';
 import { ErrorToast } from '../ErrorToast';
 import { TableButton } from '../TableButton';
 import { DeleteEntitiesDialog } from './DeleteEntitiesDialog';
-import { CreateOrEditEntityDetails, ICreateOrUpdateWithRuleBreachDialogState } from '../dialogs/entity/CreateOrEditEntityDialog';
+import { CreateOrEditEntityDetails } from '../dialogs/entity/CreateOrEditEntityDialog';
+import { LoadEntitiesTables } from '../wizards/excel/excelSteps/LoadEntitiesTables';
+import { StepType, Wizard } from '../wizards';
+import { EntitiesWizardValues, ITablesResults } from '../../interfaces/excel';
+import { MutationActionType, ICreateOrUpdateWithRuleBreachDialogState } from '../dialogs/entity/CreateOrEditEntityDialog/interface';
 
 interface MultiSelectStatusBarProps extends IStatusPanelParams {
     template: IMongoEntityTemplatePopulated;
@@ -107,6 +111,67 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
         setOpenDeleteDialog(false);
     };
 
+    const [stepsData, setStepsData] = useState<ITablesResults>({ succeededEntities: [], failedEntities: [] });
+    const currentStep: number = 0;
+
+    const isBrokenRules = (stepsData.brokenRulesEntities?.brokenRules ?? []).length > 0;
+
+    const steps: StepType<EntitiesWizardValues>[] = [
+        {
+            label: i18next.t('wizard.entity.loadEntities.downloadFileTitle'),
+            description: i18next.t('wizard.entity.loadEntities.downloadFileDescription'),
+            // eslint-disable-next-line react/no-unstable-nested-components
+            component: (props) => {
+                // console.log({ props }, 'createOrEditEntityDetails props');
+
+                return (
+                    <CreateOrEditEntityDetails
+                        // isEditMode
+                        // entitiesToUpdate={getSelectedEntities()}
+                        mutationProps={{
+                            actionType: MutationActionType.UpdateMultiple,
+                            payload: getSelectedEntities(),
+                        }}
+                        entityTemplate={template}
+                        onSuccess={(prop) => {
+                            setOpenEditDialog((prev) => !prev);
+                            setExternalErrors({ files: false, unique: {}, action: '' });
+                            api.refreshServerSide();
+                        }}
+                        handleClose={() => {
+                            setOpenEditDialog((prev) => !prev);
+                        }}
+                        onError={() => {
+                            setOpenEditDialog(true);
+                        }}
+                        externalErrors={externalErrors}
+                        setExternalErrors={setExternalErrors}
+                        createOrUpdateWithRuleBreachDialogState={createOrUpdateWithRuleBreachDialogState}
+                        setCreateOrUpdateWithRuleBreachDialogState={setCreateOrUpdateWithRuleBreachDialogState}
+                        createDraft={false}
+                        // showActionButtons={false}
+                    />
+                );
+            },
+            validationSchema: {},
+            stepperActions: { disable: 'all' },
+            invisibleBeforeStep: true,
+        },
+        {
+            label: i18next.t('wizard.entity.loadEntities.entitiesStatus'),
+            // eslint-disable-next-line react/no-unstable-nested-components
+            component: (props) => {
+                return <LoadEntitiesTables {...props} tablesData={stepsData} template={template!} />;
+            },
+            stepperActions: {
+                next: {
+                    text: isBrokenRules ? i18next.t('wizard.entity.loadEntities.handleRules') : undefined,
+                },
+            },
+            invisibleBeforeStep: true,
+        },
+    ];
+
     return (
         <Grid>
             <Grid container spacing={2} alignItems="center">
@@ -178,7 +243,7 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
                 setValue={setConfirmDeleteDisplayNameValue}
             />
 
-            <Dialog open={openEditDialog} maxWidth={template.documentTemplatesIds?.length ? 'lg' : 'md'}>
+            {/* <Dialog open={openEditDialog} maxWidth={template.documentTemplatesIds?.length ? 'lg' : 'md'}>
                 <CreateOrEditEntityDetails
                     isEditMode
                     entityTemplate={template}
@@ -197,7 +262,27 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
                     setCreateOrUpdateWithRuleBreachDialogState={setCreateOrUpdateWithRuleBreachDialogState}
                     entitiesToUpdate={getSelectedEntities()}
                 />
-            </Dialog>
+            </Dialog> */}
+
+            <Wizard
+                open={openEditDialog}
+                handleClose={() => {
+                    setOpenEditDialog((prev) => !prev);
+                }}
+                initialValues={{}}
+                initialStep={currentStep}
+                isEditMode
+                title={`${i18next.t('wizard.entity.loadEntities.title')} - ${template?.displayName}`}
+                steps={steps}
+                isLoading={false}
+                submitFunction={async () => {
+                    setOpenEditDialog((prev) => !prev);
+                    setExternalErrors({ files: false, unique: {}, action: '' });
+                    api.refreshServerSide();
+                    return {};
+                }}
+                direction="column"
+            />
         </Grid>
     );
 };

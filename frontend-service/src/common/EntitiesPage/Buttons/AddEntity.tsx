@@ -3,7 +3,8 @@ import i18next from 'i18next';
 import React, { CSSProperties, useState } from 'react';
 import { toast } from 'react-toastify';
 import { emptyEntityTemplate, EntityWizardValues } from '../../dialogs/entity';
-import { CreateOrEditEntityDetails, ICreateOrUpdateWithRuleBreachDialogState } from '../../dialogs/entity/CreateOrEditEntityDialog';
+import { CreateOrEditEntityDetails } from '../../dialogs/entity/CreateOrEditEntityDialog';
+import { MutationActionType, ICreateOrUpdateWithRuleBreachDialogState } from '../../dialogs/entity/CreateOrEditEntityDialog/interface';
 import { IEntity } from '../../../interfaces/entities';
 import { useDraftIdStore } from '../../../stores/drafts';
 import { TableButton } from '../../TableButton';
@@ -38,6 +39,18 @@ const AddEntityButton: React.FC<{
     const theme = useTheme();
     const disabledColor = darkMode ? 'rgba(255, 255, 255, 0.26)' : 'rgba(0, 0, 0, 0.26)';
 
+    const handleSuccess = (entity: IEntity) => {
+        onSuccessCreate?.(entity);
+        setUpdatedEntities?.(
+            Object.values(entity.properties).filter(
+                (property): property is IEntity => typeof property === 'object' && 'templateId' in property && 'properties' in property,
+            ),
+        );
+
+        setAddEntityWizardState((prev) => ({ ...prev, isOpen: false }));
+        setExternalErrors({ files: false, unique: {}, action: '' });
+    };
+
     return (
         <>
             <TableButton
@@ -68,20 +81,21 @@ const AddEntityButton: React.FC<{
                 maxWidth={addEntityWizardState.initialValues?.template.documentTemplatesIds?.length ? 'lg' : 'md'}
             >
                 <CreateOrEditEntityDetails
-                    isEditMode={false}
+                    // isEditMode={false}
+                    mutationProps={{ actionType: MutationActionType.Create, payload: undefined }}
                     entityTemplate={addEntityWizardState.initialValues?.template || emptyEntityTemplate}
                     initialCurrValues={addEntityWizardState.initialCurrValues}
-                    onSuccessUpdate={(entity) => {
-                        setUpdatedEntities?.(
-                            Object.values(entity.properties).filter(
-                                (property): property is IEntity =>
-                                    typeof property === 'object' && 'templateId' in property && 'properties' in property,
-                            ),
-                        );
+                    // onSuccessUpdate={(entity) => {
+                    //     setUpdatedEntities?.(
+                    //         Object.values(entity.properties).filter(
+                    //             (property): property is IEntity =>
+                    //                 typeof property === 'object' && 'templateId' in property && 'properties' in property,
+                    //         ),
+                    //     );
 
-                        setAddEntityWizardState((prev) => ({ ...prev, isOpen: false }));
-                        setExternalErrors({ files: false, unique: {}, action: '' });
-                    }}
+                    //     setAddEntityWizardState((prev) => ({ ...prev, isOpen: false }));
+                    //     setExternalErrors({ files: false, unique: {}, action: '' });
+                    // }}
                     handleClose={() => {
                         setAddEntityWizardState((prev) => ({ ...prev, isOpen: false }));
                     }}
@@ -93,9 +107,13 @@ const AddEntityButton: React.FC<{
                             initialCurrValues: currEntityValues,
                         }))
                     }
+                    onSuccess={handleSuccess}
                     externalErrors={externalErrors}
                     setExternalErrors={setExternalErrors}
-                    onSuccessCreate={onSuccessCreate}
+                    // onSuccessCreate={(entity) => {
+                    //     onSuccessCreate?.(entity);
+                    //     console.log('here onSuccessCreate');
+                    // }}
                     createOrUpdateWithRuleBreachDialogState={createOrUpdateWithRuleBreachDialogState}
                     setCreateOrUpdateWithRuleBreachDialogState={setCreateOrUpdateWithRuleBreachDialogState}
                 />

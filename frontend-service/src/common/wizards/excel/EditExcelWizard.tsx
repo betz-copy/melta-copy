@@ -12,7 +12,6 @@ import { editManyEntitiesByExcelRequest, getChangedEntitiesFromExcelRequest, exp
 import { attachmentPropertiesBaseSchema } from '../entityTemplate/AddFields';
 import ActionOnEntityWithRuleBreachDialog from '../../../pages/Entity/components/ActionOnEntityWithRuleBreachDialog';
 import { ActionTypes } from '../../../interfaces/ruleBreaches/actionMetadata';
-import { ICreateOrUpdateWithRuleBreachDialogState } from '../../dialogs/entity/CreateOrEditEntityDialog';
 import { environment } from '../../../globals';
 import { UploadExcel } from './excelSteps/UploadExcel';
 import { LoadEntitiesTables } from './excelSteps/LoadEntitiesTables';
@@ -20,6 +19,7 @@ import { EntitiesWizardValues, IExcelSteps, ExcelStepStatus } from '../../../int
 import { IEntityWithIgnoredRules } from '../../../interfaces/entities';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { groupBrokenRulesByEntity } from '../../../utils/loadEntities';
+import { ICreateOrUpdateWithRuleBreachDialogState } from '../../dialogs/entity/CreateOrEditEntityDialog/interface';
 
 const { excelExtension } = environment.loadExcel;
 

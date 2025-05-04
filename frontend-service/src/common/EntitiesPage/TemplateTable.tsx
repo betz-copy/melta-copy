@@ -31,7 +31,8 @@ import { checkUserTemplatePermission } from '../../utils/permissions/instancePer
 import { BlueTitle } from '../BlueTitle';
 import { CustomIcon } from '../CustomIcon';
 import { EntityWizardValues } from '../dialogs/entity';
-import { CreateOrEditEntityDetails, ICreateOrUpdateWithRuleBreachDialogState } from '../dialogs/entity/CreateOrEditEntityDialog';
+import { CreateOrEditEntityDetails } from '../dialogs/entity/CreateOrEditEntityDialog';
+import { MutationActionType, ICreateOrUpdateWithRuleBreachDialogState } from '../dialogs/entity/CreateOrEditEntityDialog/interface';
 import EntitiesTableOfTemplate, { EntitiesTableOfTemplateRef } from '../EntitiesTableOfTemplate';
 import { EntityTemplateColor } from '../EntityTemplateColor';
 import { TableButton } from '../TableButton';
@@ -440,12 +441,20 @@ const TemplateTable = forwardRef<
 
             <Dialog open={editDialog.isOpen} maxWidth={template.documentTemplatesIds?.length ? 'lg' : 'md'}>
                 <CreateOrEditEntityDetails
-                    isEditMode={editDialog.isEditMode}
+                    // entityToUpdate={editDialog.entity!}
+                    // isEditMode={editDialog.isEditMode}
+                    mutationProps={
+                        editDialog.isEditMode
+                            ? {
+                                  actionType: MutationActionType.Update,
+                                  payload: editDialog.entity!, // maybe check before if it is undefined
+                              }
+                            : { actionType: MutationActionType.Create, payload: undefined }
+                    }
                     entityTemplate={template}
                     initialCurrValues={editDialog.wizardValues}
-                    entityToUpdate={editDialog.entity!}
                     onError={(currEntityValues) => setEditDialog((prev) => ({ ...prev, isOpen: true, wizardValues: currEntityValues }))}
-                    onSuccessUpdate={(entity) => {
+                    onSuccess={(entity: IEntity) => {
                         if (editDialog.isEditMode) {
                             entitiesTableRef.current?.updateRowDataClientSide(entity);
                             setUpdatedEntities?.(

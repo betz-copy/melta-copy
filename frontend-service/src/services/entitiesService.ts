@@ -358,11 +358,7 @@ export const updateEntityRequestForMultiple = async (
     newEntityData: EntityWizardValues,
     ignoredRules?: IRuleBreach['brokenRules'],
 ) => {
-    console.log({ ignoredRules, newEntityData });
-
     const formData = await getBodyForUpdateRequest(newEntityData, ignoredRules);
-
-    console.log(formData.values().forEach((prop) => console.log(prop)));
 
     const { data } = await axios.put<IEntity>(`${entities}/${entityId}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
@@ -371,23 +367,17 @@ export const updateEntityRequestForMultiple = async (
     return data;
 };
 
-export const updateMultEntitiesRequestForMultiple = async (
+export const updateMultipleEntitiesRequest = async (
     entitiesToUpdate: IMultipleSelect<boolean>,
     newEntityData: EntityWizardValues,
     ignoredRules?: IRuleBreach['brokenRules'],
 ) => {
-    console.log({ newEntityData });
-
     const formData = await getBodyForUpdateRequest(newEntityData, ignoredRules);
-
     formData.append('entitiesToUpdate', JSON.stringify(entitiesToUpdate));
 
-    console.log(formData.values().forEach((prop) => console.log(prop)));
-    const { data } = await axios.put<IEntity>(`${entities}/bulk`, formData, {
+    const { data } = await axios.put<ITablesResults>(`${entities}/bulk`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
     });
-
-    // console.log({ data });
 
     return data;
 };
