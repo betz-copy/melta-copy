@@ -189,7 +189,7 @@ export class EntityValidator extends DefaultController {
         return isValidDate(parsedDate) && dateString === formatFns(parsedDate, expectedFormat);
     }
 
-    private validateSimplePartFilterOfField(rhs: boolean | string | number | null, templateOfField: IEntitySingleProperty, path: string) {
+    private validateSimplePartFilterOfField(rhs: boolean | string | number | RegExp | null, templateOfField: IEntitySingleProperty, path: string) {
         if (rhs === null) return;
 
         const { type, format } = templateOfField;

@@ -14,6 +14,7 @@ export enum IAggregationType {
     Sum = 'sum',
     Maximum = 'maximum',
     Minimum = 'minimum',
+    None = 'none',
 }
 
 export interface IAggregation {

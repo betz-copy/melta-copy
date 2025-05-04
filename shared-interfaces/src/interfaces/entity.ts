@@ -36,7 +36,7 @@ export interface IUniqueConstraint {
     type: 'UNIQUE';
     constraintName: string;
     templateId: string;
-    uniqueGroupName?: string;
+    uniqueGroupName: string;
     properties: string[];
     values?: Record<string, any>;
 }
