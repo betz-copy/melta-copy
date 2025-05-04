@@ -1,8 +1,8 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { menash } from 'menashmq';
 
-import logger from '../logger/logsLogger';
 import config from '../../config';
+import { logger } from '@microservices/shared';
 
 const { rabbit } = config;
 

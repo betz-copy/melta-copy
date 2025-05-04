@@ -41,7 +41,7 @@ export {
 export { NotificationType } from './interfaces/notification';
 export { WorkspaceTypes, Colors } from './interfaces/workspace';
 export { PermissionScope, PermissionType, InstancesSubclassesPermissions } from './interfaces/permission';
-export { Status, ProcessPropertyFormats, ProcessStatus } from './interfaces/process';
+export { Status, ProcessPropertyFormats } from './interfaces/process';
 export { FileTypes } from './interfaces/semanticSearch';
 export { IndexingAction } from './interfaces/globalSearch';
 

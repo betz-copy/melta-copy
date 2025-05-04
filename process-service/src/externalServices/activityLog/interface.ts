@@ -1,4 +1,4 @@
-import { ActionsLog } from '@microservices/shared';
+import { ActionsLog, Status } from '@microservices/shared';
 
 export interface IUpdatedFields {
     fieldName: string;

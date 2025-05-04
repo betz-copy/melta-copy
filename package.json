@@ -49,6 +49,9 @@
         "husky": "^6.0.0"
     },
     "dependencies": {
-        "rimraf": "^5.0.5"
+        "-": "^0.0.1",
+        "@microservices/shared-interfaces": "^1.0.0",
+        "rimraf": "^5.0.5",
+        "shared": "^0.2.0"
     }
 }

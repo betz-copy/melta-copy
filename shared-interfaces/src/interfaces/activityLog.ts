@@ -1,4 +1,4 @@
-import { ProcessStatus } from './process';
+import { Status } from './process';
 
 export interface IUpdatedFields {
     fieldName: string;
@@ -56,7 +56,7 @@ interface IUpdateEntityMetadata extends IBaseActivityLog {
 
 export interface IUpdateProcessStepMetadata extends IBaseActivityLog {
     action: ActionsLog.UPDATE_PROCESS_STEP;
-    metadata: { updatedFields?: IUpdatedFields[]; comments?: string; status?: ProcessStatus };
+    metadata: { updatedFields?: IUpdatedFields[]; comments?: string; status?: Status };
 }
 
 export type IActivityLog = IEmptyMetadata | IRelationshipMetadata | IDuplicateEntityMetadata | IUpdateEntityMetadata | IUpdateProcessStepMetadata;

@@ -38,13 +38,6 @@ export enum StatusBackgroundColors {
     Archived = '#B0B0B0',
 }
 
-export enum ProcessStatus {
-    Pending = 'pending',
-    Approved = 'approved',
-    Rejected = 'rejected',
-    Archived = 'archived',
-}
-
 export type InstanceProperties = Record<string, any>;
 
 export interface IProcessInstance {

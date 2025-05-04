@@ -156,7 +156,7 @@ export default class ProcessTemplateManager extends DefaultManagerMongo<IProcess
         const stepsIds = await this.stepTemplateManager.updateStepsTemplates(updatedData.steps, session);
         return this.model
             .findByIdAndUpdate(id, { ...updatedData, steps: stepsIds }, { new: true, session })
-            .populate(config.processFields.steps)
+            .populate<IMongoProcessTemplatePopulated>(config.processFields.steps)
             .orFail(new TemplateNotFoundError('process', id))
             .lean();
     }

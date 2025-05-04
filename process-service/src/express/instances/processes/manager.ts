@@ -24,16 +24,16 @@ import {
     IProcessInstanceSearchProperties,
     InstanceProperties,
     ProcessInstanceDocument,
-    Status,
     UpdateProcessReqBody,
     DefaultManagerMongo,
+    ActionsLog,
+    Status,
 } from '@microservices/shared';
 import { InstancePropertiesValidationError, InstanceNotFoundError, ServiceError, ValidationError } from '../../error';
 import ProcessTemplateManager from '../../templates/processes/manager';
 import StepInstanceManager from '../steps/manager';
 import { ProcessInstanceSchema } from './model';
 import { ActivityLogProducer } from '../../../externalServices/activityLog/producer';
-import { ActionsLog } from '../../../externalServices/activityLog/interface';
 
 type ProcessInstanceType<T extends boolean> = T extends true ? IMongoProcessInstancePopulated : IMongoProcessInstance;
 

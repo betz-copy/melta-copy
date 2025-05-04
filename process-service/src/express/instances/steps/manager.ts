@@ -1,5 +1,13 @@
 /* eslint-disable class-methods-use-this */
-import { IMongoStepTemplate, IMongoStepInstance, IStepInstance, UpdateStepReqBody, DefaultManagerMongo } from '@microservices/shared';
+import {
+    IMongoStepTemplate,
+    IMongoStepInstance,
+    IStepInstance,
+    UpdateStepReqBody,
+    DefaultManagerMongo,
+    IUpdateProcessStepMetadata,
+    ActionsLog,
+} from '@microservices/shared';
 import { ClientSession, UpdateQuery, UpdateWithAggregationPipeline } from 'mongoose';
 import config from '../../../config';
 import ElasticSearchManager from '../../../utils/elastic/documentsOnElastic';
@@ -8,7 +16,6 @@ import { InstanceNotFoundError, NotFoundError, ServiceError, StepNotPartOfProces
 import ProcessInstanceManager from '../processes/manager';
 import { StepInstanceSchema } from './model';
 import { ActivityLogProducer } from '../../../externalServices/activityLog/producer';
-import { ActionsLog, IUpdateProcessStepMetadata } from '../../../externalServices/activityLog/interface';
 
 export default class StepInstanceManager extends DefaultManagerMongo<IStepInstance> {
     private elasticSearchManager: ElasticSearchManager;

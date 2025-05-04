@@ -67,7 +67,7 @@ class ElasticClient {
                         type: 'dense_vector',
                         dims: vectorDims,
                         index: true,
-                        similarity: similarityAlgorithm,
+                        similarity: similarityAlgorithm as estypes.MappingDenseVectorSimilarity,
                     },
                     text: { type: 'text' },
                     title: { type: 'text' },
