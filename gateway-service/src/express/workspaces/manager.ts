@@ -1,6 +1,5 @@
-import { IWorkspace } from '@microservices/shared';
+import { IWorkspace, UploadedFile } from '@microservices/shared';
 import StorageService from '../../externalServices/storageService';
-import { UploadedFile } from '../../utils/busboy/interface';
 import DefaultManagerProxy from '../../utils/express/manager';
 import { UserNotAuthorizedError } from '../error';
 import UsersManager from '../users/manager';

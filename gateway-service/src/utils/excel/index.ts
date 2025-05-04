@@ -1,13 +1,20 @@
 import { AxiosError } from 'axios';
 import { StatusCodes } from 'http-status-codes';
 import config from '../../config';
-import { BadRequestError, ServiceError } from '../../express/error';
-import { IWorkspace } from '../../express/workspaces/interface';
-import { ActionErrors, ActionTypes, IBrokenRuleEntity, IFailedEntity } from '../../externalServices/ruleBreachService/interfaces';
-import { IMongoEntityTemplatePopulated } from '../../externalServices/templates/entityTemplateService';
-import { UploadedFile } from '../busboy/interface';
 import { getValidationErrorEntities, readExcelFile } from './getFunctions';
-import { IBrokenRulesError, IEntity } from '../../externalServices/instanceService/interfaces/entities';
+import {
+    UploadedFile,
+    IMongoEntityTemplatePopulated,
+    IFailedEntity,
+    IWorkspace,
+    BadRequestError,
+    ServiceError,
+    IBrokenRuleEntity,
+    ActionErrors,
+    IEntity,
+    IBrokenRulesError,
+    ActionTypes,
+} from '@microservices/shared';
 
 const { errorCodes, loadExcel } = config;
 
@@ -53,7 +60,12 @@ export const handleExcelErrors = (error: any, failedEntities: IFailedEntity[], e
 
                 failedEntities.push({
                     properties: entity.properties,
-                    errors: [{ type: ActionErrors.unique, metadata: { type: ActionErrors.unique, constraintName: '', templateId, properties } }],
+                    errors: [
+                        {
+                            type: ActionErrors.unique,
+                            metadata: { type: ActionErrors.unique, constraintName: '', templateId, properties },
+                        },
+                    ],
                 });
             }
 

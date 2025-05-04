@@ -1,10 +1,9 @@
 import { Request } from 'express';
 import DefaultController from '../../utils/express/controller';
 import { Authorizer, RequestWithPermissionsOfUserId } from '../../utils/authorizer';
-import { EntityTemplateService } from '../../externalServices/templates/entityTemplateService';
-import { ForbiddenError } from '../error';
+import EntityTemplateService from '../../externalServices/templates/entityTemplateService';
 import { ChartManager } from './manager';
-import { IMongoChart, IPermission } from '../../externalServices/dashboardService/chartService';
+import { IMongoChart, IChartPermission, ForbiddenError } from '@microservices/shared';
 
 export class ChartsValidator extends DefaultController {
     private chartManager: ChartManager;
@@ -28,7 +27,7 @@ export class ChartsValidator extends DefaultController {
     private async validateUserIsCreatorOfChart(req: Request, chart: IMongoChart) {
         const { permission, createdBy, _id } = chart;
 
-        if (permission === IPermission.Private && req.user?.id !== createdBy)
+        if (permission === IChartPermission.Private && req.user?.id !== createdBy)
             throw new ForbiddenError('user not authorized', { metadata: `user does not have write permission on chart ${_id}` });
     }
 

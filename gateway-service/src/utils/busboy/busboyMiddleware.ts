@@ -3,7 +3,7 @@ import { Request, Response, NextFunction } from 'express';
 import Busboy from 'busboy';
 import { PassThrough } from 'stream';
 import ReadableStreamClone from 'readable-stream-clone';
-import { UploadedFile } from './interface';
+import { UploadedFile } from '@microservices/shared';
 
 const busboyMiddleware = (req: Request, _res: Response, next: NextFunction): void => {
     if (!req.is('multipart/form-data')) {

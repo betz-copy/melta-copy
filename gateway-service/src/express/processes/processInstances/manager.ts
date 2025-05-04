@@ -26,6 +26,7 @@ import {
     INewProcessNotificationMetadataPopulated,
     IProcessStatusUpdateNotificationMetadataPopulated,
     ServiceError,
+    UploadedFile,
 } from '@microservices/shared';
 import config from '../../../config';
 import InstancesService from '../../../externalServices/instanceService';
@@ -42,7 +43,6 @@ import UsersManager from '../../users/manager';
 import WorkspaceManager from '../../workspaces/manager';
 import { EntityNotExist, NotFoundError } from '../error';
 import StepsInstancesManager from '../stepInstances/manager';
-import { UploadedFile } from '../../../utils/busboy/interface';
 
 export default class ProcessesInstancesManager extends DefaultManagerProxy<ProcessService> {
     private instancesService: InstancesService;

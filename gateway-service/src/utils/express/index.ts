@@ -1,9 +1,10 @@
 import { NextFunction, Request, Response } from 'express';
 import { get } from 'lodash';
-import { dataLogger } from '@microservices/shared';
+import { dataLogger, FunctionKey } from '@microservices/shared';
 import config from '../../config';
 import { InvalidWorkspaceHeaderError } from '../../express/error';
 import WorkspaceService from '../../express/workspaces/service';
+import DefaultManagerProxy from './manager';
 
 const { workspaceIdHeaderName } = config.service;
 
@@ -88,4 +89,43 @@ export const translateWorkspaceParameterFlow = async (req: Request) => {
 export const translateWorkspaceParameterFlowColumns = async (req: Request) => {
     const [workspaceId] = req.body.WorkspaceId;
     req.headers[config.service.workspaceIdHeaderName] = workspaceId;
+};
+
+export default abstract class DefaultProxyController<Manager extends DefaultManagerProxy<any> | null = null> {
+    public manager: Manager;
+
+    constructor(manager: Manager) {
+        this.manager = manager;
+    }
+}
+
+export const createWorkspacesController = <T extends InstanceType<typeof DefaultProxyController<any>>>(
+    Controller: { new (workspaceId: string): T },
+    isMiddleware = false,
+) => {
+    return new Proxy(
+        {},
+        {
+            get: (_, funcName: string) => {
+                return async (req: Request, res: Response, next: NextFunction) => {
+                    const workspaceId = await getWorkspaceId(req).catch(next);
+
+                    if (!workspaceId) return;
+
+                    if (isMiddleware) {
+                        (new Controller(workspaceId)[funcName] as Function)(req, res, next).then(next).catch(next);
+                        return;
+                    }
+
+                    (new Controller(workspaceId)[funcName] as Function)(req, res, next).catch(next);
+                };
+            },
+        },
+    ) as {
+        [K in FunctionKey<T, (req: Request, res: Response, next?: NextFunction) => Promise<void>>]: (
+            req: Request,
+            res: Response,
+            next: NextFunction,
+        ) => void;
+    };
 };

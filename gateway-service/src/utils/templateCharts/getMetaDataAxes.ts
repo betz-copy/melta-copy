@@ -1,11 +1,4 @@
-import {
-    IAxisField,
-    IChartType,
-    IChartTypeMetaData,
-    IColumnOrLineMetaData,
-    INUmberMetaData,
-    IPieMetaData,
-} from '../../externalServices/dashboardService/chartService';
+import { IAxisField, IChartType, IChartTypeMetaData, IColumnOrLineMetaData, INUmberMetaData, IPieMetaData } from '@microservices/shared';
 
 export const getMetaDataAxes = (type: IChartType, metaData: IChartTypeMetaData, filter?: string) => {
     let xAxis: IAxisField;

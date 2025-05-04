@@ -1,7 +1,6 @@
-import { ISearchIFramesBody, IFrame, IMongoIframe } from '@microservices/shared';
+import { ISearchIFramesBody, IFrame, IMongoIframe, UploadedFile } from '@microservices/shared';
 import StorageService from '../../externalServices/storageService';
 import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
-import { UploadedFile } from '../../utils/busboy/interface';
 import DefaultManagerProxy from '../../utils/express/manager';
 import { IFramesService } from '../../externalServices/dashboardService/iframesService';
 

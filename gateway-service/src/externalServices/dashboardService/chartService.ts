@@ -6,7 +6,7 @@ const {
     dashboardService: { url, baseRoute, requestTimeout, charts },
 } = config;
 
-export class ChartService extends DefaultExternalServiceApi {
+class ChartService extends DefaultExternalServiceApi {
     constructor(workspaceId: string) {
         super(workspaceId, { baseURL: `${url}${baseRoute}${charts.baseRoute}`, timeout: requestTimeout });
     }
@@ -36,3 +36,5 @@ export class ChartService extends DefaultExternalServiceApi {
         return data;
     }
 }
+
+export default ChartService;

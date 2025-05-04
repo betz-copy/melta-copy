@@ -1,21 +1,11 @@
-import { InstancesService } from '../../externalServices/instanceService';
+import InstancesService from '../../externalServices/instanceService';
 import { getMetaDataAxes } from '../../utils/templateCharts/getMetaDataAxes';
-import {
-    ChartsAndGenerator,
-    IAxisField,
-    IChart,
-    IChartBody,
-    IMongoChart,
-    IChartType,
-    IColumnOrLineMetaData,
-    IPermission,
-    IPieMetaData,
-    ChartService,
-} from '../../externalServices/dashboardService/chartService';
+import ChartService from '../../externalServices/dashboardService/chartService';
 import TemplatesManager from '../templates/manager';
-import { ISubCompactPermissions } from '../../externalServices/userService/interfaces/permissions/permissions';
-import { IMongoEntityTemplatePopulated } from '../../externalServices/templates/entityTemplateService';
 import DefaultManagerProxy from '../../utils/express/manager';
+import { ChartsAndGenerator, IChart, IChartBody, IChartPermission, IColumnOrLineMetaData, IMongoChart, IPieMetaData } from '@microservices/shared';
+import { IChartType, IMongoEntityTemplatePopulated, ISubCompactPermissions } from '@microservices/shared';
+import { IAxisField } from '@microservices/shared';
 
 export class ChartManager extends DefaultManagerProxy<ChartService> {
     private instanceService: InstancesService;
@@ -76,7 +66,7 @@ export class ChartManager extends DefaultManagerProxy<ChartService> {
         const chartPermissionChecks = await Promise.all(
             charts.map(async (chart) => {
                 const hasPermission =
-                    chart.permission === IPermission.Protected || (chart.permission === IPermission.Private && userId === chart.createdBy);
+                    chart.permission === IChartPermission.Protected || (chart.permission === IChartPermission.Private && userId === chart.createdBy);
 
                 const isAllowedRelatedTemplate = await this.validateAllowedRelatedTemplate(userId, permissionsOfUserId, chart);
 

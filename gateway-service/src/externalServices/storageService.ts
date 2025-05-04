@@ -1,7 +1,7 @@
 import FormData from 'form-data';
 import config from '../config';
 import DefaultExternalServiceApi from '../utils/express/externalService';
-import { UploadedFile } from '../utils/busboy/interface';
+import { UploadedFile } from '@microservices/shared';
 
 const {
     service: { docxHeaders, workspaceIdHeaderName },

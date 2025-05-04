@@ -22,11 +22,11 @@ import {
     IBrokenRulePopulated,
     ICreateEntityMetadataPopulated,
     IUpdateEntityMetadataPopulated,
+    UploadedFile,
 } from '@microservices/shared';
 import excelConfig from './excelConfig';
 
 import config from '../../config';
-import { UploadedFile } from '../busboy/interface';
 import {
     CoordinateSystem,
     extractUtmLocation,

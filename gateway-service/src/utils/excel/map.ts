@@ -1,7 +1,7 @@
 import proj4 from 'proj4';
 import config from '../../config';
-import { BadRequestError } from '../../express/error';
 import { locationFormatError } from './getFunctions';
+import { BadRequestError } from '@microservices/shared';
 
 const {
     polygon: { polygonPrefix, polygonSuffix },

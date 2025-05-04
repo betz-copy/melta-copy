@@ -47,6 +47,7 @@ import {
     IRuleBreachRequestPopulated,
     IUpdateEntityMetadataPopulated,
     IUpdateEntityStatusMetadataPopulated,
+    UploadedFile,
 } from '@microservices/shared';
 import { trycatch } from '../../utils';
 import InstancesManager from '../instances/manager';
@@ -62,7 +63,6 @@ import DefaultManagerProxy from '../../utils/express/manager';
 import RabbitManager from '../../utils/rabbit';
 import UsersManager from '../users/manager';
 import WorkspaceManager from '../workspaces/manager';
-import { UploadedFile } from '../../utils/busboy/interface';
 import TemplatesManager from '../templates/manager';
 
 const { errorCodes, ruleBreachService } = config;

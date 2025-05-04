@@ -11,12 +11,12 @@ import {
     Status,
     ServiceError,
     IProcessTemplatePopulated,
+    UploadedFile,
 } from '@microservices/shared';
 import config from '../../../config';
 import ProcessService from '../../../externalServices/processService';
 import StorageService from '../../../externalServices/storageService';
 import { Authorizer } from '../../../utils/authorizer';
-import { UploadedFile } from '../../../utils/busboy/interface';
 import DefaultManagerProxy from '../../../utils/express/manager';
 import UsersManager from '../../users/manager';
 import ProcessesInstancesManager from '../processInstances/manager';

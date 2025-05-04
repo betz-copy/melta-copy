@@ -36,6 +36,7 @@ import {
     IExportEntitiesBody,
     ISemanticSearchResult,
     BadRequestError,
+    UploadedFile,
 } from '@microservices/shared';
 import config from '../../config';
 import InstancesService from '../../externalServices/instanceService';
@@ -50,7 +51,6 @@ import { patchDocumentAsStream } from './documentExport';
 import RabbitManager from '../../utils/rabbit';
 import { SemanticSearchService } from '../../externalServices/semanticSearch';
 import WorkspaceService from '../workspaces/service';
-import { UploadedFile } from '../../utils/busboy/interface';
 import { createTextsFromEntitiesWithFiles, formatEntitiesBulkSearch, sortEntities } from '../../utils/semantic';
 import { convertIdOfBrokenRules, readExcelFile } from '../../utils/excel/getFunctions';
 import { generateSerialNumbers, getAllEntitiesFromExcel, getSerialStarters, handleExcelErrors } from '../../utils/excel';

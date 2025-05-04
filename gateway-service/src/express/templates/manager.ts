@@ -40,6 +40,7 @@ import {
     INUmberMetaData,
     IPieMetaData,
     ISearchFilter,
+    UploadedFile,
 } from '@microservices/shared';
 import config from '../../config';
 import InstancesService from '../../externalServices/instanceService';
@@ -57,7 +58,6 @@ import { getParametersOfFormula } from './rules';
 import GanttsService from '../../externalServices/ganttsService';
 import checkPropertyInUsedFromFormula from './rules/checkIfPropertyInUsed';
 import { buildNewRelationshipField, validateNoDependentRules, validateRequiredConstraints, validateUniqueRelationships } from '../../utils/templates';
-import { UploadedFile } from '../../utils/busboy/interface';
 import InstancesManager from '../instances/manager';
 import { ChartManager } from '../templateCharts/manager';
 import Kartoffel from '../../externalServices/kartoffel';

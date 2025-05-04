@@ -1,6 +1,6 @@
 import Joi from 'joi';
 import { MongoIdSchema } from '../../utils/joi';
-import { IAggregationType, IChartType, IPermission } from '../../externalServices/dashboardService/chartService';
+import { IAggregationType, IChartType, IChartPermission } from '@microservices/shared-interfaces';
 
 // format of properties keys in entity template
 export const variableNameValidation = Joi.string().regex(/^[a-zA-Z][a-zA-Z_$0-9]*$/);
@@ -77,7 +77,7 @@ const chartSchema = Joi.object({
         .required(),
     filter: searchFilterSchema,
     permission: Joi.string()
-        .valid(...Object.values(IPermission))
+        .valid(...Object.values(IChartPermission))
         .required(),
     createdBy: Joi.string().required(),
 });

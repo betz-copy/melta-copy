@@ -11,6 +11,7 @@ import {
     IPermission,
     ISubCompactPermissions,
     BadRequestError,
+    UploadedFile,
 } from '@microservices/shared';
 import config from '../../config';
 import Kartoffel from '../../externalServices/kartoffel';
@@ -19,7 +20,6 @@ import StorageService from '../../externalServices/storageService';
 import UserService from '../../externalServices/userService';
 import { isProfileFileType, objectContains } from '../../utils';
 import { DigitalIdentitySourceDoesNotExistsError, KartoffelUserMissingDataError } from './error';
-import { UploadedFile } from '../../utils/busboy/interface';
 
 const {
     storageService: { usersGlobalBucketName },

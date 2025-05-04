@@ -6,6 +6,7 @@ import {
     IMongoProcessInstanceReviewerPopulated,
     IMongoProcessInstancePopulated,
     logger,
+    UploadedFile,
 } from '@microservices/shared';
 import ProcessService from '../../../externalServices/processService';
 import StorageService from '../../../externalServices/storageService';
@@ -13,7 +14,6 @@ import DefaultManagerProxy from '../../../utils/express/manager';
 import InstancesManager from '../../instances/manager';
 import UsersManager from '../../users/manager';
 import ProcessesInstancesManager from '../processInstances/manager';
-import { UploadedFile } from '../../../utils/busboy/interface';
 
 class StepsInstancesManager extends DefaultManagerProxy<ProcessService> {
     private storageService: StorageService;
