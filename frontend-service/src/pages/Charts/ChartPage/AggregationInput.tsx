@@ -3,15 +3,15 @@ import { FormikProps, getIn } from 'formik';
 import i18next from 'i18next';
 import React from 'react';
 import { useQueryClient } from 'react-query';
-import { IAggregation, IAggregationType, IBasicChart, isAggregation, OptionsType } from '../../../interfaces/charts';
+import { IAggregation, IAggregationType, IChart, isAggregation, OptionsType } from '../../../interfaces/charts';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { filteredMap } from '../../../utils/filteredMap';
 import { FormikAutoComplete } from '../../../common/inputs/FormikAutoComplete';
 
 interface AxisInputProps {
-    formik: FormikProps<IBasicChart>;
+    formik: FormikProps<IChart>;
     formikField: string;
-    formikValues: IBasicChart;
+    formikValues: IChart;
     label: string;
     entityTemplate: IMongoEntityTemplatePopulated;
     optionsType: OptionsType;

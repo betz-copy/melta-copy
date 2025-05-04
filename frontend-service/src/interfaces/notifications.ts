@@ -54,9 +54,3 @@ export const isNewProcessNotification = (
 export const isDateAboutToExpireNotification = (
     notification: Partial<INotificationPopulated>,
 ): notification is INotificationPopulated<IDateAboutToExpireMetadataPopulated> => notification.type === NotificationType.dateAboutToExpire;
-
-export type INotificationCountGroups = Record<string, NotificationType[]>;
-export interface INotificationGroupCountDetails {
-    groups: Record<string, number>;
-    total: number;
-}

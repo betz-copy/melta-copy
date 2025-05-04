@@ -2,13 +2,13 @@ import { FormikProps } from 'formik';
 import i18next from 'i18next';
 import React from 'react';
 import { Grid } from '@mui/material';
-import { IBasicChart, OptionsType } from '../../../interfaces/charts';
+import { IChart, OptionsType } from '../../../interfaces/charts';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { AxisInput } from '../ChartPage/AggregationInput';
 
 const NumberChart: React.FC<{
-    formik: FormikProps<IBasicChart>;
-    formikValues: IBasicChart;
+    formik: FormikProps<IChart>;
+    formikValues: IChart;
     entityTemplate: IMongoEntityTemplatePopulated;
     disabled: boolean;
 }> = ({ formik, formikValues, entityTemplate, disabled }) => {

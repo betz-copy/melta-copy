@@ -16,7 +16,7 @@ import {
     IRequiredConstraint,
     IEntity,
     IRelationship,
-    IMongoActivityLog,
+    IMongoBaseActivityLog,
 } from '@microservices/shared';
 import ActivityLogProducer from '../../externalServices/activityLog/producer';
 import EntityTemplateManagerService from '../../externalServices/templates/entityTemplateManager';
@@ -285,7 +285,7 @@ export class BulkActionManager extends DefaultManagerNeo4j {
         userId?: string,
     ) {
         const results: (IEntity | IRelationship)[] = [];
-        const allActivityLogsToCreate: Omit<IMongoActivityLog, '_id'>[] = [];
+        const allActivityLogsToCreate: Omit<IMongoBaseActivityLog, '_id'>[] = [];
 
         for (const action of actions) {
             switch (action.actionType) {

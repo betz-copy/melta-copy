@@ -4,11 +4,11 @@ import {
     IAggregationType,
     IAxisField,
     IColumnOrLineMetaData,
-    IBasicChart,
+    IChart,
     IChartType,
     IChartTypeMetaData,
     INUmberMetaData,
-    IPermission,
+    IChartPermission,
     IPieMetaData,
     IAxis,
 } from '../../interfaces/charts';
@@ -69,7 +69,7 @@ export const initializeChartMetaData = (type: IChartType): IChartTypeMetaData =>
     return metaData;
 };
 
-export const initialValues: IBasicChart = {
+export const initialValues: IChart = {
     name: '',
     description: '',
     type: IChartType.Line,
@@ -77,7 +77,7 @@ export const initialValues: IBasicChart = {
         xAxis: { field: '', title: '' },
         yAxis: { field: '', title: '' },
     } as IColumnOrLineMetaData,
-    permission: IPermission.Private,
+    permission: IChartPermission.Private,
 };
 
 const aggregationSchema = Yup.object({
@@ -138,5 +138,5 @@ export const chartValidationSchema = Yup.object({
     metaData: Yup.mixed()
         .when('type', (type: IChartType, schema: Yup.AnySchema) => schema.concat(getMetaDataSchema(type)))
         .required('metaData is required'),
-    permission: Yup.mixed<IPermission>().oneOf(Object.values(IPermission)).required(i18next.t('validation.required')),
+    permission: Yup.mixed<IChartPermission>().oneOf(Object.values(IChartPermission)).required(i18next.t('validation.required')),
 });

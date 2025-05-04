@@ -16,7 +16,7 @@ export enum IAggregationType {
     Minimum = 'minimum',
 }
 
-interface IAggregation {
+export interface IAggregation {
     type: IAggregationType;
     byField?: string;
 }
@@ -52,12 +52,12 @@ export enum IChartPermission {
 export interface IChart {
     name: string;
     description: string;
-    templateId: string;
     type: IChartType;
     metaData: IChartTypeMetaData;
-    filter?: string;
-    createdBy: string;
     permission: IChartPermission;
+    filter?: string;
+    templateId: string;
+    createdBy: string;
 }
 
 export interface IMongoChart extends IChart {
@@ -71,6 +71,14 @@ export interface IChartBody {
     xAxis: IAxisField;
     yAxis?: IAxisField;
     filter: ISearchFilter;
+}
+
+export enum OptionsType {
+    Aggregation = 'aggregation',
+    AllProperties = 'allProperties',
+    NumberProperties = 'numberProperties',
+    AggregationAndNumberProperties = 'aggregationAndNumberProperties',
+    AggregationAndAllProperties = 'aggregationAndAllProperties',
 }
 
 type GeneratorChart = { x: any; y: number }[];
