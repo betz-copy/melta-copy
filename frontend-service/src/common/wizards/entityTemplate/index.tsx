@@ -6,7 +6,7 @@ import React from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { environment } from '../../../globals';
-import { IConstraint, IUniqueConstraintOfTemplate } from '../../../interfaces/entities';
+import { IConstraint, IFieldsGroup, IUniqueConstraintOfTemplate } from '../../../interfaces/entities';
 import { IEntityTemplateMap, IEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import fileDetails from '../../../interfaces/fileDetails';
 import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
@@ -23,6 +23,7 @@ import { ChooseIcon } from './ChooseIcon';
 import { CreateTemplateName, useCreateOrEditTemplateNameSchema } from './CreateTemplateName';
 import { UploadExportFormats } from './UploadExportFormats';
 import { updateUserPermissionForEntityTemplate } from '../../../utils/permissions/templatePermissions';
+import { FieldsGroup } from './commonInterfaces';
 
 const { errorCodes } = environment;
 
@@ -56,8 +57,9 @@ export interface EntityTemplateFormInputProperties {
     };
     archive?: boolean;
     mapSearch?: boolean;
-    fieldGroup?: string;
+    fieldGroup?: FieldsGroup;
 }
+
 export interface EntityTemplateWizardValues
     extends Omit<
         IEntityTemplatePopulated,
@@ -65,7 +67,7 @@ export interface EntityTemplateWizardValues
     > {
     properties: EntityTemplateFormInputProperties[];
     attachmentProperties: EntityTemplateFormInputProperties[];
-    archiveProperties: EntityTemplateFormInputProperties[];
+    archiveProperties: { type: 'field'; data: EntityTemplateFormInputProperties } | EntityTemplateFormInputProperties[];
     uniqueConstraints?: IUniqueConstraintOfTemplate[];
     icon?: fileDetails;
     documentTemplatesIds?: File[];
@@ -171,11 +173,12 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
                     return;
                 }
 
-                if (isEditMode) {
-                    toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.entityTemplate.failedToEdit')} />);
-                } else {
-                    toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.entityTemplate.failedToCreate')} />);
-                }
+                toast.error(
+                    <ErrorToast
+                        axiosError={error}
+                        defaultErrorMessage={i18next.t(`wizard.entityTemplate.${isEditMode ? 'failedToEdit' : 'failedToCreate'}`)}
+                    />,
+                );
 
                 console.log('failed to create/update entity template. error', error);
             },

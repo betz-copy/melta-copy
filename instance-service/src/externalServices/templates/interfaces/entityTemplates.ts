@@ -30,6 +30,11 @@ export interface IEntitySingleProperty {
     uniqueItems?: true;
     archive?: boolean;
 }
+interface IFieldsGroup {
+    groupId: string;
+    title: string;
+    fields: string[];
+}
 
 export interface IEntityTemplate {
     name: string;
@@ -47,6 +52,7 @@ export interface IEntityTemplate {
     propertiesTypeOrder: ('properties' | 'attachmentProperties')[];
     propertiesPreview: string[];
     actions?: string;
+    fieldGroups?: IFieldsGroup[];
 }
 
 export interface IMongoEntityTemplate extends IEntityTemplate {

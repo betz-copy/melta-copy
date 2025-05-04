@@ -58,6 +58,7 @@ export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
     const isNewProperty = !initialValue;
 
     const isDisabled = Boolean(isEditMode && !isNewProperty && areThereAnyInstances);
+    console.log({ initialValue , value});
 
     return (
         <Draggable draggableId={value.id} index={index}>
@@ -110,6 +111,8 @@ export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
                                             name={type}
                                             value={value.type}
                                             onChange={onChange}
+                                            error={touchedTitle && Boolean(errorTitle)}
+                                            helperText={touchedTitle && errorTitle}
                                             disabled={isDisabled && (initialValue?.type !== 'fileId' || !supportConvertingToMultipleFields)}
                                             sx={{ marginRight: '5px' }}
                                             fullWidth

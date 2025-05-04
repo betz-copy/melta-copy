@@ -15,8 +15,8 @@ import StepsApproversBlock from './StepsApproversBlock';
 import StepsIconBlock from './StepsIconBlock';
 import { StepsNameBlock } from './StepsNameBlock';
 import FieldBlock, { FieldBlockAccordion } from '../entityTemplate/FieldBlock';
-import { attachmentPropertiesBaseSchema, propertiesBaseSchema } from '../entityTemplate/AddFields';
-import { initialFieldCardDataOnAdd, useAreThereProcessInstancesByTemplateId } from './AddDetailsFields';
+import { attachmentPropertiesBaseSchema } from '../entityTemplate/AddFields';
+import { fieldDetailsSchema, initialFieldCardDataOnAdd, useAreThereProcessInstancesByTemplateId } from './AddDetailsFields';
 import { MeltaTooltip } from '../../MeltaTooltip';
 
 const stepTemplateUniqueNames = (value, context: Yup.TestContext) => {
@@ -46,7 +46,7 @@ const addStepsFieldsSchema = Yup.object({
     steps: Yup.array()
         .of(
             Yup.object({
-                properties: Yup.array().of(propertiesBaseSchema).min(1, i18next.t('validation.oneField')),
+                properties: Yup.array().of(fieldDetailsSchema).min(1, i18next.t('validation.oneField')),
                 attachmentProperties: Yup.array().of(attachmentPropertiesBaseSchema),
                 reviewers: Yup.array().of(Yup.object({})).min(1, i18next.t('validation.oneField')),
                 icon: Yup.object({

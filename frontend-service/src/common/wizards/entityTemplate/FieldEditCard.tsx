@@ -40,7 +40,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { dateNotificationTypes, validPropertyTypes } from './AddFields';
-import { CommonFormInputProperties, IRelationshipReference } from './commonInterfaces';
+import { CommonFormInputProperties, IRelationshipReference, PropertyItem } from './commonInterfaces';
 import { MinimizedColorPicker } from '../../inputs/MinimizedColorPicker';
 import { MeltaCheckbox } from '../../MeltaCheckbox';
 import { arrayTypes, deleteEnumFieldRequest, updateEnumFieldRequest } from '../../../services/templates/enitityTemplatesService';
@@ -81,7 +81,7 @@ export interface FieldEditCardProps {
     errors?: FormikErrors<CommonFormInputProperties>;
     setFieldValue: (field: keyof CommonFormInputProperties, value: any) => void;
     onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-    remove: (index: number, isNewProperty: boolean) => any;
+    remove: (index: number, isNewProperty: boolean, groupIndex?: number) => any;
     supportSerialNumberType: boolean;
     supportEntityReferenceType: boolean;
     supportChangeToRequiredWithInstances: boolean;
@@ -101,6 +101,7 @@ export interface FieldEditCardProps {
     locationSearchFields?: { show: boolean; disabled: boolean };
     hasActions?: boolean;
     supportConvertingToMultipleFields?: boolean;
+    groupIndex?: number;
 }
 
 export const FieldEditCard: React.FC<FieldEditCardProps> = ({
@@ -135,6 +136,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     locationSearchFields,
     hasActions,
     supportConvertingToMultipleFields = true,
+    groupIndex,
 }) => {
     const isText = value.type === 'string' || value.type === 'text-area';
 
@@ -177,7 +179,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     const hide = `properties[${index}].hide`;
     const readOnly = `properties[${index}].readOnly`;
     const identifier = `properties[${index}].identifier`;
-
+    console.log({ uniqueConstraints });
     const unique =
         value.type === 'serialNumber' ||
         (uniqueConstraints && uniqueConstraints.filter((constraints) => constraints.properties.includes(value.name)).length > 0);
@@ -191,6 +193,24 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     const isIdentifierAble = isText || value.type === 'number' || value.type === 'pattern' || value.type === 'serialNumber';
 
     const mapSearchDisabled = !value.mapSearch && locationSearchFields?.disabled;
+
+    const setFieldValues = (prevValue, updatedValues: object) => {
+        if (prevValue.fieldGroup) {
+            return {
+                ...prevValue,
+                ...updatedValues,
+            };
+        }
+        console.log({ prevValue, updatedValues });
+
+        return {
+            ...prevValue,
+            data: {
+                ...prevValue.data,
+                ...updatedValues,
+            },
+        };
+    };
 
     const createNewUniqueGroup = (groupName) => {
         if (groupName) {
@@ -328,14 +348,12 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                     updatedConstraints.push({ groupName: '', properties: [fieldName] });
                 }
             });
-            setValues!((prevValue) => ({
-                ...prevValue,
-                groupName: undefined,
-            }));
+            setValues!((prevValue) => setFieldValues(prevValue, { groupName: undefined }));
 
             return updatedConstraints;
         });
     };
+    console.log({ initialValue });
 
     const isNewProperty = !initialValue;
     const isDisabled = Boolean(isEditMode && !isNewProperty && areThereAnyInstances);
@@ -409,11 +427,12 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                         delete newOptionColors[fieldValue.options[editIndex]];
                         newOptionColors[option] = color;
                     }
-                    setValues?.((prev) => ({
-                        ...prev,
-                        options: newOptions.concat(frontEndEnumValues),
-                        optionColors: newOptionColors,
-                    }));
+                    setValues?.((prev) =>
+                        setFieldValues(prev, {
+                            options: newOptions.concat(frontEndEnumValues),
+                            optionColors: newOptionColors,
+                        }),
+                    );
 
                     entityTemplateMap!.set(id, resultOfMutation);
                     return entityTemplateMap!;
@@ -457,11 +476,12 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                     if (fieldValue.optionColors && Object.keys(fieldValue.optionColors).length > 0 && editIndex != null) {
                         delete newOptionColors[fieldValue.options[editIndex]];
                     }
-                    setValues?.((prev) => ({
-                        ...prev,
-                        options: newOptions.concat(frontEndEnumValues),
-                        optionColors: newOptionColors,
-                    }));
+                    setValues?.((prev) =>
+                        setFieldValues(prev, {
+                            options: newOptions.concat(frontEndEnumValues),
+                            optionColors: newOptionColors,
+                        }),
+                    );
                     entityTemplateMap!.set(id, resultOfMutation);
                     return entityTemplateMap!;
                 });
@@ -508,9 +528,9 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
             if (oldColor) {
                 const newOptionColors = { ...value.optionColors! };
                 delete newOptionColors[value.options[tagIndex]];
-                setValues?.((prev) => ({ ...prev, optionColors: { ...newOptionColors, [trimValue]: oldColor }, options: newOptions }));
+                setValues?.((prev) => setFieldValues(prev, { optionColors: { ...newOptionColors, [trimValue]: oldColor }, options: newOptions }));
             } else {
-                setValues?.((prev) => ({ ...prev, options: newOptions }));
+                setValues?.((prev) => setFieldValues(prev, { options: newOptions }));
             }
             setEditIndex(null);
         }
@@ -536,11 +556,12 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
             }
             return acc;
         }, {});
-        setValues?.((prev) => ({
-            ...prev,
-            options: [...value.options.slice(0, initialOptionArray.length), ...newValues],
-            optionColors: tempColors,
-        }));
+        setValues?.((prev) =>
+            setFieldValues(prev, {
+                options: [...value.options.slice(0, initialOptionArray.length), ...newValues],
+                optionColors: tempColors,
+            }),
+        );
     };
 
     const archiveButtonTooltip = () => {
@@ -550,6 +571,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
         if (value.archive) return i18next.t('wizard.entityTemplate.removeFromArchive');
         return i18next.t('wizard.entityTemplate.moveToArchive');
     };
+    console.log(value.deleted, isEditMode, !isNewProperty, areThereAnyInstances);
 
     return (
         <Draggable draggableId={value.id} index={index}>
@@ -604,11 +626,12 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                             name={type}
                                             value={value.type === 'text-area' ? 'string' : value.type}
                                             onChange={(e) => {
-                                                setValues?.((prevValue) => ({
-                                                    ...prevValue,
-                                                    type: e.target.value,
-                                                    required: e.target.value === 'serialNumber' || prevValue.required,
-                                                }));
+                                                setValues?.((prevValue: any) =>
+                                                    setFieldValues(prevValue, {
+                                                        type: e.target.value,
+                                                        required: (e.target.value === 'serialNumber' || prevValue.required) ?? false,
+                                                    }),
+                                                );
                                             }}
                                             error={touchedType && Boolean(errorType)}
                                             helperText={touchedType && errorType}
@@ -658,10 +681,11 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                     if (isDisabled) {
                                                         updateOldDisabledEnumVals(trimmedValue);
                                                     } else {
-                                                        setValues?.((prev) => ({
-                                                            ...prev,
-                                                            options: trimmedValue,
-                                                        }));
+                                                        setValues?.((prev) =>
+                                                            setFieldValues(prev, {
+                                                                options: trimmedValue,
+                                                            }),
+                                                        );
                                                     }
                                                 }}
                                                 isOptionEqualToValue={(option, inputValue) => {
@@ -936,10 +960,11 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                 <MeltaCheckbox
                                                                     checked={value.isDatePastAlert ?? true}
                                                                     onChange={(_e, checked) => {
-                                                                        setValues?.((prevValue) => ({
-                                                                            ...prevValue,
-                                                                            isDatePastAlert: checked,
-                                                                        }));
+                                                                        setValues?.((prevValue) =>
+                                                                            setFieldValues(prevValue, {
+                                                                                isDatePastAlert: checked,
+                                                                            }),
+                                                                        );
                                                                     }}
                                                                 />
                                                             }
@@ -1006,11 +1031,12 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                             id={required}
                                                             name={required}
                                                             onChange={(_e, checked) => {
-                                                                setValues((prevValue) => ({
-                                                                    ...prevValue,
-                                                                    required: checked,
-                                                                    identifier: !checked ? undefined : prevValue.identifier,
-                                                                }));
+                                                                setValues((prevValue) =>
+                                                                    setFieldValues(prevValue, {
+                                                                        required: checked,
+                                                                        identifier: !checked ? undefined : prevValue.identifier,
+                                                                    }),
+                                                                );
                                                                 // unique is allowed only if required=true, automatic uncheck 'unique' too
                                                                 if (!checked && unique) {
                                                                     deletePropFromUniqueConstraints(uniqueConstraintGroupName, value.name);
@@ -1041,10 +1067,11 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                         id={readOnly}
                                                         name={readOnly}
                                                         onChange={(_e, checked) => {
-                                                            setValues?.((prevValue) => ({
-                                                                ...prevValue,
-                                                                readOnly: checked || undefined,
-                                                            }));
+                                                            setValues?.((prevValue) =>
+                                                                setFieldValues(prevValue, {
+                                                                    readOnly: checked || undefined,
+                                                                }),
+                                                            );
                                                         }}
                                                         disabled={value.required || value.archive}
                                                         checked={value.readOnly}
@@ -1089,13 +1116,14 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                             checked={unique}
                                                             disabled={value.archive || value.type === 'serialNumber'}
                                                             onChange={(_e, checked) => {
-                                                                setValues((prevValue) => ({
-                                                                    ...prevValue,
-                                                                    required: checked ? true : prevValue.required,
-                                                                    identifier: !checked ? undefined : prevValue.identifier,
-                                                                    groupName: undefined,
-                                                                    uniqueCheckbox: false,
-                                                                }));
+                                                                setValues((prevValue) =>
+                                                                    setFieldValues(prevValue, {
+                                                                        required: checked ? true : prevValue.required,
+                                                                        identifier: !checked ? undefined : prevValue.identifier,
+                                                                        groupName: undefined,
+                                                                        uniqueCheckbox: false,
+                                                                    }),
+                                                                );
                                                                 if (checked) {
                                                                     createEmptyGroup(value.name);
                                                                 } else {
@@ -1128,10 +1156,11 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                             name={type}
                                                             onChange={(e) => {
                                                                 const newFormatToText = e.target.checked ? 'text-area' : 'string';
-                                                                setValues?.((prevValue) => ({
-                                                                    ...prevValue,
-                                                                    type: newFormatToText,
-                                                                }));
+                                                                setValues?.((prevValue) =>
+                                                                    setFieldValues(prevValue, {
+                                                                        type: newFormatToText,
+                                                                    }),
+                                                                );
                                                             }}
                                                             checked={value.type === 'text-area'}
                                                             disabled={value.archive}
@@ -1147,13 +1176,14 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                             id={identifier}
                                                             name={identifier}
                                                             onChange={(_e, checked) => {
-                                                                setValues?.((prevValue) => ({
-                                                                    ...prevValue,
-                                                                    required: checked ? true : prevValue.required,
-                                                                    identifier: checked || undefined,
-                                                                    groupName: undefined,
-                                                                    uniqueCheckbox: false,
-                                                                }));
+                                                                setValues?.((prevValue) =>
+                                                                    setFieldValues(prevValue, {
+                                                                        required: checked ? true : prevValue.required,
+                                                                        identifier: checked || undefined,
+                                                                        groupName: undefined,
+                                                                        uniqueCheckbox: false,
+                                                                    }),
+                                                                );
                                                                 if (checked) createEmptyGroup(value.name);
                                                             }}
                                                             disabled={hasIdentifier && !value.identifier}
@@ -1206,7 +1236,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                             >
                                                 <Box>
                                                     <IconButton
-                                                        onClick={() => remove(index, isNewProperty)}
+                                                        onClick={() => remove(index, isNewProperty, groupIndex)}
                                                         disabled={!supportDeleteForExistingInstances || initialValue?.required || hasActions}
                                                     >
                                                         {value.deleted ? <DeleteOff /> : <DeleteIcon />}
@@ -1225,10 +1255,11 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                 <MeltaCheckbox
                                                                     checked={value.uniqueCheckbox}
                                                                     onChange={(_e, checked) => {
-                                                                        setValues!((prevValue) => ({
-                                                                            ...prevValue,
-                                                                            uniqueCheckbox: checked,
-                                                                        }));
+                                                                        setValues!((prevValue) =>
+                                                                            setFieldValues(prevValue, {
+                                                                                uniqueCheckbox: checked,
+                                                                            }),
+                                                                        );
                                                                         if (!checked) {
                                                                             movePropAndCreateGroup(value.name);
                                                                         }
@@ -1256,10 +1287,11 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                         onChange={(_event, newValue) => {
                                                             if (newValue !== null) {
                                                                 addToProperties(newValue);
-                                                                setValues!((prevValue) => ({
-                                                                    ...prevValue,
-                                                                    groupName: newValue,
-                                                                }));
+                                                                setValues!((prevValue) =>
+                                                                    setFieldValues(prevValue, {
+                                                                        groupName: newValue,
+                                                                    }),
+                                                                );
                                                             }
                                                         }}
                                                         renderInput={(params) => (
@@ -1303,10 +1335,11 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                                 !uniqueConstraints?.some((group) => group.groupName === inputValue)
                                                                             ) {
                                                                                 createNewUniqueGroup(inputValue);
-                                                                                setValues!((prevValue) => ({
-                                                                                    ...prevValue,
-                                                                                    groupName: String(inputValue),
-                                                                                }));
+                                                                                setValues!((prevValue) =>
+                                                                                    setFieldValues(prevValue, {
+                                                                                        groupName: String(inputValue),
+                                                                                    }),
+                                                                                );
                                                                             }
                                                                         }
                                                                     }}
@@ -1320,10 +1353,11 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                             aria-label="create"
                                                                             onClick={() => {
                                                                                 createNewUniqueGroup(params.inputProps.value);
-                                                                                setValues!((prevValue) => ({
-                                                                                    ...prevValue,
-                                                                                    groupName: String(params.inputProps.value),
-                                                                                }));
+                                                                                setValues!((prevValue) =>
+                                                                                    setFieldValues(prevValue, {
+                                                                                        groupName: String(params.inputProps.value),
+                                                                                    }),
+                                                                                );
                                                                             }}
                                                                             style={{
                                                                                 position: 'absolute',

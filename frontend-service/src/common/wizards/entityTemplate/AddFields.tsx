@@ -44,49 +44,89 @@ export const propertiesBaseSchema = Yup.object({
 export const attachmentPropertiesBaseSchema = Yup.object({
     name: Yup.string().matches(variableNameValidation, i18next.t('validation.variableName')).required(i18next.t('validation.required')),
     title: Yup.string().required(i18next.t('validation.required')),
+    type: Yup.string().required(i18next.t('validation.required')),
 });
 
-const addFieldsSchema = Yup.object({
-    properties: Yup.array()
-        .of(
-            propertiesBaseSchema.shape({
-                required: Yup.boolean().required(i18next.t('validation.required')),
-                preview: Yup.boolean().required(i18next.t('validation.required')),
-                dateNotification: Yup.number().nullable().oneOf([1, 7, 14, 30, 90, 180], i18next.t('validation.mustBeOneOfList')),
-                serialStarter: Yup.number()
-                    .typeError(i18next.t('validation.invalidNumberField'))
-                    .when('type', {
-                        is: 'serialNumber',
-                        then: (schema) => schema.min(0, i18next.t('validation.invalidSerialStarter')).required(i18next.t('validation.required')),
-                    }),
-                relationshipReference: Yup.object().when('type', {
-                    is: 'relationshipReference',
-                    then: Yup.object({
-                        relatedTemplateId: Yup.string().required(i18next.t('validation.required')),
-                        relatedTemplateField: Yup.string().required(i18next.t('validation.required')),
-                        relationshipTemplateDirection: Yup.string().required(i18next.t('validation.required')),
-                    }),
-                }),
-                mapSearch: Yup.boolean(),
-            }),
-        )
-        .min(1, i18next.t('validation.oneField'))
-        .test(i18next.t('validation.oneField'), i18next.t('validation.oneField'), (value) =>
-            value ? value.some((obj) => !('deleted' in obj) || obj.deleted === false) : false,
-        )
-        .test(i18next.t('validation.oneField'), i18next.t('validation.oneField'), (value) =>
-            value ? value.some((obj) => !('archive' in obj) || obj.archive === false || obj.archive === undefined) : false,
-        )
-        .test(i18next.t('validation.mapSearchPropertiesLimit', { limit: mapSearchPropertiesLimit }), (value) => {
-            if (!value) return true;
-            const mapSearchCount = value.filter((obj) => obj.mapSearch === true).length;
-            if (mapSearchCount > mapSearchPropertiesLimit)
-                toast.error(i18next.t('validation.mapSearchPropertiesLimit', { limit: mapSearchPropertiesLimit }));
-            return mapSearchCount <= mapSearchPropertiesLimit;
+const extendedPropertySchema = propertiesBaseSchema.shape({
+    required: Yup.boolean().required(i18next.t('validation.required')),
+    preview: Yup.boolean().required(i18next.t('validation.required')),
+    dateNotification: Yup.number().nullable().oneOf([1, 7, 14, 30, 90, 180], i18next.t('validation.mustBeOneOfList')),
+    serialStarter: Yup.number()
+        .typeError(i18next.t('validation.invalidNumberField'))
+        .when('type', {
+            is: 'serialNumber',
+            then: (schema) => schema.min(0, i18next.t('validation.invalidSerialStarter')).required(i18next.t('validation.required')),
         }),
+    relationshipReference: Yup.object().when('type', {
+        is: 'relationshipReference',
+        then: Yup.object({
+            relatedTemplateId: Yup.string().required(i18next.t('validation.required')),
+            relatedTemplateField: Yup.string().required(i18next.t('validation.required')),
+            relationshipTemplateDirection: Yup.string().required(i18next.t('validation.required')),
+        }),
+    }),
+    mapSearch: Yup.boolean(),
+});
+
+const fieldSchema = Yup.object({
+    type: Yup.string().oneOf(['field']).required(),
+    data: extendedPropertySchema.required(),
+});
+
+const groupSchema = Yup.object({
+    type: Yup.string().oneOf(['group']).required(),
+    groupId: Yup.string().matches(variableNameValidation, i18next.t('validation.variableName')).required(i18next.t('validation.required')),
+    groupTitle: Yup.string().required(i18next.t('validation.required')),
+    fields: Yup.array().of(extendedPropertySchema).min(1, i18next.t('validation.oneField')),
+});
+const fieldByTypeSchema = Yup.lazy((item: any): Yup.BaseSchema => {
+    if (item?.type === 'field') return fieldSchema;
+    if (item?.type === 'group') return groupSchema;
+    return Yup.mixed().notRequired();
+});
+
+const propertiesSchema = Yup.array()
+    .of(fieldByTypeSchema as any)
+    .min(1, i18next.t('validation.oneField'))
+    .test('hasActiveFields', i18next.t('validation.oneField'), (entries) => {
+        if (!entries) return false;
+        return entries.some((item) => {
+            if (item.type === 'field') return !item.data?.deleted;
+            if (item.type === 'group') return item.fields?.some((f) => !f.deleted);
+            return false;
+        });
+    })
+    .test('hasNonArchivedFields', i18next.t('validation.oneField'), (entries) => {
+        if (!entries) return false;
+        return entries.some((item) => {
+            if (item.type === 'field') return item.data?.archive !== true;
+            if (item.type === 'group') return item.fields?.some((f) => f.archive !== true);
+            return false;
+        });
+    })
+    .test('mapSearchLimit', i18next.t('validation.mapSearchPropertiesLimit', { limit: mapSearchPropertiesLimit }), (entries) => {
+        if (!entries) return true;
+        let count = 0;
+        for (const item of entries) {
+            if (item.type === 'field' && item.data?.mapSearch) count++;
+            if (item.type === 'group') {
+                count += item.fields?.filter((f) => f.mapSearch).length || 0;
+            }
+        }
+        if (count > mapSearchPropertiesLimit) {
+            toast.error(i18next.t('validation.mapSearchPropertiesLimit', { limit: mapSearchPropertiesLimit }));
+        }
+        return count <= mapSearchPropertiesLimit;
+    });
+
+const addFieldsSchema = Yup.object({
+    properties: propertiesSchema,
     attachmentProperties: Yup.array().of(
-        attachmentPropertiesBaseSchema.shape({
-            required: Yup.boolean().required(i18next.t('validation.required')),
+        Yup.object({
+            type: Yup.string().oneOf(['field']).required(),
+            data: attachmentPropertiesBaseSchema.shape({
+                required: Yup.boolean().required(i18next.t('validation.required')),
+            }),
         }),
     ),
 }).test('uniqueProperties', entityTemplateUniqueProperties);
@@ -102,7 +142,15 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
     setBlock,
 }) => {
     const hasActions = Boolean(initialValues?.actions);
-    const countMapSearchProperties = Object.values(values.properties).filter((property) => property.mapSearch).length;
+    const countMapSearchProperties = Object.values(values.properties).flatMap((property: any) => {
+        if (property.type === 'field' && property.data?.mapSearch) {
+            return [property];
+        }
+        if (property.type === 'group' && Array.isArray(property.fields)) {
+            return property.fields.filter((field) => field.mapSearch);
+        }
+        return [];
+    }).length;
 
     if (countMapSearchProperties > mapSearchPropertiesLimit) setBlock(true);
 
@@ -173,13 +221,15 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
                                             values={values}
                                             uniqueConstraints={values.uniqueConstraints}
                                             setUniqueConstraints={(newUniqueConstraints) => {
-                                                setValues((prev) => ({
-                                                    ...prev,
-                                                    uniqueConstraints:
-                                                        typeof newUniqueConstraints === 'function'
-                                                            ? newUniqueConstraints(prev.uniqueConstraints!)
-                                                            : newUniqueConstraints,
-                                                }));
+                                                setValues((prev) => {
+                                                    return {
+                                                        ...prev,
+                                                        uniqueConstraints:
+                                                            typeof newUniqueConstraints === 'function'
+                                                                ? newUniqueConstraints(prev.uniqueConstraints!)
+                                                                : newUniqueConstraints,
+                                                    };
+                                                });
                                             }}
                                             initialValues={initialValues}
                                             setFieldValue={setFieldValue}
@@ -209,7 +259,14 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
                                             hasActions={hasActions}
                                             draggable={{ isDraggable: true, dragHandleProps: draggableProvided.dragHandleProps }}
                                             locationSearchFields={{
-                                                show: Object.values(values.properties).some((property) => property.type === 'location'),
+                                                show: Object.values(values.properties).some((property: any) => {
+                                                    if (property.type === 'field') return property.data?.type === 'location';
+
+                                                    if (property.type === 'group' && Array.isArray(property.fields))
+                                                        return property.fields.some((field) => field.type === 'location');
+
+                                                    return false;
+                                                }),
                                                 disabled: countMapSearchProperties >= 2,
                                             }}
                                             supportIdentifier

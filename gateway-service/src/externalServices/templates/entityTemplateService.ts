@@ -62,6 +62,11 @@ export interface IEntitySingleProperty {
     };
     archive?: boolean;
 }
+interface IFieldsGroup {
+    groupId: string;
+    title: string;
+    fields: string[];
+}
 
 export interface IEntityTemplate {
     name: string;
@@ -81,6 +86,7 @@ export interface IEntityTemplate {
     actions?: string;
     documentTemplatesIds?: string[];
     mapSearchProperties?: string[];
+    fieldGroups?: IFieldsGroup[];
 }
 
 export interface IEntityTemplatePopulated extends Omit<IEntityTemplate, 'category'> {

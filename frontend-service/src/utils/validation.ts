@@ -2,6 +2,7 @@ import i18next from 'i18next';
 import * as Yup from 'yup';
 import { EntityTemplateFormInputProperties } from '../common/wizards/entityTemplate';
 import { ProcessTemplateFormInputProperties } from '../common/wizards/processTemplate';
+import { extractProperties } from '../services/templates/enitityTemplatesService';
 
 export const regexSchema = Yup.string().test('is-regex', (value, context) => {
     if (!value) return true;
@@ -33,20 +34,22 @@ const addDuplicateFieldsError = (
         `validation.${duplicateFieldType === 'normal' ? 'field' : 'attachmentField'}${inputType === 'name' ? 'Name' : 'Title'}Exists`,
     );
     const path = `${fieldPath}.${inputType}`;
+    console.log({ message, path });
+
     errors.push(context.createError({ message, path }));
 };
 const testFields = (
     properties1: EntityTemplateFormInputProperties[] | ProcessTemplateFormInputProperties[],
     properties1Type: PropertiesType,
-    properties1Path: string,
+    properties1Path: any,
     properties2: EntityTemplateFormInputProperties[] | ProcessTemplateFormInputProperties[],
     properties2Type: PropertiesType,
-    properties2Path: string,
+    properties2Path: any,
     context: Yup.TestContext,
     errors: Yup.ValidationError[],
 ) => {
-    properties1.forEach((field1, index1) => {
-        properties2.forEach((field2, index2) => {
+    properties1.forEach((field1) => {
+        properties2.forEach((field2) => {
             if (field1.id === field2.id) return;
             if (
                 !('deleted' in field1 || 'deleted' in field2) ||
@@ -54,12 +57,12 @@ const testFields = (
                 ('deleted' in field2 && !field2.deleted)
             ) {
                 if (field1.name === field2.name) {
-                    addDuplicateFieldsError(`${properties1Path}[${index1}]`, properties2Type, 'name', context, errors);
-                    addDuplicateFieldsError(`${properties2Path}[${index2}]`, properties1Type, 'name', context, errors);
+                    addDuplicateFieldsError(properties1Path[field1.id], properties2Type, 'name', context, errors);
+                    addDuplicateFieldsError(properties2Path[field2.id], properties1Type, 'name', context, errors);
                 }
                 if (field1.title === field2.title) {
-                    addDuplicateFieldsError(`${properties1Path}[${index1}]`, properties2Type, 'title', context, errors);
-                    addDuplicateFieldsError(`${properties2Path}[${index2}]`, properties1Type, 'title', context, errors);
+                    addDuplicateFieldsError(properties1Path[field1.id], properties2Type, 'title', context, errors);
+                    addDuplicateFieldsError(properties2Path[field2.id], properties1Type, 'title', context, errors);
                 }
             }
         });
@@ -68,22 +71,17 @@ const testFields = (
 
 export const entityTemplateUniqueProperties = (value, context: Yup.TestContext) => {
     if (!value) return true;
-    const { properties, attachmentProperties } = value;
 
     const errors: Yup.ValidationError[] = [];
-
-    testFields(properties, 'normal', 'properties', properties, 'normal', 'properties', context, errors);
-    testFields(
-        attachmentProperties,
-        'attachment',
+    const { properties, propertiesPath } = extractProperties(value.properties, 'properties');
+    const { properties: attachmentProperties, propertiesPath: attachmentPath } = extractProperties(
+        value.attachmentProperties,
         'attachmentProperties',
-        attachmentProperties,
-        'attachment',
-        'attachmentProperties',
-        context,
-        errors,
     );
-    testFields(properties, 'normal', 'properties', attachmentProperties, 'attachment', 'attachmentProperties', context, errors);
+
+    testFields(properties, 'normal', propertiesPath, properties, 'normal', propertiesPath, context, errors);
+    testFields(attachmentProperties, 'attachment', attachmentPath, attachmentProperties, 'attachment', attachmentPath, context, errors);
+    testFields(properties, 'normal', propertiesPath, attachmentProperties, 'attachment', attachmentPath, context, errors);
 
     if (errors.length) {
         return new Yup.ValidationError(errors);
@@ -93,31 +91,27 @@ export const entityTemplateUniqueProperties = (value, context: Yup.TestContext) 
 };
 
 export const processTemplateUniquePropertiesDetails = (value, context: Yup.TestContext) => {
+    console.log({ value });
     if (!value) return true;
-    const { detailsProperties, detailsAttachmentProperties } = value;
     const errors: Yup.ValidationError[] = [];
+    const { properties: detailsProperties, propertiesPath: detailsPropertiesPath } = extractProperties(value.detailsProperties, 'detailsProperties');
+    const { properties: attachmentProperties, propertiesPath: attachmentPropertiesPath } = extractProperties(
+        value.detailsAttachmentProperties,
+        'detailsAttachmentProperties',
+    );
 
-    testFields(detailsProperties, 'normal', 'detailsProperties', detailsProperties, 'normal', 'detailsProperties', context, errors);
+    testFields(detailsProperties, 'normal', detailsPropertiesPath, detailsProperties, 'normal', detailsPropertiesPath, context, errors);
     testFields(
-        detailsAttachmentProperties,
+        attachmentProperties,
         'attachment',
-        'detailsAttachmentProperties',
-        detailsAttachmentProperties,
+        attachmentPropertiesPath,
+        attachmentProperties,
         'attachment',
-        'detailsAttachmentProperties',
+        attachmentPropertiesPath,
         context,
         errors,
     );
-    testFields(
-        detailsProperties,
-        'normal',
-        'detailsProperties',
-        detailsAttachmentProperties,
-        'attachment',
-        'detailsAttachmentProperties',
-        context,
-        errors,
-    );
+    testFields(detailsProperties, 'normal', detailsPropertiesPath, attachmentProperties, 'attachment', attachmentPropertiesPath, context, errors);
 
     if (errors.length) {
         return new Yup.ValidationError(errors);
@@ -130,27 +124,14 @@ export const processTemplateUniquePropertiesSteps = (value, context: Yup.TestCon
     const { steps } = value;
     const errors: Yup.ValidationError[] = [];
     steps.forEach((step, index) => {
-        testFields(step.properties, 'normal', `steps[${index}].properties`, step.properties, 'normal', `steps[${index}].properties`, context, errors);
-        testFields(
+        const { properties, propertiesPath } = extractProperties(step.properties, `steps[${index}].properties`);
+        const { properties: attachmentProperties, propertiesPath: attachmentPath } = extractProperties(
             step.attachmentProperties,
-            'attachment',
             `steps[${index}].attachmentProperties`,
-            step.attachmentProperties,
-            'attachment',
-            `steps[${index}].attachmentProperties`,
-            context,
-            errors,
         );
-        testFields(
-            step.properties,
-            'normal',
-            `steps[${index}].properties`,
-            step.attachmentProperties,
-            'attachment',
-            `steps[${index}].attachmentProperties`,
-            context,
-            errors,
-        );
+        testFields(properties, 'normal', propertiesPath, properties, 'normal', propertiesPath, context, errors);
+        testFields(attachmentProperties, 'attachment', attachmentPath, attachmentProperties, 'attachment', attachmentPath, context, errors);
+        testFields(properties, 'normal', propertiesPath, attachmentProperties, 'attachment', attachmentPath, context, errors);
     });
 
     if (errors.length) {

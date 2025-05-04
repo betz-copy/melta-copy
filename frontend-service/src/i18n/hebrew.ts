@@ -524,6 +524,9 @@ export default {
             failedToDeleteFieldThatUsedInGantts: 'נכשל למחוק שדה "{{property}}" אשר בשימוש בטבלאות',
             failedToDeleteFieldThatUsedInRelationshipReference: 'נכשל למחוק שדה "{{property}}" אשר בשימוש כשדה קשר לתבנית "{{relatedTemplateName}}"',
             cantDeleteUniqueOrRequiredFields: 'לא ניתן למחוק שדה ייחודי או חובה',
+            cantDeleteGroupWithFields: 'יש להסיר שדות מחוץ לקבוצה כדי למחוק אותה',
+            deleteGroup: 'מחיקת קבוצה',
+            // addFieldToGroup:''
             propertyName: 'שם שדה באנגלית',
             attachmentName: 'שם באנגלית',
             propertyDisplayName: 'שם שדה לתצוגה',
@@ -838,6 +841,7 @@ export default {
         stepDisplayNameExists: 'קיים שלב עם שם לתצוגה זהה',
         fileslimit: 'מספר קבצים מוגבל ל{{limit}}',
         mapSearchPropertiesLimit: 'מספר השדות המקסימלי בחיפוש עמוד מפות הוא: {{limit}}',
+        uniqueGroupId: 'קיים שם קבוצה באנגלית זהה',
     },
     propertyTypes: {
         string: 'טקסט',

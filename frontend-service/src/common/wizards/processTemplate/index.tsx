@@ -28,14 +28,14 @@ export interface ProcessTemplateFormInputProperties {
     deleted?: boolean | undefined;
 }
 export interface ProcessTemplateWizardValues extends Omit<IMongoProcessTemplatePopulated, 'details' | 'steps' | 'createdAt' | 'updatedAt'> {
-    detailsProperties: ProcessTemplateFormInputProperties[];
+    detailsProperties: ({ type: 'field'; data: ProcessTemplateFormInputProperties } | ProcessTemplateFormInputProperties)[];
     detailsAttachmentProperties: ProcessTemplateFormInputProperties[];
     steps: Array<{
         _id?: string;
         draggableId: string;
         name: string;
         displayName: string;
-        properties: ProcessTemplateFormInputProperties[];
+        properties: ({ type: 'field'; data: ProcessTemplateFormInputProperties } | ProcessTemplateFormInputProperties)[];
         attachmentProperties: ProcessTemplateFormInputProperties[];
         reviewers: IUser[];
         icon?: fileDetails;

@@ -11,6 +11,7 @@ import {
     IProcessSingleProperty,
     ISearchProcessTemplatesBody,
 } from '../../interfaces/processes/processTemplate';
+import { extractProperties } from './enitityTemplatesService';
 
 const { processTemplates } = environment.api;
 export const basePropertyTypes = ['string', 'number', 'boolean', 'array'];
@@ -21,8 +22,8 @@ const processTemplateObjectToProcessTemplateForm = (
 ): ProcessTemplateWizardValues | undefined => {
     if (!processTemplate) return undefined;
     const { details, steps, ...restOfProcessTemplate } = processTemplate;
-    const detailsPropertiesArray: ProcessTemplateFormInputProperties[] = [];
-    const detailsAttachmentProperties: ProcessTemplateFormInputProperties[] = [];
+    const detailsPropertiesArray: { type: 'field'; data: ProcessTemplateFormInputProperties }[] = [];
+    const detailsAttachmentProperties: { type: 'field'; data: ProcessTemplateFormInputProperties }[] = [];
     const stepsForm: ProcessTemplateWizardValues['steps'] = [];
 
     details.propertiesOrder.forEach((key) => {
@@ -48,18 +49,18 @@ const processTemplateObjectToProcessTemplateForm = (
         };
 
         if (value.format === 'fileId') {
-            detailsAttachmentProperties.push(property);
+            detailsAttachmentProperties.push({ type: 'field', data: property });
         } else if (value.items?.format === 'fileId') {
             property.type = 'multipleFiles';
 
-            detailsAttachmentProperties.push(property);
+            detailsAttachmentProperties.push({ type: 'field', data: property });
         } else {
-            detailsPropertiesArray.push(property);
+            detailsPropertiesArray.push({ type: 'field', data: property });
         }
     });
     steps.forEach((step) => {
-        const stepsPropertiesArray: ProcessTemplateFormInputProperties[] = [];
-        const stepsAttachmentProperties: ProcessTemplateFormInputProperties[] = [];
+        const stepsPropertiesArray: { type: 'field'; data: ProcessTemplateFormInputProperties }[] = [];
+        const stepsAttachmentProperties: { type: 'field'; data: ProcessTemplateFormInputProperties }[] = [];
         step.propertiesOrder.forEach((key) => {
             const value = step.properties.properties[key];
 
@@ -83,13 +84,13 @@ const processTemplateObjectToProcessTemplateForm = (
             };
 
             if (value.format === 'fileId') {
-                stepsAttachmentProperties.push(property);
+                stepsAttachmentProperties.push({ type: 'field', data: property });
             } else if (value.items?.format === 'fileId') {
                 property.type = 'multipleFiles';
 
-                stepsAttachmentProperties.push(property);
+                stepsAttachmentProperties.push({ type: 'field', data: property });
             } else {
-                stepsPropertiesArray.push(property);
+                stepsPropertiesArray.push({ type: 'field', data: property });
             }
         });
 
@@ -161,6 +162,10 @@ const addAttachmentProperties = (
 
 const formToJSONSchema = (values: ProcessTemplateWizardValues): ICreateProcessTemplateBody | IUpdateProcessTemplateBody => {
     const { detailsProperties, detailsAttachmentProperties, steps, ...restOfProperties } = values;
+
+    const extractDetailsProperties = extractProperties(detailsProperties);
+    const extractDetailsAttachmentProperties = extractProperties(detailsAttachmentProperties);
+
     const detailsPropertiesOrder: string[] = [];
     const stepTemplates: ICreateProcessTemplateBody['steps'] | IUpdateProcessTemplateBody['steps'] = [];
 
@@ -170,7 +175,7 @@ const formToJSONSchema = (values: ProcessTemplateWizardValues): ICreateProcessTe
         required: [],
     };
 
-    detailsProperties.forEach(({ name, title, type, required, options, pattern, patternCustomErrorMessage, deleted }) => {
+    extractDetailsProperties.forEach(({ name, title, type, required, options, pattern, patternCustomErrorMessage, deleted }) => {
         if (!deleted) {
             detailsSchema.properties[name] = {
                 title,
@@ -187,7 +192,7 @@ const formToJSONSchema = (values: ProcessTemplateWizardValues): ICreateProcessTe
         }
     });
 
-    addAttachmentProperties(detailsSchema.properties, detailsPropertiesOrder, detailsAttachmentProperties, detailsSchema);
+    addAttachmentProperties(extractDetailsProperties.properties, detailsPropertiesOrder, extractDetailsAttachmentProperties, detailsSchema);
 
     steps.forEach((step) => {
         const stepPropertiesOrder: string[] = [];
@@ -196,7 +201,10 @@ const formToJSONSchema = (values: ProcessTemplateWizardValues): ICreateProcessTe
             properties: {},
             required: [],
         };
-        step.properties.forEach(({ name, title, type, required, options, pattern, patternCustomErrorMessage, deleted }) => {
+        const extractStepProperties = extractProperties(step.properties);
+        const extractStepAttachmentProperties = extractProperties(step.attachmentProperties);
+
+        extractStepProperties.forEach(({ name, title, type, required, options, pattern, patternCustomErrorMessage, deleted }) => {
             if (!deleted) {
                 stepSchema.properties[name] = {
                     title,
@@ -213,7 +221,7 @@ const formToJSONSchema = (values: ProcessTemplateWizardValues): ICreateProcessTe
             }
         });
 
-        addAttachmentProperties(stepSchema.properties, stepPropertiesOrder, step.attachmentProperties, stepSchema);
+        addAttachmentProperties(stepSchema.properties, stepPropertiesOrder, extractStepAttachmentProperties, stepSchema);
 
         const reviewersIds: string[] = step.reviewers.map((reviewer) => reviewer._id);
         stepTemplates.push({
@@ -225,6 +233,13 @@ const formToJSONSchema = (values: ProcessTemplateWizardValues): ICreateProcessTe
             propertiesOrder: stepPropertiesOrder,
             reviewers: reviewersIds,
         });
+    });
+    console.log({
+        im2: {
+            ...restOfProperties,
+            details: { properties: detailsSchema, propertiesOrder: detailsPropertiesOrder },
+            steps: stepTemplates,
+        },
     });
 
     return {

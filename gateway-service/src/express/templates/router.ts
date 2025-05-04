@@ -97,7 +97,7 @@ templatesRouter.patch(
     templatesControllerMiddleware.deleteEntityEnumFieldValue,
 );
 templatesRouter.patch('/entities/:id/actions', AuthorizerControllerMiddleware.userIsRootAdmin, TemplatesServiceProxy);
-templatesRouter.post('/entities/search', AuthorizerControllerMiddleware.userCanReadTemplates, templatesControllerMiddleware.searchEntityTemplates); // todo shirel
+templatesRouter.post('/entities/search', AuthorizerControllerMiddleware.userCanReadTemplates, templatesControllerMiddleware.searchEntityTemplates);
 templatesRouter.post(
     '/entities',
     busboyMiddleware,

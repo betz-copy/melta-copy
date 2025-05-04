@@ -1,3 +1,4 @@
+import { FieldsGroup } from '../common/wizards/entityTemplate/commonInterfaces';
 import { IMongoCategory } from './categories';
 import { IFieldsGroup, IUniqueConstraintOfTemplate } from './entities';
 
@@ -32,6 +33,7 @@ export interface IEntitySingleProperty {
         relatedTemplateField: string;
     };
     archive?: boolean;
+    fieldGroup?: FieldsGroup;
 }
 
 export interface IEntityTemplate {
