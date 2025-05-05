@@ -1,7 +1,8 @@
-import { Autocomplete, TextField, TextFieldProps } from '@mui/material';
+import { Autocomplete, MenuItem, TextField, TextFieldProps } from '@mui/material';
 import React from 'react';
-import CloseIcon from '@mui/icons-material/Close';
+import { ExpandMore, Close } from '@mui/icons-material';
 import { ColoredEnumChip } from '../ColoredEnumChip';
+import { MeltaCheckbox } from '../MeltaCheckbox';
 
 const MultipleSelect: React.FC<{
     items: {
@@ -67,15 +68,15 @@ const MultipleSelect: React.FC<{
             getOptionLabel={(option) => option.label}
             isOptionEqualToValue={(option, val) => option.value === val.value}
             onChange={onChange}
-            renderOption={(props, option) =>
-                option.color ? (
-                    <li {...props} key={option.value}>
-                        <ColoredEnumChip label={option.label} color={option.color || 'default'} />
-                    </li>
-                ) : (
-                    <span {...props}>{option.label}</span>
-                )
-            }
+            popupIcon={<ExpandMore />}
+            renderOption={(props, option) => {
+                return (
+                    <MenuItem {...props} key={option.value} value={option.value} style={{ height: '40px' }}>
+                        {multiple && <MeltaCheckbox checked={value.includes(option.value)} />}
+                        <ColoredEnumChip {...props} label={option.label} color={option.color || 'default'} />
+                    </MenuItem>
+                );
+            }}
             renderTags={(tagValue, getTagProps) =>
                 tagValue.map((option, index) => {
                     const { key, onDelete, ...restTagProps } = getTagProps({ index });
@@ -85,7 +86,7 @@ const MultipleSelect: React.FC<{
                             label={option.label}
                             color={option.color || 'default'}
                             onDelete={onDelete}
-                            deleteIcon={<CloseIcon />}
+                            deleteIcon={<Close />}
                             {...restTagProps}
                             style={{
                                 margin: '0 4px 4px 0',
