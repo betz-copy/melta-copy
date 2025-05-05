@@ -94,7 +94,22 @@ export class MinIOClient {
         return this.wrapDBNotExistsError(() => this.minioClient.fPutObject(this.bucketName, destinationFilePath, sourceFilePath, metaData));
     }
 
-    uploadFileStream(fileStream: string | Readable | Buffer, destinationFilePath: string, size: number, metaData = {}) {
-        return this.wrapDBNotExistsError(() => this.minioClient.putObject(this.bucketName, destinationFilePath, fileStream, size, metaData));
+    // uploadFileStream(fileStream: string | Readable | Buffer, destinationFilePath: string, size: number, metaData = {}) {
+    //     return this.wrapDBNotExistsError(() => this.minioClient.putObject(this.bucketName, destinationFilePath, fileStream, size, metaData));
+    // }
+
+    uploadFileStream(fileStream: string | Readable | Buffer, destinationFilePath: string, size?: number, metaData = {}) {
+        return this.wrapDBNotExistsError(() => {
+            if (typeof fileStream === 'string' || Buffer.isBuffer(fileStream)) {
+                // For file path or buffer, size is required
+                if (typeof size !== 'number') {
+                    throw new Error('Size must be provided for string or Buffer uploads.');
+                }
+                return this.minioClient.putObject(this.bucketName, destinationFilePath, fileStream, size, metaData);
+            }
+
+            // For streams, size is optional — pass undefined if unknown
+            return this.minioClient.putObject(this.bucketName, destinationFilePath, fileStream, undefined, metaData);
+        });
     }
 }

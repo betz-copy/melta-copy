@@ -23,33 +23,47 @@ export class FilesManager extends DefaultManagerMinio {
         await this.makeBuckets();
         const nameWithId = `${generate32CharUUID()}${file?.originalname}`;
         const fileWithId = { ...file, originalname: nameWithId, path: nameWithId };
-        await this.minioClient.uploadFileStream(fileWithId.stream!, fileWithId.originalname, fileWithId?.size!, { 'content-type': file?.mimetype });
+
+        await this.minioClient.uploadFileStream(
+            fileWithId.stream!,
+            fileWithId.originalname,
+            fileWithId.size ?? undefined, // ✅ use only if known
+            { 'content-type': file?.mimetype },
+        );
 
         return fileWithId;
     }
 
     async uploadFiles(files?: UploadedFile[]) {
-        if (!files) throw new Error('No files to upload');
+        console.log('uploadFiles', files);
 
+        if (!files) throw new Error('No files to upload');
         await this.minioClient.ensureBucket();
 
         const filesWithIds = files.map((file) => {
             const nameWithId = this.buildNameWithId(file);
             return { ...file, originalname: nameWithId, path: nameWithId };
         });
+
         await Promise.allSettled(
             filesWithIds.map((file) =>
-                this.minioClient.uploadFileStream(file.stream!, file.originalname!, file.size!, { 'content-type': file.mimetype }),
+                this.minioClient.uploadFileStream(
+                    file.stream!,
+                    file.originalname!,
+                    file.size ?? undefined, // ✅ safe
+                    { 'content-type': file.mimetype },
+                ),
             ),
         );
 
-        const documentFiles = files?.filter((file) => isFileDocument(file.originalname));
-        if (documentFiles?.length)
+        const documentFiles = filesWithIds.filter((file) => isFileDocument(file.originalname));
+        if (documentFiles.length > 0) {
             await menash.send(
                 rabbit.previewQueue,
                 documentFiles.map((file) => file.originalname),
                 { headers: { [workspaceIdHeaderName]: this.workspaceId } },
             );
+        }
 
         return filesWithIds;
     }
@@ -125,6 +139,8 @@ export class FilesManager extends DefaultManagerMinio {
     private async streamToBuffer(stream: Stream): Promise<Buffer> {
         return new Promise((resolve, reject) => {
             const chunks: Buffer[] = [];
+            console.log({ chunks });
+
             stream.on('data', (chunk: Buffer) => chunks.push(chunk));
             stream.on('end', () => resolve(Buffer.concat(chunks)));
             stream.on('error', reject);

@@ -2,7 +2,7 @@
 import { Request, Response, NextFunction } from 'express';
 import Busboy from 'busboy';
 import { PassThrough } from 'stream';
-import ReadableStreamClone from 'readable-stream-clone';
+// import ReadableStreamClone from 'readable-stream-clone';
 import { UploadedFile } from './interface';
 
 export const busboyMiddleware = (req: Request, _res: Response, next: NextFunction): void => {
@@ -16,7 +16,9 @@ export const busboyMiddleware = (req: Request, _res: Response, next: NextFunctio
         let singleFileField: UploadedFile | null = null;
 
         busboy.on('file', (fieldname, file, { encoding, filename, mimeType }) => {
-            const copiedStream = new ReadableStreamClone(file);
+            console.log(`📦 Received file: ${filename}`);
+
+            // const copiedStream = new ReadableStreamClone(file);
             const passthrough = new PassThrough();
             file.pipe(passthrough);
 
@@ -33,7 +35,7 @@ export const busboyMiddleware = (req: Request, _res: Response, next: NextFunctio
                     originalname: validFileName,
                     encoding,
                     mimetype: mimeType,
-                    stream: copiedStream,
+                    stream: passthrough,
                     size,
                 };
 
