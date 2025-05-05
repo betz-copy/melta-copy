@@ -31,6 +31,7 @@ import { EntityTopBar } from './components/TopBar';
 import DeleteRelationshipDialog from './DeleteRelationshipDialog';
 import { RelationshipIcon } from './RelationshipIcon';
 import { useWorkspaceStore } from '../../stores/workspace';
+import { getAllAllowedEntities, getAllAllowedRelationships } from '../../utils/permissions/templatePermissions';
 
 export const getButtonState = (
     isEntityDisabled: boolean,
@@ -354,6 +355,10 @@ const Entity: React.FC = () => {
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const relationshipTemplates = queryClient.getQueryData<IRelationshipTemplateMap>('getRelationshipTemplates')!;
 
+    const allowedEntityTemplates: IMongoEntityTemplatePopulated[] = getAllAllowedEntities(Array.from(entityTemplates.values()), currentUser);
+    const allowedEntityTemplatesIds: string[] = allowedEntityTemplates.map((entity) => entity._id);
+    const allowedRelationships = getAllAllowedRelationships(Array.from(relationshipTemplates.values()), allowedEntityTemplatesIds);
+
     const templateIds = Array.from(entityTemplates.keys());
 
     const expanded = entityId ? { [entityId]: 1 } : {};
@@ -381,8 +386,8 @@ const Entity: React.FC = () => {
         currentEntityTemplate._id,
         PermissionScope.write,
     );
-    const populatedRelationshipTemplates = Array.from(relationshipTemplates.values(), (currRelationshipTemplate) =>
-        populateRelationshipTemplate(currRelationshipTemplate, entityTemplates),
+    const populatedRelationshipTemplates = allowedRelationships.map((currRelationshipTemplate) =>
+        populateRelationshipTemplate(currRelationshipTemplate, allowedEntityTemplates),
     );
     const connectionsTemplates: IConnectionTemplateOfExpandedEntity[] = [];
 
@@ -453,8 +458,8 @@ const Entity: React.FC = () => {
                         </Grid>
                         <Grid item>
                             <TabContext value={value}>
-                                <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                                    <TabList style={{ height: '60px' }} onChange={(_event, newValue) => setValue(newValue)}>
+                                <Box sx={{ borderBottom: 1, borderColor: 'divider', display: 'flex' }}>
+                                    <TabList style={{ height: '60px' }} onChange={(_event, newValue) => setValue(newValue)} variant="scrollable">
                                         {categoriesWithConnectionsTemplates.map(({ category: { _id, displayName, iconFileId } }, index) => (
                                             <Tab
                                                 style={{

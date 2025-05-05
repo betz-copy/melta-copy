@@ -96,7 +96,7 @@ const ComponentToPrint = React.forwardRef<
                                     const parentInstance = expandedEntity.connections.find(
                                         (connection) => relevantParentRelationship.relationship.templateId === connection.relationship.templateId,
                                     );
-                                    const entityId = isExpandedEntityRelationshipSourceChild
+                                    const parentId = isExpandedEntityRelationshipSource
                                         ? parentInstance?.destinationEntity.properties._id
                                         : parentInstance?.sourceEntity.properties._id;
 
@@ -104,7 +104,7 @@ const ComponentToPrint = React.forwardRef<
                                     const relevantConnections = expandedRelationships.filter(
                                         (connection) =>
                                             connection.relationship.templateId === childId &&
-                                            connection[entityRelevantType].properties._id === entityId,
+                                            connection[entityRelevantType].properties._id === parentId,
                                     );
 
                                     return relevantConnections.length > 0;

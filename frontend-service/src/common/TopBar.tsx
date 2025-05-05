@@ -4,11 +4,11 @@ import { BlueTitle } from './BlueTitle';
 import { useWorkspaceStore } from '../stores/workspace';
 
 export const TopBarGrid = styled(Grid)(({ theme }) => {
-    const bgColor: CSSProperties['backgroundColor'] = theme.palette.mode === 'dark' ? '#131313' : '#fcfeff';
+    const darkMode = theme.palette.mode === 'dark';
 
     return {
-        backgroundColor: bgColor,
-        boxShadow: '0px 4px 4px #0000000D',
+        backgroundColor: darkMode ? '#131313' : '#fcfeff',
+        boxShadow: darkMode ? '0px 0.5px 0.5px #444' : '0px 4px 4px #0000000D',
         height: '3.6rem',
         padding: '0.5rem 2.5rem',
         marginBottom: '1rem',

@@ -1,9 +1,9 @@
 import { Request } from 'express';
-import { IFrame } from '../../externalServices/iFramesService';
 import { ServiceError } from '../error';
 import DefaultController from '../../utils/express/controller';
 import { Authorizer } from '../../utils/authorizer';
 import IFrameManager from './manager';
+import { IFrame } from '../../externalServices/dashboardService/iframesService';
 
 export class IFramesValidator extends DefaultController {
     private iFramesManager: IFrameManager;

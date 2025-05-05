@@ -97,6 +97,7 @@ const config = {
         signatureFieldRegex: env.get('SIGNATURE_FIELD_REGEX').default('.*').asRegExp(),
         textAreaFieldRegex: env.get('TEXT_AREA_FIELD_REGEX').default('.*').asRegExp(),
         relationshipReferenceFieldRegex: env.get('RELATIONSHIP_REFERENCE_FIELD_REGEX').default('.*').asRegExp(),
+        commentFieldRegex: env.get('COMMENT_FIELD_REGEX').default('.*').asRegExp(),
     },
     brokenRulesFakeEntityIdPrefix: env.get('BROKEN_RULES_FAKE_ENTITY_ID_PREFIX').default('$').asString(),
     createdEntityIdInBrokenRules: env.get('CREATED_ENTITY_ID_IN_BROKEN_RULES').default('created-entity-id').asString(),
@@ -135,9 +136,35 @@ const config = {
         },
     },
     map: {
-        polygonPrefix: env.get('POLYGON_PREFIX').default('POLYGON((').asString(),
-        polygonSuffix: env.get('POLYGON_SUFFIX').default('))').asString(),
         srid: env.get('SRID').default(4326).asInt(),
+        polygon: {
+            polygonPrefix: env.get('POLYGON_PREFIX').default('POLYGON((').asString(),
+            polygonSuffix: env.get('POLYGON_SUFFIX').default('))').asString(),
+        },
+        epsgCode: {
+            epsg: env.get('EPSG').default('EPSG').asString(),
+            wgs84: env.get('WGS84').default('EPSG:4326').asString(),
+            southHemiUTM: env.get('SOUTH_HEMI_UTM').default('327').asString(),
+            northHemiUTM: env.get('NORTH_HEMI_UTM').default('326').asString(),
+        },
+        utm: {
+            utmRegex: env
+                .get('UTM_REGEX')
+                .default('\\b([1-9]|[1-5][0-9]|60)([C-HJ-NP-X])\\s([0-9]+(?:\\.[0-9]+)?)\\s([0-9]+(?:\\.[0-9]+)?)\\b')
+                .asRegExp(),
+
+            utmPolygonRegex: env
+                .get('UTM_POLYGON_REGEX')
+                .default('\\b([1-9]|[1-5][0-9]|60)([C-HJ-NP-X])\\s([0-9]+(?:\\.[0-9]+)?)\\s([0-9]+(?:\\.[0-9]+)?)\\b')
+                .asRegExp('g'),
+
+            minZone: env.get('MIN_ZONE').default(1).asInt(),
+            maxZone: env.get('MAX_ZONE').default(60).asInt(),
+            minEasting: env.get('MIN_EASTING').default(160000).asInt(),
+            maxEasting: env.get('MAX_EASTING').default(834000).asInt(),
+            minNorthing: env.get('MIN_NORTHING').default(0).asInt(),
+            maxNorthing: env.get('MAX_NORTHING').default(10000000).asInt(),
+        },
     },
 };
 

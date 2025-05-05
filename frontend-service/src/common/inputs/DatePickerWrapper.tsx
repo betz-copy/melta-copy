@@ -5,8 +5,36 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import i18next from 'i18next';
 import heLocale from 'date-fns/locale/he';
+import { SxProps } from '@mui/material';
+import { DatePickerSlotsComponent } from '@mui/x-date-pickers/DatePicker/DatePicker';
 
-const DatePickerWrapper: React.FC<any> = ({ label, value, onChange, minDate, maxDate, sx, components, isStartDate = false, directionIsRow }) => (
+interface DatePickerWrapperProps {
+    label?: string;
+    value?: Date | string | null;
+    onChange: (date: Date | null) => void;
+    minDate?: Date | string | null;
+    maxDate?: Date | string | null;
+    sx?: SxProps;
+    components?: Partial<DatePickerSlotsComponent>;
+    isStartDate?: boolean;
+    directionIsRow?: boolean;
+    readOnly?: boolean;
+    borderRadius?: string;
+}
+
+const DatePickerWrapper: React.FC<DatePickerWrapperProps> = ({
+    label,
+    value,
+    onChange,
+    minDate,
+    maxDate,
+    sx,
+    components,
+    isStartDate = false,
+    directionIsRow,
+    readOnly = false,
+    borderRadius,
+}) => (
     <LocalizationProvider
         dateAdapter={AdapterDateFns}
         adapterLocale={heLocale}
@@ -14,8 +42,8 @@ const DatePickerWrapper: React.FC<any> = ({ label, value, onChange, minDate, max
     >
         <DatePicker
             inputFormat="dd/MM/yyyy"
-            minDate={minDate}
-            maxDate={maxDate}
+            minDate={minDate ? new Date(minDate) : undefined}
+            maxDate={maxDate ? new Date(maxDate) : undefined}
             label={label}
             value={value}
             onChange={onChange}
@@ -23,11 +51,12 @@ const DatePickerWrapper: React.FC<any> = ({ label, value, onChange, minDate, max
             InputProps={{
                 style: {
                     // eslint-disable-next-line no-nested-ternary
-                    borderRadius: !directionIsRow ? '7px' : isStartDate ? '0px 7px 7px 0px' : '7px 0px 0px 7px',
-                    backgroundColor: sx && 'white',
+                    borderRadius: borderRadius || !directionIsRow ? '7px' : isStartDate ? '0px 7px 7px 0px' : '7px 0px 0px 7px',
+                    backgroundColor: sx ? 'white' : undefined,
                 },
             }}
             components={components}
+            readOnly={readOnly}
         />
     </LocalizationProvider>
 );

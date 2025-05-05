@@ -3,14 +3,21 @@ import i18next from 'i18next';
 import pickBy from 'lodash.pickby';
 import React from 'react';
 import ReactDiffViewer from 'react-diff-viewer';
-import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { useQueryClient } from 'react-query';
+import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IUpdateEntityMetadataPopulated } from '../../interfaces/ruleBreaches/actionMetadata';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { getFileName } from '../../utils/getFileName';
 import { containsHTMLTags } from '../../utils/HtmlTagsStringValue';
 import { formatToString } from '../EntityProperties';
 
-const getEntityPropertyString = (value: any, propertyTemplate: IEntitySingleProperty, oldValue: any, items?: any) => {
+const getEntityPropertyString = (
+    value: any,
+    propertyTemplate: IEntitySingleProperty,
+    oldValue: any,
+    entityTemplates: IEntityTemplateMap,
+    items?: any,
+) => {
     const { format } = propertyTemplate;
 
     if (value === null || value === undefined) {
@@ -22,6 +29,8 @@ const getEntityPropertyString = (value: any, propertyTemplate: IEntitySingleProp
     }
 
     if (format === 'relationshipReference') {
+        const isRelatedEntityAllowed = entityTemplates.get(propertyTemplate.relationshipReference!.relatedTemplateId);
+        if (!isRelatedEntityAllowed) return '-';
         const isDiff = oldValue?.properties._id !== value.properties._id;
         const displayValue = value.properties[propertyTemplate.relationshipReference!.relatedTemplateField];
         const oldDisplayValue = oldValue?.properties[propertyTemplate.relationshipReference!.relatedTemplateField];
@@ -65,13 +74,14 @@ const getEntityPropertyString = (value: any, propertyTemplate: IEntitySingleProp
 
 const getEntityPropertiesString = (
     entityProperties: Record<string, any>,
+    entityTemplates: IEntityTemplateMap,
     entityTemplate: IMongoEntityTemplatePopulated,
     oldEntityProperties?: Record<string, any>,
 ) => {
     const fieldPropertiesStrings = Object.entries(entityTemplate?.properties?.properties || []).map(([propertyKey, propertyTemplate]) => {
         const oldValue = oldEntityProperties?.[propertyKey];
         const value = entityProperties[propertyKey];
-        const valueFormatted = getEntityPropertyString(value, propertyTemplate, oldValue, propertyTemplate.items);
+        const valueFormatted = getEntityPropertyString(value, propertyTemplate, oldValue, entityTemplates, propertyTemplate.items);
         return `${propertyTemplate.title}: ${valueFormatted}`;
     });
     return fieldPropertiesStrings.join('\n');
@@ -81,6 +91,9 @@ export const UpdatedFieldsDiff: React.FC<{
     actionMetadata: IUpdateEntityMetadataPopulated;
     entityTemplate: IMongoEntityTemplatePopulated | null;
 }> = ({ actionMetadata, entityTemplate }) => {
+    const queryClient = useQueryClient();
+    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+
     const { entity, before, updatedFields } = actionMetadata;
     const oldProperties = before ?? entity?.properties;
 
@@ -93,12 +106,12 @@ export const UpdatedFieldsDiff: React.FC<{
         <ReactDiffViewer
             oldValue={
                 oldProperties
-                    ? getEntityPropertiesString(oldProperties, entityTemplate!)
+                    ? getEntityPropertiesString(oldProperties, entityTemplates, entityTemplate!)
                     : i18next.t('ruleBreachInfo.updateEntityActionInfo.entityBeforeUnknown')
             }
             newValue={
                 entityTemplate
-                    ? getEntityPropertiesString(newProperties, entityTemplate, oldProperties)
+                    ? getEntityPropertiesString(newProperties, entityTemplates, entityTemplate, oldProperties)
                     : i18next.t('ruleBreachInfo.updateEntityActionInfo.entityAfterUnknown')
             }
             hideLineNumbers
