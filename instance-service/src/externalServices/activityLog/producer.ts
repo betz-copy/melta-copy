@@ -1,7 +1,6 @@
-import { IActivityLog } from '@microservices/shared';
+import { IActivityLog, ServiceError } from '@microservices/shared';
 import config from '../../config';
 import DefaultExternalServiceRabbit from '../../utils/rabbit/manager';
-import { ServiceError } from '../../express/error';
 
 const { rabbit } = config;
 

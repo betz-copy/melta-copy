@@ -2,8 +2,8 @@ import { once } from 'events';
 import express from 'express';
 import helmet from 'helmet';
 import * as http from 'http';
+import { errorMiddleware } from '@microservices/shared';
 import config from '../config';
-import { errorMiddleware } from './error';
 import appRouter from './router';
 
 class Server {

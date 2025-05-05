@@ -11,12 +11,12 @@ import {
     IAction,
     IEntity,
     ActionErrors,
+    ValidationError,
 } from '@microservices/shared';
 import EntityTemplateManagerService from '../../externalServices/templates/entityTemplateManager';
 import RelationshipsTemplateManagerService from '../../externalServices/templates/relationshipTemplateManager';
 import DefaultController from '../../utils/express/controller';
 import EntityManager from '../entities/manager';
-import { ValidationError } from '../error';
 import config from '../../config';
 
 const { brokenRulesFakeEntityIdPrefix } = config;

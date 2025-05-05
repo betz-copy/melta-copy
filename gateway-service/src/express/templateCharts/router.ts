@@ -1,8 +1,8 @@
 import { Router } from 'express';
-import { ChartController } from './controller';
-import { createWorkspacesController } from '../../utils/express';
-import { ChartsValidator } from './middlewares';
 import { ValidateRequest } from '@microservices/shared';
+import ChartController from './controller';
+import { createWorkspacesController } from '../../utils/express';
+import ChartsValidator from './middlewares';
 import {
     createChartRequestSchema,
     deleteChartRequestSchema,
@@ -12,7 +12,7 @@ import {
 } from './validator.schema';
 import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
 
-export const ChartsRouter: Router = Router();
+const ChartsRouter: Router = Router();
 
 const ChartsControllerMiddleware = createWorkspacesController(ChartController);
 const ChartsValidatorMiddleware = createWorkspacesController(ChartsValidator, true);
@@ -56,3 +56,5 @@ ChartsRouter.put(
     ChartsValidatorMiddleware.validateUserCanUpdateChartWithRelatedTemplate,
     ChartsControllerMiddleware.updateChart,
 );
+
+export default ChartsRouter;

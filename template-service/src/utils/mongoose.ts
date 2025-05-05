@@ -1,8 +1,8 @@
 /* eslint-disable no-param-reassign */
 import _forEach from 'lodash.foreach';
 import { ClientSession, startSession, Types } from 'mongoose';
+import { ServiceError } from '@microservices/shared';
 import { trycatch } from '.';
-import { ServiceError } from '../express/error';
 
 export const withTransaction = async <Func extends (session: ClientSession) => Promise<any>>(func: Func): Promise<Awaited<ReturnType<Func>>> => {
     const session = await startSession();

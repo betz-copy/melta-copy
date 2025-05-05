@@ -1,7 +1,7 @@
 import FormData from 'form-data';
+import { UploadedFile } from '@microservices/shared';
 import config from '../config';
 import DefaultExternalServiceApi from '../utils/express/externalService';
-import { UploadedFile } from '@microservices/shared';
 
 const {
     service: { docxHeaders, workspaceIdHeaderName },

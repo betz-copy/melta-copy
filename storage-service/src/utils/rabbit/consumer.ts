@@ -1,5 +1,5 @@
 import { ConsumerMessage } from 'menashmq';
-import { ServiceError } from '../../express/error';
+import { ServiceError } from '@microservices/shared';
 import FilesManager from '../../express/files/manager';
 
 class DeleteFilesConsumer {

@@ -59,7 +59,7 @@ import GanttsService from '../../externalServices/ganttsService';
 import checkPropertyInUsedFromFormula from './rules/checkIfPropertyInUsed';
 import { buildNewRelationshipField, validateNoDependentRules, validateRequiredConstraints, validateUniqueRelationships } from '../../utils/templates';
 import InstancesManager from '../instances/manager';
-import { ChartManager } from '../templateCharts/manager';
+import ChartManager from '../templateCharts/manager';
 import Kartoffel from '../../externalServices/kartoffel';
 
 const {
@@ -1221,7 +1221,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
     ) {
         try {
             if (currentRelationshipTemplate) {
-                const { createdAt, updatedAt, _id, ...restRelationshipTemplate } = currentRelationshipTemplate;
+                const { createdAt: _createdAt, updatedAt: _updatedAt, _id, ...restRelationshipTemplate } = currentRelationshipTemplate;
                 await this.relationshipTemplateService.updateRelationshipTemplate(_id, restRelationshipTemplate);
             }
 

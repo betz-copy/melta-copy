@@ -2,7 +2,7 @@ import { ISearchIFramesBody, IFrame, IMongoIframe, UploadedFile } from '@microse
 import StorageService from '../../externalServices/storageService';
 import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
 import DefaultManagerProxy from '../../utils/express/manager';
-import { IFramesService } from '../../externalServices/dashboardService/iframesService';
+import IFramesService from '../../externalServices/dashboardService/iframesService';
 
 export class IFrameManager extends DefaultManagerProxy<IFramesService> {
     private storageService: StorageService;

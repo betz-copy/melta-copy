@@ -1,7 +1,6 @@
 import mongoose from 'mongoose';
-import { Colors, IMetadata, IWorkspace } from '@microservices/shared';
+import { BadRequestError, Colors, IMetadata, IWorkspace } from '@microservices/shared';
 import config from '../../config';
-import { BadRequestError } from '../error';
 import { AllowedEmptyString } from '../../utils/mongoose';
 
 const MetadataSchema = new mongoose.Schema<IMetadata>(

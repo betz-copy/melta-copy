@@ -6,7 +6,7 @@ import {
     IStepInstance,
     IProcessInstance,
     ProcessInstanceDocument,
-    Status
+    Status,
 } from '@microservices/shared';
 import config from '../../config';
 

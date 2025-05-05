@@ -2,15 +2,6 @@
 import { ClientSession, FilterQuery, Types, UpdateWriteOpResult } from 'mongoose';
 /* eslint-disable class-methods-use-this */
 import { Request } from 'express';
-import config from '../../../config';
-import ajv from '../../../utils/ajv';
-import ElasticSearchManager from '../../../utils/elastic/documentsOnElastic';
-import {
-    getTemplateAggregation,
-    searchAllowedProcessInstanceForReviewerAggregation,
-    searchAllowedProcessInstanceWaitForMe,
-    transaction,
-} from '../../../utils/mongo';
 import {
     IMongoStepTemplate,
     IMongoProcessTemplate,
@@ -28,12 +19,23 @@ import {
     DefaultManagerMongo,
     ActionsLog,
     Status,
+    ServiceError,
+    ValidationError,
 } from '@microservices/shared';
-import { InstancePropertiesValidationError, InstanceNotFoundError, ServiceError, ValidationError } from '../../error';
+import config from '../../../config';
+import ajv from '../../../utils/ajv';
+import ElasticSearchManager from '../../../utils/elastic/documentsOnElastic';
+import {
+    getTemplateAggregation,
+    searchAllowedProcessInstanceForReviewerAggregation,
+    searchAllowedProcessInstanceWaitForMe,
+    transaction,
+} from '../../../utils/mongo';
 import ProcessTemplateManager from '../../templates/processes/manager';
 import StepInstanceManager from '../steps/manager';
 import { ProcessInstanceSchema } from './model';
 import { ActivityLogProducer } from '../../../externalServices/activityLog/producer';
+import { InstanceNotFoundError, InstancePropertiesValidationError } from '../../error';
 
 type ProcessInstanceType<T extends boolean> = T extends true ? IMongoProcessInstancePopulated : IMongoProcessInstance;
 

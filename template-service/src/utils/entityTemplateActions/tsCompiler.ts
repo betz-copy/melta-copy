@@ -2,7 +2,7 @@
 import * as ts from 'typescript-actions';
 import * as fs from 'fs';
 import * as path from 'path';
-import { BadRequestError } from '../../express/error';
+import { BadRequestError } from '@microservices/shared';
 
 const createCustomCompilerHost = (
     defaultCompilerHost: ts.CompilerHost,

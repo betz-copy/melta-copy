@@ -17,6 +17,7 @@ import {
     IEntity,
     IRelationship,
     IActivityLog,
+    BadRequestError,
 } from '@microservices/shared';
 import ActivityLogProducer from '../../externalServices/activityLog/producer';
 import EntityTemplateManagerService from '../../externalServices/templates/entityTemplateManager';
@@ -27,7 +28,6 @@ import EntityManager from '../entities/manager';
 import RelationshipManager from '../relationships/manager';
 import { throwIfActionCausedRuleFailures } from '../rules/throwIfActionCausedRuleFailures';
 import config from '../../config';
-import { BadRequestError } from '../error';
 
 const { brokenRulesFakeEntityIdPrefix } = config;
 

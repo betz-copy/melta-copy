@@ -1,11 +1,10 @@
 import { menash } from 'menashmq';
 import { Stream } from 'stream';
+import { ServiceError, UploadedFile } from '@microservices/shared';
 import config from '../../config';
 import { getFileExtension, isFileDocument } from '../../utils/fileHelper';
 import { generate32CharUUID, generatePath } from '../../utils/generatePath';
 import DefaultManagerMinio from '../../utils/minio/manager';
-import { ServiceError } from '../error';
-import { UploadedFile } from '@microservices/shared';
 
 const {
     rabbit,

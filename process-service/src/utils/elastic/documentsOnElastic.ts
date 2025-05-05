@@ -1,7 +1,6 @@
 import { logger } from 'elastic-apm-node';
-import { IMongoProcessInstancePopulated, ProcessInstanceDocument } from '@microservices/shared';
+import { IMongoProcessInstancePopulated, ProcessInstanceDocument, ServiceError } from '@microservices/shared';
 import config from '../../config';
-import { ServiceError } from '../../express/error';
 import DefaultManagerElastic from './manager';
 
 const { elastic } = config;

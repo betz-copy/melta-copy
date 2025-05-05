@@ -7,12 +7,15 @@ import {
     DefaultManagerMongo,
     IUpdateProcessStepMetadata,
     ActionsLog,
+    NotFoundError,
+    ServiceError,
+    ValidationError,
 } from '@microservices/shared';
 import { ClientSession, UpdateQuery, UpdateWithAggregationPipeline } from 'mongoose';
 import config from '../../../config';
 import ElasticSearchManager from '../../../utils/elastic/documentsOnElastic';
 import { getTemplateAggregation, transaction } from '../../../utils/mongo';
-import { InstanceNotFoundError, NotFoundError, ServiceError, StepNotPartOfProcessError, ValidationError } from '../../error';
+import { InstanceNotFoundError, StepNotPartOfProcessError } from '../../error';
 import ProcessInstanceManager from '../processes/manager';
 import { StepInstanceSchema } from './model';
 import { ActivityLogProducer } from '../../../externalServices/activityLog/producer';

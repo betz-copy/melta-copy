@@ -1,6 +1,5 @@
-import { DefaultManagerMongo, IMongoCategory, ICategory } from '@microservices/shared';
+import { DefaultManagerMongo, IMongoCategory, ICategory, NotFoundError } from '@microservices/shared';
 import config from '../../config';
-import { NotFoundError } from '../error';
 import CategorySchema from './model';
 
 class CategoryManager extends DefaultManagerMongo<IMongoCategory> {

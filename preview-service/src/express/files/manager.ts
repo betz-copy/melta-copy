@@ -2,9 +2,9 @@ import * as libreoffice from 'libreoffice-convert';
 import { Readable } from 'stream';
 import { promisify } from 'util';
 import { menash } from 'menashmq';
+import { NotFoundError } from '@microservices/shared';
 import { streamToBuffer } from '../../utils/fs';
 import config from '../../config';
-import { NotFoundError } from '../error';
 import DefaultManagerMinio from '../../utils/minio/manager';
 
 const {

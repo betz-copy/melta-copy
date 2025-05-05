@@ -4,7 +4,7 @@ module.exports = {
         'import/no-extraneous-dependencies': [
             'error',
             {
-                packageDir: [__dirname, `${__dirname}/..`],
+                packageDir: [__dirname, `${__dirname}/../..`],
             },
         ],
     },

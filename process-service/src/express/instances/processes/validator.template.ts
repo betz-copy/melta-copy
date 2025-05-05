@@ -8,9 +8,10 @@ import {
     IProcessInstance,
     InstanceProperties,
     UpdateProcessReqBody,
+    ValidationError,
 } from '@microservices/shared';
 import ajv from '../../../utils/ajv';
-import { InstancePropertiesValidationError, ValidationError } from '../../error';
+import { InstancePropertiesValidationError } from '../../error';
 import ProcessTemplateManager from '../../templates/processes/manager';
 import StepInstanceManager from '../steps/manager';
 import ProcessInstanceManager from './manager';

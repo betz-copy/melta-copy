@@ -19,6 +19,7 @@ import {
     ActionErrors,
     addPropertyToRequest,
     CoordinateSystem,
+    ValidationError,
 } from '@microservices/shared';
 import { IGetExpandedEntityBody } from './interface';
 import config from '../../config';
@@ -28,7 +29,6 @@ import addDefaultFieldsToTemplate from '../../utils/addDefaultsFieldsToEntityTem
 import DefaultController from '../../utils/express/controller';
 import { trycatch } from '../../utils/lib';
 import { getNeo4jDate, getNeo4jDateTime, getNeo4jLocation } from '../../utils/neo4j/lib';
-import { ValidationError } from '../error';
 
 const { neo4j, ajvCustomFormats } = config;
 

@@ -61,6 +61,16 @@ export class UnauthorizedError extends ServiceError {
     }
 }
 
+export class ValidationError extends ServiceError {
+    constructor(
+        message: string,
+        public metadata: object = {},
+    ) {
+        super(StatusCodes.BAD_REQUEST, message, metadata);
+        this.name = 'TemplateValidationError';
+    }
+}
+
 const formatAxiosErrorData = (axiosErrorData: object & { message?: string; metadata?: object }) => {
     if (axiosErrorData.message?.includes('E11000')) {
         return { ...axiosErrorData, errorCode: 'DUPLICATE_ERROR' };

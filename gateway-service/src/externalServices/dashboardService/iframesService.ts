@@ -6,7 +6,7 @@ const {
     dashboardService: { url, baseRoute, requestTimeout, iframes },
 } = config;
 
-export class IFramesService extends DefaultExternalServiceApi {
+class IFramesService extends DefaultExternalServiceApi {
     constructor(workspaceId: string) {
         super(workspaceId, { baseURL: `${url}${baseRoute}${iframes.baseRoute}`, timeout: requestTimeout });
     }
@@ -40,3 +40,5 @@ export class IFramesService extends DefaultExternalServiceApi {
         await this.api.delete(`/${iframeId}`);
     }
 }
+
+export default IFramesService;

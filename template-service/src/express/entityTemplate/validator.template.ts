@@ -6,9 +6,9 @@ import {
     IEntityTemplatePopulated,
     IMongoEntityTemplate,
     IEntitySingleProperty,
+    BadRequestError,
 } from '@microservices/shared';
 import { generateInterfaceWithRelationships } from '../../utils/entityTemplateActions/interfacesGenerator';
-import { BadRequestError } from '../error';
 import EntityTemplateManager from './manager';
 import { compileTsCode } from '../../utils/entityTemplateActions/tsCompiler';
 

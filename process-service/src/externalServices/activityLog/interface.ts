@@ -15,7 +15,7 @@ interface IBaseActivityLog {
 
 interface IEmptyMetadata extends IBaseActivityLog {
     action: ActionsLog.CREATE_ENTITY | ActionsLog.DISABLE_ENTITY | ActionsLog.ACTIVATE_ENTITY | ActionsLog.VIEW_ENTITY | ActionsLog.CREATE_PROCESS;
-    metadata: {};
+    metadata: object;
 }
 
 interface IRelationshipMetadata extends IBaseActivityLog {

@@ -1,9 +1,8 @@
 import { Router } from 'express';
-import { createController } from '@microservices/shared';
+import { createController, wrapController, ValidateRequest } from '@microservices/shared';
 import { createProxyMiddleware, fixRequestBody } from 'http-proxy-middleware';
 import config from '../../config';
 import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
-import { wrapController, ValidateRequest } from '@microservices/shared';
 import WorkspaceController from './controller';
 import {
     createOneSchema,

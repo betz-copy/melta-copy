@@ -38,7 +38,7 @@ class Kartoffel {
             });
             return data;
         } catch (error) {
-            throw new BadRequestError('Kartoffel profile not found');
+            throw new BadRequestError('Kartoffel profile not found', { error });
         }
     };
 }

@@ -1,3 +1,4 @@
+/* eslint-disable import/prefer-default-export */
 import { defaultValidationOptions } from '@microservices/shared';
 import Joi from 'joi';
 

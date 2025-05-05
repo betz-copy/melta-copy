@@ -1,13 +1,23 @@
+import {
+    ChartsAndGenerator,
+    IChart,
+    IChartBody,
+    IChartPermission,
+    IColumnOrLineMetaData,
+    IMongoChart,
+    IPieMetaData,
+    IChartType,
+    IMongoEntityTemplatePopulated,
+    ISubCompactPermissions,
+    IAxisField,
+} from '@microservices/shared';
 import InstancesService from '../../externalServices/instanceService';
 import { getMetaDataAxes } from '../../utils/templateCharts/getMetaDataAxes';
 import ChartService from '../../externalServices/dashboardService/chartService';
 import TemplatesManager from '../templates/manager';
 import DefaultManagerProxy from '../../utils/express/manager';
-import { ChartsAndGenerator, IChart, IChartBody, IChartPermission, IColumnOrLineMetaData, IMongoChart, IPieMetaData } from '@microservices/shared';
-import { IChartType, IMongoEntityTemplatePopulated, ISubCompactPermissions } from '@microservices/shared';
-import { IAxisField } from '@microservices/shared';
 
-export class ChartManager extends DefaultManagerProxy<ChartService> {
+class ChartManager extends DefaultManagerProxy<ChartService> {
     private instanceService: InstancesService;
 
     private templateManager: TemplatesManager;
@@ -30,7 +40,7 @@ export class ChartManager extends DefaultManagerProxy<ChartService> {
         if (typeof field === 'string') {
             const propertyTemplate = chartEntityTemplate?.properties.properties[field];
             if (propertyTemplate?.format === 'relationshipReference') {
-                const relatedTemplateId = propertyTemplate.relationshipReference?.relatedTemplateId!;
+                const { relatedTemplateId } = propertyTemplate.relationshipReference!;
                 return allowedEntityTemplates?.some((allowedEntityTemplate) => allowedEntityTemplate._id === relatedTemplateId);
             }
         }
@@ -120,3 +130,5 @@ export class ChartManager extends DefaultManagerProxy<ChartService> {
         return this.service.deleteChart(chartId);
     }
 }
+
+export default ChartManager;

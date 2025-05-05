@@ -1,7 +1,7 @@
 /* eslint-disable import/prefer-default-export */
 import Joi from 'joi';
-import { ExtendedJoi } from '../../../utils/joi';
 import { fileSchema, MongoIdSchema } from '@microservices/shared';
+import { ExtendedJoi } from '../../../utils/joi';
 
 // PATCH: processes/instances/:processId/steps/:stepId
 export const updateStepSchema = Joi.object({

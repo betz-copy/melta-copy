@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-function-type */
 import { NextFunction, Request, Response } from 'express';
 import { get } from 'lodash';
 import { dataLogger, FunctionKey } from '@microservices/shared';

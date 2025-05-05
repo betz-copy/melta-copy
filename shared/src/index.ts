@@ -32,7 +32,15 @@ export {
     addPropertyToRequest,
     fetchPropertyFromRequest,
 } from './utils/express';
-export { ServiceError, NotFoundError, ForbiddenError, BadRequestError, UnauthorizedError, errorMiddleware } from './utils/express/error';
+export {
+    ServiceError,
+    NotFoundError,
+    ForbiddenError,
+    BadRequestError,
+    UnauthorizedError,
+    ValidationError,
+    errorMiddleware,
+} from './utils/express/error';
 export { default as DefaultController } from './utils/express/controller';
 
 export { default as DefaultManagerMongo } from './utils/mongo/manager';

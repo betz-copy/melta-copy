@@ -1,7 +1,6 @@
 import { ClientSession, FilterQuery } from 'mongoose';
-import { DefaultManagerMongo, IMongoRelationshipTemplate, IRelationshipTemplate } from '@microservices/shared';
+import { DefaultManagerMongo, IMongoRelationshipTemplate, IRelationshipTemplate, NotFoundError } from '@microservices/shared';
 import config from '../../config';
-import { NotFoundError } from '../error';
 import { escapeRegExp } from '../../utils';
 import RelationshipTemplateSchema from './model';
 
