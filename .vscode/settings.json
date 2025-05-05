@@ -36,12 +36,12 @@
     "peacock.color": "#007fff",
     "cSpell.words": ["ECEF", "epsg", "hemi", "melta"],
     "files.exclude": {
-        "**/node_modules": true
+        // "**/node_modules": true
         // "**/dist": true,
         // "**/.git": true
     },
     "search.exclude": {
-        "**/node_modules": true
+        // "**/node_modules": true
         // "**/dist": true,
         // "**/.git": true
     },

@@ -24,15 +24,15 @@
         "mock-service"
     ],
     "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1",
-        "pre-push": "cd ./frontend-service && npm run lint && node --max_old_space_size=16384 npm run build",
-        "build": "npm run build --workspaces",
-        "lint": "npm run lint --workspaces",
-        "prettier": "npm run prettier --workspaces",
-        "clean": "rimraf ./**/dist && rimraf ./packages/**/dist",
-        "clean:node_modules": "rimraf ./**/node_modules && rimraf ./node_modules",
+        "test": "jest --coverage",
+        "pre-push": "npm run lint && npm run build",
+        "build": "npm run build --workspaces --if-present",
+        "lint": "npm run lint --workspaces --if-present",
+        "prettier": "npm run prettier --workspaces --if-present",
+        "clean": "rimraf ./**/dist",
+        "clean:all": "rimraf ./**/dist ./**/node_modules ./node_modules",
         "start-ui": "npm run -w frontend-service start:docker",
-        "migrate": "rimraf ./*-service && npm run clean && npm run clean:node_modules && npm i && npm run build -w shared && sudo kill $(lsof -t -i:3000) && npm run start-ui"
+        "migrate": "npm run clean:all && npm install && npm run build -w shared && npm run start-ui"
     },
     "repository": {
         "type": "git",
@@ -45,10 +45,34 @@
     },
     "homepage": "https://github.com/melta-team/melta#readme",
     "devDependencies": {
-        "husky": "^6.0.0"
+        "@types/jest": "^29.5.12",
+        "@types/node": "^22.3.0",
+        "@typescript-eslint/eslint-plugin": "^8.1.0",
+        "@typescript-eslint/parser": "^8.1.0",
+        "eslint": "^8.2.0",
+        "eslint-config-airbnb-base": "^15.0.0",
+        "eslint-config-prettier": "^9.1.0",
+        "eslint-plugin-import": "^2.29.1",
+        "eslint-plugin-prettier": "^5.2.1",
+        "husky": "^6.0.0",
+        "jest": "^29.7.0",
+        "prettier": "^3.3.3",
+        "rimraf": "^6.0.1",
+        "ts-jest": "^29.2.4",
+        "typescript": "^5.5.4"
     },
     "dependencies": {
-        "rimraf": "^5.0.5",
-        "shared": "^0.2.0"
+        "axios": "^1.7.7",
+        "dotenv": "^16.4.5",
+        "elastic-apm-node": "^4.7.3",
+        "env-var": "^7.5.0",
+        "express": "^4.19.2",
+        "helmet": "^7.1.0",
+        "http-status-codes": "^2.3.0",
+        "joi": "^17.13.3",
+        "morgan": "^1.10.0",
+        "uuid": "^10.0.0",
+        "winston": "^3.14.1",
+        "winston-daily-rotate-file": "^5.0.0"
     }
 }

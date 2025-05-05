@@ -20,25 +20,12 @@
     "license": "ISC",
     "dependencies": {
         "@microservices/shared": "^1.0.0",
-        "axios": "^1.7.7",
-        "dotenv": "^16.4.5",
-        "elastic-apm-node": "^4.7.3",
-        "env-var": "^7.5.0",
         "lodash": "^4.17.21",
         "menashmq": "^0.1.6",
-        "node-schedule": "^2.1.1",
-        "winston": "^3.14.1",
-        "winston-daily-rotate-file": "^5.0.0"
+        "node-schedule": "^2.1.1"
     },
     "devDependencies": {
         "@types/lodash.groupby": "^4.6.9",
-        "@types/node-schedule": "^2.1.7",
-        "@typescript-eslint/eslint-plugin": "^8.1.0",
-        "eslint": "^8.2.0",
-        "eslint-config-airbnb-base": "^15.0.0",
-        "eslint-config-prettier": "^9.1.0",
-        "eslint-plugin-import": "^2.29.1",
-        "eslint-plugin-prettier": "^5.2.1",
-        "typescript": "^5.5.4"
+        "@types/node-schedule": "^2.1.7"
     }
 }
