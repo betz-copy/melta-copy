@@ -7,7 +7,7 @@ import { useDarkModeStore } from '../stores/darkMode';
 const PopperSidebar: React.FC<{
     open: boolean;
     setOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    title: string;
+    title: React.ReactNode;
     side: 'right' | 'left';
     sideMargin?: CSSProperties['margin'];
     width?: CSSProperties['width'];
@@ -40,16 +40,7 @@ const PopperSidebar: React.FC<{
                             >
                                 <Grid item padding="15px" sx={{ position: 'relative' }}>
                                     <Grid container alignItems="center" height="2.5rem" paddingX="0.2rem">
-                                        <Typography
-                                            color={theme.palette.primary.main}
-                                            fontFamily="Rubik"
-                                            component="h5"
-                                            variant="h5"
-                                            marginX="auto"
-                                            fontWeight="bold"
-                                        >
-                                            {title}
-                                        </Typography>
+                                        {title}
                                     </Grid>
                                     <IconButton
                                         onClick={() => {

@@ -26,9 +26,12 @@ import { useWorkspaceStore } from '../../stores/workspace';
 import { environment } from '../../globals';
 import { MeltaUpdates } from '../../MeltaUpdates';
 import { BackendConfigState } from '../../services/backendConfigService';
+// import { Dashboard } from '../Dashboard';
 
 const GlobalSearch = lazy(() => import('../GlobalSearch'));
+const Dashboard = lazy(() => import('../Dashboard'));
 const Category = lazy(() => import('../Category'));
+const Table = lazy(() => import('../Dashboard/Table'));
 const SystemManagement = lazy(() => import('../SystemManagement'));
 const PermissionsManagement = lazy(() => import('../PermissionsManagement'));
 const RuleManagement = lazy(() => import('../RuleManagement'));
@@ -199,16 +202,22 @@ export const MeltaRoutesInner: React.FC = () => {
                                 <Map />
                             </Route>
 
-                            <Route path="/charts/:templateId/:chartId?/chart">
-                                <ChartsProtectedRoute permissions={currentUser.currentWorkspacePermissions}>
-                                    <ChartPage />
-                                </ChartsProtectedRoute>
+                            <Route path="/charts/:templateId?/:chartId?/chart">
+                                {/* <ChartsProtectedRoute permissions={currentUser.currentWorkspacePermissions}> */}
+                                <ChartPage />
+                                {/* </ChartsProtectedRoute> */}
                             </Route>
 
                             <Route path="/charts/:templateId">
-                                <ChartsProtectedRoute permissions={currentUser.currentWorkspacePermissions}>
-                                    <Charts />
-                                </ChartsProtectedRoute>
+                                {/* <ChartsProtectedRoute permissions={currentUser.currentWorkspacePermissions}> */}
+                                <Charts />
+                                {/* </ChartsProtectedRoute> */}
+                            </Route>
+
+                            <Route path="/table/:tableId?">
+                                {/* <ChartsProtectedRoute permissions={currentUser.currentWorkspacePermissions}> */}
+                                <Table />
+                                {/* </ChartsProtectedRoute> */}
                             </Route>
 
                             <Route path="/gantts">
@@ -265,7 +274,8 @@ export const MeltaRoutesInner: React.FC = () => {
                             </Route>
 
                             <Route path="/">
-                                <GlobalSearch />
+                                <Dashboard />
+                                {/* <GlobalSearch /> */}
                             </Route>
 
                             <Route path="*">

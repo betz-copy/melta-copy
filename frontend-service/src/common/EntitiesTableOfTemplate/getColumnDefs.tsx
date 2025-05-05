@@ -56,6 +56,7 @@ export interface IGetColumnDefsOptions<Data extends any> {
     searchValue?: string;
     disableEditCell?: boolean;
     entityTemplates: IEntityTemplateMap;
+    hideColumns?: string[];
 }
 
 export const getColumnDefs = <Data extends any = EntityData>({
@@ -80,6 +81,7 @@ export const getColumnDefs = <Data extends any = EntityData>({
     searchValue,
     disableEditCell,
     entityTemplates,
+    hideColumns,
 }: IGetColumnDefsOptions<Data>): ColDef[] => {
     const invisibleColumnsAmount = Object.values(defaultVisibleColumns).filter((value) => value === false).length;
     const lastColumnIndex = Object.keys(defaultColumnsOrder).length - invisibleColumnsAmount - 2;

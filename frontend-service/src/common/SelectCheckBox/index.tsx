@@ -1,5 +1,5 @@
 /* eslint-disable no-nested-ternary */
-import { Box, FormControl, Select, Typography, useTheme } from '@mui/material';
+import { Box, FormControl, Grid, Select, Typography, useTheme } from '@mui/material';
 import lodashUniqby from 'lodash.uniqby';
 import React, { Dispatch, Key, PropsWithChildren, SetStateAction, useCallback, useState } from 'react';
 import { DropResult } from 'react-beautiful-dnd';
@@ -40,6 +40,8 @@ export type SelectCheckboxProps<Option extends {}, Group extends any = Option> =
     dynamicWidth?: number;
     showIcon?: boolean;
     treeFunc?: (groups: Group[], options: Option[], getItemId: SelectCheckboxProps<Option>['getOptionId']) => TreeViewBaseItem<Option>[];
+    asMenu?: boolean;
+    onSelectItems?: ((itemIds: string | string[]) => any) | undefined;
 }>;
 
 export const getOptionsAndGroupsMiniFiltered = <Option extends {}, Group extends any = Option>(
@@ -105,6 +107,8 @@ const SelectCheckbox = <Option extends {}, Group extends any = Option>({
     onDragEnd,
     setOptions,
     showIcon,
+    asMenu = true,
+    onSelectItems,
 }: SelectCheckboxProps<Option, Group>) => {
     const [miniFilterValue, setMiniFilterValue] = useState('');
     const [isOpen, setIsOpen] = useState(false);
@@ -156,126 +160,138 @@ const SelectCheckbox = <Option extends {}, Group extends any = Option>({
 
     const borderRadiusStyle = overrideSx ? (isOpen ? '12px 12px 12px 0' : '12px') : isOpen ? '7px 7px 0 0' : '7px';
 
+    const TreeCompetent = (
+        <>
+            {!isSelectDisabled && !hideSearchBar && <Search value={miniFilterValue} onChange={setMiniFilterValue} toTopBar={toTopBar} />}
+            {hideChooseAll ? (
+                <Typography color={theme.palette.primary.main} fontFamily="Rubik" fontWeight={400} marginX="16px" marginY="8px">
+                    {title}
+                </Typography>
+            ) : undefined}
+            <Tree
+                onDragEnd={({ itemId, newPosition, oldPosition }) => {
+                    const transformedDrag: DropResult = {
+                        draggableId: itemId,
+                        type: 'DEFAULT',
+                        source: {
+                            index: oldPosition.index,
+                            droppableId: oldPosition.parentId!,
+                        },
+                        destination: {
+                            index: newPosition.index,
+                            droppableId: newPosition.parentId!,
+                        },
+                        reason: 'DROP',
+                        combine: undefined,
+                        mode: 'FLUID',
+                    };
+
+                    if (onDragEnd) return onDragEnd(transformedDrag);
+                    return onDragEndDefault(transformedDrag);
+                }}
+                isSelectDisabled={isSelectDisabled}
+                selectAll={!hideChooseAll}
+                flattenedTree={[...(groupsProps.useGroups ? (groupsProps.groups as any[]) : []), ...options]}
+                preSelectedItemsIds={selectedOptionIds}
+                getItemId={getOptionId}
+                getItemLabel={getOptionLabel}
+                filteredTreeItems={filteredTree()}
+                multi
+                treeItems={treeItems()}
+                isDraggable={!isDraggableDisabled}
+                onSelectItems={(ids) => {
+                    // todo: get the checked or unchecked elements
+                    const filteredOptions = options.filter((option) => ids.includes(getOptionId(option)));
+                    setSelectedOptions(filteredOptions);
+                    console.log({ ids, options, filteredOptions });
+                    onSelectItems?.(ids);
+                }}
+                showIcon={showIcon}
+            />
+        </>
+    );
+
     return (
         <FormControl style={{ borderRadius: isOpen ? '7px 7px 0 0' : '7px' }}>
-            <Select
-                displayEmpty
-                renderValue={() => <Box>{title}</Box>}
-                MenuProps={{
-                    PaperProps: {
-                        style: {
-                            height: toTopBar ? '180px' : '333px',
-                            minWidth: '219px',
-                            width: horizontalOrigin === 154 ? '219px' : dynamicWidth ? `${dynamicWidth}px` : undefined,
-                            ...(darkMode ? {} : { backgroundColor: toTopBar ? '#EBEFFA' : '#FFFFFF' }),
-                            borderRadius: overrideSx ? '10px' : '20px 0px 20px 20px',
-                            padding: toTopBar ? '5px, 10px' : '10px, 10px, 5px, 10px',
-                            boxShadow: '-2px 2px 6px 0px #1E27754D',
-                            top: '39px',
-                            gap: '15px',
-                            marginTop: '5px',
-                            border: darkMode ? `solid 2px ${theme.palette.primary.main}` : 'none',
+            {asMenu ? (
+                <Select
+                    displayEmpty
+                    renderValue={() => <Box>{title}</Box>}
+                    MenuProps={{
+                        PaperProps: {
+                            style: {
+                                height: toTopBar ? '180px' : '333px',
+                                minWidth: '219px',
+                                width: horizontalOrigin === 154 ? '219px' : dynamicWidth ? `${dynamicWidth}px` : undefined,
+                                ...(darkMode ? {} : { backgroundColor: toTopBar ? '#EBEFFA' : '#FFFFFF' }),
+                                borderRadius: overrideSx ? '10px' : '20px 0px 20px 20px',
+                                padding: toTopBar ? '5px, 10px' : '10px, 10px, 5px, 10px',
+                                boxShadow: '-2px 2px 6px 0px #1E27754D',
+                                top: '39px',
+                                gap: '15px',
+                                marginTop: '5px',
+                                border: darkMode ? `solid 2px ${theme.palette.primary.main}` : 'none',
+                            },
+                            sx: {
+                                overflowY: 'overlay',
+                                '::-webkit-scrollbar-track': {
+                                    marginY: '1rem',
+                                    bgcolor: toTopBar ? '#EBEFFA' : '#FFFFFF',
+                                    borderRadius: '5px',
+                                },
+                                '::-webkit-scrollbar-thumb': { background: toTopBar ? '' : '#EBEFFA' },
+                            },
                         },
-                        sx: {
-                            overflowY: 'overlay',
-                            '::-webkit-scrollbar-track': {
-                                marginY: '1rem',
-                                bgcolor: toTopBar ? '#EBEFFA' : '#FFFFFF',
-                                borderRadius: '5px',
-                            },
-                            '::-webkit-scrollbar-thumb': { background: toTopBar ? '' : '#EBEFFA' },
+                        transformOrigin: {
+                            vertical: overrideSx ? 'top' : 'top',
+                            horizontal: overrideSx ? 'center' : horizontalOrigin,
                         },
-                    },
-                    transformOrigin: {
-                        vertical: overrideSx ? 'top' : 'top',
-                        horizontal: overrideSx ? 'center' : horizontalOrigin,
-                    },
-                }}
-                IconComponent={(params) => CustomExpandMore({ filterIcon, ...params })}
-                size={size}
-                onOpen={() => {
-                    setMiniFilterValue('');
-                    setIsOpen(true);
-                    handleCheckboxClick(true);
-                }}
-                onClose={() => {
-                    setIsOpen(false);
-                    handleCheckboxClick(false);
-                }}
-                sx={{
-                    ...overrideSx,
-                    '& .MuiSelect-select ': {
-                        borderRadius: borderRadiusStyle,
-                    },
-                    fontFamily: 'Rubik',
-                    fontSize: '14px',
-                    fontWeight: 400,
-                    boxShadow: toUserProfile ? '0px 3px 10px rgba(0,0,0,0.2)' : 'none',
-                    borderRadius: '8px',
-                    ...(darkMode
-                        ? {
-                              color: theme.palette.primary.main,
-                              '& .MuiOutlinedInput-notchedOutline': { borderColor: '#d2d3e3' },
-                          }
-                        : {
-                              '& .MuiOutlinedInput-notchedOutline': { display: 'none' },
-                              background: toTopBar ? '#EBEFFA' : '#FFFFFF',
-                              color: toTopBar ? '#1E2775' : '#787C9E',
-                          }),
-                    maxWidth: !overrideSx ? (toTopBar ? '130px' : '131px') : undefined,
-                    maxHeight: toTopBar ? '35px' : '34px',
-                    padding: toTopBar ? '6.99px, 13.98px' : '0px, 8px',
-                    '& .MuiSvgIcon-root': {
-                        color: filterIcon ? (darkMode ? '#9398C2' : '#1E2775') : '',
-                        transform: filterIcon ? 'none' : '',
-                    },
-                }}
-            >
-                {!isSelectDisabled && !hideSearchBar && <Search value={miniFilterValue} onChange={setMiniFilterValue} toTopBar={toTopBar} />}
-                {isSelectDisabled && hideChooseAll ? (
-                    <Typography color={theme.palette.primary.main} fontFamily="Rubik" fontWeight={400} marginX="16px" marginY="8px">
-                        {title}
-                    </Typography>
-                ) : undefined}
-
-                <Tree
-                    onDragEnd={({ itemId, newPosition, oldPosition }) => {
-                        const transformedDrag: DropResult = {
-                            draggableId: itemId,
-                            type: 'DEFAULT',
-                            source: {
-                                index: oldPosition.index,
-                                droppableId: oldPosition.parentId!,
-                            },
-                            destination: {
-                                index: newPosition.index,
-                                droppableId: newPosition.parentId!,
-                            },
-                            reason: 'DROP',
-                            combine: undefined,
-                            mode: 'FLUID',
-                        };
-
-                        if (onDragEnd) return onDragEnd(transformedDrag);
-                        return onDragEndDefault(transformedDrag);
                     }}
-                    isSelectDisabled={isSelectDisabled}
-                    selectAll={!hideChooseAll}
-                    flattenedTree={[...(groupsProps.useGroups ? (groupsProps.groups as any[]) : []), ...options]}
-                    preSelectedItemsIds={selectedOptionIds}
-                    getItemId={getOptionId}
-                    getItemLabel={getOptionLabel}
-                    filteredTreeItems={filteredTree()}
-                    multi
-                    treeItems={treeItems()}
-                    isDraggable={!isDraggableDisabled}
-                    onSelectItems={(ids) => {
-                        const filteredOptions = options.filter((option) => ids.includes(getOptionId(option)));
-                        setSelectedOptions(filteredOptions);
+                    IconComponent={(params) => CustomExpandMore({ filterIcon, ...params })}
+                    size={size}
+                    onOpen={() => {
+                        setMiniFilterValue('');
+                        setIsOpen(true);
+                        handleCheckboxClick(true);
                     }}
-                    showIcon={showIcon}
-                />
-            </Select>
+                    onClose={() => {
+                        setIsOpen(false);
+                        handleCheckboxClick(false);
+                    }}
+                    sx={{
+                        ...overrideSx,
+                        '& .MuiSelect-select ': {
+                            borderRadius: borderRadiusStyle,
+                        },
+                        fontFamily: 'Rubik',
+                        fontSize: '14px',
+                        fontWeight: 400,
+                        boxShadow: toUserProfile ? '0px 3px 10px rgba(0,0,0,0.2)' : 'none',
+                        borderRadius: '8px',
+                        ...(darkMode
+                            ? {
+                                  color: theme.palette.primary.main,
+                                  '& .MuiOutlinedInput-notchedOutline': { borderColor: '#d2d3e3' },
+                              }
+                            : {
+                                  '& .MuiOutlinedInput-notchedOutline': { display: 'none' },
+                                  background: toTopBar ? '#EBEFFA' : '#FFFFFF',
+                                  color: toTopBar ? '#1E2775' : '#787C9E',
+                              }),
+                        maxWidth: !overrideSx ? (toTopBar ? '130px' : '131px') : undefined,
+                        maxHeight: toTopBar ? '35px' : '34px',
+                        padding: toTopBar ? '6.99px, 13.98px' : '0px, 8px',
+                        '& .MuiSvgIcon-root': {
+                            color: filterIcon ? (darkMode ? '#9398C2' : '#1E2775') : '',
+                            transform: filterIcon ? 'none' : '',
+                        },
+                    }}
+                >
+                    {TreeCompetent}
+                </Select>
+            ) : (
+                <Grid>{TreeCompetent}</Grid>
+            )}
         </FormControl>
     );
 };

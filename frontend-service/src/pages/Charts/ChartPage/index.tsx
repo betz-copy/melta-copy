@@ -24,7 +24,7 @@ import { ChartTopBar } from './TopBar';
 import { EntitiesTable } from '../../../common/wizards/excel/excelSteps/EntitiesTable';
 
 const ChartPage: React.FC = () => {
-    const { templateId, chartId } = useParams<{ templateId: string; chartId?: string }>();
+    const { templateId, chartId } = useParams<{ templateId?: string; chartId?: string }>();
     const [_, navigate] = useLocation();
     const queryClient = useQueryClient();
     const { data: chart, isLoading } = useQuery(['getChart', chartId], () => getChartById(chartId!), {
@@ -35,7 +35,12 @@ const ChartPage: React.FC = () => {
     const bgColor: CSSProperties['backgroundColor'] = theme.palette.mode === 'dark' ? '#131313' : '#fcfeff';
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const currentUser = useUserStore((state) => state.user);
-    const template = entityTemplates.get(templateId as string) as IMongoEntityTemplatePopulated;
+    const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(templateId || null);
+
+    const selectedTemplate = useMemo(
+        () => (selectedTemplateId ? entityTemplates.get(selectedTemplateId) : undefined),
+        [entityTemplates, selectedTemplateId],
+    );
     const initialValues = chartId && chart ? chart : defaultInitialValues;
     const sideBarTabs = [
         { name: 'generalDetails', labelKey: 'generalDetails', icon: <Settings fontSize="small" /> },
@@ -49,13 +54,13 @@ const ChartPage: React.FC = () => {
     const [tabValue, setTabValue] = useState('generalDetails');
 
     useEffect(() => {
-        if (chart?.filter) {
+        if (chart?.filter && selectedTemplate) {
             const parsedFilter = JSON.parse(chart.filter);
-            const formattedFilter = FilterOfGraphToFilterRecord(parsedFilter, template);
+            const formattedFilter = FilterOfGraphToFilterRecord(parsedFilter, selectedTemplate);
             setFilterRecord(formattedFilter);
             setFilters(Object.keys(formattedFilter).map(Number));
         }
-    }, [chart, template]);
+    }, [chart, selectedTemplate]);
 
     const memoizedFilter = useMemo(
         () => (filterRecord && Object.keys(filterRecord).length > 0 ? filterModelToFilterOfGraph(filterRecord)[templateId].filter : undefined),
@@ -136,50 +141,54 @@ const ChartPage: React.FC = () => {
                         readonly={readonly}
                         setReadOnly={setReadonly}
                         formik={formik}
-                        template={template}
+                        template={selectedTemplate}
                         filterRecord={filterRecord}
                         setFilterRecord={setFilterRecord}
                         setFilters={setFilters}
                     />
                     <Grid container flexWrap="nowrap" height="94.5vh" justifyContent="space-evenly">
                         <Grid container item flexDirection="column" flexWrap="nowrap" height="100%" alignItems="center">
-                            <Grid item alignSelf="flex-start">
-                                <Button
-                                    variant="text"
-                                    sx={{ fontWeight: '400', fontSize: '18px', top: '30px', left: '30px' }}
-                                    startIcon={<ArrowForwardIosOutlined sx={{ width: '12px', height: '12px' }} />}
-                                    onClick={() => navigate(`/charts/${templateId}`)}
-                                >
-                                    {i18next.t('charts.actions.back')}
-                                </Button>
-                            </Grid>
-                            <Grid container item height="100%" alignItems="center" justifyContent="center">
-                                <ChartGenerator
-                                    formikValues={formik.values}
-                                    template={template}
-                                    entityTemplate={template}
-                                    filterRecord={filterRecord}
-                                />
-                            </Grid>
-                            <Grid item width="98%">
-                                <EntitiesTable
-                                    rowModelType="infinite"
-                                    template={template}
-                                    defaultExpanded={false}
-                                    title={i18next.t('charts.viewData')}
-                                    defaultFilter={memoizedFilter}
-                                    infiniteModeWithoutExpand
-                                    disableFilter
-                                    overrideSx={{
-                                        '&.MuiPaper-root': {
-                                            boxShadow: '0px -2px 10.15px 0px #1E277533',
-                                            borderTopLeftRadius: '13px',
-                                            borderTopRightRadius: '13px',
-                                        },
-                                    }}
-                                    ignoreType={false}
-                                />
-                            </Grid>
+                            {selectedTemplate && (
+                                <>
+                                    <Grid item alignSelf="flex-start">
+                                        <Button
+                                            variant="text"
+                                            sx={{ fontWeight: '400', fontSize: '18px', top: '30px', left: '30px' }}
+                                            startIcon={<ArrowForwardIosOutlined sx={{ width: '12px', height: '12px' }} />}
+                                            onClick={() => navigate(`/charts/${selectedTemplate._id}`)}
+                                        >
+                                            {i18next.t('charts.actions.back')}
+                                        </Button>
+                                    </Grid>
+                                    <Grid container item height="100%" alignItems="center" justifyContent="center">
+                                        <ChartGenerator
+                                            formikValues={formik.values}
+                                            template={selectedTemplate}
+                                            entityTemplate={selectedTemplate}
+                                            filterRecord={filterRecord}
+                                        />
+                                    </Grid>
+                                    <Grid item width="98%">
+                                        <EntitiesTable
+                                            rowModelType="infinite"
+                                            template={selectedTemplate}
+                                            defaultExpanded={false}
+                                            title={i18next.t('charts.viewData')}
+                                            defaultFilter={memoizedFilter}
+                                            infiniteModeWithoutExpand
+                                            disableFilter
+                                            overrideSx={{
+                                                '&.MuiPaper-root': {
+                                                    boxShadow: '0px -2px 10.15px 0px #1E277533',
+                                                    borderTopLeftRadius: '13px',
+                                                    borderTopRightRadius: '13px',
+                                                },
+                                            }}
+                                            ignoreType={false}
+                                        />
+                                    </Grid>
+                                </>
+                            )}
                         </Grid>
                         <TabContext value={tabValue}>
                             <Grid
@@ -240,10 +249,21 @@ const ChartPage: React.FC = () => {
                                     {sideBarTabs.map(({ name }) => (
                                         <TabPanel key={name} value={name} sx={{ padding: 0 }}>
                                             {name === 'generalDetails' ? (
-                                                <ChartSideBar formik={formik} entityTemplate={template} readonly={readonly} edit={edit} />
+                                                <ChartSideBar
+                                                    formik={formik}
+                                                    entityTemplates={entityTemplates}
+                                                    defaultTemplateId={templateId}
+                                                    edit={edit}
+                                                    readonly={readonly}
+                                                    onTemplateChange={(id) => {
+                                                        setSelectedTemplateId(id);
+                                                        formik.setFieldValue('templateId', id);
+                                                    }}
+                                                    selectedTemplate={selectedTemplate}
+                                                />
                                             ) : (
                                                 <FilterSideBar
-                                                    templateId={template._id}
+                                                    templateId={selectedTemplate?._id}
                                                     filterRecord={filterRecord}
                                                     setFilterRecord={setFilterRecord}
                                                     filters={filters}

@@ -59,9 +59,7 @@ const ChartTopBar: React.FC<IChartTopBar> = ({
             >
                 <Grid>
                     <BlueTitle
-                        title={`${i18next.t(edit ? 'actions.editment' : 'actions.createment')} ${i18next.t('charts.chart')} - ${
-                            template.displayName
-                        }`}
+                        title={`${i18next.t(edit ? 'actions.editment' : 'actions.createment')} ${i18next.t('charts.chart')}`}
                         component="h4"
                         variant="h4"
                         style={{ fontSize: workspace.metadata.mainFontSizes.headlineTitleFontSize, whiteSpace: 'nowrap' }}
@@ -133,7 +131,6 @@ const ChartTopBar: React.FC<IChartTopBar> = ({
                     )}
                 </Grid>
             </TopBarGrid>
-
             <AreYouSureDialog open={deleteDialogOpen} handleClose={() => setDeleteDialogOpen(false)} onYes={onDelete} />
         </Box>
     );

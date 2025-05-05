@@ -107,6 +107,8 @@ const Tree = <T extends {}>({
                 getItemLabel={getItemLabel}
                 selectedItems={selectedItemsIds}
                 onSelectedItemsChange={(_event, itemIds) => {
+                    console.log({ itemIds });
+
                     setSelectedItemsIds(handleSelectedItemsChange(itemIds, multi));
                 }}
                 onExpandedItemsChange={(_event: React.SyntheticEvent, itemIds: string[]) => {

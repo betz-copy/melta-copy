@@ -111,7 +111,21 @@ const HighchartGenerator: React.FC<HighchartGeneratorProps> = ({
                 dataLabels: {
                     enabled: false,
                 },
-
+                colors: [
+                    '#F098ED',
+                    '#F9FB85',
+                    '#FFBB6D',
+                    '#86FB83',
+                    '#6DCBFF',
+                    '#F09898',
+                    '#AF98F0',
+                    '#85FBED',
+                    '#C0FB85',
+                    '#FFDF6D',
+                    '#6D96FF',
+                    '#FB8383',
+                    '#D498F0',
+                ],
                 showInLegend: true,
             },
         },

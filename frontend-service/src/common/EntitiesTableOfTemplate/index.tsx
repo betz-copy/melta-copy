@@ -32,6 +32,7 @@ import { toast } from 'react-toastify';
 import { useLocation } from 'wouter';
 import '../../css/resizeTable.css';
 import '../../css/table.css';
+import { DropResult } from 'react-beautiful-dnd';
 import { environment } from '../../globals';
 import { EntityData, IDeleteEntityBody, IEntity, IEntityExpanded, ISearchFilter, IUniqueConstraint } from '../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
@@ -221,6 +222,8 @@ export type EntitiesTableOfTemplateRef<Data> = {
     scrollIntoView: () => void;
     showSideBar: () => void;
     getDisplayColumns: () => string[];
+    setColumnsVisible: (colId: string) => void;
+    moveColumn: (colId: string, destination: number) => void;
 };
 
 const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, EntitiesTableOfTemplateProps<unknown>>(
@@ -352,58 +355,6 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                 (c) => c.sortIndex,
             ).map((s) => ({ colId: s.colId, sort: s.sort! }))!;
         };
-
-        useImperativeHandle(ref, () => ({
-            getExcelData() {
-                return gridRef.current?.api.getSheetDataForExcel({ sheetName: template.displayName });
-            },
-            resetFilter() {
-                gridRef.current?.api.setFilterModel(defaultFilterModel);
-            },
-            refreshServerSide() {
-                gridRef.current?.api.refreshServerSide({ purge: true });
-            },
-            updateRowDataClientSide(data: Data) {
-                gridRef.current?.api.forEachNode((rowNode) => {
-                    if (rowNode.data && getRowId(data) === getRowId(rowNode.data)) {
-                        rowNode.updateData(data);
-                    }
-                });
-            },
-            isFiltered() {
-                const filters = gridRef.current?.api.getFilterModel();
-                return !filters || !isEqual(filters, defaultFilterModel);
-            },
-            getFilterModel() {
-                return gridRef.current!.api.getFilterModel();
-            },
-            getSortModel() {
-                return getSortModel();
-            },
-            scrollIntoView() {
-                tableRef.current?.scrollIntoView({ behavior: 'smooth' });
-            },
-            showSideBar() {
-                const gridApi = gridRef.current?.api;
-                if (!gridApi) return;
-                const isSideBarOpen = gridApi.isToolPanelShowing();
-                gridApi.setSideBarVisible(!isSideBarOpen);
-                if (isSideBarOpen) {
-                    gridApi.closeToolPanel();
-                } else {
-                    gridApi.openToolPanel('columns');
-                }
-            },
-            getDisplayColumns: () => {
-                const validKeys = Object.keys(template.properties.properties);
-                return (
-                    gridRef.current?.api
-                        .getAllDisplayedColumns()
-                        .map((column) => column.getColId())
-                        .filter((colId) => validKeys.includes(colId)) || []
-                );
-            },
-        }));
 
         const columnDefProps: IGetColumnDefsOptions<Data> = {
             template,
@@ -678,6 +629,18 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                 else gridApi.openToolPanel('columns');
             },
             getDisplayColumns: () => gridRef.current?.api.getAllDisplayedColumns().map((column) => column.getColId()) || [],
+            setColumnsVisible: (colId: string) => {
+                if (gridRef.current) {
+                    const column = gridRef.current.api.getColumn(colId);
+                    if (column) {
+                        const currentlyVisible = column.isVisible();
+                        gridRef.current.api.setColumnsVisible([colId], !currentlyVisible);
+                    }
+                }
+            },
+            moveColumn: (colId: string, destination: number) => {
+                gridRef.current?.api.moveColumns([colId], destination);
+            },
         }));
 
         const rowModelProps = useMemo(

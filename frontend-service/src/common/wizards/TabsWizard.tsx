@@ -1,44 +1,7 @@
-import React, { PropsWithChildren, useEffect, useState } from 'react';
-import { Dialog, DialogTitle, DialogContent, IconButton, Box } from '@mui/material';
-import { Close as CloseIcon } from '@mui/icons-material';
-import { Formik, Form, FormikProps, FormikConfig } from 'formik';
-import * as Yup from 'yup';
-import { ObjectShape } from 'yup/lib/object';
-import { useDarkModeStore } from '../../stores/darkMode';
-import { StepperActions } from './stepper/StepperActions';
-import { Stepper } from './stepper';
+import React, { PropsWithChildren } from 'react';
+import { StepType, WizardBaseType } from '.';
 
-export interface StepComponentHelpers {
-    isEditMode: boolean;
-    setBlock: React.Dispatch<React.SetStateAction<boolean>>;
-}
-
-export type StepComponentProps<T extends object, helpers extends keyof StepComponentHelpers = never> = FormikProps<T> &
-    Pick<StepComponentHelpers, helpers>;
-
-export type WizardBaseType<T extends object> = {
-    open: boolean;
-    handleClose: () => void;
-    initialValues?: T;
-    initialStep?: number;
-    isEditMode?: boolean;
-};
-
-export type StepType<T extends object> = {
-    label: string;
-    description?: string;
-    component: (formikProps: FormikProps<T>, helpers: StepComponentHelpers) => JSX.Element;
-    validationSchema?: ObjectShape | Yup.ObjectSchema<ObjectShape>;
-    validate?: FormikConfig<T>['validate'];
-    stepperActions?: {
-        disable?: 'all' | 'back' | 'next';
-        back?: { text?: string; onClick?: () => void };
-        next?: { text?: string; onClick?: () => void };
-    };
-    invisibleBeforeStep?: boolean;
-};
-
-const Wizard = <T extends object>({
+const TabsWizard = <T extends object>({
     open,
     handleClose,
     title,
@@ -156,4 +119,4 @@ const Wizard = <T extends object>({
     );
 };
 
-export { Wizard };
+export { TabsWizard };
