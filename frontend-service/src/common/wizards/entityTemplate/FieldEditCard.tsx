@@ -20,6 +20,7 @@ import {
     CircularProgress,
     ThemeProvider,
     createTheme,
+    FormHelperText,
 } from '@mui/material';
 import {
     Delete as DeleteIcon,
@@ -964,6 +965,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                         onFocus={() => setCommentEditorFocused(true)}
                                                         onBlur={() => setCommentEditorFocused(false)}
                                                     />
+                                                    {errorComment && <FormHelperText error>{i18next.t('validation.required')}</FormHelperText>}
                                                 </Grid>
                                             </ThemeProvider>
                                         )}
@@ -1260,45 +1262,47 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                 />
                                             )}
                                             {isComment && (
-                                                <FormControlLabel
-                                                    control={
-                                                        <Switch
-                                                            id={hideFromDetailsPage}
-                                                            name={hideFromDetailsPage}
-                                                            onChange={(_e, checked) => {
-                                                                setValues?.((prevValue) => ({
-                                                                    ...prevValue,
-                                                                    hideFromDetailsPage: checked,
-                                                                }));
-                                                            }}
-                                                            checked={value.hideFromDetailsPage ?? false}
-                                                        />
-                                                    }
-                                                    label={i18next.t('validation.hideFromDetailsPage')}
-                                                />
-                                            )}
-                                            {isComment && (
-                                                <SelectAutocomplete
-                                                    options={commentColorsObj}
-                                                    value={
-                                                        value.color
-                                                            ? {
-                                                                  value: value.color,
-                                                                  label: Object.entries(commentColors).find(([, val]) => val === value.color)?.[0]!,
-                                                              }
-                                                            : commentColorsObj[0]
-                                                    }
-                                                    onValueChange={(newValue) => {
-                                                        setValues?.((prevValue) => ({
-                                                            ...prevValue,
-                                                            color: newValue as string,
-                                                        }));
-                                                    }}
-                                                    colorsOptions={commentColors}
-                                                    disableClearable
-                                                    label={i18next.t('validation.colors.colors')}
-                                                    overrideSx={{ width: '150px' }}
-                                                />
+                                                <>
+                                                    <FormControlLabel
+                                                        control={
+                                                            <Switch
+                                                                id={hideFromDetailsPage}
+                                                                name={hideFromDetailsPage}
+                                                                onChange={(_e, checked) => {
+                                                                    setValues?.((prevValue) => ({
+                                                                        ...prevValue,
+                                                                        hideFromDetailsPage: checked,
+                                                                    }));
+                                                                }}
+                                                                checked={value.hideFromDetailsPage ?? false}
+                                                            />
+                                                        }
+                                                        label={i18next.t('validation.hideFromDetailsPage')}
+                                                    />
+                                                    <SelectAutocomplete
+                                                        options={commentColorsObj}
+                                                        value={
+                                                            value.color
+                                                                ? {
+                                                                      value: value.color,
+                                                                      label: Object.entries(commentColors).find(
+                                                                          ([, val]) => val === value.color,
+                                                                      )?.[0]!,
+                                                                  }
+                                                                : commentColorsObj[0]
+                                                        }
+                                                        onValueChange={(newValue) => {
+                                                            setValues?.((prevValue) => ({
+                                                                ...prevValue,
+                                                                color: newValue as string,
+                                                            }));
+                                                        }}
+                                                        colorsOptions={commentColors}
+                                                        disableClearable
+                                                        label={i18next.t('validation.colors.colors')}
+                                                        overrideSx={{ width: '150px' }}
+                                                    />
+                                                </>
                                             )}
                                         </Box>
                                         <Grid display="flex">

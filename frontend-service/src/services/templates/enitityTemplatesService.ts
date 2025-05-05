@@ -16,6 +16,7 @@ import { CommonFormInputProperties } from '../../common/wizards/entityTemplate/c
 import { commentColors } from '../../common/inputs/JSONSchemaFormik/RjsfCommentWidget';
 
 const { entityTemplates } = environment.api;
+
 export const basePropertyTypes = ['string', 'number', 'boolean'];
 export const stringFormats = [
     'date',
