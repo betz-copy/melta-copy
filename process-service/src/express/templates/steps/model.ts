@@ -15,6 +15,10 @@ export const StepTemplateSchema = new mongoose.Schema(
             type: [String],
             required: true,
         },
+        disableAddingReviewers: {
+            type: Boolean,
+            default: false,
+        },
         properties: {
             type: Object,
             required: true,

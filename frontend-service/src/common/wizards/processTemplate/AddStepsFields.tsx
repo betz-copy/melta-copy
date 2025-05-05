@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AccordionDetails, AccordionSummary, Grid, IconButton, Typography, useTheme } from '@mui/material';
+import { AccordionDetails, AccordionSummary, FormControlLabel, Grid, IconButton, Switch, Typography, useTheme } from '@mui/material';
 import * as Yup from 'yup';
 import i18next from 'i18next';
 import { ExpandMore as ExpandMoreIcon, Delete as DeleteIcon, DragHandle as DragHandleIcon } from '@mui/icons-material';
@@ -52,6 +52,7 @@ const addStepsFieldsSchema = Yup.object({
                 icon: Yup.object({
                     name: Yup.string().nullable(true).optional(),
                 }),
+                disableAddingReviewers: Yup.boolean().nullable(true).optional(),
                 name: Yup.string().matches(variableNameValidation, i18next.t('validation.variableName')).required(i18next.t('validation.required')),
                 displayName: Yup.string().required(i18next.t('validation.required')),
             }),
@@ -127,6 +128,7 @@ const AddStepsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues, '
                                                 attachmentProperties: [],
                                                 reviewers: [],
                                                 icon: { file: { name: '' }, name: '' },
+                                                disableAddingReviewers: false,
                                             })
                                         }
                                         size="large"
@@ -252,6 +254,19 @@ const AddStepsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues, '
                                                                         errors={errors}
                                                                         isEditMode={isEditMode}
                                                                         areThereAnyInstances={areThereAnyInstances}
+                                                                    />
+                                                                    <FormControlLabel
+                                                                        control={
+                                                                            <Switch
+                                                                                id="disableAddApprovers"
+                                                                                name="disableAddApprovers"
+                                                                                onChange={(_e, checked) => {
+                                                                                    setFieldValue(`steps[${index}].disableAddingReviewers`, checked);
+                                                                                }}
+                                                                                checked={step.disableAddingReviewers}
+                                                                            />
+                                                                        }
+                                                                        label={i18next.t('wizard.processTemplate.blockAddingApprovers')}
                                                                     />
                                                                 </Grid>
                                                                 <Grid item>

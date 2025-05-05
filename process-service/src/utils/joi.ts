@@ -143,6 +143,7 @@ const baseStepSchema = Joi.object({
     properties: innerPropertiesSchema.required(),
     propertiesOrder: orderPropertiesSchema.required(),
     reviewers: Joi.array().items(Joi.string()).required(),
+    disableAddingReviewers: Joi.boolean(),
     iconFileId: Joi.string().allow(null),
 });
 

@@ -74,6 +74,7 @@ const ReviewCard = ({ stepTemplate, values, setFieldValue, isEditMode, processIn
                                 ? values.steps[getStepInstanceByStepTemplateId(stepTemplate._id, processInstance)!._id]
                                 : values.steps[stepTemplate._id] || []
                         }
+                        disableAddingReviewers={stepTemplate.disableAddingReviewers}
                         forcedReviewers={stepTemplate.reviewers}
                         onAdd={(newReviewer, reviewers) => {
                             if (isEditMode && processInstance) {
