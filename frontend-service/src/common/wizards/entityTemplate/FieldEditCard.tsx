@@ -244,7 +244,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
 
     useEffect(() => {
         setRawCommentContent(JSON.stringify(convertToRaw(commentValue.getCurrentContent())));
-    }, [commentValue]);
+    }, []);
 
     useEffect(() => {
         setErrorComment((typeof errors === 'string' && (errors as string)?.includes('comment')) || Boolean(errors?.comment));
