@@ -1,18 +1,19 @@
+/* eslint-disable no-nested-ternary */
 import React, { useEffect, useState } from 'react';
 import { Autocomplete, TextField, Box, FormControl } from '@mui/material';
 import { Close } from '@mui/icons-material';
-import { MeltaCheckbox } from '../../common/MeltaCheckbox';
-import { ColoredEnumChip } from '../../common/ColoredEnumChip';
+import { ColoredEnumChip } from '../ColoredEnumChip';
+import { MeltaCheckbox } from '../MeltaCheckbox';
 
 export interface Option {
     value: string;
     label: string;
 }
 
-interface SelectCellEditorProps {
-    options: string[];
-    value?: string | string[];
-    onValueChange: (newValue: string | string[] | null) => void;
+interface SelectAutocompleteProps {
+    options: Option[];
+    value?: Option | Option[];
+    onValueChange: (newValue: string | string[] | null | undefined) => void;
     multiple?: boolean;
     colorsOptions?: Record<string, string>;
     overrideSx?: object;
@@ -20,7 +21,7 @@ interface SelectCellEditorProps {
     label?: string;
 }
 
-const SelectCellEditor: React.FC<SelectCellEditorProps> = ({
+const SelectAutocomplete: React.FC<SelectAutocompleteProps> = ({
     options,
     value,
     onValueChange,
@@ -30,35 +31,42 @@ const SelectCellEditor: React.FC<SelectCellEditorProps> = ({
     disableClearable,
     label,
 }) => {
-    const [selectedValues, setSelectedValues] = useState<string | string[] | undefined>(value || (multiple ? [] : ''));
+    const [selectedValues, setSelectedValues] = useState<Option | Option[] | undefined>(value || (multiple ? [] : undefined));
 
     useEffect(() => {
-        setSelectedValues(value || (multiple ? [] : ''));
+        setSelectedValues(value || (multiple ? [] : undefined));
     }, [value, multiple]);
 
-    const handleAutocompleteChange = (newValue: string | string[] | null) => {
-        // eslint-disable-next-line no-nested-ternary
-        const updatedValue = newValue === null ? (multiple ? [] : '') : newValue;
+    const handleAutocompleteChange = (newValue: Option | Option[] | null) => {
+        const updatedValue = newValue === null ? (multiple ? [] : undefined) : newValue;
         setSelectedValues(updatedValue);
-        onValueChange(updatedValue);
+        onValueChange(Array.isArray(updatedValue) ? updatedValue.map((val) => val.value) : updatedValue?.value);
     };
 
     return (
         <FormControl fullWidth={!disableClearable}>
-            <Autocomplete<string, boolean, boolean, false>
+            <Autocomplete<Option, boolean, boolean, false>
                 multiple={multiple}
                 value={selectedValues}
                 onChange={(_, newValue) => handleAutocompleteChange(newValue)}
                 disableCloseOnSelect={multiple}
                 options={options}
-                getOptionLabel={(option) => option}
+                getOptionLabel={(option) => option.label}
                 style={overrideSx}
                 fullWidth
-                isOptionEqualToValue={(option, val) => option === val}
+                isOptionEqualToValue={(option, val) => option.value === val.value}
                 renderOption={(props, option) => (
-                    <Box component="li" {...props} key={option} style={{ height: '40px' }}>
-                        {multiple && <MeltaCheckbox checked={Array.isArray(selectedValues) && selectedValues.includes(option)} />}
-                        <ColoredEnumChip label={option} color={colorsOptions?.[option] || 'default'} style={{ marginLeft: '8px' }} />
+                    <Box component="li" {...props} key={option.value} style={{ height: '40px' }}>
+                        {multiple && (
+                            <MeltaCheckbox
+                                checked={
+                                    Array.isArray(selectedValues)
+                                        ? selectedValues.some((sv) => sv.value === option.value)
+                                        : selectedValues?.value === option.value
+                                }
+                            />
+                        )}
+                        <ColoredEnumChip label={option.label} color={colorsOptions?.[option.label] || 'default'} style={{ marginLeft: '8px' }} />
                     </Box>
                 )}
                 renderTags={(tagValue, getTagProps) =>
@@ -67,8 +75,8 @@ const SelectCellEditor: React.FC<SelectCellEditorProps> = ({
                         return (
                             <ColoredEnumChip
                                 key={key}
-                                label={option}
-                                color={colorsOptions?.[option] || 'default'}
+                                label={option.label}
+                                color={colorsOptions?.[option.label] || 'default'}
                                 onDelete={onDelete}
                                 deleteIcon={<Close />}
                                 {...restTagProps}
@@ -97,4 +105,4 @@ const SelectCellEditor: React.FC<SelectCellEditorProps> = ({
     );
 };
 
-export default SelectCellEditor;
+export default SelectAutocomplete;

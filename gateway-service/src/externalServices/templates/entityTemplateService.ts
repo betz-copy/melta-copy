@@ -44,7 +44,8 @@ export interface IEntitySingleProperty {
         | 'location'
         | 'user'
         | 'signature'
-        | 'kartoffelUserField';
+        | 'kartoffelUserField'
+        | 'comment';
     enum?: string[];
     readOnly?: true;
     identifier?: true;
@@ -75,6 +76,9 @@ export interface IEntitySingleProperty {
         relatedTemplateField: string;
     };
     archive?: boolean;
+    comment?: string;
+    color?: string;
+    hideFromDetailsPage?: boolean;
 }
 
 export interface IEntityTemplate {

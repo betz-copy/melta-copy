@@ -61,7 +61,7 @@ const RjfsSignatureWidget = ({ id, required, readonly, disabled, label, value, o
 
     return (
         <ThemeProvider theme={darkMode ? darkTheme : lightTheme}>
-            <Box display="flex" flexDirection="column" className="signature">
+            <Box display="flex" flexDirection="column">
                 <Box sx={{ position: 'relative', width: 210 }}>
                     <Typography
                         sx={{
@@ -78,7 +78,6 @@ const RjfsSignatureWidget = ({ id, required, readonly, disabled, label, value, o
                         velocityFilterWeight={0.7}
                         penColor="black"
                         canvasProps={{
-                            className: 'signature',
                             width: 205,
                             height: '100%',
                             style: {
