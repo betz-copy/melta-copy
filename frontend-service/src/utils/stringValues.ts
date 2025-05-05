@@ -12,7 +12,7 @@ export const getFixedNumber = (value: number) => {
 
 export const isStartWithHebrewLetter = (value: string) => {
     const uniqueCharsPattern = /^[^a-zA-Z\u0590-\u05FF]+/g;
-    const cleanedStr = value.replace(uniqueCharsPattern, '');
+    const cleanedStr = String(value).replace(uniqueCharsPattern, '');
     const isHebrewLetter = /^[\u0590-\u05FF]/.test(cleanedStr.charAt(0));
 
     return isHebrewLetter;

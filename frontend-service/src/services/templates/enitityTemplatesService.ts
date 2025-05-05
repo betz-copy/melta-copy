@@ -1,5 +1,6 @@
 /* eslint-disable no-nested-ternary */
 import { v4 as uuid } from 'uuid';
+import i18next from 'i18next';
 import axios from '../../axios';
 import { EntityTemplateFormInputProperties, EntityTemplateWizardValues } from '../../common/wizards/entityTemplate';
 import { environment } from '../../globals';
@@ -12,10 +13,24 @@ import {
 } from '../../interfaces/entityTemplates';
 import { getFileName } from '../../utils/getFileName';
 import { CommonFormInputProperties } from '../../common/wizards/entityTemplate/commonInterfaces';
+import { commentColors } from '../../common/inputs/JSONSchemaFormik/RjsfCommentWidget';
 
 const { entityTemplates } = environment.api;
+
 export const basePropertyTypes = ['string', 'number', 'boolean'];
-export const stringFormats = ['date', 'date-time', 'email', 'fileId', 'text-area', 'relationshipReference', 'location', 'user'];
+export const stringFormats = [
+    'date',
+    'date-time',
+    'email',
+    'fileId',
+    'text-area',
+    'relationshipReference',
+    'location',
+    'user',
+    'signature',
+    'comment',
+    'kartoffelUserField',
+];
 export const arrayTypes = ['multipleFiles', 'enumArray', 'users'];
 
 const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTemplatePopulated | null): EntityTemplateWizardValues | undefined => {
@@ -42,7 +57,6 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
 
         let type = value.format || value.type;
         if (value.serialStarter !== undefined) type = 'serialNumber';
-        // else if (value.items?.format === 'user') type = 'users'; // TODO
         else if (value.enum) type = 'enum';
         else if (value.pattern) type = 'pattern';
         else if (value.format && value.format === 'text-area') type = 'text-area';
@@ -51,6 +65,7 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
         else if (value.items?.format === 'fileId') type = 'multipleFiles';
         else if (value.items?.format === 'user') type = 'users';
         else if (value.items?.format === 'text-area') type = 'text-area';
+        else if (value.format && value.format === 'comment') type = 'comment';
 
         const property: EntityTemplateFormInputProperties = {
             id: uuid(),
@@ -60,6 +75,7 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
             preview: propertiesPreview.includes(key),
             hide: properties.hide.includes(key),
             readOnly: value.readOnly || undefined,
+            expandedUserField: value.expandedUserField,
             uniqueCheckbox: uniqueConstraints.some((constraint) => constraint.properties.includes(key) && constraint.groupName !== ''),
             groupName: uniqueConstraints.find((constraint) => constraint.properties.includes(key) && constraint.groupName !== '')?.groupName,
             calculateTime: value.calculateTime ?? undefined,
@@ -76,6 +92,9 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
             archive: value.archive || undefined,
             identifier: value.identifier || undefined,
             mapSearch: mapSearchProperties?.includes(key) || undefined,
+            hideFromDetailsPage: value.hideFromDetailsPage || undefined,
+            comment: value.comment,
+            color: value.color,
         };
 
         if (value.format === 'fileId' || value.items?.format === 'fileId') {
@@ -157,8 +176,13 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
             archive,
             identifier,
             mapSearch,
+            hideFromDetailsPage,
+            color,
+            comment,
+            expandedUserField,
         }) => {
             if (deleted) return;
+            if (type === 'comment' && !comment) return;
 
             let propertyType: IEntitySingleProperty['type'];
             switch (type) {
@@ -188,9 +212,12 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                     | 'date-time'
                     | 'email'
                     | 'fileId'
+                    | 'signature'
                     | 'text-area'
                     | 'relationshipReference'
                     | 'user'
+                    | 'comment'
+                    | 'kartoffelUserField'
                     | undefined,
                 enum: type === 'enum' ? options : undefined,
                 items: type === 'enumArray' ? { type: 'string', enum: options } : type === 'users' ? { type: 'string', format: 'user' } : undefined,
@@ -198,6 +225,8 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                 readOnly,
                 archive,
                 identifier,
+                hideFromDetailsPage,
+                color: comment && !color ? commentColors[i18next.t('validation.colors.blue')] : color,
                 uniqueItems: type === 'enumArray' || type === 'users' ? true : undefined,
                 pattern: type === 'pattern' ? pattern : undefined,
                 patternCustomErrorMessage: type === 'pattern' ? patternCustomErrorMessage : undefined,
@@ -215,6 +244,8 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                           relatedTemplateField: relationshipReference!.relatedTemplateField,
                       }
                     : undefined,
+                comment,
+                expandedUserField,
             };
             if (isEditMode) {
                 schema.properties[name] = {
@@ -222,7 +253,6 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                     isNewPropNameEqualDeletedPropName: properties.some((property) => property.id !== id && property.name === name),
                 };
             }
-
             propertiesOrder.push(name);
 
             if (required) schema.required.push(name);
@@ -231,11 +261,11 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
             if (mapSearch) mapSearchProperties.push(name);
             if (type === 'serialNumber') serialsUniqueConstraints.push([name]);
             if (type === 'enum' || type === 'enumArray') {
-                Object.entries(optionColors).forEach(([option, color]) => {
-                    if (!color) return;
+                Object.entries(optionColors).forEach(([option, enumColor]) => {
+                    if (!enumColor) return;
                     if (!enumPropertiesColors) enumPropertiesColors = {};
                     if (!enumPropertiesColors[name]) enumPropertiesColors[name] = {};
-                    enumPropertiesColors[name][option] = color;
+                    enumPropertiesColors[name][option] = enumColor;
                 });
             }
         },
@@ -265,8 +295,12 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
             relationshipReference,
             archive,
             mapSearch,
+            hideFromDetailsPage,
+            color,
+            comment,
         }) => {
             if (deleted) return;
+            if (type === 'comment' && !comment) return;
 
             let propertyType: IEntitySingleProperty['type'];
             switch (type) {
@@ -295,6 +329,8 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                 readOnly,
                 archive,
                 identifier,
+                hideFromDetailsPage,
+                color: comment && !color ? '#4752B6' : color,
                 uniqueItems: type === 'enumArray' || type === 'users' ? true : undefined,
                 pattern: type === 'pattern' ? pattern : undefined,
                 patternCustomErrorMessage: type === 'pattern' ? patternCustomErrorMessage : undefined,
@@ -312,6 +348,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                           relatedTemplateField: relationshipReference!.relatedTemplateField,
                       }
                     : undefined,
+                comment,
             };
 
             if (isEditMode) {
@@ -329,11 +366,11 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
             if (mapSearch) mapSearchProperties.push(name);
             if (type === 'serialNumber') serialsUniqueConstraints.push([name]);
             if (type === 'enum' || type === 'enumArray') {
-                Object.entries(optionColors).forEach(([option, color]) => {
-                    if (!color) return;
+                Object.entries(optionColors).forEach(([option, enumColor]) => {
+                    if (!enumColor) return;
                     if (!enumPropertiesColors) enumPropertiesColors = {};
                     if (!enumPropertiesColors[name]) enumPropertiesColors[name] = {};
-                    enumPropertiesColors[name][option] = color;
+                    enumPropertiesColors[name][option] = enumColor;
                 });
             }
         },
@@ -398,12 +435,24 @@ const createEntityTemplateRequest = async (newEntityTemplate: EntityTemplateWiza
     const entityTemplate = formToJSONSchema(newEntityTemplate, false);
 
     if (newEntityTemplate.icon) {
-        formData.append('file', newEntityTemplate.icon.file as File);
+        if (newEntityTemplate.icon.file instanceof File) {
+            formData.append('file', newEntityTemplate.icon.file);
+        } else if (newEntityTemplate.icon.file?.name) {
+            formData.append('iconFileId', newEntityTemplate.icon.file.name);
+        }
     }
 
-    newEntityTemplate.documentTemplatesIds?.forEach((documentTemplateId) => {
-        formData.append('files', documentTemplateId);
-    });
+    newEntityTemplate.documentTemplatesIds?.filter((item): item is File => item instanceof File).forEach((file) => formData.append('files', file));
+
+    const docTemplateIds = newEntityTemplate.documentTemplatesIds
+        ?.filter((item): item is any | { name: string } => {
+            return typeof item === 'string' || ('name' in item && !(item instanceof File));
+        })
+        .map((item) => (typeof item === 'string' ? item : item.name));
+
+    if (docTemplateIds?.length) {
+        formData.append('documentTemplatesIds', JSON.stringify(docTemplateIds));
+    }
 
     if (entityTemplate.enumPropertiesColors) {
         formData.append('enumPropertiesColors', JSON.stringify(entityTemplate.enumPropertiesColors));
@@ -413,7 +462,9 @@ const createEntityTemplateRequest = async (newEntityTemplate: EntityTemplateWiza
         entityTemplate.propertiesTypeOrder = entityTemplate.propertiesTypeOrder.filter((str) => str !== 'archiveProperties');
     }
 
-    if (entityTemplate.mapSearchProperties) formData.append('mapSearchProperties', JSON.stringify(entityTemplate.mapSearchProperties));
+    if (entityTemplate.mapSearchProperties) {
+        formData.append('mapSearchProperties', JSON.stringify(entityTemplate.mapSearchProperties));
+    }
 
     formData.append('displayName', entityTemplate.displayName);
     formData.append('name', entityTemplate.name);
@@ -439,22 +490,30 @@ const updateEntityTemplateStatusRequest = async (entityTemplateId: string, disab
 const updateEntityTemplateRequest = async (entityTemplateId: string, updatedEntityTemplate: IEntityTemplate | EntityTemplateWizardValues) => {
     const formData = new FormData();
     const entityTemplate: IEntityTemplate =
-        'attachmentProperties' in updatedEntityTemplate // its type is - EntityTemplateWizardValues
+        'attachmentProperties' in updatedEntityTemplate
             ? formToJSONSchema(updatedEntityTemplate as EntityTemplateWizardValues, true)
             : updatedEntityTemplate;
 
     if ('attachmentProperties' in updatedEntityTemplate && updatedEntityTemplate.icon) {
         if (updatedEntityTemplate.icon.file instanceof File) {
             formData.append('file', updatedEntityTemplate.icon.file);
-        } else {
-            formData.append('iconFileId', updatedEntityTemplate.icon.file.name!);
+        } else if (updatedEntityTemplate.icon.file?.name) {
+            formData.append('iconFileId', updatedEntityTemplate.icon.file.name);
         }
     }
 
-    if (updatedEntityTemplate.documentTemplatesIds) {
-        updatedEntityTemplate.documentTemplatesIds.forEach((documentTemplateId) => {
-            if (documentTemplateId instanceof File) formData.append('files', documentTemplateId);
-        });
+    ((updatedEntityTemplate.documentTemplatesIds as (File | string | { name: string })[]) ?? [])
+        .filter((item): item is File => item instanceof File)
+        .forEach((file) => formData.append('files', file));
+
+    const docTemplateIds = ((updatedEntityTemplate.documentTemplatesIds as (File | string | { name: string })[]) ?? [])
+        .filter((item): item is string | { name: string } => {
+            return typeof item === 'string' || ('name' in item && !(item instanceof File));
+        })
+        .map((item) => (typeof item === 'string' ? item : item.name));
+
+    if (docTemplateIds?.length) {
+        formData.append('documentTemplatesIds', JSON.stringify(docTemplateIds));
     }
 
     if (entityTemplate.enumPropertiesColors) {
@@ -465,7 +524,9 @@ const updateEntityTemplateRequest = async (entityTemplateId: string, updatedEnti
         entityTemplate.propertiesTypeOrder = entityTemplate.propertiesTypeOrder.filter((str) => str !== 'archiveProperties');
     }
 
-    if (entityTemplate.mapSearchProperties) formData.append('mapSearchProperties', JSON.stringify(entityTemplate.mapSearchProperties));
+    if (entityTemplate.mapSearchProperties) {
+        formData.append('mapSearchProperties', JSON.stringify(entityTemplate.mapSearchProperties));
+    }
 
     formData.append('displayName', entityTemplate.displayName);
     formData.append('name', entityTemplate.name);
@@ -475,15 +536,6 @@ const updateEntityTemplateRequest = async (entityTemplateId: string, updatedEnti
     formData.append('propertiesTypeOrder', JSON.stringify(entityTemplate.propertiesTypeOrder));
     formData.append('propertiesPreview', JSON.stringify(entityTemplate.propertiesPreview));
     formData.append('uniqueConstraints', JSON.stringify(entityTemplate.uniqueConstraints));
-    if (updatedEntityTemplate.documentTemplatesIds)
-        formData.append(
-            'documentTemplatesIds',
-            JSON.stringify(
-                [...updatedEntityTemplate.documentTemplatesIds]
-                    .filter((fileTemplate) => !(fileTemplate instanceof File))
-                    .map((fileTemplate: string | { name: string }) => (typeof fileTemplate === 'string' ? fileTemplate : fileTemplate.name)),
-            ),
-        );
     const { data } = await axios.put<IMongoEntityTemplatePopulated>(`${entityTemplates}/${entityTemplateId}`, formData);
     return data;
 };

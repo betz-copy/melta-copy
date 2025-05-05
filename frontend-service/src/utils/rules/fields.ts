@@ -11,6 +11,8 @@ import {
 } from '../templates';
 import { IVariable } from '../../interfaces/rules/formula/argument';
 import { getAggVariablesInTree } from './getAggVariablesInTree';
+import { ICurrentUser } from '../../interfaces/users';
+import { getAllAllowedEntities, getAllAllowedRelationships } from '../permissions/templatePermissions';
 
 const entityTemplateToFieldsConfig = (
     entityTemplate: IMongoEntityTemplatePopulated,
@@ -46,7 +48,7 @@ const entityTemplateToFieldsConfig = (
             ]);
         }
 
-        if (value.format !== 'relationshipReference' && value.format !== 'user') {
+        if (value.format !== 'relationshipReference' && value.format !== 'user' && value.format !== 'signature' && value.format !== 'comment') {
             fieldEntries.push([
                 `${keyPrefix}${entityTemplate._id}${keySuffix}-${key}`,
                 {
@@ -169,13 +171,19 @@ export const getFieldsConfigOfRule = (
     entityTemplates: IEntityTemplateMap,
     relationshipTemplates: IRelationshipTemplateMap,
     formula: ImmutableTree,
+    currentUser: ICurrentUser,
 ): Fields => {
-    const entityTemplate = entityTemplates.get(entityTemplateId)!;
+    const allowedEntityTemplates = getAllAllowedEntities(Array.from(entityTemplates.values()), currentUser);
+    const entityTemplate = allowedEntityTemplates.find((entity) => entity._id === entityTemplateId);
+    if (!entityTemplate) throw new Error('entity template doesnt exist');
+
+    const allowedEntityTemplatesIds: string[] = allowedEntityTemplates.map((entity) => entity._id);
+    const allowedRelationships = getAllAllowedRelationships(Array.from(relationshipTemplates.values()), allowedEntityTemplatesIds);
 
     const fieldsOfEntityTemplate = entityTemplateToFieldsConfig(entityTemplate, {});
 
-    const connectedTemplatesWithRelationship = Array.from(relationshipTemplates.values())
-        .map((relationshipTemplate) => populateRelationshipTemplate(relationshipTemplate, entityTemplates))
+    const connectedTemplatesWithRelationship = allowedRelationships
+        .map((relationshipTemplate) => populateRelationshipTemplate(relationshipTemplate, allowedEntityTemplates))
         .filter(
             (relationshipTemplate) =>
                 isRelationshipConnectedToEntityTemplate(entityTemplate, relationshipTemplate) && !relationshipTemplate.isProperty,

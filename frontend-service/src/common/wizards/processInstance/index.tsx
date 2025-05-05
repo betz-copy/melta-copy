@@ -158,7 +158,7 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({
                         }}
                     >
                         <Grid container item flexDirection="column" width="100%" height="100%">
-                            <Grid item>
+                            <Grid item height="5%">
                                 <MeltaTooltip
                                     componentsProps={{
                                         tooltip: {
@@ -185,7 +185,7 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({
                                     />
                                 </MeltaTooltip>
                             </Grid>
-                            <Grid item height="90%">
+                            <Grid item height="95%">
                                 <GeneralDetails
                                     detailsFormikData={detailsFormikData}
                                     processInstance={processInstance}

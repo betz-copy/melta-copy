@@ -6,7 +6,7 @@ import { Field, Form, Formik } from 'formik';
 import i18next from 'i18next';
 import pickBy from 'lodash.pickby';
 import React, { FC } from 'react';
-import { useMutation } from 'react-query';
+import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { ProcessStepValues } from '.';
 import { PermissionScope } from '../../../../interfaces/permissions';
@@ -135,6 +135,7 @@ export const ProcessStep: FC<ProcessStepProps> = ({
 }) => {
     const currentUser = useUserStore((state) => state.user);
     const darkMode = useDarkModeStore((state) => state.darkMode);
+    const queryClient = useQueryClient();
 
     const hasPermissionsToEditStep =
         (currentUser.currentWorkspacePermissions.processes?.scope === PermissionScope.write ||
@@ -149,11 +150,13 @@ export const ProcessStep: FC<ProcessStepProps> = ({
     );
     const templateEntityReferenceProperties = pickBy(stepTemplate.properties.properties, (value) => value.format === 'entityReference');
     const { isLoading: editStepIsLoading, mutateAsync: editStepMutateAsync } = useMutation(
-        (stepData: ProcessStepValues) => updateStepRequest(stepInstance._id, stepData, processInstance._id, stepInstance, templateFileProperties),
+        (stepData: ProcessStepValues) =>
+            updateStepRequest(stepInstance._id, stepData, processInstance._id, stepInstance, stepTemplate.properties.properties),
         {
             onSuccess: (updatedStepInstance) => {
                 toast.success(i18next.t('wizard.processInstance.step.editedSuccessfully'));
                 onStepUpdateSuccess(updatedStepInstance);
+                queryClient.invalidateQueries({ queryKey: ['searchProcesses'] });
             },
             onError: (error: AxiosError) => {
                 toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.processInstance.step.failedToEdit')} />);
@@ -206,9 +209,9 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                 });
 
                 return (
-                    <Grid container flexDirection="column" justifyContent="space-between" width="100%" height="80%">
-                        <Form style={{ height: '100%' }}>
-                            <Grid item container width="100%" height="90%" justifyContent="space-between">
+                    <Form style={{ height: '100%', paddingTop: '10px' }}>
+                        <Grid container flexDirection="column" justifyContent="space-between" width="100%" height="100%" minHeight="320px">
+                            <Grid item container width="100%" height="90%" justifyContent="space-between" flexWrap="nowrap">
                                 <Grid
                                     item
                                     xs={toPrint ? 0 : 7}
@@ -427,7 +430,7 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                     </Grid>
                                 )}
                             </Grid>
-                            <Grid item container width="100%" alignItems="center" justifyContent="space-between">
+                            <Grid item container width="100%" height="10%" alignItems="center" justifyContent="space-between">
                                 <Grid item container justifyContent="flex-start" flexBasis="33%">
                                     <Grid item>
                                         {isTherePrevStep && (
@@ -509,8 +512,8 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                     </Grid>
                                 </Grid>
                             </Grid>
-                        </Form>
-                    </Grid>
+                        </Grid>
+                    </Form>
                 );
             }}
         </Formik>

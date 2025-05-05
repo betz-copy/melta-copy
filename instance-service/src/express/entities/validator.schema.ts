@@ -170,6 +170,21 @@ const searchByTemplateSchema = {
         .default([]),
 };
 
+export const chartSchema = Joi.object({
+    body: Joi.array().items(
+        Joi.object({
+            _id: Joi.string(),
+            xAxis: Joi.any(),
+            yAxis: Joi.any(),
+            filter: searchFilterSchema,
+        }),
+    ),
+    query: {},
+    params: {
+        templateId: Joi.string().required(),
+    },
+});
+
 /*
  * POST /api/instances/entities/search/template/:templateId
  */
@@ -332,7 +347,7 @@ export const updateEntityByIdRequestSchema = Joi.object({
         properties: Joi.object().required(),
         templateId: Joi.string().required(),
         ignoredRules: Joi.array().items(brokenRuleSchema).default([]),
-        userId: Joi.string().required(),
+        userId: Joi.string(),
         convertToRelationshipField: Joi.boolean().default(false),
     },
     query: {},

@@ -1,28 +1,34 @@
 /* eslint-disable no-param-reassign */
 import { mapValues } from 'lodash';
 import axios from '../axios';
+import { EntityWizardValues } from '../common/dialogs/entity';
 import { environment } from '../globals';
+import { IAxisField } from '../interfaces/charts';
 import {
+    ICountSearchResult,
+    IDeleteEntityBody,
     IEntity,
     IEntityExpanded,
-    ISearchBatchBody,
-    ISearchResult,
-    ISearchEntitiesOfTemplateBody,
+    IEntityWithIgnoredRules,
     IExportEntitiesBody,
     IGraphFilterBodyBatch,
-    ISearchEntitiesByTemplatesBody,
+    ISearchBatchBody,
     ISearchEntitiesByLocationBody,
-    IDeleteEntityBody,
-    ICountSearchResult,
-    IEntityWithIgnoredRules,
+    ISearchEntitiesByTemplatesBody,
+    ISearchEntitiesOfTemplateBody,
+    ISearchFilter,
+    ISearchResult,
 } from '../interfaces/entities';
-import { EntityWizardValues } from '../common/dialogs/entity';
 import { IRuleBreach } from '../interfaces/ruleBreaches/ruleBreach';
 import { filterModelToFilterOfGraph } from '../pages/Graph/GraphFilterToBackend';
+import urlToFile from '../common/fileConversions';
 import { IEditReadExcel, ITablesResults } from '../interfaces/excel';
 import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
+import { locationConverterToString } from '../utils/map/convert';
+import { CoordinateSystem } from '../common/inputs/JSONSchemaFormik/RjsfLocationWidget';
 
 const { entities, relationships } = environment.api;
+const { uuidFormat } = environment;
 
 export const exportEntitiesRequest = async (body: IExportEntitiesBody) => {
     const { data } = await axios.post(`${entities}/export`, body, { responseType: 'blob' });
@@ -30,7 +36,7 @@ export const exportEntitiesRequest = async (body: IExportEntitiesBody) => {
 };
 
 export const loadEntitiesRequest = async (
-    templateId: string,
+    template: IMongoEntityTemplatePopulated,
     files?: Record<string, File>,
     insertBrokenEntities?: IEntityWithIgnoredRules[],
 ): Promise<ITablesResults> => {
@@ -39,12 +45,37 @@ export const loadEntitiesRequest = async (
         Object.entries(files).forEach(([key, value]) => {
             formData.append(key, value as Blob);
         });
-    formData.append('templateId', templateId);
+    formData.append('templateId', template._id);
 
     if (insertBrokenEntities) {
         const formattedInsertBrokenEntities = insertBrokenEntities.map((entity) => ({
             templateId: entity.templateId,
-            properties: mapValues(entity.properties, (property) => property),
+            properties: formData.append(
+                'properties',
+                JSON.stringify(
+                    mapValues(entity.properties, (property, key) => {
+                        switch (template.properties.properties[key]?.format) {
+                            case 'relationshipReference':
+                                return property?.properties._id;
+                            case 'location': {
+                                if (!property) return undefined;
+                                const location = JSON.parse(property);
+
+                                if (location.coordinateSystem === CoordinateSystem.UTM)
+                                    return JSON.stringify({
+                                        location: locationConverterToString(location.location),
+                                        coordinateSystem: location.coordinateSystem,
+                                    });
+                                return JSON.stringify(location);
+                            }
+                            case 'signature':
+                                return undefined;
+                            default:
+                                return property;
+                        }
+                    }),
+                ),
+            ),
             ignoredRules: entity.ignoredRules,
         }));
 
@@ -74,14 +105,28 @@ export const editManyEntitiesByExcelRequest = async (
     entitiesToUpdate: IEntityWithIgnoredRules[],
 ): Promise<ITablesResults> => {
     const formData = new FormData();
+    const isUUID = (str: string) => uuidFormat.test(str);
 
     formData.append('templateId', template._id);
 
     const entitiesArray = entitiesToUpdate.map((entity) => ({
         templateId: entity.templateId,
-        properties: mapValues(entity.properties, (property, key) =>
-            template.properties.properties[key]?.format === 'relationshipReference' ? property?.properties._id : property,
-        ),
+        properties: mapValues(entity.properties, (property, key) => {
+            switch (template.properties.properties[key]?.format) {
+                case 'relationshipReference':
+                    return property?.properties._id;
+                case 'location': {
+                    if (!property) return undefined;
+                    return JSON.stringify(property);
+                }
+                case 'signature': {
+                    if (!isUUID(property)) return undefined;
+                    return property;
+                }
+                default:
+                    return property;
+            }
+        }),
         ignoredRules: entity.ignoredRules,
     }));
     formData.append('entities', JSON.stringify(entitiesArray));
@@ -118,8 +163,10 @@ export const getRelationshipInstancesCountByTemplateIdRequest = async (templateI
 
 export const createEntityRequest = async (entity: EntityWizardValues, ignoredRules?: IRuleBreach['brokenRules']) => {
     const formData = new FormData();
-
+    const templateProperties = entity.template.properties.properties;
     const filesToUpload: any = [];
+    const fileUploadPromises: Promise<[string, File]>[] = [];
+
     Object.entries(entity.attachmentsProperties).forEach(([key, value]: [string, any]) => {
         if (Array.isArray(value)) {
             value.forEach((file, index) => {
@@ -133,15 +180,40 @@ export const createEntityRequest = async (entity: EntityWizardValues, ignoredRul
             filesToUpload.push([`${key}`, value]);
         }
     });
+
+    Object.entries(entity.properties).forEach(([key, value]: [string, any]) => {
+        if (templateProperties[key]?.format === 'signature' && value)
+            fileUploadPromises.push(urlToFile(value, templateProperties[key]!.title).then((file) => [key, file]));
+    });
+    filesToUpload.push(...(await Promise.all(fileUploadPromises)));
+
     filesToUpload.forEach(([key, value]) => {
         formData.append(key, value as Blob);
     });
     formData.append(
         'properties',
         JSON.stringify(
-            mapValues(entity.properties, (property, key) =>
-                entity.template.properties.properties[key]?.format === 'relationshipReference' ? property?.properties._id : property,
-            ),
+            mapValues(entity.properties, (property, key) => {
+                switch (entity.template.properties.properties[key]?.format) {
+                    case 'relationshipReference':
+                        return property?.properties._id;
+                    case 'location': {
+                        if (!property) return undefined;
+                        const location = JSON.parse(property);
+
+                        if (location.coordinateSystem === CoordinateSystem.UTM)
+                            return JSON.stringify({
+                                location: locationConverterToString(location.location),
+                                coordinateSystem: location.coordinateSystem,
+                            });
+                        return JSON.stringify(location);
+                    }
+                    case 'signature':
+                        return undefined;
+                    default:
+                        return property;
+                }
+            }),
         ),
     );
     formData.append('templateId', entity.template._id);
@@ -164,15 +236,20 @@ export const updateEntityRequestForMultiple = async (
     newEntityData: EntityWizardValues,
     ignoredRules?: IRuleBreach['brokenRules'],
 ) => {
+    const isUUID = (str: string) => uuidFormat.test(str);
     const formData = new FormData();
 
     const filesToUpload: any = [];
     const unchangedFiles: any = []; /// //send single file as array to the back
 
+    const properties = Object.entries(newEntityData.properties);
+    const templateProperties = newEntityData.template.properties.properties;
+    const fileUploadPromises: Promise<[string, File]>[] = [];
+
     Object.entries(newEntityData.attachmentsProperties).forEach(([key, value]: [string, any]) => {
         if (Array.isArray(value) && value) {
             value.forEach((file, index) => {
-                if (file instanceof File && newEntityData.template.properties.properties[key].items) {
+                if (file instanceof File && templateProperties[key].items) {
                     filesToUpload.push([`${key}.${index}`, file]);
                 } else if (file instanceof File) {
                     filesToUpload.push([`${key}`, file]);
@@ -188,6 +265,18 @@ export const updateEntityRequestForMultiple = async (
             }
         }
     });
+
+    for (const [key, value] of properties) {
+        if (templateProperties[key]?.format === 'signature') {
+            if (value && isUUID(value)) {
+                unchangedFiles.push([key, { name: value }]);
+            } else if (value) {
+                fileUploadPromises.push(urlToFile(value, templateProperties[key]!.title).then((file) => [key, file]));
+            }
+        }
+    }
+    filesToUpload.push(...(await Promise.all(fileUploadPromises)));
+
     filesToUpload.forEach(([key, value]) => {
         formData.append(key, value);
     });
@@ -210,9 +299,30 @@ export const updateEntityRequestForMultiple = async (
     formData.append(
         'properties',
         JSON.stringify(
-            mapValues(newEntityData.properties, (property, key) =>
-                newEntityData.template.properties.properties[key]?.format === 'relationshipReference' ? property?.properties._id : property,
-            ),
+            // eslint-disable-next-line consistent-return
+            mapValues(newEntityData.properties, (property, key) => {
+                switch (newEntityData.template.properties.properties[key]?.format) {
+                    case 'relationshipReference':
+                        return property?.properties._id;
+                    case 'location': {
+                        if (!property) return undefined;
+                        const location = typeof property === 'string' && property.includes('location') ? JSON.parse(property) : property;
+
+                        if (location.coordinateSystem === CoordinateSystem.UTM)
+                            return JSON.stringify({
+                                location: locationConverterToString(location.location),
+                                coordinateSystem: location.coordinateSystem,
+                            });
+                        return JSON.stringify(location);
+                    }
+                    case 'signature': {
+                        if (!isUUID(property)) return undefined;
+                        break;
+                    }
+                    default:
+                        return property;
+                }
+            }),
         ),
     );
 
@@ -276,11 +386,30 @@ export const duplicateEntityRequest = async (entityId: string, newEntityData: En
     formData.append(
         'properties',
         JSON.stringify(
-            mapValues(newEntityData.properties, (property, key) =>
-                newEntityData.template.properties.properties[key].format === 'relationshipReference' ? property?.properties._id : property,
-            ),
+            mapValues(newEntityData.properties, (property, key) => {
+                switch (newEntityData.template.properties.properties[key]?.format) {
+                    case 'relationshipReference':
+                        return property?.properties._id;
+                    case 'location': {
+                        if (!property) return undefined;
+                        const location = typeof property === 'string' && property.includes('location') ? JSON.parse(property) : property;
+
+                        if (location.coordinateSystem === CoordinateSystem.UTM)
+                            return JSON.stringify({
+                                location: locationConverterToString(location.location),
+                                coordinateSystem: location.coordinateSystem,
+                            });
+                        return JSON.stringify(location);
+                    }
+                    case 'signature':
+                        return undefined;
+                    default:
+                        return property;
+                }
+            }),
         ),
     );
+
     formData.append('templateId', newEntityData.template._id);
 
     if (ignoredRules) {
@@ -329,5 +458,16 @@ export const getEntitiesByLocation = async (searchBody: ISearchEntitiesByLocatio
 
 export const exportEntityToDocumentRequest = async (documentTemplateId: string, entityProperties: EntityWizardValues['properties']) => {
     const { data } = await axios.post<Blob>(`${entities}/export/document`, { documentTemplateId, entityProperties }, { responseType: 'blob' });
+    return data;
+};
+
+export const getChartOfTemplate = async (
+    xAxis: IAxisField,
+    yAxis: IAxisField | undefined,
+    templateId: string,
+    filter?: ISearchFilter<Record<string, any>>,
+) => {
+    const { data } = await axios.post<{ x: any; y: number }[][]>(`${entities}/chart/${templateId}`, [{ xAxis, yAxis, filter }]);
+
     return data;
 };

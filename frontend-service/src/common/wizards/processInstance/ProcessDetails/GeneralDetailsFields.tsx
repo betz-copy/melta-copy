@@ -38,7 +38,7 @@ export const GeneralDetailsFields = ({
     };
 
     return (
-        <Grid item>
+        <Grid item width="100%">
             {!viewMode && (
                 <BlueTitle
                     title={i18next.t('wizard.processInstance.generalDetails')}
@@ -47,13 +47,14 @@ export const GeneralDetailsFields = ({
                     style={{ marginBottom: '30px', marginTop: '20px', fontSize: '16px' }}
                 />
             )}
-            <Grid container spacing={3}>
+            <Grid container spacing={3} width="100%">
                 <Grid item width="100%">
                     <Autocomplete
                         id="template"
                         options={Array.from(processTemplatesMap.values())}
                         onChange={(_e, newValue) => {
                             setFieldValue('template', newValue);
+                            setFieldValue('details', {});
                         }}
                         value={values.template ?? null}
                         disabled={Boolean(isEditMode && processInstance)}

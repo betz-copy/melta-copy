@@ -9,6 +9,7 @@ import {
     getAllTemplatesSchema,
     getEntityTemplateByIdSchema,
     getTemplatesUsingRelationshipReferanceSchema,
+    searchEntityTemplatesByFormatSchema,
     searchEntityTemplatesSchema,
     updateEntityTemplateActionSchema,
     updateEntityTemplateSchema,
@@ -20,6 +21,9 @@ const entityTemplateRouter: Router = Router();
 
 const controller = createController(EntityTemplateController);
 const validatorController = createController(EntityTemplateValidator, true);
+
+
+entityTemplateRouter.post('/searchByFormat', ValidateRequest(searchEntityTemplatesByFormatSchema), controller.searchEntityTemplatesIncludesFormat);
 
 entityTemplateRouter.post('/search', ValidateRequest(searchEntityTemplatesSchema), controller.searchEntityTemplates);
 
@@ -33,7 +37,7 @@ entityTemplateRouter.get(
     controller.getTemplatesUsingRelationshipReferance,
 );
 
-entityTemplateRouter.post('/', ValidateRequest(createEntityTemplateSchema), controller.createEntityTemplate);
+entityTemplateRouter.post('/', ValidateRequest(createEntityTemplateSchema), validatorController.validateCreateEntityTemplate, controller.createEntityTemplate);
 
 entityTemplateRouter.delete('/:templateId', ValidateRequest(deleteEntityTemplateSchema), controller.deleteEntityTemplate);
 

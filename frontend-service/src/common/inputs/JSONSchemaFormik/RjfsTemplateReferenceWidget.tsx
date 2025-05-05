@@ -1,6 +1,8 @@
 import React from 'react';
 import { WidgetProps } from '@rjsf/utils';
 import { useQueryClient } from 'react-query';
+import { TextField } from '@mui/material';
+import i18next from 'i18next';
 import TemplateEntitiesAutocomplete from '../TemplateEntitiesAutocomplete';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { IEntity } from '../../../interfaces/entities';
@@ -19,6 +21,7 @@ const RjfsTemplateReferenceWidget = ({
     schema,
     uiSchema,
     formContext,
+    placeholder,
     ...widgetProps
 }: WidgetProps) => {
     const [inputValue, setInputValue] = React.useState('');
@@ -34,11 +37,27 @@ const RjfsTemplateReferenceWidget = ({
     const handleEntityInputChange = (_event: React.SyntheticEvent, newDisplayValue: string) => setInputValue(newDisplayValue);
 
     const handleBlur = () => onBlur(id, inputValue);
+    const relatedEntityTemplate = entityTemplates.get(schema.relationshipReference.relatedTemplateId);
+
+    if (!relatedEntityTemplate)
+        return (
+            <TextField
+                color="primary"
+                fullWidth
+                id={id}
+                placeholder={placeholder}
+                label={schema.title}
+                required={required}
+                disabled
+                value={i18next.t('templateEntitiesAutocomplete.noWritePermissions')}
+                error={rawErrors.length > 0}
+            />
+        );
 
     return (
         <TemplateEntitiesAutocomplete
             {...widgetProps}
-            template={entityTemplates.get(schema.relationshipReference.relatedTemplateId)!}
+            template={relatedEntityTemplate}
             showField={schema.relationshipReference.relatedTemplateField}
             value={value || null}
             label={label}

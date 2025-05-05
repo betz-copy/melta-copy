@@ -1,22 +1,23 @@
 import config from '../../config';
+import { IChartBody } from '../dashboardService/chartService';
 import { IMongoRule } from '../../express/templates/rules/interfaces';
 import DefaultExternalServiceApi from '../../utils/express/externalService';
 import { IAction, IBrokenRule } from '../ruleBreachService/interfaces';
+import { ISemanticSearchResult } from '../semanticSearch/interface';
+import { IEntitySingleProperty } from '../templates/entityTemplateService';
 import {
     IConstraintsOfTemplate,
     ICountSearchResult,
     IDeleteBody,
     IEntity,
     ISearchBatchBody,
+    ISearchEntitiesByLocationBody,
     ISearchEntitiesOfTemplateBody,
     ISearchResult,
     ITemplateSearchBody,
     IUniqueConstraintOfTemplate,
-    ISearchEntitiesByLocationBody,
 } from './interfaces/entities';
-import { IEntitySingleProperty } from '../templates/entityTemplateService';
 import { IRelationship } from './interfaces/relationships';
-import { ISemanticSearchResult } from '../semanticSearch/interface';
 
 const {
     instanceService: {
@@ -74,7 +75,7 @@ export class InstancesService extends DefaultExternalServiceApi {
         return data;
     }
 
-    async updateEntityInstance(id: string, entity: IEntity, ignoredRules: IBrokenRule[], userId: string, convertToRelationshipField = false) {
+    async updateEntityInstance(id: string, entity: IEntity, ignoredRules: IBrokenRule[], userId?: string, convertToRelationshipField = false) {
         const { data } = await this.api.put<{ updatedEntity: IEntity; actions?: IAction[] }>(`${baseEntitiesRoute}/${id}`, {
             ...entity,
             ignoredRules,
@@ -134,6 +135,15 @@ export class InstancesService extends DefaultExternalServiceApi {
 
         return data;
     }
+
+    getChartsOfTemplate = async (templateId: string, chartsData: IChartBody[]) => {
+        const { data } = await this.api.post<{ _id: string; chart: { x: any; y: number }[] }[]>(
+            `${baseEntitiesRoute}/chart/${templateId}`,
+            chartsData,
+        );
+
+        return data;
+    };
 
     // relationships instances
     async getRelationshipInstanceById(id: string) {

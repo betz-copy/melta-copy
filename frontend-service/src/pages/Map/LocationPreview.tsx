@@ -6,12 +6,13 @@ import { useQueryClient } from 'react-query';
 import { IEntity } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { useEntityWithLocationFields } from '../../utils/hooks/useLocation';
-import { cartesian3ToString, jerusalemCoordinates } from '../../utils/map';
+import { locationToWGS84String, jerusalemCoordinates } from '../../utils/map';
 import { BaseLayers } from './BaseLayers';
 import { BackendConfigState } from '../../services/backendConfigService';
+import { convertWGS94ToECEF } from '../../utils/map/convert';
 
 export const MeltaPolygon = ({ name, polygon, onClick }: { name: string; polygon: Cartesian3[]; onClick?: () => void }) => (
-    <Entity name={name} description={cartesian3ToString(polygon)} onClick={onClick}>
+    <Entity name={name} description={locationToWGS84String(polygon)} onClick={onClick}>
         <PolylineGraphics positions={[...polygon, polygon[0]]} material={Color.fromCssColorString('#11695a')} width={3} />
         <PolygonGraphics hierarchy={polygon} material={Color.fromAlpha(Color.GRAY, 0.3)} />
         {polygon.map((position, index) => (
@@ -24,7 +25,7 @@ export const MeltaPolygon = ({ name, polygon, onClick }: { name: string; polygon
 );
 
 export const MeltaCoordinate = ({ name, position, onClick }: { name: string; position: Cartesian3; onClick?: () => void }) => (
-    <Entity name={name} description={cartesian3ToString(position)} position={position} onClick={onClick}>
+    <Entity name={name} description={locationToWGS84String(position)} position={position} onClick={onClick}>
         <BillboardGraphics image="/icons/location.svg" scale={1} verticalOrigin={Cesium.VerticalOrigin.BOTTOM} />
     </Entity>
 );
@@ -83,13 +84,14 @@ const LocationPreview = ({ entityProperties, entityTemplate }: Props) => {
                 sceneModePicker={false}
                 vrButton={false}
                 fullscreenButton={false}
+                navigationHelpButton={false}
             >
                 {polygons.map(({ key, position: polygon }) => (
                     <MeltaPolygon key={key} name={propertyDefinitions[key].title} polygon={polygon} />
                 ))}
 
                 {markers.map(({ key, position }) => (
-                    <MeltaCoordinate key={key} name={propertyDefinitions[key].title} position={Cartesian3.fromDegrees(position.x, position.y, 0)} />
+                    <MeltaCoordinate key={key} name={propertyDefinitions[key].title} position={convertWGS94ToECEF(position) as Cartesian3} />
                 ))}
 
                 <div style={{ position: 'absolute', top: '10px', left: '10px', display: 'flex', gap: '15px' }}>

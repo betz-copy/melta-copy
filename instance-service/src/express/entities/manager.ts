@@ -22,11 +22,13 @@ import { IMongoRule } from '../../externalServices/templates/interfaces/rules';
 import { RelationshipsTemplateManagerService } from '../../externalServices/templates/relationshipTemplateManager';
 import { executeActionCodeAndGetEntitiesToUpdate } from '../../utils/actions/executeScript';
 import { isBodyFunctionHasContent } from '../../utils/actions/isBodyFunctionHasContent';
+import { buildChartAggregationQuery, handleChartPropertiesTemplate, manipulateReturnedChart } from '../../utils/templateCharts';
 import { arraysEqualsNonOrdered } from '../../utils/lib';
 import { expandEntityToNeoQuery, getExpandedFilteredGraphRecursively } from '../../utils/neo4j/getExpandedEntityByIdRecursive';
 import {
     generateDefaultProperties,
     getNeo4jDateTime,
+    normalizeChartResponse,
     normalizeGetDbConstraints,
     normalizeNeighborsOfEntityForRule,
     normalizeResponseCount,
@@ -38,7 +40,7 @@ import {
     runInTransactionAndNormalize,
 } from '../../utils/neo4j/lib';
 import DefaultManagerNeo4j from '../../utils/neo4j/manager';
-import { escapeNeo4jQuerySpecialChars, searchWithRelationshipsToNeoQuery } from '../../utils/neo4j/searchBodyToNeoQuery';
+import { escapeNeo4jQuerySpecialChars, searchWithRelationshipsToNeoQuery, templatesFilterToNeoQuery } from '../../utils/neo4j/searchBodyToNeoQuery';
 import { ActionTypes, IAction, ICreateEntityMetadata, IDuplicateEntityMetadata, IUpdateEntityMetadata } from '../bulkActions/interface';
 import BulkActionManager from '../bulkActions/manager';
 import { BadRequestError, NotFoundError, ServiceError, ValidationError } from '../error';
@@ -50,6 +52,7 @@ import { runRulesOnEntity } from '../rules/runRulesOnEntity';
 import { throwIfActionCausedRuleFailures } from '../rules/throwIfActionCausedRuleFailures';
 import {
     EntitiesIdsRulesReasonsMap,
+    IChartBody,
     IConstraint,
     IConstraintsOfTemplate,
     IDeleteBody,
@@ -60,12 +63,12 @@ import {
     IGetExpandedEntityBody,
     IRequiredConstraint,
     ISearchBatchBody,
+    ISearchEntitiesByLocationBody,
     ISearchEntitiesByTemplatesBody,
     ISearchEntitiesOfTemplateBody,
     IUniqueConstraint,
     IUniqueConstraintOfTemplate,
     RunRuleReason,
-    ISearchEntitiesByLocationBody,
 } from './interface';
 import { addStringFieldsAndNormalizeSpecialStringValues } from './validator.template';
 
@@ -238,7 +241,7 @@ export class EntityManager extends DefaultManagerNeo4j {
         transaction: Transaction,
         properties: IEntity['properties'],
         entityTemplate: IMongoEntityTemplate,
-        userId: string,
+        userId?: string,
         duplicatedFromId?: string,
     ) {
         const fixedProperties = JSON.parse(JSON.stringify(properties));
@@ -288,13 +291,15 @@ export class EntityManager extends DefaultManagerNeo4j {
 
         const allActivityLogsToCreate: Omit<IActivityLog, '_id'>[] = [];
 
-        allActivityLogsToCreate.push({
-            action: duplicatedFromId ? ActionsLog.DUPLICATE_ENTITY : ActionsLog.CREATE_ENTITY,
-            entityId: createdEntity.properties._id,
-            metadata: duplicatedFromId ? { entityIdDuplicatedFrom: duplicatedFromId } : {},
-            timestamp: new Date(),
-            userId,
-        });
+        if (userId) {
+            allActivityLogsToCreate.push({
+                action: duplicatedFromId ? ActionsLog.DUPLICATE_ENTITY : ActionsLog.CREATE_ENTITY,
+                entityId: createdEntity.properties._id,
+                metadata: duplicatedFromId ? { entityIdDuplicatedFrom: duplicatedFromId } : {},
+                timestamp: new Date(),
+                userId,
+            });
+        }
 
         return { createdEntity, activityLogsToCreate: allActivityLogsToCreate };
     }
@@ -317,7 +322,7 @@ export class EntityManager extends DefaultManagerNeo4j {
         relatedEntity: IEntity,
         originalEntityId: string,
         transaction: Transaction,
-        userId: string,
+        userId?: string,
     ) {
         const { relationshipTemplateId, relationshipTemplateDirection, relatedTemplateId } = relationshipReference;
 
@@ -419,8 +424,8 @@ export class EntityManager extends DefaultManagerNeo4j {
     async createOrDuplicateAction(
         metadata: ICreateEntityMetadata,
         transaction: Transaction,
-        userId: string,
         entitiesTemplatesByIds: Map<string, IMongoEntityTemplate>,
+        userId?: string,
     ) {
         const { properties, templateId } = metadata;
         const entityTemplate = entitiesTemplatesByIds.get(templateId)!;
@@ -431,8 +436,8 @@ export class EntityManager extends DefaultManagerNeo4j {
     async updateAction(
         metadata: IUpdateEntityMetadata,
         transaction: Transaction,
-        userId: string,
         entitiesTemplatesByIds: Map<string, IMongoEntityTemplate>,
+        userId?: string,
     ) {
         const { entityId } = metadata;
         const entity = await this.getEntityByIdInTransaction(entityId, transaction);
@@ -446,8 +451,8 @@ export class EntityManager extends DefaultManagerNeo4j {
     async executeEntityTemplateActionOnInstanceCrud(
         { actionType, actionMetadata }: IAction,
         crudAction: IEntityCrudAction,
-        userId: string,
         entitiesTemplatesByIds: Map<string, IMongoEntityTemplate>,
+        userId?: string,
     ): Promise<IExecutionOutput[]> {
         return this.neo4jClient.performComplexTransaction(
             'writeTransaction',
@@ -457,15 +462,15 @@ export class EntityManager extends DefaultManagerNeo4j {
                     () => Promise<IEntity | undefined>
                 > = {
                     [ActionTypes.CreateEntity]: async () =>
-                        this.createOrDuplicateAction(actionMetadata as ICreateEntityMetadata, transaction, userId, entitiesTemplatesByIds),
+                        this.createOrDuplicateAction(actionMetadata as ICreateEntityMetadata, transaction, entitiesTemplatesByIds, userId),
                     [ActionTypes.DuplicateEntity]: async () =>
-                        this.createOrDuplicateAction(actionMetadata as ICreateEntityMetadata, transaction, userId, entitiesTemplatesByIds),
+                        this.createOrDuplicateAction(actionMetadata as ICreateEntityMetadata, transaction, entitiesTemplatesByIds, userId),
                     [ActionTypes.UpdateEntity]: async () => {
                         const { updatedEntity } = await this.updateAction(
                             actionMetadata as IUpdateEntityMetadata,
                             transaction,
-                            userId,
                             entitiesTemplatesByIds,
+                            userId,
                         );
                         return updatedEntity;
                     },
@@ -571,7 +576,7 @@ export class EntityManager extends DefaultManagerNeo4j {
         crudAction: IEntityCrudAction,
         properties: IEntity['properties'],
         entityTemplate: IMongoEntityTemplate,
-        userId: string,
+        userId?: string,
         entity?: IEntity,
         duplicatedFromId?: string,
     ) => {
@@ -579,7 +584,7 @@ export class EntityManager extends DefaultManagerNeo4j {
 
         const mainAction = this.buildMainAction(crudAction, properties, entityTemplate, entity, duplicatedFromId);
 
-        const entitiesToUpdate = await this.executeEntityTemplateActionOnInstanceCrud(mainAction, crudAction, userId, entitiesTemplatesByIds);
+        const entitiesToUpdate = await this.executeEntityTemplateActionOnInstanceCrud(mainAction, crudAction, entitiesTemplatesByIds, userId);
 
         const actionsOfUpdatedEntities = await this.buildUpdatedActions(properties, entityTemplate, entitiesToUpdate, entitiesTemplatesByIds);
 
@@ -1033,8 +1038,8 @@ export class EntityManager extends DefaultManagerNeo4j {
 
                     relationshipReferencesToDelete.push({
                         relationshipReference: relationshipReference!,
-                        originalEntityId: sourceEntityId,
-                        relatedEntityId: destinationEntityId,
+                        originalEntityId: relationshipReference!.relationshipTemplateDirection === 'incoming' ? destinationEntityId : sourceEntityId,
+                        relatedEntityId: relationshipReference!.relationshipTemplateDirection === 'incoming' ? sourceEntityId : destinationEntityId,
                     });
                 } else if (!deleteAllRelationships) {
                     entityCanDelete = false;
@@ -1524,7 +1529,7 @@ export class EntityManager extends DefaultManagerNeo4j {
         entityProperties: Record<string, any>,
         entityTemplate: IMongoEntityTemplate,
         ignoredRules: IBrokenRule[],
-        userId: string,
+        userId?: string,
         convertToRelationshipField = false,
     ) {
         const entity = await this.getEntityById(id);
@@ -2029,7 +2034,7 @@ export class EntityManager extends DefaultManagerNeo4j {
 
             if (type !== 'string') propertiesToRemove.push(`${property}${config.neo4j.stringPropertySuffix}`);
             if (type === 'boolean') propertiesToRemove.push(`${property}${config.neo4j.booleanPropertySuffix}`);
-            if (format === 'fileId' || (type === 'array' && items?.format === 'fileId'))
+            if (format === 'fileId' || (type === 'array' && items?.format === 'fileId') || format === 'signature')
                 propertiesToRemove.push(`${property}${config.neo4j.filePropertySuffix}`);
 
             if (format !== 'relationshipReference') continue;
@@ -2053,5 +2058,24 @@ export class EntityManager extends DefaultManagerNeo4j {
 
     getDependentRules(rules: IMongoRule[], relationshipTemplateId: string) {
         return filterDependentRulesViaAggregation(rules, relationshipTemplateId);
+    }
+
+    async getChart(templateId: string, chartBody: IChartBody[]) {
+        const entityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(templateId);
+        const entityTemplatesMap = new Map([[templateId, entityTemplate]]);
+        const specialProperties = handleChartPropertiesTemplate(entityTemplate);
+
+        const chartPromises = chartBody.map(async ({ filter, xAxis, yAxis, _id }) => {
+            const templatesFilter = { [templateId]: { filter, showRelationships: false } };
+            const { cypherQuery: filterQuery, parameters } = templatesFilterToNeoQuery(templatesFilter, entityTemplatesMap);
+
+            const query = buildChartAggregationQuery(xAxis, yAxis, specialProperties, entityTemplate, filterQuery);
+            const chart = await this.neo4jClient.readTransaction(query, normalizeChartResponse, parameters);
+            const manipulatedChart = await manipulateReturnedChart(xAxis, chart, entityTemplate, this.workspaceId);
+
+            return _id ? { _id, chart: manipulatedChart } : manipulatedChart;
+        });
+
+        return Promise.all(chartPromises);
     }
 }

@@ -23,8 +23,6 @@ const FlowCubeRouter: Router = Router();
 const FlowCubeControllerMiddleware = createWorkspacesController(FlowCubeController);
 const InstancesValidatorMiddleware = createWorkspacesController(InstancesValidator, true);
 
-FlowCubeRouter.use(validateFlowHeaders);
-
 // entities
 FlowCubeRouter.post(
     '/:workspaceId/entities/search/template/:templateId',
@@ -34,11 +32,9 @@ FlowCubeRouter.post(
     FlowCubeControllerMiddleware.searchFlowCube,
 );
 
-FlowCubeRouter.post(
-    '/workspaces/search',
-    ValidateRequest(searchWorkspacesSchema),
-    wrapMiddleware((req, res) => FlowCubeController.searchWorkspaces(req, res!)),
-);
+FlowCubeRouter.use(validateFlowHeaders);
+
+FlowCubeRouter.post('/workspaces/search', ValidateRequest(searchWorkspacesSchema), FlowCubeController.searchWorkspaces);
 
 FlowCubeRouter.post(
     '/categories/search',

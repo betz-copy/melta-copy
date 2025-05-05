@@ -4,12 +4,20 @@ import { Close } from '@mui/icons-material';
 import { MeltaCheckbox } from '../../common/MeltaCheckbox';
 import { ColoredEnumChip } from '../../common/ColoredEnumChip';
 
+export interface Option {
+    value: string;
+    label: string;
+}
+
 interface SelectCellEditorProps {
-    values: string[];
+    options: string[];
     value?: string | string[];
     onValueChange: (newValue: string | string[] | null) => void;
     multiple?: boolean;
     colorsOptions?: Record<string, string>;
+    overrideSx?: object;
+    disableClearable?: boolean;
+    label?: string;
 }
 
 const SelectCellEditor: React.FC<SelectCellEditorProps> = ({ values, value, onValueChange, multiple = false, colorsOptions }) => {

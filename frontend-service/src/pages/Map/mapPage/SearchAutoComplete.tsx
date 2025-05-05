@@ -186,7 +186,7 @@ const SearchAutoComplete = ({ selectedTemplates, handleEntityClick, onClear }: p
                         width: 400,
                         borderRadius: '10px',
                     }}
-                    label={i18next.t('globalSearch.searchInPage')}
+                    placeholder={i18next.t('globalSearch.searchInPage')}
                     size="small"
                     variant="outlined"
                 />

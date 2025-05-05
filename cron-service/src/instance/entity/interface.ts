@@ -40,6 +40,17 @@ export interface IFilterOfField {
     $not?: IFilterOfField;
 }
 
+
+export interface ISearchEntitiesOfTemplateBody {
+    skip?: number;
+    limit: number;
+    textSearch?: string;
+    filter?: ISearchFilter;
+    showRelationships?: boolean | Array<IRelationshipTemplate['_id']>;
+    sort?: ISearchSort;
+}
+
+
 export type IFilterOfTemplate<T extends Record<string, any> = Record<string, any>> = {
     [field in keyof T]?: IFilterOfField;
 };
@@ -54,11 +65,8 @@ export type ISearchSort<T extends Record<string, any> = Record<string, any>> = A
     sort: 'asc' | 'desc';
 }>;
 
-export interface ISearchEntitiesOfTemplateBody {
-    skip?: number;
-    limit: number;
-    textSearch?: string;
-    filter?: ISearchFilter;
-    showRelationships?: boolean | Array<IRelationshipTemplate['_id']>;
-    sort?: ISearchSort;
+export interface ISearchEntitiesByTemplatesBody {
+    searchConfigs: {
+        [templateId: string]: ISearchEntitiesOfTemplateBody;
+    };
 }

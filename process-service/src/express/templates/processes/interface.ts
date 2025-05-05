@@ -7,6 +7,7 @@ export enum ProcessPropertyFormats {
     FileId = 'fileId',
     EntityReference = 'entityReference',
     TextArea = 'text-area',
+    Signature = 'signature',
 }
 
 export interface IProcessSingleProperty {

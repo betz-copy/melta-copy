@@ -56,7 +56,10 @@ const ChooseTemplate: React.FC<{
         <Autocomplete
             id="template"
             options={activeEntityTemplatesFiltered}
-            onChange={(_e, value) => setFieldValue('template', value || emptyEntityTemplate)}
+            onChange={(_e, value) => {
+                setFieldValue('template', value || emptyEntityTemplate);
+                setFieldValue('properties', {});
+            }}
             value={values.template._id ? values.template : null}
             disabled={disabled}
             getOptionLabel={(option) => option.displayName}

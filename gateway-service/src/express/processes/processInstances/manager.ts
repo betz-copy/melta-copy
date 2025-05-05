@@ -111,7 +111,7 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
         const details = await this.getPropertiesWithEntities(process.details, processTemplate.details.properties, userId);
 
         const result = await Promise.all(
-            process.steps.map((step) => this.stepsInstancesManager.getStepInstanceWithEntitesAndReviewers(step, userId)),
+            process.steps.map((step) => this.stepsInstancesManager.getStepInstanceWithEntitiesAndReviewers(step, userId)),
         ).then(async (populatedSteps) => {
             const populatedProcess = {
                 ...process,
@@ -205,22 +205,15 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
         const processTemplate = await this.service.getProcessTemplateById(currProcessInstance.templateId);
 
         if (processData.details) this.checkEntityReferenceFields(processData.details, processTemplate.details.properties);
-        if (!files.length) {
-            const updatedProcess = await this.service.updateProcessInstance(processId, processData, userId);
-            const updatedPopulatedProcess = await this.getPopulatedProcess(updatedProcess, userId);
-
-            await Promise.allSettled([
-                this.sendProcessReviewerUpdateNotification([updatedProcess._id], updatedPopulatedProcess.steps, currProcessInstance.steps),
-            ]);
-            return updatedPopulatedProcess;
-        }
 
         const { props, files: filesToUpload } = await this.instancesManager.uploadInstanceFiles(files, processData.details);
 
-        const updatedProcessInstance = {
-            ...processData,
-            details: props,
-        };
+        const updatedProcessInstance = !files.length
+            ? processData
+            : {
+                  ...processData,
+                  details: props,
+              };
 
         if (props) {
             await this.removeUnusedFileIds(processTemplate.details.properties, currProcessInstance.details, updatedProcessInstance.details);
@@ -279,7 +272,7 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
         const fileIds: string[] = [];
 
         Object.entries(templateProperties.properties || {}).forEach(([key, value]) => {
-            if (value.format === PropertyFormats.FileId && instanceProperties[key]) {
+            if ((value.format === PropertyFormats.FileId || value.format === PropertyFormats.Signature) && instanceProperties[key]) {
                 fileIds.push(instanceProperties[key]);
             } else if (value.items?.format === PropertyFormats.FileId && instanceProperties[key]) {
                 fileIds.push(...instanceProperties[key]);

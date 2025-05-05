@@ -27,10 +27,21 @@ import {
 } from '../../externalServices/ruleBreachService/interfaces/populated';
 import config from '../../config';
 import { UploadedFile } from '../busboy/interface';
+import {
+    CoordinateSystem,
+    extractUtmLocation,
+    getCoordinateSystem,
+    isValidUTM,
+    isValidWGS84,
+    locationConverterToString,
+    stringToCoordinates,
+} from './map';
 
 const { invalidDate, invalidTime } = config.loadExcel;
 
-const formatExcel = (value: Excel.CellValue | string, propertyTemplate: IEntitySingleProperty) => {
+export const locationFormatError = 'location format not valid';
+
+const formatExcel = (value: Excel.CellValue | string, propertyTemplate: IEntitySingleProperty, isEditMode: boolean) => {
     const { type, format } = propertyTemplate;
     if (value === null) return undefined;
 
@@ -44,6 +55,22 @@ const formatExcel = (value: Excel.CellValue | string, propertyTemplate: IEntityS
             if (format === 'date') return new Date(value as string).toLocaleDateString('en-CA');
             if (format === 'date-time') return new Date(value as string).toISOString();
             if (format === 'fileId') return (value as CellModel).text;
+            if (format === 'location') {
+                const locationString = value as string;
+                const coordinateSystem = getCoordinateSystem(locationString);
+
+                if (coordinateSystem === CoordinateSystem.WGS84) {
+                    const wgs84Location = stringToCoordinates(locationString).value;
+                    if (!isValidWGS84(wgs84Location)) throw new BadRequestError(locationFormatError);
+                    const location = { location: locationString, coordinateSystem };
+                    return isEditMode ? location : JSON.stringify(location);
+                }
+                const utmLocation = extractUtmLocation(locationString);
+
+                if (!isValidUTM(utmLocation)) throw new BadRequestError(locationFormatError);
+                const location = { location: locationConverterToString(locationString), coordinateSystem };
+                return isEditMode ? location : JSON.stringify(location);
+            }
             return value?.toString();
         case 'array':
             if (propertyTemplate.items && propertyTemplate.items.type === 'string' && typeof value === 'object' && 'richText' in value)
@@ -62,16 +89,23 @@ export const isIncludedColumn = (propertyTemplate: IEntitySingleProperty) => {
     const isRelationshipRef = propertyTemplate.format === 'relationshipReference' || propertyTemplate.relationshipReference;
     const isFile = propertyTemplate.format === 'fileId' || (propertyTemplate.type === 'array' && propertyTemplate.items?.format === 'fileId');
     const isSerialNumber = propertyTemplate.type === 'number' && propertyTemplate.serialCurrent;
+    const isSignature = propertyTemplate.format === 'signature';
     const isUser = propertyTemplate.format === 'user';
     const isUsers = propertyTemplate.items?.format === 'user';
-    return !isRelationshipRef && !isFile && !isSerialNumber && !isUser && !isUsers;
+    const isComment = propertyTemplate.format === 'comment';
+    const isKartoffelUserField = propertyTemplate.format === 'kartoffelUserField';
+
+    return !isRelationshipRef && !isFile && !isSerialNumber && !isUser && !isUsers && !isSignature && !isComment && !isKartoffelUserField;
 };
+
+export const isIncludedEditColumn = (propertyTemplate: IEntitySingleProperty, entityDisabled: boolean, templateDisabled: boolean) =>
+    !propertyTemplate.readOnly && !propertyTemplate.identifier && !entityDisabled && !templateDisabled && isIncludedColumn(propertyTemplate);
 
 type IFailedProperties = {
     key: string;
     value: IEntitySingleProperty;
     cellValue: Excel.CellValue;
-    dateOrTime: 'date' | 'date-time';
+    format: 'date' | 'date-time' | 'location';
 }[];
 
 const handleFailedEntities = (rowData: Record<string, any>, failedProperties: IFailedProperties, failedEntities: IFailedEntity[]) => {
@@ -85,10 +119,10 @@ const handleFailedEntities = (rowData: Record<string, any>, failedProperties: IF
 
     const failedEntity: IFailedEntity = {
         properties: failedEntityProperties,
-        errors: failedProperties.map(({ key, value, dateOrTime }) => ({
+        errors: failedProperties.map(({ key, value, format }) => ({
             type: ActionErrors.validation,
             metadata: {
-                message: `must be valid ${dateOrTime ? 'date' : 'date-time'}`,
+                message: `must be valid ${format}`,
                 path: `/${key}`,
                 params: value,
                 schemaPath: `#/properties/${key}/type`,
@@ -108,13 +142,17 @@ const getUpdatedEntity = (
 
     if (!existingEntity) return undefined;
 
-    const hasEntityChanged = Object.keys(entity.properties).some((key) =>
-        isIncludedColumn(template.properties.properties[key])
-            ? JSON.stringify(entity.properties[key]) !== JSON.stringify(existingEntity.entity.properties[key])
-            : false,
+    const changedProperties = Object.fromEntries(
+        Object.entries(entity.properties).filter(([key, value]) => {
+            const propertyTemplate = template.properties.properties[key];
+            return (
+                isIncludedEditColumn(propertyTemplate, existingEntity.entity.properties.disabled, template.disabled) &&
+                JSON.stringify(value) !== JSON.stringify(existingEntity.entity.properties[key])
+            );
+        }),
     );
 
-    if (hasEntityChanged) return { ...entity, properties: { ...existingEntity.entity.properties, ...entity.properties } };
+    if (Object.keys(changedProperties).length) return { ...entity, properties: { ...existingEntity.entity.properties, ...changedProperties } };
     return undefined;
 };
 
@@ -126,6 +164,7 @@ const readExcelFile = async (
     oldEntities: IEntityWithDirectRelationships[] = [],
 ) => {
     const isEditMode = oldEntities.length > 0;
+
     const entities: IEntityWithIgnoredRules[] = [];
     const columns = Object.fromEntries(
         Object.entries(template.properties.properties).filter(([_propertyKey, propertyTemplate]) => isEditMode || isIncludedColumn(propertyTemplate)),
@@ -156,15 +195,19 @@ const readExcelFile = async (
                 Object.entries(columns).forEach(([key, value], columnIndex) => {
                     const cellValue = row.getCell(columnIndex + 1).value;
                     try {
-                        const formatCellValue = formatExcel(cellValue, value);
+                        const formatCellValue = formatExcel(cellValue, value, isEditMode);
                         if (formatCellValue === invalidDate) {
-                            failedProperties.push({ key, value, cellValue, dateOrTime: 'date' });
+                            failedProperties.push({ key, value, cellValue, format: 'date' });
                             isFailed = true;
                         } else rowData[key] = formatCellValue;
                     } catch (error: any) {
                         console.error("there's an error in the entity", { error });
                         if (error.message.includes(invalidTime)) {
-                            failedProperties.push({ key, value, cellValue, dateOrTime: 'date-time' });
+                            failedProperties.push({ key, value, cellValue, format: 'date-time' });
+                            isFailed = true;
+                        }
+                        if (error.message.includes(locationFormatError)) {
+                            failedProperties.push({ key, value, cellValue, format: 'location' });
                             isFailed = true;
                         }
                     }

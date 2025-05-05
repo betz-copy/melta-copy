@@ -9,7 +9,7 @@ import { searchExternalUsersRequest, searchUsersRequest } from '../../services/u
 import { useWorkspaceStore } from '../../stores/workspace';
 import { MeltaTooltip } from '../MeltaTooltip';
 
-interface IUserAutocomplete<TMode = 'internal' | 'external'> {
+export interface IUserAutocomplete<TMode = 'internal' | 'external' | 'kartoffel'> {
     mode: TMode;
     value: IUser | null;
     displayValue?: string;
@@ -29,6 +29,7 @@ interface IUserAutocomplete<TMode = 'internal' | 'external'> {
     required?: boolean;
     autoFocus?: any;
     textFieldProps?: any;
+    overrideSx?: Object;
 }
 
 const UserAutocomplete: React.FC<IUserAutocomplete> = ({
@@ -51,6 +52,7 @@ const UserAutocomplete: React.FC<IUserAutocomplete> = ({
     required,
     autoFocus,
     textFieldProps,
+    overrideSx,
 }) => {
     const workspace = useWorkspaceStore((state) => state.workspace);
     const [internalDisplayValue, setInputValue] = useState<string>(value?.displayName ?? '');
@@ -65,6 +67,7 @@ const UserAutocomplete: React.FC<IUserAutocomplete> = ({
         ['searchUsers', mode, currentDisplayValue],
         () => {
             if (mode === 'external') return searchExternalUsersRequest(currentDisplayValue, workspace._id);
+            if (mode === 'kartoffel') return searchExternalUsersRequest(currentDisplayValue, workspace._id, true);
             return searchUsersRequest({ search: currentDisplayValue || undefined, limit: 10 }).then((baseUsers) => baseUsers.users);
         },
         {
@@ -139,8 +142,8 @@ const UserAutocomplete: React.FC<IUserAutocomplete> = ({
                                 },
                             }),
                         }}
-                        sx={
-                            readOnly
+                        sx={{
+                            ...(readOnly
                                 ? {
                                       '& .MuiOutlinedInput-root.Mui-focused': {
                                           '& > fieldset': {
@@ -155,8 +158,9 @@ const UserAutocomplete: React.FC<IUserAutocomplete> = ({
                                           },
                                       },
                                   }
-                                : {}
-                        }
+                                : {}),
+                            ...overrideSx,
+                        }}
                     />
                 )}
                 readOnly={readOnly}
