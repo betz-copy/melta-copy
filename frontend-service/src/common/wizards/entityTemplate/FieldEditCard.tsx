@@ -153,12 +153,8 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     userPropertiesInTemplate = [],
     onDuplicateKartoffelField,
 }) => {
-    const [errorComment, setErrorComment] = useState(
-        (typeof errors === 'string' && (errors as string)?.includes('comment')) || Boolean(errors?.comment),
-    );
-
-    const theme = createTheme();
-    Object.assign(theme, useMuiRteTheme(errorComment));
+    const queryClient = useQueryClient();
+    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
 
     const isText = value.type === 'string' || value.type === 'text-area';
     const isComment = value.type === 'comment';
@@ -217,6 +213,176 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     const isIdentifierAble = isText || value.type === 'number' || value.type === 'pattern' || value.type === 'serialNumber';
 
     const mapSearchDisabled = !value.mapSearch && locationSearchFields?.disabled;
+
+    const commentColorsObj = Object.entries(commentColors).map(([label, val]) => ({ label, value: val }));
+
+    const isNewProperty = !initialValue;
+    const isDisabled = Boolean(isEditMode && !isNewProperty && areThereAnyInstances);
+
+    const [open, setOpen] = useState<boolean>(false);
+    const [openDelete, setOpenDelete] = useState<boolean>(false);
+
+    const [commentValue, setCommentValue] = useState(getInitialValue(value.comment));
+    const [commentEditorFocused, setCommentEditorFocused] = useState(false);
+    const [rawCommentContent, setRawCommentContent] = useState('');
+    const [errorComment, setErrorComment] = useState(
+        (typeof errors === 'string' && (errors as string)?.includes('comment')) || Boolean(errors?.comment),
+    );
+
+    const [localOption, setLocalOption] = useState<string>('');
+    const [initialOptionArray, setInitialOptionArray] = useState<string[]>(initialValue?.options || []);
+    const [editError, setEditError] = useState<string>('');
+    const [editIndex, setEditIndex] = useState<number | null>(null);
+    const [atLeastOneItem, setAtLeastOneItem] = useState<string | null>(null);
+
+    const chipRefs = useRef<(HTMLDivElement | null)[]>([]);
+    const MemoizedIconButton = React.memo(IconButton);
+
+    const theme = createTheme();
+    Object.assign(theme, useMuiRteTheme(errorComment));
+
+    useEffect(() => {
+        setRawCommentContent(JSON.stringify(convertToRaw(commentValue.getCurrentContent())));
+    }, [commentValue]);
+
+    useEffect(() => {
+        setErrorComment((typeof errors === 'string' && (errors as string)?.includes('comment')) || Boolean(errors?.comment));
+    }, [errors]);
+
+    useEffect(() => {
+        if (!editIndex) setEditError('');
+    }, [editIndex]);
+
+    const relationshipRefs = Array.from(entityTemplates.values()).reduce((acc: IRelationshipReference[], template) => {
+        const properties = template.properties?.properties || {};
+
+        const references = Object.values(properties).reduce((refAcc: IRelationshipReference[], property) => {
+            if (property.format === 'relationshipReference' && property.relationshipReference) refAcc.push(property.relationshipReference);
+
+            return refAcc;
+        }, []);
+
+        return acc.concat(references);
+    }, []);
+
+    const disableRemoveRequire = Boolean(
+        relationshipRefs.find((ref) => ref.relatedTemplateField === value.name && ref.relatedTemplateId === templateId) !== undefined,
+    );
+
+    const handleEditChange = (e, _tagIndex) => {
+        e.preventDefault();
+        setLocalOption(e.target.value);
+        setEditError('');
+    };
+
+    const { mutate: updateEnumField, isLoading } = useMutation(
+        (mutationArgs: { id: string; tagIndex: number; option: string; fieldValue: any }) => {
+            const { id, tagIndex, option, fieldValue } = mutationArgs;
+            return updateEnumFieldRequest(id, fieldValue.options[tagIndex], fieldValue, option);
+        },
+        {
+            onError: () => {
+                if (editIndex !== null) {
+                    setLocalOption('');
+                    setEditIndex(null);
+                }
+                toast.error(<div>{i18next.t('errorPage.updateEnumField')}</div>);
+                setOpen(!open);
+            },
+            onSuccess: (resultOfMutation, { id, option, fieldValue }) => {
+                if (editIndex !== null) {
+                    const indexValue = initialOptionArray.indexOf(fieldValue.options[editIndex]);
+                    if (indexValue !== -1) {
+                        const tempInitialOptionArray = [...initialOptionArray];
+                        tempInitialOptionArray[indexValue] = option;
+                        setInitialOptionArray(tempInitialOptionArray);
+                    }
+                }
+                const frontEndEnumValues = value.options.slice(initialOptionArray.length);
+                const fieldProps = resultOfMutation.properties.properties[fieldValue.name];
+                const newOptions = fieldProps.type === 'array' ? fieldProps.items!.enum! : fieldProps.enum!;
+                queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) => {
+                    const newOptionColors = { ...fieldValue.optionColors };
+                    if (fieldValue.optionColors && Object.keys(fieldValue.optionColors).length > 0 && editIndex != null) {
+                        const newColor = fieldValue.optionColors[fieldValue.options[editIndex]];
+                        delete newOptionColors[fieldValue.options[editIndex]];
+                        newOptionColors[option] = newColor;
+                    }
+                    setValues?.((prev) => ({
+                        ...prev,
+                        options: newOptions.concat(frontEndEnumValues),
+                        optionColors: newOptionColors,
+                    }));
+
+                    entityTemplateMap!.set(id, resultOfMutation);
+                    return entityTemplateMap!;
+                });
+                setEditIndex(null);
+                toast.success(<div>{i18next.t('entityPage.updatedEnumFieldSuccessfully')}</div>);
+                setOpen(!open);
+            },
+        },
+    );
+
+    const { mutate: deleteEnumField, isLoading: isDeleteLoading } = useMutation(
+        (mutationArgs: { id: string; tagIndex: number; fieldValue: any }) => {
+            const { id, tagIndex, fieldValue } = mutationArgs;
+            return deleteEnumFieldRequest(id, fieldValue.options[tagIndex], fieldValue);
+        },
+        {
+            onError: () => {
+                if (editIndex !== null) {
+                    setLocalOption('');
+                    setEditIndex(null);
+                }
+                toast.error(<div>{i18next.t('errorPage.deleteFieldValue')}</div>);
+            },
+            onSuccess: (resultOfMutation, { id, fieldValue }) => {
+                if (editIndex !== null) {
+                    const indexValue = initialOptionArray.indexOf(fieldValue.options[editIndex]);
+                    if (indexValue !== -1) {
+                        const tempInitialOptionArray = [...initialOptionArray];
+                        tempInitialOptionArray.splice(indexValue, 1);
+                        setInitialOptionArray(tempInitialOptionArray);
+                    }
+                }
+                queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) => {
+                    const fieldProps = resultOfMutation.properties.properties[fieldValue.name];
+                    const newOptions = fieldProps.type === 'array' ? fieldProps.items!.enum! : fieldProps.enum!;
+                    const frontEndEnumValues = value.options.slice(newOptions.length + 1);
+                    const newOptionColors = { ...fieldValue.optionColors };
+                    if (fieldValue.optionColors && Object.keys(fieldValue.optionColors).length > 0 && editIndex != null) {
+                        delete newOptionColors[fieldValue.options[editIndex]];
+                    }
+                    setValues?.((prev) => ({
+                        ...prev,
+                        options: newOptions.concat(frontEndEnumValues),
+                        optionColors: newOptionColors,
+                    }));
+                    entityTemplateMap!.set(id, resultOfMutation);
+                    return entityTemplateMap!;
+                });
+                setEditIndex(null);
+                toast.success(<div>{i18next.t('entityPage.deleteEnumFieldSuccessfully')}</div>);
+            },
+        },
+    );
+
+    const handleUpdateEnumField = (id: string, tagIndex: number, option: string, fieldValue: any) => {
+        updateEnumField({ id, tagIndex, option, fieldValue });
+    };
+
+    const handleDeleteEnumField = (id: string, tagIndex: number, fieldValue: any) => {
+        if (fieldValue.options.length <= 1 || initialOptionArray.length <= 1) {
+            setAtLeastOneItem(i18next.t('entityPage.atLeastOneItem'));
+            setEditIndex(null);
+            setTimeout(() => {
+                setAtLeastOneItem(null);
+            }, 2000);
+            return;
+        }
+        deleteEnumField({ id, tagIndex, fieldValue });
+    };
 
     const createNewUniqueGroup = (groupName) => {
         if (groupName) {
@@ -363,169 +529,6 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
         });
     };
 
-    const isNewProperty = !initialValue;
-    const isDisabled = Boolean(isEditMode && !isNewProperty && areThereAnyInstances);
-
-    const [editIndex, setEditIndex] = useState<number | null>(null);
-    const [commentValue, setCommentValue] = useState(getInitialValue(value.comment));
-    const [commentEditorFocused, setCommentEditorFocused] = useState(false);
-    const [rawCommentContent, setRawCommentContent] = useState('');
-
-    useEffect(() => {
-        setRawCommentContent(JSON.stringify(convertToRaw(commentValue.getCurrentContent())));
-    }, []);
-
-    useEffect(() => {
-        setErrorComment((typeof errors === 'string' && (errors as string)?.includes('comment')) || Boolean(errors?.comment));
-    }, [errors]);
-
-    const queryClient = useQueryClient();
-    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-
-    const relationshipRefs = Array.from(entityTemplates.values()).reduce((acc: IRelationshipReference[], template) => {
-        const properties = template.properties?.properties || {};
-
-        const references = Object.values(properties).reduce((refAcc: IRelationshipReference[], property) => {
-            if (property.format === 'relationshipReference' && property.relationshipReference) refAcc.push(property.relationshipReference);
-
-            return refAcc;
-        }, []);
-
-        return acc.concat(references);
-    }, []);
-
-    const disableRemoveRequire = Boolean(
-        relationshipRefs.find((ref) => ref.relatedTemplateField === value.name && ref.relatedTemplateId === templateId) !== undefined,
-    );
-
-    const [localOption, setLocalOption] = useState<string>('');
-    const [editError, setEditError] = useState<string>('');
-
-    const chipRefs = useRef<(HTMLDivElement | null)[]>([]);
-    const [open, setOpen] = useState<boolean>(false);
-    const [openDelete, setOpenDelete] = useState<boolean>(false);
-    const MemoizedIconButton = React.memo(IconButton);
-
-    const [initialOptionArray, setInitialOptionArray] = useState<string[]>(initialValue?.options || []);
-
-    const handleEditChange = (e, _tagIndex) => {
-        e.preventDefault();
-        setLocalOption(e.target.value);
-        setEditError('');
-    };
-    const { mutate: updateEnumField, isLoading } = useMutation(
-        (mutationArgs: { id: string; tagIndex: number; option: string; fieldValue: any }) => {
-            const { id, tagIndex, option, fieldValue } = mutationArgs;
-            return updateEnumFieldRequest(id, fieldValue.options[tagIndex], fieldValue, option);
-        },
-        {
-            onError: () => {
-                if (editIndex !== null) {
-                    setLocalOption('');
-                    setEditIndex(null);
-                }
-                toast.error(<div>{i18next.t('errorPage.updateEnumField')}</div>);
-                setOpen(!open);
-            },
-            onSuccess: (resultOfMutation, { id, option, fieldValue }) => {
-                if (editIndex !== null) {
-                    const indexValue = initialOptionArray.indexOf(fieldValue.options[editIndex]);
-                    if (indexValue !== -1) {
-                        const tempInitialOptionArray = [...initialOptionArray];
-                        tempInitialOptionArray[indexValue] = option;
-                        setInitialOptionArray(tempInitialOptionArray);
-                    }
-                }
-                const frontEndEnumValues = value.options.slice(initialOptionArray.length);
-                const fieldProps = resultOfMutation.properties.properties[fieldValue.name];
-                const newOptions = fieldProps.type === 'array' ? fieldProps.items!.enum! : fieldProps.enum!;
-                queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) => {
-                    const newOptionColors = { ...fieldValue.optionColors };
-                    if (fieldValue.optionColors && Object.keys(fieldValue.optionColors).length > 0 && editIndex != null) {
-                        const newColor = fieldValue.optionColors[fieldValue.options[editIndex]];
-                        delete newOptionColors[fieldValue.options[editIndex]];
-                        newOptionColors[option] = newColor;
-                    }
-                    setValues?.((prev) => ({
-                        ...prev,
-                        options: newOptions.concat(frontEndEnumValues),
-                        optionColors: newOptionColors,
-                    }));
-
-                    entityTemplateMap!.set(id, resultOfMutation);
-                    return entityTemplateMap!;
-                });
-                setEditIndex(null);
-                toast.success(<div>{i18next.t('entityPage.updatedEnumFieldSuccessfully')}</div>);
-                setOpen(!open);
-            },
-        },
-    );
-
-    const [atLeastOneItem, setAtLeastOneItem] = useState<string | null>(null);
-
-    const { mutate: deleteEnumField, isLoading: isDeleteLoading } = useMutation(
-        (mutationArgs: { id: string; tagIndex: number; fieldValue: any }) => {
-            const { id, tagIndex, fieldValue } = mutationArgs;
-            return deleteEnumFieldRequest(id, fieldValue.options[tagIndex], fieldValue);
-        },
-        {
-            onError: () => {
-                if (editIndex !== null) {
-                    setLocalOption('');
-                    setEditIndex(null);
-                }
-                toast.error(<div>{i18next.t('errorPage.deleteFieldValue')}</div>);
-            },
-            onSuccess: (resultOfMutation, { id, fieldValue }) => {
-                if (editIndex !== null) {
-                    const indexValue = initialOptionArray.indexOf(fieldValue.options[editIndex]);
-                    if (indexValue !== -1) {
-                        const tempInitialOptionArray = [...initialOptionArray];
-                        tempInitialOptionArray.splice(indexValue, 1);
-                        setInitialOptionArray(tempInitialOptionArray);
-                    }
-                }
-                queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) => {
-                    const fieldProps = resultOfMutation.properties.properties[fieldValue.name];
-                    const newOptions = fieldProps.type === 'array' ? fieldProps.items!.enum! : fieldProps.enum!;
-                    const frontEndEnumValues = value.options.slice(newOptions.length + 1);
-                    const newOptionColors = { ...fieldValue.optionColors };
-                    if (fieldValue.optionColors && Object.keys(fieldValue.optionColors).length > 0 && editIndex != null) {
-                        delete newOptionColors[fieldValue.options[editIndex]];
-                    }
-                    setValues?.((prev) => ({
-                        ...prev,
-                        options: newOptions.concat(frontEndEnumValues),
-                        optionColors: newOptionColors,
-                    }));
-                    entityTemplateMap!.set(id, resultOfMutation);
-                    return entityTemplateMap!;
-                });
-                setEditIndex(null);
-                toast.success(<div>{i18next.t('entityPage.deleteEnumFieldSuccessfully')}</div>);
-            },
-        },
-    );
-    const handleUpdateEnumField = (id: string, tagIndex: number, option: string, fieldValue: any) => {
-        updateEnumField({ id, tagIndex, option, fieldValue });
-    };
-    const handleDeleteEnumField = (id: string, tagIndex: number, fieldValue: any) => {
-        if (fieldValue.options.length <= 1 || initialOptionArray.length <= 1) {
-            setAtLeastOneItem(i18next.t('entityPage.atLeastOneItem'));
-            setEditIndex(null);
-            setTimeout(() => {
-                setAtLeastOneItem(null);
-            }, 2000);
-            return;
-        }
-        deleteEnumField({ id, tagIndex, fieldValue });
-    };
-
-    useEffect(() => {
-        if (!editIndex) setEditError('');
-    }, [editIndex]);
-
     const handleSaveEdit = (tagIndex: number) => {
         const checkIfOldEnumValue = initialOptionArray.length > tagIndex && isDisabled;
         const trimValue = localOption.trim();
@@ -587,8 +590,6 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
         if (value.archive) return i18next.t('wizard.entityTemplate.removeFromArchive');
         return i18next.t('wizard.entityTemplate.moveToArchive');
     };
-
-    const commentColorsObj = Object.entries(commentColors).map(([label, val]) => ({ label, value: val }));
 
     return (
         <Draggable draggableId={value.id} index={index}>
@@ -1341,7 +1342,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                 <MeltaTooltip title={archiveButtonTooltip()} placement="right">
                                                     <Box>
                                                         <IconButton
-                                                            onClick={() => setFieldValue('archive', !isComment ? !value.archive : false)}
+                                                            onClick={() => setFieldValue('archive', !value.archive)}
                                                             disabled={value.required || value.uniqueCheckbox || value.preview || isComment}
                                                         >
                                                             {value.archive ? <Unarchive color="primary" /> : <Archive />}
