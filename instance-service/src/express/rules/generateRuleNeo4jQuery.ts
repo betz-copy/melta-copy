@@ -321,7 +321,7 @@ const generateNeo4jQueryFromGroup = (
     entityTemplate: IMongoEntityTemplate,
 ): CypherQuery => {
     const subFormulasQueries = formula.subFormulas.map((subFormula, index) => {
-        console.dir({ subFormula, withVariablesForSubQueries, resultVariableNamePrefix, index }, { depth: null });
+        // console.dir({ subFormula, withVariablesForSubQueries, resultVariableNamePrefix, index }, { depth: null });
         // eslint-disable-next-line no-use-before-define -- circular recursive functions (formula->group->formulas)
         return generateNeo4jQueryFromFormula(
             subFormula,
@@ -330,11 +330,11 @@ const generateNeo4jQueryFromGroup = (
             entityTemplate,
         );
     });
-    console.dir({ subFormulasQueries }, { depth: null });
+    // console.dir({ subFormulasQueries }, { depth: null });
 
     const resultValueVariableName = `${resultVariableNamePrefix}${resultValueVariableNameSuffix}`;
     const resultCausesVariableName = `${resultVariableNamePrefix}${resultCausesVariableNameSuffix}`;
-    console.log({ resultValueVariableName, resultCausesVariableName });
+    // console.log({ resultValueVariableName, resultCausesVariableName });
 
     return {
         cypherCalculation: `
@@ -400,7 +400,7 @@ const generateNeo4jQueryFromEquation = (
         `${resultVariableNamePrefix}lhsArgument_`,
         entityTemplate,
     );
-    console.log({ lhsArgumentQuery });
+    // console.log({ lhsArgumentQuery });
 
     const rhsArgumentQuery = generateNeo4jQueryFromArgument(
         formula.rhsArgument,
@@ -442,7 +442,7 @@ const generateNeo4jQueryFromAggregationGroup = (
     resultVariableNamePrefix: string,
     entityTemplate: IMongoEntityTemplate,
 ): CypherQuery => {
-    console.log('generateNeo4jQueryFromAggregationGroup');
+    // console.log('generateNeo4jQueryFromAggregationGroup');
 
     const {
         entityTemplateId,
@@ -523,17 +523,17 @@ const generateNeo4jQueryFromFormula = (
     entityTemplate: IMongoEntityTemplate,
 ): CypherQuery => {
     if (isGroup(formula)) {
-        console.log('isGroup(formula)');
+        // console.log('isGroup(formula)');
         return generateNeo4jQueryFromGroup(formula, withVariablesForSubQueries, `${resultVariableNamePrefix}group_`, entityTemplate);
     }
 
     if (isEquation(formula)) {
-        console.log('isEquation(formula)');
+        // console.log('isEquation(formula)');
         return generateNeo4jQueryFromEquation(formula, withVariablesForSubQueries, `${resultVariableNamePrefix}equation_`, entityTemplate);
     }
 
     if (isAggregationGroup(formula)) {
-        console.log('isAggregationGroup(formula)');
+        // console.log('isAggregationGroup(formula)');
         return generateNeo4jQueryFromAggregationGroup(
             formula,
             withVariablesForSubQueries,
@@ -547,14 +547,14 @@ const generateNeo4jQueryFromFormula = (
 
 export const generateNeo4jRuleQueryOnEntity = (rule: IMongoRule, entityId: string, entityTemplate: IMongoEntityTemplate): CypherQuery => {
     const { entityTemplateId, formula } = rule;
-    console.dir({ rule }, { depth: null });
+    // console.dir({ rule }, { depth: null });
 
     const entityVariableName = `\`${entityTemplateId}\``;
     const variablesForSubQueries = [entityVariableName];
-    console.dir({ entityVariableName, variablesForSubQueries }, { depth: null });
+    // console.dir({ entityVariableName, variablesForSubQueries }, { depth: null });
 
     const formulaQuery = generateNeo4jQueryFromFormula(formula, variablesForSubQueries, 'formula_', entityTemplate);
-    console.dir({ formulaQuery }, { depth: null });
+    // console.dir({ formulaQuery }, { depth: null });
 
     return {
         cypherCalculation: `

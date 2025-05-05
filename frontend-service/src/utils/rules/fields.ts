@@ -48,7 +48,6 @@ const entityTemplateToFieldsConfig = (
         //  else if (value.format === 'relationshipReference') {
         //     type = 'relationshipReference';
         // }
-        console.log(value.format);
 
         if (value.format !== 'user' && value.format !== 'signature') {
             fieldEntries.push([
@@ -60,7 +59,6 @@ const entityTemplateToFieldsConfig = (
                     ...options,
                 },
             ]);
-            console.log('pushed', `${keyPrefix}${entityTemplate._id}${keySuffix}-${key}`);
 
             if (type === 'datetime') {
                 fieldEntries.push([
@@ -75,7 +73,6 @@ const entityTemplateToFieldsConfig = (
             }
         }
     });
-    console.log({ fieldEntries: Object.fromEntries(fieldEntries) });
 
     return Object.fromEntries(fieldEntries);
 };

@@ -109,17 +109,17 @@ export const throwIfActionCausedRuleFailures = (
     actionsResults: { createdRelationshipId?: string; createdEntityId?: string; updatedEntityId?: string }[],
     actions?: IAction[],
 ) => {
-    console.log('throwIfActionCausedRuleFailures');
-    console.dir({ ignoredRules, ruleFailuresBeforeAction, ruleFailuresAfterAction, actionsResults, actions }, { depth: null });
+    // console.log('throwIfActionCausedRuleFailures');
+    // console.dir({ ignoredRules, ruleFailuresBeforeAction, ruleFailuresAfterAction, actionsResults, actions }, { depth: null });
 
     const ruleFailuresWithNewCauses = filteredMap(ruleFailuresAfterAction, (ruleFailureAfterAction) => {
         const ruleFailureBeforeAction = ruleFailuresBeforeAction.find(({ rule, entityId }) => {
             return rule._id === ruleFailureAfterAction.rule._id && entityId === ruleFailureAfterAction.entityId;
         });
-        console.dir({ ruleFailureBeforeAction }, { depth: null });
+        // console.dir({ ruleFailureBeforeAction }, { depth: null });
 
         const causes = getCausesOfRuleFailure(ruleFailureAfterAction, ruleFailureBeforeAction, ruleFailureAfterAction.rule.formula);
-        console.dir({ causes }, { depth: null });
+        // console.dir({ causes }, { depth: null });
 
         if (causes.length === 0) return undefined;
 

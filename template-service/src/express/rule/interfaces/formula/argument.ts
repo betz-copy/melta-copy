@@ -23,7 +23,6 @@ export interface IPropertyOfVariable {
     isPropertyOfVariable: true;
     variable: IVariable;
     property: string;
-    variableNameSuffix?: string;
 }
 
 export const isPropertyOfVariable = (propertyOfVariable: any): propertyOfVariable is IPropertyOfVariable => {
