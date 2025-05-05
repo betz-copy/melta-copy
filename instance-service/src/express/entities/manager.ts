@@ -143,8 +143,10 @@ export class EntityManager extends DefaultManagerNeo4j {
         const entitiesRelevantRulesMap = this.getRelevantRulesOfEntities(entitiesIdsRulesReasonsMap, rulesByEntityTemplateIds);
 
         const ruleFailuresPromises: Promise<IRuleFailure[]>[] = [];
-        entitiesRelevantRulesMap.forEach(({ rules }, entityId) => {
-            ruleFailuresPromises.push(runRulesOnEntity(transaction, entityId, rules));
+        entitiesRelevantRulesMap.forEach(async ({ rules }, entityId) => {
+            const entity = await this.getEntityById(entityId);
+            const entityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(entity.templateId);
+            ruleFailuresPromises.push(runRulesOnEntity(transaction, entityId, rules, entityTemplate));
         });
 
         return (await Promise.all(ruleFailuresPromises)).flat();
@@ -163,7 +165,9 @@ export class EntityManager extends DefaultManagerNeo4j {
 
         const relevantRules = filterDependentRulesViaAggregation(rulesOfEntity, dependentRelationshipTemplateId, updatedProperties);
 
-        return runRulesOnEntity(transaction, entityId, relevantRules);
+        const entityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(entityTemplateId);
+
+        return runRulesOnEntity(transaction, entityId, relevantRules, entityTemplate);
     };
 
     throwServiceErrorIfFailedConstraintsValidation = (err: unknown): never => {
@@ -1219,7 +1223,9 @@ export class EntityManager extends DefaultManagerNeo4j {
         const relevantRulesOfEntity = filterDependentRulesOnEntity(rulesOfEntity, entity.templateId, updatedProperties);
         console.dir({ relevantRulesOfEntity }, { depth: null });
 
-        return runRulesOnEntity(transaction, entity.properties._id, relevantRulesOfEntity);
+        const entityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(entity.templateId);
+
+        return runRulesOnEntity(transaction, entity.properties._id, relevantRulesOfEntity, entityTemplate);
     };
 
     getNeighborsOfUpdatedEntityForRule = (transaction: Transaction, entityId: string) =>

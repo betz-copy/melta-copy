@@ -24,6 +24,8 @@ const getCausesOfPropertyOfVariable = (
     propertyOfVariableCausesBeforeAction: IPropertyOfVariableCauses | undefined,
     _propertyOfVariable: IPropertyOfVariable,
 ): { newCauses: ICause[]; oldCauses: ICause[] } => {
+    console.log('getCausesOfPropertyOfVariable');
+
     if (!propertyOfVariableCausesBeforeAction) {
         return { newCauses: [propertyOfVariableCauses.cause], oldCauses: [] };
     }
@@ -83,6 +85,9 @@ export const getNewCausesOfArgument = (
     argumentCausesBeforeAction: IArgumentCauses | undefined,
     argument: IArgument,
 ): { newCauses: ICause[]; oldCauses: ICause[] } => {
+    console.log('getNewCausesOfArgument');
+    console.dir({ argumentCauses, argumentCausesBeforeAction, argument }, { depth: null });
+
     if (isConstant(argument)) {
         return { newCauses: [], oldCauses: [] };
     }
@@ -121,6 +126,8 @@ export const getCausesOfEquation = (
 ): { newCauses: ICause[]; oldCauses: ICause[] } => {
     const lhsArgumentNewCauses = getNewCausesOfArgument(equationCauses.lhsArgument, equationCausesBeforeAction?.lhsArgument, equation.lhsArgument);
     const rhsArgumentNewCauses = getNewCausesOfArgument(equationCauses.rhsArgument, equationCausesBeforeAction?.rhsArgument, equation.rhsArgument);
+    console.dir({ lhsArgumentNewCauses, rhsArgumentNewCauses }, { depth: null });
+    console.dir({ equationCauses, equationCausesBeforeAction }, { depth: null });
 
     if (equationCauses.resultValue !== equationCausesBeforeAction?.resultValue) {
         // if resultValue is new, then all causes are new.
