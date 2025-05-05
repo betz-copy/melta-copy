@@ -5,7 +5,7 @@
         "lib": ["ES2022"],
         "outDir": "./dist/",
         "paths": {
-            "@microservices/*": ["./*/src"]
+            "@microservices/shared/*": ["./*/src"]
         }
     },
     "include": ["src/**/*"]

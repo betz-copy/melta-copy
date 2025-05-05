@@ -20,7 +20,8 @@
         "storage-service",
         "template-service",
         "user-service",
-        "workspace-service"
+        "workspace-service",
+        "mock-service"
     ],
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",

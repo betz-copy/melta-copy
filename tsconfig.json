@@ -21,6 +21,7 @@
         "skipLibCheck": true,
         "isolatedModules": true,
         "moduleResolution": "node",
+        "baseUrl": ".",
         "lib": ["ES2020.Promise"]
     },
     "exclude": ["node_modules", "dist", ".eslintrc.js"]

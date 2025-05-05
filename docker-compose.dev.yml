@@ -329,6 +329,8 @@ services:
     ports:
       - 8012:8000
     restart: always
+    volumes:
+      - logs:/usr/src/app/logs
     networks:
       - network
 
@@ -336,6 +338,8 @@ services:
     ports:
       - 8017:8000
     restart: always
+    volumes:
+      - logs:/usr/src/app/logs
     networks:
       - network
 

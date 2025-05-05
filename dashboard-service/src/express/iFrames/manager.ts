@@ -4,7 +4,7 @@ import config from '../../config';
 import IFrameSchema from './model';
 import { escapeRegExp } from '../../utils';
 
-export class IFrameManager extends DefaultManagerMongo<IMongoIframe> {
+class IFrameManager extends DefaultManagerMongo<IMongoIframe> {
     constructor(workspaceId: string) {
         super(workspaceId, config.mongo.iFramesCollectionName, IFrameSchema);
     }

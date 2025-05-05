@@ -4,7 +4,7 @@
         "jsx": "react",
         "outDir": "./dist/",
         "paths": {
-            "@microservices/*": ["./*/src"]
+            "@microservices/shared/*": ["./*/src"]
         }
     },
     "include": ["src/**/*"]

@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import ChartController from './controller';
 import { createController, ValidateRequest } from '@microservices/shared';
+import ChartController from './controller';
 import {
     createChartRequestSchema,
     deleteChartRequestSchema,

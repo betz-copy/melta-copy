@@ -1,6 +1,5 @@
 import Joi from 'joi';
-import { IAggregationType, IChartType, IChartPermission } from '@microservices/shared';
-import { MongoIdSchema } from '@microservices/shared';
+import { IAggregationType, IChartType, IChartPermission, MongoIdSchema } from '@microservices/shared';
 
 // format of properties keys in entity template
 export const variableNameValidation = Joi.string().regex(/^[a-zA-Z][a-zA-Z_$0-9]*$/);

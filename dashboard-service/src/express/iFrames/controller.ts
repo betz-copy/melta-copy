@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { DefaultController, IMongoIframe } from '@microservices/shared';
-import { IFrameManager } from './manager';
+import IFrameManager from './manager';
 
 class IFrameController extends DefaultController<IMongoIframe, IFrameManager> {
     constructor(workspaceId: string) {

@@ -5,7 +5,7 @@ import ChartSchema from './model';
 import config from '../../config';
 import { escapeRegExp } from '../../utils';
 
-export class ChartManager extends DefaultManagerMongo<IMongoChart> {
+class ChartManager extends DefaultManagerMongo<IMongoChart> {
     constructor(workspaceId: string) {
         super(workspaceId, config.mongo.chartsCollectionName, ChartSchema);
     }
@@ -46,3 +46,5 @@ export class ChartManager extends DefaultManagerMongo<IMongoChart> {
             .exec();
     }
 }
+
+export default ChartManager;

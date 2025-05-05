@@ -19,7 +19,7 @@
     "forceConsistentCasingInFileNames": true,
     "outDir": "./dist/",
     "paths": {
-      "@microservices/*": ["./*/src"]
+      "@microservices/shared/*": ["./*/src"]
     },
     "lib": ["ES2022"],
     "skipLibCheck": true,
