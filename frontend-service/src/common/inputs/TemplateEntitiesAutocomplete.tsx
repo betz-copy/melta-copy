@@ -4,7 +4,7 @@ import { useInfiniteQuery } from 'react-query';
 import { toast } from 'react-toastify';
 import _debounce from 'lodash.debounce';
 import i18next from 'i18next';
-import { InfoOutlined } from '@mui/icons-material';
+import { ExpandMore, InfoOutlined } from '@mui/icons-material';
 import { MeltaTooltip } from '../MeltaTooltip';
 import { IEntity } from '../../interfaces/entities';
 import { searchEntitiesOfTemplateRequest } from '../../services/entitiesService';
@@ -138,6 +138,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
             getOptionLabel={(option) => option.properties[showField].toString() || option.properties._id.toString()}
             isOptionEqualToValue={(option, currValue) => option.properties._id === currValue.properties._id}
             filterOptions={(options) => options}
+            popupIcon={<ExpandMore />}
             renderInput={(params) => (
                 <TextField
                     {...params}

@@ -119,7 +119,7 @@ const RjfsTextAreaWidget = ({ id, value, label, readonly, onChange, options }: W
                             top: '0',
                             right: '0',
                             zIndex: 1,
-                            background: darkMode ? '#383838' : '#fff',
+                            background: darkMode ? '#1e1e1e' : '#fff',
                             padding: '0 8px',
                             transition: 'top 0.3s',
                             transform: 'translate(-14px,-9px) scale(0.75)',

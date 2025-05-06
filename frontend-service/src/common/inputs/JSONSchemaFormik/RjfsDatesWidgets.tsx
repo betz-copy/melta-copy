@@ -113,9 +113,9 @@ const getRjfsDateOrDateTimeWidget =
                                 endAdornment: (
                                     <InputAdornment position="end" style={{ cursor: 'pointer' }}>
                                         {dateOrDateTime === 'date' ? (
-                                            <CalendarToday fontSize="small" color={value && !readonly ? 'action' : 'disabled'} />
+                                            <CalendarToday fontSize="small" color={!readonly ? 'action' : 'disabled'} />
                                         ) : (
-                                            <Alarm fontSize="small" color={value && !readonly ? 'action' : 'disabled'} />
+                                            <Alarm fontSize="small" color={!readonly ? 'action' : 'disabled'} />
                                         )}
                                     </InputAdornment>
                                 ),

@@ -4,6 +4,7 @@ import _debounce from 'lodash.debounce';
 import React, { useState } from 'react';
 import { useQuery } from 'react-query';
 import { toast } from 'react-toastify';
+import { ExpandMore } from '@mui/icons-material';
 import { IUser } from '../../interfaces/users';
 import { searchExternalUsersRequest, searchUsersRequest } from '../../services/userService';
 import { useWorkspaceStore } from '../../stores/workspace';
@@ -93,6 +94,7 @@ const UserAutocomplete: React.FC<IUserAutocomplete> = ({
                         onChange?.(_e, newValue, reason);
                     }
                 }}
+                popupIcon={<ExpandMore />}
                 onInputChange={(_e, newValue, reason) => {
                     setInputValue(newValue);
                     onDisplayValueChange?.(_e, newValue, reason);
