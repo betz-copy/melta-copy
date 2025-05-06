@@ -157,7 +157,7 @@ export const getCausesOfGroup = (
 
     // already filtered in DB, but to make sure. if group is false, then all falsy subFormulas caused it. same goes to true
     const relevantSubFormulasCauses = groupCauses.subFormulas.filter(({ resultValue }) => groupCauses.resultValue === resultValue);
-    // console.dir({ relevantSubFormulasCauses }, { depth: null });
+    console.log('gelloooooo', { relevantSubFormulasCauses, groupCauses, groupCausesBeforeAction });
 
     const subFormulasNewCauses = relevantSubFormulasCauses.map((subFormulaCauses, index) =>
         // eslint-disable-next-line no-use-before-define
@@ -169,6 +169,7 @@ export const getCausesOfGroup = (
         // if resultValue is new, then all causes are new
         return { newCauses: subFormulasNewCauses.flatMap(({ newCauses, oldCauses }) => [...newCauses, ...oldCauses]), oldCauses: [] };
     }
+    console.log('before return', { subFormulasNewCauses });
 
     return {
         newCauses: subFormulasNewCauses.flatMap(({ newCauses }) => newCauses),

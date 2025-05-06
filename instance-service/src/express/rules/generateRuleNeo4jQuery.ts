@@ -229,6 +229,7 @@ const getAggregatedRelationshipName = ({
 
 const getPropertyKey = (entityTemplate: IMongoEntityTemplate, propertyKey: string) => {
     const property = Object.entries(entityTemplate.properties.properties).find(([key, _value]) => key === propertyKey)?.[1];
+    console.log('in getPropKey');
     if (property?.format === 'relationshipReference' && property.relationshipReference)
         return `${propertyKey}.properties.${property.relationshipReference.relatedTemplateField}_tostring_reference`;
     return propertyKey;
