@@ -1,6 +1,5 @@
-import { IFilterRelationReference } from '../common/wizards/entityTemplate/commonInterfaces';
 import { IMongoCategory } from './categories';
-import { IUniqueConstraintOfTemplate } from './entities';
+import { ISearchFilter, IUniqueConstraintOfTemplate } from './entities';
 
 export interface IEntitySingleProperty {
     title: string;
@@ -31,7 +30,7 @@ export interface IEntitySingleProperty {
         relationshipTemplateDirection: 'outgoing' | 'incoming';
         relatedTemplateId: string;
         relatedTemplateField: string;
-        filters?: IFilterRelationReference[];
+        filters?: ISearchFilter;
     };
     archive?: boolean;
     filterRelationList?: boolean;

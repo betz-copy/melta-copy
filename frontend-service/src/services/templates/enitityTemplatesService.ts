@@ -12,6 +12,10 @@ import {
 } from '../../interfaces/entityTemplates';
 import { getFileName } from '../../utils/getFileName';
 import { CommonFormInputProperties } from '../../common/wizards/entityTemplate/commonInterfaces';
+import {
+    filterRelationListToSearchFilter,
+    SearchFilterToFilterRelationList,
+} from '../../common/wizards/entityTemplate/RelationshipRefrence/RelationFilterToBackend';
 
 const { entityTemplates } = environment.api;
 export const basePropertyTypes = ['string', 'number', 'boolean'];
@@ -72,7 +76,17 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
             isDailyAlert: value.isDailyAlert ?? undefined,
             isDatePastAlert: value.isDatePastAlert ?? undefined,
             serialStarter: value.serialStarter,
-            relationshipReference: value.relationshipReference || undefined,
+            relationshipReference: value.relationshipReference
+                ? {
+                      relationshipTemplateId: value.relationshipReference.relationshipTemplateId,
+                      relationshipTemplateDirection: value.relationshipReference.relationshipTemplateDirection,
+                      relatedTemplateId: value.relationshipReference.relatedTemplateId,
+                      relatedTemplateField: value.relationshipReference.relatedTemplateField,
+                      filters: value.relationshipReference.filters
+                          ? SearchFilterToFilterRelationList(value.relationshipReference.filters, entityTemplate)
+                          : undefined,
+                  }
+                : undefined,
             archive: value.archive || undefined,
             identifier: value.identifier || undefined,
             mapSearch: mapSearchProperties?.includes(key) || undefined,
@@ -216,6 +230,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                           relationshipTemplateDirection: relationshipReference!.relationshipTemplateDirection,
                           relatedTemplateId: relationshipReference!.relatedTemplateId,
                           relatedTemplateField: relationshipReference!.relatedTemplateField,
+                          filters: relationshipReference.filters ? filterRelationListToSearchFilter(relationshipReference.filters) : undefined,
                       }
                     : undefined,
                 filterRelationList,
@@ -315,6 +330,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                           relationshipTemplateDirection: relationshipReference!.relationshipTemplateDirection,
                           relatedTemplateId: relationshipReference!.relatedTemplateId,
                           relatedTemplateField: relationshipReference!.relatedTemplateField,
+                          filters: relationshipReference.filters ? filterRelationListToSearchFilter(relationshipReference.filters) : undefined,
                       }
                     : undefined,
                 filterRelationList,
@@ -403,6 +419,10 @@ const createEntityTemplateRequest = async (newEntityTemplate: EntityTemplateWiza
 
     const entityTemplate = formToJSONSchema(newEntityTemplate, false);
 
+    console.log('here');
+
+    console.dir({ entityTemplate }, { depth: null });
+
     if (newEntityTemplate.icon) {
         formData.append('file', newEntityTemplate.icon.file as File);
     }
@@ -448,6 +468,9 @@ const updateEntityTemplateRequest = async (entityTemplateId: string, updatedEnti
         'attachmentProperties' in updatedEntityTemplate // its type is - EntityTemplateWizardValues
             ? formToJSONSchema(updatedEntityTemplate as EntityTemplateWizardValues, true)
             : updatedEntityTemplate;
+
+    console.log('here');
+    console.dir({ entityTemplate }, { depth: null });
 
     if ('attachmentProperties' in updatedEntityTemplate && updatedEntityTemplate.icon) {
         if (updatedEntityTemplate.icon.file instanceof File) {

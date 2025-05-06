@@ -3,7 +3,7 @@ import { useFormikContext, getIn, FormikTouched, FormikErrors } from 'formik';
 import { Grid, TextField, Button, Typography, IconButton, Autocomplete } from '@mui/material';
 import { Add, Clear } from '@mui/icons-material';
 import i18next from 'i18next';
-import { CommonFormInputProperties, IAGGridFilter, IFilterRelationReference, IRelationshipReference } from '../commonInterfaces';
+import { CommonFormInputProperties, IAGGridFilter, IFilterRelationReference } from '../commonInterfaces';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridTextFilter } from '../../../../utils/agGrid/interfaces';
 import { DateFilterInput } from '../../../inputs/FilterInputs/DateFilterInput';
