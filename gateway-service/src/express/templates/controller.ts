@@ -56,15 +56,15 @@ export default class TemplatesController extends DefaultController<TemplatesMana
     }
 
     async updateCategoryTempOrder(req: Request, res: Response) {
-        const srcCategoryId: string = req.body.srcCategoryId;
-        const newCategoryId: string = req.body.newCategoryId;
-        const newIndex: number = req.body.newIndex;
-        const templateId: string = req.body.templateId;
+        const { srcCategoryId } = req.body;
+        const { newCategoryId } = req.body;
+        const { newIndex } = req.body;
+        const { templateId } = req.body;
 
         res.json(await this.manager.updateCategoryTempOrder(templateId, newIndex, srcCategoryId, newCategoryId));
     }
 
-    //config
+    // config
     async getAllConfigs(_req: Request, res: Response) {
         res.json(await this.manager.getAllConfigs());
     }

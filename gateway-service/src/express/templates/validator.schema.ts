@@ -22,7 +22,7 @@ export const updateCategorySchema = Joi.object({
         displayName: Joi.string(),
         iconFileId: Joi.string().allow(null),
         color: ColorSchema,
-        templateOrder: ExtendedJoi.stringToArray(),
+        templatesOrder: ExtendedJoi.stringToArray(),
     },
     params: {
         id: MongoIdSchema.required(),
@@ -39,7 +39,7 @@ export const deleteCategorySchema = Joi.object({
     },
 });
 
-// PATCH /api/templates/categories/changeTemplateOrder
+// PATCH /api/templates/categories/templatesOrder
 export const updateCategoryTempOrderSchema = Joi.object({
     query: {},
     body: {
@@ -271,7 +271,7 @@ export const getAllConfigsSchema = Joi.object({
     params: {},
 });
 
-//GET /api/templates/config/:name
+// GET /api/templates/config/:name
 export const getOrderConfigByNameSchema = Joi.object({
     query: {},
     body: {},

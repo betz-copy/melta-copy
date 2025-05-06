@@ -5,6 +5,7 @@ import i18next from 'i18next';
 import React, { useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
+import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { ICategoryMap, IMongoCategory } from '../../../interfaces/categories';
 import { ViewingCard } from './Card';
 import { CustomIcon } from '../../../common/CustomIcon';
@@ -22,7 +23,6 @@ import { Box } from './Box';
 import { CardMenu } from './CardMenu';
 import { CreateButton } from './CreateButton';
 import { useWorkspaceStore } from '../../../stores/workspace';
-import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { updateConfigOrderRequest } from '../../../services/templates/configService';
 import { IMongoOrderConfig } from '../../../interfaces/config';
 import { mapCategories } from '../../../utils/templates';
@@ -143,7 +143,6 @@ const CategoriesRow: React.FC = () => {
 
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
     const categoryOrder = queryClient.getQueryData<IMongoOrderConfig>('getCategoryConfig');
-    // const categoriesArray = Array.from(categories.values());
     const allowedCategoriesToShow = allowedCategories(categories, currentUser);
 
     const { headlineSubTitleFontSize } = workspace.metadata.mainFontSizes;
@@ -172,14 +171,14 @@ const CategoriesRow: React.FC = () => {
             });
 
             queryClient.setQueryData<IMongoOrderConfig>('getCategoryConfig', (categoryConfig) => {
-                const order = categoryConfig!.order;
+                const { order } = categoryConfig!;
                 const index = order.indexOf(id);
 
                 if (index > -1) {
                     order.splice(index, 1);
                 }
 
-                return { ...categoryConfig!, order: order };
+                return { ...categoryConfig!, order };
             });
 
             setDeleteCategoryDialogState({ isDialogOpen: false, categoryId: null });
@@ -209,13 +208,14 @@ const CategoriesRow: React.FC = () => {
         const { source, destination, draggableId } = result;
         if (!destination) {
             return;
-        } else if (source.droppableId === destination.droppableId && source.index !== destination.index) {
+        }
+
+        if (source.droppableId === destination.droppableId && source.index !== destination.index) {
             const { _id, ...restCategory } = categories.get(draggableId)!;
             allowedCategoriesToShow.splice(source.index, 1);
             allowedCategoriesToShow.splice(destination.index, 0, { _id, ...restCategory });
-            changeOrder();
 
-            return;
+            changeOrder();
         }
     };
 

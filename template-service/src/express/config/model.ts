@@ -1,5 +1,4 @@
 import mongoose from 'mongoose';
-// import { IMongoBaseConfig, IMongoOrderConfig } from './interface';
 
 export const ConfigSchema = new mongoose.Schema(
     {
@@ -14,8 +13,6 @@ export const ConfigSchema = new mongoose.Schema(
 
 ConfigSchema.index({ name: 'text' });
 
-// const BaseConfig = mongoose.model<IMongoBaseConfig>('BaseConfig', ConfigSchema);
-
 export const orderConfigSchema = new mongoose.Schema({
     order: {
         type: [String],
@@ -23,5 +20,3 @@ export const orderConfigSchema = new mongoose.Schema({
         required: true,
     },
 });
-
-// export const CategoryOrderConfig = BaseConfig.discriminator<IMongoOrderConfig>('order', orderSchema);

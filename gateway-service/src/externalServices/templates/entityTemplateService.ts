@@ -17,7 +17,7 @@ export interface ICategory {
     displayName: string;
     iconFileId: string | null;
     color: string;
-    templateOrder: string[];
+    templatesOrder: string[];
 }
 
 export interface IMongoCategory extends ICategory {
@@ -184,10 +184,12 @@ export class EntityTemplateService extends TemplatesManagerService {
     }
 
     async updateCategoryTempOrder(templateId: string, newIndex: number, srcCategoryId: string, newCategoryId: string) {
-        const { data } = await this.api.patch<{ oldCategory: IMongoCategory; newCategory: IMongoCategory }>(
-            `${baseCategoriesRoute}/changeTemplateOrder`,
-            { templateId, newIndex, srcCategoryId, newCategoryId },
-        );
+        const { data } = await this.api.patch<{ oldCategory: IMongoCategory; newCategory: IMongoCategory }>(`${baseCategoriesRoute}/templatesOrder`, {
+            templateId,
+            newIndex,
+            srcCategoryId,
+            newCategoryId,
+        });
 
         return data;
     }
@@ -262,7 +264,7 @@ export class EntityTemplateService extends TemplatesManagerService {
         return data;
     }
 
-    //config
+    // config
     async getConfigs() {
         const { data } = await this.api.get<IMongoBaseConfig[]>(`${baseConfigRoute}/all`);
 

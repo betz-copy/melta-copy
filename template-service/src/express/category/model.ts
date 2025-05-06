@@ -18,7 +18,7 @@ export const CategorySchema = new mongoose.Schema(
         color: {
             type: String,
         },
-        templateOrder: {
+        templatesOrder: {
             type: [String],
             default: [],
         },

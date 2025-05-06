@@ -9,7 +9,7 @@ class ConfigManager extends DefaultManagerMongo<IMongoBaseConfig> {
     private orderDiscriminator: mongoose.Model<IMongoOrderConfig>;
 
     constructor(workspaceId: string) {
-        super(workspaceId, config.mongo.configCollectionName, ConfigSchema);
+        super(workspaceId, config.mongo.configsCollectionName, ConfigSchema);
 
         if (!this.model.discriminators?.[ConfigTypes.ORDER]) {
             this.orderDiscriminator = this.model.discriminator<IMongoOrderConfig>(ConfigTypes.ORDER, orderConfigSchema);

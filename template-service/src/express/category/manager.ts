@@ -62,13 +62,13 @@ class CategoryManager extends DefaultManagerMongo<IMongoCategory> {
         newIndex: number,
     ): Promise<{ oldCategory: IMongoCategory; newCategory: IMongoCategory }> {
         const oldCategory: IMongoCategory = await this.model
-            .findByIdAndUpdate(srcCategoryId, { $pullAll: { templateOrder: [templateId.toString()] } }, { new: true })
+            .findByIdAndUpdate(srcCategoryId, { $pullAll: { templatesOrder: [templateId.toString()] } }, { new: true })
             .orFail(new NotFoundError('Category not found'))
             .lean()
             .exec();
 
         const newCategory: IMongoCategory = await this.model
-            .findByIdAndUpdate(newCategoryId, { $push: { templateOrder: { $each: [templateId.toString()], $position: newIndex } } }, { new: true })
+            .findByIdAndUpdate(newCategoryId, { $push: { templatesOrder: { $each: [templateId.toString()], $position: newIndex } } }, { new: true })
             .orFail(new NotFoundError('Category not found'))
             .lean()
             .exec();

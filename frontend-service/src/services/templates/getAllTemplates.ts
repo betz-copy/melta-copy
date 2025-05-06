@@ -20,7 +20,6 @@ export type GetAllTemplatesType = {
 
 const getAllTemplates = async () => {
     const { data } = await axios.get<GetAllTemplatesType>(getAllTemplatesRoute);
-    
     return data;
 };
 

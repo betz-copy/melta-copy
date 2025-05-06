@@ -262,7 +262,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         const categoryOrder = await this.getOrderConfigByName('categoryOrder');
 
         return {
-            categoryOrder: categoryOrder,
+            categoryOrder,
             categories: allAllowedCategories,
             entityTemplates: allAllowedEntityTemplatesWithConstraints,
             relationshipTemplates: [...allowedRelationshipsTemplates, ...allowedRelationshipTemplatesBecauseOfRules],
@@ -388,13 +388,12 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         return this.entityTemplateService.updateCategoryTempOrder(templateId, newIndex, srcCategoryId, newCategoryId);
     }
 
-    //config
+    // config
     async getAllConfigs(): Promise<IMongoBaseConfig[]> {
         return this.entityTemplateService.getConfigs();
     }
 
     async getOrderConfigByName(name: string): Promise<IMongoOrderConfig> {
-        console.log('aaaaaaaa')
         return this.entityTemplateService.getOrderConfigByName(name);
     }
 

@@ -5,7 +5,7 @@ export interface ICategory {
     displayName: string;
     iconFileId: string | null;
     color: string;
-    templateOrder: string[],
+    templatesOrder: string[];
 }
 
 export interface IMongoCategory extends ICategory, Document<string> {

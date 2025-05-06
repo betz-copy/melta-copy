@@ -131,9 +131,9 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
             entityTemplate = await createdEntityTemplate.populate<Pick<IEntityTemplatePopulated, 'category'>>('category');
         }
 
-        const templateOrder = entityTemplate.category.templateOrder;
-        templateOrder.push(entityTemplate._id.toString());
-        await this.categoryManager.updateCategory(entityTemplate.category._id, { templateOrder: templateOrder });
+        const templatesOrder = entityTemplate.category.templatesOrder;
+        templatesOrder.push(entityTemplate._id.toString());
+        await this.categoryManager.updateCategory(entityTemplate.category._id, { templatesOrder: templatesOrder });
 
         await this.globalSearchIndexCreator.sendUpdateIndexesOnUpdateTemplate(entityTemplate!._id);
 
@@ -157,13 +157,13 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
             );
 
             const category: IMongoCategory = await this.categoryManager.getCategoryById(deletedEntityTemplate.category);
-            const index: number = category.templateOrder.indexOf(id);
+            const index: number = category.templatesOrder.indexOf(id);
 
             if (index !== -1) {
-                category.templateOrder.splice(index, 1);
+                category.templatesOrder.splice(index, 1);
             }
 
-            await this.categoryManager.updateCategory(category._id, { templateOrder: category.templateOrder });
+            await this.categoryManager.updateCategory(category._id, { templatesOrder: category.templatesOrder });
         });
 
         await this.globalSearchIndexCreator.sendUpdateIndexesOnDeleteTemplate(id);

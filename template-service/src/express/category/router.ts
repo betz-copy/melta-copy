@@ -3,7 +3,7 @@ import { createController } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
 import CategoriesController from './controller';
 import {
-    changeTemplateOrderSchema,
+    changeTemplatesOrderSchema,
     createCategorySchema,
     deleteCategorySchema,
     getCategoriesSchema,
@@ -25,6 +25,6 @@ categoryRouter.delete('/:categoryId', ValidateRequest(deleteCategorySchema), con
 
 categoryRouter.put('/:categoryId', ValidateRequest(updateCategorySchema), controller.updateCategory);
 
-categoryRouter.patch('/changeTemplateOrder', ValidateRequest(changeTemplateOrderSchema), controller.updateCategoryTempOrder);
+categoryRouter.patch('/templatesOrder', ValidateRequest(changeTemplatesOrderSchema), controller.updateCategoryTempOrder);
 
 export default categoryRouter;

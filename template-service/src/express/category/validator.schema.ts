@@ -53,8 +53,8 @@ export const updateCategorySchema = Joi.object({
     },
 });
 
-// PATCH /api/categories/changeTemplateOrder
-export const changeTemplateOrderSchema = Joi.object({
+// PATCH /api/categories/templatesOrder
+export const changeTemplatesOrderSchema = Joi.object({
     query: {},
     body: {
         newCategoryId: MongoIdSchema.required(),

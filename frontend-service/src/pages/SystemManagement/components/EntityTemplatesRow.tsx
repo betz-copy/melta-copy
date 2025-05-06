@@ -6,6 +6,7 @@ import i18next from 'i18next';
 import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd';
 import { UseMutateAsyncFunction, useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
+import { keyBy } from 'lodash';
 import { CustomIcon } from '../../../common/CustomIcon';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import { EntityTemplateColor } from '../../../common/EntityTemplateColor';
@@ -18,7 +19,7 @@ import { EntityTemplateWizard } from '../../../common/wizards/entityTemplate';
 import { ICategoryMap, IMongoCategory } from '../../../interfaces/categories';
 import { IEntitySingleProperty, IEntityTemplate, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
-import { updateCategoryRequest, updateCategoryTempOrderRequest } from '../../../services/templates/categoriesService';
+import { updateCategoryRequest, updateCategoryTemplatesOrderRequest } from '../../../services/templates/categoriesService';
 import {
     deleteEntityTemplateRequest,
     entityTemplateObjectToEntityTemplateForm,
@@ -53,7 +54,7 @@ const defaultEntityTemplatePopulated: IMongoEntityTemplatePopulated = {
     uniqueConstraints: [],
     name: '',
     displayName: '',
-    category: { displayName: '', name: '', _id: '', color: '', templateOrder: [] },
+    category: { displayName: '', name: '', _id: '', color: '', templatesOrder: [] },
     disabled: false,
     properties: {
         type: 'object',
@@ -361,14 +362,10 @@ interface CategoryEntitiesBoxProps {
     loadedEntityTemplateId: string;
 }
 
-const orderTemplatesInCategory = (templateOrder: string[], templates: IMongoEntityTemplatePopulated[]): IMongoEntityTemplatePopulated[] => {
-    const idToTemplateMap = new Map<string, IMongoEntityTemplatePopulated>();
+const orderTemplatesInCategory = (templatesOrder: string[], templates: IMongoEntityTemplatePopulated[]): IMongoEntityTemplatePopulated[] => {
+    const idToTemplateMap = keyBy(templates, (t) => t._id.toString());
 
-    for (const template of templates) {
-        idToTemplateMap.set(template._id.toString(), template);
-    }
-
-    return templateOrder.map((id) => idToTemplateMap.get(id)).filter((template): template is IMongoEntityTemplatePopulated => template !== undefined);
+    return templatesOrder.map((id) => idToTemplateMap[id]).filter((template): template is IMongoEntityTemplatePopulated => template !== undefined);
 };
 
 const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
@@ -558,7 +555,7 @@ const EntityTemplatesRow: React.FC = () => {
         const categoriesToShowMapEntities: { category: IMongoCategory; entityTemplates: IMongoEntityTemplatePopulated[] }[] = [];
         categoriesToShow.forEach((category) => {
             const relatedEntityTemplatesToShow = orderTemplatesInCategory(
-                category.templateOrder,
+                category.templatesOrder,
                 entityTemplatesToShow.filter((entity) => entity.category._id === category._id),
             );
             categoriesToShowMapEntities.push({
@@ -649,7 +646,7 @@ const EntityTemplatesRow: React.FC = () => {
             srcCategoryId: string;
             newCategoryId: string;
         }) => {
-            return updateCategoryTempOrderRequest(templateId, newIndex, srcCategoryId, newCategoryId);
+            return updateCategoryTemplatesOrderRequest(templateId, newIndex, srcCategoryId, newCategoryId);
         },
         {
             onSuccess(data) {
@@ -658,11 +655,13 @@ const EntityTemplatesRow: React.FC = () => {
                     categoriesToShow.map((category) => {
                         if (category._id === data.newCategory._id) {
                             return data.newCategory;
-                        } else if (category._id === data.oldCategory._id) {
-                            return data.oldCategory;
-                        } else {
-                            return category;
                         }
+
+                        if (category._id === data.oldCategory._id) {
+                            return data.oldCategory;
+                        }
+
+                        return category;
                     }),
                 );
                 queryClient.invalidateQueries(['searchEntityTemplates', searchText, categoriesToShow]);
@@ -687,7 +686,6 @@ const EntityTemplatesRow: React.FC = () => {
                 srcCategoryId: result.source.droppableId,
                 newCategoryId: result.destination.droppableId,
             });
-            return;
         } else {
             const { category, ...restEntityTemp } = entityTemplates.get(result.draggableId)!;
 
@@ -708,7 +706,7 @@ const EntityTemplatesRow: React.FC = () => {
 
     useEffect(() => {
         setCategoriesToShow(categoriesToShow.map((category) => categories.get(category._id)!));
-    }, [categories]);
+    }, [categories, categoriesToShow]);
 
     return (
         <Grid item container>

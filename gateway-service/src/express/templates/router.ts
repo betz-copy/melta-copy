@@ -87,13 +87,13 @@ templatesRouter.post(
 );
 
 templatesRouter.patch(
-    '/categories/changeTemplateOrder',
+    '/categories/templatesOrder',
     ValidateRequest(updateCategoryTempOrderSchema),
     AuthorizerControllerMiddleware.userCanWriteTemplates,
     templatesControllerMiddleware.updateCategoryTempOrder,
 );
 
-//config
+// config
 
 templatesRouter.get(
     `/config/all`,

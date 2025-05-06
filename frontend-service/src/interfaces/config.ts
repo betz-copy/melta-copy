@@ -8,10 +8,6 @@ export interface IBaseConfig {
     type: ConfigTypes;
 }
 
-export interface IMongoBaseConfig extends IBaseConfig {
-    _id: string;
-}
-
 export interface IOrderConfig extends IBaseConfig {
     order: string[];
 }

@@ -43,12 +43,12 @@ const CategoryWizard: React.FC<WizardBaseType<CategoryWizardValues>> = ({
         {
             onSuccess: (data) => {
                 queryClient.setQueryData<ICategoryMap>('getCategories', (categories) => categories!.set(data._id, data));
-                queryClient.setQueryData<IMongoOrderConfig>('getCategoryConfig', (categoryConfig) => {
-                    const order = categoryConfig!.order;
-                    order.push(data._id);
+                // queryClient.setQueryData<IMongoOrderConfig>('getCategoryConfig', (categoryConfig) => {
+                //     const { order } = categoryConfig!;
+                //     order.push(data._id);
 
-                    return { ...categoryConfig!, order: order };
-                });
+                //     return { ...categoryConfig!, order };
+                // });
 
                 const updatedUserPermissions = updateUserPermissionForCategory(data, currentUser, currentWorkspace._id);
                 setUser(updatedUserPermissions);
