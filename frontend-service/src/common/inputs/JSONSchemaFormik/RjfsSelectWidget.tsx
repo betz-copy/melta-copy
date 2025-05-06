@@ -1,10 +1,9 @@
 /* eslint-disable no-underscore-dangle */
 import React from 'react';
 import { WidgetProps, asNumber, getUiOptions, guessType } from '@rjsf/utils';
-import './form.css';
-
-import './widget.css';
 import MultipleSelect from '../MultipleSelect';
+import './form.css';
+import './widget.css';
 
 const nums = new Set(['number', 'integer']);
 

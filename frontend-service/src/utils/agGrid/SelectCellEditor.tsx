@@ -20,7 +20,7 @@ interface SelectCellEditorProps {
     label?: string;
 }
 
-const SelectCellEditor: React.FC<SelectCellEditorProps> = ({ values, value, onValueChange, multiple = false, colorsOptions }) => {
+const SelectCellEditor: React.FC<SelectCellEditorProps> = ({ options, value, onValueChange, multiple = false, colorsOptions }) => {
     const [selectedValues, setSelectedValues] = useState<string | string[] | undefined>(value || (multiple ? [] : ''));
 
     useEffect(() => {
@@ -40,7 +40,7 @@ const SelectCellEditor: React.FC<SelectCellEditorProps> = ({ values, value, onVa
             value={selectedValues}
             onChange={(_, newValue) => handleAutocompleteChange(newValue)}
             disableCloseOnSelect={multiple}
-            options={values}
+            options={options}
             fullWidth
             getOptionLabel={(option) => option}
             isOptionEqualToValue={(option, val) => option === val}
