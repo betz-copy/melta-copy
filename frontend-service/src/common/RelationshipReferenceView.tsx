@@ -13,7 +13,8 @@ import { getEntityTemplateColor } from '../utils/colors';
 import { ColoredEnumChip } from './ColoredEnumChip';
 import { IEntity } from '../interfaces/entities';
 import { useWorkspaceStore } from '../stores/workspace';
-
+import { locationConverterToString } from '../utils/map/convert';
+import { CoordinateSystem } from './inputs/JSONSchemaFormik/RjsfLocationWidget';
 interface RelationshipReferenceViewProps {
     entity: IEntity | string;
     relatedTemplateId: string;
@@ -84,6 +85,12 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({ e
         );
     }
 
+    const fieldValue =
+        relatedEntityTemplate.properties.properties[relatedTemplateField].format === 'location'
+            ? entity.properties[`${relatedTemplateField}_coordinateSystem`] === CoordinateSystem.UTM
+                ? locationConverterToString(entity.properties[relatedTemplateField].location, CoordinateSystem.WGS84, CoordinateSystem.UTM)
+                : entity.properties[relatedTemplateField].location
+            : entity.properties[relatedTemplateField];
     return (
         <MeltaTooltip
             PopperProps={{
@@ -121,8 +128,10 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({ e
             >
                 <Grid display="inline-block">
                     <ColoredEnumChip
-                        key={entity.properties[relatedTemplateField]}
-                        label={entity.properties[relatedTemplateField]}
+                        // key={entity.properties[relatedTemplateField]}
+                        // label={entity.properties[relatedTemplateField]}
+                        key={fieldValue}
+                        label={fieldValue}
                         color={entityTemplateColor}
                         icon={
                             relatedEntityTemplate.iconFileId ? (

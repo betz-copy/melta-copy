@@ -10,8 +10,9 @@ import { IEntity } from '../../interfaces/entities';
 import { searchEntitiesOfTemplateRequest } from '../../services/entitiesService';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { EntityPropertiesInternal } from '../EntityProperties';
-import RelationshipReferenceView from '../RelationshipReferenceView';
+// import RelationshipReferenceView from '../RelationshipReferenceView';
 import { environment } from '../../globals';
+import { locationConverterToString } from '../../utils/map/convert';
 
 const TemplateEntitiesAutocomplete: React.FC<{
     template: IMongoEntityTemplatePopulated;
@@ -122,6 +123,37 @@ const TemplateEntitiesAutocomplete: React.FC<{
             : template.propertiesPreview[0]) ?? template.propertiesOrder[0],
     ];
 
+    const convertPropertyToString = (property: any): string | undefined => {
+        if (typeof property === 'object') {
+            if (property.location) {
+                return locationConverterToString(property.location, property.coordinateSystem);
+            } else if (Array.isArray(property)) {
+                try {
+                    //user array
+                    const parsedArray = property.map((prop) => {
+                        const parsed = JSON.parse(prop);
+
+                        return `${parsed.fullName} - ${parsed.hierarchy}`;
+                    });
+                    return parsedArray.toString();
+                } catch {
+                    return property.toString();
+                }
+            } else {
+                return property.toString();
+            }
+        }
+
+        try {
+            //check if field is user and parse it
+            const parsedUser = JSON.parse(property);
+
+            return typeof parsedUser === 'object' ? `${parsedUser.fullName} - ${parsedUser.hierarchy}` : parsedUser;
+        } catch {
+            return property;
+        }
+    };
+
     return (
         <Autocomplete
             value={value}
@@ -135,7 +167,14 @@ const TemplateEntitiesAutocomplete: React.FC<{
             loading={isLoading || isFetchingNextPage}
             loadingText={i18next.t('templateEntitiesAutocomplete.loading')}
             noOptionsText={i18next.t('templateEntitiesAutocomplete.noOptions')}
-            getOptionLabel={(option) => option.properties[showField].toString() || option.properties._id.toString()}
+            getOptionLabel={(option) => {
+                // if (typeof option.properties[showField] === 'object') {
+                //     return convertPropertyToString(option.properties[showField]);
+                // }
+
+                // return option.properties[showField].toString() || option.properties._id.toString();
+                return convertPropertyToString(option.properties[showField]) || option.properties._id.toString();
+            }}
             isOptionEqualToValue={(option, currValue) => option.properties._id === currValue.properties._id}
             filterOptions={(options) => options}
             renderInput={(params) => (
@@ -151,18 +190,18 @@ const TemplateEntitiesAutocomplete: React.FC<{
             renderOption={(props, option) => {
                 const displayOptionValues = displayKeys.map((key) => {
                     const property = option.properties[key];
-                    const templateProperty = template.properties.properties[key];
 
-                    return typeof property === 'object' ? (
-                        <RelationshipReferenceView
-                            key={key}
-                            entity={property}
-                            relatedTemplateId={property.templateId}
-                            relatedTemplateField={templateProperty.relationshipReference!.relatedTemplateField}
-                        />
-                    ) : (
-                        property
-                    );
+                    // return typeof property === 'object'
+                    //     ? // <RelationshipReferenceView
+                    //       //     key={key}
+                    //       //     entity={property}
+                    //       //     relatedTemplateId={property.relatedTemplateId}
+                    //       //     // relatedTemplateField={templateProperty.relationshipReference!.relatedTemplateField}
+                    //       //     relatedTemplateField={showField}
+                    //       // />
+                    //       convertPropertyToString(property)
+                    //     : property;
+                    return convertPropertyToString(property);
                 });
 
                 return (

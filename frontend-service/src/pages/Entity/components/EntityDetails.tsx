@@ -35,6 +35,8 @@ import { EntityDisableCheckbox } from './EntityDisableCheckbox';
 import TooltipMenuButton from './TooltipMenuButton';
 import UpdateStatusWithRuleBreachDialog from './UpdateStatusWithRuleBreachDialog';
 import LocationPreview from '../../Map/LocationPreview';
+import { CoordinateSystem } from '../../../common/inputs/JSONSchemaFormik/RjsfLocationWidget';
+import { locationConverterToString } from '../../../utils/map/convert';
 
 const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; expandedEntity: IEntityExpanded }> = ({
     entityTemplate,
@@ -82,17 +84,32 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
             : '';
     };
 
-    const formatRelationshipField = (): IEntityExpanded => {
-        const expandedCopy = JSON.parse(JSON.stringify(expandedEntity));
+    const formatFieldsForExport = (): IEntityExpanded => {
+        const expandedCopy = structuredClone(expandedEntity);
 
         for (const [fieldKey, field] of Object.entries(entityTemplate.properties.properties)) {
             if (field?.format === 'relationshipReference' && field?.relationshipReference?.relatedTemplateField) {
-                const relatedField = field.relationshipReference.relatedTemplateField;
+                const relatedField: string = field.relationshipReference.relatedTemplateField;
                 const relationshipObject = expandedCopy.entity.properties?.[fieldKey];
 
                 if (relationshipObject && typeof relationshipObject === 'object' && relationshipObject.properties) {
-                    expandedCopy.entity.properties[fieldKey] = relationshipObject.properties?.[relatedField];
+                    if (relationshipObject.properties?.[relatedField].location) {
+                        //is a location
+                        const locationString: string = relationshipObject.properties?.[`${relatedField}_tostring`];
+                        expandedCopy.entity.properties[fieldKey] =
+                            relationshipObject.properties?.[`${relatedField}_coordinateSystem`] === CoordinateSystem.UTM
+                                ? locationConverterToString(locationString, CoordinateSystem.WGS84, CoordinateSystem.UTM)
+                                : locationString;
+                    } else {
+                        expandedCopy.entity.properties[fieldKey] = relationshipObject.properties?.[relatedField];
+                    }
                 }
+            } else if (field?.format === 'location') {
+                const location: { location: string; coordinateSystem: CoordinateSystem } = expandedCopy.entity.properties?.[fieldKey];
+                expandedCopy.entity.properties[fieldKey] =
+                    location.coordinateSystem === CoordinateSystem.UTM
+                        ? locationConverterToString(location.location, CoordinateSystem.WGS84, CoordinateSystem.UTM)
+                        : location.location;
             }
         }
 
@@ -337,7 +354,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                             {entityTemplate.documentTemplatesIds?.length ? (
                                 <Grid item>
                                     <ExportFormats
-                                        properties={formatRelationshipField().entity.properties}
+                                        properties={formatFieldsForExport().entity.properties}
                                         documentTemplateIds={entityTemplate.documentTemplatesIds}
                                         disabled={isEntityDisabled}
                                         justifyContent="flex-end"
