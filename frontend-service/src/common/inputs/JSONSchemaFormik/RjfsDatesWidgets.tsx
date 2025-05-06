@@ -108,9 +108,7 @@ const getRjfsDateOrDateTimeWidget =
                             onFocus={_onFocus}
                             error={rawErrors.length > 0}
                             variant={variant}
-                            InputLabelProps={{
-                                shrink: readonly || undefined,
-                            }}
+                            InputLabelProps={{ shrink: readonly || undefined }}
                             InputProps={{
                                 endAdornment: (
                                     <InputAdornment position="end" style={{ cursor: 'pointer' }}>

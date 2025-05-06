@@ -106,14 +106,12 @@ const MultipleSelect: React.FC<{
                     variant={variant}
                     error={rawErrors.length > 0}
                     label={label}
-                    InputLabelProps={{
-                        shrink: readonly || undefined,
-                    }}
                     inputProps={{
                         required: multiple ? required && value.length === 0 : required,
                         ...params.inputProps,
                     }}
                     color={color as TextFieldProps['color']}
+                    InputLabelProps={{ shrink: readonly || undefined }}
                 />
             )}
         />

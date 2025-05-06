@@ -74,23 +74,8 @@ const RjsfTextWidget = ({
             autoFocus={autofocus}
             required={required}
             disabled={disabled}
-            InputLabelProps={{
-                shrink: readonly || undefined,
-                style: {
-                    fontSize: '14px',
-                },
-            }}
-            inputProps={{
-                readOnly: readonly,
-                style: {
-                    textOverflow: 'ellipsis',
-                    fontSize: '14px',
-                },
-                sx: {
-                    '&::-webkit-inner-spin-button': { display: 'none' },
-                    '&::-webkit-outer-spin-button': { display: 'none' },
-                },
-            }}
+            InputLabelProps={{ shrink: readonly || undefined }}
+            inputProps={{ readOnly: readonly }}
             type={(options.inputType ?? inputType) as string}
             value={finalValue}
             error={rawErrors.length > 0}

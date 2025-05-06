@@ -487,6 +487,7 @@ export default {
         color: 'בחר צבע',
         failedToUpdateSystemData: 'נכשל לעדכן נתוני מערכת',
         date: 'בחר תאריך',
+        dateRange: 'טווח תאריכים',
         category: {
             createTitle: 'יצירת קטגוריה',
             updateTitle: 'עריכת קטגוריה',
