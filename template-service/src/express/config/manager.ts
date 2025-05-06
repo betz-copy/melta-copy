@@ -23,7 +23,7 @@ class ConfigManager extends DefaultManagerMongo<IMongoBaseConfig> {
     }
 
     getOrderConfigByName(name: string): Promise<IMongoOrderConfig> {
-        return this.orderDiscriminator.findOne({ name: name }).orFail(new NotFoundError('Config not found')).lean().exec();
+        return this.orderDiscriminator.findOne({ name }).orFail(new NotFoundError('Config not found')).lean().exec();
     }
 
     updateOrder(id: string, updatedOrder: Partial<IOrderConfig>): Promise<IMongoOrderConfig> {

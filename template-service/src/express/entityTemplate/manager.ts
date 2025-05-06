@@ -131,7 +131,7 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
             entityTemplate = await createdEntityTemplate.populate<Pick<IEntityTemplatePopulated, 'category'>>('category');
         }
 
-        const templatesOrder = entityTemplate.category.templatesOrder;
+        const { templatesOrder } = entityTemplate.category;
         templatesOrder.push(entityTemplate._id.toString());
         await this.categoryManager.updateCategory(entityTemplate.category._id, { templatesOrder: templatesOrder });
 
