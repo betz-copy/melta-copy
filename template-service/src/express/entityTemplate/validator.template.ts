@@ -84,19 +84,17 @@ export class EntityTemplateValidator extends DefaultController<IMongoEntityTempl
         const relatedUserFieldsOfkartoffelFields: string[] = [];
         const userFields: string[] = [];
         Object.entries(properties).forEach(([key, value]) => {
-            if(value.format && value.format === 'user') {
+            if (value.format && value.format === 'user') {
                 userFields.push(key);
             }
-            if (value.format && value.format === 'kartoffelUserField') {
+            if (value.format && (value.format === 'kartoffelUserField' || value.format === 'unitField')) {
                 relatedUserFieldsOfkartoffelFields.push(value.expandedUserField?.relatedUserField || '');
             }
         });
 
-        if (relatedUserFieldsOfkartoffelFields.some((userField) => !userFields.includes(userField))) 
+        if (relatedUserFieldsOfkartoffelFields.some((userField) => !userFields.includes(userField)))
             throw new BadRequestError('Cannot add kartoffelField derived from user field that does not exist');
     }
-
-
 
     validateEntityTemplateUpdate = async (req: Request) => {
         const {
@@ -112,7 +110,6 @@ export class EntityTemplateValidator extends DefaultController<IMongoEntityTempl
 
         this.validateProperties(properties.properties);
     };
-
 
     validateCreateEntityTemplate = async (req: Request) => {
         const {
