@@ -1,6 +1,7 @@
 import { TemplatesManagerService } from '.';
 import config from '../../config';
 import { Authorizer, RequestWithPermissionsOfUserId } from '../../utils/authorizer';
+import { ISearchFilter } from '../instanceService/interfaces/entities';
 import { ISubCompactPermissions } from '../userService/interfaces/permissions/permissions';
 import { IMongoRelationshipTemplate } from './relationshipsTemplateService';
 
@@ -59,6 +60,7 @@ export interface IEntitySingleProperty {
         relationshipTemplateDirection: 'outgoing' | 'incoming';
         relatedTemplateId: string;
         relatedTemplateField: string;
+        filters?: ISearchFilter;
     };
     archive?: boolean;
     filterRelationList?: boolean;
