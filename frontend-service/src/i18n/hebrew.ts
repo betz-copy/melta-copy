@@ -1449,5 +1449,6 @@ export default {
             // table: 'כמות ישויות למשיכה בתצוגה טבלאית', // comment out  waiting for Itay
             bulk: 'כמות ישויות למשיכה בתצוגת כרטיסיות',
         },
+        unitFieldSplitDepth: 'מספר תתי רמות להפרדה של שדה יחידה',
     },
 };

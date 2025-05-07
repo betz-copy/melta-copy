@@ -32,6 +32,7 @@ const MetadataSchema = new mongoose.Schema<IMetadata>(
         searchLimits: {
             bulk: { type: Number },
         },
+        unitFieldSplitDepth: { type: Number },
     },
     { _id: false },
 );

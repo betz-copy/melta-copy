@@ -132,8 +132,8 @@ const propertiesArraySchema = Joi.array()
                 switch: [
                     { is: 'kartoffelUserField', then: Joi.required() },
                     { is: 'unitField', then: Joi.required() },
-                    // { otherwise: Joi.forbidden() },
                 ],
+                otherwise: Joi.forbidden(),
             }),
             calculateTime: Joi.boolean().when('format', { not: Joi.valid('date', 'date-time'), then: Joi.forbidden() }),
             serialStarter: Joi.number().when('type', { not: 'number', then: Joi.forbidden() }),

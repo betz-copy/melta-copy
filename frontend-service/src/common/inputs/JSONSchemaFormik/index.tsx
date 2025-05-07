@@ -23,6 +23,7 @@ import RjfsUserArrayWidget from './RjfsUserArrayWidget';
 import { IKartoffelUser } from '../../../interfaces/users';
 import RjfsSignatureWidget from './RjfsSignatureWidgets';
 import RjsfCommentWidget from './RjsfCommentWidget';
+import { useWorkspaceStore } from '../../../stores/workspace';
 
 const ajvErrorsToFormikErrors = (schema: IMongoEntityTemplatePopulated['properties'], ajvErrors: ErrorObject[]): FormikErrors<any> => {
     const formikErrorsEntries = ajvErrors.map((ajvError) => {
@@ -177,6 +178,8 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
 
     const notTouchedUnique: ErrorSchema<{}> = pickBy(rjsfExtraUniqueErrors, (_value, key) => !touched[key]);
     const mergedErrors: ErrorSchema<{}> = mergeErrorSchemas(ajvExtraErrorsOnlyTouched, notTouchedUnique);
+    const workspace = useWorkspaceStore((state) => state.workspace);
+    const { unitFieldSplitDepth } = workspace.metadata;
 
     return (
         <JSONSchemaForm
@@ -244,7 +247,13 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
 
                                 userFieldsToUpdate.forEach((key) => {
                                     const kartoffelField = schema.properties[key].expandedUserField?.kartoffelField;
-                                    propertiesToUpdate[key] = user && kartoffelField ? user[kartoffelField] : undefined;
+
+                                    if (schema.properties[key].format === 'unitField') {
+                                        propertiesToUpdate[key] =
+                                            user && kartoffelField ? user[kartoffelField].split('/')[unitFieldSplitDepth] : undefined;
+                                    } else {
+                                        propertiesToUpdate[key] = user && kartoffelField ? user[kartoffelField] : undefined;
+                                    }
                                 });
 
                                 propertiesToUpdate[propertyKey] = user
