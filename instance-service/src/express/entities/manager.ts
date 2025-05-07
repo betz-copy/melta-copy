@@ -1224,10 +1224,10 @@ export class EntityManager extends DefaultManagerNeo4j {
         const rulesOfEntity = await this.relationshipsTemplateManagerService.searchRules({
             entityTemplateIds: [entity.templateId],
         });
-        console.dir({ rulesOfEntity }, { depth: null });
+        // console.dir({ rulesOfEntity }, { depth: null });
 
         const relevantRulesOfEntity = filterDependentRulesOnEntity(rulesOfEntity, entity.templateId, updatedProperties);
-        console.dir({ relevantRulesOfEntity }, { depth: null });
+        // console.dir({ relevantRulesOfEntity }, { depth: null });
 
         const entityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(entity.templateId);
 

@@ -229,9 +229,12 @@ const getAggregatedRelationshipName = ({
 
 const getPropertyKey = (entityTemplate: IMongoEntityTemplate, propertyKey: string) => {
     const property = Object.entries(entityTemplate.properties.properties).find(([key, _value]) => key === propertyKey)?.[1];
-    console.log('in getPropKey');
-    if (property?.format === 'relationshipReference' && property.relationshipReference)
-        return `${propertyKey}.properties.${property.relationshipReference.relatedTemplateField}_tostring_reference`;
+    if (property?.format === 'relationshipReference' && property.relationshipReference) {
+        console.log('getPropertyKeyyyyyyyyyyyy', { propertyKey }, property.relationshipReference.relatedTemplateField);
+
+        return `${propertyKey}.properties.${property.relationshipReference.relatedTemplateField}_reference`;
+    }
+
     return propertyKey;
 };
 
@@ -252,7 +255,7 @@ const generateNeo4jQueryFromPropertyOfVariable = (
     const aggregatedRelationshipName = variable.aggregatedRelationship && getAggregatedRelationshipName(variable as Required<IVariable>);
 
     const propertyKey = getPropertyKey(entityTemplate, property);
-    console.log({ propertyKey });
+    // console.log({ propertyKey });
 
     return {
         // todo: can assume property is good format?
@@ -331,11 +334,11 @@ const generateNeo4jQueryFromGroup = (
             entityTemplate,
         );
     });
-    // console.dir({ subFormulasQueries }, { depth: null });
 
     const resultValueVariableName = `${resultVariableNamePrefix}${resultValueVariableNameSuffix}`;
     const resultCausesVariableName = `${resultVariableNamePrefix}${resultCausesVariableNameSuffix}`;
     // console.log({ resultValueVariableName, resultCausesVariableName });
+    console.log('barvazzzzzzzzzzzzzz', { subFormulasQueries });
 
     return {
         cypherCalculation: `

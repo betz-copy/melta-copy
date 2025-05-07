@@ -128,8 +128,11 @@ export const getCausesOfEquation = (
     const rhsArgumentNewCauses = getNewCausesOfArgument(equationCauses.rhsArgument, equationCausesBeforeAction?.rhsArgument, equation.rhsArgument);
     // console.dir({ lhsArgumentNewCauses, rhsArgumentNewCauses }, { depth: null });
     // console.dir({ equationCauses, equationCausesBeforeAction }, { depth: null });
+    console.log('in getCausesOfEquation', lhsArgumentNewCauses, rhsArgumentNewCauses);
 
     if (equationCauses.resultValue !== equationCausesBeforeAction?.resultValue) {
+        console.log('in if in getCausesOfEquation');
+
         // if resultValue is new, then all causes are new.
         return {
             newCauses: [
@@ -154,6 +157,7 @@ export const getCausesOfGroup = (
     group: IGroup,
 ): { newCauses: ICause[]; oldCauses: ICause[] } => {
     // console.dir({ groupCauses, groupCausesBeforeAction }, { depth: null });
+    console.log('hiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii', { groupCauses, groupCausesBeforeAction, group });
 
     // already filtered in DB, but to make sure. if group is false, then all falsy subFormulas caused it. same goes to true
     const relevantSubFormulasCauses = groupCauses.subFormulas.filter(({ resultValue }) => groupCauses.resultValue === resultValue);
@@ -182,6 +186,8 @@ export const getCausesOfAggregationGroup = (
     aggGroupCausesBeforeAction: IAggregationGroupCauses | undefined,
     aggGroup: IAggregationGroup,
 ): { newCauses: ICause[]; oldCauses: ICause[] } => {
+    console.log('heloooooooooooooo', { aggGroupCauses, aggGroupCausesBeforeAction, aggGroup });
+
     // already filtered in DB, but to make sure. if agg group is false, then all falsy iterations caused it. same goes to true
     const relevantIterationsCauses = aggGroupCauses.iterations.filter(({ resultValue }) => aggGroupCauses.resultValue === resultValue);
     const iterationsNewAndOldCauses = relevantIterationsCauses.map((iteration) => {
@@ -200,6 +206,8 @@ export const getCausesOfAggregationGroup = (
             // then oldCausesOfGroup should be empty anyways, but using it just in case
             return { newCauses: [...newCausesOfGroup, instanceOfIterationCause], oldCauses: oldCausesOfGroup };
         }
+        console.log('new an old', { newCausesOfGroup, oldCausesOfGroup });
+
         return { newCauses: [...newCausesOfGroup], oldCauses: [...oldCausesOfGroup, instanceOfIterationCause] };
     });
 
@@ -226,7 +234,8 @@ export const getCausesOfFormula = (
     }
 
     if (isEquation(formula)) {
-        // console.log('isEquation(formula)');
+        // console.log('getCausesOfFormula isEquation');
+        console.log('isEquation(formula)');
         return getCausesOfEquation(formulaCauses as IEquationCauses, formulaCausesBeforeAction as IEquationCauses | undefined, formula);
     }
 

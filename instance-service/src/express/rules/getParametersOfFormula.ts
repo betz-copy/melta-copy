@@ -75,17 +75,24 @@ export const filterDependentRulesViaAggregation = (rules: IMongoRule[], relation
 
 const isRuleDependentOnEntity = (rule: IMongoRule, entityTemplateId: string, updatedProperties?: string[]) => {
     const parameters = getParametersOfFormula(rule.formula);
+    // console.log('in isRuleDependentOnEntity', { rule, updatedProperties });
+    // console.log('parameters', { parameters });
 
     return parameters.some(({ variable, property }) => {
         if (updatedProperties) {
+            console.log('in if 1');
+
             // check if rule dependent specificly only on updatedProperties
             if (!property) {
+                console.log('in if 2');
                 return false;
             }
 
             if (variable.aggregatedRelationship) {
+                console.log('in if 3');
                 return false;
             }
+            console.log('T or F', updatedProperties.includes(property));
 
             return variable.entityTemplateId === entityTemplateId && updatedProperties.includes(property);
         }
