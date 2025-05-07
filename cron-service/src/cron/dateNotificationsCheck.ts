@@ -2,7 +2,7 @@ import { IDateAboutToExpireNotificationMetadata, NotificationType } from '../not
 import config from '../config';
 import { UsersManager } from '../users/manager';
 import { WorkspaceTypes } from '../workspaces/inteface';
-import { InstancesService } from '../services/instance';
+import { InstanceService } from '../services/instance';
 import { IFilterDatesRange } from '../instance/entity/interface';
 import { EntityTemplateService, IMongoEntityTemplatePopulated } from '../services/entityTemplate';
 import { PermissionScope, PermissionType } from '../users/intefaces/permissions';
@@ -29,7 +29,7 @@ const checkNotificationDateInCustomAlert = (datePropertyValue: Date, dateNotific
 };
 
 const getFilteredInstances = async (
-    instancesService: InstancesService,
+    instancesService: InstanceService,
     entityTemplateId: string,
     propertiesWithDateNotifications: IFilterDatesRange[],
 ) => {
@@ -64,7 +64,7 @@ const getFilteredInstances = async (
 
 const sendNotificationsForEntityTemplate = async (
     workspaceId: string,
-    instancesService: InstancesService,
+    instancesService: InstanceService,
     rabbitManager: RabbitManager,
     entityTemplate: IMongoEntityTemplatePopulated,
 ) => {
@@ -138,7 +138,7 @@ export const checkForDateNotifications = async () => {
         await Promise.all(
             workspaceIds.map(async (workspaceId) => {
                 const entityTemplateService = new EntityTemplateService(workspaceId);
-                const instancesService = new InstancesService(workspaceId);
+                const instancesService = new InstanceService(workspaceId);
                 const rabbitManager = new RabbitManager(workspaceId);
 
                 try {

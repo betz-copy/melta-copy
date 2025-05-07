@@ -280,7 +280,7 @@ export class BulkActionManager extends DefaultManagerNeo4j {
         transaction: Transaction,
         actions: IAction[],
         entitiesTemplatesByIds: Map<string, IMongoEntityTemplate>,
-        userId: string,
+        userId?: string,
     ) {
         const results: (IEntity | IRelationship)[] = [];
         const allActivityLogsToCreate: Omit<IActivityLog, '_id'>[] = [];
@@ -352,8 +352,8 @@ export class BulkActionManager extends DefaultManagerNeo4j {
                     const { updatedEntity, activityLogsToCreate } = await this.entityManager.updateAction(
                         fixedMetaData,
                         transaction,
-                        userId,
                         entitiesTemplatesByIds,
+                        userId,
                     );
 
                     results.push(updatedEntity);
@@ -447,7 +447,7 @@ export class BulkActionManager extends DefaultManagerNeo4j {
         });
     }
 
-    async runBulkOfActions(actions: IAction[], ignoredRules: IBrokenRule[], dryRun: boolean, userId: string) {
+    async runBulkOfActions(actions: IAction[], ignoredRules: IBrokenRule[], dryRun: boolean, userId?: string) {
         return this.neo4jClient
             .performComplexTransaction(
                 'writeTransaction',

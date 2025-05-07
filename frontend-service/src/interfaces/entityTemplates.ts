@@ -32,8 +32,15 @@ export interface IEntitySingleProperty {
         relatedTemplateField: string;
         filters?: ISearchFilter;
     };
+    expandedUserField?: {
+        relatedUserField: string;
+        kartoffelField: string;
+    };
     archive?: boolean;
     filterRelationList?: boolean;
+    hideFromDetailsPage?: boolean;
+    comment?: string;
+    color?: string;
 }
 
 export interface IEntityTemplate {

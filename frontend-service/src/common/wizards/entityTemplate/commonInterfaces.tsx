@@ -29,11 +29,18 @@ export interface CommonFormInputProperties {
     deleted?: boolean;
     readOnly?: boolean;
     uniqueCheckbox?: boolean;
+    expandedUserField?: {
+        relatedUserField: string;
+        kartoffelField: string;
+    };
     groupName?: string;
     archive?: boolean;
     identifier?: boolean;
     mapSearch?: boolean;
     filterRelationList?: boolean;
+    comment?: string;
+    hideFromDetailsPage?: boolean;
+    color?: string;
 }
 
 export interface ConvertToRelationshipFieldFormInputProperties {

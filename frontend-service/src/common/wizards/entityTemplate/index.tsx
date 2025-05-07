@@ -56,9 +56,16 @@ export interface EntityTemplateFormInputProperties {
         relatedTemplateField: string;
         filters?: IFilterRelationReference[];
     };
+    expandedUserField?: {
+        relatedUserField: string;
+        kartoffelField: string;
+    };
     archive?: boolean;
     mapSearch?: boolean;
     filterRelationList?: boolean;
+    hideFromDetailsPage?: boolean;
+    comment?: string;
+    color?: string;
 }
 export interface EntityTemplateWizardValues
     extends Omit<

@@ -30,6 +30,9 @@ export interface IEntitySingleProperty {
     uniqueItems?: true;
     archive?: boolean;
     filterRelationList?: boolean;
+    comment?: string;
+    color?: string;
+    hideFromDetailsPage?: boolean;
 }
 
 export interface IEntityTemplate {

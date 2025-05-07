@@ -1,4 +1,4 @@
-import React, { SetStateAction, useCallback, useRef, useState } from 'react';
+import React, { SetStateAction, useCallback, useMemo, useRef, useState } from 'react';
 import { Accordion, AccordionDetails, AccordionSummary, Box, Button, Grid, styled, Typography } from '@mui/material';
 import { DragDropContext, DraggableProvided, Droppable } from 'react-beautiful-dnd';
 import { v4 as uuid } from 'uuid';
@@ -54,6 +54,7 @@ interface FieldBlockProps<PropertiesType extends string, Values extends Record<P
     supportIdentifier?: boolean;
     hasIdentifier?: boolean;
     supportFilterRelationList?: boolean;
+    supportComment?: boolean;
 }
 
 const FieldBlock = <PropertiesType extends string, Values extends Record<PropertiesType, CommonFormInputProperties[]>>({
@@ -104,18 +105,20 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
         dateNotification: undefined,
         calculateTime: undefined,
         relationshipReference: undefined,
+        expandedUserField: undefined,
         serialStarter: 0,
         archive: false,
         mapSearch: false,
         filterRelationList: false,
     },
     supportConvertingToMultipleFields = true,
+    supportComment,
 }: React.PropsWithChildren<FieldBlockProps<PropertiesType, Values>>) => {
     // copy of values of formik in order to show changes on inputs fast (formik rerenders are slow)
     const [displayValues, setDisplayValues] = React.useState(values[propertiesType]);
 
     const [showAreUSureDialogForRemoveProperty, setShowAreUSureDialogForRemoveProperty] = useState(false);
-    const [selectedIndexToRemove, setSelectedIndexForRemove] = useState(-1);
+    const [selectedIndexesToRemove, setSelectedIndexesForRemove] = useState<number[]>([]);
 
     // using displayValues ref because update functions (push/remove/...) are not updated for the field cards on
     // every re-render and if displayValues changes, it does not update in the functions of the field cards.
@@ -141,10 +144,17 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
         updateFormik();
     };
 
-    const setFieldDisplayValue = (index: number, field: keyof Values, value: any) => {
+    const setFieldDisplayValue = (indexes: number[], field: keyof Values, value: any) => {
         const displayValuesCopy = [...displayValuesRef.current] as Values[PropertiesType];
 
-        displayValuesCopy[index] = { ...displayValuesCopy[index], [field]: value };
+        indexes.forEach((index) => {
+            displayValuesCopy[index] = {
+                ...displayValuesCopy[index],
+                [field]: value,
+            };
+            if (field === 'name' && displayValuesCopy[index].type === 'comment')
+                displayValuesCopy[index].title = `${i18next.t('propertyTypes.comment')}-${value}`;
+        });
 
         setDisplayValues(displayValuesCopy);
         updateFormik();
@@ -152,20 +162,49 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
 
     const onDeleteSure = () => {
         setShowAreUSureDialogForRemoveProperty(false);
-        setFieldDisplayValue(selectedIndexToRemove, 'deleted' as keyof Values, true);
+        setFieldDisplayValue(selectedIndexesToRemove, 'deleted' as keyof Values, true);
     };
 
     const remove = (index: number, isNewProperty: Boolean) => {
         const displayValuesCopy = [...displayValuesRef.current] as Values[PropertiesType];
         const isDeleted = displayValuesCopy[index].deleted;
 
+        const removedProperty = displayValuesCopy[index];
+
         if (isDeleted) {
-            setFieldDisplayValue(index, 'deleted' as keyof Values, false);
+            const indexesToUpdate = [index];
+
+            if (removedProperty.type === 'kartoffelUserField') {
+                const userFieldIndex = displayValuesCopy.findIndex(
+                    (property) =>
+                        property.type === 'user' && removedProperty.expandedUserField?.relatedUserField === property.name && property.deleted,
+                );
+
+                if (userFieldIndex !== -1) indexesToUpdate.push(userFieldIndex);
+            }
+
+            setFieldDisplayValue(indexesToUpdate, 'deleted' as keyof Values, false);
         } else if (areThereAnyInstances && !isNewProperty) {
             setShowAreUSureDialogForRemoveProperty(true);
-            setSelectedIndexForRemove(index);
+            const indexesToUpdate = [index];
+            if (removedProperty.type === 'user') {
+                displayValuesCopy.forEach((property, propIndex) => {
+                    if (property.type === 'kartoffelUserField' && property.expandedUserField?.relatedUserField === removedProperty.name) {
+                        indexesToUpdate.push(propIndex);
+                    }
+                });
+            }
+
+            setSelectedIndexesForRemove(indexesToUpdate);
         } else {
             displayValuesCopy.splice(index, 1);
+            if (removedProperty.type === 'user') {
+                displayValuesCopy.forEach((property, propIndex) => {
+                    if (property.type === 'kartoffelUserField' && property.expandedUserField?.relatedUserField === removedProperty.name) {
+                        displayValuesCopy.splice(propIndex, 1);
+                    }
+                });
+            }
             setDisplayValues(displayValuesCopy);
             updateFormik();
         }
@@ -198,12 +237,33 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
     const onChange = (index: number, event: React.ChangeEvent<HTMLInputElement>) => {
         const inputName = event.target.name.split('.')[1]; // the input name is in the format `properties[index].field`
         const inputValue = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
-        setFieldDisplayValue(index, inputName as keyof Values, inputValue);
+        setFieldDisplayValue([index], inputName as keyof Values, inputValue);
     };
     const onChangeWrapper = (index: number) => (event: React.ChangeEvent<HTMLInputElement>) => onChange(index, event);
-    const setFieldDisplayValueWrapper = (index: number) => (field: keyof Values, value: any) => setFieldDisplayValue(index, field, value);
+    const setFieldDisplayValueWrapper = (index: number) => (field: keyof Values, value: any) => setFieldDisplayValue([index], field, value);
     const setDisplayValueWrapper = (index: number) => (value: SetStateAction<CommonFormInputProperties>) => setDisplayValue(index, value);
     const isFieldBlockError = Boolean(touched?.[propertiesType]) && Boolean(errors?.[propertiesType]);
+
+    const userPropertiesInTemplate = useMemo(
+        () => values[propertiesType].filter(({ type, deleted }) => type === 'user' && !deleted).map(({ name }) => name),
+        [propertiesType, values],
+    );
+
+    const onDuplicateKartoffelField = (fieldIndex: number) => {
+        const displayValuesCopy = [...displayValuesRef.current] as Values[PropertiesType];
+        displayValuesCopy.splice(fieldIndex + 1, 0, {
+            id: uuid(),
+            ...initialFieldCardDataOnAdd,
+            type: 'kartoffelUserField',
+            readOnly: true,
+            expandedUserField: {
+                relatedUserField: displayValues[fieldIndex].expandedUserField?.relatedUserField || '',
+                kartoffelField: '',
+            },
+        });
+
+        setDisplayValues(displayValuesCopy);
+    };
 
     return (
         <FieldBlockAccordion style={{ border: isFieldBlockError ? '1px solid red' : '' }}>
@@ -261,6 +321,9 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
                                                 locationSearchFields,
                                                 hasActions,
                                                 supportConvertingToMultipleFields,
+                                                supportComment,
+                                                userPropertiesInTemplate,
+                                                onDuplicateKartoffelField,
                                             };
 
                                             if (
@@ -311,7 +374,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
                 handleClose={() => setShowAreUSureDialogForRemoveProperty(false)}
                 title={i18next.t('systemManagement.deleteField')}
                 body={`${i18next.t('systemManagement.warningOnDeleteField')}
-                    ${selectedIndexToRemove > -1 && displayValuesRef.current[selectedIndexToRemove].title}
+                    ${selectedIndexesToRemove.length > 0 && displayValuesRef.current[selectedIndexesToRemove[0]].title}
                     ${i18next.t('systemManagement.continueWarningOnDeleteField')} ${
                     (initialValues as unknown as IMongoEntityTemplatePopulated)?.displayName
                 }`}

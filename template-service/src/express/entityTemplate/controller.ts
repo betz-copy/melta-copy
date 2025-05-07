@@ -13,6 +13,10 @@ class EntityTemplateController extends DefaultController<IMongoEntityTemplate, E
         res.json(await this.manager.getTemplates(req.body));
     }
 
+    async searchEntityTemplatesIncludesFormat(req: Request, res: Response) {
+        res.json(await this.manager.getTemplatesByFormat(req.body));
+    }
+
     async getEntityTemplateById(req: Request, res: Response) {
         const { templateId: id } = req.params;
         res.json(await this.manager.getTemplateById(id));

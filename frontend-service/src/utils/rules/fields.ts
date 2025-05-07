@@ -48,7 +48,7 @@ const entityTemplateToFieldsConfig = (
             ]);
         }
 
-        if (value.format !== 'relationshipReference' && value.format !== 'user' && value.format !== 'signature') {
+        if (value.format !== 'relationshipReference' && value.format !== 'user' && value.format !== 'signature' && value.format !== 'comment') {
             fieldEntries.push([
                 `${keyPrefix}${entityTemplate._id}${keySuffix}-${key}`,
                 {

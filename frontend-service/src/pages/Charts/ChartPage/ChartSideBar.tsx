@@ -83,7 +83,9 @@ const ChartSideBar: React.FC<{
                         size="small"
                         sx={{ height: '35px' }}
                         value={formik.values.permission}
-                        onChange={(_event: React.MouseEvent<HTMLElement>, permission: IPermission) => formik.setFieldValue('permission', permission)}
+                        onChange={(_event: React.MouseEvent<HTMLElement>, permission: IPermission) => {
+                            if (permission !== null) formik.setFieldValue('permission', permission);
+                        }}
                         disabled={
                             readonly ||
                             (edit &&

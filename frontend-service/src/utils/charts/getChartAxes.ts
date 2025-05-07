@@ -82,18 +82,28 @@ export const initialValues: IBasicChart = {
 
 const aggregationSchema = Yup.object({
     type: Yup.mixed<IAggregationType>().oneOf(Object.values(IAggregationType)).required('validation.required'),
-    byField: Yup.string().optional(),
+    byField: Yup.string()
+        .nullable()
+        .when('type', {
+            is: (type: IAggregationType) =>
+                [
+                    IAggregationType.CountDistinct,
+                    IAggregationType.Average,
+                    IAggregationType.Sum,
+                    IAggregationType.Minimum,
+                    IAggregationType.Maximum,
+                ].includes(type),
+            then: Yup.string().required(i18next.t('validation.required')).nullable(),
+            otherwise: Yup.string().optional().nullable(),
+        }),
 });
 
 const axisSchema = Yup.object({
-    title: Yup.string().min(2, i18next.t('validation.variableName')),
-    field: Yup.mixed<IAxisField>()
-        .test('is-valid-field', i18next.t('validation.required'), (value) => {
-            if (typeof value === 'string') return true;
-            if (typeof value === 'object' && value !== null && 'type' in value) return aggregationSchema.isValidSync(value);
-            return false;
-        })
-        .required(i18next.t('validation.required')),
+    title: Yup.string(),
+    field: Yup.lazy((value) => {
+        if (typeof value === 'object' && value !== null && 'type' in value) return aggregationSchema;
+        return Yup.string().required(i18next.t('validation.required'));
+    }),
 });
 
 const IBarOrLineMetaDataSchema = Yup.object({
@@ -122,8 +132,8 @@ const getMetaDataSchema = (type: IChartType) => {
 };
 
 export const chartValidationSchema = Yup.object({
-    name: Yup.string().min(2, i18next.t('validation.variableName')).required(i18next.t('validation.required')),
-    description: Yup.string().min(2, i18next.t('validation.variableName')),
+    name: Yup.string().required(i18next.t('validation.required')),
+    description: Yup.string(),
     type: Yup.mixed<IChartType>().oneOf(Object.values(IChartType)).required(i18next.t('validation.required')),
     metaData: Yup.mixed()
         .when('type', (type: IChartType, schema: Yup.AnySchema) => schema.concat(getMetaDataSchema(type)))
