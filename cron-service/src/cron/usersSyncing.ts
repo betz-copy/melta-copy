@@ -1,10 +1,11 @@
+/* eslint-disable import/prefer-default-export */
 import { keyBy } from 'lodash';
 import * as schedule from 'node-schedule';
-import config from '../config';
 import { IEntity, IMongoEntityTemplatePopulated, logger, WorkspaceTypes } from '@microservices/shared';
+import config from '../config';
 import EntityTemplateService from '../services/entityTemplate';
 import InstanceService from '../services/instance';
-import { Kartoffel } from '../services/kartoffel';
+import Kartoffel from '../services/kartoffel';
 import { IKartoffelUser } from '../services/kartoffel/interface';
 import WorkspaceManager from '../workspaces/manager';
 
@@ -118,6 +119,7 @@ export const updateKartoffelFields = async () => {
 
                             const entityById = entitiesMapById[entity.properties._id];
 
+                            // eslint-disable-next-line consistent-return
                             return instanceService.updateEntityInstance(
                                 entity.properties._id,
                                 {

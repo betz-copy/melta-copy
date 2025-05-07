@@ -8,8 +8,8 @@ import {
     PermissionType,
     logger,
 } from '@microservices/shared';
-import InstanceService from '../services/instance';
 import * as schedule from 'node-schedule';
+import InstanceService from '../services/instance';
 import config from '../config';
 import UsersManager from '../users/manager';
 import EntityTemplateService from '../services/entityTemplate';
