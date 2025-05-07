@@ -50,6 +50,7 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
     ajv.addFormat('fileId', /.*/);
     ajv.addFormat('signature', /.*/);
     ajv.addFormat('kartoffelUserField', /.*/);
+    ajv.addFormat('unitField', /.*/);
     ajv.addFormat('user', {
         type: 'string',
         validate: (user) => {

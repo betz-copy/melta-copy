@@ -30,6 +30,7 @@ export const stringFormats = [
     'signature',
     'comment',
     'kartoffelUserField',
+    'unitField',
 ];
 export const arrayTypes = ['multipleFiles', 'enumArray', 'users'];
 
@@ -218,6 +219,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                     | 'user'
                     | 'comment'
                     | 'kartoffelUserField'
+                    | 'unitField'
                     | undefined,
                 enum: type === 'enum' ? options : undefined,
                 items: type === 'enumArray' ? { type: 'string', enum: options } : type === 'users' ? { type: 'string', format: 'user' } : undefined,

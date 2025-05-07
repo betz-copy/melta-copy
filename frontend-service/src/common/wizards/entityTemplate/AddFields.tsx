@@ -68,7 +68,7 @@ const addFieldsSchema = Yup.object({
                     }),
                 }),
                 expandedUserField: Yup.object().when('type', {
-                    is: 'kartoffelUserField',
+                    is: (type) => type === 'kartoffelUserField' || type === 'unitField',
                     then: Yup.object({
                         relatedUserField: Yup.string().required(i18next.t('validation.required')),
                         kartoffelField: Yup.string().required(i18next.t('validation.required')),

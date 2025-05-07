@@ -73,7 +73,7 @@ const validateProperties = (properties, context, errors) => {
         if (value.type && value.type === 'user') {
             userFields.push(value.name);
         }
-        if (value?.type === 'kartoffelUserField') {
+        if (value?.type === 'kartoffelUserField' || value?.type === 'unitField') {
             relatedUserFieldsOfkartoffelFields.push({ value: value.expandedUserField?.relatedUserField || '', index });
         }
     });

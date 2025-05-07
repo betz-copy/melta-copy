@@ -12,6 +12,7 @@ export interface FieldEditCardProps {
     setFieldValue: (field: keyof CommonFormInputProperties, value: any) => void;
     isDisabled?: boolean;
     userPropertiesInTemplate?: string[];
+    isUnitField?: boolean;
 }
 
 const KartoffelUserField: React.FC<FieldEditCardProps> = ({
@@ -22,6 +23,7 @@ const KartoffelUserField: React.FC<FieldEditCardProps> = ({
     setFieldValue,
     isDisabled,
     userPropertiesInTemplate = [],
+    isUnitField = false,
 }) => {
     const kartoffelUserFields: string[] = [
         'displayName',
@@ -64,6 +66,7 @@ const KartoffelUserField: React.FC<FieldEditCardProps> = ({
                 options={userPropertiesInTemplate}
                 onChange={(_e, userField) => {
                     const newValue = { ...value.expandedUserField, relatedUserField: userField || undefined };
+                    if (isUnitField) newValue.kartoffelField = 'hierarchy';
                     setFieldValue('expandedUserField', newValue);
                 }}
                 sx={{ marginRight: '5px', width: '50%' }}
@@ -88,7 +91,7 @@ const KartoffelUserField: React.FC<FieldEditCardProps> = ({
                     />
                 )}
             />
-            {value.expandedUserField?.relatedUserField && (
+            {value.expandedUserField?.relatedUserField && !isUnitField && (
                 <TextField
                     select
                     label={i18next.t('wizard.entityTemplate.fieldDisplay')}
@@ -102,7 +105,7 @@ const KartoffelUserField: React.FC<FieldEditCardProps> = ({
                     error={touchedExpandedUserField && Boolean(errorExpandedUserField?.kartoffelField)}
                     helperText={errorExpandedUserField?.kartoffelField && i18next.t('wizard.entityTemplate.kartoffelFieldRequired')}
                     sx={{ marginRight: '5px', width: '50%' }}
-                    disabled={isDisabled}
+                    disabled={isDisabled || isUnitField}
                     fullWidth
                 >
                     {kartoffelUserFields.map((userField) => (

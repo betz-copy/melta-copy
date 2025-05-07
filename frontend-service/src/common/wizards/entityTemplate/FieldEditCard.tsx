@@ -116,6 +116,7 @@ export interface FieldEditCardProps {
     supportComment?: boolean;
     userPropertiesInTemplate?: string[];
     onDuplicateKartoffelField?: (fieldIndex: number) => void;
+    onDuplicateUnitField?: (fieldIndex: number) => void;
 }
 
 export const FieldEditCard: React.FC<FieldEditCardProps> = ({
@@ -153,6 +154,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     supportComment,
     userPropertiesInTemplate = [],
     onDuplicateKartoffelField,
+    onDuplicateUnitField,
 }) => {
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
@@ -651,7 +653,10 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                     type: newType,
                                                     required: newType === 'serialNumber' || prevValue.required,
                                                     title: newType === 'comment' ? value.name : value.title,
-                                                    readOnly: e.target.value === 'kartoffelUserField' || prevValue.readOnly,
+                                                    readOnly:
+                                                        e.target.value === 'kartoffelUserField' ||
+                                                        e.target.value === 'unitField' ||
+                                                        prevValue.readOnly,
                                                 }));
                                             }}
                                             error={touchedType && Boolean(errorType)}
@@ -678,7 +683,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                     if (validPropertyType === 'user' || validPropertyType === 'users') return supportUserType;
                                                     if (validPropertyType === 'comment') return supportComment;
                                                     if (
-                                                        validPropertyType === 'kartoffelUserField' &&
+                                                        (validPropertyType === 'kartoffelUserField' || validPropertyType === 'unitField') &&
                                                         userPropertiesInTemplate.length === 0 &&
                                                         !value.deleted
                                                     )
@@ -990,6 +995,18 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                 userPropertiesInTemplate={userPropertiesInTemplate}
                                             />
                                         )}
+                                        {value.type === 'unitField' && (
+                                            <KartoffelUserField
+                                                value={value}
+                                                index={index}
+                                                touched={touched}
+                                                errors={errors}
+                                                setFieldValue={setFieldValue}
+                                                isDisabled={isDisabled}
+                                                userPropertiesInTemplate={userPropertiesInTemplate}
+                                                isUnitField
+                                            />
+                                        )}
                                         {(value.type === 'date' || value.type === 'date-time') &&
                                             'dateNotification' in value &&
                                             (value.dateNotification !== undefined ? (
@@ -1092,42 +1109,46 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                     </Grid>
                                     <Grid item container justifyContent="space-between" marginTop={value.type === 'comment' ? '5px' : ''}>
                                         <Box>
-                                            {value.required !== undefined && setValues && !isComment && value.type !== 'kartoffelUserField' && (
-                                                <FormControlLabel
-                                                    control={
-                                                        <Switch
-                                                            id={required}
-                                                            name={required}
-                                                            onChange={(_e, checked) => {
-                                                                setValues((prevValue) => ({
-                                                                    ...prevValue,
-                                                                    required: checked,
-                                                                    identifier: !checked ? undefined : prevValue.identifier,
-                                                                }));
-                                                                // unique is allowed only if required=true, automatic uncheck 'unique' too
-                                                                if (!checked && unique) {
-                                                                    deletePropFromUniqueConstraints(uniqueConstraintGroupName, value.name);
+                                            {value.required !== undefined &&
+                                                setValues &&
+                                                !isComment &&
+                                                value.type !== 'kartoffelUserField' &&
+                                                value.type !== 'unitField' && (
+                                                    <FormControlLabel
+                                                        control={
+                                                            <Switch
+                                                                id={required}
+                                                                name={required}
+                                                                onChange={(_e, checked) => {
+                                                                    setValues((prevValue) => ({
+                                                                        ...prevValue,
+                                                                        required: checked,
+                                                                        identifier: !checked ? undefined : prevValue.identifier,
+                                                                    }));
+                                                                    // unique is allowed only if required=true, automatic uncheck 'unique' too
+                                                                    if (!checked && unique) {
+                                                                        deletePropFromUniqueConstraints(uniqueConstraintGroupName, value.name);
+                                                                    }
+                                                                }}
+                                                                disabled={
+                                                                    value.type === 'serialNumber' ||
+                                                                    value.type === 'boolean' ||
+                                                                    value.readOnly ||
+                                                                    (supportChangeToRequiredWithInstances
+                                                                        ? false
+                                                                        : isEditMode &&
+                                                                          areThereAnyInstances &&
+                                                                          (isNewProperty || (!isNewProperty && !initialValue?.required))) ||
+                                                                    value.deleted ||
+                                                                    value.archive ||
+                                                                    disableRemoveRequire
                                                                 }
-                                                            }}
-                                                            disabled={
-                                                                value.type === 'serialNumber' ||
-                                                                value.type === 'boolean' ||
-                                                                value.readOnly ||
-                                                                (supportChangeToRequiredWithInstances
-                                                                    ? false
-                                                                    : isEditMode &&
-                                                                      areThereAnyInstances &&
-                                                                      (isNewProperty || (!isNewProperty && !initialValue?.required))) ||
-                                                                value.deleted ||
-                                                                value.archive ||
-                                                                disableRemoveRequire
-                                                            }
-                                                            checked={value.required}
-                                                        />
-                                                    }
-                                                    label={i18next.t('validation.required')}
-                                                />
-                                            )}
+                                                                checked={value.required}
+                                                            />
+                                                        }
+                                                        label={i18next.t('validation.required')}
+                                                    />
+                                                )}
                                             <FormControlLabel
                                                 control={
                                                     <Switch
@@ -1139,7 +1160,13 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                 readOnly: checked || undefined,
                                                             }));
                                                         }}
-                                                        disabled={value.required || value.archive || value.type === 'kartoffelUserField' || isComment}
+                                                        disabled={
+                                                            value.required ||
+                                                            value.archive ||
+                                                            value.type === 'kartoffelUserField' ||
+                                                            value.type === 'unitField' ||
+                                                            isComment
+                                                        }
                                                         checked={value.readOnly || isComment}
                                                     />
                                                 }
@@ -1178,6 +1205,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                 setValues &&
                                                 value.type !== 'signature' &&
                                                 value.type !== 'kartoffelUserField' &&
+                                                value.type !== 'unitField' &&
                                                 !isComment && (
                                                     <FormControlLabel
                                                         control={
@@ -1342,6 +1370,19 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                     </Box>
                                                 </MeltaTooltip>
                                             )}
+                                            {value.type === 'unitField' && (
+                                                <MeltaTooltip title={i18next.t('wizard.entityTemplate.duplicateField')} placement="right">
+                                                    <Box>
+                                                        <IconButton onClick={() => onDuplicateUnitField?.(index)}>
+                                                            <ImageWithDisable
+                                                                srcPath="/icons/duplicate.svg"
+                                                                style={{ width: '22px', height: '22px' }}
+                                                            />
+                                                        </IconButton>
+                                                    </Box>
+                                                </MeltaTooltip>
+                                            )}
+
                                             {supportArchive && isEditMode && (
                                                 <MeltaTooltip title={archiveButtonTooltip()} placement="right">
                                                     <Box>

@@ -171,7 +171,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
         if (isDeleted) {
             const indexesToUpdate = [index];
 
-            if (removedProperty.type === 'kartoffelUserField') {
+            if (removedProperty.type === 'kartoffelUserField' || removedProperty.type === 'unitField') {
                 const userFieldIndex = displayValuesCopy.findIndex(
                     (property) =>
                         property.type === 'user' && removedProperty.expandedUserField?.relatedUserField === property.name && property.deleted,
@@ -186,7 +186,10 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
             const indexesToUpdate = [index];
             if (removedProperty.type === 'user') {
                 displayValuesCopy.forEach((property, propIndex) => {
-                    if (property.type === 'kartoffelUserField' && property.expandedUserField?.relatedUserField === removedProperty.name) {
+                    if (
+                        (property.type === 'kartoffelUserField' || property.type === 'unitField') &&
+                        property.expandedUserField?.relatedUserField === removedProperty.name
+                    ) {
                         indexesToUpdate.push(propIndex);
                     }
                 });
@@ -197,7 +200,10 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
             displayValuesCopy.splice(index, 1);
             if (removedProperty.type === 'user') {
                 displayValuesCopy.forEach((property, propIndex) => {
-                    if (property.type === 'kartoffelUserField' && property.expandedUserField?.relatedUserField === removedProperty.name) {
+                    if (
+                        (property.type === 'kartoffelUserField' || property.type === 'unitField') &&
+                        property.expandedUserField?.relatedUserField === removedProperty.name
+                    ) {
                         displayValuesCopy.splice(propIndex, 1);
                     }
                 });
@@ -262,6 +268,21 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
         setDisplayValues(displayValuesCopy);
     };
 
+    const onDuplicateUnitField = (fieldIndex: number) => {
+        const displayValuesCopy = [...displayValuesRef.current] as Values[PropertiesType];
+        displayValuesCopy.splice(fieldIndex + 1, 0, {
+            id: uuid(),
+            ...initialFieldCardDataOnAdd,
+            type: 'unitField',
+            readOnly: true,
+            expandedUserField: {
+                relatedUserField: displayValues[fieldIndex].expandedUserField?.relatedUserField || '',
+                kartoffelField: 'hierarchy',
+            },
+        });
+        setDisplayValues(displayValuesCopy);
+    };
+
     return (
         <FieldBlockAccordion style={{ border: isFieldBlockError ? '1px solid red' : '' }}>
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
@@ -320,6 +341,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
                                                 supportComment,
                                                 userPropertiesInTemplate,
                                                 onDuplicateKartoffelField,
+                                                onDuplicateUnitField,
                                             };
 
                                             if (
