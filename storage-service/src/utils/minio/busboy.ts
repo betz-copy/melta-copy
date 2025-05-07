@@ -10,7 +10,7 @@ export const busboyMiddleware = (req: Request, _res: Response, next: NextFunctio
 
     console.log('🟢 [BUSBOY] Entered middleware');
 
-    const busboy = Busboy({ headers: req.headers });
+    const busboy = Busboy({ headers: req.headers, defCharset: 'utf8' });
     const files: UploadedFile[] = [];
     const fields: Record<string, unknown> = {};
 
@@ -28,16 +28,16 @@ export const busboyMiddleware = (req: Request, _res: Response, next: NextFunctio
 
         file.on('end', () => {
             console.log(`✅ [BUSBOY] Stream ended for ${filename}, total size: ${size} bytes`);
-            passthrough.end(Buffer.concat(chunks));
-        });
+            passthrough.end(Buffer.concat(chunks as Uint8Array[]));
 
-        files.push({
-            fieldname,
-            originalname: filename,
-            encoding,
-            mimetype: mimeType,
-            size,
-            stream: passthrough,
+            files.push({
+                fieldname,
+                originalname: filename,
+                encoding,
+                mimetype: mimeType,
+                size,
+                stream: passthrough,
+            });
         });
     });
 
@@ -49,7 +49,12 @@ export const busboyMiddleware = (req: Request, _res: Response, next: NextFunctio
     busboy.on('finish', () => {
         console.log('✅ [BUSBOY] Busboy finished parsing form');
         req.body = fields;
-        (req as any).files = files;
+        if (files.length) {
+            console.log('🟢 [BUSBOY] filesssssssssssss', files);
+
+            req.files = files;
+            console.log(`🟢 [OG12] req.files populated with ${files.length} file(s)`);
+        }
         next();
     });
 

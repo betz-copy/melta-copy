@@ -37,6 +37,13 @@ export const ValidateRequest = (schema: Joi.ObjectSchema<any>, options: Joi.Vali
     const validator = async (req: Request) => {
         const { error, value } = schema.unknown().validate(req, options);
         if (error) {
+            console.log('🔴 [JOI] Error');
+
+            // console.log(error);
+            console.log(req.file);
+            console.log(req.files);
+            console.log(req.body);
+            console.log(value);
             throw error;
         }
 

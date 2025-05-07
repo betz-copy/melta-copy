@@ -1,6 +1,8 @@
 /* eslint-disable consistent-return */
 import { Request, Response, NextFunction } from 'express';
 import Busboy from 'busboy';
+import { PassThrough } from 'stream';
+import { ReadableStreamClone } from 'readable-stream-clone';
 import { UploadedFile } from './interface';
 
 export const busboyMiddleware = (req: Request, _res: Response, next: NextFunction): void => {
@@ -21,6 +23,9 @@ export const busboyMiddleware = (req: Request, _res: Response, next: NextFunctio
         console.log('🟢 [OG3] Busboy initialized');
 
         busboy.on('file', (fieldname, file, { encoding, filename, mimeType }) => {
+            const copiedStream = new ReadableStreamClone(file);
+            const passthrough = new PassThrough();
+            file.pipe(passthrough);
             console.log(`📦 [OG4] Received file field: ${fieldname}, filename: ${filename}`);
 
             const validFileName = Buffer.from(filename, 'binary').toString('utf8');
@@ -39,7 +44,7 @@ export const busboyMiddleware = (req: Request, _res: Response, next: NextFunctio
                     originalname: validFileName,
                     encoding,
                     mimetype: mimeType,
-                    stream: file,
+                    stream: copiedStream,
                     size,
                 };
 
