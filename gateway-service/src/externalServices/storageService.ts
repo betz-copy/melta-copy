@@ -38,22 +38,22 @@ export class StorageService extends DefaultExternalServiceApi {
     }
 
     async uploadFiles(files: UploadedFile[]) {
-        console.log('uploading filess', files);
-
         const formData = new FormData();
 
-        files.forEach((file) => {
-            const passthrough = new PassThrough();
-            file.stream.pipe(passthrough);
-            formData.append('files', passthrough, file.originalname);
-        });
-        console.log('uploadFiles', files);
+        for (const file of files) {
+            formData.append('files', file.stream, {
+                filename: file.originalname,
+                contentType: file.mimetype,
+            });
+        }
+
+        const headers = formData.getHeaders();
 
         const { data } = await this.api.post<{ path: string }[]>(uploadFilesRoute, formData, {
-            headers: formData.getHeaders(),
+            headers,
             maxBodyLength: Infinity,
             maxContentLength: Infinity,
-            timeout: 120000,
+            timeout: 120_000, // שמור על טיים־אאוט סביר
         });
 
         return data.map(({ path }) => path);

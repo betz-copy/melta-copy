@@ -3,7 +3,7 @@ import { createController } from '../../utils/express';
 import { ValidateRequest } from '../../utils/joi';
 import FilesController, { workspaceIdInHeader } from './controller';
 import { bulkFilesRequestSchema, defaultSchema, uploadFileRequestSchema, uploadFilesRequestSchema, workspaceSchema } from './validator.schema';
-import { busboyMiddleware } from '../../utils/minio/busboy';
+// import { busboyMiddleware } from '../../utils/minio/busboy';
 
 const filesRouter: Router = Router();
 
@@ -23,7 +23,7 @@ filesRouter.delete('/:path', ValidateRequest(defaultSchema), filesController.del
 filesRouter.post('/duplicate/:path', ValidateRequest(defaultSchema), filesController.duplicateFile);
 filesRouter.post('/duplicate-bulk', ValidateRequest(bulkFilesRequestSchema), filesController.duplicateFiles);
 
-filesRouter.post('/', busboyMiddleware, ValidateRequest(uploadFileRequestSchema), filesController.uploadFile);
-filesRouter.post('/bulk', busboyMiddleware, ValidateRequest(uploadFilesRequestSchema), filesController.uploadFiles);
+filesRouter.post('/', ValidateRequest(uploadFileRequestSchema), filesController.uploadFile);
+filesRouter.post('/bulk', ValidateRequest(uploadFilesRequestSchema), filesController.uploadFiles);
 
 export { filesRouter };

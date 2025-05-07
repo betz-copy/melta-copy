@@ -7,6 +7,7 @@ import { once } from 'events';
 import { errorMiddleware } from './error';
 import { appRouter } from './router';
 import { config } from '../config';
+import { busboyMiddleware } from '../utils/minio/busboy';
 
 export class Server {
     private app: express.Application;
@@ -19,7 +20,7 @@ export class Server {
 
     createExpressApp() {
         const app = express();
-
+        app.use(busboyMiddleware);
         app.use(helmet());
         app.use(bodyParser.json({ limit: config.service.maxFileSize }));
         app.use(bodyParser.urlencoded({ extended: true, limit: config.service.maxFileSize }));
