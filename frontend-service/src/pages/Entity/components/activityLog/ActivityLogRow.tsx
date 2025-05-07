@@ -43,7 +43,7 @@ const ActivityLogRow: React.FC<{
                         )}
                     </Grid>
                 </Grid>
-                <Grid item width="120px">
+                <Grid item width="130px">
                     {isLoading ? (
                         <Skeleton variant="text" width="5vw" />
                     ) : (
