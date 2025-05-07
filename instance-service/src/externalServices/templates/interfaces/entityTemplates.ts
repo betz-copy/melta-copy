@@ -31,8 +31,8 @@ export interface IEntitySingleProperty {
     archive?: boolean;
 }
 interface IFieldsGroup {
-    groupId: string;
-    title: string;
+    name: string;
+    displayName: string;
     fields: string[];
 }
 

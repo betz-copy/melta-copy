@@ -107,14 +107,14 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
         if (!usedFields.has(key)) {
             const group = fieldToGroup[key];
             if (group) {
-                let existingGroup = propertiesArray.find((item) => item.type === 'group' && item.groupId === group.groupId);
-                const { groupId, title } = group;
+                let existingGroup = propertiesArray.find((item) => item.type === 'group' && item.name === group.name);
+                const { name, displayName } = group;
 
                 if (!existingGroup) {
                     existingGroup = {
                         type: 'group',
-                        groupId,
-                        groupTitle: title,
+                        name,
+                        displayName,
                         fields: [],
                     };
                     propertiesArray.push(existingGroup);
@@ -122,7 +122,7 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
 
                 for (const groupedField of group.fields) {
                     if (!usedFields.has(groupedField)) {
-                        const propertyDetails = propertyData(groupedField, { groupId, groupTitle: title });
+                        const propertyDetails = propertyData(groupedField, { name, displayName });
                         if (propertyDetails) {
                             existingGroup.fields.push(propertyDetails);
                             usedFields.add(groupedField);
@@ -140,7 +140,6 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
             }
         }
     });
-    console.log({ result: propertiesArray, archiveProperties });
 
     if (archiveProperties.length !== 0 && !propertiesTypeOrder.includes('archiveProperties')) propertiesTypeOrder.push('archiveProperties');
 
@@ -179,15 +178,15 @@ const updateFieldGroupsOrder = (updatedProperties: EntityTemplateFormInputProper
     for (const property of updatedProperties) {
         const { fieldGroup } = property;
 
-        if (fieldGroup?.groupId && !property.deleted) {
-            if (!groupMap.has(fieldGroup.groupId)) {
-                groupMap.set(fieldGroup.groupId, {
-                    groupId: fieldGroup.groupId,
-                    title: fieldGroup.groupTitle,
+        if (fieldGroup?.name && !property.deleted) {
+            if (!groupMap.has(fieldGroup.name)) {
+                groupMap.set(fieldGroup.name, {
+                    name: fieldGroup.name,
+                    displayName: fieldGroup.displayName,
                     fields: [],
                 });
             }
-            groupMap.get(fieldGroup.groupId).fields.push(property.name);
+            groupMap.get(fieldGroup.name).fields.push(property.name);
         }
     }
 

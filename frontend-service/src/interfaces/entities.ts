@@ -47,8 +47,8 @@ export interface IRequiredConstraint {
 export type IConstraint = IRequiredConstraint | IUniqueConstraint;
 
 export interface IFieldsGroup {
-    groupId: string;
-    title: string;
+    name: string;
+    displayName: string;
     fields: string[];
 }
 export interface IUniqueConstraintOfTemplate {

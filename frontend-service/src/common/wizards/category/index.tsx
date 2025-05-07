@@ -42,6 +42,8 @@ const CategoryWizard: React.FC<WizardBaseType<CategoryWizardValues>> = ({
         {
             onSuccess: (data) => {
                 queryClient.setQueryData<ICategoryMap>('getCategories', (categories) => categories!.set(data._id, data));
+                console.log('grgrgrgr');
+
                 const updatedUserPermissions = updateUserPermissionForCategory(data, currentUser, currentWorkspace._id);
                 setUser(updatedUserPermissions);
                 toast.success(i18next.t(isEditMode ? 'wizard.category.editedSuccessfully' : 'wizard.category.createdSuccessfully'));

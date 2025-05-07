@@ -5,8 +5,8 @@ export interface IRelationshipReference {
     relatedTemplateField: string;
 }
 export interface FieldsGroup {
-    groupId: string;
-    groupTitle: string;
+    name: string;
+    displayName: string;
 }
 export interface CommonFormInputProperties {
     name: string;

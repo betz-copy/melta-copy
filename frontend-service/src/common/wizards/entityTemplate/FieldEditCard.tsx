@@ -572,9 +572,10 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
         return i18next.t('wizard.entityTemplate.moveToArchive');
     };
     console.log(value.deleted, isEditMode, !isNewProperty, areThereAnyInstances);
+    console.log(groupIndex, value.id);
 
     return (
-        <Draggable draggableId={value.id} index={index}>
+        <Draggable draggableId={`field-${value.id}`} index={index}>
             {(draggableProvided) => (
                 <Grid item ref={draggableProvided.innerRef} {...draggableProvided.draggableProps} alignSelf="stretch" marginBottom="1rem">
                     <Card

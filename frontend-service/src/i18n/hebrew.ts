@@ -841,7 +841,7 @@ export default {
         stepDisplayNameExists: 'קיים שלב עם שם לתצוגה זהה',
         fileslimit: 'מספר קבצים מוגבל ל{{limit}}',
         mapSearchPropertiesLimit: 'מספר השדות המקסימלי בחיפוש עמוד מפות הוא: {{limit}}',
-        uniqueGroupId: 'קיים שם קבוצה באנגלית זהה',
+        uniqueGroupName: 'קיים שם קבוצה באנגלית זהה',
     },
     propertyTypes: {
         string: 'טקסט',

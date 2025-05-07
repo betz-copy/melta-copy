@@ -382,16 +382,16 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                 {showByGroups && entityTemplate.fieldGroups ? (
                     propertiesOrderedToShow.map((propertyKey, index) => {
                         const group = entityTemplate.fieldGroups!.find((g) => g.fields.includes(propertyKey));
-                        const groupIndex = entityTemplate.fieldGroups!.findIndex((g) => g.groupId === group?.groupId);
+                        const groupIndex = entityTemplate.fieldGroups!.findIndex((g) => g.name === group?.name);
 
-                        if (group && !alreadyRenderedGroups.has(group.groupId)) {
-                            alreadyRenderedGroups.add(group.groupId);
+                        if (group && !alreadyRenderedGroups.has(group.name)) {
+                            alreadyRenderedGroups.add(group.name);
 
                             const orderedGroupFields = propertiesOrderedToShow.filter((key) => group.fields.includes(key));
 
                             return (
                                 <Box
-                                    key={group.groupId}
+                                    key={group.name}
                                     sx={{
                                         // mb: 2,
                                         width: '100%',
@@ -404,13 +404,13 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                                     {/* <Grid container item alignItems="center"> */}
                                     {/* <Grid item sx={{ width: '30%' }}> */}
                                     <Typography fontWeight="bold" fontSize="16px" color="#4752B6" paddingBottom={1} marginBottom="10px">
-                                        {group.title}
+                                        {group.displayName}
                                     </Typography>
                                     {/* </Grid> */}
                                     {/* </Grid> */}
                                     <Grid container>
                                         <PropertiesDetails
-                                            key={group.groupId}
+                                            key={group.name}
                                             propertiesOrderedToShow={orderedGroupFields}
                                             properties={properties}
                                             entityTemplate={entityTemplate}

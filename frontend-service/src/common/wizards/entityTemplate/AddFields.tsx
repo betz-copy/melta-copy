@@ -75,8 +75,8 @@ const fieldSchema = Yup.object({
 
 const groupSchema = Yup.object({
     type: Yup.string().oneOf(['group']).required(),
-    groupId: Yup.string().matches(variableNameValidation, i18next.t('validation.variableName')).required(i18next.t('validation.required')),
-    groupTitle: Yup.string().required(i18next.t('validation.required')),
+    name: Yup.string().matches(variableNameValidation, i18next.t('validation.variableName')).required(i18next.t('validation.required')),
+    displayName: Yup.string().required(i18next.t('validation.required')),
     fields: Yup.array().of(extendedPropertySchema).min(1, i18next.t('validation.oneField')),
 });
 const fieldByTypeSchema = Yup.lazy((item: any): Yup.BaseSchema => {

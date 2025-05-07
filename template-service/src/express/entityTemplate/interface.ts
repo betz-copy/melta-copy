@@ -41,8 +41,8 @@ export interface IProperties {
 export type IEnumPropertiesColors = Record<string, Record<string, string>>; // { [fieldName]: { [enumOption1]: [color1], [enumOption2]: [color2] } }
 
 interface IFieldsGroup {
-    groupId: string;
-    title: string;
+    name: string;
+    displayName: string;
     fields: string[];
 }
 export interface IEntityTemplate {
