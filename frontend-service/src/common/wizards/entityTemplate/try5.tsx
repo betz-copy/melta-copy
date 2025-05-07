@@ -679,7 +679,17 @@ const Group = ({ group, onDrop, index, moveField }) => {
             {group.items.length === 0 ? (
                 <div style={{ padding: 8, color: '#777', fontStyle: 'italic' }}>Drop a field here</div>
             ) : (
-                group.items.map((field, idx) => <Field key={field.id} field={field} index={idx} parentId={group.id} onDrop={moveField} />)
+                group.items.map((field, idx) => (
+                    <Field
+                        key={field.id}
+                        field={field}
+                        index={idx}
+                        parentId={group.id}
+                        onDrop={(item, toIndex, toGroupId) => {
+                            moveField(item, toIndex, toGroupId);
+                        }}
+                    />
+                ))
             )}
         </div>
     );
@@ -799,12 +809,13 @@ const StructureEditor = () => {
                 ref={drop}
                 style={{
                     border: '2px dashed #aaa',
-                    padding: 10,
+                    padding: 30,
                     margin: 10,
                     borderRadius: 8,
                     minHeight: 100,
                     display: 'flex',
                     flexDirection: 'column',
+                    minWidth: '500px',
                 }}
             >
                 <Grid padding={2}>
@@ -825,9 +836,14 @@ const StructureEditor = () => {
 };
 
 export const ManualDndLayout = () => {
+    // return (
+    //     <DndProvider backend={HTML5Backend}>
+    //         <h3 style={{ padding: '10px' }}>Drag & Drop Fields and Groups</h3>
+    //         <StructureEditor />
+    //     </DndProvider>
+    // );
     return (
         <DndProvider backend={HTML5Backend}>
-            <h3 style={{ padding: '10px' }}>Drag & Drop Fields and Groups</h3>
             <StructureEditor />
         </DndProvider>
     );

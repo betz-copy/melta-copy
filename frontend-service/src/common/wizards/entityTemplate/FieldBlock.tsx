@@ -387,12 +387,6 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
         setDisplayValue(index, value, groupName);
     const isFieldBlockError = Boolean(touched?.[propertiesType]) && Boolean(errors?.[propertiesType]);
 
-    // interface ValueWrapper {
-    //     type: 'field' | 'group';
-    //     data?: any;
-    //     fields?: any[];
-    // }
-
     const buildProps = (propertyProp, index: number, groupIndex?: number) => {
         const isGroup = groupIndex !== undefined;
         const currentTypeValues = initialValues?.[propertiesType]; // as ValueWrapper[] | undefined;
@@ -571,9 +565,6 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
                 <FieldArray name={propertiesType}>
                     {() => (
                         <DragDropContext
-                            // onDragUpdate={(resUp) => {
-                            //     console.log({ resUp });
-                            // }}
                             onDragStart={(res) => {
                                 console.log({ res });
                             }}
