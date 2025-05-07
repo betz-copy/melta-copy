@@ -75,6 +75,10 @@ const addFieldsSchema = Yup.object({
                     }),
                 }),
                 mapSearch: Yup.boolean(),
+                comment: Yup.string().when('type', {
+                    is: 'comment',
+                    then: Yup.string().required(),
+                }),
             }),
         )
         .min(1, i18next.t('validation.oneField'))
@@ -212,6 +216,7 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
                                             supportUnique
                                             supportLocation
                                             supportArchive
+                                            supportComment
                                             supportAddFieldButton={itemId === 'attachmentProperties' || itemId === 'properties'}
                                             hasActions={hasActions}
                                             draggable={{ isDraggable: true, dragHandleProps: draggableProvided.dragHandleProps }}

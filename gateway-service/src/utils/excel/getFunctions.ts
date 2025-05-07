@@ -90,9 +90,10 @@ export const isIncludedColumn = (propertyTemplate: IEntitySingleProperty) => {
     const isSignature = propertyTemplate.format === 'signature';
     const isUser = propertyTemplate.format === 'user';
     const isUsers = propertyTemplate.items?.format === 'user';
+    const isComment = propertyTemplate.format === 'comment';
     const isKartoffelUserField = propertyTemplate.format === 'kartoffelUserField';
 
-    return !isRelationshipRef && !isFile && !isSerialNumber && !isUser && !isUsers && !isSignature && !isKartoffelUserField;
+    return !isRelationshipRef && !isFile && !isSerialNumber && !isUser && !isUsers && !isSignature && !isComment && !isKartoffelUserField;
 };
 
 export const isIncludedEditColumn = (propertyTemplate: IEntitySingleProperty, entityDisabled: boolean, templateDisabled: boolean) =>

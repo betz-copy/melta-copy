@@ -1,20 +1,11 @@
 import { Router } from 'express';
-import { createProxyMiddleware, fixRequestBody } from 'http-proxy-middleware';
-import config from '../../config';
-
-const { activityLogService: activityLog } = config;
-
-const ActivityLogProxy = createProxyMiddleware({
-    target: `${activityLog.url}${activityLog.baseRoute}`,
-    changeOrigin: true,
-    on: {
-        proxyReq: fixRequestBody,
-    },
-    proxyTimeout: activityLog.requestTimeout,
-});
+import ActivityLogController from './controller';
+import { createWorkspacesController } from '../../utils/express';
 
 const ActivityLogRouter: Router = Router();
 
-ActivityLogRouter.get('*', ActivityLogProxy);
+const InstancesControllerMiddleware = createWorkspacesController(ActivityLogController);
+
+ActivityLogRouter.get('/:entityId', InstancesControllerMiddleware.getActivity);
 
 export default ActivityLogRouter;

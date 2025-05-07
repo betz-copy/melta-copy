@@ -60,6 +60,9 @@ export interface EntityTemplateFormInputProperties {
     };
     archive?: boolean;
     mapSearch?: boolean;
+    hideFromDetailsPage?: boolean;
+    comment?: string;
+    color?: string;
 }
 export interface EntityTemplateWizardValues
     extends Omit<

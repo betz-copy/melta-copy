@@ -31,6 +31,7 @@ export const generateInterface = (entity: Record<string, IEntitySingleProperty>,
 
     Object.entries(entity).forEach(([propertyName, propertyValues]) => {
         const { type, serialCurrent } = propertyValues;
+        const isComment = propertyValues.format === 'comment';
 
         switch (type) {
             case 'number':
@@ -43,7 +44,7 @@ export const generateInterface = (entity: Record<string, IEntitySingleProperty>,
                 dynamicInterface[propertyName] = generateFromArray(propertyValues);
                 break;
             default:
-                dynamicInterface[propertyName] = generateFromString(propertyValues, queryClient);
+                dynamicInterface[`${isComment ? 'readonly ' : ''}${propertyName}`] = generateFromString(propertyValues, queryClient);
         }
     });
 

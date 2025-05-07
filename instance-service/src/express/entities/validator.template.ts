@@ -36,6 +36,7 @@ const ajv = new Ajv();
 
 ajv.addFormat('fileId', ajvCustomFormats.fileIdFieldRegex);
 ajv.addFormat('signature', ajvCustomFormats.signatureFieldRegex);
+ajv.addFormat('comment', ajvCustomFormats.commentFieldRegex);
 ajv.addFormat('user', {
     type: 'string',
     validate: (user) => {
@@ -67,6 +68,9 @@ ajv.addKeyword({ keyword: 'isDailyAlert', type: 'boolean' });
 ajv.addKeyword({ keyword: 'isDatePastAlert', type: 'boolean' });
 ajv.addKeyword({ keyword: 'archive', type: 'boolean' });
 ajv.addKeyword({ keyword: 'identifier', type: 'boolean' });
+ajv.addKeyword({ keyword: 'hideFromDetailsPage', type: 'boolean' });
+ajv.addKeyword({ keyword: 'comment', type: 'string' });
+ajv.addKeyword({ keyword: 'color', type: 'string' });
 ajv.addKeyword({
     keyword: 'serialStarter',
     type: 'number',

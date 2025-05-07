@@ -1,10 +1,10 @@
+/* eslint-disable import/no-extraneous-dependencies */
 /* eslint-disable no-param-reassign */
 import _, { groupBy } from 'lodash';
 import { AxiosError, AxiosResponse } from 'axios';
 import _isEqual from 'lodash.isequal';
 import lodashUniqby from 'lodash.uniqby';
 import { StatusCodes } from 'http-status-codes';
-import { logger } from 'elastic-apm-node';
 import {
     ICategory,
     IEntitySingleProperty,
@@ -41,6 +41,7 @@ import {
     IPieMetaData,
     ISearchFilter,
     UploadedFile,
+    logger,
 } from '@microservices/shared';
 import config from '../../config';
 import InstancesService from '../../externalServices/instanceService';
@@ -489,8 +490,9 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
     }
 
     validateConstraintsProperties = (properties: Record<string, IEntitySingleProperty>, requiredConstraints: string[]) => {
-        let identifier;
+        let identifier: string;
         Object.entries(properties).forEach(([key, value]) => {
+            const isComment = value.comment || value.hideFromDetailsPage || value.format === 'comment';
             if (value.readOnly && requiredConstraints.includes(key)) throw new BadRequestError(`${key} property can't be both readOnly and required`);
             if (value.archive && requiredConstraints.includes(key)) throw new BadRequestError(`${key} property can't be both archive and required`);
             if (value.identifier) {
@@ -500,6 +502,8 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             }
             if (value.serialCurrent && !requiredConstraints.includes(key))
                 throw new BadRequestError(`${key} property serial number has to be required`);
+            if (isComment && requiredConstraints.includes(key)) throw new BadRequestError(`${key} property comment can't be required`);
+            if (isComment && value.archive) throw new BadRequestError(`${key} property comment can't be archive`);
         });
     };
 
@@ -726,8 +730,15 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         }
     }
 
-    private async checkIfPropertyInUsedBeforeDeleteOrArchive(templateId: string, properties: string[], archive: boolean, userId: string) {
-        if (properties.length)
+    private async checkIfPropertyInUsedBeforeDeleteOrArchive(
+        entityTemplate: IMongoEntityTemplatePopulated,
+        properties: string[],
+        archive: boolean,
+        userId: string,
+    ) {
+        const { _id: templateId } = entityTemplate;
+
+        if (properties.length && properties.some((removedProperty) => entityTemplate.properties.properties[removedProperty].format !== 'comment'))
             await Promise.all([
                 this.isPropertyOfTemplateInUsedInGantts(templateId, properties, archive),
                 this.isPropertyOfTemplateInUsedInRules(templateId, properties, archive),
@@ -756,7 +767,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
                     return { chartId: chart._id, updatedChart: chart };
                 } catch (error) {
-                    logger.error(`Error parsing filter for chart ${chart._id}:`, error);
+                    logger.error(`Error parsing filter for chart ${chart._id}:`, { error });
                     return null;
                 }
             })
@@ -847,29 +858,31 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             await this.deleteFilesOfDeletedProperty(id, removedFilesProperties, count);
         }
 
-        await this.deletePropertyFromChartFilter(id, removedProperties);
+        if (removedProperties.some((removedProperty) => currentTemplate.properties.properties[removedProperty].format !== 'comment')) {
+            await this.deletePropertyFromChartFilter(id, removedProperties);
 
-        const { err } = await trycatch(() =>
-            this.instancesService.deletePropertiesOfTemplate(id, removedProperties, currentTemplate.properties.properties),
-        );
+            const { err } = await trycatch(() =>
+                this.instancesService.deletePropertiesOfTemplate(id, removedProperties, currentTemplate.properties.properties),
+            );
 
-        if (err) {
-            const manipulatedTemplate = JSON.parse(JSON.stringify(currentTemplate));
+            if (err) {
+                const manipulatedTemplate = JSON.parse(JSON.stringify(currentTemplate));
 
-            Object.entries(currentTemplate.properties.properties).forEach(([name, value]) => {
-                if (value.format === 'relationshipReference' && value.relationshipReference) {
-                    const { relationshipTemplateId: _relationshipTemplateId, ...restData } = value.relationshipReference;
-                    manipulatedTemplate.properties.properties[name].relationshipReference = restData;
-                }
-            });
+                Object.entries(currentTemplate.properties.properties).forEach(([name, value]) => {
+                    if (value.format === 'relationshipReference' && value.relationshipReference) {
+                        const { relationshipTemplateId: _relationshipTemplateId, ...restData } = value.relationshipReference;
+                        manipulatedTemplate.properties.properties[name].relationshipReference = restData;
+                    }
+                });
 
-            const updatedTemplate: Omit<IEntityTemplate, 'disabled'> = {
-                ...this.removeBasicFields(manipulatedTemplate),
-                category: currentTemplate.category._id,
-            };
+                const updatedTemplate: Omit<IEntityTemplate, 'disabled'> = {
+                    ...this.removeBasicFields(manipulatedTemplate),
+                    category: currentTemplate.category._id,
+                };
 
-            await this.entityTemplateService.updateEntityTemplate(id, updatedTemplate);
-            throw err;
+                await this.entityTemplateService.updateEntityTemplate(id, updatedTemplate);
+                throw err;
+            }
         }
     }
 
@@ -1054,8 +1067,8 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
                 throw new BadRequestError('can not add identifier fields because there are existing instances');
         }
 
-        await this.checkIfPropertyInUsedBeforeDeleteOrArchive(id, removedProperties, false, userId);
-        await this.checkIfPropertyInUsedBeforeDeleteOrArchive(id, archiveProperties, true, userId);
+        await this.checkIfPropertyInUsedBeforeDeleteOrArchive(currTemplate, removedProperties, false, userId);
+        await this.checkIfPropertyInUsedBeforeDeleteOrArchive(currTemplate, archiveProperties, true, userId);
 
         const { iconFileId, documentTemplatesIds } = await this.handleFiles(updatedTemplateData, currTemplate, { file, files });
 
