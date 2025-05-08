@@ -1,11 +1,11 @@
 import axios from '../../axios';
 import { environment } from '../../globals';
-import { ConfigTypes, IMongoOrderConfig, IOrderConfig } from '../../interfaces/config';
+import { ConfigTypes, IMongoOrderConfig } from '../../interfaces/config';
 
 const { templatesConfig } = environment.api;
 
-const updateConfigOrderRequest = async (configId: string, configData: Partial<IOrderConfig>): Promise<IMongoOrderConfig> => {
-    const { data } = await axios.put(`${templatesConfig}/${ConfigTypes.ORDER}/${configId}`, configData);
+const updateConfigOrderRequest = async (configId: string, newIndex: number, item: string): Promise<IMongoOrderConfig> => {
+    const { data } = await axios.put(`${templatesConfig}/${ConfigTypes.ORDER}/${configId}`, { newIndex, item });
 
     return data;
 };
