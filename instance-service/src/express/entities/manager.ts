@@ -665,7 +665,6 @@ export class EntityManager extends DefaultManagerNeo4j {
                     duplicatedFromId,
                 );
                 const ruleFailuresAfterAction = await this.runRulesOnEntity(transaction, createdEntity);
-                console.dir({ ruleFailuresAfterAction }, { depth: null });
 
                 throwIfActionCausedRuleFailures(ignoredRules, [], ruleFailuresAfterAction, [{ createdEntityId: createdEntity.properties._id }]);
 
@@ -1224,10 +1223,8 @@ export class EntityManager extends DefaultManagerNeo4j {
         const rulesOfEntity = await this.relationshipsTemplateManagerService.searchRules({
             entityTemplateIds: [entity.templateId],
         });
-        // console.dir({ rulesOfEntity }, { depth: null });
 
         const relevantRulesOfEntity = filterDependentRulesOnEntity(rulesOfEntity, entity.templateId, updatedProperties);
-        // console.dir({ relevantRulesOfEntity }, { depth: null });
 
         const entityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(entity.templateId);
 
@@ -1266,16 +1263,13 @@ export class EntityManager extends DefaultManagerNeo4j {
 
     private async runRulesDependOnEntityUpdate(transaction: Transaction, updatedEntity: IEntity, updatedProperties: string[]) {
         const ruleFailuresOfUpdatedEntityPromise = this.runRulesOnEntity(transaction, updatedEntity, updatedProperties);
-        // console.dir({ ruleFailuresOfUpdatedEntityPromise }, { depth: null });
 
         const ruleFailuresOnNeighborsOfEntityPromise = this.runRulesOnNeighborsOfUpdatedEntity(transaction, updatedEntity, updatedProperties);
-        // console.dir({ ruleFailuresOnNeighborsOfEntityPromise }, { depth: null });
 
         const [ruleFailuresOfUpdatedEntity, ruleFailuresOfNeighborsOfEntity] = await Promise.all([
             ruleFailuresOfUpdatedEntityPromise,
             ruleFailuresOnNeighborsOfEntityPromise,
         ]);
-        // console.dir({ ruleFailuresOfUpdatedEntity, ruleFailuresOfNeighborsOfEntity }, { depth: null });
 
         const ruleFailures = [...ruleFailuresOfUpdatedEntity, ...ruleFailuresOfNeighborsOfEntity];
 
@@ -1576,7 +1570,6 @@ export class EntityManager extends DefaultManagerNeo4j {
                     entityTemplate,
                 );
                 const ruleFailuresBeforeAction = await this.runRulesDependOnEntityUpdate(transaction, entity, updatedProperties);
-                // console.dir({ ruleFailuresBeforeAction }, { depth: null });
 
                 const { updatedEntity, activityLogsToCreate } = await this.updateEntityByIdInnerTransaction(
                     id,
@@ -1586,10 +1579,8 @@ export class EntityManager extends DefaultManagerNeo4j {
                     userId,
                     convertToRelationshipField,
                 );
-                // console.dir({ updatedEntity, activityLogsToCreate }, { depth: null });
 
                 const ruleFailuresAfterAction = await this.runRulesDependOnEntityUpdate(transaction, updatedEntity, updatedProperties);
-                // console.dir({ ruleFailuresAfterAction }, { depth: null });
 
                 throwIfActionCausedRuleFailures(ignoredRules, ruleFailuresBeforeAction, ruleFailuresAfterAction, [{}]);
 

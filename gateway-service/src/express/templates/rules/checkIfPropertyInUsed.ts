@@ -46,16 +46,11 @@ const checkPropertyInUsedFromEquation = (formula: IEquation, entityId: string, p
 };
 
 export const checkPropertyInUsedFromFormula = (formula: IFormula, entityId: string, properties: string[], archive: boolean) => {
-    // console.log('in checkPropertyInUsedFromFormula', formula);
-
     if (isGroup(formula)) {
-        // console.log('in if');
-
         return formula.subFormulas.map((subFormula) => checkPropertyInUsedFromFormula(subFormula, entityId, properties, archive));
     }
 
     if (isEquation(formula)) {
-        // console.log('in if2');
         return checkPropertyInUsedFromEquation(formula, entityId, properties, archive);
     }
 

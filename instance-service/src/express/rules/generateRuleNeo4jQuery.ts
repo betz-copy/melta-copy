@@ -203,10 +203,6 @@ const generateNeo4jQueryFromConstant = (constant: IConstant, resultVariableNameP
 };
 
 const getVariableName = ({ entityTemplateId, aggregatedRelationship }: IVariable) => {
-    console.log('getVariableName');
-
-    console.log({ entityTemplateId, aggregatedRelationship });
-
     if (!aggregatedRelationship) {
         return `\`${entityTemplateId}\``;
     }
@@ -228,11 +224,13 @@ const getAggregatedRelationshipName = ({
 };
 
 const getPropertyKey = (entityTemplate: IMongoEntityTemplate, propertyKey: string) => {
-    const property = Object.entries(entityTemplate.properties.properties).find(([key, _value]) => key === propertyKey)?.[1];
-    if (property?.format === 'relationshipReference' && property.relationshipReference) {
-        console.log('getPropertyKeyyyyyyyyyyyy', { propertyKey }, property.relationshipReference.relatedTemplateField);
+    const directProperty = entityTemplate.properties.properties[propertyKey];
+    if (directProperty?.format === 'relationshipReference' && directProperty.relationshipReference) {
+        return `${propertyKey}.properties.${directProperty.relationshipReference.relatedTemplateField}_reference`;
+    }
 
-        return `${propertyKey}.properties.${property.relationshipReference.relatedTemplateField}_reference`;
+    if (propertyKey.includes('.') && propertyKey.includes('_reference')) {
+        return propertyKey;
     }
 
     return propertyKey;
@@ -243,31 +241,25 @@ const generateNeo4jQueryFromPropertyOfVariable = (
     resultVariableNamePrefix: string,
     entityTemplate: IMongoEntityTemplate,
 ): CypherQuery => {
-    console.log('generateNeo4jQueryFromPropertyOfVariable');
-    console.log({ variable, property });
-
     const resultValueVariableName = `${resultVariableNamePrefix}${resultValueVariableNameSuffix}`;
     const resultCausesVariableName = `${resultVariableNamePrefix}${resultCausesVariableNameSuffix}`;
-
-    console.log({ resultValueVariableName, resultCausesVariableName });
 
     const variableName = getVariableName(variable);
     const aggregatedRelationshipName = variable.aggregatedRelationship && getAggregatedRelationshipName(variable as Required<IVariable>);
 
     const propertyKey = getPropertyKey(entityTemplate, property);
-    // console.log({ propertyKey });
+    const cypherPath = `${variableName}.\`${propertyKey}\``;
 
     return {
-        // todo: can assume property is good format?
         cypherCalculation: `
-            WITH *, ${variableName}.${propertyKey} as ${resultValueVariableName}
+            WITH *, ${cypherPath} as ${resultValueVariableName}
             WITH *, {
                 instance: {
                     entityId: \`${variable.entityTemplateId}\`._id
                     ${
                         variable.aggregatedRelationship
-                            ? `
-                    , aggregatedRelationship: {
+                            ? `,
+                    aggregatedRelationship: {
                         relationshipId: ${aggregatedRelationshipName}._id,
                         otherEntityId: ${variableName}._id
                     }`
@@ -325,7 +317,6 @@ const generateNeo4jQueryFromGroup = (
     entityTemplate: IMongoEntityTemplate,
 ): CypherQuery => {
     const subFormulasQueries = formula.subFormulas.map((subFormula, index) => {
-        // console.dir({ subFormula, withVariablesForSubQueries, resultVariableNamePrefix, index }, { depth: null });
         // eslint-disable-next-line no-use-before-define -- circular recursive functions (formula->group->formulas)
         return generateNeo4jQueryFromFormula(
             subFormula,
@@ -337,8 +328,6 @@ const generateNeo4jQueryFromGroup = (
 
     const resultValueVariableName = `${resultVariableNamePrefix}${resultValueVariableNameSuffix}`;
     const resultCausesVariableName = `${resultVariableNamePrefix}${resultCausesVariableNameSuffix}`;
-    // console.log({ resultValueVariableName, resultCausesVariableName });
-    console.log('barvazzzzzzzzzzzzzz', { subFormulasQueries });
 
     return {
         cypherCalculation: `
@@ -404,7 +393,6 @@ const generateNeo4jQueryFromEquation = (
         `${resultVariableNamePrefix}lhsArgument_`,
         entityTemplate,
     );
-    // console.log({ lhsArgumentQuery });
 
     const rhsArgumentQuery = generateNeo4jQueryFromArgument(
         formula.rhsArgument,
@@ -446,8 +434,6 @@ const generateNeo4jQueryFromAggregationGroup = (
     resultVariableNamePrefix: string,
     entityTemplate: IMongoEntityTemplate,
 ): CypherQuery => {
-    // console.log('generateNeo4jQueryFromAggregationGroup');
-
     const {
         entityTemplateId,
         aggregatedRelationship: { relationshipTemplateId },
@@ -527,17 +513,14 @@ const generateNeo4jQueryFromFormula = (
     entityTemplate: IMongoEntityTemplate,
 ): CypherQuery => {
     if (isGroup(formula)) {
-        // console.log('isGroup(formula)');
         return generateNeo4jQueryFromGroup(formula, withVariablesForSubQueries, `${resultVariableNamePrefix}group_`, entityTemplate);
     }
 
     if (isEquation(formula)) {
-        // console.log('isEquation(formula)');
         return generateNeo4jQueryFromEquation(formula, withVariablesForSubQueries, `${resultVariableNamePrefix}equation_`, entityTemplate);
     }
 
     if (isAggregationGroup(formula)) {
-        // console.log('isAggregationGroup(formula)');
         return generateNeo4jQueryFromAggregationGroup(
             formula,
             withVariablesForSubQueries,
@@ -551,14 +534,11 @@ const generateNeo4jQueryFromFormula = (
 
 export const generateNeo4jRuleQueryOnEntity = (rule: IMongoRule, entityId: string, entityTemplate: IMongoEntityTemplate): CypherQuery => {
     const { entityTemplateId, formula } = rule;
-    // console.dir({ rule }, { depth: null });
 
     const entityVariableName = `\`${entityTemplateId}\``;
     const variablesForSubQueries = [entityVariableName];
-    // console.dir({ entityVariableName, variablesForSubQueries }, { depth: null });
 
     const formulaQuery = generateNeo4jQueryFromFormula(formula, variablesForSubQueries, 'formula_', entityTemplate);
-    // console.dir({ formulaQuery }, { depth: null });
 
     return {
         cypherCalculation: `

@@ -24,8 +24,6 @@ export const getParametersOfArgument = (argument: IArgument): Array<{ variable: 
 };
 
 export const getParametersOfFormula = (formula: IFormula): Array<{ variable: IVariable; property?: string }> => {
-    // console.log('in getParametersOfFormula', { formula });
-
     if (isEquation(formula)) {
         const { lhsArgument, rhsArgument } = formula;
 
