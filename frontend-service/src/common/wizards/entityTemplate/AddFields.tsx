@@ -283,7 +283,78 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
     //     </DragDropContext>
     // );
 
-    return <ManualDndLayout />;
+    return (
+        <Grid container direction="column" alignItems="center" style={{ minHeight: '160px' }}>
+            {values.propertiesTypeOrder.map((itemId, index) => (
+                // <Draggable key={itemId} draggableId={itemId} index={index}>
+                //     {(draggableProvided) => (
+                // <Grid item ref={draggableProvided.innerRef} {...draggableProvided.draggableProps} alignSelf="stretch" marginBottom="1rem">
+
+                <Grid item alignSelf="stretch" marginBottom="1rem" key={itemId}>
+                    <ManualDndLayout
+                        propertiesType={itemId}
+                        values={values}
+                        uniqueConstraints={values.uniqueConstraints}
+                        setUniqueConstraints={(newUniqueConstraints) => {
+                            setValues((prev) => {
+                                return {
+                                    ...prev,
+                                    uniqueConstraints:
+                                        typeof newUniqueConstraints === 'function'
+                                            ? newUniqueConstraints(prev.uniqueConstraints!)
+                                            : newUniqueConstraints,
+                                };
+                            });
+                        }}
+                        initialValues={initialValues}
+                        setFieldValue={setFieldValue}
+                        areThereAnyInstances={areThereAnyInstances}
+                        isEditMode={isEditMode}
+                        setBlock={setBlock}
+                        title={getTitle(itemId)}
+                        addPropertyButtonLabel={
+                            itemId === 'properties'
+                                ? i18next.t('wizard.entityTemplate.addProperty')
+                                : i18next.t('wizard.entityTemplate.addAttachment')
+                        }
+                        touched={touched}
+                        errors={errors}
+                        supportSerialNumberType
+                        supportUserType
+                        supportEntityReferenceType={false}
+                        supportChangeToRequiredWithInstances
+                        supportRelationshipReference
+                        supportArrayFields
+                        supportDeleteForExistingInstances
+                        supportEditEnum
+                        supportUnique
+                        supportLocation
+                        supportArchive
+                        supportAddFieldButton={itemId === 'attachmentProperties' || itemId === 'properties'}
+                        hasActions={hasActions}
+                        // draggable={{ isDraggable: true, dragHandleProps: draggableProvided.dragHandleProps }}
+                        locationSearchFields={{
+                            show: Object.values(values.properties).some((property: any) => {
+                                if (property.type === 'field') return property.data?.type === 'location';
+
+                                if (property.type === 'group' && Array.isArray(property.fields))
+                                    return property.fields.some((field) => field.type === 'location');
+
+                                return false;
+                            }),
+                            disabled: countMapSearchProperties >= 2,
+                        }}
+                        supportIdentifier
+                        hasIdentifier={Object.values(values.properties).some((value) => value.identifier)}
+                    />
+                </Grid>
+                //         )}
+                //     </Draggable>
+            ))}
+        </Grid>
+    );
+
+    //    <ManualDndLayout />;
 };
 
 export { AddFields, addFieldsSchema, validPropertyTypes, dateNotificationTypes };

@@ -102,6 +102,7 @@ export interface FieldEditCardProps {
     hasActions?: boolean;
     supportConvertingToMultipleFields?: boolean;
     groupIndex?: number;
+    refDragAndDrop?: any;
 }
 
 export const FieldEditCard: React.FC<FieldEditCardProps> = ({
@@ -137,6 +138,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     hasActions,
     supportConvertingToMultipleFields = true,
     groupIndex,
+    refDragAndDrop,
 }) => {
     const isText = value.type === 'string' || value.type === 'text-area';
 
@@ -352,7 +354,6 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
             return updatedConstraints;
         });
     };
-    console.log({ initialValue });
 
     const isNewProperty = !initialValue;
     const isDisabled = Boolean(isEditMode && !isNewProperty && areThereAnyInstances);
@@ -570,822 +571,816 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
         if (value.archive) return i18next.t('wizard.entityTemplate.removeFromArchive');
         return i18next.t('wizard.entityTemplate.moveToArchive');
     };
-    console.log(value.deleted, isEditMode, !isNewProperty, areThereAnyInstances);
-    console.log(groupIndex, value.id);
 
     return (
-        <Draggable draggableId={`field-${value.id}`} index={index}>
-            {(draggableProvided) => (
-                <Grid item ref={draggableProvided.innerRef} {...draggableProvided.draggableProps} alignSelf="stretch" marginBottom="1rem">
-                    <Card
-                        elevation={3}
-                        sx={{
-                            padding: '0.5rem',
-                            ...(value.deleted && {
-                                backgroundColor: 'rgb(224, 225, 237,0.4)',
-                            }),
-                        }}
-                    >
-                        <CardContent sx={{ '&:last-child': { padding: 0 } }}>
-                            <Grid container justifyContent="space-between" wrap="nowrap" alignItems="center">
-                                <Box {...draggableProvided.dragHandleProps}>
-                                    <DragHandleIcon fontSize="large" />
-                                </Box>
+        // <Draggable draggableId={`field-${value.id}`} index={index}>
+        // {(draggableProvided) => (
+        // <Grid item ref={draggableProvided.innerRef} {...draggableProvided.draggableProps} alignSelf="stretch" marginBottom="1rem">
+        <Grid ref={refDragAndDrop} item alignSelf="stretch" marginBottom="1rem">
+            <Card
+                elevation={3}
+                sx={{
+                    padding: '0.5rem',
+                    ...(value.deleted && {
+                        backgroundColor: 'rgb(224, 225, 237,0.4)',
+                    }),
+                }}
+            >
+                <CardContent sx={{ '&:last-child': { padding: 0 } }}>
+                    <Grid container justifyContent="space-between" wrap="nowrap" alignItems="center">
+                        {/* <Box {...draggableProvided.dragHandleProps}> */}
+                        <Box>
+                            <DragHandleIcon fontSize="large" />
+                        </Box>
 
-                                <Grid container direction="column">
-                                    <Grid container wrap="nowrap" marginBottom="0.4rem">
-                                        <TextField
-                                            label={i18next.t('wizard.entityTemplate.propertyName')}
-                                            id={name}
-                                            name={name}
-                                            value={value.name}
-                                            onChange={onChange}
-                                            error={touchedName && Boolean(errorName)}
-                                            helperText={touchedName && errorName}
-                                            disabled={isDisabled || value.deleted}
-                                            sx={{ marginRight: '5px' }}
-                                            fullWidth
-                                        />
-                                        <TextField
-                                            label={i18next.t('wizard.entityTemplate.propertyDisplayName')}
-                                            id={title}
-                                            name={title}
-                                            value={value.title}
-                                            onChange={onChange}
-                                            error={touchedTitle && Boolean(errorTitle)}
-                                            helperText={touchedTitle && errorTitle}
-                                            sx={{ marginRight: '5px' }}
-                                            fullWidth
-                                            disabled={value.deleted}
-                                        />
-                                        <TextField
-                                            select
-                                            type="text"
-                                            label={i18next.t('wizard.entityTemplate.propertyType')}
-                                            id={type}
-                                            name={type}
-                                            value={value.type === 'text-area' ? 'string' : value.type}
-                                            onChange={(e) => {
-                                                setValues?.((prevValue: any) =>
-                                                    setFieldValues(prevValue, {
-                                                        type: e.target.value,
-                                                        required: (e.target.value === 'serialNumber' || prevValue.required) ?? false,
+                        <Grid container direction="column">
+                            <Grid container wrap="nowrap" marginBottom="0.4rem">
+                                <TextField
+                                    label={i18next.t('wizard.entityTemplate.propertyName')}
+                                    id={name}
+                                    name={name}
+                                    value={value.name}
+                                    onChange={onChange}
+                                    error={touchedName && Boolean(errorName)}
+                                    helperText={touchedName && errorName}
+                                    disabled={isDisabled || value.deleted}
+                                    sx={{ marginRight: '5px' }}
+                                    fullWidth
+                                />
+                                <TextField
+                                    label={i18next.t('wizard.entityTemplate.propertyDisplayName')}
+                                    id={title}
+                                    name={title}
+                                    value={value.title}
+                                    onChange={onChange}
+                                    error={touchedTitle && Boolean(errorTitle)}
+                                    helperText={touchedTitle && errorTitle}
+                                    sx={{ marginRight: '5px' }}
+                                    fullWidth
+                                    disabled={value.deleted}
+                                />
+                                <TextField
+                                    select
+                                    type="text"
+                                    label={i18next.t('wizard.entityTemplate.propertyType')}
+                                    id={type}
+                                    name={type}
+                                    value={value.type === 'text-area' ? 'string' : value.type}
+                                    onChange={(e) => {
+                                        setValues?.((prevValue: any) =>
+                                            setFieldValues(prevValue, {
+                                                type: e.target.value,
+                                                required: (e.target.value === 'serialNumber' || prevValue.required) ?? false,
+                                            }),
+                                        );
+                                    }}
+                                    error={touchedType && Boolean(errorType)}
+                                    helperText={touchedType && errorType}
+                                    disabled={(isDisabled && (initialValue?.type !== 'enum' || !supportConvertingToMultipleFields)) || value.deleted}
+                                    sx={{ marginRight: '5px' }}
+                                    fullWidth
+                                >
+                                    {validPropertyTypes
+                                        .filter((validPropertyType) => {
+                                            if (initialValue?.type === 'enum' && areThereAnyInstances && supportConvertingToMultipleFields)
+                                                return validPropertyType === 'enumArray' || validPropertyType === 'enum';
+                                            if (validPropertyType === 'entityReference') return supportEntityReferenceType;
+                                            if (validPropertyType === 'serialNumber') {
+                                                if (!supportSerialNumberType) return false;
+                                            }
+                                            if (validPropertyType === 'location') return supportLocation;
+                                            if (validPropertyType === 'text-area') return false;
+                                            if (validPropertyType === 'enumArray') return supportArrayFields;
+                                            if (validPropertyType === 'relationshipReference') return supportRelationshipReference;
+                                            if (validPropertyType === 'fileId' || validPropertyType === 'multipleFiles') return false; // TODO: support file inputs
+                                            if (validPropertyType === 'user' || validPropertyType === 'users') return supportUserType;
+                                            return true;
+                                        })
+                                        .map((validType) => {
+                                            return (
+                                                <MenuItem key={validType} value={validType}>
+                                                    {i18next.t(`propertyTypes.${validType}`)}
+                                                </MenuItem>
+                                            );
+                                        })}
+                                </TextField>
+                            </Grid>
+                            <Grid item container justifyContent="space-between" flexWrap="nowrap">
+                                {(value.type === 'enum' || value.type === 'enumArray') && (
+                                    <Autocomplete
+                                        id={options}
+                                        multiple
+                                        options={value.options}
+                                        freeSolo
+                                        value={value.options}
+                                        onChange={(_e, currValue) => {
+                                            const lastValue = currValue.pop();
+                                            const trimmedValue = lastValue ? [...currValue, lastValue.trim()] : [];
+
+                                            if (isDisabled) {
+                                                updateOldDisabledEnumVals(trimmedValue);
+                                            } else {
+                                                setValues?.((prev) =>
+                                                    setFieldValues(prev, {
+                                                        options: trimmedValue,
                                                     }),
                                                 );
-                                            }}
-                                            error={touchedType && Boolean(errorType)}
-                                            helperText={touchedType && errorType}
-                                            disabled={
-                                                (isDisabled && (initialValue?.type !== 'enum' || !supportConvertingToMultipleFields)) || value.deleted
                                             }
-                                            sx={{ marginRight: '5px' }}
-                                            fullWidth
-                                        >
-                                            {validPropertyTypes
-                                                .filter((validPropertyType) => {
-                                                    if (initialValue?.type === 'enum' && areThereAnyInstances && supportConvertingToMultipleFields)
-                                                        return validPropertyType === 'enumArray' || validPropertyType === 'enum';
-                                                    if (validPropertyType === 'entityReference') return supportEntityReferenceType;
-                                                    if (validPropertyType === 'serialNumber') {
-                                                        if (!supportSerialNumberType) return false;
-                                                    }
-                                                    if (validPropertyType === 'location') return supportLocation;
-                                                    if (validPropertyType === 'text-area') return false;
-                                                    if (validPropertyType === 'enumArray') return supportArrayFields;
-                                                    if (validPropertyType === 'relationshipReference') return supportRelationshipReference;
-                                                    if (validPropertyType === 'fileId' || validPropertyType === 'multipleFiles') return false; // TODO: support file inputs
-                                                    if (validPropertyType === 'user' || validPropertyType === 'users') return supportUserType;
-                                                    return true;
-                                                })
-                                                .map((validType) => {
-                                                    return (
-                                                        <MenuItem key={validType} value={validType}>
-                                                            {i18next.t(`propertyTypes.${validType}`)}
-                                                        </MenuItem>
-                                                    );
-                                                })}
-                                        </TextField>
-                                    </Grid>
-                                    <Grid item container justifyContent="space-between" flexWrap="nowrap">
-                                        {(value.type === 'enum' || value.type === 'enumArray') && (
-                                            <Autocomplete
-                                                id={options}
-                                                multiple
-                                                options={value.options}
-                                                freeSolo
-                                                value={value.options}
-                                                onChange={(_e, currValue) => {
-                                                    const lastValue = currValue.pop();
-                                                    const trimmedValue = lastValue ? [...currValue, lastValue.trim()] : [];
-
-                                                    if (isDisabled) {
-                                                        updateOldDisabledEnumVals(trimmedValue);
-                                                    } else {
-                                                        setValues?.((prev) =>
-                                                            setFieldValues(prev, {
-                                                                options: trimmedValue,
-                                                            }),
-                                                        );
-                                                    }
-                                                }}
-                                                isOptionEqualToValue={(option, inputValue) => {
-                                                    return option.trim() === inputValue.trim() || option.trim().length === 0;
-                                                }}
-                                                renderTags={(tagValue, getTagProps) =>
-                                                    tagValue.map((option, tagIndex) => {
-                                                        const chipDisabled = isDisabled && initialOptionArray.length > tagIndex;
-                                                        return (
-                                                            <Box position="relative" key={option}>
-                                                                <>
-                                                                    {chipDisabled ? (
-                                                                        <Chip
-                                                                            variant="outlined"
-                                                                            label={option}
-                                                                            {...getTagProps({ index: tagIndex })}
-                                                                            onDelete={undefined}
-                                                                            icon={value.optionColors && <Box width="1.3rem" />}
-                                                                            sx={{ position: 'relative', pr: supportEditEnum ? '22px' : '3px' }}
-                                                                            ref={(ref) => {
-                                                                                chipRefs.current[tagIndex] = ref;
-                                                                            }}
-                                                                        />
-                                                                    ) : (
-                                                                        <Chip
-                                                                            variant="outlined"
-                                                                            label={option}
-                                                                            {...getTagProps({ index: tagIndex })}
-                                                                            icon={value.optionColors && <Box width="1.3rem" />}
-                                                                            sx={{ position: 'relative', pr: supportEditEnum ? '32px' : '3px' }}
-                                                                            ref={(ref) => {
-                                                                                chipRefs.current[tagIndex] = ref;
-                                                                            }}
-                                                                        />
-                                                                    )}
-                                                                    {value.optionColors && (
-                                                                        <MinimizedColorPicker
-                                                                            color={value.optionColors[option]}
-                                                                            onColorChange={(color) => {
-                                                                                setFieldValue('optionColors', {
-                                                                                    ...value.optionColors,
-                                                                                    [option]: color,
-                                                                                });
-                                                                            }}
-                                                                            circleSize="1.6rem"
-                                                                            style={{
-                                                                                position: 'absolute',
-                                                                                top: 4.5,
-                                                                                left: 4.2,
-                                                                                zIndex: 10000,
-                                                                            }}
-                                                                        />
-                                                                    )}
-                                                                    {supportEditEnum && (
-                                                                        <MemoizedIconButton
-                                                                            onClick={() => {
-                                                                                setEditError('');
-                                                                                setEditIndex(tagIndex);
-                                                                                setLocalOption(value.options[tagIndex]);
-                                                                            }}
-                                                                            sx={{
-                                                                                position: 'absolute',
-                                                                                top: '50%',
-                                                                                right: '8px',
-                                                                                transform: 'translateY(-50%)',
-                                                                                zIndex: 2000,
-                                                                                backgroundColor: 'transparent',
-                                                                                width: '1.6rem',
-                                                                                height: '1.6rem',
-                                                                                padding: 0,
-                                                                            }}
-                                                                        >
-                                                                            <EditIcon />
-                                                                        </MemoizedIconButton>
-                                                                    )}
-                                                                </>
-                                                                <Popover
-                                                                    open={editIndex === tagIndex}
-                                                                    anchorEl={chipRefs.current[tagIndex]}
-                                                                    onClose={() => {
-                                                                        setEditIndex(null);
+                                        }}
+                                        isOptionEqualToValue={(option, inputValue) => {
+                                            return option.trim() === inputValue.trim() || option.trim().length === 0;
+                                        }}
+                                        renderTags={(tagValue, getTagProps) =>
+                                            tagValue.map((option, tagIndex) => {
+                                                const chipDisabled = isDisabled && initialOptionArray.length > tagIndex;
+                                                return (
+                                                    <Box position="relative" key={option}>
+                                                        <>
+                                                            {chipDisabled ? (
+                                                                <Chip
+                                                                    variant="outlined"
+                                                                    label={option}
+                                                                    {...getTagProps({ index: tagIndex })}
+                                                                    onDelete={undefined}
+                                                                    icon={value.optionColors && <Box width="1.3rem" />}
+                                                                    sx={{ position: 'relative', pr: supportEditEnum ? '22px' : '3px' }}
+                                                                    ref={(ref) => {
+                                                                        chipRefs.current[tagIndex] = ref;
                                                                     }}
-                                                                    anchorOrigin={{
-                                                                        vertical: 'bottom',
-                                                                        horizontal: 'center',
+                                                                />
+                                                            ) : (
+                                                                <Chip
+                                                                    variant="outlined"
+                                                                    label={option}
+                                                                    {...getTagProps({ index: tagIndex })}
+                                                                    icon={value.optionColors && <Box width="1.3rem" />}
+                                                                    sx={{ position: 'relative', pr: supportEditEnum ? '32px' : '3px' }}
+                                                                    ref={(ref) => {
+                                                                        chipRefs.current[tagIndex] = ref;
                                                                     }}
-                                                                    transformOrigin={{
-                                                                        vertical: 'top',
-                                                                        horizontal: 'center',
+                                                                />
+                                                            )}
+                                                            {value.optionColors && (
+                                                                <MinimizedColorPicker
+                                                                    color={value.optionColors[option]}
+                                                                    onColorChange={(color) => {
+                                                                        setFieldValue('optionColors', {
+                                                                            ...value.optionColors,
+                                                                            [option]: color,
+                                                                        });
                                                                     }}
-                                                                    PaperProps={{
-                                                                        style: {
-                                                                            zIndex: 10000,
-                                                                            borderRadius: '10px',
-                                                                        },
+                                                                    circleSize="1.6rem"
+                                                                    style={{
+                                                                        position: 'absolute',
+                                                                        top: 4.5,
+                                                                        left: 4.2,
+                                                                        zIndex: 10000,
+                                                                    }}
+                                                                />
+                                                            )}
+                                                            {supportEditEnum && (
+                                                                <MemoizedIconButton
+                                                                    onClick={() => {
+                                                                        setEditError('');
+                                                                        setEditIndex(tagIndex);
+                                                                        setLocalOption(value.options[tagIndex]);
+                                                                    }}
+                                                                    sx={{
+                                                                        position: 'absolute',
+                                                                        top: '50%',
+                                                                        right: '8px',
+                                                                        transform: 'translateY(-50%)',
+                                                                        zIndex: 2000,
+                                                                        backgroundColor: 'transparent',
+                                                                        width: '1.6rem',
+                                                                        height: '1.6rem',
+                                                                        padding: 0,
                                                                     }}
                                                                 >
-                                                                    <Box
-                                                                        p={2}
-                                                                        style={{
-                                                                            display: 'flex',
-                                                                            alignItems: 'center',
-                                                                            borderColor: editError !== '' ? 'red' : 'inherit',
-                                                                            borderStyle: editError !== '' ? 'solid' : 'inherit',
-                                                                            borderWidth: '1px',
-                                                                            borderRadius: '10px',
-                                                                        }}
-                                                                    >
-                                                                        <Backdrop
-                                                                            open={isDeleteLoading}
-                                                                            style={{ zIndex: 999, backgroundColor: 'transparent' }}
-                                                                        />
-                                                                        <TextField
-                                                                            key={editIndex}
-                                                                            fullWidth
-                                                                            value={localOption} // changed from local
-                                                                            onChange={(e) => handleEditChange(e, tagIndex)}
-                                                                            onKeyDown={(e) => {
-                                                                                e.stopPropagation();
-                                                                                if (e.key === 'Enter') {
-                                                                                    e.preventDefault();
-                                                                                    const localOptionTrimmed = localOption.trim();
-
-                                                                                    if (
-                                                                                        tagIndex > initialOptionArray.length - 1 ||
-                                                                                        value.options[tagIndex] === localOptionTrimmed ||
-                                                                                        value.options.includes(localOptionTrimmed) ||
-                                                                                        localOptionTrimmed.length === 0
-                                                                                    ) {
-                                                                                        setOpen(false);
-                                                                                        handleSaveEdit(editIndex!);
-                                                                                    } else setOpen(true);
-                                                                                }
-                                                                            }}
-                                                                        />
-                                                                        {chipDisabled && (
-                                                                            <IconButton
-                                                                                size="small"
-                                                                                onClick={() => {
-                                                                                    if (!isDeleteLoading) {
-                                                                                        setOpenDelete(true);
-                                                                                    }
-                                                                                }}
-                                                                                disabled={isDeleteLoading}
-                                                                            >
-                                                                                {isDeleteLoading ? <CircularProgress size={20} /> : <DeleteIcon />}
-                                                                            </IconButton>
-                                                                        )}
-                                                                        {!!editError && (
-                                                                            <Typography variant="body2" color="error">
-                                                                                {i18next.t(editError)}
-                                                                            </Typography>
-                                                                        )}
-                                                                    </Box>
-                                                                </Popover>
-                                                            </Box>
-                                                        );
-                                                    })
-                                                }
-                                                filterSelectedOptions
-                                                renderInput={(params) => (
-                                                    <TextField
-                                                        {...params}
-                                                        label={i18next.t('propertyTypes.enum')}
-                                                        error={(touchedOptions && Boolean(errorOptions)) || Boolean(atLeastOneItem)}
-                                                        helperText={(touchedOptions && errorOptions) || atLeastOneItem}
-                                                    />
-                                                )}
-                                                sx={{ marginRight: '5px' }}
-                                                fullWidth
-                                                disabled={value.deleted}
-                                            />
-                                        )}
-
-                                        {value.type === 'pattern' && (
-                                            <>
-                                                <TextField
-                                                    label={i18next.t('propertyTypes.pattern')}
-                                                    id={pattern}
-                                                    name={pattern}
-                                                    value={value.pattern}
-                                                    onChange={onChange}
-                                                    error={touchedPattern && Boolean(errorPattern)}
-                                                    helperText={touchedPattern && errorPattern}
-                                                    disabled={isDisabled || value.deleted}
-                                                    dir="ltr"
-                                                    sx={{ marginRight: '5px' }}
-                                                    fullWidth
-                                                />
-                                                <TextField
-                                                    label={i18next.t('wizard.entityTemplate.customErrorMessage')}
-                                                    id={patternCustomErrorMessage}
-                                                    name={patternCustomErrorMessage}
-                                                    value={value.patternCustomErrorMessage}
-                                                    onChange={onChange}
-                                                    error={touchedPatternCustomErrorMessage && Boolean(errorPatternCustomErrorMessage)}
-                                                    helperText={
-                                                        touchedPatternCustomErrorMessage && errorPatternCustomErrorMessage
-                                                            ? errorPatternCustomErrorMessage
-                                                            : i18next.t('wizard.entityTemplate.customErrorMessageHelperText')
-                                                    }
-                                                    sx={{ marginRight: '5px' }}
-                                                    fullWidth
-                                                    disabled={value.deleted}
-                                                />
-                                            </>
-                                        )}
-                                        {value.type === 'serialNumber' && (
-                                            <TextField
-                                                label={i18next.t('wizard.entityTemplate.serialStarter')}
-                                                id={serialStarter}
-                                                name={serialStarter}
-                                                value={value.serialStarter}
-                                                onChange={(e) => {
-                                                    setFieldValue('serialStarter', Number(e.target.value));
-                                                }}
-                                                type="number"
-                                                error={touchedSerialStarter && Boolean(errorSerialStarter)}
-                                                helperText={touchedSerialStarter && errorSerialStarter}
-                                                disabled={isDisabled || value.deleted}
-                                                dir="ltr"
-                                                sx={{ marginRight: '5px' }}
-                                                fullWidth
-                                            />
-                                        )}
-                                        {value.type === 'relationshipReference' && supportRelationshipReference && (
-                                            <RelationshipReferenceField
-                                                value={value}
-                                                index={index}
-                                                touched={touched}
-                                                errors={errors}
-                                                setFieldValue={setFieldValue}
-                                                isDisabled={isDisabled}
-                                            />
-                                        )}
-                                        {(value.type === 'date' || value.type === 'date-time') &&
-                                            'dateNotification' in value &&
-                                            (value.dateNotification !== undefined ? (
-                                                <Grid container direction="row">
-                                                    <Grid container item direction="row">
-                                                        <IconButton
-                                                            onClick={() => setFieldValue('dateNotification', undefined)}
-                                                            sx={{ borderRadius: 10 }}
-                                                            disabled={value.deleted}
-                                                        >
-                                                            <NotificationsActiveIcon />
-                                                        </IconButton>
-                                                        <ToggleButtonGroup
-                                                            exclusive
-                                                            id={isDailyAlert}
-                                                            color="primary"
-                                                            size="small"
-                                                            sx={{ height: '35px', marginLeft: '10px' }}
-                                                            value={value.isDailyAlert ?? true}
-                                                            onChange={(_event: React.MouseEvent<HTMLElement>, newIsDailyAlert: boolean) => {
-                                                                setFieldValue('isDailyAlert', newIsDailyAlert);
+                                                                    <EditIcon />
+                                                                </MemoizedIconButton>
+                                                            )}
+                                                        </>
+                                                        <Popover
+                                                            open={editIndex === tagIndex}
+                                                            anchorEl={chipRefs.current[tagIndex]}
+                                                            onClose={() => {
+                                                                setEditIndex(null);
+                                                            }}
+                                                            anchorOrigin={{
+                                                                vertical: 'bottom',
+                                                                horizontal: 'center',
+                                                            }}
+                                                            transformOrigin={{
+                                                                vertical: 'top',
+                                                                horizontal: 'center',
+                                                            }}
+                                                            PaperProps={{
+                                                                style: {
+                                                                    zIndex: 10000,
+                                                                    borderRadius: '10px',
+                                                                },
                                                             }}
                                                         >
-                                                            <ToggleButton value>
-                                                                <MeltaTooltip title={i18next.t('wizard.entityTemplate.dailyAlert')}>
-                                                                    <DailyAlertIcon />
-                                                                </MeltaTooltip>
-                                                            </ToggleButton>
-                                                            <ToggleButton value={false}>
-                                                                <MeltaTooltip title={TooltipTitleWithLinesSpace('wizard.entityTemplate.customAlert')}>
-                                                                    <CustomAlertIcon />
-                                                                </MeltaTooltip>
-                                                            </ToggleButton>
-                                                        </ToggleButtonGroup>
-                                                        <FormControlLabel
-                                                            control={
-                                                                <MeltaCheckbox
-                                                                    checked={value.isDatePastAlert ?? true}
-                                                                    onChange={(_e, checked) => {
-                                                                        setValues?.((prevValue) =>
-                                                                            setFieldValues(prevValue, {
-                                                                                isDatePastAlert: checked,
-                                                                            }),
-                                                                        );
-                                                                    }}
-                                                                />
-                                                            }
-                                                            style={{
-                                                                display: 'flex',
-                                                                justifyContent: 'center',
-                                                                marginRight: 'auto',
-                                                                marginLeft: 10,
-                                                            }}
-                                                            label={i18next.t('wizard.entityTemplate.datePastNotification')}
-                                                        />
-                                                    </Grid>
-                                                    <TextField
-                                                        select
-                                                        label={i18next.t('wizard.entityTemplate.dateNotification')}
-                                                        id={dateNotification}
-                                                        name={dateNotification}
-                                                        value={value.dateNotification ?? ''}
-                                                        onChange={onChange}
-                                                        error={touchedDateNotification && Boolean(errorDateNotification)}
-                                                        helperText={touchedDateNotification && errorDateNotification}
-                                                        sx={{ marginRight: '5px', marginTop: '5px' }}
-                                                        fullWidth
-                                                        disabled={value.deleted}
-                                                    >
-                                                        {dateNotificationTypes.map((notificationType) => (
-                                                            <MenuItem key={notificationType} value={dateNotificationOptions[notificationType]}>
-                                                                {i18next.t(`wizard.entityTemplate.dateNotificationTypes.${notificationType}`)}
-                                                            </MenuItem>
-                                                        ))}
-                                                    </TextField>
-                                                </Grid>
-                                            ) : (
-                                                <IconButton
-                                                    onClick={() => setFieldValue('dateNotification', null)}
-                                                    sx={{ borderRadius: 10 }}
-                                                    disabled={value.deleted}
-                                                >
-                                                    <NotificationsOffIcon />
-                                                </IconButton>
-                                            ))}
-                                        <AreYouSureDialog
-                                            open={open || openDelete}
-                                            handleClose={() => {
-                                                setOpenDelete(false);
-                                                setOpen(false);
-                                            }}
-                                            onYes={() => {
-                                                if (openDelete) handleDelete(editIndex!);
-                                                else {
-                                                    handleSaveEdit(editIndex!);
-                                                }
-                                            }}
-                                            isLoading={isLoading}
-                                            body={`${i18next.t('areYouSureDialog.enumChangeDisclaimer')} ${entity}`}
-                                        />
-                                    </Grid>
-                                    <Grid item container justifyContent="space-between">
-                                        <Box>
-                                            {value.required !== undefined && setValues && (
-                                                <FormControlLabel
-                                                    control={
-                                                        <Switch
-                                                            id={required}
-                                                            name={required}
-                                                            onChange={(_e, checked) => {
-                                                                setValues((prevValue) =>
-                                                                    setFieldValues(prevValue, {
-                                                                        required: checked,
-                                                                        identifier: !checked ? undefined : prevValue.identifier,
-                                                                    }),
-                                                                );
-                                                                // unique is allowed only if required=true, automatic uncheck 'unique' too
-                                                                if (!checked && unique) {
-                                                                    deletePropFromUniqueConstraints(uniqueConstraintGroupName, value.name);
-                                                                }
-                                                            }}
-                                                            disabled={
-                                                                value.type === 'serialNumber' ||
-                                                                value.type === 'boolean' ||
-                                                                value.readOnly ||
-                                                                (supportChangeToRequiredWithInstances
-                                                                    ? false
-                                                                    : isEditMode &&
-                                                                      areThereAnyInstances &&
-                                                                      (isNewProperty || (!isNewProperty && !initialValue?.required))) ||
-                                                                value.deleted ||
-                                                                value.archive ||
-                                                                disableRemoveRequire
-                                                            }
-                                                            checked={value.required}
-                                                        />
-                                                    }
-                                                    label={i18next.t('validation.required')}
-                                                />
-                                            )}
-                                            <FormControlLabel
-                                                control={
-                                                    <Switch
-                                                        id={readOnly}
-                                                        name={readOnly}
-                                                        onChange={(_e, checked) => {
-                                                            setValues?.((prevValue) =>
-                                                                setFieldValues(prevValue, {
-                                                                    readOnly: checked || undefined,
-                                                                }),
-                                                            );
-                                                        }}
-                                                        disabled={value.required || value.archive}
-                                                        checked={value.readOnly}
-                                                    />
-                                                }
-                                                label={i18next.t('validation.readOnly')}
-                                            />
-                                            {value.preview !== undefined && (
-                                                <FormControlLabel
-                                                    control={
-                                                        <Switch
-                                                            id={preview}
-                                                            name={preview}
-                                                            onChange={onChange}
-                                                            disabled={value.hide || value.deleted || value.archive}
-                                                            checked={value.preview}
-                                                        />
-                                                    }
-                                                    label={i18next.t('validation.preview')}
-                                                />
-                                            )}
-                                            {value.hide !== undefined && (
-                                                <FormControlLabel
-                                                    control={
-                                                        <Switch
-                                                            id={hide}
-                                                            name={hide}
-                                                            onChange={onChange}
-                                                            disabled={value.preview || value.deleted || value.archive}
-                                                            checked={value.hide}
-                                                        />
-                                                    }
-                                                    label={i18next.t('validation.hide')}
-                                                />
-                                            )}
-                                            {supportUnique && unique !== undefined && setValues && value.type !== 'signature' && (
-                                                <FormControlLabel
-                                                    control={
-                                                        <Switch
-                                                            id={String(unique)}
-                                                            name={String(unique)}
-                                                            checked={unique}
-                                                            disabled={value.archive || value.type === 'serialNumber'}
-                                                            onChange={(_e, checked) => {
-                                                                setValues((prevValue) =>
-                                                                    setFieldValues(prevValue, {
-                                                                        required: checked ? true : prevValue.required,
-                                                                        identifier: !checked ? undefined : prevValue.identifier,
-                                                                        groupName: undefined,
-                                                                        uniqueCheckbox: false,
-                                                                    }),
-                                                                );
-                                                                if (checked) {
-                                                                    createEmptyGroup(value.name);
-                                                                } else {
-                                                                    deletePropFromUniqueConstraints(uniqueConstraintGroupName, value.name);
-                                                                }
-                                                            }}
-                                                        />
-                                                    }
-                                                    label={i18next.t('validation.unique')}
-                                                />
-                                            )}
-                                            {(value.type === 'date' || value.type === 'date-time') && 'calculateTime' in value && (
-                                                <FormControlLabel
-                                                    control={
-                                                        <Switch
-                                                            id={calculateTime}
-                                                            name={calculateTime}
-                                                            onChange={onChange}
-                                                            checked={value.calculateTime ?? false}
-                                                        />
-                                                    }
-                                                    label={i18next.t('validation.calculateTime')}
-                                                />
-                                            )}
-                                            {isText && (
-                                                <FormControlLabel
-                                                    control={
-                                                        <Switch
-                                                            id={type}
-                                                            name={type}
-                                                            onChange={(e) => {
-                                                                const newFormatToText = e.target.checked ? 'text-area' : 'string';
-                                                                setValues?.((prevValue) =>
-                                                                    setFieldValues(prevValue, {
-                                                                        type: newFormatToText,
-                                                                    }),
-                                                                );
-                                                            }}
-                                                            checked={value.type === 'text-area'}
-                                                            disabled={value.archive}
-                                                        />
-                                                    }
-                                                    label={i18next.t('propertyTypes.text-area')}
-                                                />
-                                            )}
-                                            {isIdentifierAble && supportIdentifier && (
-                                                <FormControlLabel
-                                                    control={
-                                                        <Switch
-                                                            id={identifier}
-                                                            name={identifier}
-                                                            onChange={(_e, checked) => {
-                                                                setValues?.((prevValue) =>
-                                                                    setFieldValues(prevValue, {
-                                                                        required: checked ? true : prevValue.required,
-                                                                        identifier: checked || undefined,
-                                                                        groupName: undefined,
-                                                                        uniqueCheckbox: false,
-                                                                    }),
-                                                                );
-                                                                if (checked) createEmptyGroup(value.name);
-                                                            }}
-                                                            disabled={hasIdentifier && !value.identifier}
-                                                            checked={value.identifier ?? false}
-                                                        />
-                                                    }
-                                                    label={i18next.t('validation.identifier')}
-                                                />
-                                            )}
-                                        </Box>
-                                        <Grid display="flex">
-                                            {locationSearchFields?.show &&
-                                                value.type !== 'fileId' &&
-                                                value.type !== 'relationshipReference' &&
-                                                !arrayTypes.includes(value.type) && (
-                                                    <MeltaTooltip
-                                                        title={i18next.t(
-                                                            mapSearchDisabled
-                                                                ? 'validation.mapSearchPropertiesLimit'
-                                                                : 'wizard.entityTemplate.searchLocation',
-                                                            { limit: mapSearchPropertiesLimit },
-                                                        )}
-                                                        placement="right"
-                                                    >
-                                                        <Box>
-                                                            <IconButton
-                                                                onClick={() => setFieldValue('mapSearch', !value.mapSearch)}
-                                                                disabled={mapSearchDisabled}
+                                                            <Box
+                                                                p={2}
+                                                                style={{
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    borderColor: editError !== '' ? 'red' : 'inherit',
+                                                                    borderStyle: editError !== '' ? 'solid' : 'inherit',
+                                                                    borderWidth: '1px',
+                                                                    borderRadius: '10px',
+                                                                }}
                                                             >
-                                                                {value.mapSearch ? <WrongLocation color="primary" /> : <AddLocationAlt />}
-                                                            </IconButton>
-                                                        </Box>
-                                                    </MeltaTooltip>
-                                                )}
-                                            {supportArchive && isEditMode && (
-                                                <MeltaTooltip title={archiveButtonTooltip()} placement="right">
-                                                    <Box>
-                                                        <IconButton
-                                                            onClick={() => setFieldValue('archive', !value.archive)}
-                                                            disabled={value.required || value.uniqueCheckbox || value.preview}
-                                                        >
-                                                            {value.archive ? <Unarchive color="primary" /> : <Archive />}
-                                                        </IconButton>
-                                                    </Box>
-                                                </MeltaTooltip>
-                                            )}
-                                            <MeltaTooltip
-                                                disableHoverListener={!initialValue?.required}
-                                                title={i18next.t('wizard.entityTemplate.cantDeleteUniqueOrRequiredFields')}
-                                            >
-                                                <Box>
-                                                    <IconButton
-                                                        onClick={() => remove(index, isNewProperty, groupIndex)}
-                                                        disabled={!supportDeleteForExistingInstances || initialValue?.required || hasActions}
-                                                    >
-                                                        {value.deleted ? <DeleteOff /> : <DeleteIcon />}
-                                                    </IconButton>
-                                                </Box>
-                                            </MeltaTooltip>
-                                        </Grid>
-                                    </Grid>
-                                    <Grid item container justifyContent="space-between" alignItems="center" flexWrap="nowrap">
-                                        {unique && !value.identifier && value.type !== 'serialNumber' && (
-                                            <Grid container direction="row">
-                                                <Grid item container alignItems="center" flexWrap="nowrap">
-                                                    <MeltaTooltip title={i18next.t('validation.uniqueTooltipTitle')}>
-                                                        <FormControlLabel
-                                                            control={
-                                                                <MeltaCheckbox
-                                                                    checked={value.uniqueCheckbox}
-                                                                    onChange={(_e, checked) => {
-                                                                        setValues!((prevValue) =>
-                                                                            setFieldValues(prevValue, {
-                                                                                uniqueCheckbox: checked,
-                                                                            }),
-                                                                        );
-                                                                        if (!checked) {
-                                                                            movePropAndCreateGroup(value.name);
-                                                                        }
-                                                                    }}
+                                                                <Backdrop
+                                                                    open={isDeleteLoading}
+                                                                    style={{ zIndex: 999, backgroundColor: 'transparent' }}
                                                                 />
-                                                            }
-                                                            label={i18next.t('wizard.entityTemplate.createOrAddUniqueGroup')}
-                                                        />
-                                                    </MeltaTooltip>
-                                                </Grid>
-                                                {value.uniqueCheckbox && (
-                                                    <Autocomplete
-                                                        id={uniqueConstraintGroupName}
-                                                        value={uniqueConstraintGroupName}
-                                                        fullWidth
-                                                        freeSolo
-                                                        disableClearable
-                                                        options={
-                                                            Array.isArray(uniqueConstraints)
-                                                                ? uniqueConstraints
-                                                                      .filter((group) => group.groupName !== '')
-                                                                      ?.map((group) => group.groupName)
-                                                                : []
-                                                        }
-                                                        onChange={(_event, newValue) => {
-                                                            if (newValue !== null) {
-                                                                addToProperties(newValue);
-                                                                setValues!((prevValue) =>
-                                                                    setFieldValues(prevValue, {
-                                                                        groupName: newValue,
-                                                                    }),
-                                                                );
-                                                            }
-                                                        }}
-                                                        renderInput={(params) => (
-                                                            <div style={{ position: 'relative' }}>
                                                                 <TextField
-                                                                    {...params}
-                                                                    label={i18next.t('wizard.entityTemplate.createOrAddUniqueGroup')}
-                                                                    error={touchedUniqueGroupName && Boolean(errorUniqueGroupName)}
-                                                                    helperText={touchedUniqueGroupName && errorUniqueGroupName}
-                                                                    sx={{ marginRight: '5px' }}
+                                                                    key={editIndex}
                                                                     fullWidth
-                                                                    InputProps={{
-                                                                        ...params.InputProps,
-                                                                        endAdornment: (
-                                                                            <>
-                                                                                {params.InputProps.endAdornment}
-                                                                                {uniqueConstraintGroupName !== '' &&
-                                                                                    params.inputProps.value === uniqueConstraintGroupName &&
-                                                                                    uniqueConstraints?.some(
-                                                                                        (group) => group.groupName === uniqueConstraintGroupName,
-                                                                                    ) && (
-                                                                                        <IconButton
-                                                                                            aria-label="delete"
-                                                                                            onClick={() => {
-                                                                                                deleteAndCreateEmptyGroup(uniqueConstraintGroupName);
-                                                                                            }}
-                                                                                        >
-                                                                                            <DeleteIcon />
-                                                                                        </IconButton>
-                                                                                    )}
-                                                                            </>
-                                                                        ),
-                                                                    }}
+                                                                    value={localOption} // changed from local
+                                                                    onChange={(e) => handleEditChange(e, tagIndex)}
                                                                     onKeyDown={(e) => {
                                                                         e.stopPropagation();
                                                                         if (e.key === 'Enter') {
                                                                             e.preventDefault();
-                                                                            const inputValue = params.inputProps.value;
+                                                                            const localOptionTrimmed = localOption.trim();
+
                                                                             if (
-                                                                                inputValue &&
-                                                                                !uniqueConstraints?.some((group) => group.groupName === inputValue)
+                                                                                tagIndex > initialOptionArray.length - 1 ||
+                                                                                value.options[tagIndex] === localOptionTrimmed ||
+                                                                                value.options.includes(localOptionTrimmed) ||
+                                                                                localOptionTrimmed.length === 0
                                                                             ) {
-                                                                                createNewUniqueGroup(inputValue);
-                                                                                setValues!((prevValue) =>
-                                                                                    setFieldValues(prevValue, {
-                                                                                        groupName: String(inputValue),
-                                                                                    }),
-                                                                                );
-                                                                            }
+                                                                                setOpen(false);
+                                                                                handleSaveEdit(editIndex!);
+                                                                            } else setOpen(true);
                                                                         }
                                                                     }}
                                                                 />
-
-                                                                {params.inputProps.value &&
-                                                                    !uniqueConstraints?.some(
-                                                                        (group) => group.groupName === params.inputProps.value,
-                                                                    ) && (
-                                                                        <IconButton
-                                                                            aria-label="create"
-                                                                            onClick={() => {
-                                                                                createNewUniqueGroup(params.inputProps.value);
-                                                                                setValues!((prevValue) =>
-                                                                                    setFieldValues(prevValue, {
-                                                                                        groupName: String(params.inputProps.value),
-                                                                                    }),
-                                                                                );
-                                                                            }}
-                                                                            style={{
-                                                                                position: 'absolute',
-                                                                                left: 10,
-                                                                                top: '50%',
-                                                                                transform:
-                                                                                    touchedUniqueGroupName && errorUniqueGroupName
-                                                                                        ? 'translateY(-80%)'
-                                                                                        : 'translateY(-50%)',
-                                                                            }}
-                                                                        >
-                                                                            <AddIcon />
-                                                                        </IconButton>
-                                                                    )}
-                                                            </div>
-                                                        )}
-                                                    />
-                                                )}
-                                            </Grid>
+                                                                {chipDisabled && (
+                                                                    <IconButton
+                                                                        size="small"
+                                                                        onClick={() => {
+                                                                            if (!isDeleteLoading) {
+                                                                                setOpenDelete(true);
+                                                                            }
+                                                                        }}
+                                                                        disabled={isDeleteLoading}
+                                                                    >
+                                                                        {isDeleteLoading ? <CircularProgress size={20} /> : <DeleteIcon />}
+                                                                    </IconButton>
+                                                                )}
+                                                                {!!editError && (
+                                                                    <Typography variant="body2" color="error">
+                                                                        {i18next.t(editError)}
+                                                                    </Typography>
+                                                                )}
+                                                            </Box>
+                                                        </Popover>
+                                                    </Box>
+                                                );
+                                            })
+                                        }
+                                        filterSelectedOptions
+                                        renderInput={(params) => (
+                                            <TextField
+                                                {...params}
+                                                label={i18next.t('propertyTypes.enum')}
+                                                error={(touchedOptions && Boolean(errorOptions)) || Boolean(atLeastOneItem)}
+                                                helperText={(touchedOptions && errorOptions) || atLeastOneItem}
+                                            />
                                         )}
-                                    </Grid>
+                                        sx={{ marginRight: '5px' }}
+                                        fullWidth
+                                        disabled={value.deleted}
+                                    />
+                                )}
+
+                                {value.type === 'pattern' && (
+                                    <>
+                                        <TextField
+                                            label={i18next.t('propertyTypes.pattern')}
+                                            id={pattern}
+                                            name={pattern}
+                                            value={value.pattern}
+                                            onChange={onChange}
+                                            error={touchedPattern && Boolean(errorPattern)}
+                                            helperText={touchedPattern && errorPattern}
+                                            disabled={isDisabled || value.deleted}
+                                            dir="ltr"
+                                            sx={{ marginRight: '5px' }}
+                                            fullWidth
+                                        />
+                                        <TextField
+                                            label={i18next.t('wizard.entityTemplate.customErrorMessage')}
+                                            id={patternCustomErrorMessage}
+                                            name={patternCustomErrorMessage}
+                                            value={value.patternCustomErrorMessage}
+                                            onChange={onChange}
+                                            error={touchedPatternCustomErrorMessage && Boolean(errorPatternCustomErrorMessage)}
+                                            helperText={
+                                                touchedPatternCustomErrorMessage && errorPatternCustomErrorMessage
+                                                    ? errorPatternCustomErrorMessage
+                                                    : i18next.t('wizard.entityTemplate.customErrorMessageHelperText')
+                                            }
+                                            sx={{ marginRight: '5px' }}
+                                            fullWidth
+                                            disabled={value.deleted}
+                                        />
+                                    </>
+                                )}
+                                {value.type === 'serialNumber' && (
+                                    <TextField
+                                        label={i18next.t('wizard.entityTemplate.serialStarter')}
+                                        id={serialStarter}
+                                        name={serialStarter}
+                                        value={value.serialStarter}
+                                        onChange={(e) => {
+                                            setFieldValue('serialStarter', Number(e.target.value));
+                                        }}
+                                        type="number"
+                                        error={touchedSerialStarter && Boolean(errorSerialStarter)}
+                                        helperText={touchedSerialStarter && errorSerialStarter}
+                                        disabled={isDisabled || value.deleted}
+                                        dir="ltr"
+                                        sx={{ marginRight: '5px' }}
+                                        fullWidth
+                                    />
+                                )}
+                                {value.type === 'relationshipReference' && supportRelationshipReference && (
+                                    <RelationshipReferenceField
+                                        value={value}
+                                        index={index}
+                                        touched={touched}
+                                        errors={errors}
+                                        setFieldValue={setFieldValue}
+                                        isDisabled={isDisabled}
+                                    />
+                                )}
+                                {(value.type === 'date' || value.type === 'date-time') &&
+                                    'dateNotification' in value &&
+                                    (value.dateNotification !== undefined ? (
+                                        <Grid container direction="row">
+                                            <Grid container item direction="row">
+                                                <IconButton
+                                                    onClick={() => setFieldValue('dateNotification', undefined)}
+                                                    sx={{ borderRadius: 10 }}
+                                                    disabled={value.deleted}
+                                                >
+                                                    <NotificationsActiveIcon />
+                                                </IconButton>
+                                                <ToggleButtonGroup
+                                                    exclusive
+                                                    id={isDailyAlert}
+                                                    color="primary"
+                                                    size="small"
+                                                    sx={{ height: '35px', marginLeft: '10px' }}
+                                                    value={value.isDailyAlert ?? true}
+                                                    onChange={(_event: React.MouseEvent<HTMLElement>, newIsDailyAlert: boolean) => {
+                                                        setFieldValue('isDailyAlert', newIsDailyAlert);
+                                                    }}
+                                                >
+                                                    <ToggleButton value>
+                                                        <MeltaTooltip title={i18next.t('wizard.entityTemplate.dailyAlert')}>
+                                                            <DailyAlertIcon />
+                                                        </MeltaTooltip>
+                                                    </ToggleButton>
+                                                    <ToggleButton value={false}>
+                                                        <MeltaTooltip title={TooltipTitleWithLinesSpace('wizard.entityTemplate.customAlert')}>
+                                                            <CustomAlertIcon />
+                                                        </MeltaTooltip>
+                                                    </ToggleButton>
+                                                </ToggleButtonGroup>
+                                                <FormControlLabel
+                                                    control={
+                                                        <MeltaCheckbox
+                                                            checked={value.isDatePastAlert ?? true}
+                                                            onChange={(_e, checked) => {
+                                                                setValues?.((prevValue) =>
+                                                                    setFieldValues(prevValue, {
+                                                                        isDatePastAlert: checked,
+                                                                    }),
+                                                                );
+                                                            }}
+                                                        />
+                                                    }
+                                                    style={{
+                                                        display: 'flex',
+                                                        justifyContent: 'center',
+                                                        marginRight: 'auto',
+                                                        marginLeft: 10,
+                                                    }}
+                                                    label={i18next.t('wizard.entityTemplate.datePastNotification')}
+                                                />
+                                            </Grid>
+                                            <TextField
+                                                select
+                                                label={i18next.t('wizard.entityTemplate.dateNotification')}
+                                                id={dateNotification}
+                                                name={dateNotification}
+                                                value={value.dateNotification ?? ''}
+                                                onChange={onChange}
+                                                error={touchedDateNotification && Boolean(errorDateNotification)}
+                                                helperText={touchedDateNotification && errorDateNotification}
+                                                sx={{ marginRight: '5px', marginTop: '5px' }}
+                                                fullWidth
+                                                disabled={value.deleted}
+                                            >
+                                                {dateNotificationTypes.map((notificationType) => (
+                                                    <MenuItem key={notificationType} value={dateNotificationOptions[notificationType]}>
+                                                        {i18next.t(`wizard.entityTemplate.dateNotificationTypes.${notificationType}`)}
+                                                    </MenuItem>
+                                                ))}
+                                            </TextField>
+                                        </Grid>
+                                    ) : (
+                                        <IconButton
+                                            onClick={() => setFieldValue('dateNotification', null)}
+                                            sx={{ borderRadius: 10 }}
+                                            disabled={value.deleted}
+                                        >
+                                            <NotificationsOffIcon />
+                                        </IconButton>
+                                    ))}
+                                <AreYouSureDialog
+                                    open={open || openDelete}
+                                    handleClose={() => {
+                                        setOpenDelete(false);
+                                        setOpen(false);
+                                    }}
+                                    onYes={() => {
+                                        if (openDelete) handleDelete(editIndex!);
+                                        else {
+                                            handleSaveEdit(editIndex!);
+                                        }
+                                    }}
+                                    isLoading={isLoading}
+                                    body={`${i18next.t('areYouSureDialog.enumChangeDisclaimer')} ${entity}`}
+                                />
+                            </Grid>
+                            <Grid item container justifyContent="space-between">
+                                <Box>
+                                    {value.required !== undefined && setValues && (
+                                        <FormControlLabel
+                                            control={
+                                                <Switch
+                                                    id={required}
+                                                    name={required}
+                                                    onChange={(_e, checked) => {
+                                                        setValues((prevValue) =>
+                                                            setFieldValues(prevValue, {
+                                                                required: checked,
+                                                                identifier: !checked ? undefined : prevValue.identifier,
+                                                            }),
+                                                        );
+                                                        // unique is allowed only if required=true, automatic uncheck 'unique' too
+                                                        if (!checked && unique) {
+                                                            deletePropFromUniqueConstraints(uniqueConstraintGroupName, value.name);
+                                                        }
+                                                    }}
+                                                    disabled={
+                                                        value.type === 'serialNumber' ||
+                                                        value.type === 'boolean' ||
+                                                        value.readOnly ||
+                                                        (supportChangeToRequiredWithInstances
+                                                            ? false
+                                                            : isEditMode &&
+                                                              areThereAnyInstances &&
+                                                              (isNewProperty || (!isNewProperty && !initialValue?.required))) ||
+                                                        value.deleted ||
+                                                        value.archive ||
+                                                        disableRemoveRequire
+                                                    }
+                                                    checked={value.required}
+                                                />
+                                            }
+                                            label={i18next.t('validation.required')}
+                                        />
+                                    )}
+                                    <FormControlLabel
+                                        control={
+                                            <Switch
+                                                id={readOnly}
+                                                name={readOnly}
+                                                onChange={(_e, checked) => {
+                                                    setValues?.((prevValue) =>
+                                                        setFieldValues(prevValue, {
+                                                            readOnly: checked || undefined,
+                                                        }),
+                                                    );
+                                                }}
+                                                disabled={value.required || value.archive}
+                                                checked={value.readOnly}
+                                            />
+                                        }
+                                        label={i18next.t('validation.readOnly')}
+                                    />
+                                    {value.preview !== undefined && (
+                                        <FormControlLabel
+                                            control={
+                                                <Switch
+                                                    id={preview}
+                                                    name={preview}
+                                                    onChange={onChange}
+                                                    disabled={value.hide || value.deleted || value.archive}
+                                                    checked={value.preview}
+                                                />
+                                            }
+                                            label={i18next.t('validation.preview')}
+                                        />
+                                    )}
+                                    {value.hide !== undefined && (
+                                        <FormControlLabel
+                                            control={
+                                                <Switch
+                                                    id={hide}
+                                                    name={hide}
+                                                    onChange={onChange}
+                                                    disabled={value.preview || value.deleted || value.archive}
+                                                    checked={value.hide}
+                                                />
+                                            }
+                                            label={i18next.t('validation.hide')}
+                                        />
+                                    )}
+                                    {supportUnique && unique !== undefined && setValues && value.type !== 'signature' && (
+                                        <FormControlLabel
+                                            control={
+                                                <Switch
+                                                    id={String(unique)}
+                                                    name={String(unique)}
+                                                    checked={unique}
+                                                    disabled={value.archive || value.type === 'serialNumber'}
+                                                    onChange={(_e, checked) => {
+                                                        setValues((prevValue) =>
+                                                            setFieldValues(prevValue, {
+                                                                required: checked ? true : prevValue.required,
+                                                                identifier: !checked ? undefined : prevValue.identifier,
+                                                                groupName: undefined,
+                                                                uniqueCheckbox: false,
+                                                            }),
+                                                        );
+                                                        if (checked) {
+                                                            createEmptyGroup(value.name);
+                                                        } else {
+                                                            deletePropFromUniqueConstraints(uniqueConstraintGroupName, value.name);
+                                                        }
+                                                    }}
+                                                />
+                                            }
+                                            label={i18next.t('validation.unique')}
+                                        />
+                                    )}
+                                    {(value.type === 'date' || value.type === 'date-time') && 'calculateTime' in value && (
+                                        <FormControlLabel
+                                            control={
+                                                <Switch
+                                                    id={calculateTime}
+                                                    name={calculateTime}
+                                                    onChange={onChange}
+                                                    checked={value.calculateTime ?? false}
+                                                />
+                                            }
+                                            label={i18next.t('validation.calculateTime')}
+                                        />
+                                    )}
+                                    {isText && (
+                                        <FormControlLabel
+                                            control={
+                                                <Switch
+                                                    id={type}
+                                                    name={type}
+                                                    onChange={(e) => {
+                                                        const newFormatToText = e.target.checked ? 'text-area' : 'string';
+                                                        setValues?.((prevValue) =>
+                                                            setFieldValues(prevValue, {
+                                                                type: newFormatToText,
+                                                            }),
+                                                        );
+                                                    }}
+                                                    checked={value.type === 'text-area'}
+                                                    disabled={value.archive}
+                                                />
+                                            }
+                                            label={i18next.t('propertyTypes.text-area')}
+                                        />
+                                    )}
+                                    {isIdentifierAble && supportIdentifier && (
+                                        <FormControlLabel
+                                            control={
+                                                <Switch
+                                                    id={identifier}
+                                                    name={identifier}
+                                                    onChange={(_e, checked) => {
+                                                        setValues?.((prevValue) =>
+                                                            setFieldValues(prevValue, {
+                                                                required: checked ? true : prevValue.required,
+                                                                identifier: checked || undefined,
+                                                                groupName: undefined,
+                                                                uniqueCheckbox: false,
+                                                            }),
+                                                        );
+                                                        if (checked) createEmptyGroup(value.name);
+                                                    }}
+                                                    disabled={hasIdentifier && !value.identifier}
+                                                    checked={value.identifier ?? false}
+                                                />
+                                            }
+                                            label={i18next.t('validation.identifier')}
+                                        />
+                                    )}
+                                </Box>
+                                <Grid display="flex">
+                                    {locationSearchFields?.show &&
+                                        value.type !== 'fileId' &&
+                                        value.type !== 'relationshipReference' &&
+                                        !arrayTypes.includes(value.type) && (
+                                            <MeltaTooltip
+                                                title={i18next.t(
+                                                    mapSearchDisabled
+                                                        ? 'validation.mapSearchPropertiesLimit'
+                                                        : 'wizard.entityTemplate.searchLocation',
+                                                    { limit: mapSearchPropertiesLimit },
+                                                )}
+                                                placement="right"
+                                            >
+                                                <Box>
+                                                    <IconButton
+                                                        onClick={() => setFieldValue('mapSearch', !value.mapSearch)}
+                                                        disabled={mapSearchDisabled}
+                                                    >
+                                                        {value.mapSearch ? <WrongLocation color="primary" /> : <AddLocationAlt />}
+                                                    </IconButton>
+                                                </Box>
+                                            </MeltaTooltip>
+                                        )}
+                                    {supportArchive && isEditMode && (
+                                        <MeltaTooltip title={archiveButtonTooltip()} placement="right">
+                                            <Box>
+                                                <IconButton
+                                                    onClick={() => setFieldValue('archive', !value.archive)}
+                                                    disabled={value.required || value.uniqueCheckbox || value.preview}
+                                                >
+                                                    {value.archive ? <Unarchive color="primary" /> : <Archive />}
+                                                </IconButton>
+                                            </Box>
+                                        </MeltaTooltip>
+                                    )}
+                                    <MeltaTooltip
+                                        disableHoverListener={!initialValue?.required}
+                                        title={i18next.t('wizard.entityTemplate.cantDeleteUniqueOrRequiredFields')}
+                                    >
+                                        <Box>
+                                            <IconButton
+                                                onClick={() => remove(index, isNewProperty, groupIndex)}
+                                                disabled={!supportDeleteForExistingInstances || initialValue?.required || hasActions}
+                                            >
+                                                {value.deleted ? <DeleteOff /> : <DeleteIcon />}
+                                            </IconButton>
+                                        </Box>
+                                    </MeltaTooltip>
                                 </Grid>
                             </Grid>
-                        </CardContent>
-                    </Card>
-                </Grid>
-            )}
-        </Draggable>
+                            <Grid item container justifyContent="space-between" alignItems="center" flexWrap="nowrap">
+                                {unique && !value.identifier && value.type !== 'serialNumber' && (
+                                    <Grid container direction="row">
+                                        <Grid item container alignItems="center" flexWrap="nowrap">
+                                            <MeltaTooltip title={i18next.t('validation.uniqueTooltipTitle')}>
+                                                <FormControlLabel
+                                                    control={
+                                                        <MeltaCheckbox
+                                                            checked={value.uniqueCheckbox}
+                                                            onChange={(_e, checked) => {
+                                                                setValues!((prevValue) =>
+                                                                    setFieldValues(prevValue, {
+                                                                        uniqueCheckbox: checked,
+                                                                    }),
+                                                                );
+                                                                if (!checked) {
+                                                                    movePropAndCreateGroup(value.name);
+                                                                }
+                                                            }}
+                                                        />
+                                                    }
+                                                    label={i18next.t('wizard.entityTemplate.createOrAddUniqueGroup')}
+                                                />
+                                            </MeltaTooltip>
+                                        </Grid>
+                                        {value.uniqueCheckbox && (
+                                            <Autocomplete
+                                                id={uniqueConstraintGroupName}
+                                                value={uniqueConstraintGroupName}
+                                                fullWidth
+                                                freeSolo
+                                                disableClearable
+                                                options={
+                                                    Array.isArray(uniqueConstraints)
+                                                        ? uniqueConstraints.filter((group) => group.groupName !== '')?.map((group) => group.groupName)
+                                                        : []
+                                                }
+                                                onChange={(_event, newValue) => {
+                                                    if (newValue !== null) {
+                                                        addToProperties(newValue);
+                                                        setValues!((prevValue) =>
+                                                            setFieldValues(prevValue, {
+                                                                groupName: newValue,
+                                                            }),
+                                                        );
+                                                    }
+                                                }}
+                                                renderInput={(params) => (
+                                                    <div style={{ position: 'relative' }}>
+                                                        <TextField
+                                                            {...params}
+                                                            label={i18next.t('wizard.entityTemplate.createOrAddUniqueGroup')}
+                                                            error={touchedUniqueGroupName && Boolean(errorUniqueGroupName)}
+                                                            helperText={touchedUniqueGroupName && errorUniqueGroupName}
+                                                            sx={{ marginRight: '5px' }}
+                                                            fullWidth
+                                                            InputProps={{
+                                                                ...params.InputProps,
+                                                                endAdornment: (
+                                                                    <>
+                                                                        {params.InputProps.endAdornment}
+                                                                        {uniqueConstraintGroupName !== '' &&
+                                                                            params.inputProps.value === uniqueConstraintGroupName &&
+                                                                            uniqueConstraints?.some(
+                                                                                (group) => group.groupName === uniqueConstraintGroupName,
+                                                                            ) && (
+                                                                                <IconButton
+                                                                                    aria-label="delete"
+                                                                                    onClick={() => {
+                                                                                        deleteAndCreateEmptyGroup(uniqueConstraintGroupName);
+                                                                                    }}
+                                                                                >
+                                                                                    <DeleteIcon />
+                                                                                </IconButton>
+                                                                            )}
+                                                                    </>
+                                                                ),
+                                                            }}
+                                                            onKeyDown={(e) => {
+                                                                e.stopPropagation();
+                                                                if (e.key === 'Enter') {
+                                                                    e.preventDefault();
+                                                                    const inputValue = params.inputProps.value;
+                                                                    if (
+                                                                        inputValue &&
+                                                                        !uniqueConstraints?.some((group) => group.groupName === inputValue)
+                                                                    ) {
+                                                                        createNewUniqueGroup(inputValue);
+                                                                        setValues!((prevValue) =>
+                                                                            setFieldValues(prevValue, {
+                                                                                groupName: String(inputValue),
+                                                                            }),
+                                                                        );
+                                                                    }
+                                                                }
+                                                            }}
+                                                        />
+
+                                                        {params.inputProps.value &&
+                                                            !uniqueConstraints?.some((group) => group.groupName === params.inputProps.value) && (
+                                                                <IconButton
+                                                                    aria-label="create"
+                                                                    onClick={() => {
+                                                                        createNewUniqueGroup(params.inputProps.value);
+                                                                        setValues!((prevValue) =>
+                                                                            setFieldValues(prevValue, {
+                                                                                groupName: String(params.inputProps.value),
+                                                                            }),
+                                                                        );
+                                                                    }}
+                                                                    style={{
+                                                                        position: 'absolute',
+                                                                        left: 10,
+                                                                        top: '50%',
+                                                                        transform:
+                                                                            touchedUniqueGroupName && errorUniqueGroupName
+                                                                                ? 'translateY(-80%)'
+                                                                                : 'translateY(-50%)',
+                                                                    }}
+                                                                >
+                                                                    <AddIcon />
+                                                                </IconButton>
+                                                            )}
+                                                    </div>
+                                                )}
+                                            />
+                                        )}
+                                    </Grid>
+                                )}
+                            </Grid>
+                        </Grid>
+                    </Grid>
+                </CardContent>
+            </Card>
+        </Grid>
+        //     )}
+        // </Draggable>
     );
 };
 

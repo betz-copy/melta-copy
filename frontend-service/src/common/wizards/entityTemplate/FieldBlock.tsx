@@ -45,7 +45,7 @@ export const FieldBlockAccordion = styled(Accordion)({
     marginBottom: '10px',
 });
 
-interface FieldBlockProps<PropertiesType extends string, Values extends Record<PropertiesType, CommonFormInputProperties[]>> {
+export interface FieldBlockProps<PropertiesType extends string, Values extends Record<PropertiesType, CommonFormInputProperties[]>> {
     propertiesType: PropertiesType;
     values: Values;
     uniqueConstraints?: IUniqueConstraintOfTemplate[];
@@ -622,13 +622,6 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
                                             ) {
                                                 if (item.type === 'field') {
                                                     return (
-                                                        // <Draggable draggableId={`field-${item.data.id}`} index={index} key={`field-${item.data.id}`}>
-                                                        //     {(dragProvided) => (
-                                                        //         <Box
-                                                        //             ref={dragProvided.innerRef}
-                                                        //             {...dragProvided.draggableProps}
-                                                        //             {...dragProvided.dragHandleProps}
-                                                        //         >
                                                         <MemoFieldEditCard
                                                             {...buildProps(item.data, index)}
                                                             key={item.data.id}
@@ -637,9 +630,6 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
                                                             uniqueConstraints={uniqueConstraints}
                                                             setUniqueConstraints={setUniqueConstraints}
                                                         />
-                                                        //     </Box>
-                                                        // )}
-                                                        // </Draggable>
                                                     );
                                                 }
                                                 if (item.type === 'group') {
