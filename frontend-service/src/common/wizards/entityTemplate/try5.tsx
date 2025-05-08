@@ -553,6 +553,7 @@ import { MemoAttachmentEditCard } from './AttachmentEditCard';
 import { MemoFieldEditCard } from './FieldEditCard';
 import { FieldEditCardProps } from './RelationshipReferenceField';
 import { MeltaTooltip } from '../../MeltaTooltip';
+import { AreYouSureDialog } from '../../dialogs/AreYouSureDialog';
 
 const ItemTypes = {
     FIELD: 'field',
@@ -561,34 +562,63 @@ const ItemTypes = {
 
 let idCounter = 5;
 const generateId = () => `item-${idCounter++}`;
-const MainItemWrapper = ({ item, index, moveField, moveGroup, children }) => {
+// const MainItemWrapper = ({ item, index, moveField, moveGroup, children }) => {
+//     const ref = React.useRef(null);
+
+//     const [, drop] = useDrop({
+//         accept: [ItemTypes.FIELD, ItemTypes.GROUP],
+//         hover(dragItem, monitor) {
+//             if (!ref.current || dragItem.id === item.id) return;
+
+//             const hoverIndex = index;
+//             const dragIndex = dragItem.index;
+
+//             if (dragIndex === hoverIndex && !dragItem.parentId) return;
+
+//             if (dragItem.type === 'field' && !dragItem.parentId) {
+//                 moveField(dragItem, hoverIndex, null);
+//                 dragItem.index = hoverIndex;
+//             }
+
+//             if (dragItem.type === 'group') {
+//                 moveGroup(dragItem, hoverIndex);
+//                 dragItem.index = hoverIndex;
+//             }
+//         },
+//     });
+
+//     drop(ref);
+
+//     return <div ref={ref}>{children}</div>;
+// };
+const Attachment = ({ field, index, buildProps, onDrop, parentId }) => {
     const ref = React.useRef(null);
 
     const [, drop] = useDrop({
-        accept: [ItemTypes.FIELD, ItemTypes.GROUP],
-        hover(dragItem, monitor) {
-            if (!ref.current || dragItem.id === item.id) return;
-
+        accept: ItemTypes.FIELD,
+        hover(item, monitor) {
+            const dragIndex = item.index;
             const hoverIndex = index;
-            const dragIndex = dragItem.index;
 
-            if (dragIndex === hoverIndex && !dragItem.parentId) return;
+            if (dragIndex === hoverIndex && item.parentId === parentId) return;
 
-            if (dragItem.type === 'field' && !dragItem.parentId) {
-                moveField(dragItem, hoverIndex, null);
-                dragItem.index = hoverIndex;
-            }
-
-            if (dragItem.type === 'group') {
-                moveGroup(dragItem, hoverIndex);
-                dragItem.index = hoverIndex;
-            }
+            onDrop(item, hoverIndex, parentId);
+            item.index = hoverIndex;
+            item.parentId = parentId;
         },
     });
 
-    drop(ref);
+    const [{ isDragging }, drag] = useDrag({
+        type: ItemTypes.FIELD,
+        item: { ...field, index },
+        collect: (monitor) => ({
+            isDragging: monitor.isDragging(),
+        }),
+    });
 
-    return <div ref={ref}>{children}</div>;
+    drag(drop(ref));
+
+    return <MemoAttachmentEditCard {...buildProps} refDragAndDrop={ref} key={field.id} />;
 };
 
 const Field = ({ field, onDrop, index, parentId, buildProps, setFieldValue, setValues, uniqueConstraints, setUniqueConstraints }) => {
@@ -597,14 +627,8 @@ const Field = ({ field, onDrop, index, parentId, buildProps, setFieldValue, setV
     const [, drop] = useDrop({
         accept: ItemTypes.FIELD,
         hover(item, monitor) {
-            console.log('shirel', { item }, { field }, !ref.current || item.id === field.id);
-
-            // if (!ref.current || item.id === field.id) return;
-            console.log('fgfgfg');
-
             const dragIndex = item.index;
             const hoverIndex = index;
-            console.log({ parentId, parent: item.parentId, dragIndex, hoverIndex });
 
             if (dragIndex === hoverIndex && item.parentId === parentId) return;
 
@@ -660,12 +684,12 @@ const Group = ({
     const [, drop] = useDrop({
         accept: [ItemTypes.GROUP, ItemTypes.FIELD],
         hover(item, monitor) {
-            if (!ref.current || item.id === group.name) return;
+            if (!ref.current || item.id === group.id) return;
 
             const dragIndex = item.index;
             const hoverIndex = index;
 
-            console.log('hover a group', { item, group }, { dragIndex, hoverIndex });
+            // console.log('hover a group', { item, group }, { dragIndex, hoverIndex });
             // Handle group reordering
             if (item.type === 'group' && dragIndex !== hoverIndex) {
                 console.log('move group!!!');
@@ -675,10 +699,10 @@ const Group = ({
             }
 
             // Handle field dropping into an empty group
-            if (group.fields.length === 0 && item.parentId !== group.name) {
-                moveField(item, 0, group.name);
+            if (group.fields.length === 0 && item.parentId !== group.id) {
+                moveField(item, 0, group.id);
                 item.index = 0;
-                item.parentId = group.name;
+                item.parentId = group.id;
             }
         },
     });
@@ -720,7 +744,7 @@ const Group = ({
                         id={groupName}
                         name={groupName}
                         value={group.name ?? ''}
-                        onChange={(e) => onChangeGroupData(e, group.name)}
+                        onChange={(e) => onChangeGroupData(e, group.id)}
                         error={touchedName && Boolean(errorName)}
                         helperText={touchedName && errorName}
                         sx={{ marginRight: '6px' }}
@@ -732,7 +756,7 @@ const Group = ({
                         id={displayName}
                         name={displayName}
                         value={group.displayName ?? ''}
-                        onChange={(e) => onChangeGroupData(e, group.name)}
+                        onChange={(e) => onChangeGroupData(e, group.id)}
                         error={touchedTitle && Boolean(errorTitle)}
                         helperText={touchedTitle && errorTitle}
                         sx={{ marginRight: '6px' }}
@@ -764,12 +788,12 @@ const Group = ({
                         <Field
                             field={field}
                             index={idx}
-                            parentId={group.name}
+                            parentId={group.id}
                             onDrop={moveField}
                             buildProps={{ ...buildProps(field, idx, index) }}
                             key={field.id}
                             setFieldValue={setFieldDisplayValueWrapper(idx, index) as FieldEditCardProps['setFieldValue']}
-                            setValues={setDisplayValueWrapper(idx, index)}
+                            setValues={setDisplayValueWrapper(idx, group.id)}
                             uniqueConstraints={uniqueConstraints}
                             setUniqueConstraints={setUniqueConstraints}
                         />
@@ -791,7 +815,7 @@ const Group = ({
                             justifyContent: 'center',
                         }}
                         onClick={() => {
-                            if (group.name !== '') addFieldToGroup(group);
+                            if (group.id !== '') addFieldToGroup(group);
                         }}
                     >
                         <Typography>{addPropertyButtonLabel}</Typography>
@@ -859,13 +883,6 @@ export const StructureEditor = <PropertiesType extends string, Values extends Re
     },
     supportConvertingToMultipleFields = true,
 }: React.PropsWithChildren<FieldBlockProps<PropertiesType, Values>>) => {
-    // return (
-    //     <DndProvider backend={HTML5Backend}>
-    //         <h3 style={{ padding: '10px' }}>Drag & Drop Fields and Groups</h3>
-    //         <StructureEditor />
-    //     </DndProvider>
-    // );
-
     // copy of values of formik in order to show changes on inputs fast (formik rerenders are slow)
     const [showAreUSureDialogForRemoveProperty, setShowAreUSureDialogForRemoveProperty] = useState(false);
     const [selectedIndexToRemove, setSelectedIndexToRemove] = useState<{ index: number; groupIndex?: number }>({
@@ -883,6 +900,7 @@ export const StructureEditor = <PropertiesType extends string, Values extends Re
 
     useEffect(() => {
         setFieldValue(propertiesType, orderedItems);
+        console.log({ orderedItems });
     }, []);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -959,12 +977,14 @@ export const StructureEditor = <PropertiesType extends string, Values extends Re
     const setDisplayValue = (
         index: number,
         valueOrFunc: SetStateAction<FieldCommonFormInputProperties | GroupCommonFormInputProperties>,
-        groupName?: string,
+        groupId?: string,
     ) => {
         const displayValuesCopy: any = [...orderedItemsRef.current];
 
-        if (groupName) {
-            const group = displayValuesCopy.find((val) => val.type === 'group' && val.name === groupName);
+        if (groupId) {
+            console.log({ groupId });
+
+            const group = displayValuesCopy.find((val) => val.type === 'group' && val.id === groupId);
             if (!group) return;
 
             const updatedField = typeof valueOrFunc === 'function' ? valueOrFunc(group.fields[index]) : valueOrFunc;
@@ -984,13 +1004,13 @@ export const StructureEditor = <PropertiesType extends string, Values extends Re
         setFieldDisplayValue(index, inputName as keyof Values, inputValue, groupIndex);
     };
 
-    const onChangeGroupData = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, groupName: string) => {
+    const onChangeGroupData = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, groupId: string) => {
         const inputName = event.target.name.split('.')[1];
         const inputValue = event.target.type === 'checkbox' && event.target instanceof HTMLInputElement ? event.target.checked : event.target.value;
 
         const displayValuesCopy = [...orderedItemsRef.current];
 
-        const groupIndex = displayValuesCopy.findIndex((value) => value.type === 'group' && value.name === groupName);
+        const groupIndex = displayValuesCopy.findIndex((value) => value.type === 'group' && value.id === groupId);
 
         if (groupIndex === -1) return;
 
@@ -1019,8 +1039,8 @@ export const StructureEditor = <PropertiesType extends string, Values extends Re
 
     const setFieldDisplayValueWrapper = (index: number, groupIndex?: number) => (field: keyof Values, value: any) =>
         setFieldDisplayValue(index, field, value, groupIndex);
-    const setDisplayValueWrapper = (index: number, groupName?: string) => (value: SetStateAction<PropertyItem>) =>
-        setDisplayValue(index, value, groupName);
+    const setDisplayValueWrapper = (index: number, groupId?: string) => (value: SetStateAction<PropertyItem>) =>
+        setDisplayValue(index, value, groupId);
     const isFieldBlockError = Boolean(touched?.[propertiesType]) && Boolean(errors?.[propertiesType]);
 
     const buildProps = (propertyProp, index: number, groupIndex?: number) => {
@@ -1034,7 +1054,6 @@ export const StructureEditor = <PropertiesType extends string, Values extends Re
         };
 
         const findInitialValue = (): any => {
-            // if (propertiesType === 'properties' || propertiesType === 'detailsProperties' || propertiesType === 'archiveProperties') {
             error = getTouchedOrError(errors);
             touch = getTouchedOrError(touched);
             const directField = currentTypeValues?.find((item) => item.type === 'field' && item.data?.id === propertyProp.id);
@@ -1048,12 +1067,6 @@ export const StructureEditor = <PropertiesType extends string, Values extends Re
             }
 
             return undefined;
-            // }
-
-            // const initialVal = (initialValues?.[propertiesType] as any[])?.find((item) => item.id === propertyProp.id);
-            // error = errors?.[propertiesType]?.[index];
-            // touch = touched?.[propertiesType]?.[index];
-            // return { data: initialVal };
         };
 
         const initialVal = findInitialValue();
@@ -1091,13 +1104,12 @@ export const StructureEditor = <PropertiesType extends string, Values extends Re
     };
 
     const addFieldToGroup = (item) => {
-        const { name, displayName } = item;
+        const { name, displayName, id } = item;
         const displayValuesCopy = [...orderedItemsRef.current];
 
-        const newField = { ...initialFieldCardDataOnAdd, id: uuid(), fieldGroup: { name, displayName } };
-        console.log({ newField, displayValuesCopy });
+        const newField = { ...initialFieldCardDataOnAdd, id: uuid(), fieldGroup: { name, displayName, id } };
 
-        const group = displayValuesCopy.find((val) => val.type === 'group' && val.name === name);
+        const group = displayValuesCopy.find((val) => val.type === 'group' && val.id === id);
 
         if (group === -1) return;
 
@@ -1110,10 +1122,9 @@ export const StructureEditor = <PropertiesType extends string, Values extends Re
     const moveField = (item, toIndex: number, toGroupId: string | null) => {
         const orderedItemsCopy = [...orderedItemsRef.current];
         let movedField: any = null;
-        console.log({ item });
 
         if (item.fieldGroup) {
-            const fromGroupIndex = orderedItemsCopy.findIndex((el) => el.type === 'group' && el.name === item.fieldGroup.name);
+            const fromGroupIndex = orderedItemsCopy.findIndex((el) => el.type === 'group' && el.id === item.fieldGroup.id);
             if (fromGroupIndex === -1) return;
 
             const fromGroup = orderedItemsCopy[fromGroupIndex];
@@ -1131,12 +1142,12 @@ export const StructureEditor = <PropertiesType extends string, Values extends Re
         }
 
         if (toGroupId) {
-            const toGroupIndex = orderedItemsCopy.findIndex((el) => el.type === 'group' && el.name === toGroupId);
+            const toGroupIndex = orderedItemsCopy.findIndex((el) => el.type === 'group' && el.id === toGroupId);
             if (toGroupIndex === -1) return;
 
             orderedItemsCopy[toGroupIndex].fields.splice(toIndex, 0, {
                 ...movedField,
-                fieldGroup: { name: toGroupId, displayName: orderedItemsCopy[toGroupIndex].displayName },
+                fieldGroup: { name: orderedItemsCopy[toGroupIndex].name, displayName: orderedItemsCopy[toGroupIndex].displayName, id: toGroupId },
             });
         } else {
             const { fieldGroup, ...movedGroupData } = movedField;
@@ -1153,7 +1164,7 @@ export const StructureEditor = <PropertiesType extends string, Values extends Re
         }
 
         const orderedItemsCopy = [...orderedItemsRef.current];
-        const fromIndex = orderedItemsCopy.findIndex((el) => el.type === 'group' && el.name === group.name);
+        const fromIndex = orderedItemsCopy.findIndex((el) => el.type === 'group' && el.id === group.id);
         if (fromIndex === -1) return;
 
         const movedGroup = orderedItemsCopy.splice(fromIndex, 1)[0];
@@ -1175,7 +1186,7 @@ export const StructureEditor = <PropertiesType extends string, Values extends Re
             console.log(2, isGroup);
 
             const dropIndex = orderedItems.findIndex((el) => {
-                if (isGroup) return el.name === item.name;
+                if (isGroup) return el.id === item.id;
                 return el.type === 'field' && el.data.id === item.id;
             });
             console.log(3, dropIndex);
@@ -1213,11 +1224,7 @@ export const StructureEditor = <PropertiesType extends string, Values extends Re
                                 key={propertiesType}
                                 ref={drop}
                                 style={{
-                                    border: '2px dashed #aaa',
-                                    padding: 30,
                                     margin: 10,
-                                    borderRadius: 8,
-                                    minHeight: 100,
                                     display: 'flex',
                                     flexDirection: 'column',
                                     minWidth: '500px',
@@ -1231,13 +1238,13 @@ export const StructureEditor = <PropertiesType extends string, Values extends Re
                                     )
                                         return (
                                             // <MainItemWrapper
-                                            //     key={item.type === 'group' ? item.name : item.data.id}
+                                            //     key={item.type === 'group' ? item.id : item.data.id}
                                             //     item={item}
                                             //     index={index}
                                             //     moveField={moveField}
                                             //     moveGroup={moveGroup}
                                             // >
-                                            <Box key={item.type === 'group' ? item.name : item.data.id}>
+                                            <Box key={item.type === 'group' ? item.id : item.data.id}>
                                                 {item.type === 'group' ? (
                                                     <Group
                                                         group={item}
@@ -1274,15 +1281,30 @@ export const StructureEditor = <PropertiesType extends string, Values extends Re
                                             </Box>
                                             // </MainItemWrapper>
                                         );
-                                    return undefined;
-                                    // return <MemoAttachmentEditCard {...buildProps(item.data, index)} key={item.id} />;
+                                    // return undefined;
+                                    return (
+                                        <Attachment
+                                            key={item.data.id}
+                                            field={item.data}
+                                            parentId={null}
+                                            index={index}
+                                            buildProps={{ ...buildProps(item.data, index) }}
+                                            onDrop={moveField}
+                                        />
+                                    );
                                 })}
                                 {supportAddFieldButton && (
-                                    <Grid>
+                                    <Grid
+                                        sx={{
+                                            display: 'flex',
+                                            justifyContent: 'center',
+                                            paddingTop: '5px',
+                                        }}
+                                    >
                                         <Button
+                                            style={{ margin: '8px' }}
                                             type="button"
                                             variant="contained"
-                                            style={{ margin: '8px' }}
                                             onClick={() => push({ type: 'field', data: { id: uuid(), ...initialFieldCardDataOnAdd } })}
                                         >
                                             <Typography>{addPropertyButtonLabel}</Typography>
@@ -1297,7 +1319,8 @@ export const StructureEditor = <PropertiesType extends string, Values extends Re
                                                 onClick={() =>
                                                     push({
                                                         type: 'group',
-                                                        name: uuid(),
+                                                        id: uuid(),
+                                                        name: '',
                                                         displayName: '',
                                                         fields: [],
                                                     })
@@ -1313,6 +1336,22 @@ export const StructureEditor = <PropertiesType extends string, Values extends Re
                     )}
                 </FieldArray>
             </AccordionDetails>
+            <AreYouSureDialog
+                open={showAreUSureDialogForRemoveProperty}
+                handleClose={() => setShowAreUSureDialogForRemoveProperty(false)}
+                title={i18next.t('systemManagement.deleteField')}
+                body={`${i18next.t('systemManagement.warningOnDeleteField')}
+                                ${
+                                    selectedIndexToRemove.index > -1 &&
+                                    (selectedIndexToRemove.groupIndex
+                                        ? orderedItemsRef.current[selectedIndexToRemove.groupIndex].fields[selectedIndexToRemove.index].title
+                                        : orderedItemsRef.current[selectedIndexToRemove.index].data.title)
+                                }
+                                ${i18next.t('systemManagement.continueWarningOnDeleteField')} ${
+                    (initialValues as unknown as IMongoEntityTemplatePopulated)?.displayName
+                }`}
+                onYes={onDeleteSure}
+            />
         </FieldBlockAccordion>
     );
 };

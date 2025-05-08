@@ -41,8 +41,9 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
     const usedFields = new Set();
     const fieldToGroup = {};
     fieldGroups?.forEach((group) => {
+        const id = uuid();
         group.fields.forEach((fieldName) => {
-            fieldToGroup[fieldName] = group;
+            fieldToGroup[fieldName] = { ...group, id };
         });
     });
 
@@ -85,11 +86,10 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
             archive: value.archive || undefined,
             identifier: value.identifier || undefined,
             mapSearch: mapSearchProperties?.includes(key) || undefined,
-            fieldGroup,
+            fieldGroup: !value.archive ? fieldGroup : undefined,
         };
 
         if (value.format === 'fileId' || value.items?.format === 'fileId') {
-            // attachmentProperties.push(property);
             attachmentProperties.push({
                 type: 'field',
                 data: property,
@@ -108,21 +108,21 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
             const group = fieldToGroup[key];
             if (group) {
                 let existingGroup = propertiesArray.find((item) => item.type === 'group' && item.name === group.name);
-                const { name, displayName } = group;
+                const { name, displayName, id } = group;
 
                 if (!existingGroup) {
                     existingGroup = {
                         type: 'group',
                         name,
                         displayName,
+                        id,
                         fields: [],
                     };
                     propertiesArray.push(existingGroup);
                 }
-
                 for (const groupedField of group.fields) {
                     if (!usedFields.has(groupedField)) {
-                        const propertyDetails = propertyData(groupedField, { name, displayName });
+                        const propertyDetails = propertyData(groupedField, { name, displayName, id });
                         if (propertyDetails) {
                             existingGroup.fields.push(propertyDetails);
                             usedFields.add(groupedField);

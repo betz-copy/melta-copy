@@ -7,6 +7,7 @@ export interface IRelationshipReference {
 export interface FieldsGroup {
     name: string;
     displayName: string;
+    id: string;
 }
 export interface CommonFormInputProperties {
     name: string;

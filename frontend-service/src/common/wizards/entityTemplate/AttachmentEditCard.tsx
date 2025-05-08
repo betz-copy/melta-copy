@@ -24,6 +24,7 @@ interface AttachmentEditCardProps {
     supportDeleteForExistingInstances: boolean;
     hasActions?: boolean;
     supportConvertingToMultipleFields?: boolean;
+    refDragAndDrop?: any;
 }
 
 export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
@@ -40,6 +41,7 @@ export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
     supportDeleteForExistingInstances,
     hasActions,
     supportConvertingToMultipleFields = true,
+    refDragAndDrop,
 }) => {
     const currentUser = useUserStore((state) => state.user);
 
@@ -58,124 +60,124 @@ export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
     const isNewProperty = !initialValue;
 
     const isDisabled = Boolean(isEditMode && !isNewProperty && areThereAnyInstances);
-    console.log({ initialValue , value});
+    console.log({ initialValue, value });
 
     return (
-        <Draggable draggableId={value.id} index={index}>
-            {(draggableProvided) => (
-                <Grid item ref={draggableProvided.innerRef} {...draggableProvided.draggableProps} alignSelf="stretch" marginBottom="1rem">
-                    <Card
-                        elevation={3}
-                        sx={{
-                            padding: '0.5rem',
-                            ...(value.deleted && {
-                                backgroundColor: 'rgb(224, 225, 237,0.4)',
-                            }),
-                        }}
-                    >
-                        <CardContent sx={{ '&:last-child': { padding: 0 } }}>
-                            <Grid container justifyContent="space-between" wrap="nowrap" alignItems="center">
-                                <Box {...draggableProvided.dragHandleProps}>
-                                    <DragHandleIcon fontSize="large" />
+        // <Draggable draggableId={value.id} index={index}>
+        //     {(draggableProvided) => (
+        <Grid item ref={refDragAndDrop} alignSelf="stretch" marginBottom="1rem">
+            <Card
+                elevation={3}
+                sx={{
+                    padding: '0.5rem',
+                    ...(value.deleted && {
+                        backgroundColor: 'rgb(224, 225, 237,0.4)',
+                    }),
+                }}
+            >
+                <CardContent sx={{ '&:last-child': { padding: 0 } }}>
+                    <Grid container justifyContent="space-between" wrap="nowrap" alignItems="center">
+                        <Box>
+                            <DragHandleIcon fontSize="large" />
+                        </Box>
+
+                        <Grid container direction="column">
+                            <Grid container wrap="nowrap">
+                                <TextField
+                                    label={i18next.t('wizard.entityTemplate.attachmentName')}
+                                    id={name}
+                                    name={name}
+                                    value={value.name}
+                                    onChange={onChange}
+                                    error={touchedName && Boolean(errorName)}
+                                    helperText={touchedName && errorName}
+                                    disabled={isDisabled || value.deleted}
+                                    sx={{ width: '70%', marginRight: '5px' }}
+                                />
+                                <TextField
+                                    label={i18next.t('wizard.entityTemplate.attachmentDisplayName')}
+                                    id={title}
+                                    name={title}
+                                    value={value.title}
+                                    onChange={onChange}
+                                    error={touchedTitle && Boolean(errorTitle)}
+                                    helperText={touchedTitle && errorTitle}
+                                    disabled={value.deleted}
+                                    sx={{ width: '70%', marginRight: '5px' }}
+                                />
+                                <TextField
+                                    select
+                                    type="text"
+                                    label={i18next.t('wizard.entityTemplate.propertyType')}
+                                    id={type}
+                                    name={type}
+                                    value={value.type}
+                                    onChange={onChange}
+                                    error={touchedTitle && Boolean(errorTitle)}
+                                    helperText={touchedTitle && errorTitle}
+                                    disabled={isDisabled && (initialValue?.type !== 'fileId' || !supportConvertingToMultipleFields)}
+                                    sx={{ marginRight: '5px' }}
+                                    fullWidth
+                                >
+                                    {validPropertyTypes.map((validType) => {
+                                        return (
+                                            <MenuItem key={validType} value={validType}>
+                                                {i18next.t(`propertyTypes.${validType}`)}
+                                            </MenuItem>
+                                        );
+                                    })}
+                                </TextField>
+                            </Grid>
+                            <Grid container justifyContent="space-between">
+                                <Box>
+                                    {value.required !== undefined && (
+                                        <FormControlLabel
+                                            control={
+                                                <Switch
+                                                    id={required}
+                                                    name={required}
+                                                    onChange={onChange}
+                                                    checked={value.required}
+                                                    disabled={
+                                                        (supportChangeToRequiredWithInstances
+                                                            ? false
+                                                            : isEditMode &&
+                                                              areThereAnyInstances &&
+                                                              (isNewProperty || (!isNewProperty && !initialValue?.required))) || value.deleted
+                                                    }
+                                                />
+                                            }
+                                            label={i18next.t('validation.required')}
+                                        />
+                                    )}
                                 </Box>
 
-                                <Grid container direction="column">
-                                    <Grid container wrap="nowrap">
-                                        <TextField
-                                            label={i18next.t('wizard.entityTemplate.attachmentName')}
-                                            id={name}
-                                            name={name}
-                                            value={value.name}
-                                            onChange={onChange}
-                                            error={touchedName && Boolean(errorName)}
-                                            helperText={touchedName && errorName}
-                                            disabled={isDisabled || value.deleted}
-                                            sx={{ width: '70%', marginRight: '5px' }}
-                                        />
-                                        <TextField
-                                            label={i18next.t('wizard.entityTemplate.attachmentDisplayName')}
-                                            id={title}
-                                            name={title}
-                                            value={value.title}
-                                            onChange={onChange}
-                                            error={touchedTitle && Boolean(errorTitle)}
-                                            helperText={touchedTitle && errorTitle}
-                                            disabled={value.deleted}
-                                            sx={{ width: '70%', marginRight: '5px' }}
-                                        />
-                                        <TextField
-                                            select
-                                            type="text"
-                                            label={i18next.t('wizard.entityTemplate.propertyType')}
-                                            id={type}
-                                            name={type}
-                                            value={value.type}
-                                            onChange={onChange}
-                                            error={touchedTitle && Boolean(errorTitle)}
-                                            helperText={touchedTitle && errorTitle}
-                                            disabled={isDisabled && (initialValue?.type !== 'fileId' || !supportConvertingToMultipleFields)}
-                                            sx={{ marginRight: '5px' }}
-                                            fullWidth
+                                <MeltaTooltip
+                                    disableHoverListener={!initialValue?.required}
+                                    title={i18next.t('wizard.entityTemplate.cantDeleteUniqueOrRequiredFields')}
+                                >
+                                    <Grid>
+                                        <IconButton
+                                            onClick={() => remove(index, isNewProperty)}
+                                            disabled={
+                                                !supportDeleteForExistingInstances ||
+                                                initialValue?.required ||
+                                                currentUser.currentWorkspacePermissions.admin?.scope !== PermissionScope.write ||
+                                                hasActions
+                                            }
                                         >
-                                            {validPropertyTypes.map((validType) => {
-                                                return (
-                                                    <MenuItem key={validType} value={validType}>
-                                                        {i18next.t(`propertyTypes.${validType}`)}
-                                                    </MenuItem>
-                                                );
-                                            })}
-                                        </TextField>
+                                            {value.deleted ? <DeleteOff /> : <DeleteIcon />}
+                                        </IconButton>
                                     </Grid>
-                                    <Grid container justifyContent="space-between">
-                                        <Box>
-                                            {value.required !== undefined && (
-                                                <FormControlLabel
-                                                    control={
-                                                        <Switch
-                                                            id={required}
-                                                            name={required}
-                                                            onChange={onChange}
-                                                            checked={value.required}
-                                                            disabled={
-                                                                (supportChangeToRequiredWithInstances
-                                                                    ? false
-                                                                    : isEditMode &&
-                                                                      areThereAnyInstances &&
-                                                                      (isNewProperty || (!isNewProperty && !initialValue?.required))) || value.deleted
-                                                            }
-                                                        />
-                                                    }
-                                                    label={i18next.t('validation.required')}
-                                                />
-                                            )}
-                                        </Box>
-
-                                        <MeltaTooltip
-                                            disableHoverListener={!initialValue?.required}
-                                            title={i18next.t('wizard.entityTemplate.cantDeleteUniqueOrRequiredFields')}
-                                        >
-                                            <Grid>
-                                                <IconButton
-                                                    onClick={() => remove(index, isNewProperty)}
-                                                    disabled={
-                                                        !supportDeleteForExistingInstances ||
-                                                        initialValue?.required ||
-                                                        currentUser.currentWorkspacePermissions.admin?.scope !== PermissionScope.write ||
-                                                        hasActions
-                                                    }
-                                                >
-                                                    {value.deleted ? <DeleteOff /> : <DeleteIcon />}
-                                                </IconButton>
-                                            </Grid>
-                                        </MeltaTooltip>
-                                    </Grid>
-                                </Grid>
+                                </MeltaTooltip>
                             </Grid>
-                        </CardContent>
-                    </Card>
-                </Grid>
-            )}
-        </Draggable>
+                        </Grid>
+                    </Grid>
+                </CardContent>
+            </Card>
+        </Grid>
+        //     )}
+        // </Draggable>
     );
 };
 

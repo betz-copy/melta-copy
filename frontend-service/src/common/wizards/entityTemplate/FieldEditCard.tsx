@@ -196,6 +196,8 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     const mapSearchDisabled = !value.mapSearch && locationSearchFields?.disabled;
 
     const setFieldValues = (prevValue, updatedValues: object) => {
+        console.log({ prevValue });
+
         if (prevValue.fieldGroup) {
             return {
                 ...prevValue,
@@ -627,6 +629,8 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                     name={type}
                                     value={value.type === 'text-area' ? 'string' : value.type}
                                     onChange={(e) => {
+                                        console.log('change type', setValues);
+
                                         setValues?.((prevValue: any) =>
                                             setFieldValues(prevValue, {
                                                 type: e.target.value,
