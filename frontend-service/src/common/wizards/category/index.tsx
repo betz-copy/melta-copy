@@ -16,6 +16,7 @@ import { ChooseColor, chooseColorSchema } from './ChooseColor';
 import { ChooseIcon } from './ChooseIcon';
 import { CreateCategoryName, useCreateCategoryNameSchema } from './CreateCategoryName';
 import { updateUserPermissionForCategory } from '../../../utils/permissions/templatePermissions';
+import { getOrderConfigByNameRequest } from '../../../services/templates/configService';
 
 export interface CategoryWizardValues extends Omit<ICategory, 'iconFileId'> {
     icon?: fileDetails;
@@ -41,14 +42,16 @@ const CategoryWizard: React.FC<WizardBaseType<CategoryWizardValues>> = ({
                 ? updateCategoryRequest((initialValues as CategoryWizardValues & { _id: string })._id, category)
                 : createCategoryRequest(category),
         {
-            onSuccess: (data) => {
+            onSuccess: async (data) => {
                 queryClient.setQueryData<ICategoryMap>('getCategories', (categories) => categories!.set(data._id, data));
-                // queryClient.setQueryData<IMongoOrderConfig>('getCategoryConfig', (categoryConfig) => {
-                //     const { order } = categoryConfig!;
-                //     order.push(data._id);
+                if (!isEditMode) {
+                    queryClient.setQueryData<IMongoOrderConfig>('getCategoryOrder', (categoryConfig) => {
+                        const { order } = categoryConfig!;
+                        order.push(data._id);
 
-                //     return { ...categoryConfig!, order };
-                // });
+                        return { ...categoryConfig!, order };
+                    });
+                }
 
                 const updatedUserPermissions = updateUserPermissionForCategory(data, currentUser, currentWorkspace._id);
                 setUser(updatedUserPermissions);

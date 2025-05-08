@@ -53,8 +53,8 @@ export const MeltaRoutes: React.FC<IMeltaRoutesProps> = ({ path }) => {
             console.log('failed to get templates error:', error);
         },
         onSuccess: ({ categories, categoryOrder, entityTemplates, relationshipTemplates, processTemplates, rules }) => {
-            queryClient.setQueryData<ICategoryMap>('getCategories', mapCategories(categories, categoryOrder.order));
-            queryClient.setQueryData<IMongoOrderConfig>('getCategoryConfig', categoryOrder);
+            queryClient.setQueryData<ICategoryMap>('getCategories', mapCategories(categories, categoryOrder ? categoryOrder.order : []));
+            queryClient.setQueryData<IMongoOrderConfig>('getCategoryOrder', categoryOrder);
             queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', mapTemplates(entityTemplates));
             queryClient.setQueryData<IRelationshipTemplateMap>('getRelationshipTemplates', mapTemplates(relationshipTemplates));
             queryClient.setQueryData<IProcessTemplateMap>('getProcessTemplates', mapTemplates(processTemplates));

@@ -12,10 +12,8 @@ import fileDetails from '../../../interfaces/fileDetails';
 import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
 import { createEntityTemplateRequest, formToJSONSchema, updateEntityTemplateRequest } from '../../../services/templates/enitityTemplatesService';
 import { getAllRelationshipTemplatesRequest } from '../../../services/templates/relationshipTemplatesService';
-import { mapCategories, mapTemplates } from '../../../utils/templates';
+import { mapTemplates } from '../../../utils/templates';
 import { ICategoryMap } from '../../../interfaces/categories';
-import { getAllCategoryRequest } from '../../../services/templates/categoriesService';
-import { getOrderConfigByNameRequest } from '../../../services/templates/configService';
 import { useUserStore } from '../../../stores/user';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { ErrorToast } from '../../ErrorToast';
@@ -126,12 +124,17 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
                     toast.error(i18next.t('wizard.failedToUpdateSystemData'));
                 }
 
-                try {
-                    const categories = await getAllCategoryRequest();
-                    const categoryOrder = await getOrderConfigByNameRequest('categoryOrder');
-                    queryClient.setQueryData<ICategoryMap>('getCategories', mapCategories(categories, categoryOrder.order));
-                } catch (error) {
-                    toast.error(i18next.t('wizard.failedToUpdateSystemData'));
+                if (!isEditMode) {
+                    try {
+                        queryClient.setQueryData<ICategoryMap>('getCategories', (categories) => {
+                            const newCategoryMap = new Map(categories!);
+                            newCategoryMap.set(data.category._id, data.category);
+
+                            return newCategoryMap;
+                        });
+                    } catch (error) {
+                        toast.error(i18next.t('wizard.failedToUpdateSystemData'));
+                    }
                 }
 
                 const updatedUserPermissions = updateUserPermissionForEntityTemplate(data, currentUser, currentWorkspace._id);

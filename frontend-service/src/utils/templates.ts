@@ -50,7 +50,7 @@ export const mapTemplates = <T extends Record<string, any> & { _id: string }>(te
 export const mapCategories = (categories: IMongoCategory[], order: string[]): Map<string, IMongoCategory> => {
     const map: Map<string, IMongoCategory> = new Map();
 
-    const sortedCategories = categories.sort((a, b) => order.indexOf(a._id) - order.indexOf(b._id));
+    const sortedCategories = order.length > 0 ? categories.sort((a, b) => order.indexOf(a._id) - order.indexOf(b._id)) : categories;
 
     sortedCategories.forEach((category) => {
         map.set(category._id, category);

@@ -142,7 +142,8 @@ const CategoriesRow: React.FC = () => {
     const currentUser = useUserStore((state) => state.user);
 
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
-    const categoryOrder = queryClient.getQueryData<IMongoOrderConfig>('getCategoryConfig');
+    const categoryOrder = queryClient.getQueryData<IMongoOrderConfig>('getCategoryOrder');
+    // console.log(categoryOrder);
     const allowedCategoriesToShow = allowedCategories(categories, currentUser);
 
     const { headlineSubTitleFontSize } = workspace.metadata.mainFontSizes;
@@ -170,7 +171,7 @@ const CategoriesRow: React.FC = () => {
                 return data!;
             });
 
-            queryClient.setQueryData<IMongoOrderConfig>('getCategoryConfig', (categoryConfig) => {
+            queryClient.setQueryData<IMongoOrderConfig>('getCategoryOrder', (categoryConfig) => {
                 const { order } = categoryConfig!;
                 const index = order.indexOf(id);
 
@@ -190,12 +191,12 @@ const CategoriesRow: React.FC = () => {
     });
 
     const { mutateAsync: changeOrder } = useMutation(
-        () => {
-            return updateConfigOrderRequest(categoryOrder!._id, { order: allowedCategoriesToShow.map((category) => category._id) });
+        ({ categoryId, newIndex }: { categoryId: string; newIndex: number }) => {
+            return updateConfigOrderRequest(categoryOrder!._id, newIndex, categoryId);
         },
         {
             onSuccess(data) {
-                queryClient.setQueryData<IMongoOrderConfig>('getCategoryConfig', data);
+                queryClient.setQueryData<IMongoOrderConfig>('getCategoryOrder', data);
                 queryClient.setQueryData<ICategoryMap>('getCategories', mapCategories(allowedCategoriesToShow, data.order));
             },
             onError(error: AxiosError) {
@@ -215,7 +216,7 @@ const CategoriesRow: React.FC = () => {
             allowedCategoriesToShow.splice(source.index, 1);
             allowedCategoriesToShow.splice(destination.index, 0, { _id, ...restCategory });
 
-            changeOrder();
+            changeOrder({ categoryId: _id, newIndex: destination.index });
         }
     };
 
