@@ -29,10 +29,10 @@ class CategoriesController extends DefaultController<IMongoCategory, CategoryMan
         res.json(await this.manager.updateCategory(req.params.categoryId, req.body));
     }
 
-    async updateCategoryTempOrder(req: Request, res: Response) {
+    async updateCategoryTemplatesOrder(req: Request, res: Response) {
         const { srcCategoryId, newCategoryId, newIndex, templateId } = req.body;
 
-        res.json(await this.manager.updateCategoryTempOrder(templateId, newCategoryId, srcCategoryId, newIndex));
+        res.json(await this.manager.updateCategoryTemplatesOrder(templateId, newCategoryId, srcCategoryId, newIndex));
     }
 }
 

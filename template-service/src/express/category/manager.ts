@@ -4,6 +4,9 @@ import { NotFoundError } from '../error';
 import { ICategory, IMongoCategory } from './interface';
 import { CategorySchema } from './model';
 import ConfigManager from '../config/manager';
+import { ConfigTypes, IMongoOrderConfig } from '../config/interface';
+import { withTransaction } from '../../utils/mongoose';
+import { ClientSession } from 'mongoose';
 
 class CategoryManager extends DefaultManagerMongo<IMongoCategory> {
     private configManager: ConfigManager;
@@ -19,9 +22,13 @@ class CategoryManager extends DefaultManagerMongo<IMongoCategory> {
             .lean()
             .exec();
 
-        const categoryOrder = await this.configManager.getOrderConfigByName('categoryOrder');
+        try {
+            const categoryOrder: IMongoOrderConfig = await this.configManager.getOrderConfigByName('categoryOrder');
 
-        return categories.sort((a, b) => categoryOrder.order.indexOf(a._id) - categoryOrder.order.indexOf(b._id));
+            return categories.sort((a, b) => categoryOrder.order.indexOf(a._id) - categoryOrder.order.indexOf(b._id));
+        } catch {
+            return categories;
+        }
     }
 
     async getCategoryById(id: string) {
@@ -31,21 +38,25 @@ class CategoryManager extends DefaultManagerMongo<IMongoCategory> {
     async createCategory(categoryData: ICategory) {
         const category = await this.model.create(categoryData);
 
-        const categoryOrder = await this.configManager.getOrderConfigByName('categoryOrder');
-        const order = categoryOrder.order;
-        order.push(category._id);
-        this.configManager.updateOrder(categoryOrder._id, { order: order });
+        try {
+            const categoryOrder: IMongoOrderConfig = await this.configManager.getOrderConfigByName('categoryOrder');
+            const order = categoryOrder.order;
+            this.configManager.updateOrder(categoryOrder._id, order.length, category._id);
+        } catch {
+            await this.configManager.createOrder({ name: 'categoryOrder', type: ConfigTypes.ORDER, order: [category._id] });
+        }
 
         return category;
     }
 
     async deleteCategory(id: string) {
         const categoryOrder = await this.configManager.getOrderConfigByName('categoryOrder');
-        const order = categoryOrder.order;
+        const { order } = categoryOrder;
         const index = order.indexOf(id);
+
         if (index > -1) {
             order.splice(index, 1);
-            this.configManager.updateOrder(categoryOrder._id, { order: order });
+            this.configManager.updateOrder(categoryOrder._id, -1, id, true);
         }
 
         return this.model.findByIdAndDelete(id).orFail(new NotFoundError('Category not found')).lean().exec();
@@ -55,25 +66,33 @@ class CategoryManager extends DefaultManagerMongo<IMongoCategory> {
         return this.model.findByIdAndUpdate(id, updatedData, { new: true }).orFail(new NotFoundError('Category not found')).lean().exec();
     }
 
-    async updateCategoryTempOrder(
+    async updateCategoryTemplatesOrder(
         templateId: string,
         newCategoryId: string,
         srcCategoryId: string,
         newIndex: number,
     ): Promise<{ oldCategory: IMongoCategory; newCategory: IMongoCategory }> {
-        const oldCategory: IMongoCategory = await this.model
-            .findByIdAndUpdate(srcCategoryId, { $pullAll: { templatesOrder: [templateId.toString()] } }, { new: true })
-            .orFail(new NotFoundError('Category not found'))
-            .lean()
-            .exec();
+        const updatedCategories = await withTransaction(async (session: ClientSession) => {
+            const oldCategory: IMongoCategory = await this.model
+                .findByIdAndUpdate(srcCategoryId, { $pullAll: { templatesOrder: [templateId.toString()] } }, { new: true, session })
+                .orFail(new NotFoundError('Category not found'))
+                .lean()
+                .exec();
 
-        const newCategory: IMongoCategory = await this.model
-            .findByIdAndUpdate(newCategoryId, { $push: { templatesOrder: { $each: [templateId.toString()], $position: newIndex } } }, { new: true })
-            .orFail(new NotFoundError('Category not found'))
-            .lean()
-            .exec();
+            const newCategory: IMongoCategory = await this.model
+                .findByIdAndUpdate(
+                    newCategoryId,
+                    { $push: { templatesOrder: { $each: [templateId.toString()], $position: newIndex } } },
+                    { new: true, session },
+                )
+                .orFail(new NotFoundError('Category not found'))
+                .lean()
+                .exec();
 
-        return { oldCategory, newCategory };
+            return { oldCategory, newCategory };
+        });
+
+        return updatedCategories;
     }
 }
 

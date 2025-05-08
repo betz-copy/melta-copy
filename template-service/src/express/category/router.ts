@@ -25,6 +25,6 @@ categoryRouter.delete('/:categoryId', ValidateRequest(deleteCategorySchema), con
 
 categoryRouter.put('/:categoryId', ValidateRequest(updateCategorySchema), controller.updateCategory);
 
-categoryRouter.patch('/templatesOrder', ValidateRequest(changeTemplatesOrderSchema), controller.updateCategoryTempOrder);
+categoryRouter.patch('/templatesOrder', ValidateRequest(changeTemplatesOrderSchema), controller.updateCategoryTemplatesOrder);
 
 export default categoryRouter;
