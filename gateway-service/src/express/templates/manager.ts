@@ -259,7 +259,13 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             ...processTemplatesBeforePopulate.map((processTemplate) => this.processManager.getTemplateWithPopulatedStepReviewers(processTemplate)),
         ]);
 
-        const categoryOrder = await this.getOrderConfigByName('categoryOrder');
+        let categoryOrder: IMongoOrderConfig | null;
+
+        try {
+            categoryOrder = await this.getOrderConfigByName('categoryOrder');
+        } catch {
+            categoryOrder = null;
+        }
 
         return {
             categoryOrder,
@@ -384,8 +390,8 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         return this.entityTemplateService.updateCategory(id, updatedData);
     }
 
-    async updateCategoryTempOrder(templateId: string, newIndex: number, srcCategoryId: string, newCategoryId: string) {
-        return this.entityTemplateService.updateCategoryTempOrder(templateId, newIndex, srcCategoryId, newCategoryId);
+    async updateCategoryTemplatesOrder(templateId: string, newIndex: number, srcCategoryId: string, newCategoryId: string) {
+        return this.entityTemplateService.updateCategoryTemplatesOrder(templateId, newIndex, srcCategoryId, newCategoryId);
     }
 
     // config
@@ -397,8 +403,8 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         return this.entityTemplateService.getOrderConfigByName(name);
     }
 
-    async updateOrderConfig(configId: string, configData: Partial<IOrderConfig>): Promise<IMongoOrderConfig> {
-        return this.entityTemplateService.updateOrderConfig(configId, configData);
+    async updateOrderConfig(configId: string, newIndex: number, item: string): Promise<IMongoOrderConfig> {
+        return this.entityTemplateService.updateOrderConfig(configId, newIndex, item);
     }
 
     async createOrderConfig(configData: IOrderConfig): Promise<IMongoOrderConfig> {

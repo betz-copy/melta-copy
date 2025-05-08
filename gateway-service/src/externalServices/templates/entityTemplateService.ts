@@ -183,7 +183,7 @@ export class EntityTemplateService extends TemplatesManagerService {
         return data;
     }
 
-    async updateCategoryTempOrder(templateId: string, newIndex: number, srcCategoryId: string, newCategoryId: string) {
+    async updateCategoryTemplatesOrder(templateId: string, newIndex: number, srcCategoryId: string, newCategoryId: string) {
         const { data } = await this.api.patch<{ oldCategory: IMongoCategory; newCategory: IMongoCategory }>(`${baseCategoriesRoute}/templatesOrder`, {
             templateId,
             newIndex,
@@ -277,8 +277,8 @@ export class EntityTemplateService extends TemplatesManagerService {
         return data;
     }
 
-    async updateOrderConfig(configId: string, configData: Partial<IOrderConfig>) {
-        const { data } = await this.api.put<IMongoOrderConfig>(`${baseConfigRoute}/${ConfigTypes.ORDER}/${configId}`, configData);
+    async updateOrderConfig(configId: string, newIndex: number, item: string) {
+        const { data } = await this.api.put<IMongoOrderConfig>(`${baseConfigRoute}/${ConfigTypes.ORDER}/${configId}`, { newIndex, item });
 
         return data;
     }

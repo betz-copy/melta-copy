@@ -22,9 +22,8 @@ export const getOrderConfigByNameSchema = Joi.object({
 export const updateOrderConfigSchema = Joi.object({
     query: {},
     body: {
-        name: variableNameValidation,
-        type: Joi.string().valid(...Object.values(ConfigTypes)),
-        order: Joi.array().items(MongoIdSchema),
+        newIndex: Joi.number().min(0).required(),
+        item: MongoIdSchema.required(),
     },
     params: {
         configId: MongoIdSchema.required(),
