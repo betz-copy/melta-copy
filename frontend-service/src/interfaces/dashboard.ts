@@ -1,3 +1,7 @@
+import { IChart } from './charts';
+import { IGraphFilterBodyBatch } from './entities';
+import { IFrame } from './iFrames';
+
 export enum DashboardItemType {
     Iframe = 'iframe',
     Chart = 'chart',
@@ -11,11 +15,11 @@ export enum IPermission {
 
 export interface TableMetaData {
     templateId: string;
-    columns: string[];
-    columnsOrder: string[];
-    filters: string;
     name: string;
     description: string;
+    columns: string[];
+    columnsOrder: string[];
+    filter?: IGraphFilterBodyBatch;
 }
 
 export interface IframeMetaData {
@@ -38,6 +42,11 @@ export interface ChartDashboardItem extends DashboardItemBase {
     metaData: ChartMetaData;
 }
 
+export interface ChartDashboardItemPopulated extends DashboardItemBase {
+    type: DashboardItemType.Chart;
+    metaData: IChart;
+}
+
 export interface IframeDashboardItem extends DashboardItemBase {
     type: DashboardItemType.Iframe;
     metaData: IframeMetaData;
@@ -47,8 +56,11 @@ export interface TableDashboardItem extends DashboardItemBase {
     type: DashboardItemType.Table;
     metaData: TableMetaData;
 }
-
 export type DashboardItem = ChartDashboardItem | IframeDashboardItem | TableDashboardItem;
+
+export type DashboardItemPopulated = ChartDashboardItemPopulated | IframeDashboardItem | TableDashboardItem;
+
+export type DashboardItemData = IFrame | IChart | TableMetaData;
 
 export const isChartItem = ({ type }: DashboardItem) => type === DashboardItemType.Chart;
 

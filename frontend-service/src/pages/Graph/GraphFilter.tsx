@@ -23,7 +23,7 @@ interface GraphFilterProps {
     templateOptions: IMongoEntityTemplatePopulated[];
     graphEntityTemplateIds: string[];
     deleteFilter: (value: number) => void;
-    setFilterRecord: React.Dispatch<React.SetStateAction<IGraphFilterBodyBatch>>;
+    setFilterRecord: (value: IGraphFilterBody, filterKey: number) => void;
     filterKey: number;
     removeFilterFromFilterList: (filterKey: number) => void;
     entityFilter: boolean;
@@ -71,15 +71,21 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
         : [];
 
     const debouncedOnFilter = useCallback(
-        debounce((newFilterField) => {
-            setFilterRecord((prev) => ({
-                ...prev,
-                [filterKey]: {
-                    selectedTemplate,
-                    selectedProperty,
-                    filterField: newFilterField,
-                },
-            }));
+        debounce((newFilterField: IGraphFilterBody['filterField']) => {
+            const newValue: IGraphFilterBody = {
+                selectedTemplate,
+                selectedProperty,
+                filterField: newFilterField,
+            };
+            setFilterRecord(newValue, filterKey);
+            // setFilterRecord((prev) => ({
+            //     ...prev,
+            //     [filterKey]: {
+            // selectedTemplate,
+            // selectedProperty,
+            // filterField: newFilterField,
+            //     },
+            // }));
 
             onFilter?.();
         }, 500),

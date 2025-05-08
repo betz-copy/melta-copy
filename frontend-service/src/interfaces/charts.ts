@@ -1,10 +1,12 @@
+import { IGraphFilterBodyBatch } from './entities';
+
 export interface IBasicChart {
     name: string;
     description: string;
     type: IChartType;
     metaData: IChartTypeMetaData;
     permission: IPermission;
-    filter?: string;
+    filter?: IGraphFilterBodyBatch;
     templateId?: string;
     createdBy?: string;
 }

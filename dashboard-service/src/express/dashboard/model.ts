@@ -45,19 +45,19 @@ export const DashboardItemSchema = new mongoose.Schema(
             enum: Object.values(DashboardItemType),
             required: true,
         },
-        permission: {
-            type: String,
-            enum: Object.values(IPermission),
-            required: true,
-        },
-        createdBy: {
-            type: String,
-            // required: true,
-        },
-        iframeId: {
-            type: String,
-            ref: config.mongo.iFramesCollectionName,
-        },
+        // permission: {
+        //     type: String,
+        //     enum: Object.values(IPermission),
+        //     required: true,
+        // },
+        // createdBy: {
+        //     type: String,
+        //     // required: true,
+        // },
+        // iframeId: {
+        //     type: String,
+        //     ref: config.mongo.iFramesCollectionName,
+        // },
     },
     { timestamps: true, versionKey: false, minimize: false, discriminatorKey: 'type' },
 );

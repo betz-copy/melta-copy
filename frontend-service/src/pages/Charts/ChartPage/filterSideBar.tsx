@@ -1,32 +1,41 @@
 import { Add } from '@mui/icons-material';
 import { Button, Divider, Grid, useTheme } from '@mui/material';
 import i18next from 'i18next';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { DropResult } from 'react-beautiful-dnd';
 import { useQueryClient } from 'react-query';
-import { options } from 'linkifyjs';
+import { FormikProps } from 'formik';
 import { SelectCheckbox } from '../../../common/SelectCheckBox';
-import { IGraphFilterBodyBatch } from '../../../interfaces/entities';
+import { IGraphFilterBody, IGraphFilterBodyBatch } from '../../../interfaces/entities';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { GraphFilterBatch } from '../../Graph/GraphFilterBatch';
+import { IChart } from '../../../interfaces/charts';
+import { TableMetaData } from '../../../interfaces/dashboard';
 
-const FilterSideBar: React.FC<{
-    templateId: string;
-    filterRecord: IGraphFilterBodyBatch;
-    setFilterRecord: React.Dispatch<React.SetStateAction<IGraphFilterBodyBatch>>;
+interface FilterSideBarProps {
+    formikProps: FormikProps<IChart | TableMetaData>;
     filters: number[];
-    readonly: boolean;
     setFilters: React.Dispatch<React.SetStateAction<number[]>>;
+    readonly: boolean;
     moveColumn?: (colId: string, destination: number) => void;
     setColumnsVisible: (colId: string) => void;
-}> = ({ templateId, filterRecord, setFilterRecord, filters, setFilters, readonly, moveColumn, setColumnsVisible }) => {
+}
+
+const FilterSideBar: React.FC<FilterSideBarProps> = ({
+    formikProps: { values, setFieldValue },
+    filters,
+    setFilters,
+    readonly,
+    moveColumn,
+    setColumnsVisible,
+}) => {
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const templateOptions = Array.from(entityTemplates.values());
-    const entityTemplate = entityTemplates.get(templateId);
+    const entityTemplate = entityTemplates.get(values.templateId!);
     const entityTemplateFields = entityTemplate && Object.keys(entityTemplate.properties.properties);
 
-    const [selectedProperties, setSelectedProperties] = useState<string[]>(entityTemplateFields);
+    const [selectedProperties, setSelectedProperties] = useState<string[]>(entityTemplateFields!);
     const [fullView, setFullView] = useState<boolean>(true);
 
     // useEffect(() => {
@@ -50,11 +59,11 @@ const FilterSideBar: React.FC<{
     const theme = useTheme();
 
     return (
-        <Grid container direction="column" marginTop={2}>
+        <Grid container direction="column">
             <SelectCheckbox
                 options={entityTemplateFields!}
                 selectedOptions={selectedProperties}
-                setSelectedOptions={setSelectedProperties}
+                setSelectedOptions={(value) => setFieldValue('myField', value)}
                 title="עמודות להצגה"
                 getOptionId={(_id) => _id}
                 getOptionLabel={(displayName) => displayName}
@@ -70,17 +79,29 @@ const FilterSideBar: React.FC<{
             {/* <IconButton onClick={() => setFullView(!fullView)} sx={{ color: theme.palette.primary.main }}>
                 {fullView ? <KeyboardArrowDown fontSize="small" /> : <KeyboardArrowUp fontSize="small" />}
             </IconButton> */}
-            <Divider sx={{ width: '95%' }} />
+            {/* <Divider sx={{ width: '95%' }} /> */}
             <Grid sx={{ overflowY: 'auto', maxHeight: '76vh' }}>
                 <GraphFilterBatch
                     filters={filters}
                     setFilters={setFilters}
                     templateOptions={templateOptions}
-                    filterRecord={filterRecord}
-                    setFilterRecord={setFilterRecord}
-                    graphEntityTemplateIds={[templateId]}
+                    filterRecord={values.filter || {}}
+                    setFilterRecord={(value: IGraphFilterBody, filterKey: number) => {
+                        const currentValue = values.filter;
+                        const newValue = { ...currentValue, [filterKey]: { ...value } };
+
+                        setFieldValue('filter', newValue);
+                    }}
+                    onRemoveFilter={(filterKey: number) => {
+                        const currentValue = values.filter;
+                        const newValue = { ...currentValue };
+                        delete newValue[filterKey];
+
+                        setFieldValue('filter', newValue);
+                    }}
+                    graphEntityTemplateIds={[values.templateId!]}
                     entityFilter
-                    selectedEntityTemplate={entityTemplates.get(templateId)}
+                    selectedEntityTemplate={entityTemplates.get(values.templateId!)}
                     readonly={readonly}
                 />
             </Grid>

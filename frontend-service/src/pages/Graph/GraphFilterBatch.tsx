@@ -1,14 +1,15 @@
 /* eslint-disable react/no-array-index-key */
 import { Box } from '@mui/material';
 import React from 'react';
-import { IGraphFilterBodyBatch } from '../../interfaces/entities';
+import { IGraphFilterBody, IGraphFilterBodyBatch } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { GraphFilter } from './GraphFilter';
 
 interface GraphFilterBatchProps {
     templateOptions: IMongoEntityTemplatePopulated[];
     graphEntityTemplateIds: string[];
-    setFilterRecord: React.Dispatch<React.SetStateAction<IGraphFilterBodyBatch>>;
+    setFilterRecord: (value: IGraphFilterBody, filterKey: number) => void;
+    onRemoveFilter: (filterKey: number) => void;
     filters: number[];
     setFilters: React.Dispatch<React.SetStateAction<number[]>>;
     filterRecord: IGraphFilterBodyBatch;
@@ -22,6 +23,7 @@ const GraphFilterBatch: React.FC<GraphFilterBatchProps> = React.memo(
     ({
         templateOptions,
         setFilterRecord,
+        onRemoveFilter,
         filters,
         setFilters,
         filterRecord,
@@ -31,15 +33,18 @@ const GraphFilterBatch: React.FC<GraphFilterBatchProps> = React.memo(
         selectedEntityTemplate,
         entityFilter = false,
     }) => {
+        console.log({ filters, filterRecord });
+
         const deleteFilter = (value: number) => {
             setFilters((prevFilters) => prevFilters.filter((item) => item !== value));
         };
 
         const removeFilterFromFilterList = (filterKey: number) => {
-            setFilterRecord((prev) => {
-                const { [filterKey]: deletedFilter, ...restFilters } = prev;
-                return restFilters;
-            });
+            // setFilterRecord((prev) => {
+            //     const { [filterKey]: deletedFilter, ...restFilters } = prev;
+            //     return restFilters;
+            // });
+            onRemoveFilter(filterKey);
             onFilter?.();
         };
 
@@ -53,7 +58,7 @@ const GraphFilterBatch: React.FC<GraphFilterBatchProps> = React.memo(
                                 filterKey={key}
                                 templateOptions={templateOptions}
                                 setFilterRecord={setFilterRecord}
-                                filter={filterRecord[key]}
+                                filter={filterRecord?.[key]}
                                 deleteFilter={deleteFilter}
                                 graphEntityTemplateIds={graphEntityTemplateIds}
                                 removeFilterFromFilterList={removeFilterFromFilterList}

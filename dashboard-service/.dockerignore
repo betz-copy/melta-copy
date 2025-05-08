@@ -4,7 +4,7 @@
 **/.git
 **/.gitignore
 **/.project
-**/.settings
+**/./
 **/.toolstarget
 **/.vs
 **/.vscode

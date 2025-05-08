@@ -16,39 +16,35 @@ import {
 import { FormikProps } from 'formik';
 import i18next from 'i18next';
 import React, { useState, useEffect } from 'react';
-import { IBasicChart, IPermission } from '../../../interfaces/charts';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { useQueryClient } from 'react-query';
+import { IBasicChart, IChart, IPermission } from '../../../interfaces/charts';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { useUserStore } from '../../../stores/user';
 import { isWorkspaceAdmin } from '../../../utils/permissions/instancePermissions';
 import { ChartTypesEdit } from './ChartTypesEdit';
+import { StepComponentProps } from '../../../common/wizards';
 
-interface ChartSideBarProps {
-    formik: FormikProps<IBasicChart>;
-    entityTemplates: Map<string, IMongoEntityTemplatePopulated>;
-    defaultTemplateId?: string;
-    edit: boolean;
-    readonly: boolean;
-    onTemplateChange?: (templateId: string) => void;
-    selectedTemplate: IMongoEntityTemplatePopulated | undefined;
-}
-
-const ChartSideBar: React.FC<ChartSideBarProps> = ({ formik, entityTemplates, selectedTemplate, edit, readonly, onTemplateChange }) => {
+const ChartSideBar: React.FC<StepComponentProps<IChart>> = (props) => {
+    const { values, errors, touched, handleChange, setFieldValue } = props as FormikProps<IBasicChart>;
     const currentUser = useUserStore();
+    const queryClient = useQueryClient();
+    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+
     const [chartMode, setChartMode] = useState<'new' | 'exist'>('new');
 
     return (
         <Grid container direction="column" spacing={2}>
             <Grid item>
                 <Autocomplete
-                    value={selectedTemplate?._id || null}
-                    onChange={(_e, newValue) => onTemplateChange?.(newValue)}
+                    value={values.templateId || null}
+                    onChange={(_e, newValue) => setFieldValue('templateId', newValue || null)}
                     options={Array.from(entityTemplates.keys())}
                     getOptionLabel={(id) => entityTemplates.get(id)?.displayName || id}
                     renderInput={(params) => <TextField {...params} label={i18next.t('entity')} fullWidth />}
                 />
             </Grid>
 
-            {selectedTemplate && (
+            {values.templateId && (
                 <>
                     <Grid item>
                         <FormControl>
@@ -66,15 +62,12 @@ const ChartSideBar: React.FC<ChartSideBarProps> = ({ formik, entityTemplates, se
                                     name="name"
                                     label={i18next.t('charts.name')}
                                     placeholder={i18next.t('charts.name')}
-                                    value={formik.values.name}
-                                    onChange={formik.handleChange}
-                                    onBlur={formik.handleBlur}
-                                    error={formik.touched.name && Boolean(formik.errors.name)}
-                                    helperText={formik.touched.name && formik.errors.name}
-                                    variant={readonly ? 'standard' : 'outlined'}
+                                    value={values.name}
+                                    onChange={handleChange}
+                                    error={touched.name && Boolean(errors.name)}
+                                    helperText={touched.name && errors.name}
                                     sx={{ width: '100%' }}
                                     inputProps={{
-                                        readOnly: readonly,
                                         style: { textOverflow: 'ellipsis' },
                                     }}
                                 />
@@ -86,23 +79,25 @@ const ChartSideBar: React.FC<ChartSideBarProps> = ({ formik, entityTemplates, se
                                     multiline
                                     label={i18next.t('charts.description')}
                                     placeholder={i18next.t('charts.description')}
-                                    value={formik.values.description}
-                                    onChange={formik.handleChange}
-                                    onBlur={formik.handleBlur}
-                                    error={formik.touched.description && Boolean(formik.errors.description)}
-                                    helperText={formik.touched.description && formik.errors.description}
-                                    variant={readonly ? 'standard' : 'outlined'}
+                                    value={values.description}
+                                    onChange={handleChange}
+                                    error={touched.description && Boolean(errors.description)}
+                                    helperText={touched.description && errors.description}
                                     maxRows={4}
                                     sx={{ width: '100%' }}
                                     inputProps={{
-                                        readOnly: readonly,
                                         style: { textOverflow: 'ellipsis' },
                                     }}
                                 />
                             </Grid>
 
                             <Grid item>
-                                <ChartTypesEdit formik={formik} formikValues={formik.values} entityTemplate={selectedTemplate} disabled={readonly} />
+                                <ChartTypesEdit
+                                    formik={props}
+                                    formikValues={values}
+                                    entityTemplate={entityTemplates.get(values.templateId)!}
+                                    disabled={false}
+                                />
                             </Grid>
 
                             <Grid item>
@@ -113,16 +108,15 @@ const ChartSideBar: React.FC<ChartSideBarProps> = ({ formik, entityTemplates, se
                                     color="primary"
                                     size="small"
                                     sx={{ height: '35px' }}
-                                    value={formik.values.permission}
+                                    value={values.permission}
                                     onChange={(_event, permission: IPermission) => {
-                                        if (permission !== null) formik.setFieldValue('permission', permission);
+                                        if (permission !== null) setFieldValue('permission', permission);
                                     }}
-                                    disabled={
-                                        readonly ||
-                                        (edit &&
-                                            formik.values.createdBy !== currentUser.user._id &&
-                                            !isWorkspaceAdmin(currentUser.user.currentWorkspacePermissions))
-                                    }
+                                    // disabled={
+                                    //     edit &&
+                                    //     values.createdBy !== currentUser.user._id &&
+                                    //     !isWorkspaceAdmin(currentUser.user.currentWorkspacePermissions)
+                                    // }
                                 >
                                     <ToggleButton value={IPermission.Private}>
                                         <PersonalIcon />
@@ -134,7 +128,7 @@ const ChartSideBar: React.FC<ChartSideBarProps> = ({ formik, entityTemplates, se
                             </Grid>
                         </>
                     ) : (
-                        /// todo: bring all existing charts and 
+                        /// todo: bring all existing charts and
                         <h1>hi</h1>
                     )}
                 </>

@@ -56,6 +56,7 @@ export interface IChart {
     filter?: string;
     createdBy: string;
     permission: IPermission;
+    dashboardId: string;
 }
 
 export interface IMongoChart extends IChart {

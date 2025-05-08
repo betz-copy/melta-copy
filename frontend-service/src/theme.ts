@@ -15,6 +15,9 @@ const basicTheme: ThemeOptions = {
                     '& .MuiInputBase-root': {
                         borderRadius: '10px',
                     },
+                    '& .MuiInputBase-input': {
+                        fontSize: '14px',
+                    },
                     '& fieldset': {
                         borderColor: '#CCCFE5',
                         color: '#CCCFE5',

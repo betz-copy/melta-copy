@@ -13,11 +13,10 @@ import { HighchartGenerator } from './HighChartgenerator';
 interface IChartGeneratorProps {
     formikValues: IBasicChart;
     template: IMongoEntityTemplatePopulated;
-    entityTemplate: IMongoEntityTemplatePopulated;
     filterRecord: IGraphFilterBodyBatch;
 }
 
-const ChartGenerator: React.FC<IChartGeneratorProps> = ({ template, formikValues, entityTemplate, filterRecord }) => {
+const ChartGenerator: React.FC<IChartGeneratorProps> = ({ template, formikValues, filterRecord }) => {
     const { type, metaData } = formikValues;
 
     const isAggregationValid = (field: IAxisField): boolean => {
@@ -37,9 +36,7 @@ const ChartGenerator: React.FC<IChartGeneratorProps> = ({ template, formikValues
         ['chart', template._id, xAxis, yAxis, filterRecord],
         () => {
             const filter =
-                filterRecord && Object.keys(filterRecord).length > 0
-                    ? filterModelToFilterOfGraph(filterRecord)[entityTemplate._id].filter
-                    : undefined;
+                filterRecord && Object.keys(filterRecord).length > 0 ? filterModelToFilterOfGraph(filterRecord)[template._id].filter : undefined;
 
             return getChartOfTemplate(xAxisField, yAxisField, template._id, filter);
         },

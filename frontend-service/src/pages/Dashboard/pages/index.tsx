@@ -1,23 +1,44 @@
+import { Grid } from '@mui/material';
 import React from 'react';
-import { TopBarGrid } from '../../../common/TopBar';
+import { Form, Formik, FormikProps } from 'formik';
+import { DashboardItemHeader } from './DashboardItemHeader';
+import { DashboardItemSideBar } from './DashboardItemSideBar';
+import { StepComponentHelpers, StepType } from '../../../common/wizards';
+import { DashboardItemData } from '../../../interfaces/dashboard';
 
-const DashboardItem: React.FC<{ title: string }> = ({ title }) => {
+interface DashboardItemProps {
+    title: string;
+    /// createOrEditMutation
+    // onDelete: () => void;
+    initialValues: DashboardItemData;
+    edit: boolean;
+    readonly: boolean;
+    backPath: { path: string; title: string };
+    onDelete: () => void;
+    steps: StepType<DashboardItemData>[];
+    bodyComponent: (formikProps: FormikProps<DashboardItemData>, helpers?: StepComponentHelpers) => JSX.Element;
+}
+
+const DashboardItem: React.FC<DashboardItemProps> = ({ title, initialValues, edit, readonly, backPath, onDelete, steps, bodyComponent }) => {
+    const [activeStep, setActiveStep] = React.useState(0);
+
     return (
-        <TopBarGrid
-            container
-            alignItems="center"
-            wrap="nowrap"
-            sx={{ marginBottom: 0, paddingRight: '1.6rem', boxShadow: '  -2px 2px 6px 0px #1E277533' }}
-        >
-            <Grid>
-                <BlueTitle
-                    title="הוספת טבלה"
-                    component="h4"
-                    variant="h4"
-                    style={{ fontSize: workspace.metadata.mainFontSizes.headlineTitleFontSize, whiteSpace: 'nowrap' }}
-                />
-            </Grid>
-        </TopBarGrid>
+        <Formik initialValues={initialValues} onSubmit={() => console.log('Submit')} validationSchema={steps[activeStep].validationSchema}>
+            {(formikProps: FormikProps<DashboardItemData>) => (
+                <Form>
+                    <DashboardItemHeader title={title} edit={edit} readonly={readonly} backPath={backPath} onDelete={onDelete} />
+                    <Grid container height="94.7vh">
+                        <Grid item flexGrow={1} overflow="auto">
+                            {bodyComponent(formikProps)}
+                        </Grid>
+
+                        <Grid item width="375px" flexShrink={0}>
+                            <DashboardItemSideBar activeStep={activeStep} setActiveStep={setActiveStep} steps={steps} formikProps={formikProps} />
+                        </Grid>
+                    </Grid>
+                </Form>
+            )}
+        </Formik>
     );
 };
 
