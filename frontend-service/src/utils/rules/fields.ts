@@ -1,7 +1,7 @@
 import lodashIsEqual from 'lodash.isequal';
-import { Fields, ImmutableTree, SimpleField } from '@react-awesome-query-builder/mui';
+import { Fields, FieldSettings, ImmutableTree, SimpleField } from '@react-awesome-query-builder/mui';
 import lodashFindLast from 'lodash.findlast';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
 import {
     addDefaultFieldsToTemplate,
@@ -14,65 +14,79 @@ import { getAggVariablesInTree } from './getAggVariablesInTree';
 import { ICurrentUser } from '../../interfaces/users';
 import { getAllAllowedEntities, getAllAllowedRelationships } from '../permissions/templatePermissions';
 
-const entityTemplateToFieldsConfig = (
+const formatField = (
+    key: string,
+    value: IEntitySingleProperty,
     entityTemplate: IMongoEntityTemplatePopulated,
+    fieldEntries: [string, SimpleField<FieldSettings>][],
     options: { hideForCompare?: boolean },
     initials?: { key: string; label: string },
     variableNameSuffix: string = '',
 ) => {
     const keyPrefix = initials ? `${initials.key}-` : '';
     const keySuffix = variableNameSuffix ? `-${variableNameSuffix}` : '';
-
     const labelPrefix = initials ? `${initials.label}.` : '';
+    let type: string = 'text';
 
+    if (value.type !== 'string') {
+        type = value.type;
+    } else if (value.format === 'date') {
+        type = 'date';
+    } else if (value.format === 'date-time') {
+        type = 'datetime';
+    } else if (value.format === 'user') {
+        type = 'user';
+    }
+
+    // skip unsupported formats
+    if (value.format === 'signature' || value.format === 'comment') {
+        return;
+    }
+
+    const fieldKey = `${keyPrefix}${entityTemplate._id}${keySuffix}-${key}`;
+    const label = `${labelPrefix}${entityTemplate.name}${variableNameSuffix}.${key}`;
+
+    fieldEntries.push([
+        fieldKey,
+        {
+            type,
+            valueSources: type === 'user' ? [] : ['field', 'value', 'func'],
+            label,
+            ...options,
+        },
+    ]);
+
+    if (type === 'datetime') {
+        fieldEntries.push([
+            `${fieldKey}-ignoreHour`,
+            {
+                type: 'date',
+                valueSources: ['field', 'value', 'func'],
+                label: `${label} (ignore hour)`,
+                ...options,
+            },
+        ]);
+    }
+};
+
+const entityTemplateToFieldsConfig = (
+    entityTemplate: IMongoEntityTemplatePopulated,
+    entityTemplates: IEntityTemplateMap,
+    options: { hideForCompare?: boolean },
+    initials?: { key: string; label: string },
+    variableNameSuffix: string = '',
+) => {
     const fieldEntries: [string, SimpleField][] = [];
     Object.entries(addDefaultFieldsToTemplate(entityTemplate).properties.properties).forEach(([key, value]) => {
-        let type = 'text';
+        if (value.format === 'relationshipReference' && value.relationshipReference) {
+            const relTemplateId = value.relationshipReference!.relatedTemplateId;
+            const relTemplateKey = value.relationshipReference?.relatedTemplateField;
+            const refTemplate = entityTemplates.get(relTemplateId)!;
+            const relProperty = refTemplate?.properties.properties[relTemplateKey];
 
-        if (value.type !== 'string') {
-            type = value.type;
-        } else if (value.format === 'date') {
-            type = 'date';
-        } else if (value.format === 'date-time') {
-            type = 'datetime';
-        } else if (value.format === 'user') {
-            type = 'user';
-            fieldEntries.push([
-                `${keyPrefix}${entityTemplate._id}${keySuffix}-${key}`,
-                {
-                    type,
-                    valueSources: [],
-                    label: `${labelPrefix}${entityTemplate.name}${variableNameSuffix}.${key}`,
-                    ...options,
-                },
-            ]);
-        }
-        //  else if (value.format === 'relationshipReference') {
-        //     type = 'relationshipReference';
-        // }
-
-        if (value.format !== 'user' && value.format !== 'signature' && value.format !== 'comment') {
-            fieldEntries.push([
-                `${keyPrefix}${entityTemplate._id}${keySuffix}-${key}`,
-                {
-                    type,
-                    valueSources: ['field', 'value', 'func'],
-                    label: `${labelPrefix}${entityTemplate.name}${variableNameSuffix}.${key}`,
-                    ...options,
-                },
-            ]);
-
-            if (type === 'datetime') {
-                fieldEntries.push([
-                    `${keyPrefix}${entityTemplate._id}${keySuffix}-${key}-ignoreHour`,
-                    {
-                        type: 'date',
-                        valueSources: ['field', 'value', 'func'],
-                        label: `${labelPrefix}${entityTemplate.name}${variableNameSuffix}.${key} (ignore hour)`,
-                        ...options,
-                    },
-                ]);
-            }
+            formatField(key, relProperty, entityTemplate, fieldEntries, options, initials, variableNameSuffix);
+        } else {
+            formatField(key, value, entityTemplate, fieldEntries, options, initials, variableNameSuffix);
         }
     });
 
@@ -81,6 +95,7 @@ const entityTemplateToFieldsConfig = (
 
 const getRelationshipFieldsConfigOfRule = (
     entityTemplate: IMongoEntityTemplatePopulated,
+    entityTemplates: IEntityTemplateMap,
     connectedTemplatesWithRelationship: {
         relationshipTemplate: IMongoRelationshipTemplatePopulated;
         otherEntityTemplate: IMongoEntityTemplatePopulated;
@@ -104,6 +119,7 @@ const getRelationshipFieldsConfigOfRule = (
 
             const fieldsOfAggregationVariable = entityTemplateToFieldsConfig(
                 otherEntityTemplate,
+                entityTemplates,
                 {},
                 {
                     key: `${entityTemplate._id}-${relationshipTemplate._id}`,
@@ -126,6 +142,7 @@ const getRelationshipFieldsConfigOfRule = (
                 ? {}
                 : getRelationshipFieldsConfigOfRule(
                       entityTemplate,
+                      entityTemplates,
                       connectedTemplatesWithRelationship,
                       {
                           existingAggregationVariables: [
@@ -183,7 +200,7 @@ export const getFieldsConfigOfRule = (
     const allowedEntityTemplatesIds: string[] = allowedEntityTemplates.map((entity) => entity._id);
     const allowedRelationships = getAllAllowedRelationships(Array.from(relationshipTemplates.values()), allowedEntityTemplatesIds);
 
-    const fieldsOfEntityTemplate = entityTemplateToFieldsConfig(entityTemplate, {});
+    const fieldsOfEntityTemplate = entityTemplateToFieldsConfig(entityTemplate, entityTemplates, {});
 
     const connectedTemplatesWithRelationship = allowedRelationships
         .map((relationshipTemplate) => populateRelationshipTemplate(relationshipTemplate, allowedEntityTemplates))
@@ -204,6 +221,7 @@ export const getFieldsConfigOfRule = (
 
     const relationshipFields = getRelationshipFieldsConfigOfRule(
         entityTemplate,
+        entityTemplates,
         connectedTemplatesWithRelationship,
         { existingAggregationVariables: [], existingFieldsInUpperScopes: fieldsOfEntityTemplate },
         existingAggregationVariablesInTree,

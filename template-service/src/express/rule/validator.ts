@@ -163,15 +163,47 @@ export class RuleValidator extends DefaultController<IMongoRelationshipTemplate,
         }
     }
 
-    private validatePropertyExistInEntityTemplate(property: string, entityTemplate: IEntityTemplatePopulated): IConstant['type'] {
+    private validatePropertyExistInEntityTemplate(
+        property: string,
+        entityTemplate: IEntityTemplatePopulated,
+        relevantTemplates: IRelevantTemplates,
+    ): IConstant['type'] {
         const entityTemplateWithDefaults = this.addDefaultFieldsToTemplate(entityTemplate);
+        const templateProps = entityTemplateWithDefaults.properties.properties;
 
-        const propertyTemplate = entityTemplateWithDefaults.properties.properties[property];
-        if (propertyTemplate) {
-            return this.jsonSchemaTypeToType(propertyTemplate);
+        const propertyTemplate = templateProps[property];
+        if (!propertyTemplate) {
+            throw new Error(`property "${property}" must exist in template "${entityTemplate._id}"`);
         }
 
-        throw new Error(`property "${property}" must exist in template "${entityTemplate._id}"`);
+        // If it's a relationshipReference, get the type from the related template's field
+        if (
+            propertyTemplate.format === 'relationshipReference' &&
+            propertyTemplate.relationshipReference?.relatedTemplateId &&
+            propertyTemplate.relationshipReference?.relatedTemplateField
+        ) {
+            const { relatedTemplateId } = propertyTemplate.relationshipReference;
+            const relatedFieldKey = propertyTemplate.relationshipReference.relatedTemplateField;
+
+            const relatedTemplate = [
+                relevantTemplates.entityTemplate,
+                ...relevantTemplates.connectionsTemplatesOfEntityTemplate.map((connection) => connection.otherEntityTemplate),
+            ].find((template) => template._id === relatedTemplateId);
+
+            if (!relatedTemplate) {
+                throw new Error(`related template "${relatedTemplateId}" not found in relevantTemplates`);
+            }
+
+            const relatedTemplateWithDefaults = this.addDefaultFieldsToTemplate(relatedTemplate);
+            const referencedField = relatedTemplateWithDefaults.properties.properties[relatedFieldKey];
+            if (!referencedField) {
+                throw new Error(`related field "${relatedFieldKey}" not found in template "${relatedTemplateId}"`);
+            }
+
+            return this.jsonSchemaTypeToType(referencedField);
+        }
+
+        return this.jsonSchemaTypeToType(propertyTemplate);
     }
 
     private validateConstant(constant: any): IConstant['type'] {
@@ -235,12 +267,12 @@ export class RuleValidator extends DefaultController<IMongoRelationshipTemplate,
                 aggregationGroupsContext,
             );
 
-            return this.validatePropertyExistInEntityTemplate(property, otherEntityTemplate);
+            return this.validatePropertyExistInEntityTemplate(property, otherEntityTemplate, relevantTemplates);
         }
 
         assert(variable.entityTemplateId === relevantTemplates.entityTemplate._id, 'variable.entityTemplateId must be the same as entityTemplateId');
 
-        return this.validatePropertyExistInEntityTemplate(property, relevantTemplates.entityTemplate);
+        return this.validatePropertyExistInEntityTemplate(property, relevantTemplates.entityTemplate, relevantTemplates);
     }
 
     private validateCountAggFunction(
@@ -267,7 +299,7 @@ export class RuleValidator extends DefaultController<IMongoRelationshipTemplate,
             aggregationGroupsContext,
         );
 
-        return this.validatePropertyExistInEntityTemplate(sumAggFunction.property, otherEntityTemplate);
+        return this.validatePropertyExistInEntityTemplate(sumAggFunction.property, otherEntityTemplate, relevantTemplates);
     }
 
     private validateRegularFunction(
