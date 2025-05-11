@@ -16,7 +16,6 @@ import { ChooseColor, chooseColorSchema } from './ChooseColor';
 import { ChooseIcon } from './ChooseIcon';
 import { CreateCategoryName, useCreateCategoryNameSchema } from './CreateCategoryName';
 import { updateUserPermissionForCategory } from '../../../utils/permissions/templatePermissions';
-import { getOrderConfigByNameRequest } from '../../../services/templates/configService';
 
 export interface CategoryWizardValues extends Omit<ICategory, 'iconFileId'> {
     icon?: fileDetails;

@@ -143,7 +143,6 @@ const CategoriesRow: React.FC = () => {
 
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
     const categoryOrder = queryClient.getQueryData<IMongoOrderConfig>('getCategoryOrder');
-    // console.log(categoryOrder);
     const allowedCategoriesToShow = allowedCategories(categories, currentUser);
 
     const { headlineSubTitleFontSize } = workspace.metadata.mainFontSizes;
