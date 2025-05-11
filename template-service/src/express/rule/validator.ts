@@ -169,19 +169,14 @@ export class RuleValidator extends DefaultController<IMongoRelationshipTemplate,
         relevantTemplates: IRelevantTemplates,
     ): IConstant['type'] {
         const entityTemplateWithDefaults = this.addDefaultFieldsToTemplate(entityTemplate);
-        const templateProps = entityTemplateWithDefaults.properties.properties;
+        const propertyTemplate = entityTemplateWithDefaults.properties.properties[property];
 
-        const propertyTemplate = templateProps[property];
         if (!propertyTemplate) {
             throw new Error(`property "${property}" must exist in template "${entityTemplate._id}"`);
         }
 
         // If it's a relationshipReference, get the type from the related template's field
-        if (
-            propertyTemplate.format === 'relationshipReference' &&
-            propertyTemplate.relationshipReference?.relatedTemplateId &&
-            propertyTemplate.relationshipReference?.relatedTemplateField
-        ) {
+        if (propertyTemplate.format === 'relationshipReference' && propertyTemplate.relationshipReference) {
             const { relatedTemplateId } = propertyTemplate.relationshipReference;
             const relatedFieldKey = propertyTemplate.relationshipReference.relatedTemplateField;
 
