@@ -16,6 +16,7 @@ import { ChooseColor, chooseColorSchema } from './ChooseColor';
 import { ChooseIcon } from './ChooseIcon';
 import { CreateCategoryName, useCreateCategoryNameSchema } from './CreateCategoryName';
 import { updateUserPermissionForCategory } from '../../../utils/permissions/templatePermissions';
+import { getOrderConfigByNameRequest } from '../../../services/templates/configService';
 
 export interface CategoryWizardValues extends Omit<ICategory, 'iconFileId'> {
     icon?: fileDetails;
@@ -44,12 +45,18 @@ const CategoryWizard: React.FC<WizardBaseType<CategoryWizardValues>> = ({
             onSuccess: async (data) => {
                 queryClient.setQueryData<ICategoryMap>('getCategories', (categories) => categories!.set(data._id, data));
                 if (!isEditMode) {
-                    queryClient.setQueryData<IMongoOrderConfig>('getCategoryOrder', (categoryConfig) => {
-                        const { order } = categoryConfig!;
-                        order.push(data._id);
+                    const categoryOrder = queryClient.getQueryData<IMongoOrderConfig>('getCategoryOrder');
 
-                        return { ...categoryConfig!, order };
-                    });
+                    if (categoryOrder) {
+                        queryClient.setQueryData<IMongoOrderConfig>('getCategoryOrder', (categoryConfig) => {
+                            const { order } = categoryConfig!;
+                            order.push(data._id);
+
+                            return { ...categoryConfig!, order };
+                        });
+                    } else {
+                        queryClient.setQueryData<IMongoOrderConfig>('getCategoryOrder', await getOrderConfigByNameRequest('categoryOrder'));
+                    }
                 }
 
                 const updatedUserPermissions = updateUserPermissionForCategory(data, currentUser, currentWorkspace._id);
