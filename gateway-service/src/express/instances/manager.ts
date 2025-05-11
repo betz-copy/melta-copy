@@ -57,6 +57,7 @@ import { createTextsFromEntitiesWithFiles, formatEntitiesBulkSearch, sortEntitie
 import { ISemanticSearchResult } from '../../externalServices/semanticSearch/interface';
 import { convertIdOfBrokenRules, readExcelFile } from '../../utils/excel/getFunctions';
 import { generateSerialNumbers, getAllEntitiesFromExcel, getSerialStarters, handleExcelErrors } from '../../utils/excel';
+import { PreviewService } from '../../externalServices/previewService';
 
 const { errorCodes, rabbit, ruleBreachService } = config;
 
@@ -73,6 +74,8 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
     private workspaceId: string;
 
+    private previewService: PreviewService;
+
     constructor(workspaceId: string) {
         super(new InstancesService(workspaceId));
         this.workspaceId = workspaceId;
@@ -81,6 +84,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         this.semanticSearchSearch = new SemanticSearchService(workspaceId);
         this.ruleBreachesManager = new RuleBreachesManager(workspaceId);
         this.rabbitManager = new RabbitManager(workspaceId);
+        this.previewService = new PreviewService(workspaceId);
     }
 
     async uploadInstanceFiles<TProps = Record<string, any>>(
@@ -495,7 +499,11 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         documentTemplateId: string;
         entityProperties: IEntity['properties'];
     }) {
-        return patchDocumentAsStream(await this.storageService.downloadFile(documentTemplateId), entityProperties);
+        return patchDocumentAsStream(
+            await this.storageService.downloadFile(documentTemplateId),
+            entityProperties,
+            async (path: string, contentType?: string) => this.previewService.getFilePreview(path, contentType),
+        );
     }
 
     async searchEntitiesBatch(shouldSemanticSearch: boolean, searchBody: ISearchBatchBody) {

@@ -192,6 +192,7 @@ const config = {
         requestTimeout: env.get('KARTOFFEL_REQUEST_TIMEOUT').default(10000).asIntPositive(),
         profilePath: env.get('KARTOFFEL_PROFILE_PATH').default('pictures/profile').asString(),
     },
+    hebrew: { yes: 'כן', no: 'לא' },
     errorCodes: {
         categoryHasTemplates: 'CATEGORY_HAS_TEMPLATES',
         entityTemplateHasOutgoingRelationships: 'TEMPLATE_HAS_OUTGOING_RELATIONSHIPS',
@@ -295,6 +296,7 @@ const config = {
         },
         wgs84: { maxLongitude: env.get('MAX_LONGITUDE').default(180).asInt(), maxLatitude: env.get('MAX_LATITUDE').default(90).asInt() },
     },
+    fileExtensions: { png: env.get('PNG').default('png').asString() },
 };
 
 export default config;
