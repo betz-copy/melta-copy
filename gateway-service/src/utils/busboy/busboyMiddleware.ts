@@ -24,21 +24,34 @@ export const busboyMiddleware = (req: Request, _res: Response, next: NextFunctio
 
         busboy.on('file', (fieldname, file, { encoding, filename, mimeType }) => {
             const copiedStream = new ReadableStreamClone(file);
-            const passthrough = new PassThrough();
-            file.pipe(passthrough);
+            const passthrough = new PassThrough({
+                highWaterMark: 600 * 1024 * 1024, // 500MB buffer size
+            });
+
             console.log(`📦 [OG4] Received file field: ${fieldname}, filename: ${filename}`);
 
             const validFileName = Buffer.from(filename, 'binary').toString('utf8');
             console.log(`🟢 [OG5] validFileName: ${validFileName}`);
             let size = 0;
 
+            // Handle backpressure
             file.on('data', (data) => {
                 size += data.length;
+                const canContinue = passthrough.write(data);
+                if (!canContinue) {
+                    file.pause();
+                }
                 console.log(`🔄 [OG6] Streaming chunk (${data.length} bytes)`);
+            });
+
+            passthrough.on('drain', () => {
+                file.resume();
             });
 
             file.on('end', () => {
                 console.log(`✅ [OG7] File stream ended for: ${validFileName} (total size: ${size})`);
+                passthrough.end();
+
                 const fileData: UploadedFile = {
                     fieldname,
                     originalname: validFileName,
@@ -54,6 +67,11 @@ export const busboyMiddleware = (req: Request, _res: Response, next: NextFunctio
                     singleFileField = fileData;
                     console.log('🟢 [OG8] singleFileField set');
                 }
+            });
+
+            file.on('error', (err) => {
+                console.error(`❌ [OG16] Error processing file ${validFileName}:`, err);
+                passthrough.destroy(err);
             });
         });
 

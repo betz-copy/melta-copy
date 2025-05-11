@@ -17,18 +17,20 @@ export const busboyMiddleware = (req: Request, _res: Response, next: NextFunctio
     busboy.on('file', (fieldname, file, { filename, encoding, mimeType }) => {
         console.log('📦 [BUSBOY] Received file', filename);
 
-        const passthrough = new PassThrough();
-        const chunks: Buffer[] = [];
+        const passthrough = new PassThrough({
+            highWaterMark: 600 * 1024 * 1024, // 500MB buffer size
+        });
         let size = 0;
 
+        // Handle file stream events
         file.on('data', (chunk) => {
-            chunks.push(chunk);
             size += chunk.length;
+            passthrough.write(chunk);
         });
 
         file.on('end', () => {
             console.log(`✅ [BUSBOY] Stream ended for ${filename}, total size: ${size} bytes`);
-            passthrough.end(Buffer.concat(chunks as Uint8Array[]));
+            passthrough.end();
 
             files.push({
                 fieldname,
@@ -38,6 +40,11 @@ export const busboyMiddleware = (req: Request, _res: Response, next: NextFunctio
                 size,
                 stream: passthrough,
             });
+        });
+
+        file.on('error', (err) => {
+            console.error(`❌ [BUSBOY] Error processing file ${filename}:`, err);
+            passthrough.destroy(err);
         });
     });
 
@@ -50,13 +57,20 @@ export const busboyMiddleware = (req: Request, _res: Response, next: NextFunctio
         console.log('✅ [BUSBOY] Busboy finished parsing form');
         req.body = fields;
         if (files.length) {
-            console.log('🟢 [BUSBOY] filesssssssssssss', files);
-
+            console.log('🟢 [BUSBOY] Files processed:', files.length);
             req.files = files;
-            console.log(`🟢 [OG12] req.files populated with ${files.length} file(s)`);
+            console.log(`🟢 [BUSBOY] req.files populated with ${files.length} file(s)`);
         }
         next();
     });
+
+    busboy.on('error', (err) => {
+        console.error('❌ [BUSBOY] Error parsing form:', err);
+        next(err);
+    });
+
+    console.log('🟢 [BUSBOY] Busboy initialized');
+    console.log('🟢 [BUSBOY] req.files', req.files);
 
     req.pipe(busboy);
     console.log('🔄 [BUSBOY] Starting to pipe request to Busboy');
