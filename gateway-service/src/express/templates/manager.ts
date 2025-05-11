@@ -262,7 +262,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         let categoryOrder: IMongoOrderConfig | null;
 
         try {
-            categoryOrder = await this.getOrderConfigByName('categoryOrder');
+            categoryOrder = await this.getCategoryOrderConfig('categoryOrder', permissionsOfUserId);
         } catch {
             categoryOrder = null;
         }
@@ -399,8 +399,11 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         return this.entityTemplateService.getConfigs();
     }
 
-    async getOrderConfigByName(name: string): Promise<IMongoOrderConfig> {
-        return this.entityTemplateService.getOrderConfigByName(name);
+    async getCategoryOrderConfig(
+        name: string,
+        permissionsOfUserId: RequestWithPermissionsOfUserId['permissionsOfUserId'],
+    ): Promise<IMongoOrderConfig> {
+        return this.entityTemplateService.getOrderConfigByName(name, permissionsOfUserId);
     }
 
     async updateOrderConfig(configId: string, newIndex: number, item: string): Promise<IMongoOrderConfig> {

@@ -59,9 +59,8 @@ export default class TemplatesController extends DefaultController<TemplatesMana
         const { srcCategoryId } = req.body;
         const { newCategoryId } = req.body;
         const { newIndex } = req.body;
-        const { templateId } = req.body;
 
-        res.json(await this.manager.updateCategoryTemplatesOrder(templateId, newIndex, srcCategoryId, newCategoryId));
+        res.json(await this.manager.updateCategoryTemplatesOrder(req.params.templateId, newIndex, srcCategoryId, newCategoryId));
     }
 
     // config
@@ -69,8 +68,11 @@ export default class TemplatesController extends DefaultController<TemplatesMana
         res.json(await this.manager.getAllConfigs());
     }
 
-    async getOrderConfigByName(req: Request, res: Response) {
-        res.json(await this.manager.getOrderConfigByName(req.params.configName));
+    async getCategoryOrderConfig(req: Request, res: Response) {
+        const { user, permissionsOfUserId } = req as RequestWithPermissionsOfUserId;
+        assert(user, userDoesntExistUnderReq);
+
+        res.json(await this.manager.getCategoryOrderConfig(req.params.configName, permissionsOfUserId));
     }
 
     async updateOrderConfig(req: Request, res: Response) {

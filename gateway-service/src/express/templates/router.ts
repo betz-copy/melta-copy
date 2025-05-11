@@ -87,9 +87,9 @@ templatesRouter.post(
 );
 
 templatesRouter.patch(
-    '/categories/templatesOrder',
+    '/categories/templatesOrder/:templateId',
     ValidateRequest(updateCategoryTempOrderSchema),
-    AuthorizerControllerMiddleware.userCanWriteCategory,
+    AuthorizerControllerMiddleware.userCanWriteTemplates,
     templatesControllerMiddleware.updateCategoryTemplatesOrder,
 );
 
@@ -106,7 +106,7 @@ templatesRouter.get(
     '/config/order/:configName',
     ValidateRequest(getOrderConfigByNameSchema),
     AuthorizerControllerMiddleware.userCanReadTemplates,
-    templatesControllerMiddleware.getOrderConfigByName,
+    templatesControllerMiddleware.getCategoryOrderConfig,
 );
 
 templatesRouter.put('/config/order/:configId', AuthorizerControllerMiddleware.userCanWriteTemplates, templatesControllerMiddleware.updateOrderConfig);

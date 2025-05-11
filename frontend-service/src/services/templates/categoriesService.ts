@@ -62,7 +62,7 @@ const deleteCategoryRequest = async (categoryId: string) => {
 };
 
 const updateCategoryTemplatesOrderRequest = async (templateId: string, newIndex: number, srcCategoryId: string, newCategoryId: string) => {
-    const { data } = await axios.patch(`${categories}/templatesOrder`, { templateId, newIndex, srcCategoryId, newCategoryId });
+    const { data } = await axios.patch(`${categories}/templatesOrder/${templateId}`, { newIndex, srcCategoryId, newCategoryId });
 
     return data;
 };

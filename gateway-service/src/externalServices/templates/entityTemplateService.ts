@@ -184,12 +184,14 @@ export class EntityTemplateService extends TemplatesManagerService {
     }
 
     async updateCategoryTemplatesOrder(templateId: string, newIndex: number, srcCategoryId: string, newCategoryId: string) {
-        const { data } = await this.api.patch<{ oldCategory: IMongoCategory; newCategory: IMongoCategory }>(`${baseCategoriesRoute}/templatesOrder`, {
-            templateId,
-            newIndex,
-            srcCategoryId,
-            newCategoryId,
-        });
+        const { data } = await this.api.patch<{ oldCategory: IMongoCategory; newCategory: IMongoCategory }>(
+            `${baseCategoriesRoute}/templatesOrder/${templateId}`,
+            {
+                newIndex,
+                srcCategoryId,
+                newCategoryId,
+            },
+        );
 
         return data;
     }
@@ -271,10 +273,12 @@ export class EntityTemplateService extends TemplatesManagerService {
         return data;
     }
 
-    async getOrderConfigByName(configName: string) {
-        const { data } = await this.api.get<IMongoOrderConfig>(`${baseConfigRoute}/${ConfigTypes.ORDER}/${configName}`);
+    async getOrderConfigByName(configName: string, permissionsOfUserId: ISubCompactPermissions) {
+        const { data: categoryOrder } = await this.api.get<IMongoOrderConfig>(`${baseConfigRoute}/${ConfigTypes.ORDER}/${configName}`);
 
-        return data;
+        return permissionsOfUserId.admin
+            ? categoryOrder
+            : { ...categoryOrder, order: categoryOrder.order.filter((_id) => permissionsOfUserId.instances?.categories[_id]) };
     }
 
     async updateOrderConfig(configId: string, newIndex: number, item: string) {
