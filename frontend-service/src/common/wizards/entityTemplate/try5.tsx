@@ -1233,6 +1233,7 @@ export const StructureEditor = <PropertiesType extends string, Values extends Re
                                     display: 'flex',
                                     flexDirection: 'column',
                                     minWidth: '500px',
+                                    backgroundColor: 'pink',
                                 }}
                             >
                                 {orderedItems.map((item, index) => {

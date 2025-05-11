@@ -142,15 +142,23 @@ const addFieldsSchema = Yup.object({
     ),
 }).test('uniqueProperties', entityTemplateUniqueProperties);
 
-const ItemType = 'MANUAL_DND_LAYOUT';
+const ItemType = 'SECTION';
 const DraggableManualDndLayout = ({ id, index, moveItem, children }) => {
     const ref = useRef(null);
+
+    const [{ isDragging, opacity }, drag] = useDrag({
+        type: 'SECTION',
+        item: { id, index },
+        collect: (m) => ({ isDragging: m.isDragging(), opacity: m.isDragging() ? 0.2 : 1 }),
+    });
 
     const [{ isOver }, drop] = useDrop({
         accept: 'SECTION',
         collect: (m) => ({ isOver: m.isOver({ shallow: true }) }),
-        hover(item: { id: string; index: number }, monitor) {
+        drop: (item: { id: string; index: number }, monitor) => {
             if (!monitor.isOver({ shallow: true })) return;
+            console.log('hover', { id, index });
+
             const dragIndex = item.index;
             const hoverIndex = index;
             if (dragIndex === hoverIndex) return;
@@ -159,15 +167,13 @@ const DraggableManualDndLayout = ({ id, index, moveItem, children }) => {
         },
     });
 
-    const [{ isDragging }, drag] = useDrag({
-        type: 'SECTION',
-        item: { id, index },
-        collect: (m) => ({ isDragging: m.isDragging() }),
-    });
-
     drag(drop(ref));
 
-    return <div ref={ref}>{children}</div>;
+    return (
+        <div ref={ref} style={{ opacity }}>
+            {children}
+        </div>
+    );
 };
 
 const AddFieldsDND: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEditMode' | 'setBlock'>> = ({
@@ -222,17 +228,20 @@ const AddFieldsDND: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isE
 
     //     setFieldValue('propertiesTypeOrder', newPropertiesTypeOrder);
     // };
-    const moveItem = (fromIndex: number, toIndex: number) => {
-        console.log({ fromIndex, toIndex });
+    const moveItem = useCallback(
+        (fromIndex: number, toIndex: number) => {
+            console.log({ fromIndex, toIndex });
 
-        if (fromIndex === toIndex) return;
+            if (fromIndex === toIndex) return;
 
-        const newPropertiesTypeOrder = Array.from(values.propertiesTypeOrder);
-        const [movedOption] = newPropertiesTypeOrder.splice(fromIndex, 1);
-        newPropertiesTypeOrder.splice(toIndex, 0, movedOption);
+            const newPropertiesTypeOrder = Array.from(values.propertiesTypeOrder);
+            const [movedOption] = newPropertiesTypeOrder.splice(fromIndex, 1);
+            newPropertiesTypeOrder.splice(toIndex, 0, movedOption);
 
-        setFieldValue('propertiesTypeOrder', newPropertiesTypeOrder);
-    };
+            setFieldValue('propertiesTypeOrder', newPropertiesTypeOrder);
+        },
+        [values.propertiesTypeOrder, setFieldValue],
+    );
 
     const getTitle = (itemId: string): string => {
         const titles: Record<string, string> = {
@@ -247,7 +256,7 @@ const AddFieldsDND: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isE
 
     const [{ isOver }, drop] = useDrop({
         accept: ItemType,
-        hover(item: { id: string; index: number }, monitor) {
+        hover: (item: { id: string; index: number }, monitor) => {
             if (!ref.current) return;
 
             const dragIndex = item.index;
@@ -262,78 +271,79 @@ const AddFieldsDND: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isE
             isOver: monitor.isOver(),
         }),
     });
+
+    // drop(ref);
     return (
-        <Grid container direction="column" alignItems="center" style={{ minHeight: '160px' }}>
-            <div ref={drop}>
-                {values.propertiesTypeOrder.map((itemId, index) => (
-                    // <Draggable key={itemId} draggableId={itemId} index={index}>
-                    //     {(draggableProvided) => (
-                    // <Grid item ref={draggableProvided.innerRef} {...draggableProvided.draggableProps} alignSelf="stretch" marginBottom="1rem">
+        <Grid ref={drop} container direction="column" alignItems="center" style={{ minHeight: '160px', backgroundColor: 'red' }}>
+            {values.propertiesTypeOrder.map((itemId, index) => (
+                // <Draggable key={itemId} draggableId={itemId} index={index}>
+                //     {(draggableProvided) => (
+                // <Grid item ref={draggableProvided.innerRef} {...draggableProvided.draggableProps} alignSelf="stretch" marginBottom="1rem">
 
-                    <Grid item alignSelf="stretch" marginBottom="1rem" key={itemId}>
-                        <DraggableManualDndLayout id={itemId} index={index} moveItem={moveItem}>
-                            <StructureEditor
-                                propertiesType={itemId}
-                                values={values}
-                                uniqueConstraints={values.uniqueConstraints}
-                                setUniqueConstraints={(newUniqueConstraints) => {
-                                    setValues((prev) => {
-                                        return {
-                                            ...prev,
-                                            uniqueConstraints:
-                                                typeof newUniqueConstraints === 'function'
-                                                    ? newUniqueConstraints(prev.uniqueConstraints!)
-                                                    : newUniqueConstraints,
-                                        };
-                                    });
-                                }}
-                                initialValues={initialValues}
-                                setFieldValue={setFieldValue}
-                                areThereAnyInstances={areThereAnyInstances}
-                                isEditMode={isEditMode}
-                                setBlock={setBlock}
-                                title={getTitle(itemId)}
-                                addPropertyButtonLabel={
-                                    itemId === 'properties'
-                                        ? i18next.t('wizard.entityTemplate.addProperty')
-                                        : i18next.t('wizard.entityTemplate.addAttachment')
-                                }
-                                touched={touched}
-                                errors={errors}
-                                supportSerialNumberType
-                                supportUserType
-                                supportEntityReferenceType={false}
-                                supportChangeToRequiredWithInstances
-                                supportRelationshipReference
-                                supportArrayFields
-                                supportDeleteForExistingInstances
-                                supportEditEnum
-                                supportUnique
-                                supportLocation
-                                supportArchive
-                                supportAddFieldButton={itemId === 'attachmentProperties' || itemId === 'properties'}
-                                hasActions={hasActions}
-                                // draggable={{ isDraggable: true, dragHandleProps: draggableProvided.dragHandleProps }}
-                                locationSearchFields={{
-                                    show: Object.values(values.properties).some((property: any) => {
-                                        if (property.type === 'field') return property.data?.type === 'location';
+                <Grid item alignSelf="stretch" marginBottom="1rem" key={itemId}>
+                    <DraggableManualDndLayout id={itemId} index={index} moveItem={moveItem}>
+                        {/* <div>{itemId}</div> */}
+                        <StructureEditor
+                            propertiesType={itemId}
+                            values={values}
+                            uniqueConstraints={values.uniqueConstraints}
+                            setUniqueConstraints={(newUniqueConstraints) => {
+                                setValues((prev) => {
+                                    return {
+                                        ...prev,
+                                        uniqueConstraints:
+                                            typeof newUniqueConstraints === 'function'
+                                                ? newUniqueConstraints(prev.uniqueConstraints!)
+                                                : newUniqueConstraints,
+                                    };
+                                });
+                            }}
+                            initialValues={initialValues}
+                            setFieldValue={setFieldValue}
+                            areThereAnyInstances={areThereAnyInstances}
+                            isEditMode={isEditMode}
+                            setBlock={setBlock}
+                            title={getTitle(itemId)}
+                            addPropertyButtonLabel={
+                                itemId === 'properties'
+                                    ? i18next.t('wizard.entityTemplate.addProperty')
+                                    : i18next.t('wizard.entityTemplate.addAttachment')
+                            }
+                            touched={touched}
+                            errors={errors}
+                            supportSerialNumberType
+                            supportUserType
+                            supportEntityReferenceType={false}
+                            supportChangeToRequiredWithInstances
+                            supportRelationshipReference
+                            supportArrayFields
+                            supportDeleteForExistingInstances
+                            supportEditEnum
+                            supportUnique
+                            supportLocation
+                            supportArchive
+                            supportAddFieldButton={itemId === 'attachmentProperties' || itemId === 'properties'}
+                            hasActions={hasActions}
+                            // draggable={{ isDraggable: true, dragHandleProps: draggableProvided.dragHandleProps }}
+                            locationSearchFields={{
+                                show: Object.values(values.properties).some((property: any) => {
+                                    if (property.type === 'field') return property.data?.type === 'location';
 
-                                        if (property.type === 'group' && Array.isArray(property.fields))
-                                            return property.fields.some((field) => field.type === 'location');
+                                    if (property.type === 'group' && Array.isArray(property.fields))
+                                        return property.fields.some((field) => field.type === 'location');
 
-                                        return false;
-                                    }),
-                                    disabled: countMapSearchProperties >= 2,
-                                }}
-                                supportIdentifier
-                                hasIdentifier={Object.values(values.properties).some((value) => value.identifier)}
-                            />
-                        </DraggableManualDndLayout>
-                    </Grid>
-                    //         )}
-                    //     </Draggable>
-                ))}
-            </div>
+                                    return false;
+                                }),
+                                disabled: countMapSearchProperties >= 2,
+                            }}
+                            supportIdentifier
+                            hasIdentifier={Object.values(values.properties).some((value) => value.identifier)}
+                        />
+                    </DraggableManualDndLayout>
+                </Grid>
+                //         )}
+                //     </Draggable>
+            ))}
         </Grid>
         // </DndProvider>
     );
