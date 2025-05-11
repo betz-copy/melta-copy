@@ -4,11 +4,11 @@ import { toHebrewJewishDate, toJewishDate } from 'jewish-date';
 import mammoth from 'mammoth';
 import config from '../../../config';
 import { IEntity } from '../../../externalServices/instanceService/interfaces/entities';
+import { IMongoEntityTemplatePopulated } from '../../../externalServices/templates/entityTemplateService';
 
 const {
     service: { jewishDateIndicator, hebrewDateIndicator, maxPatchIterations },
     hebrew: { yes, no },
-    fileExtensions: { png },
 } = config;
 
 // ! This is commented because this code will be used in the future, it's just not ready right now. contact Rozner about continuing it.
@@ -198,6 +198,7 @@ const isDateWithoutTime = (strDate: string): boolean => {
  */
 const createPatchesFromEntity = async (
     properties: IEntity['properties'],
+    entityTemplate: IMongoEntityTemplatePopulated,
     getFilePreview: (path: string, contentType?: string) => Promise<Buffer>,
 ): Promise<Record<string, IPatch>> => {
     const patches: Record<string, IPatch> = {};
@@ -222,8 +223,8 @@ const createPatchesFromEntity = async (
     await Promise.all(
         Object.entries(propertiesWithHebrewDates).map(async ([key, value]) => {
             const trimmedValue: string = isHTML(String(value)) ? extractTextFromHtml(value) : value;
-
-            if (String(value).endsWith(png)) {
+            const templateProperty = entityTemplate.properties.properties[key];
+            if (templateProperty && templateProperty.format === 'signature') {
                 const imageBuffer = await getFilePreview(trimmedValue, 'image');
 
                 patches[key] = {
@@ -263,9 +264,10 @@ const arePatchesEqual = (firstPatchDocument: Uint8Array, secondPatchDocument: Ui
 export const patchDocumentAsStream = async (
     arrayBuffer: ArrayBuffer,
     properties: IEntity['properties'],
+    entityTemplate: IMongoEntityTemplatePopulated,
     getFilePreview: (path: string, contentType?: string) => Promise<Buffer>,
 ) => {
-    const patches = await createPatchesFromEntity(properties, getFilePreview);
+    const patches = await createPatchesFromEntity(properties, entityTemplate, getFilePreview);
 
     // Due to the fact that 'patchDocument' function can patch only one instance of a string per patch,
     // we need to check if the document can no longer change with the patches

@@ -296,7 +296,6 @@ const config = {
         },
         wgs84: { maxLongitude: env.get('MAX_LONGITUDE').default(180).asInt(), maxLatitude: env.get('MAX_LATITUDE').default(90).asInt() },
     },
-    fileExtensions: { png: env.get('PNG').default('png').asString() },
 };
 
 export default config;

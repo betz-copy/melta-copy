@@ -580,6 +580,7 @@ const CreateOrEditEntityDetails: React.FC<{
                                                         ...values.properties,
                                                     }}
                                                     documentTemplateIds={entityTemplate.documentTemplatesIds || values.template.documentTemplatesIds}
+                                                    templateId={values.template._id}
                                                 />
                                             ) : (
                                                 <Grid item xs={6}>

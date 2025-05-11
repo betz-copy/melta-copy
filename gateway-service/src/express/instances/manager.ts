@@ -494,14 +494,16 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
     async exportEntityToDocumentTemplate({
         documentTemplateId,
-        entityProperties,
+        entity: { templateId, properties },
     }: {
         documentTemplateId: string;
-        entityProperties: IEntity['properties'];
+        entity: IEntity;
     }) {
+        const entityTemplate = await this.entityTemplateService.getEntityTemplateById(templateId);
         return patchDocumentAsStream(
             await this.storageService.downloadFile(documentTemplateId),
-            entityProperties,
+            properties,
+            entityTemplate,
             async (path: string, contentType?: string) => this.previewService.getFilePreview(path, contentType),
         );
     }

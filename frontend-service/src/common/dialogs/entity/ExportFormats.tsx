@@ -9,18 +9,20 @@ import { exportEntityToDocumentRequest } from '../../../services/entitiesService
 import { getLongDate } from '../../../utils/date';
 import { getFileName } from '../../../utils/getFileName';
 import { EntityWizardValues } from '.';
+import { IEntity } from '../../../interfaces/entities';
 
 export const ExportFormats: React.FC<{
     properties: EntityWizardValues['properties'];
+    templateId: string;
     documentTemplateIds?: string[];
     disabled?: boolean;
     justifyContent?: React.CSSProperties['justifyContent'];
-}> = ({ properties, documentTemplateIds = [], disabled = false, justifyContent }) => {
+}> = ({ properties, templateId, documentTemplateIds = [], disabled = false, justifyContent }) => {
     const [selectedFileToExport, setSelectedFileToExport] = useState('');
 
     const { isLoading: isExportToFileLoading, mutate: exportMutation } = useMutation(
-        ({ documentTemplateId, entityProperties }: { documentTemplateId: string; entityProperties: EntityWizardValues['properties'] }) =>
-            exportEntityToDocumentRequest(documentTemplateId, entityProperties),
+        ({ documentTemplateId, entity }: { documentTemplateId: string; entity: IEntity }) =>
+            exportEntityToDocumentRequest(documentTemplateId, entity),
         {
             onSuccess: (file) => {
                 const [fileName, fileExtension] = getFileName(selectedFileToExport).split('.');
@@ -77,7 +79,10 @@ export const ExportFormats: React.FC<{
                     variant="contained"
                     startIcon={isExportToFileLoading ? <CircularProgress /> : <FileDownloadOutlined />}
                     onClick={() => {
-                        exportMutation({ documentTemplateId: selectedFileToExport, entityProperties: properties });
+                        exportMutation({
+                            documentTemplateId: selectedFileToExport,
+                            entity: { templateId, properties: properties as IEntity['properties'] },
+                        });
                     }}
                     disabled={!selectedFileToExport?.length || isExportToFileLoading}
                 >
