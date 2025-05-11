@@ -173,9 +173,10 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
 };
 
 const updateFieldGroupsOrder = (updatedProperties: EntityTemplateFormInputProperties[], propertiesOrder: string[]) => {
+    const properties = updatedProperties.filter((property) => !property.archive);
     const groupMap = new Map();
 
-    for (const property of updatedProperties) {
+    for (const property of properties) {
         const { fieldGroup } = property;
 
         if (fieldGroup?.name && !property.deleted) {
@@ -249,6 +250,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
     const extractArchiveProperties = extractProperties(archiveProperties);
     const extractAttachmentPropertiesData = extractProperties(attachmentProperties);
 
+    console.log(1, { extractPropertiesData });
     const updatedFieldsGroups = updateFieldGroupsOrder(extractPropertiesData, propertiesOrder);
 
     extractPropertiesData.forEach(
@@ -562,6 +564,7 @@ const createEntityTemplateRequest = async (newEntityTemplate: EntityTemplateWiza
     formData.append('propertiesTypeOrder', JSON.stringify(entityTemplate.propertiesTypeOrder));
     formData.append('propertiesPreview', JSON.stringify(entityTemplate.propertiesPreview));
     formData.append('uniqueConstraints', JSON.stringify(entityTemplate.uniqueConstraints));
+    formData.append('fieldGroups', JSON.stringify(entityTemplate.fieldGroups));
 
     const { data } = await axios.post<IMongoEntityTemplatePopulated>(entityTemplates, formData);
     return data;
@@ -576,6 +579,8 @@ const updateEntityTemplateStatusRequest = async (entityTemplateId: string, disab
 
 const updateEntityTemplateRequest = async (entityTemplateId: string, updatedEntityTemplate: IEntityTemplate | EntityTemplateWizardValues) => {
     const formData = new FormData();
+    console.log('dfd', { updatedEntityTemplate });
+
     const entityTemplate: IEntityTemplate =
         'attachmentProperties' in updatedEntityTemplate
             ? formToJSONSchema(updatedEntityTemplate as EntityTemplateWizardValues, true)
@@ -624,6 +629,7 @@ const updateEntityTemplateRequest = async (entityTemplateId: string, updatedEnti
     formData.append('propertiesTypeOrder', JSON.stringify(entityTemplate.propertiesTypeOrder));
     formData.append('propertiesPreview', JSON.stringify(entityTemplate.propertiesPreview));
     formData.append('uniqueConstraints', JSON.stringify(entityTemplate.uniqueConstraints));
+    formData.append('fieldGroups', JSON.stringify(entityTemplate.fieldGroups));
 
     const { data } = await axios.put<IMongoEntityTemplatePopulated>(`${entityTemplates}/${entityTemplateId}`, formData);
     return data;

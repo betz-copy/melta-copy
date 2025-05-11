@@ -17,7 +17,7 @@ import { useWorkspaceStore } from '../../../stores/workspace';
 import { mapTemplates } from '../../../utils/templates';
 import { ErrorToast } from '../../ErrorToast';
 import { StepType, Wizard, WizardBaseType } from '../index';
-import { AddFields, addFieldsSchema } from './AddFields';
+import { AddFields, AddFieldsDND, addFieldsSchema } from './AddFields';
 import { ChooseCategory, chooseCategorySchema } from './ChooseCategory';
 import { ChooseIcon } from './ChooseIcon';
 import { CreateTemplateName, useCreateOrEditTemplateNameSchema } from './CreateTemplateName';

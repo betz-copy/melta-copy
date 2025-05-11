@@ -647,6 +647,7 @@ const Field = ({ field, onDrop, index, parentId, buildProps, setFieldValue, setV
     });
 
     drag(drop(ref));
+    console.log({ field, ref });
 
     return (
         <MemoFieldEditCard
@@ -1042,6 +1043,7 @@ export const StructureEditor = <PropertiesType extends string, Values extends Re
     const setDisplayValueWrapper = (index: number, groupId?: string) => (value: SetStateAction<PropertyItem>) =>
         setDisplayValue(index, value, groupId);
     const isFieldBlockError = Boolean(touched?.[propertiesType]) && Boolean(errors?.[propertiesType]);
+    console.log({ errors });
 
     const buildProps = (propertyProp, index: number, groupIndex?: number) => {
         const isGroup = groupIndex !== undefined;
@@ -1201,6 +1203,9 @@ export const StructureEditor = <PropertiesType extends string, Values extends Re
                 moveField(item, dropIndex, toGroupId);
             }
         },
+        collect: (m) => ({
+            isOver: m.isOver({ shallow: true }),
+        }),
     }));
     // drop(ref);
     return (
@@ -1237,13 +1242,6 @@ export const StructureEditor = <PropertiesType extends string, Values extends Re
                                         propertiesType === 'archiveProperties'
                                     )
                                         return (
-                                            // <MainItemWrapper
-                                            //     key={item.type === 'group' ? item.id : item.data.id}
-                                            //     item={item}
-                                            //     index={index}
-                                            //     moveField={moveField}
-                                            //     moveGroup={moveGroup}
-                                            // >
                                             <Box key={item.type === 'group' ? item.id : item.data.id}>
                                                 {item.type === 'group' ? (
                                                     <Group
@@ -1279,7 +1277,6 @@ export const StructureEditor = <PropertiesType extends string, Values extends Re
                                                     />
                                                 )}
                                             </Box>
-                                            // </MainItemWrapper>
                                         );
                                     // return undefined;
                                     return (

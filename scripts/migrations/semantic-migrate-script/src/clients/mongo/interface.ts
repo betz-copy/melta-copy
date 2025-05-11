@@ -38,6 +38,11 @@ export interface IProperties {
 
 export type IEnumPropertiesColors = Record<string, Record<string, string>>; // { [fieldName]: { [enumOption1]: [color1], [enumOption2]: [color2] } }
 
+interface IFieldsGroup {
+    name: string;
+    displayName: string;
+    fields: string[];
+}
 export interface IEntityTemplate {
     name: string;
     displayName: string;
@@ -52,6 +57,7 @@ export interface IEntityTemplate {
     actions?: string;
     documentTemplatesIds?: string[];
     mapSearchProperties?: string[];
+    fieldGroups?: IFieldsGroup[];
 }
 
 export interface IMongoEntityTemplate extends IEntityTemplate, Document<string> {

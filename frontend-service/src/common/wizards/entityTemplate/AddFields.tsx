@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback, useRef } from 'react';
 import { Grid } from '@mui/material';
 import * as Yup from 'yup';
 import i18next from 'i18next';
@@ -6,6 +6,8 @@ import { useQuery } from 'react-query';
 import { AxiosError } from 'axios';
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
 import { toast } from 'react-toastify';
+import { DndProvider, useDrag, useDrop } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
 import { entityTemplateUniqueProperties, regexSchema, variableNameValidation } from '../../../utils/validation';
 import { EntityTemplateWizardValues } from './index';
 import { StepComponentProps } from '../index';
@@ -14,7 +16,7 @@ import { arrayTypes, basePropertyTypes, stringFormats } from '../../../services/
 import FieldBlock from './FieldBlock';
 import { ErrorToast } from '../../ErrorToast';
 import { environment } from '../../../globals';
-import { ManualDndLayout } from './try5';
+import { ManualDndLayout, StructureEditor } from './try5';
 
 const { mapSearchPropertiesLimit } = environment.map;
 
@@ -78,7 +80,15 @@ const groupSchema = Yup.object({
     type: Yup.string().oneOf(['group']).required(),
     name: Yup.string().matches(variableNameValidation, i18next.t('validation.variableName')).required(i18next.t('validation.required')),
     displayName: Yup.string().required(i18next.t('validation.required')),
-    fields: Yup.array().of(extendedPropertySchema).min(1, i18next.t('validation.oneField')),
+    fields: Yup.array()
+        .of(extendedPropertySchema)
+        .min(1, i18next.t('validation.oneField'))
+        .test('hasNonArchivedFields', i18next.t('validation.oneField'), (entries) => {
+            if (!entries) return false;
+            return entries.some((item) => {
+                return item.archive !== true;
+            });
+        }),
 });
 const fieldByTypeSchema = Yup.lazy((item: any): Yup.BaseSchema => {
     if (item?.type === 'field') return fieldSchema;
@@ -132,7 +142,35 @@ const addFieldsSchema = Yup.object({
     ),
 }).test('uniqueProperties', entityTemplateUniqueProperties);
 
-const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEditMode' | 'setBlock'>> = ({
+const ItemType = 'MANUAL_DND_LAYOUT';
+const DraggableManualDndLayout = ({ id, index, moveItem, children }) => {
+    const ref = useRef(null);
+
+    const [{ isOver }, drop] = useDrop({
+        accept: 'SECTION',
+        collect: (m) => ({ isOver: m.isOver({ shallow: true }) }),
+        hover(item: { id: string; index: number }, monitor) {
+            if (!monitor.isOver({ shallow: true })) return;
+            const dragIndex = item.index;
+            const hoverIndex = index;
+            if (dragIndex === hoverIndex) return;
+            moveItem(dragIndex, hoverIndex);
+            item.index = hoverIndex;
+        },
+    });
+
+    const [{ isDragging }, drag] = useDrag({
+        type: 'SECTION',
+        item: { id, index },
+        collect: (m) => ({ isDragging: m.isDragging() }),
+    });
+
+    drag(drop(ref));
+
+    return <div ref={ref}>{children}</div>;
+};
+
+const AddFieldsDND: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEditMode' | 'setBlock'>> = ({
     values,
     setValues,
     touched,
@@ -174,13 +212,24 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
     );
     const areThereAnyInstances = isEditMode && areThereInstancesByTemplateIdResponse!.count > 0;
 
-    const onDragEnd = (result: DropResult) => {
-        const { destination, source } = result;
-        if (!destination) return;
+    // const onDragEnd = (result: DropResult) => {
+    //     const { destination, source } = result;
+    //     if (!destination) return;
+
+    //     const newPropertiesTypeOrder = Array.from(values.propertiesTypeOrder);
+    //     const [movedOption] = newPropertiesTypeOrder.splice(source.index, 1);
+    //     newPropertiesTypeOrder.splice(destination.index, 0, movedOption);
+
+    //     setFieldValue('propertiesTypeOrder', newPropertiesTypeOrder);
+    // };
+    const moveItem = (fromIndex: number, toIndex: number) => {
+        console.log({ fromIndex, toIndex });
+
+        if (fromIndex === toIndex) return;
 
         const newPropertiesTypeOrder = Array.from(values.propertiesTypeOrder);
-        const [movedOption] = newPropertiesTypeOrder.splice(source.index, 1);
-        newPropertiesTypeOrder.splice(destination.index, 0, movedOption);
+        const [movedOption] = newPropertiesTypeOrder.splice(fromIndex, 1);
+        newPropertiesTypeOrder.splice(toIndex, 0, movedOption);
 
         setFieldValue('propertiesTypeOrder', newPropertiesTypeOrder);
     };
@@ -194,167 +243,126 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
 
         return titles[itemId] || '';
     };
+    const ref = useRef(null);
 
-    // return (
-    //     <DragDropContext onDragEnd={onDragEnd}>
-    //         <Droppable droppableId="propertiesArea">
-    //             {(provided) => (
-    //                 <Grid
-    //                     container
-    //                     direction="column"
-    //                     alignItems="center"
-    //                     ref={provided.innerRef}
-    //                     {...provided.droppableProps}
-    //                     style={{ minHeight: '160px' }}
-    //                 >
-    //                     {values.propertiesTypeOrder.map((itemId, index) => (
-    //                         <Draggable key={itemId} draggableId={itemId} index={index}>
-    //                             {(draggableProvided) => (
-    //                                 <Grid
-    //                                     item
-    //                                     ref={draggableProvided.innerRef}
-    //                                     {...draggableProvided.draggableProps}
-    //                                     alignSelf="stretch"
-    //                                     marginBottom="1rem"
-    //                                 >
-    //                                     <FieldBlock
-    //                                         propertiesType={itemId}
-    //                                         values={values}
-    //                                         uniqueConstraints={values.uniqueConstraints}
-    //                                         setUniqueConstraints={(newUniqueConstraints) => {
-    //                                             setValues((prev) => {
-    //                                                 return {
-    //                                                     ...prev,
-    //                                                     uniqueConstraints:
-    //                                                         typeof newUniqueConstraints === 'function'
-    //                                                             ? newUniqueConstraints(prev.uniqueConstraints!)
-    //                                                             : newUniqueConstraints,
-    //                                                 };
-    //                                             });
-    //                                         }}
-    //                                         initialValues={initialValues}
-    //                                         setFieldValue={setFieldValue}
-    //                                         areThereAnyInstances={areThereAnyInstances}
-    //                                         isEditMode={isEditMode}
-    //                                         setBlock={setBlock}
-    //                                         title={getTitle(itemId)}
-    //                                         addPropertyButtonLabel={
-    //                                             itemId === 'properties'
-    //                                                 ? i18next.t('wizard.entityTemplate.addProperty')
-    //                                                 : i18next.t('wizard.entityTemplate.addAttachment')
-    //                                         }
-    //                                         touched={touched}
-    //                                         errors={errors}
-    //                                         supportSerialNumberType
-    //                                         supportUserType
-    //                                         supportEntityReferenceType={false}
-    //                                         supportChangeToRequiredWithInstances
-    //                                         supportRelationshipReference
-    //                                         supportArrayFields
-    //                                         supportDeleteForExistingInstances
-    //                                         supportEditEnum
-    //                                         supportUnique
-    //                                         supportLocation
-    //                                         supportArchive
-    //                                         supportAddFieldButton={itemId === 'attachmentProperties' || itemId === 'properties'}
-    //                                         hasActions={hasActions}
-    //                                         draggable={{ isDraggable: true, dragHandleProps: draggableProvided.dragHandleProps }}
-    //                                         locationSearchFields={{
-    //                                             show: Object.values(values.properties).some((property: any) => {
-    //                                                 if (property.type === 'field') return property.data?.type === 'location';
+    const [{ isOver }, drop] = useDrop({
+        accept: ItemType,
+        hover(item: { id: string; index: number }, monitor) {
+            if (!ref.current) return;
 
-    //                                                 if (property.type === 'group' && Array.isArray(property.fields))
-    //                                                     return property.fields.some((field) => field.type === 'location');
+            const dragIndex = item.index;
+            const hoverIndex = index;
 
-    //                                                 return false;
-    //                                             }),
-    //                                             disabled: countMapSearchProperties >= 2,
-    //                                         }}
-    //                                         supportIdentifier
-    //                                         hasIdentifier={Object.values(values.properties).some((value) => value.identifier)}
-    //                                     />
-    //                                 </Grid>
-    //                             )}
-    //                         </Draggable>
-    //                     ))}
-    //                 </Grid>
-    //             )}
-    //         </Droppable>
-    //     </DragDropContext>
-    // );
+            if (dragIndex === hoverIndex) return;
 
+            moveItem(dragIndex, hoverIndex);
+            item.index = hoverIndex;
+        },
+        collect: (monitor) => ({
+            isOver: monitor.isOver(),
+        }),
+    });
     return (
         <Grid container direction="column" alignItems="center" style={{ minHeight: '160px' }}>
-            {values.propertiesTypeOrder.map((itemId, index) => (
-                // <Draggable key={itemId} draggableId={itemId} index={index}>
-                //     {(draggableProvided) => (
-                // <Grid item ref={draggableProvided.innerRef} {...draggableProvided.draggableProps} alignSelf="stretch" marginBottom="1rem">
+            <div ref={drop}>
+                {values.propertiesTypeOrder.map((itemId, index) => (
+                    // <Draggable key={itemId} draggableId={itemId} index={index}>
+                    //     {(draggableProvided) => (
+                    // <Grid item ref={draggableProvided.innerRef} {...draggableProvided.draggableProps} alignSelf="stretch" marginBottom="1rem">
 
-                <Grid item alignSelf="stretch" marginBottom="1rem" key={itemId}>
-                    <ManualDndLayout
-                        propertiesType={itemId}
-                        values={values}
-                        uniqueConstraints={values.uniqueConstraints}
-                        setUniqueConstraints={(newUniqueConstraints) => {
-                            setValues((prev) => {
-                                return {
-                                    ...prev,
-                                    uniqueConstraints:
-                                        typeof newUniqueConstraints === 'function'
-                                            ? newUniqueConstraints(prev.uniqueConstraints!)
-                                            : newUniqueConstraints,
-                                };
-                            });
-                        }}
-                        initialValues={initialValues}
-                        setFieldValue={setFieldValue}
-                        areThereAnyInstances={areThereAnyInstances}
-                        isEditMode={isEditMode}
-                        setBlock={setBlock}
-                        title={getTitle(itemId)}
-                        addPropertyButtonLabel={
-                            itemId === 'properties'
-                                ? i18next.t('wizard.entityTemplate.addProperty')
-                                : i18next.t('wizard.entityTemplate.addAttachment')
-                        }
-                        touched={touched}
-                        errors={errors}
-                        supportSerialNumberType
-                        supportUserType
-                        supportEntityReferenceType={false}
-                        supportChangeToRequiredWithInstances
-                        supportRelationshipReference
-                        supportArrayFields
-                        supportDeleteForExistingInstances
-                        supportEditEnum
-                        supportUnique
-                        supportLocation
-                        supportArchive
-                        supportAddFieldButton={itemId === 'attachmentProperties' || itemId === 'properties'}
-                        hasActions={hasActions}
-                        // draggable={{ isDraggable: true, dragHandleProps: draggableProvided.dragHandleProps }}
-                        locationSearchFields={{
-                            show: Object.values(values.properties).some((property: any) => {
-                                if (property.type === 'field') return property.data?.type === 'location';
+                    <Grid item alignSelf="stretch" marginBottom="1rem" key={itemId}>
+                        <DraggableManualDndLayout id={itemId} index={index} moveItem={moveItem}>
+                            <StructureEditor
+                                propertiesType={itemId}
+                                values={values}
+                                uniqueConstraints={values.uniqueConstraints}
+                                setUniqueConstraints={(newUniqueConstraints) => {
+                                    setValues((prev) => {
+                                        return {
+                                            ...prev,
+                                            uniqueConstraints:
+                                                typeof newUniqueConstraints === 'function'
+                                                    ? newUniqueConstraints(prev.uniqueConstraints!)
+                                                    : newUniqueConstraints,
+                                        };
+                                    });
+                                }}
+                                initialValues={initialValues}
+                                setFieldValue={setFieldValue}
+                                areThereAnyInstances={areThereAnyInstances}
+                                isEditMode={isEditMode}
+                                setBlock={setBlock}
+                                title={getTitle(itemId)}
+                                addPropertyButtonLabel={
+                                    itemId === 'properties'
+                                        ? i18next.t('wizard.entityTemplate.addProperty')
+                                        : i18next.t('wizard.entityTemplate.addAttachment')
+                                }
+                                touched={touched}
+                                errors={errors}
+                                supportSerialNumberType
+                                supportUserType
+                                supportEntityReferenceType={false}
+                                supportChangeToRequiredWithInstances
+                                supportRelationshipReference
+                                supportArrayFields
+                                supportDeleteForExistingInstances
+                                supportEditEnum
+                                supportUnique
+                                supportLocation
+                                supportArchive
+                                supportAddFieldButton={itemId === 'attachmentProperties' || itemId === 'properties'}
+                                hasActions={hasActions}
+                                // draggable={{ isDraggable: true, dragHandleProps: draggableProvided.dragHandleProps }}
+                                locationSearchFields={{
+                                    show: Object.values(values.properties).some((property: any) => {
+                                        if (property.type === 'field') return property.data?.type === 'location';
 
-                                if (property.type === 'group' && Array.isArray(property.fields))
-                                    return property.fields.some((field) => field.type === 'location');
+                                        if (property.type === 'group' && Array.isArray(property.fields))
+                                            return property.fields.some((field) => field.type === 'location');
 
-                                return false;
-                            }),
-                            disabled: countMapSearchProperties >= 2,
-                        }}
-                        supportIdentifier
-                        hasIdentifier={Object.values(values.properties).some((value) => value.identifier)}
-                    />
-                </Grid>
-                //         )}
-                //     </Draggable>
-            ))}
+                                        return false;
+                                    }),
+                                    disabled: countMapSearchProperties >= 2,
+                                }}
+                                supportIdentifier
+                                hasIdentifier={Object.values(values.properties).some((value) => value.identifier)}
+                            />
+                        </DraggableManualDndLayout>
+                    </Grid>
+                    //         )}
+                    //     </Draggable>
+                ))}
+            </div>
         </Grid>
+        // </DndProvider>
     );
+};
 
-    //    <ManualDndLayout />;
+const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEditMode' | 'setBlock'>> = ({
+    values,
+    setValues,
+    touched,
+    errors,
+    setFieldValue,
+    initialValues,
+    isEditMode,
+    setBlock,
+}) => {
+    return (
+        <DndProvider backend={HTML5Backend}>
+            <AddFieldsDND
+                values={values}
+                setValues={setValues}
+                touched={touched}
+                errors={errors}
+                setFieldValue={setFieldValue}
+                initialValues={initialValues}
+                isEditMode={isEditMode}
+                setBlock={setBlock}
+            />
+        </DndProvider>
+    );
 };
 
 export { AddFields, addFieldsSchema, validPropertyTypes, dateNotificationTypes };

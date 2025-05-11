@@ -18,6 +18,7 @@ import FieldBlock, { FieldBlockAccordion } from '../entityTemplate/FieldBlock';
 import { attachmentPropertiesBaseSchema } from '../entityTemplate/AddFields';
 import { fieldDetailsSchema, initialFieldCardDataOnAdd, useAreThereProcessInstancesByTemplateId } from './AddDetailsFields';
 import { MeltaTooltip } from '../../MeltaTooltip';
+import { ManualDndLayout } from '../entityTemplate/try5';
 
 const stepTemplateUniqueNames = (value, context: Yup.TestContext) => {
     if (!value) return true;
@@ -177,7 +178,38 @@ const AddStepsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues, '
                                                         <AccordionDetails>
                                                             <Grid container direction="column" alignItems="stretch" spacing={1}>
                                                                 <Grid item>
-                                                                    <FieldBlock
+                                                                    {/* <FieldBlock
+                                                                        propertiesType="properties"
+                                                                        values={step}
+                                                                        initialValues={initialValues.steps[index]}
+                                                                        setFieldValue={(field, ...rest) =>
+                                                                            setFieldValue(`steps[${index}].${field}`, ...rest)
+                                                                        }
+                                                                        areThereAnyInstances={areThereAnyInstances}
+                                                                        isEditMode={isEditMode}
+                                                                        setBlock={setBlock}
+                                                                        title={i18next.t('wizard.processTemplate.properties')}
+                                                                        addPropertyButtonLabel={i18next.t('wizard.processTemplate.addProperty')}
+                                                                        touched={touched.steps?.[index]}
+                                                                        errors={
+                                                                            typeof errors.steps === 'string'
+                                                                                ? undefined
+                                                                                : (errors.steps?.[index] as
+                                                                                      | FormikErrors<ProcessTemplateWizardValues['steps'][number]>
+                                                                                      | undefined)
+                                                                        }
+                                                                        initialFieldCardDataOnAdd={initialFieldCardDataOnAdd}
+                                                                        supportSerialNumberType={false}
+                                                                        supportEntityReferenceType={false}
+                                                                        supportChangeToRequiredWithInstances={false}
+                                                                        supportArrayFields={false}
+                                                                        supportDeleteForExistingInstances
+                                                                        supportRelationshipReference={false}
+                                                                        supportUserType={false}
+                                                                        supportConvertingToMultipleFields={false}
+                                                                        locationSearchFields={{ show: false, disabled: false }}
+                                                                    /> */}
+                                                                    <ManualDndLayout
                                                                         propertiesType="properties"
                                                                         values={step}
                                                                         initialValues={initialValues.steps[index]}
@@ -210,7 +242,38 @@ const AddStepsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues, '
                                                                     />
                                                                 </Grid>
                                                                 <Grid item>
-                                                                    <FieldBlock
+                                                                    {/* <FieldBlock
+                                                                        propertiesType="attachmentProperties"
+                                                                        values={step}
+                                                                        initialValues={initialValues.steps[index]}
+                                                                        setFieldValue={(field, ...rest) =>
+                                                                            setFieldValue(`steps[${index}].${field}`, ...rest)
+                                                                        }
+                                                                        areThereAnyInstances={areThereAnyInstances}
+                                                                        isEditMode={isEditMode}
+                                                                        setBlock={setBlock}
+                                                                        title={i18next.t('wizard.processTemplate.attachments')}
+                                                                        addPropertyButtonLabel={i18next.t('wizard.processTemplate.addAttachment')}
+                                                                        touched={touched.steps?.[index]}
+                                                                        errors={
+                                                                            typeof errors.steps === 'string'
+                                                                                ? undefined
+                                                                                : (errors.steps?.[index] as
+                                                                                      | FormikErrors<ProcessTemplateWizardValues['steps'][number]>
+                                                                                      | undefined)
+                                                                        }
+                                                                        initialFieldCardDataOnAdd={initialFieldCardDataOnAdd}
+                                                                        supportSerialNumberType={false}
+                                                                        supportEntityReferenceType={false}
+                                                                        supportChangeToRequiredWithInstances={false}
+                                                                        supportArrayFields={false}
+                                                                        supportUserType={false}
+                                                                        supportDeleteForExistingInstances
+                                                                        supportRelationshipReference={false}
+                                                                        supportConvertingToMultipleFields={false}
+                                                                        locationSearchFields={{ show: false, disabled: false }}
+                                                                    /> */}
+                                                                    <ManualDndLayout
                                                                         propertiesType="attachmentProperties"
                                                                         values={step}
                                                                         initialValues={initialValues.steps[index]}

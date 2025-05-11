@@ -12,6 +12,7 @@ import FieldBlock from '../entityTemplate/FieldBlock';
 import { ErrorToast } from '../../ErrorToast';
 import { processTemplateUniquePropertiesDetails } from '../../../utils/validation';
 import { StepComponentProps } from '..';
+import { ManualDndLayout } from '../entityTemplate/try5';
 
 export const fieldDetailsSchema = Yup.object({
     type: Yup.string().oneOf(['field']).required(),
@@ -83,7 +84,30 @@ const AddDetailsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues,
     return (
         <Grid container direction="column" alignItems="stretch" spacing={1}>
             <Grid item>
-                <FieldBlock
+                {/* <FieldBlock
+                    propertiesType="detailsProperties"
+                    values={values}
+                    initialValues={initialValues}
+                    setFieldValue={setFieldValue}
+                    areThereAnyInstances={areThereAnyInstances}
+                    isEditMode={isEditMode}
+                    setBlock={setBlock}
+                    title={i18next.t('wizard.entityTemplate.properties')}
+                    addPropertyButtonLabel={i18next.t('wizard.entityTemplate.addProperty')}
+                    touched={touched}
+                    errors={errors}
+                    initialFieldCardDataOnAdd={initialFieldCardDataOnAdd}
+                    supportSerialNumberType={false}
+                    supportEntityReferenceType={false} // TODO: for now unsupport user and relationship reference fields
+                    supportChangeToRequiredWithInstances={false}
+                    supportArrayFields={false}
+                    supportDeleteForExistingInstances
+                    supportRelationshipReference
+                    supportUserType={false}
+                    supportConvertingToMultipleFields={false}
+                    locationSearchFields={{ show: false, disabled: false }}
+                /> */}
+                <ManualDndLayout
                     propertiesType="detailsProperties"
                     values={values}
                     initialValues={initialValues}
@@ -109,7 +133,31 @@ const AddDetailsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues,
             </Grid>
 
             <Grid item>
-                <FieldBlock
+                {/* <FieldBlock
+                    propertiesType="detailsAttachmentProperties"
+                    values={values}
+                    initialValues={initialValues}
+                    setFieldValue={setFieldValue}
+                    areThereAnyInstances={areThereAnyInstances}
+                    isEditMode={isEditMode}
+                    setBlock={setBlock}
+                    title={i18next.t('wizard.entityTemplate.attachments')}
+                    addPropertyButtonLabel={i18next.t('wizard.entityTemplate.addAttachment')}
+                    touched={touched}
+                    errors={errors}
+                    initialFieldCardDataOnAdd={initialFieldCardDataOnAdd}
+                    supportSerialNumberType={false}
+                    supportEntityReferenceType={false}
+                    supportChangeToRequiredWithInstances={false}
+                    supportArrayFields={false}
+                    supportDeleteForExistingInstances
+                    supportRelationshipReference={false}
+                    supportUserType={false}
+                    supportConvertingToMultipleFields={false}
+                    locationSearchFields={{ show: false, disabled: false }}
+                /> */}
+
+                <ManualDndLayout
                     propertiesType="detailsAttachmentProperties"
                     values={values}
                     initialValues={initialValues}

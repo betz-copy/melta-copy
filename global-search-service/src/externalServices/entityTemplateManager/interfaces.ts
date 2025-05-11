@@ -30,6 +30,12 @@ interface IJSONSchema {
     required: string[];
 }
 
+interface IFieldsGroup {
+    name: string;
+    displayName: string;
+    fields: string[];
+}
+
 export interface IEntityTemplate {
     _id: string;
     name: string;
@@ -42,6 +48,7 @@ export interface IEntityTemplate {
     propertiesPreview: string[];
     disabled: boolean;
     documentTemplatesIds?: string[];
+    fieldGroups?: IFieldsGroup[];
 }
 
 export interface ISearchEntityTemplatesBody {

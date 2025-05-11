@@ -43,6 +43,12 @@ export interface IProperties {
     hide: string[];
 }
 
+interface IFieldsGroup {
+    name: string;
+    displayName: string;
+    fields: string[];
+}
+
 export interface IEntityTemplate {
     name: string;
     displayName: string;
@@ -54,6 +60,7 @@ export interface IEntityTemplate {
     disabled: boolean;
     iconFileId: string | null;
     documentTemplatesIds?: string[];
+    fieldGroups?: IFieldsGroup[];
 }
 
 export interface IEntityTemplateMock extends Omit<IEntityTemplate, 'category' | 'iconFileId'> {

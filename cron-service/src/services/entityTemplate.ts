@@ -51,6 +51,12 @@ export interface IEntitySingleProperty {
     };
 }
 
+interface IFieldsGroup {
+    name: string;
+    displayName: string;
+    fields: string[];
+}
+
 export interface IEntityTemplate {
     name: string;
     displayName: string;
@@ -68,6 +74,7 @@ export interface IEntityTemplate {
     iconFileId: string | null;
     documentTemplatesIds?: string[];
     mapSearchProperties?: string[];
+    fieldGroups?: IFieldsGroup[];
 }
 
 export interface IEntityTemplatePopulated extends Omit<IEntityTemplate, 'category'> {
