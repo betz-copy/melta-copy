@@ -17,18 +17,10 @@ class CategoryManager extends DefaultManagerMongo<IMongoCategory> {
     }
 
     async getCategories(displayName?: string) {
-        const categories = await this.model
+        return this.model
             .find(displayName ? { displayName: { $regex: new RegExp(`.*${displayName}.*`) } } : {})
             .lean()
             .exec();
-
-        try {
-            const categoryOrder: IMongoOrderConfig = await this.configManager.getOrderConfigByName('categoryOrder');
-
-            return categories.sort((a, b) => categoryOrder.order.indexOf(a._id) - categoryOrder.order.indexOf(b._id));
-        } catch {
-            return categories;
-        }
     }
 
     async getCategoryById(id: string) {
