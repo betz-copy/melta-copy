@@ -27,7 +27,9 @@ const entityTemplateSchema = {
 export const searchEntityTemplatesByFormatSchema = Joi.object({
     query: {},
     body: {
-        format: Joi.string().valid(...stringFormats).required(),
+        format: Joi.string()
+            .valid(...stringFormats)
+            .required(),
     },
     params: {},
 });

@@ -37,6 +37,8 @@ export const stringFormats = [
 ];
 export const arrayTypes = ['multipleFiles', 'enumArray', 'users'];
 
+const parseFilters = (filters: any) => (typeof filters === 'string' ? JSON.parse(filters) : filters);
+
 const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTemplatePopulated | null): EntityTemplateWizardValues | undefined => {
     if (!entityTemplate) return undefined;
     const {
@@ -99,7 +101,10 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
                       relatedTemplateId: value.relationshipReference.relatedTemplateId,
                       relatedTemplateField: value.relationshipReference.relatedTemplateField,
                       filters: value.relationshipReference.filters
-                          ? SearchFilterToFilterRelationList(value.relationshipReference.filters, entityTemplate)
+                          ? SearchFilterToFilterRelationList(
+                                parseFilters(value.relationshipReference.filters),
+                                value.relationshipReference.relatedTemplateId,
+                            )
                           : undefined,
                   }
                 : undefined,
@@ -455,8 +460,7 @@ const createEntityTemplateRequest = async (newEntityTemplate: EntityTemplateWiza
 
     const entityTemplate = formToJSONSchema(newEntityTemplate, false);
 
-    console.log('here');
-
+    console.log('in create entity template req frontend');
     console.dir({ entityTemplate }, { depth: null });
 
     if (newEntityTemplate.icon) {
@@ -519,7 +523,7 @@ const updateEntityTemplateRequest = async (entityTemplateId: string, updatedEnti
             ? formToJSONSchema(updatedEntityTemplate as EntityTemplateWizardValues, true)
             : updatedEntityTemplate;
 
-    console.log('here');
+    console.log('in update entity template req frontend');
     console.dir({ entityTemplate }, { depth: null });
 
     if ('attachmentProperties' in updatedEntityTemplate && updatedEntityTemplate.icon) {

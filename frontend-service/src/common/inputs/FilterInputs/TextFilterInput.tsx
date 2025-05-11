@@ -54,6 +54,7 @@ const TextFilterInput: React.FC<TextFilterProps> = ({
                     fullWidth
                     type={type}
                     value={filterField?.filter ?? ''}
+                    disabled={readOnly}
                     onChange={(e) => {
                         const { value } = e.target;
 

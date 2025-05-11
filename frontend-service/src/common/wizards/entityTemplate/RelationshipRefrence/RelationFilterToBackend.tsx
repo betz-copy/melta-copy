@@ -1,5 +1,6 @@
+import { useQueryClient } from 'react-query';
 import { IFilterOfField, IFilterOfTemplate, ISearchFilter } from '../../../../interfaces/entities';
-import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
+import { IEntitySingleProperty, IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
 import {
     dateFilterToFilterOfTemplate,
     numberFilterToFilterOfTemplate,
@@ -93,7 +94,11 @@ const handleDateFilter = (filterKeys: (keyof IFilterOfField)[], fieldFilter: IFi
     } as IAGGridDateFilter;
 };
 
-const translateRelationFieldFilter = (fieldFilter: IFilterOfField, { type, format }: IEntitySingleProperty): IAGGridFilter | null => {
+const translateRelationFieldFilter = (fieldFilter: IFilterOfField, property: IEntitySingleProperty | undefined): IAGGridFilter | null => {
+    if (!property) return null; // early exit if property is undefined
+
+    const { type, format } = property;
+
     const filterKeys = Object.keys(fieldFilter) as (keyof IFilterOfField)[];
     const [filterKey] = filterKeys;
     const filterValue = fieldFilter[filterKey];
@@ -129,11 +134,13 @@ const translateRelationFieldFilter = (fieldFilter: IFilterOfField, { type, forma
 };
 
 // New function to handle relation filter conversion
-export const SearchFilterToFilterRelationList = (
-    filterModel: ISearchFilter | undefined,
-    template: IMongoEntityTemplatePopulated,
-): IFilterRelationReference[] => {
+export const SearchFilterToFilterRelationList = (filterModel: ISearchFilter | undefined, relatedTemplateId: string): IFilterRelationReference[] => {
     const relationFilters: IFilterRelationReference[] = [];
+
+    const queryClient = useQueryClient();
+    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+
+    const relatedTemplate = entityTemplates.get(relatedTemplateId)!;
 
     if (!filterModel || !filterModel.$and || !Array.isArray(filterModel.$and)) return relationFilters;
 
@@ -141,12 +148,13 @@ export const SearchFilterToFilterRelationList = (
         Object.entries(filter).forEach(([field, fieldFilter]) => {
             if (!fieldFilter) return;
 
-            const translatedFilter = translateRelationFieldFilter(fieldFilter, template.properties.properties[field]);
+            const property = relatedTemplate.properties.properties[field];
+            const filterField = translateRelationFieldFilter(fieldFilter, property);
 
-            if (translatedFilter) {
+            if (filterField) {
                 relationFilters.push({
                     filterProperty: field,
-                    filterField: translatedFilter,
+                    filterField,
                 });
             }
         });

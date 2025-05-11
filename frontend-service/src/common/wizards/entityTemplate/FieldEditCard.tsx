@@ -262,7 +262,8 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
         const properties = template.properties?.properties || {};
 
         const references = Object.values(properties).reduce((refAcc: IRelationshipReference[], property) => {
-            if (property.format === 'relationshipReference' && property.relationshipReference) refAcc.push(property.relationshipReference);
+            if (property.format === 'relationshipReference' && property.relationshipReference)
+                refAcc.push(property.relationshipReference as IRelationshipReference);
 
             return refAcc;
         }, []);
@@ -1542,6 +1543,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                         <FilterEntitiesByCriteria
                                             name={`properties[${index}].relationshipReference.filters`}
                                             selectedEntityTemplate={entityTemplates.get(value.relationshipReference?.relatedTemplateId!)}
+                                            initialValue={initialValue}
                                             errors={errors}
                                             touched={touched}
                                         />

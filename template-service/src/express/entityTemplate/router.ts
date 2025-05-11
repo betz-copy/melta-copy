@@ -22,7 +22,6 @@ const entityTemplateRouter: Router = Router();
 const controller = createController(EntityTemplateController);
 const validatorController = createController(EntityTemplateValidator, true);
 
-
 entityTemplateRouter.post('/searchByFormat', ValidateRequest(searchEntityTemplatesByFormatSchema), controller.searchEntityTemplatesIncludesFormat);
 
 entityTemplateRouter.post('/search', ValidateRequest(searchEntityTemplatesSchema), controller.searchEntityTemplates);
@@ -37,7 +36,12 @@ entityTemplateRouter.get(
     controller.getTemplatesUsingRelationshipReferance,
 );
 
-entityTemplateRouter.post('/', ValidateRequest(createEntityTemplateSchema), validatorController.validateCreateEntityTemplate, controller.createEntityTemplate);
+entityTemplateRouter.post(
+    '/',
+    ValidateRequest(createEntityTemplateSchema),
+    validatorController.validateCreateEntityTemplate,
+    controller.createEntityTemplate,
+);
 
 entityTemplateRouter.delete('/:templateId', ValidateRequest(deleteEntityTemplateSchema), controller.deleteEntityTemplate);
 

@@ -127,6 +127,13 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
     }
 
     async createTemplate(templateData: Omit<IEntityTemplate, 'disabled'>) {
+        Object.entries(templateData.properties.properties).forEach(([_name, value]) => {
+            if (value.filterRelationList && value.relationshipReference?.filters && typeof value.relationshipReference.filters === 'object') {
+                // eslint-disable-next-line no-param-reassign
+                value.relationshipReference.filters = JSON.stringify(value.relationshipReference.filters);
+            }
+        });
+
         let entityTemplate: IEntityTemplatePopulated | null = null;
 
         if (this.hasRelationshipsProperties(templateData)) {

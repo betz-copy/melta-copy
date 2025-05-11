@@ -31,6 +31,7 @@ const SelectFilterInput: React.FC<SelectFilterInputProps> = ({ filterField, hand
                 fullWidth
                 value={filterField?.filter ?? ''}
                 onChange={(e) => handleFilterFieldChange({ filterType: 'text', type: 'equals', filter: e.target.value } as IAGGridTextFilter)}
+                disabled={readOnly}
                 inputProps={{
                     readOnly,
                     style: {
