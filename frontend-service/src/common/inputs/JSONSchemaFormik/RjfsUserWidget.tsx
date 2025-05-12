@@ -3,7 +3,6 @@ import { WidgetProps } from '@rjsf/utils';
 import { Grid } from '@mui/material';
 import UserAutocomplete from '../UserAutocomplete';
 import { IKartoffelUser, IKartoffelUserStringFields, IUser } from '../../../interfaces/users';
-import './widget.css';
 
 const RjfsUserWidget = ({
     disabled,

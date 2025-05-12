@@ -6,7 +6,6 @@ import i18next from 'i18next';
 import TemplateEntitiesAutocomplete from '../TemplateEntitiesAutocomplete';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { IEntity } from '../../../interfaces/entities';
-import './widget.css';
 
 const RjfsTemplateReferenceWidget = ({
     id,

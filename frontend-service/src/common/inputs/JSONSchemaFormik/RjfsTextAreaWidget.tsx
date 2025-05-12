@@ -8,7 +8,6 @@ import MUIRichTextEditor, { TMUIRichTextEditorStyles } from 'mui-rte';
 import React, { useEffect, useState } from 'react';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { containsHTMLTags } from '../../../utils/HtmlTagsStringValue';
-import './widget.css';
 
 export const getInitialValue = (value) => {
     if (!value) return EditorState.createEmpty();

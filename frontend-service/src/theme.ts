@@ -13,7 +13,7 @@ const basicTheme: ThemeOptions = {
             styleOverrides: {
                 root: {
                     '& .MuiInputBase-root': {
-                        borderRadius: '10px',
+                        borderRadius: '7px',
                         fontSize: '14px',
                         textOverflow: 'ellipsis',
                         '& input[type=number]::-webkit-inner-spin-button, & input[type=number]::-webkit-outer-spin-button': {

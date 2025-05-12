@@ -3,11 +3,10 @@ import React from 'react';
 import { WidgetProps, asNumber, getUiOptions, guessType } from '@rjsf/utils';
 import MultipleSelect from '../MultipleSelect';
 import './form.css';
-import './widget.css';
 
 const nums = new Set(['number', 'integer']);
 
-export const processValue = (schema: any, value: any) => {
+const processValue = (schema: any, value: any) => {
     const { type, items } = schema;
     if (value === null) return undefined;
     if (type === 'array' && items && nums.has(items.type)) {

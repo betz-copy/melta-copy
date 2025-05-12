@@ -139,16 +139,35 @@ const TemplateEntitiesAutocomplete: React.FC<{
             isOptionEqualToValue={(option, currValue) => option.properties._id === currValue.properties._id}
             filterOptions={(options) => options}
             popupIcon={<ExpandMore />}
-            renderInput={(params) => (
-                <TextField
-                    {...params}
-                    error={isError}
-                    fullWidth
-                    helperText={helperText}
-                    label={label}
-                    InputProps={{ ...params.InputProps, readOnly, endAdornment: readOnly ? undefined : params.InputProps.endAdornment }}
-                />
-            )}
+            renderInput={(params) => {
+                const relProperty = value?.properties[showField];
+
+                return (
+                    <TextField
+                        {...params}
+                        error={isError}
+                        fullWidth
+                        helperText={helperText}
+                        label={label}
+                        InputProps={{
+                            ...params.InputProps,
+                            readOnly,
+                            endAdornment: readOnly ? undefined : params.InputProps.endAdornment,
+                            startAdornment: relProperty ? (
+                                <RelationshipReferenceView
+                                    entity={String(relProperty)}
+                                    relatedTemplateId={value.templateId}
+                                    relatedTemplateField={showField}
+                                />
+                            ) : undefined,
+                            inputProps: {
+                                ...params.inputProps,
+                                style: relProperty ? { display: 'none' } : {},
+                            },
+                        }}
+                    />
+                );
+            }}
             renderOption={(props, option) => {
                 const displayOptionValues = displayKeys.map((key) => {
                     const property = option.properties[key];

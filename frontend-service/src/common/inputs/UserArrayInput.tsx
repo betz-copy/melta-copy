@@ -2,9 +2,10 @@ import { Box, Grid } from '@mui/material';
 import React from 'react';
 import CreateUserCard from '../wizards/processTemplate/ApproverCard';
 import UserAutocomplete, { IUserAutocomplete } from './UserAutocomplete';
+import { IUser } from '../../interfaces/users';
 
 interface UserArrayInputProps extends IUserAutocomplete {
-    currentUsers: string[];
+    currentUsers: string[] | IUser[];
     onRemove?: <T>(index: number) => T | undefined;
 }
 
@@ -43,8 +44,8 @@ const UserArrayInput: React.FC<UserArrayInputProps> = ({
                 />
             </Grid>
             <Grid container spacing={1}>
-                {currentUsers.map((user, index) => (
-                    <CreateUserCard key={user} userName={user} userIndex={index} remove={() => onRemove?.(index)} readOnly={readOnly} />
+                {currentUsers.map((user: IUser | string, index: number) => (
+                    <CreateUserCard key={String(user)} user={user} userIndex={index} remove={() => onRemove?.(index)} readOnly={readOnly} />
                 ))}
             </Grid>
         </Box>

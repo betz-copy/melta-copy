@@ -13,7 +13,6 @@ import { stringToCoordinates } from '../../../utils/map';
 import { extractUtmLocation, isValidUTM, isValidWGS84, locationConverterToString } from '../../../utils/map/convert';
 import { MeltaTooltip } from '../../MeltaTooltip';
 import { SplitBy } from '../../../interfaces/entities';
-import './widget.css';
 
 const { polygonPrefix, polygonSuffix } = environment.map.polygon;
 

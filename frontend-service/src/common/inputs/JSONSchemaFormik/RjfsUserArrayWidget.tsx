@@ -1,7 +1,6 @@
 import { WidgetProps } from '@rjsf/utils';
 import React from 'react';
 import { UserArrayInput } from '../UserArrayInput';
-import './widget.css';
 
 const RjfsUserArrayWidget = ({ label, value, onChange, rawErrors = [], onBlur, onFocus }: WidgetProps) => {
     const [inputValue, setInputValue] = React.useState('');
@@ -37,7 +36,7 @@ const RjfsUserArrayWidget = ({ label, value, onChange, rawErrors = [], onBlur, o
             isError={rawErrors.length > 0}
             displayValue={inputValue}
             onDisplayValueChange={(_, newDisplayValue) => setInputValue(newDisplayValue)}
-            currentUsers={currentUsers.map((user) => user.fullName)}
+            currentUsers={currentUsers}
             onRemove={(index) => {
                 const removedUser = currentUsers[index];
                 const currentUsersCopy = currentUsers;

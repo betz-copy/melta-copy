@@ -106,9 +106,17 @@ const MultipleSelect: React.FC<{
                     variant={variant}
                     error={rawErrors.length > 0}
                     label={label}
-                    inputProps={{
+                    InputProps={{
+                        ...params.InputProps,
                         required: multiple ? required && value.length === 0 : required,
-                        ...params.inputProps,
+                        startAdornment:
+                            selectedValue && !Array.isArray(selectedValue) ? (
+                                <ColoredEnumChip label={selectedValue.label} color={selectedValue.color || 'default'} />
+                            ) : undefined,
+                        inputProps: {
+                            ...params.inputProps,
+                            style: value ? { display: 'none' } : {},
+                        },
                     }}
                     color={color as TextFieldProps['color']}
                     InputLabelProps={{ shrink: readonly || undefined }}

@@ -8,7 +8,6 @@ import { IconButton, InputAdornment, TextField } from '@mui/material';
 import { KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material';
 import { convertToPlainText, containsHTMLTags } from '../../../utils/HtmlTagsStringValue';
 import { getFixedNumber, getTextDirection } from '../../../utils/stringValues';
-import './widget.css';
 
 const RjsfTextWidget = ({
     id,

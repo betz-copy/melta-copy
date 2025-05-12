@@ -4,20 +4,12 @@ import { Close } from '@mui/icons-material';
 import { MeltaCheckbox } from '../../common/MeltaCheckbox';
 import { ColoredEnumChip } from '../../common/ColoredEnumChip';
 
-export interface Option {
-    value: string;
-    label: string;
-}
-
 interface SelectCellEditorProps {
     options: string[];
     value?: string | string[];
     onValueChange: (newValue: string | string[] | null) => void;
     multiple?: boolean;
     colorsOptions?: Record<string, string>;
-    overrideSx?: object;
-    disableClearable?: boolean;
-    label?: string;
 }
 
 const SelectCellEditor: React.FC<SelectCellEditorProps> = ({ options, value, onValueChange, multiple = false, colorsOptions }) => {
@@ -76,20 +68,13 @@ const SelectCellEditor: React.FC<SelectCellEditorProps> = ({ options, value, onV
                     error={false}
                     inputProps={{
                         ...params.inputProps,
-                    }}
-                    sx={{
-                        '& .MuiAutocomplete-listbox': {
-                            '::webkit-scrollbar': {
-                                width: '8px',
-                                backgroundColor: '#CCCFE5',
-                            },
-                            '::webkit-scrollbar-thumb': {
-                                backgroundColor: '#CCCFE5',
-                                borderRadius: '4px',
-                            },
-                            '::webkit-scrollbar-thumb:hover': {
-                                backgroundColor: '#CCCFE5',
-                            },
+                        startAdornment:
+                            value && !Array.isArray(value) ? (
+                                <ColoredEnumChip label={value} color={colorsOptions?.[value] || 'default'} />
+                            ) : undefined,
+                        inputProps: {
+                            ...params.inputProps,
+                            style: value ? { display: 'none' } : {},
                         },
                     }}
                 />
