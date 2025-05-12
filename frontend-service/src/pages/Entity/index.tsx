@@ -3,7 +3,7 @@ import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { Box, CircularProgress, Grid, Tab, Typography, useTheme } from '@mui/material';
 import { useTour } from '@reactour/tour';
 import i18next from 'i18next';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { useParams } from 'wouter';
 import { BlueTitle } from '../../common/BlueTitle';
