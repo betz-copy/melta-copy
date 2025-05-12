@@ -29,6 +29,9 @@ export interface IEntitySingleProperty {
     minItems?: 1;
     uniqueItems?: true;
     archive?: boolean;
+    comment?: string;
+    color?: string;
+    hideFromDetailsPage?: boolean;
 }
 
 export interface IEntityTemplate {

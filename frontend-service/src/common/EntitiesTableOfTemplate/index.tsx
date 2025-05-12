@@ -32,6 +32,7 @@ import { toast } from 'react-toastify';
 import { useLocation } from 'wouter';
 import '../../css/resizeTable.css';
 import '../../css/table.css';
+import { pickBy } from 'lodash';
 import { environment } from '../../globals';
 import { EntityData, IDeleteEntityBody, IEntity, IEntityExpanded, ISearchFilter, IUniqueConstraint } from '../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
@@ -291,6 +292,8 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             rawActions?: IAction[];
         }>({ isOpen: false });
 
+        const filteredColumns = Object.keys(pickBy(template.properties.properties, (property) => property.comment === undefined));
+
         const savedColumnsOrder = localStorage.getItem(`${columnsOrder}${saveStorageProps.pageType}-${template._id}`);
         const [defaultColumnsOrder, setDefaultColumnsOrder] = useState(savedColumnsOrder ? JSON.parse(savedColumnsOrder) : {});
 
@@ -395,12 +398,11 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                 }
             },
             getDisplayColumns: () => {
-                const validKeys = Object.keys(template.properties.properties);
                 return (
                     gridRef.current?.api
                         .getAllDisplayedColumns()
                         .map((column) => column.getColId())
-                        .filter((colId) => validKeys.includes(colId)) || []
+                        .filter((colId) => filteredColumns.includes(colId)) || []
                 );
             },
         }));
@@ -527,12 +529,12 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             const { api } = params;
 
             const hasActions = visibleKeys.some((key) => key.startsWith(actionPrefix));
-            const templateKeys = Object.keys(template.properties.properties);
+
             const uniqKeys = ['disabled', 'createdAt', 'updatedAt'];
             const defaultKeys = Object.keys(defaultColumnWidths).filter((key) => !key.includes(actionPrefix) && !uniqKeys.includes(key));
-            const isRemovedFields = defaultKeys.some((key) => !templateKeys.includes(key));
+            const isRemovedFields = defaultKeys.some((key) => !filteredColumns.includes(key));
 
-            if (templateKeys.length === defaultKeys.length && templateKeys.every((key, index) => key === defaultKeys[index])) return;
+            if (filteredColumns.length === defaultKeys.length && filteredColumns.every((key, index) => key === defaultKeys[index])) return;
 
             handleColumnsOrder(params);
 
@@ -543,9 +545,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             api.refreshHeader();
             api.sizeColumnsToFit();
             // eslint-disable-next-line no-unused-expressions
-            Object.keys(defaultColumnWidths).length > 0
-                ? api.autoSizeColumns(columnsKeys)
-                : api.autoSizeColumns(Object.keys(template.properties.properties));
+            Object.keys(defaultColumnWidths).length > 0 ? api.autoSizeColumns(columnsKeys) : api.autoSizeColumns(filteredColumns);
 
             const columnStates = api.getColumnState().filter((col) => columnsKeys.includes(col.colId));
 

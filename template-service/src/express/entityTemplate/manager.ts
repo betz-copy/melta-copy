@@ -46,6 +46,31 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
         return this.model.find(query).populate('category').limit(limit).skip(skip).lean().exec();
     }
 
+    getTemplatesByFormat({ format }: { format: string }) {
+        const query: FilterQuery<IEntityTemplate> = {
+            $expr: {
+                $gt: [
+                    {
+                        $size: {
+                            $filter: {
+                                input: {
+                                    $objectToArray: '$properties.properties',
+                                },
+                                as: 'item',
+                                cond: {
+                                    $eq: ['$$item.v.format', format],
+                                },
+                            },
+                        },
+                    },
+                    0,
+                ],
+            },
+        };
+
+        return this.model.find(query).lean().exec();
+    }
+
     getAllTemplates() {
         return this.model.find().lean().exec();
     }

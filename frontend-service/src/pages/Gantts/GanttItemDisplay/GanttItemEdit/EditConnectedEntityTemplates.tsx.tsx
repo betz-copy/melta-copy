@@ -3,6 +3,7 @@ import { Button, Grid } from '@mui/material';
 import { FieldArray, FormikProps } from 'formik';
 import { useQueryClient } from 'react-query';
 import i18next from 'i18next';
+import { pickBy } from 'lodash';
 import { IBasicGantt, IGanttItem } from '../../../../interfaces/gantts';
 import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
 import { FormikAutoComplete } from '../../../../common/inputs/FormikAutoComplete';
@@ -60,8 +61,10 @@ export const EditConnectedEntityTemplates: React.FC<IEditConnectedEntityTemplate
                                         ? relationshipTemplate.destinationEntityId
                                         : relationshipTemplate.sourceEntityId,
                                 );
-                            const connectedEntityTemplateFields =
-                                connectedEntityTemplate && Object.keys(connectedEntityTemplate.properties.properties);
+
+                            const connectedEntityTemplateFields = Object.keys(
+                                pickBy(connectedEntityTemplate?.properties.properties, ({ format }) => format !== 'comment'),
+                            );
 
                             return (
                                 <Grid

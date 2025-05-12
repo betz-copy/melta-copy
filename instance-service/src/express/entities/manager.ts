@@ -99,6 +99,7 @@ export class EntityManager extends DefaultManagerNeo4j {
     ) => {
         // sort relevant rules by each entity
         // entityId -> rules[], entityTemplateId
+
         const entitiesRelevantRulesMap = new Map<
             string,
             {
@@ -145,8 +146,10 @@ export class EntityManager extends DefaultManagerNeo4j {
         const entitiesRelevantRulesMap = this.getRelevantRulesOfEntities(entitiesIdsRulesReasonsMap, rulesByEntityTemplateIds);
 
         const ruleFailuresPromises: Promise<IRuleFailure[]>[] = [];
-        entitiesRelevantRulesMap.forEach(({ rules }, entityId) => {
-            ruleFailuresPromises.push(runRulesOnEntity(transaction, entityId, rules));
+        entitiesRelevantRulesMap.forEach(async ({ rules }, entityId) => {
+            const entity = await this.getEntityById(entityId);
+            const entityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(entity.templateId);
+            ruleFailuresPromises.push(runRulesOnEntity(transaction, entityId, rules, entityTemplate));
         });
 
         return (await Promise.all(ruleFailuresPromises)).flat();
@@ -165,7 +168,9 @@ export class EntityManager extends DefaultManagerNeo4j {
 
         const relevantRules = filterDependentRulesViaAggregation(rulesOfEntity, dependentRelationshipTemplateId, updatedProperties);
 
-        return runRulesOnEntity(transaction, entityId, relevantRules);
+        const entityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(entityTemplateId);
+
+        return runRulesOnEntity(transaction, entityId, relevantRules, entityTemplate);
     };
 
     throwServiceErrorIfFailedConstraintsValidation = (err: unknown): never => {
@@ -241,7 +246,7 @@ export class EntityManager extends DefaultManagerNeo4j {
         transaction: Transaction,
         properties: IEntity['properties'],
         entityTemplate: IMongoEntityTemplate,
-        userId: string,
+        userId?: string,
         duplicatedFromId?: string,
     ) {
         const fixedProperties = JSON.parse(JSON.stringify(properties));
@@ -291,13 +296,15 @@ export class EntityManager extends DefaultManagerNeo4j {
 
         const allActivityLogsToCreate: Omit<IActivityLog, '_id'>[] = [];
 
-        allActivityLogsToCreate.push({
-            action: duplicatedFromId ? ActionsLog.DUPLICATE_ENTITY : ActionsLog.CREATE_ENTITY,
-            entityId: createdEntity.properties._id,
-            metadata: duplicatedFromId ? { entityIdDuplicatedFrom: duplicatedFromId } : {},
-            timestamp: new Date(),
-            userId,
-        });
+        if (userId) {
+            allActivityLogsToCreate.push({
+                action: duplicatedFromId ? ActionsLog.DUPLICATE_ENTITY : ActionsLog.CREATE_ENTITY,
+                entityId: createdEntity.properties._id,
+                metadata: duplicatedFromId ? { entityIdDuplicatedFrom: duplicatedFromId } : {},
+                timestamp: new Date(),
+                userId,
+            });
+        }
 
         return { createdEntity, activityLogsToCreate: allActivityLogsToCreate };
     }
@@ -320,7 +327,7 @@ export class EntityManager extends DefaultManagerNeo4j {
         relatedEntity: IEntity,
         originalEntityId: string,
         transaction: Transaction,
-        userId: string,
+        userId?: string,
     ) {
         const { relationshipTemplateId, relationshipTemplateDirection, relatedTemplateId } = relationshipReference;
 
@@ -422,8 +429,8 @@ export class EntityManager extends DefaultManagerNeo4j {
     async createOrDuplicateAction(
         metadata: ICreateEntityMetadata,
         transaction: Transaction,
-        userId: string,
         entitiesTemplatesByIds: Map<string, IMongoEntityTemplate>,
+        userId?: string,
     ) {
         const { properties, templateId } = metadata;
         const entityTemplate = entitiesTemplatesByIds.get(templateId)!;
@@ -434,8 +441,8 @@ export class EntityManager extends DefaultManagerNeo4j {
     async updateAction(
         metadata: IUpdateEntityMetadata,
         transaction: Transaction,
-        userId: string,
         entitiesTemplatesByIds: Map<string, IMongoEntityTemplate>,
+        userId?: string,
     ) {
         const { entityId } = metadata;
         const entity = await this.getEntityByIdInTransaction(entityId, transaction);
@@ -449,8 +456,8 @@ export class EntityManager extends DefaultManagerNeo4j {
     async executeEntityTemplateActionOnInstanceCrud(
         { actionType, actionMetadata }: IAction,
         crudAction: IEntityCrudAction,
-        userId: string,
         entitiesTemplatesByIds: Map<string, IMongoEntityTemplate>,
+        userId?: string,
     ): Promise<IExecutionOutput[]> {
         return this.neo4jClient.performComplexTransaction(
             'writeTransaction',
@@ -460,15 +467,15 @@ export class EntityManager extends DefaultManagerNeo4j {
                     () => Promise<IEntity | undefined>
                 > = {
                     [ActionTypes.CreateEntity]: async () =>
-                        this.createOrDuplicateAction(actionMetadata as ICreateEntityMetadata, transaction, userId, entitiesTemplatesByIds),
+                        this.createOrDuplicateAction(actionMetadata as ICreateEntityMetadata, transaction, entitiesTemplatesByIds, userId),
                     [ActionTypes.DuplicateEntity]: async () =>
-                        this.createOrDuplicateAction(actionMetadata as ICreateEntityMetadata, transaction, userId, entitiesTemplatesByIds),
+                        this.createOrDuplicateAction(actionMetadata as ICreateEntityMetadata, transaction, entitiesTemplatesByIds, userId),
                     [ActionTypes.UpdateEntity]: async () => {
                         const { updatedEntity } = await this.updateAction(
                             actionMetadata as IUpdateEntityMetadata,
                             transaction,
-                            userId,
                             entitiesTemplatesByIds,
+                            userId,
                         );
                         return updatedEntity;
                     },
@@ -574,7 +581,7 @@ export class EntityManager extends DefaultManagerNeo4j {
         crudAction: IEntityCrudAction,
         properties: IEntity['properties'],
         entityTemplate: IMongoEntityTemplate,
-        userId: string,
+        userId?: string,
         entity?: IEntity,
         duplicatedFromId?: string,
     ) => {
@@ -582,7 +589,7 @@ export class EntityManager extends DefaultManagerNeo4j {
 
         const mainAction = this.buildMainAction(crudAction, properties, entityTemplate, entity, duplicatedFromId);
 
-        const entitiesToUpdate = await this.executeEntityTemplateActionOnInstanceCrud(mainAction, crudAction, userId, entitiesTemplatesByIds);
+        const entitiesToUpdate = await this.executeEntityTemplateActionOnInstanceCrud(mainAction, crudAction, entitiesTemplatesByIds, userId);
 
         const actionsOfUpdatedEntities = await this.buildUpdatedActions(properties, entityTemplate, entitiesToUpdate, entitiesTemplatesByIds);
 
@@ -1216,9 +1223,12 @@ export class EntityManager extends DefaultManagerNeo4j {
         const rulesOfEntity = await this.relationshipsTemplateManagerService.searchRules({
             entityTemplateIds: [entity.templateId],
         });
+
         const relevantRulesOfEntity = filterDependentRulesOnEntity(rulesOfEntity, entity.templateId, updatedProperties);
 
-        return runRulesOnEntity(transaction, entity.properties._id, relevantRulesOfEntity);
+        const entityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(entity.templateId);
+
+        return runRulesOnEntity(transaction, entity.properties._id, relevantRulesOfEntity, entityTemplate);
     };
 
     getNeighborsOfUpdatedEntityForRule = (transaction: Transaction, entityId: string) =>
@@ -1260,6 +1270,7 @@ export class EntityManager extends DefaultManagerNeo4j {
             ruleFailuresOfUpdatedEntityPromise,
             ruleFailuresOnNeighborsOfEntityPromise,
         ]);
+
         const ruleFailures = [...ruleFailuresOfUpdatedEntity, ...ruleFailuresOfNeighborsOfEntity];
 
         return ruleFailures;
@@ -1527,7 +1538,7 @@ export class EntityManager extends DefaultManagerNeo4j {
         entityProperties: Record<string, any>,
         entityTemplate: IMongoEntityTemplate,
         ignoredRules: IBrokenRule[],
-        userId: string,
+        userId?: string,
         convertToRelationshipField = false,
     ) {
         const entity = await this.getEntityById(id);
