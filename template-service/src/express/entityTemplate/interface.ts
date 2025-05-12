@@ -4,7 +4,18 @@ import { IMongoCategory } from '../category/interface';
 export interface IEntitySingleProperty {
     title: string;
     type: 'string' | 'number' | 'boolean' | 'array';
-    format?: 'date' | 'date-time' | 'email' | 'fileId' | 'text-area' | 'relationshipReference' | 'location' | 'user' | 'signature';
+    format?:
+        | 'date'
+        | 'date-time'
+        | 'email'
+        | 'fileId'
+        | 'text-area'
+        | 'relationshipReference'
+        | 'location'
+        | 'user'
+        | 'signature'
+        | 'comment'
+        | 'kartoffelUserField';
     enum?: string[];
     readOnly?: true;
     identifier?: true;
@@ -16,6 +27,10 @@ export interface IEntitySingleProperty {
     calculateTime?: boolean;
     serialStarter?: number;
     serialCurrent?: number;
+    expandedUserField?: {
+        relatedUserField: string;
+        kartoffelField: string;
+    };
     relationshipReference?: {
         relationshipTemplateId?: string;
         relationshipTemplateDirection: 'outgoing' | 'incoming';
@@ -30,6 +45,9 @@ export interface IEntitySingleProperty {
     minItems?: 1;
     uniqueItems?: true;
     archive?: boolean;
+    comment?: string;
+    color?: string;
+    hideFromDetailsPage?: boolean;
 }
 
 export interface IProperties {

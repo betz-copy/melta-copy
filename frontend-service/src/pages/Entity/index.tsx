@@ -3,7 +3,7 @@ import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { Box, CircularProgress, Grid, Tab, Typography, useTheme } from '@mui/material';
 import { useTour } from '@reactour/tour';
 import i18next from 'i18next';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { useParams } from 'wouter';
 import { BlueTitle } from '../../common/BlueTitle';
@@ -375,10 +375,8 @@ const Entity: React.FC = () => {
         setDisabledActions(false);
     }, [expandedEntity]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    if (!expandedEntity) return <CircularProgress />;
-
-    const isEntityDisabled = expandedEntity.entity.properties.disabled;
-    const currentEntityTemplate = entityTemplates.get(expandedEntity.entity.templateId)!;
+    const isEntityDisabled = !!expandedEntity?.entity.properties.disabled;
+    const currentEntityTemplate = entityTemplates.get(expandedEntity?.entity.templateId ?? '')!;
 
     const hasWritePermissionToCurrTemplate = checkUserTemplatePermission(
         currentUser.currentWorkspacePermissions,
@@ -392,7 +390,7 @@ const Entity: React.FC = () => {
     const connectionsTemplates: IConnectionTemplateOfExpandedEntity[] = [];
 
     populatedRelationshipTemplates.forEach((relationshipTemplate) => {
-        const hasInstances = expandedEntity.connections.some(
+        const hasInstances = !!expandedEntity?.connections.some(
             (connection) => 'relationship' in connection && connection.relationship.templateId === relationshipTemplate._id,
         );
 
@@ -433,7 +431,7 @@ const Entity: React.FC = () => {
                 .sort((a, b) => Number(b.hasInstances) - Number(a.hasInstances)),
             relationshipCount:
                 // calculate the amount of the related connections of each entity
-                expandedEntity.connections.filter((connection) => {
+                expandedEntity?.connections.filter((connection) => {
                     const connectionRelationshipTemplate = relationshipTemplates.get(connection.relationship.templateId)!;
 
                     if (
@@ -451,13 +449,15 @@ const Entity: React.FC = () => {
         };
     })
         .filter((currCategory) => currCategory.connectionsTemplates?.length > 0)
-        .sort((a, b) => b.relationshipCount - a.relationshipCount);
+        .sort((a, b) => (b?.relationshipCount ?? 0) - (a?.relationshipCount ?? 0));
 
     useEffect(() => {
         if (categoriesWithConnectionsTemplates.length > 0 && selectedTabId === null) {
             setSelectedTabId(categoriesWithConnectionsTemplates[0].category._id);
         }
     }, [categoriesWithConnectionsTemplates, selectedTabId]);
+
+    if (!expandedEntity) return <CircularProgress />;
 
     return (
         <>
@@ -536,7 +536,7 @@ const Entity: React.FC = () => {
                                     </TabList>
                                 </Box>
                                 {categoriesWithConnectionsTemplates.map(
-                                    ({ category: { _id }, connectionsTemplates: connectionsTemplatesOfCategory }, _index) => {
+                                    ({ category: { _id }, connectionsTemplates: connectionsTemplatesOfCategory }) => {
                                         const isAdmin = Boolean(currentUser.currentWorkspacePermissions?.admin) || false;
 
                                         return (

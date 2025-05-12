@@ -1,5 +1,6 @@
 /* eslint-disable no-nested-ternary */
 import { v4 as uuid } from 'uuid';
+import i18next from 'i18next';
 import axios from '../../axios';
 import { EntityTemplateFormInputProperties, EntityTemplateWizardValues } from '../../common/wizards/entityTemplate';
 import { environment } from '../../globals';
@@ -12,10 +13,24 @@ import {
 } from '../../interfaces/entityTemplates';
 import { getFileName } from '../../utils/getFileName';
 import { CommonFormInputProperties } from '../../common/wizards/entityTemplate/commonInterfaces';
+import { commentColors } from '../../common/inputs/JSONSchemaFormik/RjsfCommentWidget';
 
 const { entityTemplates } = environment.api;
+
 export const basePropertyTypes = ['string', 'number', 'boolean'];
-export const stringFormats = ['date', 'date-time', 'email', 'fileId', 'text-area', 'relationshipReference', 'location', 'user', 'signature'];
+export const stringFormats = [
+    'date',
+    'date-time',
+    'email',
+    'fileId',
+    'text-area',
+    'relationshipReference',
+    'location',
+    'user',
+    'signature',
+    'comment',
+    'kartoffelUserField',
+];
 export const arrayTypes = ['multipleFiles', 'enumArray', 'users'];
 
 const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTemplatePopulated | null): EntityTemplateWizardValues | undefined => {
@@ -42,7 +57,6 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
 
         let type = value.format || value.type;
         if (value.serialStarter !== undefined) type = 'serialNumber';
-        // else if (value.items?.format === 'user') type = 'users'; // TODO
         else if (value.enum) type = 'enum';
         else if (value.pattern) type = 'pattern';
         else if (value.format && value.format === 'text-area') type = 'text-area';
@@ -51,6 +65,7 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
         else if (value.items?.format === 'fileId') type = 'multipleFiles';
         else if (value.items?.format === 'user') type = 'users';
         else if (value.items?.format === 'text-area') type = 'text-area';
+        else if (value.format && value.format === 'comment') type = 'comment';
 
         const property: EntityTemplateFormInputProperties = {
             id: uuid(),
@@ -60,6 +75,7 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
             preview: propertiesPreview.includes(key),
             hide: properties.hide.includes(key),
             readOnly: value.readOnly || undefined,
+            expandedUserField: value.expandedUserField,
             uniqueCheckbox: uniqueConstraints.some((constraint) => constraint.properties.includes(key) && constraint.groupName !== ''),
             groupName: uniqueConstraints.find((constraint) => constraint.properties.includes(key) && constraint.groupName !== '')?.groupName,
             calculateTime: value.calculateTime ?? undefined,
@@ -76,6 +92,9 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
             archive: value.archive || undefined,
             identifier: value.identifier || undefined,
             mapSearch: mapSearchProperties?.includes(key) || undefined,
+            hideFromDetailsPage: value.hideFromDetailsPage || undefined,
+            comment: value.comment,
+            color: value.color,
         };
 
         if (value.format === 'fileId' || value.items?.format === 'fileId') {
@@ -157,8 +176,13 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
             archive,
             identifier,
             mapSearch,
+            hideFromDetailsPage,
+            color,
+            comment,
+            expandedUserField,
         }) => {
             if (deleted) return;
+            if (type === 'comment' && !comment) return;
 
             let propertyType: IEntitySingleProperty['type'];
             switch (type) {
@@ -192,6 +216,8 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                     | 'text-area'
                     | 'relationshipReference'
                     | 'user'
+                    | 'comment'
+                    | 'kartoffelUserField'
                     | undefined,
                 enum: type === 'enum' ? options : undefined,
                 items: type === 'enumArray' ? { type: 'string', enum: options } : type === 'users' ? { type: 'string', format: 'user' } : undefined,
@@ -199,6 +225,8 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                 readOnly,
                 archive,
                 identifier,
+                hideFromDetailsPage,
+                color: comment && !color ? commentColors[i18next.t('validation.colors.blue')] : color,
                 uniqueItems: type === 'enumArray' || type === 'users' ? true : undefined,
                 pattern: type === 'pattern' ? pattern : undefined,
                 patternCustomErrorMessage: type === 'pattern' ? patternCustomErrorMessage : undefined,
@@ -216,6 +244,8 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                           relatedTemplateField: relationshipReference!.relatedTemplateField,
                       }
                     : undefined,
+                comment,
+                expandedUserField,
             };
             if (isEditMode) {
                 schema.properties[name] = {
@@ -223,7 +253,6 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                     isNewPropNameEqualDeletedPropName: properties.some((property) => property.id !== id && property.name === name),
                 };
             }
-
             propertiesOrder.push(name);
 
             if (required) schema.required.push(name);
@@ -232,11 +261,11 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
             if (mapSearch) mapSearchProperties.push(name);
             if (type === 'serialNumber') serialsUniqueConstraints.push([name]);
             if (type === 'enum' || type === 'enumArray') {
-                Object.entries(optionColors).forEach(([option, color]) => {
-                    if (!color) return;
+                Object.entries(optionColors).forEach(([option, enumColor]) => {
+                    if (!enumColor) return;
                     if (!enumPropertiesColors) enumPropertiesColors = {};
                     if (!enumPropertiesColors[name]) enumPropertiesColors[name] = {};
-                    enumPropertiesColors[name][option] = color;
+                    enumPropertiesColors[name][option] = enumColor;
                 });
             }
         },
@@ -266,8 +295,12 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
             relationshipReference,
             archive,
             mapSearch,
+            hideFromDetailsPage,
+            color,
+            comment,
         }) => {
             if (deleted) return;
+            if (type === 'comment' && !comment) return;
 
             let propertyType: IEntitySingleProperty['type'];
             switch (type) {
@@ -296,6 +329,8 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                 readOnly,
                 archive,
                 identifier,
+                hideFromDetailsPage,
+                color: comment && !color ? '#4752B6' : color,
                 uniqueItems: type === 'enumArray' || type === 'users' ? true : undefined,
                 pattern: type === 'pattern' ? pattern : undefined,
                 patternCustomErrorMessage: type === 'pattern' ? patternCustomErrorMessage : undefined,
@@ -313,6 +348,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                           relatedTemplateField: relationshipReference!.relatedTemplateField,
                       }
                     : undefined,
+                comment,
             };
 
             if (isEditMode) {
@@ -330,11 +366,11 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
             if (mapSearch) mapSearchProperties.push(name);
             if (type === 'serialNumber') serialsUniqueConstraints.push([name]);
             if (type === 'enum' || type === 'enumArray') {
-                Object.entries(optionColors).forEach(([option, color]) => {
-                    if (!color) return;
+                Object.entries(optionColors).forEach(([option, enumColor]) => {
+                    if (!enumColor) return;
                     if (!enumPropertiesColors) enumPropertiesColors = {};
                     if (!enumPropertiesColors[name]) enumPropertiesColors[name] = {};
-                    enumPropertiesColors[name][option] = color;
+                    enumPropertiesColors[name][option] = enumColor;
                 });
             }
         },
