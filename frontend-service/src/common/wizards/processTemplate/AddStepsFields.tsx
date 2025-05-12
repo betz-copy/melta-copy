@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { AccordionDetails, AccordionSummary, Grid, IconButton, Typography, useTheme } from '@mui/material';
 import * as Yup from 'yup';
 import i18next from 'i18next';
@@ -8,17 +8,20 @@ import _debounce from 'lodash.debounce';
 import { FieldArray, FormikErrors } from 'formik';
 import { DragDropContext, DropResult, Droppable, Draggable } from 'react-beautiful-dnd';
 import { v4 as uuid } from 'uuid';
+import { DndProvider, useDrag, useDrop } from 'react-dnd';
+import { getEmptyImage, HTML5Backend } from 'react-dnd-html5-backend';
 import { processTemplateUniquePropertiesSteps, variableNameValidation } from '../../../utils/validation';
 import { ProcessTemplateWizardValues } from './index';
 import { StepComponentProps } from '../index';
 import StepsApproversBlock from './StepsApproversBlock';
 import StepsIconBlock from './StepsIconBlock';
 import { StepsNameBlock } from './StepsNameBlock';
-import FieldBlock, { FieldBlockAccordion } from '../entityTemplate/FieldBlock';
+import FieldBlock, { FieldBlockAccordion, FieldBlockProps } from '../entityTemplate/FieldBlock';
 import { attachmentPropertiesBaseSchema } from '../entityTemplate/AddFields';
 import { fieldDetailsSchema, initialFieldCardDataOnAdd, useAreThereProcessInstancesByTemplateId } from './AddDetailsFields';
 import { MeltaTooltip } from '../../MeltaTooltip';
-import { ManualDndLayout } from '../entityTemplate/try5';
+import { ItemTypes, ManualDndLayout, StructureEditor } from '../entityTemplate/try5';
+import { CommonFormInputProperties } from '../entityTemplate/commonInterfaces';
 
 const stepTemplateUniqueNames = (value, context: Yup.TestContext) => {
     if (!value) return true;
@@ -63,6 +66,201 @@ const addStepsFieldsSchema = Yup.object({
     .test('uniqueProperties', processTemplateUniquePropertiesSteps)
     .test('uniqueStepNames', stepTemplateUniqueNames);
 
+const FieldBlockStepWarper: any = ({
+    values,
+    initialValues,
+    setFieldValue,
+    areThereAnyInstances,
+    isEditMode,
+    setBlock,
+    touched,
+    errors,
+    index,
+    itemId,
+    moveItem,
+    step,
+    remove,
+}) => {
+    const [expandedId, setExpandedId] = useState<string | null>(null);
+    const isFieldBlockTouched = touched?.steps;
+
+    const ref = useRef(null);
+
+    const [, drop] = useDrop({
+        accept: ItemTypes.STEP,
+        hover(item, monitor) {
+            if (!ref.current) return;
+            const dragIndex = item.index;
+            const hoverIndex = index;
+
+            if (dragIndex === hoverIndex) return;
+
+            const hoverBoundingRect = ref.current?.getBoundingClientRect();
+            const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
+            const clientOffset = monitor.getClientOffset();
+            const hoverClientY = clientOffset.y - hoverBoundingRect.top;
+
+            if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) return;
+            if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) return;
+
+            moveItem(dragIndex, hoverIndex);
+            item.index = hoverIndex;
+        },
+    });
+
+    const [{ isDragging }, drag, preview] = useDrag({
+        type: ItemTypes.STEP,
+        item: { id: itemId, index },
+        collect: (monitor) => ({
+            isDragging: monitor.isDragging(),
+        }),
+    });
+
+    useEffect(() => {
+        preview(getEmptyImage(), { captureDraggingState: true });
+    }, []);
+
+    drag(drop(ref));
+    return (
+        <Grid
+            item
+            style={{
+                opacity: isDragging ? 0.5 : 1,
+                alignSelf: 'stretch',
+                marginBottom: '1rem',
+                cursor: 'grab',
+            }}
+        >
+            <div ref={ref} style={{ cursor: 'grab', transition: isDragging ? 'none' : 'box-shadow 0.1s ease', opacity: isDragging ? 0.5 : 1 }}>
+                <FieldBlockAccordion
+                    expanded={expandedId === step.draggableId}
+                    onChange={(_e, expanded) => setExpandedId(expanded ? step.draggableId : null)}
+                    style={{
+                        border: isFieldBlockTouched && errors.steps?.[index] ? '1px solid red' : '',
+                    }}
+                    // eslint-disable-next-line react/no-array-index-key
+                    key={index}
+                    TransitionProps={{ unmountOnExit: true }} // performance issues with many steps
+                >
+                    <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                        <DragHandleIcon />
+                        <Typography>{` ${i18next.t('wizard.processTemplate.level')}: ${values.steps[index].displayName || ''}`}</Typography>
+                    </AccordionSummary>
+                    <Grid item sx={{ mt: '7px' }}>
+                        <StepsNameBlock
+                            values={values}
+                            errors={errors}
+                            touched={touched}
+                            propIndex={index}
+                            setFieldValue={setFieldValue}
+                            isEditMode={isEditMode}
+                            areThereAnyInstances={areThereAnyInstances}
+                        />
+                    </Grid>
+                    <AccordionDetails>
+                        <Grid container direction="column" alignItems="stretch" spacing={1}>
+                            <Grid item>
+                                <StructureEditor
+                                    propertiesType="properties"
+                                    values={step}
+                                    initialValues={initialValues.steps[index]}
+                                    setFieldValue={(field, ...rest) => setFieldValue(`steps[${index}].${field}`, ...rest)}
+                                    areThereAnyInstances={areThereAnyInstances}
+                                    isEditMode={isEditMode}
+                                    setBlock={setBlock}
+                                    title={i18next.t('wizard.processTemplate.properties')}
+                                    addPropertyButtonLabel={i18next.t('wizard.processTemplate.addProperty')}
+                                    touched={touched.steps?.[index]}
+                                    errors={
+                                        typeof errors.steps === 'string'
+                                            ? undefined
+                                            : (errors.steps?.[index] as FormikErrors<ProcessTemplateWizardValues['steps'][number]> | undefined)
+                                    }
+                                    initialFieldCardDataOnAdd={initialFieldCardDataOnAdd}
+                                    supportSerialNumberType={false}
+                                    supportEntityReferenceType={false}
+                                    supportChangeToRequiredWithInstances={false}
+                                    supportArrayFields={false}
+                                    supportDeleteForExistingInstances
+                                    supportRelationshipReference={false}
+                                    supportUserType={false}
+                                    supportConvertingToMultipleFields={false}
+                                    locationSearchFields={{ show: false, disabled: false }}
+                                />
+                            </Grid>
+                            <Grid item>
+                                <StructureEditor
+                                    propertiesType="attachmentProperties"
+                                    values={step}
+                                    initialValues={initialValues.steps[index]}
+                                    setFieldValue={(field, ...rest) => setFieldValue(`steps[${index}].${field}`, ...rest)}
+                                    areThereAnyInstances={areThereAnyInstances}
+                                    isEditMode={isEditMode}
+                                    setBlock={setBlock}
+                                    title={i18next.t('wizard.processTemplate.attachments')}
+                                    addPropertyButtonLabel={i18next.t('wizard.processTemplate.addAttachment')}
+                                    touched={touched.steps?.[index]}
+                                    errors={
+                                        typeof errors.steps === 'string'
+                                            ? undefined
+                                            : (errors.steps?.[index] as FormikErrors<ProcessTemplateWizardValues['steps'][number]> | undefined)
+                                    }
+                                    initialFieldCardDataOnAdd={initialFieldCardDataOnAdd}
+                                    supportSerialNumberType={false}
+                                    supportEntityReferenceType={false}
+                                    supportChangeToRequiredWithInstances={false}
+                                    supportArrayFields={false}
+                                    supportUserType={false}
+                                    supportDeleteForExistingInstances
+                                    supportRelationshipReference={false}
+                                    supportConvertingToMultipleFields={false}
+                                    locationSearchFields={{ show: false, disabled: false }}
+                                />
+                            </Grid>
+                            <Grid item>
+                                <StepsApproversBlock
+                                    touched={touched.steps?.[index]}
+                                    values={values}
+                                    title={i18next.t('wizard.processTemplate.approvers')}
+                                    propIndex={index}
+                                    setFieldValue={setFieldValue}
+                                    errors={errors}
+                                    isEditMode={isEditMode}
+                                    areThereAnyInstances={areThereAnyInstances}
+                                />
+                            </Grid>
+                            <Grid item>
+                                <StepsIconBlock
+                                    touched={touched.steps?.[index]}
+                                    values={values}
+                                    setFieldValue={setFieldValue}
+                                    title={i18next.t('wizard.processTemplate.icon')}
+                                    propIndex={index}
+                                    errors={errors}
+                                    isEditMode={isEditMode}
+                                    areThereAnyInstances={areThereAnyInstances}
+                                />
+                            </Grid>
+                        </Grid>
+                        <Grid>
+                            <IconButton
+                                style={{ marginRight: '95%' }}
+                                disabled={isEditMode && areThereAnyInstances}
+                                onClick={() => {
+                                    remove(index);
+                                }}
+                                size="large"
+                            >
+                                <DeleteIcon fontSize="medium" />
+                            </IconButton>
+                        </Grid>
+                    </AccordionDetails>
+                </FieldBlockAccordion>
+            </div>
+        </Grid>
+    );
+};
+
 const AddStepsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues, 'isEditMode' | 'setBlock'>> = ({
     values,
     touched,
@@ -79,23 +277,18 @@ const AddStepsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues, '
 
     const errorsOfSteps = errors.steps as FormikErrors<ProcessTemplateWizardValues['steps'][number]> | undefined;
 
-    const [expandedId, setExpandedId] = useState<string | null>(null);
-
-    const isFieldBlockTouched = touched?.steps;
-
     const theme = useTheme();
 
-    const onDragEnd = (result: DropResult) => {
-        const { destination, source } = result;
-        if (!destination) return;
+    const moveItem = useCallback(
+        (dragIndex, hoverIndex) => {
+            const newValuesOrder = Array.from(values.steps);
+            const [movedOption] = newValuesOrder.splice(dragIndex, 1);
+            newValuesOrder.splice(hoverIndex, 0, movedOption);
 
-        const newValuesOrder = Array.from(values.steps);
-        const [movedOption] = newValuesOrder.splice(source.index, 1);
-        newValuesOrder.splice(destination.index, 0, movedOption);
-
-        setFieldValue('steps', newValuesOrder);
-    };
-
+            setFieldValue('steps', newValuesOrder);
+        },
+        [values.steps],
+    );
     return (
         <Grid style={{ width: '100%' }}>
             <FieldArray name="steps">
@@ -137,221 +330,30 @@ const AddStepsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues, '
                                 </span>
                             </MeltaTooltip>
                         </Grid>
-                        <DragDropContext onDragEnd={onDragEnd}>
-                            <Droppable droppableId="addStepsFieldsDroppable">
-                                {(provided) => (
-                                    <Grid ref={provided.innerRef} {...provided.droppableProps}>
-                                        {values.steps.map((step, index) => (
-                                            <Draggable draggableId={step.draggableId} index={index} key={step.draggableId}>
-                                                {(draggableProvided) => (
-                                                    <FieldBlockAccordion
-                                                        ref={draggableProvided.innerRef}
-                                                        {...draggableProvided.draggableProps}
-                                                        {...draggableProvided.dragHandleProps}
-                                                        expanded={expandedId === step.draggableId}
-                                                        onChange={(_e, expanded) => setExpandedId(expanded ? step.draggableId : null)}
-                                                        style={{
-                                                            ...draggableProvided.draggableProps.style,
-                                                            border: isFieldBlockTouched && errors.steps?.[index] ? '1px solid red' : '',
-                                                        }}
-                                                        // eslint-disable-next-line react/no-array-index-key
-                                                        key={index}
-                                                        TransitionProps={{ unmountOnExit: true }} // performance issues with many steps
-                                                    >
-                                                        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                                                            <DragHandleIcon />
-                                                            <Typography>{` ${i18next.t('wizard.processTemplate.level')}: ${
-                                                                values.steps[index].displayName || ''
-                                                            }`}</Typography>
-                                                        </AccordionSummary>
-                                                        <Grid item sx={{ mt: '7px' }}>
-                                                            <StepsNameBlock
-                                                                values={values}
-                                                                errors={errors}
-                                                                touched={touched}
-                                                                propIndex={index}
-                                                                setFieldValue={setFieldValue}
-                                                                isEditMode={isEditMode}
-                                                                areThereAnyInstances={areThereAnyInstances}
-                                                            />
-                                                        </Grid>
-                                                        <AccordionDetails>
-                                                            <Grid container direction="column" alignItems="stretch" spacing={1}>
-                                                                <Grid item>
-                                                                    {/* <FieldBlock
-                                                                        propertiesType="properties"
-                                                                        values={step}
-                                                                        initialValues={initialValues.steps[index]}
-                                                                        setFieldValue={(field, ...rest) =>
-                                                                            setFieldValue(`steps[${index}].${field}`, ...rest)
-                                                                        }
-                                                                        areThereAnyInstances={areThereAnyInstances}
-                                                                        isEditMode={isEditMode}
-                                                                        setBlock={setBlock}
-                                                                        title={i18next.t('wizard.processTemplate.properties')}
-                                                                        addPropertyButtonLabel={i18next.t('wizard.processTemplate.addProperty')}
-                                                                        touched={touched.steps?.[index]}
-                                                                        errors={
-                                                                            typeof errors.steps === 'string'
-                                                                                ? undefined
-                                                                                : (errors.steps?.[index] as
-                                                                                      | FormikErrors<ProcessTemplateWizardValues['steps'][number]>
-                                                                                      | undefined)
-                                                                        }
-                                                                        initialFieldCardDataOnAdd={initialFieldCardDataOnAdd}
-                                                                        supportSerialNumberType={false}
-                                                                        supportEntityReferenceType={false}
-                                                                        supportChangeToRequiredWithInstances={false}
-                                                                        supportArrayFields={false}
-                                                                        supportDeleteForExistingInstances
-                                                                        supportRelationshipReference={false}
-                                                                        supportUserType={false}
-                                                                        supportConvertingToMultipleFields={false}
-                                                                        locationSearchFields={{ show: false, disabled: false }}
-                                                                    /> */}
-                                                                    <ManualDndLayout
-                                                                        propertiesType="properties"
-                                                                        values={step}
-                                                                        initialValues={initialValues.steps[index]}
-                                                                        setFieldValue={(field, ...rest) =>
-                                                                            setFieldValue(`steps[${index}].${field}`, ...rest)
-                                                                        }
-                                                                        areThereAnyInstances={areThereAnyInstances}
-                                                                        isEditMode={isEditMode}
-                                                                        setBlock={setBlock}
-                                                                        title={i18next.t('wizard.processTemplate.properties')}
-                                                                        addPropertyButtonLabel={i18next.t('wizard.processTemplate.addProperty')}
-                                                                        touched={touched.steps?.[index]}
-                                                                        errors={
-                                                                            typeof errors.steps === 'string'
-                                                                                ? undefined
-                                                                                : (errors.steps?.[index] as
-                                                                                      | FormikErrors<ProcessTemplateWizardValues['steps'][number]>
-                                                                                      | undefined)
-                                                                        }
-                                                                        initialFieldCardDataOnAdd={initialFieldCardDataOnAdd}
-                                                                        supportSerialNumberType={false}
-                                                                        supportEntityReferenceType={false}
-                                                                        supportChangeToRequiredWithInstances={false}
-                                                                        supportArrayFields={false}
-                                                                        supportDeleteForExistingInstances
-                                                                        supportRelationshipReference={false}
-                                                                        supportUserType={false}
-                                                                        supportConvertingToMultipleFields={false}
-                                                                        locationSearchFields={{ show: false, disabled: false }}
-                                                                    />
-                                                                </Grid>
-                                                                <Grid item>
-                                                                    {/* <FieldBlock
-                                                                        propertiesType="attachmentProperties"
-                                                                        values={step}
-                                                                        initialValues={initialValues.steps[index]}
-                                                                        setFieldValue={(field, ...rest) =>
-                                                                            setFieldValue(`steps[${index}].${field}`, ...rest)
-                                                                        }
-                                                                        areThereAnyInstances={areThereAnyInstances}
-                                                                        isEditMode={isEditMode}
-                                                                        setBlock={setBlock}
-                                                                        title={i18next.t('wizard.processTemplate.attachments')}
-                                                                        addPropertyButtonLabel={i18next.t('wizard.processTemplate.addAttachment')}
-                                                                        touched={touched.steps?.[index]}
-                                                                        errors={
-                                                                            typeof errors.steps === 'string'
-                                                                                ? undefined
-                                                                                : (errors.steps?.[index] as
-                                                                                      | FormikErrors<ProcessTemplateWizardValues['steps'][number]>
-                                                                                      | undefined)
-                                                                        }
-                                                                        initialFieldCardDataOnAdd={initialFieldCardDataOnAdd}
-                                                                        supportSerialNumberType={false}
-                                                                        supportEntityReferenceType={false}
-                                                                        supportChangeToRequiredWithInstances={false}
-                                                                        supportArrayFields={false}
-                                                                        supportUserType={false}
-                                                                        supportDeleteForExistingInstances
-                                                                        supportRelationshipReference={false}
-                                                                        supportConvertingToMultipleFields={false}
-                                                                        locationSearchFields={{ show: false, disabled: false }}
-                                                                    /> */}
-                                                                    <ManualDndLayout
-                                                                        propertiesType="attachmentProperties"
-                                                                        values={step}
-                                                                        initialValues={initialValues.steps[index]}
-                                                                        setFieldValue={(field, ...rest) =>
-                                                                            setFieldValue(`steps[${index}].${field}`, ...rest)
-                                                                        }
-                                                                        areThereAnyInstances={areThereAnyInstances}
-                                                                        isEditMode={isEditMode}
-                                                                        setBlock={setBlock}
-                                                                        title={i18next.t('wizard.processTemplate.attachments')}
-                                                                        addPropertyButtonLabel={i18next.t('wizard.processTemplate.addAttachment')}
-                                                                        touched={touched.steps?.[index]}
-                                                                        errors={
-                                                                            typeof errors.steps === 'string'
-                                                                                ? undefined
-                                                                                : (errors.steps?.[index] as
-                                                                                      | FormikErrors<ProcessTemplateWizardValues['steps'][number]>
-                                                                                      | undefined)
-                                                                        }
-                                                                        initialFieldCardDataOnAdd={initialFieldCardDataOnAdd}
-                                                                        supportSerialNumberType={false}
-                                                                        supportEntityReferenceType={false}
-                                                                        supportChangeToRequiredWithInstances={false}
-                                                                        supportArrayFields={false}
-                                                                        supportUserType={false}
-                                                                        supportDeleteForExistingInstances
-                                                                        supportRelationshipReference={false}
-                                                                        supportConvertingToMultipleFields={false}
-                                                                        locationSearchFields={{ show: false, disabled: false }}
-                                                                    />
-                                                                </Grid>
-                                                                <Grid item>
-                                                                    <StepsApproversBlock
-                                                                        touched={touched.steps?.[index]}
-                                                                        values={values}
-                                                                        title={i18next.t('wizard.processTemplate.approvers')}
-                                                                        propIndex={index}
-                                                                        setFieldValue={setFieldValue}
-                                                                        errors={errors}
-                                                                        isEditMode={isEditMode}
-                                                                        areThereAnyInstances={areThereAnyInstances}
-                                                                    />
-                                                                </Grid>
-                                                                <Grid item>
-                                                                    <StepsIconBlock
-                                                                        touched={touched.steps?.[index]}
-                                                                        values={values}
-                                                                        setFieldValue={setFieldValue}
-                                                                        title={i18next.t('wizard.processTemplate.icon')}
-                                                                        propIndex={index}
-                                                                        errors={errors}
-                                                                        isEditMode={isEditMode}
-                                                                        areThereAnyInstances={areThereAnyInstances}
-                                                                    />
-                                                                </Grid>
-                                                            </Grid>
-                                                            <Grid>
-                                                                <IconButton
-                                                                    style={{ marginRight: '95%' }}
-                                                                    disabled={isEditMode && areThereAnyInstances}
-                                                                    onClick={() => {
-                                                                        remove(index);
-                                                                    }}
-                                                                    size="large"
-                                                                >
-                                                                    <DeleteIcon fontSize="medium" />
-                                                                </IconButton>
-                                                            </Grid>
-                                                        </AccordionDetails>
-                                                    </FieldBlockAccordion>
-                                                )}
-                                            </Draggable>
-                                        ))}
-                                        {provided.placeholder}
-                                    </Grid>
-                                )}
-                            </Droppable>
-                        </DragDropContext>
+                        <DndProvider backend={HTML5Backend}>
+                            <Grid container direction="column" alignItems="center" style={{ minHeight: '160px' }}>
+                                {values.steps.map((step, index) => (
+                                    <FieldBlockStepWarper
+                                        step={step}
+                                        values={values}
+                                        initialValues={initialValues}
+                                        setFieldValue={setFieldValue}
+                                        areThereAnyInstances={areThereAnyInstances}
+                                        isEditMode={isEditMode}
+                                        setBlock={setBlock}
+                                        title={i18next.t('wizard.processTemplate.properties')}
+                                        addPropertyButtonLabel={i18next.t('wizard.processTemplate.addProperty')}
+                                        touched={touched}
+                                        errors={errors}
+                                        key={step._id}
+                                        itemId={step._id}
+                                        moveItem={moveItem}
+                                        index={index}
+                                        remove={remove}
+                                    />
+                                ))}
+                            </Grid>
+                        </DndProvider>
                     </Grid>
                 )}
             </FieldArray>

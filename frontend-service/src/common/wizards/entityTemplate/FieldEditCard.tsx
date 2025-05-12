@@ -102,7 +102,6 @@ export interface FieldEditCardProps {
     hasActions?: boolean;
     supportConvertingToMultipleFields?: boolean;
     groupIndex?: number;
-    refDragAndDrop?: any;
 }
 
 export const FieldEditCard: React.FC<FieldEditCardProps> = ({
@@ -138,7 +137,6 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     hasActions,
     supportConvertingToMultipleFields = true,
     groupIndex,
-    refDragAndDrop,
 }) => {
     const isText = value.type === 'string' || value.type === 'text-area';
 
@@ -575,10 +573,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     };
 
     return (
-        // <Draggable draggableId={`field-${value.id}`} index={index}>
-        // {(draggableProvided) => (
-        // <Grid item ref={draggableProvided.innerRef} {...draggableProvided.draggableProps} alignSelf="stretch" marginBottom="1rem">
-        <Grid ref={refDragAndDrop} item alignSelf="stretch" marginBottom="1rem">
+        <Grid item alignSelf="stretch" marginBottom="1rem">
             <Card
                 elevation={3}
                 sx={{
@@ -590,7 +585,6 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
             >
                 <CardContent sx={{ '&:last-child': { padding: 0 } }}>
                     <Grid container justifyContent="space-between" wrap="nowrap" alignItems="center">
-                        {/* <Box {...draggableProvided.dragHandleProps}> */}
                         <Box>
                             <DragHandleIcon fontSize="large" />
                         </Box>
@@ -629,8 +623,6 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                     name={type}
                                     value={value.type === 'text-area' ? 'string' : value.type}
                                     onChange={(e) => {
-                                        console.log('change type', setValues);
-
                                         setValues?.((prevValue: any) =>
                                             setFieldValues(prevValue, {
                                                 type: e.target.value,
@@ -1383,8 +1375,6 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                 </CardContent>
             </Card>
         </Grid>
-        //     )}
-        // </Draggable>
     );
 };
 

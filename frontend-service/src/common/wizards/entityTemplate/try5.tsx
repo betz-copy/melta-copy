@@ -538,10 +538,10 @@
 //     );
 // };
 
-import { AccordionDetails, AccordionSummary, Box, Button, Grid, IconButton, TextField, Typography } from '@mui/material';
+import { AccordionDetails, AccordionSummary, Box, Button, Divider, Grid, IconButton, TextField, Typography } from '@mui/material';
 import React, { SetStateAction, useCallback, useEffect, useRef, useState } from 'react';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
+import { getEmptyImage, HTML5Backend } from 'react-dnd-html5-backend';
 import { FieldArray } from 'formik';
 import { DragHandle as DragHandleIcon, ExpandMore as ExpandMoreIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import { _debounce } from '@ag-grid-community/core';
@@ -555,13 +555,13 @@ import { FieldEditCardProps } from './RelationshipReferenceField';
 import { MeltaTooltip } from '../../MeltaTooltip';
 import { AreYouSureDialog } from '../../dialogs/AreYouSureDialog';
 
-const ItemTypes = {
+export const ItemTypes = {
     FIELD: 'field',
     GROUP: 'group',
+    STEP: 'step',
+    PROPERTY: 'property',
 };
 
-let idCounter = 5;
-const generateId = () => `item-${idCounter++}`;
 // const MainItemWrapper = ({ item, index, moveField, moveGroup, children }) => {
 //     const ref = React.useRef(null);
 
@@ -596,7 +596,7 @@ const Attachment = ({ field, index, buildProps, onDrop, parentId }) => {
 
     const [, drop] = useDrop({
         accept: ItemTypes.FIELD,
-        hover(item, monitor) {
+        hover: (item, monitor) => {
             const dragIndex = item.index;
             const hoverIndex = index;
 
@@ -608,7 +608,7 @@ const Attachment = ({ field, index, buildProps, onDrop, parentId }) => {
         },
     });
 
-    const [{ isDragging }, drag] = useDrag({
+    const [{ isDragging }, drag, preview] = useDrag({
         type: ItemTypes.FIELD,
         item: { ...field, index },
         collect: (monitor) => ({
@@ -616,9 +616,27 @@ const Attachment = ({ field, index, buildProps, onDrop, parentId }) => {
         }),
     });
 
+    useEffect(() => {
+        preview(getEmptyImage(), { captureDraggingState: true });
+    }, []);
+
     drag(drop(ref));
 
-    return <MemoAttachmentEditCard {...buildProps} refDragAndDrop={ref} key={field.id} />;
+    return (
+        <Grid
+            item
+            style={{
+                opacity: isDragging ? 0.5 : 1,
+                alignSelf: 'stretch',
+                marginBottom: '1rem',
+                cursor: 'grab',
+            }}
+        >
+            <div ref={ref} style={{ cursor: 'grab', transition: isDragging ? 'none' : 'box-shadow 0.1s ease', opacity: isDragging ? 0.5 : 1 }}>
+                <MemoAttachmentEditCard {...buildProps} refDragAndDrop={ref} key={field.id} />
+            </div>
+        </Grid>
+    );
 };
 
 const Field = ({ field, onDrop, index, parentId, buildProps, setFieldValue, setValues, uniqueConstraints, setUniqueConstraints }) => {
@@ -626,7 +644,7 @@ const Field = ({ field, onDrop, index, parentId, buildProps, setFieldValue, setV
 
     const [, drop] = useDrop({
         accept: ItemTypes.FIELD,
-        hover(item, monitor) {
+        hover: (item, monitor) => {
             const dragIndex = item.index;
             const hoverIndex = index;
 
@@ -638,27 +656,41 @@ const Field = ({ field, onDrop, index, parentId, buildProps, setFieldValue, setV
         },
     });
 
-    const [{ isDragging }, drag] = useDrag({
+    const [{ isDragging }, drag, preview] = useDrag({
         type: ItemTypes.FIELD,
         item: { ...field, index, parentId },
         collect: (monitor) => ({
             isDragging: monitor.isDragging(),
         }),
     });
+    useEffect(() => {
+        // This removes the "ghost image"
+        preview(getEmptyImage(), { captureDraggingState: true });
+    }, []);
 
     drag(drop(ref));
-    console.log({ field, ref });
 
     return (
-        <MemoFieldEditCard
-            {...buildProps}
-            refDragAndDrop={ref}
-            key={field.id}
-            setFieldValue={setFieldValue}
-            setValues={setValues}
-            uniqueConstraints={uniqueConstraints}
-            setUniqueConstraints={setUniqueConstraints}
-        />
+        <Grid
+            item
+            style={{
+                opacity: isDragging ? 0.5 : 1,
+                alignSelf: 'stretch',
+                marginBottom: '1rem',
+                cursor: 'grab',
+            }}
+        >
+            <div ref={ref} style={{ cursor: 'grab', transition: isDragging ? 'none' : 'box-shadow 0.1s ease', opacity: isDragging ? 0.5 : 1 }}>
+                <MemoFieldEditCard
+                    {...buildProps}
+                    key={field.id}
+                    setFieldValue={setFieldValue}
+                    setValues={setValues}
+                    uniqueConstraints={uniqueConstraints}
+                    setUniqueConstraints={setUniqueConstraints}
+                />
+            </div>
+        </Grid>
     );
 };
 
@@ -684,13 +716,28 @@ const Group = ({
 
     const [, drop] = useDrop({
         accept: [ItemTypes.GROUP, ItemTypes.FIELD],
-        hover(item, monitor) {
+        // hover(item, monitor) {
+        //     if (!monitor.isOver({ shallow: true })) return;
+
+        //     const dragIndex = item.index;
+        //     const hoverIndex = index; // index of the group being hovered
+
+        //     if (item.type === 'group' && dragIndex !== hoverIndex) {
+        //         onDrop(item, hoverIndex);
+        //         item.index = hoverIndex; // 👈 Save the new hover index
+        //     }
+        // },
+
+        drop(item, monitor) {
+            console.log('a');
+
             if (!ref.current || item.id === group.id) return;
 
             const dragIndex = item.index;
             const hoverIndex = index;
+            console.log('b', { dragIndex, hoverIndex });
 
-            // console.log('hover a group', { item, group }, { dragIndex, hoverIndex });
+            console.log('hover a group', { item, group }, { dragIndex, hoverIndex });
             // Handle group reordering
             if (item.type === 'group' && dragIndex !== hoverIndex) {
                 console.log('move group!!!');
@@ -708,7 +755,7 @@ const Group = ({
         },
     });
 
-    const [{ isDragging }, drag] = useDrag({
+    const [{ isDragging }, drag, preview] = useDrag({
         type: ItemTypes.GROUP,
         item: { ...group, index },
         collect: (monitor) => ({
@@ -716,7 +763,12 @@ const Group = ({
         }),
     });
 
+    useEffect(() => {
+        preview(getEmptyImage(), { captureDraggingState: true });
+    }, []);
+
     drag(drop(ref));
+
     const groupName = `properties[${index}].name`;
     const touchedName = touched?.[propertiesType]?.[index]?.name;
     const errorName = errors?.[propertiesType]?.[index]?.name;
@@ -725,109 +777,138 @@ const Group = ({
     const errorTitle = errors?.[propertiesType]?.[index]?.displayName;
 
     return (
-        <FieldBlockAccordion
-            ref={ref}
-            sx={{
-                padding: '0.5rem',
-                backgroundColor: 'rgb(224, 225, 237,0.4)',
-                marginTop: 1.5,
-                marginBottom: 1.5,
+        <Grid
+            item
+            style={{
+                opacity: isDragging ? 0.5 : 1,
+                alignSelf: 'stretch',
+                marginBottom: '1rem',
+                cursor: 'grab',
             }}
         >
-            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                <Grid container wrap="nowrap">
-                    <Box style={{ display: 'flex', alignItems: 'center' }}>
-                        <DragHandleIcon fontSize="large" />
-                    </Box>
-
-                    <TextField
-                        label={i18next.t('wizard.entityTemplate.groupName')}
-                        id={groupName}
-                        name={groupName}
-                        value={group.name ?? ''}
-                        onChange={(e) => onChangeGroupData(e, group.id)}
-                        error={touchedName && Boolean(errorName)}
-                        helperText={touchedName && errorName}
-                        sx={{ marginRight: '6px' }}
-                        fullWidth
-                        onClick={(e) => e.stopPropagation()}
-                    />
-                    <TextField
-                        label={i18next.t('wizard.entityTemplate.groupDisplayName')}
-                        id={displayName}
-                        name={displayName}
-                        value={group.displayName ?? ''}
-                        onChange={(e) => onChangeGroupData(e, group.id)}
-                        error={touchedTitle && Boolean(errorTitle)}
-                        helperText={touchedTitle && errorTitle}
-                        sx={{ marginRight: '6px' }}
-                        fullWidth
-                        onClick={(e) => e.stopPropagation()}
-                    />
-
-                    <MeltaTooltip
-                        title={
-                            group.fields.length > 0
-                                ? i18next.t('wizard.entityTemplate.cantDeleteGroupWithFields')
-                                : i18next.t('wizard.entityTemplate.deleteGroup')
-                        }
-                    >
-                        <Grid>
-                            <IconButton onClick={() => remove(index, true)} disabled={group.fields.length > 0}>
-                                <DeleteIcon />
-                            </IconButton>
-                        </Grid>
-                    </MeltaTooltip>
-                </Grid>
-            </AccordionSummary>
-
-            <AccordionDetails ref={drop}>
-                {group.fields.length === 0 ? (
-                    <div style={{ padding: 8, color: '#777', fontStyle: 'italic', minHeight: '100px' }}>Drop a field here</div>
-                ) : (
-                    group.fields.map((field, idx) => (
-                        <Field
-                            field={field}
-                            index={idx}
-                            parentId={group.id}
-                            onDrop={moveField}
-                            buildProps={{ ...buildProps(field, idx, index) }}
-                            key={field.id}
-                            setFieldValue={setFieldDisplayValueWrapper(idx, index) as FieldEditCardProps['setFieldValue']}
-                            setValues={setDisplayValueWrapper(idx, group.id)}
-                            uniqueConstraints={uniqueConstraints}
-                            setUniqueConstraints={setUniqueConstraints}
-                        />
-                    ))
-                )}
-
-                <Grid
+            <div ref={ref} style={{ cursor: 'grab', transition: isDragging ? 'none' : 'box-shadow 0.1s ease', opacity: isDragging ? 0.5 : 1 }}>
+                <FieldBlockAccordion
+                    // sx={{
+                    //     padding: '0.5rem',
+                    //     backgroundColor: 'rgb(224, 225, 237,0.4)',
+                    //     marginTop: 1.5,
+                    // marginBottom: 1.5,
+                    // }}
                     sx={{
-                        display: 'flex',
-                        justifyContent: 'center',
+                        mb: 2,
+                        padding: '0.5rem',
+                        borderRadius: '12px',
+                        backgroundColor: '#f4f6fa',
+                        boxShadow: 'none',
+                        '&:before': { display: 'none' },
                     }}
                 >
-                    <Button
-                        type="button"
-                        variant="contained"
-                        style={{
-                            margin: '8px',
-                            display: 'flex',
-                            justifyContent: 'center',
-                        }}
-                        onClick={() => {
-                            if (group.id !== '') addFieldToGroup(group);
-                        }}
-                    >
-                        <Typography>{addPropertyButtonLabel}</Typography>
-                    </Button>
-                </Grid>
-                {errors?.[propertiesType]?.[index]?.fields === i18next.t('validation.oneField') && (
-                    <div style={{ color: '#d32f2f' }}>{i18next.t('validation.oneField')}</div>
-                )}
-            </AccordionDetails>
-        </FieldBlockAccordion>
-        // </div>
+                    <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                        <Grid container wrap="nowrap">
+                            <Box style={{ display: 'flex', alignItems: 'center' }}>
+                                <DragHandleIcon fontSize="large" />
+                            </Box>
+
+                            <TextField
+                                label={i18next.t('wizard.entityTemplate.groupName')}
+                                id={groupName}
+                                name={groupName}
+                                value={group.name ?? ''}
+                                onChange={(e) => onChangeGroupData(e, group.id)}
+                                error={touchedName && Boolean(errorName)}
+                                helperText={touchedName && errorName}
+                                sx={{
+                                    marginRight: '6px',
+                                    '& .MuiInputBase-root': {
+                                        backgroundColor: 'white',
+                                    },
+                                }}
+                                fullWidth
+                                onClick={(e) => e.stopPropagation()}
+                            />
+                            <TextField
+                                label={i18next.t('wizard.entityTemplate.groupDisplayName')}
+                                id={displayName}
+                                name={displayName}
+                                value={group.displayName ?? ''}
+                                onChange={(e) => onChangeGroupData(e, group.id)}
+                                error={touchedTitle && Boolean(errorTitle)}
+                                helperText={touchedTitle && errorTitle}
+                                sx={{
+                                    marginRight: '6px',
+                                    '& .MuiInputBase-root': {
+                                        backgroundColor: 'white',
+                                    },
+                                }}
+                                fullWidth
+                                onClick={(e) => e.stopPropagation()}
+                            />
+
+                            <MeltaTooltip
+                                title={
+                                    group.fields.length > 0
+                                        ? i18next.t('wizard.entityTemplate.cantDeleteGroupWithFields')
+                                        : i18next.t('wizard.entityTemplate.deleteGroup')
+                                }
+                            >
+                                <Grid>
+                                    <IconButton onClick={() => remove(index, true)} disabled={group.fields.length > 0}>
+                                        <DeleteIcon />
+                                    </IconButton>
+                                </Grid>
+                            </MeltaTooltip>
+                        </Grid>
+                    </AccordionSummary>
+
+                    <AccordionDetails ref={drop}>
+                        <Grid item marginBottom={2}>
+                            <Divider />
+                        </Grid>
+
+                        {group.fields?.map((field, idx) => (
+                            <Field
+                                field={field}
+                                index={idx}
+                                parentId={group.id}
+                                onDrop={moveField}
+                                buildProps={{ ...buildProps(field, idx, index) }}
+                                key={field.id}
+                                setFieldValue={setFieldDisplayValueWrapper(idx, index) as FieldEditCardProps['setFieldValue']}
+                                setValues={setDisplayValueWrapper(idx, group.id)}
+                                uniqueConstraints={uniqueConstraints}
+                                setUniqueConstraints={setUniqueConstraints}
+                            />
+                        ))}
+
+                        <Grid
+                            sx={{
+                                display: 'flex',
+                                justifyContent: 'center',
+                            }}
+                        >
+                            <Button
+                                type="button"
+                                variant="contained"
+                                style={{
+                                    marginTop: group.fields.length === 0 ? '30px' : '',
+                                    margin: '8px',
+                                    display: 'flex',
+                                    justifyContent: 'center',
+                                }}
+                                onClick={() => {
+                                    if (group.id !== '') addFieldToGroup(group);
+                                }}
+                            >
+                                <Typography>{addPropertyButtonLabel}</Typography>
+                            </Button>
+                        </Grid>
+                        {errors?.[propertiesType]?.[index]?.fields === i18next.t('validation.oneField') && (
+                            <div style={{ color: '#d32f2f' }}>{i18next.t('validation.oneField')}</div>
+                        )}
+                    </AccordionDetails>
+                </FieldBlockAccordion>
+            </div>
+        </Grid>
     );
 };
 
@@ -956,7 +1037,7 @@ export const StructureEditor = <PropertiesType extends string, Values extends Re
     const remove = (index: number, isNewProperty: Boolean, groupIndex?: number) => {
         const displayValuesCopy = [...orderedItemsRef.current];
 
-        const isDeleted = groupIndex ? displayValuesCopy[groupIndex].fields[index].deleted : displayValuesCopy[index].deleted;
+        const isDeleted = groupIndex ? displayValuesCopy[groupIndex].fields[index].deleted : displayValuesCopy[index].data.deleted;
 
         if (isDeleted) {
             setFieldDisplayValue(index, 'deleted' as keyof Values, false, groupIndex);
@@ -1043,7 +1124,6 @@ export const StructureEditor = <PropertiesType extends string, Values extends Re
     const setDisplayValueWrapper = (index: number, groupId?: string) => (value: SetStateAction<PropertyItem>) =>
         setDisplayValue(index, value, groupId);
     const isFieldBlockError = Boolean(touched?.[propertiesType]) && Boolean(errors?.[propertiesType]);
-    console.log({ errors });
 
     const buildProps = (propertyProp, index: number, groupIndex?: number) => {
         const isGroup = groupIndex !== undefined;
@@ -1122,6 +1202,7 @@ export const StructureEditor = <PropertiesType extends string, Values extends Re
         updateFormik();
     };
     const moveField = (item, toIndex: number, toGroupId: string | null) => {
+        if (item.deleteed) return;
         const orderedItemsCopy = [...orderedItemsRef.current];
         let movedField: any = null;
 
@@ -1168,6 +1249,7 @@ export const StructureEditor = <PropertiesType extends string, Values extends Re
         const orderedItemsCopy = [...orderedItemsRef.current];
         const fromIndex = orderedItemsCopy.findIndex((el) => el.type === 'group' && el.id === group.id);
         if (fromIndex === -1) return;
+        console.log({ fromIndex, toIndex });
 
         const movedGroup = orderedItemsCopy.splice(fromIndex, 1)[0];
         orderedItemsCopy.splice(toIndex, 0, movedGroup);
@@ -1179,7 +1261,8 @@ export const StructureEditor = <PropertiesType extends string, Values extends Re
     const [, drop] = useDrop(() => ({
         accept: [ItemTypes.FIELD, ItemTypes.GROUP],
         drop: (item: any, monitor) => {
-            console.log(0, { monitor });
+            console.log(0, { item });
+
             if (monitor.didDrop()) return;
             console.log(1, item);
 
@@ -1187,15 +1270,18 @@ export const StructureEditor = <PropertiesType extends string, Values extends Re
             const isGroup = Array.isArray(item.fields);
             console.log(2, isGroup);
 
-            const dropIndex = orderedItems.findIndex((el) => {
-                if (isGroup) return el.id === item.id;
-                return el.type === 'field' && el.data.id === item.id;
-            });
-            console.log(3, dropIndex);
+            // const dropIndex = orderedItems.findIndex((el) => {
+            //     if (isGroup) return el.id === item.id;
+            //     return el.type === 'field' && el.data.id === item.id;
+            // });
+            const dropIndex = item.index ?? 0;
+
+            console.log(3, dropIndex, item.index);
 
             if (isGroup) {
                 console.log(4);
-                moveGroup(item, dropIndex, null);
+                moveGroup(item, item.index, null);
+                // item.index = hoverIndex;
             } else {
                 console.log(5);
 
@@ -1207,16 +1293,17 @@ export const StructureEditor = <PropertiesType extends string, Values extends Re
             isOver: m.isOver({ shallow: true }),
         }),
     }));
-    // drop(ref);
+
     return (
         <FieldBlockAccordion style={{ border: isFieldBlockError ? '1px solid red' : '' }}>
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                 <Grid container wrap="nowrap" alignItems="center">
-                    {draggable.isDraggable && (
-                        <Box {...draggable.dragHandleProps} style={{ display: 'flex', alignItems: 'center' }}>
+                    {draggable?.isDraggable && (
+                        <Box {...draggable.dragHandleProps} sx={{ display: 'flex', alignItems: 'center', cursor: 'grab' }}>
                             <DragHandleIcon fontSize="large" />
                         </Box>
                     )}
+
                     <Typography>{title}</Typography>
                 </Grid>
             </AccordionSummary>
@@ -1233,7 +1320,6 @@ export const StructureEditor = <PropertiesType extends string, Values extends Re
                                     display: 'flex',
                                     flexDirection: 'column',
                                     minWidth: '500px',
-                                    backgroundColor: 'pink',
                                 }}
                             >
                                 {orderedItems.map((item, index) => {
@@ -1307,9 +1393,7 @@ export const StructureEditor = <PropertiesType extends string, Values extends Re
                                         >
                                             <Typography>{addPropertyButtonLabel}</Typography>
                                         </Button>
-                                        {(propertiesType === 'properties' ||
-                                            propertiesType === 'detailsProperties' ||
-                                            propertiesType === 'archiveProperties') && (
+                                        {propertiesType === 'properties' && supportArchive && (
                                             <Button
                                                 type="button"
                                                 variant="contained"

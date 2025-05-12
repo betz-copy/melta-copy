@@ -546,7 +546,6 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
         setOrderedItems(newOrderedItems);
         updateFormik();
     };
-    console.log({ errors });
 
     return (
         <FieldBlockAccordion style={{ border: isFieldBlockError ? '1px solid red' : '' }}>

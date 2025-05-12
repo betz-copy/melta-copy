@@ -1,4 +1,4 @@
-import React, { useCallback, useRef } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { Grid } from '@mui/material';
 import * as Yup from 'yup';
 import i18next from 'i18next';
@@ -7,7 +7,7 @@ import { AxiosError } from 'axios';
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
 import { toast } from 'react-toastify';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
+import { HTML5Backend, getEmptyImage } from 'react-dnd-html5-backend';
 import { entityTemplateUniqueProperties, regexSchema, variableNameValidation } from '../../../utils/validation';
 import { EntityTemplateWizardValues } from './index';
 import { StepComponentProps } from '../index';
@@ -16,7 +16,7 @@ import { arrayTypes, basePropertyTypes, stringFormats } from '../../../services/
 import FieldBlock from './FieldBlock';
 import { ErrorToast } from '../../ErrorToast';
 import { environment } from '../../../globals';
-import { ManualDndLayout, StructureEditor } from './try5';
+import { ItemTypes, ManualDndLayout, StructureEditor } from './try5';
 
 const { mapSearchPropertiesLimit } = environment.map;
 
@@ -176,16 +176,9 @@ const DraggableManualDndLayout = ({ id, index, moveItem, children }) => {
     );
 };
 
-const AddFieldsDND: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEditMode' | 'setBlock'>> = ({
-    values,
-    setValues,
-    touched,
-    errors,
-    setFieldValue,
-    initialValues,
-    isEditMode,
-    setBlock,
-}) => {
+export const FieldBlockWrapper: React.FC<
+    StepComponentProps<EntityTemplateWizardValues, 'isEditMode' | 'setBlock' | 'itemId' | 'index' | 'moveItem'>
+> = ({ itemId, index, moveItem, values, setValues, touched, errors, setFieldValue, initialValues, isEditMode, setBlock }) => {
     const hasActions = Boolean(initialValues?.actions);
     const countMapSearchProperties = Object.values(values.properties).flatMap((property: any) => {
         if (property.type === 'field' && property.data?.mapSearch) {
@@ -218,31 +211,6 @@ const AddFieldsDND: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isE
     );
     const areThereAnyInstances = isEditMode && areThereInstancesByTemplateIdResponse!.count > 0;
 
-    // const onDragEnd = (result: DropResult) => {
-    //     const { destination, source } = result;
-    //     if (!destination) return;
-
-    //     const newPropertiesTypeOrder = Array.from(values.propertiesTypeOrder);
-    //     const [movedOption] = newPropertiesTypeOrder.splice(source.index, 1);
-    //     newPropertiesTypeOrder.splice(destination.index, 0, movedOption);
-
-    //     setFieldValue('propertiesTypeOrder', newPropertiesTypeOrder);
-    // };
-    const moveItem = useCallback(
-        (fromIndex: number, toIndex: number) => {
-            console.log({ fromIndex, toIndex });
-
-            if (fromIndex === toIndex) return;
-
-            const newPropertiesTypeOrder = Array.from(values.propertiesTypeOrder);
-            const [movedOption] = newPropertiesTypeOrder.splice(fromIndex, 1);
-            newPropertiesTypeOrder.splice(toIndex, 0, movedOption);
-
-            setFieldValue('propertiesTypeOrder', newPropertiesTypeOrder);
-        },
-        [values.propertiesTypeOrder, setFieldValue],
-    );
-
     const getTitle = (itemId: string): string => {
         const titles: Record<string, string> = {
             properties: i18next.t('wizard.entityTemplate.properties'),
@@ -252,100 +220,145 @@ const AddFieldsDND: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isE
 
         return titles[itemId] || '';
     };
+
     const ref = useRef(null);
 
-    const [{ isOver }, drop] = useDrop({
-        accept: ItemType,
-        hover: (item: { id: string; index: number }, monitor) => {
+    const [, drop] = useDrop({
+        accept: ItemTypes.PROPERTY,
+        hover(item, monitor) {
             if (!ref.current) return;
-
             const dragIndex = item.index;
             const hoverIndex = index;
 
             if (dragIndex === hoverIndex) return;
 
+            const hoverBoundingRect = ref.current?.getBoundingClientRect();
+            const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
+            const clientOffset = monitor.getClientOffset();
+            const hoverClientY = clientOffset.y - hoverBoundingRect.top;
+
+            if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) return;
+            if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) return;
+
             moveItem(dragIndex, hoverIndex);
             item.index = hoverIndex;
         },
-        collect: (monitor) => ({
-            isOver: monitor.isOver(),
-        }),
     });
 
-    // drop(ref);
+    const [{ isDragging }, drag, preview] = useDrag({
+        type: ItemTypes.PROPERTY,
+        item: { id: itemId, index },
+        collect: (monitor) => ({
+            isDragging: monitor.isDragging(),
+        }),
+    });
+    useEffect(() => {
+        preview(getEmptyImage(), { captureDraggingState: true });
+    }, []);
+
+    drag(drop(ref));
+
     return (
-        <Grid ref={drop} container direction="column" alignItems="center" style={{ minHeight: '160px', backgroundColor: 'red' }}>
+        <Grid
+            item
+            style={{
+                opacity: isDragging ? 0.5 : 1,
+                alignSelf: 'stretch',
+                marginBottom: '1rem',
+                cursor: 'grab',
+            }}
+        >
+            <div ref={ref} style={{ cursor: 'grab', transition: isDragging ? 'none' : 'box-shadow 0.1s ease', opacity: isDragging ? 0.5 : 1 }}>
+                <StructureEditor
+                    propertiesType={itemId}
+                    values={values}
+                    uniqueConstraints={values.uniqueConstraints}
+                    setUniqueConstraints={(newUniqueConstraints) => {
+                        setValues((prev) => ({
+                            ...prev,
+                            uniqueConstraints:
+                                typeof newUniqueConstraints === 'function' ? newUniqueConstraints(prev.uniqueConstraints!) : newUniqueConstraints,
+                        }));
+                    }}
+                    initialValues={initialValues}
+                    setFieldValue={setFieldValue}
+                    areThereAnyInstances={areThereAnyInstances}
+                    isEditMode={isEditMode}
+                    setBlock={setBlock}
+                    title={getTitle(itemId)}
+                    addPropertyButtonLabel={
+                        itemId === 'properties' ? i18next.t('wizard.entityTemplate.addProperty') : i18next.t('wizard.entityTemplate.addAttachment')
+                    }
+                    touched={touched}
+                    errors={errors}
+                    supportSerialNumberType
+                    supportUserType
+                    supportEntityReferenceType={false}
+                    supportChangeToRequiredWithInstances
+                    supportRelationshipReference
+                    supportArrayFields
+                    supportDeleteForExistingInstances
+                    supportEditEnum
+                    supportUnique
+                    supportLocation
+                    supportArchive
+                    supportComment
+                    supportAddFieldButton={itemId === 'attachmentProperties' || itemId === 'properties'}
+                    hasActions={hasActions}
+                    draggable={{ isDraggable: true }}
+                    // draggable={{ isDraggable: true, dragHandleProps: draggableProvided.dragHandleProps }}
+                    locationSearchFields={{
+                        show: Object.values(values.properties).some((property) => property.type === 'location'),
+                        disabled: countMapSearchProperties >= 2,
+                    }}
+                    supportIdentifier
+                    hasIdentifier={Object.values(values.properties).some((value) => value.identifier)}
+                />
+            </div>
+        </Grid>
+    );
+};
+
+export const AddFieldsDND: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEditMode' | 'setBlock'>> = ({
+    values,
+    setValues,
+    touched,
+    errors,
+    setFieldValue,
+    initialValues,
+    isEditMode,
+    setBlock,
+}) => {
+    const moveItem = useCallback(
+        (dragIndex, hoverIndex) => {
+            const newValuesOrder = Array.from(values.propertiesTypeOrder);
+            const [movedOption] = newValuesOrder.splice(dragIndex, 1);
+            newValuesOrder.splice(hoverIndex, 0, movedOption);
+
+            setFieldValue('propertiesTypeOrder', newValuesOrder);
+        },
+        [values.propertiesTypeOrder],
+    );
+
+    return (
+        <Grid container direction="column" alignItems="center" style={{ minHeight: '160px' }}>
             {values.propertiesTypeOrder.map((itemId, index) => (
-                // <Draggable key={itemId} draggableId={itemId} index={index}>
-                //     {(draggableProvided) => (
-                // <Grid item ref={draggableProvided.innerRef} {...draggableProvided.draggableProps} alignSelf="stretch" marginBottom="1rem">
-
-                <Grid item alignSelf="stretch" marginBottom="1rem" key={itemId}>
-                    <DraggableManualDndLayout id={itemId} index={index} moveItem={moveItem}>
-                        {/* <div>{itemId}</div> */}
-                        <StructureEditor
-                            propertiesType={itemId}
-                            values={values}
-                            uniqueConstraints={values.uniqueConstraints}
-                            setUniqueConstraints={(newUniqueConstraints) => {
-                                setValues((prev) => {
-                                    return {
-                                        ...prev,
-                                        uniqueConstraints:
-                                            typeof newUniqueConstraints === 'function'
-                                                ? newUniqueConstraints(prev.uniqueConstraints!)
-                                                : newUniqueConstraints,
-                                    };
-                                });
-                            }}
-                            initialValues={initialValues}
-                            setFieldValue={setFieldValue}
-                            areThereAnyInstances={areThereAnyInstances}
-                            isEditMode={isEditMode}
-                            setBlock={setBlock}
-                            title={getTitle(itemId)}
-                            addPropertyButtonLabel={
-                                itemId === 'properties'
-                                    ? i18next.t('wizard.entityTemplate.addProperty')
-                                    : i18next.t('wizard.entityTemplate.addAttachment')
-                            }
-                            touched={touched}
-                            errors={errors}
-                            supportSerialNumberType
-                            supportUserType
-                            supportEntityReferenceType={false}
-                            supportChangeToRequiredWithInstances
-                            supportRelationshipReference
-                            supportArrayFields
-                            supportDeleteForExistingInstances
-                            supportEditEnum
-                            supportUnique
-                            supportLocation
-                            supportArchive
-                            supportAddFieldButton={itemId === 'attachmentProperties' || itemId === 'properties'}
-                            hasActions={hasActions}
-                            // draggable={{ isDraggable: true, dragHandleProps: draggableProvided.dragHandleProps }}
-                            locationSearchFields={{
-                                show: Object.values(values.properties).some((property: any) => {
-                                    if (property.type === 'field') return property.data?.type === 'location';
-
-                                    if (property.type === 'group' && Array.isArray(property.fields))
-                                        return property.fields.some((field) => field.type === 'location');
-
-                                    return false;
-                                }),
-                                disabled: countMapSearchProperties >= 2,
-                            }}
-                            supportIdentifier
-                            hasIdentifier={Object.values(values.properties).some((value) => value.identifier)}
-                        />
-                    </DraggableManualDndLayout>
-                </Grid>
-                //         )}
-                //     </Draggable>
+                <FieldBlockWrapper
+                    key={itemId}
+                    index={index}
+                    itemId={itemId}
+                    moveItem={moveItem}
+                    values={values}
+                    setValues={setValues}
+                    touched={touched}
+                    errors={errors}
+                    setFieldValue={setFieldValue}
+                    initialValues={initialValues}
+                    isEditMode={isEditMode}
+                    setBlock={setBlock}
+                />
             ))}
         </Grid>
-        // </DndProvider>
     );
 };
 
