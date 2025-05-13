@@ -151,6 +151,7 @@ const CreateFormula: React.FC<StepComponentProps<RuleWizardValues>> = ({ values,
                 subFromDateTime: getAddOrSubDateTimeFunc(false),
             },
         };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [entityTemplateId, entityTemplates, relationshipTemplates, formula]);
 
     const onChange = useCallback((immutableTree: ImmutableTree) => {

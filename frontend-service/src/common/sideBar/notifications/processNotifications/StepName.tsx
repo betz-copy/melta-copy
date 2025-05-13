@@ -14,6 +14,7 @@ interface StepNameProps {
 export const StepName: React.FC<StepNameProps> = ({ step }) => {
     const queryClient = useQueryClient();
     const processTemplatesMap = queryClient.getQueryData<IProcessTemplateMap>('getProcessTemplates')!;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     const stepName = useMemo(() => (step ? getStepName(step.templateId, processTemplatesMap) : undefined), [step]);
 
     return (

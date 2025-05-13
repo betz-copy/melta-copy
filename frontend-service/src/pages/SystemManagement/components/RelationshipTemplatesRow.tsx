@@ -413,8 +413,7 @@ const RelationshipTemplatesRow: React.FC = () => {
                             .splice(pageParam, infiniteScrollPageCount);
                     }}
                     onQueryError={(error) => {
-                        // eslint-disable-next-line no-console
-                        console.log('failed to search process templates error:', error);
+                        console.error('failed to search process templates error:', error);
                         toast.error(i18next.t('failedToLoadResults'));
                     }}
                     getItemId={(relationshipTemplateWithEntity) => relationshipTemplateWithEntity.entityTemplate._id}

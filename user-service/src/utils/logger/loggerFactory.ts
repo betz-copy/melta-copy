@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import 'winston-daily-rotate-file';
 import { Logform, createLogger, Logger, transport, transports } from 'winston';
 import { config } from '../../config';

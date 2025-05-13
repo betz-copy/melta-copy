@@ -45,7 +45,7 @@ export const RuleBreachDialogContainer: React.FC<RuleBreachDialogContainerProps>
         initialData: rule,
         retry: false,
         onError: (err) => {
-            console.log(err);
+            console.error(err);
             navigate('/404');
         },
     });
