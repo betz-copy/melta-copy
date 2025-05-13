@@ -5,7 +5,7 @@ import { compileTsCode } from '../../utils/entityTemplateActions/tsCompiler';
 import { addPropertyToRequest } from '../../utils/express';
 import DefaultController from '../../utils/express/controller';
 import { BadRequestError } from '../error';
-import { IMongoEntityTemplate } from './interface';
+import { IEntitySingleProperty, IMongoEntityTemplate } from './interface';
 import EntityTemplateManager from './manager';
 
 export class EntityTemplateValidator extends DefaultController<IMongoEntityTemplate, EntityTemplateManager> {
@@ -80,9 +80,27 @@ export class EntityTemplateValidator extends DefaultController<IMongoEntityTempl
         addPropertyToRequest(req, 'actions', this.cleanActionCode(actions, entityTemplatesByIds));
     };
 
+    private validateProperties(properties: Record<string, IEntitySingleProperty>) {
+        const relatedUserFieldsOfkartoffelFields: string[] = [];
+        const userFields: string[] = [];
+        Object.entries(properties).forEach(([key, value]) => {
+            if(value.format && value.format === 'user') {
+                userFields.push(key);
+            }
+            if (value.format && value.format === 'kartoffelUserField') {
+                relatedUserFieldsOfkartoffelFields.push(value.expandedUserField?.relatedUserField || '');
+            }
+        });
+
+        if (relatedUserFieldsOfkartoffelFields.some((userField) => !userFields.includes(userField))) 
+            throw new BadRequestError('Cannot add kartoffelField derived from user field that does not exist');
+    }
+
+
+
     validateEntityTemplateUpdate = async (req: Request) => {
         const {
-            body: { actions },
+            body: { actions, properties },
             params: { templateId },
         } = req;
 
@@ -91,5 +109,16 @@ export class EntityTemplateValidator extends DefaultController<IMongoEntityTempl
 
             if (actions !== existingActions) throw new BadRequestError('Cannot update actions in update entityTemplate request');
         }
+
+        this.validateProperties(properties.properties);
+    };
+
+
+    validateCreateEntityTemplate = async (req: Request) => {
+        const {
+            body: { properties },
+        } = req;
+
+        this.validateProperties(properties.properties);
     };
 }

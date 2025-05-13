@@ -52,19 +52,16 @@ const RuleWizard: React.FC<WizardBaseType<RuleWizardValues>> = ({
             onSuccess: (data) => {
                 queryClient.setQueryData<IRuleMap>('getRules', (ruleMap) => ruleMap!.set(data._id, data));
                 queryClient.invalidateQueries(['searchRulesTemplates']);
-                if (isEditMode) {
-                    toast.success(i18next.t('wizard.rule.editedSuccessfully'));
-                } else {
-                    toast.success(i18next.t('wizard.rule.createdSuccessfully'));
-                }
+                toast.success(i18next.t(`wizard.rule.${isEditMode ? 'editedSuccessfully' : 'createdSuccessfully'}`));
                 handleClose();
             },
             onError: (error: AxiosError) => {
-                if (isEditMode) {
-                    toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.rule.failedToEdit')} />);
-                } else {
-                    toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.rule.failedToCreate')} />);
-                }
+                toast.error(
+                    <ErrorToast
+                        axiosError={error}
+                        defaultErrorMessage={i18next.t(`wizard.rule.${isEditMode ? 'failedToEdit' : 'failedToCreate'}`)}
+                    />,
+                );
             },
         },
     );
@@ -76,7 +73,7 @@ const RuleWizard: React.FC<WizardBaseType<RuleWizardValues>> = ({
             initialValues={initialValues}
             initialStep={initialStep}
             isEditMode={isEditMode}
-            title={isEditMode ? i18next.t('wizard.rule.updateTitle') : i18next.t('wizard.rule.createTitle')}
+            title={i18next.t(`wizard.rule.${isEditMode ? 'updateTitle' : 'createTitle'}`)}
             steps={steps}
             isLoading={isLoading}
             submitFunction={(values) => mutateAsync(values)}

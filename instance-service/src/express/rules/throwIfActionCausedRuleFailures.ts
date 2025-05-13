@@ -116,9 +116,7 @@ export const throwIfActionCausedRuleFailures = (
 
         const causes = getCausesOfRuleFailure(ruleFailureAfterAction, ruleFailureBeforeAction, ruleFailureAfterAction.rule.formula);
 
-        if (causes.length === 0) {
-            return undefined;
-        }
+        if (causes.length === 0) return undefined;
 
         return {
             include: true,

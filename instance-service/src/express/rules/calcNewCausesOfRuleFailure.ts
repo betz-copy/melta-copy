@@ -144,6 +144,7 @@ export const getCausesOfGroup = (
 ): { newCauses: ICause[]; oldCauses: ICause[] } => {
     // already filtered in DB, but to make sure. if group is false, then all falsy subFormulas caused it. same goes to true
     const relevantSubFormulasCauses = groupCauses.subFormulas.filter(({ resultValue }) => groupCauses.resultValue === resultValue);
+
     const subFormulasNewCauses = relevantSubFormulasCauses.map((subFormulaCauses, index) =>
         // eslint-disable-next-line no-use-before-define
         getCausesOfFormula(subFormulaCauses, groupCausesBeforeAction?.subFormulas[index], group.subFormulas[index]),
@@ -183,6 +184,7 @@ export const getCausesOfAggregationGroup = (
             // then oldCausesOfGroup should be empty anyways, but using it just in case
             return { newCauses: [...newCausesOfGroup, instanceOfIterationCause], oldCauses: oldCausesOfGroup };
         }
+
         return { newCauses: [...newCausesOfGroup], oldCauses: [...oldCausesOfGroup, instanceOfIterationCause] };
     });
 
