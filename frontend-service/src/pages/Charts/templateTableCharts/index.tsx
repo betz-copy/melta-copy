@@ -108,8 +108,8 @@ const TemplateTableCharts: React.FC<{
                     key={chart._id}
                     style={{
                         background: '#f9f9f9',
-                        border: '1px solid #ccc',
-                        borderRadius: '5px',
+                        border: '1px solid  #CCCFE5',
+                        borderRadius: '7px',
                         position: 'relative',
                         overflow: 'hidden',
                         cursor: 'pointer',

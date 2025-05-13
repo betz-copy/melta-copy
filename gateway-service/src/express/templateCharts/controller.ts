@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
+import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
 import DefaultController from '../../utils/express/controller';
 import { ChartManager } from './manager';
-import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
 
 export class ChartController extends DefaultController<ChartManager> {
     constructor(workspaceId: string) {
