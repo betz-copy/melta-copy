@@ -30,6 +30,9 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
     const filters: IFilterRelationReference[] = useMemo(() => getIn(values, name) || [], [values, name]);
     const initialFilters = initialValue?.relationshipReference?.filters;
 
+    console.log({ values });
+    console.log({ filters });
+
     // const errorRelationshipReference = errors?.relationshipReference as FormikErrors<IRelationshipReference> | undefined;
     // const touchedRelationshipReference = touched?.relationshipReference as FormikTouched<IRelationshipReference> | undefined;
 

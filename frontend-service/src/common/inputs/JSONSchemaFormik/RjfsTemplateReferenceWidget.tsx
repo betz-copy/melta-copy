@@ -66,6 +66,7 @@ const RjfsTemplateReferenceWidget = ({
             isError={rawErrors.length > 0}
             onBlur={handleBlur}
             disabled={disabled}
+            relationFilters={schema.relationshipReference.filters}
         />
     );
 };

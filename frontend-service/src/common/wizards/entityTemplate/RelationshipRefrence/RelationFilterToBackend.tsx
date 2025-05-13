@@ -22,7 +22,9 @@ export const filterRelationFieldToFilterOfTemplate = (field: string, fieldFilter
     }
 };
 
-export const filterRelationListToSearchFilter = (filterModel: IFilterRelationReference[]): ISearchFilter => {
+export const filterRelationListToSearchFilter = (filterModel: IFilterRelationReference[]): ISearchFilter | undefined => {
+    if (filterModel.length === 0) return undefined;
+
     const filters: IFilterOfTemplate[] = filterModel.map(({ filterProperty, filterField }) => {
         if (!filterProperty || !filterField) return {}; // Skip invalid
         return filterRelationFieldToFilterOfTemplate(filterProperty, filterField);

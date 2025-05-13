@@ -223,6 +223,8 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
             entityTemplateToUpdate = await this.upsertRelationshipsProperties(entityTemplateToUpdate, session, true);
         }
 
+        console.log('In transaction');
+
         const updatedEntityTemplate = await this.model
             .findByIdAndUpdate(id, entityTemplateToUpdate, {
                 new: true,
@@ -259,6 +261,15 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
         allowToDeleteRelationshipFields: boolean,
         session?: ClientSession,
     ) {
+        Object.entries(updatedTemplateData.properties.properties).forEach(([_name, value]) => {
+            if (value.filterRelationList && value.relationshipReference?.filters && typeof value.relationshipReference.filters === 'object') {
+                // eslint-disable-next-line no-param-reassign
+                value.relationshipReference.filters = JSON.stringify(value.relationshipReference.filters);
+            }
+        });
+
+        console.dir({ updatedTemplateData }, { depth: null });
+
         const currentEntityTemplate = await this.getTemplateById(id);
 
         const newEntityTemplate = session

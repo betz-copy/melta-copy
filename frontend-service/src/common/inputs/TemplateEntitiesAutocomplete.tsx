@@ -29,6 +29,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
     helperText?: string;
     size?: 'small' | 'medium';
     style?: React.CSSProperties;
+    relationFilters?: string;
 }> = ({
     template,
     showField,
@@ -44,6 +45,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
     helperText,
     size,
     style,
+    relationFilters,
 }) => {
     const { cacheBlockSize } = environment.agGrid;
 
@@ -56,7 +58,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
             return searchEntitiesOfTemplateRequest(template._id!, {
                 skip: pageParam * cacheBlockSize,
                 limit: cacheBlockSize,
-                filter: { $and: { disabled: { $eq: false } } },
+                filter: relationFilters ? JSON.parse(relationFilters) : { $and: { disabled: { $eq: false } } },
                 textSearch: inputValue,
             });
         },

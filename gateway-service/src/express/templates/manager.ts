@@ -4,6 +4,7 @@ import { AxiosError, AxiosResponse } from 'axios';
 import { logger } from 'elastic-apm-node';
 import { StatusCodes } from 'http-status-codes';
 import _isEqual from 'lodash.isequal';
+import _omit from 'lodash/omit';
 import lodashUniqby from 'lodash.uniqby';
 import config from '../../config';
 import { GanttsService } from '../../externalServices/ganttsService';
@@ -1049,7 +1050,10 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
                     if (value.enum && newValue.enum && !value.enum?.every((val) => newValue.enum?.includes(val)))
                         throw new BadRequestError('can not remove options from enum');
                     if (value.serialStarter !== newValue.serialStarter) throw new BadRequestError('can not change property serial starter');
-                    if (value.relationshipReference && !_isEqual(value.relationshipReference, newValue.relationshipReference))
+                    if (
+                        value.relationshipReference &&
+                        !_isEqual(_omit(value.relationshipReference, 'filters'), _omit(newValue.relationshipReference, 'filters'))
+                    )
                         throw new BadRequestError('can not change relationship reference fields');
                     if (!value.archive && newValue.archive && !currTemplate.actions) archiveProperties.push(key);
                     if (isSingularToPlural) propertiesKeysToPluralize.push(key);
