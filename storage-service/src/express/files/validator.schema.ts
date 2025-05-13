@@ -20,7 +20,7 @@ export const uploadFileRequestSchema = Joi.object({
 
 // POST /api/files/bulk
 export const uploadFilesRequestSchema = Joi.object({
-    files: { file: Joi.array().items(iconFileSchema).length(1), files: Joi.array().items(fileSchema) },
+    files: Joi.array().items(fileSchema),
     query: {},
     params: {},
 });

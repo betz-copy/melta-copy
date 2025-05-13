@@ -6,6 +6,7 @@ import { Colors, WorkspaceTypes } from './interface';
 const metadataSchema = Joi.object({
     shouldNavigateToEntityPage: Joi.boolean(),
     isDrawerOpen: Joi.boolean(),
+    flowCube: Joi.boolean(),
     agGrid: Joi.object({
         rowCount: Joi.number(),
         defaultExpandedRowCount: Joi.number(),
@@ -27,7 +28,6 @@ const metadataSchema = Joi.object({
         filesLimit: Joi.number(),
     }).optional(),
     searchLimits: Joi.object({
-        table: Joi.number().min(Joi.ref('agGrid.rowCount')),
         bulk: Joi.number(),
     }).optional(),
 }).optional();
@@ -122,4 +122,13 @@ export const updateMetadataSchema = Joi.object({
     params: {
         id: MongoIdSchema.required(),
     },
+});
+
+// POST /api/workspaces/search
+export const searchWorkspacesSchema = Joi.object({
+    query: {},
+    body: {
+        search: Joi.string(),
+    },
+    params: {},
 });

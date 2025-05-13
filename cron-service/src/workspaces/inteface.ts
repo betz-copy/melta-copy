@@ -1,21 +1,21 @@
-import { HexColor } from "../utils/types";
+import { HexColor } from '../utils/types';
 
 export enum Colors {
-  primary = "primary",
+    primary = 'primary',
 }
 
 export enum WorkspaceTypes {
-  dir = "",
-  mlt = ".mlt",
+    dir = '',
+    mlt = '.mlt',
 }
 
 export interface IWorkspace {
-  _id: string;
-  name: string;
-  displayName: string;
-  path: string;
-  type: WorkspaceTypes;
-  colors: Record<Colors, HexColor>;
-  iconFileId?: string;
-  logoFileId?: string;
+    _id: string;
+    name: string;
+    displayName: string;
+    path: string;
+    type: WorkspaceTypes;
+    colors: Record<Colors, HexColor>;
+    iconFileId?: string;
+    logoFileId?: string;
 }

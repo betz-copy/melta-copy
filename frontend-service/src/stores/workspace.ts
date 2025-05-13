@@ -10,6 +10,7 @@ export interface WorkspaceState {
 export const defaultMetadata = {
     shouldNavigateToEntityPage: false,
     isDrawerOpen: false,
+    flowCube: false,
     agGrid: {
         rowCount: 5,
         defaultExpandedRowCount: 13,
@@ -31,7 +32,6 @@ export const defaultMetadata = {
         filesLimit: 5,
     },
     searchLimits: {
-        table: 5,
         bulk: 5,
     },
 } as const;

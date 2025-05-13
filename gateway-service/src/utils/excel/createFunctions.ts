@@ -1,12 +1,13 @@
 /* eslint-disable no-param-reassign */
-import Excel from 'exceljs';
+import Excel, { Cell } from 'exceljs';
 import { v4 as uuidv4 } from 'uuid';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../externalServices/templates/entityTemplateService';
 import { IEntity } from '../../externalServices/instanceService/interfaces/entities';
 import config from '../../config/index';
 import { excelConfig } from './excelConfig';
 import { hexToARGB } from './colors';
-import { isIncludedColumn } from './getFunctions';
+import { isIncludedColumn, isIncludedEditColumn } from './getFunctions';
+import { CoordinateSystem, locationConverterToString } from './map';
 
 interface IExcelStyle {
     columnHeader: {
@@ -151,6 +152,11 @@ const createWorksheet = async (
             const type = TypesToHebrew(Object.values(properties).find((propertyTemplate) => propertyTemplate.title === cell.value)!);
             cell.note = type;
         }
+        cell.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FFA7C7E7' },
+        };
     });
     return worksheet;
 };
@@ -159,26 +165,18 @@ export const getFileName = (fileId: string) => {
     return fileId.slice(config.storageService.fileIdLength);
 };
 
-const relationshipRefCell = (
-    cell: Excel.Cell,
-    [key, value]: [string, IEntitySingleProperty],
-    row: Record<string, any>,
-    workspacePath: string,
-    edit?: boolean,
-) => {
+const relationshipRefCell = (cell: Excel.Cell, [key, value]: [string, IEntitySingleProperty], row: Record<string, any>, workspacePath: string) => {
     cell.value = {
         text: row[key].properties[value.relationshipReference!.relatedTemplateField],
         hyperlink: `${config.service.meltaBaseUrl}${workspacePath}/entity/${row[key].properties._id}`,
     };
-    cell.protection = { locked: edit };
 };
 
-const filesCell = (cell: Excel.Cell, isFileArray: boolean, rowIndex: number, value: string, workspaceId: string, edit?: boolean) => {
+const filesCell = (cell: Excel.Cell, isFileArray: boolean, rowIndex: number, value: string, workspaceId: string) => {
     cell.value = {
         text: isFileArray ? `${config.excel.multipleFilesName}${rowIndex}` : getFileName(value),
         hyperlink: `${config.service.meltaBaseUrl}${config.storageService.baseRoute}/${isFileArray ? 'zip/' : ''}${encodeURIComponent(value)}/${workspaceId}`,
     };
-    cell.protection = { locked: edit };
 };
 
 const fixComplexProperties = (
@@ -187,20 +185,28 @@ const fixComplexProperties = (
     [key, value]: [string, IEntitySingleProperty],
     rowIndex: number,
     workspace: { path: string; id: string },
-    edit?: boolean,
 ) => {
     const isFileArray = value.type === 'array' && value.items?.format === 'fileId';
     const isSingleFile = value.format === 'fileId';
+    const isSignature = value.format === 'signature';
 
     if (value.format === 'relationshipReference') {
-        relationshipRefCell(cell, [key, value], row, workspace.path, edit);
+        relationshipRefCell(cell, [key, value], row, workspace.path);
         return true;
     }
-    if (isSingleFile || isFileArray) {
-        filesCell(cell, isFileArray, rowIndex, row[key], workspace.id, edit);
+    if (isSingleFile || isFileArray || isSignature) {
+        filesCell(cell, isFileArray, rowIndex, row[key], workspace.id);
         return true;
     }
     return false;
+};
+
+const readOnlyCell = (cell: Cell) => {
+    cell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FFD3D3D3' },
+    };
 };
 
 const styleAWorksheet = (
@@ -211,12 +217,10 @@ const styleAWorksheet = (
     displayColumns?: string[],
     headersOnly?: boolean,
     skip: number = 0,
-    edit: boolean = false,
 ) => {
     worksheet.getRow(1).eachCell((cell) => {
         cell.font = excelStyle.columnHeader.font;
         cell.alignment = excelStyle.columnHeader.alignment;
-        cell.protection = { locked: true };
     });
     const { properties } = template.properties;
     const { createdAt, updatedAt, disabled } = template;
@@ -232,19 +236,29 @@ const styleAWorksheet = (
         rows.forEach((row, index) => {
             const rowIndex = index + skip;
             const cell = worksheet.getCell(`${indexToExcelColumn(columnIndex + 1)}${rowIndex + SKIP_ROW_HEADER}`);
+            if (!isIncludedEditColumn(value, row.disabled, disabled)) readOnlyCell(cell);
             if (row[key] !== undefined && value !== undefined) {
                 cell.alignment = excelStyle.cell.alignment;
                 cell.font = excelStyle.cell.font;
-                if (value.readOnly || value.identifier || value.serialStarter) cell.protection = { locked: true };
-                else cell.protection = { locked: false };
 
-                const isComplex = fixComplexProperties(cell, row, [key, value], rowIndex, workspace, edit);
+                const isComplex = fixComplexProperties(cell, row, [key, value], rowIndex, workspace);
                 if (!isComplex) {
                     cell.value = row[key];
 
-                    if (typeof cell.value === 'boolean') {
-                        cell.value = cell.value ? excelConfig.TRUE_TO_HEBREW : excelConfig.FALSE_TO_HEBREW;
+                    if (typeof cell.value === 'boolean') cell.value = cell.value ? excelConfig.TRUE_TO_HEBREW : excelConfig.FALSE_TO_HEBREW;
+                    if (value.format === 'user') cell.value = JSON.parse(cell.value as string).fullName;
+                    if (value.items?.format === 'user')
+                        cell.value = (cell.value as any).map((stringUser) => JSON.parse(stringUser).fullName).join(', ');
+                    if (value.format === 'location') {
+                        if (typeof cell.value === 'string' && !cell.value.includes('{')) return;
+                        const location: { location: string; coordinateSystem: CoordinateSystem.UTM | CoordinateSystem.WGS84 } =
+                            typeof cell.value === 'string' ? JSON.parse(cell.value) : cell.value;
+                        cell.value =
+                            location.coordinateSystem === CoordinateSystem.UTM
+                                ? locationConverterToString(location.location, CoordinateSystem.WGS84, CoordinateSystem.UTM)
+                                : location.location;
                     }
+
                     // Check if value is date
                     if (cell.value && typeof cell.value === 'string') {
                         const cellValue = String(cell.value);
@@ -266,40 +280,24 @@ const styleAWorksheet = (
                         cell.value = String(cell.value).replace(/<[^>]*>/g, '');
                         cell.alignment = { vertical: 'top' };
                     }
+                    if (value.type === 'number') cell.value = row[key].toString();
 
-                    // Check if value is simple list
-                    if (!headersOnly)
+                    if (!headersOnly) {
+                        // Check if value is simple list
                         if (value.type === 'string' && value.enum) {
                             if (template?.enumPropertiesColors?.[key]?.[row?.[key]])
                                 cell.font = { ...excelStyle.cell.font, color: { argb: hexToARGB(template.enumPropertiesColors[key][row[key]]) } };
                         }
-
-                    // Check if value is multiple list
-                    if (!headersOnly)
+                        // Check if value is multiple list
                         if (value.type === 'array' && value.items?.type === 'string' && value.items.enum) cell.value = row[key].join(', ');
+                    }
                 }
             }
         });
     });
-
-    worksheet
-        .protect('mypassword', {
-            selectLockedCells: true,
-            selectUnlockedCells: true,
-            formatCells: false,
-            formatColumns: false,
-            formatRows: false,
-            insertColumns: false,
-            insertRows: false,
-            deleteColumns: false,
-            deleteRows: false,
-        })
-        .then(() => {
-            console.log('Worksheet is protected');
-        })
-        .catch((error) => {
-            console.error('Error protecting worksheet:', error);
-        });
+    Object.entries(allProperties).forEach(([_key, value], columnIndex) => {
+        if (value.archive) worksheet.getColumn(columnIndex + 1).hidden = true;
+    });
 };
 
-export { createWorkbook, createWorksheet, styleAWorksheet, fixComplexProperties };
+export { createWorkbook, createWorksheet, styleAWorksheet };

@@ -13,6 +13,9 @@ import { searchEntitiesOfTemplateRequest } from '../../../services/entitiesServi
 import { arrayTypes, basePropertyTypes, stringFormats } from '../../../services/templates/enitityTemplatesService';
 import FieldBlock from './FieldBlock';
 import { ErrorToast } from '../../ErrorToast';
+import { environment } from '../../../globals';
+
+const { mapSearchPropertiesLimit } = environment.map;
 
 const processStringFormats = [...stringFormats, 'entityReference'];
 const validPropertyTypes = [...basePropertyTypes, ...processStringFormats, ...arrayTypes, 'enum', 'serialNumber', 'pattern'];
@@ -64,6 +67,7 @@ const addFieldsSchema = Yup.object({
                         relationshipTemplateDirection: Yup.string().required(i18next.t('validation.required')),
                     }),
                 }),
+                mapSearch: Yup.boolean(),
             }),
         )
         .min(1, i18next.t('validation.oneField'))
@@ -72,7 +76,14 @@ const addFieldsSchema = Yup.object({
         )
         .test(i18next.t('validation.oneField'), i18next.t('validation.oneField'), (value) =>
             value ? value.some((obj) => !('archive' in obj) || obj.archive === false || obj.archive === undefined) : false,
-        ),
+        )
+        .test(i18next.t('validation.mapSearchPropertiesLimit', { limit: mapSearchPropertiesLimit }), (value) => {
+            if (!value) return true;
+            const mapSearchCount = value.filter((obj) => obj.mapSearch === true).length;
+            if (mapSearchCount > mapSearchPropertiesLimit)
+                toast.error(i18next.t('validation.mapSearchPropertiesLimit', { limit: mapSearchPropertiesLimit }));
+            return mapSearchCount <= mapSearchPropertiesLimit;
+        }),
     attachmentProperties: Yup.array().of(
         attachmentPropertiesBaseSchema.shape({
             required: Yup.boolean().required(i18next.t('validation.required')),
@@ -91,6 +102,9 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
     setBlock,
 }) => {
     const hasActions = Boolean(initialValues?.actions);
+    const countMapSearchProperties = Object.values(values.properties).filter((property) => property.mapSearch).length;
+
+    if (countMapSearchProperties > mapSearchPropertiesLimit) setBlock(true);
 
     const { data: areThereInstancesByTemplateIdResponse } = useQuery(
         ['areThereInstancesByTemplateId', (values as EntityTemplateWizardValues & { _id: string })._id],
@@ -180,6 +194,7 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
                                             touched={touched}
                                             errors={errors}
                                             supportSerialNumberType
+                                            supportUserType
                                             supportEntityReferenceType={false}
                                             supportChangeToRequiredWithInstances
                                             supportRelationshipReference
@@ -192,6 +207,12 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
                                             supportAddFieldButton={itemId === 'attachmentProperties' || itemId === 'properties'}
                                             hasActions={hasActions}
                                             draggable={{ isDraggable: true, dragHandleProps: draggableProvided.dragHandleProps }}
+                                            locationSearchFields={{
+                                                show: Object.values(values.properties).some((property) => property.type === 'location'),
+                                                disabled: countMapSearchProperties >= 2,
+                                            }}
+                                            supportIdentifier
+                                            hasIdentifier={Object.values(values.properties).some((value) => value.identifier)}
                                         />
                                     </Grid>
                                 )}

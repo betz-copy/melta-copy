@@ -6,11 +6,16 @@ import { useQueryClient } from 'react-query';
 import { useLocation } from 'wouter';
 import { MeltaTooltip } from '../../../../common/MeltaTooltip';
 import RelationshipReferenceView from '../../../../common/RelationshipReferenceView';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
+import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { IRelationshipTemplateMap } from '../../../../interfaces/relationshipTemplates';
-import { IActivityLog } from '../../../../services/activityLogService';
+import { IActivityLog, IUpdateProcessStepMetadata } from '../../../../services/activityLogService';
 import { containsHTMLTags, getFirstLine, getNumLines } from '../../../../utils/HtmlTagsStringValue';
 import { getFilesName } from '../../../../utils/getFileName';
+import { IProcessDetails, IProcessSingleProperty } from '../../../../interfaces/processes/processTemplate';
+import { IMongoStepTemplatePopulated } from '../../../../interfaces/processes/stepTemplate';
+import { StatusDisplay } from '../../../../common/wizards/processInstance/ProcessSummaryStep/ProcessStatus';
+import { CoordinateSystem, LocationData } from '../../../../common/inputs/JSONSchemaFormik/RjsfLocationWidget';
+import { locationConverterToString } from '../../../../utils/map/convert';
 
 const StyledTypography = styled(Typography)(({ theme }) => ({
     fontFamily: 'Rubik',
@@ -20,12 +25,13 @@ const StyledTypography = styled(Typography)(({ theme }) => ({
 })) as typeof Typography;
 
 const EmptyMetadataActionText: React.FC<{
-    action: 'CREATE_ENTITY' | 'DISABLE_ENTITY' | 'ACTIVATE_ENTITY' | 'VIEW_ENTITY';
+    action: 'CREATE_ENTITY' | 'DISABLE_ENTITY' | 'ACTIVATE_ENTITY' | 'VIEW_ENTITY' | 'CREATE_PROCESS';
 }> = ({ action }) => {
     const logTexts = {
         ACTIVATE_ENTITY: i18next.t('entityPage.activityLog.activateEntity'),
         DISABLE_ENTITY: i18next.t('entityPage.activityLog.disableEntity'),
         CREATE_ENTITY: i18next.t('entityPage.activityLog.createEntity'),
+        CREATE_PROCESS: i18next.t('entityPage.activityLog.createProcess'),
     };
 
     return (
@@ -131,17 +137,29 @@ const popperProps = {
     ],
 };
 
-const UpdateTextValue: React.FC<{ value: any; old: boolean; fieldName: string; entityTemplate: IMongoEntityTemplatePopulated }> = ({
-    value,
-    old,
-    fieldName,
-    entityTemplate,
-}) => {
-    const containsHtmlTags = containsHTMLTags(value);
-    let innerContent: React.ReactNode = containsHtmlTags ? `"${getFirstLine(value)}${getNumLines(value) > 1 ? '...' : ''}"` : `"${value}"`;
-    const entityTemplateUpdatedField = entityTemplate.properties.properties[fieldName];
+const isLocationData = (value: any): value is LocationData => {
+    return value && typeof value === 'object' && 'location' in value && 'coordinateSystem' in value;
+};
 
-    if (entityTemplateUpdatedField.format === 'relationshipReference') {
+const UpdateTextValue: React.FC<{
+    value: string;
+    old: boolean;
+    fieldName: string;
+    entityTemplateProperties: Record<string, IEntitySingleProperty> | Record<string, IProcessSingleProperty>;
+}> = ({ value, old, fieldName, entityTemplateProperties }) => {
+    let innerContent: React.ReactNode;
+    if (isLocationData(value))
+        innerContent =
+            value.coordinateSystem === CoordinateSystem.UTM
+                ? locationConverterToString(value.location, CoordinateSystem.WGS84, CoordinateSystem.UTM)
+                : value.location;
+    else {
+        const containsHtmlTags = containsHTMLTags(value);
+        innerContent = containsHtmlTags ? `"${getFirstLine(value)}${getNumLines(value) > 1 ? '...' : ''}"` : `"${value}"`;
+    }
+    const entityTemplateUpdatedField = entityTemplateProperties[fieldName];
+
+    if (entityTemplateUpdatedField && entityTemplateUpdatedField.format === 'relationshipReference') {
         innerContent = (
             <RelationshipReferenceView
                 entity={value}
@@ -152,13 +170,17 @@ const UpdateTextValue: React.FC<{ value: any; old: boolean; fieldName: string; e
     }
 
     const isFileIdFormat = (): boolean => {
-        const { type, format } = entityTemplate.properties.properties[fieldName];
+        if (!entityTemplateProperties[fieldName]) return false;
+
+        const { type, format } = entityTemplateProperties[fieldName];
 
         return type === 'string' && format === 'fileId';
     };
 
     const isArrayOfFileIds = (): boolean => {
-        const { type, items } = entityTemplate.properties.properties[fieldName];
+        if (!entityTemplateProperties[fieldName]) return false;
+
+        const { type, items } = entityTemplateProperties[fieldName];
 
         return type === 'array' && items?.type === 'string' && items.format === 'fileId';
     };
@@ -174,39 +196,32 @@ const UpdateTextValue: React.FC<{ value: any; old: boolean; fieldName: string; e
         return content;
     };
 
-    return (
+    return value && typeof innerContent === 'string' ? (
         <MeltaTooltip
             PopperProps={popperProps}
             disableHoverListener={!innerContent}
-            title={
-                <Grid style={{ maxHeight: '500px', overflowY: 'auto' }}>
-                    {value
-                        ? typeof innerContent === 'string'
-                            ? contentDisplayNameByTemplate(innerContent)
-                            : innerContent
-                        : i18next.t('entityPage.activityLog.emptyField')}
-                </Grid>
-            }
+            title={<Grid style={{ maxHeight: '500px', overflowY: 'auto' }}>{contentDisplayNameByTemplate(innerContent)}</Grid>}
             placement="top-start"
         >
             <Grid>
                 <StyledTypography variant="body2" style={ellipsisStyle}>
                     {old ? i18next.t('entityPage.activityLog.from') : i18next.t('entityPage.activityLog.to')}{' '}
-                    {value
-                        ? typeof innerContent === 'string'
-                            ? contentDisplayNameByTemplate(innerContent)
-                            : innerContent
-                        : i18next.t('entityPage.activityLog.emptyField')}
+                    {contentDisplayNameByTemplate(innerContent)}
                 </StyledTypography>
             </Grid>
         </MeltaTooltip>
+    ) : (
+        <StyledTypography variant="body2" style={{ ...ellipsisStyle, display: 'flex' }}>
+            {old ? i18next.t('entityPage.activityLog.from') : i18next.t('entityPage.activityLog.to')}{' '}
+            {value ? innerContent : i18next.t('entityPage.activityLog.emptyField')}
+        </StyledTypography>
     );
 };
 
 const UpdateEntityMetadataActionText: React.FC<{
     actionMetadata: { updatedFields: [{ fieldName: string; oldValue: any; newValue: any }] };
-    entityTemplate: IMongoEntityTemplatePopulated;
-}> = ({ actionMetadata, entityTemplate }) => {
+    entityTemplateProperties: Record<string, IEntitySingleProperty> | Record<string, IProcessSingleProperty>;
+}> = ({ actionMetadata, entityTemplateProperties }) => {
     const theme = useTheme();
     return (
         <Grid item minWidth="190px">
@@ -219,7 +234,7 @@ const UpdateEntityMetadataActionText: React.FC<{
             {actionMetadata.updatedFields.map((field) => {
                 const { oldValue, newValue, fieldName } = field;
 
-                const deleted = entityTemplate.properties.properties[fieldName];
+                const deleted = entityTemplateProperties[fieldName];
                 const isDeleted = deleted === undefined;
 
                 return (
@@ -227,17 +242,19 @@ const UpdateEntityMetadataActionText: React.FC<{
                         <StyledTypography key={fieldName} variant="body2" style={{ ...ellipsisStyle, color: theme.palette.primary.main }}>
                             {isDeleted
                                 ? `${fieldName} (${i18next.t('entityPage.activityLog.wasDeleted')})`
-                                : entityTemplate.properties.properties[fieldName].title}
+                                : entityTemplateProperties[fieldName].title}
                         </StyledTypography>
-                        {[oldValue, newValue].map((value, index) => (
-                            <UpdateTextValue
-                                key={value}
-                                value={value}
-                                old={index === 0}
-                                fieldName={field.fieldName}
-                                entityTemplate={entityTemplate}
-                            />
-                        ))}
+                        {[oldValue, newValue].map((value, index) => {
+                            return (
+                                <UpdateTextValue
+                                    key={value}
+                                    value={value}
+                                    old={index === 0}
+                                    fieldName={field.fieldName}
+                                    entityTemplateProperties={entityTemplateProperties}
+                                />
+                            );
+                        })}
                     </Grid>
                 );
             })}
@@ -245,28 +262,89 @@ const UpdateEntityMetadataActionText: React.FC<{
     );
 };
 
+const UpdateStepProcessMetadataActionText: React.FC<{
+    actionMetadata: IUpdateProcessStepMetadata['metadata'];
+    entityTemplate: IMongoStepTemplatePopulated;
+}> = ({ actionMetadata, entityTemplate }) => {
+    return (
+        <Grid item minWidth="190px">
+            {actionMetadata?.updatedFields && actionMetadata?.updatedFields.length > 0 && (
+                <UpdateEntityMetadataActionText
+                    actionMetadata={{ updatedFields: actionMetadata.updatedFields }}
+                    entityTemplateProperties={entityTemplate.properties.properties}
+                />
+            )}
+            {actionMetadata.status && (
+                <Grid>
+                    <StyledTypography variant="body2" marginBottom="5px">
+                        {i18next.t('entityPage.activityLog.updatedStatus')}
+                    </StyledTypography>
+                    <StatusDisplay
+                        status={actionMetadata.status}
+                        text={i18next.t(`wizard.processInstance.summary.processStatuses.${actionMetadata.status}`)}
+                        displayIcon={false}
+                    />
+                </Grid>
+            )}
+            {actionMetadata.comments && (
+                <Grid>
+                    <StyledTypography variant="body2" marginBottom="5px">
+                        {i18next.t('entityPage.activityLog.updatedComment')}
+                    </StyledTypography>
+                    <Typography
+                        variant="body1"
+                        sx={{
+                            paddingY: '5px',
+                            paddingX: '10px',
+                            wordBreak: 'break-word',
+                            fontSize: '13px',
+                            overflowY: 'auto',
+                            maxHeight: '50px',
+                        }}
+                    >
+                        {actionMetadata.comments}
+                    </Typography>
+                </Grid>
+            )}
+        </Grid>
+    );
+};
+
 const ActionText: React.FC<{
     log: IActivityLog;
-    entityTemplate: IMongoEntityTemplatePopulated;
+    entityTemplate: IMongoEntityTemplatePopulated | IProcessDetails | IMongoStepTemplatePopulated;
 }> = ({ log: { metadata, action }, entityTemplate }) => {
     if (action === 'CREATE_RELATIONSHIP' || action === 'DELETE_RELATIONSHIP')
         return (
             <RelationshipMetadataActionText
-                entityTemplate={entityTemplate}
+                entityTemplate={entityTemplate as IMongoEntityTemplatePopulated}
                 action={action}
                 actionMetadata={metadata as { relationshipId: string; relationshipTemplateId: string; entityId: string }}
             />
         );
-    if (action === 'UPDATE_ENTITY')
+    if (action === 'UPDATE_ENTITY' || action === 'UPDATE_PROCESS')
         return (
             <UpdateEntityMetadataActionText
-                entityTemplate={entityTemplate}
+                entityTemplateProperties={entityTemplate.properties.properties}
                 actionMetadata={metadata as { updatedFields: [{ fieldName: string; oldValue: any; newValue: any }] }}
             />
         );
 
+    if (action === 'UPDATE_PROCESS_STEP')
+        return (
+            <UpdateStepProcessMetadataActionText
+                entityTemplate={entityTemplate as IMongoStepTemplatePopulated}
+                actionMetadata={metadata as IUpdateProcessStepMetadata['metadata']}
+            />
+        );
+
     if (action === 'DUPLICATE_ENTITY')
-        return <DuplicateEntityMetadataActionText entityTemplate={entityTemplate} actionMetadata={metadata as { entityIdDuplicatedFrom: string }} />;
+        return (
+            <DuplicateEntityMetadataActionText
+                entityTemplate={entityTemplate as IMongoEntityTemplatePopulated}
+                actionMetadata={metadata as { entityIdDuplicatedFrom: string }}
+            />
+        );
 
     return <EmptyMetadataActionText action={action} />;
 };

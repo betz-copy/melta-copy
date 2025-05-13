@@ -7,18 +7,32 @@ import DatePickerWrapper from './DatePickerWrapper';
 const DateRange: React.FC<{
     onStartDateChange: (newStartDateInput: Date | null) => void;
     onEndDateChange: (newEndDateInput: Date | null) => void;
-    startDateInput: Date | null;
-    endDateInput: Date | null;
+    startDateInput: Date | string | null;
+    endDateInput: Date | string | null;
     directionIsRow: boolean;
     overrideSx?: object;
-}> = ({ onStartDateChange, onEndDateChange, startDateInput, endDateInput, overrideSx, directionIsRow }) => {
+    maxEndDate?: Date;
+    maxStartDate?: Date;
+    readOnly?: boolean;
+}> = ({
+    onStartDateChange,
+    onEndDateChange,
+    startDateInput,
+    endDateInput,
+    overrideSx,
+    directionIsRow,
+    maxEndDate,
+    maxStartDate,
+    readOnly = false,
+}) => {
     return (
         <Grid
             container
             justifyContent="center"
             alignItems="center"
             wrap="nowrap"
-            spacing={overrideSx ? 2 : 0}
+            // eslint-disable-next-line no-nested-ternary
+            spacing={overrideSx && 'spacing' in overrideSx ? (overrideSx.spacing as number) : overrideSx ? 2 : 0}
             display="flex"
             flexDirection={directionIsRow ? 'row' : 'column'}
         >
@@ -27,8 +41,7 @@ const DateRange: React.FC<{
                     label={i18next.t('processInstancesPage.startDate')}
                     value={startDateInput}
                     onChange={onStartDateChange}
-                    maxDate={endDateInput ?? new Date()}
-                    minDate={undefined}
+                    maxDate={endDateInput ?? maxStartDate}
                     sx={overrideSx}
                     components={
                         overrideSx && {
@@ -38,6 +51,7 @@ const DateRange: React.FC<{
                     }
                     isStartDate
                     directionIsRow={directionIsRow}
+                    readOnly={readOnly}
                 />
             </Grid>
             <Grid item className="processList-dateContainer">
@@ -45,7 +59,7 @@ const DateRange: React.FC<{
                     label={i18next.t('processInstancesPage.endDate')}
                     value={endDateInput}
                     onChange={onEndDateChange}
-                    maxDate={new Date()}
+                    maxDate={maxEndDate}
                     minDate={startDateInput}
                     sx={overrideSx}
                     components={
@@ -55,6 +69,7 @@ const DateRange: React.FC<{
                         }
                     }
                     directionIsRow={directionIsRow}
+                    readOnly={readOnly}
                 />
             </Grid>
         </Grid>

@@ -1,3 +1,4 @@
+import { logger } from 'elastic-apm-node';
 import config from '../../../config';
 import { ProcessService } from '../../../externalServices/processService';
 import {
@@ -91,6 +92,89 @@ export class ProcessTemplatesManager extends DefaultManagerProxy<ProcessService>
         return this.getTemplateWithPopulatedStepReviewers(processTemplate);
     }
 
+    private async getFilesPathOfDeletedProperty(
+        templateId: string,
+        removedFileProperties: {
+            processProperties: Record<string, boolean>;
+            stepsProperties: Record<string, Record<string, boolean>>;
+        },
+    ) {
+        const processesInstances = await this.getInstancesOfTemplate(templateId);
+
+        const filePaths: string[] = [];
+
+        processesInstances.forEach((processInstance) => {
+            Object.entries(removedFileProperties.processProperties).forEach(([filePropertyName, isMultipleFiles]) => {
+                const fileToRemove = processInstance.details[filePropertyName];
+
+                if (fileToRemove) {
+                    if (isMultipleFiles) filePaths.push(...fileToRemove);
+                    else filePaths.push(fileToRemove);
+                }
+            });
+
+            Object.keys(removedFileProperties.stepsProperties).forEach((stepId) => {
+                const stepWithFilesToRemove = processInstance.steps.find((step) => step.templateId === stepId);
+
+                if (stepWithFilesToRemove && stepWithFilesToRemove.properties) {
+                    Object.entries(removedFileProperties.stepsProperties[stepId]).forEach(([filePropertyName, isMultipleFiles]) => {
+                        const fileToRemove = stepWithFilesToRemove.properties![filePropertyName];
+
+                        if (fileToRemove) {
+                            if (isMultipleFiles) filePaths.push(...fileToRemove);
+                            else filePaths.push(fileToRemove);
+                        }
+                    });
+                }
+            });
+        });
+
+        return filePaths;
+    }
+
+    async getFilePathsOfProcessInstancesToDelete(
+        currProcessTemplate: IMongoProcessTemplatePopulated,
+        updatedProcessTemplate: IProcessTemplateWithSteps,
+    ) {
+        const removedFileProperties: {
+            processProperties: Record<string, boolean>;
+            stepsProperties: Record<string, Record<string, boolean>>;
+        } = {
+            processProperties: {},
+            stepsProperties: {},
+        };
+
+        Object.entries(currProcessTemplate.details.properties.properties).forEach(([key, value]) => {
+            const newValue = updatedProcessTemplate.details.properties.properties[key];
+            const { format, items } = value;
+
+            if (!newValue && (format === 'fileId' || items?.format === 'fileId')) {
+                removedFileProperties.processProperties[key] = items?.format === 'fileId';
+            }
+        });
+
+        currProcessTemplate.steps.forEach((step, index) => {
+            removedFileProperties.stepsProperties[step._id] = {};
+            Object.entries(step.properties.properties).forEach(([key, value]) => {
+                const newValue = updatedProcessTemplate.steps[index].properties.properties[key];
+                const { format, items } = value;
+
+                if (!newValue && (format === 'fileId' || items?.format === 'fileId')) {
+                    removedFileProperties.stepsProperties[step._id][key] = items?.format === 'fileId';
+                }
+            });
+        });
+
+        if (
+            Object.keys(removedFileProperties.processProperties).length ||
+            Object.values(removedFileProperties.stepsProperties).some((stepRemovedProperties) => Object.keys(stepRemovedProperties).length > 0)
+        ) {
+            return this.getFilesPathOfDeletedProperty(currProcessTemplate._id, removedFileProperties); // TODO - what happens if the delete properties after that is failed..
+        }
+
+        return [];
+    }
+
     async updateProcessTemplate(templateId: string, templateData: IProcessTemplateWithSteps, icons: UploadedFile[], userId: string) {
         const currProcessTemplate = await this.getProcessTemplate(templateId, userId);
 
@@ -100,8 +184,19 @@ export class ProcessTemplatesManager extends DefaultManagerProxy<ProcessService>
             updatedSteps.map((step) => step.iconFileId),
         );
 
+        const filePathsOfFilesToDelete = await this.getFilePathsOfProcessInstancesToDelete(currProcessTemplate, {
+            ...templateData,
+            steps: updatedSteps,
+        });
+
         const processTemplate = await this.service.updateProcessTemplate(templateId, { ...templateData, steps: updatedSteps });
         const populatedProcessTemplate = await this.getTemplateWithPopulatedStepReviewers(processTemplate);
+
+        if (filePathsOfFilesToDelete.length) {
+            await this.storageService.deleteFiles(filePathsOfFilesToDelete).catch((error) => {
+                logger.error('Failed to delete files', filePathsOfFilesToDelete, error);
+            });
+        }
 
         this.sendProcessReviewerUpdateNotifications(populatedProcessTemplate, currProcessTemplate);
 

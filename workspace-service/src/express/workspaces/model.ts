@@ -8,6 +8,7 @@ const MetadataSchema = new mongoose.Schema<IMetadata>(
     {
         shouldNavigateToEntityPage: { type: Boolean },
         isDrawerOpen: { type: Boolean },
+        flowCube: { type: Boolean },
         agGrid: {
             rowCount: { type: Number },
             defaultExpandedRowCount: { type: Number },
@@ -29,7 +30,6 @@ const MetadataSchema = new mongoose.Schema<IMetadata>(
             filesLimit: { type: Number },
         },
         searchLimits: {
-            table: { type: Number },
             bulk: { type: Number },
         },
     },

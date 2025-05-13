@@ -2,22 +2,6 @@ import { Request } from 'express';
 import Joi from 'joi';
 import { wrapValidator } from './express';
 
-const validateProperties = (value, helpers) => {
-    const properties = value;
-    const requiredFields = Object.keys(properties).filter((key) => properties[key].readOnly !== true || properties[key].archive !== true);
-
-    for (const key of requiredFields) {
-        if (properties[key].required && properties[key].readOnly) {
-            return helpers.message(`Property ${key} is readOnly and cannot be required`);
-        }
-        if (properties[key].required && !properties[key].identifier) {
-            return helpers.message(`Property ${key} is identifier and has to be required`);
-        }
-    }
-
-    return value;
-};
-
 export const ExtendedJoi = Joi.extend(
     {
         base: Joi.object(),
@@ -27,10 +11,7 @@ export const ExtendedJoi = Joi.extend(
         },
         coerce: (value: string, helpers) => {
             try {
-                let parsedValue = JSON.parse(value);
-                if ('required' in parsedValue && 'type' in parsedValue && 'hide' in parsedValue)
-                    parsedValue = validateProperties(parsedValue, helpers);
-                return { value: parsedValue };
+                return { value: JSON.parse(value) };
             } catch {
                 return { errors: [helpers.error('string.object')] };
             }

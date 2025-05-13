@@ -5,6 +5,7 @@ import { WorkspaceTypes } from './interface';
 const metadataSchema = Joi.object({
     shouldNavigateToEntityPage: Joi.boolean(),
     isDrawerOpen: Joi.boolean(),
+    flowCube: Joi.boolean(),
     agGrid: Joi.object({
         rowCount: Joi.number(),
         defaultExpandedRowCount: Joi.number(),
@@ -26,7 +27,6 @@ const metadataSchema = Joi.object({
         filesLimit: Joi.number(),
     }).optional(),
     searchLimits: Joi.object({
-        table: Joi.number(),
         bulk: Joi.number(),
     }).optional(),
 }).optional();

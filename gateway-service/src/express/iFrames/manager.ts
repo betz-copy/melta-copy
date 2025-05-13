@@ -1,29 +1,19 @@
-import { FilterQuery, Types } from 'mongoose';
-import { StatusCodes } from 'http-status-codes';
-import config from '../../config';
-import { ISearchIFramesBody } from '../../externalServices/iFramesService';
 import { StorageService } from '../../externalServices/storageService';
 import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
-import { DefaultManagerMongo } from '../../utils/mongo/manager';
-import { ServiceError } from '../error';
-import { IFrame, IFrameDocument } from './interface';
-import IFrameSchema from './model';
 import { UploadedFile } from '../../utils/busboy/interface';
+import DefaultManagerProxy from '../../utils/express/manager';
+import { IFrame, IMongoIframe, IFramesService, ISearchIFramesBody } from '../../externalServices/dashboardService/iframesService';
 
-export class IFrameManager extends DefaultManagerMongo<IFrameDocument> {
+export class IFrameManager extends DefaultManagerProxy<IFramesService> {
     private storageService: StorageService;
 
     constructor(workspaceId: string) {
-        super(workspaceId, config.mongo.iFramesCollectionName, IFrameSchema);
+        super(new IFramesService(workspaceId));
         this.storageService = new StorageService(workspaceId);
     }
 
-    private filterIFramesWithPermissions(allIFrames: IFrameDocument[], allowedCategories: string[]) {
+    private filterIFramesWithPermissions(allIFrames: IMongoIframe[], allowedCategories: string[]) {
         return allIFrames.filter((iFrame) => iFrame.categoryIds.every((categoryId) => allowedCategories.includes(categoryId)));
-    }
-
-    escapeRegExp(text: string) {
-        return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
     }
 
     async searchIFrames(
@@ -32,16 +22,7 @@ export class IFrameManager extends DefaultManagerMongo<IFrameDocument> {
     ) {
         const allowedCategories = Object.keys(permissionsOfUserId.instances?.categories ?? {});
 
-        const query: FilterQuery<IFrameDocument> = {};
-        if (search) {
-            const searchRegex = { $regex: this.escapeRegExp(search), $options: 'i' };
-            query.$or = [{ name: searchRegex }, { url: searchRegex }];
-        }
-        if (ids) query._id = { $in: ids.map((id) => new Types.ObjectId(id)) };
-        const iFrames = await this.model
-            .find(query, {}, { limit, skip, sort: ids ? {} : { createdAt: -1 } })
-            .lean()
-            .exec();
+        const iFrames = await this.service.searchIFrames({ search, limit, skip, ids });
 
         const filteredIFrames = permissionsOfUserId.admin?.scope ? iFrames : this.filterIFramesWithPermissions(iFrames, allowedCategories);
 
@@ -51,7 +32,7 @@ export class IFrameManager extends DefaultManagerMongo<IFrameDocument> {
     }
 
     async getIFrameById(iFrameId: string) {
-        return this.model.findById(iFrameId).orFail(new ServiceError(StatusCodes.NOT_FOUND, 'IFrame not found')).lean().exec();
+        return this.service.getIFrameById(iFrameId);
     }
 
     async createIFrame(iFrameData: Omit<IFrame, 'iconFileId'>, file?: UploadedFile) {
@@ -61,11 +42,11 @@ export class IFrameManager extends DefaultManagerMongo<IFrameDocument> {
             newIFrame = { ...iFrameData, iconFileId: newFileId };
         } else newIFrame = { ...iFrameData, iconFileId: null };
 
-        return this.model.create(newIFrame);
+        return this.service.createIFrame(newIFrame);
     }
 
     deleteIFrame(iFrameId: string) {
-        return this.model.findByIdAndDelete(iFrameId).orFail(new ServiceError(StatusCodes.NOT_FOUND, 'IFrame not found')).lean().exec();
+        return this.service.deleteIFrame(iFrameId);
     }
 
     async update(
@@ -74,11 +55,7 @@ export class IFrameManager extends DefaultManagerMongo<IFrameDocument> {
             file?: string;
         },
     ) {
-        return this.model
-            .findByIdAndUpdate(id, updatedIFrame, { new: true, overwrite: true })
-            .orFail(new ServiceError(StatusCodes.NOT_FOUND, 'IFrame not found'))
-            .lean()
-            .exec();
+        return this.service.updateIFrame(id, updatedIFrame);
     }
 
     async updateIFrame(iFrameId: string, updatedData: Partial<IFrame> & { file?: string }, file?: UploadedFile) {
