@@ -1,8 +1,10 @@
-import { Autocomplete, MenuItem, TextField, TextFieldProps } from '@mui/material';
+import { Autocomplete, Grid, MenuItem, TextField, TextFieldProps, Typography } from '@mui/material';
 import React from 'react';
 import { ExpandMore, Close } from '@mui/icons-material';
 import { ColoredEnumChip } from '../ColoredEnumChip';
 import { MeltaCheckbox } from '../MeltaCheckbox';
+import { MeltaTooltip } from '../MeltaTooltip';
+import { HighlightText } from '../../utils/HighlightText';
 
 const MultipleSelect: React.FC<{
     items: {
@@ -77,51 +79,84 @@ const MultipleSelect: React.FC<{
                     </MenuItem>
                 );
             }}
-            renderTags={(tagValue, getTagProps) =>
-                tagValue.map((option, index) => {
-                    const { key, onDelete, ...restTagProps } = getTagProps({ index });
-                    return (
-                        <ColoredEnumChip
-                            key={key}
-                            label={option.label}
-                            color={option.color || 'default'}
-                            onDelete={onDelete}
-                            deleteIcon={<Close />}
-                            {...restTagProps}
-                            style={{
-                                margin: '0 4px 4px 0',
-                            }}
-                        />
-                    );
-                })
-            }
-            renderInput={(params) => (
-                <TextField
-                    {...textFieldProps}
-                    {...params}
-                    required={required}
-                    autoFocus={autofocus}
-                    onBlur={onBlur}
-                    onFocus={onFocus}
-                    variant={variant}
-                    error={rawErrors.length > 0}
-                    label={label}
-                    InputProps={{
-                        ...params.InputProps,
-                        required: multiple ? required && value.length === 0 : required,
-                        startAdornment:
-                            selectedValue && !Array.isArray(selectedValue) ? (
-                                <ColoredEnumChip label={selectedValue.label} color={selectedValue.color || 'default'} />
-                            ) : undefined,
-                        inputProps: {
-                            ...params.inputProps,
-                            style: value ? { display: 'none' } : {},
-                        },
-                    }}
-                    color={color as TextFieldProps['color']}
-                    InputLabelProps={{ shrink: readonly || undefined }}
-                />
-            )}
+            renderTags={(tagValue, getTagProps) => {
+                const maxVisible = 6;
+                const visibleTags = tagValue.slice(0, maxVisible);
+                const hiddenTags = tagValue.slice(maxVisible);
+
+                return [
+                    ...visibleTags.map((option, index) => {
+                        const { key, onDelete, ...restTagProps } = getTagProps({ index });
+                        return (
+                            <Grid alignContent="center" justifyContent="center" key={key}>
+                                <ColoredEnumChip
+                                    label={option.label}
+                                    color={option.color || 'default'}
+                                    onDelete={onDelete}
+                                    deleteIcon={<Close />}
+                                    {...restTagProps}
+                                    style={{ margin: '2px 4px 2px 0' }}
+                                />
+                            </Grid>
+                        );
+                    }),
+                    ...(hiddenTags.length > 0
+                        ? [
+                              <Grid item style={{ cursor: 'pointer' }} key="more">
+                                  <MeltaTooltip
+                                      title={hiddenTags.map((item) => (
+                                          <Typography key={item.value} style={{ margin: '5px' }}>
+                                              <HighlightText text={item.label} />
+                                          </Typography>
+                                      ))}
+                                      arrow
+                                  >
+                                      <Grid
+                                          container
+                                          alignItems="center"
+                                          justifyContent="center"
+                                          sx={{ borderRadius: '30px', height: '24px', width: '24px', background: 'var(--Gray-Medium, #9398C2)' }}
+                                      >
+                                          <Typography color="white" fontWeight={500} fontSize="12px">
+                                              +{hiddenTags.length}
+                                          </Typography>
+                                      </Grid>
+                                  </MeltaTooltip>
+                              </Grid>,
+                          ]
+                        : []),
+                ];
+            }}
+            renderInput={(params) => {
+                const isMultiple = selectedValue && !Array.isArray(selectedValue);
+                return (
+                    <TextField
+                        {...textFieldProps}
+                        {...params}
+                        required={required}
+                        autoFocus={autofocus}
+                        onBlur={onBlur}
+                        onFocus={onFocus}
+                        variant={variant}
+                        error={rawErrors.length > 0}
+                        label={label}
+                        InputProps={{
+                            ...params.InputProps,
+                            startAdornment: isMultiple ? (
+                                <ColoredEnumChip label={selectedValue.label} color={selectedValue.color || 'default'} style={{ marginLeft: 1 }} />
+                            ) : (
+                                params.InputProps.startAdornment
+                            ),
+                            inputProps: {
+                                ...params.inputProps,
+                                style: isMultiple ? { display: 'none' } : {},
+                            },
+                        }}
+                        color={color as TextFieldProps['color']}
+                        InputLabelProps={{ shrink: readonly || undefined }}
+                    />
+                );
+            }}
         />
     );
 };
