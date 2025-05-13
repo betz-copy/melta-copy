@@ -104,7 +104,7 @@ export class MinIOClient {
             }
 
             fileStream.on('error', (err) => {
-                console.error(`❌ Error in fileStream to ${destinationFilePath}`, err);
+                console.error(`Error in fileStream to ${destinationFilePath}`, err);
             });
 
             return this.minioClient.putObject(this.bucketName, destinationFilePath, fileStream, size, metaData);

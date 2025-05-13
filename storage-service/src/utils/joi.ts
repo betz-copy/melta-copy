@@ -36,20 +36,9 @@ const normalizeRequest = (req: any, value: any) => {
 export const ValidateRequest = (schema: Joi.ObjectSchema<any>, options: Joi.ValidationOptions = defaultValidationOptions) => {
     const validator = async (req: Request) => {
         const { error, value } = schema.unknown().validate(req, options);
-        if (error) {
-            console.log('🔴 [JOI] Error');
+        if (error) throw error;
 
-            // console.log(error);
-            console.log(req.file);
-            console.log(req.files);
-            console.log(req.body);
-            console.log(value);
-            throw error;
-        }
-
-        if (options.convert) {
-            normalizeRequest(req, value);
-        }
+        if (options.convert) normalizeRequest(req, value);
     };
 
     return wrapValidator(validator);

@@ -24,30 +24,26 @@ export class FilesManager extends DefaultManagerMinio {
         const nameWithId = `${generate32CharUUID()}${file?.originalname}`;
         const fileWithId = { ...file, originalname: nameWithId, path: nameWithId };
 
-        await this.minioClient.uploadFileStream(
-            fileWithId.stream!,
-            fileWithId.originalname,
-            fileWithId.size ?? undefined, // ✅ use only if known
-            { 'content-type': file?.mimetype },
-        );
+        await this.minioClient.uploadFileStream(fileWithId.stream!, fileWithId.originalname, fileWithId.size ?? undefined, {
+            'content-type': file?.mimetype,
+        });
 
         return fileWithId;
     }
 
     async uploadFiles(files?: UploadedFile[]) {
-        console.log('uploadFiles', files);
-        if (!files?.length) throw new Error('No files to upload');
+        if (!files?.length) return [];
 
         await this.minioClient.ensureBucket();
 
-        const filesWithIds = files.map((file) => {
+        const filesWithIds = files?.map((file) => {
             if (!file.stream) throw new Error(`Missing stream for file ${file.originalname}`);
             const nameWithId = this.buildNameWithId(file);
             return { ...file, originalname: nameWithId, path: nameWithId };
         });
 
         await Promise.allSettled(
-            filesWithIds.map((file) =>
+            filesWithIds!.map((file) =>
                 this.minioClient.uploadFileStream(file.stream, file.originalname!, file.size ?? undefined, { 'content-type': file.mimetype }),
             ),
         );
@@ -135,7 +131,6 @@ export class FilesManager extends DefaultManagerMinio {
     private async streamToBuffer(stream: Stream): Promise<Buffer> {
         return new Promise((resolve, reject) => {
             const chunks: Buffer[] = [];
-            console.log({ chunks });
 
             stream.on('data', (chunk: Buffer) => chunks.push(chunk));
             stream.on('end', () => resolve(Buffer.concat(chunks)));

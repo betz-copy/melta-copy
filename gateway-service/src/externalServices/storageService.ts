@@ -28,7 +28,6 @@ export class StorageService extends DefaultExternalServiceApi {
         const passthrough = new PassThrough();
         file.stream.pipe(passthrough);
         formData.append('file', passthrough, file.originalname);
-        console.log('uploadFile', file);
 
         const { data } = await this.api.post<{ path: string }>(uploadFileRoute, formData, {
             headers: formData.getHeaders(),
@@ -53,7 +52,7 @@ export class StorageService extends DefaultExternalServiceApi {
             headers,
             maxBodyLength: Infinity,
             maxContentLength: Infinity,
-            timeout: 120_000, // שמור על טיים־אאוט סביר
+            timeout: 120_000,
         });
 
         return data.map(({ path }) => path);
