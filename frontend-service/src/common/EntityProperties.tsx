@@ -247,7 +247,10 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
                         item
                         container
                         flexDirection="row"
-                        style={overrideStyleInLongText ? { width: '100%' } : innerStyle}
+                        style={{
+                            ...(overrideStyleInLongText ? { width: '100%' } : innerStyle),
+                            marginBottom: '20px',
+                        }}
                         alignItems={textWrap ? 'flex-start' : 'center'}
                     >
                         <Grid item container width="100%" flexWrap="nowrap" alignItems={textWrap ? 'flex-start' : 'center'}>
@@ -371,7 +374,6 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
             ? entityTemplate.propertiesOrder.filter((propertyKey) => entityTemplate.properties.properties[propertyKey].archive)
             : entityTemplate.propertiesOrder.filter((propertyKey) => !entityTemplate.properties.properties[propertyKey].archive);
 
-    // const [hideFieldsToDisplay, setHideFieldsToDisplay] = React.useState(entityTemplate.properties.hide);
     const alreadyRenderedGroups = new Set<string>();
 
     return (
@@ -381,8 +383,8 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
             <Grid container style={{ ...style, alignItems: textWrap ? 'flex-start' : 'center', alignContent: 'center' }}>
                 {showByGroups && entityTemplate.fieldGroups ? (
                     propertiesOrderedToShow.map((propertyKey, index) => {
-                        const group = entityTemplate.fieldGroups!.find((g) => g.fields.includes(propertyKey));
-                        const groupIndex = entityTemplate.fieldGroups!.findIndex((g) => g.name === group?.name);
+                        const group = entityTemplate.fieldGroups?.find((g) => g.fields.includes(propertyKey));
+                        const groupIndex = entityTemplate.fieldGroups?.findIndex((g) => g.name === group?.name);
 
                         if (group && !alreadyRenderedGroups.has(group.name)) {
                             alreadyRenderedGroups.add(group.name);
@@ -393,21 +395,15 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                                 <Box
                                     key={group.name}
                                     sx={{
-                                        // mb: 2,
                                         width: '100%',
                                         borderRadius: '40px',
                                         marginBottom: entityTemplate.fieldGroups?.length === groupIndex ? '0px' : '40px',
                                         marginTop: index === 0 ? '0px' : '40px',
                                     }}
                                 >
-                                    {/* <Grid container> */}
-                                    {/* <Grid container item alignItems="center"> */}
-                                    {/* <Grid item sx={{ width: '30%' }}> */}
-                                    <Typography fontWeight="bold" fontSize="16px" color="#4752B6" paddingBottom={1} marginBottom="10px">
+                                    <Typography fontWeight="bold" fontSize="16px" color="#4752B6" paddingBottom={1} marginBottom="20px">
                                         {group.displayName}
                                     </Typography>
-                                    {/* </Grid> */}
-                                    {/* </Grid> */}
                                     <Grid container>
                                         <PropertiesDetails
                                             key={group.name}
@@ -427,7 +423,6 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                                             textWrap={textWrap}
                                         />
                                     </Grid>
-                                    {/* </Grid> */}
                                 </Box>
                             );
                         }
