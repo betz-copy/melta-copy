@@ -9,14 +9,13 @@ import {
     Button,
     Grid,
     FormControlLabel,
-    Checkbox,
     Typography,
     FormControl,
     RadioGroup,
     Radio,
     Autocomplete,
+    InputAdornment,
 } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
 import i18next from 'i18next';
 import { useQueryClient } from 'react-query';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
@@ -24,6 +23,7 @@ import { ICategoryMap, IMongoCategory } from '../../../interfaces/categories';
 import { ColoredEnumChip } from '../../ColoredEnumChip';
 import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter, IAGGridTextFilter } from '../../../utils/agGrid/interfaces';
 import FieldsAndFiltersTable from './FieldsAndFiltersTable';
+import { MeltaCheckbox } from '../../MeltaCheckbox';
 
 export interface IFieldFilter {
     fieldValue: IEntitySingleProperty;
@@ -111,16 +111,21 @@ const CreateChildTemplateDialog: React.FC<{
 
     return (
         <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
-            <DialogTitle>{entityTemplate?.displayName}</DialogTitle>
+            <DialogTitle sx={{ fontWeight: 400, fontSize: '16px' }}>{entityTemplate?.displayName}</DialogTitle>
             <DialogContent>
                 <Grid container direction="column">
-                    <Grid container sx={{ pt: 1 }} alignItems="center" justifyContent="space-between">
+                    <Grid container sx={{ pt: 3 }} alignItems="center" justifyContent="space-between">
                         <Grid xs={6} item>
                             <TextField
                                 fullWidth
                                 label={i18next.t('createChildTemplateDialog.templateName')}
                                 onChange={(e) => setChildTemplateName(e.target.value)}
                                 value={childTemplateName}
+                                InputLabelProps={{ sx: { fontSize: '14px', fontWeight: 400 } }}
+                                InputProps={{
+                                    sx: { fontSize: '14px', fontWeight: 400 },
+                                    startAdornment: <InputAdornment position="start">{entityTemplate.displayName} -</InputAdornment>,
+                                }}
                             />
                         </Grid>
                         <Grid xs={5.5} item>
@@ -133,13 +138,15 @@ const CreateChildTemplateDialog: React.FC<{
                                 variant="outlined"
                                 onChange={(e) => setChildTemplateDescription(e.target.value)}
                                 value={childTemplateDescription}
+                                InputLabelProps={{ sx: { fontSize: '14px', fontWeight: 400 } }}
+                                InputProps={{ sx: { fontSize: '14px', fontWeight: 400 } }}
                             />
                         </Grid>
                     </Grid>
 
-                    <Grid container direction="row">
-                        <Grid xs={6} item container marginBottom="0.4rem">
-                            <FormControl>
+                    <Grid container direction="row" sx={{ pt: 3 }} alignItems="center" justifyContent="space-between">
+                        <Grid item xs={6}>
+                            <FormControl fullWidth>
                                 <RadioGroup
                                     value={childTemplateViewType}
                                     onChange={(e) => {
@@ -152,42 +159,54 @@ const CreateChildTemplateDialog: React.FC<{
                                         value="categoryPage"
                                         control={<Radio />}
                                         label={i18next.t('createChildTemplateDialog.status.categoryPage')}
+                                        componentsProps={{
+                                            typography: { sx: { fontSize: '14px' } },
+                                        }}
                                     />
                                     <FormControlLabel
                                         value="userPage"
                                         control={<Radio />}
                                         label={i18next.t('createChildTemplateDialog.status.userPage')}
+                                        componentsProps={{
+                                            typography: { sx: { fontSize: '14px' } },
+                                        }}
                                     />
                                 </RadioGroup>
                             </FormControl>
                         </Grid>
-                        <Grid xs={6} item container>
+                        <Grid item xs={5.5} container direction="row" justifyContent="space-between">
                             <Grid item>
                                 <FormControlLabel
                                     control={
-                                        <Checkbox
+                                        <MeltaCheckbox
                                             checked={childTemplateFilterByCurrentUser}
                                             onChange={(e) => setChildTemplateFilterByCurrentUser(e.target.checked)}
                                         />
                                     }
                                     label={i18next.t('createChildTemplateDialog.userType.regularUser')}
+                                    componentsProps={{
+                                        typography: { sx: { fontSize: '14px' } },
+                                    }}
                                 />
                             </Grid>
                             <Grid item>
                                 <FormControlLabel
                                     control={
-                                        <Checkbox
+                                        <MeltaCheckbox
                                             checked={childTemplateFilterByUserUnit}
                                             onChange={(e) => setChildTemplateFilterByUserUnit(e.target.checked)}
                                         />
                                     }
                                     label={i18next.t('createChildTemplateDialog.userType.specialUser')}
+                                    componentsProps={{
+                                        typography: { sx: { fontSize: '14px' } },
+                                    }}
                                 />
                             </Grid>
                         </Grid>
                     </Grid>
 
-                    <Grid container sx={{ pt: 1 }} alignItems="center" justifyContent="space-between">
+                    <Grid container sx={{ pt: 3 }} alignItems="center" justifyContent="space-between">
                         <Grid item xs={6}>
                             <FormControl fullWidth>
                                 <Autocomplete
@@ -209,11 +228,16 @@ const CreateChildTemplateDialog: React.FC<{
                                             name="category"
                                             variant="outlined"
                                             label={i18next.t('createChildTemplateDialog.categoryType.relatedToLabel')}
+                                            InputLabelProps={{ sx: { fontSize: '14px', fontWeight: 400 } }}
                                         />
                                     )}
                                     renderOption={(props, category) => (
                                         <li {...props} key={category._id}>
-                                            <ColoredEnumChip label={category.displayName} color="default" />
+                                            <ColoredEnumChip
+                                                label={category.displayName}
+                                                color="default"
+                                                style={{ backgroundColor: '#EBEFFA', borderRadius: '10px' }}
+                                            />
                                         </li>
                                     )}
                                     renderTags={(tagValue, getTagProps) =>
@@ -225,11 +249,11 @@ const CreateChildTemplateDialog: React.FC<{
                                                     label={category.displayName}
                                                     color="default"
                                                     onDelete={onDelete}
-                                                    deleteIcon={<CloseIcon />}
                                                     {...restTagProps}
                                                     style={{
                                                         margin: '0 4px 4px 0',
-                                                        borderRadius: '4px',
+                                                        borderRadius: '10px',
+                                                        backgroundColor: '#EBEFFA',
                                                     }}
                                                 />
                                             );
@@ -247,41 +271,42 @@ const CreateChildTemplateDialog: React.FC<{
                                 variant="outlined"
                                 value="a"
                                 disabled
+                                InputLabelProps={{ sx: { fontSize: '14px', fontWeight: 400 } }}
+                                InputProps={{ sx: { fontSize: '14px', fontWeight: 400 } }}
                             />
                         </Grid>
                     </Grid>
 
-                    <Grid container sx={{ pt: 4 }} alignItems="start" justifyContent="space-between">
+                    <Grid container sx={{ pt: 4 }} alignSelf="center" width="98%" justifyContent="space-between">
                         <Grid item xs={12}>
-                            <Typography variant="h6" sx={{ mb: 2 }}>
+                            <Typography sx={{ fontWeight: 400, fontSize: '16px', marginBottom: '19px' }}>
                                 {i18next.t('createChildTemplateDialog.columns.title')}
                             </Typography>
-                            <Grid container>
-                                <Grid container justifyContent="space-between">
-                                    <Grid container item xs={6} sx={{ mb: 2 }}>
-                                        <Grid item xs={3}>
-                                            <Typography variant="body2" fontWeight="bold">
-                                                {i18next.t('createChildTemplateDialog.columns.nameCol')}
-                                            </Typography>
-                                        </Grid>
-                                        <Grid item xs={3}>
-                                            <Typography variant="body2" fontWeight="bold">
-                                                {i18next.t('createChildTemplateDialog.columns.filterCol')}
-                                            </Typography>
-                                        </Grid>
-                                    </Grid>
-                                    <Grid item xs={3}>
-                                        <Typography variant="body2" fontWeight="bold">
-                                            {i18next.t('createChildTemplateDialog.columns.defaultCol')}
-                                        </Typography>
-                                    </Grid>
+                            <Grid container alignItems="center" justifyContent="space-between" sx={{ mb: 1.5 }}>
+                                <Grid item xs={3}>
+                                    <Typography sx={{ fontWeight: 400, fontSize: '14px' }}>
+                                        {i18next.t('createChildTemplateDialog.columns.nameCol')}
+                                    </Typography>
+                                </Grid>
+                                <Grid item xs={3}>
+                                    <Typography sx={{ fontWeight: 400, fontSize: '14px', textAlign: 'center' }}>
+                                        {i18next.t('createChildTemplateDialog.columns.filterCol')}
+                                    </Typography>
+                                </Grid>
+                                <Grid item xs={3}>
+                                    <Typography sx={{ fontWeight: 400, fontSize: '14px' }}>
+                                        {i18next.t('createChildTemplateDialog.columns.defaultCol')}
+                                    </Typography>
                                 </Grid>
                             </Grid>
-                            <FieldsAndFiltersTable
-                                entityTemplate={entityTemplate}
-                                templateFieldsFilters={templateFieldsFilters}
-                                setTemplateFieldsFilters={setTemplateFieldsFilters}
-                            />
+
+                            <Grid item xs={12} sx={{ maxHeight: 400, overflowY: 'auto', pr: 3 }}>
+                                <FieldsAndFiltersTable
+                                    entityTemplate={entityTemplate}
+                                    templateFieldsFilters={templateFieldsFilters}
+                                    setTemplateFieldsFilters={setTemplateFieldsFilters}
+                                />
+                            </Grid>
                         </Grid>
                     </Grid>
                 </Grid>

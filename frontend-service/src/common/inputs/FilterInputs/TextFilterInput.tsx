@@ -17,17 +17,10 @@ interface TextFilterProps {
     handleFilterFieldChange: (value: IGraphFilterBody['filterField'], condition?: boolean) => void;
 }
 
-const TextFilterInput: React.FC<TextFilterProps> = ({
-    entityFilter,
-    readOnly,
-    filterField,
-    type,
-    handleFilterTypeChange,
-    handleFilterFieldChange,
-}) => {
+const TextFilterInput: React.FC<TextFilterProps> = ({ readOnly, filterField, type, handleFilterTypeChange, handleFilterFieldChange }) => {
     return (
-        <Grid container justifyContent="center" direction={entityFilter ? 'row' : 'column'} spacing={2}>
-            <Grid item xs={entityFilter ? 5 : 12}>
+        <Grid container alignItems="center" justifyContent="space-between">
+            <Grid item xs={6}>
                 <TypeSelectFilter
                     filterField={filterField as IAGGidNumberFilter | IAGGridTextFilter}
                     handleFilterTypeChange={handleFilterTypeChange}
@@ -36,7 +29,7 @@ const TextFilterInput: React.FC<TextFilterProps> = ({
                 />
             </Grid>
 
-            <Grid item xs={entityFilter ? 7 : 12}>
+            <Grid item xs={5.5}>
                 <StyledFilterInput
                     inputProps={{
                         readOnly,

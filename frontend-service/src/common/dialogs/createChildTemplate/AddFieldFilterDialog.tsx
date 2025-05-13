@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { Dialog, DialogActions, DialogContent, DialogTitle, Box, Button, Grid, IconButton, Typography, debounce } from '@mui/material';
+import { Dialog, DialogActions, DialogContent, DialogTitle, Box, Button, Grid, IconButton, Typography, debounce, TextField } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import i18next from 'i18next';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
@@ -19,6 +19,7 @@ interface IAddFieldFilterDialogProps {
     updateFieldFilter: (filterField: IAGGridTextFilter | IAGGidNumberFilter | IAGGridDateFilter | IAGGridSetFilter, currentFieldName: string) => void;
     entityTemplate: IMongoEntityTemplatePopulated;
     currentFieldName: string;
+    dialogType: 'filter' | 'default';
 }
 
 const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
@@ -29,6 +30,7 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
     fieldFilter,
     updateFieldFilter,
     currentFieldName,
+    dialogType,
 }) => {
     const currentFilterField = fieldFilter.filterField || undefined;
 
@@ -165,9 +167,7 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
                         ? (currentFilterField as IAGGidNumberFilter | IAGGridTextFilter)
                         : undefined
                 }
-                handleFilterFieldChange={(value, condition) => {
-                    if (value) handleFilterFieldChange(value, condition);
-                }}
+                handleFilterFieldChange={handleFilterFieldChange}
                 handleFilterTypeChange={handleFilterTypeChange}
                 type={type}
                 readOnly={readOnly}
@@ -176,22 +176,51 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
     };
 
     return (
-        <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+        <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
             <DialogTitle>
                 <Box display="flex" justifyContent="space-between" alignItems="center">
-                    <Typography>{i18next.t('createChildTemplateDialog.fieldFilterDialog.title')}</Typography>
+                    <Typography>
+                        {dialogType === 'filter'
+                            ? i18next.t('createChildTemplateDialog.fieldFilterDialog.title')
+                            : i18next.t('createChildTemplateDialog.fieldDefaultDialog.title')}
+                    </Typography>
+
                     <IconButton onClick={onClose}>
                         <CloseIcon />
                     </IconButton>
                 </Box>
             </DialogTitle>
             <DialogContent>
-                <Grid item container justifyContent="center">
-                    <Grid item style={{ width: '90%', paddingBottom: '10px' }}>
+                <Grid container spacing={2} alignItems="center" justifyContent="space-between">
+                    <Grid item xs={12}>
+                        <TextField
+                            fullWidth
+                            disabled
+                            value={entityTemplate.properties.properties[currentFieldName]?.title || currentFieldName}
+                            InputLabelProps={{ shrink: false }}
+                            inputProps={{
+                                style: { fontSize: '14px', fontWeight: 400, backgroundColor: '#EBEFFA', borderRadius: '10px' },
+                            }}
+                        />
+                    </Grid>
+
+                    <Grid container sx={{ pt: 3, pl: 2 }} alignItems="center" justifyContent="space-between">
                         {renderFilterInput()}
+
+                        {dialogType === 'default' && (
+                            <TextField
+                                fullWidth
+                                value={fieldFilter.fieldValue ?? ''}
+                                InputLabelProps={{ shrink: false }}
+                                inputProps={{
+                                    style: { fontSize: '14px', fontWeight: 400 },
+                                }}
+                            />
+                        )}
                     </Grid>
                 </Grid>
             </DialogContent>
+
             <DialogActions>
                 <Grid container spacing={2} alignItems="center">
                     <Grid xs={12} item display="flex" justifyContent="center" alignItems="center">

@@ -1409,8 +1409,8 @@ export default {
         templateName: 'שם תצוגת תבנית בן',
         templateDetails: 'תיאור תבנית בן (יוצג במסכי הרשאות)',
         status: {
-            categoryPage: 'מצב בעמוד קטגוריה',
-            userPage: 'מצב בעמוד לקוח',
+            categoryPage: 'מוצג בעמוד קטגוריה',
+            userPage: 'מוצג בעמוד לקוח',
         },
         userType: {
             regularUser: 'סינון עפ״י משתמש מחובר',
@@ -1423,12 +1423,15 @@ export default {
         columns: {
             title: 'עמודות להצגה',
             nameCol: 'עמודה',
-            filterCol: 'סינון תצוגה',
-            defaultCol: 'עמודה ברירת מחדל בהוספה',
+            filterCol: 'סינון ערכים',
+            defaultCol: 'ערך ברירת מחדל בהוספה',
         },
         fieldFilterDialog: {
             title: 'סינון שדה',
             addFilter: 'הוספה',
+        },
+        fieldDefaultDialog: {
+            title: 'ערך ברירת מחדל',
         },
     },
 };
