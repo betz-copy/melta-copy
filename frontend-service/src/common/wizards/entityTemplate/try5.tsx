@@ -539,7 +539,7 @@
 // };
 
 import { AccordionDetails, AccordionSummary, Box, Button, Divider, Grid, IconButton, TextField, Typography } from '@mui/material';
-import React, { SetStateAction, useCallback, useEffect, useRef, useState } from 'react';
+import React, { SetStateAction, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { getEmptyImage, HTML5Backend } from 'react-dnd-html5-backend';
 import { FieldArray } from 'formik';
@@ -554,6 +554,7 @@ import { MemoFieldEditCard } from './FieldEditCard';
 import { FieldEditCardProps } from './RelationshipReferenceField';
 import { MeltaTooltip } from '../../MeltaTooltip';
 import { AreYouSureDialog } from '../../dialogs/AreYouSureDialog';
+import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 
 export const ItemTypes = {
     FIELD: 'field',
@@ -776,6 +777,8 @@ const Group = ({
     const touchedTitle = touched?.[propertiesType]?.[index]?.displayName;
     const errorTitle = errors?.[propertiesType]?.[index]?.displayName;
 
+    const isGroupFieldBlockError = Boolean(touched?.[propertiesType]?.[index]) && Boolean(errors?.[propertiesType]?.[index]);
+
     return (
         <Grid
             item
@@ -786,7 +789,14 @@ const Group = ({
                 cursor: 'grab',
             }}
         >
-            <div ref={ref} style={{ cursor: 'grab', transition: isDragging ? 'none' : 'box-shadow 0.1s ease', opacity: isDragging ? 0.5 : 1 }}>
+            <div
+                ref={ref}
+                style={{
+                    cursor: 'grab',
+                    transition: isDragging ? 'none' : 'box-shadow 0.1s ease',
+                    opacity: isDragging ? 0.5 : 1,
+                }}
+            >
                 <FieldBlockAccordion
                     // sx={{
                     //     padding: '0.5rem',
@@ -801,6 +811,7 @@ const Group = ({
                         backgroundColor: '#f4f6fa',
                         boxShadow: 'none',
                         '&:before': { display: 'none' },
+                        border: isGroupFieldBlockError ? '1px solid red' : '',
                     }}
                 >
                     <AccordionSummary expandIcon={<ExpandMoreIcon />}>
@@ -964,13 +975,15 @@ export const StructureEditor = <PropertiesType extends string, Values extends Re
         mapSearch: false,
     },
     supportConvertingToMultipleFields = true,
+    supportComment,
 }: React.PropsWithChildren<FieldBlockProps<PropertiesType, Values>>) => {
     // copy of values of formik in order to show changes on inputs fast (formik rerenders are slow)
     const [showAreUSureDialogForRemoveProperty, setShowAreUSureDialogForRemoveProperty] = useState(false);
-    const [selectedIndexToRemove, setSelectedIndexToRemove] = useState<{ index: number; groupIndex?: number }>({
-        index: -1,
-        groupIndex: -1,
-    });
+    // const [selectedIndexToRemove, setSelectedIndexToRemove] = useState<{ index: number; groupIndex?: number }>({
+    //     index: -1,
+    //     groupIndex: -1,
+    // });
+    const [selectedIndexesToRemove, setSelectedIndexesForRemove] = useState<{ index: number; groupIndex?: number }[]>([]);
 
     // using ordered item ref because update functions (push/remove/...) are not updated for the field cards on
     // every re-render and if displayValues changes, it does not update in the functions of the field cards.
@@ -1000,15 +1013,24 @@ export const StructureEditor = <PropertiesType extends string, Values extends Re
     };
 
     const setFieldDisplayValue = (index: number, field: keyof Values, value: any, groupIndex?: number) => {
-        const displayValuesCopy: any = [...orderedItemsRef.current];
+        const displayValuesCopy: any = [...orderedItemsRef.current] as Values[PropertiesType];
 
         if (groupIndex !== undefined) {
             const group = displayValuesCopy[groupIndex];
+            console.log({ displayValuesCopy });
 
             if (group === -1) return;
 
-            group.fields = group.fields.map((fieldData: any, i: number) => (i === index ? { ...fieldData, [field]: value } : fieldData));
+            group.fields[index] = {
+                ...group.fields[index],
+                [field]: value,
+            };
+
+            if (field === 'name' && group.fields[index].type === 'comment')
+                group.fields[index].title = `${i18next.t('propertyTypes.comment')}-${value}`;
         } else {
+            console.log('in else', { field, value }, index);
+
             displayValuesCopy[index] = {
                 ...displayValuesCopy[index],
                 data: {
@@ -1016,6 +1038,9 @@ export const StructureEditor = <PropertiesType extends string, Values extends Re
                     [field]: value,
                 },
             };
+
+            if (field === 'name' && displayValuesCopy[index].data.type === 'comment')
+                displayValuesCopy[index].data.title = `${i18next.t('propertyTypes.comment')}-${value}`;
         }
         setOrderedItems(displayValuesCopy);
         updateFormik();
@@ -1023,7 +1048,9 @@ export const StructureEditor = <PropertiesType extends string, Values extends Re
 
     const onDeleteSure = () => {
         setShowAreUSureDialogForRemoveProperty(false);
-        setFieldDisplayValue(selectedIndexToRemove.index, 'deleted' as keyof Values, true, selectedIndexToRemove.groupIndex);
+        selectedIndexesToRemove.forEach(({ index, groupIndex }) => {
+            setFieldDisplayValue(index, 'deleted' as keyof Values, true, groupIndex);
+        });
     };
 
     const push = (properties) => {
@@ -1034,22 +1061,111 @@ export const StructureEditor = <PropertiesType extends string, Values extends Re
         updateFormik();
     };
 
+    // const remove = (index: number, isNewProperty: Boolean, groupIndex?: number) => {
+    //     const displayValuesCopy = [...orderedItemsRef.current];
+
+    //     const isDeleted = groupIndex ? displayValuesCopy[groupIndex].fields[index].deleted : displayValuesCopy[index].data.deleted;
+
+    //     if (isDeleted) {
+    //         setFieldDisplayValue(index, 'deleted' as keyof Values, false, groupIndex);
+    //     } else if (areThereAnyInstances && !isNewProperty) {
+    //         setShowAreUSureDialogForRemoveProperty(true);
+    //         setSelectedIndexToRemove({ index, groupIndex });
+    //     } else {
+    //         if (groupIndex) {
+    //             const group = displayValuesCopy[groupIndex];
+    //             if (group === -1) return;
+    //             group.fields.splice(index, 1);
+    //         } else displayValuesCopy.splice(index, 1);
+
+    //         setOrderedItems(displayValuesCopy);
+    //         updateFormik();
+    //     }
+    // };
+
     const remove = (index: number, isNewProperty: Boolean, groupIndex?: number) => {
         const displayValuesCopy = [...orderedItemsRef.current];
+        const isGrouped = typeof groupIndex === 'number';
+        const field = isGrouped ? displayValuesCopy[groupIndex].fields[index] : displayValuesCopy[index].data;
 
-        const isDeleted = groupIndex ? displayValuesCopy[groupIndex].fields[index].deleted : displayValuesCopy[index].data.deleted;
+        const isDeleted = field.deleted;
 
         if (isDeleted) {
-            setFieldDisplayValue(index, 'deleted' as keyof Values, false, groupIndex);
+            const indexesToUpdate = [{ index, groupIndex }];
+
+            if (field.type === 'kartoffelUserField') {
+                const relatedUserFieldName = field.expandedUserField?.relatedUserField;
+
+                if (relatedUserFieldName) {
+                    displayValuesCopy.forEach((item, idx) => {
+                        if (item.type === 'group') {
+                            item.fields.forEach((nestedField, nestedIndex) => {
+                                if (nestedField.type === 'user' && nestedField.name === relatedUserFieldName && nestedField.deleted) {
+                                    indexesToUpdate.push({ index: nestedIndex, groupIndex: idx });
+                                }
+                            });
+                        } else if (item.data.type === 'user' && item.data.name === relatedUserFieldName && item.data.deleted) {
+                            indexesToUpdate.push({ index: idx });
+                        }
+                    });
+                }
+            }
+
+            // Restore the fields
+            indexesToUpdate.forEach(({ index, groupIndex }) => {
+                setFieldDisplayValue(index, 'deleted' as keyof Values, false, groupIndex);
+            });
         } else if (areThereAnyInstances && !isNewProperty) {
+            const indexesToUpdate = [{ index, groupIndex }];
+
+            if (field.type === 'user') {
+                const userFieldName = field.name;
+
+                displayValuesCopy.forEach((item, idx) => {
+                    if (item.type === 'group') {
+                        item.fields.forEach((nestedField, nestedIndex) => {
+                            if (nestedField.type === 'kartoffelUserField' && nestedField.expandedUserField?.relatedUserField === userFieldName) {
+                                indexesToUpdate.push({ index: nestedIndex, groupIndex: idx });
+                            }
+                        });
+                    } else if (item.data.type === 'kartoffelUserField' && item.data.expandedUserField?.relatedUserField === userFieldName) {
+                        indexesToUpdate.push({ index: idx });
+                    }
+                });
+            }
+
             setShowAreUSureDialogForRemoveProperty(true);
-            setSelectedIndexToRemove({ index, groupIndex });
+            setSelectedIndexesForRemove(indexesToUpdate);
         } else {
-            if (groupIndex) {
+            // Remove directly
+            if (isGrouped) {
                 const group = displayValuesCopy[groupIndex];
-                if (group === -1) return;
+                if (!group || !group.fields) return;
+
+                const removedField = group.fields[index];
+
                 group.fields.splice(index, 1);
-            } else displayValuesCopy.splice(index, 1);
+
+                // Also remove any related kartoffelUserField
+                if (removedField.type === 'user') {
+                    const userFieldName = removedField.name;
+                    group.fields = group.fields.filter(
+                        (field) => !(field.type === 'kartoffelUserField' && field.expandedUserField?.relatedUserField === userFieldName),
+                    );
+                }
+            } else {
+                const removedField = displayValuesCopy[index].data;
+                displayValuesCopy.splice(index, 1);
+
+                if (removedField.type === 'user') {
+                    for (let i = displayValuesCopy.length - 1; i >= 0; i--) {
+                        const item = displayValuesCopy[i];
+                        if (item.data.type === 'kartoffelUserField' && item.data.expandedUserField?.relatedUserField === removedField.name) {
+                            displayValuesCopy.splice(i, 1);
+                        }
+                    }
+                }
+            }
 
             setOrderedItems(displayValuesCopy);
             updateFormik();
@@ -1078,12 +1194,6 @@ export const StructureEditor = <PropertiesType extends string, Values extends Re
         }
         setOrderedItems(displayValuesCopy);
         updateFormik();
-    };
-
-    const onChange = (index: number, event: React.ChangeEvent<HTMLInputElement>, groupIndex?: number) => {
-        const inputName = event.target.name.split('.')[1]; // the input name is in the format `properties[index].field`
-        const inputValue = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
-        setFieldDisplayValue(index, inputName as keyof Values, inputValue, groupIndex);
     };
 
     const onChangeGroupData = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, groupId: string) => {
@@ -1116,6 +1226,13 @@ export const StructureEditor = <PropertiesType extends string, Values extends Re
         updateFormik();
     };
 
+    const onChange = (index: number, event: React.ChangeEvent<HTMLInputElement>, groupIndex?: number) => {
+        const inputName = event.target.name.split('.')[1]; // the input name is in the format `properties[index].field`
+        const inputValue = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
+        setFieldDisplayValue(index, inputName as keyof Values, inputValue, groupIndex);
+        // setFieldDisplayValue([index], inputName as keyof Values, inputValue);
+    };
+
     const onChangeWrapper = (index: number, groupIndex?: number) => (event: React.ChangeEvent<HTMLInputElement>) =>
         onChange(index, event, groupIndex);
 
@@ -1124,6 +1241,56 @@ export const StructureEditor = <PropertiesType extends string, Values extends Re
     const setDisplayValueWrapper = (index: number, groupId?: string) => (value: SetStateAction<PropertyItem>) =>
         setDisplayValue(index, value, groupId);
     const isFieldBlockError = Boolean(touched?.[propertiesType]) && Boolean(errors?.[propertiesType]);
+
+    // liraz`s code
+    // const setFieldDisplayValueWrapper = (index: number) => (field: keyof Values, value: any) => setFieldDisplayValue([index], field, value);
+    // const setDisplayValueWrapper = (index: number) => (value: SetStateAction<CommonFormInputProperties>) => setDisplayValue(index, value);
+    // const onChangeWrapper = (index: number) => (event: React.ChangeEvent<HTMLInputElement>) => onChange(index, event);
+
+    const userPropertiesInTemplate = useMemo(() => {
+        const userNames: string[] = [];
+
+        values[propertiesType].forEach((item) => {
+            if (item.type === 'group') {
+                item.fields.forEach((field) => {
+                    if (field.type === 'user' && !field.deleted) {
+                        userNames.push(field.name);
+                    }
+                });
+            } else if (item.data.type === 'user' && !item.data.deleted) {
+                userNames.push(item.data.name);
+            }
+        });
+
+        return userNames;
+    }, [propertiesType, values]);
+
+    // const onDuplicateKartoffelField = (fieldIndex: number, groupIndex?: number) => {
+    //     const displayValuesCopy = [...orderedItemsRef.current];
+
+    //     const isGrouped = typeof groupIndex === 'number';
+
+    //     const sourceField = isGrouped ? displayValuesCopy[groupIndex].fields[fieldIndex] : displayValuesCopy[fieldIndex].data;
+
+    //     const newField = {
+    //         id: uuid(),
+    //         ...initialFieldCardDataOnAdd,
+    //         type: 'kartoffelUserField',
+    //         readOnly: true,
+    //         expandedUserField: {
+    //             relatedUserField: sourceField.expandedUserField?.relatedUserField || '',
+    //             kartoffelField: '',
+    //         },
+    //     };
+
+    //     if (isGrouped) {
+    //         displayValuesCopy[groupIndex].fields.splice(fieldIndex + 1, 0, newField);
+    //     } else {
+    //         displayValuesCopy.splice(fieldIndex + 1, 0, { data: newField, type: 'field' });
+    //     }
+
+    //     setOrderedItems(displayValuesCopy);
+    // };
 
     const buildProps = (propertyProp, index: number, groupIndex?: number) => {
         const isGroup = groupIndex !== undefined;
@@ -1139,6 +1306,8 @@ export const StructureEditor = <PropertiesType extends string, Values extends Re
             error = getTouchedOrError(errors);
             touch = getTouchedOrError(touched);
             const directField = currentTypeValues?.find((item) => item.type === 'field' && item.data?.id === propertyProp.id);
+            console.log({ directField });
+
             if (directField) return directField;
 
             const group = currentTypeValues?.find((item) => item.type === 'group' && item.fields?.some((f) => f.id === propertyProp.id));
@@ -1182,6 +1351,9 @@ export const StructureEditor = <PropertiesType extends string, Values extends Re
             hasActions,
             supportConvertingToMultipleFields,
             groupIndex,
+            supportComment,
+            userPropertiesInTemplate,
+            onDuplicateKartoffelField: () => {}, // onDuplicateKartoffelField(index, groupIndex),
         };
     };
 
@@ -1214,6 +1386,7 @@ export const StructureEditor = <PropertiesType extends string, Values extends Re
             const fieldIndex = fromGroup.fields.findIndex((f) => f.id === item.id);
             if (fieldIndex === -1) return;
 
+            // eslint-disable-next-line prefer-destructuring
             movedField = fromGroup.fields.splice(fieldIndex, 1)[0];
         } else {
             const index = orderedItemsCopy.findIndex((el) => el.type === 'field' && el.data.id === item.id);
@@ -1293,6 +1466,7 @@ export const StructureEditor = <PropertiesType extends string, Values extends Re
             isOver: m.isOver({ shallow: true }),
         }),
     }));
+    console.log({ errors });
 
     return (
         <FieldBlockAccordion style={{ border: isFieldBlockError ? '1px solid red' : '' }}>
@@ -1424,10 +1598,11 @@ export const StructureEditor = <PropertiesType extends string, Values extends Re
                 title={i18next.t('systemManagement.deleteField')}
                 body={`${i18next.t('systemManagement.warningOnDeleteField')}
                                 ${
-                                    selectedIndexToRemove.index > -1 &&
-                                    (selectedIndexToRemove.groupIndex
-                                        ? orderedItemsRef.current[selectedIndexToRemove.groupIndex].fields[selectedIndexToRemove.index].title
-                                        : orderedItemsRef.current[selectedIndexToRemove.index].data.title)
+                                    selectedIndexesToRemove.length > 0 &&
+                                    (selectedIndexesToRemove[0].groupIndex
+                                        ? orderedItemsRef.current[selectedIndexesToRemove[0].groupIndex].fields[selectedIndexesToRemove[0].index]
+                                              .title
+                                        : orderedItemsRef.current[selectedIndexesToRemove[0].index].data.title)
                                 }
                                 ${i18next.t('systemManagement.continueWarningOnDeleteField')} ${
                     (initialValues as unknown as IMongoEntityTemplatePopulated)?.displayName
@@ -1490,6 +1665,7 @@ export const ManualDndLayout = <PropertiesType extends string, Values extends Re
         mapSearch: false,
     },
     supportConvertingToMultipleFields = true,
+    supportComment,
 }: React.PropsWithChildren<FieldBlockProps<PropertiesType, Values>>) => {
     return (
         <DndProvider backend={HTML5Backend}>
@@ -1547,6 +1723,7 @@ export const ManualDndLayout = <PropertiesType extends string, Values extends Re
                     }
                 }
                 supportConvertingToMultipleFields={supportConvertingToMultipleFields ?? true}
+                supportComment={supportComment}
             />
         </DndProvider>
     );

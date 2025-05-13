@@ -69,6 +69,7 @@ const testFields = (
     });
 };
 
+// const testGroupsName = (group1, )
 const validateProperties = (properties, context, errors) => {
     const relatedUserFieldsOfkartoffelFields: { value: string; index: number }[] = [];
     const userFields: string[] = [];
