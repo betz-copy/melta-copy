@@ -1,5 +1,6 @@
+/* eslint-disable no-nested-ternary */
 import { Grid, InputLabel, ThemeProvider, useTheme } from '@mui/material';
-import { createTheme } from '@mui/material/styles';
+import { createTheme, Theme } from '@mui/material/styles';
 import { WidgetProps } from '@rjsf/utils';
 import { ContentState, convertFromHTML, convertToRaw, EditorState } from 'draft-js';
 import { stateToHTML } from 'draft-js-export-html';
@@ -8,58 +9,38 @@ import React, { useEffect, useState } from 'react';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { containsHTMLTags } from '../../../utils/HtmlTagsStringValue';
 
-const RjfsTextAreaWidget = ({ id, value, label, readonly, onChange, options }: WidgetProps) => {
-    const { toPrint } = options;
+export const getInitialValue = (value) => {
+    if (!value) return EditorState.createEmpty();
 
-    const initialValue = () => {
-        if (value) {
-            const checkHasHTMLTags = containsHTMLTags(value);
-            if (checkHasHTMLTags) {
-                const contentBlock = convertFromHTML(value);
-                const contentState = ContentState.createFromBlockArray(contentBlock.contentBlocks);
-                return EditorState.createWithContent(contentState);
-            }
-            const contentState = ContentState.createFromText(value);
-            return EditorState.createWithContent(contentState);
-        }
-        return EditorState.createEmpty();
-    };
+    const checkHasHTMLTags = containsHTMLTags(value);
 
-    const [editorValue, setEditorValue] = useState(initialValue());
-    const [showLabel, setShowLabel] = useState(false);
-    const [rawContentState, setRawContentState] = useState('');
+    if (checkHasHTMLTags) {
+        const contentBlock = convertFromHTML(value);
+        const contentState = ContentState.createFromBlockArray(contentBlock.contentBlocks);
 
-    useEffect(() => {
-        setRawContentState(JSON.stringify(convertToRaw(editorValue.getCurrentContent())));
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+        return EditorState.createWithContent(contentState);
+    }
 
-    const handleChange = (state: EditorState) => {
-        setEditorValue(state);
-        const newValue = state.getCurrentContent().getPlainText();
-        const htmlContent = stateToHTML(state.getCurrentContent());
-        onChange(newValue === '' ? options.emptyValue : htmlContent);
-    };
+    const contentState = ContentState.createFromText(value);
+    return EditorState.createWithContent(contentState);
+};
 
-    const handleFocus = () => {
-        setShowLabel(true);
-    };
-
-    const handleBlur = () => {
-        setShowLabel(false);
-    };
-
-    const darkMode = useDarkModeStore((state) => state.darkMode);
-    const globalTheme = useTheme();
-
-    const theme = createTheme();
-    const muiRteTheme: TMUIRichTextEditorStyles = {
+export const useMuiRteTheme = (error?: boolean, globalTheme?: Theme, showLabel?: boolean, readonly?: boolean): TMUIRichTextEditorStyles => {
+    return {
         overrides: {
             MUIRichTextEditor: {
                 root: {
                     borderRadius: readonly ? 0 : '10px',
-                    border: readonly ? 'none' : (showLabel && `1px solid ${globalTheme.palette.primary.main}`) || '1px solid #CCCFE5',
-                    borderBottom: readonly ? '1px solid gray' : (showLabel && `1px solid ${globalTheme.palette.primary.main}`) || '1px solid #CCCFE5',
+                    border: error
+                        ? '1px solid #FF0000'
+                        : readonly
+                        ? 'none'
+                        : (showLabel && `1px solid ${globalTheme!.palette.primary.main}`) || '1px solid #CCCFE5',
+                    borderBottom: error
+                        ? ' 1px solid #FF0000'
+                        : readonly
+                        ? '1px solid gray'
+                        : (showLabel && `1px solid ${globalTheme!.palette.primary.main}`) || '1px solid #CCCFE5',
                     transition: 'border-color 0.3s',
                 },
                 container: {
@@ -91,8 +72,39 @@ const RjfsTextAreaWidget = ({ id, value, label, readonly, onChange, options }: W
             },
         },
     };
+};
 
-    Object.assign(theme, muiRteTheme);
+const RjfsTextAreaWidget = ({ id, value, label, readonly, onChange, options }: WidgetProps) => {
+    const { toPrint } = options;
+
+    const [editorValue, setEditorValue] = useState(getInitialValue(value));
+    const [showLabel, setShowLabel] = useState(false);
+    const [rawContentState, setRawContentState] = useState('');
+
+    useEffect(() => {
+        setRawContentState(JSON.stringify(convertToRaw(editorValue.getCurrentContent())));
+    }, []);
+
+    const handleChange = (state: EditorState) => {
+        setEditorValue(state);
+        const newValue = state.getCurrentContent().getPlainText();
+        const htmlContent = stateToHTML(state.getCurrentContent());
+        onChange(newValue === '' ? options.emptyValue : htmlContent);
+    };
+
+    const handleFocus = () => {
+        setShowLabel(true);
+    };
+
+    const handleBlur = () => {
+        setShowLabel(false);
+    };
+
+    const darkMode = useDarkModeStore((state) => state.darkMode);
+    const globalTheme = useTheme();
+    const theme = createTheme();
+
+    Object.assign(theme, useMuiRteTheme(false, globalTheme, showLabel, readonly));
 
     if (toPrint) return null;
 

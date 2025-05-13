@@ -54,8 +54,15 @@ export interface EntityTemplateFormInputProperties {
         relatedTemplateId: string;
         relatedTemplateField: string;
     };
+    expandedUserField?: {
+        relatedUserField: string;
+        kartoffelField: string;
+    };
     archive?: boolean;
     mapSearch?: boolean;
+    hideFromDetailsPage?: boolean;
+    comment?: string;
+    color?: string;
 }
 export interface EntityTemplateWizardValues
     extends Omit<

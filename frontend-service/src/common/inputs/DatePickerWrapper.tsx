@@ -19,6 +19,7 @@ interface DatePickerWrapperProps {
     isStartDate?: boolean;
     directionIsRow?: boolean;
     readOnly?: boolean;
+    borderRadius?: string;
 }
 
 const DatePickerWrapper: React.FC<DatePickerWrapperProps> = ({
@@ -32,6 +33,7 @@ const DatePickerWrapper: React.FC<DatePickerWrapperProps> = ({
     isStartDate = false,
     directionIsRow,
     readOnly = false,
+    borderRadius,
 }) => (
     <LocalizationProvider
         dateAdapter={AdapterDateFns}
@@ -49,7 +51,7 @@ const DatePickerWrapper: React.FC<DatePickerWrapperProps> = ({
             InputProps={{
                 style: {
                     // eslint-disable-next-line no-nested-ternary
-                    borderRadius: !directionIsRow ? '7px' : isStartDate ? '0px 7px 7px 0px' : '7px 0px 0px 7px',
+                    borderRadius: borderRadius || !directionIsRow ? '7px' : isStartDate ? '0px 7px 7px 0px' : '7px 0px 0px 7px',
                     backgroundColor: sx ? 'white' : undefined,
                 },
             }}

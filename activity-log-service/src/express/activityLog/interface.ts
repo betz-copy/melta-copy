@@ -40,6 +40,7 @@ export enum Action {
     'DISABLE_ENTITY',
     'ACTIVATE_ENTITY',
     'VIEW_ENTITY',
+    'DUPLICATE_ENTITY',
 }
 
 export type IActivityLog = IEmptyMetadata | IRelationshipMetadata | IDuplicateEntityMetadata | IUpdateEntityMetadata | IUpdateProcessStepMetadata;
