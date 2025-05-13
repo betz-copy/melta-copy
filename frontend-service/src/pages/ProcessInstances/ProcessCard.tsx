@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import React, { CSSProperties, useState } from 'react';
 import { Box, Card, CardContent, Grid, Typography, styled, IconButton, Menu, Skeleton } from '@mui/material';
 import { ScatterPlotOutlined as HiveIcon, FiberManualRecordOutlined as StatusIcon, Unarchive } from '@mui/icons-material';
@@ -198,7 +197,7 @@ const ProcessCard: React.FC<{
             },
             onError: (error: AxiosError) => {
                 toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.processInstance.failedToEdit')} />);
-                console.log('failed to update process instance. error', error);
+                console.error('failed to update process instance. error', error);
             },
         },
     );

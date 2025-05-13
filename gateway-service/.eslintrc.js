@@ -43,5 +43,6 @@ module.exports = {
         'no-plusplus': 'off',
         'max-classes-per-file': 'off',
         'class-methods-use-this': 'off',
+        'no-console': ['error', { allow: ['error'] }],
     },
 };

@@ -200,8 +200,7 @@ const RulesRow: React.FC = () => {
                             .splice(pageParam, bulk)
                     }
                     onQueryError={(error) => {
-                        // eslint-disable-next-line no-console
-                        console.log('failed to search process templates error:', error);
+                        console.error('failed to search process templates error:', error);
                         toast.error(i18next.t('failedToLoadResults'));
                     }}
                     getItemId={(rule) => rule._id}

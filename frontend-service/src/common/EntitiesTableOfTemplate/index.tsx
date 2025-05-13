@@ -247,7 +247,6 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         const darkMode = useDarkModeStore((state) => state.darkMode);
         const workspace = useWorkspaceStore((state) => state.workspace);
         const { rowCount, defaultExpandedRowCount } = workspace.metadata.agGrid;
-        // const { table } = workspace.metadata.searchLimits;// comment out  waiting for Itay
 
         if (!pageRowCount) pageRowCount = rowCount;
 
@@ -258,8 +257,6 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
 
         const minHeightTable = rowHeight * pageRowCount + rowHeight * 2;
         const [gridHeight, setGridHeight] = useState<number>(rowHeight * defaultExpandedRowCount);
-        console.log({ defaultExpandedRowCount });
-        console.log({ gridHeight, minHeightTable });
 
         const [selectedRow, setSelectedRow] = useState('');
         const [currEntity, setCurrEntity] = useState<IEntity>();
@@ -415,7 +412,6 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
 
         const datasourceOnFail = (err: unknown) => {
             toast.error(i18next.t('entitiesTableOfTemplate.failedToLoadData'));
-            // eslint-disable-next-line no-console
             console.error('Failed to load data from datasource. Error:', err);
         };
 

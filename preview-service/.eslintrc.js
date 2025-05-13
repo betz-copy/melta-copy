@@ -37,7 +37,7 @@ module.exports = {
         'no-unused-vars': 'off', // Checked by typescript
         'arrow-body-style': 'off',
         'import/prefer-default-export': 'off',
-        'no-console': 'off',
+        'no-console': ['error', { allow: ['error'] }],
         'class-methods-use-this': 'off',
     },
 };

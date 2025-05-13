@@ -67,7 +67,6 @@ const RuleBreachDialog: React.FC<{
         },
         {
             onError: (error: AxiosError, status) => {
-                // eslint-disable-next-line no-console
                 console.error('failed to review ruleBreach. error:', error);
 
                 if (error.response?.data?.metadata?.errorCode === errorCodes.ruleBlock) {

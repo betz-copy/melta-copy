@@ -165,7 +165,6 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
                     toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.entityTemplate.failedToCreate')} />);
                 }
 
-                // eslint-disable-next-line no-console
                 console.error('failed to create/update entity template. error', error);
             },
         },

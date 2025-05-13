@@ -167,7 +167,6 @@ const ActionOnEntityWithRuleBreachDialog: React.FC<IActionOnEntityWithRuleBreach
                 if (errorMetadata?.errorCode === errorCodes) {
                     onUpdatedRuleBlock(errorMetadata.brokenRules, errorMetadata.rawBrokenRules);
                 }
-                // eslint-disable-next-line no-console
                 console.error('failed to create rule breach request. error:', err);
                 toast.error(<ErrorToast axiosError={err} defaultErrorMessage={i18next.t('execActionWithRuleBreach.failedToCreateRequest')} />);
             },

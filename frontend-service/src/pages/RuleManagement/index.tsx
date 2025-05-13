@@ -45,7 +45,6 @@ export const RuleBreachDialogContainer: React.FC<RuleBreachDialogContainerProps>
         initialData: rule,
         retry: false,
         onError: (err) => {
-            // eslint-disable-next-line no-console
             console.error(err);
             navigate('/404');
         },

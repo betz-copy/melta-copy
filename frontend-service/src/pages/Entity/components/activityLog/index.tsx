@@ -52,8 +52,7 @@ const ActivityLog: React.FC<{ expandedEntity: IEntityExpanded; entityTemplate: I
                         ])
                     }
                     onQueryError={(error) => {
-                        // eslint-disable-next-line no-console
-                        console.log('failed to get activities. error:', error);
+                        console.error('failed to get activities. error:', error);
                         toast.error(i18next.t('entityPage.activityLog.failedToGetActivities'));
                     }}
                     getNextPageParam={(lastPage, allPages) => {

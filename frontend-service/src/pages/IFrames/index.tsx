@@ -100,7 +100,6 @@ const IFramesPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) =>
                             return allIFrames ? allIFrames.slice(index, index + infiniteScrollPageCount) : [];
                         }}
                         onQueryError={(error) => {
-                            // eslint-disable-next-line no-console
                             console.error('Failed loading data:', error);
                             toast.error(i18next.t('iFrames.searchFailed'));
                         }}

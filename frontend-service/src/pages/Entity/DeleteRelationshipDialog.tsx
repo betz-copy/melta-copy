@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import i18next from 'i18next';
 import React, { useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';

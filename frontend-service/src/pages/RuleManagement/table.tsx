@@ -161,8 +161,7 @@ const RuleBreachTable = forwardRef<
 
     const datasourceOnFail = (err: unknown) => {
         toast.error(i18next.t('entitiesTableOfTemplate.failedToLoadData'));
-        // eslint-disable-next-line no-console
-        console.log('failed to load data from datasource. err:', err);
+        console.error('failed to load data from datasource. err:', err);
     };
 
     const getGlobalStyles = () => {

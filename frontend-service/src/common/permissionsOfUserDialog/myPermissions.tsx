@@ -63,8 +63,7 @@ const MyPermissions: React.FC<{
             createUserRequest(formUser.externalMetadata.kartoffelId, formUser.externalMetadata.digitalIdentitySource, formUser.permissions),
         {
             onError: (error) => {
-                // eslint-disable-next-line no-console
-                console.log('failed to upsert permission. error:', error);
+                console.error('failed to upsert permission. error:', error);
                 toast.error(i18next.t('permissions.permissionsOfUserDialog.failedToCreatePermissionsOfUser'));
             },
             onSuccess: () => {
@@ -102,8 +101,7 @@ const MyPermissions: React.FC<{
         },
         {
             onError: (error) => {
-                // eslint-disable-next-line no-console
-                console.log('failed to upsert permission. error:', error);
+                console.error('failed to upsert permission. error:', error);
                 toast.error(i18next.t('permissions.permissionsOfUserDialog.failedToEditPermissionsOfUser'));
             },
             onSuccess: (newPermissions) => {

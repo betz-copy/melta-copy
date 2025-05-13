@@ -71,7 +71,6 @@ const MyAccount: React.FC<{
             },
 
             onError: (err: AxiosError) => {
-                // eslint-disable-next-line no-console
                 console.error('failed to update user`s preferences request. error:', err);
                 toast.error(<ErrorToast axiosError={err} defaultErrorMessage={i18next.t('user.failedToUpdateRequest')} />);
             },
