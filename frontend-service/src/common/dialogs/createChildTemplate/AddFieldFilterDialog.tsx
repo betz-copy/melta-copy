@@ -38,24 +38,13 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
     const entityFilter = false; // Assuming entityFilter is a prop or state that you will manage
     const [inputValue, setInputValue] = useState<string>('');
 
-    const debouncedOnFilter = useCallback(
-        debounce((newFilterField) => {
-            if (!currentFieldName || !entityTemplate) return;
-            updateFieldFilter(newFilterField, currentFieldName);
-        }, 500),
-        [entityTemplate, currentFieldName],
-    );
-
-    const handleSetFilterRecord = (newFilterField: IFieldFilter['filterField'], condition: boolean = true) => {
-        if (condition) debouncedOnFilter(newFilterField);
+    const handleSetFilterRecord = (newFilterField: IFieldFilter['filterField']) => {
+        if (!currentFieldName || !entityTemplate || !newFilterField) return;
+        updateFieldFilter(newFilterField, currentFieldName);
     };
 
-    const handleFilterFieldChange = (value: IFieldFilter['filterField'], condition: boolean = true) => {
-        if ((value?.filterType === 'number' || value?.filterType === 'text') && (value.filter === undefined || value.filter === '')) {
-            return;
-        }
-
-        handleSetFilterRecord(value, condition);
+    const handleFilterFieldChange = (value: IFieldFilter['filterField']) => {
+        handleSetFilterRecord(value);
     };
 
     const handleDateChange = (newValue: Date | null, isStartDate: boolean) => {
@@ -65,17 +54,10 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
             if (isRemovingStart || isRemovingEnd) return;
         }
 
-        handleFilterFieldChange(
-            {
-                ...currentFilterField,
-                ...(isStartDate ? { dateFrom: newValue } : { dateTo: newValue }),
-            } as IAGGridDateFilter,
-            Boolean(
-                isStartDate
-                    ? currentFilterField?.filterType === 'date' && newValue && (currentFilterField.type !== 'inRange' || currentFilterField.dateTo)
-                    : newValue && currentFilterField?.filterType === 'date' && currentFilterField.type === 'inRange' && currentFilterField.dateFrom,
-            ),
-        );
+        handleFilterFieldChange({
+            ...currentFilterField,
+            ...(isStartDate ? { dateFrom: newValue } : { dateTo: newValue }),
+        } as IAGGridDateFilter);
     };
 
     const handleCheckboxChange = (option: string, checked: boolean) => {
@@ -88,14 +70,9 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
         handleSetFilterRecord(updatedFilterField);
     };
 
-    const handleFilterTypeChange = (
-        newTypeFilter: IAGGridDateFilter['type'] | IAGGridTextFilter['type'] | IAGGidNumberFilter['type'],
-        condition: boolean = true,
-    ) =>
-        handleFilterFieldChange(
-            { ...currentFilterField, type: newTypeFilter } as IAGGridDateFilter | IAGGridTextFilter | IAGGidNumberFilter,
-            condition,
-        );
+    const handleFilterTypeChange = (newTypeFilter: IAGGridDateFilter['type'] | IAGGridTextFilter['type'] | IAGGidNumberFilter['type']) => {
+        handleFilterFieldChange({ ...currentFilterField, type: newTypeFilter } as IAGGridDateFilter | IAGGridTextFilter | IAGGidNumberFilter);
+    };
 
     const renderFilterInput = () => {
         if (!(currentFieldName && entityTemplate)) return null;
@@ -108,8 +85,8 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
                 <SelectFilterInput
                     filterField={currentFilterField?.filterType === 'text' ? (currentFilterField as IAGGridTextFilter) : undefined}
                     enumOptions={propEnum}
-                    handleFilterFieldChange={(value, condition) => {
-                        if (value) handleFilterFieldChange(value, condition);
+                    handleFilterFieldChange={(value) => {
+                        if (value) handleFilterFieldChange(value);
                     }}
                     readOnly={readOnly}
                 />
@@ -131,8 +108,8 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
                 <SelectFilterInput
                     filterField={currentFilterField?.filterType === 'text' ? (currentFilterField as IAGGridTextFilter) : undefined}
                     isBooleanSelect
-                    handleFilterFieldChange={(value, condition) => {
-                        if (value) handleFilterFieldChange(value, condition);
+                    handleFilterFieldChange={(value) => {
+                        if (value) handleFilterFieldChange(value);
                     }}
                     readOnly={readOnly}
                 />
