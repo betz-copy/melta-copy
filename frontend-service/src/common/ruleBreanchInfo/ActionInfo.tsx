@@ -15,6 +15,7 @@ import {
     IDuplicateEntityMetadataPopulated,
     IUpdateEntityMetadataPopulated,
     IUpdateEntityStatusMetadataPopulated,
+    IUpdateMultipleEntitiesMetadataPopulated,
 } from '../../interfaces/ruleBreaches/actionMetadata';
 import { populateRelationshipTemplate } from '../../utils/templates';
 import { UpdatedFieldsDiff } from './UpdatedFieldsDiff';
@@ -340,6 +341,27 @@ const UpdateEntityActionInfo: React.FC<{
     );
 };
 
+// const UpdateMultipleEntitiesActionInfo: React.FC<{
+//     actionMetadata: IUpdateMultipleEntitiesMetadataPopulated;
+//     isCompact: boolean;
+//     failedProperties: string[];
+// }> = ({ actionMetadata, isCompact, failedProperties }) => {
+//     return (
+//         <Grid container direction="column">
+//             {actionMetadata.map((action) => {
+//                 return (
+//                     <UpdateEntityActionInfo
+//                         key={action.entity?.properties._id}
+//                         actionMetadata={action as IUpdateEntityMetadataPopulated}
+//                         isCompact={isCompact}
+//                         failedProperties={failedProperties}
+//                     />
+//                 );
+//             })}
+//         </Grid>
+//     );
+// };
+
 const UpdateEntityStatusActionInfo: React.FC<{
     actionMetadata: IUpdateEntityStatusMetadataPopulated;
     failedProperties: string[];
@@ -404,6 +426,13 @@ export const ActionInfo: React.FC<{
                         failedProperties={failedProperties}
                     />
                 )}
+                {/* {actionType === ActionTypes.UpdateMultipleEntities && (
+                    <UpdateMultipleEntitiesActionInfo
+                        actionMetadata={actionMetadata as IUpdateMultipleEntitiesMetadataPopulated}
+                        isCompact={isCompact}
+                        failedProperties={failedProperties}
+                    />
+                )} */}
                 {actionType === ActionTypes.UpdateStatus && (
                     <UpdateEntityStatusActionInfo
                         actionMetadata={actionMetadata as IUpdateEntityStatusMetadataPopulated}

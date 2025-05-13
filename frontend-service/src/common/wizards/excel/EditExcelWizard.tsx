@@ -19,7 +19,7 @@ import { EntitiesWizardValues, IExcelSteps, ExcelStepStatus } from '../../../int
 import { IEntityWithIgnoredRules } from '../../../interfaces/entities';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { groupBrokenRulesByEntity } from '../../../utils/loadEntities';
-import { ICreateOrUpdateWithRuleBreachDialogState } from '../../dialogs/entity/CreateOrEditEntityDialog/interface';
+import { ICreateOrUpdateWithRuleBreachDialogState } from '../../../interfaces/CreateOrEditEntityDialog';
 
 const { excelExtension } = environment.loadExcel;
 

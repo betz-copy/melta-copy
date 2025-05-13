@@ -125,29 +125,22 @@ const getComponent = (
     onCheckboxChange: (fieldName: string, isChecked: boolean) => void,
     multipleEntities?: boolean,
 ) => {
+    const hasInput = (value) => {
+        if (value === undefined || value === null) return false;
+        if (typeof value === 'string' && value.trim() === '') return false;
+        if (Array.isArray(value) && value.length === 0) return false;
+        if (typeof value === 'object' && Object.keys(value).length > 0 && !!value.value) return false;
+        return true;
+    };
+
     if (multipleEntities) {
         const WrappedComponent: React.FC<WidgetProps> = (props: WidgetProps) => {
-            const { label, disabled, name } = props;
-            const [checked, setChecked] = useState(false);
+            const { label, disabled, name, value } = props;
+            const [checked, setChecked] = useState(hasInput(value));
 
             useEffect(() => {
                 onCheckboxChange(name, checked);
             }, [checked, name]);
-
-            // let hasMounted = false;
-            // if (!hasMounted) {
-            //     hasMounted = true;
-            // } else {
-            //     onCheckboxChange(name, checked);
-            // }
-
-            // useEffect(() => {
-            //     if (!hasMounted.current) {
-            //         hasMounted.current = true;
-            //         return; // Skip the first render
-            //     }
-            //     onCheckboxChange(name, checked);
-            // }, [checked]);
 
             return (
                 <InputAccordion label={label} disabled={disabled} checked={checked} setChecked={setChecked}>

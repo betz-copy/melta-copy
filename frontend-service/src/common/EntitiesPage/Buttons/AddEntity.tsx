@@ -4,7 +4,7 @@ import React, { CSSProperties, useState } from 'react';
 import { toast } from 'react-toastify';
 import { emptyEntityTemplate, EntityWizardValues } from '../../dialogs/entity';
 import { CreateOrEditEntityDetails } from '../../dialogs/entity/CreateOrEditEntityDialog';
-import { MutationActionType, ICreateOrUpdateWithRuleBreachDialogState } from '../../dialogs/entity/CreateOrEditEntityDialog/interface';
+import { MutationActionType, ICreateOrUpdateWithRuleBreachDialogState } from '../../../interfaces/CreateOrEditEntityDialog';
 import { IEntity } from '../../../interfaces/entities';
 import { useDraftIdStore } from '../../../stores/drafts';
 import { TableButton } from '../../TableButton';
@@ -81,21 +81,9 @@ const AddEntityButton: React.FC<{
                 maxWidth={addEntityWizardState.initialValues?.template.documentTemplatesIds?.length ? 'lg' : 'md'}
             >
                 <CreateOrEditEntityDetails
-                    // isEditMode={false}
                     mutationProps={{ actionType: MutationActionType.Create, payload: undefined }}
                     entityTemplate={addEntityWizardState.initialValues?.template || emptyEntityTemplate}
                     initialCurrValues={addEntityWizardState.initialCurrValues}
-                    // onSuccessUpdate={(entity) => {
-                    //     setUpdatedEntities?.(
-                    //         Object.values(entity.properties).filter(
-                    //             (property): property is IEntity =>
-                    //                 typeof property === 'object' && 'templateId' in property && 'properties' in property,
-                    //         ),
-                    //     );
-
-                    //     setAddEntityWizardState((prev) => ({ ...prev, isOpen: false }));
-                    //     setExternalErrors({ files: false, unique: {}, action: '' });
-                    // }}
                     handleClose={() => {
                         setAddEntityWizardState((prev) => ({ ...prev, isOpen: false }));
                     }}
@@ -110,10 +98,6 @@ const AddEntityButton: React.FC<{
                     onSuccess={handleSuccess}
                     externalErrors={externalErrors}
                     setExternalErrors={setExternalErrors}
-                    // onSuccessCreate={(entity) => {
-                    //     onSuccessCreate?.(entity);
-                    //     console.log('here onSuccessCreate');
-                    // }}
                     createOrUpdateWithRuleBreachDialogState={createOrUpdateWithRuleBreachDialogState}
                     setCreateOrUpdateWithRuleBreachDialogState={setCreateOrUpdateWithRuleBreachDialogState}
                 />

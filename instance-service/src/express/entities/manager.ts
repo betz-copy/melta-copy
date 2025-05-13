@@ -1580,8 +1580,19 @@ export class EntityManager extends DefaultManagerNeo4j {
                 );
 
                 const ruleFailuresAfterAction = await this.runRulesDependOnEntityUpdate(transaction, updatedEntity, updatedProperties);
-
-                throwIfActionCausedRuleFailures(ignoredRules, ruleFailuresBeforeAction, ruleFailuresAfterAction, [{}]);
+                console.dir({ ruleFailuresBeforeAction, ruleFailuresAfterAction }, { depth: null });
+                throwIfActionCausedRuleFailures(
+                    ignoredRules,
+                    ruleFailuresBeforeAction,
+                    ruleFailuresAfterAction,
+                    [{}],
+                    [
+                        {
+                            actionType: ActionTypes.UpdateEntity,
+                            actionMetadata: { entityId: id, updatedFields: entityProperties, before: entity.properties },
+                        },
+                    ],
+                );
 
                 const activityLogsPromises = activityLogsToCreate.map((activityLogToCreate) =>
                     this.activityLogProducer.createActivityLog(activityLogToCreate),

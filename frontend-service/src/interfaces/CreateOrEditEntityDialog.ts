@@ -1,8 +1,7 @@
-import { EntityWizardValues } from '..';
-import { IEntity, IMultipleSelect } from '../../../../interfaces/entities';
-import { ITablesResults } from '../../../../interfaces/excel';
-import { IActionPopulated, IAction } from '../../../../interfaces/ruleBreaches/actionMetadata';
-import { IRuleBreachPopulated, IRuleBreach } from '../../../../interfaces/ruleBreaches/ruleBreach';
+import { EntityWizardValues } from '../common/dialogs/entity';
+import { IEntity, IMultipleSelect } from './entities';
+import { IActionPopulated, IAction } from './ruleBreaches/actionMetadata';
+import { IRuleBreachPopulated, IRuleBreach } from './ruleBreaches/ruleBreach';
 
 export type ICreateOrUpdateWithRuleBreachDialogState = {
     isOpen: boolean;
@@ -25,12 +24,12 @@ export enum MutationActionType {
     UpdateMultiple = 'updateMultiple',
 }
 
-// export type IMutationProps =
-//     | { action: ActionType.Create; }
-//     | { action: ActionType.Update; entityToUpdate: IEntity }
-//     | { action: ActionType.UpdateMultiple; entitiesToUpdate: IMultipleSelect<boolean> };
-
-export type IMutationProps =
+export type IMutationWithPayload =
     | { actionType: MutationActionType.Create; payload: undefined }
     | { actionType: MutationActionType.Update; payload: IEntity }
     | { actionType: MutationActionType.UpdateMultiple; payload: IMultipleSelect<boolean> };
+
+export type IMutationProps = IMutationWithPayload & {
+    onSuccess?: (entity: IEntity) => void;
+    onError?: (entity: EntityWizardValues) => void;
+};

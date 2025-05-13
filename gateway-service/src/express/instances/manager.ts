@@ -406,17 +406,36 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 templateId: updatedInstanceData.templateId,
             };
 
+            const myIgnoreRules = ignoredRules.filter((rule) => rule.failures.some((failure) => failure.entityId === entity.properties._id));
+
             try {
-                const result = await this.updateEntityInstance(entity.properties._id, propToUpdate, files, ignoredRules, userId, true, false);
+                const result = await this.updateEntityInstance(entity.properties._id, propToUpdate, files, myIgnoreRules, userId, true, false);
                 results.push(result);
             } catch (error) {
-                classifyEntityErrors(error, failedEntities, updatedInstanceData, allBrokenRulesEntities);
+                classifyEntityErrors(
+                    error,
+                    failedEntities,
+                    entity,
+                    allBrokenRulesEntities,
+                    //     [
+                    //     {
+                    //         actionType: ActionTypes.UpdateEntity,
+                    //         actionMetadata: { entity, updatedFields: updatedInstanceData.properties },
+                    //     },
+                    // ]
+                );
             }
         };
 
         await Promise.all(data!.map(async ({ entity }) => handleUpdateEntity(entity)));
         succeededEntities.push(...results);
-        const brokenRulesEntities = await convertIdOfBrokenRules(allBrokenRulesEntities);
+        const brokenRulesEntities: IBrokenRuleEntity = {
+            rawBrokenRules: allBrokenRulesEntities.flatMap((e) => e.rawBrokenRules),
+            brokenRules: allBrokenRulesEntities.flatMap((e) => e.brokenRules),
+            actions: allBrokenRulesEntities.flatMap((e) => e.actions),
+            rawActions: allBrokenRulesEntities.flatMap((e) => e.rawActions),
+            entities: allBrokenRulesEntities.flatMap((e) => e.entities),
+        };
 
         return { succeededEntities, failedEntities, brokenRulesEntities };
     }

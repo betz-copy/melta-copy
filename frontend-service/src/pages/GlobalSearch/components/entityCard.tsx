@@ -30,7 +30,7 @@ import { EntityWizardValues } from '../../../common/dialogs/entity';
 import { NoFile } from './NoFile';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { HighlightText } from '../../../utils/HighlightText';
-import { MutationActionType, ICreateOrUpdateWithRuleBreachDialogState } from '../../../common/dialogs/entity/CreateOrEditEntityDialog/interface';
+import { MutationActionType, ICreateOrUpdateWithRuleBreachDialogState } from '../../../interfaces/CreateOrEditEntityDialog';
 
 export const StyledCard = styled(Card)(({ theme }) => ({
     background: theme.palette.mode === 'light' ? '#FFFFFF 0% 0% no-repeat padding-box' : undefined,
@@ -529,8 +529,6 @@ const EntityCard: React.FC<EntityCardProps> = ({
             </Grid>
             <Dialog open={editDialog.isOpen} maxWidth={entityTemplate.documentTemplatesIds?.length ? 'lg' : 'md'}>
                 <CreateOrEditEntityDetails
-                    // isEditMode
-                    // entityToUpdate={entity}
                     mutationProps={{ actionType: MutationActionType.Update, payload: entity }}
                     entityTemplate={entityTemplate}
                     initialCurrValues={editDialog.wizardValues}

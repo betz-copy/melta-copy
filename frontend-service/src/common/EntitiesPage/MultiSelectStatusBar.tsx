@@ -6,10 +6,10 @@ import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import { IDeleteEntityBody, IMultipleSelect } from '../../interfaces/entities';
+import { IDeleteEntityBody, IEntity, IEntityWithIgnoredRules, IMultipleSelect } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { BackendConfigState } from '../../services/backendConfigService';
-import { deleteEntityRequest } from '../../services/entitiesService';
+import { deleteEntityRequest, editManyEntitiesByExcelRequest, updateMultipleEntitiesRequest } from '../../services/entitiesService';
 import { useUserStore } from '../../stores/user';
 import { filterModelToFilterOfTemplate } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 import { isWorkspaceAdmin } from '../../utils/permissions/instancePermissions';
@@ -20,7 +20,13 @@ import { CreateOrEditEntityDetails } from '../dialogs/entity/CreateOrEditEntityD
 import { LoadEntitiesTables } from '../wizards/excel/excelSteps/LoadEntitiesTables';
 import { StepType, Wizard } from '../wizards';
 import { EntitiesWizardValues, ITablesResults } from '../../interfaces/excel';
-import { MutationActionType, ICreateOrUpdateWithRuleBreachDialogState } from '../dialogs/entity/CreateOrEditEntityDialog/interface';
+import { MutationActionType, ICreateOrUpdateWithRuleBreachDialogState } from '../../interfaces/CreateOrEditEntityDialog';
+import { EntityWizardValues } from '../dialogs/entity';
+import { IRuleBreach } from '../../interfaces/ruleBreaches/ruleBreach';
+import EditProps from '../dialogs/entity/CreateOrEditEntityDialog/EditProps';
+import ActionOnEntityWithRuleBreachDialog from '../../pages/Entity/components/ActionOnEntityWithRuleBreachDialog';
+import { ActionTypes } from '../../interfaces/ruleBreaches/actionMetadata';
+import { groupBrokenRulesByEntity } from '../../utils/loadEntities';
 
 interface MultiSelectStatusBarProps extends IStatusPanelParams {
     template: IMongoEntityTemplatePopulated;
@@ -40,9 +46,7 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
     const [confirmDeleteDisplayNameValue, setConfirmDeleteDisplayNameValue] = useState('');
 
     const [externalErrors, setExternalErrors] = useState({ files: false, unique: {}, action: '' });
-    const [createOrUpdateWithRuleBreachDialogState, setCreateOrUpdateWithRuleBreachDialogState] = useState<ICreateOrUpdateWithRuleBreachDialogState>({
-        isOpen: false,
-    });
+    const [createOrUpdateWithRuleBreachDialogState, setCreateOrUpdateWithRuleBreachDialogState] = useState(false);
 
     const { isLoading: isDeleteLoading, mutateAsync: deleteMutation } = useMutation(
         (deleteBody: IDeleteEntityBody) => deleteEntityRequest(deleteBody),
@@ -111,59 +115,152 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
         setOpenDeleteDialog(false);
     };
 
-    const [stepsData, setStepsData] = useState<ITablesResults>({ succeededEntities: [], failedEntities: [] });
-    const currentStep: number = 0;
+    const initialValues: any = {
+        template,
+        attachmentsProperties: {},
+        properties: {},
+    };
+
+    const [stepsData, setStepsData] = useState<any>({ succeededEntities: [], failedEntities: [] });
 
     const isBrokenRules = (stepsData.brokenRulesEntities?.brokenRules ?? []).length > 0;
 
+    const { isLoading: isMultipleUpdateLoading, mutateAsync: updateMultipleMutation } = useMutation(
+        ({
+            newEntityData,
+            entitiesToUpdate,
+            ignoredRules,
+        }: {
+            newEntityData: EntityWizardValues;
+            entitiesToUpdate: IMultipleSelect<boolean>;
+            ignoredRules?: IRuleBreach['brokenRules'];
+        }) => updateMultipleEntitiesRequest(entitiesToUpdate, newEntityData, ignoredRules),
+        {
+            onSuccess: (data) => {
+                setStepsData(data);
+            },
+            onError: (err: AxiosError, { newEntityData }) => {
+                toast.error(i18next.t('wizard.entity.loadEntities.failedLoadEntities'));
+            },
+        },
+    );
+
+    const [wasDirty, setWasDirty] = useState(false);
+    const [initialValuePropsToFilter, setInitialValuePropsToFilter] = useState<object>({});
+
     const steps: StepType<EntitiesWizardValues>[] = [
         {
-            label: i18next.t('wizard.entity.loadEntities.downloadFileTitle'),
-            description: i18next.t('wizard.entity.loadEntities.downloadFileDescription'),
+            label: i18next.t('wizard.entity.loadEntities.downloadFileTitle'), // TODO CHANGE THE LABEL
+            description: i18next.t('wizard.entity.loadEntities.downloadFileDescription'), // TODO CHANGE THE DESCRIPTION
             // eslint-disable-next-line react/no-unstable-nested-components
             component: (props) => {
-                // console.log({ props }, 'createOrEditEntityDetails props');
-
                 return (
-                    <CreateOrEditEntityDetails
-                        // isEditMode
-                        // entitiesToUpdate={getSelectedEntities()}
-                        mutationProps={{
-                            actionType: MutationActionType.UpdateMultiple,
-                            payload: getSelectedEntities(),
-                        }}
+                    // <CreateOrEditEntityDetails
+                    //     mutationProps={{
+                    //         actionType: MutationActionType.UpdateMultiple,
+                    //         payload: getSelectedEntities(),
+                    //     }}
+                    //     initialCurrValues={props?.values?.valuesToUpdate}
+                    //     entityTemplate={template}
+                    //     // onSuccess={(prop) => {
+                    //     //     // console.log('im in first step', prop);
+                    //     //     setStepsData(prop);
+                    //     //     // setStepsData({ succeededEntities: [], failedEntities: [] });
+
+                    //     //     // setOpenEditDialog((prev) => !prev);
+                    //     //     // setExternalErrors({ files: false, unique: {}, action: '' });
+                    //     //     // api.refreshServerSide();
+                    //     //     // setCurrentStep(1);
+                    //     // }}
+                    //     handleClose={() => {
+                    //         // setOpenEditDialog((prev) => !prev);
+                    //     }}
+                    //     // onError={() => {
+                    //     //     setOpenEditDialog(true);
+                    //     // }}
+                    //     externalErrors={externalErrors}
+                    //     setExternalErrors={setExternalErrors}
+                    //     createOrUpdateWithRuleBreachDialogState={createOrUpdateWithRuleBreachDialogState}
+                    //     setCreateOrUpdateWithRuleBreachDialogState={setCreateOrUpdateWithRuleBreachDialogState}
+                    //     createDraft={false}
+                    //     showActionButtons={false}
+                    //     submitHandler={(data) => {
+                    //         // updateMultipleMutation(data);
+                    //         console.log({ data, selectedRowCount });
+
+                    //         setStepsData({ data: { ...data, sum: selectedRowCount } });
+                    //         props.setFieldValue('valuesToUpdate', data);
+                    //         setCurrentStep(1);
+                    //     }}
+                    // />
+                    <EditProps
+                        setFieldValue={props.setFieldValue}
+                        values={props.values}
+                        errors={props.errors}
+                        touched={props.touched}
+                        setFieldTouched={props.setFieldTouched}
+                        setValues={props.setValues}
+                        setInitialValuePropsToFilter={setInitialValuePropsToFilter}
+                        initialValuePropsToFilter={initialValuePropsToFilter}
+                        isMultipleSelection
                         entityTemplate={template}
-                        onSuccess={(prop) => {
-                            setOpenEditDialog((prev) => !prev);
-                            setExternalErrors({ files: false, unique: {}, action: '' });
-                            api.refreshServerSide();
-                        }}
-                        handleClose={() => {
-                            setOpenEditDialog((prev) => !prev);
-                        }}
-                        onError={() => {
-                            setOpenEditDialog(true);
-                        }}
+                        draftId={undefined}
+                        wasDirty={wasDirty}
+                        setWasDirty={setWasDirty}
                         externalErrors={externalErrors}
                         setExternalErrors={setExternalErrors}
-                        createOrUpdateWithRuleBreachDialogState={createOrUpdateWithRuleBreachDialogState}
-                        setCreateOrUpdateWithRuleBreachDialogState={setCreateOrUpdateWithRuleBreachDialogState}
-                        createDraft={false}
-                        // showActionButtons={false}
+                        isEditMode
+                        currentDraft={undefined}
+                        showActionButtons={false}
+                        setIsDraftDialogOpen={undefined}
+                        handleClose={undefined}
+                        initialValues={initialValues}
                     />
                 );
             },
             validationSchema: {},
-            stepperActions: { disable: 'all' },
+            stepperActions: {
+                disable: 'back',
+            },
             invisibleBeforeStep: true,
         },
         {
             label: i18next.t('wizard.entity.loadEntities.entitiesStatus'),
             // eslint-disable-next-line react/no-unstable-nested-components
             component: (props) => {
-                return <LoadEntitiesTables {...props} tablesData={stepsData} template={template!} />;
+                return (
+                    <div>
+                        {Object.entries(props.values?.properties || {}).map(([A, b]) => (
+                            <div>{`${A} : ${b}`}</div>
+                        ))}
+                        <div>{selectedRowCount}</div>
+                    </div>
+                );
             },
             stepperActions: {
+                next: {
+                    text: isBrokenRules ? i18next.t('wizard.entity.loadEntities.handleRules') : undefined,
+                    onClick: async (props) => {
+                        // await stepsData.data.mutateAsync(stepsData.data.values);
+                        await updateMultipleMutation({ newEntityData: props, entitiesToUpdate: getSelectedEntities() });
+
+                        // setStepsData({ succeededEntities: [], failedEntities: [] });
+                        // setCurrentStep(2);
+                    },
+                },
+            },
+            invisibleBeforeStep: true,
+        },
+        {
+            label: i18next.t('wizard.entity.loadEntities.entitiesStatus'),
+            // eslint-disable-next-line react/no-unstable-nested-components
+            component: (props) => {
+                console.log({ stepsData });
+
+                return <LoadEntitiesTables {...props} tablesData={stepsData} template={template} />;
+            },
+            stepperActions: {
+                // TODO add disabled on back
                 next: {
                     text: isBrokenRules ? i18next.t('wizard.entity.loadEntities.handleRules') : undefined,
                 },
@@ -171,6 +268,8 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
             invisibleBeforeStep: true,
         },
     ];
+
+    const [data, setData] = useState({});
 
     return (
         <Grid>
@@ -243,46 +342,72 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
                 setValue={setConfirmDeleteDisplayNameValue}
             />
 
-            {/* <Dialog open={openEditDialog} maxWidth={template.documentTemplatesIds?.length ? 'lg' : 'md'}>
-                <CreateOrEditEntityDetails
-                    isEditMode
-                    entityTemplate={template}
-                    onSuccessUpdate={() => {
-                        setOpenEditDialog((prev) => !prev);
-                        setExternalErrors({ files: false, unique: {}, action: '' });
-                        api.refreshServerSide();
-                    }}
-                    handleClose={() => {
-                        setOpenEditDialog((prev) => !prev);
-                    }}
-                    onError={() => setOpenEditDialog(true)}
-                    externalErrors={externalErrors}
-                    setExternalErrors={setExternalErrors}
-                    createOrUpdateWithRuleBreachDialogState={createOrUpdateWithRuleBreachDialogState}
-                    setCreateOrUpdateWithRuleBreachDialogState={setCreateOrUpdateWithRuleBreachDialogState}
-                    entitiesToUpdate={getSelectedEntities()}
-                />
-            </Dialog> */}
-
             <Wizard
                 open={openEditDialog}
                 handleClose={() => {
                     setOpenEditDialog((prev) => !prev);
                 }}
-                initialValues={{}}
-                initialStep={currentStep}
+                initialValues={initialValues}
                 isEditMode
                 title={`${i18next.t('wizard.entity.loadEntities.title')} - ${template?.displayName}`}
                 steps={steps}
-                isLoading={false}
-                submitFunction={async () => {
-                    setOpenEditDialog((prev) => !prev);
-                    setExternalErrors({ files: false, unique: {}, action: '' });
-                    api.refreshServerSide();
-                    return {};
+                isLoading={isMultipleUpdateLoading}
+                submitFunction={async (values) => {
+                    if (isBrokenRules) {
+                        setData(values);
+                        setCreateOrUpdateWithRuleBreachDialogState(true);
+                    } else {
+                        setOpenEditDialog((prev) => !prev);
+                        setExternalErrors({ files: false, unique: {}, action: '' });
+                        api.refreshServerSide();
+                    }
                 }}
                 direction="column"
             />
+
+            {createOrUpdateWithRuleBreachDialogState && isBrokenRules && (
+                <ActionOnEntityWithRuleBreachDialog
+                    isLoadingActionOnEntity={isMultipleUpdateLoading}
+                    handleClose={() => {
+                        setCreateOrUpdateWithRuleBreachDialogState(false);
+                    }}
+                    doActionEntity={async () => {
+                        await updateMultipleMutation({
+                            newEntityData: data,
+                            entitiesToUpdate: {
+                                selectAll: false,
+                                idsToInclude: stepsData.brokenRulesEntities?.entities.map(({ properties }) => properties._id),
+                            },
+                            ignoredRules: stepsData?.brokenRulesEntities.rawBrokenRules || [],
+                        });
+
+                        setOpenEditDialog(false);
+                        setExternalErrors({ files: false, unique: {}, action: '' });
+                        api.refreshServerSide();
+                    }}
+                    actionType={ActionTypes.UpdateMultipleEntities} // change to update
+                    brokenRules={stepsData?.brokenRulesEntities.brokenRules || []}
+                    rawBrokenRules={stepsData?.brokenRulesEntities.rawBrokenRules || []}
+                    onUpdatedRuleBlock={(brokenRules) => {
+                        setStepsData((prevState) => ({
+                            ...prevState,
+                            brokenRules,
+                        }));
+                    }}
+                    entityFormData={{
+                        template,
+                        properties: { ...data.properties, disabled: false },
+                        attachmentsProperties: {},
+                    }}
+                    onCreateRuleBreachRequest={() => {
+                        setCreateOrUpdateWithRuleBreachDialogState(false);
+                        setOpenEditDialog(false);
+                    }}
+                    actions={stepsData.brokenRulesEntities?.actions}
+                    rawActions={stepsData.brokenRulesEntities?.rawActions}
+                    entities={stepsData?.brokenRulesEntities?.entities || []}
+                />
+            )}
         </Grid>
     );
 };

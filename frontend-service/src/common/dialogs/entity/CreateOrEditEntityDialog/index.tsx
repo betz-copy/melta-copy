@@ -5,9 +5,8 @@ import { Form, Formik } from 'formik';
 import isEqual from 'lodash.isequal';
 import pickBy from 'lodash.pickby';
 import React, { useEffect, useMemo, useState } from 'react';
-import { useLocation } from 'wouter';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
-import { IEntity, IMultipleSelect } from '../../../../interfaces/entities';
+import { IEntity } from '../../../../interfaces/entities';
 import { EntityWizardValues } from '..';
 import { environment } from '../../../../globals';
 import { InstanceFileInput } from '../../../inputs/InstanceFilesInput/InstanceFileInput';
@@ -23,12 +22,16 @@ import { DraftWarningDialog } from '../draftWarningDialog';
 import { useWorkspaceStore } from '../../../../stores/workspace';
 import useDraftEntityDialogHook from './useDraft';
 import useMutationHandler from './useMutationHandler';
-import { IExternalErrors, ICreateOrUpdateWithRuleBreachDialogState, IMutationProps, MutationActionType } from './interface';
-import { ITablesResults } from '../../../../interfaces/excel';
+import {
+    IExternalErrors,
+    ICreateOrUpdateWithRuleBreachDialogState,
+    IMutationProps,
+    MutationActionType,
+} from '../../../../interfaces/CreateOrEditEntityDialog';
 
 const { errorCodes, signaturePrefix } = environment;
 
-const getEntityTemplateFilesFieldsInfo = (entityTemplate: IMongoEntityTemplatePopulated) => {
+export const getEntityTemplateFilesFieldsInfo = (entityTemplate: IMongoEntityTemplatePopulated) => {
     const templateFilesProperties = pickBy(
         entityTemplate.properties.properties,
         (value) => (value.type === 'array' && value.items?.format === 'fileId') || value.format === 'fileId',
@@ -70,32 +73,30 @@ const CreateOrEditEntityDetails: React.FC<{
     mutationProps: IMutationProps;
     entityTemplate: IMongoEntityTemplatePopulated;
     initialCurrValues?: EntityWizardValues;
-    // entityToUpdate?: IEntity;
-    // entitiesToUpdate?: IMultipleSelect<boolean>;
-    onSuccess: ((entity: IEntity) => void) | ((entity: ITablesResults) => void); // rename maybe or insert it to mutation prop
+    // onSuccess?: (entity: IEntity) => void;
     handleClose: () => void;
-    onError: (entity: EntityWizardValues) => void;
+    // onError: (entity: EntityWizardValues) => void;
     externalErrors: IExternalErrors;
     setExternalErrors: React.Dispatch<React.SetStateAction<IExternalErrors>>;
     createOrUpdateWithRuleBreachDialogState: ICreateOrUpdateWithRuleBreachDialogState; // TODO understand this
     setCreateOrUpdateWithRuleBreachDialogState: React.Dispatch<React.SetStateAction<ICreateOrUpdateWithRuleBreachDialogState>>;
     showActionButtons?: boolean;
     createDraft?: boolean;
+    submitHandler?: (data: EntityWizardValues) => void;
 }> = ({
     mutationProps,
     entityTemplate,
-    // entityToUpdate,
-    // entitiesToUpdate,
     initialCurrValues,
     handleClose,
-    onSuccess,
-    onError,
+    // onSuccess,
+    // onError,
     externalErrors,
     setExternalErrors,
     createOrUpdateWithRuleBreachDialogState,
     setCreateOrUpdateWithRuleBreachDialogState,
     showActionButtons = true,
     createDraft = true,
+    submitHandler,
 }) => {
     const { payload, actionType } = mutationProps;
     const [isDraftDialogOpen, setIsDraftDialogOpen] = useState(false);
@@ -109,8 +110,6 @@ const CreateOrEditEntityDetails: React.FC<{
     const initialValues = useMemo(() => {
         if (actionType === MutationActionType.Update) {
             return convertIEntityToEntityWizardValues(payload, entityTemplate, initialTemplateFileKeys);
-            // if (entityToUpdate) {
-            //     return convertIEntityToEntityWizardValues(entityToUpdate, entityTemplate, initialTemplateFileKeys);
         }
         if (initialCurrValues) return initialCurrValues;
         return {
@@ -122,119 +121,10 @@ const CreateOrEditEntityDetails: React.FC<{
         };
     }, [payload, entityTemplate, initialTemplateFileKeys]);
 
-    // const handleMutationError = (err: AxiosError, template: IMongoEntityTemplatePopulated, newEntityData?: EntityWizardValues | undefined) => {
-    //     if (err.response?.status === StatusCodes.REQUEST_TOO_LONG) setExternalErrors((prev) => ({ ...prev, files: true }));
-
-    //     const errorMetadata = err.response?.data?.metadata;
-
-    //     switch (errorMetadata?.errorCode) {
-    //         case errorCodes.failedConstraintsValidation: {
-    //             const { properties } = errorMetadata.constraint as Omit<IUniqueConstraint, 'constraintName'>;
-
-    //             const constraintPropsDisplayNames = properties.map((prop) => `${prop}-${template.properties.properties[prop].title}`);
-
-    //             constraintPropsDisplayNames.forEach((uniqueProp) => {
-    //                 const [propKey, propTitle] = uniqueProp.split('-');
-
-    //                 setExternalErrors((prev) => ({
-    //                     ...prev,
-    //                     unique: {
-    //                         ...prev.unique,
-    //                         [propKey]: `${i18next.t(
-    //                             `wizard.entity.someEntityAlreadyHasTheSameField${constraintPropsDisplayNames.length > 1 ? 's' : ''}`,
-    //                         )} ${propTitle}`,
-    //                     },
-    //                 }));
-    //             });
-    //             break;
-    //         }
-
-    //         case errorCodes.actionsCustomError:
-    //             setExternalErrors((prev) => ({ ...prev, action: errorMetadata?.message }));
-    //             break;
-
-    //         case errorCodes.ruleBlock: {
-    //             const { brokenRules, rawBrokenRules, actions, rawActions } = errorMetadata;
-
-    //             setCreateOrUpdateWithRuleBreachDialogState!({
-    //                 isOpen: true,
-    //                 brokenRules,
-    //                 rawBrokenRules,
-    //                 newEntityData,
-    //                 actions,
-    //                 rawActions,
-    //             });
-    //             break;
-    //         }
-
-    //         default:
-    //             break;
-    //     }
-    // };
-
-    const [_, navigate] = useLocation();
     const workspace = useWorkspaceStore((state) => state.workspace);
     const { shouldNavigateToEntityPage } = workspace.metadata;
-    // const { isLoading: isUpdateLoading, mutateAsync: updateMutation } = useMutation(
-    //     ({ newEntityData, ignoredRules }: { newEntityData: EntityWizardValues; ignoredRules?: IRuleBreach['brokenRules'] }) =>
-    //         updateEntityRequestForMultiple(entityToUpdate!.properties._id, newEntityData, ignoredRules),
-    //     {
-    //         onSuccess: (data) => {
-    //             if (onSuccessUpdate) onSuccessUpdate(data);
-    //             if (Object.values(externalErrors.unique).length === 0 || !externalErrors.files || externalErrors.action.length === 0) {
-    //                 if (shouldNavigateToEntityPage === true) {
-    //                     navigate(`/entity/${data.properties._id}`);
-    //                 }
-    //             }
-    //         },
-    //         onError: (err: AxiosError, { newEntityData }) => {
-    //             handleMutationError(err, entityTemplate, newEntityData);
-    //         },
-    //     },    if (onSuccessUpdate) onSuccessUpdate(data);
-    //         },
-    //         onError: (err: AxiosError, { newEntityData }) => {
-    //             handleMutationError(err, entityTemplate, newEntityData);
-    //         },
-    //     },
-    // ); // TODO move this and all mutation func to another file and return only the wanted func
-    // );
-
-    // const { isLoading: isCreateLoading, mutateAsync: createMutation } = useMutation(
-    //     ({ newEntityData, ignoredRules }: { newEntityData: EntityWizardValues; ignoredRules?: IRuleBreach['brokenRules'] }) =>
-    //         createEntityRequest(newEntityData, ignoredRules),
-    //     {
-    //         onSuccess: (currEntity: IEntity) => {
-    //             onSuccessCreate?.(currEntity);
-    //             onSuccessUpdate?.(currEntity);
-    //             entityId = currEntity.properties._id;
-
-    //             if (Object.values(externalErrors.unique).length === 0 || !externalErrors.files || externalErrors.action.length === 0) {
-    //                 if (shouldNavigateToEntityPage === true) {
-    //                     navigate(`/entity/${currEntity.properties._id}`);
-    //                 }
-    //             }
-    //         },
-    //         onError: (err: AxiosError, { newEntityData }) => {
-    //             handleMutationError(err, entityTemplate, newEntityData);
-    //         },
-    //     },
-    // );
-    // // TODO add another mutation for mult edit
-    // const { isLoading: isMultUpdateLoading, mutateAsync: updateMultMutation } = useMutation(
-    //     ({ newEntityData, ignoredRules }: { newEntityData: EntityWizardValues; ignoredRules?: IRuleBreach['brokenRules'] }) =>
-    //         updateMultEntitiesRequestForMultiple(entitiesToUpdate!, newEntityData, ignoredRules),
-    //     {
-    //         onSuccess: (data) => {
-    //             if (onSuccessUpdate) onSuccessUpdate(data);
-    //         },
-    //         onError: (err: AxiosError, { newEntityData }) => {
-    //             handleMutationError(err, entityTemplate, newEntityData);
-    //         },
-    //     },
-    // ); // TODO move this and all mutation func to another file and return only the wanted func
 
     const [isLoading, mutationPromiseToastify] = useMutationHandler(
-        onSuccess,
         externalErrors,
         shouldNavigateToEntityPage,
         entityTemplate,
@@ -242,76 +132,9 @@ const CreateOrEditEntityDetails: React.FC<{
         setExternalErrors,
         errorCodes,
         setCreateOrUpdateWithRuleBreachDialogState,
-        onError,
+        // onError,
+        // onSuccess,
     );
-
-    // const mutationPromiseToastify = async (values: EntityWizardValues, ignoredRules?: IRuleBreach['brokenRules']) => {
-    //     // eslint-disable-next-line no-nested-ternary
-    //     const mutationPromise =
-    //         // !isEditMode
-    //         //     ? createMutation({ newEntityData: values, ignoredRules })
-    //         //     : entityToUpdate
-    //         //     ? updateMutation({ newEntityData: values, ignoredRules })
-    //         //     : updateMultMutation({ newEntityData: values, ignoredRules });
-    //         mutateAsync?.({ newEntityData: values, ignoredRules });
-    //     toast.dismiss();
-
-    //     await new Promise<void>((resolve) => {
-    //         toast.promise(
-    //             mutationPromise,
-    //             {
-    //                 pending: `${i18next.t(`actions.${isEditMode ? 'update' : 'create'}`)} ${
-    //                     entityTemplate.displayName.length > 0 ? entityTemplate.displayName : i18next.t('entity')
-    //                 }`,
-    //                 success: {
-    //                     render({ data }: { data?: IEntity }) {
-    //                         // TODO add mult
-    //                         return (
-    //                             <Grid display="flex" alignItems="center">
-    //                                 <span>{`${i18next.t(`wizard.entity.${isEditMode ? 'editedSuccessfully' : 'createdSuccessfully'}`)}. `}</span>
-    //                                 {data?.properties?._id && (
-    //                                     <Button
-    //                                         variant="text"
-    //                                         onClick={() => {
-    //                                             navigate(`/entity/${data?.properties?._id}`);
-    //                                         }}
-    //                                         sx={{ marginRight: '5px' }}
-    //                                     >
-    //                                         {i18next.t('entityPage.linkToEntityPage')}
-    //                                     </Button>
-    //                                 )}
-    //                             </Grid>
-    //                         );
-    //                     },
-    //                 },
-    //                 error: {
-    //                     render({ data }: { data?: IEntity }) {
-    //                         // TODO add mult
-    //                         return (
-    //                             <Grid display="flex" alignItems="center">
-    //                                 <span>{i18next.t(`wizard.entity.${isEditMode ? 'failedToEdit' : 'failedToCreate'}`)}</span>
-    //                                 <Button
-    //                                     variant="text"
-    //                                     onClick={() => {
-    //                                         if (data) onError({ ...values, properties: { ...data?.properties } });
-    //                                     }}
-    //                                     sx={{ marginRight: '5px' }}
-    //                                 >
-    //                                     {i18next.t('entityPage.error')}
-    //                                 </Button>
-    //                             </Grid>
-    //                         );
-    //                     },
-    //                 },
-    //             },
-    //             {
-    //                 autoClose: false,
-    //                 style: { width: '335px' },
-    //             },
-    //         );
-    //         mutationPromise?.finally(resolve);
-    //     });
-    // };
 
     const [initialValuePropsToFilter, setInitialValuePropsToFilter] = useState<object>({});
 
@@ -352,7 +175,7 @@ const CreateOrEditEntityDetails: React.FC<{
                 return { properties: propertiesErrors };
             }}
         >
-            {({ setFieldValue, values, errors, touched, setFieldTouched, setValues, dirty, initialValues: formInitialValues }) => {
+            {({ setFieldValue, values, errors, touched, setFieldTouched, setValues, dirty, initialValues: formInitialValues, submitForm }) => {
                 const { templateFilesProperties, templateFileKeys, requiredFilesNames } = getEntityTemplateFilesFieldsInfo(
                     values.template || entityTemplate,
                 );
@@ -404,7 +227,7 @@ const CreateOrEditEntityDetails: React.FC<{
                 // eslint-disable-next-line react-hooks/rules-of-hooks
                 useEffect(() => {
                     if (!absoluteDirty) return;
-                    if (createDraft) createOrUpdateDraftDebounced?.(values, draftId);
+                    if (createDraft) createOrUpdateDraftDebounced(values, draftId);
                     // eslint-disable-next-line react-hooks/exhaustive-deps
                 }, [absoluteDirty, values, draftId]);
 
@@ -576,77 +399,72 @@ const CreateOrEditEntityDetails: React.FC<{
                                                 </Box>
                                             </Grid>
                                         </Grid>
-                                        {showActionButtons && (
-                                            <>
-                                                <Divider orientation="horizontal" style={{ alignSelf: 'stretch', width: '100%' }} />
-                                                <Grid
-                                                    container
-                                                    item
-                                                    flexDirection="row"
-                                                    flexWrap="nowrap"
-                                                    justifyContent="space-between"
-                                                    alignItems="center"
-                                                    paddingTop="25px"
-                                                    width="100%"
-                                                >
-                                                    {(entityTemplate.documentTemplatesIds || values.template.documentTemplatesIds)?.length &&
-                                                    actionType === MutationActionType.Update ? (
-                                                        <ExportFormats
-                                                            properties={{
-                                                                createdAt: payload?.properties.createdAt || new Date(),
-                                                                updatedAt: payload?.properties.updatedAt || new Date(),
-                                                                ...values.properties,
-                                                            }}
-                                                            documentTemplateIds={
-                                                                entityTemplate.documentTemplatesIds || values.template.documentTemplatesIds
-                                                            }
-                                                        />
-                                                    ) : (
-                                                        <Grid item xs={6}>
-                                                            <Button
-                                                                style={{ borderRadius: '7px' }}
-                                                                variant="outlined"
-                                                                startIcon={<ClearIcon />}
-                                                                onClick={() => (wasDirty ? setIsDraftDialogOpen(true) : handleClose())}
-                                                            >
-                                                                {i18next.t('entityPage.cancel')}
-                                                            </Button>
-                                                        </Grid>
-                                                    )}
-                                                    <Grid item xs={6} container justifyContent="space-between">
-                                                        <Grid item container flexDirection="row" justifyContent="right">
-                                                            <Button
-                                                                style={{ borderRadius: '7px' }}
-                                                                type="submit"
-                                                                variant="contained"
-                                                                startIcon={
-                                                                    isLoading ? ( // TODO add mult
-                                                                        <CircularProgress sx={{ color: 'white' }} size={20} />
-                                                                    ) : (
-                                                                        <DoneIcon />
-                                                                    )
-                                                                }
-                                                                onClick={() =>
-                                                                    Object.keys(errors).length > 0
-                                                                        ? ''
-                                                                        : setTimeout(() => (externalErrors ? undefined : handleClose()), 5000)
-                                                                }
-                                                                disabled={!dirty || isLoading} // TODO add mult
-                                                            >
-                                                                {i18next.t('entityPage.save')}
-                                                            </Button>
-                                                        </Grid>
-                                                    </Grid>
+                                        {/* {showActionButtons && (
+                                            <> */}
+                                        <Divider orientation="horizontal" style={{ alignSelf: 'stretch', width: '100%' }} />
+                                        <Grid
+                                            container
+                                            item
+                                            flexDirection="row"
+                                            flexWrap="nowrap"
+                                            justifyContent="space-between"
+                                            alignItems="center"
+                                            paddingTop="25px"
+                                            width="100%"
+                                        >
+                                            {(entityTemplate.documentTemplatesIds || values.template.documentTemplatesIds)?.length &&
+                                            actionType === MutationActionType.Update ? (
+                                                <ExportFormats
+                                                    properties={{
+                                                        createdAt: payload?.properties.createdAt || new Date(),
+                                                        updatedAt: payload?.properties.updatedAt || new Date(),
+                                                        ...values.properties,
+                                                    }}
+                                                    documentTemplateIds={entityTemplate.documentTemplatesIds || values.template.documentTemplatesIds}
+                                                />
+                                            ) : (
+                                                <Grid item xs={6}>
+                                                    <Button
+                                                        style={{ borderRadius: '7px' }}
+                                                        variant="outlined"
+                                                        startIcon={<ClearIcon />}
+                                                        onClick={() => (wasDirty ? setIsDraftDialogOpen(true) : handleClose())}
+                                                    >
+                                                        {i18next.t('entityPage.cancel')}
+                                                    </Button>
                                                 </Grid>
-                                            </>
-                                        )}
+                                            )}
+                                            <Grid item xs={6} container justifyContent="space-between">
+                                                <Grid item container flexDirection="row" justifyContent="right">
+                                                    <Button
+                                                        style={{ borderRadius: '7px' }}
+                                                        type="button"
+                                                        variant="contained"
+                                                        startIcon={isLoading ? <CircularProgress sx={{ color: 'white' }} size={20} /> : <DoneIcon />}
+                                                        onClick={() => {
+                                                            if (submitHandler) submitHandler(values);
+                                                            else submitForm();
+
+                                                            return Object.keys(errors).length > 0
+                                                                ? ''
+                                                                : setTimeout(() => (externalErrors ? undefined : handleClose()), 5000);
+                                                        }}
+                                                        disabled={!dirty || isLoading} // TODO add mult
+                                                    >
+                                                        {i18next.t('entityPage.save')}
+                                                    </Button>
+                                                </Grid>
+                                            </Grid>
+                                        </Grid>
+                                        {/* </>
+                                        )} */}
                                     </Grid>
                                 </CardContent>
                             </Card>
                         </Form>
                         {createOrUpdateWithRuleBreachDialogState.isOpen && (
                             <ActionOnEntityWithRuleBreachDialog // ? do later
-                                isLoadingActionOnEntity={isLoading} // TODO add mult
+                                isLoadingActionOnEntity={isLoading}
                                 handleClose={() => setCreateOrUpdateWithRuleBreachDialogState({ isOpen: false })}
                                 doActionEntity={() => {
                                     return mutationPromiseToastify(

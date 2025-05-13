@@ -98,7 +98,6 @@ const EditEntityDetails: React.FC<{
 
                 if (errorMetadata?.errorCode === errorCodes.ruleBlock) {
                     const { brokenRules, rawBrokenRules, actions, rawActions } = errorMetadata;
-
                     setUpdateWithRuleBreachDialogState({
                         isOpen: true,
                         brokenRules,

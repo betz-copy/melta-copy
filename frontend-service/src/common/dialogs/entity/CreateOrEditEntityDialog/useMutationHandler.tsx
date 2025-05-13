@@ -7,35 +7,31 @@ import React, { Dispatch, SetStateAction } from 'react';
 import { toast } from 'react-toastify';
 import { Button, Grid } from '@mui/material';
 import { EntityWizardValues } from '..';
-import { IEntity, IMultipleSelect, IUniqueConstraint } from '../../../../interfaces/entities';
+import { IEntity, IUniqueConstraint } from '../../../../interfaces/entities';
 import { IRuleBreach } from '../../../../interfaces/ruleBreaches/ruleBreach';
-import { updateEntityRequestForMultiple, createEntityRequest, updateMultipleEntitiesRequest } from '../../../../services/entitiesService';
-import { MutationActionType, ICreateOrUpdateWithRuleBreachDialogState, IExternalErrors, IMutationProps } from './interface';
+import { updateEntityRequestForMultiple, createEntityRequest } from '../../../../services/entitiesService';
+import {
+    MutationActionType,
+    ICreateOrUpdateWithRuleBreachDialogState,
+    IExternalErrors,
+    IMutationProps,
+} from '../../../../interfaces/CreateOrEditEntityDialog';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
-import { ITablesResults } from '../../../../interfaces/excel';
 
 const useMutationHandler = (
-    onSuccess: ((entity: IEntity) => void) | ((entity: ITablesResults) => void),
     externalErrors: IExternalErrors,
     shouldNavigateToEntityPage: boolean,
     entityTemplate: IMongoEntityTemplatePopulated,
-    { actionType, payload }: IMutationProps,
+    { actionType, payload, onError, onSuccess }: IMutationProps,
     setExternalErrors: Dispatch<SetStateAction<IExternalErrors>>,
     errorCodes,
     setCreateOrUpdateWithRuleBreachDialogState: Dispatch<SetStateAction<ICreateOrUpdateWithRuleBreachDialogState>>,
-    onError: (values: EntityWizardValues) => void,
+    // onError?: (values: EntityWizardValues) => void,
+    // onSuccess?: (entity: IEntity) => void,
 ) => {
     const [_, navigate] = useLocation();
     let isLoading = false;
-    let mutateAsync:
-        | (({
-              newEntityData,
-              ignoredRules,
-          }: {
-              newEntityData: EntityWizardValues;
-              ignoredRules?: IRuleBreach['brokenRules'];
-          }) => Promise<IEntity | ITablesResults>)
-        | undefined;
+    let mutateAsync;
 
     const handleMutationError = (err: AxiosError, template: IMongoEntityTemplatePopulated, newEntityData?: EntityWizardValues | undefined) => {
         if (err.response?.status === StatusCodes.REQUEST_TOO_LONG) setExternalErrors((prev) => ({ ...prev, files: true }));
@@ -92,7 +88,7 @@ const useMutationHandler = (
             updateEntityRequestForMultiple((payload as IEntity).properties._id, newEntityData, ignoredRules),
         {
             onSuccess: (data) => {
-                (onSuccess as (entity: IEntity) => void)(data);
+                onSuccess?.(data);
 
                 if (Object.values(externalErrors.unique).length === 0 || !externalErrors.files || externalErrors.action.length === 0) {
                     if (shouldNavigateToEntityPage === true) {
@@ -111,7 +107,7 @@ const useMutationHandler = (
             createEntityRequest(newEntityData, ignoredRules),
         {
             onSuccess: (data) => {
-                (onSuccess as (entity: IEntity) => void)(data);
+                onSuccess?.(data);
 
                 if (Object.values(externalErrors.unique).length === 0 || !externalErrors.files || externalErrors.action.length === 0) {
                     if (shouldNavigateToEntityPage && data) {
@@ -125,18 +121,18 @@ const useMutationHandler = (
         },
     );
 
-    const { isLoading: isMultipleUpdateLoading, mutateAsync: updateMultipleMutation } = useMutation(
-        ({ newEntityData, ignoredRules }: { newEntityData: EntityWizardValues; ignoredRules?: IRuleBreach['brokenRules'] }) =>
-            updateMultipleEntitiesRequest(payload as IMultipleSelect<boolean>, newEntityData, ignoredRules),
-        {
-            onSuccess: (data) => {
-                (onSuccess as (entity: ITablesResults) => void)(data);
-            },
-            onError: (err: AxiosError, { newEntityData }) => {
-                handleMutationError(err, entityTemplate, newEntityData);
-            },
-        },
-    );
+    // const { isLoading: isMultipleUpdateLoading, mutateAsync: updateMultipleMutation } = useMutation(
+    //     ({ newEntityData, ignoredRules }: { newEntityData: EntityWizardValues; ignoredRules?: IRuleBreach['brokenRules'] }) =>
+    //         updateMultipleEntitiesRequest(payload as IMultipleSelect<boolean>, newEntityData, ignoredRules),
+    //     {
+    //         onSuccess: (data) => {
+    //             (onSuccess as (entity: ITablesResults) => void)(data);
+    //         },
+    //         onError: (err: AxiosError, { newEntityData }) => {
+    //             handleMutationError(err, entityTemplate, newEntityData);
+    //         },
+    //     },
+    // );
 
     switch (actionType) {
         case MutationActionType.Create:
@@ -147,10 +143,10 @@ const useMutationHandler = (
             isLoading = isUpdateLoading;
             mutateAsync = updateMutation;
             break;
-        case MutationActionType.UpdateMultiple:
-            isLoading = isMultipleUpdateLoading;
-            mutateAsync = updateMultipleMutation;
-            break;
+        // case MutationActionType.UpdateMultiple:
+        //     isLoading = isMultipleUpdateLoading;
+        //     mutateAsync = updateMultipleMutation;
+        //     break;
         default:
             isLoading = false;
             mutateAsync = undefined;
@@ -200,7 +196,7 @@ const useMutationHandler = (
                                     <Button
                                         variant="text"
                                         onClick={() => {
-                                            if (data) onError({ ...values, properties: { ...data?.properties } });
+                                            if (data) onError?.({ ...values, properties: { ...data?.properties } });
                                         }}
                                         sx={{ marginRight: '5px' }}
                                     >

@@ -33,7 +33,7 @@ export type StepType<T extends object> = {
     stepperActions?: {
         disable?: 'all' | 'back' | 'next';
         back?: { text?: string; onClick?: () => void };
-        next?: { text?: string; onClick?: () => void };
+        next?: { text?: string; onClick?: (values) => Promise<void> | void };
     };
     invisibleBeforeStep?: boolean;
 };
@@ -114,11 +114,13 @@ const Wizard = <T extends object>({
                     validate={steps?.[activeStep]?.validate}
                     onSubmit={async (values, actions) => {
                         if (isLastStep) {
-                            console.log({ submitFunction });
-
                             await submitFunction(values);
                         } else {
-                            steps[activeStep].stepperActions?.next?.onClick?.();
+                            console.log('before next');
+
+                            await steps[activeStep].stepperActions?.next?.onClick?.(values);
+                            console.log('after next');
+
                             setActiveStep((prevActiveStep) => prevActiveStep + 1);
                             actions.setTouched({});
                             actions.setSubmitting(false);

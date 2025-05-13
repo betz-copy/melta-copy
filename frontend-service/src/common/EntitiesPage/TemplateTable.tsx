@@ -32,7 +32,7 @@ import { BlueTitle } from '../BlueTitle';
 import { CustomIcon } from '../CustomIcon';
 import { EntityWizardValues } from '../dialogs/entity';
 import { CreateOrEditEntityDetails } from '../dialogs/entity/CreateOrEditEntityDialog';
-import { MutationActionType, ICreateOrUpdateWithRuleBreachDialogState } from '../dialogs/entity/CreateOrEditEntityDialog/interface';
+import { MutationActionType, ICreateOrUpdateWithRuleBreachDialogState } from '../../interfaces/CreateOrEditEntityDialog';
 import EntitiesTableOfTemplate, { EntitiesTableOfTemplateRef } from '../EntitiesTableOfTemplate';
 import { EntityTemplateColor } from '../EntityTemplateColor';
 import { TableButton } from '../TableButton';
@@ -441,13 +441,11 @@ const TemplateTable = forwardRef<
 
             <Dialog open={editDialog.isOpen} maxWidth={template.documentTemplatesIds?.length ? 'lg' : 'md'}>
                 <CreateOrEditEntityDetails
-                    // entityToUpdate={editDialog.entity!}
-                    // isEditMode={editDialog.isEditMode}
                     mutationProps={
                         editDialog.isEditMode
                             ? {
                                   actionType: MutationActionType.Update,
-                                  payload: editDialog.entity!, // maybe check before if it is undefined
+                                  payload: editDialog.entity!,
                               }
                             : { actionType: MutationActionType.Create, payload: undefined }
                     }
