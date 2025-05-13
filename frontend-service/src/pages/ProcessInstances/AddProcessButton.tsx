@@ -35,7 +35,7 @@ const AddProcessButton: React.FC<{
         },
         onError: (error: AxiosError) => {
             toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('processInstancesPage.failedToCreateProcess')} />);
-            console.log('Failed to create process. Error', error);
+            console.error('Failed to create process. Error', error);
         },
     });
 
