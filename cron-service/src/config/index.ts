@@ -67,6 +67,16 @@ const config = {
         dateAlertTime: env.get('DATE_ALERT_TIME').default('0 0 * * *').asString(),
         displayCronDates: env.get('DISPLAY_CRON_DATES').default('true').asString(),
     },
+    userFieldsSync: {
+        usersSyncTime: env.get('USERS_SYNC_TIME').default('0 */12 * * *').asString(),
+        isSyncingUsers: env.get('IS_SYNCING_USERS').default('true').asString(),
+    },
+    kartoffel: {
+        url: env.get('KARTOFFEL_BASE_URL').required().asString(),
+        baseEntitiesRoute: env.get('KARTOFFEL_BASE_ENTITIES_ROUTE').default('/api/entities').asString(),
+        requestTimeout: env.get('KARTOFFEL_REQUEST_TIMEOUT').default(10000).asIntPositive(),
+        getByIdRoute: env.get('KARTOFFEL_FIND_USER_BY_ID_ROUTE').default('').asString(),
+    },
 };
 
 export default config;

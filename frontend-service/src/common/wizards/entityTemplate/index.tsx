@@ -6,7 +6,7 @@ import React from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { environment } from '../../../globals';
-import { IConstraint, IFieldsGroup, IUniqueConstraintOfTemplate } from '../../../interfaces/entities';
+import { IConstraint, IUniqueConstraintOfTemplate } from '../../../interfaces/entities';
 import { IEntityTemplateMap, IEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import fileDetails from '../../../interfaces/fileDetails';
 import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
@@ -17,7 +17,7 @@ import { useWorkspaceStore } from '../../../stores/workspace';
 import { mapTemplates } from '../../../utils/templates';
 import { ErrorToast } from '../../ErrorToast';
 import { StepType, Wizard, WizardBaseType } from '../index';
-import { AddFields, AddFieldsDND, addFieldsSchema } from './AddFields';
+import { AddFields, addFieldsSchema } from './AddFields';
 import { ChooseCategory, chooseCategorySchema } from './ChooseCategory';
 import { ChooseIcon } from './ChooseIcon';
 import { CreateTemplateName, useCreateOrEditTemplateNameSchema } from './CreateTemplateName';
@@ -55,9 +55,16 @@ export interface EntityTemplateFormInputProperties {
         relatedTemplateId: string;
         relatedTemplateField: string;
     };
+    expandedUserField?: {
+        relatedUserField: string;
+        kartoffelField: string;
+    };
     archive?: boolean;
     mapSearch?: boolean;
     fieldGroup?: FieldsGroup;
+    hideFromDetailsPage?: boolean;
+    comment?: string;
+    color?: string;
 }
 
 export interface EntityTemplateWizardValues

@@ -69,6 +69,29 @@ const testFields = (
     });
 };
 
+const validateProperties = (properties, context, errors) => {
+    const relatedUserFieldsOfkartoffelFields: { value: string; index: number }[] = [];
+    const userFields: string[] = [];
+    properties.forEach((value, index) => {
+        if (value.type && value.type === 'user') {
+            userFields.push(value.name);
+        }
+        if (value?.type === 'kartoffelUserField') {
+            relatedUserFieldsOfkartoffelFields.push({ value: value.expandedUserField?.relatedUserField || '', index });
+        }
+    });
+
+    relatedUserFieldsOfkartoffelFields.forEach((userField) => {
+        if (!userFields.includes(userField.value))
+            errors.push(
+                context.createError({
+                    message: 'wizard.entityTemplate.userFieldNotFound',
+                    path: `properties[${userField.index}].expandedUserField.relatedUserField`,
+                }),
+            );
+    });
+};
+
 export const entityTemplateUniqueProperties = (value, context: Yup.TestContext) => {
     if (!value) return true;
 
@@ -78,6 +101,8 @@ export const entityTemplateUniqueProperties = (value, context: Yup.TestContext) 
         value.attachmentProperties,
         'attachmentProperties',
     );
+
+    validateProperties(properties, context, errors);
 
     testFields(properties, 'normal', propertiesPath, properties, 'normal', propertiesPath, context, errors);
     testFields(attachmentProperties, 'attachment', attachmentPath, attachmentProperties, 'attachment', attachmentPath, context, errors);

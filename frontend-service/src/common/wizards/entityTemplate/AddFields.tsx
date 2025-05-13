@@ -68,7 +68,18 @@ const extendedPropertySchema = propertiesBaseSchema.shape({
             relationshipTemplateDirection: Yup.string().required(i18next.t('validation.required')),
         }),
     }),
+    expandedUserField: Yup.object().when('type', {
+        is: 'kartoffelUserField',
+        then: Yup.object({
+            relatedUserField: Yup.string().required(i18next.t('validation.required')),
+            kartoffelField: Yup.string().required(i18next.t('validation.required')),
+        }),
+    }),
     mapSearch: Yup.boolean(),
+    comment: Yup.string().when('type', {
+        is: 'comment',
+        then: Yup.string().required(),
+    }),
 });
 
 const fieldSchema = Yup.object({
@@ -141,40 +152,6 @@ const addFieldsSchema = Yup.object({
         }),
     ),
 }).test('uniqueProperties', entityTemplateUniqueProperties);
-
-const ItemType = 'SECTION';
-const DraggableManualDndLayout = ({ id, index, moveItem, children }) => {
-    const ref = useRef(null);
-
-    const [{ isDragging, opacity }, drag] = useDrag({
-        type: 'SECTION',
-        item: { id, index },
-        collect: (m) => ({ isDragging: m.isDragging(), opacity: m.isDragging() ? 0.2 : 1 }),
-    });
-
-    const [{ isOver }, drop] = useDrop({
-        accept: 'SECTION',
-        collect: (m) => ({ isOver: m.isOver({ shallow: true }) }),
-        drop: (item: { id: string; index: number }, monitor) => {
-            if (!monitor.isOver({ shallow: true })) return;
-            console.log('hover', { id, index });
-
-            const dragIndex = item.index;
-            const hoverIndex = index;
-            if (dragIndex === hoverIndex) return;
-            moveItem(dragIndex, hoverIndex);
-            item.index = hoverIndex;
-        },
-    });
-
-    drag(drop(ref));
-
-    return (
-        <div ref={ref} style={{ opacity }}>
-            {children}
-        </div>
-    );
-};
 
 export const FieldBlockWrapper: React.FC<
     StepComponentProps<EntityTemplateWizardValues, 'isEditMode' | 'setBlock' | 'itemId' | 'index' | 'moveItem'>

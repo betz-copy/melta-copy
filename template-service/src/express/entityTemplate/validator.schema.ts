@@ -7,6 +7,7 @@ import {
     previewPropertiesSchema,
     orderPropertiesTypeSchema,
     innerFieldGroupsSchema,
+    stringFormats,
 } from './joi.helper';
 
 const entityTemplateSchema = {
@@ -23,6 +24,17 @@ const entityTemplateSchema = {
     mapSearchProperties: Joi.array().items(Joi.string()),
     fieldGroups: innerFieldGroupsSchema,
 };
+
+// POST /api/entities/templates/searchByFormat
+export const searchEntityTemplatesByFormatSchema = Joi.object({
+    query: {},
+    body: {
+        format: Joi.string()
+            .valid(...stringFormats)
+            .required(),
+    },
+    params: {},
+});
 
 // POST /api/entities/templates/search
 export const searchEntityTemplatesSchema = Joi.object({

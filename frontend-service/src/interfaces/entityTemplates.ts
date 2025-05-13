@@ -32,8 +32,15 @@ export interface IEntitySingleProperty {
         relatedTemplateId: string;
         relatedTemplateField: string;
     };
+    expandedUserField?: {
+        relatedUserField: string;
+        kartoffelField: string;
+    };
     archive?: boolean;
     fieldGroup?: FieldsGroup;
+    hideFromDetailsPage?: boolean;
+    comment?: string;
+    color?: string;
 }
 
 export interface IEntityTemplate {
