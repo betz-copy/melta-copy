@@ -8,6 +8,7 @@ import { IConnectionTemplateExpanded, ISelectRelationshipTemplates } from '.';
 import { CustomExpandMore } from '../../../../common/SelectCheckBox';
 import { useDarkModeStore } from '../../../../stores/darkMode';
 
+// item id is node id - parent id (if he has one)
 const getItemId = (item: ISelectRelationshipTemplates | IConnectionTemplateExpanded) =>
     `${item.relationshipTemplate._id}${'parentRelationship' in item ? `-${item.parentRelationship?.relationshipTemplate._id}` : ''}`;
 
