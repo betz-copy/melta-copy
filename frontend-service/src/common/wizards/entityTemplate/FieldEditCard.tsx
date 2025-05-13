@@ -18,6 +18,9 @@ import {
     Popover,
     Backdrop,
     CircularProgress,
+    ThemeProvider,
+    createTheme,
+    FormHelperText,
 } from '@mui/material';
 import {
     Delete as DeleteIcon,
@@ -32,6 +35,7 @@ import {
     AddLocationAlt,
     WrongLocation,
 } from '@mui/icons-material';
+import _debounce from 'lodash.debounce';
 import AddIcon from '@mui/icons-material/Add';
 import { Draggable } from 'react-beautiful-dnd';
 import i18next from 'i18next';
@@ -39,6 +43,9 @@ import isEqual from 'lodash.isequal';
 import EditIcon from '@mui/icons-material/Edit';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
+import { stateToHTML } from 'draft-js-export-html';
+import MUIRichTextEditor from 'mui-rte';
+import { convertToRaw, EditorState } from 'draft-js';
 import { dateNotificationTypes, validPropertyTypes } from './AddFields';
 import { CommonFormInputProperties, IRelationshipReference } from './commonInterfaces';
 import { MinimizedColorPicker } from '../../inputs/MinimizedColorPicker';
@@ -50,6 +57,11 @@ import { MeltaTooltip } from '../../MeltaTooltip';
 import { IUniqueConstraintOfTemplate } from '../../../interfaces/entities';
 import RelationshipReferenceField from './RelationshipReferenceField';
 import { environment } from '../../../globals';
+import { getInitialValue, useMuiRteTheme } from '../../inputs/JSONSchemaFormik/RjfsTextAreaWidget';
+import { commentColors } from '../../inputs/JSONSchemaFormik/RjsfCommentWidget';
+import KartoffelUserField from './KartoffelUserField';
+import { ImageWithDisable } from '../../ImageWithDisable';
+import SelectAutocomplete from '../../inputs/SelectAutocomplete';
 
 const { mapSearchPropertiesLimit } = environment.map;
 
@@ -101,6 +113,9 @@ export interface FieldEditCardProps {
     locationSearchFields?: { show: boolean; disabled: boolean };
     hasActions?: boolean;
     supportConvertingToMultipleFields?: boolean;
+    supportComment?: boolean;
+    userPropertiesInTemplate?: string[];
+    onDuplicateKartoffelField?: (fieldIndex: number) => void;
 }
 
 export const FieldEditCard: React.FC<FieldEditCardProps> = ({
@@ -135,8 +150,15 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     locationSearchFields,
     hasActions,
     supportConvertingToMultipleFields = true,
+    supportComment,
+    userPropertiesInTemplate = [],
+    onDuplicateKartoffelField,
 }) => {
+    const queryClient = useQueryClient();
+    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+
     const isText = value.type === 'string' || value.type === 'text-area';
+    const isComment = value.type === 'comment';
 
     const name = `properties[${index}].name`;
     const touchedName = touched?.name;
@@ -177,6 +199,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     const hide = `properties[${index}].hide`;
     const readOnly = `properties[${index}].readOnly`;
     const identifier = `properties[${index}].identifier`;
+    const hideFromDetailsPage = `properties[${index}].hideFromDetailsPage`;
 
     const unique =
         value.type === 'serialNumber' ||
@@ -191,6 +214,177 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     const isIdentifierAble = isText || value.type === 'number' || value.type === 'pattern' || value.type === 'serialNumber';
 
     const mapSearchDisabled = !value.mapSearch && locationSearchFields?.disabled;
+
+    const commentColorsObj = Object.entries(commentColors).map(([label, val]) => ({ label, value: val }));
+
+    const isNewProperty = !initialValue;
+    const isDisabled = Boolean(isEditMode && !isNewProperty && areThereAnyInstances);
+
+    const [open, setOpen] = useState<boolean>(false);
+    const [openDelete, setOpenDelete] = useState<boolean>(false);
+
+    const [commentValue, setCommentValue] = useState(getInitialValue(value.comment));
+    const [commentEditorFocused, setCommentEditorFocused] = useState(false);
+    const [rawCommentContent, setRawCommentContent] = useState('');
+    const [errorComment, setErrorComment] = useState(
+        (typeof errors === 'string' && (errors as string)?.includes('comment')) || Boolean(errors?.comment),
+    );
+
+    const [localOption, setLocalOption] = useState<string>('');
+    const [initialOptionArray, setInitialOptionArray] = useState<string[]>(initialValue?.options || []);
+    const [editError, setEditError] = useState<string>('');
+    const [editIndex, setEditIndex] = useState<number | null>(null);
+    const [atLeastOneItem, setAtLeastOneItem] = useState<string | null>(null);
+
+    const chipRefs = useRef<(HTMLDivElement | null)[]>([]);
+    const MemoizedIconButton = React.memo(IconButton);
+
+    const theme = createTheme();
+    Object.assign(theme, useMuiRteTheme(errorComment));
+
+    useEffect(() => {
+        setRawCommentContent(JSON.stringify(convertToRaw(commentValue.getCurrentContent())));
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    useEffect(() => {
+        setErrorComment((typeof errors === 'string' && (errors as string)?.includes('comment')) || Boolean(errors?.comment));
+    }, [errors]);
+
+    useEffect(() => {
+        if (!editIndex) setEditError('');
+    }, [editIndex]);
+
+    const relationshipRefs = Array.from(entityTemplates.values()).reduce((acc: IRelationshipReference[], template) => {
+        const properties = template.properties?.properties || {};
+
+        const references = Object.values(properties).reduce((refAcc: IRelationshipReference[], property) => {
+            if (property.format === 'relationshipReference' && property.relationshipReference) refAcc.push(property.relationshipReference);
+
+            return refAcc;
+        }, []);
+
+        return acc.concat(references);
+    }, []);
+
+    const disableRemoveRequire = Boolean(
+        relationshipRefs.find((ref) => ref.relatedTemplateField === value.name && ref.relatedTemplateId === templateId) !== undefined,
+    );
+
+    const handleEditChange = (e, _tagIndex) => {
+        e.preventDefault();
+        setLocalOption(e.target.value);
+        setEditError('');
+    };
+
+    const { mutate: updateEnumField, isLoading } = useMutation(
+        (mutationArgs: { id: string; tagIndex: number; option: string; fieldValue: any }) => {
+            const { id, tagIndex, option, fieldValue } = mutationArgs;
+            return updateEnumFieldRequest(id, fieldValue.options[tagIndex], fieldValue, option);
+        },
+        {
+            onError: () => {
+                if (editIndex !== null) {
+                    setLocalOption('');
+                    setEditIndex(null);
+                }
+                toast.error(<div>{i18next.t('errorPage.updateEnumField')}</div>);
+                setOpen(!open);
+            },
+            onSuccess: (resultOfMutation, { id, option, fieldValue }) => {
+                if (editIndex !== null) {
+                    const indexValue = initialOptionArray.indexOf(fieldValue.options[editIndex]);
+                    if (indexValue !== -1) {
+                        const tempInitialOptionArray = [...initialOptionArray];
+                        tempInitialOptionArray[indexValue] = option;
+                        setInitialOptionArray(tempInitialOptionArray);
+                    }
+                }
+                const frontEndEnumValues = value.options.slice(initialOptionArray.length);
+                const fieldProps = resultOfMutation.properties.properties[fieldValue.name];
+                const newOptions = fieldProps.type === 'array' ? fieldProps.items!.enum! : fieldProps.enum!;
+                queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) => {
+                    const newOptionColors = { ...fieldValue.optionColors };
+                    if (fieldValue.optionColors && Object.keys(fieldValue.optionColors).length > 0 && editIndex != null) {
+                        const newColor = fieldValue.optionColors[fieldValue.options[editIndex]];
+                        delete newOptionColors[fieldValue.options[editIndex]];
+                        newOptionColors[option] = newColor;
+                    }
+                    setValues?.((prev) => ({
+                        ...prev,
+                        options: newOptions.concat(frontEndEnumValues),
+                        optionColors: newOptionColors,
+                    }));
+
+                    entityTemplateMap!.set(id, resultOfMutation);
+                    return entityTemplateMap!;
+                });
+                setEditIndex(null);
+                toast.success(<div>{i18next.t('entityPage.updatedEnumFieldSuccessfully')}</div>);
+                setOpen(!open);
+            },
+        },
+    );
+
+    const { mutate: deleteEnumField, isLoading: isDeleteLoading } = useMutation(
+        (mutationArgs: { id: string; tagIndex: number; fieldValue: any }) => {
+            const { id, tagIndex, fieldValue } = mutationArgs;
+            return deleteEnumFieldRequest(id, fieldValue.options[tagIndex], fieldValue);
+        },
+        {
+            onError: () => {
+                if (editIndex !== null) {
+                    setLocalOption('');
+                    setEditIndex(null);
+                }
+                toast.error(<div>{i18next.t('errorPage.deleteFieldValue')}</div>);
+            },
+            onSuccess: (resultOfMutation, { id, fieldValue }) => {
+                if (editIndex !== null) {
+                    const indexValue = initialOptionArray.indexOf(fieldValue.options[editIndex]);
+                    if (indexValue !== -1) {
+                        const tempInitialOptionArray = [...initialOptionArray];
+                        tempInitialOptionArray.splice(indexValue, 1);
+                        setInitialOptionArray(tempInitialOptionArray);
+                    }
+                }
+                queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) => {
+                    const fieldProps = resultOfMutation.properties.properties[fieldValue.name];
+                    const newOptions = fieldProps.type === 'array' ? fieldProps.items!.enum! : fieldProps.enum!;
+                    const frontEndEnumValues = value.options.slice(newOptions.length + 1);
+                    const newOptionColors = { ...fieldValue.optionColors };
+                    if (fieldValue.optionColors && Object.keys(fieldValue.optionColors).length > 0 && editIndex != null) {
+                        delete newOptionColors[fieldValue.options[editIndex]];
+                    }
+                    setValues?.((prev) => ({
+                        ...prev,
+                        options: newOptions.concat(frontEndEnumValues),
+                        optionColors: newOptionColors,
+                    }));
+                    entityTemplateMap!.set(id, resultOfMutation);
+                    return entityTemplateMap!;
+                });
+                setEditIndex(null);
+                toast.success(<div>{i18next.t('entityPage.deleteEnumFieldSuccessfully')}</div>);
+            },
+        },
+    );
+
+    const handleUpdateEnumField = (id: string, tagIndex: number, option: string, fieldValue: any) => {
+        updateEnumField({ id, tagIndex, option, fieldValue });
+    };
+
+    const handleDeleteEnumField = (id: string, tagIndex: number, fieldValue: any) => {
+        if (fieldValue.options.length <= 1 || initialOptionArray.length <= 1) {
+            setAtLeastOneItem(i18next.t('entityPage.atLeastOneItem'));
+            setEditIndex(null);
+            setTimeout(() => {
+                setAtLeastOneItem(null);
+            }, 2000);
+            return;
+        }
+        deleteEnumField({ id, tagIndex, fieldValue });
+    };
 
     const createNewUniqueGroup = (groupName) => {
         if (groupName) {
@@ -337,158 +531,6 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
         });
     };
 
-    const isNewProperty = !initialValue;
-    const isDisabled = Boolean(isEditMode && !isNewProperty && areThereAnyInstances);
-
-    const [editIndex, setEditIndex] = useState<number | null>(null);
-
-    const queryClient = useQueryClient();
-    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-
-    const relationshipRefs = Array.from(entityTemplates.values()).reduce((acc: IRelationshipReference[], template) => {
-        const properties = template.properties?.properties || {};
-
-        const references = Object.values(properties).reduce((refAcc: IRelationshipReference[], property) => {
-            if (property.format === 'relationshipReference' && property.relationshipReference) refAcc.push(property.relationshipReference);
-
-            return refAcc;
-        }, []);
-
-        return acc.concat(references);
-    }, []);
-
-    const disableRemoveRequire = Boolean(
-        relationshipRefs.find((ref) => ref.relatedTemplateField === value.name && ref.relatedTemplateId === templateId) !== undefined,
-    );
-
-    const [localOption, setLocalOption] = useState<string>('');
-    const [editError, setEditError] = useState<string>('');
-
-    const chipRefs = useRef<(HTMLDivElement | null)[]>([]);
-    const [open, setOpen] = useState<boolean>(false);
-    const [openDelete, setOpenDelete] = useState<boolean>(false);
-    const MemoizedIconButton = React.memo(IconButton);
-
-    const [initialOptionArray, setInitialOptionArray] = useState<string[]>(initialValue?.options || []);
-
-    const handleEditChange = (e, _tagIndex) => {
-        e.preventDefault();
-        setLocalOption(e.target.value);
-        setEditError('');
-    };
-    const { mutate: updateEnumField, isLoading } = useMutation(
-        (mutationArgs: { id: string; tagIndex: number; option: string; fieldValue: any }) => {
-            const { id, tagIndex, option, fieldValue } = mutationArgs;
-            return updateEnumFieldRequest(id, fieldValue.options[tagIndex], fieldValue, option);
-        },
-        {
-            onError: () => {
-                if (editIndex !== null) {
-                    setLocalOption('');
-                    setEditIndex(null);
-                }
-                toast.error(<div>{i18next.t('errorPage.updateEnumField')}</div>);
-                setOpen(!open);
-            },
-            onSuccess: (resultOfMutation, { id, option, fieldValue }) => {
-                if (editIndex !== null) {
-                    const indexValue = initialOptionArray.indexOf(fieldValue.options[editIndex]);
-                    if (indexValue !== -1) {
-                        const tempInitialOptionArray = [...initialOptionArray];
-                        tempInitialOptionArray[indexValue] = option;
-                        setInitialOptionArray(tempInitialOptionArray);
-                    }
-                }
-                const frontEndEnumValues = value.options.slice(initialOptionArray.length);
-                const fieldProps = resultOfMutation.properties.properties[fieldValue.name];
-                const newOptions = fieldProps.type === 'array' ? fieldProps.items!.enum! : fieldProps.enum!;
-                queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) => {
-                    const newOptionColors = { ...fieldValue.optionColors };
-                    if (fieldValue.optionColors && Object.keys(fieldValue.optionColors).length > 0 && editIndex != null) {
-                        const color = fieldValue.optionColors[fieldValue.options[editIndex]];
-                        delete newOptionColors[fieldValue.options[editIndex]];
-                        newOptionColors[option] = color;
-                    }
-                    setValues?.((prev) => ({
-                        ...prev,
-                        options: newOptions.concat(frontEndEnumValues),
-                        optionColors: newOptionColors,
-                    }));
-
-                    entityTemplateMap!.set(id, resultOfMutation);
-                    return entityTemplateMap!;
-                });
-                setEditIndex(null);
-                toast.success(<div>{i18next.t('entityPage.updatedEnumFieldSuccessfully')}</div>);
-                setOpen(!open);
-            },
-        },
-    );
-
-    const [atLeastOneItem, setAtLeastOneItem] = useState<string | null>(null);
-
-    const { mutate: deleteEnumField, isLoading: isDeleteLoading } = useMutation(
-        (mutationArgs: { id: string; tagIndex: number; fieldValue: any }) => {
-            const { id, tagIndex, fieldValue } = mutationArgs;
-            return deleteEnumFieldRequest(id, fieldValue.options[tagIndex], fieldValue);
-        },
-        {
-            onError: () => {
-                if (editIndex !== null) {
-                    setLocalOption('');
-                    setEditIndex(null);
-                }
-                toast.error(<div>{i18next.t('errorPage.deleteFieldValue')}</div>);
-            },
-            onSuccess: (resultOfMutation, { id, fieldValue }) => {
-                if (editIndex !== null) {
-                    const indexValue = initialOptionArray.indexOf(fieldValue.options[editIndex]);
-                    if (indexValue !== -1) {
-                        const tempInitialOptionArray = [...initialOptionArray];
-                        tempInitialOptionArray.splice(indexValue, 1);
-                        setInitialOptionArray(tempInitialOptionArray);
-                    }
-                }
-                queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) => {
-                    const fieldProps = resultOfMutation.properties.properties[fieldValue.name];
-                    const newOptions = fieldProps.type === 'array' ? fieldProps.items!.enum! : fieldProps.enum!;
-                    const frontEndEnumValues = value.options.slice(newOptions.length + 1);
-                    const newOptionColors = { ...fieldValue.optionColors };
-                    if (fieldValue.optionColors && Object.keys(fieldValue.optionColors).length > 0 && editIndex != null) {
-                        delete newOptionColors[fieldValue.options[editIndex]];
-                    }
-                    setValues?.((prev) => ({
-                        ...prev,
-                        options: newOptions.concat(frontEndEnumValues),
-                        optionColors: newOptionColors,
-                    }));
-                    entityTemplateMap!.set(id, resultOfMutation);
-                    return entityTemplateMap!;
-                });
-                setEditIndex(null);
-                toast.success(<div>{i18next.t('entityPage.deleteEnumFieldSuccessfully')}</div>);
-            },
-        },
-    );
-    const handleUpdateEnumField = (id: string, tagIndex: number, option: string, fieldValue: any) => {
-        updateEnumField({ id, tagIndex, option, fieldValue });
-    };
-    const handleDeleteEnumField = (id: string, tagIndex: number, fieldValue: any) => {
-        if (fieldValue.options.length <= 1 || initialOptionArray.length <= 1) {
-            setAtLeastOneItem(i18next.t('entityPage.atLeastOneItem'));
-            setEditIndex(null);
-            setTimeout(() => {
-                setAtLeastOneItem(null);
-            }, 2000);
-            return;
-        }
-        deleteEnumField({ id, tagIndex, fieldValue });
-    };
-
-    useEffect(() => {
-        if (!editIndex) setEditError('');
-    }, [editIndex]);
-
     const handleSaveEdit = (tagIndex: number) => {
         const checkIfOldEnumValue = initialOptionArray.length > tagIndex && isDisabled;
         const trimValue = localOption.trim();
@@ -594,7 +636,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                             helperText={touchedTitle && errorTitle}
                                             sx={{ marginRight: '5px' }}
                                             fullWidth
-                                            disabled={value.deleted}
+                                            disabled={value.deleted || isComment}
                                         />
                                         <TextField
                                             select
@@ -604,10 +646,13 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                             name={type}
                                             value={value.type === 'text-area' ? 'string' : value.type}
                                             onChange={(e) => {
+                                                const newType = e.target.value;
                                                 setValues?.((prevValue) => ({
                                                     ...prevValue,
-                                                    type: e.target.value,
-                                                    required: e.target.value === 'serialNumber' || prevValue.required,
+                                                    type: newType,
+                                                    required: newType === 'serialNumber' || prevValue.required,
+                                                    title: newType === 'comment' ? value.name : value.title,
+                                                    readOnly: e.target.value === 'kartoffelUserField' || prevValue.readOnly,
                                                 }));
                                             }}
                                             error={touchedType && Boolean(errorType)}
@@ -632,6 +677,13 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                     if (validPropertyType === 'relationshipReference') return supportRelationshipReference;
                                                     if (validPropertyType === 'fileId' || validPropertyType === 'multipleFiles') return false; // TODO: support file inputs
                                                     if (validPropertyType === 'user' || validPropertyType === 'users') return supportUserType;
+                                                    if (validPropertyType === 'comment') return supportComment;
+                                                    if (
+                                                        validPropertyType === 'kartoffelUserField' &&
+                                                        userPropertiesInTemplate.length === 0 &&
+                                                        !value.deleted
+                                                    )
+                                                        return false;
                                                     return true;
                                                 })
                                                 .map((validType) => {
@@ -700,10 +752,10 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                     {value.optionColors && (
                                                                         <MinimizedColorPicker
                                                                             color={value.optionColors[option]}
-                                                                            onColorChange={(color) => {
+                                                                            onColorChange={(newColor) => {
                                                                                 setFieldValue('optionColors', {
                                                                                     ...value.optionColors,
-                                                                                    [option]: color,
+                                                                                    [option]: newColor,
                                                                                 });
                                                                             }}
                                                                             circleSize="1.6rem"
@@ -887,6 +939,37 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                 fullWidth
                                             />
                                         )}
+                                        {isComment && (
+                                            <ThemeProvider theme={theme}>
+                                                <Grid position="relative" width="99.5%">
+                                                    <MUIRichTextEditor
+                                                        id={value.id}
+                                                        label={i18next.t('propertyTypes.comment')}
+                                                        controls={[
+                                                            'title',
+                                                            'bold',
+                                                            'italic',
+                                                            'underline',
+                                                            'strikethrough',
+                                                            'numberList',
+                                                            'bulletList',
+                                                        ]}
+                                                        onChange={(state: EditorState) => {
+                                                            setCommentValue(state);
+                                                            const newValue = state.getCurrentContent().getPlainText();
+                                                            const htmlContent = stateToHTML(state.getCurrentContent());
+
+                                                            setFieldValue('comment', newValue === '' ? '' : htmlContent);
+                                                        }}
+                                                        defaultValue={rawCommentContent}
+                                                        toolbar={commentEditorFocused}
+                                                        onFocus={() => setCommentEditorFocused(true)}
+                                                        onBlur={() => setCommentEditorFocused(false)}
+                                                    />
+                                                    {errorComment && <FormHelperText error>{i18next.t('validation.required')}</FormHelperText>}
+                                                </Grid>
+                                            </ThemeProvider>
+                                        )}
                                         {value.type === 'relationshipReference' && supportRelationshipReference && (
                                             <RelationshipReferenceField
                                                 value={value}
@@ -895,6 +978,17 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                 errors={errors}
                                                 setFieldValue={setFieldValue}
                                                 isDisabled={isDisabled}
+                                            />
+                                        )}
+                                        {value.type === 'kartoffelUserField' && (
+                                            <KartoffelUserField
+                                                value={value}
+                                                index={index}
+                                                touched={touched}
+                                                errors={errors}
+                                                setFieldValue={setFieldValue}
+                                                isDisabled={isDisabled}
+                                                userPropertiesInTemplate={userPropertiesInTemplate}
                                             />
                                         )}
                                         {(value.type === 'date' || value.type === 'date-time') &&
@@ -997,9 +1091,9 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                             body={`${i18next.t('areYouSureDialog.enumChangeDisclaimer')} ${entity}`}
                                         />
                                     </Grid>
-                                    <Grid item container justifyContent="space-between">
+                                    <Grid item container justifyContent="space-between" marginTop={value.type === 'comment' ? '5px' : ''}>
                                         <Box>
-                                            {value.required !== undefined && setValues && (
+                                            {value.required !== undefined && setValues && !isComment && value.type !== 'kartoffelUserField' && (
                                                 <FormControlLabel
                                                     control={
                                                         <Switch
@@ -1046,13 +1140,13 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                 readOnly: checked || undefined,
                                                             }));
                                                         }}
-                                                        disabled={value.required || value.archive}
-                                                        checked={value.readOnly}
+                                                        disabled={value.required || value.archive || value.type === 'kartoffelUserField' || isComment}
+                                                        checked={value.readOnly || isComment}
                                                     />
                                                 }
                                                 label={i18next.t('validation.readOnly')}
                                             />
-                                            {value.preview !== undefined && (
+                                            {value.preview !== undefined && !isComment && (
                                                 <FormControlLabel
                                                     control={
                                                         <Switch
@@ -1080,33 +1174,38 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                     label={i18next.t('validation.hide')}
                                                 />
                                             )}
-                                            {supportUnique && unique !== undefined && setValues && value.type !== 'signature' && (
-                                                <FormControlLabel
-                                                    control={
-                                                        <Switch
-                                                            id={String(unique)}
-                                                            name={String(unique)}
-                                                            checked={unique}
-                                                            disabled={value.archive || value.type === 'serialNumber'}
-                                                            onChange={(_e, checked) => {
-                                                                setValues((prevValue) => ({
-                                                                    ...prevValue,
-                                                                    required: checked ? true : prevValue.required,
-                                                                    identifier: !checked ? undefined : prevValue.identifier,
-                                                                    groupName: undefined,
-                                                                    uniqueCheckbox: false,
-                                                                }));
-                                                                if (checked) {
-                                                                    createEmptyGroup(value.name);
-                                                                } else {
-                                                                    deletePropFromUniqueConstraints(uniqueConstraintGroupName, value.name);
-                                                                }
-                                                            }}
-                                                        />
-                                                    }
-                                                    label={i18next.t('validation.unique')}
-                                                />
-                                            )}
+                                            {supportUnique &&
+                                                unique !== undefined &&
+                                                setValues &&
+                                                value.type !== 'signature' &&
+                                                value.type !== 'kartoffelUserField' &&
+                                                !isComment && (
+                                                    <FormControlLabel
+                                                        control={
+                                                            <Switch
+                                                                id={String(unique)}
+                                                                name={String(unique)}
+                                                                checked={unique}
+                                                                disabled={value.archive || value.type === 'serialNumber'}
+                                                                onChange={(_e, checked) => {
+                                                                    setValues((prevValue) => ({
+                                                                        ...prevValue,
+                                                                        required: checked ? true : prevValue.required,
+                                                                        identifier: !checked ? undefined : prevValue.identifier,
+                                                                        groupName: undefined,
+                                                                        uniqueCheckbox: false,
+                                                                    }));
+                                                                    if (checked) {
+                                                                        createEmptyGroup(value.name);
+                                                                    } else {
+                                                                        deletePropFromUniqueConstraints(uniqueConstraintGroupName, value.name);
+                                                                    }
+                                                                }}
+                                                            />
+                                                        }
+                                                        label={i18next.t('validation.unique')}
+                                                    />
+                                                )}
                                             {(value.type === 'date' || value.type === 'date-time') && 'calculateTime' in value && (
                                                 <FormControlLabel
                                                     control={
@@ -1163,11 +1262,55 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                     label={i18next.t('validation.identifier')}
                                                 />
                                             )}
+                                            {isComment && (
+                                                <>
+                                                    <FormControlLabel
+                                                        control={
+                                                            <Switch
+                                                                id={hideFromDetailsPage}
+                                                                name={hideFromDetailsPage}
+                                                                onChange={(_e, checked) => {
+                                                                    setValues?.((prevValue) => ({
+                                                                        ...prevValue,
+                                                                        hideFromDetailsPage: checked,
+                                                                    }));
+                                                                }}
+                                                                checked={value.hideFromDetailsPage ?? false}
+                                                            />
+                                                        }
+                                                        label={i18next.t('validation.hideFromDetailsPage')}
+                                                    />
+                                                    <SelectAutocomplete
+                                                        options={commentColorsObj}
+                                                        value={
+                                                            value.color
+                                                                ? {
+                                                                      value: value.color,
+                                                                      label: Object.entries(commentColors).find(
+                                                                          ([, val]) => val === value.color,
+                                                                      )?.[0]!,
+                                                                  }
+                                                                : commentColorsObj[0]
+                                                        }
+                                                        onValueChange={(newValue) => {
+                                                            setValues?.((prevValue) => ({
+                                                                ...prevValue,
+                                                                color: newValue as string,
+                                                            }));
+                                                        }}
+                                                        colorsOptions={commentColors}
+                                                        disableClearable
+                                                        label={i18next.t('validation.colors.colors')}
+                                                        overrideSx={{ width: '150px' }}
+                                                    />
+                                                </>
+                                            )}
                                         </Box>
                                         <Grid display="flex">
                                             {locationSearchFields?.show &&
                                                 value.type !== 'fileId' &&
                                                 value.type !== 'relationshipReference' &&
+                                                !isComment &&
                                                 !arrayTypes.includes(value.type) && (
                                                     <MeltaTooltip
                                                         title={i18next.t(
@@ -1188,12 +1331,24 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                         </Box>
                                                     </MeltaTooltip>
                                                 )}
+                                            {value.type === 'kartoffelUserField' && (
+                                                <MeltaTooltip title={i18next.t('wizard.entityTemplate.duplicateField')} placement="right">
+                                                    <Box>
+                                                        <IconButton onClick={() => onDuplicateKartoffelField?.(index)}>
+                                                            <ImageWithDisable
+                                                                srcPath="/icons/duplicate.svg"
+                                                                style={{ width: '22px', height: '22px' }}
+                                                            />
+                                                        </IconButton>
+                                                    </Box>
+                                                </MeltaTooltip>
+                                            )}
                                             {supportArchive && isEditMode && (
                                                 <MeltaTooltip title={archiveButtonTooltip()} placement="right">
                                                     <Box>
                                                         <IconButton
                                                             onClick={() => setFieldValue('archive', !value.archive)}
-                                                            disabled={value.required || value.uniqueCheckbox || value.preview}
+                                                            disabled={value.required || value.uniqueCheckbox || value.preview || isComment}
                                                         >
                                                             {value.archive ? <Unarchive color="primary" /> : <Archive />}
                                                         </IconButton>
@@ -1365,5 +1520,6 @@ export const MemoFieldEditCard = memo(
         isEqual(prev.errors, next.errors) &&
         isEqual(prev.uniqueConstraints, next.uniqueConstraints) &&
         isEqual(prev.locationSearchFields, next.locationSearchFields) &&
-        isEqual(prev.hasIdentifier, next.hasIdentifier),
+        isEqual(prev.hasIdentifier, next.hasIdentifier) &&
+        isEqual(prev.userPropertiesInTemplate, next.userPropertiesInTemplate),
 );

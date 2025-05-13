@@ -40,8 +40,7 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({ notification
     const { mutate, isLoading, isSuccess } = useMutation(() => notificationSeenRequest(notification._id), {
         onSuccess: onSeen,
         onError: (error) => {
-            // eslint-disable-next-line no-console
-            console.log('failed to set notification as seen. error:', error);
+            console.error('failed to set notification as seen. error:', error);
             toast.error(i18next.t('notifications.failedSetAsSeen'));
         },
     });

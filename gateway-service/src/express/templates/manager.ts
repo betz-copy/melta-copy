@@ -1,14 +1,19 @@
 /* eslint-disable no-param-reassign */
+import _, { groupBy } from 'lodash';
 import { AxiosError, AxiosResponse } from 'axios';
 import { logger } from 'elastic-apm-node';
 import { StatusCodes } from 'http-status-codes';
-import _ from 'lodash';
 import _isEqual from 'lodash.isequal';
 import lodashUniqby from 'lodash.uniqby';
 import config from '../../config';
 import { GanttsService } from '../../externalServices/ganttsService';
 import { InstancesService } from '../../externalServices/instanceService';
-import { IConstraintsOfTemplate, ISearchFilter, IUniqueConstraintOfTemplate } from '../../externalServices/instanceService/interfaces/entities';
+import {
+    IConstraintsOfTemplate,
+    IEntity,
+    IUniqueConstraintOfTemplate,
+    ISearchFilter,
+} from '../../externalServices/instanceService/interfaces/entities';
 import { IRelationship } from '../../externalServices/instanceService/interfaces/relationships';
 import { ProcessService } from '../../externalServices/processService';
 import { RuleBreachService } from '../../externalServices/ruleBreachService';
@@ -50,6 +55,8 @@ import { getParametersOfFormula } from './rules';
 import { checkPropertyInUsedFromFormula } from './rules/checkIfPropertyInUsed';
 import { IMongoRule, IRule } from './rules/interfaces';
 import { IFormula } from './rules/interfaces/formula';
+import { InstancesManager } from '../instances/manager';
+import { Kartoffel } from '../../externalServices/kartoffel';
 import {
     IAxisField,
     IMongoChart,
@@ -85,6 +92,8 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
     private processManager: ProcessTemplatesManager;
 
+    private instanceManager: InstancesManager;
+
     private ruleBreachService: RuleBreachService;
 
     private ganttService: GanttsService;
@@ -97,6 +106,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         this.instancesService = new InstancesService(workspaceId);
         this.processService = new ProcessService(workspaceId);
         this.processManager = new ProcessTemplatesManager(workspaceId);
+        this.instanceManager = new InstancesManager(workspaceId);
         this.ruleBreachService = new RuleBreachService(workspaceId);
         this.ganttService = new GanttsService(workspaceId);
     }
@@ -484,8 +494,9 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
     }
 
     validateConstraintsProperties = (properties: Record<string, IEntitySingleProperty>, requiredConstraints: string[]) => {
-        let identifier;
+        let identifier: string;
         Object.entries(properties).forEach(([key, value]) => {
+            const isComment = value.comment || value.hideFromDetailsPage || value.format === 'comment';
             if (value.readOnly && requiredConstraints.includes(key)) throw new BadRequestError(`${key} property can't be both readOnly and required`);
             if (value.archive && requiredConstraints.includes(key)) throw new BadRequestError(`${key} property can't be both archive and required`);
             if (value.identifier) {
@@ -495,6 +506,8 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             }
             if (value.serialCurrent && !requiredConstraints.includes(key))
                 throw new BadRequestError(`${key} property serial number has to be required`);
+            if (isComment && requiredConstraints.includes(key)) throw new BadRequestError(`${key} property comment can't be required`);
+            if (isComment && value.archive) throw new BadRequestError(`${key} property comment can't be archive`);
         });
     };
 
@@ -721,8 +734,15 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         }
     }
 
-    private async checkIfPropertyInUsedBeforeDeleteOrArchive(templateId: string, properties: string[], archive: boolean, userId: string) {
-        if (properties.length)
+    private async checkIfPropertyInUsedBeforeDeleteOrArchive(
+        entityTemplate: IMongoEntityTemplatePopulated,
+        properties: string[],
+        archive: boolean,
+        userId: string,
+    ) {
+        const { _id: templateId } = entityTemplate;
+
+        if (properties.length && properties.some((removedProperty) => entityTemplate.properties.properties[removedProperty].format !== 'comment'))
             await Promise.all([
                 this.isPropertyOfTemplateInUsedInGantts(templateId, properties, archive),
                 this.isPropertyOfTemplateInUsedInRules(templateId, properties, archive),
@@ -840,29 +860,31 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             await this.deleteFilesOfDeletedProperty(id, removedFilesProperties, count);
         }
 
-        await this.deletePropertyFromChartFilter(id, removedProperties);
+        if (removedProperties.some((removedProperty) => currentTemplate.properties.properties[removedProperty].format !== 'comment')) {
+            await this.deletePropertyFromChartFilter(id, removedProperties);
 
-        const { err } = await trycatch(() =>
-            this.instancesService.deletePropertiesOfTemplate(id, removedProperties, currentTemplate.properties.properties),
-        );
+            const { err } = await trycatch(() =>
+                this.instancesService.deletePropertiesOfTemplate(id, removedProperties, currentTemplate.properties.properties),
+            );
 
-        if (err) {
-            const manipulatedTemplate = JSON.parse(JSON.stringify(currentTemplate));
+            if (err) {
+                const manipulatedTemplate = JSON.parse(JSON.stringify(currentTemplate));
 
-            Object.entries(currentTemplate.properties.properties).forEach(([name, value]) => {
-                if (value.format === 'relationshipReference' && value.relationshipReference) {
-                    const { relationshipTemplateId, ...restData } = value.relationshipReference;
-                    manipulatedTemplate.properties.properties[name].relationshipReference = restData;
-                }
-            });
+                Object.entries(currentTemplate.properties.properties).forEach(([name, value]) => {
+                    if (value.format === 'relationshipReference' && value.relationshipReference) {
+                        const { relationshipTemplateId, ...restData } = value.relationshipReference;
+                        manipulatedTemplate.properties.properties[name].relationshipReference = restData;
+                    }
+                });
 
-            const updatedTemplate: Omit<IEntityTemplate, 'disabled'> = {
-                ...this.removeBasicFields(manipulatedTemplate),
-                category: currentTemplate.category._id,
-            };
+                const updatedTemplate: Omit<IEntityTemplate, 'disabled'> = {
+                    ...this.removeBasicFields(manipulatedTemplate),
+                    category: currentTemplate.category._id,
+                };
 
-            await this.entityTemplateService.updateEntityTemplate(id, updatedTemplate);
-            throw err;
+                await this.entityTemplateService.updateEntityTemplate(id, updatedTemplate);
+                throw err;
+            }
         }
     }
 
@@ -908,6 +930,56 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         };
     }
 
+    private async updateInstancesWithUserFields(
+        templateId: string,
+        newExpandedUserFields: string[],
+        updatedTemplateData: Omit<IEntityTemplateWithConstraints, 'disabled'> & {
+            file?: string;
+        },
+    ) {
+        const entities = await this.instanceManager.getAllTemplateEntities(templateId);
+
+        const usersIds = new Set<string>();
+        entities.forEach((entity) => {
+            newExpandedUserFields.forEach((expandedUserFieldKey) => {
+                const userKey = updatedTemplateData.properties.properties[expandedUserFieldKey].expandedUserField?.relatedUserField;
+                if (userKey && entity.entity.properties[userKey] && JSON.parse(entity.entity.properties[userKey])._id) {
+                    usersIds.add(JSON.parse(entity.entity.properties[userKey])._id);
+                }
+            });
+        });
+
+        const kartoffelUsers = await Promise.all(Array.from(usersIds).map((userId) => Kartoffel.getUserById(userId)));
+        const kartoffelUsersMapById = groupBy(kartoffelUsers, (user) => user._id);
+        const entitiesToUpdate: IEntity[] = [];
+
+        entities.forEach((entity) => {
+            let wasEntityChange = false;
+            const entityToUpdate = entity.entity;
+            newExpandedUserFields.forEach((expandedUserFieldKey) => {
+                const expandedUserFieldValue = updatedTemplateData.properties.properties[expandedUserFieldKey];
+                const userKey = expandedUserFieldValue.expandedUserField?.relatedUserField;
+                const userFieldValue = userKey ? entity.entity.properties[userKey] : undefined;
+                const userId = userFieldValue ? JSON.parse(userFieldValue)._id : undefined;
+
+                if (userId && userKey) {
+                    const kartoffelUser = kartoffelUsersMapById[userId] ? kartoffelUsersMapById[userId][0] : undefined;
+                    if (kartoffelUser && kartoffelUser[expandedUserFieldValue.expandedUserField?.kartoffelField || '']) {
+                        wasEntityChange = true;
+                        entityToUpdate.properties[expandedUserFieldKey] =
+                            kartoffelUser[expandedUserFieldValue.expandedUserField?.kartoffelField || ''].toString();
+                    }
+                }
+            });
+
+            if (wasEntityChange) entitiesToUpdate.push(entityToUpdate);
+        });
+
+        await Promise.all(
+            entitiesToUpdate.map((entityToUpdate) => this.instancesService.updateEntityInstance(entityToUpdate.properties._id, entityToUpdate, [])),
+        );
+    }
+
     async updateEntityTemplate(
         id: string,
         userId: string,
@@ -943,6 +1015,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         const removedProperties: string[] = [];
         const archiveProperties: string[] = [];
         const propertiesKeysToPluralize: string[] = [];
+        let newExpandedUserFields: string[] = [];
 
         if (count > 0) {
             if (updatedTemplateData.name !== currTemplate.name) throw new BadRequestError('can not change template name');
@@ -970,8 +1043,9 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
                             value.format === newValue.format ||
                             isSingularToPlural
                         )
-                    )
+                    ) {
                         throw new BadRequestError('can not change property format');
+                    }
                     if (value.enum && newValue.enum && !value.enum?.every((val) => newValue.enum?.includes(val)))
                         throw new BadRequestError('can not remove options from enum');
                     if (value.serialStarter !== newValue.serialStarter) throw new BadRequestError('can not change property serial starter');
@@ -986,13 +1060,17 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
                 (property) => !currProperties.properties[property] && !removedProperties.includes(property),
             );
 
+            newExpandedUserFields = newProperties.filter((property) => {
+                return updatedTemplateData.properties.properties[property].format === 'kartoffelUserField';
+            });
+
             const updatedProperties = updatedTemplateData.properties.properties;
             if (newProperties.some((property) => updatedProperties[property].identifier && updatedProperties[property].serialStarter === undefined))
                 throw new BadRequestError('can not add identifier fields because there are existing instances');
         }
 
-        await this.checkIfPropertyInUsedBeforeDeleteOrArchive(id, removedProperties, false, userId);
-        await this.checkIfPropertyInUsedBeforeDeleteOrArchive(id, archiveProperties, true, userId);
+        await this.checkIfPropertyInUsedBeforeDeleteOrArchive(currTemplate, removedProperties, false, userId);
+        await this.checkIfPropertyInUsedBeforeDeleteOrArchive(currTemplate, archiveProperties, true, userId);
 
         const { iconFileId, documentTemplatesIds } = await this.handleFiles(updatedTemplateData, currTemplate, { file, files });
 
@@ -1018,6 +1096,10 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         });
 
         await this.deletePropertyOfEntityTemplate(id, count, removedProperties, currTemplate);
+
+        if (newExpandedUserFields.length) {
+            await this.updateInstancesWithUserFields(id, newExpandedUserFields, updatedTemplateData);
+        }
 
         try {
             if (propertiesKeysToPluralize.length > 0) await this.instancesService.convertFieldsToPlural(id, propertiesKeysToPluralize);

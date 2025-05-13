@@ -9,7 +9,7 @@ import { searchExternalUsersRequest, searchUsersRequest } from '../../services/u
 import { useWorkspaceStore } from '../../stores/workspace';
 import { MeltaTooltip } from '../MeltaTooltip';
 
-export interface IUserAutocomplete<TMode = 'internal' | 'external'> {
+export interface IUserAutocomplete<TMode = 'internal' | 'external' | 'kartoffel'> {
     mode: TMode;
     value: IUser | null;
     displayValue?: string;
@@ -67,6 +67,7 @@ const UserAutocomplete: React.FC<IUserAutocomplete> = ({
         ['searchUsers', mode, currentDisplayValue],
         () => {
             if (mode === 'external') return searchExternalUsersRequest(currentDisplayValue, workspace._id);
+            if (mode === 'kartoffel') return searchExternalUsersRequest(currentDisplayValue, workspace._id, true);
             return searchUsersRequest({ search: currentDisplayValue || undefined, limit: 10 }).then((baseUsers) => baseUsers.users);
         },
         {

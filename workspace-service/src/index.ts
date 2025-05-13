@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import 'elastic-apm-node/start';
 import * as mongoose from 'mongoose';
 import { config } from './config';

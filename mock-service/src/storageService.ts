@@ -1,10 +1,10 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import FormData = require('form-data');
+import axios from 'axios';
 import config from './config';
 import { trycatch } from './utils';
 import { createAxiosInstance } from './utils/axios';
-import FormData = require('form-data');
-import axios from 'axios';
 
 const { url, uploadFileRoute, fileData, fileName, isAliveRoute } = config.storageService;
 export const uploadFile = async (workspaceId: string) => {
@@ -25,7 +25,6 @@ export const uploadFile = async (workspaceId: string) => {
         await fs.promises.unlink(filePath);
         return data.path;
     } catch (error) {
-        // eslint-disable-next-line no-console
         console.error('Error in mockFileService:', error);
         throw error;
     }

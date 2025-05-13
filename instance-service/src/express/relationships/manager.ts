@@ -130,7 +130,7 @@ export class RelationshipManager extends DefaultManagerNeo4j {
         relationshipTemplate: IMongoRelationshipTemplate,
         ignoredRules: IBrokenRule[],
         transaction: Transaction,
-        userId: string,
+        userId?: string,
     ) {
         const { templateId, sourceEntityId, destinationEntityId } = relationship;
 
@@ -161,7 +161,7 @@ export class RelationshipManager extends DefaultManagerNeo4j {
         return { createdRelationship, activityLogsToCreate };
     }
 
-    createRelationshipInTransaction = async (transaction: Transaction, relationship: IRelationship, userId: string) => {
+    createRelationshipInTransaction = async (transaction: Transaction, relationship: IRelationship, userId?: string) => {
         const { templateId, properties, sourceEntityId, destinationEntityId } = relationship;
 
         const activityLogsToCreate: Omit<IActivityLog, '_id'>[] = [];
@@ -176,27 +176,29 @@ export class RelationshipManager extends DefaultManagerNeo4j {
             { relProps: { ...properties, ...generateDefaultProperties() } },
         );
 
-        const updatedFields = {
-            action: ActionsLog.CREATE_RELATIONSHIP,
-            timestamp: new Date(),
-            userId,
-            metadata: {
-                relationshipTemplateId: createdRelationship.templateId,
-                relationshipId: createdRelationship.properties._id,
-            },
-        };
+        if (userId) {
+            const updatedFields = {
+                action: ActionsLog.CREATE_RELATIONSHIP,
+                timestamp: new Date(),
+                userId,
+                metadata: {
+                    relationshipTemplateId: createdRelationship.templateId,
+                    relationshipId: createdRelationship.properties._id,
+                },
+            };
 
-        activityLogsToCreate.push({
-            ...updatedFields,
-            entityId: createdRelationship.sourceEntityId,
-            metadata: { ...updatedFields.metadata, entityId: createdRelationship.destinationEntityId },
-        });
+            activityLogsToCreate.push({
+                ...updatedFields,
+                entityId: createdRelationship.sourceEntityId,
+                metadata: { ...updatedFields.metadata, entityId: createdRelationship.destinationEntityId },
+            });
 
-        activityLogsToCreate.push({
-            ...updatedFields,
-            entityId: createdRelationship.destinationEntityId,
-            metadata: { ...updatedFields.metadata, entityId: createdRelationship.sourceEntityId },
-        });
+            activityLogsToCreate.push({
+                ...updatedFields,
+                entityId: createdRelationship.destinationEntityId,
+                metadata: { ...updatedFields.metadata, entityId: createdRelationship.sourceEntityId },
+            });
+        }
 
         return { createdRelationship, activityLogsToCreate };
     };
