@@ -24,6 +24,11 @@ export interface IUser extends IBaseUser {
     displayName: string; // custom displayName, not of kartoffel: `${fullName} - ${hierarchy}/${jobTitle}`
 }
 
+export interface IRole {
+    permissions: ICompactPermissions;
+    name: string;
+}
+
 export interface IMongoUser extends IUser {
     createdAt: Date;
     updatedAt: Date;

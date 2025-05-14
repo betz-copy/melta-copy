@@ -1,3 +1,4 @@
+/* eslint-disable no-nested-ternary */
 import CloseIcon from '@mui/icons-material/Close';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { Box, Button, Dialog, Grid, IconButton, Tab } from '@mui/material';
@@ -15,14 +16,16 @@ import { BackendConfigState } from '../../services/backendConfigService';
 import { LocalStorage } from '../../utils/localStorage';
 import { environment } from '../../globals';
 import { MeltaUpdates } from '../../MeltaUpdates';
+import RoleDialog from './RoleDialog';
 
-const PermissionsOfUserDialog: React.FC<{
+const PermissionsDialog: React.FC<{
     isOpen: boolean;
     handleClose: () => any;
     mode: 'create' | 'edit' | 'view';
     existingUser?: IUser;
     onSuccess?: (user?: IUser) => void;
-}> = ({ isOpen, handleClose, mode, existingUser, onSuccess }) => {
+    permissionType: 'role' | 'user';
+}> = ({ isOpen, handleClose, mode, existingUser, onSuccess, permissionType }) => {
     const [_, navigate] = useLocation();
     const { setIsOpen, setCurrentStep } = useTour();
 
@@ -69,7 +72,11 @@ const PermissionsOfUserDialog: React.FC<{
                 <CloseIcon fontSize="medium" />
             </IconButton>
             {mode !== 'view' ? (
-                <MyPermissions handleClose={handleClose} mode={mode} existingUser={existingUser} onSuccess={onSuccess} />
+                permissionType === 'user' ? (
+                    <MyPermissions handleClose={handleClose} mode={mode} existingUser={existingUser} onSuccess={onSuccess} />
+                ) : (
+                    <RoleDialog handleClose={handleClose} mode={mode} existingUser={existingUser} onSuccess={onSuccess} />
+                )
             ) : (
                 <Box
                     sx={{
@@ -169,4 +176,4 @@ const PermissionsOfUserDialog: React.FC<{
     );
 };
 
-export default PermissionsOfUserDialog;
+export default PermissionsDialog;

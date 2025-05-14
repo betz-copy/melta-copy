@@ -32,6 +32,8 @@ export default {
     successfullyCopied: 'הקישור הועתק בהצלחה',
     soon: 'בקרוב...',
     map: 'מפה',
+    roles: 'תפקידנים',
+    users: 'משתמשים',
     general: 'כללי',
     agGridTimes: {
         hours: 'שעות',
@@ -391,8 +393,10 @@ export default {
     },
     permissions: {
         searchUser: 'חיפוש שם משתמש',
+        searchRole: 'חיפוש תפקידן',
         failedToLoadMyPermissions: 'נכשל לטעון הרשאות',
         userHeaderName: 'משתמש',
+        roleHeaderName: 'שם תפקידן',
         sourceHeaderName: 'מקור',
         permissionsManagement: 'ניהול הרשאות',
         templatesManagement: 'ניהול תבניות',
@@ -429,6 +433,15 @@ export default {
             chooseAll: 'סמן הכל',
             read: 'קריאה',
             write: 'עריכה',
+        },
+        permissionsOfRoleDialog: {
+            createTitle: 'הוסף תפקידן',
+            editTitle: 'ערוך תפקידן',
+            failedToCreatePermissionsOfRole: 'נכשל להוסיף הרשאות לתפקידן',
+            failedToEditPermissionsOfRole: 'נכשל לערוך הרשאות של תפקידן',
+            succeededToCreatePermission: 'נוצר הרשאות תפקידן בהצלחה',
+            succeededToUpdatePermission: 'עודכן הרשאות תפקידן בהצלחה',
+            userAlreadyExistOnCreateMessage: 'שם תפקידן כבר קיים',
         },
         scopes: {
             read: 'קריאה',

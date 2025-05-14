@@ -6,7 +6,7 @@ import { PermissionScope } from '../../interfaces/permissions';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { MeltaCheckbox } from '../MeltaCheckbox';
 import CategoryCheckboxPermission from './categoryCheckboxPermission';
-import { IUser } from '../../interfaces/users';
+import { IRole, IUser } from '../../interfaces/users';
 import { entityTemplatePermissionDialog } from '../../utils/permissions/permissionOfUserDialog';
 
 type checkboxControlProps = {
@@ -21,7 +21,7 @@ export type permissionTypeCheckboxProps = {
 
 const InstancesPermissionsCard: React.FC<{
     viewMode: boolean;
-    formikProps: FormikProps<IUser>;
+    formikProps: FormikProps<IUser | IRole>;
     permissionsPath: string;
     workspaceId: string;
     categoriesCheckboxProps: {

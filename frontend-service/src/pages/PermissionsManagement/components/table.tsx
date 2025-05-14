@@ -6,18 +6,18 @@ import i18next from 'i18next';
 import React, { ForwardedRef, forwardRef, useImperativeHandle, useMemo, useRef } from 'react';
 import ScrollContainer from 'react-indiana-drag-scroll';
 import { toast } from 'react-toastify';
-import { environment } from '../../globals';
-import { IMongoCategory } from '../../interfaces/categories';
-import { PermissionScope } from '../../interfaces/permissions';
-import { ICompact, IInstancesPermission } from '../../interfaces/permissions/permissions';
-import { IUser } from '../../interfaces/users';
-import { IWorkspace } from '../../interfaces/workspaces';
-import { searchUsersRequest } from '../../services/userService';
-import { useDarkModeStore } from '../../stores/darkMode';
-import { useWorkspaceStore } from '../../stores/workspace';
-import { agGridLocaleText } from '../../utils/agGrid/agGridLocaleText';
-import { translatedEnumColDef } from '../../utils/agGrid/commonColDefs';
-import { trycatch } from '../../utils/trycatch';
+import { environment } from '../../../globals';
+import { IMongoCategory } from '../../../interfaces/categories';
+import { PermissionScope } from '../../../interfaces/permissions';
+import { IUser } from '../../../interfaces/users';
+import { IWorkspace } from '../../../interfaces/workspaces';
+import { searchUsersRequest } from '../../../services/userService';
+import { useDarkModeStore } from '../../../stores/darkMode';
+import { useWorkspaceStore } from '../../../stores/workspace';
+import { agGridLocaleText } from '../../../utils/agGrid/agGridLocaleText';
+import { translatedEnumColDef } from '../../../utils/agGrid/commonColDefs';
+import { trycatch } from '../../../utils/trycatch';
+import { ICompact, IInstancesPermission } from '../../../interfaces/permissions/permissions';
 
 const { infiniteScrollPageCount } = environment.permission;
 
@@ -40,13 +40,14 @@ const defaultColDef: ColDef<IUser> = {
 
 const columnDefs = (
     workspaceId: string,
+    permissionType: 'user' | 'role',
     categories: IMongoCategory[],
     onDeletePermissionsOfUser: (permissionsOfUser: IUser) => any,
     onEditPermissionsOfUser: (permissionsOfUser: IUser) => any,
 ): ColDef[] => [
     {
         field: 'displayName',
-        headerName: i18next.t('permissions.userHeaderName'),
+        headerName: i18next.t(`permissions.${permissionType === 'user' ? 'userHeaderName' : 'roleHeaderName'}`),
         filter: 'agTextColumnFilter',
         sortable: true,
         suppressHeaderFilterButton: false,
@@ -219,6 +220,7 @@ type PermissionsTableProps<Data> = {
     onDeletePermissionsOfUser: (permissionsOfUser: Data) => any;
     onEditPermissionsOfUser: (permissionsOfUser: Data) => any;
     quickFilterText: string;
+    permissionType: 'user' | 'role';
 };
 
 export type PermissionsTableRef<Data> = {
@@ -227,7 +229,10 @@ export type PermissionsTableRef<Data> = {
 };
 
 const PermissionsTable = forwardRef<PermissionsTableRef<IUser>, PermissionsTableProps<IUser>>(
-    ({ categories, onDeletePermissionsOfUser, onEditPermissionsOfUser, quickFilterText }, ref: ForwardedRef<PermissionsTableRef<IUser>>) => {
+    (
+        { permissionType, categories, onDeletePermissionsOfUser, onEditPermissionsOfUser, quickFilterText },
+        ref: ForwardedRef<PermissionsTableRef<IUser>>,
+    ) => {
         const darkMode = useDarkModeStore((state) => state.darkMode);
         const workspace = useWorkspaceStore((state) => state.workspace);
         const gridRef = useRef<AgGridReact<IUser>>(null);
@@ -271,7 +276,7 @@ const PermissionsTable = forwardRef<PermissionsTableRef<IUser>, PermissionsTable
                     borderRadius: '70px',
                 }}
                 defaultColDef={defaultColDef}
-                columnDefs={columnDefs(workspace._id, categories, onDeletePermissionsOfUser, onEditPermissionsOfUser)}
+                columnDefs={columnDefs(workspace._id, permissionType, categories, onDeletePermissionsOfUser, onEditPermissionsOfUser)}
                 getRowId={(params) => getRowId(params.data)}
                 {...rowModelProps}
                 paginationAutoPageSize

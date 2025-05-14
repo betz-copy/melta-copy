@@ -7,7 +7,7 @@ import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { MeltaTooltip } from '../../common/MeltaTooltip';
 import UserAvatar from '../../common/UserAvatar';
-import { ICompactPermissions } from '../../interfaces/permissions/permissions';
+import { ICompactPermissions } from '../../interfaces/roles/permissions';
 import { IMongoUser } from '../../interfaces/users';
 import { syncUserPermissionsRequest } from '../../services/userService';
 import { useDarkModeStore } from '../../stores/darkMode';

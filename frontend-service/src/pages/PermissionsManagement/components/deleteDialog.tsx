@@ -3,12 +3,12 @@ import React from 'react';
 import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
 
-import { AreYouSureDialog } from '../../common/dialogs/AreYouSureDialog';
-import { IUser } from '../../interfaces/users';
-import { syncUserPermissionsRequest } from '../../services/userService';
-import { useWorkspaceStore } from '../../stores/workspace';
+import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
+import { IUser } from '../../../interfaces/users';
+import { syncUserPermissionsRequest } from '../../../services/userService';
+import { useWorkspaceStore } from '../../../stores/workspace';
 
-const DeletePermissionsOfUserDialog: React.FC<{ isOpen: boolean; user: IUser | null; handleClose: () => void; onSuccess: () => void }> = ({
+const DeletePermissionsDialog: React.FC<{ isOpen: boolean; user: IUser | null; handleClose: () => void; onSuccess: () => void }> = ({
     isOpen,
     handleClose,
     user,
@@ -45,4 +45,4 @@ const DeletePermissionsOfUserDialog: React.FC<{ isOpen: boolean; user: IUser | n
     );
 };
 
-export default DeletePermissionsOfUserDialog;
+export default DeletePermissionsDialog;

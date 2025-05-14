@@ -31,7 +31,7 @@ import { CustomIcon, CustomImage } from '../CustomIcon';
 import { GlobalSearchBar } from '../EntitiesPage/Headline';
 import IconButtonWithPopover from '../IconButtonWithPopover';
 import { MeltaIcon } from '../MeltaIcon';
-import PermissionsOfUserDialog from '../permissionsOfUserDialog';
+import PermissionsDialog from '../PermissionsDialog';
 import { NavButton } from './NavButton';
 import { NotificationsButton } from './notifications/NotificationsButton';
 import { NotificationsScreen } from './notifications/NotificationsScreen';
@@ -542,7 +542,8 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                 </Grid>
             </Grid>
 
-            <PermissionsOfUserDialog
+            <PermissionsDialog
+                permissionType="user"
                 isOpen={isMyPermissionsDialogOpen}
                 mode="view"
                 handleClose={() => setIsMyPermissionsDialogOpen(false)}

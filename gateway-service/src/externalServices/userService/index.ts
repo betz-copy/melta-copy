@@ -3,9 +3,10 @@ import config from '../../config';
 import { DeepPartial, RecursiveNullable } from '../../utils/types';
 import { ICompactNullablePermissions, ICompactPermissions, IPermission, ISubCompactPermissions } from './interfaces/permissions/permissions';
 import { IBaseUser, IUser, IUserSearchBody } from './interfaces/users';
+import { ICompactNullableRoles, ICompactRoles, IRole, ISubCompactRoles } from './interfaces/roles/permissions';
 
 const {
-    userService: { url, usersRoute, permissionsRoute, requestTimeout },
+    userService: { url, usersRoute, rolesRoute, permissionsRoute, requestTimeout },
 } = config;
 
 export class UserService {
@@ -64,6 +65,26 @@ export class UserService {
 
     static async searchUsersByPermissions(workspaceId: string) {
         const { data } = await this.userService.get<IUser[]>(`${usersRoute}/search/${workspaceId}`);
+        return data;
+    }
+
+    static async getRolePermissions(roleName: string, workspaceIds?: string[]): Promise<ICompactRoles> {
+        const { data } = await this.userService.post<ICompactRoles>(`${rolesRoute}/compact/find-by-role-name/${roleName}`, {
+            workspaceIds,
+        });
+        return data;
+    }
+
+    static async syncRolePermissions(name: string, permissions: ICompactNullableRoles | ICompactRoles): Promise<ICompactPermissions> {
+        const { data } = await this.userService.post<ICompactRoles>(`${rolesRoute}/compact/sync`, { name, permissions });
+        return data;
+    }
+
+    static async deleteRolePermissionsFromMetadata(
+        query: Pick<IRole, 'type' | 'workspaceId'> & { name?: IRole['name'] },
+        metadata: RecursiveNullable<ISubCompactRoles>,
+    ) {
+        const { data } = await this.userService.patch<void>(`${rolesRoute}/metadata`, { query, metadata });
         return data;
     }
 }
