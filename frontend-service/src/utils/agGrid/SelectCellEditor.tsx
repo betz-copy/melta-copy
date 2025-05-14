@@ -5,6 +5,7 @@ import { MeltaCheckbox } from '../../common/MeltaCheckbox';
 import { ColoredEnumChip } from '../../common/ColoredEnumChip';
 import { MeltaTooltip } from '../../common/MeltaTooltip';
 import { HighlightText } from '../HighlightText';
+import OverflowWrapper from './OverflowWrapper';
 
 interface SelectCellEditorProps {
     options: string[];
@@ -44,54 +45,26 @@ const SelectCellEditor: React.FC<SelectCellEditorProps> = ({ options, value, onV
                     <ColoredEnumChip label={option} color={colorsOptions?.[option] || 'default'} style={{ marginLeft: '8px' }} />
                 </Box>
             )}
-            renderTags={(tagValue, getTagProps) => {
-                const maxVisible = 1;
-                const visibleTags = tagValue.slice(0, maxVisible);
-                const hiddenTags = tagValue.slice(maxVisible);
-
-                return [
-                    ...visibleTags.map((option, index) => {
+            renderTags={(tagValue, getTagProps) => (
+                <OverflowWrapper
+                    items={tagValue}
+                    getItemKey={(item) => item}
+                    renderItem={(item, index) => {
                         const { key, onDelete, ...restTagProps } = getTagProps({ index });
+
                         return (
-                            <Grid alignContent="center" justifyContent="center" key={key}>
-                                <ColoredEnumChip
-                                    label={option}
-                                    color={colorsOptions?.[option] || 'default'}
-                                    onDelete={onDelete}
-                                    deleteIcon={<Close />}
-                                    {...restTagProps}
-                                    style={{ margin: '2px 4px 2px 0' }}
-                                />
-                            </Grid>
+                            <ColoredEnumChip
+                                label={item}
+                                color={colorsOptions?.[item] || 'default'}
+                                onDelete={onDelete}
+                                deleteIcon={<Close />}
+                                {...restTagProps}
+                                style={{ margin: '2px 4px 2px 0' }}
+                            />
                         );
-                    }),
-                    ...(hiddenTags.length > 0
-                        ? [
-                              <Grid item style={{ cursor: 'pointer' }} key="more">
-                                  <MeltaTooltip
-                                      title={hiddenTags.map((item) => (
-                                          <Typography key={item} style={{ margin: '5px' }}>
-                                              <HighlightText text={item} />
-                                          </Typography>
-                                      ))}
-                                      arrow
-                                  >
-                                      <Grid
-                                          container
-                                          alignItems="center"
-                                          justifyContent="center"
-                                          sx={{ borderRadius: '30px', height: '24px', width: '24px', background: 'var(--Gray-Medium, #9398C2)' }}
-                                      >
-                                          <Typography color="white" fontWeight={500} fontSize="12px">
-                                              +{hiddenTags.length}
-                                          </Typography>
-                                      </Grid>
-                                  </MeltaTooltip>
-                              </Grid>,
-                          ]
-                        : []),
-                ];
-            }}
+                    }}
+                />
+            )}
             renderInput={(params) => (
                 <TextField
                     {...params}

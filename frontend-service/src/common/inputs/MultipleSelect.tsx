@@ -78,29 +78,27 @@ const MultipleSelect: React.FC<{
                     </MenuItem>
                 );
             }}
-            renderTags={(tagValue, getTagProps) => {
-                return (
-                    <OverflowWrapper
-                        items={tagValue}
-                        propertyToDisplayInTooltip="label"
-                        getItemKey={(item) => item.value}
-                        renderItem={(item, index) => {
-                            const { key, onDelete, ...restTagProps } = getTagProps({ index });
+            renderTags={(tagValue, getTagProps) => (
+                <OverflowWrapper
+                    items={tagValue}
+                    propertyToDisplayInTooltip="label"
+                    getItemKey={(item) => item.value}
+                    renderItem={(item, index) => {
+                        const { key, onDelete, ...restTagProps } = getTagProps({ index });
 
-                            return (
-                                <ColoredEnumChip
-                                    label={item.label}
-                                    color={item.color || 'default'}
-                                    onDelete={onDelete}
-                                    deleteIcon={<Close />}
-                                    {...restTagProps}
-                                    style={{ margin: '2px 4px 2px 0' }}
-                                />
-                            );
-                        }}
-                    />
-                );
-            }}
+                        return (
+                            <ColoredEnumChip
+                                label={item.label}
+                                color={item.color || 'default'}
+                                onDelete={onDelete}
+                                deleteIcon={<Close />}
+                                {...restTagProps}
+                                style={{ margin: '2px 4px 2px 0' }}
+                            />
+                        );
+                    }}
+                />
+            )}
             renderInput={(params) => {
                 const isMultiple = selectedValue && !Array.isArray(selectedValue);
                 return (
