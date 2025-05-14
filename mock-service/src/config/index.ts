@@ -65,6 +65,17 @@ const config = {
         baseRoute: env.get('WORKSPACES_SERVICE_BASE_ROUTE').default('/api/workspaces').asString(),
         isAliveRoute: env.get('WORKSPACES_SERVICE_ALIVE_ROUTE').default('/isAlive').asString(),
     },
+    dashboardService: {
+        url: env.get('DASHBOARD_SERVICE_URL').required().asString(),
+        baseRoute: env.get('DASHBOARD_SERVICE_BASE_ROUTE').default('/api/dashboard').asString(),
+        charts: {
+            baseRoute: env.get('DASHBOARD_SERVICE_CHARTS_ROUTE').default('/charts').asString(),
+        },
+        iframes: {
+            baseRoute: env.get('DASHBOARD_SERVICE_IFRAMES_ROUTE').default('/iframes').asString(),
+        },
+    },
+
     requestLimit: env.get('REQUEST_LIMIT').default(10).asInt(),
 };
 

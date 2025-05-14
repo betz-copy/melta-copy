@@ -74,7 +74,7 @@ class WorkspaceManager extends DefaultManagerProxy {
         try {
             return deleteFunc();
         } catch (error) {
-            console.log(`failed to delete files of workspaceId ${id}`, { error }); // eslint-disable-line no-console
+            console.error(`failed to delete files of workspaceId ${id}`, { error }); // eslint-disable-line no-console
             return [];
         }
     }

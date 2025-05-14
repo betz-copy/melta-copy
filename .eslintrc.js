@@ -55,6 +55,7 @@ module.exports = {
         'valid-typeof': ['error', { requireStringLiterals: false }],
 
         'no-underscore-dangle': ['error', { allow: ['_id'] }],
+        'no-console': ['error', { allow: ['error'] }],
     },
     root: true,
 };

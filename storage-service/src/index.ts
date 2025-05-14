@@ -1,3 +1,4 @@
+/* eslint-disable no-new */
 import 'elastic-apm-node/start';
 import * as http from 'http';
 import menash from 'menashmq';

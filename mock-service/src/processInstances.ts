@@ -72,7 +72,6 @@ const createProcessInstance = (
             .post(url + processInstanceRoute, requestBody)
             .then((response) => response.data)
             .catch((error) => {
-                // eslint-disable-next-line no-console
                 console.error(`Error creating instance for template ${processTemplate._id}: `, error);
                 throw error;
             }),

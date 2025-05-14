@@ -139,7 +139,7 @@ const TemplateTablesView = forwardRef<TemplateTablesViewRef, TemplateTablesViewP
                     }
                 },
                 onError(error) {
-                    console.log('Failed to load templates counts', error);
+                    console.error('Failed to load templates counts', error);
                     toast.error(i18next.t('entitiesTableOfTemplate.failedToLoadData'));
                 },
             },

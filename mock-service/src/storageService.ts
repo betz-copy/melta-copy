@@ -26,7 +26,6 @@ export const uploadFile = async (workspaceId: string) => {
         await fs.promises.unlink(filePath);
         return data.map(({ path: resultPath }) => resultPath)[0];
     } catch (error) {
-        // eslint-disable-next-line no-console
         console.error('Error in mockFileService:', error);
         throw error;
     }

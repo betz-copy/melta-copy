@@ -67,7 +67,7 @@ const RuleBreachDialog: React.FC<{
         },
         {
             onError: (error: AxiosError, status) => {
-                console.log('failed to review ruleBreach. error:', error);
+                console.error('failed to review ruleBreach. error:', error);
 
                 if (error.response?.data?.metadata?.errorCode === errorCodes.ruleBlock) {
                     const newRuleBreach = { ...ruleBreach, brokenRules: error.response?.data?.metadata?.brokenRules } as IRuleBreachRequestPopulated;

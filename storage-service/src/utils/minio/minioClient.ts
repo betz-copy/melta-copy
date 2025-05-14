@@ -60,7 +60,7 @@ class MinIOClient {
     }
 
     getFilesList(recursive = false, prefix = '', startAfter = '') {
-        this.wrapDBNotExistsError(() => {
+        return this.wrapDBNotExistsError(() => {
             return new Promise((resolve, reject) => {
                 const files: BucketItem[] = [];
                 const stream = this.minioClient.listObjectsV2(this.bucketName, prefix, recursive, startAfter);
@@ -94,8 +94,21 @@ class MinIOClient {
         return this.wrapDBNotExistsError(() => this.minioClient.fPutObject(this.bucketName, destinationFilePath, sourceFilePath, metaData));
     }
 
-    uploadFileStream(fileStream: string | Readable | Buffer, destinationFilePath: string, size: number, metaData = {}) {
-        return this.wrapDBNotExistsError(() => this.minioClient.putObject(this.bucketName, destinationFilePath, fileStream, size, metaData));
+    uploadFileStream(fileStream: string | Readable | Buffer, destinationFilePath: string, size?: number, metaData = {}) {
+        return this.wrapDBNotExistsError(() => {
+            if (typeof fileStream === 'string' || Buffer.isBuffer(fileStream)) {
+                if (typeof size !== 'number') {
+                    throw new Error('Size must be provided for string or Buffer uploads.');
+                }
+                return this.minioClient.putObject(this.bucketName, destinationFilePath, fileStream, size, metaData);
+            }
+
+            fileStream.on('error', (err) => {
+                console.error(`Error in fileStream to ${destinationFilePath}`, err);
+            });
+
+            return this.minioClient.putObject(this.bucketName, destinationFilePath, fileStream, size, metaData);
+        });
     }
 }
 

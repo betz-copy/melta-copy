@@ -39,11 +39,11 @@ class MinIOClient {
     downloadFileStream(filePath: string) {
         return this.wrapDBNotExistsError(() => this.minioClient.getObject(this.bucketName, filePath));
     }
-
-    uploadFileStream(filePath: Readable, objectName: string, size: number, metaData = {}) {
-        return this.wrapDBNotExistsError(() => this.minioClient.putObject(this.bucketName, objectName, filePath, size, metaData));
-    }
-
+    uploadFileStream(fileStream: Readable, destinationPath: string, size: number, meta = {}) {
+        return this.minioClient.putObject(this.bucketName, destinationPath, fileStream, size, meta);
+      }
+      
+    
     statFile(filePath: string) {
         return this.wrapDBNotExistsError(() => this.minioClient.statObject(this.bucketName, filePath));
     }

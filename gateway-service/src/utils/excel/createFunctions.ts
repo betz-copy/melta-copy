@@ -147,10 +147,9 @@ const createWorksheet = async (
     worksheet.getRow(1).eachCell((cell) => {
         cell.font = excelStyle.columnHeader.font;
         cell.alignment = excelStyle.columnHeader.alignment;
-        if (headersOnly) {
-            const type = TypesToHebrew(Object.values(properties).find((propertyTemplate) => propertyTemplate.title === cell.value)!);
-            cell.note = type;
-        }
+
+        const type = TypesToHebrew(Object.values(properties).find((propertyTemplate) => propertyTemplate.title === cell.value)!);
+        cell.note = type;
         cell.fill = {
             type: 'pattern',
             pattern: 'solid',
