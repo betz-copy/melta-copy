@@ -1,10 +1,9 @@
-import { Autocomplete, Grid, MenuItem, TextField, TextFieldProps, Typography } from '@mui/material';
+import { Autocomplete, MenuItem, TextField, TextFieldProps } from '@mui/material';
 import React from 'react';
 import { ExpandMore, Close } from '@mui/icons-material';
 import { ColoredEnumChip } from '../ColoredEnumChip';
 import { MeltaCheckbox } from '../MeltaCheckbox';
-import { MeltaTooltip } from '../MeltaTooltip';
-import { HighlightText } from '../../utils/HighlightText';
+import OverflowWrapper from '../../utils/agGrid/OverflowWrapper';
 
 const MultipleSelect: React.FC<{
     items: {
@@ -80,52 +79,27 @@ const MultipleSelect: React.FC<{
                 );
             }}
             renderTags={(tagValue, getTagProps) => {
-                const maxVisible = 6;
-                const visibleTags = tagValue.slice(0, maxVisible);
-                const hiddenTags = tagValue.slice(maxVisible);
+                return (
+                    <OverflowWrapper
+                        items={tagValue}
+                        propertyToDisplayInTooltip="label"
+                        getItemKey={(item) => item.value}
+                        renderItem={(item, index) => {
+                            const { key, onDelete, ...restTagProps } = getTagProps({ index });
 
-                return [
-                    ...visibleTags.map((option, index) => {
-                        const { key, onDelete, ...restTagProps } = getTagProps({ index });
-                        return (
-                            <Grid alignContent="center" justifyContent="center" key={key}>
+                            return (
                                 <ColoredEnumChip
-                                    label={option.label}
-                                    color={option.color || 'default'}
+                                    label={item.label}
+                                    color={item.color || 'default'}
                                     onDelete={onDelete}
                                     deleteIcon={<Close />}
                                     {...restTagProps}
                                     style={{ margin: '2px 4px 2px 0' }}
                                 />
-                            </Grid>
-                        );
-                    }),
-                    ...(hiddenTags.length > 0
-                        ? [
-                              <Grid item style={{ cursor: 'pointer' }} key="more">
-                                  <MeltaTooltip
-                                      title={hiddenTags.map((item) => (
-                                          <Typography key={item.value} style={{ margin: '5px' }}>
-                                              <HighlightText text={item.label} />
-                                          </Typography>
-                                      ))}
-                                      arrow
-                                  >
-                                      <Grid
-                                          container
-                                          alignItems="center"
-                                          justifyContent="center"
-                                          sx={{ borderRadius: '30px', height: '24px', width: '24px', background: 'var(--Gray-Medium, #9398C2)' }}
-                                      >
-                                          <Typography color="white" fontWeight={500} fontSize="12px">
-                                              +{hiddenTags.length}
-                                          </Typography>
-                                      </Grid>
-                                  </MeltaTooltip>
-                              </Grid>,
-                          ]
-                        : []),
-                ];
+                            );
+                        }}
+                    />
+                );
             }}
             renderInput={(params) => {
                 const isMultiple = selectedValue && !Array.isArray(selectedValue);
