@@ -3,8 +3,8 @@
 import Busboy from 'busboy';
 import { Request, Response, NextFunction } from 'express';
 import { PassThrough } from 'stream';
-import  config  from '../../config';
 import { UploadedFile } from '@microservices/shared';
+import config from '../../config';
 
 export const busboyMiddleware = (req: Request, _res: Response, next: NextFunction) => {
     if (!req.headers['content-type']?.startsWith('multipart/form-data')) return next();

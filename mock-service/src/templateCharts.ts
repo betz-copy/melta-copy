@@ -1,8 +1,8 @@
+/* eslint-disable import/prefer-default-export */
+import { IMongoEntityTemplate, IMongoChart } from '@microservices/shared';
 import config from './config';
-import { IChartDocument } from './interfaces/templateCharts';
 import { chartsCreator } from './mocks/templateCharts';
-import { IMongoEntityTemplate } from './templates/entityTemplates';
-import { createAxiosInstance } from './utils/axios';
+import createAxiosInstance from './utils/axios';
 
 const {
     url,
@@ -21,7 +21,7 @@ export const createCharts = async (workspaceId: string, entityTemplates: IMongoE
 
     return Promise.all(
         charts.map(async (chart) => {
-            const { data } = await axios.post<IChartDocument>(`${url}${baseRoute}${createChartsBaseRoute}`, chart);
+            const { data } = await axios.post<IMongoChart>(`${url}${baseRoute}${createChartsBaseRoute}`, chart);
             return data;
         }),
     );

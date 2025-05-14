@@ -20,10 +20,10 @@ import {
     isCountAggFunction,
     isRegularFunction,
     isSumAggFunction,
+    IMongoEntityTemplate,
 } from '@microservices/shared';
 import { CypherQuery } from './interfaces';
 import config from '../../config';
-import { IMongoEntityTemplate } from '../../externalServices/templates/interfaces/entityTemplates';
 
 const {
     cypherRulesResultValueVariableNameSuffix: resultValueVariableNameSuffix,
