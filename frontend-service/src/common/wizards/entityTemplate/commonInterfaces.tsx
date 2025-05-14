@@ -37,7 +37,6 @@ export interface CommonFormInputProperties {
     archive?: boolean;
     identifier?: boolean;
     mapSearch?: boolean;
-    filterRelationList?: boolean;
     comment?: string;
     hideFromDetailsPage?: boolean;
     color?: string;

@@ -109,7 +109,6 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
         serialStarter: 0,
         archive: false,
         mapSearch: false,
-        filterRelationList: false,
     },
     supportConvertingToMultipleFields = true,
     supportComment,

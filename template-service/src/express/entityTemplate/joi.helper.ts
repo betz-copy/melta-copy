@@ -46,7 +46,6 @@ ajv.addKeyword({ keyword: 'calculateTime', type: 'boolean' });
 ajv.addKeyword({ keyword: 'isDailyAlert', type: 'boolean' });
 ajv.addKeyword({ keyword: 'isDatePastAlert', type: 'boolean' });
 ajv.addKeyword({ keyword: 'archive', type: 'boolean' });
-ajv.addKeyword({ keyword: 'filterRelationList', type: 'boolean' });
 ajv.addKeyword({ keyword: 'identifier', type: 'boolean' });
 ajv.addKeyword({ keyword: 'hideFromDetailsPage', type: 'boolean' });
 ajv.addKeyword({ keyword: 'comment', type: 'string' });
@@ -110,7 +109,6 @@ const propertiesArraySchema = Joi.array()
             readOnly: Joi.valid(true),
             identifier: Joi.valid(true),
             archive: Joi.boolean().optional(),
-            filterRelationList: Joi.boolean().optional(),
             pattern: Joi.string().when('type', { not: 'string', then: Joi.forbidden() }),
             patternCustomErrorMessage: Joi.string().when('pattern', { is: Joi.exist(), then: Joi.required(), otherwise: Joi.forbidden() }),
             items: Joi.object({

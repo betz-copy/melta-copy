@@ -78,7 +78,6 @@ export interface IEntitySingleProperty {
         filters?: ISearchFilter;
     };
     archive?: boolean;
-    filterRelationList?: boolean;
     comment?: string;
     color?: string;
     hideFromDetailsPage?: boolean;

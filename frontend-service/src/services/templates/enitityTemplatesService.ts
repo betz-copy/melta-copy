@@ -111,7 +111,6 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
             archive: value.archive || undefined,
             identifier: value.identifier || undefined,
             mapSearch: mapSearchProperties?.includes(key) || undefined,
-            filterRelationList: value.filterRelationList || undefined,
             hideFromDetailsPage: value.hideFromDetailsPage || undefined,
             comment: value.comment,
             color: value.color,
@@ -196,7 +195,6 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
             archive,
             identifier,
             mapSearch,
-            filterRelationList,
             hideFromDetailsPage,
             color,
             comment,
@@ -266,7 +264,6 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                           filters: relationshipReference.filters ? filterRelationListToSearchFilter(relationshipReference.filters) : undefined,
                       }
                     : undefined,
-                filterRelationList,
                 comment,
                 expandedUserField,
             };
@@ -318,7 +315,6 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
             relationshipReference,
             archive,
             mapSearch,
-            filterRelationList,
             hideFromDetailsPage,
             color,
             comment,
@@ -373,7 +369,6 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                           filters: relationshipReference.filters ? filterRelationListToSearchFilter(relationshipReference.filters) : undefined,
                       }
                     : undefined,
-                filterRelationList,
                 comment,
             };
 

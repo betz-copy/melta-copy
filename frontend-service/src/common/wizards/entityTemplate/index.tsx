@@ -62,7 +62,6 @@ export interface EntityTemplateFormInputProperties {
     };
     archive?: boolean;
     mapSearch?: boolean;
-    filterRelationList?: boolean;
     hideFromDetailsPage?: boolean;
     comment?: string;
     color?: string;
@@ -97,7 +96,6 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
         uniqueConstraints: [],
         documentTemplatesIds: [],
         mapSearchProperties: [],
-        filterRelationList: [],
     },
     isEditMode = false,
 }) => {

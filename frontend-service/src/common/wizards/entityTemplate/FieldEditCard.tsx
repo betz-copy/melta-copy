@@ -202,7 +202,6 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     const hide = `properties[${index}].hide`;
     const readOnly = `properties[${index}].readOnly`;
     const identifier = `properties[${index}].identifier`;
-    const filterRelationList = `properties[${index}].filterRelationList`;
     const hideFromDetailsPage = `properties[${index}].hideFromDetailsPage`;
 
     const unique =
@@ -1283,24 +1282,6 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                     label={i18next.t('validation.identifier')}
                                                 />
                                             )}
-                                            {value.type === 'relationshipReference' && supportRelationshipReference && supportFilterRelationList && (
-                                                <FormControlLabel
-                                                    control={
-                                                        <Switch
-                                                            id={filterRelationList}
-                                                            name={filterRelationList}
-                                                            onChange={(_e, checked) => {
-                                                                setValues?.((prevValue) => ({
-                                                                    ...prevValue,
-                                                                    filterRelationList: checked || undefined,
-                                                                }));
-                                                            }}
-                                                            checked={value.filterRelationList}
-                                                        />
-                                                    }
-                                                    label={i18next.t('propertyTypes.filterRelationList')}
-                                                />
-                                            )}
                                             {isComment && (
                                                 <>
                                                     <FormControlLabel
@@ -1539,7 +1520,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                             </Grid>
                                         )}
                                     </Grid>
-                                    {value.filterRelationList && (
+                                    {value.type === 'relationshipReference' && supportRelationshipReference && supportFilterRelationList && (
                                         <FilterEntitiesByCriteria
                                             name={`properties[${index}].relationshipReference.filters`}
                                             selectedEntityTemplate={entityTemplates.get(value.relationshipReference?.relatedTemplateId!)}

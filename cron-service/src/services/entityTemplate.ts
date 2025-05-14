@@ -86,7 +86,6 @@ export interface IEntityTemplate {
     iconFileId: string | null;
     documentTemplatesIds?: string[];
     mapSearchProperties?: string[];
-    filterRelationList?: boolean;
 }
 
 export interface IEntityTemplatePopulated extends Omit<IEntityTemplate, 'category'> {

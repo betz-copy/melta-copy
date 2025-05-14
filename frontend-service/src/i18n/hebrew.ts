@@ -901,7 +901,6 @@ export default {
         pattern: 'תבנית (regex)',
         enum: 'רשימה',
         relationshipReference: 'שיוך לקשר',
-        filterRelationList: 'סינון רשימת הקשר',
         dateNotification: 'התראה לפני סיום',
         entityReference: 'שיוך לישות',
         serialNumber: 'מספר סידורי',

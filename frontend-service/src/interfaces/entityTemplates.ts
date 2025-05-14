@@ -38,7 +38,6 @@ export interface IEntitySingleProperty {
         kartoffelField: string;
     };
     archive?: boolean;
-    filterRelationList?: boolean;
     hideFromDetailsPage?: boolean;
     comment?: string;
     color?: string;
