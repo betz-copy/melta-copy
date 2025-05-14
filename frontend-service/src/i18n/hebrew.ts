@@ -1471,6 +1471,7 @@ export default {
             nameCol: 'עמודה',
             filterCol: 'סינון ערכים',
             defaultCol: 'ערך ברירת מחדל בהוספה',
+            filterByUserCol: 'עריכה ע"י משתמש קצה',
         },
         fieldFilterDialog: {
             title: 'סינון שדה',

@@ -15,9 +15,11 @@ import {
     Radio,
     Autocomplete,
     InputAdornment,
+    IconButton,
 } from '@mui/material';
 import i18next from 'i18next';
 import { useQueryClient } from 'react-query';
+import CloseIcon from '@mui/icons-material/Close';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { ICategoryMap, IMongoCategory } from '../../../interfaces/categories';
 import { ColoredEnumChip } from '../../ColoredEnumChip';
@@ -104,7 +106,6 @@ const CreateChildTemplateDialog: React.FC<{
             filterByCurrentUser: childTemplateFilterByCurrentUser,
             filterByUserUnit: childTemplateFilterByUserUnit,
         };
-        console.log('newChildTemplate', newChildTemplate);
 
         handleClose();
     };
@@ -112,6 +113,7 @@ const CreateChildTemplateDialog: React.FC<{
     return (
         <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
             <DialogTitle sx={{ fontWeight: 400, fontSize: '16px' }}>{entityTemplate?.displayName}</DialogTitle>
+
             <DialogContent>
                 <Grid container direction="column">
                     <Grid container sx={{ pt: 3 }} alignItems="center" justifyContent="space-between">
@@ -294,8 +296,13 @@ const CreateChildTemplateDialog: React.FC<{
                                     </Typography>
                                 </Grid>
                                 <Grid item xs={3}>
-                                    <Typography sx={{ fontWeight: 400, fontSize: '14px' }}>
+                                    <Typography sx={{ fontWeight: 400, fontSize: '14px', textAlign: 'center' }}>
                                         {i18next.t('createChildTemplateDialog.columns.defaultCol')}
+                                    </Typography>
+                                </Grid>
+                                <Grid item xs={3}>
+                                    <Typography sx={{ fontWeight: 400, fontSize: '14px', textAlign: 'center' }}>
+                                        {i18next.t('createChildTemplateDialog.columns.filterByUserCol')}
                                     </Typography>
                                 </Grid>
                             </Grid>
@@ -311,9 +318,9 @@ const CreateChildTemplateDialog: React.FC<{
                     </Grid>
                 </Grid>
             </DialogContent>
-            <DialogActions>
-                <Button onClick={handleClose}>{i18next.t('actions.cancel')}</Button>
-                <Button onClick={handleSave} variant="contained" color="primary">
+            <DialogActions sx={{ justifyContent: 'center', marginBottom: '10px' }}>
+                {/* <Button onClick={handleClose}>{i18next.t('actions.cancel')}</Button> */}
+                <Button onClick={handleSave} variant="contained" color="primary" sx={{ minWidth: '100px' }}>
                     {i18next.t('actions.create')}
                 </Button>
             </DialogActions>

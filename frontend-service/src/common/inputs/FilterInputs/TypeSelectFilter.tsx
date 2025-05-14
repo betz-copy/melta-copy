@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import React from 'react';
 import { IoIosArrowDown } from 'react-icons/io';
 import { MenuItem } from '@mui/material';
@@ -19,6 +20,7 @@ interface TypeSelectFilterProps {
 }
 
 const TypeSelectFilter: React.FC<TypeSelectFilterProps> = ({ filterField, handleFilterTypeChange, readOnly, type }) => {
+    console.log({ filterField, filterOptions });
     return (
         <StyledFilterInput
             fullWidth

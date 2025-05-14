@@ -1,5 +1,5 @@
-import React, { useCallback, useState } from 'react';
-import { Dialog, DialogActions, DialogContent, DialogTitle, Box, Button, Grid, IconButton, Typography, debounce, TextField } from '@mui/material';
+import React, { useState } from 'react';
+import { Dialog, DialogActions, DialogContent, DialogTitle, Box, Button, Grid, IconButton, Typography, TextField } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import i18next from 'i18next';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
@@ -14,12 +14,12 @@ import { IFieldFilter } from '.';
 interface IAddFieldFilterDialogProps {
     open: boolean;
     onClose: () => void;
-    onSubmit: () => void;
+    onSubmit: (fieldName: string, fieldValue: any) => void;
     fieldFilter: IFieldFilter;
     updateFieldFilter: (filterField: IAGGridTextFilter | IAGGidNumberFilter | IAGGridDateFilter | IAGGridSetFilter, currentFieldName: string) => void;
     entityTemplate: IMongoEntityTemplatePopulated;
     currentFieldName: string;
-    dialogType: 'filter' | 'default';
+    dialogType: 'filter' | 'default' | 'editByUser';
 }
 
 const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
@@ -168,7 +168,7 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
                 </Box>
             </DialogTitle>
             <DialogContent>
-                <Grid container spacing={2} alignItems="center" justifyContent="space-between">
+                <Grid container spacing={2}>
                     <Grid item xs={12}>
                         <TextField
                             fullWidth
@@ -181,19 +181,8 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
                         />
                     </Grid>
 
-                    <Grid container sx={{ pt: 3, pl: 2 }} alignItems="center" justifyContent="space-between">
+                    <Grid item xs={12}>
                         {renderFilterInput()}
-
-                        {dialogType === 'default' && (
-                            <TextField
-                                fullWidth
-                                value={fieldFilter.fieldValue ?? ''}
-                                InputLabelProps={{ shrink: false }}
-                                inputProps={{
-                                    style: { fontSize: '14px', fontWeight: 400 },
-                                }}
-                            />
-                        )}
                     </Grid>
                 </Grid>
             </DialogContent>
@@ -201,7 +190,17 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
             <DialogActions>
                 <Grid container spacing={2} alignItems="center">
                     <Grid xs={12} item display="flex" justifyContent="center" alignItems="center">
-                        <Button onClick={onSubmit} variant="contained" color="primary">
+                        <Button
+                            onClick={() => {
+                                const valueToSubmit = dialogType === 'default' ? fieldFilter.fieldValue : fieldFilter.filterField;
+
+                                if (!valueToSubmit) return;
+
+                                onSubmit(currentFieldName, valueToSubmit);
+                            }}
+                            variant="contained"
+                            color="primary"
+                        >
                             {i18next.t('createChildTemplateDialog.fieldFilterDialog.addFilter')}
                         </Button>
                     </Grid>
