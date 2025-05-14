@@ -8,6 +8,7 @@ import { IconButton, InputAdornment, TextField } from '@mui/material';
 import { KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material';
 import { convertToPlainText, containsHTMLTags } from '../../../utils/HtmlTagsStringValue';
 import { getFixedNumber, getTextDirection } from '../../../utils/stringValues';
+import './form.css';
 
 const RjsfTextWidget = ({
     id,
@@ -65,6 +66,7 @@ const RjsfTextWidget = ({
         <TextField
             {...textFieldProps}
             color="primary"
+            className={inputType === 'number' && schema.serialCurrent === undefined ? 'rjsf-text-input-override' : undefined}
             variant={variant}
             fullWidth
             id={id}
