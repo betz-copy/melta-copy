@@ -30,11 +30,8 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
     const filters: IFilterRelationReference[] = useMemo(() => getIn(values, name) || [], [values, name]);
     const initialFilters = initialValue?.relationshipReference?.filters;
 
-    console.log({ values });
-    console.log({ filters });
-
-    // const errorRelationshipReference = errors?.relationshipReference as FormikErrors<IRelationshipReference> | undefined;
-    // const touchedRelationshipReference = touched?.relationshipReference as FormikTouched<IRelationshipReference> | undefined;
+    console.log({ touched });
+    console.log({ errors });
 
     const selectedEntityTemplatePropOptions = useMemo(
         () =>
@@ -129,7 +126,14 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
         }
     };
 
-    const renderFilterField = (filter: IFilterRelationReference, index: number, property: IEntitySingleProperty, isNewProperty: boolean) => {
+    const renderFilterField = (
+        filter: IFilterRelationReference,
+        index: number,
+        property: IEntitySingleProperty,
+        isNewProperty: boolean,
+        filterTouched?,
+        filterErrors?,
+    ) => {
         const field = filter.filterField;
         if (!field?.filterType || !field.type) return null;
 
@@ -151,6 +155,8 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
                         }
                     }}
                     readOnly={!isNewProperty}
+                    error={Boolean(touched && filterErrors?.filter)}
+                    helperText={filterErrors?.filter}
                 />
             );
         }
@@ -209,6 +215,8 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
                 readOnly={!isNewProperty}
                 entityFilter
                 type={field.filterType}
+                errors={filterErrors}
+                touched={filterTouched}
             />
         );
     };
@@ -236,6 +244,10 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
                         const filterType = filter.filterField?.filterType;
                         const selectedProperty =
                             selectedEntityTemplate?.properties.properties[filter.filterProperty] ?? ({} as IEntitySingleProperty);
+
+                        const fieldBase = `relationshipReference.filters[${index}]`; // e.g., 'relationshipReference.filters[2]'
+                        const filterError: FormikErrors<IFilterRelationReference> = getIn(errors, `${fieldBase}`);
+                        const filterTouched: FormikTouched<IFilterRelationReference> = getIn(touched, `${fieldBase}`);
 
                         return (
                             <Grid container wrap="nowrap" direction="row" gap="0.4rem" key={filter.filterProperty || index}>
@@ -266,6 +278,8 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
                                         <TextField
                                             {...params}
                                             fullWidth
+                                            error={Boolean(filterTouched?.filterProperty && filterError?.filterProperty)}
+                                            helperText={filterTouched?.filterProperty ? filterError?.filterProperty : ''}
                                             sx={{ '& .MuiInputBase-root': { borderRadius: '10px' } }}
                                             variant="outlined"
                                             label={i18next.t('wizard.entityTemplate.filterField')}
@@ -273,7 +287,15 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
                                     )}
                                 />
 
-                                {filterType && renderFilterField(filter, index, selectedProperty, isNewProperty)}
+                                {filterType &&
+                                    renderFilterField(
+                                        filter,
+                                        index,
+                                        selectedProperty,
+                                        isNewProperty,
+                                        filterTouched?.filterField,
+                                        filterError?.filterField,
+                                    )}
 
                                 <Grid item>
                                     <IconButton onClick={() => handleRemoveFilter(index)}>
