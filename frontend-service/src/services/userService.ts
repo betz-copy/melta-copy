@@ -2,6 +2,7 @@ import axios from '../axios';
 import { environment } from '../globals';
 import { NotificationType } from '../interfaces/notifications';
 import { ICompactNullablePermissions, ICompactPermissions, IPermission, ISubCompactPermissions } from '../interfaces/permissions/permissions';
+import { ICompactNullableRoles, ICompactRoles, IRole, ISubCompactRoles } from '../interfaces/roles/permissions';
 import { IExternalUser, IKartoffelUser, IMongoUser, IUser, IUserPreferences, IUserSearchBody } from '../interfaces/users';
 import { RecursiveNullable } from '../utils/types';
 
@@ -65,6 +66,11 @@ export const syncUserPermissionsRequest = async (userId: string, permissions: IC
     return data;
 };
 
+export const syncRolePermissionsRequest = async (name: string, permissions: ICompactNullableRoles) => {
+    const { data } = await axios.post<ICompactRoles>(`${users}/${name}/permissions/roles/sync`, permissions);
+    return data;
+};
+
 export const searchExternalUsersRequest = async (search: string, workspaceId?: string, isKartoffelUser?: boolean) => {
     if (search.length < 2) return [];
     const { data } = await axios.get<IExternalUser[] | IKartoffelUser[]>(`${users}/external`, { params: { search, workspaceId, isKartoffelUser } });
@@ -76,6 +82,14 @@ export const deletePermissionsFromMetadata = async (
     metadata: RecursiveNullable<ISubCompactPermissions>,
 ) => {
     const { data } = await axios.patch<void>(`${users}/metadata`, { query, metadata });
+    return data;
+};
+
+export const deleteRolePermissionsFromMetadata = async (
+    query: Pick<IRole, 'type' | 'workspaceId'> & { name?: IRole['name'] },
+    metadata: RecursiveNullable<ISubCompactRoles>,
+) => {
+    const { data } = await axios.patch<void>(`${users}/metadata/roles`, { query, metadata });
     return data;
 };
 

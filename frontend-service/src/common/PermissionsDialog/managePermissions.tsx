@@ -49,7 +49,7 @@ const ManagePermissions: React.FC<{
                 currentPermissions?.rules?.scope !== PermissionScope.write
             ) ||
                 currentPermissions?.admin?.scope === PermissionScope.write) && (
-                <Box margin={1}>
+                <Box>
                     <ManagementPermissionsCard
                         permissionsManagement={{
                             checked:
@@ -96,7 +96,7 @@ const ManagePermissions: React.FC<{
                     />
                 </Box>
             )}
-            <Box margin={1}>
+            <Box marginTop="25px">
                 <InstancesPermissionsCard
                     viewMode={mode === 'view'}
                     formikProps={formikProps}

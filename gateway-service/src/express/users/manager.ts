@@ -17,6 +17,7 @@ import { RecursiveNullable } from '../../utils/types';
 import { DigitalIdentitySourceDoesNotExistsError, KartoffelUserMissingDataError } from './error';
 import { BadRequestError } from '../error';
 import { UploadedFile } from '../../utils/busboy/interface';
+import { ICompactRoles, IRole, ISubCompactRoles } from '../../externalServices/userService/interfaces/roles/permissions';
 
 const {
     storageService: { usersGlobalBucketName },
@@ -217,5 +218,16 @@ export class UsersManager {
 
     static async searchUsersByPermissions(workspaceId: string): Promise<IUser[]> {
         return UserService.searchUsersByPermissions(workspaceId);
+    }
+
+    static async syncRolePermissions(name: string, permissions: ICompactNullablePermissions): Promise<ICompactRoles> {
+        return UserService.syncRolePermissions(name, permissions);
+    }
+
+    static async deleteRolePermissionsFromMetadata(
+        query: Pick<IRole, 'type' | 'workspaceId'> & { name?: IRole['name'] },
+        metadata: RecursiveNullable<ISubCompactRoles>,
+    ) {
+        return UserService.deleteRolePermissionsFromMetadata(query, metadata);
     }
 }

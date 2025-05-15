@@ -23,6 +23,7 @@ import {
 } from '../../utils/permissions/permissionOfUserDialog';
 import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
 import ManagePermissions from './managePermissions';
+import { BlueTitle } from '../BlueTitle';
 
 const MyPermissions: React.FC<{
     handleClose: () => void;
@@ -144,11 +145,12 @@ const MyPermissions: React.FC<{
                 return (
                     <Form>
                         <DialogTitle>
-                            {mode === 'edit' && i18next.t('permissions.permissionsOfUserDialog.editTitle')}
-                            {mode === 'create' && i18next.t('permissions.permissionsOfUserDialog.createTitle')}
+                            {mode !== 'view' && (
+                                <BlueTitle title={i18next.t(`permissions.permissionsOfUserDialog.${mode}Title`)} component="h6" variant="h6" />
+                            )}
                         </DialogTitle>
                         <DialogContent>
-                            <Box margin={1} sx={{ bgcolor: darkMode ? '#242424' : 'white' }}>
+                            <Box sx={{ bgcolor: darkMode ? '#242424' : 'white', marginBottom: '15px' }}>
                                 <UserAutocomplete
                                     mode={existingUser ? 'internal' : 'external'}
                                     value={formikProps.values}

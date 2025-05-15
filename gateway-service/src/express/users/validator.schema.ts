@@ -117,6 +117,32 @@ export const updateUserExternalMetadataRequestSchema = joi.object({
     },
 });
 
+// POST /api/users/:name/permissions/roles/sync
+export const syncRolePermissionsRequestSchema = joi.object({
+    query: {},
+    body: joi.object(),
+    params: {
+        name: joi.string().required(),
+    },
+});
+
+// PATCH /api/permissions/metadata/roles
+export const deleteRolePermissionsFromMetadataRequestSchema = joi.object({
+    query: {},
+    body: {
+        metadata: joi.object(),
+        query: {
+            workspaceId: MongoIdSchema.required(),
+            type: joi
+                .string()
+                .valid(...Object.values(PermissionType))
+                .required(),
+            name: joi.string().required(),
+        },
+    },
+    params: {},
+});
+
 // POST /api/users/:userId/permissions/sync
 export const syncUserPermissionsRequestSchema = joi.object({
     query: {},

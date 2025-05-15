@@ -77,6 +77,7 @@ const ManagePermissionTab: React.FC<{ permissionType: 'role' | 'user'; searchPla
                             onDeletePermissionsOfUser={(existingUser) => setDeleteDialogState({ isDialogOpen: true, user: existingUser })}
                             onEditPermissionsOfUser={(existingUser) => setEditDialogState({ isDialogOpen: true, user: existingUser })}
                             quickFilterText={quickFilterText}
+                            getRowId={({ _id }) => _id}
                         />
                     )}
                 </Grid>

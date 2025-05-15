@@ -9,7 +9,7 @@ import { toast } from 'react-toastify';
 import { environment } from '../../../globals';
 import { IMongoCategory } from '../../../interfaces/categories';
 import { PermissionScope } from '../../../interfaces/permissions';
-import { IUser } from '../../../interfaces/users';
+import { PermissionData } from '../../../interfaces/users';
 import { IWorkspace } from '../../../interfaces/workspaces';
 import { searchUsersRequest } from '../../../services/userService';
 import { useDarkModeStore } from '../../../stores/darkMode';
@@ -23,7 +23,7 @@ const { infiniteScrollPageCount } = environment.permission;
 
 const scopesTranslation: Record<string, string> = i18next.t('permissions.scopes', { returnObjects: true });
 
-const defaultColDef: ColDef<IUser> = {
+const defaultColDef: ColDef<PermissionData> = {
     editable: false,
     sortable: false,
     flex: 1,
@@ -42,8 +42,8 @@ const columnDefs = (
     workspaceId: string,
     permissionType: 'user' | 'role',
     categories: IMongoCategory[],
-    onDeletePermissionsOfUser: (permissionsOfUser: IUser) => any,
-    onEditPermissionsOfUser: (permissionsOfUser: IUser) => any,
+    onDeletePermissionsOfUser: (permissionsOfUser: PermissionData) => any,
+    onEditPermissionsOfUser: (permissionsOfUser: PermissionData) => any,
 ): ColDef[] => [
     {
         field: 'displayName',
@@ -58,27 +58,27 @@ const columnDefs = (
         filter: 'agTextColumnFilter',
         hide: true,
     },
-    translatedEnumColDef<IUser>({
+    translatedEnumColDef<PermissionData>({
         field: 'permissionsManagement',
         valueGetter: (params) =>
             (params.data?.permissions[workspaceId]?.permissions?.scope || params.data?.permissions[workspaceId]?.admin?.scope) ?? '',
         title: i18next.t('permissions.permissionsManagement'),
         valuesMap: scopesTranslation,
     }),
-    translatedEnumColDef<IUser>({
+    translatedEnumColDef<PermissionData>({
         field: 'templatesManagement',
         valueGetter: (params) =>
             (params.data?.permissions[workspaceId]?.templates?.scope || params.data?.permissions[workspaceId]?.admin?.scope) ?? '',
         title: i18next.t('permissions.templatesManagement'),
         valuesMap: scopesTranslation,
     }),
-    translatedEnumColDef<IUser>({
+    translatedEnumColDef<PermissionData>({
         field: 'rulesManagement',
         valueGetter: (params) => (params.data?.permissions[workspaceId]?.rules?.scope || params.data?.permissions[workspaceId]?.admin?.scope) ?? '',
         title: i18next.t('permissions.rulesManagement'),
         valuesMap: scopesTranslation,
     }),
-    translatedEnumColDef<IUser>({
+    translatedEnumColDef<PermissionData>({
         field: 'processesManagement',
         valueGetter: (params) =>
             (params.data?.permissions[workspaceId]?.processes?.scope || params.data?.permissions[workspaceId]?.admin?.scope) ?? '',
@@ -110,7 +110,7 @@ const columnDefs = (
             // else, compare by categories ids (sorted in each). not important, just be deterministic
             return lhs.sort().join(',').localeCompare(rhs.sort().join(','));
         },
-        cellRenderer: (props: ICellRendererParams<IUser, ICompact<IInstancesPermission>['categories']>) => {
+        cellRenderer: (props: ICellRendererParams<PermissionData, ICompact<IInstancesPermission>['categories']>) => {
             const categoriesPermissionsPopulated = Object.keys(props.value ?? {}).map((category) => {
                 return {
                     _id: category,
@@ -145,7 +145,7 @@ const columnDefs = (
         sortable: false,
         filter: false,
         suppressColumnsToolPanel: true,
-        cellRenderer: (props: ICellRendererParams<IUser>) => {
+        cellRenderer: (props: ICellRendererParams<PermissionData>) => {
             const { data } = props;
 
             const isAdmin = data?.permissions[workspaceId]?.admin?.scope === PermissionScope.write;
@@ -166,7 +166,7 @@ const columnDefs = (
     },
 ];
 
-const getDatasource = <Data extends any = IUser>(
+const getDatasource = <Data extends any = PermissionData>(
     { _id }: IWorkspace,
     quickFilter: string | undefined,
     onFail: (err: unknown) => void | undefined,
@@ -199,7 +199,7 @@ const getDatasource = <Data extends any = IUser>(
     };
 };
 
-const getRowModelProps = <Data extends any = IUser>(
+const getRowModelProps = <Data extends any = PermissionData>(
     workspace: IWorkspace,
     paginationPageSize: number,
     quickFilterText: string | undefined,
@@ -207,7 +207,7 @@ const getRowModelProps = <Data extends any = IUser>(
 ): React.ComponentProps<typeof AgGridReact<Data>> => {
     return {
         rowModelType: 'serverSide',
-        serverSideDatasource: getDatasource<IUser>(workspace, quickFilterText, datasourceOnFail),
+        serverSideDatasource: getDatasource<PermissionData>(workspace, quickFilterText, datasourceOnFail),
         cacheBlockSize: infiniteScrollPageCount,
         maxBlocksInCache: infiniteScrollPageCount,
         pagination: true,
@@ -221,6 +221,7 @@ type PermissionsTableProps<Data> = {
     onEditPermissionsOfUser: (permissionsOfUser: Data) => any;
     quickFilterText: string;
     permissionType: 'user' | 'role';
+    getRowId: (data: Data) => string;
 };
 
 export type PermissionsTableRef<Data> = {
@@ -228,23 +229,21 @@ export type PermissionsTableRef<Data> = {
     updateRowDataClientSide: (data: Data) => void;
 };
 
-const PermissionsTable = forwardRef<PermissionsTableRef<IUser>, PermissionsTableProps<IUser>>(
-    (
-        { permissionType, categories, onDeletePermissionsOfUser, onEditPermissionsOfUser, quickFilterText },
-        ref: ForwardedRef<PermissionsTableRef<IUser>>,
+const PermissionsTable = forwardRef<PermissionsTableRef<unknown>, PermissionsTableProps<unknown>>(
+    <Data extends any>(
+        { permissionType, categories, onDeletePermissionsOfUser, onEditPermissionsOfUser, quickFilterText, getRowId },
+        ref: ForwardedRef<PermissionsTableRef<Data>>,
     ) => {
         const darkMode = useDarkModeStore((state) => state.darkMode);
         const workspace = useWorkspaceStore((state) => state.workspace);
-        const gridRef = useRef<AgGridReact<IUser>>(null);
+        const gridRef = useRef<AgGridReact<Data>>(null);
         const { defaultRowHeight, defaultFontSize } = workspace.metadata.agGrid;
-
-        const getRowId = ({ _id }) => _id;
 
         useImperativeHandle(ref, () => ({
             refreshServerSide() {
                 gridRef.current?.api.refreshServerSide({ purge: true });
             },
-            updateRowDataClientSide(data: IUser) {
+            updateRowDataClientSide(data: Data) {
                 gridRef.current?.api.forEachNode((rowNode) => {
                     if (rowNode.data && getRowId(data) === getRowId(rowNode.data)) {
                         rowNode.updateData(data);
@@ -264,7 +263,7 @@ const PermissionsTable = forwardRef<PermissionsTableRef<IUser>, PermissionsTable
         );
 
         return (
-            <AgGridReact<IUser>
+            <AgGridReact<Data>
                 ref={gridRef}
                 className={`ag-theme-material${darkMode ? '-dark' : ''}`}
                 containerStyle={{
@@ -277,7 +276,7 @@ const PermissionsTable = forwardRef<PermissionsTableRef<IUser>, PermissionsTable
                 }}
                 defaultColDef={defaultColDef}
                 columnDefs={columnDefs(workspace._id, permissionType, categories, onDeletePermissionsOfUser, onEditPermissionsOfUser)}
-                getRowId={(params) => getRowId(params.data)}
+                getRowId={({ data }) => getRowId(data)}
                 {...rowModelProps}
                 paginationAutoPageSize
                 rowHeight={defaultRowHeight}
@@ -309,6 +308,6 @@ const PermissionsTable = forwardRef<PermissionsTableRef<IUser>, PermissionsTable
     },
 );
 
-export default PermissionsTable as <Data = IUser>(
+export default PermissionsTable as <Data = PermissionData>(
     props: PermissionsTableProps<Data> & { ref?: React.ForwardedRef<PermissionsTableRef<Data>> },
 ) => ReturnType<typeof PermissionsTable>;

@@ -1,4 +1,4 @@
-import { Card, CardContent, CheckboxProps, Divider, FormControlLabel, Grid, Typography } from '@mui/material';
+import { Box, CardContent, CheckboxProps, Divider, FormControlLabel, Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
 import { FormikProps } from 'formik';
@@ -8,6 +8,7 @@ import { MeltaCheckbox } from '../MeltaCheckbox';
 import CategoryCheckboxPermission from './categoryCheckboxPermission';
 import { IRole, IUser } from '../../interfaces/users';
 import { entityTemplatePermissionDialog } from '../../utils/permissions/permissionOfUserDialog';
+import { BlueTitle } from '../BlueTitle';
 
 type checkboxControlProps = {
     onChange: CheckboxProps['onChange'];
@@ -40,21 +41,26 @@ const InstancesPermissionsCard: React.FC<{
     const bgcolor = darkMode ? '#242424' : 'white';
 
     return (
-        <Card variant="outlined" sx={{ bgcolor, overflowY: 'auto', maxHeight: 500 }}>
-            <CardContent>
+        <Box sx={{ bgcolor, overflowY: 'auto', maxHeight: 500 }}>
+            <Box>
                 <Grid container rowGap={1}>
                     <Grid container sx={{ position: 'sticky', top: 0, zIndex: 2, bgcolor }}>
                         <Grid xs={12}>
-                            <Typography sx={{ padding: 2, boxSizing: 'border-box' }} fontWeight="bold">
-                                {i18next.t('permissions.permissionsOfUserDialog.instancesPermissions')}
-                            </Typography>
+                            <Box sx={{ background: !darkMode ? '#EBEFFA' : '#1E2A3A', borderRadius: '5px' }}>
+                                <BlueTitle
+                                    title={i18next.t('permissions.permissionsOfUserDialog.instancesPermissions')}
+                                    component="p"
+                                    variant="body1"
+                                    style={{ marginRight: '5px', padding: '5px' }}
+                                />
+                            </Box>
                         </Grid>
-                        <Grid xs={6}>
+                        <Grid xs={6} marginTop="10px">
                             <Typography sx={{ paddingLeft: 2, boxSizing: 'border-box' }} fontWeight="bold">
                                 {i18next.t('category')}
                             </Typography>
                         </Grid>
-                        <Grid xs={3}>
+                        <Grid xs={3} marginTop="10px">
                             <Typography paddingLeft="15px" fontWeight="bold">
                                 {i18next.t('permissions.permissionsOfUserDialog.read')}
                             </Typography>
@@ -72,7 +78,7 @@ const InstancesPermissionsCard: React.FC<{
                                 />
                             )}
                         </Grid>
-                        <Grid xs={3}>
+                        <Grid xs={3} marginTop="10px">
                             <Typography paddingLeft="15px" fontWeight="bold">
                                 {i18next.t('permissions.permissionsOfUserDialog.write')}
                             </Typography>
@@ -113,8 +119,8 @@ const InstancesPermissionsCard: React.FC<{
                         </>
                     ))}
                 </Grid>
-            </CardContent>
-        </Card>
+            </Box>
+        </Box>
     );
 };
 

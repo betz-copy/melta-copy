@@ -1,4 +1,4 @@
-import { Autocomplete, Box, Button, CircularProgress, DialogActions, DialogContent, DialogTitle, Grid } from '@mui/material';
+import { Box, Button, CircularProgress, DialogActions, DialogContent, DialogTitle, Grid, TextField } from '@mui/material';
 import { Form, Formik, FormikProps } from 'formik';
 import i18next from 'i18next';
 import _cloneDeep from 'lodash.clonedeep';
@@ -9,7 +9,7 @@ import { toast } from 'react-toastify';
 import * as Yup from 'yup';
 
 import { IRole, IUser } from '../../interfaces/users';
-import { createUserRequest, syncUserPermissionsRequest } from '../../services/userService';
+import { createUserRequest, syncRolePermissionsRequest } from '../../services/userService';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { useUserStore } from '../../stores/user';
 import { useWorkspaceStore } from '../../stores/workspace';
@@ -22,6 +22,7 @@ import {
 } from '../../utils/permissions/permissionOfUserDialog';
 import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
 import ManagePermissions from './managePermissions';
+import { BlueTitle } from '../BlueTitle';
 
 const RoleDialog: React.FC<{
     handleClose: () => void;
@@ -58,26 +59,26 @@ const RoleDialog: React.FC<{
         dialogPermissionData.set(entity.category._id, category);
     });
 
-    const { mutate: createRole } = useMutation(
-        (formRole: IRole) =>
-            createUserRequest(formRole.externalMetadata.kartoffelId, formRole.externalMetadata.digitalIdentitySource, formRole.permissions),
-        {
-            onError: (error) => {
-                console.error('failed to upsert permission. error:', error);
-                toast.error(i18next.t('permissions.permissionsOfRoleDialog.failedToCreatePermissionsOfRole'));
-            },
-            onSuccess: () => {
-                onSuccess?.();
-                queryClient.invalidateQueries('allIFrames');
-                toast.success(i18next.t('permissions.permissionsOfRoleDialog.succeededToCreatePermission'));
-                handleClose();
-            },
-        },
-    );
+    // const { mutate: createRole } = useMutation(
+    //     (formRole: IRole) =>
+    //         createUserRequest(formRole.externalMetadata.kartoffelId, formRole.externalMetadata.digitalIdentitySource, formRole.permissions),
+    //     {
+    //         onError: (error) => {
+    //             console.error('failed to upsert permission. error:', error);
+    //             toast.error(i18next.t('permissions.permissionsOfRoleDialog.failedToCreatePermissionsOfRole'));
+    //         },
+    //         onSuccess: () => {
+    //             onSuccess?.();
+    //             queryClient.invalidateQueries('allIFrames');
+    //             toast.success(i18next.t('permissions.permissionsOfRoleDialog.succeededToCreatePermission'));
+    //             handleClose();
+    //         },
+    //     },
+    // );
 
     const { mutate: syncRolePermissions } = useMutation(
         async (formRole: IRole) => {
-            return syncUserPermissionsRequest(formRole.name, {
+            return syncRolePermissionsRequest(formRole.name, {
                 [workspace._id]: {
                     ...formRole.permissions[workspace._id],
                 },
@@ -122,28 +123,45 @@ const RoleDialog: React.FC<{
                 return {};
             }}
             onSubmit={(formRole) => {
-                if (mode === 'create') createRole(formRole);
-                else syncRolePermissions(formRole);
+                // if (mode === 'create') createRole(formRole);
+                // else
+                syncRolePermissions(formRole);
             }}
         >
             {(formikProps: FormikProps<IRole>) => {
                 return (
                     <Form>
                         <DialogTitle>
-                            {mode === 'edit' && i18next.t('permissions.permissionsOfRoleDialog.editTitle')}
-                            {mode === 'create' && i18next.t('permissions.permissionsOfRoleDialog.createTitle')}
+                            {mode !== 'view' && (
+                                <BlueTitle title={i18next.t(`permissions.permissionsOfRoleDialog.${mode}Title`)} component="h6" variant="h6" />
+                            )}
                         </DialogTitle>
                         <DialogContent>
-                            <Box margin={1} sx={{ bgcolor: darkMode ? '#242424' : 'white' }}>
-                                <Autocomplete
-                                    value={formikProps.values}
-                                    onChange={(_e, newName) => formikProps.setValues(newName)}
+                            <Box sx={{ bgcolor: darkMode ? '#242424' : 'white', marginBottom: '15px' }}>
+                                <TextField
+                                    fullWidth
+                                    value={formikProps.values.name}
+                                    onChange={({ target: { value: newValue } }) => {
+                                        formikProps.setFieldValue('name', newValue);
+                                    }}
                                     onBlur={formikProps.handleBlur}
-                                    readOnly={mode === 'view'}
+                                    label={i18next.t('permissions.roleHeaderName')}
+                                    InputLabelProps={{
+                                        shrink: mode === 'view' || undefined,
+                                        style: {
+                                            fontSize: '14px',
+                                        },
+                                    }}
+                                    inputProps={{
+                                        readOnly: mode === 'view',
+                                        style: {
+                                            textOverflow: 'ellipsis',
+                                            fontSize: '14px',
+                                        },
+                                    }}
                                     disabled={mode === 'edit'}
-                                    isError={Boolean(formikProps.touched.name && formikProps.errors.name)}
+                                    error={Boolean(formikProps.touched.name && formikProps.errors.name)}
                                     helperText={formikProps.touched.name ? formikProps.errors.name : ''}
-                                    isOptionDisabled={(option) => !option.fullName || !option.jobTitle || !option.hierarchy || !option.mail}
                                 />
                             </Box>
 

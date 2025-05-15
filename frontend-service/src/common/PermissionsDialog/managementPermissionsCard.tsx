@@ -1,11 +1,13 @@
-import { Card, CardContent, CheckboxProps, FormControlLabel, FormGroup, Typography } from '@mui/material';
+import { Box, CheckboxProps, FormControlLabel, FormGroup } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { MeltaCheckbox } from '../MeltaCheckbox';
 import PermissionViewIcon from './PermissionViewIcon';
+import { BlueTitle } from '../BlueTitle';
 
 type ManagementCheckboxProps = { disabled: boolean; viewMode: boolean; checked: boolean; onChange: CheckboxProps['onChange'] };
+
 const ManagementPermissionsCard: React.FC<{
     permissionsManagement: ManagementCheckboxProps;
     templatesManagement: ManagementCheckboxProps;
@@ -15,12 +17,17 @@ const ManagementPermissionsCard: React.FC<{
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
     return (
-        <Card variant="outlined" sx={{ bgcolor: darkMode ? '#242424' : 'white' }}>
-            <CardContent>
-                <Typography style={{ fontWeight: 'bold', cursor: 'default' }}>
-                    {i18next.t('permissions.permissionsOfUserDialog.managementTitle')}
-                </Typography>
-                <FormGroup row>
+        <Box sx={{ bgcolor: darkMode ? '#242424' : 'white' }}>
+            <Box>
+                <Box sx={{ background: !darkMode ? '#EBEFFA' : '#1E2A3A', borderRadius: '5px' }}>
+                    <BlueTitle
+                        title={i18next.t('permissions.permissionsOfUserDialog.managementTitle')}
+                        component="p"
+                        variant="body1"
+                        style={{ marginRight: '5px', padding: '5px' }}
+                    />
+                </Box>
+                <FormGroup row sx={{ marginTop: '5px', justifyContent: 'center' }}>
                     <FormControlLabel
                         label={i18next.t('permissions.permissionsOfUserDialog.permissionsManagement') as string}
                         labelPlacement="end"
@@ -70,8 +77,8 @@ const ManagementPermissionsCard: React.FC<{
                         }
                     />
                 </FormGroup>
-            </CardContent>
-        </Card>
+            </Box>
+        </Box>
     );
 };
 

@@ -87,4 +87,18 @@ usersRouter.patch(
     wrapController(UsersController.deletePermissionsFromMetadata),
 );
 
+usersRouter.post(
+    '/:name/permissions/roles/sync',
+    AuthorizerControllerMiddleware.userCanWritePermissions,
+    ValidateRequest(syncUserPermissionsRequestSchema),
+    wrapController(UsersController.syncRolePermissions),
+);
+
+usersRouter.patch(
+    '/metadata/roles',
+    AuthorizerControllerMiddleware.userCanWritePermissions,
+    ValidateRequest(deletePermissionsFromMetadataRequestSchema),
+    wrapController(UsersController.deleteRolePermissionsFromMetadata),
+);
+
 usersRouter.get('/search/:workspaceId', ValidateRequest(searchUsersByPermissionsSchema), UserManagerProxy);

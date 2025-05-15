@@ -29,6 +29,8 @@ export interface IRole {
     name: string;
 }
 
+export type PermissionData = IUser | IRole;
+
 export interface IMongoUser extends IUser {
     createdAt: Date;
     updatedAt: Date;
