@@ -1,9 +1,9 @@
 import { Request, Response } from 'express';
 import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
 import DefaultController from '../../utils/express/controller';
-import { ChartManager } from './manager';
+import ChartManager from './manager';
 
-export class ChartController extends DefaultController<ChartManager> {
+class ChartController extends DefaultController<ChartManager> {
     constructor(workspaceId: string) {
         super(new ChartManager(workspaceId));
     }
@@ -15,7 +15,7 @@ export class ChartController extends DefaultController<ChartManager> {
     async getChartsByTemplateId(req: Request, res: Response) {
         const { body, params, permissionsOfUserId, user } = req as RequestWithPermissionsOfUserId;
 
-        res.json(await this.manager.getChartsOfTemplateId(params.templateId, user?.id!, permissionsOfUserId, body.textSearch));
+        res.json(await this.manager.getChartsOfTemplateId(params.templateId, user!.id, permissionsOfUserId, body.textSearch));
     }
 
     async createChart(req: Request, res: Response) {
@@ -30,3 +30,5 @@ export class ChartController extends DefaultController<ChartManager> {
         res.json(await this.manager.deleteChart(req.params.chartId));
     }
 }
+
+export default ChartController;

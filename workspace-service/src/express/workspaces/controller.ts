@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
-import { WorkspacesManager } from './manager';
+import WorkspacesManager from './manager';
 
-export class WorkspacesController {
+class WorkspacesController {
     static async getWorkspaceIds(req: Request, res: Response) {
         res.json(await WorkspacesManager.getWorkspaceIds(req.body.type));
     }
@@ -42,3 +42,5 @@ export class WorkspacesController {
         res.json(await WorkspacesManager.searchWorkspaces(req.body));
     }
 }
+
+export default WorkspacesController;

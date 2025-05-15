@@ -1,23 +1,31 @@
 import isEqual from 'lodash.isequal';
 import groupBy from 'lodash.groupby';
-import { IFormula } from '../../externalServices/templates/interfaces/rules/formula';
-import { IEquation, isEquation } from '../../externalServices/templates/interfaces/rules/formula/equation';
-import { IAggregationGroup, IGroup, isAggregationGroup, isGroup } from '../../externalServices/templates/interfaces/rules/formula/group';
-import { ICausesOfInstance, IRuleFailure } from './interfaces';
-import { IFormulaCauses } from './interfaces/formulaWithCauses';
-import { ICause } from './interfaces/formulaWithCauses/cause';
-import { IEquationCauses } from './interfaces/formulaWithCauses/equation';
-import { IAggregationGroupCauses, IGroupCauses } from './interfaces/formulaWithCauses/group';
-import { IArgument, IPropertyOfVariable, isConstant, isPropertyOfVariable } from '../../externalServices/templates/interfaces/rules/formula/argument';
-import { IArgumentCauses, IPropertyOfVariableCauses } from './interfaces/formulaWithCauses/argument';
 import {
+    IFormula,
+    IEquation,
+    isEquation,
+    IAggregationGroup,
+    IGroup,
+    isAggregationGroup,
+    isGroup,
+    IArgument,
+    IPropertyOfVariable,
+    isConstant,
+    isPropertyOfVariable,
     IRegularFunction,
     isCountAggFunction,
     isRegularFunction,
     isSumAggFunction,
-} from '../../externalServices/templates/interfaces/rules/formula/function';
+    ICausesOfInstance,
+} from '@microservices/shared';
+import { IRuleFailure } from './interfaces';
+import { IFormulaCauses } from './interfaces/formulaWithCauses';
+import { ICause } from './interfaces/formulaWithCauses/cause';
+import { IEquationCauses } from './interfaces/formulaWithCauses/equation';
+import { IAggregationGroupCauses, IGroupCauses } from './interfaces/formulaWithCauses/group';
+import { IArgumentCauses, IPropertyOfVariableCauses } from './interfaces/formulaWithCauses/argument';
 import { ICountAggFunctionCauses, IRegularFunctionCauses, ISumAggFunctionCauses } from './interfaces/formulaWithCauses/function';
-import { filteredMap } from '../../utils/filteredMap';
+import filteredMap from '../../utils/filteredMap';
 
 const getCausesOfPropertyOfVariable = (
     propertyOfVariableCauses: IPropertyOfVariableCauses,

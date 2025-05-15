@@ -1,15 +1,23 @@
 import axios from 'axios';
+import {
+    IBaseUser,
+    IUser,
+    IUserSearchBody,
+    ICompactNullablePermissions,
+    ICompactPermissions,
+    IPermission,
+    ISubCompactPermissions,
+    DeepPartial,
+    RecursiveNullable,
+    ICompactNullableRoles, ICompactRoles, IRole, ISubCompactRoles
+} from '@microservices/shared';
 import config from '../../config';
-import { DeepPartial, RecursiveNullable } from '../../utils/types';
-import { ICompactNullablePermissions, ICompactPermissions, IPermission, ISubCompactPermissions } from './interfaces/permissions/permissions';
-import { IBaseUser, IUser, IUserSearchBody } from './interfaces/users';
-import { ICompactNullableRoles, ICompactRoles, IRole, ISubCompactRoles } from './interfaces/roles/permissions';
 
 const {
     userService: { url, usersRoute, rolesRoute, permissionsRoute, requestTimeout },
 } = config;
 
-export class UserService {
+class UserService {
     private static userService = axios.create({
         baseURL: url,
         timeout: requestTimeout,
@@ -88,3 +96,5 @@ export class UserService {
         return data;
     }
 }
+
+export default UserService;

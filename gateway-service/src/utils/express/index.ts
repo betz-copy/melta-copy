@@ -1,23 +1,13 @@
+/* eslint-disable @typescript-eslint/no-unsafe-function-type */
 import { NextFunction, Request, Response } from 'express';
 import { get } from 'lodash';
+import { dataLogger, FunctionKey } from '@microservices/shared';
 import config from '../../config';
 import { InvalidWorkspaceHeaderError } from '../../express/error';
-import { WorkspaceService } from '../../express/workspaces/service';
-import dataLogger from '../logger/dataLogger';
-import { FunctionKey } from '../types';
-import DefaultController from './controller';
+import WorkspaceService from '../../express/workspaces/service';
+import DefaultManagerProxy from './manager';
 
 const { workspaceIdHeaderName } = config.service;
-
-export const wrapMiddleware = (func: (req: Request, res?: Response) => Promise<void>) => {
-    return (req: Request, res: Response, next: NextFunction) => {
-        func(req, res)
-            .then(() => next())
-            .catch(next);
-    };
-};
-
-export const wrapValidator = wrapMiddleware;
 
 interface IWrapControllerOptions {
     toLog: boolean;
@@ -89,7 +79,28 @@ export const getWorkspaceId = async (req: Request) => {
     return workspaceId;
 };
 
-export const createWorkspacesController = <T extends InstanceType<typeof DefaultController<any>>>(
+export const translateWorkspaceParameter = async (req: Request) => {
+    req.headers[config.service.workspaceIdHeaderName] = req.params.workspaceId;
+};
+
+export const translateWorkspaceParameterFlow = async (req: Request) => {
+    req.headers[config.service.workspaceIdHeaderName] = req.body.WorkspaceId;
+};
+
+export const translateWorkspaceParameterFlowColumns = async (req: Request) => {
+    const [workspaceId] = req.body.WorkspaceId;
+    req.headers[config.service.workspaceIdHeaderName] = workspaceId;
+};
+
+export default abstract class DefaultProxyController<Manager extends DefaultManagerProxy<any> | null = null> {
+    public manager: Manager;
+
+    constructor(manager: Manager) {
+        this.manager = manager;
+    }
+}
+
+export const createWorkspacesController = <T extends InstanceType<typeof DefaultProxyController<any>>>(
     Controller: { new (workspaceId: string): T },
     isMiddleware = false,
 ) => {
@@ -118,17 +129,4 @@ export const createWorkspacesController = <T extends InstanceType<typeof Default
             next: NextFunction,
         ) => void;
     };
-};
-
-export const translateWorkspaceParameter = async (req: Request) => {
-    req.headers[config.service.workspaceIdHeaderName] = req.params.workspaceId;
-};
-
-export const translateWorkspaceParameterFlow = async (req: Request) => {
-    req.headers[config.service.workspaceIdHeaderName] = req.body.WorkspaceId;
-};
-
-export const translateWorkspaceParameterFlowColumns = async (req: Request) => {
-    const [workspaceId] = req.body.WorkspaceId;
-    req.headers[config.service.workspaceIdHeaderName] = workspaceId;
 };

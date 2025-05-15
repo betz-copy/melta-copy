@@ -1,8 +1,7 @@
+import { DefaultManagerMongo, IActivityLog } from '@microservices/shared';
 import { FilterQuery } from 'mongoose';
 import config from '../../config';
-import { DefaultManagerMongo } from '../../utils/mongo/manager';
-import { IActivityLog } from './interface';
-import { ActivityLogSchema } from './model';
+import ActivityLogSchema from './model';
 
 export default class ActivityLogManager extends DefaultManagerMongo<IActivityLog> {
     constructor(workspaceId: string) {

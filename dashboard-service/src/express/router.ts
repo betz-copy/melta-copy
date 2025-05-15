@@ -4,7 +4,7 @@ import { StatusCodes } from 'http-status-codes';
 import chartsRouter from './charts/router';
 import iFramesRouter from './iFrames/router';
 
-const appRouter: Router = Router();
+const appRouter = Router();
 
 appRouter.use('/api/dashboard/charts', chartsRouter);
 appRouter.use('/api/dashboard/iframes', iFramesRouter);

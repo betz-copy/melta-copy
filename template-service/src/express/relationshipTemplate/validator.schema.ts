@@ -1,5 +1,5 @@
 import Joi from 'joi';
-import { MongoIdSchema, variableNameValidation } from '../../utils/joi';
+import { MongoIdSchema, variableNameValidation } from '@microservices/shared';
 
 // GET /api/relationship/templates/:templateId
 export const getTemplateByIdRequestSchema = Joi.object({
@@ -17,6 +17,7 @@ export const createTemplateRequestSchema = Joi.object({
         displayName: Joi.string().required(),
         sourceEntityId: MongoIdSchema.required(),
         destinationEntityId: MongoIdSchema.required(),
+        isProperty: Joi.boolean().default(false),
     },
     query: {},
     params: {},
