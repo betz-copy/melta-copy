@@ -53,6 +53,7 @@ interface FieldBlockProps<PropertiesType extends string, Values extends Record<P
     supportConvertingToMultipleFields?: boolean;
     supportIdentifier?: boolean;
     hasIdentifier?: boolean;
+    supportFilterRelationList?: boolean;
     supportComment?: boolean;
 }
 
@@ -84,6 +85,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
     locationSearchFields,
     supportIdentifier,
     hasIdentifier,
+    supportFilterRelationList,
     supportAddFieldButton = true,
     hasActions,
     draggable = { isDraggable: false },
@@ -314,6 +316,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
                                                 supportArchive,
                                                 supportIdentifier,
                                                 hasIdentifier,
+                                                supportFilterRelationList,
                                                 locationSearchFields,
                                                 hasActions,
                                                 supportConvertingToMultipleFields,

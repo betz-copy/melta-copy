@@ -1480,5 +1480,15 @@ export default {
         fieldDefaultDialog: {
             title: 'ערך ברירת מחדל',
         },
+        byUser: 'לפי משתמש מחובר',
+        byUnit: 'לפי יחידת המשתמש',
+        connectToUserPage: 'שיוך לעמוד לקוח',
+        selectUserDialog: {
+            title: 'בחירת שם משתמש',
+            description: 'על מנת לסנן עפ”י משתמש מחובר יש לבחור את העמודה ממנה ילקח המידע',
+            selectUser: 'משתמש',
+            addAction: 'הוספה',
+            byUser: 'משתמש',
+        },
     },
 };

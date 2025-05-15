@@ -49,7 +49,6 @@ const TextFilterInput: React.FC<TextFilterProps> = ({ readOnly, filterField, typ
                                 : ({ ...filterField, filter: value } as IAGGridTextFilter);
 
                         handleFilterFieldChange(updatedFilter);
-                        // console.log({ updatedFilter });
                     }}
                 />
             </Grid>

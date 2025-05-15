@@ -15,17 +15,16 @@ import {
     Radio,
     Autocomplete,
     InputAdornment,
-    IconButton,
 } from '@mui/material';
 import i18next from 'i18next';
 import { useQueryClient } from 'react-query';
-import CloseIcon from '@mui/icons-material/Close';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { ICategoryMap, IMongoCategory } from '../../../interfaces/categories';
 import { ColoredEnumChip } from '../../ColoredEnumChip';
 import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter, IAGGridTextFilter } from '../../../utils/agGrid/interfaces';
 import FieldsAndFiltersTable from './FieldsAndFiltersTable';
 import { MeltaCheckbox } from '../../MeltaCheckbox';
+import SelectUserFieldDialog from './SelectUserFieldDialog';
 
 export interface IFieldFilter {
     fieldValue: IEntitySingleProperty;
@@ -42,14 +41,16 @@ export interface IEntityChildTemplate {
     name: string;
     displayName: string;
     description: string;
-    fatherTemplate: string;
-    categories: string[];
-    propertiesFilters: Record<string, unknown>;
+    fatherTemplateId: string;
+    categories: IMongoCategory['_id'][];
+    properties: Record<string, unknown>;
     disabled: boolean;
     actions?: string;
     viewType: ViewType;
-    filterByCurrentUser: boolean;
-    filterByUserUnit: boolean;
+    defaults: Record<string, string | number | boolean | Date | string[]>;
+    filters: Record<string, unknown>;
+    isFilterByCurrentUser: boolean;
+    isFilterByUserUnit: boolean;
 }
 
 export interface ITemplateFieldsFilters {
@@ -71,9 +72,10 @@ const CreateChildTemplateDialog: React.FC<{
     const [childTemplateViewType, setChildTemplateViewType] = useState<ViewType>(ViewType.categoryPage);
     const [childTemplateFilterByCurrentUser, setChildTemplateFilterByCurrentUser] = useState<boolean>(false);
     const [childTemplateFilterByUserUnit, setChildTemplateFilterByUserUnit] = useState<boolean>(false);
-
     const [selectedCategories, setSelectedCategories] = useState<IMongoCategory[]>(entityTemplate!.category ? [entityTemplate!.category] : []);
     const [templateFieldsFilters, setTemplateFieldsFilters] = useState<ITemplateFieldsFilters>({});
+    const [selectUserFieldDialogOpen, setSelectUserFieldDialogOpen] = useState(false);
+    const [selectedUserField, setSelectedUserField] = useState<string | null>(null);
 
     const initFieldFilters = () => {
         const newTemplateFieldsFilters: ITemplateFieldsFilters = {};
@@ -85,6 +87,13 @@ const CreateChildTemplateDialog: React.FC<{
         });
         setTemplateFieldsFilters(newTemplateFieldsFilters);
     };
+    const userFields = React.useMemo(() => {
+        return entityTemplate
+            ? Object.entries(entityTemplate.properties.properties)
+                  .filter(([_, prop]) => prop.format === 'user')
+                  .map(([key]) => key)
+            : [];
+    }, [entityTemplate]);
 
     useEffect(() => {
         if (entityTemplate) {
@@ -97,18 +106,26 @@ const CreateChildTemplateDialog: React.FC<{
             name: childTemplateName,
             displayName: childTemplateName,
             description: childTemplateDescription,
-            fatherTemplate: entityTemplate._id,
+            fatherTemplateId: entityTemplate._id,
             categories: selectedCategories.map((category) => category._id),
-            propertiesFilters: {},
+            properties: {},
             disabled: false,
             actions: entityTemplate.actions,
             viewType: childTemplateViewType,
-            filterByCurrentUser: childTemplateFilterByCurrentUser,
-            filterByUserUnit: childTemplateFilterByUserUnit,
+            isFilterByCurrentUser: childTemplateFilterByCurrentUser,
+            isFilterByUserUnit: childTemplateFilterByUserUnit,
         };
 
         handleClose();
     };
+
+    const hasUserTypeProperty = React.useMemo(() => {
+        return Object.values(entityTemplate.properties.properties).some((property) => property.format === 'user');
+    }, [entityTemplate]);
+
+    const hasUnitTypeProperty = React.useMemo(() => {
+        return Object.values(entityTemplate.properties.properties).some((property) => property.format === 'unitField');
+    }, [entityTemplate]);
 
     return (
         <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
@@ -123,9 +140,7 @@ const CreateChildTemplateDialog: React.FC<{
                                 label={i18next.t('createChildTemplateDialog.templateName')}
                                 onChange={(e) => setChildTemplateName(e.target.value)}
                                 value={childTemplateName}
-                                InputLabelProps={{ sx: { fontSize: '14px', fontWeight: 400 } }}
                                 InputProps={{
-                                    sx: { fontSize: '14px', fontWeight: 400 },
                                     startAdornment: <InputAdornment position="start">{entityTemplate.displayName} -</InputAdornment>,
                                 }}
                             />
@@ -140,8 +155,6 @@ const CreateChildTemplateDialog: React.FC<{
                                 variant="outlined"
                                 onChange={(e) => setChildTemplateDescription(e.target.value)}
                                 value={childTemplateDescription}
-                                InputLabelProps={{ sx: { fontSize: '14px', fontWeight: 400 } }}
-                                InputProps={{ sx: { fontSize: '14px', fontWeight: 400 } }}
                             />
                         </Grid>
                     </Grid>
@@ -177,34 +190,46 @@ const CreateChildTemplateDialog: React.FC<{
                             </FormControl>
                         </Grid>
                         <Grid item xs={5.5} container direction="row" justifyContent="space-between">
-                            <Grid item>
-                                <FormControlLabel
-                                    control={
-                                        <MeltaCheckbox
-                                            checked={childTemplateFilterByCurrentUser}
-                                            onChange={(e) => setChildTemplateFilterByCurrentUser(e.target.checked)}
-                                        />
-                                    }
-                                    label={i18next.t('createChildTemplateDialog.userType.regularUser')}
-                                    componentsProps={{
-                                        typography: { sx: { fontSize: '14px' } },
-                                    }}
-                                />
-                            </Grid>
-                            <Grid item>
-                                <FormControlLabel
-                                    control={
-                                        <MeltaCheckbox
-                                            checked={childTemplateFilterByUserUnit}
-                                            onChange={(e) => setChildTemplateFilterByUserUnit(e.target.checked)}
-                                        />
-                                    }
-                                    label={i18next.t('createChildTemplateDialog.userType.specialUser')}
-                                    componentsProps={{
-                                        typography: { sx: { fontSize: '14px' } },
-                                    }}
-                                />
-                            </Grid>
+                            {hasUserTypeProperty && (
+                                <Grid item>
+                                    <FormControlLabel
+                                        control={
+                                            <MeltaCheckbox
+                                                checked={childTemplateFilterByCurrentUser}
+                                                onChange={(e) => {
+                                                    setChildTemplateFilterByCurrentUser(e.target.checked);
+                                                    if (e.target.checked) setSelectUserFieldDialogOpen(true);
+                                                }}
+                                            />
+                                        }
+                                        label={i18next.t('createChildTemplateDialog.userType.regularUser')}
+                                        componentsProps={{
+                                            typography: { sx: { fontSize: '14px' } },
+                                        }}
+                                    />
+                                    {selectedUserField && (
+                                        <Typography sx={{ fontSize: '12px', color: 'text.secondary', ml: 4 }}>
+                                            {`${i18next.t('createChildTemplateDialog.selectUserDialog.byUser')} : ${selectedUserField}`}
+                                        </Typography>
+                                    )}
+                                </Grid>
+                            )}
+                            {hasUnitTypeProperty && (
+                                <Grid item>
+                                    <FormControlLabel
+                                        control={
+                                            <MeltaCheckbox
+                                                checked={childTemplateFilterByUserUnit}
+                                                onChange={(e) => setChildTemplateFilterByUserUnit(e.target.checked)}
+                                            />
+                                        }
+                                        label={i18next.t('createChildTemplateDialog.userType.specialUser')}
+                                        componentsProps={{
+                                            typography: { sx: { fontSize: '14px' } },
+                                        }}
+                                    />
+                                </Grid>
+                            )}
                         </Grid>
                     </Grid>
 
@@ -230,7 +255,6 @@ const CreateChildTemplateDialog: React.FC<{
                                             name="category"
                                             variant="outlined"
                                             label={i18next.t('createChildTemplateDialog.categoryType.relatedToLabel')}
-                                            InputLabelProps={{ sx: { fontSize: '14px', fontWeight: 400 } }}
                                         />
                                     )}
                                     renderOption={(props, category) => (
@@ -238,7 +262,7 @@ const CreateChildTemplateDialog: React.FC<{
                                             <ColoredEnumChip
                                                 label={category.displayName}
                                                 color="default"
-                                                style={{ backgroundColor: '#EBEFFA', borderRadius: '10px' }}
+                                                // style={{ backgroundColor: '#EBEFFA', borderRadius: '10px' }}
                                             />
                                         </li>
                                     )}
@@ -255,7 +279,7 @@ const CreateChildTemplateDialog: React.FC<{
                                                     style={{
                                                         margin: '0 4px 4px 0',
                                                         borderRadius: '10px',
-                                                        backgroundColor: '#EBEFFA',
+                                                        // backgroundColor: '#EBEFFA',
                                                     }}
                                                 />
                                             );
@@ -264,19 +288,18 @@ const CreateChildTemplateDialog: React.FC<{
                                 />
                             </FormControl>
                         </Grid>
-                        <Grid item xs={5.5}>
-                            <TextField
-                                label={i18next.t('createChildTemplateDialog.userType.relatedToLabel')}
-                                fullWidth
-                                rows={1}
-                                dir="rtl"
-                                variant="outlined"
-                                value="a"
-                                disabled
-                                InputLabelProps={{ sx: { fontSize: '14px', fontWeight: 400 } }}
-                                InputProps={{ sx: { fontSize: '14px', fontWeight: 400 } }}
-                            />
-                        </Grid>
+                        {hasUnitTypeProperty && (
+                            <Grid item xs={5.5}>
+                                <TextField
+                                    fullWidth
+                                    rows={1}
+                                    dir="rtl"
+                                    variant="outlined"
+                                    value={i18next.t('createChildTemplateDialog.connectToUserPage')}
+                                    disabled
+                                />
+                            </Grid>
+                        )}
                     </Grid>
 
                     <Grid container sx={{ pt: 4 }} alignSelf="center" width="98%" justifyContent="space-between">
@@ -300,11 +323,13 @@ const CreateChildTemplateDialog: React.FC<{
                                         {i18next.t('createChildTemplateDialog.columns.defaultCol')}
                                     </Typography>
                                 </Grid>
-                                <Grid item xs={3}>
-                                    <Typography sx={{ fontWeight: 400, fontSize: '14px', textAlign: 'center' }}>
-                                        {i18next.t('createChildTemplateDialog.columns.filterByUserCol')}
-                                    </Typography>
-                                </Grid>
+                                {childTemplateViewType === ViewType.userPage && (
+                                    <Grid item xs={3}>
+                                        <Typography sx={{ fontWeight: 400, fontSize: '14px', textAlign: 'center' }}>
+                                            {i18next.t('createChildTemplateDialog.columns.filterByUserCol')}
+                                        </Typography>
+                                    </Grid>
+                                )}
                             </Grid>
 
                             <Grid item xs={12} sx={{ maxHeight: 400, overflowY: 'auto', pr: 3 }}>
@@ -312,6 +337,7 @@ const CreateChildTemplateDialog: React.FC<{
                                     entityTemplate={entityTemplate}
                                     templateFieldsFilters={templateFieldsFilters}
                                     setTemplateFieldsFilters={setTemplateFieldsFilters}
+                                    viewType={childTemplateViewType}
                                 />
                             </Grid>
                         </Grid>
@@ -324,6 +350,16 @@ const CreateChildTemplateDialog: React.FC<{
                     {i18next.t('actions.create')}
                 </Button>
             </DialogActions>
+            <SelectUserFieldDialog
+                open={selectUserFieldDialogOpen}
+                userFields={userFields}
+                selectedField={selectedUserField}
+                onClose={() => setSelectUserFieldDialogOpen(false)}
+                onSubmit={(field) => {
+                    setSelectedUserField(field);
+                    setSelectUserFieldDialogOpen(false);
+                }}
+            />
         </Dialog>
     );
 };

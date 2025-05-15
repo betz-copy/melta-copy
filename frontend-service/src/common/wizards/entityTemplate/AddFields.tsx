@@ -16,7 +16,6 @@ import { ErrorToast } from '../../ErrorToast';
 import { environment } from '../../../globals';
 
 const { mapSearchPropertiesLimit } = environment.map;
-
 const processStringFormats = [...stringFormats, 'entityReference'];
 const validPropertyTypes = [...basePropertyTypes, ...processStringFormats, ...arrayTypes, 'enum', 'serialNumber', 'pattern'];
 const dateNotificationTypes: string[] = ['day', 'week', 'twoWeeks', 'month', 'threeMonths', 'halfYear'];
@@ -40,11 +39,63 @@ export const propertiesBaseSchema = Yup.object({
     }),
     groupName: Yup.string().when('uniqueCheckbox', { is: true, then: (schema) => schema.required(i18next.t('validation.mustSelectUniqueGroup')) }),
 });
-
 export const attachmentPropertiesBaseSchema = Yup.object({
     name: Yup.string().matches(variableNameValidation, i18next.t('validation.variableName')).required(i18next.t('validation.required')),
     title: Yup.string().required(i18next.t('validation.required')),
 });
+
+const agGridTextFilterSchema = Yup.object({
+    filterType: Yup.string().oneOf(['text']).required(),
+    type: Yup.string().oneOf(['contains', 'notContains', 'equals', 'notEqual', 'startsWith', 'endsWith']).required(i18next.t('validation.required')),
+    filter: Yup.mixed().required(i18next.t('validation.required')),
+});
+
+const agGridNumberFilterSchema = Yup.object({
+    filterType: Yup.string().oneOf(['number']).required(),
+    type: Yup.string()
+        .oneOf(['equals', 'notEqual', 'lessThan', 'lessThanOrEqual', 'greaterThan', 'greaterThanOrEqual', 'inRange'])
+        .required(i18next.t('validation.required')),
+    filter: Yup.number().typeError(i18next.t('validation.invalidNumberField')).required(i18next.t('validation.required')),
+    filterTo: Yup.number()
+        .typeError(i18next.t('validation.invalidNumberField'))
+        .when('type', {
+            is: 'inRange',
+            then: (schema) => schema.required(i18next.t('validation.required')),
+            otherwise: (schema) => schema.notRequired(),
+        }),
+});
+
+const agGridDateFilterSchema = Yup.object({
+    filterType: Yup.string().oneOf(['date']).required(),
+    type: Yup.string().oneOf(['equals', 'notEqual', 'greaterThan', 'lessThan', 'inRange']).required(i18next.t('validation.required')),
+    dateFrom: Yup.string().required(i18next.t('validation.required')),
+    dateTo: Yup.string().when('type', {
+        is: 'inRange',
+        then: (schema) => schema.required(i18next.t('validation.required')),
+        otherwise: (schema) => schema.notRequired(),
+    }),
+});
+
+// Dynamic filter field validation based on `filterType`
+const filterFieldSchema = Yup.lazy((value: any) => {
+    switch (value?.filterType) {
+        case 'text':
+            return agGridTextFilterSchema;
+        case 'number':
+            return agGridNumberFilterSchema;
+        case 'date':
+            return agGridDateFilterSchema;
+        default:
+            return Yup.mixed().required(i18next.t('validation.required'));
+    }
+});
+
+const filtersSchema = Yup.array().of(
+    Yup.object({
+        filterProperty: Yup.string().required(i18next.t('validation.required')),
+        filterField: filterFieldSchema,
+    }),
+);
 
 const addFieldsSchema = Yup.object({
     properties: Yup.array()
@@ -65,6 +116,7 @@ const addFieldsSchema = Yup.object({
                         relatedTemplateId: Yup.string().required(i18next.t('validation.required')),
                         relatedTemplateField: Yup.string().required(i18next.t('validation.required')),
                         relationshipTemplateDirection: Yup.string().required(i18next.t('validation.required')),
+                        filters: filtersSchema,
                     }),
                 }),
                 expandedUserField: Yup.object().when('type', {
@@ -101,7 +153,6 @@ const addFieldsSchema = Yup.object({
         }),
     ),
 }).test('uniqueProperties', entityTemplateUniqueProperties);
-
 const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEditMode' | 'setBlock'>> = ({
     values,
     setValues,
@@ -114,9 +165,7 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
 }) => {
     const hasActions = Boolean(initialValues?.actions);
     const countMapSearchProperties = Object.values(values.properties).filter((property) => property.mapSearch).length;
-
     if (countMapSearchProperties > mapSearchPropertiesLimit) setBlock(true);
-
     const { data: areThereInstancesByTemplateIdResponse } = useQuery(
         ['areThereInstancesByTemplateId', (values as EntityTemplateWizardValues & { _id: string })._id],
         () =>
@@ -128,34 +177,29 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
             enabled: isEditMode,
             initialData: { count: 1, entities: [] },
             onError: (error: AxiosError) => {
-                console.error('failed to check areThereInstancesByTemplateId. error:', error);
+                // eslint-disable-next-line no-console
+                console.log('failed to check areThereInstancesByTemplateId. error:', error);
                 toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('systemManagement.defaultCantEdit')} />);
             },
         },
     );
     const areThereAnyInstances = isEditMode && areThereInstancesByTemplateIdResponse!.count > 0;
-
     const onDragEnd = (result: DropResult) => {
         const { destination, source } = result;
         if (!destination) return;
-
         const newPropertiesTypeOrder = Array.from(values.propertiesTypeOrder);
         const [movedOption] = newPropertiesTypeOrder.splice(source.index, 1);
         newPropertiesTypeOrder.splice(destination.index, 0, movedOption);
-
         setFieldValue('propertiesTypeOrder', newPropertiesTypeOrder);
     };
-
     const getTitle = (itemId: string): string => {
         const titles: Record<string, string> = {
             properties: i18next.t('wizard.entityTemplate.properties'),
             attachmentProperties: i18next.t('wizard.entityTemplate.attachments'),
             archiveProperties: i18next.t('wizard.entityTemplate.archiveProperties'),
         };
-
         return titles[itemId] || '';
     };
-
     return (
         <DragDropContext onDragEnd={onDragEnd}>
             <Droppable droppableId="propertiesArea">
@@ -225,6 +269,7 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
                                             }}
                                             supportIdentifier
                                             hasIdentifier={Object.values(values.properties).some((value) => value.identifier)}
+                                            supportFilterRelationList
                                         />
                                     </Grid>
                                 )}
@@ -236,5 +281,4 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
         </DragDropContext>
     );
 };
-
 export { AddFields, addFieldsSchema, validPropertyTypes, dateNotificationTypes };

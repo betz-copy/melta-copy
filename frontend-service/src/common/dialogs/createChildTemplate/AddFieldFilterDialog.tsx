@@ -152,6 +152,33 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
         );
     };
 
+    const renderDialogContent = () => {
+        return (
+            <>
+                <Grid item xs={12}>
+                    <TextField
+                        fullWidth
+                        disabled
+                        value={entityTemplate.properties.properties[currentFieldName]?.title || currentFieldName}
+                        InputLabelProps={{ shrink: false }}
+                    />
+                </Grid>
+
+                {dialogType === 'filter' && (
+                    <Grid item xs={12}>
+                        {renderFilterInput()}
+                    </Grid>
+                )}
+
+                {dialogType === 'default' && (
+                    <Grid item xs={12}>
+                        <TextField fullWidth value={inputValue} onChange={(e) => setInputValue(e.target.value)} variant="outlined" />
+                    </Grid>
+                )}
+            </>
+        );
+    };
+
     return (
         <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
             <DialogTitle>
@@ -169,21 +196,7 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
             </DialogTitle>
             <DialogContent>
                 <Grid container spacing={2}>
-                    <Grid item xs={12}>
-                        <TextField
-                            fullWidth
-                            disabled
-                            value={entityTemplate.properties.properties[currentFieldName]?.title || currentFieldName}
-                            InputLabelProps={{ shrink: false }}
-                            inputProps={{
-                                style: { fontSize: '14px', fontWeight: 400, backgroundColor: '#EBEFFA', borderRadius: '10px' },
-                            }}
-                        />
-                    </Grid>
-
-                    <Grid item xs={12}>
-                        {renderFilterInput()}
-                    </Grid>
+                    {renderDialogContent()}
                 </Grid>
             </DialogContent>
 
@@ -192,9 +205,15 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
                     <Grid xs={12} item display="flex" justifyContent="center" alignItems="center">
                         <Button
                             onClick={() => {
-                                const valueToSubmit = dialogType === 'default' ? fieldFilter.fieldValue : fieldFilter.filterField;
+                                let valueToSubmit: any;
 
-                                if (!valueToSubmit) return;
+                                if (dialogType === 'default') {
+                                    valueToSubmit = inputValue;
+                                } else {
+                                    valueToSubmit = fieldFilter.filterField;
+                                }
+
+                                if (valueToSubmit === undefined || valueToSubmit === null || valueToSubmit === '') return;
 
                                 onSubmit(currentFieldName, valueToSubmit);
                             }}
