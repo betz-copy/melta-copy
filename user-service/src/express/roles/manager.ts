@@ -1,108 +1,126 @@
+/* eslint-disable no-param-reassign */
 import { FilterQuery } from 'mongoose';
-import { flattenObject, typedObjectEntries } from '../../utils';
-import { transaction } from '../../utils/mongoose';
-import { RecursiveNullable } from '../../utils/types';
-import { SinglePermissionOfTypePerRoleError } from './errors';
-import { IRole, ICompactNullableRoles, ICompactRoles, ISubCompactRoles } from './interface/permissions';
-import { RolesModel } from './model';
+import { ISubCompactPermissions, IRole, IUserAgGridRequest, IBaseRole } from '@microservices/shared';
+import RolesModel from './model';
+import PermissionsManager from '../permissions/manager';
+import { typedObjectEntries } from '../../utils';
+import { RoleDoesNotExistError } from './errors';
+import { translateAgGridFilterModel, translateAgGridSortModel } from '../../utils/agGrid';
 
-export class PermissionsManager {
-    static async getCompactRoles(roles: IRole[]): Promise<ICompactRoles> {
-        const compactPermissions: ICompactRoles = {};
-
-        roles.forEach(({ workspaceId, type, metadata }) => {
-            if (compactPermissions[workspaceId]?.[type]) throw new SinglePermissionOfTypePerRoleError(type);
-
-            if (!compactPermissions[workspaceId]) compactPermissions[workspaceId] = {};
-            compactPermissions[workspaceId][type] = metadata as any;
-        });
-
-        return compactPermissions;
+class RolesManager {
+    static async getRoleById(id: string, workspaceIds?: string[]): Promise<IRole> {
+        const baseRole = await RolesModel.findById(id).orFail(new RoleDoesNotExistError(id)).lean().exec();
+        return this.baseRoleToRole(baseRole, workspaceIds);
     }
 
-    static async getCompactPermissionsOfRole(roleName: string, workspaceIds?: string[]): Promise<ICompactRoles> {
-        const query: FilterQuery<IRole> = { name: roleName };
+    static async searchBaseRoles(
+        search: string | undefined,
+        permissions: ISubCompactPermissions | undefined,
+        workspaceIds: string[] | undefined,
+        limit: number,
+        step: number,
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        { name, permissionsManagement, templatesManagement, rulesManagement, processesManagement, ...query }: FilterQuery<IBaseRole> = {},
+        { name: nameSort }: Record<string, number> = {},
+    ): Promise<{ roles: IBaseRole[]; count: number }> {
+        const sort: FilterQuery<IBaseRole> = {};
+        if (name) query.$or = [{ name: name.$regex }];
 
-        if (workspaceIds) query.workspaceId = { $in: workspaceIds };
+        if (search) {
+            const searchRegex = { $regex: new RegExp(search, 'i') };
+            const searchQuery = [{ name: searchRegex }];
 
-        const permissions = await RolesModel.find(query).lean().exec();
-        return this.getCompactRoles(permissions);
-    }
+            if (query.$or) {
+                query.$and = [{ $or: query.$or }, { $or: searchQuery }];
+                delete query.$or;
+            } else query.$or = searchQuery;
+        }
 
-    static async syncCompactPermissionsOfRole(name: string, permissionsCompact: ICompactNullableRoles | ICompactRoles): Promise<ICompactRoles> {
-        const updatedWorkspacesIds: string[] = [];
+        if (nameSort) sort.name = nameSort;
 
-        await transaction(async (session) => {
-            const actions: Promise<any>[] = [];
+        if (permissions || workspaceIds) {
+            const simplePermissions = await PermissionsManager.searchBySubCompactPermissions(permissions ?? {}, workspaceIds);
+            const rolesIds = new Set<string>(simplePermissions.map(({ relatedId }) => relatedId));
+            query._id = { $in: [...rolesIds] };
+        }
 
-            typedObjectEntries(permissionsCompact).forEach(([workspaceId, subCompactPermission]) => {
-                if (subCompactPermission === null) {
-                    actions.push(RolesModel.deleteMany({ name, workspaceId }, { session }).lean().exec());
-                    return;
-                }
-
-                updatedWorkspacesIds.push(workspaceId);
-
-                typedObjectEntries(subCompactPermission).forEach(([type, metadata]) => {
-                    if (metadata === null) {
-                        actions.push(RolesModel.deleteOne({ name, type, workspaceId }, { session }).lean().exec());
-                        return;
-                    }
-
-                    actions.push(RolesModel.updateOne({ name, type, workspaceId }, { metadata }, { upsert: true, session }).lean().exec());
-                });
-            });
-
-            await Promise.all(actions);
-        });
-
-        return this.getCompactPermissionsOfRole(name, updatedWorkspacesIds);
-    }
-
-    static async deletePermissionsFromMetadata(
-        query: Pick<IRole, 'type' | 'workspaceId'> & { name?: IRole['name'] },
-        metadata: RecursiveNullable<ISubCompactRoles>,
-    ): Promise<void> {
-        await RolesModel.updateMany(query, { $unset: flattenObject(metadata[query.type]!, ['metadata']) })
+        const roles = await RolesModel.find(query, {}, { limit, skip: step * limit, sort })
             .lean()
             .exec();
+
+        const count = await RolesModel.countDocuments(query);
+
+        return { roles, count };
     }
 
-    //     static async searchBySubCompactPermissions(subCompactPermissions: ISubCompactRoles, workspaceIds?: string[]): Promise<IRole[]> {
-    //         const workspaceId = workspaceIds ? workspaceIds[workspaceIds.length - 1] : undefined;
+    static async searchRoleIds(
+        search: string | undefined,
+        permissions: ISubCompactPermissions | undefined,
+        workspaceIds: string[] | undefined,
+        limit: number,
+        step: number,
+    ): Promise<string[]> {
+        const { roles } = await this.searchBaseRoles(search, permissions, workspaceIds, limit, step);
+        return roles.map(({ _id }) => _id);
+    }
 
-    //         const query: FilterQuery<IRole> = Object.keys(subCompactPermissions).length ? {} : { workspaceId };
-    //         const subQueries: FilterQuery<IRole>[] = [];
+    static async searchRoles(request: IUserAgGridRequest): Promise<{ roles: IRole[]; count: number }> {
+        const { limit, step, workspaceIds, permissions, filterModel, sortModel, search } = request;
 
-    //         typedObjectEntries(subCompactPermissions).forEach(([type, metadata]) => {
-    //             subQueries.push({ type, workspaceId, ...flattenObject(metadata!, ['metadata']) });
-    //         });
+        const sort = sortModel ? translateAgGridSortModel(sortModel) : {};
+        const query = filterModel ? translateAgGridFilterModel(filterModel) : {};
 
-    //         if (workspaceIds && workspaceIds.length > 1) {
-    //             workspaceIds.pop();
+        const { roles, count } = await this.searchBaseRoles(search, permissions, workspaceIds, limit, step, query, sort);
+        const permissionsToRoles = await this.appendPermissionsToRoles(roles);
 
-    //             workspaceIds.forEach((workspaceId) => {
-    //                 subQueries.push({ type: PermissionType.admin, metadata: { scope: PermissionScope.write }, workspaceId });
-    //             });
-    //         }
+        return { roles: permissionsToRoles, count };
+    }
 
-    //         if (subQueries.length) query.$or = subQueries;
+    static async createRole({ permissions, ...roleData }: Omit<IRole, '_id'>): Promise<IRole> {
+        const baseRole = (await RolesModel.create(roleData)).toObject();
 
-    //         return RolesModel.find(query).lean().exec();
-    //     }
+        await PermissionsManager.syncCompactPermissions(baseRole._id, 'role', permissions);
 
-    //     static async getRolesByWorkspaceId(workspaceId: string, pagination?: { step: number; limit: number }): Promise<IRole[]> {
-    //         return RolesModel.find({ workspaceId }, pagination ? { limit: pagination.limit, skip: pagination.step } : {});
-    //     }
+        return this.baseRoleToRole(baseRole);
+    }
 
-    //     static async getRolesByWorkspaceIdWithCount(workspaceId: string, limit: number, step: number): Promise<{ roles: IRole[]; count: number }> {
-    //         const [roles, count] = await Promise.all([
-    //             RolesModel.find({ workspaceId }, { limit, skip: step * limit })
-    //                 .lean()
-    //                 .exec(),
-    //             RolesModel.countDocuments({ workspaceId }),
-    //         ]);
+    static async updateRole(id: string, updateData: Partial<IBaseRole>): Promise<IRole> {
+        const baseRole = await RolesModel.findByIdAndUpdate(id, updateData, { new: true }).orFail(new RoleDoesNotExistError(id)).lean().exec();
+        return this.baseRoleToRole(baseRole);
+    }
 
-    //         return { roles, count };
-    //     }
+    static async updateRolesBulk(bulkUpdateData: Record<string, IBaseRole>): Promise<void> {
+        await RolesModel.bulkWrite(
+            typedObjectEntries(bulkUpdateData).map(([id, updateData]) => ({ updateOne: { filter: { _id: id }, update: updateData } })),
+        );
+    }
+
+    private static async baseRoleToRole(role: IBaseRole, workspaceIds?: string[]): Promise<IRole> {
+        const permissions = await PermissionsManager.getCompactPermissionsOfRelatedId(role._id, workspaceIds);
+        return { ...role, permissions };
+    }
+
+    private static async appendPermissionsToRoles(roles: IBaseRole[]): Promise<IRole[]> {
+        return Promise.all(roles.map((role) => this.baseRoleToRole(role)));
+    }
+
+    static async searchRolesByPermissions(workspaceId: string, pagination?: { step: number; limit: number }): Promise<IRole[]> {
+        const permissions = await PermissionsManager.getPermissionsByWorkspaceId(workspaceId, pagination);
+
+        const roles = await RolesModel.find({ _id: { $in: permissions.map(({ relatedId }) => relatedId) } })
+            .lean()
+            .exec();
+
+        return this.appendPermissionsToRoles(roles);
+    }
+
+    static async searchRolesByPermWithCount(workspaceId: string, limit: number, step: number): Promise<{ roles: IRole[]; count: number }> {
+        const { permissions, count } = await PermissionsManager.getPermissionsByWorkspaceIdWithCount(workspaceId, limit, step);
+
+        const roles = await Promise.all(permissions.map(({ relatedId }) => this.getRoleById(relatedId)));
+
+        return { roles, count };
+    }
 }
+
+export default RolesManager;

@@ -9,7 +9,7 @@ import { toast } from 'react-toastify';
 import * as Yup from 'yup';
 
 import { IUser } from '../../interfaces/users';
-import { createUserRequest, syncUserPermissionsRequest } from '../../services/userService';
+import { createUserRequest, syncPermissionsRequest } from '../../services/userService';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { useUserStore } from '../../stores/user';
 import { useWorkspaceStore } from '../../stores/workspace';
@@ -92,7 +92,7 @@ const MyPermissions: React.FC<{
 
     const { mutate: syncUserPermissions } = useMutation(
         async (formUser: IUser) => {
-            return syncUserPermissionsRequest(formUser._id, {
+            return syncPermissionsRequest(formUser._id, 'user', {
                 [workspace._id]: {
                     ...formUser.permissions[workspace._id],
                 },

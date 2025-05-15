@@ -18,6 +18,7 @@ export * from './interfaces/ruleBreach/agGrid';
 export * from './interfaces/semanticSearch';
 export * from './interfaces/globalSearch';
 export * from './interfaces/chart';
+export * from './interfaces/role';
 
 export * from './utils/express';
 export { default as logger } from './utils/logger/logsLogger';

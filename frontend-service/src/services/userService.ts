@@ -2,12 +2,12 @@ import axios from '../axios';
 import { environment } from '../globals';
 import { NotificationType } from '../interfaces/notifications';
 import { ICompactNullablePermissions, ICompactPermissions, IPermission, ISubCompactPermissions } from '../interfaces/permissions/permissions';
-import { ICompactNullableRoles, ICompactRoles, IRole, ISubCompactRoles } from '../interfaces/roles/permissions';
+import { IMongoRole, IRole } from '../interfaces/roles';
 import { IExternalUser, IKartoffelUser, IMongoUser, IUser, IUserPreferences, IUserSearchBody } from '../interfaces/users';
 import { RecursiveNullable } from '../utils/types';
 
 const {
-    api: { users },
+    api: { users, roles },
 } = environment;
 
 export const getMyUserRequest = async () => {
@@ -61,13 +61,8 @@ export const updateUserExternalMetadataRequest = async (userId: string, kartoffe
     return data;
 };
 
-export const syncUserPermissionsRequest = async (userId: string, permissions: ICompactNullablePermissions) => {
-    const { data } = await axios.post<ICompactPermissions>(`${users}/${userId}/permissions/sync`, permissions);
-    return data;
-};
-
-export const syncRolePermissionsRequest = async (name: string, permissions: ICompactNullableRoles) => {
-    const { data } = await axios.post<ICompactRoles>(`${users}/${name}/permissions/roles/sync`, permissions);
+export const syncPermissionsRequest = async (relatedId: string, permissionType: 'user' | 'role', permissions: ICompactNullablePermissions) => {
+    const { data } = await axios.post<ICompactPermissions>(`${users}/${relatedId}/permissions/sync`, { permissionType, permissions });
     return data;
 };
 
@@ -85,14 +80,6 @@ export const deletePermissionsFromMetadata = async (
     return data;
 };
 
-export const deleteRolePermissionsFromMetadata = async (
-    query: Pick<IRole, 'type' | 'workspaceId'> & { name?: IRole['name'] },
-    metadata: RecursiveNullable<ISubCompactRoles>,
-) => {
-    const { data } = await axios.patch<void>(`${users}/metadata/roles`, { query, metadata });
-    return data;
-};
-
 export const getUserProfileRequest = async (user: Partial<IUser>) => {
     const { data } = await axios.get(`${users}/user-profile/${user._id}`, { responseType: 'blob' });
     return URL.createObjectURL(data);
@@ -100,5 +87,30 @@ export const getUserProfileRequest = async (user: Partial<IUser>) => {
 
 export const searchUsersByPermissions = async (workspaceId: string): Promise<IMongoUser[]> => {
     const { data } = await axios.get<IMongoUser[]>(`${users}/search/${workspaceId}`);
+    return data;
+};
+
+export const getRoleByIdRequest = async (roleId: string) => {
+    const { data } = await axios.get<IRole>(`${roles}/${roleId}`);
+    return data;
+};
+
+export const searchRolesRequest = async (searchBody: IUserSearchBody) => {
+    const { data } = await axios.post<{ roles: IRole[]; count: number }>(`${roles}/search`, searchBody);
+    return data;
+};
+
+export const createRoleRequest = async (name: string, permissions: ICompactPermissions) => {
+    const { data } = await axios.post<IRole>(roles, { name, permissions });
+    return data;
+};
+
+export const updateRoleRequest = async (roleId: string, name: string) => {
+    const { data } = await axios.patch<IRole>(`${roles}/${roleId}`, { name });
+    return data;
+};
+
+export const searchRolesByPermissions = async (workspaceId: string): Promise<IMongoRole[]> => {
+    const { data } = await axios.get<IMongoRole[]>(`${roles}/search/${workspaceId}`);
     return data;
 };

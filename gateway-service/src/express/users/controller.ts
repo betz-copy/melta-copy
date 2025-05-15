@@ -48,20 +48,13 @@ class UsersController {
         res.json(await UsersManager.updateUserExternalMetadata(req.params.userId, req.body));
     }
 
-    static async syncUserPermissions(req: Request, res: Response) {
-        res.json(await UsersManager.syncUserPermissions(req.params.userId, req.body));
+    static async syncPermissions(req: Request, res: Response) {
+        const { permissionType, ...permissions } = req.body;
+        res.json(await UsersManager.syncUserPermissions(req.params.relatedId, permissionType, permissions));
     }
 
     static async deletePermissionsFromMetadata(req: Request, res: Response) {
         res.json(await UsersManager.deletePermissionsFromMetadata(req.body.query, req.body.metadata));
-    }
-
-    static async syncRolePermissions(req: Request, res: Response) {
-        res.json(await UsersManager.syncRolePermissions(req.params.name, req.body));
-    }
-
-    static async deleteRolePermissionsFromMetadata(req: Request, res: Response) {
-        res.json(await UsersManager.deleteRolePermissionsFromMetadata(req.body.query, req.body.metadata));
     }
 
     static async searchExternalUsers(req: Request, res: Response) {
@@ -76,6 +69,32 @@ class UsersController {
 
     static async searchUsersByPermissions(req: Request, res: Response) {
         res.json(await UsersManager.searchUsersByPermissions(req.params.workspaceId as string));
+    }
+
+    static async getRoleById(req: Request, res: Response) {
+        res.json(await UsersManager.getRoleById(req.params.roleId));
+    }
+
+    static async searchRoleIds(req: Request, res: Response) {
+        res.json(await UsersManager.searchRoleIds(req.body));
+    }
+
+    static async searchRoles(req: Request, res: Response) {
+        res.json(await UsersManager.searchRoles(req.body));
+    }
+
+    static async createRole(req: Request, res: Response) {
+        const { name, permissions } = req.body;
+
+        res.json(await UsersManager.createRole(name, permissions));
+    }
+
+    static async updateRole(req: Request, res: Response) {
+        res.json(await UsersManager.updateRole(req.params.roleId, req.body));
+    }
+
+    static async searchRolesByPermissions(req: Request, res: Response) {
+        res.json(await UsersManager.searchRolesByPermissions(req.params.workspaceId as string));
     }
 }
 

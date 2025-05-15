@@ -3,22 +3,22 @@ import { wrapController, ValidateRequest } from '@microservices/shared';
 import PermissionsController from './controller';
 import {
     deletePermissionsFromMetadataRequestSchema,
-    getCompactPermissionsOfUserRequestSchema,
+    getCompactPermissionsRequestSchema,
     syncCompactPermissionsRequestSchema,
 } from './validator.schema';
 
 const permissionsRouter = Router();
 
 permissionsRouter.post(
-    '/compact/find-by-user-id/:userId',
-    ValidateRequest(getCompactPermissionsOfUserRequestSchema),
-    wrapController(PermissionsController.getCompactPermissionsOfUser),
+    '/compact/find-by-related-id/:relatedId',
+    ValidateRequest(getCompactPermissionsRequestSchema),
+    wrapController(PermissionsController.getCompactPermissions),
 );
 
 permissionsRouter.post(
     '/compact/sync',
     ValidateRequest(syncCompactPermissionsRequestSchema),
-    wrapController(PermissionsController.syncCompactPermissionsOfUser),
+    wrapController(PermissionsController.syncCompactPermissions),
 );
 
 permissionsRouter.patch(

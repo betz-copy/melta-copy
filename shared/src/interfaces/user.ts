@@ -17,6 +17,7 @@ export interface IBaseUser {
         kartoffelId: string;
         digitalIdentitySource: string;
     };
+    roleId?: string;
 }
 export interface IUser extends IBaseUser {
     permissions: ICompactPermissions;

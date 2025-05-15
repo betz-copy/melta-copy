@@ -1,15 +1,9 @@
 import { StatusCodes } from 'http-status-codes';
-import { ServiceError } from '../error';
-import { PermissionType } from '../permissions/interface';
+import { ServiceError } from '@microservices/shared';
 
-export class SinglePermissionOfTypePerRoleError extends ServiceError {
-    constructor(type: PermissionType) {
-        super(StatusCodes.BAD_REQUEST, `A role should only have a single permission of type '${type}'`);
-    }
-}
-
-export class UnknownPermissionTypeError extends ServiceError {
-    constructor(type: string) {
-        super(StatusCodes.NOT_FOUND, `Unknown permission type '${type}'`);
+// eslint-disable-next-line import/prefer-default-export
+export class RoleDoesNotExistError extends ServiceError {
+    constructor(roleId: string) {
+        super(StatusCodes.NOT_FOUND, `A role with id '${roleId}' does not exist`);
     }
 }

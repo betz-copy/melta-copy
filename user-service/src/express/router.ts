@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import { rolesRouter } from './roles/router';
+import rolesRouter from './roles/router';
 import permissionsRouter from './permissions/router';
 import usersRouter from './users/router';
 

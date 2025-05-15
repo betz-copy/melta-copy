@@ -1,42 +1,73 @@
 import * as joi from 'joi';
+import { partialBaseRoleSchema, roleSchema } from '../../utils/joi/schemas/role';
 import { mongoIdSchema } from '../../utils/joi/schemas';
-import { CompactNullablePermissionsSchema, SubCompactNullablePermissionSchema } from '../../utils/joi/schemas/permission/compact';
-import { PermissionTypeOptions } from '../permissions/interface';
+import { SubCompactPermissionSchema } from '../../utils/joi/schemas/permission/compact';
+import config from '../../config';
+import { agGridDateFilterSchema, agGridNumberFilterSchema, agGridSetFilterSchema, agGridTextFilterSchema } from '../users/agGridValidator.schema';
 
-// GET /api/permissions/compact/find-by-role-name/:roleName
-export const getCompactPermissionsOfRoleRequestSchema = joi.object({
+const { maxFindLimit } = config.mongo;
+
+// POST /api/roles/find-by-id/:id
+export const getRoleByIdRequestSchema = joi.object({
     query: {},
     body: {
         workspaceIds: joi.array().items(mongoIdSchema.required()),
     },
     params: {
-        roleName: joi.string().required(),
+        id: mongoIdSchema.required(),
     },
 });
 
-// POST /api/permissions/compact/sync
-export const syncCompactPermissionsRequestSchema = joi.object({
+// POST /api/roles/search
+export const searchRolesRequestSchema = joi.object({
     query: {},
-    body: {
-        name: joi.string().required(),
-        permissions: CompactNullablePermissionsSchema.required(),
-    },
+    body: joi.object({
+        permissions: SubCompactPermissionSchema,
+        workspaceIds: joi.array().items(mongoIdSchema.required()),
+        limit: joi.number().integer().min(1).max(maxFindLimit).required(),
+        step: joi.number().integer().min(0).default(0),
+        search: joi.string(),
+        filterModel: joi
+            .object()
+            .pattern(/^/, joi.alternatives(agGridTextFilterSchema, agGridDateFilterSchema, agGridNumberFilterSchema, agGridSetFilterSchema)),
+        sortModel: joi.array().items(
+            joi.object({
+                colId: joi.string(),
+                sort: joi.string().valid('asc', 'desc'),
+            }),
+        ),
+    }),
     params: {},
 });
 
-// PATCH /api/permissions/metadata
-export const deletePermissionsFromMetadataRequestSchema = joi.object({
+// POST /api/roles
+export const createRoleRequestSchema = joi.object({
     query: {},
-    body: {
-        metadata: SubCompactNullablePermissionSchema.required(),
-        query: {
-            workspaceId: mongoIdSchema.required(),
-            type: joi
-                .string()
-                .valid(...PermissionTypeOptions)
-                .required(),
-            name: joi.string().required(),
-        },
-    },
+    body: roleSchema.required(),
     params: {},
+});
+
+// PATCH /api/roles/:id
+export const updateRoleRequestSchema = joi.object({
+    query: {},
+    body: partialBaseRoleSchema.required(),
+    params: {
+        id: mongoIdSchema.required(),
+    },
+});
+
+// PATCH /api/roles/bulk
+export const updateRolesBulkRequestSchema = joi.object({
+    query: {},
+    body: joi.object().pattern(mongoIdSchema, partialBaseRoleSchema.required()),
+    params: {},
+});
+
+// GET /api/roles/search/:workspaceId
+export const searchRolesByPermissionsSchema = joi.object({
+    query: {},
+    body: {},
+    params: {
+        workspaceId: joi.string().required(),
+    },
 });

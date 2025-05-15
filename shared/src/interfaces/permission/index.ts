@@ -24,7 +24,7 @@ export interface IBasePermission<
     D extends Object = IDefaultPermissionDetails,
 > {
     _id: string;
-    userId: string;
+    relatedId: string;
     workspaceId: string;
     type: T;
     metadata: IPermissionMetadata<H, D>;

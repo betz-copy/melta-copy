@@ -12,6 +12,9 @@ import {
     ISubCompactPermissions,
     BadRequestError,
     UploadedFile,
+    IRole,
+    IBaseRole,
+    DeepPartial,
 } from '@microservices/shared';
 import config from '../../config';
 import Kartoffel from '../../externalServices/kartoffel';
@@ -81,7 +84,7 @@ class UsersManager {
         const existingUser = await UserService.getUserByExternalId(kartoffelId).catch(() => {});
 
         if (existingUser?.externalMetadata.digitalIdentitySource === digitalIdentitySource) {
-            const newPermissions = await UsersManager.syncUserPermissions(existingUser._id, permissions);
+            const newPermissions = await UsersManager.syncUserPermissions(existingUser._id, 'user', permissions);
             return { ...existingUser, permissions: { ...existingUser.permissions, ...newPermissions } };
         }
 
@@ -135,12 +138,16 @@ class UsersManager {
         return UserService.updateUser(userId, { preferences: updates });
     }
 
-    static async syncUserPermissions(userId: string, permissions: ICompactNullablePermissions): Promise<ICompactPermissions> {
-        return UserService.syncUserPermissions(userId, permissions);
+    static async syncUserPermissions(
+        relatedId: string,
+        permissionType: 'user' | 'role',
+        permissions: ICompactNullablePermissions,
+    ): Promise<ICompactPermissions> {
+        return UserService.syncPermissions(relatedId, permissionType, permissions);
     }
 
     static async deletePermissionsFromMetadata(
-        query: Pick<IPermission, 'type' | 'workspaceId'> & { userId?: IPermission['userId'] },
+        query: Pick<IPermission, 'type' | 'workspaceId'> & { relatedId?: IPermission['relatedId'] },
         metadata: RecursiveNullable<ISubCompactPermissions>,
     ) {
         return UserService.deletePermissionsFromMetadata(query, metadata);
@@ -232,15 +239,36 @@ class UsersManager {
         return UserService.searchUsersByPermissions(workspaceId);
     }
 
-    static async syncRolePermissions(name: string, permissions: ICompactNullablePermissions): Promise<ICompactRoles> {
-        return UserService.syncRolePermissions(name, permissions);
+    static async getRoleById(roleId: string, workspaceIds?: string[]): Promise<IRole> {
+        return UserService.getRoleById(roleId, workspaceIds);
     }
 
-    static async deleteRolePermissionsFromMetadata(
-        query: Pick<IRole, 'type' | 'workspaceId'> & { name?: IRole['name'] },
-        metadata: RecursiveNullable<ISubCompactRoles>,
-    ) {
-        return UserService.deleteRolePermissionsFromMetadata(query, metadata);
+    static async searchRoleIds(searchBody: IUserSearchBody): Promise<string[]> {
+        return UserService.searchRoleIds(searchBody);
+    }
+
+    static async searchRoles(searchBody: IUserSearchBody): Promise<{ roles: IRole[]; count: number }> {
+        return UserService.searchRoles(searchBody);
+    }
+
+    static async createRole(name: string, permissions: ICompactPermissions): Promise<IRole> {
+        // TODO: think if i need to validate unique name here
+        // const existingUser = await UserService.getUserByExternalId(kartoffelId).catch(() => {});
+
+        // if (existingUser?.externalMetadata.digitalIdentitySource === digitalIdentitySource) {
+        //     const newPermissions = await UsersManager.syncUserPermissions(existingUser._id, permissions);
+        //     return { ...existingUser, permissions: { ...existingUser.permissions, ...newPermissions } };
+        // }
+
+        return UserService.createRole({ name, permissions });
+    }
+
+    static async updateRole(roleId: string, updates: DeepPartial<IBaseRole>): Promise<IRole> {
+        return UserService.updateRole(roleId, updates);
+    }
+
+    static async searchRolesByPermissions(workspaceId: string): Promise<IRole[]> {
+        return UserService.searchRolesByPermissions(workspaceId);
     }
 }
 

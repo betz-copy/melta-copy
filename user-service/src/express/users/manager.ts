@@ -51,7 +51,7 @@ class UsersManager {
 
         if (permissions || workspaceIds) {
             const simplePermissions = await PermissionsManager.searchBySubCompactPermissions(permissions ?? {}, workspaceIds);
-            const usersIds = new Set<string>(simplePermissions.map(({ userId }) => userId));
+            const usersIds = new Set<string>(simplePermissions.map(({ relatedId }) => relatedId));
             query._id = { $in: [...usersIds] };
         }
 
@@ -90,7 +90,7 @@ class UsersManager {
     static async createUser({ permissions, ...userData }: Omit<IUser, '_id'>): Promise<IUser> {
         const baseUser = (await UsersModel.create(userData)).toObject();
 
-        await PermissionsManager.syncCompactPermissionsOfUser(baseUser._id, permissions);
+        await PermissionsManager.syncCompactPermissions(baseUser._id, 'user', permissions);
 
         return this.baseUserToUser(baseUser);
     }
@@ -107,7 +107,7 @@ class UsersManager {
     }
 
     private static async baseUserToUser(user: IBaseUser, workspaceIds?: string[]): Promise<IUser> {
-        const permissions = await PermissionsManager.getCompactPermissionsOfUser(user._id, workspaceIds);
+        const permissions = await PermissionsManager.getCompactPermissionsOfRelatedId(user._id, workspaceIds);
         return { ...user, permissions, displayName: `${user.fullName} - ${user.hierarchy}/${user.jobTitle}` };
     }
 
@@ -118,7 +118,7 @@ class UsersManager {
     static async searchUsersByPermissions(workspaceId: string, pagination?: { step: number; limit: number }): Promise<IUser[]> {
         const permissions = await PermissionsManager.getPermissionsByWorkspaceId(workspaceId, pagination);
 
-        const users = await UsersModel.find({ _id: { $in: permissions.map(({ userId }) => userId) } })
+        const users = await UsersModel.find({ _id: { $in: permissions.map(({ relatedId }) => relatedId) } })
             .lean()
             .exec();
 
@@ -128,7 +128,7 @@ class UsersManager {
     static async searchUsersByPermWithCount(workspaceId: string, limit: number, step: number): Promise<{ users: IUser[]; count: number }> {
         const { permissions, count } = await PermissionsManager.getPermissionsByWorkspaceIdWithCount(workspaceId, limit, step);
 
-        const users = await Promise.all(permissions.map(({ userId }) => this.getUserById(userId)));
+        const users = await Promise.all(permissions.map(({ relatedId }) => this.getUserById(relatedId)));
 
         return { users, count };
     }

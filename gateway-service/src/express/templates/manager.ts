@@ -318,7 +318,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
                   },
               };
 
-        await UsersManager.syncUserPermissions(userId, {
+        await UsersManager.syncUserPermissions(userId, 'user', {
             [this.workspaceId]: updatedPermissions,
         });
     }
@@ -425,7 +425,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         const categoryScope = instances?.categories?.[categoryId]?.scope;
 
         if (admin || categoryScope === PermissionScope.write) {
-            await UsersManager.syncUserPermissions(userId, { [this.workspaceId]: permissionsOfUserId });
+            await UsersManager.syncUserPermissions(userId, 'user', { [this.workspaceId]: permissionsOfUserId });
             return;
         }
 
@@ -448,7 +448,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             },
         };
 
-        await UsersManager.syncUserPermissions(userId, { [this.workspaceId]: updatedPermissions });
+        await UsersManager.syncUserPermissions(userId, 'user', { [this.workspaceId]: updatedPermissions });
     }
 
     async searchEntityTemplates(

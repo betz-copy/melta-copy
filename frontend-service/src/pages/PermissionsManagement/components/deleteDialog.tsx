@@ -5,7 +5,7 @@ import { toast } from 'react-toastify';
 
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import { IUser } from '../../../interfaces/users';
-import { syncUserPermissionsRequest } from '../../../services/userService';
+import { syncPermissionsRequest } from '../../../services/userService';
 import { useWorkspaceStore } from '../../../stores/workspace';
 
 const DeletePermissionsDialog: React.FC<{ isOpen: boolean; user: IUser | null; handleClose: () => void; onSuccess: () => void }> = ({
@@ -17,7 +17,7 @@ const DeletePermissionsDialog: React.FC<{ isOpen: boolean; user: IUser | null; h
     const workspace = useWorkspaceStore((state) => state.workspace);
     const { mutateAsync: deleteAllPermissionsOfUser, isLoading: isLoadingDeleteAllPermissionsOfUser } = useMutation(
         () =>
-            syncUserPermissionsRequest(user!._id, {
+            syncPermissionsRequest(user!._id, {
                 [workspace._id]: { permissions: null, rules: null, instances: null, processes: null, templates: null },
             }),
         {

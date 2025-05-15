@@ -2,17 +2,17 @@ import { Request, Response } from 'express';
 import PermissionsManager from './manager';
 
 class PermissionsController {
-    static async getCompactPermissionsOfUser(req: Request, res: Response) {
-        const { userId } = req.params;
+    static async getCompactPermissions(req: Request, res: Response) {
+        const { relatedId } = req.params;
         const { workspaceIds } = req.body;
 
-        res.json(await PermissionsManager.getCompactPermissionsOfUser(userId, workspaceIds));
+        res.json(await PermissionsManager.getCompactPermissionsOfRelatedId(relatedId, workspaceIds));
     }
 
-    static async syncCompactPermissionsOfUser(req: Request, res: Response) {
-        const { userId, permissions } = req.body;
+    static async syncCompactPermissions(req: Request, res: Response) {
+        const { userId, permissionType, permissions } = req.body;
 
-        res.json(await PermissionsManager.syncCompactPermissionsOfUser(userId, permissions));
+        res.json(await PermissionsManager.syncCompactPermissions(userId, permissionType, permissions));
     }
 
     static async deletePermissionsFromMetadata(req: Request, res: Response) {

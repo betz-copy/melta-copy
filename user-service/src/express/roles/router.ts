@@ -1,29 +1,32 @@
 import { Router } from 'express';
-import { wrapController } from '../../utils/express';
-import { ValidateRequest } from '../../utils/joi';
-import { PermissionsController } from './controller';
+import { wrapController, ValidateRequest } from '@microservices/shared';
 import {
-    deletePermissionsFromMetadataRequestSchema,
-    getCompactPermissionsOfRoleRequestSchema,
-    syncCompactPermissionsRequestSchema,
+    createRoleRequestSchema,
+    getRoleByIdRequestSchema,
+    searchRolesByPermissionsSchema,
+    searchRolesRequestSchema,
+    updateRoleRequestSchema,
+    updateRolesBulkRequestSchema,
 } from './validator.schema';
+import RolesController from './controller';
 
-export const rolesRouter = Router();
+const rolesRouter: Router = Router();
 
-rolesRouter.post(
-    '/compact/find-by-role-name/:roleName',
-    ValidateRequest(getCompactPermissionsOfRoleRequestSchema),
-    wrapController(PermissionsController.getCompactPermissionsOfRole),
+rolesRouter.post('/find-by-id/:id', ValidateRequest(getRoleByIdRequestSchema), wrapController(RolesController.getRoleById));
+
+rolesRouter.post('/search-ids', ValidateRequest(searchRolesRequestSchema), wrapController(RolesController.searchRoleIds));
+rolesRouter.post('/search', ValidateRequest(searchRolesRequestSchema), wrapController(RolesController.searchRoles));
+
+rolesRouter.post('/', ValidateRequest(createRoleRequestSchema), wrapController(RolesController.createRole));
+
+rolesRouter.patch('/:id', ValidateRequest(updateRoleRequestSchema), wrapController(RolesController.updateRole));
+
+rolesRouter.patch('/bulk', ValidateRequest(updateRolesBulkRequestSchema), wrapController(RolesController.updateRolesBulk));
+
+rolesRouter.get(
+    '/roles/search/:workspaceId',
+    ValidateRequest(searchRolesByPermissionsSchema),
+    wrapController(RolesController.searchRolesByPermissions),
 );
 
-rolesRouter.post(
-    '/compact/sync',
-    ValidateRequest(syncCompactPermissionsRequestSchema),
-    wrapController(PermissionsController.syncCompactPermissionsOfRole),
-);
-
-rolesRouter.patch(
-    '/metadata',
-    ValidateRequest(deletePermissionsFromMetadataRequestSchema),
-    wrapController(PermissionsController.deletePermissionsFromMetadata),
-);
+export default rolesRouter;

@@ -9,7 +9,8 @@ import {
     ISubCompactPermissions,
     DeepPartial,
     RecursiveNullable,
-    ICompactNullableRoles, ICompactRoles, IRole, ISubCompactRoles
+    IRole,
+    IBaseRole,
 } from '@microservices/shared';
 import config from '../../config';
 
@@ -53,46 +54,64 @@ class UserService {
         return data;
     }
 
+    static async searchUsersByPermissions(workspaceId: string) {
+        const { data } = await this.userService.get<IUser[]>(`${usersRoute}/search/${workspaceId}`);
+        return data;
+    }
+
     static async getUserPermissions(userId: string, workspaceIds?: string[]): Promise<ICompactPermissions> {
         const { data } = await this.userService.post<ICompactPermissions>(`${permissionsRoute}/compact/find-by-user-id/${userId}`, { workspaceIds });
         return data;
     }
 
-    static async syncUserPermissions(userId: string, permissions: ICompactNullablePermissions | ICompactPermissions): Promise<ICompactPermissions> {
-        const { data } = await this.userService.post<ICompactPermissions>(`${permissionsRoute}/compact/sync`, { userId, permissions });
+    static async syncPermissions(
+        relatedId: string,
+        permissionType: 'user' | 'role',
+        permissions: ICompactNullablePermissions | ICompactPermissions,
+    ): Promise<ICompactPermissions> {
+        const { data } = await this.userService.post<ICompactPermissions>(`${permissionsRoute}/compact/sync`, {
+            relatedId,
+            permissionType,
+            permissions,
+        });
         return data;
     }
 
     static async deletePermissionsFromMetadata(
-        query: Pick<IPermission, 'type' | 'workspaceId'> & { userId?: IPermission['userId'] },
+        query: Pick<IPermission, 'type' | 'workspaceId'> & { relatedId?: IPermission['relatedId'] },
         metadata: RecursiveNullable<ISubCompactPermissions>,
     ) {
         const { data } = await this.userService.patch<void>(`${permissionsRoute}/metadata`, { query, metadata });
         return data;
     }
 
-    static async searchUsersByPermissions(workspaceId: string) {
-        const { data } = await this.userService.get<IUser[]>(`${usersRoute}/search/${workspaceId}`);
+    static async getRoleById(roleId: string, workspaceIds?: string[]): Promise<IRole> {
+        const { data } = await this.userService.post<IRole>(`${rolesRoute}/find-by-id/${roleId}`, { workspaceIds });
         return data;
     }
 
-    static async getRolePermissions(roleName: string, workspaceIds?: string[]): Promise<ICompactRoles> {
-        const { data } = await this.userService.post<ICompactRoles>(`${rolesRoute}/compact/find-by-role-name/${roleName}`, {
-            workspaceIds,
-        });
+    static async searchRoleIds(searchBody: IUserSearchBody): Promise<string[]> {
+        const { data } = await this.userService.post<string[]>(`${rolesRoute}/search-ids`, searchBody);
         return data;
     }
 
-    static async syncRolePermissions(name: string, permissions: ICompactNullableRoles | ICompactRoles): Promise<ICompactPermissions> {
-        const { data } = await this.userService.post<ICompactRoles>(`${rolesRoute}/compact/sync`, { name, permissions });
+    static async searchRoles(searchBody: IUserSearchBody): Promise<{ roles: IRole[]; count: number }> {
+        const { data } = await this.userService.post<{ roles: IRole[]; count: number }>(`${rolesRoute}/search`, searchBody);
         return data;
     }
 
-    static async deleteRolePermissionsFromMetadata(
-        query: Pick<IRole, 'type' | 'workspaceId'> & { name?: IRole['name'] },
-        metadata: RecursiveNullable<ISubCompactRoles>,
-    ) {
-        const { data } = await this.userService.patch<void>(`${rolesRoute}/metadata`, { query, metadata });
+    static async createRole(roleData: Omit<IRole, '_id'>): Promise<IRole> {
+        const { data } = await this.userService.post<IRole>(rolesRoute, roleData);
+        return data;
+    }
+
+    static async updateRole(roleId: string, updates: DeepPartial<IBaseRole>): Promise<IRole> {
+        const { data } = await this.userService.patch<IRole>(`${rolesRoute}/${roleId}`, updates);
+        return data;
+    }
+
+    static async searchRolesByPermissions(workspaceId: string) {
+        const { data } = await this.userService.get<IRole[]>(`${rolesRoute}/search/${workspaceId}`);
         return data;
     }
 }

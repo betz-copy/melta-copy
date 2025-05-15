@@ -8,8 +8,8 @@ import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import * as Yup from 'yup';
 
-import { IRole, IUser } from '../../interfaces/users';
-import { createUserRequest, syncRolePermissionsRequest } from '../../services/userService';
+import { IUser } from '../../interfaces/users';
+import { createRoleRequest, syncPermissionsRequest } from '../../services/userService';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { useUserStore } from '../../stores/user';
 import { useWorkspaceStore } from '../../stores/workspace';
@@ -23,6 +23,7 @@ import {
 import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
 import ManagePermissions from './managePermissions';
 import { BlueTitle } from '../BlueTitle';
+import { IRole } from '../../interfaces/roles';
 
 const RoleDialog: React.FC<{
     handleClose: () => void;
@@ -59,26 +60,22 @@ const RoleDialog: React.FC<{
         dialogPermissionData.set(entity.category._id, category);
     });
 
-    // const { mutate: createRole } = useMutation(
-    //     (formRole: IRole) =>
-    //         createUserRequest(formRole.externalMetadata.kartoffelId, formRole.externalMetadata.digitalIdentitySource, formRole.permissions),
-    //     {
-    //         onError: (error) => {
-    //             console.error('failed to upsert permission. error:', error);
-    //             toast.error(i18next.t('permissions.permissionsOfRoleDialog.failedToCreatePermissionsOfRole'));
-    //         },
-    //         onSuccess: () => {
-    //             onSuccess?.();
-    //             queryClient.invalidateQueries('allIFrames');
-    //             toast.success(i18next.t('permissions.permissionsOfRoleDialog.succeededToCreatePermission'));
-    //             handleClose();
-    //         },
-    //     },
-    // );
+    const { mutate: createRole } = useMutation((formRole: IRole) => createRoleRequest(formRole.name, formRole.permissions), {
+        onError: (error) => {
+            console.error('failed to upsert permission. error:', error);
+            toast.error(i18next.t('permissions.permissionsOfRoleDialog.failedToCreatePermissionsOfRole'));
+        },
+        onSuccess: () => {
+            onSuccess?.();
+            queryClient.invalidateQueries('allIFrames');
+            toast.success(i18next.t('permissions.permissionsOfRoleDialog.succeededToCreatePermission'));
+            handleClose();
+        },
+    });
 
     const { mutate: syncRolePermissions } = useMutation(
         async (formRole: IRole) => {
-            return syncRolePermissionsRequest(formRole.name, {
+            return syncPermissionsRequest(formRole._id, 'role', {
                 [workspace._id]: {
                     ...formRole.permissions[workspace._id],
                 },
@@ -123,9 +120,8 @@ const RoleDialog: React.FC<{
                 return {};
             }}
             onSubmit={(formRole) => {
-                // if (mode === 'create') createRole(formRole);
-                // else
-                syncRolePermissions(formRole);
+                if (mode === 'create') createRole(formRole);
+                else syncRolePermissions(formRole);
             }}
         >
             {(formikProps: FormikProps<IRole>) => {

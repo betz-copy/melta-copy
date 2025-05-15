@@ -1,21 +1,36 @@
 import { Request, Response } from 'express';
-import { PermissionsManager } from './manager';
+import RolesManager from './manager';
 
-export class PermissionsController {
-    static async getCompactPermissionsOfRole(req: Request, res: Response) {
-        const { roleName } = req.params;
-        const { workspaceIds } = req.body;
-
-        res.json(await PermissionsManager.getCompactPermissionsOfRole(roleName, workspaceIds));
+class RolesController {
+    static async getRoleById(req: Request, res: Response) {
+        res.json(await RolesManager.getRoleById(req.params.id, req.body.workspaceIds));
     }
 
-    static async syncCompactPermissionsOfRole(req: Request, res: Response) {
-        const { name, permissions } = req.body;
+    static async searchRoleIds(req: Request, res: Response) {
+        const { search, permissions, workspaceIds, limit, step } = req.body;
 
-        res.json(await PermissionsManager.syncCompactPermissionsOfRole(name, permissions));
+        res.json(await RolesManager.searchRoleIds(search, permissions, workspaceIds, limit, step));
     }
 
-    static async deletePermissionsFromMetadata(req: Request, res: Response) {
-        res.json(await PermissionsManager.deletePermissionsFromMetadata(req.body.query, req.body.metadata));
+    static async searchRoles(req: Request, res: Response) {
+        res.json(await RolesManager.searchRoles(req.body));
+    }
+
+    static async createRole(req: Request, res: Response) {
+        res.json(await RolesManager.createRole(req.body));
+    }
+
+    static async updateRole(req: Request, res: Response) {
+        res.json(await RolesManager.updateRole(req.params.id, req.body));
+    }
+
+    static async updateRolesBulk(req: Request, res: Response) {
+        res.json(await RolesManager.updateRolesBulk(req.body));
+    }
+
+    static async searchRolesByPermissions(req: Request, res: Response) {
+        res.json(await RolesManager.searchRolesByPermissions(req.params.workspaceId));
     }
 }
+
+export default RolesController;

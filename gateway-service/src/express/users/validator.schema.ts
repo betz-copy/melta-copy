@@ -26,6 +26,10 @@ const UserPreferencesMetadataSchema = joi.object({
     }),
 });
 
+const RoleSchema = joi.object({
+    name: joi.string().required(),
+});
+
 // GET /api/users/my
 export const getMyUserRequestSchema = joi.object({
     query: {},
@@ -117,38 +121,12 @@ export const updateUserExternalMetadataRequestSchema = joi.object({
     },
 });
 
-// POST /api/users/:name/permissions/roles/sync
-export const syncRolePermissionsRequestSchema = joi.object({
+// POST /api/users/:relatedId/permissions/sync
+export const syncPermissionsRequestSchema = joi.object({
     query: {},
     body: joi.object(),
     params: {
-        name: joi.string().required(),
-    },
-});
-
-// PATCH /api/permissions/metadata/roles
-export const deleteRolePermissionsFromMetadataRequestSchema = joi.object({
-    query: {},
-    body: {
-        metadata: joi.object(),
-        query: {
-            workspaceId: MongoIdSchema.required(),
-            type: joi
-                .string()
-                .valid(...Object.values(PermissionType))
-                .required(),
-            name: joi.string().required(),
-        },
-    },
-    params: {},
-});
-
-// POST /api/users/:userId/permissions/sync
-export const syncUserPermissionsRequestSchema = joi.object({
-    query: {},
-    body: joi.object(),
-    params: {
-        userId: joi.string().required(),
+        relatedId: joi.string().required(),
     },
 });
 
@@ -163,7 +141,7 @@ export const deletePermissionsFromMetadataRequestSchema = joi.object({
                 .string()
                 .valid(...Object.values(PermissionType))
                 .required(),
-            userId: MongoIdSchema.optional(),
+            relatedId: MongoIdSchema.optional(),
         },
     },
     params: {},
@@ -182,6 +160,62 @@ export const searchExternalUsersRequestSchema = joi.object({
 
 // GET /api/users/search/:workspaceId
 export const searchUsersByPermissionsSchema = joi.object({
+    query: {},
+    body: {},
+    params: {
+        workspaceId: joi.string().required(),
+    },
+});
+
+// GET /api/users/roles/:roleId
+export const getRoleByIdRequestSchema = joi.object({
+    query: {},
+    body: {},
+    params: {
+        roleId: joi.string().required(),
+    },
+});
+
+// POST /api/users/roles/search
+export const searchRolesRequestSchema = joi.object({
+    query: {},
+    body: {
+        search: joi.string(),
+        permissions: joi.object(),
+        workspaceIds: joi.array().items(MongoIdSchema.required()),
+        limit: joi.number().integer().required(),
+        step: joi.number().integer(),
+        filterModel: joi.object(),
+        sortModel: joi.array().items(
+            joi.object({
+                colId: joi.string(),
+                sort: joi.string(),
+            }),
+        ),
+    },
+    params: {},
+});
+
+// POST /api/users/roles
+export const createRoleRequestSchema = joi.object({
+    query: {},
+    body: RoleSchema.keys({
+        permissions: joi.object(),
+    }).required(),
+    params: {},
+});
+
+// PATCH /api/users/roles/:roleId
+export const updateRoleRequestSchema = joi.object({
+    query: {},
+    body: RoleSchema.required(),
+    params: {
+        roleId: joi.string().required(),
+    },
+});
+
+// GET /api/users/roles/search/:workspaceId
+export const searchRolesByPermissionsSchema = joi.object({
     query: {},
     body: {},
     params: {
