@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
-import DefaultController from '../../utils/express/controller';
+import { DefaultController } from '@microservices/shared';
 import { IMongoEntityChildTemplate } from './interface';
-import { EntityChildTemplateManager } from './manager';
+import EntityChildTemplateManager from './manager';
 
 class EntityChildTemplateController extends DefaultController<IMongoEntityChildTemplate, EntityChildTemplateManager> {
     constructor(workspaceId: string) {

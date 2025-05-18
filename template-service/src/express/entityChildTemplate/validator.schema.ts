@@ -1,5 +1,5 @@
+import { MongoIdSchema, variableNameValidation } from '@microservices/shared';
 import Joi from 'joi';
-import { MongoIdSchema, variableNameValidation } from '../../utils/joi';
 
 // format of properties keys in entity template
 

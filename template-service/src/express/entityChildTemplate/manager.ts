@@ -1,13 +1,12 @@
+import { DefaultManagerMongo, NotFoundError } from '@microservices/shared';
 import { FilterQuery } from 'mongoose';
 import config from '../../config';
 import { escapeRegExp } from '../../utils';
 
-import { DefaultManagerMongo } from '../../utils/mongo/manager';
-import { NotFoundError } from '../error';
 import { IEntityChildTemplate, IEntityChildTemplatePopulated, IMongoEntityChildTemplate } from './interface';
 import { EntityChildTemplateSchema } from './model';
 
-export class EntityChildTemplateManager extends DefaultManagerMongo<IMongoEntityChildTemplate> {
+class EntityChildTemplateManager extends DefaultManagerMongo<IMongoEntityChildTemplate> {
     constructor(workspaceId: string) {
         super(workspaceId, config.mongo.entityTemplatesCollectionName, EntityChildTemplateSchema);
     }

@@ -1,6 +1,5 @@
+import { createController, ValidateRequest } from '@microservices/shared';
 import { Router } from 'express';
-import { createController } from '../../utils/express';
-import ValidateRequest from '../../utils/joi';
 import EntityChildTemplateController from './controller';
 import { searchEntityChildTemplatesSchema, getAllChildTemplatesSchema, createEntityChildTemplateSchema } from './validator.schema';
 

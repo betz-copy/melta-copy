@@ -1,6 +1,5 @@
 import { Document } from 'mongoose';
-import { IMongoCategory } from '../category/interface';
-import { IMongoEntityTemplate } from '../entityTemplate/interface';
+import { IMongoCategory, IMongoEntityTemplate } from '@microservices/shared';
 
 export enum ViewType {
     categoryPage = 'categoryPage',
