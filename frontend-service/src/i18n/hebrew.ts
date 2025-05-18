@@ -405,6 +405,8 @@ export default {
         processesManagement: 'ניהול תהליכים',
         failedToDeleteUser: 'נכשל למחוק הרשאות של משתמש',
         succeededToDeleteUser: 'נמחק הרשאות של משתמש בהצלחה',
+        failedToDeleteRole: 'נכשל למחוק הרשאות של תפקידן',
+        succeededToDeleteRole: 'נמחק הרשאות של תפקידן בהצלחה',
         failedToLoadAllPermissions: 'נכשל לטעון את כל ההרשאות',
         dontHavePermissionsToCategory: 'אין הרשאות לקטגוריה',
         dontHaveWritePermissionsToTemplate: 'אין הרשאות עריכה לתבנית',

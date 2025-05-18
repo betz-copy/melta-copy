@@ -27,6 +27,11 @@ export interface IUser extends IBaseUser {
 
 export type PermissionData = IUser | IRole;
 
+export enum RelatedPermission {
+    User = 'user',
+    Role = 'role',
+}
+
 export interface IMongoUser extends IUser {
     createdAt: Date;
     updatedAt: Date;

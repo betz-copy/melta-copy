@@ -1,4 +1,4 @@
-import { Box, CardContent, CheckboxProps, Divider, FormControlLabel, Grid, Typography } from '@mui/material';
+import { Box, CheckboxProps, Divider, FormControlLabel, Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
 import { FormikProps } from 'formik';
@@ -6,7 +6,7 @@ import { PermissionScope } from '../../interfaces/permissions';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { MeltaCheckbox } from '../MeltaCheckbox';
 import CategoryCheckboxPermission from './categoryCheckboxPermission';
-import { IRole, IUser } from '../../interfaces/users';
+import { PermissionData } from '../../interfaces/users';
 import { entityTemplatePermissionDialog } from '../../utils/permissions/permissionOfUserDialog';
 import { BlueTitle } from '../BlueTitle';
 
@@ -22,7 +22,7 @@ export type permissionTypeCheckboxProps = {
 
 const InstancesPermissionsCard: React.FC<{
     viewMode: boolean;
-    formikProps: FormikProps<IUser | IRole>;
+    formikProps: FormikProps<PermissionData>;
     permissionsPath: string;
     workspaceId: string;
     categoriesCheckboxProps: {
@@ -51,7 +51,7 @@ const InstancesPermissionsCard: React.FC<{
                                     title={i18next.t('permissions.permissionsOfUserDialog.instancesPermissions')}
                                     component="p"
                                     variant="body1"
-                                    style={{ marginRight: '5px', padding: '5px' }}
+                                    style={{ marginRight: '5px', padding: '5px', fontWeight: 600 }}
                                 />
                             </Box>
                         </Grid>

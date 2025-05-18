@@ -7,7 +7,7 @@ import i18next from 'i18next';
 import React, { ReactElement } from 'react';
 import { useLocation } from 'wouter';
 import { useQueryClient } from 'react-query';
-import { IUser } from '../../interfaces/users';
+import { IUser, PermissionData, RelatedPermission } from '../../interfaces/users';
 import { useDarkModeStore } from '../../stores/darkMode';
 import MyAccount from './myAccount';
 import MyPermissions from './myPermissions';
@@ -17,15 +17,16 @@ import { LocalStorage } from '../../utils/localStorage';
 import { environment } from '../../globals';
 import { MeltaUpdates } from '../../MeltaUpdates';
 import RoleDialog from './RoleDialog';
+import { IRole } from '../../interfaces/roles';
 
 const PermissionsDialog: React.FC<{
     isOpen: boolean;
     handleClose: () => any;
     mode: 'create' | 'edit' | 'view';
-    existingUser?: IUser;
-    onSuccess?: (user?: IUser) => void;
-    permissionType: 'role' | 'user';
-}> = ({ isOpen, handleClose, mode, existingUser, onSuccess, permissionType }) => {
+    roleOrUser?: PermissionData;
+    onSuccess?: (roleOrUser?: PermissionData) => void;
+    permissionType: RelatedPermission;
+}> = ({ isOpen, handleClose, mode, roleOrUser, onSuccess, permissionType }) => {
     const [_, navigate] = useLocation();
     const { setIsOpen, setCurrentStep } = useTour();
 
@@ -45,13 +46,13 @@ const PermissionsDialog: React.FC<{
             myAccount: (
                 <MyAccount
                     handleClose={handleClose}
-                    existingUser={existingUser!}
+                    existingUser={roleOrUser as IUser}
                     isPreferencesUpdated={isPreferencesUpdated}
                     setIsPreferencesUpdated={setIsPreferencesUpdated}
                 />
             ),
         }),
-        myPermissions: <MyPermissions handleClose={handleClose} mode={mode} existingUser={existingUser} onSuccess={onSuccess} />,
+        myPermissions: <MyPermissions handleClose={handleClose} mode={mode} existingUser={roleOrUser as IUser} onSuccess={onSuccess} />,
     };
 
     const handleCloseMeltaUpdates = () => {
@@ -72,10 +73,10 @@ const PermissionsDialog: React.FC<{
                 <CloseIcon fontSize="medium" />
             </IconButton>
             {mode !== 'view' ? (
-                permissionType === 'user' ? (
-                    <MyPermissions handleClose={handleClose} mode={mode} existingUser={existingUser} onSuccess={onSuccess} />
+                permissionType === RelatedPermission.User ? (
+                    <MyPermissions handleClose={handleClose} mode={mode} existingUser={roleOrUser as IUser} onSuccess={onSuccess} />
                 ) : (
-                    <RoleDialog handleClose={handleClose} mode={mode} existingUser={existingUser} onSuccess={onSuccess} />
+                    <RoleDialog handleClose={handleClose} mode={mode} existingRole={roleOrUser as IRole} onSuccess={onSuccess} />
                 )
             ) : (
                 <Box

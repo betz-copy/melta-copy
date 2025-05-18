@@ -8,7 +8,7 @@ import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import * as Yup from 'yup';
 
-import { IUser } from '../../interfaces/users';
+import { IUser, PermissionData, RelatedPermission } from '../../interfaces/users';
 import { createUserRequest, syncPermissionsRequest } from '../../services/userService';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { useUserStore } from '../../stores/user';
@@ -92,7 +92,7 @@ const MyPermissions: React.FC<{
 
     const { mutate: syncUserPermissions } = useMutation(
         async (formUser: IUser) => {
-            return syncPermissionsRequest(formUser._id, 'user', {
+            return syncPermissionsRequest(formUser._id, RelatedPermission.User, {
                 [workspace._id]: {
                     ...formUser.permissions[workspace._id],
                 },
@@ -146,11 +146,16 @@ const MyPermissions: React.FC<{
                     <Form>
                         <DialogTitle>
                             {mode !== 'view' && (
-                                <BlueTitle title={i18next.t(`permissions.permissionsOfUserDialog.${mode}Title`)} component="h6" variant="h6" />
+                                <BlueTitle
+                                    title={i18next.t(`permissions.permissionsOfUserDialog.${mode}Title`)}
+                                    component="h6"
+                                    variant="h6"
+                                    style={{ fontWeight: 600 }}
+                                />
                             )}
                         </DialogTitle>
                         <DialogContent>
-                            <Box sx={{ bgcolor: darkMode ? '#242424' : 'white', marginBottom: '15px' }}>
+                            <Box sx={{ bgcolor: darkMode ? '#242424' : 'white', marginBottom: '15px', marginTop: '5px' }}>
                                 <UserAutocomplete
                                     mode={existingUser ? 'internal' : 'external'}
                                     value={formikProps.values}
@@ -168,7 +173,7 @@ const MyPermissions: React.FC<{
                             <ManagePermissions
                                 mode={mode}
                                 dialogPermissionData={dialogPermissionData}
-                                formikProps={formikProps}
+                                formikProps={formikProps as FormikProps<PermissionData>}
                                 workspace={workspace}
                             />
                         </DialogContent>

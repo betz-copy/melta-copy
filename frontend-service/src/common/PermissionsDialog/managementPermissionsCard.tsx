@@ -24,7 +24,7 @@ const ManagementPermissionsCard: React.FC<{
                         title={i18next.t('permissions.permissionsOfUserDialog.managementTitle')}
                         component="p"
                         variant="body1"
-                        style={{ marginRight: '5px', padding: '5px' }}
+                        style={{ marginRight: '5px', padding: '5px', fontWeight: 600 }}
                     />
                 </Box>
                 <FormGroup row sx={{ marginTop: '5px', justifyContent: 'center' }}>

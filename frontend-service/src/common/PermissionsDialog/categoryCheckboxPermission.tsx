@@ -4,7 +4,7 @@ import ArrowLeftRoundedIcon from '@mui/icons-material/ArrowLeftRounded';
 import { FormikProps } from 'formik';
 import { _cloneObject } from '@ag-grid-community/core';
 import { permissionTypeCheckboxProps } from './instancesPermissionsCard';
-import { IRole, IUser } from '../../interfaces/users';
+import { PermissionData } from '../../interfaces/users';
 import { PermissionScope } from '../../interfaces/permissions';
 import { getChangedTemplatePermission } from '../../utils/permissions/instancePermissions';
 import { entityTemplatePermissionDialog } from '../../utils/permissions/permissionOfUserDialog';
@@ -16,7 +16,7 @@ const CategoryCheckboxPermission: React.FC<{
     permissionType: permissionTypeCheckboxProps;
     disabled: boolean;
     categoryId: string;
-    formikProps: FormikProps<IUser | IRole>;
+    formikProps: FormikProps<PermissionData>;
     workspaceId: string;
     permissionsPath: string;
     entityTemplates: entityTemplatePermissionDialog[];

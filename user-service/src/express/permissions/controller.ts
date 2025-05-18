@@ -10,9 +10,9 @@ class PermissionsController {
     }
 
     static async syncCompactPermissions(req: Request, res: Response) {
-        const { userId, permissionType, permissions } = req.body;
+        const { relatedId, permissionType, permissions } = req.body;
 
-        res.json(await PermissionsManager.syncCompactPermissions(userId, permissionType, permissions));
+        res.json(await PermissionsManager.syncCompactPermissions(relatedId, permissionType, permissions));
     }
 
     static async deletePermissionsFromMetadata(req: Request, res: Response) {

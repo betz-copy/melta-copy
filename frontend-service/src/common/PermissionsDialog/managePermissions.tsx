@@ -13,26 +13,26 @@ import {
 import { ICategoryMap } from '../../interfaces/categories';
 import { IMetadata, IWorkspace } from '../../interfaces/workspaces';
 import { CategoryWithTemplates } from '../../utils/permissions/permissionOfUserDialog';
-import { IRole, IUser } from '../../interfaces/users';
+import { PermissionData } from '../../interfaces/users';
 
 const ManagePermissions: React.FC<{
     mode: 'create' | 'edit' | 'view';
     workspace: IWorkspace & {
         metadata: IMetadata;
     };
-    formikProps: FormikProps<IUser | IRole>;
+    formikProps: FormikProps<PermissionData>;
     dialogPermissionData: Map<string, CategoryWithTemplates>;
 }> = ({ mode, workspace, formikProps, dialogPermissionData }) => {
     const queryClient = useQueryClient();
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
 
     const currentPermissions = formikProps.values.permissions[workspace._id];
-    const permissionsPath = useMemo(() => `permissions.${workspace}`, [workspace]);
+    const permissionsPath = useMemo(() => `permissions.${workspace._id}`, [workspace]);
 
     const categoriesPermissions = currentPermissions?.instances?.categories ?? {};
 
     const handleManagementPermissionCheck = (path: string, checked: boolean, permissionsManagement?: boolean) => {
-        formikProps.setFieldValue(path, checked ? { scope: PermissionScope.write } : null);
+        formikProps.setFieldValue(path, checked ? { scope: PermissionScope.write } : undefined);
         if (!permissionsManagement) return;
         formikProps.setFieldValue(
             `${permissionsPath}.instances.categories`,

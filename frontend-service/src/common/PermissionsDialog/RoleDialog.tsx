@@ -8,7 +8,8 @@ import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import * as Yup from 'yup';
 
-import { IUser } from '../../interfaces/users';
+import { IUser, PermissionData, RelatedPermission } from '../../interfaces/users';
+import { IRole } from '../../interfaces/roles';
 import { createRoleRequest, syncPermissionsRequest } from '../../services/userService';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { useUserStore } from '../../stores/user';
@@ -23,14 +24,13 @@ import {
 import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
 import ManagePermissions from './managePermissions';
 import { BlueTitle } from '../BlueTitle';
-import { IRole } from '../../interfaces/roles';
 
 const RoleDialog: React.FC<{
     handleClose: () => void;
     mode: 'create' | 'edit' | 'view';
-    existingUser?: IUser;
-    onSuccess?: (user?: IUser) => void;
-}> = ({ handleClose, mode, existingUser, onSuccess }) => {
+    existingRole?: IRole;
+    onSuccess?: (user?: IRole) => void;
+}> = ({ handleClose, mode, existingRole, onSuccess }) => {
     const currentUser = useUserStore((state) => state.user);
     const setUser = useUserStore((state) => state.setUser);
     const workspace = useWorkspaceStore((state) => state.workspace);
@@ -75,7 +75,7 @@ const RoleDialog: React.FC<{
 
     const { mutate: syncRolePermissions } = useMutation(
         async (formRole: IRole) => {
-            return syncPermissionsRequest(formRole._id, 'role', {
+            return syncPermissionsRequest(formRole._id, RelatedPermission.Role, {
                 [workspace._id]: {
                     ...formRole.permissions[workspace._id],
                 },
@@ -87,11 +87,11 @@ const RoleDialog: React.FC<{
                 toast.error(i18next.t('permissions.permissionsOfRoleDialog.failedToEditPermissionsOfRole'));
             },
             onSuccess: (newPermissions) => {
-                if (!existingUser) return;
+                if (!existingRole) return;
 
-                onSuccess?.({ ...existingUser, permissions: newPermissions });
+                onSuccess?.({ ...existingRole, permissions: newPermissions });
 
-                if (existingUser?._id === currentUser._id && !_isEqual(currentUser.currentWorkspacePermissions, newPermissions[workspace._id])) {
+                if (existingRole?._id === currentUser._id && !_isEqual(currentUser.currentWorkspacePermissions, newPermissions[workspace._id])) {
                     setUser({
                         ...currentUser,
                         permissions: { ...currentUser.permissions, ...newPermissions },
@@ -108,7 +108,7 @@ const RoleDialog: React.FC<{
 
     return (
         <Formik
-            initialValues={existingUser ? _cloneDeep(existingUser) : defaultEmptyRole}
+            initialValues={existingRole ? _cloneDeep(existingRole) : defaultEmptyRole}
             validationSchema={Yup.object({
                 name: Yup.string().nullable().required(i18next.t('validation.required')),
             }).unknown(true)}
@@ -129,11 +129,16 @@ const RoleDialog: React.FC<{
                     <Form>
                         <DialogTitle>
                             {mode !== 'view' && (
-                                <BlueTitle title={i18next.t(`permissions.permissionsOfRoleDialog.${mode}Title`)} component="h6" variant="h6" />
+                                <BlueTitle
+                                    title={i18next.t(`permissions.permissionsOfRoleDialog.${mode}Title`)}
+                                    component="h6"
+                                    variant="h6"
+                                    style={{ fontWeight: 600 }}
+                                />
                             )}
                         </DialogTitle>
                         <DialogContent>
-                            <Box sx={{ bgcolor: darkMode ? '#242424' : 'white', marginBottom: '15px' }}>
+                            <Box sx={{ bgcolor: darkMode ? '#242424' : 'white', marginBottom: '15px', marginTop: '5px' }}>
                                 <TextField
                                     fullWidth
                                     value={formikProps.values.name}
@@ -165,7 +170,7 @@ const RoleDialog: React.FC<{
                             <ManagePermissions
                                 mode={mode}
                                 dialogPermissionData={dialogPermissionData}
-                                formikProps={formikProps}
+                                formikProps={formikProps as FormikProps<PermissionData>}
                                 workspace={workspace}
                             />
                         </DialogContent>

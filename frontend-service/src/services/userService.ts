@@ -3,7 +3,7 @@ import { environment } from '../globals';
 import { NotificationType } from '../interfaces/notifications';
 import { ICompactNullablePermissions, ICompactPermissions, IPermission, ISubCompactPermissions } from '../interfaces/permissions/permissions';
 import { IMongoRole, IRole } from '../interfaces/roles';
-import { IExternalUser, IKartoffelUser, IMongoUser, IUser, IUserPreferences, IUserSearchBody } from '../interfaces/users';
+import { IExternalUser, IKartoffelUser, IMongoUser, IUser, IUserPreferences, IUserSearchBody, RelatedPermission } from '../interfaces/users';
 import { RecursiveNullable } from '../utils/types';
 
 const {
@@ -61,7 +61,7 @@ export const updateUserExternalMetadataRequest = async (userId: string, kartoffe
     return data;
 };
 
-export const syncPermissionsRequest = async (relatedId: string, permissionType: 'user' | 'role', permissions: ICompactNullablePermissions) => {
+export const syncPermissionsRequest = async (relatedId: string, permissionType: RelatedPermission, permissions: ICompactNullablePermissions) => {
     const { data } = await axios.post<ICompactPermissions>(`${users}/${relatedId}/permissions/sync`, { permissionType, permissions });
     return data;
 };

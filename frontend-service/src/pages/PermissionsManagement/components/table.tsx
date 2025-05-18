@@ -9,9 +9,9 @@ import { toast } from 'react-toastify';
 import { environment } from '../../../globals';
 import { IMongoCategory } from '../../../interfaces/categories';
 import { PermissionScope } from '../../../interfaces/permissions';
-import { PermissionData } from '../../../interfaces/users';
+import { PermissionData, RelatedPermission } from '../../../interfaces/users';
 import { IWorkspace } from '../../../interfaces/workspaces';
-import { searchUsersRequest } from '../../../services/userService';
+import { searchRolesRequest, searchUsersRequest } from '../../../services/userService';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { agGridLocaleText } from '../../../utils/agGrid/agGridLocaleText';
@@ -40,14 +40,14 @@ const defaultColDef: ColDef<PermissionData> = {
 
 const columnDefs = (
     workspaceId: string,
-    permissionType: 'user' | 'role',
+    permissionType: RelatedPermission,
     categories: IMongoCategory[],
-    onDeletePermissionsOfUser: (permissionsOfUser: PermissionData) => any,
-    onEditPermissionsOfUser: (permissionsOfUser: PermissionData) => any,
+    onDeletePermissions: (permissions: PermissionData) => any,
+    onEditPermissions: (permissions: PermissionData) => any,
 ): ColDef[] => [
     {
-        field: 'displayName',
-        headerName: i18next.t(`permissions.${permissionType === 'user' ? 'userHeaderName' : 'roleHeaderName'}`),
+        field: permissionType === RelatedPermission.User ? 'displayName' : 'name',
+        headerName: i18next.t(`permissions.${permissionType === RelatedPermission.User ? 'userHeaderName' : 'roleHeaderName'}`),
         filter: 'agTextColumnFilter',
         sortable: true,
         suppressHeaderFilterButton: false,
@@ -152,10 +152,10 @@ const columnDefs = (
 
             return (
                 <div>
-                    <IconButton color="primary" onClick={() => onEditPermissionsOfUser(data!)} disabled={isAdmin}>
+                    <IconButton color="primary" onClick={() => onEditPermissions(data!)} disabled={isAdmin}>
                         <EditIcon />
                     </IconButton>
-                    <IconButton color="primary" onClick={() => onDeletePermissionsOfUser(data!)} disabled={isAdmin}>
+                    <IconButton color="primary" onClick={() => onDeletePermissions(data!)} disabled={isAdmin}>
                         <DeleteIcon />
                     </IconButton>
                 </div>
@@ -170,29 +170,47 @@ const getDatasource = <Data extends any = PermissionData>(
     { _id }: IWorkspace,
     quickFilter: string | undefined,
     onFail: (err: unknown) => void | undefined,
+    permissionType: RelatedPermission,
 ): IServerSideDatasource => {
     return {
         async getRows({ request, success, fail }: IServerSideGetRowsParams<Data>) {
             const { startRow, endRow, filterModel, sortModel } = request;
+            let data, error; //TODO: add types :)
+            if (permissionType === RelatedPermission.User) {
+                const { result, err } = await trycatch(() =>
+                    searchUsersRequest({
+                        workspaceIds: [_id],
+                        step: startRow! / infiniteScrollPageCount,
+                        limit: endRow! - startRow!,
+                        search: quickFilter || undefined,
+                        filterModel,
+                        sortModel,
+                    }),
+                );
+                data = { dataArray: result?.users, count: result?.count };
+                error = err;
+            } else {
+                const { result, err } = await trycatch(() =>
+                    searchRolesRequest({
+                        workspaceIds: [_id],
+                        step: startRow! / infiniteScrollPageCount,
+                        limit: endRow! - startRow!,
+                        search: quickFilter || undefined,
+                        filterModel,
+                        sortModel,
+                    }),
+                );
+                data = { dataArray: result?.roles, count: result?.count };
+                error = err;
+            }
 
-            const { result: data, err } = await trycatch(() =>
-                searchUsersRequest({
-                    workspaceIds: [_id],
-                    step: startRow! / infiniteScrollPageCount,
-                    limit: endRow! - startRow!,
-                    search: quickFilter || undefined,
-                    filterModel,
-                    sortModel,
-                }),
-            );
-
-            if (err || !data) {
-                onFail?.(err);
+            if (error || !data) {
+                onFail?.(error);
                 fail();
                 return;
             }
             success({
-                rowData: data.users,
+                rowData: data.dataArray,
                 rowCount: data.count,
             });
         },
@@ -204,10 +222,11 @@ const getRowModelProps = <Data extends any = PermissionData>(
     paginationPageSize: number,
     quickFilterText: string | undefined,
     datasourceOnFail: (err: unknown) => void,
+    permissionType: RelatedPermission,
 ): React.ComponentProps<typeof AgGridReact<Data>> => {
     return {
         rowModelType: 'serverSide',
-        serverSideDatasource: getDatasource<PermissionData>(workspace, quickFilterText, datasourceOnFail),
+        serverSideDatasource: getDatasource<PermissionData>(workspace, quickFilterText, datasourceOnFail, permissionType),
         cacheBlockSize: infiniteScrollPageCount,
         maxBlocksInCache: infiniteScrollPageCount,
         pagination: true,
@@ -217,10 +236,10 @@ const getRowModelProps = <Data extends any = PermissionData>(
 
 type PermissionsTableProps<Data> = {
     categories: IMongoCategory[];
-    onDeletePermissionsOfUser: (permissionsOfUser: Data) => any;
-    onEditPermissionsOfUser: (permissionsOfUser: Data) => any;
+    onDeletePermissions: (permissionsOfUser: Data) => any;
+    onEditPermissions: (permissionsOfUser: Data) => any;
     quickFilterText: string;
-    permissionType: 'user' | 'role';
+    permissionType: RelatedPermission;
     getRowId: (data: Data) => string;
 };
 
@@ -231,7 +250,7 @@ export type PermissionsTableRef<Data> = {
 
 const PermissionsTable = forwardRef<PermissionsTableRef<unknown>, PermissionsTableProps<unknown>>(
     <Data extends any>(
-        { permissionType, categories, onDeletePermissionsOfUser, onEditPermissionsOfUser, quickFilterText, getRowId },
+        { permissionType, categories, onDeletePermissions, onEditPermissions, quickFilterText, getRowId },
         ref: ForwardedRef<PermissionsTableRef<Data>>,
     ) => {
         const darkMode = useDarkModeStore((state) => state.darkMode);
@@ -258,7 +277,7 @@ const PermissionsTable = forwardRef<PermissionsTableRef<unknown>, PermissionsTab
         };
 
         const rowModelProps = useMemo(
-            () => getRowModelProps(workspace, infiniteScrollPageCount, quickFilterText, datasourceOnFail),
+            () => getRowModelProps(workspace, infiniteScrollPageCount, quickFilterText, datasourceOnFail, permissionType),
             [quickFilterText, workspace],
         );
 
@@ -275,7 +294,7 @@ const PermissionsTable = forwardRef<PermissionsTableRef<unknown>, PermissionsTab
                     borderRadius: '70px',
                 }}
                 defaultColDef={defaultColDef}
-                columnDefs={columnDefs(workspace._id, permissionType, categories, onDeletePermissionsOfUser, onEditPermissionsOfUser)}
+                columnDefs={columnDefs(workspace._id, permissionType, categories, onDeletePermissions, onEditPermissions)}
                 getRowId={({ data }) => getRowId(data)}
                 {...rowModelProps}
                 paginationAutoPageSize

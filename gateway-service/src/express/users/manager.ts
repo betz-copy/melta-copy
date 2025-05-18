@@ -252,14 +252,6 @@ class UsersManager {
     }
 
     static async createRole(name: string, permissions: ICompactPermissions): Promise<IRole> {
-        // TODO: think if i need to validate unique name here
-        // const existingUser = await UserService.getUserByExternalId(kartoffelId).catch(() => {});
-
-        // if (existingUser?.externalMetadata.digitalIdentitySource === digitalIdentitySource) {
-        //     const newPermissions = await UsersManager.syncUserPermissions(existingUser._id, permissions);
-        //     return { ...existingUser, permissions: { ...existingUser.permissions, ...newPermissions } };
-        // }
-
         return UserService.createRole({ name, permissions });
     }
 

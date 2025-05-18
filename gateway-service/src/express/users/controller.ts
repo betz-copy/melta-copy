@@ -49,7 +49,7 @@ class UsersController {
     }
 
     static async syncPermissions(req: Request, res: Response) {
-        const { permissionType, ...permissions } = req.body;
+        const { permissionType, permissions } = req.body;
         res.json(await UsersManager.syncUserPermissions(req.params.relatedId, permissionType, permissions));
     }
 
