@@ -39,5 +39,6 @@ module.exports = {
         '@typescript-eslint/no-shadow': 'error',
         'import/prefer-default-export': 'off',
         'class-methods-use-this': 'off',
+        'no-console': ['error', { allow: ['error'] }],
     },
 };

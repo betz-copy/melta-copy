@@ -35,7 +35,7 @@ module.exports = {
         ],
         'import/no-extraneous-dependencies': ['error', { devDependencies: ['**/*.spec.ts', '**/*.mock.ts'] }],
         'no-underscore-dangle': ['error', { allow: ['_id'] }],
-        'no-console': 'off',
+        'no-console': ['error', { allow: ['error'] }],
         'no-unused-vars': 'off', // Checked by typescript
         'no-plusplus': 'off', // shitty rule
         'import/prefer-default-export': 'off',
@@ -43,6 +43,5 @@ module.exports = {
         'class-methods-use-this': 'off',
         'valid-typeof': ['error', { requireStringLiterals: false }],
         semi: [2, 'always'],
-        'class-methods-use-this': 'off',
     },
 };
