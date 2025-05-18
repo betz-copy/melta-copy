@@ -6,7 +6,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "pre-push": "cd ./frontend-service && npm run lint && node --max_old_space_size=16384 npm run build",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "clean": "rimraf ./**/dist",
+    "clean:all": "rimraf ./**/dist ./**/node_modules ./node_modules"
   },
   "repository": {
     "type": "git",
@@ -20,5 +22,8 @@
   "homepage": "https://github.com/melta-team/melta#readme",
   "devDependencies": {
     "husky": "^6.0.0"
+  },
+  "dependencies": {
+    "rimraf": "^6.0.1"
   }
 }
