@@ -359,6 +359,13 @@ export default {
         loading: 'טוען...',
         noOptions: 'אין תוצאות',
     },
+    roleAutocomplete: {
+        label: 'תפקידן',
+        searchLabel: 'חיפוש תפקידן',
+        failedToSearchRoles: 'נכשל לחפש תפקידנים',
+        loading: 'טוען...',
+        noOptions: 'אין תוצאות',
+    },
     notifications: {
         notificationType: 'התראות למייל',
         title: 'התראות',

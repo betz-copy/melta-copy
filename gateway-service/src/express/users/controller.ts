@@ -34,10 +34,14 @@ class UsersController {
         res.json(await UsersManager.searchUsers(req.body));
     }
 
-    static async createUser(req: Request, res: Response) {
-        const { kartoffelId, digitalIdentitySource, permissions } = req.body;
+    static async updateUserRoleId(req: Request, res: Response) {
+        res.json(await UsersManager.updateUserRoleId(req.params.userId, req.body));
+    }
 
-        res.json(await UsersManager.createUser(kartoffelId, digitalIdentitySource, permissions));
+    static async createUser(req: Request, res: Response) {
+        const { kartoffelId, digitalIdentitySource, permissions, roleId } = req.body;
+
+        res.json(await UsersManager.createUser(kartoffelId, digitalIdentitySource, permissions, roleId));
     }
 
     static async updateUserPreferencesMetadata(req: Request, res: Response) {

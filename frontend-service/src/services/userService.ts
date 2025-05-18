@@ -30,8 +30,8 @@ export const searchUsersRequest = async (searchBody: IUserSearchBody) => {
     return data;
 };
 
-export const createUserRequest = async (kartoffelId: string, digitalIdentitySource: string, permissions: ICompactPermissions) => {
-    const { data } = await axios.post<IUser>(users, { kartoffelId, digitalIdentitySource, permissions });
+export const createUserRequest = async (kartoffelId: string, digitalIdentitySource: string, permissions: ICompactPermissions, roleId?: string) => {
+    const { data } = await axios.post<IUser>(users, { kartoffelId, digitalIdentitySource, permissions, roleId });
     return data;
 };
 
@@ -58,6 +58,11 @@ export const updateUserPreferencesMetadataRequest = async (
 
 export const updateUserExternalMetadataRequest = async (userId: string, kartoffelId: string, digitalIdentitySource: string) => {
     const { data } = await axios.patch<IUser>(`${users}/${userId}/externalMetadata`, { kartoffelId, digitalIdentitySource });
+    return data;
+};
+
+export const updateUserRoleIdRequest = async (userId: string, roleId?: string) => {
+    const { data } = await axios.patch<IUser>(`${users}/${userId}/roleId`, { roleId });
     return data;
 };
 

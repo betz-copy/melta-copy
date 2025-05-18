@@ -35,6 +35,7 @@ const InstancesPermissionsCard: React.FC<{
     }[];
     checkboxAllProps?: {
         permissionType: permissionTypeCheckboxProps;
+        disabled?: boolean;
     };
 }> = ({ categoriesCheckboxProps, viewMode, checkboxAllProps, formikProps, permissionsPath, workspaceId }) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
@@ -68,10 +69,11 @@ const InstancesPermissionsCard: React.FC<{
                                 <FormControlLabel
                                     sx={{ margin: '0' }}
                                     label={i18next.t('permissions.permissionsOfUserDialog.chooseAll') as string}
+                                    disabled={checkboxAllProps?.disabled}
                                     control={
                                         <MeltaCheckbox
                                             checked={checkboxAllProps?.permissionType.read.checked}
-                                            disabled={checkboxAllProps?.permissionType.write.checked}
+                                            disabled={checkboxAllProps?.permissionType.write.checked || checkboxAllProps?.disabled}
                                             onChange={checkboxAllProps?.permissionType.read.onChange}
                                         />
                                     }
@@ -86,10 +88,12 @@ const InstancesPermissionsCard: React.FC<{
                                 <FormControlLabel
                                     sx={{ margin: '0' }}
                                     label={i18next.t('permissions.permissionsOfUserDialog.chooseAll') as string}
+                                    disabled={checkboxAllProps?.disabled}
                                     control={
                                         <MeltaCheckbox
                                             checked={checkboxAllProps?.permissionType.write.checked}
                                             onChange={checkboxAllProps?.permissionType.write.onChange}
+                                            disabled={checkboxAllProps?.disabled}
                                         />
                                     }
                                 />

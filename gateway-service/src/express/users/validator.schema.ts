@@ -18,6 +18,10 @@ const UserExternalMetadataSchema = joi.object({
     digitalIdentitySource: joi.string().required(),
 });
 
+const UserRoleIdSchema = joi.object({
+    roleId: joi.string(),
+});
+
 const UserPreferencesMetadataSchema = joi.object({
     darkMode: ExtendedJoi.boolean(),
     mailsNotificationsTypes: ExtendedJoi.stringToArray(),
@@ -93,11 +97,21 @@ export const searchUsersRequestSchema = joi.object({
     params: {},
 });
 
+// PATCH /api/users/:userId/roleId
+export const updateUserRoleIdRequestSchema = joi.object({
+    query: {},
+    body: UserRoleIdSchema.required(),
+    params: {
+        userId: joi.string().required(),
+    },
+});
+
 // POST /api/users
 export const createUserRequestSchema = joi.object({
     query: {},
     body: UserExternalMetadataSchema.keys({
         permissions: joi.object(),
+        roleId: joi.string(),
     }).required(),
     params: {},
 });

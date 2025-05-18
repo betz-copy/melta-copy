@@ -68,6 +68,10 @@ class UsersManager {
         return UserService.searchUsers(searchBody);
     }
 
+    static async updateUserRoleId(userId: string, roleId?: string): Promise<IUser> {
+        return UserService.updateUser(userId, { roleId });
+    }
+
     private static validateDigitalIdentity(
         kartoffelId: string,
         digitalIdentity: Pick<IExternalUser, 'fullName' | 'jobTitle' | 'hierarchy' | 'mail'>,
@@ -80,10 +84,11 @@ class UsersManager {
         }
     }
 
-    static async createUser(kartoffelId: string, digitalIdentitySource: string, permissions: ICompactPermissions): Promise<IUser> {
+    static async createUser(kartoffelId: string, digitalIdentitySource: string, permissions: ICompactPermissions, roleId?: string): Promise<IUser> {
         const existingUser = await UserService.getUserByExternalId(kartoffelId).catch(() => {});
 
         if (existingUser?.externalMetadata.digitalIdentitySource === digitalIdentitySource) {
+            if ((!existingUser.roleId && roleId) || roleId !== existingUser.roleId) return this.updateUserRoleId(existingUser._id, roleId);
             const newPermissions = await UsersManager.syncUserPermissions(existingUser._id, 'user', permissions);
             return { ...existingUser, permissions: { ...existingUser.permissions, ...newPermissions } };
         }
@@ -103,6 +108,7 @@ class UsersManager {
             permissions,
             externalMetadata: { kartoffelId, digitalIdentitySource },
             preferences,
+            roleId,
         });
     }
 

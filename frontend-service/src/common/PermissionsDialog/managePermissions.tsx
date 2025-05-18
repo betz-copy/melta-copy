@@ -22,7 +22,8 @@ const ManagePermissions: React.FC<{
     };
     formikProps: FormikProps<PermissionData>;
     dialogPermissionData: Map<string, CategoryWithTemplates>;
-}> = ({ mode, workspace, formikProps, dialogPermissionData }) => {
+    disableCheckboxes?: boolean;
+}> = ({ mode, workspace, formikProps, dialogPermissionData, disableCheckboxes }) => {
     const queryClient = useQueryClient();
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
 
@@ -59,7 +60,7 @@ const ManagePermissions: React.FC<{
                                 mode === 'view'
                                     ? () => {}
                                     : (_e, checked) => handleManagementPermissionCheck(`${permissionsPath}.permissions`, checked, true),
-                            disabled: formikProps.isSubmitting || currentPermissions?.admin?.scope === PermissionScope.write,
+                            disabled: disableCheckboxes || formikProps.isSubmitting || currentPermissions?.admin?.scope === PermissionScope.write,
                             viewMode: mode === 'view',
                         }}
                         templatesManagement={{
@@ -70,7 +71,7 @@ const ManagePermissions: React.FC<{
                                 mode === 'view'
                                     ? () => {}
                                     : (_e, checked) => handleManagementPermissionCheck(`${permissionsPath}.templates`, checked),
-                            disabled: formikProps.isSubmitting || currentPermissions?.admin?.scope === PermissionScope.write,
+                            disabled: disableCheckboxes || formikProps.isSubmitting || currentPermissions?.admin?.scope === PermissionScope.write,
                             viewMode: mode === 'view',
                         }}
                         rulesManagement={{
@@ -79,7 +80,7 @@ const ManagePermissions: React.FC<{
                                 currentPermissions?.admin?.scope === PermissionScope.write,
                             onChange:
                                 mode === 'view' ? () => {} : (_e, checked) => handleManagementPermissionCheck(`${permissionsPath}.rules`, checked),
-                            disabled: formikProps.isSubmitting || currentPermissions?.admin?.scope === PermissionScope.write,
+                            disabled: disableCheckboxes || formikProps.isSubmitting || currentPermissions?.admin?.scope === PermissionScope.write,
                             viewMode: mode === 'view',
                         }}
                         processesManagement={{
@@ -90,7 +91,7 @@ const ManagePermissions: React.FC<{
                                 mode === 'view'
                                     ? () => {}
                                     : (_e, checked) => handleManagementPermissionCheck(`${permissionsPath}.processes`, checked),
-                            disabled: formikProps.isSubmitting || currentPermissions?.admin?.scope === PermissionScope.write,
+                            disabled: disableCheckboxes || formikProps.isSubmitting || currentPermissions?.admin?.scope === PermissionScope.write,
                             viewMode: mode === 'view',
                         }}
                     />
@@ -105,7 +106,7 @@ const ManagePermissions: React.FC<{
                     categoriesCheckboxProps={Array.from(dialogPermissionData.values(), (currCategory) => ({
                         categoryId: currCategory._id,
                         categoryDisplayName: currCategory.displayName,
-                        disabled: formikProps.isSubmitting || currentPermissions?.admin?.scope === PermissionScope.write,
+                        disabled: disableCheckboxes || formikProps.isSubmitting || currentPermissions?.admin?.scope === PermissionScope.write,
                         scope: getUserPermissionScopeOfCategory(categoriesPermissions, currCategory._id),
                         entityTemplates: currCategory.entityTemplates,
                         permissionType: {
@@ -154,6 +155,7 @@ const ManagePermissions: React.FC<{
                         mode === 'view'
                             ? undefined
                             : {
+                                  disabled: disableCheckboxes,
                                   permissionType: {
                                       write: {
                                           checked:

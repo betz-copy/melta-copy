@@ -22,6 +22,7 @@ import {
     updateRoleRequestSchema,
     searchRolesByPermissionsSchema,
     syncPermissionsRequestSchema,
+    updateUserRoleIdRequestSchema,
 } from './validator.schema';
 import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
 import busboyMiddleware from '../../utils/busboy/busboyMiddleware';
@@ -55,6 +56,13 @@ usersRouter.get('/user-profile/:userId', ValidateRequest(getUserProfileRequestSc
 usersRouter.post('/search-ids', ValidateRequest(searchUsersRequestSchema), wrapController(UsersController.searchUserIds));
 
 usersRouter.post('/search', ValidateRequest(searchUsersRequestSchema), wrapController(UsersController.searchUsers));
+
+usersRouter.patch(
+    '/:userId/roleId',
+    AuthorizerControllerMiddleware.userCanWritePermissions,
+    ValidateRequest(updateUserRoleIdRequestSchema),
+    wrapController(UsersController.updateUserRoleId),
+);
 
 usersRouter.post(
     '/',

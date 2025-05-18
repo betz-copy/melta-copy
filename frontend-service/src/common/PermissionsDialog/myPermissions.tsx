@@ -9,7 +9,7 @@ import { toast } from 'react-toastify';
 import * as Yup from 'yup';
 
 import { IUser, PermissionData, RelatedPermission } from '../../interfaces/users';
-import { createUserRequest, syncPermissionsRequest } from '../../services/userService';
+import { createUserRequest, syncPermissionsRequest, updateUserRoleIdRequest } from '../../services/userService';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { useUserStore } from '../../stores/user';
 import { useWorkspaceStore } from '../../stores/workspace';
@@ -24,6 +24,7 @@ import {
 import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
 import ManagePermissions from './managePermissions';
 import { BlueTitle } from '../BlueTitle';
+import RoleAutocomplete from '../inputs/RoleAutocomplete';
 
 const MyPermissions: React.FC<{
     handleClose: () => void;
@@ -52,6 +53,7 @@ const MyPermissions: React.FC<{
         },
         permissions: {},
         displayName: '',
+        role: undefined,
     } as IUser;
 
     const queryClient = useQueryClient();
@@ -75,7 +77,12 @@ const MyPermissions: React.FC<{
 
     const { mutate: createUser } = useMutation(
         (formUser: IUser) =>
-            createUserRequest(formUser.externalMetadata.kartoffelId, formUser.externalMetadata.digitalIdentitySource, formUser.permissions),
+            createUserRequest(
+                formUser.externalMetadata.kartoffelId,
+                formUser.externalMetadata.digitalIdentitySource,
+                formUser.permissions,
+                formUser.roleId,
+            ),
         {
             onError: (error) => {
                 console.error('failed to upsert permission. error:', error);
@@ -89,6 +96,19 @@ const MyPermissions: React.FC<{
             },
         },
     );
+
+    const { mutate: updateUserRoleId } = useMutation((formUser: IUser) => updateUserRoleIdRequest(formUser._id, formUser.roleId), {
+        onError: (error) => {
+            console.error('failed to upsert permission. error:', error);
+            toast.error(i18next.t('permissions.permissionsOfUserDialog.failedToEditPermissionsOfUser'));
+        },
+        onSuccess: () => {
+            onSuccess?.();
+            queryClient.invalidateQueries('allIFrames');
+            toast.success(i18next.t('permissions.permissionsOfUserDialog.succeededToUpdatePermission'));
+            handleClose();
+        },
+    });
 
     const { mutate: syncUserPermissions } = useMutation(
         async (formUser: IUser) => {
@@ -138,7 +158,25 @@ const MyPermissions: React.FC<{
             }}
             onSubmit={(formUser) => {
                 if (mode === 'create') createUser(formUser);
-                else syncUserPermissions(formUser);
+                else if ((!existingUser?.roleId && formUser.roleId) || existingUser?.roleId !== formUser.roleId) {
+                    // add role instead of personal permissions
+                    updateUserRoleId(formUser);
+
+                    if (!existingUser?.roleId && formUser.roleId) {
+                        // remove personal permissions if it has any
+                        syncUserPermissions({
+                            ...formUser,
+                            [workspace._id]: { permissions: null, rules: null, instances: null, processes: null, templates: null },
+                        });
+                    }
+                } else {
+                    if (existingUser?.roleId && !formUser.roleId) {
+                        // remove role and add personal permissions
+                        updateUserRoleId(formUser);
+                    }
+
+                    syncUserPermissions(formUser); // update personal permissions or add if it enters the if above
+                }
             }}
         >
             {(formikProps: FormikProps<IUser>) => {
@@ -169,12 +207,28 @@ const MyPermissions: React.FC<{
                                 />
                             </Box>
 
+                            <Box sx={{ bgcolor: darkMode ? '#242424' : 'white', marginBottom: '15px', marginTop: '5px' }}>
+                                <RoleAutocomplete
+                                    roleId={formikProps.values.roleId}
+                                    onChange={(_e, chosenRole) => {
+                                        formikProps.setFieldValue('roleId', chosenRole?._id ?? undefined);
+                                        formikProps.setFieldValue('permissions', chosenRole?.permissions ?? {});
+                                    }}
+                                    onBlur={formikProps.handleBlur}
+                                    readOnly={mode === 'view'}
+                                    isError={Boolean(formikProps.touched.fullName && formikProps.errors.fullName)}
+                                    helperText={formikProps.touched.fullName ? formikProps.errors.fullName : ''}
+                                    isOptionDisabled={(option) => !option.name}
+                                />
+                            </Box>
+
                             {/* dont show management permissions to regular user (if dont have at all) */}
                             <ManagePermissions
                                 mode={mode}
                                 dialogPermissionData={dialogPermissionData}
                                 formikProps={formikProps as FormikProps<PermissionData>}
                                 workspace={workspace}
+                                disableCheckboxes={!!formikProps.values.roleId}
                             />
                         </DialogContent>
 

@@ -22,6 +22,7 @@ export interface IBaseUser {
 }
 export interface IUser extends IBaseUser {
     permissions: ICompactPermissions;
+    roleId?: string;
     displayName: string; // custom displayName, not of kartoffel: `${fullName} - ${hierarchy}/${jobTitle}`
 }
 

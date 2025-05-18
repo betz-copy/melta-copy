@@ -6,6 +6,7 @@ import PermissionsManager from '../permissions/manager';
 import { typedObjectEntries } from '../../utils';
 import { UserDoesNotExistError } from './errors';
 import { translateAgGridFilterModel, translateAgGridSortModel } from '../../utils/agGrid';
+import RolesManager from '../roles/manager';
 
 class UsersManager {
     static async getUserById(id: string, workspaceIds?: string[]): Promise<IUser> {
@@ -51,8 +52,8 @@ class UsersManager {
 
         if (permissions || workspaceIds) {
             const simplePermissions = await PermissionsManager.searchBySubCompactPermissions(permissions ?? {}, workspaceIds);
-            const usersIds = new Set<string>(simplePermissions.map(({ relatedId }) => relatedId));
-            query._id = { $in: [...usersIds] };
+            const relatedIds = new Set<string>(simplePermissions.map(({ relatedId }) => relatedId));
+            query.$or = [{ _id: { $in: [...relatedIds] } }, { roleId: { $in: [...relatedIds] } }];
         }
 
         const users = await UsersModel.find(query, {}, { limit, skip: step * limit, sort })
@@ -90,7 +91,9 @@ class UsersManager {
     static async createUser({ permissions, ...userData }: Omit<IUser, '_id'>): Promise<IUser> {
         const baseUser = (await UsersModel.create(userData)).toObject();
 
-        await PermissionsManager.syncCompactPermissions(baseUser._id, 'user', permissions);
+        if (userData.roleId)
+            await RolesManager.getRoleById(userData.roleId); // Validate role exists
+        else await PermissionsManager.syncCompactPermissions(baseUser._id, 'user', permissions);
 
         return this.baseUserToUser(baseUser);
     }
@@ -107,7 +110,7 @@ class UsersManager {
     }
 
     private static async baseUserToUser(user: IBaseUser, workspaceIds?: string[]): Promise<IUser> {
-        const permissions = await PermissionsManager.getCompactPermissionsOfRelatedId(user._id, workspaceIds);
+        const permissions = await PermissionsManager.getCompactPermissionsOfRelatedId(user.roleId ?? user._id, workspaceIds);
         return { ...user, permissions, displayName: `${user.fullName} - ${user.hierarchy}/${user.jobTitle}` };
     }
 

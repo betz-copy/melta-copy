@@ -36,7 +36,11 @@ const ManagementPermissionsCard: React.FC<{
                             permissionsManagement.viewMode ? (
                                 <PermissionViewIcon checked={permissionsManagement.checked} />
                             ) : (
-                                <MeltaCheckbox checked={permissionsManagement.checked} onChange={permissionsManagement.onChange} />
+                                <MeltaCheckbox
+                                    checked={permissionsManagement.checked}
+                                    onChange={permissionsManagement.onChange}
+                                    disabled={permissionsManagement.disabled}
+                                />
                             )
                         }
                     />
@@ -48,7 +52,11 @@ const ManagementPermissionsCard: React.FC<{
                             templatesManagement.viewMode ? (
                                 <PermissionViewIcon checked={templatesManagement.checked} />
                             ) : (
-                                <MeltaCheckbox checked={templatesManagement.checked} onChange={templatesManagement.onChange} />
+                                <MeltaCheckbox
+                                    checked={templatesManagement.checked}
+                                    onChange={templatesManagement.onChange}
+                                    disabled={permissionsManagement.disabled}
+                                />
                             )
                         }
                     />
@@ -60,7 +68,11 @@ const ManagementPermissionsCard: React.FC<{
                             rulesManagement.viewMode ? (
                                 <PermissionViewIcon checked={rulesManagement.checked} />
                             ) : (
-                                <MeltaCheckbox checked={rulesManagement.checked} onChange={rulesManagement.onChange} />
+                                <MeltaCheckbox
+                                    checked={rulesManagement.checked}
+                                    onChange={rulesManagement.onChange}
+                                    disabled={permissionsManagement.disabled}
+                                />
                             )
                         }
                     />
@@ -72,7 +84,11 @@ const ManagementPermissionsCard: React.FC<{
                             processesManagement.viewMode ? (
                                 <PermissionViewIcon checked={processesManagement.checked} />
                             ) : (
-                                <MeltaCheckbox checked={processesManagement.checked} onChange={processesManagement.onChange} />
+                                <MeltaCheckbox
+                                    checked={processesManagement.checked}
+                                    onChange={processesManagement.onChange}
+                                    disabled={permissionsManagement.disabled}
+                                />
                             )
                         }
                     />
