@@ -10,14 +10,16 @@ export interface IEntityChildTemplate {
     name: string;
     displayName: string;
     description: string;
-    fatherTemplate: string;
-    categories: string[];
-    propertiesFilters: Record<string, unknown>;
+    fatherTemplateId: string;
+    categories: IMongoCategory['_id'][];
+    properties: Record<string, unknown>;
     disabled: boolean;
-    actions: string;
+    actions?: string;
     viewType: ViewType;
-    filterByCurrentUser: boolean;
-    filterByUserUnit: boolean;
+    defaults: Record<string, string | number | boolean | Date | string[]>;
+    filters: Record<string, unknown>;
+    isFilterByCurrentUser: boolean;
+    isFilterByUserUnit: boolean;
 }
 
 export interface IMongoEntityChildTemplate extends IEntityChildTemplate, Document<string> {

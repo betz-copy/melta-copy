@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 import config from '../../config';
 import { transformResultDocsObjectIdKeysToString } from '../../utils/mongoose';
 
-export const EntityChildTemplateSchema = new mongoose.Schema(
+const EntityChildTemplateSchema = new mongoose.Schema(
     {
         name: {
             type: String,
@@ -17,7 +17,7 @@ export const EntityChildTemplateSchema = new mongoose.Schema(
         description: {
             type: String,
         },
-        fatherTemplate: {
+        fatherTemplateId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: config.mongo.entityTemplatesCollectionName,
             required: true,
@@ -29,7 +29,7 @@ export const EntityChildTemplateSchema = new mongoose.Schema(
             required: true,
             index: true,
         },
-        propertiesFilters: {
+        properties: {
             type: Object,
             required: true,
         },
@@ -41,17 +41,25 @@ export const EntityChildTemplateSchema = new mongoose.Schema(
         actions: {
             type: String,
         },
+        defaults: {
+            type: Object,
+            required: true,
+        },
+        filters: {
+            type: Object,
+            required: true,
+        },
         viewType: {
             type: String,
             enum: ['categoryPage', 'userPage'],
             required: true,
         },
-        filterByCurrentUser: {
+        isFilterByCurrentUser: {
             type: Boolean,
             required: true,
             default: false,
         },
-        filterByUserUnit: {
+        isFilterByUserUnit: {
             type: Boolean,
             required: true,
             default: false,
@@ -69,3 +77,5 @@ EntityChildTemplateSchema.index({ displayName: 'text' });
 EntityChildTemplateSchema.post(['find', 'findOne', 'findOneAndUpdate', 'findOneAndDelete'], (res) => {
     transformResultDocsObjectIdKeysToString(res);
 });
+
+export default EntityChildTemplateSchema;

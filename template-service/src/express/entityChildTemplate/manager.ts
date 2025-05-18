@@ -4,7 +4,7 @@ import config from '../../config';
 import { escapeRegExp } from '../../utils';
 
 import { IEntityChildTemplate, IEntityChildTemplatePopulated, IMongoEntityChildTemplate } from './interface';
-import { EntityChildTemplateSchema } from './model';
+import EntityChildTemplateSchema from './model';
 
 class EntityChildTemplateManager extends DefaultManagerMongo<IMongoEntityChildTemplate> {
     constructor(workspaceId: string) {

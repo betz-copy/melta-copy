@@ -1452,7 +1452,8 @@ export default {
     },
     createChildTemplateDialog: {
         title: 'תואנה',
-        templateName: 'שם תצוגת תבנית בן',
+        templateName: 'שם תצוגת תבנית בן (אנגלית)',
+        templateDisplayName: 'שם תצוגת תבנית בן',
         templateDetails: 'תיאור תבנית בן (יוצג במסכי הרשאות)',
         status: {
             categoryPage: 'מוצג בעמוד קטגוריה',

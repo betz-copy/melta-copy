@@ -68,6 +68,7 @@ const CreateChildTemplateDialog: React.FC<{
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
 
     const [childTemplateName, setChildTemplateName] = useState<string>('');
+    const [childTemplateDisplayName, setChildTemplateDisplayName] = useState<string>('');
     const [childTemplateDescription, setChildTemplateDescription] = useState<string>('');
     const [childTemplateViewType, setChildTemplateViewType] = useState<ViewType>(ViewType.categoryPage);
     const [childTemplateFilterByCurrentUser, setChildTemplateFilterByCurrentUser] = useState<boolean>(false);
@@ -104,7 +105,7 @@ const CreateChildTemplateDialog: React.FC<{
     const handleSave = () => {
         const newChildTemplate: IEntityChildTemplate = {
             name: childTemplateName,
-            displayName: childTemplateName,
+            displayName: childTemplateDisplayName,
             description: childTemplateDescription,
             fatherTemplateId: entityTemplate._id,
             categories: selectedCategories.map((category) => category._id),
@@ -112,9 +113,14 @@ const CreateChildTemplateDialog: React.FC<{
             disabled: false,
             actions: entityTemplate.actions,
             viewType: childTemplateViewType,
+            defaults: {},
+            filters: {},
             isFilterByCurrentUser: childTemplateFilterByCurrentUser,
             isFilterByUserUnit: childTemplateFilterByUserUnit,
         };
+
+        console.log(newChildTemplate);
+        console.log(templateFieldsFilters);
 
         handleClose();
     };
@@ -134,16 +140,29 @@ const CreateChildTemplateDialog: React.FC<{
             <DialogContent>
                 <Grid container direction="column">
                     <Grid container sx={{ pt: 3 }} alignItems="center" justifyContent="space-between">
-                        <Grid xs={6} item>
-                            <TextField
-                                fullWidth
-                                label={i18next.t('createChildTemplateDialog.templateName')}
-                                onChange={(e) => setChildTemplateName(e.target.value)}
-                                value={childTemplateName}
-                                InputProps={{
-                                    startAdornment: <InputAdornment position="start">{entityTemplate.displayName} -</InputAdornment>,
-                                }}
-                            />
+                        <Grid xs={6} item container direction="column" justifyContent="space-between">
+                            <Grid xs={6} item>
+                                <TextField
+                                    fullWidth
+                                    label={i18next.t('createChildTemplateDialog.templateDisplayName')}
+                                    onChange={(e) => setChildTemplateDisplayName(e.target.value)}
+                                    value={childTemplateDisplayName}
+                                    InputProps={{
+                                        startAdornment: <InputAdornment position="start">{entityTemplate.displayName} -</InputAdornment>,
+                                    }}
+                                />
+                            </Grid>
+                            <Grid xs={6} sx={{ pt: 3 }} item>
+                                <TextField
+                                    fullWidth
+                                    label={i18next.t('createChildTemplateDialog.templateName')}
+                                    onChange={(e) => setChildTemplateName(e.target.value)}
+                                    value={childTemplateName}
+                                    InputProps={{
+                                        startAdornment: <InputAdornment position="start">{entityTemplate.name}_</InputAdornment>,
+                                    }}
+                                />
+                            </Grid>
                         </Grid>
                         <Grid xs={5.5} item>
                             <TextField
