@@ -1,40 +1,41 @@
 import React from 'react';
 import { renderToString } from 'react-dom/server';
-import config from '../../config';
-import { IRule } from '../../express/templates/rules/interfaces';
-import { IWorkspace } from '../../express/workspaces/interface';
-import { WorkspaceService } from '../../express/workspaces/service';
-import { IEntity } from '../../externalServices/instanceService/interfaces/entities';
-import { IDeleteProcessNotificationMetadata, NotificationType } from '../../externalServices/notificationService/interfaces';
 import {
+    IMongoEntityTemplatePopulated,
+    IRule,
+    RuleBreachRequestStatus,
+    ActionTypes,
+    IMongoStepTemplate,
+    IDeleteProcessNotificationMetadata,
+    NotificationType,
+    IEntity,
+    IUser,
+    IWorkspace,
     IArchiveProcessNotificationMetadataPopulated,
     IDateAboutToExpireMetadataPopulated,
     INewProcessNotificationMetadataPopulated,
     IRuleBreachAlertNotificationMetadataPopulated,
     IRuleBreachRequestNotificationMetadataPopulated,
     IRuleBreachResponseNotificationMetadataPopulated,
-} from '../../externalServices/notificationService/interfaces/populated';
-import { IMongoStepTemplate } from '../../externalServices/processService/interfaces/stepTemplate';
-import { ActionTypes, RuleBreachRequestStatus } from '../../externalServices/ruleBreachService/interfaces';
-import {
     ICreateRelationshipMetadataPopulated,
     IDeleteRelationshipMetadataPopulated,
     IRuleBreachAlertPopulated,
     IRuleBreachRequestPopulated,
     IUpdateEntityMetadataPopulated,
     IUpdateEntityStatusMetadataPopulated,
-} from '../../externalServices/ruleBreachService/interfaces/populated';
-import { EntityTemplateService, IMongoEntityTemplatePopulated } from '../../externalServices/templates/entityTemplateService';
-import { RelationshipsTemplateService } from '../../externalServices/templates/relationshipsTemplateService';
-import { IUser } from '../../externalServices/userService/interfaces/users';
-import { hebrew } from './hebrew';
+} from '@microservices/shared';
+import WorkspaceService from '../../express/workspaces/service';
+import config from '../../config';
+import EntityTemplateService from '../../externalServices/templates/entityTemplateService';
+import RelationshipsTemplateService from '../../externalServices/templates/relationshipsTemplateService';
+import hebrew from './hebrew';
 import {
     IMailNotification,
     IMailNotificationMetadataPopulated,
     IProcessReviewerUpdateMailNotificationMetadataPopulated,
     IProcessStatusUpdateMailNotificationMetadataPopulated,
 } from './interfaces';
-import { mailConfig } from './mailConfig';
+import mailConfig from './mailConfig';
 
 const { mailTitle } = mailConfig;
 const {
@@ -42,7 +43,7 @@ const {
     service: { meltaBaseUrl },
 } = config;
 
-export class MailManager {
+class MailManager {
     private entityTemplateService: EntityTemplateService;
 
     private relationshipsTemplateService: RelationshipsTemplateService;
@@ -428,7 +429,7 @@ export class MailManager {
         const viewersMail = viewers.map((viewer: IUser) => viewer.mail);
         const title = mailTitle[type];
 
-        const html = renderToString(await this.getMailHtml(type, populatedMetaData));
+        const html = renderToString((await this.getMailHtml(type, populatedMetaData)) || <></>);
         return {
             from: mailerService.mailUser,
             to: viewersMail,
@@ -437,3 +438,5 @@ export class MailManager {
         };
     }
 }
+
+export default MailManager;

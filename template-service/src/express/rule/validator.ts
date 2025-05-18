@@ -3,16 +3,26 @@ import { isValid as isValidDate, parse } from 'date-fns';
 import { Request } from 'express';
 import Joi from 'joi';
 import isEqual from 'lodash.isequal';
-import DefaultController from '../../utils/express/controller';
-import { defaultValidationOptions, joiValidate } from '../../utils/joi';
-import { IEntitySingleProperty, IEntityTemplatePopulated } from '../entityTemplate/interface';
+import {
+    IEntitySingleProperty,
+    IEntityTemplatePopulated,
+    IMongoRelationshipTemplate,
+    IRelevantTemplates,
+    IRule,
+    IConstant,
+    IPropertyOfVariable,
+    IVariable,
+    isConstant,
+    ICountAggFunction,
+    IRegularFunction,
+    ISumAggFunction,
+    IAggregationGroup,
+    DefaultController,
+    defaultValidationOptions,
+} from '@microservices/shared';
+import { joiValidate } from '../../utils/joi';
 import EntityTemplateManager from '../entityTemplate/manager';
-import { IMongoRelationshipTemplate } from '../relationshipTemplate/interface';
 import { RelationshipTemplateManager } from '../relationshipTemplate/manager';
-import { IRelevantTemplates, IRule } from './interfaces';
-import { IConstant, IPropertyOfVariable, IVariable, isConstant } from './interfaces/formula/argument';
-import { ICountAggFunction, IRegularFunction, ISumAggFunction } from './interfaces/formula/function';
-import { IAggregationGroup } from './interfaces/formula/group';
 
 const numberRegExp = '[1-9]\\d*'; // digits that doesnt start with 0
 const dateDurationRegExp = new RegExp(`^(${numberRegExp}Y)?(${numberRegExp}M)?(${numberRegExp}D)?$`);
@@ -121,7 +131,7 @@ const formulaSchema = Joi.alternatives(
     Joi.object({ isAggregationGroup: Joi.boolean().valid(true).required() }).unknown(true),
 ).messages({ 'alternatives.match': 'formula must be one of equation/group/aggregationGroup' });
 
-export class RuleValidator extends DefaultController<IMongoRelationshipTemplate, RelationshipTemplateManager> {
+class RuleValidator extends DefaultController<IMongoRelationshipTemplate, RelationshipTemplateManager> {
     private entityTemplateManager: EntityTemplateManager;
 
     constructor(workspaceId: string) {
@@ -475,3 +485,5 @@ export class RuleValidator extends DefaultController<IMongoRelationshipTemplate,
         await this.validateRuleFormula(req.body);
     }
 }
+
+export default RuleValidator;

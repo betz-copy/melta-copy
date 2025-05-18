@@ -7,21 +7,48 @@ import groupBy from 'lodash.groupby';
 import mapValues from 'lodash.mapvalues';
 import pickBy from 'lodash.pickby';
 import { Neo4jError, Transaction } from 'neo4j-driver';
-import config from '../../config';
-import { ActionsLog, IActivityLog, IUpdatedFields } from '../../externalServices/activityLog/interface';
-import { ActivityLogProducer } from '../../externalServices/activityLog/producer';
-import { ISemanticSearchResult } from '../../externalServices/semanticSearch/interface';
-import { EntityTemplateManagerService } from '../../externalServices/templates/entityTemplateManager';
 import {
     IEntitySingleProperty,
-    IEntityTemplate,
     IMongoEntityTemplate,
     IRelationshipReference,
-} from '../../externalServices/templates/interfaces/entityTemplates';
-import { IMongoRule } from '../../externalServices/templates/interfaces/rules';
-import { RelationshipsTemplateManagerService } from '../../externalServices/templates/relationshipTemplateManager';
+    IMongoRule,
+    ActionTypes,
+    ICreateEntityMetadata,
+    IDuplicateEntityMetadata,
+    IUpdateEntityMetadata,
+    IAction,
+    IBrokenRule,
+    IConstraint,
+    IConstraintsOfTemplate,
+    IEntity,
+    IEntityWithDirectRelationships,
+    IRequiredConstraint,
+    ISearchBatchBody,
+    ISearchEntitiesByTemplatesBody,
+    ISearchEntitiesOfTemplateBody,
+    IUniqueConstraint,
+    IUniqueConstraintOfTemplate,
+    IRelationship,
+    IDeleteRelationshipReference,
+    IUpdatedFields,
+    ActionsLog,
+    IDeleteEntityBody,
+    IEntityTemplate,
+    ISemanticSearchResult,
+    ISearchEntitiesByLocationBody,
+    IActivityLog,
+    IChartBody,
+    NotFoundError,
+    ServiceError,
+    ValidationError,
+    BadRequestError,
+} from '@microservices/shared';
+import { EntitiesIdsRulesReasonsMap, IEntityCrudAction, IExecutionOutput, IGetExpandedEntityBody, RunRuleReason } from './interface';
+import config from '../../config';
+import ActivityLogProducer from '../../externalServices/activityLog/producer';
+import EntityTemplateManagerService from '../../externalServices/templates/entityTemplateManager';
+import RelationshipsTemplateManagerService from '../../externalServices/templates/relationshipTemplateManager';
 import { executeActionCodeAndGetEntitiesToUpdate } from '../../utils/actions/executeScript';
-import { isBodyFunctionHasContent } from '../../utils/actions/isBodyFunctionHasContent';
 import { buildChartAggregationQuery, handleChartPropertiesTemplate, manipulateReturnedChart } from '../../utils/templateCharts';
 import { arraysEqualsNonOrdered } from '../../utils/lib';
 import { expandEntityToNeoQuery, getExpandedFilteredGraphRecursively } from '../../utils/neo4j/getExpandedEntityByIdRecursive';
@@ -41,42 +68,20 @@ import {
 } from '../../utils/neo4j/lib';
 import DefaultManagerNeo4j from '../../utils/neo4j/manager';
 import { escapeNeo4jQuerySpecialChars, searchWithRelationshipsToNeoQuery, templatesFilterToNeoQuery } from '../../utils/neo4j/searchBodyToNeoQuery';
-import { ActionTypes, IAction, ICreateEntityMetadata, IDuplicateEntityMetadata, IUpdateEntityMetadata } from '../bulkActions/interface';
-import BulkActionManager from '../bulkActions/manager';
-import { BadRequestError, NotFoundError, ServiceError, ValidationError } from '../error';
-import { IDeleteRelationshipReference, IRelationship } from '../relationships/interfaces';
-import { RelationshipManager } from '../relationships/manager';
+import RelationshipManager from '../relationships/manager';
 import { filterDependentRulesOnEntity, filterDependentRulesViaAggregation } from '../rules/getParametersOfFormula';
-import { IBrokenRule, IRuleFailure } from '../rules/interfaces';
+import { IRuleFailure } from '../rules/interfaces';
 import { runRulesOnEntity } from '../rules/runRulesOnEntity';
 import { throwIfActionCausedRuleFailures } from '../rules/throwIfActionCausedRuleFailures';
-import {
-    EntitiesIdsRulesReasonsMap,
-    IChartBody,
-    IConstraint,
-    IConstraintsOfTemplate,
-    IDeleteBody,
-    IEntity,
-    IEntityCrudAction,
-    IEntityWithDirectRelationships,
-    IExecutionOutput,
-    IGetExpandedEntityBody,
-    IRequiredConstraint,
-    ISearchBatchBody,
-    ISearchEntitiesByLocationBody,
-    ISearchEntitiesByTemplatesBody,
-    ISearchEntitiesOfTemplateBody,
-    IUniqueConstraint,
-    IUniqueConstraintOfTemplate,
-    RunRuleReason,
-} from './interface';
+import BulkActionManager from '../bulkActions/manager';
+import isBodyFunctionHasContent from '../../utils/actions/isBodyFunctionHasContent';
 import { addStringFieldsAndNormalizeSpecialStringValues } from './validator.template';
 
 const { brokenRulesFakeEntityIdPrefix, deleteEntitiesMaxLimit } = config;
 
 const { BAD_REQUEST: badRequestStatus } = StatusCodes;
 
-export class EntityManager extends DefaultManagerNeo4j {
+class EntityManager extends DefaultManagerNeo4j {
     private entityTemplateManagerService: EntityTemplateManagerService;
 
     private relationshipsTemplateManagerService: RelationshipsTemplateManagerService;
@@ -511,7 +516,7 @@ export class EntityManager extends DefaultManagerNeo4j {
                     actionType: ActionTypes.UpdateEntity,
                     actionMetadata: {
                         entityId: entity?.properties._id,
-                        updatedFields: this.getUpdatedProperties(entity?.properties!, properties, entityTemplate),
+                        updatedFields: this.getUpdatedProperties(entity?.properties ?? {}, properties, entityTemplate),
                         before: entity?.properties,
                     } as IUpdateEntityMetadata,
                 };
@@ -981,22 +986,22 @@ export class EntityManager extends DefaultManagerNeo4j {
     }
 
     async getEntitiesWithDirectRelationshipsToDelete(
-        deleteBody: IDeleteBody,
+        deleteBody: IDeleteEntityBody,
         entityTemplate: IMongoEntityTemplate,
     ): Promise<IEntityWithDirectRelationships[]> {
         const entitiesWithDirectRelationships: IEntityWithDirectRelationships[] = [];
 
         if (deleteBody.selectAll) {
-            const { idsToExclude, filter, textSearch = '' } = deleteBody as IDeleteBody<true>;
+            const { idsToExclude, filter, textSearch = '' } = deleteBody as IDeleteEntityBody<true>;
             const { entities } = await this.searchEntitiesOfTemplate(
-                { limit: deleteEntitiesMaxLimit, skip: 0, filter, showRelationships: true, textSearch, entityIdsToExclude: idsToExclude },
+                { sort: [], limit: deleteEntitiesMaxLimit, skip: 0, filter, showRelationships: true, textSearch, entityIdsToExclude: idsToExclude },
                 entityTemplate,
             );
             entitiesWithDirectRelationships.push(...entities);
         } else {
-            const { idsToInclude } = deleteBody as IDeleteBody<false>;
+            const { idsToInclude } = deleteBody as IDeleteEntityBody<false>;
             const { entities } = await this.searchEntitiesOfTemplate(
-                { limit: deleteEntitiesMaxLimit, skip: 0, showRelationships: true, entityIdsToInclude: idsToInclude },
+                { sort: [], limit: deleteEntitiesMaxLimit, skip: 0, showRelationships: true, entityIdsToInclude: idsToInclude },
                 entityTemplate,
             );
 
@@ -1119,7 +1124,7 @@ export class EntityManager extends DefaultManagerNeo4j {
         }
     }
 
-    async deleteEntityInstances(deleteBody: IDeleteBody) {
+    async deleteEntityInstances(deleteBody: IDeleteEntityBody) {
         let entityIdsToDelete: string[] = [];
         const { deleteAllRelationships, templateId } = deleteBody;
 
@@ -1297,7 +1302,7 @@ export class EntityManager extends DefaultManagerNeo4j {
     }
 
     private removeBasicProperties(properties: Record<string, any>) {
-        const { createdAt, updatedAt, _id, disabled, ...rest } = properties;
+        const { createdAt: _createdAt, updatedAt: _updatedAt, _id, disabled: _disabled, ...rest } = properties;
         return rest;
     }
 
@@ -2088,3 +2093,5 @@ export class EntityManager extends DefaultManagerNeo4j {
         return Promise.all(chartPromises);
     }
 }
+
+export default EntityManager;

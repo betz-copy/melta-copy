@@ -1,5 +1,6 @@
 import Joi from 'joi';
-import { ColorSchema, ExtendedJoi, fileSchema, iconFileSchema, MongoIdSchema } from '../../utils/joi';
+import { ColorSchema, MongoIdSchema, fileSchema, iconFileSchema } from '@microservices/shared';
+import { ExtendedJoi } from '../../utils/joi';
 
 const nativeDataTypeSchema = Joi.alternatives(Joi.boolean(), Joi.string(), Joi.number());
 

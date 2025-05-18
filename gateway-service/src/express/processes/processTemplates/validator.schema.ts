@@ -1,5 +1,6 @@
 import Joi from 'joi';
-import { MongoIdSchema, ExtendedJoi, iconFileSchema } from '../../../utils/joi';
+import { MongoIdSchema, iconFileSchema } from '@microservices/shared';
+import { ExtendedJoi } from '../../../utils/joi';
 
 // GET /api/processes/templates
 export const getTemplateByIdSchema = Joi.object({

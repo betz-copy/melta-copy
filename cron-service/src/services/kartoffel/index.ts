@@ -6,7 +6,7 @@ const {
     kartoffel: { url, baseEntitiesRoute, requestTimeout, getByIdRoute },
 } = config;
 
-export class Kartoffel {
+class Kartoffel {
     private static kartoffel = axios.create({
         baseURL: `${url}${baseEntitiesRoute}`,
         timeout: requestTimeout,
@@ -15,7 +15,9 @@ export class Kartoffel {
 
     static getUserById = async (id: string) => {
         const { data } = await this.kartoffel.get<IKartoffelUser>(`${getByIdRoute}/${id}`);
-        
+
         return data;
     };
 }
+
+export default Kartoffel;

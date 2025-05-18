@@ -1,56 +1,12 @@
 import axios from 'axios';
+import { IMongoProcessTemplatePopulated, ICreateProcessTemplateBody } from '@microservices/shared';
 import config from './config';
 import { trycatch } from './utils';
-import { createAxiosInstance } from './utils/axios';
+import createAxiosInstance from './utils/axios';
 
 const { url, createProcessTemplateRoute, isAliveRoute } = config.processService;
 
-// Interfaces
-export interface IProcessSingleProperty {
-    title: string;
-    type: 'string' | 'number' | 'boolean';
-    format?: 'date' | 'date-time' | 'email' | 'fileId' | 'entityId' | 'text-area' | 'signature';
-    enum?: string[];
-    pattern?: string;
-    patternCustomErrorMessage?: string;
-}
-export interface IProcessDetails {
-    properties: {
-        type: 'object';
-        properties: Record<string, IProcessSingleProperty>;
-        required: string[];
-    };
-    propertiesOrder: string[];
-}
-
-export interface IStepTemplate extends IProcessDetails {
-    name: string;
-    displayName: string;
-    reviewers: string[];
-    iconFileId: string | null;
-}
-
-export interface IMongoStepTemplate extends IStepTemplate {
-    _id: string;
-    createdAt: Date;
-    updatedAt: Date;
-}
-
-export interface IProcessTemplateWithSteps {
-    name: string;
-    displayName: string;
-    details: IProcessDetails;
-    steps: IStepTemplate[];
-}
-
-export interface IMongoProcessTemplatePopulated extends Omit<IProcessTemplateWithSteps, 'steps'> {
-    steps: IMongoStepTemplate[];
-    _id: string;
-    createdAt: Date;
-    updatedAt: Date;
-}
-
-export const createProcessTemplates = async (workspaceId: string, processTemplates: IProcessTemplateWithSteps[]) => {
+export const createProcessTemplates = async (workspaceId: string, processTemplates: ICreateProcessTemplateBody[]) => {
     const axiosInstance = createAxiosInstance(workspaceId);
 
     const promises = processTemplates.map((processTemplate) => {

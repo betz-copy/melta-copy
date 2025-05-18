@@ -1,12 +1,12 @@
 import axios from 'axios';
+import { IUserSearchBody } from '@microservices/shared';
 import config from '../config';
-import { IUserSearchBody } from '../users/intefaces/users';
 
 const {
     userService: { url, usersRoute, requestTimeout },
 } = config;
 
-export class UserService {
+class UserService {
     private static userService = axios.create({
         baseURL: url,
         timeout: requestTimeout,
@@ -17,3 +17,5 @@ export class UserService {
         return data;
     }
 }
+
+export default UserService;

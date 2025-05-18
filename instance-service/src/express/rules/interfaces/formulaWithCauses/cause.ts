@@ -1,23 +1,5 @@
 import { Date as Neo4jDate, DateTime as Neo4jDateTime } from 'neo4j-driver';
-import { IEntity } from '../../../entities/interface';
-import { IRelationship } from '../../../relationships/interfaces';
-
-export interface ICauseInstance {
-    // same format of IVariable in Formula interfaces, but with instance ids
-    entityId: string;
-    aggregatedRelationship?: {
-        relationshipId: string;
-        otherEntityId: string;
-    };
-}
-
-export interface ICauseInstancePopulated {
-    entity: IEntity;
-    aggregatedRelationship?: {
-        relationship: IRelationship;
-        otherEntity: IEntity;
-    };
-}
+import { ICauseInstance } from '@microservices/shared';
 
 export interface ICause {
     instance: ICauseInstance;

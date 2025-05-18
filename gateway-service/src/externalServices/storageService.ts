@@ -1,8 +1,8 @@
 import FormData from 'form-data';
+import { UploadedFile } from '@microservices/shared';
 import { PassThrough } from 'stream';
 import config from '../config';
 import DefaultExternalServiceApi from '../utils/express/externalService';
-import { UploadedFile } from '../utils/busboy/interface';
 
 const {
     service: { docxHeaders, workspaceIdHeaderName },
@@ -18,7 +18,7 @@ const {
     },
 } = config;
 
-export class StorageService extends DefaultExternalServiceApi {
+class StorageService extends DefaultExternalServiceApi {
     constructor(workspaceId: string) {
         super(workspaceId, { baseURL: url });
     }
@@ -98,3 +98,5 @@ export class StorageService extends DefaultExternalServiceApi {
         return data;
     }
 }
+
+export default StorageService;

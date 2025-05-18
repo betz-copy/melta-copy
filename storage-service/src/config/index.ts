@@ -1,8 +1,8 @@
 import 'dotenv/config';
 import * as env from 'env-var';
-import { fileExtension } from './documentExtension';
+import fileExtension from './documentExtension';
 
-export const config = {
+const config = {
     busboy: {
         fileKeyName: 'file',
         filesKeyName: 'files',
@@ -75,3 +75,5 @@ export const config = {
         uuidLength: env.get('FILE_UUID_LENGTH').default(32).asInt(),
     },
 };
+
+export default config;
