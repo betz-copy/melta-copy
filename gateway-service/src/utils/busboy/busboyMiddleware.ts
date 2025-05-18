@@ -2,13 +2,14 @@
 import { Request, Response, NextFunction } from 'express';
 import Busboy from 'busboy';
 import { PassThrough } from 'stream';
-import { ReadableStreamClone } from 'readable-stream-clone';
-import { UploadedFile } from './interface';
+import ReadableStreamClone from 'readable-stream-clone';
+import { UploadedFile } from '@microservices/shared';
 import config from '../../config';
 
-export const busboyMiddleware = (req: Request, _res: Response, next: NextFunction): void => {
-    if (!req.is('multipart/form-data')) return next();
-
+const busboyMiddleware = (req: Request, _res: Response, next: NextFunction): void => {
+    if (!req.is('multipart/form-data')) {
+        return next();
+    }
     try {
         const busboy = Busboy({ headers: req.headers, defCharset: 'utf8' });
         const fields: Record<string, unknown> = {};
@@ -88,3 +89,5 @@ export const busboyMiddleware = (req: Request, _res: Response, next: NextFunctio
         next(err);
     }
 };
+
+export default busboyMiddleware;

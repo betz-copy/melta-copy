@@ -1,4 +1,4 @@
-export const fileExtension = {
+const fileExtension = {
     document: [
         'doc',
         'docx',
@@ -1023,3 +1023,5 @@ export const fileExtension = {
         'prw',
     ],
 };
+
+export default fileExtension;

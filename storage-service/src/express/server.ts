@@ -1,14 +1,14 @@
-import http from 'http';
+import * as http from 'http';
 import express from 'express';
-import bodyParser from 'body-parser';
+import * as bodyParser from 'body-parser';
 import helmet from 'helmet';
 
 import { once } from 'events';
-import { errorMiddleware } from './error';
-import { appRouter } from './router';
-import { config } from '../config';
+import { errorMiddleware } from '@microservices/shared';
+import appRouter from './router';
+import config from '../config';
 
-export class Server {
+class Server {
     private app: express.Application;
 
     private http: http.Server;
@@ -35,3 +35,5 @@ export class Server {
         await once(this.http, 'listening');
     }
 }
+
+export default Server;

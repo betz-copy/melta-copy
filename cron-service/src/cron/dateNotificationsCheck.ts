@@ -1,15 +1,20 @@
-import { IDateAboutToExpireNotificationMetadata, NotificationType } from '../notification/interface';
-import config from '../config';
-import { UsersManager } from '../users/manager';
-import { WorkspaceTypes } from '../workspaces/inteface';
-import { InstanceService } from '../services/instance';
-import { IFilterDatesRange } from '../instance/entity/interface';
-import { EntityTemplateService, IMongoEntityTemplatePopulated } from '../services/entityTemplate';
-import { PermissionScope, PermissionType } from '../users/intefaces/permissions';
-import { WorkspaceManager } from '../workspaces/manager';
-import { RabbitManager } from '../utils/rabbit/rabbit';
-import logger from '../utils/logger/logsLogger';
+import {
+    IDateAboutToExpireNotificationMetadata,
+    NotificationType,
+    WorkspaceTypes,
+    IFilterDatesRange,
+    IEntityTemplatePopulated,
+    PermissionScope,
+    PermissionType,
+    logger,
+} from '@microservices/shared';
 import * as schedule from 'node-schedule';
+import InstanceService from '../services/instance';
+import config from '../config';
+import UsersManager from '../users/manager';
+import EntityTemplateService from '../services/entityTemplate';
+import WorkspaceManager from '../workspaces/manager';
+import RabbitManager from '../utils/rabbit/rabbit';
 
 const { notifications } = config;
 
@@ -33,7 +38,12 @@ const getFilteredInstances = async (
     entityTemplateId: string,
     propertiesWithDateNotifications: IFilterDatesRange[],
 ) => {
-    const { count } = await instancesService.searchEntitiesOfTemplateRequest(entityTemplateId, { limit: 1 });
+    const { count } = await instancesService.searchEntitiesOfTemplateRequest(entityTemplateId, {
+        limit: 1,
+        skip: 0,
+        showRelationships: false,
+        sort: [],
+    });
     const today = new Date();
 
     const dateNotificationFilterQuery = propertiesWithDateNotifications.map((propertyWithNotification) => {
@@ -57,6 +67,9 @@ const getFilteredInstances = async (
     const { entities } = await instancesService.searchEntitiesOfTemplateRequest(entityTemplateId, {
         limit: count,
         filter: { $or: dateNotificationFilterQuery },
+        skip: 0,
+        showRelationships: false,
+        sort: [],
     });
 
     return entities;
@@ -66,7 +79,7 @@ const sendNotificationsForEntityTemplate = async (
     workspaceId: string,
     instancesService: InstanceService,
     rabbitManager: RabbitManager,
-    entityTemplate: IMongoEntityTemplatePopulated,
+    entityTemplate: IEntityTemplatePopulated,
 ) => {
     const today = new Date();
 
@@ -75,11 +88,19 @@ const sendNotificationsForEntityTemplate = async (
     const userIdsWithPermission = await UsersManager.searchUserIds({
         workspaceIds,
         permissions: {
-            // @ts-ignore
+            // TODO: Yona - Check if this change is OK?
             [PermissionType.instances]: {
                 categories: {
                     [entityTemplate.category._id]: {
-                        scope: PermissionScope.write,
+                        entityTemplates: {
+                            [entityTemplate._id]: {
+                                fields: {
+                                    '*': {
+                                        scope: PermissionScope.write,
+                                    },
+                                },
+                            },
+                        },
                     },
                 },
             },
@@ -130,7 +151,7 @@ const sendNotificationsForEntityTemplate = async (
     }
 };
 
-export const checkForDateNotifications = async () => {
+const checkForDateNotifications = async () => {
     schedule.scheduleJob(notifications.dateAlertTime, async () => {
         logger.info('Checking for Date Notifications...');
         const workspaceIds = await WorkspaceManager.getWorkspaceIds(WorkspaceTypes.mlt);
@@ -155,3 +176,5 @@ export const checkForDateNotifications = async () => {
         );
     });
 };
+
+export default checkForDateNotifications;

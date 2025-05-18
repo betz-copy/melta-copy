@@ -1,3 +1,4 @@
+import { IGantt, IMongoGantt, ISearchGanttsBody } from '@microservices/shared';
 import config from '../config';
 import DefaultExternalServiceApi from '../utils/express/externalService';
 
@@ -5,43 +6,7 @@ const {
     ganttService: { url, baseRoute, requestTimeout },
 } = config;
 
-export interface IGanttItem {
-    entityTemplate: {
-        id: string;
-        startDateField: string;
-        endDateField: string;
-        fieldsToShow: string[];
-    };
-    connectedEntityTemplates: {
-        relationshipTemplateId: string;
-        fieldsToShow: string[];
-    }[];
-    groupByRelationshipId?: string; // must exist if gantt has groupBy
-}
-
-export interface IGantt {
-    name: string;
-    items: IGanttItem[];
-    groupBy?: {
-        entityTemplateId: string;
-        groupNameField: string; // must be unique
-    };
-}
-
-export interface IMongoGantt extends IGantt {
-    _id: string;
-    createdAt: string;
-    updatedAt: string;
-}
-
-export interface ISearchGanttsBody {
-    search?: string;
-    limit: number;
-    step: number;
-    entityTemplateId?: string;
-    relationshipTemplateIds?: string[];
-}
-export class GanttsService extends DefaultExternalServiceApi {
+class GanttsService extends DefaultExternalServiceApi {
     constructor(workspaceId: string) {
         super(workspaceId, { baseURL: `${url}${baseRoute}`, timeout: requestTimeout });
     }
@@ -71,3 +36,5 @@ export class GanttsService extends DefaultExternalServiceApi {
         return data;
     }
 }
+
+export default GanttsService;

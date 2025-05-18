@@ -1,26 +1,29 @@
-import { CypherQuery } from './interfaces';
 import {
+    IEquation,
+    IOperatorBool,
+    isEquation,
+    IMongoRule,
+    IAggregationGroup,
+    IGroup,
+    isAggregationGroup,
+    isGroup,
     IArgument,
     IConstant,
     IPropertyOfVariable,
     IVariable,
     isConstant,
     isPropertyOfVariable,
-} from '../../externalServices/templates/interfaces/rules/formula/argument';
-import { IFormula } from '../../externalServices/templates/interfaces/rules/formula';
-import {
+    IFormula,
     ICountAggFunction,
     IRegularFunction,
     ISumAggFunction,
     isCountAggFunction,
     isRegularFunction,
     isSumAggFunction,
-} from '../../externalServices/templates/interfaces/rules/formula/function';
-import { IAggregationGroup, IGroup, isAggregationGroup, isGroup } from '../../externalServices/templates/interfaces/rules/formula/group';
-import { IEquation, IOperatorBool, isEquation } from '../../externalServices/templates/interfaces/rules/formula/equation';
-import { IMongoRule } from '../../externalServices/templates/interfaces/rules';
+    IMongoEntityTemplate,
+} from '@microservices/shared';
+import { CypherQuery } from './interfaces';
 import config from '../../config';
-import { IMongoEntityTemplate } from '../../externalServices/templates/interfaces/entityTemplates';
 
 const {
     cypherRulesResultValueVariableNameSuffix: resultValueVariableNameSuffix,
@@ -532,6 +535,7 @@ const generateNeo4jQueryFromFormula = (
     throw new Error('unexpected formula, must be group/equation/aggeregationGroup');
 };
 
+// eslint-disable-next-line import/prefer-default-export
 export const generateNeo4jRuleQueryOnEntity = (rule: IMongoRule, entityId: string, entityTemplate: IMongoEntityTemplate): CypherQuery => {
     const { entityTemplateId, formula } = rule;
 

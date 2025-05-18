@@ -2,11 +2,10 @@ import axios from 'axios';
 import 'elastic-apm-node/start';
 import menash from 'menashmq';
 
+import { logger } from '@microservices/shared';
 import config from './config';
-import { updateIndexConsumeFunction } from './search/consumer';
-import logger from './utils/logger/logsLogger';
+import updateIndexConsumeFunction from './search/consumer';
 import Neo4jClient from './utils/neo4j/neo4j';
-import Manager from './search/manager';
 
 const { rabbit, service } = config;
 
@@ -23,17 +22,6 @@ const initializeRabbit = async () => {
     });
 
     logger.info('Rabbit initialized');
-};
-
-export const updateNonStringPropertiesScript = async (workspaceId: string) => {
-    console.log(`INFO: Start running Updating non-string properties script for workspace: ${workspaceId}`);
-    const manager = new Manager(workspaceId);
-
-    await manager.updateAllNonStringProps();
-
-    await manager.deleteAllIndexes();
-    await manager.createAllIndexes();
-    console.log(`INFO: Finished running Updating non-string properties script for workspace: ${workspaceId}`);
 };
 
 const main = async () => {

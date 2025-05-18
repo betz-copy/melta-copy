@@ -1,6 +1,6 @@
 import joi from 'joi';
-import { PermissionType } from '../../externalServices/userService/interfaces/permissions';
-import { ExtendedJoi, iconFileSchema, MongoIdSchema } from '../../utils/joi';
+import { PermissionType, iconFileSchema, MongoIdSchema } from '@microservices/shared';
+import { ExtendedJoi } from '../../utils/joi';
 import config from '../../config';
 
 const { profilePathPattern } = config.userService;

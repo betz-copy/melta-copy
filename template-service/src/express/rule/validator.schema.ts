@@ -1,5 +1,5 @@
 import Joi from 'joi';
-import { MongoIdSchema } from '../../utils/joi';
+import { MongoIdSchema } from '@microservices/shared';
 
 // GET /api/templates/rules/:ruleId
 export const getRuleByIdRequestSchema = Joi.object({

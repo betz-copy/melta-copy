@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import DefaultController from '../../utils/express/controller';
-import { ActivityLogManager } from './manager';
+import ActivityLogManager from './manager';
 
 class ActivityLogController extends DefaultController<ActivityLogManager> {
     constructor(workspaceId: string) {

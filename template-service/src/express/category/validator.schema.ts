@@ -1,5 +1,5 @@
 import Joi from 'joi';
-import { MongoIdSchema, ColorSchema, variableNameValidation } from '../../utils/joi';
+import { MongoIdSchema, ColorSchema, variableNameValidation } from '@microservices/shared';
 
 // GET /api/categories/:categoryId
 export const getCategoryByIdSchema = Joi.object({

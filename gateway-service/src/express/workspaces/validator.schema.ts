@@ -1,6 +1,6 @@
 import Joi from 'joi';
-import { ExtendedJoi, FilePathSchema, iconFileSchema, MongoIdSchema, WorkspaceNameSchema } from '../../utils/joi';
-import { WorkspaceTypes } from './interface';
+import { WorkspaceTypes, FilePathSchema, iconFileSchema, MongoIdSchema, WorkspaceNameSchema } from '@microservices/shared';
+import { ExtendedJoi } from '../../utils/joi';
 
 const metadataSchema = Joi.object({
     shouldNavigateToEntityPage: Joi.boolean(),
