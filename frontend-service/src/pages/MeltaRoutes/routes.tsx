@@ -63,6 +63,10 @@ export const MeltaRoutesInner: React.FC = () => {
 
     const { setIsOpen, setCurrentStep } = useTour();
 
+    const previousRoute = useRef<string | null>(null);
+
+    console.log({ route: previousRoute.current });
+
     const currentUser = useUserStore((state) => state.user);
 
     const queryClient = useQueryClient();
@@ -149,6 +153,10 @@ export const MeltaRoutesInner: React.FC = () => {
         if (config?.meltaUpdates && meltaUpdatesShown !== JSON.stringify(config.meltaUpdates)) setOpenMeltaUpdates(true);
     }, []);
 
+    useEffect(() => {
+        previousRoute.current = location;
+    }, [location]);
+
     const handleClose = () => {
         setOpenMeltaUpdates(false);
         LocalStorage.set(environment.meltaUpdatesShown, JSON.stringify(config?.meltaUpdates));
@@ -203,7 +211,7 @@ export const MeltaRoutesInner: React.FC = () => {
 
                             <Route path="/charts/:templateId?/:chartId?/chart">
                                 {/* <ChartsProtectedRoute permissions={currentUser.currentWorkspacePermissions}> */}
-                                <Chart />
+                                <Chart prevPath={previousRoute.current} />
                                 {/* </ChartsProtectedRoute> */}
                             </Route>
 
