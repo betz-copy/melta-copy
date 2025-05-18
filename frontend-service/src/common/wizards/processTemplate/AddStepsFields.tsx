@@ -16,11 +16,10 @@ import { StepComponentProps } from '../index';
 import StepsApproversBlock from './StepsApproversBlock';
 import StepsIconBlock from './StepsIconBlock';
 import { StepsNameBlock } from './StepsNameBlock';
-import FieldBlock, { FieldBlockAccordion, FieldBlockProps } from '../entityTemplate/FieldBlock';
+import { FieldBlockAccordion, FieldBlockProps, ItemTypes, StructureEditor } from '../entityTemplate/FieldBlock';
 import { attachmentPropertiesBaseSchema } from '../entityTemplate/AddFields';
 import { fieldDetailsSchema, initialFieldCardDataOnAdd, useAreThereProcessInstancesByTemplateId } from './AddDetailsFields';
 import { MeltaTooltip } from '../../MeltaTooltip';
-import { ItemTypes, ManualDndLayout, StructureEditor } from '../entityTemplate/try5';
 import { CommonFormInputProperties } from '../entityTemplate/commonInterfaces';
 
 const stepTemplateUniqueNames = (value, context: Yup.TestContext) => {
@@ -51,7 +50,14 @@ const addStepsFieldsSchema = Yup.object({
         .of(
             Yup.object({
                 properties: Yup.array().of(fieldDetailsSchema).min(1, i18next.t('validation.oneField')),
-                attachmentProperties: Yup.array().of(attachmentPropertiesBaseSchema),
+                attachmentProperties: Yup.array().of(
+                    Yup.object({
+                        type: Yup.string().oneOf(['field']).required(),
+                        data: attachmentPropertiesBaseSchema.shape({
+                            required: Yup.boolean().required(i18next.t('validation.required')),
+                        }),
+                    }),
+                ),
                 reviewers: Yup.array().of(Yup.object({})).min(1, i18next.t('validation.oneField')),
                 icon: Yup.object({
                     name: Yup.string().nullable(true).optional(),
@@ -121,6 +127,8 @@ const FieldBlockStepWarper: any = ({
     }, []);
 
     drag(drop(ref));
+    console.log({ errors });
+
     return (
         <Grid
             item

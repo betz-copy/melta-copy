@@ -2,6 +2,25 @@ import mongoose from 'mongoose';
 import config from '../../config';
 import { transformResultDocsObjectIdKeysToString } from '../../utils/mongoose';
 
+const FieldGroupSchema = new mongoose.Schema(
+    {
+        name: {
+            type: String,
+            required: true,
+            unique: true,
+        },
+        displayName: {
+            type: String,
+            required: true,
+        },
+        fields: {
+            type: [String],
+            required: true,
+        },
+    },
+    { _id: false },
+);
+
 export const EntityTemplateSchema = new mongoose.Schema(
     {
         name: {
@@ -57,7 +76,7 @@ export const EntityTemplateSchema = new mongoose.Schema(
             type: [String],
         },
         fieldGroups: {
-            type: [Object],
+            type: [FieldGroupSchema],
         },
     },
     {

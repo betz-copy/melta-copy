@@ -44,6 +44,7 @@ export const formatToString = (value: any, property: IEntitySingleProperty, key?
     if (valueType === 'boolean') return value ? i18next.t('booleanOptions.yes') : i18next.t('booleanOptions.no');
     if (valueType === 'string') {
         if (format === 'date') return new Date(value).toLocaleDateString('en-uk');
+        if (format === 'comment') return property.hideFromDetailsPage || (key && hideProps.includes(key)) ? undefined : property.comment;
         if (format === 'date-time') return new Date(value).toLocaleString('en-uk');
         if (format === 'fileId' || format === 'signature') return <OpenPreview fileId={value} download={isPrintingMode} />;
         if (format === 'relationshipReference') {
@@ -204,6 +205,7 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
                     },
                     entityTemplate.properties.hide,
                 );
+                if (!stringFormatValue) return undefined;
 
                 const propertyValueColor = getPropertyColor(
                     propertyKey,
@@ -549,9 +551,8 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
             <Box sx={{ marginY: '1rem' }}>{dividerTitle && <BlueTitle title={dividerTitle} component="p" variant="subtitle1" />}</Box>
             <Grid container style={{ ...style, alignItems: textWrap ? 'flex-start' : 'center', alignContent: 'center' }}>
                 {showByGroups && entityTemplate.fieldGroups ? (
-                    propertiesOrderedToShow.map((propertyKey, index) => {
+                    propertiesOrderedToShow.map((propertyKey) => {
                         const group = entityTemplate.fieldGroups?.find((g) => g.fields.includes(propertyKey));
-                        const groupIndex = entityTemplate.fieldGroups?.findIndex((g) => g.name === group?.name);
 
                         if (group && !alreadyRenderedGroups.has(group.name)) {
                             alreadyRenderedGroups.add(group.name);
@@ -559,38 +560,47 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                             const orderedGroupFields = propertiesOrderedToShow.filter((key) => group.fields.includes(key));
 
                             return (
-                                <Box
-                                    key={group.name}
+                                <Grid
+                                    container
+                                    item
                                     sx={{
                                         width: '100%',
-                                        borderRadius: '40px',
-                                        marginBottom: entityTemplate.fieldGroups?.length === groupIndex ? '0px' : '40px',
-                                        marginTop: index === 0 ? '0px' : '40px',
+                                        borderRadius: '10px',
+                                        backgroundColor: darkMode ? '#4a4a5033' : 'rgba(240, 242, 247, 0.6)',
+                                        padding: '10px',
                                     }}
+                                    key={group.name}
                                 >
-                                    <Typography fontWeight="bold" fontSize="16px" color="#4752B6" paddingBottom={1} marginBottom="20px">
-                                        {group.displayName}
-                                    </Typography>
-                                    <Grid container>
-                                        <PropertiesDetails
-                                            key={group.name}
-                                            propertiesOrderedToShow={orderedGroupFields}
-                                            properties={properties}
-                                            entityTemplate={entityTemplate}
-                                            entityTemplates={entityTemplates}
-                                            isPrintingMode={isPrintingMode}
-                                            pureString={pureString}
-                                            propertiesToHighlight={propertiesToHighlight}
-                                            propertiesToHighlightColor={propertiesToHighlightColor}
-                                            mode={mode}
-                                            darkMode={darkMode}
-                                            viewFirstLineOfLongText={viewFirstLineOfLongText}
-                                            searchedText={searchedText}
-                                            innerStyle={innerStyle}
-                                            textWrap={textWrap}
-                                        />
-                                    </Grid>
-                                </Box>
+                                    <Box
+                                        key={group.name}
+                                        sx={{
+                                            width: '100%',
+                                        }}
+                                    >
+                                        <Typography fontWeight="bold" fontSize="16px" color="#4752B6" paddingBottom={1} marginBottom="20px">
+                                            {group.displayName}
+                                        </Typography>
+                                        <Grid container>
+                                            <PropertiesDetails
+                                                key={group.name}
+                                                propertiesOrderedToShow={orderedGroupFields}
+                                                properties={properties}
+                                                entityTemplate={entityTemplate}
+                                                entityTemplates={entityTemplates}
+                                                isPrintingMode={isPrintingMode}
+                                                pureString={pureString}
+                                                propertiesToHighlight={propertiesToHighlight}
+                                                propertiesToHighlightColor={propertiesToHighlightColor}
+                                                mode={mode}
+                                                darkMode={darkMode}
+                                                viewFirstLineOfLongText={viewFirstLineOfLongText}
+                                                searchedText={searchedText}
+                                                innerStyle={innerStyle}
+                                                textWrap={textWrap}
+                                            />
+                                        </Grid>
+                                    </Box>
+                                </Grid>
                             );
                         }
 

@@ -8,11 +8,10 @@ import { toast } from 'react-toastify';
 import { ProcessTemplateWizardValues } from './index';
 import { searchProcessesRequest } from '../../../services/processesService';
 import { attachmentPropertiesBaseSchema, propertiesBaseSchema } from '../entityTemplate/AddFields';
-import FieldBlock from '../entityTemplate/FieldBlock';
+import { FieldBlock } from '../entityTemplate/FieldBlock';
 import { ErrorToast } from '../../ErrorToast';
 import { processTemplateUniquePropertiesDetails } from '../../../utils/validation';
 import { StepComponentProps } from '..';
-import { ManualDndLayout } from '../entityTemplate/try5';
 
 export const fieldDetailsSchema = Yup.object({
     type: Yup.string().oneOf(['field']).required(),
@@ -107,7 +106,7 @@ const AddDetailsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues,
                     supportConvertingToMultipleFields={false}
                     locationSearchFields={{ show: false, disabled: false }}
                 /> */}
-                <ManualDndLayout
+                <FieldBlock
                     propertiesType="detailsProperties"
                     values={values}
                     initialValues={initialValues}
@@ -157,7 +156,7 @@ const AddDetailsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues,
                     locationSearchFields={{ show: false, disabled: false }}
                 /> */}
 
-                <ManualDndLayout
+                <FieldBlock
                     propertiesType="detailsAttachmentProperties"
                     values={values}
                     initialValues={initialValues}

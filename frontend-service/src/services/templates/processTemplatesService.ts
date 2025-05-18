@@ -148,14 +148,15 @@ const addAttachmentProperties = (
     attachmentProperties.forEach(({ name, title, type, required, deleted }) => {
         if (!deleted) {
             const { required: requiredFile, ...attachmentProperty } = createFileAttachmentProperty(type, required);
+
             // eslint-disable-next-line no-param-reassign
             properties[name] = {
                 title,
                 ...attachmentProperty,
             };
+
             propertiesOrder.push(name);
         }
-
         if (required) detailsSchema.required.push(name);
     });
 };
@@ -192,7 +193,7 @@ const formToJSONSchema = (values: ProcessTemplateWizardValues): ICreateProcessTe
         }
     });
 
-    addAttachmentProperties(extractDetailsProperties.properties, detailsPropertiesOrder, extractDetailsAttachmentProperties, detailsSchema);
+    addAttachmentProperties(detailsSchema.properties, detailsPropertiesOrder, extractDetailsAttachmentProperties, detailsSchema);
 
     steps.forEach((step) => {
         const stepPropertiesOrder: string[] = [];

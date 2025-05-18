@@ -92,7 +92,7 @@ export interface FieldEditCardProps {
     errors?: FormikErrors<CommonFormInputProperties>;
     setFieldValue: (field: keyof CommonFormInputProperties, value: any) => void;
     onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-    remove: (index: number, isNewProperty: boolean) => any;
+    remove: (index: number, isNewProperty: boolean, groupIndex?: number) => any;
     supportSerialNumberType: boolean;
     supportEntityReferenceType: boolean;
     supportChangeToRequiredWithInstances: boolean;
@@ -114,7 +114,8 @@ export interface FieldEditCardProps {
     supportConvertingToMultipleFields?: boolean;
     supportComment?: boolean;
     userPropertiesInTemplate?: string[];
-    onDuplicateKartoffelField?: (fieldIndex: number) => void;
+    onDuplicateKartoffelField?: (fieldIndex: number, groupIndex?: number) => void;
+    groupIndex?: number;
 }
 
 export const FieldEditCard: React.FC<FieldEditCardProps> = ({
@@ -152,6 +153,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     supportComment,
     userPropertiesInTemplate = [],
     onDuplicateKartoffelField,
+    groupIndex,
 }) => {
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
@@ -276,26 +278,6 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
         setEditError('');
     };
 
-    const setFieldValues = (prevValue, updatedValues: object) => {
-        console.log({ prevValue });
-
-        if (prevValue.fieldGroup) {
-            return {
-                ...prevValue,
-                ...updatedValues,
-            };
-        }
-        console.log({ prevValue, updatedValues });
-
-        return {
-            ...prevValue,
-            data: {
-                ...prevValue.data,
-                ...updatedValues,
-            },
-        };
-    };
-
     const { mutate: updateEnumField, isLoading } = useMutation(
         (mutationArgs: { id: string; tagIndex: number; option: string; fieldValue: any }) => {
             const { id, tagIndex, option, fieldValue } = mutationArgs;
@@ -329,12 +311,11 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                         delete newOptionColors[fieldValue.options[editIndex]];
                         newOptionColors[option] = newColor;
                     }
-                    setValues?.((prev) =>
-                        setFieldValues(prev, {
-                            options: newOptions.concat(frontEndEnumValues),
-                            optionColors: newOptionColors,
-                        }),
-                    );
+                    setValues?.((prev) => ({
+                        ...prev,
+                        options: newOptions.concat(frontEndEnumValues),
+                        optionColors: newOptionColors,
+                    }));
 
                     entityTemplateMap!.set(id, resultOfMutation);
                     return entityTemplateMap!;
@@ -376,12 +357,11 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                     if (fieldValue.optionColors && Object.keys(fieldValue.optionColors).length > 0 && editIndex != null) {
                         delete newOptionColors[fieldValue.options[editIndex]];
                     }
-                    setValues?.((prev) =>
-                        setFieldValues(prev, {
-                            options: newOptions.concat(frontEndEnumValues),
-                            optionColors: newOptionColors,
-                        }),
-                    );
+                    setValues?.((prev) => ({
+                        ...prev,
+                        options: newOptions.concat(frontEndEnumValues),
+                        optionColors: newOptionColors,
+                    }));
                     entityTemplateMap!.set(id, resultOfMutation);
                     return entityTemplateMap!;
                 });
@@ -543,7 +523,10 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                     updatedConstraints.push({ groupName: '', properties: [fieldName] });
                 }
             });
-            setValues!((prevValue) => setFieldValues(prevValue, { groupName: undefined }));
+            setValues!((prev) => ({
+                ...prev,
+                groupName: undefined,
+            }));
 
             return updatedConstraints;
         });
@@ -568,9 +551,16 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
             if (oldColor) {
                 const newOptionColors = { ...value.optionColors! };
                 delete newOptionColors[value.options[tagIndex]];
-                setValues?.((prev) => setFieldValues(prev, { optionColors: { ...newOptionColors, [trimValue]: oldColor }, options: newOptions }));
+                setValues?.((prev) => ({
+                    ...prev,
+                    optionColors: { ...newOptionColors, [trimValue]: oldColor },
+                    options: newOptions,
+                }));
             } else {
-                setValues?.((prev) => setFieldValues(prev, { options: newOptions }));
+                setValues?.((prev) => ({
+                    ...prev,
+                    options: newOptions,
+                }));
             }
             setEditIndex(null);
         }
@@ -596,12 +586,11 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
             }
             return acc;
         }, {});
-        setValues?.((prev) =>
-            setFieldValues(prev, {
-                options: [...value.options.slice(0, initialOptionArray.length), ...newValues],
-                optionColors: tempColors,
-            }),
-        );
+        setValues?.((prev) => ({
+            ...prev,
+            options: [...value.options.slice(0, initialOptionArray.length), ...newValues],
+            optionColors: tempColors,
+        }));
     };
 
     const archiveButtonTooltip = () => {
@@ -664,14 +653,13 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                     value={value.type === 'text-area' ? 'string' : value.type}
                                     onChange={(e) => {
                                         const newType = e.target.value;
-                                        setValues?.((prevValue: any) =>
-                                            setFieldValues(prevValue, {
-                                                type: newType,
-                                                required: (newType === 'serialNumber' || prevValue.required) ?? false,
-                                                title: newType === 'comment' ? value.name : value.title,
-                                                readOnly: newType === 'kartoffelUserField' || prevValue.readOnly,
-                                            }),
-                                        );
+                                        setValues?.((prevValue) => ({
+                                            ...prevValue,
+                                            type: newType,
+                                            required: (newType === 'serialNumber' || prevValue.required) ?? false,
+                                            title: newType === 'comment' ? value.name : value.title,
+                                            readOnly: newType === 'kartoffelUserField' || prevValue.readOnly,
+                                        }));
                                     }}
                                     error={touchedType && Boolean(errorType)}
                                     helperText={touchedType && errorType}
@@ -722,11 +710,10 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                             if (isDisabled) {
                                                 updateOldDisabledEnumVals(trimmedValue);
                                             } else {
-                                                setValues?.((prevValue: any) =>
-                                                    setFieldValues(prevValue, {
-                                                        options: trimmedValue,
-                                                    }),
-                                                );
+                                                setValues?.((prev) => ({
+                                                    ...prev,
+                                                    options: trimmedValue,
+                                                }));
                                             }
                                         }}
                                         isOptionEqualToValue={(option, inputValue) => {
@@ -1035,11 +1022,10 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                         <MeltaCheckbox
                                                             checked={value.isDatePastAlert ?? true}
                                                             onChange={(_e, checked) => {
-                                                                setValues?.((prevValue) =>
-                                                                    setFieldValues(prevValue, {
-                                                                        isDatePastAlert: checked,
-                                                                    }),
-                                                                );
+                                                                setValues?.((prev) => ({
+                                                                    ...prev,
+                                                                    isDatePastAlert: checked,
+                                                                }));
                                                             }}
                                                         />
                                                     }
@@ -1106,12 +1092,11 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                     id={required}
                                                     name={required}
                                                     onChange={(_e, checked) => {
-                                                        setValues((prevValue) =>
-                                                            setFieldValues(prevValue, {
-                                                                required: checked,
-                                                                identifier: !checked ? undefined : prevValue.identifier,
-                                                            }),
-                                                        );
+                                                        setValues?.((prev) => ({
+                                                            ...prev,
+                                                            required: checked,
+                                                            identifier: !checked ? undefined : prev.identifier,
+                                                        }));
                                                         // unique is allowed only if required=true, automatic uncheck 'unique' too
                                                         if (!checked && unique) {
                                                             deletePropFromUniqueConstraints(uniqueConstraintGroupName, value.name);
@@ -1142,11 +1127,10 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                 id={readOnly}
                                                 name={readOnly}
                                                 onChange={(_e, checked) => {
-                                                    setValues?.((prevValue) =>
-                                                        setFieldValues(prevValue, {
-                                                            readOnly: checked || undefined,
-                                                        }),
-                                                    );
+                                                    setValues?.((prev) => ({
+                                                        ...prev,
+                                                        readOnly: checked || undefined,
+                                                    }));
                                                 }}
                                                 disabled={value.required || value.archive || value.type === 'kartoffelUserField' || isComment}
                                                 checked={value.readOnly || isComment}
@@ -1196,14 +1180,13 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                         checked={unique}
                                                         disabled={value.archive || value.type === 'serialNumber'}
                                                         onChange={(_e, checked) => {
-                                                            setValues?.((prevValue) =>
-                                                                setFieldValues(prevValue, {
-                                                                    required: checked ? true : prevValue.required,
-                                                                    identifier: !checked ? undefined : prevValue.identifier,
-                                                                    groupName: undefined,
-                                                                    uniqueCheckbox: false,
-                                                                }),
-                                                            );
+                                                            setValues?.((prevValue) => ({
+                                                                ...prevValue,
+                                                                required: checked ? true : prevValue.required,
+                                                                identifier: !checked ? undefined : prevValue.identifier,
+                                                                groupName: undefined,
+                                                                uniqueCheckbox: false,
+                                                            }));
 
                                                             if (checked) {
                                                                 createEmptyGroup(value.name);
@@ -1238,11 +1221,10 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                     onChange={(e) => {
                                                         const newFormatToText = e.target.checked ? 'text-area' : 'string';
 
-                                                        setValues?.((prevValue) =>
-                                                            setFieldValues(prevValue, {
-                                                                type: newFormatToText,
-                                                            }),
-                                                        );
+                                                        setValues?.((prev) => ({
+                                                            ...prev,
+                                                            type: newFormatToText,
+                                                        }));
                                                     }}
                                                     checked={value.type === 'text-area'}
                                                     disabled={value.archive}
@@ -1258,18 +1240,17 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                     id={identifier}
                                                     name={identifier}
                                                     onChange={(_e, checked) => {
-                                                        setValues?.((prevValue) =>
-                                                            setFieldValues(prevValue, {
-                                                                required: checked ? true : prevValue.required,
-                                                                identifier: checked || undefined,
-                                                                groupName: undefined,
-                                                                uniqueCheckbox: false,
-                                                            }),
-                                                        );
+                                                        setValues?.((prevValue) => ({
+                                                            ...prevValue,
+                                                            required: checked ? true : prevValue.required,
+                                                            identifier: checked || undefined,
+                                                            groupName: undefined,
+                                                            uniqueCheckbox: false,
+                                                        }));
 
                                                         if (checked) createEmptyGroup(value.name);
                                                     }}
-                                                    disabled={hasIdentifier && !value.identifier}
+                                                    disabled={(hasIdentifier && !value.identifier) || value.archive}
                                                     checked={value.identifier ?? false}
                                                 />
                                             }
@@ -1284,11 +1265,10 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                         id={hideFromDetailsPage}
                                                         name={hideFromDetailsPage}
                                                         onChange={(_e, checked) => {
-                                                            setValues?.((prevValue) =>
-                                                                setFieldValues(prevValue, {
-                                                                    hideFromDetailsPage: checked,
-                                                                }),
-                                                            );
+                                                            setValues?.((prev) => ({
+                                                                ...prev,
+                                                                hideFromDetailsPage: checked,
+                                                            }));
                                                         }}
                                                         checked={value.hideFromDetailsPage ?? false}
                                                     />
@@ -1306,11 +1286,10 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                         : commentColorsObj[0]
                                                 }
                                                 onValueChange={(newValue) => {
-                                                    setValues?.((prevValue) =>
-                                                        setFieldValues(prevValue, {
-                                                            color: newValue as string,
-                                                        }),
-                                                    );
+                                                    setValues?.((prev) => ({
+                                                        ...prev,
+                                                        color: newValue as string,
+                                                    }));
                                                 }}
                                                 colorsOptions={commentColors}
                                                 disableClearable
@@ -1348,7 +1327,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                     {value.type === 'kartoffelUserField' && (
                                         <MeltaTooltip title={i18next.t('wizard.entityTemplate.duplicateField')} placement="right">
                                             <Box>
-                                                <IconButton onClick={() => onDuplicateKartoffelField?.(index)}>
+                                                <IconButton onClick={() => onDuplicateKartoffelField?.(index, groupIndex)}>
                                                     <ImageWithDisable srcPath="/icons/duplicate.svg" style={{ width: '22px', height: '22px' }} />
                                                 </IconButton>
                                             </Box>
@@ -1372,7 +1351,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                     >
                                         <Box>
                                             <IconButton
-                                                onClick={() => remove(index, isNewProperty)}
+                                                onClick={() => remove(index, isNewProperty, groupIndex)}
                                                 disabled={!supportDeleteForExistingInstances || initialValue?.required || hasActions}
                                             >
                                                 {value.deleted ? <DeleteOff /> : <DeleteIcon />}
@@ -1391,11 +1370,10 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                         <MeltaCheckbox
                                                             checked={value.uniqueCheckbox}
                                                             onChange={(_e, checked) => {
-                                                                setValues?.((prevValue) =>
-                                                                    setFieldValues(prevValue, {
-                                                                        uniqueCheckbox: checked,
-                                                                    }),
-                                                                );
+                                                                setValues?.((prev) => ({
+                                                                    ...prev,
+                                                                    uniqueCheckbox: checked,
+                                                                }));
                                                                 if (!checked) {
                                                                     movePropAndCreateGroup(value.name);
                                                                 }
@@ -1421,11 +1399,10 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                 onChange={(_event, newValue) => {
                                                     if (newValue !== null) {
                                                         addToProperties(newValue);
-                                                        setValues?.((prevValue) =>
-                                                            setFieldValues(prevValue, {
-                                                                groupName: newValue,
-                                                            }),
-                                                        );
+                                                        setValues?.((prev) => ({
+                                                            ...prev,
+                                                            groupName: newValue,
+                                                        }));
                                                     }
                                                 }}
                                                 renderInput={(params) => (
@@ -1469,11 +1446,10 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                         !uniqueConstraints?.some((group) => group.groupName === inputValue)
                                                                     ) {
                                                                         createNewUniqueGroup(inputValue);
-                                                                        setValues?.((prevValue) =>
-                                                                            setFieldValues(prevValue, {
-                                                                                groupName: String(inputValue),
-                                                                            }),
-                                                                        );
+                                                                        setValues?.((prev) => ({
+                                                                            ...prev,
+                                                                            groupName: String(inputValue),
+                                                                        }));
                                                                     }
                                                                 }
                                                             }}
@@ -1484,11 +1460,10 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                 <IconButton
                                                                     aria-label="create"
                                                                     onClick={() => {
-                                                                        setValues?.((prevValue) =>
-                                                                            setFieldValues(prevValue, {
-                                                                                groupName: String(params.inputProps.value),
-                                                                            }),
-                                                                        );
+                                                                        setValues?.((prev) => ({
+                                                                            ...prev,
+                                                                            groupName: String(params.inputProps.value),
+                                                                        }));
                                                                     }}
                                                                     style={{
                                                                         position: 'absolute',

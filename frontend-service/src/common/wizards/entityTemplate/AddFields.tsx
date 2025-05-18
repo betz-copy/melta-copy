@@ -4,7 +4,6 @@ import * as Yup from 'yup';
 import i18next from 'i18next';
 import { useQuery } from 'react-query';
 import { AxiosError } from 'axios';
-import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
 import { toast } from 'react-toastify';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend, getEmptyImage } from 'react-dnd-html5-backend';
@@ -13,10 +12,9 @@ import { EntityTemplateWizardValues } from './index';
 import { StepComponentProps } from '../index';
 import { searchEntitiesOfTemplateRequest } from '../../../services/entitiesService';
 import { arrayTypes, basePropertyTypes, stringFormats } from '../../../services/templates/enitityTemplatesService';
-import FieldBlock from './FieldBlock';
 import { ErrorToast } from '../../ErrorToast';
 import { environment } from '../../../globals';
-import { ItemTypes, ManualDndLayout, StructureEditor } from './try5';
+import { ItemTypes, StructureEditor } from './FieldBlock';
 
 const { mapSearchPropertiesLimit } = environment.map;
 

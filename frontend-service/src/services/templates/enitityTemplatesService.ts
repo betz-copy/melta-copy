@@ -247,6 +247,16 @@ export const extractProperties = (items, propertyPath?: string) => {
         : properties;
 };
 
+export const extractGroups = (properties: { id: string; type: string }[]) => {
+    const groupsProperties = properties.map((item, index) => ({ ...item, index })).filter((item) => item.type === 'group');
+
+    const groupsPath = Object.fromEntries(groupsProperties.map(({ id, index }) => [id, `properties[${index}]`]));
+
+    return {
+        groupsProperties,
+        groupsPath,
+    };
+};
 export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode: boolean): IEntityTemplate => {
     // change to support file types
     const { properties, attachmentProperties, archiveProperties, propertiesTypeOrder, documentTemplatesIds, fieldGroups, ...restOfProperties } =
@@ -269,7 +279,6 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
     const extractArchiveProperties = extractProperties(archiveProperties);
     const extractAttachmentPropertiesData = extractProperties(attachmentProperties);
 
-    console.log(1, { extractPropertiesData });
     const updatedFieldsGroups = updateFieldGroupsOrder(extractPropertiesData, propertiesOrder);
 
     extractPropertiesData.forEach(
@@ -655,7 +664,6 @@ const updateEntityTemplateRequest = async (entityTemplateId: string, updatedEnti
     if (entityTemplate.mapSearchProperties) {
         formData.append('mapSearchProperties', JSON.stringify(entityTemplate.mapSearchProperties));
     }
-    console.log(entityTemplate.properties);
 
     formData.append('displayName', entityTemplate.displayName);
     formData.append('name', entityTemplate.name);

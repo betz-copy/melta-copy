@@ -665,7 +665,6 @@ const Field = ({ field, onDrop, index, parentId, buildProps, setFieldValue, setV
         }),
     });
     useEffect(() => {
-        // This removes the "ghost image"
         preview(getEmptyImage(), { captureDraggingState: true });
     }, []);
 
@@ -1012,45 +1011,42 @@ export const StructureEditor = <PropertiesType extends string, Values extends Re
         updateFormikDebounced();
     };
 
-    const setFieldDisplayValue = (index: number, field: keyof Values, value: any, groupIndex?: number) => {
+    const setFieldDisplayValue = (indexesToUpdate: { index: number; groupIndex?: number }[], field: keyof Values, value: any) => {
         const displayValuesCopy: any = [...orderedItemsRef.current] as Values[PropertiesType];
+        indexesToUpdate.forEach(({ index, groupIndex }) => {
+            if (groupIndex !== undefined) {
+                const group = displayValuesCopy[groupIndex];
 
-        if (groupIndex !== undefined) {
-            const group = displayValuesCopy[groupIndex];
-            console.log({ displayValuesCopy });
+                if (group === -1) return;
 
-            if (group === -1) return;
-
-            group.fields[index] = {
-                ...group.fields[index],
-                [field]: value,
-            };
-
-            if (field === 'name' && group.fields[index].type === 'comment')
-                group.fields[index].title = `${i18next.t('propertyTypes.comment')}-${value}`;
-        } else {
-            console.log('in else', { field, value }, index);
-
-            displayValuesCopy[index] = {
-                ...displayValuesCopy[index],
-                data: {
-                    ...displayValuesCopy[index].data,
+                group.fields[index] = {
+                    ...group.fields[index],
                     [field]: value,
-                },
-            };
+                };
 
-            if (field === 'name' && displayValuesCopy[index].data.type === 'comment')
-                displayValuesCopy[index].data.title = `${i18next.t('propertyTypes.comment')}-${value}`;
-        }
+                if (field === 'name' && group.fields[index].type === 'comment')
+                    group.fields[index].title = `${i18next.t('propertyTypes.comment')}-${value}`;
+            } else {
+                displayValuesCopy[index] = {
+                    ...displayValuesCopy[index],
+                    data: {
+                        ...displayValuesCopy[index].data,
+                        [field]: value,
+                    },
+                };
+
+                if (field === 'name' && displayValuesCopy[index].data.type === 'comment')
+                    displayValuesCopy[index].data.title = `${i18next.t('propertyTypes.comment')}-${value}`;
+            }
+        });
+
         setOrderedItems(displayValuesCopy);
         updateFormik();
     };
 
     const onDeleteSure = () => {
         setShowAreUSureDialogForRemoveProperty(false);
-        selectedIndexesToRemove.forEach(({ index, groupIndex }) => {
-            setFieldDisplayValue(index, 'deleted' as keyof Values, true, groupIndex);
-        });
+        setFieldDisplayValue(selectedIndexesToRemove, 'deleted' as keyof Values, true);
     };
 
     const push = (properties) => {
@@ -1111,10 +1107,7 @@ export const StructureEditor = <PropertiesType extends string, Values extends Re
                 }
             }
 
-            // Restore the fields
-            indexesToUpdate.forEach(({ index, groupIndex }) => {
-                setFieldDisplayValue(index, 'deleted' as keyof Values, false, groupIndex);
-            });
+            setFieldDisplayValue(indexesToUpdate, 'deleted' as keyof Values, false);
         } else if (areThereAnyInstances && !isNewProperty) {
             const indexesToUpdate = [{ index, groupIndex }];
 
@@ -1128,6 +1121,7 @@ export const StructureEditor = <PropertiesType extends string, Values extends Re
                                 indexesToUpdate.push({ index: nestedIndex, groupIndex: idx });
                             }
                         });
+                        console.log({ userFieldName, indexesToUpdate });
                     } else if (item.data.type === 'kartoffelUserField' && item.data.expandedUserField?.relatedUserField === userFieldName) {
                         indexesToUpdate.push({ index: idx });
                     }
@@ -1180,8 +1174,6 @@ export const StructureEditor = <PropertiesType extends string, Values extends Re
         const displayValuesCopy: any = [...orderedItemsRef.current];
 
         if (groupId) {
-            console.log({ groupId });
-
             const group = displayValuesCopy.find((val) => val.type === 'group' && val.id === groupId);
             if (!group) return;
 
@@ -1189,9 +1181,10 @@ export const StructureEditor = <PropertiesType extends string, Values extends Re
             group.fields[index] = updatedField;
         } else {
             const updatedValue =
-                typeof valueOrFunc === 'function' ? valueOrFunc(displayValuesCopy[index] as FieldCommonFormInputProperties) : valueOrFunc;
-            displayValuesCopy[index] = updatedValue;
+                typeof valueOrFunc === 'function' ? valueOrFunc(displayValuesCopy[index].data as FieldCommonFormInputProperties) : valueOrFunc;
+            displayValuesCopy[index] = { type: 'field', data: updatedValue };
         }
+
         setOrderedItems(displayValuesCopy);
         updateFormik();
     };
@@ -1229,7 +1222,7 @@ export const StructureEditor = <PropertiesType extends string, Values extends Re
     const onChange = (index: number, event: React.ChangeEvent<HTMLInputElement>, groupIndex?: number) => {
         const inputName = event.target.name.split('.')[1]; // the input name is in the format `properties[index].field`
         const inputValue = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
-        setFieldDisplayValue(index, inputName as keyof Values, inputValue, groupIndex);
+        setFieldDisplayValue([{ index, groupIndex }], inputName as keyof Values, inputValue);
         // setFieldDisplayValue([index], inputName as keyof Values, inputValue);
     };
 
@@ -1237,7 +1230,7 @@ export const StructureEditor = <PropertiesType extends string, Values extends Re
         onChange(index, event, groupIndex);
 
     const setFieldDisplayValueWrapper = (index: number, groupIndex?: number) => (field: keyof Values, value: any) =>
-        setFieldDisplayValue(index, field, value, groupIndex);
+        setFieldDisplayValue([{ index, groupIndex }], field, value);
     const setDisplayValueWrapper = (index: number, groupId?: string) => (value: SetStateAction<PropertyItem>) =>
         setDisplayValue(index, value, groupId);
     const isFieldBlockError = Boolean(touched?.[propertiesType]) && Boolean(errors?.[propertiesType]);
@@ -1265,32 +1258,32 @@ export const StructureEditor = <PropertiesType extends string, Values extends Re
         return userNames;
     }, [propertiesType, values]);
 
-    // const onDuplicateKartoffelField = (fieldIndex: number, groupIndex?: number) => {
-    //     const displayValuesCopy = [...orderedItemsRef.current];
+    const onDuplicateKartoffelField = (fieldIndex: number, groupIndex?: number) => {
+        const displayValuesCopy = [...orderedItemsRef.current];
 
-    //     const isGrouped = typeof groupIndex === 'number';
+        const isGrouped = typeof groupIndex === 'number';
 
-    //     const sourceField = isGrouped ? displayValuesCopy[groupIndex].fields[fieldIndex] : displayValuesCopy[fieldIndex].data;
+        const sourceField = isGrouped ? displayValuesCopy[groupIndex].fields[fieldIndex] : displayValuesCopy[fieldIndex].data;
 
-    //     const newField = {
-    //         id: uuid(),
-    //         ...initialFieldCardDataOnAdd,
-    //         type: 'kartoffelUserField',
-    //         readOnly: true,
-    //         expandedUserField: {
-    //             relatedUserField: sourceField.expandedUserField?.relatedUserField || '',
-    //             kartoffelField: '',
-    //         },
-    //     };
+        const newField = {
+            id: uuid(),
+            ...initialFieldCardDataOnAdd,
+            type: 'kartoffelUserField',
+            readOnly: true,
+            expandedUserField: {
+                relatedUserField: sourceField.expandedUserField?.relatedUserField || '',
+                kartoffelField: '',
+            },
+        };
 
-    //     if (isGrouped) {
-    //         displayValuesCopy[groupIndex].fields.splice(fieldIndex + 1, 0, newField);
-    //     } else {
-    //         displayValuesCopy.splice(fieldIndex + 1, 0, { data: newField, type: 'field' });
-    //     }
+        if (isGrouped) {
+            displayValuesCopy[groupIndex].fields.splice(fieldIndex + 1, 0, newField);
+        } else {
+            displayValuesCopy.splice(fieldIndex + 1, 0, { data: newField, type: 'field' });
+        }
 
-    //     setOrderedItems(displayValuesCopy);
-    // };
+        setOrderedItems(displayValuesCopy);
+    };
 
     const buildProps = (propertyProp, index: number, groupIndex?: number) => {
         const isGroup = groupIndex !== undefined;
@@ -1353,7 +1346,7 @@ export const StructureEditor = <PropertiesType extends string, Values extends Re
             groupIndex,
             supportComment,
             userPropertiesInTemplate,
-            onDuplicateKartoffelField: () => {}, // onDuplicateKartoffelField(index, groupIndex),
+            onDuplicateKartoffelField,
         };
     };
 
@@ -1613,7 +1606,7 @@ export const StructureEditor = <PropertiesType extends string, Values extends Re
     );
 };
 
-export const ManualDndLayout = <PropertiesType extends string, Values extends Record<PropertiesType, CommonFormInputProperties[]>>({
+export const FieldBlock = <PropertiesType extends string, Values extends Record<PropertiesType, CommonFormInputProperties[]>>({
     propertiesType,
     values,
     uniqueConstraints,
