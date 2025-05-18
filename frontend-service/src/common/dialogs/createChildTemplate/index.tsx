@@ -25,6 +25,7 @@ import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter, IAGGridTextFil
 import FieldsAndFiltersTable from './FieldsAndFiltersTable';
 import { MeltaCheckbox } from '../../MeltaCheckbox';
 import SelectUserFieldDialog from './SelectUserFieldDialog';
+import { filterModelToFilterOfTemplatePerField } from '../../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 
 export interface IFieldFilter {
     fieldValue: IEntitySingleProperty;
@@ -102,26 +103,44 @@ const CreateChildTemplateDialog: React.FC<{
         }
     }, [entityTemplate]);
 
-    const handleSave = () => {
+    const handleSave = async () => {
+        const selectedFields = Object.entries(templateFieldsFilters).filter(([_fieldName, fieldFilter]) => fieldFilter.selected);
+
+        const filters = selectedFields
+            .map(([fieldName, fieldConfig]) => {
+                if (!fieldConfig.filterField) return null;
+                try {
+                    return filterModelToFilterOfTemplatePerField(fieldConfig.fieldValue, fieldName, fieldConfig.filterField);
+                } catch (e) {
+                    console.error(`Error creating filter for ${fieldName}:`, e);
+                    return null;
+                }
+            })
+            .filter(Boolean);
+
+        const defaults: IEntityChildTemplate['defaults'] = {};
+        const properties: IEntityChildTemplate['properties'] = {};
+
+        selectedFields.forEach(([fieldName, fieldConfig]) => {
+            properties[fieldName] = fieldConfig.fieldValue;
+        });
+
         const newChildTemplate: IEntityChildTemplate = {
             name: childTemplateName,
             displayName: childTemplateDisplayName,
             description: childTemplateDescription,
             fatherTemplateId: entityTemplate._id,
             categories: selectedCategories.map((category) => category._id),
-            properties: {},
+            properties,
             disabled: false,
             actions: entityTemplate.actions,
             viewType: childTemplateViewType,
-            defaults: {},
-            filters: {},
+            defaults,
+            filters: filters.length ? { $and: filters } : {},
             isFilterByCurrentUser: childTemplateFilterByCurrentUser,
             isFilterByUserUnit: childTemplateFilterByUserUnit,
         };
-
-        console.log(newChildTemplate);
-        console.log(templateFieldsFilters);
-
+        console.log('Child Template Created:', newChildTemplate);
         handleClose();
     };
 

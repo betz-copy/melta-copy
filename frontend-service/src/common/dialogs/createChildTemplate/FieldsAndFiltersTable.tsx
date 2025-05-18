@@ -72,6 +72,17 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
         if (selectedFilter) addFilterToFieldHandler(selectedFilter, newProperty);
     };
 
+    const isDisallowedFormat = (fieldName: string): boolean => {
+        const prop = entityTemplate.properties.properties[fieldName];
+        return (
+            prop.format === 'fileId' ||
+            prop.format === 'signature' ||
+            prop.format === 'location' ||
+            prop.format === 'comment' ||
+            prop.items?.format === 'fileId'
+        );
+    };
+
     return (
         <>
             <Grid container>
@@ -159,9 +170,13 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                                                 ) : (
                                                     <Button
                                                         color="primary"
-                                                        onClick={() => handleSelectProperty(fieldName, 'filter')}
+                                                        onClick={() => {
+                                                            if (!fieldFilter.selected || isDisallowedFormat(fieldName)) return;
+                                                            handleSelectProperty(fieldName, 'filter');
+                                                        }}
                                                         size="small"
                                                         sx={{ minWidth: '32px', p: '4px' }}
+                                                        disabled={!fieldFilter.selected || isDisallowedFormat(fieldName)}
                                                     >
                                                         <AddRounded />
                                                     </Button>
@@ -212,9 +227,13 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({
                                                     ) : (
                                                         <Button
                                                             color="primary"
-                                                            onClick={() => handleSelectProperty(fieldName, 'default')}
+                                                            onClick={() => {
+                                                                if (!fieldFilter.selected || isDisallowedFormat(fieldName)) return;
+                                                                handleSelectProperty(fieldName, 'default');
+                                                            }}
                                                             size="small"
                                                             sx={{ minWidth: '32px', p: '4px' }}
+                                                            disabled={!fieldFilter.selected || isDisallowedFormat(fieldName)}
                                                         >
                                                             <AddRounded />
                                                         </Button>

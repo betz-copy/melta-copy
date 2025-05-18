@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogActions, DialogContent, DialogTitle, Box, Button, Grid, IconButton, Typography, TextField } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import i18next from 'i18next';
@@ -32,116 +32,115 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
     currentFieldName,
     dialogType,
 }) => {
-    const currentFilterField = fieldFilter.filterField || undefined;
+    const readOnly = false;
+    const entityFilter = false;
 
-    const readOnly = false; // Assuming readOnly is a prop or state that you will manage
-    const entityFilter = false; // Assuming entityFilter is a prop or state that you will manage
     const [inputValue, setInputValue] = useState<string>('');
+    const [localFilterField, setLocalFilterField] = useState<IFieldFilter['filterField']>(fieldFilter.filterField || undefined);
 
-    const handleSetFilterRecord = (newFilterField: IFieldFilter['filterField']) => {
-        if (!currentFieldName || !entityTemplate || !newFilterField) return;
-        updateFieldFilter(newFilterField, currentFieldName);
-    };
+    useEffect(() => {
+        if (open) {
+            setLocalFilterField(fieldFilter.filterField || undefined);
+        }
+    }, [open, fieldFilter]);
 
     const handleFilterFieldChange = (value: IFieldFilter['filterField']) => {
-        handleSetFilterRecord(value);
+        setLocalFilterField(value);
     };
 
     const handleDateChange = (newValue: Date | null, isStartDate: boolean) => {
-        if (!newValue && currentFilterField?.filterType === 'date') {
-            const isRemovingStart = isStartDate && !currentFilterField.dateTo;
-            const isRemovingEnd = !isStartDate && !currentFilterField.dateFrom;
+        if (!newValue && localFilterField?.filterType === 'date') {
+            const isRemovingStart = isStartDate && !localFilterField.dateTo;
+            const isRemovingEnd = !isStartDate && !localFilterField.dateFrom;
             if (isRemovingStart || isRemovingEnd) return;
         }
 
-        handleFilterFieldChange({
-            ...currentFilterField,
+        setLocalFilterField({
+            ...localFilterField,
             ...(isStartDate ? { dateFrom: newValue } : { dateTo: newValue }),
         } as IAGGridDateFilter);
     };
 
     const handleCheckboxChange = (option: string, checked: boolean) => {
-        const { values } = currentFilterField as IAGGridSetFilter;
-
-        const updatedValues = checked ? [...values, option] : values?.filter((item) => item !== option);
-        const updatedFilterField = { ...currentFilterField, values: updatedValues } as IAGGridSetFilter;
-
-        if (updatedValues.length === 0) return;
-        handleSetFilterRecord(updatedFilterField);
+        const { values = [] } = (localFilterField || {}) as IAGGridSetFilter;
+        const updatedValues = checked ? [...values, option] : values.filter((item) => item !== option);
+        setLocalFilterField({ ...localFilterField, values: updatedValues } as IAGGridSetFilter);
     };
 
     const handleFilterTypeChange = (newTypeFilter: IAGGridDateFilter['type'] | IAGGridTextFilter['type'] | IAGGidNumberFilter['type']) => {
-        handleFilterFieldChange({ ...currentFilterField, type: newTypeFilter } as IAGGridDateFilter | IAGGridTextFilter | IAGGidNumberFilter);
+        setLocalFilterField({ ...localFilterField, type: newTypeFilter } as any);
     };
 
     const renderFilterInput = () => {
-        if (!(currentFieldName && entityTemplate)) return null;
-        const { format, enum: propEnum, type, items } = entityTemplate.properties.properties[currentFieldName];
-        // no files in graph filter
+        const property = entityTemplate.properties.properties[currentFieldName];
+        if (!property) return null;
+        const { format, enum: propEnum, type, items } = property;
+
         if (items?.format === 'fileId' || format === 'fileId' || format === 'signature') return null;
 
-        if (propEnum)
+        if (propEnum) {
             return (
                 <SelectFilterInput
-                    filterField={currentFilterField?.filterType === 'text' ? (currentFilterField as IAGGridTextFilter) : undefined}
+                    filterField={localFilterField?.filterType === 'text' ? (localFilterField as IAGGridTextFilter) : undefined}
                     enumOptions={propEnum}
-                    handleFilterFieldChange={(value) => {
-                        if (value) handleFilterFieldChange(value);
-                    }}
+                    handleFilterFieldChange={(value) => value && handleFilterFieldChange(value)}
                     readOnly={readOnly}
                 />
             );
+        }
 
-        if (format === 'date-time' || format === 'date')
+        if (format === 'date-time' || format === 'date') {
             return (
                 <DateFilterInput
-                    filterField={currentFilterField?.filterType === 'date' ? (currentFilterField as IAGGridDateFilter) : undefined}
+                    filterField={localFilterField?.filterType === 'date' ? (localFilterField as IAGGridDateFilter) : undefined}
                     handleFilterTypeChange={handleFilterTypeChange}
                     handleDateChange={handleDateChange}
                     readOnly={readOnly}
                     entityFilter={entityFilter}
                 />
             );
+        }
 
-        if (type === 'boolean')
+        if (type === 'boolean') {
             return (
                 <SelectFilterInput
-                    filterField={currentFilterField?.filterType === 'text' ? (currentFilterField as IAGGridTextFilter) : undefined}
+                    filterField={localFilterField?.filterType === 'text' ? (localFilterField as IAGGridTextFilter) : undefined}
                     isBooleanSelect
-                    handleFilterFieldChange={(value) => {
-                        if (value) handleFilterFieldChange(value);
-                    }}
+                    handleFilterFieldChange={(value) => value && handleFilterFieldChange(value)}
                     readOnly={readOnly}
                 />
             );
+        }
 
-        if (items && entityTemplate.properties.properties[currentFieldName].items?.enum)
+        if (items?.enum) {
             return (
                 <MultipleSelectFilterInput
-                    filterField={currentFilterField?.filterType === 'set' ? (currentFilterField as IAGGridSetFilter) : undefined}
+                    filterField={localFilterField?.filterType === 'set' ? (localFilterField as IAGGridSetFilter) : undefined}
                     handleCheckboxChange={handleCheckboxChange}
-                    enumOptions={items?.enum}
+                    enumOptions={items.enum}
                     readOnly={readOnly}
                 />
             );
+        }
 
-        if (items?.format === 'user' && type === 'array')
+        if (items?.format === 'user' && type === 'array') {
             return (
                 <MultipleUserFilterInput
-                    filterField={currentFilterField?.filterType === 'set' ? (currentFilterField as IAGGridSetFilter) : undefined}
+                    filterField={localFilterField?.filterType === 'set' ? (localFilterField as IAGGridSetFilter) : undefined}
                     inputValue={inputValue}
                     setInputValue={setInputValue}
                     handleCheckboxChange={handleCheckboxChange}
                     readOnly={readOnly}
                 />
             );
+        }
 
         return (
             <TextFilterInput
                 entityFilter={entityFilter}
                 filterField={
-                    currentFilterField?.filterType === 'number' || currentFilterField?.filterType === 'text'
-                        ? (currentFilterField as IAGGidNumberFilter | IAGGridTextFilter)
+                    localFilterField?.filterType === 'number' || localFilterField?.filterType === 'text'
+                        ? (localFilterField as IAGGidNumberFilter | IAGGridTextFilter)
                         : undefined
                 }
                 handleFilterFieldChange={handleFilterFieldChange}
@@ -149,33 +148,6 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
                 type={type}
                 readOnly={readOnly}
             />
-        );
-    };
-
-    const renderDialogContent = () => {
-        return (
-            <>
-                <Grid item xs={12}>
-                    <TextField
-                        fullWidth
-                        disabled
-                        value={entityTemplate.properties.properties[currentFieldName]?.title || currentFieldName}
-                        InputLabelProps={{ shrink: false }}
-                    />
-                </Grid>
-
-                {dialogType === 'filter' && (
-                    <Grid item xs={12}>
-                        {renderFilterInput()}
-                    </Grid>
-                )}
-
-                {dialogType === 'default' && (
-                    <Grid item xs={12}>
-                        <TextField fullWidth value={inputValue} onChange={(e) => setInputValue(e.target.value)} variant="outlined" />
-                    </Grid>
-                )}
-            </>
         );
     };
 
@@ -188,37 +160,55 @@ const AddFieldFilterDialog: React.FC<IAddFieldFilterDialogProps> = ({
                             ? i18next.t('createChildTemplateDialog.fieldFilterDialog.title')
                             : i18next.t('createChildTemplateDialog.fieldDefaultDialog.title')}
                     </Typography>
-
                     <IconButton onClick={onClose}>
                         <CloseIcon />
                     </IconButton>
                 </Box>
             </DialogTitle>
+
             <DialogContent>
                 <Grid container spacing={2}>
-                    {renderDialogContent()}
+                    <Grid item xs={12}>
+                        <TextField
+                            fullWidth
+                            disabled
+                            value={entityTemplate.properties.properties[currentFieldName]?.title || currentFieldName}
+                            InputLabelProps={{ shrink: false }}
+                        />
+                    </Grid>
+
+                    {dialogType === 'filter' && (
+                        <Grid item xs={12}>
+                            {renderFilterInput()}
+                        </Grid>
+                    )}
+
+                    {dialogType === 'default' && (
+                        <Grid item xs={12}>
+                            <TextField fullWidth value={inputValue} onChange={(e) => setInputValue(e.target.value)} variant="outlined" />
+                        </Grid>
+                    )}
                 </Grid>
             </DialogContent>
 
             <DialogActions>
                 <Grid container spacing={2} alignItems="center">
-                    <Grid xs={12} item display="flex" justifyContent="center" alignItems="center">
+                    <Grid item xs={12} display="flex" justifyContent="center">
                         <Button
-                            onClick={() => {
-                                let valueToSubmit: any;
-
-                                if (dialogType === 'default') {
-                                    valueToSubmit = inputValue;
-                                } else {
-                                    valueToSubmit = fieldFilter.filterField;
-                                }
-
-                                if (valueToSubmit === undefined || valueToSubmit === null || valueToSubmit === '') return;
-
-                                onSubmit(currentFieldName, valueToSubmit);
-                            }}
                             variant="contained"
                             color="primary"
+                            onClick={() => {
+                                if (dialogType === 'default') {
+                                    if (!inputValue) return;
+                                    onSubmit(currentFieldName, inputValue);
+                                    return;
+                                }
+
+                                if (!localFilterField) return;
+
+                                updateFieldFilter(localFilterField, currentFieldName);
+                                onSubmit(currentFieldName, localFilterField);
+                            }}
                         >
                             {i18next.t('createChildTemplateDialog.fieldFilterDialog.addFilter')}
                         </Button>
